@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -10,7 +10,8 @@ Build the one-repository hub layout into the current `internal/fabricengine` (th
 A worktree whose root carries `.lym-anchor` belongs to a one-repository hub: its records live under `<anchor>/_lym` on its own code branch, and the board lives on the orphan branch `lym-bolt`.
 The cards read the layout in `lymcwd`, define the records paths and commit predicates, point fabric's records geometry at the worktree itself,
 then take clone, Add, the records commit, the anchor change, merge, the mid-merge commit, the transition seam, push and teardown, replay and the prime's guarded push through that layout,
-and close with the docs and the PATTERN changes. Two-repository hubs keep today's behavior throughout.
+and close with the docs and the PATTERN changes. Two-repository hubs keep today's behavior throughout;
+the transition seam's wait on a blocking git operation applies in a one-repository worktree only, and a two-repository worktree keeps its skip (card 11).
 
 ## Card Index
 

@@ -14,6 +14,9 @@
 - `internal/fabricengine#CommitEmptyWithTrailers`
 - `internal/fabricengine#Fabric.commitWeftLocked`
 - `internal/fabricengine#Fabric.commitEmptySnapshot`
+- `internal/fabricengine#takeoverBranch.commitEntry`
+- `internal/fabricengine#migrateWeftMarker`
+- `internal/fabricengine#recordAdoptedWeftAnchor`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
@@ -47,13 +50,21 @@ With card 3's geometry every records commit (`lym fabric commit`, `sync`, the tr
   `commitRecordsPathsHeld`, `CommitEmptyWithTrailers` and `commitWeftLocked` call it before they stage anything, so the records stay uncommitted on disk,
   and every records commit, a merge's step 1 and `MergeAbort`'s included, refuses there.
   Bound: while the prime is off its recorded branch every prime run's records commit refuses, so prime runs stall until the switch back.
+  The key lets records commits land on whichever branch it names while the prime has that branch checked out, so an operator who sets it to another branch moves the prime's records there.
+  It binds only the main worktree of a one-repository hub, never a task worktree or a two-repository records worktree, and every records push it leads to still passes card 14's guard.
+- Records commits outside the three primitives take the same refusal and retry:
+  `takeoverBranch.commitEntry` runs `refuseOffPrimeBranch` before it writes the takeover entry and wraps its `StageAndCommit` in `retryHeldIndexLock`, as the primitives do.
+  `migrateWeftMarker` and `recordAdoptedWeftAnchor`, the two that commit a missing marker through `commitAnchorMarker` on an existing worktree, run `refuseOffPrimeBranch` first
+  and wrap the `commitAnchorMarker` call in `retryHeldIndexLock`; a held-lock failure commits nothing, so the re-run commits the marker once.
+  `commitAnchorMarker` itself stays as it is, since card 5's clone runs it on a freshly cloned prime with no git operation in progress.
+  Off its recorded branch the prime's marker commit now refuses: `migrateWeftMarker` reports the refusal in its pair's `Error`, and `recordAdoptedWeftAnchor` returns it.
+  On a recorded branch lacking the marker, which `lym.primeBranch` can name, the commit lands there, and card 10 refuses it while a git operation is in progress.
 
 Tests:
 - `TestRetryHeldIndexLock` (tier0, package `fabricengine`) rows: `ReleasedWithinTheBoundLands` (two held-lock errors, then nil; sleeps 50ms and 100ms); `HeldPastTheBoundFails` (always held: returns the held-lock error once the sleeps sum to the bound); `OtherErrorIsNotRetried` (no sleep).
 - `TestRecordsCommit_OneRepository` (tier1, `NewOneRepoHub`, one pair through `AddPairWith`) rows:
   `CommitsOnlyRecordsAndLeavesStagedCodeStaged` (a code file staged by `git add` in the pair; `CommitAnchoredPathsWithTrailers` of a status file commits only that path, the code stays staged, and `Warp-SHA` names the HEAD before the commit);
   `EmptyRecordsCommitWithCodeStagedLands` (`Fabric.Commit(nil, msg, tags, ...)` lands an empty commit carrying the tags with the code still staged);
-  `RecordsRepoRootIsTheOneRepository`;
   `PrimeOffItsBranchRefuses` (prime switched to another branch with a records edit: the error is `*ErrPrimeBranch` naming both branches, `IsPrimeBranchRefusal` reads it, the edit stays on disk uncommitted);
   `PrimeWithoutTheKeyRefuses` (`lym.primeBranch` unset: refusal names the key);
   `TwoRepositoryPrimeIsNotRefused` (a `NewHub` hub's prime records commit lands with no `lym.primeBranch` key).

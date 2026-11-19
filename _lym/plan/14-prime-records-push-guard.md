@@ -11,6 +11,7 @@
 - `internal/fabricengine#PushPairAnchored`
 - `internal/fabricengine#coalescePushSides`
 - `internal/fabricengine#retryWeftPush`
+- `internal/fabricengine#takeoverBranch.land`
 - `internal/fabricengine#IsPushOwed`
 - `internal/fabricengine#FailedPushesOwedBy`
 - `internal/fabricengine#FailedPushWayForward`
@@ -34,11 +35,14 @@
 - `plan:internal/fabricengine#PushFailureProtected`
 - `plan:internal/fabricengine#oneRepositoryAt`
 - `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#AddPairWith`
 
 **Intent:** D7's guarded records push of the prime, whose branch is also the operator's code branch.
 
 `holdPrimePushForOperator(hubPath, prime, now)` is the guard every records push of a one-repository prime runs before it pushes:
-`PushPairAnchored`, the detached push's `coalescePushSides` (reached from `Fabric.Commit`, `lym fabric sync` and every other `SpawnDetachedPush`), and `retryWeftPush` before it pushes again after a replay.
+`PushPairAnchored`, the detached push's `coalescePushSides` (reached from `Fabric.Commit`, `lym fabric sync` and every other `SpawnDetachedPush`), `retryWeftPush` before it pushes again after a replay,
+and `takeoverBranch.land` before each push of a takeover entry on a one-repository prime, the parent `TakeOverRun` writes on when none is given.
+On a hold `land` returns the guard's error joined with `dropEntry`'s, as its other push failures do, so the prime keeps no unpushed takeover entry and `TakeOverRun` reports the owed push.
 It returns nil when `primePushOperatorCommits` returns none, and otherwise a `*PushFailedError` the caller returns without pushing.
 `primePushOperatorCommits` lists the commits not reachable from origin's ref of the branch and keeps each that is neither records-only (`IsRecordsOnlyCommit`) nor a fabric merge commit (`IsFabricMergeCommit`)
 nor reachable from a second parent of such a merge while some origin ref holds it (`git for-each-ref --contains <sha> refs/remotes/origin`).
@@ -62,7 +66,9 @@ Tests:
   `FastForwardedOperatorCommitHoldsThePush` (the operator fast-forwarded the prime from a branch origin holds: same outcome);
   `CodeCommitCarryingTheMergeTrailerHoldsThePush`;
   `RecordsOnlyAndFabricMergeCommitsPush` (a fabric merge made before the prime's `.lym` was removed is still admitted);
-  `ProtectedRefusalRecordsProtected` (pre-receive hook printing `GH006: Protected branch update failed`: a `protected` record; a following guard refusal over an operator commit is recorded `protected` too, its way forward naming both steps).
+  `ProtectedRefusalRecordsProtected` (pre-receive hook printing `GH006: Protected branch update failed`: a `protected` record; a following guard refusal over an operator commit is recorded `protected` too, its way forward naming both steps);
+  `ProtectedRefusalOfATaskBranchKeepsTodaysClass` (a pair through `AddPairWith` whose branch the same hook refuses: the record's class is not `protected`, and `IsPushProtected` reads false);
+  `TakeoverEntryPushOfThePrimeIsHeld` (`TakeOverRun` with an operator commit unpushed in the prime: origin's prime branch unmoved, an `operator_unpushed` record, and no takeover entry left in the run's status file).
 - `TestIsPushOwed` (tier0) gains the row `OperatorUnpushed` (owed).
 - `TestFailedPushRecord` (tier0): its row `OwedByListsTheRunsOwedClassesNewestFirst` gains an `operator_unpushed` record naming the run, which `FailedPushesOwedBy` lists;
   new rows assert the `operator_unpushed` way forward names the commits, `git push` and `git merge origin/<branch>`, and a `protected` record carrying `Commits` names both steps.

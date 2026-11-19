@@ -34,7 +34,7 @@ the records-only replay and the guarded prime push (cards 13 and 14); the Bolt o
 It names that pull request views and code identity strip the records paths too, which a later part builds.
 
 Backgrounds:
-- `PATTERN-run-fsm.md`: the rule line takes the new text, and `### An owed push holds the run` adds that an `operator_unpushed` push is owed and that a prime push failing as `protected` completes the transition with its records unpushed, held by `TestNew_ProtectedPushCompletes` and `TestPrimePushGuard`.
+- `PATTERN-run-fsm.md`: the rule line takes the new text, and `### An owed push holds the run` adds that an `operator_unpushed` push is owed and that a prime push failing as `protected` completes the transition with its records unpushed, held by `TestNew_PushErrorReturnsNil` and `TestPrimePushGuard`.
 - `PATTERN-cwd-resolution.md`: the anchor bullet says a worktree's anchor comes from its own `.lym-anchor` at its records root, the weft root in a two-repository hub and the worktree root in a one-repository hub; `ResolveWithin` accepts a one-repository cwd at or below the anchor only.
 - `PATTERN-fabric-boundary.md` gains a one-repository paragraph: the exclude gets `.lym`, the `.scratch` link and heddle's files and never `_lym`, `.lym-anchor` or the weft artifact lines; the Bolt's render-manifest `.gitignore` stays on `lym-bolt`, which no code branch merges; teardown tags and pushes the branch tip, deletes the branch and the `lym-view/` ref.
 - `PATTERN-lym-files.md` gains one: `_lym` and `.lym` are real directories at the anchor, and records are per-branch and never a merge participant because fabric's merge restores them to the receiving side.

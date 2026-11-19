@@ -41,8 +41,7 @@ Tests:
   Every existing row creates the owner directory `<hub>/<worktreeName>` and asserts worktree false, sibling false and bolt false,
   so the rows with an own or a board marker pin that a records sibling and the Bolt checkout carrying a marker are no one-repository worktree.
 - `TestResolveWithin_OneRepository` (tier1, `gitkit.CopyRepo`) commits `.lym-anchor` holding `backend` at the checkout root.
-  Rows: `AnchoredDirectory` and `BelowTheAnchoredDirectory` resolve to `ResolveWorktree(root)`;
-  `WorktreeRootAboveTheAnchor` and `SiblingOfTheAnchor` are refused with `ErrCwdOutsideAnchor` naming the anchored directory;
+  Rows: `AnchoredDirectory` resolves to `ResolveWorktree(root)`, pinning the root-marker read through the resolver;
   `SuffixedCheckoutBesideIt` adds a linked worktree at `<root>` plus `weftname.Suffix` on a branch made from the commit before the marker commit, so its root holds no marker,
   and resolves a cwd in it to that checkout's own name with anchor `.`.
 - `TestResolveWithin` (tier1) keeps its rows unchanged; its `SiblingRecordsDirectory` and `SiblingRoot` rows pin that a two-repository sibling carrying a marker still resolves to its owner.
