@@ -1,6 +1,6 @@
 # A docs darn can land with an empty diff and its report only in the change description
 
-`empty-landing-not-flagged` · Task · bug, landing, darn · landing · Finalize
+`empty-landing-not-flagged` · Task · bug, landing, darn · done
 
 ## What was seen (2026-11-18)
 
