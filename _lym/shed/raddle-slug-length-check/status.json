@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/raddle-slug-length-check/.lym/shed/raddle-slug-length-check/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Darn-Write → stuck",
+    "wait": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/raddle-slug-length-check/.lym/shed/raddle-slug-length-check/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
   },
   "history": [
     {
@@ -43,6 +43,107 @@
       "output": "",
       "at": "2026-11-19T19:36:26Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-slug-length-check/_lym/landing/summary.md",
+      "at": "2026-11-19T19:48:21Z",
+      "started_at": "2026-11-19T19:36:30Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T19:39:59.542584373Z",
+          "end": "2026-11-19T19:39:59.552435233Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T19:47:51.449642204Z",
+          "end": "2026-11-19T19:47:51.469083389Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:01.643568383Z",
+          "end": "2026-11-19T19:48:01.983769063Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:19.185517645Z",
+          "end": "2026-11-19T19:48:19.212655031Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T19:39:59.597440696Z",
+          "end": "2026-11-19T19:47:36.69970514Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T19:47:51.5327587Z",
+          "end": "2026-11-19T19:47:51.827586994Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:02.312683707Z",
+          "end": "2026-11-19T19:48:03.14097145Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:19.330335912Z",
+          "end": "2026-11-19T19:48:19.84158061Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-19T19:47:36.761700452Z",
+          "end": "2026-11-19T19:47:36.904954957Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-19T19:47:37.351867198Z",
+          "end": "2026-11-19T19:47:51.389646814Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-19T19:47:51.893888627Z",
+          "end": "2026-11-19T19:47:52.040640891Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-19T19:47:52.507409029Z",
+          "end": "2026-11-19T19:48:01.539402345Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:03.237230202Z",
+          "end": "2026-11-19T19:48:03.458630056Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-19T19:48:04.030066352Z",
+          "end": "2026-11-19T19:48:19.085563742Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-19T19:48:19.931248888Z",
+          "end": "2026-11-19T19:48:20.21440735Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
