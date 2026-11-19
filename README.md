@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 15:29 UTC; every age below is as of then.
+Rendered 2026-11-19 15:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -138,7 +138,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | Describe | neve | 2h<br>46m | landing, stencil, burler, heddle, docs |
+| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | PR-Review | neve | 2h<br>47m | landing, stencil, burler, heddle, docs |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>4h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 #### Ready (0)
@@ -153,7 +153,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 2h<br>46m | gate, testmap |
+| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 2h<br>47m | gate, testmap |
 
 ### Notes (5)
 
