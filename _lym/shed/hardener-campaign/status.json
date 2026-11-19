@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Drift-Expect → skipped",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -234,6 +234,46 @@
       "output": "",
       "at": "2026-11-19T14:27:22Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/hardener-campaign/_lym/webster/summary.md",
+      "at": "2026-11-19T16:52:19Z",
+      "started_at": "2026-11-19T14:27:28Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T16:32:31.049774432Z",
+          "end": "2026-11-19T16:32:31.280004124Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T16:49:20.424857841Z",
+          "end": "2026-11-19T16:49:20.683059141Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T16:32:31.320492619Z",
+          "end": "2026-11-19T16:36:46.766639439Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T16:36:47.150497995Z",
+          "end": "2026-11-19T16:49:20.388760938Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T16:49:20.726675566Z",
+          "end": "2026-11-19T16:52:18.422372005Z"
+        }
+      ]
     }
   ],
   "product": {
