@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -20,11 +20,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 6h<br>4h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-editor`](design-board-viewer-editor.md)<br>[Sketch](decision-board-viewer-editor.md) | raddle |  | 1d<br>0m | board, ide, fabric |
 
 ### Layer A (1)
 
@@ -34,15 +36,9 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 2h<br>1h | gate, testmap |
 
-## Notes (5)
+## Notes (4)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Sketches (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| S2 |  | **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-editor`](design-board-viewer-editor.md)<br>[Sketch](decision-board-viewer-editor.md) | 1d<br>2h | board, ide, fabric |
 
 ### Research (2)
 
