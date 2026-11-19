@@ -711,6 +711,24 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl"
       ]
     },
+    "15": {
+      "slug": "one-repository-docs",
+      "cards": [
+        "15-one-repository-docs",
+        "16-pattern-single-repo-hub"
+      ],
+      "cardHashes": {
+        "15-one-repository-docs": "f44d2f496adf29562d5e3421f68ce382d33ba30e7abeb43fbe0b51f8e12a3a63",
+        "16-pattern-single-repo-hub": "6c0287ba7f9429d09be278cc6281c5baaa0a53a726f488b2b0f850b8050f9b83"
+      },
+      "startSha": "d20b6b802ce648ee2cb83514a21f14944d606a03",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T09:31:32Z",
+      "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "4": {
       "slug": "protected-push-class",
       "cards": [
@@ -875,7 +893,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 15,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
