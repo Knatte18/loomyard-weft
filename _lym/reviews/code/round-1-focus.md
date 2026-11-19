@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "Leftovers of D5: grep the tree at HEAD for lymcwd.OneRepository, MergeStateOperation, IsPrimeBranchRefusal, IsPushProtected, MidMergeRecordsUnsettled, PushOneRepositoryClone, SingleRepo, BoltBranchName, MergeStartNoFastForward, NewOneRepoHub, lym-bolt, lym-view, lym.primeBranch, operator_unpushed, Fabric-Merge, Warp-SHA, --single-repo, in code, docs, stencils and pattern/. Does any reference or dead helper survive (PATTERN-test-only-code: a helper kept only for tests)?"
+  - "D6 keeps: ProtectedBranchRefusal still read by landingshed for the parent push; the push retry still refuses to retry a protected refusal on every branch; gitrepo still appends remote: lines to a push rejection. Does the diff keep each, with a test that reaches it?"
+  - "D7 reverts: MergeStateActive reports a merge only (a cherry-pick, revert or rebase no longer skips a status commit); a deferred failed-push record is never mailed, with or without commits; Fabric.Commit's refusal order is the pre-f06acf39 order. Check each against the pre-f06acf39 behaviour and the acceptance criteria, and check the cached layout probe of c83fec49 is fully gone without breaking the merge probe."
+  - "Fabric.ChangedCodePaths removal and landingshed Finalize: does the empty-landing check via Deps.ChangedPaths still give the right answer, and are RecordsWorktree, commitRecordsPathsHeld and the commit paths still correct for the two-repository layout now that the path-limited and mid-merge commits are gone?"
+  - "Pair teardown and remote teardown (remoteteardown.go, remove.go, replay.go, takeoverwrite.go, unwire.go, pairteardown, runfsm act): was any two-repository step removed together with the one-repository branch, such as lock ordering, weft handling or the takeover hand-over rule?"
+  - "statuscommit, battencli and loomcli seams: after removing the operation wait and protected/stalled seams, are all remaining wiring seams filled and does failure handling still stop or continue the commit as before? Check PushErrorReturnsNil and the board-status-before-RunShed order."
+  - "Test deletions: for each deleted test file or case, is it one-repository only, or did the diff drop two-repository coverage with it (loosened checks)? Check the survivors listed in the mutation report at clone.go:275-276, commit.go:112/115, pushanchored.go:192, cleanupremotewarp.go:119 against D5/D7 behaviour."
+  - "Docs and PATTERN: docs/overview.md and fabricengine/doc.go free of records-on-code-branch text; PATTERN-run-fsm and PATTERN-cwd-resolution carry the declared text exactly; PATTERN-single-repo-hub removal and the edits to PATTERN-fabric-boundary, -lym-files and -pair-remote are licensed by D5; the commit message claims match the diff."
+---
+
+Seed focus for round 1. Entries name where to look and what to settle; none pre-states a verdict.
