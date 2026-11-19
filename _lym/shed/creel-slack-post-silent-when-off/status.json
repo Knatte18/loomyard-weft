@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-19T09:29:08Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/creel-slack-post-silent-when-off/_lym/landing/summary.md",
+      "at": "2026-11-19T09:53:23Z",
+      "started_at": "2026-11-19T09:29:15Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T09:34:28.798724536Z",
+          "end": "2026-11-19T09:34:28.808805965Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T09:34:28.870609875Z",
+          "end": "2026-11-19T09:51:26.446928666Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T09:51:26.56652799Z",
+          "end": "2026-11-19T09:51:27.152457725Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T09:51:27.330812072Z",
+          "end": "2026-11-19T09:51:27.339255197Z"
+        }
+      ]
     }
   ],
   "product": {
