@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-19T18:32:25Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/single-repo-code-records-removal/_lym/landing/summary.md",
+      "at": "2026-11-19T18:54:54Z",
+      "started_at": "2026-11-19T18:32:30Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T18:37:36.365662928Z",
+          "end": "2026-11-19T18:37:36.377904038Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T18:53:57.126021579Z",
+          "end": "2026-11-19T18:53:57.135882279Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T18:37:36.425419159Z",
+          "end": "2026-11-19T18:53:35.533317892Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T18:53:35.988512947Z",
+          "end": "2026-11-19T18:53:57.092650555Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T18:53:57.184778325Z",
+          "end": "2026-11-19T18:53:58.483081192Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T18:53:58.535922375Z",
+          "end": "2026-11-19T18:53:58.809765212Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T18:53:58.855445674Z",
+          "end": "2026-11-19T18:53:58.85564675Z"
+        }
+      ]
     }
   ],
   "product": {
