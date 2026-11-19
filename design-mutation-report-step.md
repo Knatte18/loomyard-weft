@@ -1,6 +1,6 @@
 # Build the mutation gate report step with the trial bound changes
 
-`mutation-report-step` · Note · feature, gate, testmap
+`mutation-report-step` · Task · feature, gate, testmap · draft
 
 ## Source
 
