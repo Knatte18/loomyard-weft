@@ -1,57 +1,55 @@
-# A red-first gate and a Root-Cause trailer for bug runs
+# Prove a bug fix's test was red first, and name its root cause
 
-A darn run whose board entry is labelled `bug` can no longer hand off a fix whose test would have passed before the fix.
-Darn-Write gains a `red-first` gate entry, after `verify`, that runs the tests the diff adds or changes once on the merge base's code and fails when every one of them passes there.
-The writer's prompt asks for a `Root-Cause:` trailer on the fix's commit, and the Code-Review rubric checks it against the diff.
-The design is candidate 2 of `docs/research/survey/pocock-skills-2026-11-19/report.md`.
+A darn run of a board entry labelled `bug` now holds the writer until a test its diff adds or changes fails on the merge base.
+A fix whose tests all pass without the fix proves nothing about the bug, and the gate refuses it.
+The fix commit also carries a `Root-Cause:` trailer, which Code-Review checks the way it checks `Loosened-Check:`.
 
 ## What changes
 
-- **`lym gate red-first --gate <key> [--base <rev>]`** (`internal/gatecli/redfirst.go`).
-  It finds the tests the worktree's diff adds or changes with `testreach.ChangedTests`,
-  builds a Go `-overlay` that puts the merge base's version of every changed production `.go` file of the module back (a file the base lacks is removed),
-  and runs the key's tiers in process over those tests' packages with `-run` matching exactly their names.
-  It exits 0 when one of them fails on the base, by name or by its package failing to build there;
-  `gateslot.RedFirstGreenExit` (3) when every one passed; `gateslot.RedFirstNoTestExit` (4) when the diff holds no test;
-  and 1 when the run judged none of them, such as after a timeout.
-  A hub whose scoper is not `go` judges nothing and exits 0 with a note.
-  It runs only the key's tiers: none of the key's lints, scope or report steps.
-- **`testreach.ChangedTests`** returns the top-level test functions of the `_test.go` files that are new or whose declaration text differs,
-  matched across the two sides by package and name as `ChangedFuncs` matches functions.
-  The file walk is shared with `ChangedFuncs` through `declaredFuncsWhere`.
-- **`gateslot`** holds what the verb and its site share: `RedFirstCall`, the two exit codes,
-  and `PackagesFailedOutsideTests`, the read of a failure report's packages that failed outside any test.
-- **`loomshed.NewRedFirstGate`** runs the call through `verifytree.Verify`, so a pass on a tree is recorded and skipped on the next arrival.
+- `lym gate red-first --gate <key> [--base <rev>]` is a new verb in `internal/gatecli`.
+  It finds the tests the diff adds or changes through the new `testreach.ChangedTests`.
+  It runs them once per package on the base's code: the base's Go files go in as an overlay, and the tests keep their head text.
+  It exits with a code from `internal/gateslot` that names the verdict:
+  - green, when every test passed on the base;
+  - no test, when the diff adds or changes none;
+  - unjudged, when the hub's scoper is not `go` or the diff changes a non-Go file the overlay cannot put back.
+- `NewRedFirstGate` in `internal/loomshed` is a must-pass gate that runs the verb through `verifytree.Verify`.
+  The new `red-first` gate sits on the `Darn-Write` row of `contracts/recipes/darn-recipe.yaml`, after `verify` and before `drift`.
+  `loomcli/wiring.go` wires its two readers: the entry's labels and the rendered command.
   An entry without the `bug` label passes at once and runs nothing.
-  So does a decision record holding an added entry whose title opens `No test seam`: the parent's recorded stop for a bug no test can reach.
-  Exit 3 and exit 4 fail with the writer's way forward; any other failure judged no test and fails terminally, so the run halts for the parent.
-- **`shedrecipe`** adds `red-first` to the gate vocabulary over two new Env seams:
-  `EntryLabels`, which loom wiring fills with a read of the run's board entry at each arrival,
-  and `RedFirstCommand`, filled with `gateslot.RedFirstCall`.
-  The darn recipe lists the gate on Darn-Write between `verify` and `drift`, with 3 attempts and no fixer.
-- **Stencils.** The darn write prompt gains a "A bug entry" section: write the test so it fails on the merge base,
-  ask the parent for a `No test seam` record when no test can reach the bug, and put `Root-Cause: <defect>` on the fix's commit.
-  The Code-Review rubric gains a "Root cause of a bug fix" bullet beside the Loosened checks one.
-- **Docs.** The package docs of `gatecli`, `gateslot`, `testreach`, `loomshed` and `shedrecipe`, and `docs/overview.md`, describe the verb and the gate.
+- A bug with no seam for a test is a stop the record names.
+  The parent records it with `lym loom decision add` under a title opening `No test seam`, and the gate then passes.
+  The writer's failure text names that way forward for the no-test and unjudged verdicts.
+- A run that timed out, crashed its runner or exited with another code judged none of the diff's tests, and fails the gate terminally.
+- The writer stencil `darn-template-write.md` gains a section on bug entries, and its `Root-Cause:` trailer is named there.
+  `loom-rubric-code-review.md` makes a trailer that names a symptom, or a defect the diff does not touch, a finding.
+  It makes a missing trailer a finding only when the decision record alone is the answer key, which only the darn recipe uses.
+- `gateslot` holds the exit codes, the `bug` label and the `No test seam` title as shared constants.
+  The mutate verb's base resolution is now `verbDiffBase`, shared with the new verb.
+  `docs/overview.md`, `pattern/PATTERN-gate-slot.md` and the package docs describe the gate.
 
 ## Design decisions
 
-- The base run uses a Go overlay over the working tree rather than a second worktree at the merge base.
-  The new tests exist only at HEAD, so the run needs HEAD's test files over the base's code, which an overlay gives without touching git or the fabric boundary.
-- The gate reads the verb's exit code rather than parsing its output, so the contract between the two is the pair of `gateslot` constants.
-- A changed test that does not build on the base counts as red.
-  The record's rule is that the gate fails when every test passes there, and a test that does not build does not pass.
-- "A bug with no seam for a test is a stop the record names" is met by an added decision titled `No test seam`.
-  The writer cannot run `lym loom decision add`, so its way forward is to ask the parent, which keeps the stop in the record rather than in the writer's hands.
-- Only Darn-Write carries the gate.
-  The record speaks of a gate step for a `bug` entry; tapestry and sampler runs of such an entry are not checked.
+- The gate runs in Darn-Write only.
+  Tapestry and sampler runs of a bug entry are not checked: tapestry gates per Webster batch, a different seam with its own design questions.
+- The check runs each package's tests under that package's tier and base overlay, so a test of one package never runs by another's name.
+- A Go-only judgement: on another scoper the verb says so and exits with the unjudged code, so the stop goes to the parent instead of passing silently.
+- The gate has no fixer, since only the writer can make a test show the bug.
 
-## Bounds
+## To check by hand
 
-- `go.mod`, `go.sum`, embedded files and other non-Go files are not put back to the base.
-- A changed test that every tier of the key skips counts as passing on the base.
-- A tier that prebuilds `lym` builds it from the working tree, so a test that runs the binary runs HEAD's.
-- A run whose failure report mixes a changed test's failure with another package's build failure is read as judging nothing, which halts the run.
+No integration or end-to-end run of a real bug entry through Darn-Write was made.
+Check these findings, which a review left open:
+
+- `internal/gatecli/redfirst.go`: the base run keeps non-Go inputs, such as testdata a changed test reads, at their head text.
+- The `bug` label and the `No test seam` title are repeated as literals outside `gateslot`.
+- On a hub whose scoper is not `go`, check that `lym gate red-first` exits with the unjudged code and not zero.
+- `judgeRedFirst`: in a mixed report, a failure the output names may be dropped from the verdict.
+- No behaviour test covers the entry-labels reader beyond `internal/loomcli/entrylabels_integration_test.go`.
+- The gate covers darn runs only, and nothing but this description records that narrowing.
+- The rubric's missing-trailer clause may reach past its intended scope of a decision-record-only answer key.
+- The verify-site tripwire and the docs may not name the new gate's site.
+- The Merge danger blast radius below may be too narrow.
 
 ## Merge danger
 
