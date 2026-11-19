@@ -1,52 +1,45 @@
-# Shell guard rows read inside a sh -c or bash -c script
+# shellguard: read the script of a shell -c call like a top-level command
 
-The command-shaped shell guard rows now read the script of a `sh -c`, `bash -c`, `dash -c`, `ksh -c` or `zsh -c` the way they read a top-level command.
-A computed-path `rm` inside such a script now gets the computed-rm refusal and its way forward.
-Before, it reached Claude Code's "removes files and could not be checked" dialog, which stalls an unattended run until someone answers it.
+A `sh -c`, `bash -c`, `dash -c`, `ksh -c` or `zsh -c` script that removed files by a computed path reached Claude Code's own dialog instead of the guard's refusal.
+The dialog stalled an unwatched run until someone answered it by hand.
+Seen in `hardener-campaign`: a fixer's loop inside a `bash -c` script made a temp dir and removed a subdirectory of it by a variable path.
 
-## What changed
+`internal/shellguard` now reads the script of a shell `-c` call in command position, one level deep, and applies the command-shaped rows to it.
+The agent gets the row's refusal with its way forward, and no dialog opens.
+The rows that read inside the script are `python`, `shell-edit`, `computed-rm`, `machine-sleep`, `headless-claude`, `adopt-take-hold`, `publish`, `raw-go` and `refuse-raw`.
 
-`internal/shellguard/rows.go` splits `commandPositionPattern` into named parts and adds a script branch to it:
+## What changes
 
-- `topLevelReachPattern` is the old run of shell units up to a separator.
-- `commandWordPrefixPattern` is the old run of `env`, `exec`, `xargs`, `sudo` and `time` plus a path prefix.
-  It now also takes the shell keywords that open a command: `do`, `then`, `else`, `if`, `elif`, `while` and `until`.
-- `shellDashCPattern` matches a shell in command position followed by any flag words and then `-c`, alone or ending a cluster such as `-lc` or `-ec`.
-- `singleQuotedScriptUnitPattern` and `doubleQuotedScriptUnitPattern` are the shell units inside a single-quoted or a double-quoted script.
-  Each one stops at the quote that closes the script.
-- `shellScriptReachPattern` puts command position at the start of the script or after a separator inside it.
-
-Every row built on `commandPositionPattern` gains the script branch:
-python, raw go, refuse-raw, shell-edit's in-place half, computed-rm, machine-sleep, headless claude, adopt take-hold and publish.
-Two patterns do not build on it and get their own script branch:
-the shell-edit row's redirect into a source file, and the raw go row's check for a lym environment variable name.
-The raw go row's `all` word now also ends at a single quote, so `bash -c 'go test all'` is refused like `go test all`.
-
-Package docs in `internal/shellguard/doc.go` and `internal/shuttleengine/claudeengine/doc.go` and the per-row comments are updated:
-they no longer list `bash -c` as a way past the guard.
-`internal/shuttleengine/claudeengine/testdata/settings-golden.json` carries the new patterns.
-Its notices are unchanged.
+- `commandPositionPattern` in `internal/shellguard/rows.go` now covers three places a command can stand: the top level, a single-quoted script and a double-quoted script.
+  Each place has its own reading of quotes, so a row's argument scan stops at the script's closing quote and never runs on into a later command.
+  `shellScope` carries that per-place reading, and `commandRowPattern` renders one alternative per place.
+- The `shell-edit` redirect pattern and the `raw-go` variable-name patterns read inside the script too.
+- The shell keywords `do`, `then`, `else`, `if`, `elif`, `while` and `until` now open a command position at the top level as well, beside `env`, `exec`, `xargs`, `sudo` and `time`.
+  A top-level `for f in a b; do rm $f; done` is therefore refused, and so is a `sed -i` after `do` or `then`.
+- The package doc, the row comments and the `claudeengine` doc state the new reach.
+  The pass lists no longer name `bash -c`; they name a script file, a nested `bash -c` and `eval`.
+- `rows_integration_test.go` pins the new behaviour with rows for each guard: a denial inside a script, and a pass for the same word as an argument, inside an inner quoted string, in a later command after the script, or inside a quoted argument that only mentions `bash -c`.
+- `testdata/settings-golden.json` carries the regenerated patterns.
 
 ## Design decisions
 
-- The script is read one level deep.
-  A nested `sh -c` inside a script, `eval`, `find -exec sh -c` and `xargs` with a flag before the shell still pass.
-  This is the same guardrail-not-barrier standard the rows already state.
-- The shell keywords were added to the command-word prefix, which goes past the record's idea.
-  A loop body such as `for d in a b; do rm -rf $d; done` is a common way to write the removal from the incident, and without the keywords the script branch would not reach that `rm`.
-  The keywords also apply at the top level, so `for f in a b; do sed -i s/a/b/ $f; done` is now refused too.
-  Before, the shell-edit row's comment named that command as one it let through.
-- A lone apostrophe inside a double-quoted script ends the scan, so a command after it passes.
-  The alternative was to read every single quote as a plain character.
-  That would put a quoted separator such as `'a;b'` in command position and falsely deny the command after it.
+- Keyword positions widen the top-level rows too, not only the script scan.
+  A removal by a computed path inside a top-level loop stalls a run on the same dialog as one inside `bash -c`, so one rule serves both.
+  A keyword only marks a command position, so it adds no refusal for a command the guard already allows.
+- The scan is one level deep.
+  A script behind a nested `bash -c`, `eval`, `find -exec` or a flag of `xargs` still hides its commands, and a lone single quote inside a double-quoted script hides the commands after it.
+- Inside a double-quoted script, a lym variable expanded in an inner double-quoted string is not read by the `raw-go` row.
+  The doc comments state this exception.
+- The guard stays a guardrail, not a barrier: it greps static text.
 
-## Tests
+## To check by hand
 
-`internal/shellguard/rows_integration_test.go` adds rows to `TestRows_PatternsDenyAndAllow`, each run through a real `grep -E` over a PreToolUse payload.
-New denied rows include the incident's shape: a background `rm -rf "$d/x"` inside a `sh -c` loop over a `mktemp -d` directory.
-They also cover single- and double-quoted scripts, flag clusters and flag words before `-c`, a path-prefixed shell after a separator, a command after `do`, and one row per guard row.
-New allowed rows include `rm` as an argument inside a script, a literal-path `rm` inside a script, a `sh -c` script inside a quoted argument, `ssh -c`, a package-scoped `go test` in a script and `gh pr view` in a script.
-The existing python row `behind_bash_dash_c` flips from allowed to denied.
+- `internal/shuttleengine/claudeengine/doc.go`: confirm the guard section no longer describes `bash -c` as passing wherever the rows now read inside it.
+  The section's pass lists were reworded in this change, and one was flagged as stale.
+- `internal/shellguard/rows.go`, `commandWordPrefixPattern`: confirm the keyword widening at the top level is the intended scope.
+  It changes top-level refusals for `do`, `then`, `else`, `if`, `elif`, `while` and `until` as well as scripts.
+- `internal/shellguard/rows.go`, the scope's argument scans (`argument`, `goArguments`, `mutationScan`): confirm a row's scan cannot run past the script's closing quote into a later command.
+  The rows pin the cases listed above; a spelling outside them is unproven.
 
 ## Merge danger
 
