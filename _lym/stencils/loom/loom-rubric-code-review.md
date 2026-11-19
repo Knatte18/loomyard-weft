@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=b95e1863733e9a07bce678e30655785849ec901901cbc7cde68735fb7ddf9266 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=d5b669a571274eadb40dee407697110d4aec7e8a3667cde87c36930603e4c63e build=49c494cb49596c90110a08078c34de94b2c139df time=2026-11-19T08:07:50Z -->
 
 # Code-Review rubric
 
@@ -130,6 +130,7 @@ Do not flag any of the following as a finding:
   When it pins what coverage cannot see, such as an error message, an output shape, an ordering or a side effect the covering tests never check, accept it:
   file a finding to mark it `//testtiming:keep <reason>` directly above its `func Test…` line, the reason naming what it pins.
   A test the report lists as unique or not judged is no finding on that ground; judge it by the bullets above.
+  The reach report below is evidence for two of these findings: a behavior the diff adds with no coverage, and the covering test a redundancy finding names.
 
 ## Redundancy report
 
@@ -137,6 +138,15 @@ Do not flag any of the following as a finding:
 
 The note above is the advisory report `lym gate test` writes on the diff's new and changed Go tests, read only when it still matches HEAD's tree.
 When it is `none`, or says no current report exists, judge test economy by the bullets above alone, and raise no finding about the report's absence.
+
+## Reach report
+
+{{.reach_report}}
+
+The note above is the advisory report `lym gate test` writes on the diff's changed functions, read only when it still matches HEAD's tree.
+Read it as evidence for "a behavior the diff adds with no coverage", and for naming a covering test in a redundancy finding.
+A function it lists as reached by no test is a candidate, never a finding by itself.
+When it is `none`, or says no current report exists, raise no finding about its absence.
 
 ## Amendment
 
