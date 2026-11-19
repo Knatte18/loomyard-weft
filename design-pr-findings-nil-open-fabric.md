@@ -1,6 +1,6 @@
 # pr-findings fails: NewFinalize Deps.OpenFabric must not be nil
 
-`pr-findings-nil-open-fabric` · Task · bug, loom, landing · starting · Open-Window
+`pr-findings-nil-open-fabric` · Task · bug, loom, landing · starting · Seed-IDE
 
 Imported from [issue #155](https://github.com/Knatte18/loomyard/issues/155).
 
