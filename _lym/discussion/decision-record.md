@@ -38,6 +38,12 @@ Decision: code_review_ask_parent, code_review_parent_timeout_min, judge_ask_pare
 
 Rationale: The Guard rule exists to stop a local layer switching a check off. These keys can only add a check; their timeout only ends the added wait and never bypasses a gate the run has without them. The existing discussion and PR-review keys already work this way; the exception writes the precedent down.
 
+### Added after Discussion (parent, 2026-11-19): Drift key names stand
+
+Decision: drift.yaml's judge_ask_parent and judge_parent_timeout_min stand for the entry's drift_judge_ask_parent; no rename.
+
+Rationale: The keys live in drift.yaml, so a drift_ prefix only repeats the file's name.
+
 ## Constraints
 
 ## Auto-mode assumptions
