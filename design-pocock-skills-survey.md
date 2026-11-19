@@ -1,6 +1,6 @@
 # Survey Matt Pocock's skills repository for ideas that improve LoomYard
 
-`pocock-skills-survey` · Task · research · starting · Seed-Child
+`pocock-skills-survey` · Task · research · starting · Open-Window
 
 ## Question (operator, 2026-11-19)
 
