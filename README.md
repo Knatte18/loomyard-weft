@@ -124,11 +124,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -146,7 +146,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (11)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light |  | 5h<br>0m | loom, shuttle, shed |
+
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -172,13 +180,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 1h<br>1h | burler, stencil |
 | E4 |  | **Shared vocabulary: one glossary, loaded only by the orch and Discussion**<br>• One glossary of lym terms and words never to use for them; the orch gets it via heddle orch-prompt, Discussion via its stencil | [`shared-vocabulary`](design-shared-vocabulary.md) | 3m<br>0m | heddle, stencil, docs |
 
-#### Features (4)
+#### Features (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **Every run agent question for the operator goes to the run parent**<br>• By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 5h<br>1h | loom, shuttle |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 4d<br>1d | batten, loom, board |
-| F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 5h<br>5h | loom, shed |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 </details>
