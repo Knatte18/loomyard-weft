@@ -30,7 +30,7 @@ Waits on nothing open; can start now.
 | T9 | **Burler review round fails hard on invalid review-file YAML frontmatter**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | darn · light |  | 1h<br>0m | burler, shed |
 | T12 | **Intake import drops the issue comments**<br>• lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`intake-drops-issue-comments`](design-intake-drops-issue-comments.md) | darn · light |  | 1h<br>0m | board |
 
-### Layer A (3)
+### Layer A (2)
 
 Waits only on Running, Ready or Draft entries.
 
@@ -38,7 +38,14 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | T5 | 14h<br>1h | landing, darn |
 | T8 | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | darn · light | T9 | 1h<br>0m | shuttle, shed |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | T5<br>T4<br>T9 | 1h<br>0m | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+
+### Layer B (1)
+
+Starts when every entry it names under After is done.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | T5<br>T4<br>T9<br>T8 | 1h<br>0m | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Draft (1)
 
