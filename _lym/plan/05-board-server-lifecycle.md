@@ -1,24 +1,24 @@
 # Card 5 — board-server-lifecycle
 
 **Create:**
-- `plan:internal/lymdirs#BoardServeDirName` -> `const BoardServeDirName = "board-serve"`
-- `plan:internal/boardserve#StatePaths` -> `type StatePaths struct`
-- `plan:internal/boardserve#Paths` -> `func Paths(hubScratchDir string) StatePaths`
-- `plan:internal/boardserve#State` -> `type State struct`
-- `plan:internal/boardserve#ReadState` -> `func ReadState(paths StatePaths) (State, bool, error)`
-- `plan:internal/boardserve#Live` -> `func Live(paths StatePaths) (bool, error)`
-- `plan:internal/boardserve#PageAddress` -> `func PageAddress(port int) string`
-- `plan:internal/boardserve#WriteLauncher` -> `func WriteLauncher(paths StatePaths, st State) (string, error)`
-- `plan:internal/boardserve#Probe` -> `func Probe(st State, timeout time.Duration) error`
-- `plan:internal/boardserve#Options` -> `type Options struct`
-- `plan:internal/boardserve#ErrRunning` -> `var ErrRunning = errors.New("another board server serves this hub")`
-- `plan:internal/boardserve#Run` -> `func Run(ctx context.Context, opts Options) error`
-- `plan:internal/boardserve#watchBoard` -> `func watchBoard(ctx context.Context, opts Options, server *Server) string`
-- `plan:internal/boardserve#hardenFile` -> `func hardenFile(path string) error`
+- `internal/lymdirs#BoardServeDirName`
+- `internal/boardserve#StatePaths`
+- `internal/boardserve#Paths`
+- `internal/boardserve#State`
+- `internal/boardserve#ReadState`
+- `internal/boardserve#Live`
+- `internal/boardserve#PageAddress`
+- `internal/boardserve#WriteLauncher`
+- `internal/boardserve#Probe`
+- `internal/boardserve#Options`
+- `internal/boardserve#ErrRunning`
+- `internal/boardserve#Run`
+- `internal/boardserve#watchBoard`
+- `internal/boardserve#hardenFile`
 - `internal/boardserve/run_test.go`
-- `plan:internal/boardserve#TestRun` -> `func TestRun(t *testing.T)`
+- `internal/boardserve#TestRun`
 - `internal/boardserve/owneronly_windows_test.go`
-- `plan:internal/boardserve#TestHardenFileGrantsOnlyTheOwner` -> `func TestHardenFileGrantsOnlyTheOwner(t *testing.T)`
+- `internal/boardserve#TestHardenFileGrantsOnlyTheOwner`
 
 **Extends:**
 - `internal/boardserve/doc.go`

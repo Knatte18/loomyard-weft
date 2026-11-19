@@ -1,21 +1,21 @@
 # Card 6 — board-serve-open-verbs
 
 **Create:**
-- `plan:internal/runproc#RoleBoardServer` -> `const RoleBoardServer = "board-server"`
-- `plan:internal/boardengine#IsRunAgentSession` -> `func IsRunAgentSession(strandName string) bool`
-- `plan:internal/boardcli#refuseRunAgent` -> `func refuseRunAgent(verb, strandName string) error`
-- `plan:internal/boardcli#openDeps` -> `type openDeps struct`
-- `plan:internal/boardcli#openResult` -> `type openResult struct`
-- `plan:internal/boardcli#runOpen` -> `func runOpen(deps openDeps) (openResult, error)`
-- `plan:internal/boardcli#spawnServer` -> `func spawnServer(dir, logPath string) error`
-- `plan:internal/boardcli#startOpener` -> `func startOpener(path string) (<-chan error, error)`
-- `plan:internal/boardcli#openerName` -> `const openerName = "xdg-open"`
+- `internal/runproc#RoleBoardServer`
+- `internal/boardengine#IsRunAgentSession`
+- `internal/boardcli#refuseRunAgent`
+- `internal/boardcli#openDeps`
+- `internal/boardcli#openResult`
+- `internal/boardcli#runOpen`
+- `internal/boardcli#spawnServer`
+- `internal/boardcli#startOpener`
+- `internal/boardcli#openerName`
 - `internal/boardcli/open_test.go`
-- `plan:internal/boardcli#TestRunOpen` -> `func TestRunOpen(t *testing.T)`
+- `internal/boardcli#TestRunOpen`
 - `internal/boardcli/serveopen_test.go`
-- `plan:internal/boardcli_test#TestServeOpenRefusals` -> `func TestServeOpenRefusals(t *testing.T)`
+- `internal/boardcli_test#TestServeOpenRefusals`
 - `internal/boardcli/serve_linux_integration_test.go`
-- `plan:internal/boardcli_test#TestBoardServeScenario` -> `func TestBoardServeScenario(t *testing.T)`
+- `internal/boardcli_test#TestBoardServeScenario`
 
 **Delete:**
 - `internal/boardengine#isRunAgentSession`
@@ -34,14 +34,14 @@
 - `internal/boardengine/doc.go`
 - `internal/boardcli#strandNameFromEnv`
 - `internal/boardcli_test#runCLI`
-- `plan:internal/boardserve#Paths`
-- `plan:internal/boardserve#Live`
-- `plan:internal/boardserve#ReadState`
-- `plan:internal/boardserve#Probe`
-- `plan:internal/boardserve#WriteLauncher`
-- `plan:internal/boardserve#PageAddress`
-- `plan:internal/boardserve#Run`
-- `plan:internal/boardserve#ErrRunning`
+- `internal/boardserve#Paths`
+- `internal/boardserve#Live`
+- `internal/boardserve#ReadState`
+- `internal/boardserve#Probe`
+- `internal/boardserve#WriteLauncher`
+- `internal/boardserve#PageAddress`
+- `internal/boardserve#Run`
+- `internal/boardserve#ErrRunning`
 - `internal/fabricengine#PrimeName`
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#RunProcDir`
