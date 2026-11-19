@@ -1,0 +1,114 @@
+{
+  "sketch": "hardener",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "orchestrator-survey-ideas", "revised": "2026-11-17T10:49:23Z"},
+    {"slug": "single-repo-fabric-mode", "revised": "2026-11-18T19:52:44Z"},
+    {"slug": "single-repo-code-identity", "revised": "2026-11-19T09:25:59Z"},
+    {"slug": "mutation-report-step", "revised": "2026-11-19T09:25:45Z"},
+    {"slug": "stray-tmp-git-writer", "revised": "2026-11-19T09:25:46Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-05T17:03:32Z"}
+  ],
+  "parts": [
+    {
+      "slug": "hardener-campaign",
+      "title": "Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired",
+      "type": "feature",
+      "labels": ["shed", "loom", "burler", "gate", "batten", "report", "board", "config", "landing", "stencil", "preflight", "pattern", "docs"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"],
+      "packages": [
+        {"path": "internal/hardenshed", "size": 3000},
+        {"path": "internal/hardencli", "size": 400},
+        {"path": "contracts/recipes", "size": 320},
+        {"path": "internal/shedrecipe", "size": 250},
+        {"path": "internal/shedbuild", "size": 200},
+        {"path": "internal/shedadapters", "size": 500},
+        {"path": "internal/shedrun", "size": 20},
+        {"path": "internal/shedcli", "size": 15},
+        {"path": "internal/battencli", "size": 15},
+        {"path": "internal/loomrecipe", "size": 40},
+        {"path": "internal/loomcli", "size": 700},
+        {"path": "internal/loomengine", "size": 150},
+        {"path": "internal/reportengine", "size": 30},
+        {"path": "internal/boardengine", "size": 15},
+        {"path": "internal/preflightshed", "size": 100},
+        {"path": "internal/configreg", "size": 20},
+        {"path": "internal/gatecli", "size": 500},
+        {"path": "internal/gateslot", "size": 20},
+        {"path": "internal/pairteardown", "size": 200},
+        {"path": "internal/landingshed", "size": 80},
+        {"path": "internal/agentconfig", "size": 200},
+        {"path": "internal/treadleengine", "size": 5523},
+        {"path": "contracts/stencils", "size": 700},
+        {"path": "internal/verifyrun", "size": 20},
+        {"path": "internal/webstercli", "size": 20},
+        {"path": "cmd/lym", "size": 40},
+        {"path": "crucible", "size": 1176},
+        {"path": "docs", "size": 150},
+        {"path": "pattern", "size": 20}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record whole; the darn recipe and loomcli/darnwiring.go as the shape to copy; the closed recipe lists in shedrun/seed.go, shedcli/table.go, battencli/wire.go childRecipeSupported, loomrecipe (names.go, finalizerow.go, bouncerrows.go), reportengine (runs.go, timingspans.go) and boardengine/task.go; shedrecipe's BurlerFix entry and row gates (entries_burler.go, entries_gate.go), shedadapters' NewBouncer, settleUndecided and bouncerfacts.go; loomcli's loomSegmentPerches and reviewBudget; gatecli/run.go acquireSlot and gateslot.Pool.AcquireSlots; fabriccli.CloneAndWire, runproc.End, reedengine.ServerName and selfexec.LymBinary; single-repo-fabric-mode's landed pairteardown and loomcli wiring",
+        "delivers": "a board task with recipe hardener runs a Preflight, Record-Write and Harden-Review ring campaign of Harden-Bouncer, Harden-Burler-Review and Harden-Burler-Fix rounds with a Go-run live gate, sandbox hubs reaped around every round row and on every teardown route, a per-round archive under _lym/harden/, and lands through Finalize; lym gate test --copies; the hardener.yaml config unit and the harden-burler-fix, harden-live and harden-live-copies gate template keys; treadle, Tenter and crucible gone, their method in the internal/hardenshed package doc and the harden-rubric-review stencil",
+        "exports": "the hardener recipe value; the HardenFix engine; lym harden sandbox new, list and clear; lym gate test --copies <n>; the hardener.yaml unit; the harden commit seam; the agents reinterpretation that strips treadle-judge and treadle-targeting"
+      },
+      "depends_on": ["single-repo-fabric-mode"],
+      "open_risks": [
+        "A round agent can still run `lym selfreport create` by hand, which files on the real upstream whatever the hub's config says; the committed override stops only the automatic paths, and the rubric forbids the call."
+      ],
+      "criteria": [
+        "The `hardener` recipe builds under the loom contract, and a recipe holding two `HardenFix` rows, a `HardenFix` row whose segment's Bouncer lies before the record row,\none no edge from its segment's Bouncer reaches, or one whose segment holds no Bouncer, is refused with its way forward (D1, D10).",
+        "A recipe whose build row carries no segment is checked exactly as before D10 (D10).",
+        "A board task with `recipe: hardener` is started by batten's Run-Shed through dobby, and its run walks Preflight, Record-Write and the Harden-Review ring (D1).",
+        "A `hardener` run's verify scope and verify attempts come from `hardener.yaml`, and changing `darn.yaml` leaves them unchanged (D1, D9).",
+        "A capped Harden-Bouncer's parent decision verb finds its run directory (D1, D6).",
+        "Preflight refuses a `hardener` run whose `packages` is empty or names a missing directory, and the refusal names the `run_settings` write as its way forward (D2).",
+        "Preflight refuses a run one of whose `packages` holds no test of a tier the hub's `harden-live` key names, or of a tier its `harden-live-copies` key names when copies will run,\nnaming the package, the key, the `run_settings` write of `packages` and the `lym config gate --set` write of that key as its ways forward (D2).",
+        "Preflight refuses a one-entry `reviewer` list and one whose cyclic expansion puts one model in two adjacent rounds,\nnaming the `run_settings` write as its way forward (D2, D3).",
+        "The Harden-Burler-Review row spawns with tool use, source fix scope and the `harden-rubric-review` rubric; a recipe cannot configure `HardenFix`'s `live` gate off;\nits `verify` gate runs the `harden-burler-fix` key, over the touched trees' targets when the round diff lies wholly under `tree_scope` (D3).",
+        "With a three-entry model list, a cap of 7 and a hard cap of 10, rounds 1 to 9 get entries 1, 2, 3, 1, 2, 3, 1, 2, 3, where rounds 8 and 9 run after a parent's continue;\nthe round cap, hard cap and judge models come from `hardener.yaml`, not `loom.yaml` (D3, D9).",
+        "`lym loom status` on a `hardener` run reports `max_bounces` as the Harden-Review budget (D3).",
+        "The `live` gate fails on a red `harden-live` run, passes a green one, and writes `harden-live-copies` failures to the live report without failing;\nit runs both through `lym gate test --gate` with `packages` as targets and names no tier (D4).",
+        "With `llm_driving` true, the `live` gate runs no concurrent copy, and it never runs tier 3 (D4).",
+        "A `harden-live` run that starts no test binary fails the gate and marks the live report red;\na `harden-live-copies` run that starts none is recorded in the live report without failing the gate or changing its mark (D4).",
+        "Preflight refuses a run whose hub sets no `harden-live` key of its own or whose live key names tier 3,\nand a `max_bounces` above `hard_max_bounces`, each refusal naming its write as its way forward (D2, D4).",
+        "When the `live` gate's `live_attempts` run out on a red `harden-live` run, the row ends with the live report marked red and the failures deferred,\nthe run goes on, the next Harden-Bouncer's facts carry both, and the judge does not rule CONVERGED while the gate stays red (D4, D6).",
+        "`lym gate test --gate harden-live-copies --copies <n>`, called from the `live` gate with a lease equal to the pool's slot count, completes and runs n concurrent copies of the key's tier command inside its one lease;\nwith a lease above the pool's slot count it runs one copy per whole tier share and reports the clamp,\nand it is refused without `--gate`, with a key naming tier 3 or more than one tier, or with no package (D4).",
+        "`lym harden sandbox new` builds a wired hub under the run's sandbox root with no GitHub remote, whose prime records hold a committed `loom.yaml` with `selfreport: false` and `friction: \"\"`, and redeploys `.dev-bin` only when it is not HEAD's build (D5).",
+        "`clear` removes every hub under the root and nothing outside it; a hub made by one process is listed and cleared by another; each verb refuses outside a `hardener` run worktree with its way forward (D5, D11).",
+        "A reed server left alive for a sandbox hub is recorded in the stray report, killed and its hub removed, by the end-of-row reap and, marked as left by an interrupted row, by the next row's start-of-row reap (D5).",
+        "A stray left by the review row appears, with its row and reap point, in round-<n>'s archived stray report (D5, D7).",
+        "A reap ends a sandbox hub's recorded processes through `runproc.End` and kills by the `/proc` scan only a process no record names;\nit stops the reed server of a recorded hub whose directory is already gone (D5).",
+        "Finalize reaps the sandbox root before teardown, a campaign halted capped or circling reaps it as it halts,\nand `lym fabric remove` and Worktree-Teardown of a `hardener` pair clear its sandbox root, its processes included, before removing the worktree,\nkeeping the worktree with a way forward when the clear fails, so no sandbox hub blocks fabric's leftover cleaners (D5).",
+        "PATTERN-child-processes names the Hardener sandbox reaper beside `lym tender reap` as a user of `EndProcess`, bounded to the sandbox root (D5).",
+        "The facts of a Hardener round carry the round's models, live outcome, stray report, deferred findings and fix commits (D6).",
+        "Every finished Harden-Burler-Fix row commits its round's artifacts under `_lym/harden/round-<n>/`, and an approved Harden-Bouncer settle commits the final ledger (D7).",
+        "`internal/treadleengine` and the treadle stencils and roles are gone, and a hub `agents.yaml` naming `treadle-judge` is rewritten by the reinterpretation and then loads (D8).",
+        "`hardener.yaml` loads through configengine with D9's defaults; a task's `run_settings` setting `packages` and `llm_driving` load for that run,\nand one setting a Guard key (`auto_accept`, `reviewer_fan`, `fixer_fan` or `tree_scope`) is refused at seed with the hub file write as its way forward (D9).",
+        "With `auto_accept` set and the budget spent, a Harden-Bouncer escalates a round whose live report is red to the parent instead of accepting it (D6, D9).",
+        "`lym harden sandbox` is reachable from the root command (D11).",
+        "Review: `harden-rubric-review` states the convergence rule, the sweep-on-recurring-shape rule and the deferral of large findings of D6, and the round rules crucible's method taught: review before fix, log as you go, deploy first after every source change, drive the real substrate rather than trace code, sabotage-prove every new regression test and re-drive each prior round's fixes, a sequential control and a second hub for every concurrency claim, one named tier-3 test at a time for an LLM-driving module, teardown with zero stray state, never `lym selfreport create`, and a convergence verdict that states what it did not drive (D6, D12).",
+        "Review: `crucible/` is gone, the package doc of `internal/hardenshed` (new) carries D12's method, and no doc names crucible or Tenter (D12)."
+      ],
+      "pattern_changes": ["PATTERN-child-processes"],
+      "expected_cost_usd": 86,
+      "cost_line": "tapestry solid stored-record fit over 13 runs: 29.74 fixed + 0.364 per 100 lines over about 15,600 changed lines, of which about 7,100 are the treadle and crucible deletions; about 61 if the fit's line counts leave deletions out"
+    }
+  ],
+  "cost": {
+    "expected_usd": 86,
+    "line": "one tapestry solid part, about 15,600 changed lines (8,500 added, 7,100 deleted), on the tapestry solid stored-record fit (13 runs: 29.74 fixed + 0.364 per 100 lines)",
+    "next_best": {
+      "split": "the same tapestry without D8, plus a darn solid part retiring treadle that the tapestry waits on, since both change contracts/stencils, cmd/lym and docs",
+      "expected_usd": 87,
+      "line": "tapestry solid fit over about 9,600 lines, 64.7, plus darn solid stored-record fit (10 runs: 11.74 fixed + 0.181 per 100 lines) over about 6,000 lines, 22.6; the chain delays the campaign by the darn's run, about 5 hours at that cell's mean"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
