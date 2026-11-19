@@ -2,6 +2,8 @@
 
 `loop-ends-without-envelope` · Task · bug, shuttle, shed · draft
 
+Depends on: [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
+
 Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).
 
 ## What happened
