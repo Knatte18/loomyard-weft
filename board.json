@@ -404,6 +404,33 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1517,
+      "handle": "T3",
+      "slug": "board-viewer-server",
+      "title": "Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "board",
+        "ide",
+        "fabric",
+        "process",
+        "cwd"
+      ],
+      "issues": [],
+      "recipe": "tapestry",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `board-viewer-editor`.\n\nTakes: the Sketch's decision record whole, its Added after Discussion entries settling its Open risks bullet; boardengine's Render, RenderToDisk and the render manifest (render.go), boardView and layerSection as the README model, FabricReplay.Claims (replay.go), boardCriticalSection and its load migrations (board.go, draft.go, sketch.go), the owner-set write (ownerset.go), IsRunStatus and the run-agent rule (runlock.go, taskguard.go); creel's daemon start and lock (creelcli/spawn.go, creelengine/server.go) and dobbyengine.Live as the single-instance pattern; runproc roles and subjectPassSpared; lymdirs; fswatch.Watch; selfexec.New and LymBinary; shuttleengines.KeepWarm; githubclient/cache_windows.go's owner-only DACL as the shape to copy; vscode.WriteConfig, keybindings.go and BuildWorkspace; fabricengine.RegenerateHubWorkspace and InstallPairFolderNamer; ideengine's LymBinary seam; cmd/lym/daemonwakeups_test.go\nDelivers: board-data.js and board.html as committed, claimed and replayed render outputs; the embedded viewer page, read-only at file:// and editable over http; a per-entry revision checked in the board's write section with a stale-entry refusal carrying the fresh entry; lym board serve, a per-hub loopback server with token, Host, Origin and CSP checks, the board, file and write routes, a long-polled live view, and idle and binary-replacement exit; lym board open, which starts or reuses the server and opens the page through a launcher file; the board open and beam start VS Code tasks and the alt+shift+9 and alt+shift+0 keys\nExports: the board-data.js and board.html name constants; the projection builder and the entry revision function; the stale-entry error; the expected-revision form of boardengine's writes; package internal/boardserve; lym board serve and lym board open; the board server runproc role; the board server lymdirs constant; fabricengine's workspace-content hook installer\n\nThe part changes these packages:\n\n- internal/boardengine (about 2200 changed lines)\n- internal/boardserve (about 1800 changed lines)\n- internal/boardcli (about 700 changed lines)\n- internal/vscode (about 300 changed lines)\n- internal/fabricengine (about 160 changed lines)\n- internal/ideengine (about 120 changed lines)\n- internal/runproc (about 15 changed lines)\n- internal/lymdirs (about 10 changed lines)\n- cmd/lym (about 15 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-19T16:37:28Z",
+      "revised": "2026-11-19T16:37:28Z",
+      "profile": "solid",
+      "discussed": true,
+      "record_body_sha256": "c55facf400f90007f6ce52a8dc1b4afb06e6f2eead5f799484ee01326311b83a"
     }
   ],
   "prime_owner": "neve",
