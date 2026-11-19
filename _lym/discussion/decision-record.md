@@ -325,6 +325,18 @@ Rationale: Operator, 2026-11-18: the motif rewrites nothing, but writes as if th
 
 - D7 puts records commits on the operator's code branch in the prime; an operator who rebases that branch rewrites fabric's records commits too.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - add-anchor-does-not-move-forked-records (class design, severity MEDIUM, open in rounds 1)
+  - battencli-one-repo-seam-untested (class design, severity MEDIUM, open in rounds 1)
+  - merge-over-parked-merge-pinned-for-mergein-only (class design, severity MEDIUM, open in rounds 1)
+  - origin-reconcile-one-repo-code-stop-untested (class design, severity MEDIUM, open in rounds 1)
+  - readme-d2-clone-description-missing (class design, severity BLOCKING, open in rounds 1)
+  - replay-nonreplayed-warp-sha-untested (class design, severity MEDIUM, open in rounds 1)
+  - run-fsm-background-protected-contradicts-d7 (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a worktree with `.lym-anchor` at its root reads as one repository, with `_bolt` missing too; a two-repository worktree with its weft sibling missing still reads as two.
