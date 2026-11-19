@@ -17,5 +17,6 @@
       "title": "The 2026-11-18 operator treadle entry supersedes the arbiter's D8 rationale text",
       "digest": "5aec91ed445e7c96b3577ecb8288befe996217d434276f64efe00f573e16cdbf"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
