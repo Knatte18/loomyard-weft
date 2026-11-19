@@ -1,6 +1,6 @@
 {
   "runGuid": "55564e2c6983cfab5875811855cabccd",
-  "planFingerprint": "99f591c4689613044df464effb3b11382ee4dc2b26cac295e29b8f9c4392829c",
+  "planFingerprint": "6b6692ea08f3843bf4ddc024badfe71214a3ff99f86ef9f36500182e6a2d1c5c",
   "planFileHashes": {
     "00-overview.md": "60f0149d2ad266e455907c0d1f6ac189a2c7b065f5e6c2572875fd14cc856a23",
     "01-testreach-changed-funcs.md": "9697c560dae0c978316d293e521026f00787cf923a8a5b4f9a0a5f8ae0c2eab5",
@@ -15,7 +15,7 @@
     "10-reach-verb.md": "e48f83cd0480a65e7e3e47406a0d24eeb1f26d29266b5fd74a37e5e11f9affe4",
     "11-failure-triage.md": "ca8b57eedb99ac4c3618b06bb57f5cdc3b7daf87d0d4b1a3aeb30c4058cf3e9c",
     "12-triage-in-fixer-reports.md": "e50cf92c5d66b0827f12f7a76b2f28638b4c291924b559abb41a4008ef4b4567",
-    "13-gate-mutate.md": "03269c67270f4e849b327f6a6e9b8a057da5c08525f73994efdc2836655f498e"
+    "13-gate-mutate.md": "4ddb2a98ba2c2876463cd8c53b806cc53db6dff3951027a855ac5a0aa10d9280"
   },
   "planOverviewFrameHash": "c7f3d161756dc46f9b59032e8822b7ca3356dfdbb327cc6bddc0e8719b17e974",
   "partition": [
@@ -617,15 +617,40 @@
         "13-gate-mutate"
       ],
       "cardHashes": {
-        "13-gate-mutate": "03269c67270f4e849b327f6a6e9b8a057da5c08525f73994efdc2836655f498e"
+        "13-gate-mutate": "4ddb2a98ba2c2876463cd8c53b806cc53db6dff3951027a855ac5a0aa10d9280"
       },
       "startSha": "81d8670770019b8fec9089ef779b9f73a15c1d18",
       "kind": "fork",
       "spawnedAt": "2026-11-19T07:09:40Z",
       "sessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-gate-mutate",
+        "status": "done",
+        "head_sha": "a54e624bd70679b1b1b4b86a578353e209456798",
+        "deviations": [
+          "internal/gatecli/mutate.go",
+          "internal/gatecli/mutate_integration_test.go",
+          "internal/gatecli/mutatecheck.go",
+          "internal/gatecli/redundantmutants.go",
+          "internal/testcover/linemutant.go",
+          "internal/testcover/linemutant_test.go",
+          "internal/testcover/mutant.go",
+          "internal/testreach/changedlines.go",
+          "internal/testreach/changedlines_test.go"
+        ]
+      },
+      "cardShas": [
+        "a54e624bd70679b1b1b4b86a578353e209456798"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a6ca6250ecf8865a9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a6ca6250ecf8865a9.jsonl"
+      ]
     },
     "5": {
       "slug": "reach-step",
@@ -776,7 +801,7 @@
       ]
     }
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "cc2115949b2e99f9e861afb1569b42c9",
   "masterSessionId": "9b63e68d-fe70-4e48-9d29-b5e904697ecc",
   "masterEngine": "claude",
@@ -788,6 +813,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a51925198c8cd7a2c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-ad8f245ec55d741ee.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a2bde2e5909a02ca4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a00051edae0b544f0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a00051edae0b544f0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-testmap-reach-triage-mutate/9b63e68d-fe70-4e48-9d29-b5e904697ecc/subagents/agent-a6ca6250ecf8865a9.jsonl"
   ]
 }

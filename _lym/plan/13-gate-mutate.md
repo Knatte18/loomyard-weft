@@ -1,16 +1,16 @@
 # Card 13 — gate-mutate
 
 **Create:**
-- `plan:internal/testreach#ChangedLines` -> `func ChangedLines(base, head []byte) []int`
-- `plan:internal/testreach#TestChangedLines` -> `func TestChangedLines(t *testing.T)`
-- `plan:internal/testcover#PlanLineMutants` -> `func PlanLineMutants(dir, importPath string, profile []ProfileBlock, changed map[string][]int, covered BlockSet) (*MutantPlan, []BlockKey, error)`
-- `plan:internal/testcover_test#TestPlanLineMutants` -> `func TestPlanLineMutants(t *testing.T)`
-- `plan:internal/testcover_test#lineMutantFixture` -> `func lineMutantFixture(t *testing.T) string`
-- `plan:internal/gatecli#mutateRequest` -> `type mutateRequest struct`
-- `plan:internal/gatecli#mutateCmd` -> `func mutateCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Command`
-- `plan:internal/gatecli#runMutate` -> `func runMutate(ctx context.Context, out io.Writer, request mutateRequest) int`
-- `plan:internal/gatecli#diffMutation` -> `type diffMutation struct`
-- `plan:internal/gatecli#TestGateMutate` -> `func TestGateMutate(t *testing.T)`
+- `internal/testreach#ChangedLines`
+- `internal/testreach_test#TestChangedLines`
+- `internal/testcover#PlanLineMutants`
+- `internal/testcover_test#TestPlanLineMutants`
+- `internal/testcover_test#lineMutantFixture`
+- `internal/gatecli#mutateRequest`
+- `internal/gatecli#mutateCmd`
+- `internal/gatecli#runMutate`
+- `internal/gatecli#diffMutation`
+- `internal/gatecli#TestGateMutate`
 
 **Edit:**
 - `internal/testcover#site`
