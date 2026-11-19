@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Build the mutation gate report step with the trial bound changes**<br>• The mutation trial says build it: 26 of 44 survivors are real missing checks; first spread mutants over functions, skip log and other-OS lines, print one summary line<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-report-step`](design-mutation-report-step.md) | darn · solid | Darn-Write | neve | 1h<br>48m | gate, testmap |
-| T4 | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | darn · light | Drift-Verify | neve | 14h<br>48m | gate, tools |
+| T4 | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | darn · light | Code-Bouncer | neve | 14h<br>48m | gate, tools |
 | T8 | **A creel post to SLACK reports ok while Slack is disconnected**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | darn · light | Code-Burler-Review | neve | 2h<br>48m | creel, slack |
 
 ### Ready (0)
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check** | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | 45m<br>45m | loom, stencil |
+| B1 |  | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check** | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | 46m<br>46m | loom, stencil |
 | B2 |  | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings** | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | 45m<br>45m | shuttle, shed |
 | B3 |  | **Burler review round fails hard on invalid review-file YAML frontmatter** | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | 45m<br>45m | burler, shed |
 | B4 |  | **Intake import drops the issue comments**<br>• lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand | [`intake-drops-issue-comments`](design-intake-drops-issue-comments.md) | 45m<br>45m | board |
