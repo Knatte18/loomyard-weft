@@ -1,6 +1,6 @@
 # A shell -c script that removes files stalls a run on a permission dialog
 
-`shellguard-sh-c-rm-prompt` · Task · bug, process · running · Code-Burler-Fix
+`shellguard-sh-c-rm-prompt` · Task · bug, process · running · Code-Bouncer
 
 ## Seen
 
