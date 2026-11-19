@@ -1,6 +1,6 @@
 # Build the mutation gate report step with the trial bound changes
 
-`mutation-report-step` · Task · feature, gate, testmap · starting · Open-IDE
+`mutation-report-step` · Task · feature, gate, testmap · running · Preflight
 
 ## Source
 
