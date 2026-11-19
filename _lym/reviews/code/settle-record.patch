@@ -1,0 +1,2399 @@
+diff --git a/cmd/lym/verifiedtree_test.go b/cmd/lym/verifiedtree_test.go
+index 4e25bca4..5c75d6fc 100644
+--- a/cmd/lym/verifiedtree_test.go
++++ b/cmd/lym/verifiedtree_test.go
+@@ -21,6 +21,7 @@ var planVerifySites = []string{
+ 	"internal/loomshed/verifygate.go",
+ 	"internal/webstercli/verify.go",
+ 	"internal/landingshed/verifygate.go",
++	"internal/loomshed/redfirstgate.go",
+ 	"internal/weaverengine/strand.go",
+ 	"internal/weaverengine/verify.go",
+ }
+@@ -62,7 +63,7 @@ func callsAny(data []byte, token string) bool {
+ //
+ //lym:guard
+ //lym:watch internal/websterengine/verifygate.go internal/loomshed/verifygate.go internal/webstercli/verify.go
+-//lym:watch internal/landingshed/verifygate.go internal/testkit/scankit/*.go
++//lym:watch internal/landingshed/verifygate.go internal/loomshed/redfirstgate.go internal/testkit/scankit/*.go
+ func TestVerifiedTree_PlanVerifySitesCallVerify(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	seen := map[string]bool{}
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 0d14be36..706f5e96 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -132,6 +132,13 @@ producers:
+         - name: verify
+           attempts: 3
+           fixer: darn.gate_fixer
++        # The red-first gate holds a run whose board entry is labelled bug until a test the diff adds
++        # or changes fails on the merge base: it runs `lym gate red-first` over the row's gate key, which
++        # runs those tests once on the merge base's code. An entry without the label passes it at once,
++        # and so does a bug the parent recorded, with lym loom decision add, under a title opening
++        # "No test seam". It has no fixer: only the writer can make a test show the bug.
++        - name: red-first
++          attempts: 3
+         # The drift gate runs the drift check over the committed code against the sealed expectation and
+         # fails on a change nothing expects or a current capture that did not pass, with no fixer: the
+         # writer fixes the code or leaves an intended change for the parent's amendment at Drift-Verify.
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 3f1a89c1..18a66f27 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -102,6 +102,23 @@ Fix such a value in the code yourself.
+ When the change is intended, leave it: only the run's parent amends the expectation, at the Stuck that follows.
+ `lym drift check` runs the same check on demand.
+ 
++## A bug entry
++
++When the task's board entry is labelled `bug`, the fix's test must fail before the fix.
++Write a test that reaches the bug through code the merge base already has, so it fails on the merge base and passes with the fix.
++Once you end your turn, the row's red-first gate runs the tests your diff adds or changes once on the merge base's code.
++It fails when every one of them passes there, when the diff adds or changes no test,
++and when it cannot judge them, as on a hub whose scoper is not go or when the diff changes a non-Go file of a package.
++When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
++and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
++
++The commit that fixes the bug records the cause its test confirmed as a trailer line in the last paragraph of its commit message:
++
++`Root-Cause: <the defect in the code that the failing test confirmed>`
++
++Name the defect, never the symptom the entry reports.
++Code-Review reads this line.
++
+ {{template "loom-fragment-loosened-check"}}
+ 
+ ## What happens after you hand off
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 1a09158d..a13da874 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -84,6 +84,10 @@ Do not flag any of the following as a finding:
+ - **Loosened checks.**
+   An assertion, tolerance or limit the diff widens or removes in a test that exists at the review base is a finding, unless a `Loosened-Check:` trailer on any commit of the review range names it and a measured cause.
+   A cause that is no measurement, such as "flaky" or "to make it pass", is a finding too.
++- **Root cause of a bug fix.**
++  A `Root-Cause:` trailer on a commit of the review range names the defect the diff's fix removes.
++  A trailer that names a symptom, or a defect the diff does not touch, is a finding.
++  When the answer key is a decision record alone, asks to fix a bug, and no commit of the range carries the trailer, that is a finding too.
+ - **Tests still check what they say.**
+   A test whose limits changed still checks the behaviour its name and doc comment state.
+   A test whose new limits admit the failure its name rules out is a finding.
+diff --git a/docs/overview.md b/docs/overview.md
+index 662e1841..9fc867fd 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -300,7 +300,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lym cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate test --map`, the per-package coverage maps built on command at the HEAD of the worktree it runs in; `lym gate redundant`, one package's redundancy candidates read from its coverage map and confirmed by mutation; `lym gate reach`, the tests that reach one function, or the landings of a branch that a test reaches, read from the coverage maps; `lym gate mutate`, the mutants of the lines the worktree's diff changes, run against the tests that cover them, a check the gate's `mutation` report step also runs)
++├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate test --map`, the per-package coverage maps built on command at the HEAD of the worktree it runs in; `lym gate redundant`, one package's redundancy candidates read from its coverage map and confirmed by mutation; `lym gate reach`, the tests that reach one function, or the landings of a branch that a test reaches, read from the coverage maps; `lym gate mutate`, the mutants of the lines the worktree's diff changes, run against the tests that cover them, a check the gate's `mutation` report step also runs; `lym gate red-first`, the tests the worktree's diff adds or changes, run once on the merge base's code)
+ ├── internal/helpcli/             the help CLI command (`lym help [<command>...]`, `lym help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+@@ -985,6 +985,9 @@ User-facing modules each get one `lym <module>` namespace:
+   and a run that ends at the cap or its time bound is unjudged, never a kill.
+   A mutant every covering test passes is a survivor, listed with the tests of other packages that reach its function;
+   the call also lists the changed blocks no test covers and the packages it did not judge, with the reason, and exits 0 once it ran.
++  `lym gate red-first --gate <key> [--base <rev>]` runs the tests the worktree's diff adds or changes, which `internal/testreach` names, once under the key's tiers,
++  with a Go overlay that puts the base's production files back, and exits 0 when one of them fails there;
++  a run in which every one passes, a diff with no test, and a run the check cannot judge (a hub whose scoper is not `go`, or a changed non-Go file of a package) each exit with their own code from `internal/gateslot`.
+   `lym gate test --map [<targets>...]` builds the per-package coverage maps of `internal/testcover` over its scope's packages at the HEAD of the worktree it runs in, only on command
+   (the `reach` report step's refresh of a task worktree's own maps runs the same measurement under the same build and test bounds and memory cap),
+   the hub's shared maps from the prime and a worktree's own, under its `.lym`, from any other worktree:
+@@ -1098,6 +1101,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `Drift-Expect` seals the changes the task is expected to make.
+   One gated `Darn-Write` writer reads the record as its scope, edits, tests and commits;
+   its `drift` gate entry checks the code's changes against that expectation.
++  For an entry labelled `bug`, its `red-first` gate entry runs `lym gate red-first` and holds the handoff until a test the diff adds or changes fails on the merge base,
++  unless the parent recorded an added decision titled `No test seam`;
++  the fix's commit carries a `Root-Cause:` trailer that the `Code-Review` perch checks.
+   `Drift-Verify` checks the writer's code by containment and has a judge rule on the expected changes.
+   The judge also rules on each loosened check, an assertion, tolerance or limit widened in a test existing at the review base, as caused or uncaused.
+   An uncaused one makes the row Stuck until a `Loosened-Check` trailer commit or a revert, then `lym loom resume`.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8ef0d009..20811209 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -154,6 +154,8 @@ var intentionallyNil = map[string]string{
+ 	"Darn.LatestOutcome":                     "darn-only seam, batten has no darn segment",
+ 	"Darn.CheckRecord":                       "darn-only seam, batten has no darn segment",
+ 	"Darn.CommittedRecord":                   "darn-only seam, batten has no darn segment",
++	"EntryLabels":                            "darn-only seam, batten has no red-first gate",
++	"RedFirstCommand":                        "darn-only seam, batten has no red-first gate",
+ 	"DiscussionHistory":                      "loom-only seam, batten wires no loom record",
+ 	"RecordWrite.ReadBody":                   "loom-only seam, batten wires no loom record",
+ 	"RecordWrite.ReadStored":                 "loom-only seam, batten wires no loom record",
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index ac8375f9..87ab7762 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -135,6 +135,7 @@ Examples:
+ 	cmd.AddCommand(cardVerifyCmd(seams))
+ 	cmd.AddCommand(redundantCmd(goBinary, timeoutUnit, pipeWaitDelay))
+ 	cmd.AddCommand(mutateCmd(goBinary, timeoutUnit, pipeWaitDelay))
++	cmd.AddCommand(redFirstCmd(goBinary, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay))
+ 	cmd.AddCommand(reachCmd())
+ 	cmd.AddCommand(runnerCmd(func() *cobra.Command {
+ 		return newCommand(goBinary, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay, seams)
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 1e1ca184..b93eaa60 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -6,6 +6,8 @@
+ // and its verb `redundant` lists one package's redundancy candidates from its map, confirmed by mutation.
+ // Its verb `reach` prints the tests that reach one function, or the landings of a branch that a test reaches.
+ // Its verb `mutate` mutates the lines the worktree's diff changes and lists the mutants no covering test kills.
++// Its verb `red-first` runs the tests the worktree's diff adds or changes on the base's code.
++// It reports whether any of them failed there.
+ //
+ // The module is not standalone-capable and does not go through internal/cliwire.
+ // It has no target directory, state, plan or stencils to wire, and it resolves hub membership itself.
+@@ -805,6 +807,60 @@
+ // It exits 0 once it ran, whatever it found.
+ // Bound: a mutant changes the package's own code only, so a test of another package never kills one.
+ //
++// # Red-first verb
++//
++// `lym gate red-first --gate <key> [--base <rev>]` proves that a bug fix's test was red before the fix.
++// A gate on a bug fix's writer row runs it as a subprocess and reads its exit code.
++// The base is `--base`, else the merge base with the parent branch, refused as the Mutate verb refuses it.
++// `--gate` is required, and a key the config cannot run is refused with the config's way forward.
++// The refusal for a missing `--gate` comes before hub resolution, as a flag-shape refusal does.
++// A hub whose scoper is not `go` can judge nothing.
++// The verb then refuses, naming the scoper, with exit `gateslot.RedFirstUnjudgedExit`.
++// The way forward is the parent's recorded decision whose title opens `gateslot.NoTestSeamTitle`.
++//
++// `testreach.ChangedTests` finds the tests the diff adds or changes.
++// It compares the `_test.go` files of each package holding a changed one, at the base and in the working tree.
++// A diff with no such test is refused, naming the way forward, with exit `gateslot.RedFirstNoTestExit`.
++// The way forward includes recording a decision for a bug no test can reach.
++// Its title opens `gateslot.NoTestSeamTitle`.
++//
++// The verb then puts the base's production code back with a Go build overlay.
++// It runs the key's tiers once in this process.
++// The overlay maps each changed production `.go` file of the module to a copy of its text at the base.
++// A file the base lacks maps to the empty path, which Go reads as deleted.
++// Test files keep their working-tree text.
++// A changed non-Go file of a package of the module is one the overlay cannot put back.
++// The package may embed or read it.
++// It counts when a Go file lies in its directory or above it, up to the module's root, and it is not under `testdata`.
++// The verb then refuses before any tier runs, naming the paths, with exit `gateslot.RedFirstUnjudgedExit`.
++// The way forward is the same parent decision as for a hub whose scoper is not `go`.
++// The overlay and the copies live in a `lymtemp` directory that the verb removes when it ends.
++// The tiers run through the same code as `lym gate test` over explicit targets in the module's directory.
++// They run once for each package that holds a changed test, so a test of one package never runs by another's name.
++// The target is that package.
++// The words of `{args}` are `-overlay=<file>` and `-run=^(<names>)$`, the names being that package's changed tests.
++// `renderTierCommand` quotes each word through `verifyrun.QuoteArg`.
++// The pattern's `|`, `(`, `)` and `$` reach `go test` whole.
++// The key's lints, scope and report steps never run, and each tier's command must hold `{args}`.
++// The tier run's output and its failure report go to stderr as they come, and the verb keeps them for its verdict.
++// A line first names the base, the tests and the number of files the overlay replaces.
++//
++// The exit code is the contract:
++// - 0 when a changed test failed on the base; the envelope lists the red tests as `<package>.<Name>`.
++// - `gateslot.RedFirstGreenExit` when every changed test passed on the base, which does not show the bug.
++// - `gateslot.RedFirstNoTestExit` when the diff adds or changes no test.
++// - `gateslot.RedFirstUnjudgedExit` when the hub's scoper is not `go`, or the overlay cannot put back a changed file.
++// - 1 for a refusal, and for a run that judged none of the tests, such as a timeout or a crash.
++// - 128 plus the signal number after a terminating signal.
++//
++// A test is red when `gateslot.NamedFailedTests` names its package and name in the output.
++// That holds whatever else the failure report lists, such as a cut line or another package's failure.
++// It is also red when `gateslot.PackagesFailedOutsideTests` names its package.
++// A test that does not build on the base therefore counts as red.
++// Bound: `go.mod` and `go.sum` are not put back.
++// Bound: a test that every tier of the key skips counts as passing.
++// Bound: a `lym` binary a tier prebuilds is built from the working tree, not from the base, and no overlay reaches it.
++//
+ // # Failure report
+ //
+ // A call with a failed run, a halted call included, prints the failure report to stderr before its closing line.
+diff --git a/internal/gatecli/mutate.go b/internal/gatecli/mutate.go
+index e7b88114..311e82a9 100644
+--- a/internal/gatecli/mutate.go
++++ b/internal/gatecli/mutate.go
+@@ -108,20 +108,23 @@ Examples:
+ 	return cmd
+ }
+ 
+-// diffBase returns the commit the verb diffs from, or a refusal when there is none.
+-func (r mutateRequest) diffBase(location *lymcwd.Location, fabric *fabricengine.Fabric) (string, string) {
+-	if r.base != "" {
+-		if !fabric.CommitExists(r.base) {
+-			return "", fmt.Sprintf("gate mutate: --base %q names no commit; way forward: pass the SHA of a commit the repository holds", r.base)
++// verbDiffBase returns the commit a verb diffs from, or a refusal when there is none.
++// requested is the verb's --base value.
++// It is a commit the repository holds, or empty for the merge base with the parent branch.
++// verb labels the refusal, such as "gate mutate".
++func verbDiffBase(location *lymcwd.Location, fabric *fabricengine.Fabric, requested, verb string) (string, string) {
++	if requested != "" {
++		if !fabric.CommitExists(requested) {
++			return "", fmt.Sprintf("%s: --base %q names no commit; way forward: pass the SHA of a commit the repository holds", verb, requested)
+ 		}
+-		return r.base, ""
++		return requested, ""
+ 	}
+ 	base, found, err := parentMergeBase(location)
+ 	switch {
+ 	case err != nil:
+-		return "", fmt.Sprintf("gate mutate: read the merge base with the parent branch: %v; way forward: re-run the same command", err)
++		return "", fmt.Sprintf("%s: read the merge base with the parent branch: %v; way forward: re-run the same command", verb, err)
+ 	case !found:
+-		return "", "gate mutate: the worktree has no parent branch to diff from; way forward: pass --base with the commit to diff from"
++		return "", verb + ": the worktree has no parent branch to diff from; way forward: pass --base with the commit to diff from"
+ 	}
+ 	return base, ""
+ }
+@@ -164,7 +167,7 @@ func runMutate(ctx context.Context, out io.Writer, request mutateRequest) int {
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("gate mutate: %v; way forward: re-run the same command", err))
+ 	}
+-	base, refusal := request.diffBase(location, fabric)
++	base, refusal := verbDiffBase(location, fabric, request.base, "gate mutate")
+ 	if refusal != "" {
+ 		return output.Err(out, refusal)
+ 	}
+diff --git a/internal/gatecli/redfirst.go b/internal/gatecli/redfirst.go
+new file mode 100644
+index 00000000..d328929a
+--- /dev/null
++++ b/internal/gatecli/redfirst.go
+@@ -0,0 +1,463 @@
++// redfirst.go implements `lym gate red-first`, which proves a bug fix's test was red before the fix.
++// It runs the tests the worktree's diff adds or changes once on the code of the diff's base.
++// It lays the base's production files over the working tree with a Go build overlay.
++// A site reads the verb's exit code.
++// The code is 0 when a changed test failed on the base, and a gateslot red-first code otherwise.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"fmt"
++	"io"
++	"maps"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/testreach"
++)
++
++// redFirstVerb labels the refusals of `lym gate red-first`.
++const redFirstVerb = "gate red-first"
++
++// noSeamWayForward is the way forward of a refusal that only the run's parent can lift.
++func noSeamWayForward() string {
++	return fmt.Sprintf("the run's parent records the bug as having no seam a test can reach, "+
++		"with `lym loom decision add` under a title opening %q", gateslot.NoTestSeamTitle)
++}
++
++// redFirstRequest is one `lym gate red-first` invocation after flag parsing.
++type redFirstRequest struct {
++	// gate is the --gate key whose tiers run the tests.
++	gate string
++	// base is the --base revision, empty for the merge base with the parent branch.
++	base string
++	// run carries the go command, the units, the delays and the stderr of the tier run; the verb fills the rest.
++	run testRequest
++}
++
++// redFirstCmd builds `lym gate red-first`.
++// The parameters are those newCommand gives the tier run the verb starts.
++func redFirstCmd(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, rerunDelay, pipeWaitDelay time.Duration) *cobra.Command {
++	var gate, base string
++	cmd := &cobra.Command{
++		Use:         "red-first",
++		Short:       "run the tests the worktree's diff adds or changes on the base's code and report whether any failed there",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `red-first proves that a bug fix's test was red before the fix.
++It takes the tests the worktree's diff adds or changes, from --base, else the merge base with the parent branch.
++It runs them once per package, through the tiers of the gate key --gate names, on the code of that base:
++a Go build overlay puts the base's production files back, and the tests keep their working-tree text.
++It runs the key's tiers only, never its lints, its scope or its report steps.
++A test that does not build on the base counts as failing there.
++It exits 0 when a changed test failed on the base, and prints the red tests.
++It exits ` + fmt.Sprint(gateslot.RedFirstGreenExit) + ` when every changed test passed on the base, since such a test does not show the bug.
++It exits ` + fmt.Sprint(gateslot.RedFirstNoTestExit) + ` when the diff adds or changes no test.
++It exits ` + fmt.Sprint(gateslot.RedFirstUnjudgedExit) + ` when the run cannot judge the tests on the base:
++a hub whose scoper is not go, or a changed non-Go file of a Go package, which the overlay cannot put back.
++It exits 1 for a refusal, or when the run judged none of the tests.
++
++Examples:
++
++  lym gate red-first --gate darn-write
++  lym gate red-first --gate darn-write --base 3f2a9c1`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), runRedFirst(cmd.Context(), cmd.OutOrStdout(), redFirstRequest{
++				gate: gate, base: base,
++				run: testRequest{
++					goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit,
++					secondUnit: time.Second, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay, stderr: cmd.ErrOrStderr(),
++				},
++			}))
++			return nil
++		},
++	}
++	cmd.Flags().StringVar(&gate, "gate", "", "gate.yaml key whose tiers run the tests; required")
++	cmd.Flags().StringVar(&base, "base", "", "commit whose code the tests run on; default the merge base with the parent branch")
++	return cmd
++}
++
++// runRedFirst resolves the worktree's diff and runs its changed tests on the base's code.
++// It returns the verb's exit code.
++// The code is 0 when a changed test failed on the base.
++// It is gateslot.RedFirstGreenExit when all passed.
++// It is gateslot.RedFirstNoTestExit when the diff holds no changed test.
++// It is gateslot.RedFirstUnjudgedExit when the hub's scoper is not go or the overlay cannot put back a changed file.
++// It is 1 for a refusal or a run that judged none of them.
++// After a terminating signal the code is 128 plus the signal number.
++func runRedFirst(ctx context.Context, out io.Writer, request redFirstRequest) int {
++	if request.gate == "" {
++		return output.Err(out, redFirstVerb+": --gate names no gate key; way forward: pass --gate with a key of gate.yaml's gates, then re-run the same command")
++	}
++	cwd, err := lymcwd.CwdFrom(ctx)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: cannot read the working directory: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	location, inHub, err := resolveHub(cwd)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	if !inHub {
++		return output.Err(out, fmt.Sprintf("%s: %s is in no hub, and the gate keys live in a hub; way forward: run lym gate red-first from a worktree of the hub", redFirstVerb, cwd))
++	}
++	cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(location))
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: cannot read the hub's gate config: %v; way forward: take the step it names, then re-run the same command", redFirstVerb, err))
++	}
++	cfg = cfg.WithDefaultDir(location.AnchorRel)
++	if !cfg.HasGoCoverageMaps() {
++		output.Err(out, fmt.Sprintf("%s: "+noteScoper+"; way forward: %s", redFirstVerb, cfg.Scoper, noSeamWayForward()))
++		return gateslot.RedFirstUnjudgedExit
++	}
++	tiers, err := cfg.TierList(request.gate)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: --gate %q: %v", redFirstVerb, request.gate, err))
++	}
++	if len(tiers) == 0 {
++		return output.Err(out, fmt.Sprintf("%s: --gate %q runs no tier, since the hub declares none; way forward: declare tier0 with lym config gate from the prime, then re-run the same command", redFirstVerb, request.gate))
++	}
++	root := location.WorktreePath()
++	module, err := redundancyModule(cfg, root)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: %v; way forward: declare tier0 or tier1 with its dir at the Go module's root with lym config gate from the prime, then re-run the same command", redFirstVerb, err))
++	}
++	fabric, err := fabricengine.Open(location)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	base, refusal := verbDiffBase(location, fabric, request.base, redFirstVerb)
++	if refusal != "" {
++		return output.Err(out, refusal)
++	}
++	changed, err := impactset.ChangedPaths(ctx, root, base)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	baseTree := commitTree{fabric: fabric, rev: base}
++	tests, err := changedTestsAt(baseTree, workingTree{root: root}, module, changed)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: find the tests the diff changes: %v; way forward: fix the file it names, then re-run the same command", redFirstVerb, err))
++	}
++	if len(tests) == 0 {
++		output.Err(out, fmt.Sprintf("%s: the diff from %s adds or changes no test, so nothing shows the bug failing before the fix; "+
++			"way forward: add a test that fails on the merge base and passes with the fix and commit it; "+
++			"when the bug has no seam a test can reach, %s", redFirstVerb, base, noSeamWayForward()))
++		return gateslot.RedFirstNoTestExit
++	}
++	return redFirstCall{
++		request: request, tiers: tiers, root: root, module: module, base: base, changed: changed, tests: tests, baseTree: baseTree,
++	}.run(ctx, out)
++}
++
++// redFirstCall is one run of a diff's changed tests on its base, once the diff is resolved.
++type redFirstCall struct {
++	request redFirstRequest
++	// tiers are the tier numbers of the gate key, which run the tests.
++	tiers []int
++	// root is the worktree root and module the Go module the tests belong to.
++	root   string
++	module goModule
++	// base is the commit whose production code the tests run on.
++	base string
++	// changed are the worktree-relative slash paths that differ between base and the working tree.
++	changed []string
++	// tests are the tests the diff adds or changes, at least one.
++	tests []testreach.ChangedTest
++	// baseTree reads the files of the base commit.
++	baseTree redundancyTree
++}
++
++// run lays the base's production files over the working tree, runs the changed tests and prints the verdict.
++// It runs the tiers once per package of the changed tests, so a test of one package never runs by another's name.
++// The tier runs' output and failure reports go to the verb's stderr as they come.
++// Each is kept for its package's verdict.
++func (c redFirstCall) run(ctx context.Context, out io.Writer) int {
++	dir, err := lymtemp.MkdirTemp("red-first-")
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: cannot make the overlay directory: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	defer os.RemoveAll(dir)
++	replace, unrestorable, err := baseOverlay(dir, c.root, c.module, c.changed, c.baseTree.file, workingTree{root: c.root})
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++	if len(unrestorable) > 0 {
++		output.Err(out, fmt.Sprintf("%s: the diff changes %s, which the overlay cannot put back, "+
++			"so a run on the base would read the fixed file and show a test green that needs no fix; way forward: %s",
++			redFirstVerb, strings.Join(unrestorable, ", "), noSeamWayForward()))
++		return gateslot.RedFirstUnjudgedExit
++	}
++	overlayPath, err := writeOverlay(dir, replace)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("%s: cannot write the overlay: %v; way forward: re-run the same command", redFirstVerb, err))
++	}
++
++	stderr := c.request.run.stderr
++	if stderr == nil {
++		stderr = io.Discard
++	}
++	labels := testLabels(c.tests)
++	printLine(&lockedWriter{w: stderr}, fmt.Sprintf("%s: running %s on the code of %s; the overlay replaces %d files", redFirstVerb, strings.Join(labels, ", "), c.base, len(replace)))
++
++	runCtx, caught, stop := catchTerminatingSignals(ctx)
++	defer stop()
++	var red []testreach.ChangedTest
++	unjudgedCode := 0
++	for _, group := range testsByPackage(c.tests) {
++		var captured bytes.Buffer
++		sink := &lockedWriter{w: io.MultiWriter(&captured, stderr)}
++		run := c.request.run
++		run.tiers = c.tiers
++		run.dir = c.module.dir
++		run.targets = testTargetsOf(c.module, group)
++		run.args = []string{"-overlay=" + overlayPath, "-run=^(" + strings.Join(testNamesOf(group), "|") + ")$"}
++		run.stderr = sink
++		code := runTest(runCtx, sink, run)
++		if caught.Load() != 0 {
++			output.Err(out, redFirstVerb+": the call was cancelled; way forward: re-run the same command")
++			return exitAfterSignal(caught, 1)
++		}
++		verdict := judgeRedFirst(code, captured.String(), group)
++		red = append(red, verdict.red...)
++		if verdict.outcome == redFirstUnjudged && unjudgedCode == 0 {
++			unjudgedCode = code
++		}
++	}
++
++	switch {
++	case len(red) > 0:
++		return output.Ok(out, map[string]any{"base": c.base, "red_tests": testLabels(red), "tests": labels})
++	case unjudgedCode == 0:
++		output.Err(out, fmt.Sprintf("%s: every test the diff adds or changes passed on the base %s: %s; "+
++			"a test that passes before the fix does not show the bug; "+
++			"way forward: make a test reach the bug through code the base already has, so it fails there, and commit it, then re-run the same command",
++			redFirstVerb, c.base, strings.Join(labels, ", ")))
++		return gateslot.RedFirstGreenExit
++	}
++	return output.Err(out, fmt.Sprintf("%s: the tiers exited %d on the base %s and judged none of %s; "+
++		"way forward: read the failure report above and re-run the same command", redFirstVerb, unjudgedCode, c.base, strings.Join(labels, ", ")))
++}
++
++// testsByPackage splits tests into one slice per package, in the order of each package's first test.
++func testsByPackage(tests []testreach.ChangedTest) [][]testreach.ChangedTest {
++	var groups [][]testreach.ChangedTest
++	index := map[string]int{}
++	for _, test := range tests {
++		i, seen := index[test.Package]
++		if !seen {
++			i = len(groups)
++			index[test.Package] = i
++			groups = append(groups, nil)
++		}
++		groups[i] = append(groups[i], test)
++	}
++	return groups
++}
++
++// redFirstOutcome is what a run of the changed tests on the base showed.
++type redFirstOutcome int
++
++// The outcomes of a run of the changed tests on the base.
++const (
++	// redFirstUnjudged is a run that named none of the tests as failed and did not pass.
++	redFirstUnjudged redFirstOutcome = iota
++	// redFirstRed is a run in which a changed test failed.
++	redFirstRed
++	// redFirstGreen is a run in which every changed test passed.
++	redFirstGreen
++)
++
++// redFirstVerdict is the judgement of a run of the changed tests on the base.
++type redFirstVerdict struct {
++	outcome redFirstOutcome
++	// red are the changed tests that failed on the base; set for redFirstRed.
++	red []testreach.ChangedTest
++}
++
++// judgeRedFirst judges a tier run of tests on the base from its exit code and its captured output.
++// An exit code 0 is green.
++// Otherwise a test is red in one of two cases.
++// The output's failure report names its package and name as failed under a tier or guard run.
++// What else the report holds does not matter.
++// Or it names its package as failed outside any test, which is how a test that does not build on the base fails.
++// A failing run that makes no test red judged none of them.
++func judgeRedFirst(exitCode int, captured string, tests []testreach.ChangedTest) redFirstVerdict {
++	if exitCode == 0 {
++		return redFirstVerdict{outcome: redFirstGreen}
++	}
++	failed := gateslot.NamedFailedTests(captured)
++	outside := gateslot.PackagesFailedOutsideTests(captured)
++	var red []testreach.ChangedTest
++	for _, test := range tests {
++		named := slices.ContainsFunc(failed, func(f gateslot.FailedTest) bool {
++			return f.Tier >= 0 && f.Package == test.Package && f.Test == test.Name
++		})
++		if named || slices.Contains(outside, test.Package) {
++			red = append(red, test)
++		}
++	}
++	if len(red) == 0 {
++		return redFirstVerdict{outcome: redFirstUnjudged}
++	}
++	return redFirstVerdict{outcome: redFirstRed, red: red}
++}
++
++// changedTestsAt returns the tests the working tree head adds or changes against the tree base.
++// changed are the worktree-relative slash paths that differ between the two.
++// It reads the `_test.go` files of each package of module that holds a changed one, in both trees.
++func changedTestsAt(base, head redundancyTree, module goModule, changed []string) ([]testreach.ChangedTest, error) {
++	dirs := map[string]bool{}
++	for _, rel := range changed {
++		if dir := path.Dir(rel); strings.HasSuffix(rel, "_test.go") && isModulePackage(module.rel, dir) {
++			dirs[dir] = true
++		}
++	}
++	baseFiles, headFiles := testreach.FileSet{}, testreach.FileSet{}
++	for _, dir := range slices.Sorted(maps.Keys(dirs)) {
++		for _, side := range []struct {
++			tree  redundancyTree
++			files testreach.FileSet
++		}{{base, baseFiles}, {head, headFiles}} {
++			names, err := side.tree.goFiles(dir)
++			if err != nil {
++				return nil, fmt.Errorf("list the Go files of %s: %w", dir, err)
++			}
++			for _, name := range names {
++				if !strings.HasSuffix(name, "_test.go") {
++					continue
++				}
++				data, found, err := side.tree.file(path.Join(dir, name))
++				if err != nil {
++					return nil, fmt.Errorf("read %s: %w", path.Join(dir, name), err)
++				}
++				if found {
++					side.files[path.Join(dir, name)] = data
++				}
++			}
++		}
++	}
++	return testreach.ChangedTests(reachModuleOf(module), baseFiles, headFiles)
++}
++
++// baseOverlay writes the base's text of each changed production Go file of module into dir.
++// It returns the overlay's replacements: the absolute working-tree path of the file, mapped to the written copy.
++// A file the base lacks maps to "", which the Go overlay reads as deleted.
++// It also returns the changed paths it cannot put back:
++// each non-Go file of a package of module with a Go file in its directory or above it, up to the module's root, in head.
++// Such a file may be embedded or read by the package, and the run on the base would still hold its working-tree text.
++// changed are the worktree-relative slash paths that differ between the base and the working tree under root.
++// baseFile reads a worktree-relative slash path at the base and reports whether the base holds it.
++// A test file, a file outside the module's packages and a file under testdata are left as the working tree holds them.
++func baseOverlay(dir, root string, module goModule, changed []string, baseFile func(rel string) ([]byte, bool, error), head redundancyTree) (map[string]string, []string, error) {
++	replace := map[string]string{}
++	var unrestorable []string
++	for i, rel := range changed {
++		if !isModulePackage(module.rel, path.Dir(rel)) {
++			continue
++		}
++		if !strings.HasSuffix(rel, ".go") {
++			held, err := holdsGoFileAtOrAbove(head, module.rel, path.Dir(rel))
++			if err != nil {
++				return nil, nil, err
++			}
++			if held {
++				unrestorable = append(unrestorable, rel)
++			}
++			continue
++		}
++		if strings.HasSuffix(rel, "_test.go") {
++			continue
++		}
++		data, found, err := baseFile(rel)
++		if err != nil {
++			return nil, nil, fmt.Errorf("read %s at the base: %w", rel, err)
++		}
++		copyPath := ""
++		if found {
++			copyPath = filepath.Join(dir, fmt.Sprintf("%d-%s", i, path.Base(rel)))
++			if err := os.WriteFile(copyPath, data, 0o600); err != nil {
++				return nil, nil, fmt.Errorf("write the base copy of %s: %w", rel, err)
++			}
++		}
++		replace[filepath.Join(root, filepath.FromSlash(rel))] = copyPath
++	}
++	return replace, unrestorable, nil
++}
++
++// holdsGoFileAtOrAbove reports whether tree holds a Go file in the worktree-relative slash directory dir or above it.
++// The search stops at the module's root at moduleRel.
++func holdsGoFileAtOrAbove(tree redundancyTree, moduleRel, dir string) (bool, error) {
++	for {
++		names, err := tree.goFiles(dir)
++		if err != nil {
++			return false, fmt.Errorf("list the Go files of %s: %w", dir, err)
++		}
++		if len(names) > 0 {
++			return true, nil
++		}
++		if dir == moduleRel || dir == "." {
++			return false, nil
++		}
++		dir = path.Dir(dir)
++	}
++}
++
++// writeOverlay writes the Go build overlay file that holds replace into dir and returns its path.
++func writeOverlay(dir string, replace map[string]string) (string, error) {
++	data, err := json.Marshal(struct{ Replace map[string]string }{replace})
++	if err != nil {
++		return "", err
++	}
++	overlayPath := filepath.Join(dir, "overlay.json")
++	return overlayPath, os.WriteFile(overlayPath, data, 0o600)
++}
++
++// testTargetsOf returns the module-relative package of each of tests as a `go test` target, sorted and without repeats.
++func testTargetsOf(module goModule, tests []testreach.ChangedTest) []string {
++	seen := map[string]bool{}
++	for _, test := range tests {
++		if rel := module.relativePackage(test.Package); rel == "." {
++			seen["."] = true
++		} else {
++			seen["./"+rel] = true
++		}
++	}
++	return slices.Sorted(maps.Keys(seen))
++}
++
++// testNamesOf returns the name of each of tests, sorted and without repeats.
++func testNamesOf(tests []testreach.ChangedTest) []string {
++	seen := map[string]bool{}
++	for _, test := range tests {
++		seen[test.Name] = true
++	}
++	return slices.Sorted(maps.Keys(seen))
++}
++
++// testLabels returns each of tests as `<package>.<Name>`.
++func testLabels(tests []testreach.ChangedTest) []string {
++	labels := make([]string, len(tests))
++	for i, test := range tests {
++		labels[i] = test.Package + "." + test.Name
++	}
++	return labels
++}
+diff --git a/internal/gatecli/redfirst_integration_test.go b/internal/gatecli/redfirst_integration_test.go
+new file mode 100644
+index 00000000..68ff4264
+--- /dev/null
++++ b/internal/gatecli/redfirst_integration_test.go
+@@ -0,0 +1,140 @@
++// redfirst_integration_test.go drives `lym gate red-first` over a hubforge hub whose prime holds a small Go module.
++// The tests run by the verb's tier are built and run by the real go command.
++// It is Tier 1: it builds a real hub, spawns git and runs go test.
++
++package gatecli
++
++import (
++	"bytes"
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// redFirstGateYAML is a hub whose key `rf` runs tier0 as a real `go test` over the explicit targets.
++const redFirstGateYAML = "slots: 2\nscoper: go\nredundancy_test_timeout_sec: 20\nredundancy_test_memory_mb: 128\n" +
++	"tiers:\n  tier0: {command: 'go test -json -count=1 {targets} {args}', all_targets: ./..., timeout_min: 2, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n" +
++	"gates:\n  rf: {tiers: [0], scope: diff}\n"
++
++func TestGateRedFirst(t *testing.T) {
++	tiergate.Require(t, 1)
++	// The rows run one after another: each rewrites the one working tree that the next row's diff starts from.
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := seedTestMapModule(t, h, mutateModule, redFirstGateYAML, map[string]map[string]int{"calc": nil, "other": nil})
++	plankit.WriteTree(t, prime, map[string]string{
++		"internal/testkit/tiergate/tiergate.go": mutateSupportFiles["internal/testkit/tiergate/tiergate.go"],
++	})
++	// The package other holds a test named TestTwoIsTwo that fails wherever it runs, and a TestOther the diff will change.
++	writeOtherTests := func(otherBody string) {
++		t.Helper()
++		source := "package other\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\n" +
++			"func TestTwoIsTwo(t *testing.T) {\n\ttiergate.Require(t, 0)\n\tt.Fatal(\"fails wherever it runs\")\n}\n\n" +
++			"func TestOther(t *testing.T) {\n\ttiergate.Require(t, 0)\n" + otherBody + "}\n"
++		if err := os.WriteFile(filepath.Join(prime, "other", "other_test.go"), []byte(source), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeOtherTests("\t_ = 1\n")
++	gitkit.Git(t, prime, "add", "internal", "other")
++	gitkit.Git(t, prime, "commit", "-q", "-m", "add the tier gate stand-in")
++	base := gitkit.RevParse(t, prime, "HEAD")
++
++	// The fix changes One from 1 to 2.
++	fix := func() {
++		t.Helper()
++		editMutateCalc(t, prime, "func One() int { return 1 }", "func One() int { return 2 }")
++	}
++	writeTest := func(name, body string) {
++		t.Helper()
++		source := "package calc\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n\nfunc " + name +
++			"(t *testing.T) {\n\ttiergate.Require(t, 0)\n" + body + "}\n"
++		if err := os.WriteFile(filepath.Join(prime, "calc", "calc_test.go"), []byte(source), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	run := func() (int, string, string) {
++		t.Helper()
++		var out bytes.Buffer
++		code := clihelp.ExecuteIn(Command(), prime, &out, []string{"red-first", "--gate", "rf", "--base", base})
++		lines := strings.Split(strings.TrimSpace(out.String()), "\n")
++		var answer struct {
++			OK    bool   `json:"ok"`
++			Error string `json:"error"`
++		}
++		if err := json.Unmarshal([]byte(lines[len(lines)-1]), &answer); err != nil {
++			t.Fatalf("red-first printed %q; want the envelope on its last line: %v", out.String(), err)
++		}
++		return code, lines[len(lines)-1], answer.Error
++	}
++
++	fix()
++	t.Run("ADiffWithNoTestExitsWithTheNoTestCode", func(t *testing.T) {
++		code, _, message := run()
++		if code != gateslot.RedFirstNoTestExit || !strings.Contains(message, "adds or changes no test") || !strings.Contains(message, "No test seam") {
++			t.Errorf("red-first = exit %d, error %q; want exit %d naming the missing test and the No test seam way forward", code, message, gateslot.RedFirstNoTestExit)
++		}
++	})
++	t.Run("ATestThatFailsOnTheBaseExitsZeroNamingIt", func(t *testing.T) {
++		writeTest("TestOneIsTwo", "\tif One() != 2 {\n\t\tt.Fatal(\"One() != 2\")\n\t}\n")
++		code, envelope, message := run()
++		if code != 0 || !strings.Contains(envelope, `"red_tests":["github.com/Knatte18/loomyard/calc.TestOneIsTwo"]`) {
++			t.Errorf("red-first = exit %d, envelope %q, error %q; want exit 0 naming TestOneIsTwo as red", code, envelope, message)
++		}
++	})
++	t.Run("ATestThatPassesOnTheBaseExitsWithTheGreenCode", func(t *testing.T) {
++		writeTest("TestTwoIsTwo", "\tif Two() != 2 {\n\t\tt.Fatal(\"Two() != 2\")\n\t}\n")
++		code, _, message := run()
++		if code != gateslot.RedFirstGreenExit || !strings.Contains(message, "does not show the bug") {
++			t.Errorf("red-first = exit %d, error %q; want exit %d saying the test does not show the bug", code, message, gateslot.RedFirstGreenExit)
++		}
++	})
++	t.Run("AChangedTestDoesNotRunUnderItsNameInAnotherTargetPackage", func(t *testing.T) {
++		// calc.TestTwoIsTwo and other.TestOther pass on the base, and the unchanged other.TestTwoIsTwo fails wherever it runs.
++		// A run that put both names in one pattern over both packages would run it and judge none of the tests.
++		writeOtherTests("\t_ = 2\n")
++		code, _, message := run()
++		if code != gateslot.RedFirstGreenExit || !strings.Contains(message, "does not show the bug") {
++			t.Errorf("red-first = exit %d, error %q; want exit %d, the changed tests passing in their own packages", code, message, gateslot.RedFirstGreenExit)
++		}
++	})
++	t.Run("ADiffThatChangesANonGoFileOfAPackageExitsUnjudgedBeforeRunningATier", func(t *testing.T) {
++		if err := os.WriteFile(filepath.Join(prime, "calc", "data.json"), []byte("{}\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		code, _, message := run()
++		if code != gateslot.RedFirstUnjudgedExit || !strings.Contains(message, "calc/data.json") || !strings.Contains(message, "No test seam") {
++			t.Errorf("red-first = exit %d, error %q; want exit %d naming calc/data.json and the No test seam way forward", code, message, gateslot.RedFirstUnjudgedExit)
++		}
++	})
++}
++
++func TestGateRedFirst_AHubWhoseScoperIsNotGoExitsUnjudged(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime := seedTestMapModule(t, h, mutateModule, strings.Replace(redFirstGateYAML, "scoper: go", "scoper: none", 1), map[string]map[string]int{"calc": nil})
++	var out bytes.Buffer
++	code := clihelp.ExecuteIn(Command(), prime, &out, []string{"red-first", "--gate", "rf", "--base", gitkit.RevParse(t, prime, "HEAD")})
++	var answer struct {
++		OK    bool   `json:"ok"`
++		Error string `json:"error"`
++	}
++	if err := json.Unmarshal(out.Bytes(), &answer); err != nil {
++		t.Fatalf("red-first printed %q; want one JSON envelope: %v", out.String(), err)
++	}
++	if code != gateslot.RedFirstUnjudgedExit || answer.OK || !strings.Contains(answer.Error, "scoper is none") || !strings.Contains(answer.Error, "No test seam") {
++		t.Errorf("red-first = exit %d, ok %v, error %q; want exit %d naming the scoper and the No test seam way forward", code, answer.OK, answer.Error, gateslot.RedFirstUnjudgedExit)
++	}
++}
+diff --git a/internal/gatecli/redfirst_test.go b/internal/gatecli/redfirst_test.go
+new file mode 100644
+index 00000000..b2397017
+--- /dev/null
++++ b/internal/gatecli/redfirst_test.go
+@@ -0,0 +1,293 @@
++// redfirst_test.go covers the pure parts of `lym gate red-first`.
++// They are the read of the changed tests, the base overlay, the verdict and the missing-gate refusal.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testreach"
++)
++
++// memoryTree is an in-memory tree of worktree-relative slash paths and their contents.
++type memoryTree map[string][]byte
++
++func (m memoryTree) file(rel string) ([]byte, bool, error) {
++	data, found := m[rel]
++	return data, found, nil
++}
++
++func (m memoryTree) goFiles(dir string) ([]string, error) {
++	var names []string
++	for rel := range m {
++		if filepath.ToSlash(filepath.Dir(rel)) == dir && strings.HasSuffix(rel, ".go") {
++			names = append(names, filepath.Base(rel))
++		}
++	}
++	slices.Sort(names)
++	return names, nil
++}
++
++func TestChangedTestsAt_ComparesTheTestFilesOfEachPackageHoldingAChangedOne(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	module := goModule{dir: "/w/sub", rel: "sub", path: "example.com/m"}
++	base := memoryTree{
++		"sub/a/a_test.go":        []byte("package a\n\nfunc TestKept(t *testing.T) {}\n\nfunc TestFixed(t *testing.T) { _ = 1 }\n"),
++		"sub/a/a.go":             []byte("package a\n"),
++		"sub/b/b_test.go":        []byte("package b\n\nfunc TestUntouched(t *testing.T) { _ = 1 }\n"),
++		"sub/testdata/x_test.go": []byte("package x\n"),
++		"sub/c/c_test.go":        []byte("package c\n\nfunc TestCovered(t *testing.T) { _ = 1 }\n"),
++	}
++	head := memoryTree{
++		"sub/c/c_test.go":        []byte("package c\n\nfunc TestCovered(t *testing.T) { _ = 2 }\n"),
++		"sub/a/a_test.go":        []byte("package a\n\nfunc TestKept(t *testing.T) {}\n\nfunc TestFixed(t *testing.T) { _ = 2 }\n"),
++		"sub/a/other_test.go":    []byte("package a\n\nfunc TestFresh(t *testing.T) {}\n"),
++		"sub/a/a.go":             []byte("package a\n\nfunc Fix() {}\n"),
++		"sub/b/b_test.go":        []byte("package b\n\nfunc TestUntouched(t *testing.T) { _ = 2 }\n"),
++		"sub/testdata/x_test.go": []byte("package x\n\nfunc TestData(t *testing.T) {}\n"),
++	}
++	// sub/b's test file differs but is not among the changed paths, so its package is not read.
++	// sub/c holds a changed test file and no changed production file, so only its test path selects the package.
++	changed := []string{"sub/a/a_test.go", "sub/a/other_test.go", "sub/a/a.go", "sub/testdata/x_test.go", "sub/c/c_test.go"}
++
++	got, err := changedTestsAt(base, head, module, changed)
++	if err != nil {
++		t.Fatalf("changedTestsAt() error = %v; want nil", err)
++	}
++	want := []testreach.ChangedTest{
++		{Package: "example.com/m/a", File: "a_test.go", Name: "TestFixed"},
++		{Package: "example.com/m/a", File: "other_test.go", Name: "TestFresh", New: true},
++		{Package: "example.com/m/c", File: "c_test.go", Name: "TestCovered"},
++	}
++	if diff := cmp.Diff(want, got); diff != "" {
++		t.Errorf("changedTestsAt() mismatch (-want +got):\n%s", diff)
++	}
++}
++
++func TestBaseOverlay_ReplacesOnlyTheProductionGoFilesOfTheModule(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	module := goModule{dir: "/w/sub", rel: "sub", path: "example.com/m"}
++	const baseText = "package a // the base\n"
++	tests := []struct {
++		name string
++		rel  string
++		// baseHolds is whether the base holds the file.
++		baseHolds bool
++		// wantReplaced is whether the overlay names the file.
++		wantReplaced bool
++		// wantCopy is the text of the copy the file maps to; "" when it maps to no copy.
++		wantCopy string
++		// wantUnrestorable is whether the file is one the overlay cannot put back.
++		wantUnrestorable bool
++	}{
++		{name: "ProductionFileTheBaseHoldsMapsToACopyOfTheBaseText", rel: "sub/a/a.go", baseHolds: true, wantReplaced: true, wantCopy: baseText},
++		{name: "ProductionFileTheBaseLacksMapsToNoCopy", rel: "sub/a/new.go", wantReplaced: true},
++		{name: "TestFileIsLeftAsTheWorkingTreeHoldsIt", rel: "sub/a/a_test.go", baseHolds: true},
++		{name: "FileOutsideTheModuleIsLeftAlone", rel: "other/x.go", baseHolds: true},
++		{name: "NonGoFileOfAPackageIsUnrestorable", rel: "sub/a/data.json", baseHolds: true, wantUnrestorable: true},
++		{name: "NonGoFileBelowAPackageDirectoryIsUnrestorable", rel: "sub/a/embedded/data.json", baseHolds: true, wantUnrestorable: true},
++		{name: "NonGoFileWithNoGoFileAtOrAboveItIsLeftAlone", rel: "sub/notes/readme.md", baseHolds: true},
++		{name: "FileUnderTestdataIsLeftAlone", rel: "sub/a/testdata/x.go", baseHolds: true},
++		{name: "NonGoFileUnderTestdataIsLeftAlone", rel: "sub/a/testdata/data.json", baseHolds: true},
++	}
++	head := memoryTree{"sub/a/a.go": []byte("package a\n")}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			baseFile := func(rel string) ([]byte, bool, error) {
++				if rel != tt.rel || !tt.baseHolds {
++					return nil, false, nil
++				}
++				return []byte(baseText), true, nil
++			}
++			got, unrestorable, err := baseOverlay(dir, "/w", module, []string{tt.rel}, baseFile, head)
++			if err != nil {
++				t.Fatalf("baseOverlay() error = %v; want none", err)
++			}
++			var wantUnrestorable []string
++			if tt.wantUnrestorable {
++				wantUnrestorable = []string{tt.rel}
++			}
++			if diff := cmp.Diff(wantUnrestorable, unrestorable); diff != "" {
++				t.Errorf("baseOverlay(%s) unrestorable mismatch (-want +got):\n%s", tt.rel, diff)
++			}
++			if !tt.wantReplaced {
++				if len(got) != 0 {
++					t.Errorf("baseOverlay(%s) = %v; want no replacement", tt.rel, got)
++				}
++				return
++			}
++			target, named := got[filepath.Join("/w", filepath.FromSlash(tt.rel))]
++			if !named || len(got) != 1 {
++				t.Fatalf("baseOverlay(%s) = %v; want the one working-tree path of the file", tt.rel, got)
++			}
++			if tt.wantCopy == "" {
++				if target != "" {
++					t.Errorf("baseOverlay(%s) maps to %q; want %q, which deletes the file", tt.rel, target, "")
++				}
++				return
++			}
++			if filepath.Dir(target) != dir {
++				t.Errorf("baseOverlay(%s) maps to %q; want a copy in %s", tt.rel, target, dir)
++			}
++			data, err := os.ReadFile(target)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if string(data) != tt.wantCopy {
++				t.Errorf("baseOverlay(%s) copy = %q; want %q", tt.rel, data, tt.wantCopy)
++			}
++		})
++	}
++}
++
++func TestWriteOverlay_HoldsTheReplacementsUnderTheReplaceKey(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := t.TempDir()
++	replace := map[string]string{"/w/a.go": "/tmp/0-a.go", "/w/new.go": ""}
++	overlayPath, err := writeOverlay(dir, replace)
++	if err != nil {
++		t.Fatalf("writeOverlay() error = %v; want none", err)
++	}
++	if overlayPath != filepath.Join(dir, "overlay.json") {
++		t.Errorf("writeOverlay() path = %q; want overlay.json in the directory", overlayPath)
++	}
++	data, err := os.ReadFile(overlayPath)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var got map[string]map[string]string
++	if err := json.Unmarshal(data, &got); err != nil {
++		t.Fatalf("overlay file %q is no JSON object of objects: %v", data, err)
++	}
++	if diff := cmp.Diff(map[string]map[string]string{"Replace": replace}, got); diff != "" {
++		t.Errorf("writeOverlay() file mismatch (-want +got):\n%s", diff)
++	}
++}
++
++func TestJudgeRedFirst_ReadsTheRunsExitCodeAndFailureReport(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const pkg = "example.com/m/calc"
++	clamp := testreach.ChangedTest{Package: pkg, File: "calc_test.go", Name: "TestClamp", New: true}
++	scale := testreach.ChangedTest{Package: pkg, File: "calc_test.go", Name: "TestScale"}
++	other := testreach.ChangedTest{Package: "example.com/m/other", File: "other_test.go", Name: "TestRun"}
++	tests := []testreach.ChangedTest{clamp, scale, other}
++	report := func(failureLines ...string) string {
++		lines := append([]string{gateslot.FailureReportHeader, "tier0 (exit 1), log /l/tier0.log:"}, failureLines...)
++		return "ok  \tsome/pkg\n" + strings.Join(lines, "\n") + "\ngate test: failed runs: tier0 (exit 1)\n"
++	}
++
++	rows := []struct {
++		name     string
++		exitCode int
++		captured string
++		want     redFirstVerdict
++	}{
++		{name: "ARunThatPassedIsGreen", exitCode: 0, captured: "ok\n", want: redFirstVerdict{outcome: redFirstGreen}},
++		{
++			name: "ATestTheReportNamesAsFailedIsRed", exitCode: 1,
++			captured: report("  "+pkg+" TestClamp:", "    --- FAIL: TestClamp"),
++			want:     redFirstVerdict{outcome: redFirstRed, red: []testreach.ChangedTest{clamp}},
++		},
++		{
++			name: "EveryTestOfAPackageThatFailedOutsideAnyTestIsRed", exitCode: 2,
++			captured: report("  " + pkg + gateslot.ReportOutsideAnyTestSuffix + ":"),
++			want:     redFirstVerdict{outcome: redFirstRed, red: []testreach.ChangedTest{clamp, scale}},
++		},
++		{name: "ARunWithNoReportJudgedNone", exitCode: 1, captured: "timeout\n", want: redFirstVerdict{outcome: redFirstUnjudged}},
++		{
++			name: "AFailureOfAnotherTestJudgedNone", exitCode: 1,
++			captured: report("  " + pkg + " TestUnrelated:"),
++			want:     redFirstVerdict{outcome: redFirstUnjudged},
++		},
++		{
++			name: "AFailureOfTheTestUnderARunThatIsNoTierJudgedNone", exitCode: 1,
++			captured: report("vet tier1 (exit 1), log /l/vet.log:", "  "+pkg+" TestClamp:"),
++			want:     redFirstVerdict{outcome: redFirstUnjudged},
++		},
++		{
++			name: "ATestTheReportNamesBesideACutLineIsRed", exitCode: 1,
++			captured: report("  "+pkg+" TestClamp:", gateslot.ReportCutPrefix+"12 more lines cut (tier0: 12)"),
++			want:     redFirstVerdict{outcome: redFirstRed, red: []testreach.ChangedTest{clamp}},
++		},
++		{
++			name: "ATestTheReportNamesBesideAnotherPackagesFailureOutsideAnyTestIsRed", exitCode: 1,
++			captured: report("  example.com/m/unrelated"+gateslot.ReportOutsideAnyTestSuffix+":", "  "+pkg+" TestClamp:"),
++			want:     redFirstVerdict{outcome: redFirstRed, red: []testreach.ChangedTest{clamp}},
++		},
++	}
++	for _, tt := range rows {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := judgeRedFirst(tt.exitCode, tt.captured, tests)
++			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(redFirstVerdict{})); diff != "" {
++				t.Errorf("judgeRedFirst(%d, ...) mismatch (-want +got):\n%s", tt.exitCode, diff)
++			}
++		})
++	}
++}
++
++func TestNoSeamWayForward_NamesTheRecordTheParentAddsUnderTheGatesTitle(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := noSeamWayForward()
++	for _, want := range []string{"the run's parent records", "`lym loom decision add`", `under a title opening "` + gateslot.NoTestSeamTitle + `"`} {
++		if !strings.Contains(got, want) {
++			t.Errorf("noSeamWayForward() = %q; want it to contain %q", got, want)
++		}
++	}
++}
++
++func TestTestsByPackage_SplitsTheTestsOneSliceToAPackageInFirstSeenOrder(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	a1 := testreach.ChangedTest{Package: "example.com/m/a", File: "a_test.go", Name: "TestRun"}
++	b1 := testreach.ChangedTest{Package: "example.com/m/b", File: "b_test.go", Name: "TestRun"}
++	a2 := testreach.ChangedTest{Package: "example.com/m/a", File: "a_test.go", Name: "TestOther"}
++	got := testsByPackage([]testreach.ChangedTest{a1, b1, a2})
++	want := [][]testreach.ChangedTest{{a1, a2}, {b1}}
++	if diff := cmp.Diff(want, got); diff != "" {
++		t.Errorf("testsByPackage() mismatch (-want +got):\n%s", diff)
++	}
++}
++
++func TestRunRedFirst_RefusesAMissingGateKeyWithAWayForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	var out bytes.Buffer
++	code := runRedFirst(context.Background(), &out, redFirstRequest{})
++	var answer struct {
++		OK    bool   `json:"ok"`
++		Error string `json:"error"`
++	}
++	if err := json.Unmarshal(out.Bytes(), &answer); err != nil {
++		t.Fatalf("runRedFirst printed %q; want one JSON envelope: %v", out.String(), err)
++	}
++	_, wayForward, _ := strings.Cut(answer.Error, "way forward:")
++	if code != 1 || answer.OK || !strings.Contains(answer.Error, "--gate names no gate key") || !strings.Contains(wayForward, "pass --gate") {
++		t.Errorf("runRedFirst() = exit %d, ok %v, error %q; want exit 1 naming the missing key with a way forward to pass --gate", code, answer.OK, answer.Error)
++	}
++}
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 32287c4e..a18141fd 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -309,6 +309,22 @@
+ // TierRunFailures reads every failure of the report, each opened by its run's label.
+ // It reports false unless every run the report lists is a tier or guard run.
+ // It also reports false for a package that failed outside any test, such as by a compile error, which a rerun repeats.
++// PackagesFailedOutsideTests reads the packages the report names as failed outside any test.
++// NamedFailedTests reads every named failed test of the report, whatever else the report holds.
++//
++// # Red-first call
++//
++// RedFirstCall renders `lym gate red-first --gate <key>`.
++// That call runs the tests a diff adds or changes on its merge base.
++// RedFirstGreenExit is its exit code when every one of those tests passed there.
++// RedFirstNoTestExit is its exit code when the diff adds or changes no test.
++// RedFirstUnjudgedExit is its exit code when it cannot judge the tests:
++// the hub's scoper is not go, or the diff changes a non-Go file of a Go package, which the base run cannot put back.
++// BugLabel is the board label of an entry the call guards.
++// NoTestSeamTitle opens the title of the parent's decision that names a bug no test can reach.
++// That decision lifts the guard.
++// Exit 0 means a test went red on the base;
++// any other code is a refusal or a run that judged none of the tests.
+ //
+ // # Run log
+ //
+diff --git a/internal/gateslot/failedtests_test.go b/internal/gateslot/failedtests_test.go
+index d5c122cb..2f782c6e 100644
+--- a/internal/gateslot/failedtests_test.go
++++ b/internal/gateslot/failedtests_test.go
+@@ -10,6 +10,56 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestPackagesFailedOutsideTests pins that only a report's failed-outside-any-test lines name packages, each once.
++func TestPackagesFailedOutsideTests(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	report := func(lines ...string) string {
++		return "FAIL\n" + FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" +
++			FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
++	}
++	tests := []struct {
++		name string
++		log  string
++		want []string
++	}{
++		{
++			name: "packages failed outside any test across runs, each once, beside a failed test",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/a TestA:",
++				"  example.com/m/b, failed outside any test:",
++				"    b_test.go:3: undefined: x",
++				"tier1 (exit 1), log /runs/b.log:",
++				"  example.com/m/b, failed outside any test:",
++				"  example.com/m/c, failed outside any test:",
++			),
++			want: []string{"example.com/m/b", "example.com/m/c"},
++		},
++		{
++			name: "a failure's own output naming the suffix is no package",
++			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "    example.com/m/z, failed outside any test:"),
++		},
++		{
++			name: "a line past the report's cut is not read",
++			log:  report("tier0 (exit 1), log /runs/a.log:", ReportCutPrefix+"3 more lines in the log", "  example.com/m/b, failed outside any test:"),
++		},
++		{
++			name: "a log with no report names none",
++			log:  "FAIL\texample.com/m/b [build failed]\n",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := PackagesFailedOutsideTests(tt.log); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("PackagesFailedOutsideTests() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestFailedTests pins which failure reports name their failed tests: only one whose every failure is a named test.
+ func TestFailedTests(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -94,6 +144,82 @@ func TestFailedTests(t *testing.T) {
+ 	}
+ }
+ 
++// TestNamedFailedTests pins that every named failed test of a report is read, whatever else the report holds.
++// A test below the report's cut line is not read.
++func TestNamedFailedTests(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	report := func(lines ...string) string {
++		return "=== RUN   TestA\nFAIL\n" + FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" +
++			FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
++	}
++	tests := []struct {
++		name string
++		log  string
++		want []FailedTest
++	}{
++		{
++			name: "tests of a tier and a guard run keep their run's tier, a subtest folded into its test once",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/a TestA/sub:",
++				"    a_test.go:3: got 1; want 2",
++				"  example.com/m/a TestA/other:",
++				"guard tier1 (exit 1), log /runs/g.log:",
++				"  example.com/m/g TestGuard:",
++			),
++			want: []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}, {Tier: 1, Package: "example.com/m/g", Test: "TestGuard"}},
++		},
++		{
++			name: "a test beside a cut line is read, and a test below the cut line is not",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/a TestA:",
++				ReportCutPrefix+"12 more lines cut (tier0: 12); the logs named above hold the cut lines of a run with a log",
++				"  example.com/m/b TestB:",
++			),
++			want: []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}},
++		},
++		{
++			name: "a test beside another package's failure outside any test is read",
++			log: report(
++				"tier0 (exit 1), log /runs/a.log:",
++				"  example.com/m/b"+ReportOutsideAnyTestSuffix+":",
++				"    b.go:3: undefined: x",
++				"  example.com/m/a TestA:",
++			),
++			want: []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}},
++		},
++		{
++			name: "a test beside a cause line and unparsed output is read",
++			log: report(
++				"tier1 (timed out), log /runs/a.log:",
++				"  lym gate test: tier timeout: tier1 exceeded timeout_min 30m0s; find the hang",
++				"  "+ReportOutputLine,
++				"    stray line",
++				"  example.com/m/a TestA:",
++			),
++			want: []FailedTest{{Tier: 1, Package: "example.com/m/a", Test: "TestA"}},
++		},
++		{
++			name: "a test under a run that is no tier or guard run has tier -1",
++			log:  report("vet tier1 (exit 1), log /runs/v.log:", "  example.com/m/a TestA:"),
++			want: []FailedTest{{Tier: -1, Package: "example.com/m/a", Test: "TestA"}},
++		},
++		{name: "a log with no report names none", log: "--- FAIL: TestA (0.00s)\nFAIL\texample.com/m/a\t0.1s\n"},
++		{name: "a report that names no test names none", log: report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/b"+ReportOutsideAnyTestSuffix+":")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := NamedFailedTests(tt.log); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("NamedFailedTests() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestTriageLines pins which triage lines a failure report yields per failed test, and that a log with none yields none.
+ func TestTriageLines(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/gateslot/redfirst.go b/internal/gateslot/redfirst.go
+new file mode 100644
+index 00000000..5a4b5869
+--- /dev/null
++++ b/internal/gateslot/redfirst.go
+@@ -0,0 +1,30 @@
++// redfirst.go holds what `lym gate red-first` and the site that runs it share.
++// They share the call, its exit codes and the record names.
++
++package gateslot
++
++// RedFirstGreenExit is the exit code of a `lym gate red-first` call.
++// Every test the diff adds or changes passed on the base in that call.
++// The site reads it as a fix whose test would have passed before the fix.
++const RedFirstGreenExit = 3
++
++// RedFirstNoTestExit is the exit code of a `lym gate red-first` call whose diff adds or changes no test.
++const RedFirstNoTestExit = 4
++
++// RedFirstUnjudgedExit is the exit code of a `lym gate red-first` call that cannot judge the diff's tests on the base.
++// The hub's scoper is not go, or the diff changes a non-Go file of a Go package, which the base run cannot put back.
++// Only a parent's recorded NoTestSeamTitle decision lifts it.
++const RedFirstUnjudgedExit = 5
++
++// BugLabel is the board label of an entry whose run must show its fix's test failing on the merge base.
++const BugLabel = "bug"
++
++// NoTestSeamTitle opens the title of the decision record's added entry that names a bug no test can reach.
++// The parent records that entry as its stop, and the red-first gate then passes without running the call.
++const NoTestSeamTitle = "No test seam"
++
++// RedFirstCall renders the call a site runs to check that the diff's tests fail on the merge base.
++// It is `lym gate red-first --gate <key>`, and runs the tiers of the named gate key.
++func RedFirstCall(key string) string {
++	return "lym gate red-first --gate " + key
++}
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index a4f069da..d215a0f8 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -336,6 +336,45 @@ func FailedTests(log string) (failed []FailedTest, ok bool) {
+ 	return failed, true
+ }
+ 
++// NamedFailedTests returns the failed tests the first failure report in log names, each once, in report order.
++// It reads every `  <package> <test>:` line up to the report's end or its cut line, and passes over every other line.
++// So a report that also holds a cause line or unparsed output still yields its named tests.
++// So does one that names a package failed outside any test.
++// A test under a run that is no tier or guard run has Tier -1.
++// A log with no report yields none.
++func NamedFailedTests(log string) []FailedTest {
++	lines := strings.Split(strings.ReplaceAll(log, "\r\n", "\n"), "\n")
++	start := slices.Index(lines, FailureReportHeader)
++	if start < 0 {
++		return nil
++	}
++	var failed []FailedTest
++	tier := -1
++	for _, line := range lines[start+1:] {
++		if line == "" || strings.HasPrefix(line, failureReportEnd) || strings.HasPrefix(line, ReportCutPrefix) {
++			break
++		}
++		switch {
++		case strings.HasPrefix(line, "    "):
++			// A failure's own output.
++		case strings.HasPrefix(line, "  "):
++			if test, isTest := reportTestLine(line); isTest {
++				test.Tier = tier
++				if !slices.Contains(failed, test) {
++					failed = append(failed, test)
++				}
++			}
++		default:
++			number, isRun := reportRunTier(line)
++			if !isRun {
++				number = -1
++			}
++			tier = number
++		}
++	}
++	return failed
++}
++
+ // reportRunTier returns the tier of a failure report's run header, such as `tier1 (exit 1), log <path>:`.
+ // A guard run's header names its tier too; any other run, such as a build, vet or lint step, names none.
+ func reportRunTier(line string) (int, bool) {
+@@ -411,6 +450,32 @@ func TierRunFailures(log string) (failures []string, ok bool) {
+ 	return failures, header != ""
+ }
+ 
++// PackagesFailedOutsideTests returns the packages the first failure report in log names as failed outside any test.
++// Each comes once, in report order; a compile error of a package's tests is such a failure.
++// A log with no report, and a report cut at its line cap past the last such line, name only what they hold.
++func PackagesFailedOutsideTests(log string) []string {
++	lines := strings.Split(strings.ReplaceAll(log, "\r\n", "\n"), "\n")
++	start := slices.Index(lines, FailureReportHeader)
++	if start < 0 {
++		return nil
++	}
++	var packages []string
++	for _, line := range lines[start+1:] {
++		if line == "" || strings.HasPrefix(line, failureReportEnd) || strings.HasPrefix(line, ReportCutPrefix) {
++			break
++		}
++		if !strings.HasPrefix(line, "  ") || strings.HasPrefix(line, "    ") {
++			continue
++		}
++		failure, isFailure := reportFailureLine(line)
++		pkg, outside := strings.CutSuffix(failure, ReportOutsideAnyTestSuffix)
++		if isFailure && outside && !slices.Contains(packages, pkg) {
++			packages = append(packages, pkg)
++		}
++	}
++	return packages
++}
++
+ // reportFailureLine returns the failure a failure report's `  <failure>:` line under a run names, without its colon.
+ // A failed test, a test with no package and a package that failed outside any test each end with a colon.
+ // A cause line and the line that opens unparsed output name none.
+diff --git a/internal/loomcli/entrylabels_integration_test.go b/internal/loomcli/entrylabels_integration_test.go
+new file mode 100644
+index 00000000..d130e6b7
+--- /dev/null
++++ b/internal/loomcli/entrylabels_integration_test.go
+@@ -0,0 +1,48 @@
++// entrylabels_integration_test.go drives entryLabels against a real hub pair and its hub board.
++
++package loomcli
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestEntryLabels_ReadsTheRunsBoardEntryAtEachCall pins that the closure reads the worktree's board entry at every call.
++// It is serial because it sets the board skip variable, which is process-global.
++func TestEntryLabels_ReadsTheRunsBoardEntryAtEachCall(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv("BOARD_SKIP_GIT", "1")
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++
++	const slug = "labelled"
++	hubforge.AddPair(t, hub, slug)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree() error = %v; want nil", err)
++	}
++	board, err := boardengine.OpenHub(location.HubPath)
++	if err != nil {
++		t.Fatalf("OpenHub() error = %v; want nil", err)
++	}
++	labels := entryLabels(location)
++
++	got, err := labels()
++	if err != nil || got != nil {
++		t.Fatalf("entryLabels()() with no board entry = %v, %v; want nil labels and no error", got, err)
++	}
++
++	for _, want := range [][]string{{"bug"}, {"enhancement"}} {
++		if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Fix it", "kind": "task", "labels": want}); err != nil {
++			t.Fatalf("UpsertTask(%v) error = %v; want nil", want, err)
++		}
++		got, err := labels()
++		if err != nil || !slices.Equal(got, want) {
++			t.Errorf("entryLabels()() = %v, %v; want %v and no error, read from the board at this call", got, err, want)
++		}
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 1685d0b4..4a2a02b5 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -588,6 +588,25 @@ func recordWriteDeps(l *lymcwd.Location, record runRecord) loomshed.RecordWriteD
+ 	}
+ }
+ 
++// entryLabels returns a reader of the labels of the run's board entry for the worktree at l.
++// It opens the board on each call, and an entry the board lacks reads as one with no label.
++func entryLabels(l *lymcwd.Location) func() ([]string, error) {
++	return func() ([]string, error) {
++		board, err := boardengine.OpenHub(l.HubPath)
++		if err != nil {
++			return nil, fmt.Errorf("open the board: %w", err)
++		}
++		task, found, err := board.GetTask(seedSlug(l.WorktreeName))
++		if err != nil {
++			return nil, fmt.Errorf("read the run's board entry: %w", err)
++		}
++		if !found {
++			return nil, nil
++		}
++		return task.Labels, nil
++	}
++}
++
+ // writeCarryOver writes entry into the decision record of location's worktree and commits the record alone.
+ // An unchanged record commits nothing, and a write or commit error is returned to the caller.
+ func writeCarryOver(location *lymcwd.Location, entry discussionparser.CarryOver) error {
+@@ -947,6 +966,9 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		MutationReport:   mutationReportNote(location),
+ 		VerifyHold:       verifytree.NewPauseHold(pauseGeom, nil),
+ 		VerifyReach:      gatecli.ReachPendingOf(location),
++		// EntryLabels opens the board at each red-first gate arrival, never at wire time.
++		EntryLabels:     entryLabels(location),
++		RedFirstCommand: gateslot.RedFirstCall,
+ 		// GateFixer wraps the Darn-Write, Plan-Write and Discussion-Write gates of a pair run with a cold fixer.
+ 		// It reads every value here at wire time and opens nothing.
+ 		GateFixer: gateFixerSeam(gateFixerInputs{
+diff --git a/internal/loomrecipe/darnrecipe_test.go b/internal/loomrecipe/darnrecipe_test.go
+index f12570b8..30228a28 100644
+--- a/internal/loomrecipe/darnrecipe_test.go
++++ b/internal/loomrecipe/darnrecipe_test.go
+@@ -305,7 +305,7 @@ func TestDarnVerifyBudget(t *testing.T) {
+ 			}
+ 		}
+ 		want := map[string]map[any]any{
+-			loomshed.NameDarnWrite:     {"clean": 3, "verify": 7, "drift": 3, "description": 3},
++			loomshed.NameDarnWrite:     {"clean": 3, "verify": 7, "red-first": 3, "drift": 3, "description": 3},
+ 			loomshed.NameCodeBurlerFix: {"clean": 3, "verify": 7},
+ 			loomshed.NameDescribe:      {"description": 3},
+ 		}
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index ebbd1b7a..903e0c3f 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -168,6 +168,19 @@
+ // It names the attempt and the failed runs so far, and it stops nothing: the attempts go on.
+ // Bound: the kept tests and the budget's clock live in the gate, so a restarted driver starts both afresh.
+ //
++// The red-first gate (NewRedFirstGate) holds a darn writer's handoff on a bug fix until its test is shown red first.
++// It runs the row's `lym gate red-first --gate <key>` call through verifytree.Verify and reads its exit code.
++// An entry without the `bug` label (gateslot.BugLabel) passes at once and runs nothing.
++// So does a decision record holding an added entry whose title opens gateslot.NoTestSeamTitle.
++// That entry is the parent's recorded stop for a bug no test can reach.
++// Exit 0 passes.
++// Exit gateslot.RedFirstGreenExit fails with the way forward of a test that passed on the merge base.
++// Exit gateslot.RedFirstNoTestExit fails with the way forward of a diff that adds or changes no test;
++// it names the `lym creel post --parent --expect-reply` ask for the parent's no-test-seam record.
++// Exit gateslot.RedFirstUnjudgedExit fails with that same ask, for a hub or a diff the check cannot judge.
++// Any other exit code, a timeout or a runner crash judged no test and fails terminally.
++// A labels or record read error is the gate's returned error.
++//
+ // The Plan-Write rotation archives the prior plan.
+ // It appends a prior-plan block naming that archive to the respawned session's prompt.
+ // It first archives webster's run record into the archive's `webster` subdirectory through a told seam,
+diff --git a/internal/loomshed/redfirstgate.go b/internal/loomshed/redfirstgate.go
+new file mode 100644
+index 00000000..012647b9
+--- /dev/null
++++ b/internal/loomshed/redfirstgate.go
+@@ -0,0 +1,127 @@
++// redfirstgate.go implements NewRedFirstGate, the must-pass gate that holds a bug fix until its test is shown red first.
++// It runs the site's red-first command through verifytree.Verify and reads the exit code it fails with.
++
++package loomshed
++
++import (
++	"context"
++	"fmt"
++	"os"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/discussionparser"
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++// NewRedFirstGate returns a must-pass shuttleengine.Gate that proves a bug fix's test was red before the fix.
++// At each arrival it reads the entry's labels, and an entry without gateslot.BugLabel passes at once and runs nothing.
++// It then reads the decision record at recordPath.
++// An added entry whose title opens with gateslot.NoTestSeamTitle passes at once and runs nothing.
++// The title is compared case-insensitively.
++// Otherwise it runs command through verifytree.Verify over worktreeRoot, keeping its record, marker and log in verifyDir.
++// command is the site's own `lym gate red-first --gate <key>` call.
++// siteLabel names the call site in the running marker, and the closure's own count of its calls is the attempt.
++// hold is the told pause hold of the worktree's scope; nil holds nothing.
++//
++// `StatusPassed` and `StatusSkipped` pass, and `StatusDirty` fails with the dirty paths.
++// A `StatusFailed` run whose exit code is gateslot.RedFirstGreenExit fails with the way forward of a green test.
++// One whose exit code is gateslot.RedFirstNoTestExit fails with the way forward of a diff that holds no test.
++// One whose exit code is gateslot.RedFirstUnjudgedExit fails with the way forward of a check that cannot judge the diff.
++// Any other failed run, a timeout or a runner crash included, judged none of the diff's tests and fails terminally:
++// no change to the code mends it, and resuming the run runs the check again.
++// A labels read error, a record read or parse error and a verify error are returned errors.
++func NewRedFirstGate(worktreeRoot, verifyDir, siteLabel, command string, labels func() ([]string, error), recordPath string, hold *verifytree.PauseHold) shuttleengine.Gate {
++	attempt := 0
++	paths := verifytree.NewPaths(worktreeRoot, verifyDir)
++	return func() (shuttleengine.GateResult, error) {
++		attempt++
++		entryLabels, err := labels()
++		if err != nil {
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: read the entry's labels: %w", err)
++		}
++		if !slices.Contains(entryLabels, gateslot.BugLabel) {
++			return shuttleengine.GateResult{Passed: true}, nil
++		}
++		record, err := os.ReadFile(recordPath)
++		if err != nil {
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: read the decision record: %w", err)
++		}
++		added, err := discussionparser.ParseAddedDecisions(record)
++		if err != nil {
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: parse the decision record's added entries: %w", err)
++		}
++		for _, entry := range added {
++			if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(gateslot.NoTestSeamTitle)) {
++				logger.Info("loomshed: red-first gate ran nothing, the decision record names a bug no test can reach", "gate", siteLabel, "attempt", attempt, "title", entry.Title)
++				return shuttleengine.GateResult{Passed: true}, nil
++			}
++		}
++
++		site := verifytree.Site{Label: siteLabel, Attempt: attempt, BaseCommand: command, Hold: hold}
++		res, err := verifytree.Verify(context.Background(), paths, site, command)
++		if err != nil {
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: %w", err)
++		}
++		switch res.Status {
++		case verifytree.StatusPassed, verifytree.StatusSkipped:
++			return shuttleengine.GateResult{Passed: true}, nil
++		case verifytree.StatusDirty:
++			return dirtyResult(res, siteLabel, attempt), nil
++		}
++		logger.Warn("loomshed: red-first gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "timedOut", res.TimedOut, "runnerCrash", res.RunnerCrash, "log", res.Log)
++		return redFirstFailure(res), nil
++	}
++}
++
++// redFirstFailure renders a StatusFailed red-first result as a failing verdict.
++// Only a run that exited with one of the gateslot red-first exit codes is one the writer, or its parent, can mend.
++func redFirstFailure(res verifytree.Result) shuttleengine.GateResult {
++	log, _ := os.ReadFile(res.Log)
++	var b strings.Builder
++	terminal := false
++	switch {
++	case res.TimedOut:
++		terminal = true
++		fmt.Fprintf(&b, "The red-first check timed out, so it judged none of the diff's tests: %s. %s", res.Detail, redFirstNoMend)
++	case res.RunnerCrash:
++		terminal = true
++		fmt.Fprintf(&b, "The red-first check's test runner crashed, so it judged none of the diff's tests: %s. %s", res.Detail, redFirstNoMend)
++	case res.ExitCode == gateslot.RedFirstGreenExit:
++		b.WriteString("Every test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.\n\n" +
++			"Way forward: make a test fail on the merge base and pass with the fix, " +
++			"reaching the bug through code the base already has, and commit it.")
++	case res.ExitCode == gateslot.RedFirstNoTestExit:
++		fmt.Fprintf(&b, "The diff adds or changes no test, so nothing shows the bug the fix fixes.\n\n"+
++			"Way forward: add and commit a test that fails on the merge base and passes with the fix. "+
++			"When the bug has no seam a test can reach, %s", noSeamAsk())
++	case res.ExitCode == gateslot.RedFirstUnjudgedExit:
++		fmt.Fprintf(&b, "The red-first check cannot judge the diff's tests on the merge base: "+
++			"the hub's scoper is not go, or the diff changes a non-Go file the base run cannot put back. "+
++			"The log tail names which.\n\nWay forward: %s", noSeamAsk())
++	default:
++		terminal = true
++		fmt.Fprintf(&b, "The red-first check failed with exit code %d, so it judged none of the diff's tests. %s", res.ExitCode, redFirstNoMend)
++		if res.Detail != "" {
++			fmt.Fprintf(&b, " Its shell could not start: %s.", res.Detail)
++		}
++	}
++	fmt.Fprintf(&b, "\n\nFull log: %s\n", res.Log)
++	if tail := logTail(log); tail != "" {
++		fmt.Fprintf(&b, "\nLog tail:\n\n%s\n", tail)
++	}
++	return shuttleengine.GateResult{Passed: false, Findings: b.String(), Terminal: terminal}
++}
++
++// noSeamAsk is the way forward that only the run's parent can take.
++// The parent records the bug as having no seam a test can reach.
++func noSeamAsk() string {
++	return fmt.Sprintf("send your parent `lym creel post --parent --expect-reply \"<text>\"` asking it to record that with "+
++		"`lym loom decision add` under a title opening %q and naming why, then end your turn.", gateslot.NoTestSeamTitle)
++}
++
++// redFirstNoMend closes the findings of a red-first run that judged none of the diff's tests.
++const redFirstNoMend = "No change to the code mends it, so the run stops here; resuming it runs the check again."
+diff --git a/internal/loomshed/redfirstgate_test.go b/internal/loomshed/redfirstgate_test.go
+new file mode 100644
+index 00000000..1f9af017
+--- /dev/null
++++ b/internal/loomshed/redfirstgate_test.go
+@@ -0,0 +1,182 @@
++// redfirstgate_test.go exercises NewRedFirstGate against a real scratch repo and real shell processes.
++
++package loomshed
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const noTestSeamRecord = validDecisionRecord +
++		"\n### Added after Discussion (parent, 2026-11-19): No test seam: the bug lives in a tmux race\n\nDecision text.\n"
++	const lowerCaseNoTestSeamRecord = validDecisionRecord +
++		"\n### Added after Discussion (parent, 2026-11-19): no test seam: the bug lives in a tmux race\n\nDecision text.\n"
++	labelsErr := errors.New("board unreadable")
++	bugLabels := func() ([]string, error) { return []string{"area", gateslot.BugLabel}, nil }
++	timeoutLog := filepath.Join(t.TempDir(), "timeout.txt")
++	if err := os.WriteFile(timeoutLog, []byte(gateslot.TierTimeoutLine("tier1", time.Minute)+"\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	tests := []struct {
++		name         string
++		labels       func() ([]string, error)
++		record       string
++		command      string
++		wantErr      error
++		wantPassed   bool
++		wantTerminal bool
++		wantRan      bool
++		wantFindings []string
++	}{
++		{
++			name:       "an entry without the bug label passes and runs nothing",
++			labels:     func() ([]string, error) { return []string{"feature"}, nil },
++			command:    "exit 9",
++			wantPassed: true,
++		},
++		{
++			name:       "a record whose added entry opens No test seam passes and runs nothing",
++			labels:     bugLabels,
++			record:     noTestSeamRecord,
++			command:    "exit 9",
++			wantPassed: true,
++		},
++		{
++			name:       "a record whose added entry opens no test seam in lower case passes and runs nothing",
++			labels:     bugLabels,
++			record:     lowerCaseNoTestSeamRecord,
++			command:    "exit 9",
++			wantPassed: true,
++		},
++		{
++			name:    "a bug entry whose decision record cannot be read is the gate's error",
++			labels:  bugLabels,
++			command: "exit 0",
++			wantErr: os.ErrNotExist,
++		},
++		{
++			name:       "a red-first check that exits 0 passes",
++			labels:     bugLabels,
++			record:     validDecisionRecord,
++			command:    "exit 0",
++			wantPassed: true,
++			wantRan:    true,
++		},
++		{
++			name:    "a check that exits 3 fails with the green way forward",
++			labels:  bugLabels,
++			record:  validDecisionRecord,
++			command: "echo green-marker; exit 3",
++			wantRan: true,
++			wantFindings: []string{
++				"Every test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.",
++				"Way forward: make a test fail on the merge base and pass with the fix, reaching the bug through code the base already has, and commit it.",
++				"Full log: ", "green-marker",
++			},
++		},
++		{
++			name:    "a check that exits 4 fails naming the No test seam record",
++			labels:  bugLabels,
++			record:  validDecisionRecord,
++			command: "exit 4",
++			wantRan: true,
++			wantFindings: []string{
++				"The diff adds or changes no test, so nothing shows the bug the fix fixes.",
++				"lym creel post --parent --expect-reply",
++				"`lym loom decision add`",
++				`under a title opening "No test seam"`,
++				"then end your turn.",
++				"Full log: ",
++			},
++		},
++		{
++			name:    "a check that exits 5 fails naming the scoper or file it cannot judge and the No test seam record",
++			labels:  bugLabels,
++			record:  validDecisionRecord,
++			command: "exit 5",
++			wantRan: true,
++			wantFindings: []string{
++				"The red-first check cannot judge the diff's tests on the merge base",
++				"lym creel post --parent --expect-reply",
++				"`lym loom decision add`",
++				`under a title opening "No test seam"`,
++				"then end your turn.",
++				"Full log: ",
++			},
++		},
++		{
++			name:         "a check whose log holds the tier timeout line fails terminally",
++			labels:       bugLabels,
++			record:       validDecisionRecord,
++			command:      "cat " + timeoutLog + "; exit 1",
++			wantTerminal: true,
++			wantRan:      true,
++			wantFindings: []string{"The red-first check timed out", "resuming it runs the check again."},
++		},
++		{
++			name:         "a check that exits any other code fails terminally",
++			labels:       bugLabels,
++			record:       validDecisionRecord,
++			command:      "echo odd-marker; exit 9",
++			wantTerminal: true,
++			wantRan:      true,
++			wantFindings: []string{
++				"The red-first check failed with exit code 9, so it judged none of the diff's tests.",
++				"resuming it runs the check again.",
++				"Full log: ", "odd-marker",
++			},
++		},
++		{
++			name:    "a labels read error is the gate's error",
++			labels:  func() ([]string, error) { return nil, labelsErr },
++			command: "exit 0",
++			wantErr: labelsErr,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			worktree, verifyDir := t.TempDir(), t.TempDir()
++			gitkit.Git(t, worktree, "init", "-b", "main")
++			gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++			gitkit.Git(t, worktree, "config", "user.name", "Test")
++			gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++			recordPath := filepath.Join(t.TempDir(), "decision-record.md")
++			if tt.record != "" {
++				if err := os.WriteFile(recordPath, []byte(tt.record), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			got, err := NewRedFirstGate(worktree, verifyDir, "Darn-Write red-first gate", tt.command, tt.labels, recordPath, nil)()
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Fatalf("gate() error = %v; want %v", err, tt.wantErr)
++			}
++			if got.Passed != tt.wantPassed || got.Terminal != tt.wantTerminal {
++				t.Errorf("gate() = passed %v, terminal %v; want passed %v, terminal %v (findings %q)", got.Passed, got.Terminal, tt.wantPassed, tt.wantTerminal, got.Findings)
++			}
++			for _, want := range tt.wantFindings {
++				if !strings.Contains(got.Findings, want) {
++					t.Errorf("Findings = %q; want it to contain %q", got.Findings, want)
++				}
++			}
++			if ran := len(verifyLogs(t, verifyDir)) > 0; ran != tt.wantRan {
++				t.Errorf("command ran = %v; want %v", ran, tt.wantRan)
++			}
++		})
++	}
++}
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index 62f12e91..66748ec9 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -201,6 +201,17 @@
+ // The shipped darn recipe lists `drift` on Darn-Write after `verify`,
+ // and the tapestry recipe lists it on Webster, whose run-level gate carries it.
+ //
++// # The red-first gate
++//
++// The `red-first` gate holds the handoff of a run whose board entry is labelled `bug`.
++// It holds it until a test the diff adds or changes fails on the merge base.
++// The parent may instead record a decision titled `No test seam`.
++// That fits a bug no test can reach, or a check that cannot judge the tests.
++// It reads the entry's labels through Env.EntryLabels at each arrival.
++// It runs the call Env.RedFirstCommand renders for the row's gate key.
++// An entry without the label passes at once.
++// The shipped darn recipe lists it on Darn-Write after `verify`.
++//
+ // # The gate fixer element
+ //
+ // An element of a "gates" list may carry the optional key "fixer", a `<module>.<key>` setting read through Env.Setting.
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index 35438f67..843958f0 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -57,6 +57,10 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // "expectation" requires the env.Drift seams Config, TrailerCommit and FileAt;
+ // it returns driftengine.NewExpectationGate over them;
+ // "judgement" returns driftengine.NewJudgementGate over env.Drift, which reads only its Paths and requires no seam;
++// "red-first" requires the absolute env.WorktreeRoot, env.VerifyDir and env.DecisionRecordPath,
++// and the non-nil env.EntryLabels and env.RedFirstCommand;
++// it returns loomshed.NewRedFirstGate over the call env.RedFirstCommand renders for the row's gate key;
++// the site label is "<row name> red-first gate" and the hold is env.VerifyHold;
+ // any other value is an error naming the key and every legal value.
+ // A name may appear once per list.
+ //
+@@ -314,7 +318,22 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		return driftengine.NewExpectationGate(driftDepsFrom(env)), nil
+ 	case "judgement":
+ 		return driftengine.NewJudgementGate(driftDepsFrom(env)), nil
++	case "red-first":
++		for _, root := range []struct{ field, value string }{
++			{"WorktreeRoot", env.WorktreeRoot}, {"VerifyDir", env.VerifyDir}, {"DecisionRecordPath", env.DecisionRecordPath},
++		} {
++			if err := requireAbsRoot(entry, root.field, root.value); err != nil {
++				return nil, err
++			}
++		}
++		if err := requireSeam(entry, "EntryLabels", env.EntryLabels); err != nil {
++			return nil, err
++		}
++		if err := requireSeam(entry, "RedFirstCommand", env.RedFirstCommand); err != nil {
++			return nil, err
++		}
++		return loomshed.NewRedFirstGate(env.WorktreeRoot, env.VerifyDir, row+" red-first gate", env.RedFirstCommand(gateKey), env.EntryLabels, env.DecisionRecordPath, env.VerifyHold), nil
+ 	default:
+-		return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: config key %q must be %q, %q, %q, %q, %q, %q, %q, %q, %q or %q, got %q", entry, "gates", index, "name", "clean", "discussion", "plan", "parts", "raddle", "description", "verify", "drift", "expectation", "judgement", name)
++		return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: config key %q must be %q, %q, %q, %q, %q, %q, %q, %q, %q, %q or %q, got %q", entry, "gates", index, "name", "clean", "discussion", "plan", "parts", "raddle", "description", "verify", "drift", "expectation", "judgement", "red-first", name)
+ 	}
+ }
+diff --git a/internal/shedrecipe/entries_gate_test.go b/internal/shedrecipe/entries_gate_test.go
+index ca40e35a..3dd9ba38 100644
+--- a/internal/shedrecipe/entries_gate_test.go
++++ b/internal/shedrecipe/entries_gate_test.go
+@@ -60,7 +60,7 @@ func TestResolveGateSpec_AbsentKeyIsUngated(t *testing.T) {
+ 
+ func TestResolveGateSpec_ValidOneEntryPerVocabularyName(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	for _, name := range []string{"clean", "discussion", "plan", "parts", "description", "drift", "expectation", "judgement"} {
++	for _, name := range []string{"clean", "discussion", "plan", "parts", "description", "drift", "expectation", "judgement", "red-first"} {
+ 		t.Run(name, func(t *testing.T) {
+ 			env := reworkTestEnv(t)
+ 			env.DescriptionPath = filepath.Join(t.TempDir(), "summary.md")
+@@ -371,13 +371,52 @@ func TestResolveGateSpec_UnknownNameListsTheLegalValues(t *testing.T) {
+ 	for _, unknown := range []string{"bogus", "rework-plan", "parent-review"} {
+ 		t.Run(unknown, func(t *testing.T) {
+ 			_, err := resolveGateSpec("Row", gatesCfg(unknown, 1), newTestEnv(t))
+-			for _, want := range []string{"clean", "discussion", "plan", "parts", "raddle", "description", "verify", "drift", "expectation", "judgement"} {
++			for _, want := range []string{"clean", "discussion", "plan", "parts", "raddle", "description", "verify", "drift", "expectation", "judgement", "red-first"} {
+ 				assertErrContains(t, err, want)
+ 			}
+ 		})
+ 	}
+ }
+ 
++func TestResolveGateSpec_RedFirstRequiresItsEnv(t *testing.T) {
++	tiergate.Require(t, 0)
++	for _, field := range []string{"WorktreeRoot", "VerifyDir", "DecisionRecordPath", "EntryLabels", "RedFirstCommand"} {
++		t.Run(field, func(t *testing.T) {
++			env := newTestEnv(t)
++			switch field {
++			case "WorktreeRoot":
++				env.WorktreeRoot = "relative/worktree"
++			case "VerifyDir":
++				env.VerifyDir = ""
++			case "DecisionRecordPath":
++				env.DecisionRecordPath = "relative/decision-record.md"
++			case "EntryLabels":
++				env.EntryLabels = nil
++			case "RedFirstCommand":
++				env.RedFirstCommand = nil
++			}
++			_, err := resolveGateSpec("Row", gatesCfg("red-first", 3), env)
++			assertErrContains(t, err, field)
++		})
++	}
++}
++
++func TestResolveGateSpec_RedFirstRendersTheCallOfTheRowsOwnGateKey(t *testing.T) {
++	tiergate.Require(t, 0)
++	env := newTestEnv(t)
++	var asked []string
++	env.RedFirstCommand = func(gateKey string) string {
++		asked = append(asked, gateKey)
++		return "exit 0"
++	}
++	if _, err := resolveRowGateSpec("DarnWrite", "Darn-Write", gatesCfg("red-first", 3), env); err != nil {
++		t.Fatalf("resolveRowGateSpec() error = %v; want nil", err)
++	}
++	if len(asked) != 1 || asked[0] != "darn-write" {
++		t.Errorf("RedFirstCommand asked for %q; want one ask for %q, the gate key of the Darn-Write row", asked, "darn-write")
++	}
++}
++
+ func TestResolveGateSpec_CleanRequiresAbsoluteWorktreeRoot(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	for _, root := range []string{"", "relative/worktree"} {
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index 9d2fc54a..3035e903 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -266,16 +266,18 @@ func newTestEnv(t *testing.T) Env {
+ 	}
+ 
+ 	return Env{
+-		Cwd:            mustMkdir("cwd"),
+-		AnchorPath:     mustMkdir("anchor"),
+-		ConfigDirs:     configengine.Dirs{Anchor: filepath.Join(dir, "anchor")},
+-		WorktreeRoot:   mustMkdir("worktree"),
+-		VerifyDir:      mustMkdir("verify"),
+-		VerifyCommand:  func(string) (string, error) { return "go test ./...", nil },
+-		StatusPath:     filepath.Join(dir, "status.json"),
+-		StatusLockPath: filepath.Join(dir, "status.json.lock"),
+-		StencilsDir:    mustMkdir("stencils"),
+-		SpecsDir:       mustMkdir("specs"),
++		Cwd:             mustMkdir("cwd"),
++		AnchorPath:      mustMkdir("anchor"),
++		ConfigDirs:      configengine.Dirs{Anchor: filepath.Join(dir, "anchor")},
++		WorktreeRoot:    mustMkdir("worktree"),
++		VerifyDir:       mustMkdir("verify"),
++		VerifyCommand:   func(string) (string, error) { return "go test ./...", nil },
++		EntryLabels:     func() ([]string, error) { return nil, nil },
++		RedFirstCommand: func(key string) string { return "lym gate red-first --gate " + key },
++		StatusPath:      filepath.Join(dir, "status.json"),
++		StatusLockPath:  filepath.Join(dir, "status.json.lock"),
++		StencilsDir:     mustMkdir("stencils"),
++		SpecsDir:        mustMkdir("specs"),
+ 		// Inside the anchor, as in production.
+ 		RunRoot:            mustMkdir("anchor/run-root"),
+ 		DecisionRecordPath: filepath.Join(dir, "decision-record.md"),
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 044209d8..9a77f3fe 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -120,6 +120,10 @@ type Env struct {
+ 	// Set, the gate runs under the reach turn and its entry carries the re-run mark of a cold fixer's wrap.
+ 	// Nil leaves the gate as it is.
+ 	VerifyReach func(gateKey string) (verifytree.ReachPending, bool, error)
++	// EntryLabels is the told reader of the run's board entry labels, read by the "red-first" gate at each arrival.
++	EntryLabels func() ([]string, error)
++	// RedFirstCommand is the told renderer of the red-first call for a row's gate key, read by the "red-first" gate.
++	RedFirstCommand func(gateKey string) string
+ 	// GateFixer is the told wrap that hands a row's gate failure to a cold fixer; nil leaves every gate as written.
+ 	// The Darn-Write, Plan-Write and Discussion-Write entries read it for a gate with a "fixer" key.
+ 	// It receives the row's complete gate spec and returns the spec the row runs.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 150d9200..145619e0 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -419,6 +419,8 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 		VerifyCommand:      func(string) (string, error) { return "go test ./...", nil },
+ 		VerifyTreeScope:    func(string) (string, bool, error) { return "", false, nil },
+ 		VerifyHold:         verifytree.NewPauseHold(pauserecord.Geometry{}, nil),
++		EntryLabels:        func() ([]string, error) { return nil, nil },
++		RedFirstCommand:    func(key string) string { return "lym gate red-first --gate " + key },
+ 		StatusPath:         filepath.Join(dir, "status.json"),
+ 		StatusLockPath:     filepath.Join(dir, "status.json.lock"),
+ 		PreflightHarden:    func() error { return nil },
+diff --git a/internal/testreach/changedfuncs.go b/internal/testreach/changedfuncs.go
+index 6b9b28ee..a9a06338 100644
+--- a/internal/testreach/changedfuncs.go
++++ b/internal/testreach/changedfuncs.go
+@@ -111,9 +111,14 @@ func ambiguousNames(sides ...[]declaredFunc) map[string]bool {
+ 
+ // declaredFuncs returns the functions of the production Go files of files that lie in the module, in path order.
+ func declaredFuncs(module Module, files FileSet) ([]declaredFunc, error) {
++	return declaredFuncsWhere(module, files, packageImportPath, func(*ast.FuncDecl) bool { return true })
++}
++
++// declaredFuncsWhere returns the functions keep accepts of the files importPath places in the module, in path order.
++func declaredFuncsWhere(module Module, files FileSet, importPath func(Module, string) (string, bool), keep func(*ast.FuncDecl) bool) ([]declaredFunc, error) {
+ 	var funcs []declaredFunc
+ 	for _, name := range slices.Sorted(maps.Keys(files)) {
+-		pkg, ok := packageImportPath(module, name)
++		pkg, ok := importPath(module, name)
+ 		if !ok {
+ 			continue
+ 		}
+@@ -126,7 +131,7 @@ func declaredFuncs(module Module, files FileSet) ([]declaredFunc, error) {
+ 		inits := 0
+ 		for _, decl := range parsed.Decls {
+ 			fn, isFunc := decl.(*ast.FuncDecl)
+-			if !isFunc {
++			if !isFunc || !keep(fn) {
+ 				continue
+ 			}
+ 			funcName := funcKeyName(fn)
+@@ -154,6 +159,13 @@ func packageImportPath(module Module, name string) (string, bool) {
+ 	if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+ 		return "", false
+ 	}
++	return directoryImportPath(module, name)
++}
++
++// directoryImportPath returns the import path of the directory that holds a file.
++// name is the file's worktree-relative slash path.
++// It reports false for a file outside the module, and for one under testdata or a directory opening with "." or "_".
++func directoryImportPath(module Module, name string) (string, bool) {
+ 	rel := name
+ 	if module.Rel != "" && module.Rel != "." {
+ 		var inside bool
+diff --git a/internal/testreach/changedtests.go b/internal/testreach/changedtests.go
+new file mode 100644
+index 00000000..c8c28c6c
+--- /dev/null
++++ b/internal/testreach/changedtests.go
+@@ -0,0 +1,95 @@
++// changedtests.go finds the test functions a diff adds or changes, from the file contents of both sides of the diff.
++
++package testreach
++
++import (
++	"go/ast"
++	"slices"
++	"strings"
++	"unicode"
++	"unicode/utf8"
++)
++
++// testFuncPrefix opens the name of every function `go test` runs as a test.
++const testFuncPrefix = "Test"
++
++// testMainName is the one Test-prefixed function `go test` runs as the binary's main, never as a test.
++const testMainName = "TestMain"
++
++// ChangedTest is one test function a diff adds or changes.
++type ChangedTest struct {
++	// Package is the import path of the directory that holds the test's file; an external test package shares it.
++	Package string
++	// File is the base name of the test's file.
++	File string
++	// Name is the test function's name.
++	Name string
++	// New is set when the base side holds no test the test matches.
++	New bool
++}
++
++// ChangedTests returns the test functions of head that are new or whose declaration text differs from base.
++// The result is sorted by package and name.
++// A test function is a top-level function of a `_test.go` file of the module.
++// Its name is `Test` and a suffix that opens with no lower-case letter, as `go test` names one; TestMain is none.
++// Both sets hold the test files of every package whose tests the caller wants compared.
++// A test is matched across the sets by package and name, whatever its file.
++// A test moved verbatim to another file is therefore unchanged.
++// A name that either side declares in more than one file of its package is matched by package, file and name instead.
++// A test only base holds is no changed test.
++// A file outside the module, or under testdata or a directory opening with "." or "_", is passed over;
++// a file that does not parse is an error naming it.
++func ChangedTests(module Module, base, head FileSet) ([]ChangedTest, error) {
++	baseTests, err := declaredFuncsWhere(module, base, testFileImportPath, isTestFunc)
++	if err != nil {
++		return nil, err
++	}
++	headTests, err := declaredFuncsWhere(module, head, testFileImportPath, isTestFunc)
++	if err != nil {
++		return nil, err
++	}
++	ambiguous := ambiguousNames(baseTests, headTests)
++	baseByID := map[string]declaredFunc{}
++	for _, fn := range baseTests {
++		baseByID[matchID(fn, ambiguous)] = fn
++	}
++	var changed []ChangedTest
++	for _, fn := range headTests {
++		before, found := baseByID[matchID(fn, ambiguous)]
++		if found && before.hash == fn.hash {
++			continue
++		}
++		changed = append(changed, ChangedTest{Package: fn.key.Package, File: fn.key.File, Name: fn.key.Func, New: !found})
++	}
++	slices.SortStableFunc(changed, func(a, b ChangedTest) int {
++		if c := strings.Compare(a.Package, b.Package); c != 0 {
++			return c
++		}
++		return strings.Compare(a.Name, b.Name)
++	})
++	return changed, nil
++}
++
++// testFileImportPath returns the import path of the directory that holds a test file.
++// name is the file's worktree-relative slash path.
++// It reports false for a file that is no test file of the module.
++func testFileImportPath(module Module, name string) (string, bool) {
++	if !strings.HasSuffix(name, "_test.go") {
++		return "", false
++	}
++	return directoryImportPath(module, name)
++}
++
++// isTestFunc reports whether fn is a function `go test` runs as a test: no receiver,
++// and a name of testFuncPrefix and a suffix that opens with no lower-case letter, bar testMainName.
++func isTestFunc(fn *ast.FuncDecl) bool {
++	if fn.Recv != nil || fn.Name.Name == testMainName {
++		return false
++	}
++	suffix, isTest := strings.CutPrefix(fn.Name.Name, testFuncPrefix)
++	if !isTest {
++		return false
++	}
++	first, _ := utf8.DecodeRuneInString(suffix)
++	return suffix == "" || !unicode.IsLower(first)
++}
+diff --git a/internal/testreach/changedtests_test.go b/internal/testreach/changedtests_test.go
+new file mode 100644
+index 00000000..ef2edabc
+--- /dev/null
++++ b/internal/testreach/changedtests_test.go
+@@ -0,0 +1,96 @@
++// changedtests_test.go tests the finder of a diff's changed test functions over in-memory file sets.
++
++package testreach_test
++
++import (
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testreach"
++)
++
++func TestChangedTests(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	module := testreach.Module{Dir: "/w/mod", Rel: "mod", Path: "ex.com/m"}
++	tests := []struct {
++		name    string
++		base    testreach.FileSet
++		head    testreach.FileSet
++		want    []testreach.ChangedTest
++		wantErr string
++	}{
++		{
++			name: "NewTestAndChangedTestAreFoundSortedByPackageAndName",
++			base: testreach.FileSet{
++				"mod/sub/s_test.go": []byte("package sub\n\nfunc TestKeep(t *testing.T) {}\n\nfunc TestBody(t *testing.T) { _ = 1 }\n"),
++			},
++			head: testreach.FileSet{
++				"mod/sub/s_test.go": []byte("package sub\n\nfunc TestKeep(t *testing.T) {}\n\nfunc TestBody(t *testing.T) { _ = 2 }\n"),
++				"mod/a_test.go":     []byte("package p_test\n\nfunc TestFresh(t *testing.T) {}\n"),
++			},
++			want: []testreach.ChangedTest{
++				{Package: "ex.com/m", File: "a_test.go", Name: "TestFresh", New: true},
++				{Package: "ex.com/m/sub", File: "s_test.go", Name: "TestBody"},
++			},
++		},
++		{
++			name: "HelpersMethodsTestMainAndLowerCaseSuffixesAreNoTests",
++			base: testreach.FileSet{},
++			head: testreach.FileSet{"mod/a_test.go": []byte("package p\n\nfunc helper() {}\n\nfunc TestMain(m *testing.M) {}\n\n" +
++				"func Testify(t *testing.T) {}\n\nfunc (s suite) TestOnSuite(t *testing.T) {}\n\nfunc Test(t *testing.T) {}\n\nfunc Test_x(t *testing.T) {}\n")},
++			want: []testreach.ChangedTest{
++				{Package: "ex.com/m", File: "a_test.go", Name: "Test", New: true},
++				{Package: "ex.com/m", File: "a_test.go", Name: "Test_x", New: true},
++			},
++		},
++		{
++			name: "TestMovedVerbatimToAnotherFileIsNotFound",
++			base: testreach.FileSet{"mod/a_test.go": []byte("package p\n\nfunc TestA(t *testing.T) {}\n")},
++			head: testreach.FileSet{"mod/b_test.go": []byte("package p\n\nfunc TestA(t *testing.T) {}\n")},
++		},
++		{
++			name: "DeletedTestIsNotFound",
++			base: testreach.FileSet{"mod/a_test.go": []byte("package p\n\nfunc TestA(t *testing.T) {}\n")},
++			head: testreach.FileSet{"mod/a_test.go": []byte("package p\n")},
++		},
++		{
++			name: "ProductionFilesAndFilesOutsideTheModuleArePassedOver",
++			base: testreach.FileSet{},
++			head: testreach.FileSet{
++				"mod/a.go":                []byte("package p\n\nfunc TestLike(t *testing.T) {}\n"),
++				"other/o_test.go":         []byte("package o\n\nfunc TestO(t *testing.T) {}\n"),
++				"mod/testdata/d_test.go":  []byte("package d\n\nfunc TestD(t *testing.T) {}\n"),
++				"mod/_hidden/h_test.go":   []byte("package h\n\nfunc TestH(t *testing.T) {}\n"),
++				"mod/.dotted/dot_test.go": []byte("package dot\n\nfunc TestDot(t *testing.T) {}\n"),
++			},
++		},
++		{
++			name:    "UnparsableTestFileIsAnErrorNamingIt",
++			base:    testreach.FileSet{},
++			head:    testreach.FileSet{"mod/bad_test.go": []byte("package p\n\nfunc TestA( {\n")},
++			wantErr: "mod/bad_test.go",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := testreach.ChangedTests(module, tt.base, tt.head)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Fatalf("ChangedTests() error = %v; want one naming %q", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("ChangedTests() error = %v; want nil", err)
++			}
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ChangedTests() = %+v; want %+v", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/testreach/doc.go b/internal/testreach/doc.go
+index 91b54f8d..a39d3498 100644
+--- a/internal/testreach/doc.go
++++ b/internal/testreach/doc.go
+@@ -19,6 +19,9 @@
+ // a function only the base holds is no changed function.
+ // A ChangedFunc keys its function as the coverage map's block keys do, `Type.Method` for a method.
+ // A file that does not parse is an error naming the file.
++// ChangedTests finds the test functions a diff adds or changes, from the `_test.go` files of the same sets.
++// A test function is a top-level `Test` function `go test` runs as a test, TestMain excepted,
++// and it is matched across the sets as a function is.
+ // ChangedLines returns the 1-based lines of a file's head text that a line diff against its base text adds or changes.
+ // An empty base marks every line, and a line only the base holds marks none.
+ // A rewritten stretch too large for the diff's table marks every head line of the stretch.
+diff --git a/internal/verifytree/verify.go b/internal/verifytree/verify.go
+index 528c7f65..d3f457fe 100644
+--- a/internal/verifytree/verify.go
++++ b/internal/verifytree/verify.go
+@@ -307,7 +307,7 @@ func parsePorcelainZ(out string) []string {
+ // Once the log is written, whatever the exit, every log beyond the newest verifyLogKeep is pruned.
+ // The log the landing failure record names is kept.
+ // A prune failure is logged and leaves the result unchanged.
+-// The command is one `lym gate test --wait` call, or such calls joined by `&&`.
++// The command is one `lym gate test --wait` call, or such calls joined by `&&`, or one `lym gate red-first` call.
+ // Those calls take their own slots and bound themselves, so Verify takes no slot and applies no timeout.
+ // The pass writes the record only when HEAD still names the tree and commit the run started on,
+ // so a commit that lands mid-run costs the next call a re-run rather than recording a tree the command did not run on.
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index 0bc1085c..384765ae 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -87,13 +87,16 @@ the `round` gate's at the Webster-Burler-Fix round gate;
+ the `landing` gate's at Parent-Align, Finalize, Code-Burler-Fix and Darn-Write.
+ 
+ - `Verify` takes no gate slot and applies no timeout:
+-  its command is `lym gate test --wait` calls, which take their own slots and bound themselves.
++  its command is `lym gate test --wait` calls, or the `lym gate red-first` call, which take their own slots and bound themselves.
+ - No site verifies a dirty tree: `Verify` refuses one with its paths before running anything.
+ - Records are per command, each entry with its tree and its commit;
+   a skip requires an entry of the same command naming HEAD's tree.
+ - The record is written only by `Verify`, and only after a pass; no prompt names its path.
+ - The sites are the webster gate, the Webster-Burler-Fix gate and `lym webster verify`.
+   They also include the Code-Burler-Fix, Darn-Write, Harden-Burler-Fix and Drift-Verify gates, Parent-Align and Finalize.
++- The Darn-Write red-first gate is a site too:
++  it runs the `lym gate red-first` call that `gateslot.RedFirstCall` renders for the `darn-write` key through `verifytree.Verify` under the verify hold.
++  That call takes its slots through the in-process tier run, as a `lym gate test --wait` call does.
+ - Weaver's plan-level verify, `runVerify`, is a site too: it runs the hub's `webster` call through `verifytree.Verify` under the geometry's pause hold.
+ - Weaver's batch strand gates are sites too:
+   the `card` and `batch` entries of `batchGateSpec` each run their call through `verifytree.Verify` under the geometry's pause hold.
