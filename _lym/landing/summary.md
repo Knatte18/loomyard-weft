@@ -1,66 +1,59 @@
-# Settings to send code review and drift judge rulings to the run's parent
+# Route code review and drift judge rulings to the run's parent
 
-Before this change, a run's parent could be asked by setting only at PR-Review (`pr_review_ask_parent`) and Discussion-Review (`discussion_review_ask_parent`).
-Two new settings now route the Code-Review perch's and the drift judge's rulings to the parent orch.
-Both are off by default and settable per task in `run_settings`.
+A run's parent orch can now see and veto every Code-Review round and every drift judge ruling by configuration.
+Before, only `pr_review_ask_parent` and `discussion_review_ask_parent` existed, so a darn run, which has no Discussion, reached its parent only through escalated decision calls or a hand-written creel instruction.
 
-## Code-Review: `code_review_ask_parent`
+Closes #153
 
-The review row's parent seat (`shedadapters.ParentReviewSeat`) used to be Discussion-Review only.
-It now takes a line tag, a subject and an `AskEachRound` switch, and `loomcli.parentSeats` builds a seat for each of the two segments.
+## What changes
 
-- With `code_review_ask_parent` on in `loom.yaml`, every Code-Review round mails the parent orch a `[code-review request]` line, signed as `<shortname>:LOOM`.
-  The line names the task worktree, and from round 2 on also the previous round's review and fixer report.
-  It also names the deadline and `lym loom parent-review answer <slug> --ask <n>`.
-- As with Discussion-Review, the round's chair waits with `lym loom parent-review await` and keeps every parent finding as `origin: parent`.
-  The parent-coverage gate holds the review to each report id, the fixer fixes the findings, and the Bouncer judges the round.
-- `code_review_parent_timeout_min` (default 30) sets the deadline.
-  `loomengine.CapParentReviewWait` now takes the perch and caps this wait against `review_timeout_min` the same way as the discussion key.
-- The Discussion-Review tag is renamed to `DiscussionParentAskLineTag`, and its line text is byte-for-byte unchanged.
+Four new keys, all off by default and all settable in a task's `run_settings`:
 
-## Drift judge: `judge_ask_parent`
+- `code_review_ask_parent` and `code_review_parent_timeout_min` in `loom.yaml` (timeout default 30, at least 1).
+  Once a round's fixer report exists, and before the round's Bouncer judges it, lym mails the parent a `[code-review request]`.
+  The line names the slug, round, ask number, worktree, the round's own review and fixer report, the deadline and the answer verb.
+  The parent answers with `lym loom parent-review answer` (satisfied, or a findings file).
+- `judge_ask_parent` and `judge_parent_timeout_min` in `drift.yaml` (timeout default 30, at least 1), set per run as `{"drift": {"judge_ask_parent": true}}`.
+  Once the judge's `judgement.yaml` parses, lym mails a `[drift-judge request]` with the file path and a summary.
+  The summary counts cells and files by ruling and names each non-matching cell, each case and each file with an uncaused loosened check.
+  The parent agrees, or names the rulings to change.
 
-With `drift.yaml`'s `judge_ask_parent` on, Drift-Verify (and Drift-Recheck) adds a `parent-agreement` gate entry to the judge's table, after the `judgement` entry (`driftengine.ParentAgreementGateEntry`).
-
-- The first time a judge spawn's turn ends with a judgement.yaml that parses, the entry records an ask in the same never-tracked ask record the review rows use.
-  The ask's seed names the spawn id.
-  The entry mails the parent one `[drift-judge request]` line naming judgement.yaml and a summary of the rulings.
-  The summary counts cells and files by ruling, and names each cell that does not match, each case and each file with an uncaused check.
-- The entry fails, telling the judge to wait with `lym loom parent-review await`, until the ask ends.
-  A report with findings (rulings the parent wants changed) holds the judge until judgement.yaml is rewritten after the answer.
-  A satisfied report, a timeout, or an ask that never reached the parent passes.
-- `judge_parent_timeout_min` (default 30) sets the deadline.
-  Once a spawn holds an ask, the entry stays on whatever the key now reads.
-
-`contracts/orchrole/orch-role.md` gains a section for each new request, and `lym loom parent-review`'s help no longer says Discussion-Review only.
+`contracts/orchrole/orch-role.md` gains a section for each request, and `docs/overview.md` describes the code review keys.
 
 ## Design decisions
 
-- **The code-review ask goes out at round start, beside the reviewer, not between the fixer and the Bouncer.**
-  The issue asked for the ask to name the round's review and fixer report and to wait before the Bouncer judges.
-  This change reuses the Discussion-Review machinery instead: the ask record, the answer/await verbs, chair consolidation, the coverage gate and the capped deadline.
-  To keep the parent seeing each ruling, every round's ask names the previous round's review and fixer report.
-  The trade-off: the last round's fixer report goes out with no later ask, so the parent never sees it before the Bouncer approves.
-  A wait before the Bouncer would need the Bouncer to take in parent findings that arrive after the fixer, which no current path supports.
-- **The drift keys are `judge_ask_parent` and `judge_parent_timeout_min` in `drift.yaml`, not `drift_judge_ask_parent`.**
-  This follows the module's naming of `judge_model` and `judge_interactive`.
-  Per task they are set as `{"drift": {"judge_ask_parent": true}}`.
-- **The drift ask names a summary, not every cell.**
-  Every ruling and its reason is in judgement.yaml, whose path the line names.
-- **Bounds.**
-  The drift entry checks that the judge rewrote judgement.yaml after a report with findings, not that it applied each one.
-  The drift deadline is not capped by the judge's own timeout.
-  A judge that times out while waiting is resumed under the same spawn, which still holds its ask.
+- **Code review.**
+  The Bouncer's judge waits with `lym loom parent-review await`.
+  The wait is a stencil fragment, `bouncer-fragment-parent-review`, that `judgeCall` appends to the judge prompt.
+  Every finding in a parent report stands as an open finding of the round, so the next round's reviewer carries it.
+  lym refuses a `CONVERGED` verdict while the parent's report holds findings.
+  The deadline is capped to end before the judge's own `run_timeout_min`, measured from the judge run's start.
+  A cap that leaves no room sends no ask.
+- **Drift judge.**
+  A new `parent-agreement` gate entry follows the `judgement` entry in Drift-Verify and runs over the new `Deps.JudgeParent` seat (`internal/driftengine/judgeparent.go`).
+  The ask records a digest of the parsed rulings it presented.
+  A judgement changed after the ask gets a new ask naming the new rulings, and an ask still open is set timeout.
+  A satisfied answer to the current rulings, a timeout, or an ask that never reached the parent passes.
+  A `does not match` ruling or an uncaused check still stops the run for the parent.
+  The entry checks that the judge changed its rulings after the parent's findings, not that it took each one.
+- **Key names.**
+  The drift keys are `judge_ask_parent` and `judge_parent_timeout_min`, not `drift_judge_ask_parent`, since they live in `drift.yaml`.
+- **Guard.**
+  All four keys stay open to `run_settings`.
+  `pattern/PATTERN-config-layers.md` gets a written exception: a key that only adds an ask to the parent, and the timeout bounding that wait, is not a Guard key.
+  Unset or expired, it leaves the run's own gates as they are.
+- **Shared seat.**
+  The parent-seat wiring in `internal/loomcli` and `internal/shedadapters` is generalised so the discussion, code review and drift asks share one ask record and one answer path.
+  An untagged ask reads as the discussion seat's.
 
-## Tests
+## To check by hand
 
-- `internal/shedadapters`: a new test shows that a seat asking each round asks again after a satisfied round, with the line naming the previous round's review and fixer report.
-  The existing asking-rule and line tests now use the new seat fields.
-- `internal/loomcli`: placement covers both seats on their own segments, and `askParentSetting` reads the key it is given.
-- `internal/loomengine`: new rows cover the code keys' defaults, their override and the timeout refusal.
-  `CapParentReviewWait` gets code-perch rows.
-- `internal/driftengine`: `TestParentAgreementGate` covers no ask, open, past deadline, satisfied, findings before and after the rewrite, no parent and a failed post.
-  `TestJudgeAskLine` and `TestJudgementSummary` pin the line and the summary.
-  New config rows cover the judge keys.
-
-I compiled and vetted these packages, but I did not run the tests in this session: the verify gate runs them on the committed tree.
+- No regression check ran, and no run with a live parent has exercised the two new mails end to end.
+  Run a darn task with `code_review_ask_parent` on and one with `judge_ask_parent` on, answer each request, and confirm the run proceeds.
+  Also let one time out and confirm the run continues without the parent.
+- The code review ask must name the round's own review and fixer report (`code-ask-misses-rounds-own-review`, `internal/burlerengine/parentreview.go`, `internal/shedadapters/bouncer.go`).
+  A review left this open, so confirm the mail names `round-N-review.md` and `round-N-fixer-report.md` of the round that sent it, not an earlier one.
+- The judge's parent-review section must come from the stencil fragment alone, with no copy embedded in Go (`judge-parent-block-embedded-in-go`, `internal/shedadapters/bouncer.go`).
+  A review left this open, so check that no prompt text for it remains in the Go source.
+- The parent wait must not outlive the judge (`judge-parent-wait-outlives-judge`, `internal/shedadapters/bouncer.go` and `internal/driftengine/judgeparent.go`).
+  A review left this open, so check that both deadlines are capped by the judge run's own start and `run_timeout_min`.
