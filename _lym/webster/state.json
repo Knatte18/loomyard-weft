@@ -271,9 +271,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-board-viewer-server/3edfb2af-f893-4751-a054-d101999d586e/subagents/agent-a4e510641d36e631a.jsonl"
       ]
+    },
+    "5": {
+      "slug": "board-server-lifecycle",
+      "cards": [
+        "05-board-server-lifecycle",
+        "06-board-serve-open-verbs"
+      ],
+      "cardHashes": {
+        "05-board-server-lifecycle": "f4e4a0706b76f7e7453c169e27bc92dbb4384929321e6898c22eb42e81958940",
+        "06-board-serve-open-verbs": "91ca641825b4fe0d5cc65980aae472c8de20cf540a1a365edd329a8c09e681e6"
+      },
+      "startSha": "adbe98d33a3e3093993c2bfd2c2f3ca7d0340636",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T17:46:39Z",
+      "sessionId": "3edfb2af-f893-4751-a054-d101999d586e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "473e153b662b7e2cba7f0309927cd454",
   "masterSessionId": "3edfb2af-f893-4751-a054-d101999d586e",
   "masterEngine": "claude",
