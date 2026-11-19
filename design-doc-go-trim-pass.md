@@ -2,7 +2,7 @@
 
 `doc-go-trim-pass` · Task · enhancement, docs · draft
 
-Depends on: [`hardener-campaign`](design-hardener-campaign.md)
+Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md), [`hardener-campaign`](design-hardener-campaign.md)
 
 ## What was measured (2026-11-18, `comment-trim-second-pass`)
 
