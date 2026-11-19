@@ -2,6 +2,7 @@
   "current_producer": "Raddle-File",
   "state": "failed",
   "error": "loomshed: Raddle-File: file the proposal: file entry \"single-repo-records-on-code-removal\": slug exceeds max length of 32 characters: \"single-repo-records-on-code-removal\" (35 chars); way forward: the fault is transient, re-step the Raddle-File row",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Raddle-File",
