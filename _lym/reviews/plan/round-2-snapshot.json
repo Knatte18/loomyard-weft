@@ -1,0 +1,25 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "721652eef52051aa38f0ecc17f949e2303ca98ca14228ed08ea88ea6899e3b3f",
+  "added_decisions": [
+    {
+      "title": "D8's rationale quotes the 2026-10-16 treadle note as written",
+      "digest": "45d5a9fcd58ed1cd4012fa6a72cbb34552a785761b72735af55a288a965f143d"
+    },
+    {
+      "title": "Delete treadle when Hardener is built (F10)",
+      "digest": "01f072ecfaa58b9e834f7b742c52d9a5a810d615fb154176588b27899bc78125"
+    },
+    {
+      "title": "The 2026-11-18 operator treadle entry supersedes the arbiter's D8 rationale text",
+      "digest": "5aec91ed445e7c96b3577ecb8288befe996217d434276f64efe00f573e16cdbf"
+    },
+    {
+      "title": "Hub gate keys are operator writes after landing",
+      "digest": "745162106d945088b24ce9743cb4086a351d08779a8081f7e9ea17917a8cb131"
+    }
+  ]
+}
