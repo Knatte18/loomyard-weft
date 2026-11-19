@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 19:40 UTC; every age below is as of then.
+Rendered 2026-11-19 19:42 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -29,7 +29,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>19m | fabric, loom, board |
+| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | T9 | 1d<br>20m | fabric, loom, board |
 
 #### Layer B (1)
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>36m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>38m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -133,7 +133,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
 
 Owner `neve`
 
@@ -147,7 +147,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | Darn-Write | neve | 1h<br>6m | shed |
+| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | Darn-Write | neve | 1h<br>8m | shed |
 
 #### Ready (0)
 
@@ -155,7 +155,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (11)
+### Notes (12)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -170,18 +170,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **hardenshed reaper misses orphans whose cwd is under a _lym link** | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 0m<br>0m | shed, process |
-| B2 |  | **lym gate test: unexplained test-host crash and false 'ran no test' verdict with a detailed console logger** | [`gate-verdict-from-trx`](design-gate-verdict-from-trx.md) | 0m<br>0m | gate, dotnet |
-| B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 0m<br>0m | stencil, darn, gate |
-| B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 0m<br>0m | landing |
-| B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 0m<br>0m | webster, gate |
-| B6 |  | **Flaky verify failure in internal/reedcli on the first integration-suite run** | [`reedcli-flaky-verify`](design-reedcli-flaky-verify.md) | 0m<br>0m | reed |
+| B1 |  | **hardenshed reaper misses orphans whose cwd is under a _lym link** | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 1m<br>1m | shed, process |
+| B2 |  | **lym gate test: unexplained test-host crash and false 'ran no test' verdict with a detailed console logger** | [`gate-verdict-from-trx`](design-gate-verdict-from-trx.md) | 1m<br>1m | gate, dotnet |
+| B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 1m<br>1m | stencil, darn, gate |
+| B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 1m<br>1m | landing |
+| B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 1m<br>1m | webster, gate |
+| B6 |  | **Flaky verify failure in internal/reedcli on the first integration-suite run** | [`reedcli-flaky-verify`](design-reedcli-flaky-verify.md) | 1m<br>1m | reed |
 
-#### Enhancements (1)
+#### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 0m<br>0m | burler, stencil |
+| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 1m<br>1m | burler, stencil |
+| E2 |  | **Slow gate tier's COMMONLIB_REPO differs from the session's, with no warning** | [`gate-env-override-warning`](design-gate-env-override-warning.md) | 0m<br>0m | gate, dotnet |
 
 #### Features (2)
 
