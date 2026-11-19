@@ -1,6 +1,0 @@
-verdict: escalate
-reason: |
-  The stop is blocked at Worktree-Create (step 1 of 8). Its reason is the held board lock that deferred the board push, leaving the board ahead of origin, and the way forward it names is `lym board sync`, then re-running the verb.
-  Attempt 1 already resumed this stop with goto Worktree-Create, and the same board reason came back unchanged on re-step at 10:29:02, so a second resume is not allowed.
-  The driver already ran the board sync (detached, 10:28:46). The records side landed: origin main-weft equals the local tip 9744e0d. But the board commit 262c5f17 is still local-only in _bolt (`main...origin/main [ahead 1]`), and the trace shows origin main moving under the push (two "remote rejected ... expected" lines), so the cause of the unpushed board commit is not settled from what I read.
-  I cannot name the cause from what I read, and a hand-back has no parent to address, since none is recorded for this run. The case brief is at _lym/shed/mutation-report-step/tackler/attempt-2/case-brief.md.
