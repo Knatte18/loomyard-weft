@@ -39,5 +39,6 @@
       "title": "Opener waited on through cmd.Wait, not proc.Reap",
       "digest": "6bcaa89053c6d46a826c0f12f12ea1174c892659dc1107da7b8ce0146cb266ae"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
