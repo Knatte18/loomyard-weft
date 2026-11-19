@@ -1,6 +1,6 @@
 # Burler review round fails hard on invalid review-file YAML frontmatter
 
-`review-frontmatter-hard-fail` · Task · bug, burler, shed
+`review-frontmatter-hard-fail` · Task · bug, burler, shed · starting · Worktree-Create
 
 Imported from [issue #151](https://github.com/Knatte18/loomyard/issues/151).
 
