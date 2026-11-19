@@ -1,14 +1,14 @@
 # Card 9 — reach-turn
 
 **Create:**
-- `plan:internal/shuttleengine#RerunMark.On` -> `func (m *RerunMark) On() bool`
-- `plan:internal/verifytree#ReachPending` -> `type ReachPending struct`
-- `plan:internal/verifytree#ReachTurn` -> `type ReachTurn struct`
-- `plan:internal/verifytree#WithReachTurn` -> `func WithReachTurn(inner shuttleengine.Gate, turn ReachTurn) shuttleengine.Gate`
-- `plan:internal/verifytree#ReachListedPath` -> `func ReachListedPath(verifyDir, site string) string`
-- `plan:internal/verifytree#TestWithReachTurn` -> `func TestWithReachTurn(t *testing.T)`
-- `plan:internal/gatecli#ReachPendingOf` -> `func ReachPendingOf(location *lymcwd.Location) func(gateKey string) (verifytree.ReachPending, bool, error)`
-- `plan:internal/weaverengine#TestBatchGateSpec_ReachTurnOnTheBatchEntry` -> `func TestBatchGateSpec_ReachTurnOnTheBatchEntry(t *testing.T)`
+- `internal/shuttleengine#RerunMark.On`
+- `internal/verifytree#ReachPending`
+- `internal/verifytree#ReachTurn`
+- `internal/verifytree#WithReachTurn`
+- `internal/verifytree#ReachListedPath`
+- `internal/verifytree#TestWithReachTurn`
+- `internal/gatecli#ReachPendingOf`
+- `internal/weaverengine_test#TestBatchGateSpec_ReachTurnOnTheBatchEntry`
 
 **Edit:**
 - `internal/shedrecipe#Env`
