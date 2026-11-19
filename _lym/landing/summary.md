@@ -25,7 +25,10 @@ so such a slug fails the Raddle-Write gate, `raddle-propose` and `raddle-approve
 
 - `TestCheck` gains rows for a refused part slug, a refused project slug, and a context with no slug rule.
 - `TestCheck_DependsOnNoteDetailNamesTheWayForward` became the table `TestCheck_DetailNamesTheWayForward`, with a row pinning the `slug-invalid` way forward.
-- `TestRaddleBoardContext` asserts the forged hub's context admits a 32-character slug and refuses a 33-character slug, `root` and a slug with the weft suffix.
+- `TestRaddleBoardContext` asserts the forged hub's context admits a 32-character slug and refuses a 33-character slug, `root` and a slug the pair slug rule refuses.
+- The new `TestCheck` rows and `TestRaddleBoardContext` fail on the merge base.
+  The red-first gate is waived by the recorded decision "No test seam for the red-first overlay":
+  its base overlay cannot put back the changed spec file, a limit filed as the board note `red-first-overlay-non-go-files`.
 
 ## Merge danger
 
