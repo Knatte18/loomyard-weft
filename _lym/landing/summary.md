@@ -1,27 +1,30 @@
-# pr-findings: wire the landing seams before reading the send-back edge
+# Wire landing seams before pr-findings builds its shed
 
-`lym loom pr-findings` failed on every valid findings file with
-`loomrecipe: shedbuild: producer 13 "Finalize": landingshed: NewFinalize: Deps.OpenFabric must not be nil`.
-To learn whether the PR-Review row's send-back edge can fire,
-the verb builds the run's shed and reads the row's reroute target from it.
-It built that shed over an `Env` whose `Landing` deps were never filled.
-Only `wireLanding` fills them, and only the `run` and `step` building paths called it.
-So the landing rows' constructors refused to build.
+`lym loom pr-findings` failed on every findings file with `landingshed: NewFinalize: Deps.OpenFabric must not be nil`.
+The verb reads the PR-Review row's send-back edge from the run's shed, and it built that shed without wiring the landing seams.
+The recipe's landing rows, Finalize among them, refuse to build with those seams unset.
+The verb now wires them first, so the findings round runs.
 
-## Change
+Closes #155
 
-- `internal/loomcli/prfindings.go`: the edge closure becomes the method `prReviewSendBackEdge`.
-  It calls `wireLanding` before `newShed`, the same order `buildLoomShed` uses.
-  It does not reuse `buildLoomShed`, which also ties the shuttle runner to a loop step
-  and opens a pawl run's land-request watch.
-  pr-findings is no step and needs neither.
-  A recipe with no PR-Review row still answers without opening the fabric.
-- `internal/loomcli/doc.go`: names pr-findings among the callers of `wireLanding`,
-  and says the verb reads the edge from a shed built with the landing seams wired.
+## Changes
 
-## Tests
+- `internal/loomcli/prfindings.go`: the edge closure moves into `(*loomCLI).prReviewSendBackEdge`.
+  After it finds the recipe's PR-Review row, it calls `wireLanding` and only then `newShed`.
+  A recipe with no PR-Review row still answers that the edge cannot fire, without wiring anything.
+- `internal/loomcli/prfindings_integration_test.go`: a new test runs `pr-findings` through the real cobra tree in a real hub pair.
+  It feeds a BLOCKING findings file on a tapestry run and asserts the answer carries `send_back: true`.
+- `internal/loomcli/doc.go` and the comment in `wireLanding`: both name the send-back edge as a third path through `wireLanding`, beside `run` and `step`.
 
-`TestPRReviewSendBackEdge_BuildsTheShedOfAWiredRun` (tier 1, new) wires a tapestry run over a real hubforge pair.
-It asserts that `prReviewSendBackEdge` answers true with no reason and no error.
-Without the `wireLanding` call, the edge builds the shed from an `Env` that has no landing deps, the path the reported error came from.
-The unit tests of `prFindingsVerb` inject a fake edge, so they could not catch the missing wiring.
+## Design decisions
+
+- The fix wires the seams at the edge, not in the shared shed construction, so `status` and `pause` still never pass through `wireLanding`.
+- `wireLanding` also opens the sampler row's watch on its record.
+  The edge's process exits right after it reads the shed, so that watch is never waited on.
+
+## To check
+
+- The regression test must reach the verb itself, not a helper beside it.
+  An earlier version of the test bypassed the verb; it now calls the verb through the cobra tree with `clihelp.ExecuteIn`.
+  Confirm it fails when the `wireLanding` call in `prReviewSendBackEdge` is removed.
+- Nothing was run by hand against a live darn run.
