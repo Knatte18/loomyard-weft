@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 11:44 UTC; every age below is as of then.
+Rendered 2026-11-19 11:45 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -132,7 +132,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **pr-findings fails: NewFinalize Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | darn · light | Code-Burler-Review | neve | 23m<br>23m | loom, landing |
+| T2 | **pr-findings fails: NewFinalize Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | darn · light | Code-Burler-Fix | neve | 23m<br>23m | loom, landing |
 | T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | Darn-Write | neve | 15h<br>2h | landing, darn |
 | T8 | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | darn · light | Darn-Write | neve | 2h<br>53m | shuttle, shed |
 | T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | Darn-Write | neve | 2h<br>28m | loom, drift, burler |
