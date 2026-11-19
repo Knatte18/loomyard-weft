@@ -128,7 +128,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -149,7 +149,15 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **A shell -c script that removes files stalls a run on a permission dialog**<br>• The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`shellguard-sh-c-rm-prompt`](design-shellguard-sh-c-rm-prompt.md) | darn · light |  | 1h<br>0m | process |
 
-### Notes (5)
+#### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **A hardenshed test leaves .lock in the package directory**<br>• A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardenshed-test-stray-lock`](design-hardenshed-test-stray-lock.md) | darn · light |  | 17m<br>0m | gate |
+
+### Notes (4)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -159,12 +167,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B2 |  | **A hardenshed test leaves .lock in the package directory**<br>• A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardenshed-test-stray-lock`](design-hardenshed-test-stray-lock.md) | 17m<br>0m | gate |
 
 #### Features (2)
 
