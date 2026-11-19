@@ -1,17 +1,17 @@
 # Card 8 — sandbox-reaper
 
 **Create:**
-- `plan:internal/reedengine#StopServer` -> `func StopServer(tmuxPath, hubPath string) (bool, error)`
-- `plan:internal/reedengine#TestStopServer` -> `func TestStopServer(t *testing.T)`
-- `plan:internal/hardenshed#ReapPoint` -> `type ReapPoint string`
-- `plan:internal/hardenshed#ReapStart` -> `const ReapStart ReapPoint = "start"`
-- `plan:internal/hardenshed#ReapEnd` -> `const ReapEnd ReapPoint = "end"`
-- `plan:internal/hardenshed#ReapHalt` -> `const ReapHalt ReapPoint = "halt"`
-- `plan:internal/hardenshed#ReapClear` -> `const ReapClear ReapPoint = "clear"`
-- `plan:internal/hardenshed#StrayEntry` -> `type StrayEntry struct`
-- `plan:internal/hardenshed#ReapDeps` -> `type ReapDeps struct`
-- `plan:internal/hardenshed#Reap` -> `func Reap(deps ReapDeps) ([]StrayEntry, error)`
-- `plan:internal/hardenshed#TestReap` -> `func TestReap(t *testing.T)`
+- `internal/reedengine#StopServer`
+- `internal/reedengine#TestStopServer`
+- `internal/hardenshed#ReapPoint`
+- `internal/hardenshed#ReapStart`
+- `internal/hardenshed#ReapEnd`
+- `internal/hardenshed#ReapHalt`
+- `internal/hardenshed#ReapClear`
+- `internal/hardenshed#StrayEntry`
+- `internal/hardenshed#ReapDeps`
+- `internal/hardenshed#Reap`
+- `internal/hardenshed#TestReap`
 
 **Edit:**
 - `PATTERN.md`

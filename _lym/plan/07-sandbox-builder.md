@@ -1,15 +1,15 @@
 # Card 7 — sandbox-builder
 
 **Create:**
-- `plan:internal/lymdirs#HardenSandboxDirName` -> `const HardenSandboxDirName = "harden-sandbox"`
-- `plan:internal/fabricengine#SeedLocalBares` -> `func SeedLocalBares(dir string) (warp, weft string, err error)`
-- `plan:internal/fabricengine#TestSeedLocalBares` -> `func TestSeedLocalBares(t *testing.T)`
-- `plan:internal/hardenshed#SandboxRoot` -> `func SandboxRoot(worktreeRoot string) string`
-- `plan:internal/hardenshed#SandboxDeps` -> `type SandboxDeps struct`
-- `plan:internal/hardenshed#SandboxHub` -> `type SandboxHub struct`
-- `plan:internal/hardenshed#NewSandbox` -> `func NewSandbox(deps SandboxDeps) (SandboxHub, error)`
-- `plan:internal/hardenshed#ListSandbox` -> `func ListSandbox(root string) ([]string, error)`
-- `plan:internal/hardenshed#TestNewSandbox` -> `func TestNewSandbox(t *testing.T)`
+- `internal/lymdirs#HardenSandboxDirName`
+- `internal/fabricengine#SeedLocalBares`
+- `internal/fabricengine_test#TestSeedLocalBares`
+- `internal/hardenshed#SandboxRoot`
+- `internal/hardenshed#SandboxDeps`
+- `internal/hardenshed#SandboxHub`
+- `internal/hardenshed#NewSandbox`
+- `internal/hardenshed#ListSandbox`
+- `internal/hardenshed#TestNewSandbox`
 
 **Extends:**
 - `internal/lymdirs/doc.go`

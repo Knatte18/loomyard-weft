@@ -1,6 +1,6 @@
 {
   "runGuid": "6b7dece764a9513a79cfad773a871c49",
-  "planFingerprint": "6787d9d27d729a774aadf86b1dcf97d7cd2d5026803cb746776b319f9a5f14e8",
+  "planFingerprint": "1a688d3f3b370c4e768357b42558d2dcd4e101c98b9db10ce554dc2549a11ef2",
   "planFileHashes": {
     "00-overview.md": "b3a010a1548e9e4d44d52cc5c3c76f8c8cc3a7bfb6afc030b4feef8fe007dfe1",
     "01-gate-copies.md": "c8f68da5a3900d94b745ec15c1d5851557697977caff551acfb5dd09fe537fbd",
@@ -8,9 +8,9 @@
     "03-hardener-config.md": "3a05566b12c3e0c19dbd6132b0727ed3e808a025d54ae91b1ee16a12f36c299c",
     "04-loom-contract-segmented-build.md": "84877e020714a28170b41065fb78b35dd634f6dd3aa1901f4d10a42239f20e1d",
     "05-campaign-preflight.md": "f8b3405fb4506ed77c333596a79fd71ddc304acf12e465124570c23ceec1266d",
-    "06-live-gate.md": "def88dfa33eafcf0d43123fb72cfd20bfba567e3ec06d68d74e31dae6f17ab2e",
-    "07-sandbox-builder.md": "b67687940a2563e0246ba13ec891a322cb46702885a31f629ef5f771c11dcd39",
-    "08-sandbox-reaper.md": "69de5639cd27ef0b93c3ee8c66efe38f429ca8c9d607d90b304098f1c3c8e2dc",
+    "06-live-gate.md": "bbac65862cfb9782a3e693c596c6bb47b71d711f1838487189e5dcd4f7251020",
+    "07-sandbox-builder.md": "bb40bf7b8b15d79ad089aa143dc571afa179c0a92fe7fb3ca9ca783bccaab522",
+    "08-sandbox-reaper.md": "0d5c5d10309e969cf787bb3ddbbbe157a13428ff174227e5036f166f70a7e1e7",
     "09-round-row.md": "17050c6de70188b023bce038256cd4c5d81bb83c9151b2005f0c4306f7b8dca7",
     "10-bouncer-harden-seams.md": "9a5959a50a7606627a077541e50a1659489f579f24a12ad648c3a79c1d58c7ca",
     "11-harden-rows.md": "970ef9ad567108465a44ccec06ea98b208a6541b80a742372073fdbb81bf254e",
@@ -650,24 +650,49 @@
         "08-sandbox-reaper"
       ],
       "cardHashes": {
-        "06-live-gate": "def88dfa33eafcf0d43123fb72cfd20bfba567e3ec06d68d74e31dae6f17ab2e",
-        "07-sandbox-builder": "b67687940a2563e0246ba13ec891a322cb46702885a31f629ef5f771c11dcd39",
-        "08-sandbox-reaper": "69de5639cd27ef0b93c3ee8c66efe38f429ca8c9d607d90b304098f1c3c8e2dc"
+        "06-live-gate": "bbac65862cfb9782a3e693c596c6bb47b71d711f1838487189e5dcd4f7251020",
+        "07-sandbox-builder": "bb40bf7b8b15d79ad089aa143dc571afa179c0a92fe7fb3ca9ca783bccaab522",
+        "08-sandbox-reaper": "0d5c5d10309e969cf787bb3ddbbbe157a13428ff174227e5036f166f70a7e1e7"
       },
       "startSha": "9a3a421dc00528dd6348f99a9cc55ca907ea05f3",
       "kind": "fork",
       "spawnedAt": "2026-11-19T14:50:18Z",
       "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-live-gate",
+        "status": "done",
+        "head_sha": "bcba7793bcfbfa317007c22504cdc904bc5c06ae",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/seedlocalbares.go",
+          "internal/fabricengine/seedlocalbares_integration_test.go",
+          "internal/hardenshed/live.go",
+          "internal/hardenshed/reap.go",
+          "internal/hardenshed/reap_test.go",
+          "internal/hardenshed/sandbox.go",
+          "internal/hardenshed/sandbox_test.go"
+        ]
+      },
+      "cardShas": [
+        "bcba7793bcfbfa317007c22504cdc904bc5c06ae"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl"
+      ]
     }
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl"
   ]
 }

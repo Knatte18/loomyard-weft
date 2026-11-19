@@ -1,12 +1,12 @@
 # Card 6 — live-gate
 
 **Create:**
-- `plan:internal/hardenshed#LiveDeps` -> `type LiveDeps struct`
-- `plan:internal/hardenshed#LiveRun` -> `type LiveRun struct`
-- `plan:internal/hardenshed#LiveReport` -> `type LiveReport struct`
-- `plan:internal/hardenshed#NewLiveGate` -> `func NewLiveGate(deps LiveDeps) shuttleengine.Gate`
-- `plan:internal/hardenshed#ReadLiveReport` -> `func ReadLiveReport(runDir string, round int) (LiveReport, bool, error)`
-- `plan:internal/hardenshed#TestLiveGate` -> `func TestLiveGate(t *testing.T)`
+- `internal/hardenshed#LiveDeps`
+- `internal/hardenshed#LiveRun`
+- `internal/hardenshed#LiveReport`
+- `internal/hardenshed#NewLiveGate`
+- `internal/hardenshed#ReadLiveReport`
+- `internal/hardenshed#TestLiveGate`
 
 **Extends:**
 - `internal/hardenshed/doc.go`
