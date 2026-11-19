@@ -1,6 +1,6 @@
 # Bug runs prove their test was red before the fix, and name the root cause in a trailer
 
-`bug-red-first-gate` · Task · enhancement, gate, testmap · running · Drift-Recheck
+`bug-red-first-gate` · Task · enhancement, gate, testmap · running · Describe
 
 Source: `docs/research/survey/pocock-skills-2026-11-19/report.md` (survey of Matt Pocock's skills repository, 2026-11-19), candidate 2, which holds the design.
 
