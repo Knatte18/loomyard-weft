@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 16:52 UTC; every age below is as of then.
+Rendered 2026-11-19 17:00 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>13m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>21m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-single-repo-hub.md">P4 Single-repository hubs: records on each code branch, the board on lym-bolt</a> (1)</strong></summary>
 
-[`single-repo-hub`](design-single-repo-hub.md) · Age 20h · Owner `neve`
+[`single-repo-hub`](design-single-repo-hub.md) · Age 21h · Owner `neve`
 
 ### Tasks (0)
 
@@ -138,7 +138,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key** | [`board-viewer-server`](design-board-viewer-server.md)<br>[Sketch](decision-board-viewer-server.md) | tapestry · solid | Plan-Write | neve | 14m<br>14m | board, ide, fabric, process, cwd |
+| T3 | **Board viewer page with live editing through a loopback board server, opened by lym board open and a VS Code key** | [`board-viewer-server`](design-board-viewer-server.md)<br>[Sketch](decision-board-viewer-server.md) | tapestry · solid | Plan-Bouncer | neve | 22m<br>22m | board, ide, fabric, process, cwd |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Parent-Align | neve | 7h<br>5h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 #### Ready (0)
@@ -170,7 +170,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A shell -c script that removes files stalls a run on a permission dialog**<br>• The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers | [`shellguard-sh-c-rm-prompt`](design-shellguard-sh-c-rm-prompt.md) | 10m<br>10m | process |
+| B1 |  | **A shell -c script that removes files stalls a run on a permission dialog**<br>• The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers | [`shellguard-sh-c-rm-prompt`](design-shellguard-sh-c-rm-prompt.md) | 18m<br>18m | process |
 
 #### Features (2)
 
