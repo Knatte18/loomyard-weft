@@ -584,7 +584,7 @@
       "isolated": false,
       "brief": "lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand",
       "body": "## What was seen\n\n2026-11-19: `lym board intake import` of issue #153 recorded only its body; its two comments, each a further wish, were left on GitHub,\nand `intake list --full` shows only a comment count. The orch had to fetch them with `gh` by hand after the operator asked.\n\n## Idea\n\nImport carries the issue's comments, other than intake's own pointer comments, into the entry's body under a heading of their own,\nand `intake list --full` prints them, so the orch can split a comment that is a separate finding into its own note.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-19T09:29:20Z",
       "revised": "2026-11-19T10:51:12Z",
       "run_settings": {
