@@ -1,6 +1,6 @@
 # Settings to route code review and drift judge rulings to the run's parent
 
-`parent-review-code-and-drift` · Task · feature, loom, drift, burler · starting · Seed-IDE
+`parent-review-code-and-drift` · Task · feature, loom, drift, burler · starting · Open-IDE
 
 Depends on: [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md)
 
