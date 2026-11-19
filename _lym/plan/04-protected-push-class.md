@@ -1,10 +1,10 @@
 # Card 4 — protected-push-class
 
 **Create:**
-- `plan:internal/fabricengine#PushFailureProtected` -> `const PushFailureProtected PushFailureClass = "protected"`
-- `plan:internal/fabricengine#protectedBranchMarkers` -> `var protectedBranchMarkers = []string{"protected branch", "repository rule violations"}`
-- `plan:internal/fabricengine#ProtectedBranchRefusal` -> `func ProtectedBranchRefusal(err error) bool`
-- `plan:internal/fabricengine#IsPushProtected` -> `func IsPushProtected(err error) bool`
+- `internal/fabricengine#PushFailureProtected`
+- `internal/fabricengine#protectedBranchMarkers`
+- `internal/fabricengine#ProtectedBranchRefusal`
+- `internal/fabricengine#IsPushProtected`
 
 **Edit:**
 - `internal/gitrepo#mapPlainPushError`

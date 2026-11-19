@@ -1,22 +1,22 @@
 {
   "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
-  "planFingerprint": "a4cb8d31ca4bbb09899b19b9e80dd9f82c1be9b6d4a6034846ecfa0d146e8bd8",
+  "planFingerprint": "2d4776c1422edd4d8111bcc77a28efca8d305df365082cc5d5354ba8ff346c60",
   "planFileHashes": {
     "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
     "01-lymcwd-one-repository.md": "4129e3dc033151515eab5f0cc8f4919bd4d80c02b7196f191ad67532210fabc0",
     "02-records-paths-and-commit-predicates.md": "3324bdbf77128e6687cc3776c12f45db02b5799f0216c0073b371e7bef3dc3ea",
     "03-one-repository-geometry.md": "b43365f1f5b1f716ee0d4831131ef18e5c6551f124c20e9548b7162165e77625",
-    "04-protected-push-class.md": "fffc3d159c11aacd454bf080ad7da795af5c03b614b595dcd081fd6693e757cc",
-    "05-one-repository-clone.md": "5cce9998e2c3b5231abbca48849f0a168a0c2a62e9092dc34090a49a1e700613",
+    "04-protected-push-class.md": "c8da2a22476cd9d302bacaefe2b935ad756cf123f6c44c6abdec9f09aacd6454",
+    "05-one-repository-clone.md": "1598d18709897c837f60eb43a4de1667a51bc1875e4159244b25dcddc2113278",
     "06-one-repository-add.md": "0a27c09d20294804aa2536591b8a6bc7e59e51f6383c7b338badcb17b8107cc1",
     "07-records-commit-on-code-branch.md": "9d4f220d237934e58066b0e86afd50f0c4187c06483b76a48c11e5a58ba32275",
     "08-one-repository-anchor-change.md": "0c922674dc96ed24209d782babfb0ab0d87dab0a6d2655e65c620558c12be338",
     "09-merge-keeps-receiving-records.md": "14b6ead74c931a611250eee11ee0106b8d63a0959b660237e667b6db978d0095",
     "10-records-commit-during-merge.md": "b2a9515881593f9cac024dd4e760fcf0b2be433354ed44ac837e547a1cdb68a8",
-    "11-transition-seam-waits.md": "af69894b78c2736c36411b88477203e336421c9ee073b32f88f1ced72ef7b475",
+    "11-transition-seam-waits.md": "a569a252dd7e4dddd6b4a703a60d1a3862a5bfef3e17032fcd450b8464e159ac",
     "12-one-branch-push-and-teardown.md": "023b40b38bce0cc752f2317174a92666e6c42c724df5a27207c1eae63eeabb5a",
     "13-records-only-replay.md": "f4068af7c11d0b16d0accdf67fe1b5473e82d28cc6a212392157150c6ef8d956",
-    "14-prime-records-push-guard.md": "ae045f2a1877133b0077d0ced2871e0947ac4efc1c7cc3e9373756d521b9533a",
+    "14-prime-records-push-guard.md": "2fc55a380e742bccbc91f730535c77959898e56f76715362f1081de5008fe2f3",
     "15-one-repository-docs.md": "f44d2f496adf29562d5e3421f68ce382d33ba30e7abeb43fbe0b51f8e12a3a63",
     "16-pattern-single-repo-hub.md": "6c0287ba7f9429d09be278cc6281c5baaa0a53a726f488b2b0f850b8050f9b83"
   },
@@ -559,22 +559,43 @@
         "04-protected-push-class"
       ],
       "cardHashes": {
-        "04-protected-push-class": "fffc3d159c11aacd454bf080ad7da795af5c03b614b595dcd081fd6693e757cc"
+        "04-protected-push-class": "c8da2a22476cd9d302bacaefe2b935ad756cf123f6c44c6abdec9f09aacd6454"
       },
       "startSha": "94a81a57f108f0139e09e6c3e8359ad904563b12",
       "kind": "fork",
       "spawnedAt": "2026-11-19T06:58:10Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-protected-push-class",
+        "status": "done",
+        "head_sha": "559899b39ddb724532bd20ca7fc35d417907215f",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/pushclasses_integration_test.go",
+          "internal/fabricengine/pushclassified.go",
+          "internal/gitrepo/push.go"
+        ]
+      },
+      "cardShas": [
+        "559899b39ddb724532bd20ca7fc35d417907215f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1a9f3da5a5543a69.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1a9f3da5a5543a69.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab15a9dafa9470d73.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab15a9dafa9470d73.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1a9f3da5a5543a69.jsonl"
   ]
 }

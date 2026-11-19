@@ -32,7 +32,7 @@
 - `internal/pairteardown/doc.go`
 - `internal/fabricengine#IsRecordsOnlyCommit`
 - `internal/fabricengine#IsFabricMergeCommit`
-- `plan:internal/fabricengine#PushFailureProtected`
+- `internal/fabricengine#PushFailureProtected`
 - `internal/fabricengine#oneRepositoryAt`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`

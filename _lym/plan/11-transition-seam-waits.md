@@ -21,7 +21,7 @@
 - `internal/loomcli/doc.go`
 - `internal/lymcwd#OneRepository`
 - `plan:internal/fabricengine#MergeStateOperation`
-- `plan:internal/fabricengine#IsPushProtected`
+- `internal/fabricengine#IsPushProtected`
 - `plan:internal/fabricengine#IsPrimeBranchRefusal`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`

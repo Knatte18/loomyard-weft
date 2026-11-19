@@ -36,7 +36,7 @@
 - `internal/hubforge/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ProtectedBranchRefusal`
+- `internal/fabricengine#ProtectedBranchRefusal`
 - `internal/fabricengine#oneRepositoryAt`
 - `internal/fabricengine#BoltBranchName`
 - `internal/fabricengine#teardownHub`
