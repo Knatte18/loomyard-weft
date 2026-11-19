@@ -1,0 +1,116 @@
+{
+  "sketch": "single-repo-records-branches",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "drop-compat-migration-code", "revised": "2026-11-19T12:08:49Z"},
+    {"slug": "board-viewer-server", "revised": "2026-11-19T16:37:28Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-18T19:52:44Z"}
+  ],
+  "parts": [
+    {
+      "slug": "single-repo-records-on-code-removal",
+      "title": "Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings",
+      "type": "enhancement",
+      "labels": ["fabric", "cwd", "cli", "batten", "loom", "landing", "git", "board", "docs", "pattern"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D5", "D6", "D7"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 6900},
+        {"path": "internal/fabriccli", "size": 375},
+        {"path": "internal/statuscommit", "size": 230},
+        {"path": "internal/lymcwd", "size": 145},
+        {"path": "internal/loomcli", "size": 140},
+        {"path": "internal/hubforge", "size": 140},
+        {"path": "internal/battencli", "size": 100},
+        {"path": "internal/landingshed", "size": 75},
+        {"path": "internal/boardengine", "size": 67},
+        {"path": "internal/runfsm", "size": 35},
+        {"path": "internal/gitrepo", "size": 30},
+        {"path": "cmd/lym", "size": 8},
+        {"path": "internal/pairteardown", "size": 6},
+        {"path": "docs", "size": 5},
+        {"path": "pattern", "size": 40}
+      ],
+      "contract": {
+        "takes": "f06acf39's own commit message and file list as the removal map, reverted against D6's keep list; c83fec49's cached layout probe and its tests, which go with onerepository.go; fabricengine.FailedPushWayForward and its callers in pairteardown, loomcli and landingshed, weighed against D7's failed-push mail revert before any of it is deleted",
+        "delivers": "a fabric with only the two-repository layout: no root-marker layout read in lymcwd or fabric, no one-repository clone path, no lym-bolt, no --single-repo flag, no hubforge NewOneRepoHub, no path-limited or mid-merge records commits, no records strip, Fabric-Merge trailer or no-fast-forward rule, no records-only replay, no prime push guard or operator_unpushed and protected classes, no statuscommit operation wait or its battencli and loomcli seams, no lym-view ref teardown, no lym.primeBranch key; the merge-state probe reports a merge only, a deferred failed-push record is not mailed, and fabric's commit refusal order is the pre-f06acf39 one; docs/overview.md and internal/fabricengine/doc.go hold no records-on-code-branch text, and the PATTERN-run-fsm and PATTERN-cwd-resolution entries and backgrounds lose their one-repository text",
+        "exports": "nothing new; it removes lymcwd.OneRepository, fabricengine.MergeStateOperation, IsPrimeBranchRefusal, IsPushProtected, MidMergeRecordsUnsettled, PushOneRepositoryClone, CloneOptions.SingleRepo, BoltBranchName, gitrepo.MergeStartNoFastForward and hubforge.NewOneRepoHub, and keeps fabricengine.ProtectedBranchRefusal and gitrepo's remote: lines on a push rejection"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "Peer run `two-repo-merge-probe-regression` is changing `internal/fabricengine/onerepository.go`,\n`mergestateactive.go`, `recordsduringmerge.go`, `clone_onerepository.go` and `anchormarker.go`, which D5 deletes or rewrites;\nthe probe cache it builds is removed here.\nThe parent may order the two runs or narrow the peer to its merge-probe revert."
+      ],
+      "criteria": [
+        "D5: a records commit in the prime commits on any branch the prime is on.",
+        "D5, D6: a push refused as a protected branch records the ordinary rejection class, and the retry does not retry it.",
+        "D7: a status commit during a cherry-pick in the records worktree commits instead of skipping.",
+        "D7: a deferred failed-push record that names commits sends no mail."
+      ],
+      "pattern_changes": ["PATTERN-run-fsm", "PATTERN-cwd-resolution"],
+      "expected_cost_usd": 26.6,
+      "cost_line": "darn solid with a stored record (10 runs): 11.74 fixed plus 0.181 per 100 lines over about 8,200 changed lines, nearly all deletions"
+    },
+    {
+      "slug": "single-repo-namespace-layout",
+      "title": "One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric",
+      "type": "feature",
+      "labels": ["fabric", "git", "docs", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D8", "D9", "D10"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 1700},
+        {"path": "internal/gitrepo", "size": 350},
+        {"path": "internal/fabriccli", "size": 120},
+        {"path": "internal/hubforge", "size": 110},
+        {"path": "README.md", "size": 60},
+        {"path": "docs", "size": 60},
+        {"path": "pattern", "size": 70}
+      ],
+      "contract": {
+        "takes": "single-repo-records-on-code-removal's two-repository-only fabric, with no --single-repo flag, no NewOneRepoHub and no one-repository symbol left; the two-repository clone path (CloneHub, CloneAndWire, cloneRepo, suffixWeftPrimaryBranch, bornWeftPrimaryBranch, ensureBoardWorktree, probeWeftBinding, PushRecorded); primaryWeftBranch and resolveManagedBranch; the records store's remote paths in gitrepo (push.go, pushdestination.go, pushretry.go, refreads.go, blobread.go) and fabricengine (archive.go, cleanupremotewarp.go, remoteleftover.go, recordsprobe.go, originreconcile.go, recordsreads.go, destroy.go, pushclassified.go, handover.go, pull.go, ownerarchive.go, weftbranch.go, checkout.go, add.go)",
+        "delivers": "the one-repository layout of D1 to D4: a records store of the code store's origin wired as a weft, its refs under refs/lym/heads/ and refs/lym/tags/ through its refspecs, the board on the fixed branch main, the prime's records branch in lym.primeRecordsBranch; the layout read from the records store's fetch refspec, cached per existing store; a ref namespace passed to every records-store remote operation in gitrepo and fabric; lym fabric clone with one URL and with --single-repo, its ls-remote refusals and its ordered, leased seed push with teardown; hubforge's one-repository builder and the layout's tests; README.md and docs/getting-started.md describing the layout and its hazards; PATTERN-single-repo-hub rewritten, and the one-repository paragraphs of PATTERN-fabric-boundary, PATTERN-lym-files and PATTERN-pair-remote dropped",
+        "exports": "fabric's namespace and layout constants (refs/lym/, heads/, tags/, the board branch main, the lym.primeRecordsBranch key); the namespace parameter on gitrepo's push, lease, push-result, upstream-write and remote-delete operations; lym fabric clone --single-repo; hubforge's one-repository builder"
+      },
+      "depends_on": ["single-repo-records-on-code-removal"],
+      "open_risks": [
+        "The parent project `single-repo-hub` is titled for records on each code branch and the board on `lym-bolt`, which this design replaces;\nthe parent may retitle it."
+      ],
+      "criteria": [
+        "D1, D3: `lym fabric clone --single-repo` over a bare origin with no namespace puts the board and the prime's records branch\nunder `refs/lym/heads/`, leaves every `refs/heads/` ref at its prior tip, and builds a hub whose layout matches a two-repository hub's:\nthe records sibling, `_lym` junctions and `_bolt`.",
+        "D1: a default `git clone` of that origin fetches no ref under `refs/lym/`, and the hub's records store holds no code branch.",
+        "D3: a one-URL clone of an origin holding the namespace builds the same layout on a second machine, with the board's content.",
+        "D1, D3: a `--single-repo` clone of an origin whose code default branch is `master` puts the board at `refs/lym/heads/main`\nand the prime's records branch at `refs/lym/heads/master-weft`;\na one-URL clone of that origin on a second machine checks out that board with its content;\nand the orphan sweep in that hub keeps `master-weft`, also after `lym fabric checkout` moves the prime off `master`.",
+        "D3: a one-URL clone refuses an origin holding the namespaced board branch with `--single-repo`,\nan origin whose default branch holds `.lym-warp` with `--single-repo`, a second URL with `--single-repo`,\nan origin holding `lym-bolt`, and with `--single-repo` an origin whose default branch tracks a root `.lym-anchor` or `_lym`,\neach before creating anything and each naming its way forward.",
+        "D3: a one-URL clone of a two-repository weft whose board tracks the legacy root `.lym-anchor` clones as today.",
+        "D3: a seed push that fails leaves no hub directory, names its cause, and leaves no namespaced board branch on origin;\na rerun of `--single-repo`, with the same or another `--subpath`, replaces the leftover records branch and succeeds.",
+        "D3: a `--single-repo` clone whose board push loses its lease returns the records branch to the tip it observed,\nand names the one-URL clone of the other hub as its way forward.",
+        "D2, D4: in a one-repository hub, a pair add, push and teardown place its records branch at `refs/lym/heads/<branch>-weft`\nand its archive tag under `refs/lym/tags/archive/`, add no ref under `refs/heads/` or `refs/tags/` beyond the code branch,\nand teardown removes the namespaced records branch.",
+        "D4: in either layout, a teardown of a never-pushed records branch records no remote deletion.",
+        "D2, D4: in a one-repository hub, origin reconcile and remote cleanup in the records store see the namespaced records branches\nand archive tags, and no code branch.",
+        "D2: a records branch's upstream in a one-repository hub names its namespaced ref, and the branch reads as in sync after a push.",
+        "D2: the layout read of a path with no records store logs nothing and reads two repositories;\na second read of an existing store in the same process runs no git;\na store created after a missing-store read reads one repository.",
+        "D2, D5: a code branch merged by fabric in a one-repository hub has no `_lym` path in its tree,\nand its merge commit carries no `Fabric-Merge` trailer.",
+        "D8, D10: `hubforge`'s one-repository builder produces a hub over one bare origin that the D1 and D4 criteria run against,\nand D3's f06acf39-origin refusal is reached over a bare origin holding `lym-bolt`.",
+        "D9: Review: `README.md` and `docs/getting-started.md` describe the namespace layout and D9's hazards,\nand no doc or PATTERN text describes records on a code branch or `lym-bolt`."
+      ],
+      "pattern_changes": ["PATTERN-single-repo-hub"],
+      "expected_cost_usd": 42.0,
+      "cost_line": "tapestry solid with a stored record (15 runs): 34.20 fixed plus 0.309 per 100 lines over about 2,500 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 68.6,
+    "line": "a darn solid removal at 26.6 plus a tapestry solid build at 42.0, each from its stored-record cell's linear fit; the removal's line count is nearly all deletions, which the fit may overprice",
+    "next_best": {
+      "split": "one tapestry solid that removes f06acf39's layout and builds the namespace layout in one run",
+      "expected_usd": 67.3,
+      "line": "tapestry solid with a stored record (15 runs): 34.20 fixed plus 0.309 per 100 lines over about 10,700 changed lines, a size the fit likely saw few runs near"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
