@@ -2,13 +2,13 @@
 
 **Create:**
 - `contracts/recipes/hardener-recipe.yaml`
-- `plan:contracts/recipes#HardenerRecipe` -> `var HardenerRecipe []byte`
-- `plan:internal/shedrun#RecipeHardener` -> `const RecipeHardener = "hardener"`
-- `plan:internal/loomshed#NameHardenBouncer` -> `const NameHardenBouncer = "Harden-Bouncer"`
-- `plan:internal/loomshed#NameHardenBurlerReview` -> `const NameHardenBurlerReview = "Harden-Burler-Review"`
-- `plan:internal/loomshed#NameHardenBurlerFix` -> `const NameHardenBurlerFix = "Harden-Burler-Fix"`
-- `plan:internal/reportengine#hardenerPhases` -> `func hardenerPhases() map[string]string`
-- `plan:internal/loomrecipe#TestHardenerRecipe` -> `func TestHardenerRecipe(t *testing.T)`
+- `contracts/recipes#HardenerRecipe`
+- `internal/shedrun#RecipeHardener`
+- `internal/loomshed#NameHardenBouncer`
+- `internal/loomshed#NameHardenBurlerReview`
+- `internal/loomshed#NameHardenBurlerFix`
+- `internal/reportengine#hardenerPhases`
+- `internal/loomrecipe#TestHardenerRecipe`
 
 **Edit:**
 - `internal/shedrun#RecipeNames`

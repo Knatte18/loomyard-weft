@@ -1,6 +1,6 @@
 {
   "runGuid": "6b7dece764a9513a79cfad773a871c49",
-  "planFingerprint": "37f1b2e0abdb549e4f51a181dfe783109c97bb5593ba112d7c985ca2d8be98cf",
+  "planFingerprint": "bdbcaf979230ba27a26e4810d01b0d54b7934abd2fc68d4654aeb72af8a2608a",
   "planFileHashes": {
     "00-overview.md": "b3a010a1548e9e4d44d52cc5c3c76f8c8cc3a7bfb6afc030b4feef8fe007dfe1",
     "01-gate-copies.md": "c8f68da5a3900d94b745ec15c1d5851557697977caff551acfb5dd09fe537fbd",
@@ -15,7 +15,7 @@
     "10-bouncer-harden-seams.md": "dfbb01fc00296066f1cddccfcf3ac6e2022e6fe4298106d94758d51ef9d03501",
     "11-harden-rows.md": "cd176130b29d7b2293ea81ae3c3c8d27bc0677f886ec14c6e69255b9deb81c5a",
     "12-harden-rubric.md": "28540b5c2700ff2b46e97b269c68d787890410dea839ed46966e73ba7eb7e9cf",
-    "13-hardener-recipe.md": "dc437c895336bda1254235234418e896787eb70cae0d7cf50ded9757bc2a4fe6",
+    "13-hardener-recipe.md": "c64c5574fc95dd39e7a62dd850f28f30cac7a7aaac72f4a6df378c8a47cc69a9",
     "14-loom-harden-wiring.md": "18336a6c8fcbe6c0f7b48da384643b2707fb65aa8dedcdf4dbe96c037956f576",
     "15-finalize-reap.md": "33e85c05c4ffa711b6e34b94935d88e8db14e3ea7bb095461a5ab7e226ca8b84",
     "16-harden-cli.md": "ffc21ff48b63c0a2a0f66bacf070e391c8e207aadced64958a05862b4cd44ba1",
@@ -648,15 +648,36 @@
         "13-hardener-recipe"
       ],
       "cardHashes": {
-        "13-hardener-recipe": "dc437c895336bda1254235234418e896787eb70cae0d7cf50ded9757bc2a4fe6"
+        "13-hardener-recipe": "c64c5574fc95dd39e7a62dd850f28f30cac7a7aaac72f4a6df378c8a47cc69a9"
       },
       "startSha": "8ad607c6fc49e75afb965b9baf0bec51a1a26d78",
       "kind": "fork",
       "spawnedAt": "2026-11-19T15:37:54Z",
       "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-hardener-recipe",
+        "status": "done",
+        "head_sha": "f9abf62bef4fc8975c8f6c6b113bab116982a85c",
+        "deviations": [
+          "internal/loomrecipe/hardenerrecipe_test.go",
+          "internal/loomrecipe/recipe_test.go",
+          "internal/reportengine/timing_test.go",
+          "internal/testkit/envkit/envkit.go",
+          "internal/testkit/envkit/envkit_test.go"
+        ]
+      },
+      "cardShas": [
+        "f9abf62bef4fc8975c8f6c6b113bab116982a85c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl"
+      ]
     },
     "6": {
       "slug": "live-gate",
@@ -759,13 +780,14 @@
       ]
     }
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl"
   ]
 }
