@@ -379,36 +379,6 @@
       "profile": "light"
     },
     {
-      "id": 1519,
-      "handle": "T6",
-      "slug": "hardenshed-test-stray-lock",
-      "title": "A hardenshed test leaves .lock in the package directory",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A record write in a hardenshed test takes its lock beside a relative or empty path, so internal/hardenshed/.lock appears in the worktree and blocks Finalize",
-      "body": "## Seen\n\n2026-11-19: Finalize of `hardener-campaign` stopped on an untracked zero-byte `internal/hardenshed/.lock`, created 18:39 during the run's gate, held by no process.\n`internal/hardenshed`'s `round.go` and `live.go` take their lock through `lock.TrackedFileLockPath(path, \".lock\")`; a test that passes a relative or empty record path makes that lock land in the package directory, which is the test's working directory.\nThe orch removed the file by hand so Finalize could go on; the next gate run recreates it.\n\n## Idea\n\nFind the hardenshed test that writes a record outside `t.TempDir()` and point it there.\nA gate check that fails on any new untracked file in the source tree after a test run would catch the whole class.\n",
-      "status": "done",
-      "created": "2026-11-19T17:42:12Z",
-      "revised": "2026-11-19T17:59:20Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1520,
       "handle": "B1",
       "slug": "raddle-slug-length-check",
