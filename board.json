@@ -321,7 +321,7 @@
       "id": 1508,
       "handle": "F2",
       "slug": "agent-questions-to-parent",
-      "title": "Send a run agent questions for the operator to the run parent instead",
+      "title": "Every run agent question for the operator goes to the run parent",
       "kind": "note",
       "labels": [
         "feature",
@@ -331,10 +331,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "A setting that routes every question a run agent would ask the operator in its pane to the parent by creel, with the answer delivered back",
-      "body": "## What was seen\n\nFrom a comment on issue #153 (2026-11-19): a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane.\nThe parent sees such a question only when the operator relays it or tells the agent to ask the parent.\n\n## Idea\n\nA setting that sends every question an agent would put to the operator to the run's parent by creel instead, with the parent's answer delivered back,\nso the parent settles them without the operator relaying.\n\nRelated: `parent-review-code-and-drift` routes review rulings to the parent; this routes the agents' open questions.\n",
+      "brief": "By default, a run agent puts its questions to its parent orch by creel; only orchs contact the operator",
+      "body": "## What was seen\n\nFrom a comment on issue #153 (2026-11-19): a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane.\nThe parent sees such a question only when the operator relays it or tells the agent to ask the parent.\n\n## Operator decision (2026-11-19)\n\nOnly an orch contacts the operator; an orch is the only session with a Slack relay.\nBy default, every question a run agent would put to the operator goes to the run's parent orch by creel, with the parent's answer delivered back.\nIt is the default for every run agent, not an opt-in setting. The parent answers itself or asks the operator.\n\n## To find out\n\nWhich agents and stencils still address the operator directly (drift judge, Drift-Expect, perch fixers and any other),\nand how the shuttle's held-turn notice already routes a question to the parent; the change closes each remaining path.\n\nRelated: `parent-review-code-and-drift` routes review rulings to the parent; this routes the agents' open questions.\n",
       "created": "2026-11-19T09:29:19Z",
-      "revised": "2026-11-19T09:29:19Z"
+      "revised": "2026-11-19T13:20:21Z"
     },
     {
       "id": 1509,
