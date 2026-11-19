@@ -456,6 +456,25 @@
       "body": "## What was seen\n\n2026-11-19: `lym creel post ly:SLACK \"\u003ctext\u003e\"` answered `{\"ok\":true}` (message 2035) while the operator had disconnected Slack.\n`lym slack status` showed `relay_live: false`, `connected: false` and an empty `forwarding` list, so the post reached no channel, and the sender was not told.\nThe orch believed the result was on Slack.\n\n## Idea\n\nA post to SLACK while no relay runs, or while the sending orch has its slack button off, should say so:\nrefuse with the state and a way forward (`lym slack start`, or press the button), or answer ok with a `delivered: false` field and the reason.\nThe sender then reports the result in its pane instead.\n",
       "created": "2026-11-19T07:41:17Z",
       "revised": "2026-11-19T07:41:17Z"
+    },
+    {
+      "id": 1503,
+      "handle": "F1",
+      "slug": "mutation-report-step",
+      "title": "Build the mutation gate report step with the trial bound changes",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "gate",
+        "testmap"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The mutation trial says build it: 26 of 44 survivors are real missing checks; first spread mutants over functions, skip log and other-OS lines, print one summary line",
+      "body": "## Source\n\nThe mutation trial (`docs/research/speed/mutation-trial-2026-11-19/report.md`) replayed 20 landed diffs with `lym gate mutate`:\n430 mutants, 374 killed, 44 survived, 12 unjudged; 26 of the 44 survivors are checks a reviewer would act on, spread over 11 of the 20 diffs.\nThe runs took 30 s at the median and 80 s at most. Its verdict: build the step after three bound changes.\n\n## Idea\n\nBuild the `mutation` gate report step, listed in the template's `diff` keys, with the trial's three changes:\n\n1. Spread the mutants across the changed functions, one per function first, so `mutation_max_mutants` no longer judges a large diff on its first functions only.\n2. Skip as a mutation site a statement that only logs and a branch that tests `runtime.GOOS` for another platform.\n3. Write the full list to `mutation.json` and print one summary line: mutants run, killed, survived, unjudged, uncovered changed blocks, packages not judged.\n\nThe step feeds a `mutation_report` marker of the code review rubric with the survivors.\n",
+      "created": "2026-11-19T09:04:05Z",
+      "revised": "2026-11-19T09:04:05Z"
     }
   ],
   "prime_owner": "neve",
