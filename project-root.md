@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 13:15 UTC; every age below is as of then.
+Rendered 2026-11-19 13:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,17 +8,16 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Survey Matt Pocock's skills repository for ideas that improve LoomYard**<br>• Read mattpocock/skills (main and the constrain-skill branch) and report what LoomYard could adopt<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pocock-skills-survey`](design-pocock-skills-survey.md) | darn · docs | landing · Finalize | neve | 10m<br>10m |  |
 | T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | Code-Burler-Fix | neve | 3h<br>1h | loom, drift, burler |
 
 ### Ready (0)
@@ -61,10 +60,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 3h<br>3h | loom, shed |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>13d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
-## Done (1)
+## Done (2)
 
 Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
+| T2 | **Survey Matt Pocock's skills repository for ideas that improve LoomYard**<br>• Read mattpocock/skills (main and the constrain-skill branch) and report what LoomYard could adopt<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pocock-skills-survey`](design-pocock-skills-survey.md) | 10m<br>10m |  |
 | T4 | **Two-repository hubs: status commits skip during weft replay, and the layout probe spams and costs git calls**<br>• Undo the f06acf39 merge-state probe widening for two-repository hubs, and make the layout probe quiet and cached<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`two-repo-merge-probe-regression`](design-two-repo-merge-probe-regression.md) | 1h<br>1h | fabric |

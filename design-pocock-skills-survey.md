@@ -1,6 +1,6 @@
 # Survey Matt Pocock's skills repository for ideas that improve LoomYard
 
-`pocock-skills-survey` · Task · research · landing · Finalize
+`pocock-skills-survey` · Task · research · done
 
 ## Question (operator, 2026-11-19)
 
