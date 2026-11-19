@@ -1,0 +1,572 @@
+diff --git a/internal/gatecli/copies.go b/internal/gatecli/copies.go
+index 21b857e8..ceba4d51 100644
+--- a/internal/gatecli/copies.go
++++ b/internal/gatecli/copies.go
+@@ -91,7 +91,7 @@ func runTierCopies(ctx context.Context, run tierRun, env []string, request testR
+ 		running.Add(1)
+ 		go func() {
+ 			defer running.Done()
+-			results[i] = runTier(ctx, io.Discard, run, env, copyRequest)
++			results[i] = runTierCommands(ctx, io.Discard, run, env, copyRequest)
+ 		}()
+ 	}
+ 	running.Wait()
+@@ -162,6 +162,7 @@ func (e *execution) printStartedLines(run tierRun, result tierResult) {
+ }
+ 
+ // addFailedRuns adds the failed run of the tier run that ended red as result to the call's failed runs, one per red copy.
++// The stray-file failure belongs to the copies together, so a copies run lists it as one more failed run.
+ func (e *execution) addFailedRuns(run tierRun, result tierResult, logPath string) {
+ 	if len(result.copies) == 0 {
+ 		e.failed = append(e.failed, tierFailedRun(run, result, logPath, e.request.root))
+@@ -175,4 +176,7 @@ func (e *execution) addFailedRuns(run tierRun, result tierResult, logPath string
+ 		failed.label = copyLabel(runLabel(run), i+1)
+ 		e.failed = append(e.failed, failed)
+ 	}
++	if result.strayLine != "" {
++		e.failed = append(e.failed, failedRun{label: runLabel(run), outcome: "exit 1", log: logPath, causes: []string{result.strayLine}})
++	}
+ }
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 1e1ca184..290a6f71 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -562,6 +562,22 @@
+ // It cannot see a gated class in a project that ran other tests.
+ // It cannot name the property behind a skip: the counter reads only each invocation's total.
+ //
++// # Stray files
++//
++// A tier run with an invocation lists the worktree's untracked, non-ignored files before and after it.
++// The listing is taken through `git ls-files`.
++// The first listing is taken once per tier run, before its first attempt,
++// so a rerun after a shortage or a crash is held to it as well.
++// A file the second listing holds and the first lacks fails the run with exit 1, a failing run keeping its own code.
++// Such a file is one a test wrote outside its own temp directory, as a lock beside a record whose path was empty.
++// A line naming at most `strayFilesListed` of the files goes to stderr and the log before the summary line.
++// Each name is a quoted string, so a name with a newline or a comma stays one item.
++// The line gives the way forward: move the write under the test's temp directory and remove the files.
++// A `--copies` run is listed once around all its copies,
++// and the failure report lists its stray-file failure as a failed run of its own.
++// A worktree git cannot list, such as a directory outside every repository, is not checked.
++// Bound: a file another process makes in the worktree while the tier runs fails the run as well.
++//
+ // # Lint steps
+ //
+ // A `--gate` key's `lints` run in the key's order after every tier, vet and guard run of an uncancelled call.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 9546a946..f6d3b79a 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -625,8 +625,9 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ 				return result
+ 			}
+ 		}
++		before, listed := untrackedBeforeRun(run, e.request.root)
+ 		return retryTier(e.ctx, e.request.stderr, runLabel(run), e.request.rerunDelay, func() tierResult {
+-			return runTier(e.ctx, e.out, run, env, e.request)
++			return runTierChecked(e.ctx, e.out, run, env, e.request, before, listed)
+ 		}, func(first tierResult) {
+ 			first.record.WaitStart = waitStart
+ 			e.writeRecord(first.record, first.log, tierName(run.number))
+diff --git a/internal/gatecli/strayfiles.go b/internal/gatecli/strayfiles.go
+new file mode 100644
+index 00000000..06dd8cb5
+--- /dev/null
++++ b/internal/gatecli/strayfiles.go
+@@ -0,0 +1,91 @@
++// strayfiles.go fails a tier run that left new untracked, non-ignored files in the worktree it ran in.
++
++package gatecli
++
++import (
++	"fmt"
++	"sort"
++	"strconv"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gitexec"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// strayFilesListed caps how many new untracked files the stray-file line names.
++const strayFilesListed = 10
++
++// untrackedWorktreeFiles returns the root-relative paths of the untracked, non-ignored files under root.
++// It reports false when root is in no git worktree or git cannot list the files.
++func untrackedWorktreeFiles(root string) (map[string]bool, bool) {
++	out, err := gitexec.Run([]string{"ls-files", "--others", "--exclude-standard", "-z"}, root)
++	if err != nil {
++		logger.Info("gate test: cannot list the untracked files, so the run is not checked for files it leaves", "root", root, "cause", err)
++		return nil, false
++	}
++	files := map[string]bool{}
++	for _, path := range strings.Split(out, "\x00") {
++		if path != "" {
++			files[path] = true
++		}
++	}
++	return files, true
++}
++
++// untrackedBeforeRun returns the listing a tier run is checked against, taken before its first attempt.
++// A run with no invocation runs no command, so it takes no listing and reports false.
++func untrackedBeforeRun(run tierRun, root string) (map[string]bool, bool) {
++	if len(run.invocations) == 0 {
++		return nil, false
++	}
++	return untrackedWorktreeFiles(root)
++}
++
++// checkStrayFiles fails result when the tier run left untracked, non-ignored files under the request's root.
++// A stray file is one the listing taken before the run, before, did not hold.
++// It writes the line naming them to stderr and the log, adds it to the causes, and keeps it in strayLine.
++// A passing run's exit code turns to 1; a failing run keeps its own code.
++// A listing that cannot be taken after the run leaves result as it is.
++func checkStrayFiles(result tierResult, before map[string]bool, tier string, request testRequest) tierResult {
++	after, listed := untrackedWorktreeFiles(request.root)
++	if !listed {
++		return result
++	}
++	var stray []string
++	for path := range after {
++		if !before[path] {
++			stray = append(stray, path)
++		}
++	}
++	if len(stray) == 0 {
++		return result
++	}
++	sort.Strings(stray)
++	line := strayFilesLine(tier, stray)
++	result.log = append(result.log, line+"\n"...)
++	printLine(request.stderr, line)
++	result.causes = append(result.causes, line)
++	result.strayLine = line
++	if result.record.ExitCode == 0 {
++		result.record.ExitCode = 1
++		result.record.Outcome = "failed"
++	}
++	return result
++}
++
++// strayFilesLine returns the line naming the new untracked files a tier run left, sorted, and its way forward.
++// It names at most strayFilesListed files and counts the rest.
++// Each name is a quoted string, so a name with a newline or comma stays one item.
++func strayFilesLine(tier string, stray []string) string {
++	named := stray
++	rest := ""
++	if len(stray) > strayFilesListed {
++		named = stray[:strayFilesListed]
++		rest = fmt.Sprintf(" and %d more", len(stray)-strayFilesListed)
++	}
++	quoted := make([]string, len(named))
++	for i, path := range named {
++		quoted[i] = strconv.Quote(path)
++	}
++	return fmt.Sprintf("gate test: %s left new untracked files in the worktree: %s%s; a test wrote outside its own temp directory, often through a path built from an empty or relative directory; way forward: make the test write under its temp directory, remove the files named here, then re-run the same command", tier, strings.Join(quoted, ", "), rest)
++}
+diff --git a/internal/gatecli/strayfiles_integration_test.go b/internal/gatecli/strayfiles_integration_test.go
+new file mode 100644
+index 00000000..503e875c
+--- /dev/null
++++ b/internal/gatecli/strayfiles_integration_test.go
+@@ -0,0 +1,195 @@
++//go:build !windows
++
++// strayfiles_integration_test.go covers the failure of a tier run that leaves new untracked files in its git worktree.
++// The tier command is a POSIX shell, so the file is left out of the Windows build.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"fmt"
++	"io"
++	"os"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// newStrayRepo returns a git repository root that ignores `*.ignored` and holds no other file.
++func newStrayRepo(t *testing.T) string {
++	t.Helper()
++	root := t.TempDir()
++	gitkit.Git(t, root, "init", "-q")
++	gitkit.CommitFile(t, root, ".gitignore", "*.ignored\n", "ignore")
++	return root
++}
++
++// strayRequest returns a request rooted at root that writes its stderr lines to stderr.
++func strayRequest(root string, stderr io.Writer) testRequest {
++	return testRequest{root: root, stderr: stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay}
++}
++
++// strayRun returns a tier1 run of command with one invocation in each of dirs.
++func strayRun(command string, dirs ...string) tierRun {
++	var invocations []invocation
++	for _, dir := range dirs {
++		invocations = append(invocations, invocation{dir: dir})
++	}
++	return tierRun{number: 1, tier: gateslot.Tier{Command: command, Counter: counterGoJSON, TimeoutMin: 1}, invocations: invocations}
++}
++
++func TestRunTierStrayFiles(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// noRepo runs the tier in a directory outside every git repository.
++		noRepo  bool
++		command string
++		// wantExit is the tier's exit code.
++		wantExit int
++		// wantNamed are the files the stray-file line names, in order; nil means no line.
++		wantNamed []string
++		// wantRest is the count of new files the line leaves unnamed.
++		wantRest int
++	}{
++		{name: "ANewFileFailsAPassingTier", command: "mkdir -p internal/p && touch internal/p/.lock", wantExit: 1, wantNamed: []string{"internal/p/.lock"}},
++		{name: "AFailingTierKeepsItsExitCode", command: "touch z.lock a.lock; exit 3", wantExit: 3, wantNamed: []string{"a.lock", "z.lock"}},
++		{name: "AFileUntrackedBeforeTheRunIsNotNamed", command: "touch before.txt"},
++		{name: "AnIgnoredFileIsNotNamed", command: "touch out.ignored"},
++		{name: "AFileTheRunRemovesIsNotNamed", command: "touch gone.lock && rm gone.lock"},
++		{
++			name:      "MoreFilesThanTheLineNamesAreCounted",
++			command:   "touch f00 f01 f02 f03 f04 f05 f06 f07 f08 f09 f10 f11",
++			wantExit:  1,
++			wantNamed: []string{"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09"},
++			wantRest:  2,
++		},
++		{name: "ANameWithANewlineStaysOneQuotedItem", command: "touch 'a\nb'", wantExit: 1, wantNamed: []string{"a\nb"}},
++		{name: "ADirectoryOutsideEveryRepositoryIsNotChecked", noRepo: true, command: "touch new.lock"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			if !tt.noRepo {
++				root = newStrayRepo(t)
++				if err := os.WriteFile(filepath.Join(root, "before.txt"), []byte("untracked\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			var stderr bytes.Buffer
++			request := strayRequest(root, &stderr)
++			run := strayRun(tt.command, root)
++
++			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++			if result.refusal != "" || result.record.ExitCode != tt.wantExit {
++				t.Fatalf("runTier() = refusal %q, exit %d; want exit %d and no refusal", result.refusal, result.record.ExitCode, tt.wantExit)
++			}
++			wantOutcome := "failed"
++			if tt.wantExit == 0 {
++				wantOutcome = "passed"
++			}
++			if result.record.Outcome != wantOutcome {
++				t.Errorf("runTier() outcome = %q; want %q", result.record.Outcome, wantOutcome)
++			}
++			if tt.wantNamed == nil {
++				if stderr.Len() != 0 || len(result.causes) != 0 {
++					t.Errorf("runTier() stderr = %q, causes = %q; want neither", stderr.String(), result.causes)
++				}
++				return
++			}
++
++			quoted := make([]string, len(tt.wantNamed))
++			for i, name := range tt.wantNamed {
++				quoted[i] = strconv.Quote(name)
++			}
++			rest := ""
++			if tt.wantRest > 0 {
++				rest = fmt.Sprintf(" and %d more", tt.wantRest)
++			}
++			wantPrefix := "gate test: tier1 left new untracked files in the worktree: " + strings.Join(quoted, ", ") + rest + "; "
++			line, oneLine := strings.CutSuffix(stderr.String(), "\n")
++			if !oneLine || strings.Contains(line, "\n") || !strings.HasPrefix(line, wantPrefix) || !strings.Contains(line, "; way forward: ") {
++				t.Fatalf("runTier() stderr = %q; want one line opening %q with a way forward", stderr.String(), wantPrefix)
++			}
++			if !slices.Contains(result.causes, line) || !strings.Contains(string(result.log), line+"\n") {
++				t.Errorf("runTier() causes = %q, log = %q; want the line in both", result.causes, result.log)
++			}
++		})
++	}
++}
++
++func TestRunTierStrayFilesSkipsARefusedRun(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	root := newStrayRepo(t)
++	var stderr bytes.Buffer
++	// The first invocation leaves a file; the second starts in a directory that does not exist, which refuses the run.
++	run := strayRun("touch r.lock", root, filepath.Join(root, "missing"))
++
++	result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, strayRequest(root, &stderr))
++
++	if result.refusal == "" {
++		t.Fatalf("runTier() refusal = %q; want one for a shell that cannot start", result.refusal)
++	}
++	if strings.Contains(stderr.String(), "untracked files") || len(result.causes) != 0 {
++		t.Errorf("runTier() stderr = %q, causes = %q; want no stray-file line for a refused run", stderr.String(), result.causes)
++	}
++}
++
++func TestRunTierCheckedHoldsEveryAttemptToTheFirstListing(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	root := newStrayRepo(t)
++	env := []string{"PATH=" + os.Getenv("PATH")}
++	before, listed := untrackedWorktreeFiles(root)
++	if !listed {
++		t.Fatal("untrackedWorktreeFiles() = not listed; want the repository listed")
++	}
++
++	first := runTierChecked(context.Background(), io.Discard, strayRun("touch r.lock; exit 1", root), env, strayRequest(root, io.Discard), before, listed)
++	var stderr bytes.Buffer
++	second := runTierChecked(context.Background(), io.Discard, strayRun("true", root), env, strayRequest(root, &stderr), before, listed)
++
++	if first.record.ExitCode != 1 {
++		t.Fatalf("first attempt exit = %d; want 1", first.record.ExitCode)
++	}
++	if second.record.ExitCode != 1 || !strings.Contains(stderr.String(), `"r.lock"`) {
++		t.Errorf("second attempt = exit %d, stderr %q; want exit 1 naming the file the first attempt left", second.record.ExitCode, stderr.String())
++	}
++}
++
++func TestRunTierCopiesStrayFile(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	root := newStrayRepo(t)
++	var stderr bytes.Buffer
++	request := strayRequest(root, &stderr)
++	request.copiesRun = 2
++	run := strayRun("touch c.lock", root)
++
++	result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++	line, _ := strings.CutSuffix(stderr.String(), "\n")
++	if result.record.ExitCode != 1 || len(result.causes) != 1 || result.causes[0] != line || !strings.Contains(line, `"c.lock"`) {
++		t.Fatalf("runTier() = exit %d, causes %q, stderr %q; want exit 1 and the stray-file line once", result.record.ExitCode, result.causes, stderr.String())
++	}
++	exe := &execution{request: request}
++
++	exe.addFailedRuns(run, result, "run.log")
++
++	if len(exe.failed) != 1 || exe.failed[0].label != runLabel(run) || !slices.Equal(exe.failed[0].causes, []string{line}) {
++		t.Errorf("addFailedRuns() failed = %+v; want one run labelled %q holding the stray-file line", exe.failed, runLabel(run))
++	}
++}
+diff --git a/internal/gatecli/strayfiles_test.go b/internal/gatecli/strayfiles_test.go
+new file mode 100644
+index 00000000..4e7e7bcd
+--- /dev/null
++++ b/internal/gatecli/strayfiles_test.go
+@@ -0,0 +1,137 @@
++//go:build !windows
++
++// strayfiles_test.go covers the stray-file line, the check that fails a tier result for new untracked files,
++// and a tier run through the green-aware path that leaves one.
++// The file shares its helpers with the integration test, so it is left out of the Windows build as that one is.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"os"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestStrayFilesLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name  string
++		stray []string
++		// wantNamed are the quoted names the line holds, joined as the line joins them.
++		wantNamed string
++		wantRest  string
++	}{
++		{name: "OneFile", stray: []string{"a.lock"}, wantNamed: `"a.lock"`},
++		{name: "ANameWithACommaAndANewlineIsEscaped", stray: []string{"a,b", "c\nd"}, wantNamed: `"a,b", "c\nd"`},
++		{
++			name:      "FilesPastTheCapAreCounted",
++			stray:     []string{"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09", "f10", "f11"},
++			wantNamed: `"f00", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09"`,
++			wantRest:  " and 2 more",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			want := "gate test: tier1 left new untracked files in the worktree: " + tt.wantNamed + tt.wantRest + "; "
++
++			got := strayFilesLine("tier1", tt.stray)
++
++			if !strings.HasPrefix(got, want) || !strings.Contains(got, "; way forward: ") || strings.Contains(got, "\n") {
++				t.Errorf("strayFilesLine() = %q; want one line opening %q with a way forward", got, want)
++			}
++		})
++	}
++}
++
++func TestCheckStrayFiles(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// noRepo checks a directory outside every git repository.
++		noRepo   bool
++		exitCode int
++		// newFiles are written after the first listing.
++		newFiles []string
++		// wantExit is the checked result's exit code.
++		wantExit int
++		// wantLine is whether the check names the new files.
++		wantLine bool
++	}{
++		{name: "ANewFileFailsAPassingResult", newFiles: []string{"s.lock"}, wantExit: 1, wantLine: true},
++		{name: "ANewFileKeepsAFailingExitCode", exitCode: 3, newFiles: []string{"s.lock"}, wantExit: 3, wantLine: true},
++		{name: "NoNewFileLeavesTheResultAlone", wantExit: 0},
++		{name: "ADirectoryOutsideEveryRepositoryIsNotChecked", noRepo: true, newFiles: []string{"s.lock"}, wantExit: 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := t.TempDir()
++			if !tt.noRepo {
++				root = newStrayRepo(t)
++			}
++			before, _ := untrackedWorktreeFiles(root)
++			for _, name := range tt.newFiles {
++				if err := os.WriteFile(filepath.Join(root, name), nil, 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			var stderr bytes.Buffer
++			result := tierResult{record: gateslot.RunRecord{ExitCode: tt.exitCode, Outcome: "passed"}}
++
++			got := checkStrayFiles(result, before, "tier1", strayRequest(root, &stderr))
++
++			if got.record.ExitCode != tt.wantExit {
++				t.Errorf("checkStrayFiles() exit = %d; want %d", got.record.ExitCode, tt.wantExit)
++			}
++			if !tt.wantLine {
++				if got.strayLine != "" || stderr.Len() != 0 || len(got.causes) != 0 || len(got.log) != 0 {
++					t.Errorf("checkStrayFiles() = line %q, stderr %q, causes %q, log %q; want none", got.strayLine, stderr.String(), got.causes, got.log)
++				}
++				return
++			}
++			want := "gate test: tier1 left new untracked files in the worktree: " + strconv.Quote(tt.newFiles[0]) + "; "
++			if !strings.HasPrefix(got.strayLine, want) || stderr.String() != got.strayLine+"\n" || !slices.Equal(got.causes, []string{got.strayLine}) || string(got.log) != got.strayLine+"\n" {
++				t.Errorf("checkStrayFiles() = line %q, stderr %q, causes %q, log %q; want the line opening %q in each", got.strayLine, stderr.String(), got.causes, got.log, want)
++			}
++			if tt.exitCode == 0 && got.record.Outcome != "failed" {
++				t.Errorf("checkStrayFiles() outcome = %q; want %q", got.record.Outcome, "failed")
++			}
++		})
++	}
++}
++
++func TestRunGreenAwareFailsATierThatLeavesAStrayFile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := newStrayRepo(t)
++	var out, stderr bytes.Buffer
++	exe := &execution{
++		ctx:       context.Background(),
++		out:       &out,
++		request:   strayRequest(root, &stderr),
++		env:       []string{"PATH=" + os.Getenv("PATH")},
++		runLogDir: t.TempDir(),
++		callID:    "stray",
++	}
++	run := strayRun("touch s.lock", root)
++
++	end := exe.runGreenAware(run)
++
++	if end.code != 1 || end.halt || !strings.Contains(stderr.String(), `"s.lock"`) {
++		t.Fatalf("runGreenAware() = %+v, stderr %q; want exit 1 and no halt, naming s.lock", end, stderr.String())
++	}
++	if len(exe.failed) != 1 || !slices.ContainsFunc(exe.failed[0].causes, func(cause string) bool { return strings.Contains(cause, `"s.lock"`) }) {
++		t.Errorf("runGreenAware() failed = %+v; want one failed run holding the stray-file line", exe.failed)
++	}
++}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 5fd6065e..498ad6bf 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -59,11 +59,41 @@ type tierResult struct {
+ 	failures []runFailure
+ 	causes   []string
+ 	unparsed []string
++	// strayLine is the stray-file line the run failed on, empty when it left no new untracked file.
++	strayLine string
+ 	// copies holds the result of each copy when the tier ran as --copies copies; empty for a tier run that ran once.
+ 	copies []tierResult
+ }
+ 
+-// runTier runs the tier of run in ctx with its slots held.
++// runTier runs the tier of run in ctx with its slots held, once or as copies.
++// A request with copiesRun above 0 runs that many copies of the tier side by side, each under the same bounds.
++// A run with an invocation lists the worktree's untracked, non-ignored files before and after it.
++// It fails when the run left a file the first listing lacked.
++// A worktree git cannot list is not checked.
++func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
++	before, listed := untrackedBeforeRun(run, request.root)
++	return runTierChecked(ctx, out, run, env, request, before, listed)
++}
++
++// runTierChecked runs the tier of run in ctx with its slots held, once or as copies, and fails it on a stray file.
++// before is the worktree's untracked, non-ignored files from before the tier's first attempt.
++// listed says that listing could be taken; without it the run is not checked.
++// A caller that reruns the tier passes the same listing to every attempt,
++// so a file an earlier attempt left still fails the run.
++func runTierChecked(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest, before map[string]bool, listed bool) tierResult {
++	var result tierResult
++	if request.copiesRun > 0 {
++		result = runTierCopies(ctx, run, env, request)
++	} else {
++		result = runTierCommands(ctx, out, run, env, request)
++	}
++	if !listed || result.refusal != "" {
++		return result
++	}
++	return checkStrayFiles(result, before, tierName(run.number), request)
++}
++
++// runTierCommands runs the tier of run once in ctx with its slots held.
+ // It prebuilds `lym` when the tier asks.
+ // Each invocation's command then runs through the platform shell as a tied child.
+ // The run stops at the first non-zero exit.
+@@ -75,11 +105,7 @@ type tierResult struct {
+ // Every command's GOFLAGS then opens with gateslot.TestCacheOffFlag, so `go test` keeps no test result cache.
+ // A passing `vstest` invocation that reported no test prints the line naming it to stderr and the log.
+ // A run with no invocation passes at once with nothing discovered.
+-// A request with copiesRun above 0 runs that many copies of the tier side by side instead, each under these same bounds.
+-func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+-	if request.copiesRun > 0 {
+-		return runTierCopies(ctx, run, env, request)
+-	}
++func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	started := time.Now()
+ 	timeout := time.Duration(run.tier.TimeoutMin) * request.timeoutUnit
+ 	record := gateslot.RunRecord{Tier: run.number, ScopeForm: run.scopeForm, Slots: run.tier.Slots, GuardStep: run.guardStep, Start: started}
