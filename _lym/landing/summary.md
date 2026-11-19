@@ -1,37 +1,37 @@
-# Refuse or warn on a creel post to SLACK that the relay will not post
+# creel: tell a sender when a post to the Slack relay cannot reach Slack
 
-`lym creel post ly:SLACK "<text>"` answered `{"ok":true}` even when the mail could never reach Slack.
-The relay drops mail from a strand that is no orch and from an orch whose slack button is off.
-While the relay is down the mail waits unread, and the sender heard about neither case.
+`lym creel post ly:SLACK "<text>"` answered `{"ok":true}` while Slack was disconnected, so an orch believed its result was on Slack when no channel had received it.
+A post to the hub's Slack relay program now says what happened.
 
 ## What changes
 
-A post from a strand or EXTERNAL to the hub's Slack relay program, `<shortname>:SLACK`, now asks the daemon's Slack bridge before anything is stored.
-
-- **Refused, nothing stored:** a sender the relay would drop unposted.
-  - A strand that is no orch: the way forward is to report the text in its pane or ask its orch to post it.
-  - An orch with no slack button, such as a pair's: the way forward is to ask the hub's orch or a beam's orch.
-  - An orch whose button is off: the way forward is to press the button on its status bar.
-  - An orch thread counts as the orch of its worktree, matching how the relay routes its mail.
-- **Stored, with relay state:** for every other sender the post answers `receiver_live` as whether the relay runs.
-  A relay that is down adds `receiver_live: false` and a `creel: warning:` line naming `lym slack start`, because the mail waits until the relay reads it.
-
-A post to SLACK from a program is unchanged and asks nothing.
-lym's own program senders, such as the dobby reminders and the slack turn hook, keep their current behaviour.
-A daemon started without the bridge is also unchanged.
+- A post or `post --reply` from a strand or EXTERNAL to `<shortname>:SLACK` is refused, with nothing stored, when the relay would drop it unposted:
+  the sender is no orch strand, its orch belongs to neither the hub nor a beam, or its slack button is off.
+  Each refusal names a way forward: press the button on the status bar, ask the hub's orch or a beam's orch to post it, or report the text in the pane.
+- When the sender is allowed but the relay is not running, the post is stored and answers `receiver_live: false` and `delivered: false`.
+  A `creel: warning:` line names `lym slack start` and says the relay posts the waiting mail only if it starts within a day.
+- When the relay runs, the post answers `receiver_live: true` and `delivered: true`.
+- A read that fails while checking (geometry, beam listing, forwarding record, relay lock) refuses the post with a way forward of `lym slack status`.
+- `role-slack.md` now tells an orch that a post with the button off is refused and one with the relay down answers `receiver_live` false, and to report the text in its pane on either.
 
 ## Design decisions
 
-- **Refuse vs. `delivered: false`.** The entry allowed either.
-  A post the relay will certainly drop is refused, so the sender reports in its pane instead.
-  A post that only waits for a down relay is stored with a warning: refusing it would lose mail that a restarted relay still posts.
-  The warning reuses the existing `receiver_live` and `warning` fields, so no new field was added.
-- **Seam.** The check is a new `RelayPostReady` method on `creelengine.MachineBridge`, the existing seam through which the engine reads Slack state.
-  `creelcli`'s `slackBridge` implements it from the forwarding record, the beam listing and `slackengine.RelayLive`.
-  It reuses the button rule that `SendReady` already applies to mail across machines.
+- The check lives behind a new `MachineBridge.RelayPostReady(sender)` method in `creelengine`, implemented by `slackBridge` in `creelcli`.
+  The engine cannot read the Slack files itself, and the bridge already reads them afresh per call.
+- The engine asks only when the receiver is this hub's relay program, the sender is not a program, and a bridge is told.
+  A program's post, a post to a beam's relay program and a daemon without the bridge behave as before.
+- `delivered` is a new response field, set only for the relay program.
+  It carries the same answer as `receiver_live` for that receiver, so a caller can read it without knowing that `receiver_live` means "relay runs" here.
+- `Store.Reply` became `Store.ReplyWith` and returns a `PostResult`, so a reply to relay mail runs the same check and carries the same fields and warning.
+  The reply's check reads the store under its lock, then runs the bridge with no lock held, since the bridge reads files.
+- An orch thread counts as the orch of its worktree for the button check.
+- `lym creel post --help` lost a few sentences (the idle-wake clause, the reply-mark note, the resolved-receiver note) to make room under the help text's size cap.
 
-## Tests
+## To check by hand
 
-- `creelengine` `TestStore_PostToTheSlackRelay` covers a post while the relay runs, a post while it is down (warning text pinned), a refused sender (nothing journaled), a program sender and a store without the bridge.
-- `creelcli` `TestSlackBridge_RelayPostReady` covers live and down relays, an orch thread, a button that is off, a pair's orch and a non-orch strand, using a held relay lock and a real forwarding file.
-- `creelfake.Bridge` gains `RelayPostReady` and `SetRelayLive`.
+- Run `lym creel post ly:SLACK "<text>"` against a hub with the relay stopped and with an orch whose button is off, and read the answer, stderr and the refusal.
+  This was not run against a live relay.
+- Finding `relay-receiver-guard-unpinned` (design, medium): confirm the engine's receiver guard in `internal/creelengine/verbs.go` (`slackRelayCheck`)
+  is pinned by a test for each receiver it skips, a strand, a beam's relay program and a store without a bridge.
+  `TestStore_PostToTheSlackRelay` in `internal/creelengine/machinemail_test.go` has these rows.
+- Finding `reply-to-slack-mail-skips-relay-check` (scope, medium): confirm a reply to relay mail, including a reply to a chase, runs the check in `relayReplyCheck` in `internal/creelengine/verbs.go`.
