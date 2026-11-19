@@ -2,7 +2,7 @@
 
 `drop-compat-migration-code` · Task · enhancement, fabric, loom, board · draft
 
-Depends on: [`single-repo-code-identity`](design-single-repo-code-identity.md), [`hardener-campaign`](design-hardener-campaign.md)
+Depends on: [`hardener-campaign`](design-hardener-campaign.md)
 
 ## What was seen
 

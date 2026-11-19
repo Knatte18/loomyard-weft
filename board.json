@@ -187,7 +187,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "single-repo-code-identity",
         "hardener-campaign"
       ],
       "isolated": false,
@@ -195,7 +194,7 @@
       "body": "## What was seen\n\nOutside tests, \"retired\" appears in 127 files, \"migrat\" in 57 and \"legacy\" in 65 (2026-11-18);\n`fabricengine` leads with 18 files, then `loomcli` 11 and `boardengine` 10.\nSome of it is a deliberate refusal of an old name or key with a pointer to the new one, which is cheap and stays.\nSome is real migration code: `landingshed` alone carries about 100 lines (the retired `Merge-In` row name,\na scratch-to-records attempt migration, a key-rename migration).\n\n## Idea\n\nA mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path\nwhose data no hub still holds (delete).\n\n## Decided\n\n- All migration code goes: the operator confirmed no hub needs it (operator, 2026-11-19).\n- `lym board retire-legacy` is part of it: a one-off migration of `tasks.json` and `notes.json` into `board.json` that every hub has run.\n",
       "status": "draft",
       "created": "2026-11-18T17:23:24Z",
-      "revised": "2026-11-19T10:18:31Z",
+      "revised": "2026-11-19T12:08:49Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
@@ -258,44 +257,6 @@
       "revised": "2026-11-18T19:52:44Z",
       "discussed": true,
       "record_body_sha256": "575a6011931eb007845f91a517612780d622cf8ff511f6d8a1088a6bb7f946e8"
-    },
-    {
-      "id": 1498,
-      "handle": "T6",
-      "slug": "single-repo-code-identity",
-      "title": "Records-free code identity and pull request views for one-repository hubs",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "fabric",
-        "cwd",
-        "gate",
-        "git",
-        "weaver",
-        "drift",
-        "webster",
-        "lint",
-        "loom",
-        "landing",
-        "pawl",
-        "shed",
-        "arbiter"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [
-        "empty-landing-not-flagged"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "## Operator decision (2026-11-19)\n\nStopped before its run: this design spreads records-path stripping over about 15 packages outside fabric, which is wrong.\nOnly fabric knows the hub layout. Whether `_lym` and `.lym` are junctions into weft or tracked files on the code branch is invisible to every module but fabric.\nRedesign so the rest of lym reads code identity, diffs, dirtiness and pull request views through fabric with records already excluded, and no other package learns the layout.\nThe landed `single-repo-fabric-mode` already branches on `lymcwd.OneRepository` in `battencli/commitstatus.go` and `loomcli/wiring.go`; move those behind fabric too.\n\nFiled from the Sketch `fabric-single-repo-mode`.\n\nTakes: single-repo-fabric-mode's exports: fabricengine.RecordsPathsAt, the records-only-commit and fabric-written-merge-commit predicates, the merge trailer constant, the lym-view/ ref prefix constant and hubforge's one-repository hub; landingshed after landingshed-design-simplify lands; verifytree.Verify and DirtyPaths, gatecli's green record and testmap head reads, gitrepo's ChangedFilesSince and WorktreeChangedFiles, weaverengine's verify, driftengine's head and dirty reads, websterengine's gitwrap.go card checks and reconcileHead, findingtext.go and audit.go, commentlint's diff, loomshed's and loomcli's dirty readers, landingshed's Finalize, finalize_pr.go, prreview.go and parentalign.go, beamcli's pr verb, pullrequest's merge-state head check, sheddriver's and shedarbiter's head comparisons, fabricengine's HoldsWork, ParentHoldsTaskWork, OriginParentHoldsTaskWork and ReadParentTips\nDelivers: a leaf package on lymdirs that strips given records paths from trees, diffs and path sets and reads no git; every code identity judgment by tree, diff, dirtiness, changed files or held work excludes the records paths in both layouts; held work read as merging the task's code changes no code; webster's write audit tests records paths before the worktree-root case; fabric's general view-publish verb, its idempotent lym-view/\u003cbranch\u003e commit and force-push, the view refresh on a pair push, and PR-Review, Finalize's pull-request path and lym beam pr opening, comparing and recording pull requests on the view tip\nExports: the leaf package's records-path strip functions; fabricengine's view-publish verb returning the pull request head ref\n\nThe part changes these packages:\n\n- internal/recordspaths (about 200 changed lines)\n- internal/fabricengine (about 900 changed lines)\n- internal/landingshed (about 600 changed lines)\n- internal/websterengine (about 400 changed lines)\n- internal/driftengine (about 250 changed lines)\n- internal/driftcli (about 30 changed lines)\n- internal/verifytree (about 200 changed lines)\n- internal/gatecli (about 200 changed lines)\n- internal/gitrepo (about 150 changed lines)\n- internal/beamcli (about 150 changed lines)\n- internal/loomcli (about 120 changed lines)\n- internal/weaverengine (about 80 changed lines)\n- internal/weavercli (about 40 changed lines)\n- internal/commentlint (about 60 changed lines)\n- internal/loomshed (about 60 changed lines)\n- internal/pullrequest (about 60 changed lines)\n- internal/sheddriver (about 40 changed lines)\n- internal/shedarbiter (about 40 changed lines)\n",
-      "status": "draft",
-      "created": "2026-11-18T19:52:44Z",
-      "revised": "2026-11-19T12:05:15Z",
-      "profile": "solid",
-      "project": "single-repo-hub",
-      "discussed": true,
-      "record_body_sha256": "3399e9baee623898141b6530b755d5aefa0a374f442019302bde25d36844a4c8"
     },
     {
       "id": 1499,
