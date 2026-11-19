@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-19T12:16:43Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/two-repo-merge-probe-regression/_lym/landing/summary.md",
+      "at": "2026-11-19T12:46:51Z",
+      "started_at": "2026-11-19T12:16:49Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:21:31.736147124Z",
+          "end": "2026-11-19T12:21:31.75043689Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T12:38:24.486387034Z",
+          "end": "2026-11-19T12:38:24.559100163Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:21:31.806480894Z",
+          "end": "2026-11-19T12:37:38.185168103Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T12:37:38.838615529Z",
+          "end": "2026-11-19T12:38:24.349783595Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T12:38:24.796018829Z",
+          "end": "2026-11-19T12:45:47.624232328Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T12:45:47.744841236Z",
+          "end": "2026-11-19T12:45:48.046668446Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T12:45:48.135495048Z",
+          "end": "2026-11-19T12:45:48.135684523Z"
+        }
+      ]
     }
   ],
   "product": {
