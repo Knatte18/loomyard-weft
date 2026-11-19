@@ -1,55 +1,48 @@
-# Fail a gate tier run that leaves new untracked files in the worktree
+# gatecli: fail a tier run that leaves new untracked files in the worktree
 
-`lym gate test` now fails a tier run that leaves a new untracked, non-ignored file in the worktree.
-That catches the whole class behind the stray zero-byte `internal/hardenshed/.lock` that stopped `hardener-campaign`'s Finalize.
+`lym gate test` now fails a tier run that leaves new untracked, non-ignored files in the worktree it ran in.
+A test that writes outside its own temp directory used to leave the file behind unnoticed;
+a stray `internal/hardenshed/.lock` from such a run stopped a Finalize.
+The check catches that whole class, wherever the file comes from.
+
+No hardenshed test fix is included.
+The stray `.lock` did not reproduce on the base commit: every hardenshed test builds its paths under `t.TempDir()`.
 
 ## What changes
 
-- `internal/gatecli/strayfiles.go` (new) lists the worktree's untracked, non-ignored files with `git ls-files --others --exclude-standard -z` through `gitexec.Run`.
-  `checkStrayFiles` compares the listing taken after the run with the one taken before it.
-  When the run left new files, it writes one line to stderr and the log before the tier's summary line and adds the line to the failure report's causes.
-  A run that passed gets exit code 1; a run that failed keeps its own code.
-  The line names the sorted new files, at most `strayFilesListed` of them and a count of the rest.
-  It gives the way forward: make the test write under its temp directory, remove the files, then re-run.
-- `runTier` in `internal/gatecli/tierrun.go` now wraps the check around the tier.
-  The former body is now `runTierCommands`, which runs the tier once.
-  A `--copies` run is listed once around all its copies, so `runTierCopies` calls `runTierCommands` for each copy.
-  A run with no invocation takes no listing.
-  When git cannot list the files, as in a directory outside every repository, the run is not checked; that is logged at info.
-- `internal/gatecli/doc.go` adds a `# Stray files` section with the rule and its bound.
+- A tier run with an invocation lists the worktree's untracked files with `git ls-files --others --exclude-standard -z` before and after it.
+  A file in the second listing and not the first fails the run with exit 1; a run that already failed keeps its own code.
+- The failure prints one line to stderr and the log before the summary line.
+  It names at most `strayFilesListed` files, each as a quoted string, counts the rest, and gives the way forward:
+  move the write under the test's temp directory, remove the files, re-run.
+- The first listing is taken once per tier run, before its first attempt.
+  A rerun after a shortage or a crash is held to the same listing, so a file an earlier attempt left still fails it.
+- A `--copies` run is listed once around all its copies.
+  The failure report lists the stray-file failure as a failed run of its own.
+- A worktree git cannot list, such as a directory outside every repository, is not checked.
+  A run the gate refused before running anything is not checked either.
+- `internal/gatecli/doc.go` gains a "Stray files" section describing the check.
 
 ## Design decisions
 
-- **No hardenshed test changed.**
-  The board entry's first idea was to point the offending hardenshed test at `t.TempDir()`.
-  Every hardenshed test builds its record paths under `t.TempDir()`.
-  Their locks are named `<record>.json.lock` or `hubs.json.lock`.
-  `lock.TrackedFileLockPath` gives a bare `.lock` only for an empty path, and no current test passes one.
-  `lym gate test ./internal/hardenshed` on the base passed 93 of 93 tier0 tests and left the package directory clean.
-  The decision record's `Added after Discussion` entry "No hardenshed test fix; stray-file gate check instead" drops the test fix.
-  The run builds only the gate check.
-- **Before-and-after difference rather than "no untracked files".**
-  A worktree routinely holds untracked work in progress, so only files that appear during the run count.
-  Ignored files never count, and neither do files the record and cache directories hold, since git ignores them.
-- **Git CLI over go-git status.**
-  `git ls-files` honours `.git/info/exclude` and stays fast on a large tree.
-  The call goes through `gitexec.Run`, as `green.go`'s HEAD read does.
+- `runTier` is split: `runTierCommands` runs the commands once, and `runTierChecked` wraps it, or the copies run, with the listing check.
+  `runGreenAware` takes the listing itself and passes it to every attempt through `runTierChecked`.
+  `runTierCopies` calls `runTierCommands` per copy, so a copy is never checked alone.
+- Bound: a file another process makes in the worktree while the tier runs fails the run as well.
+  The check cannot tell it from a file a test wrote.
+- The new tests are `!windows`, as they drive a real git worktree.
 
-## Testing
+## To check by hand
 
-`TestRunTierStrayFiles` in `internal/gatecli/strayfiles_integration_test.go` is tier1 because it needs a real git repository.
-It drives `runTier` with a shell command in a fresh repository, one row per case:
-- a new file fails a passing tier;
-- a failing tier keeps its exit code;
-- a file untracked before the run, an ignored file and a file the run removes again are all not named;
-- the files beyond the cap are counted;
-- a directory outside every repository is not checked.
+- `internal/gatecli/copies.go`, `addFailedRuns`: a `--copies` run's stray-file failure is added to the failed runs.
+  Check that a copies run with red copies and a stray file reports both, not only the red copies.
+- `internal/gatecli/run.go`, `runGreenAware`, with `retryTier`: the listing is shared by every attempt.
+  Check that a file the first attempt left fails the run and is not taken as already present by the rerun.
+- `internal/gatecli/strayfiles_test.go` and `strayfiles_integration_test.go`: both carry `//go:build !windows`.
+  Check that this, not a runtime skip, is the intended way to keep them off Windows.
+- No test or gate run is recorded in this description; run `lym gate test ./internal/gatecli` before merging.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** gate
-
-A false positive fails every gate tier run in that worktree.
-That would happen for any existing test or tier command that leaves a non-ignored file in the tree, or for another process writing there while the tier runs.
-The check names the files, so such a failure is easy to diagnose, and a revert removes it.
+**Blast radius:** gatecli
