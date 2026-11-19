@@ -298,6 +298,14 @@ Rationale: D7 states this behaviour; HEAD as merge base in the prime gives an em
 - A writer that runs `lym gate test --gate batch` by hand on uncommitted edits gets a note from the maps there are, without its new functions;
   the note says so, names the dirty package, linked or its own, and tells it to commit and run again.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - prime-no-change-set-triage-untested (class design, severity MEDIUM, open in rounds 1)
+  - reach-seam-wiring-unasserted (class design, severity MEDIUM, open in rounds 1)
+  - reach-turn-forgets-listed-functions (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: for a function reached by a test of its own package and by a test of another package, the reader returns both, the own package's first.
