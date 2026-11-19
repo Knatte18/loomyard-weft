@@ -679,6 +679,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl"
       ]
     },
+    "14": {
+      "slug": "loom-harden-wiring",
+      "cards": [
+        "14-loom-harden-wiring",
+        "15-finalize-reap",
+        "16-harden-cli"
+      ],
+      "cardHashes": {
+        "14-loom-harden-wiring": "18336a6c8fcbe6c0f7b48da384643b2707fb65aa8dedcdf4dbe96c037956f576",
+        "15-finalize-reap": "33e85c05c4ffa711b6e34b94935d88e8db14e3ea7bb095461a5ab7e226ca8b84",
+        "16-harden-cli": "ffc21ff48b63c0a2a0f66bacf070e391c8e207aadced64958a05862b4cd44ba1"
+      },
+      "startSha": "f9abf62bef4fc8975c8f6c6b113bab116982a85c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T15:48:38Z",
+      "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "6": {
       "slug": "live-gate",
       "cards": [
@@ -780,7 +800,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
