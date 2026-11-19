@@ -1,6 +1,6 @@
 # Intake import drops the issue comments
 
-`intake-drops-issue-comments` · Task · bug, board · starting · Open-IDE
+`intake-drops-issue-comments` · Task · bug, board · running · Record-Write
 
 ## What was seen
 
