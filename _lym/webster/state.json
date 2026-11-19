@@ -1,6 +1,6 @@
 {
   "runGuid": "6b7dece764a9513a79cfad773a871c49",
-  "planFingerprint": "90cf779af22807e61af9542514578426064847d39c03e1a43fada44be6fee235",
+  "planFingerprint": "3e388796282eb455699e0f3009859bf3f90ed520c177dd687f66baeb2c7fffca",
   "planFileHashes": {
     "00-overview.md": "b3a010a1548e9e4d44d52cc5c3c76f8c8cc3a7bfb6afc030b4feef8fe007dfe1",
     "01-gate-copies.md": "c8f68da5a3900d94b745ec15c1d5851557697977caff551acfb5dd09fe537fbd",
@@ -21,7 +21,7 @@
     "16-harden-cli.md": "0b806ac49ee1489e4e0e238855d3eb6c5d4f9582f0d00ba6b5c61178d7f33b2f",
     "17-teardown-sandbox-clear.md": "e4d20226f8e9e82ce2f3b9acf13a4258844c2bf6d41d96b00c645fc9ccab970b",
     "18-treadle-callers.md": "416b9d5a73d71c169eb8a6cb1913773c24ea6ec77bf7a71060fdecce6b431c7a",
-    "19-treadle-delete.md": "fd3fdb91a7abea19a4927facbbecc62a83ef6eaf55edf35dff6cff8b16a02df2",
+    "19-treadle-delete.md": "e5818a8b06233bac757ceafc09d385a78d185f6c54229fc4207dd7d6fbb5a6de",
     "20-crucible-docs.md": "b8dd7bcca2ad0e82c8322fd8928a54adeac887724c6d8c2fe8ff3840bc4a4d25"
   },
   "planOverviewFrameHash": "4fa554a583edef7bab5a2f813055478604fedf14fa3a8ce8d65f75a732706e78",
@@ -738,15 +738,36 @@
       "cardHashes": {
         "17-teardown-sandbox-clear": "e4d20226f8e9e82ce2f3b9acf13a4258844c2bf6d41d96b00c645fc9ccab970b",
         "18-treadle-callers": "416b9d5a73d71c169eb8a6cb1913773c24ea6ec77bf7a71060fdecce6b431c7a",
-        "19-treadle-delete": "fd3fdb91a7abea19a4927facbbecc62a83ef6eaf55edf35dff6cff8b16a02df2"
+        "19-treadle-delete": "e5818a8b06233bac757ceafc09d385a78d185f6c54229fc4207dd7d6fbb5a6de"
       },
       "startSha": "8beee889e2e6260fe32491bea32cc656e3e93de9",
       "kind": "fork",
       "spawnedAt": "2026-11-19T16:12:49Z",
       "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-teardown-sandbox-clear",
+        "status": "done",
+        "head_sha": "79b3ba9995d6231257e1293d8051f0b7aa6b828d",
+        "deviations": [
+          "internal/agentconfig/config.go",
+          "internal/agentconfig/config_test.go",
+          "internal/agentconfig/reinterpret.go",
+          "internal/pairteardown/teardown.go",
+          "internal/shuttleparity/producers_test.go"
+        ]
+      },
+      "cardShas": [
+        "79b3ba9995d6231257e1293d8051f0b7aa6b828d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a3ae323e78f93b8d8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a3ae323e78f93b8d8.jsonl"
+      ]
     },
     "6": {
       "slug": "live-gate",
@@ -849,7 +870,7 @@
       ]
     }
   },
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
@@ -858,6 +879,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ae6a7865aa04e06e3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a72f14634d0201c3d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a4fd57710ad376e6b.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a3ae323e78f93b8d8.jsonl"
   ]
 }

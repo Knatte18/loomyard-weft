@@ -1,9 +1,9 @@
 # Card 19 — treadle-delete
 
 **Create:**
-- `plan:internal/agentconfig#RetiredRolesReinterpretation` -> `const RetiredRolesReinterpretation = "agents-treadle-roles-retired"`
-- `plan:internal/agentconfig#DropRetiredRoles` -> `func DropRetiredRoles(existing []byte, worktreeRoot, anchorDir string) ([]byte, []string, []string, error)`
-- `plan:internal/agentconfig_test#TestDropRetiredRoles` -> `func TestDropRetiredRoles(t *testing.T)`
+- `internal/agentconfig#RetiredRolesReinterpretation`
+- `internal/agentconfig#DropRetiredRoles`
+- `internal/agentconfig_test#TestDropRetiredRoles`
 
 **Delete:**
 - `internal/treadleengine#`
