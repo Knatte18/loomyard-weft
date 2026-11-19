@@ -29,4 +29,12 @@ Rationale: The file came from the campaign's pre-squash tree or another process;
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - copies-run-drops-stray-failure-from-report (class design, severity MEDIUM, open in rounds 1)
+  - rerun-treats-first-attempt-stray-files-as-present (class design, severity MEDIUM, open in rounds 1)
+  - stray-test-windows-runtime-skip (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
