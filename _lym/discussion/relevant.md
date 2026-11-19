@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/boardengine/board.go` `boardCriticalSection`, `PromoteTo` — the one write section every board write runs; D8's revision check joins it
+- `internal/boardengine/siblings.go` `UpsertTaskReporting` — the upsert write the page's create and edit call
+- `internal/boardengine/projectrelease.go` `SetStatusReleasingProject` — the status write behind release, draft and undraft
+- `internal/boardengine/taskguard.go` `checkTaskCreation`, `isRunAgentSession` — the run-agent rule D12 reuses
+- `internal/boardengine/render.go` `Render`, `RenderToDisk` — the render file map and manifest the two viewer files join
+- `internal/boardengine/replay.go` `FabricReplay` — claims the rendered names for a Bolt replay
+- `internal/boardcli/cli.go` — the board subtree's pre-run resolution, where `open` and `serve` are wired
+- `internal/creelcli/spawn.go` `spawnDaemon`, `reapDaemon` — the on-demand detached daemon spawn D11 follows
+- `internal/creelengine/server.go` — the single-instance lock and binary-replacement exit D11 follows
+- `internal/dobbyengine/start.go` `Live` — reads a daemon's liveness by trying its lock, the read D5 uses for the server
+- `internal/selfexec/selfexec.go` `New`, `Watcher.Replaced` — the binary-replacement check
+- `internal/selfexec/binary.go` `LymBinary` — names the lym binary for the server spawn and the VS Code tasks
+- `internal/fswatch/fswatch.go` `Watch` — the file-event source of the server's watch loop
+- `internal/lymdirs/dirs.go` — declares the hub-level `.lym` directory names; the server's directory joins them
+- `internal/ideengine/spawn.go` `LymBinary` — the ide module's binary seam the VS Code tasks use
+- `internal/vscode/config.go` `WriteConfig` — writes `tasks.json` with `reed attach`, where `board open` joins
+- `internal/vscode/keybindings.go` — the user keybindings block the two keys join
+- `internal/fabricengine/hubworkspace.go` `RegenerateHubWorkspace`, `InstallPairFolderNamer` — the workspace regeneration and the install pattern for D6's hook
+- `pattern/PATTERN-child-processes.md` — spawn logging, reaping and runproc registration for the server
+- `pattern/PATTERN-daemon-wakeups.md` — the wait rules and guard list the server's watch loop joins
