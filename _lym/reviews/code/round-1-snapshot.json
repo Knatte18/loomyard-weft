@@ -1,0 +1,19 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "47104c2913a89f7800f922c3d4d3df7f8d50e267",
+  "added_decisions": [
+    {
+      "title": "Mutation check order: trial before the mutation step (F6)",
+      "digest": "664be5d4da602cdc675f68bbf05284562c0045c85e241007fed1a19a666af2b7"
+    },
+    {
+      "title": "Reach turn bypasses Darn-Write's cold fixer (round 2 F1)",
+      "digest": "74f61df0ddabfc4e82001668286705295dd1f5a24e9d9edd449aa6243704674a"
+    },
+    {
+      "title": "Triage in the prime follows D7 (plan F10)",
+      "digest": "ca9912bc8b88c6e487d8fdae7d30a08d81b60c9305c75cac2d10a6a9ba05ebf5"
+    }
+  ]
+}
