@@ -600,6 +600,62 @@
       "body": "Imported from [issue #153](https://github.com/Knatte18/loomyard/issues/153).\n\n## What was seen\n\nOnly two reviews can be routed to the run's parent by setting: `pr_review_ask_parent` and `discussion_review_ask_parent` in `loom.yaml` or a task's `run_settings`.\nThe code review perch (Code-Burler-Review and Code-Burler-Fix) and the drift judge (Drift-Verify, Drift-Recheck) have no such key.\nTheir rulings reach the parent only when a finding is escalated as a decision call, or when an agent was told by hand to ask.\nA parent that wants to see every ruling of a darn run, which has no Discussion, cannot get it by configuration.\n\n## Wish\n\nAdd parent-review keys for the code review perch and the drift judge, parallel to `discussion_review_ask_parent`:\n\n- `code_review_ask_parent`: each code review round mails the parent a `[code-review request]` naming the review and fixer report, and waits for `lym loom parent-review answer` (satisfied or a findings file) before the Bouncer judges the round, with a timeout key as `discussion_review_parent_timeout_min` has.\n- `drift_judge_ask_parent`: the drift judge mails the parent its proposed rulings, every cell or a summary by case with the flagged cells named, and waits for the parent's agreement or changed rulings before it writes the judgement, with a timeout.\n\nBoth settable in `loom.yaml` (or `drift.yaml`) and in a task's `run_settings`.\n\n## Workaround\n\nTell the run's agents by creel to ask the parent before they finish a round or write a judgement.\n\n\n## Issue comment, 2026-11-19\n\nA related need: a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane. A setting that sends every question an agent would put to the operator to the run's parent by creel instead, with the parent's answer delivered back, would let the parent settle them without the operator relaying. Today the parent sees such a question only when the operator relays it or tells the agent to ask the parent.\n\n## Issue comment, 2026-11-19\n\nA second wish in the same direction: let the parent subscribe to a run's state, so lym mails it when the run reaches a named producer or state, for example `lym loom notify \u003cslug\u003e --on Drift-Verify,Drift-Expect,Code-Burler-Fix`, or a `run_settings` key such as `notify_parent_on: [Drift-Verify]`. The parent can then brief each agent of those rows as it starts, such as telling the drift judge to put its questions to the parent, without a polling watch on `lym loom status --watch`.",
       "created": "2026-11-19T09:28:39Z",
       "revised": "2026-11-19T09:28:39Z"
+    },
+    {
+      "id": 1508,
+      "handle": "F2",
+      "slug": "agent-questions-to-parent",
+      "title": "Send a run agent questions for the operator to the run parent instead",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A setting that routes every question a run agent would ask the operator in its pane to the parent by creel, with the answer delivered back",
+      "body": "## What was seen\n\nFrom a comment on issue #153 (2026-11-19): a run's agents (drift judge, Drift-Expect, perch fixer) put their questions to the operator in their own pane.\nThe parent sees such a question only when the operator relays it or tells the agent to ask the parent.\n\n## Idea\n\nA setting that sends every question an agent would put to the operator to the run's parent by creel instead, with the parent's answer delivered back,\nso the parent settles them without the operator relaying.\n\nRelated: `parent-review-code-and-drift` routes review rulings to the parent; this routes the agents' open questions.\n",
+      "created": "2026-11-19T09:29:19Z",
+      "revised": "2026-11-19T09:29:19Z"
+    },
+    {
+      "id": 1509,
+      "handle": "F4",
+      "slug": "parent-notify-on-row",
+      "title": "Mail the run parent when the run reaches a named row",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling",
+      "body": "## What was seen\n\nFrom a comment on issue #153 (2026-11-19): a parent that wants to brief the agent of a given row as it starts has to poll `lym loom status --watch`.\n\n## Idea\n\nLet the parent subscribe to a run's state, so lym mails it when the run reaches a named producer or state:\nfor example `lym loom notify \u003cslug\u003e --on Drift-Verify,Drift-Expect,Code-Burler-Fix`, or a `run_settings` key such as `notify_parent_on: [Drift-Verify]`.\nThe parent can then brief each agent of those rows as it starts, such as telling the drift judge to put its questions to the parent.\n",
+      "created": "2026-11-19T09:29:20Z",
+      "revised": "2026-11-19T09:29:20Z"
+    },
+    {
+      "id": 1510,
+      "handle": "B4",
+      "slug": "intake-drops-issue-comments",
+      "title": "Intake import drops the issue comments",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand",
+      "body": "## What was seen\n\n2026-11-19: `lym board intake import` of issue #153 recorded only its body; its two comments, each a further wish, were left on GitHub,\nand `intake list --full` shows only a comment count. The orch had to fetch them with `gh` by hand after the operator asked.\n\n## Idea\n\nImport carries the issue's comments, other than intake's own pointer comments, into the entry's body under a heading of their own,\nand `intake list --full` prints them, so the orch can split a comment that is a separate finding into its own note.\n",
+      "created": "2026-11-19T09:29:20Z",
+      "revised": "2026-11-19T09:29:20Z"
     }
   ],
   "prime_owner": "neve",
