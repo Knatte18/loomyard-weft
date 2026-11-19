@@ -1,0 +1,12 @@
+verdict: resume
+reason: >-
+  The stop is a bootstrap refusal (kind=bootstrap, transient unset): the step
+  said the code tip 633e4a831ed43b50ab7ccf6ccd57b73e10b4331a the run's last
+  transition names was not on origin yet, with the way forward "run lym batten
+  run hardenshed-test-stray-lock again once the code push lands". That push has
+  now landed. `git ls-remote origin` returns refs/heads/hardenshed-test-stray-lock
+  = 633e4a831ed43b50ab7ccf6ccd57b73e10b4331a, equal to the named commit (also
+  confirmed present locally: git cat-file -t reads commit, and branch --contains
+  lists origin/hardenshed-test-stray-lock). The cause was environmental and has
+  cleared, so a plain re-launch of the run settles it; no goto is needed, as the
+  stop is not blocked.
