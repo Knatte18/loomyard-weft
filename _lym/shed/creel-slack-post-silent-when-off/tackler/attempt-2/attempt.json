@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Code-Burler-Review",
+    "history_length": 9,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "fe73fb3ea10601526e59136d2ca2d9c94d19943e",
+    "branch": "creel-slack-post-silent-when-off",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-19T11:20:51.316136882+01:00",
+  "deadline": "2026-11-19T11:30:51.316136882+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/creel-slack-post-silent-when-off/_lym/shed/creel-slack-post-silent-when-off/drive-reports/drive-envelope-20261119-112051-adb9.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/creel-slack-post-silent-when-off/_lym/shed/creel-slack-post-silent-when-off/drive-reports/drive-report-20261119-112051-523c.md",
+  "strand_guid": "aad64ca1e9164ccee11f9e3a641d2d4f"
+}
