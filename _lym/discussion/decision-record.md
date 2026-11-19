@@ -28,4 +28,12 @@ Rationale: A removal by a computed path inside a top-level loop or if stalls a r
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - claudeengine-doc-bash-c-stale (class consistency, severity MEDIUM, open in rounds 1)
+  - keywords-widen-top-level (class decision, severity MEDIUM, open in rounds 1)
+  - script-argument-scan-overrun (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
