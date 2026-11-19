@@ -356,36 +356,6 @@
       "project": "code-cleanup"
     },
     {
-      "id": 1504,
-      "handle": "T4",
-      "slug": "gatefix-darn-missing-include",
-      "title": "gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom",
-        "stencil"
-      ],
-      "issues": [
-        149
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #149](https://github.com/Knatte18/loomyard/issues/149).\n\n## What happened\n\nThe loom run halted `failed` at `Darn-Write` with anomaly `producer-hard-failure`.\nThe error chain ended in the gate fixer's prompt build:\n\n```\nshedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: fill the gatefix-body-darn prompt: stencil: include \"loom-fragment-loosened-check\" has no entry in the includes\n```\n\n## Why it is abnormal\n\nThe `gatefix-body-darn` prompt references the include `loom-fragment-loosened-check`, but the gate fixer's launch supplies no entry for it.\nThe failure is deterministic prompt wiring, not a transient fault, and it kills the whole run at the point where the gate fixer is first needed.\n\n## What to do\n\nAdd the `loom-fragment-loosened-check` entry to the includes the gatefixer passes when it fills `gatefix-body-darn`, or drop the include from the prompt.\nAdd a test that fills every gatefix body prompt with the production includes map, so a missing include fails in CI rather than mid-run.\n\nProvenance: task `redundant-check-fixes`; note `loom-halt-2.md`.\n",
-      "status": "done",
-      "created": "2026-11-19T09:28:29Z",
-      "revised": "2026-11-19T10:51:11Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1505,
       "handle": "T8",
       "slug": "loop-ends-without-envelope",
@@ -509,7 +479,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "gatefix-darn-missing-include",
         "loop-ends-without-envelope",
         "parent-review-code-and-drift"
       ],

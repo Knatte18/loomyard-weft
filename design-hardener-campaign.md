@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-hardener-campaign.md)
 
-Depends on: [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md), [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md), [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md)
+Depends on: [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md), [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md)
 
 Filed from the Sketch `hardener`.
 
