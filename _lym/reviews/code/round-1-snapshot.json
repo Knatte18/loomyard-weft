@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "7b5264064b2c3a52f373ba4ab4e38217ea23d0d6",
+  "added_decisions": [
+    {
+      "title": "scribe:testing rule left out of this run",
+      "digest": "5f615177b81f87c209e2e4fa9c7ba794f706ba14ae3689876c158fe8b045a649"
+    }
+  ]
+}
