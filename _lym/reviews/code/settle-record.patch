@@ -1,0 +1,3053 @@
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index 80b0f944..2a978f9f 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -147,6 +147,17 @@ Read it as evidence for "a behavior the diff adds with no coverage", and for nam
+ A function it lists as reached by no test is a candidate, never a finding by itself.
+ When it is `none`, or says no current report exists, raise no finding about its absence.
+ 
++## Mutation report
++
++{{.mutation_report}}
++
++The note above is the advisory report `lym gate test` writes by mutating the lines the diff changes, read only when it still matches HEAD's tree.
++Each survivor is a changed line whose mutant every test covering it passed: a candidate for a missing check, never a finding by itself.
++Read each survivor's line and the tests that cover it.
++When a test could assert what the mutant changes, and that is the diff's own behavior or a contract its doc comment states, file a finding naming the line and the check the tests lack.
++A survivor no test can reasonably kill, such as a log field, a pure cache, a platform-only branch or a channel capacity, is no finding.
++When the note is `none`, or says no current report exists, raise no finding about its absence.
++
+ ## Amendment
+ 
+ {{.amendment}}
+diff --git a/contracts/stencils/rubric_test.go b/contracts/stencils/rubric_test.go
+index 8b732818..4e14c31e 100644
+--- a/contracts/stencils/rubric_test.go
++++ b/contracts/stencils/rubric_test.go
+@@ -18,11 +18,11 @@ import (
+ 
+ // rubricMarkerAllowlist is the complete set of top-level stencil markers a rubric may carry.
+ // They are specs_dir, stencils_dir, webster_record, gate_tiers and amendment.
+-// They also include review_input, review_base, redundancy_report and reach_report.
++// They also include review_input, review_base, redundancy_report, reach_report and mutation_report.
+ // internal/shedadapters.ReadRubric fills these markers as the rubric's own template at read time.
+ // A marker outside this set would sit inside the value the Bouncer and Burler prompts interpolate the rubric as.
+ // The fill's required-marker check cannot see such a marker, so this test must fail on it.
+-var rubricMarkerAllowlist = map[string]bool{"specs_dir": true, "stencils_dir": true, "webster_record": true, "gate_tiers": true, "amendment": true, "review_input": true, "review_base": true, "redundancy_report": true, "reach_report": true}
++var rubricMarkerAllowlist = map[string]bool{"specs_dir": true, "stencils_dir": true, "webster_record": true, "gate_tiers": true, "amendment": true, "review_input": true, "review_base": true, "redundancy_report": true, "reach_report": true, "mutation_report": true}
+ 
+ // TestLoomRubrics asserts, for each stencil-sourced rubric:
+ //   - its top-level marker set is a subset of rubricMarkerAllowlist, the same allowed set for every rubric:
+@@ -85,10 +85,12 @@ func TestLoomRubrics(t *testing.T) {
+ 			const reviewBase = "0123abcd4567ef"
+ 			const redundancyReport = "No current redundancy report: none written."
+ 			const reachReport = "No current reach report: none written."
++			const mutationReport = "No current mutation report: none written."
+ 			got, err := shedadapters.ReadRubric(dir, tt.name, "/abs/specs/dir", shedadapters.RubricNotes{
+ 				WebsterRecord: record, GateTiers: tier, Amendment: amendment, ReviewInput: reviewInput, ReviewBase: reviewBase,
+ 				RedundancyReport: func() string { return redundancyReport },
+ 				ReachReport:      func() string { return reachReport },
++				MutationReport:   func() string { return mutationReport },
+ 			})
+ 			if err != nil {
+ 				t.Fatalf("shedadapters.ReadRubric(%q, %q) = _, %v; want nil error", dir, tt.name, err)
+@@ -114,6 +116,9 @@ func TestLoomRubrics(t *testing.T) {
+ 			if carriesReport := strings.Contains(got, reachReport); carriesReport != (tt.name == "loom-rubric-code-review") {
+ 				t.Errorf("rendered %s carries the reach report note = %v; only the Code-Review rubric carries the marker", tt.name, carriesReport)
+ 			}
++			if carriesReport := strings.Contains(got, mutationReport); carriesReport != (tt.name == "loom-rubric-code-review") {
++				t.Errorf("rendered %s carries the mutation report note = %v; only the Code-Review rubric carries the marker", tt.name, carriesReport)
++			}
+ 			if carriesSpecs := strings.Contains(got, "/abs/specs/dir"); carriesSpecs != tt.namesSpecs {
+ 				t.Errorf("rendered %s carries the specs directory = %v; want %v", tt.name, carriesSpecs, tt.namesSpecs)
+ 			}
+diff --git a/docs/overview.md b/docs/overview.md
+index b1de1ec1..2e2fb80e 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -300,7 +300,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lym cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate test --map`, the per-package coverage maps built on command at the HEAD of the worktree it runs in; `lym gate redundant`, one package's redundancy candidates read from its coverage map and confirmed by mutation; `lym gate reach`, the tests that reach one function, or the landings of a branch that a test reaches, read from the coverage maps; `lym gate mutate`, the mutants of the lines the worktree's diff changes, run against the tests that cover them)
++├── internal/gatecli/             the gate CLI command (`lym gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lym gate status`, the holders of the hub's gate slots; `lym gate report`, the machine's run records totalled per slug and gate key; `lym gate test --map`, the per-package coverage maps built on command at the HEAD of the worktree it runs in; `lym gate redundant`, one package's redundancy candidates read from its coverage map and confirmed by mutation; `lym gate reach`, the tests that reach one function, or the landings of a branch that a test reaches, read from the coverage maps; `lym gate mutate`, the mutants of the lines the worktree's diff changes, run against the tests that cover them, a check the gate's `mutation` report step also runs)
+ ├── internal/helpcli/             the help CLI command (`lym help [<command>...]`, `lym help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lym a`, `lym s`, `lym p`, `lym r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+@@ -841,7 +841,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Status prints, once, the dobby section a beam's window draws, for the prime and for each local beam:
+   alive or not, the runs it drives with their state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, and the beam's orch: strand live, watcher live and the recorded session, then one adopt check item per subject, shown only when the hub holds a record of it: the subject, its state, the tier in flight, the tiers done and the paths of its log and output.
+   Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices and the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents), and spawns the board-tidy agent every few landings.
+-  No dobby builds the shared coverage maps: the operator builds them on command with `lym gate test --map`, and the gate's `reach` step refreshes only a task worktree's own.
++  No dobby builds the shared coverage maps: the operator builds them on command with `lym gate test --map`, and the gate's `reach` and `mutation` steps refresh only a task worktree's own.
+   It logs to its `dobby.log` the changes it sees, such as a task start, a run changing state and a failing pass episode, plus a heartbeat line every ten minutes.
+   A front task, filed through `internal/fronttask`, is the one open task of its worktree that dobby starts first, past `max_runs`, while no other task of that worktree starts.
+   Its `on_land` action runs once it lands or its entry is removed by hand with `lym board remove`, from a closed action table and on the subject's owner machine only.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 4d709bbf..25e64554 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -75,7 +75,7 @@
+ // Each run record carries the key as `gate_key`, empty for a call with manual flags.
+ // `--gate` opens no flag combination the manual flags lack.
+ // The exception is the key's lint and report steps.
+-// The Lint steps, Reach report and Redundancy report sections describe them.
++// The Lint steps, Reach report, Redundancy report and Mutation report sections describe them.
+ // `--tier` names a tier and may repeat.
+ // The default is tier0 when neither `--tier` nor `--upto` is given.
+ // A tier another listed tier covers is dropped and named as covered on stderr.
+@@ -677,6 +677,36 @@
+ // Bound: a map older than the files can make a function read as unreached.
+ // So can a test that runs the function in another process.
+ //
++// # Mutation report
++//
++// A `--gate` key whose `reports` lists `gateslot.ReportMutation` runs the mutation report step last.
++// It runs after the key's lints in an uncancelled call, under the same memory guard, whatever the key's scope.
++// The step is advisory: every failure it meets is an error line of its report, and it never changes the exit code.
++// It writes `MutationReport` through `internal/state` as `mutation.json` in the worktree's gate directory.
++// It prints one stderr line, which counts the mutants run, killed, survived and unjudged.
++// The line also counts the uncovered changed blocks, the packages not judged and any error lines.
++// It ends with the report's path.
++// A report it cannot write is logged at Warn.
++// A call one of whose runs failed gets a report marked `red_gate` that judges nothing.
++// So does a call outside every hub, a hub whose `scoper` is not `go`, or a task worktree with no parent branch.
++//
++// The step diffs from the base the reach step diffs from, HEAD in the prime, whose report records `prime`.
++// It then runs the refresh and the mutation check of the Mutate verb under the same keys.
++// Its slot holder record carries its own label.
++// Inside an enclosing gate run's slot it takes none.
++// The report holds the counts and every survivor, unjudged mutant, uncovered changed block and package not judged.
++// It also records the changed functions with their hashes and the hashes of the Go files of their packages.
++// `ReadMutationReport` reads a worktree's report.
++// `MutationReportMatches` matches one against a commit by its functions and file hashes, as `ReachReportMatches` does.
++// It never matches a report that judged nothing, a red-gate report or a prime report.
++// `MutationReport.ReviewLines` renders the counts and each survivor with its possible killers for a review.
++// It is cut at a line cap that names the report.
++// A report whose mutation call ended in error records no changed function, so it never matches a diff that changes one.
++// Bound: a survivor is a changed line no covering test checks, or one no test can reasonably check;
++// review tells them apart.
++// Bound: the file hashes cover the Go files of the changed packages only.
++// A change to a non-Go file a package's tests read, such as testdata, leaves the report matching HEAD.
++//
+ // # Reach verb
+ //
+ // `lym gate reach <file>#<Func>` prints the reach note of one function, read from the maps, and changes nothing.
+@@ -708,7 +738,7 @@
+ //
+ // `lym gate mutate [--base <rev>]` mutates the lines the worktree's diff changes.
+ // It lists the mutants no covering test kills.
+-// It is a hand verb for the mutation trial.
++// It is a hand verb; the mutation report step runs the same refresh and check in a gate call.
+ // It changes nothing but the worktree's own coverage maps, which its refresh writes, and the budgets bound its time.
+ // The base is `--base`, else the merge base with the parent branch.
+ // A worktree with no parent branch and no `--base`, the prime's case, is refused.
+@@ -731,6 +761,7 @@
+ // A block only a source-checking test covers is therefore uncovered.
+ // Each coverage build and plan runs whatever the budget, bounded by `redundancy_build_timeout_min`.
+ // `mutation_max_mutants` caps the mutants of the diff, taken one changed function at a time in turn across the packages.
++// A round with more functions than the cap leaves takes functions spread evenly over the order of package, file and name.
+ // The rest count as not run.
+ // Past `mutation_budget_min` the check starts no further mutant build or run.
+ // Every mutant left is unjudged for the budget.
+@@ -876,7 +907,7 @@
+ // The tier's log and failure report carry the line, and the tier is never rerun.
+ // A go-json tier's log and failure report also name the tests that had started and never passed, failed or skipped.
+ // `lym gate redundant`, `lym gate mutate` and `lym gate test --map` run the same guard.
+-// So do the refresh of the reach report step and the redundancy report step.
++// So do the refresh of the reach report step, the redundancy report step and the mutation report step.
+ // It watches their own process tree for the whole call, or for the step alone.
+ // It runs beside the kernel cap of `redundancy_test_memory_mb` on each test run, and each kill's line goes to stderr.
+ // A test run the guard kills in the redundancy report step or `lym gate redundant` is not judged,
+diff --git a/internal/gatecli/mutate.go b/internal/gatecli/mutate.go
+index 6c153d5e..e7b88114 100644
+--- a/internal/gatecli/mutate.go
++++ b/internal/gatecli/mutate.go
+@@ -1,4 +1,4 @@
+-// mutate.go implements `lym gate mutate`.
++// mutate.go implements `lym gate mutate` and the mutation check it shares with the mutation report step.
+ // The verb mutates the lines the worktree's diff changes and lists the mutants no covering test kills.
+ // It refreshes the worktree's own coverage maps of the changed packages.
+ // It then runs the mutation check inside one gate slot.
+@@ -81,7 +81,8 @@ The diff is from --base, else the merge base with the parent branch; a worktree
+ It refreshes the worktree's own coverage maps of the packages holding a changed function under reach_budget_min; the prime refreshes nothing.
+ A package is judged only with a fresh map: one the refresh wrote, or a map whose file hashes match the worktree, the hub's shared one in the prime.
+ Any other changed package is listed as not judged, with its reason and way forward.
+-It places at most one mutant on each changed line of a block a test covers, up to mutation_max_mutants over the changed functions in turn.
++It places at most one mutant on each changed line of a block a test covers, leaving out lines that only log or test another platform.
++It takes up to mutation_max_mutants over the changed functions in turn, spread evenly over them when the cap is short of one each.
+ It runs each mutant against the map's tests that cover its block until one fails, inside one gate slot bounded by mutation_budget_min.
+ A run past its time bound or the memory cap is unjudged, never a kill; a mutant every covering test passes is a survivor.
+ It prints the survivors with the tests of other packages that reach their function, the uncovered changed blocks, the packages not judged and the counts of mutants run, killed, survived and unjudged.
+@@ -147,7 +148,7 @@ func runMutate(ctx context.Context, out io.Writer, request mutateRequest) int {
+ 		return output.Err(out, fmt.Sprintf("gate mutate: cannot read the hub's gate config: %v; way forward: take the step it names, then re-run the same command", err))
+ 	}
+ 	cfg = cfg.WithDefaultDir(location.AnchorRel)
+-	if cfg.Scoper != "go" {
++	if !cfg.HasGoCoverageMaps() {
+ 		return output.Ok(out, map[string]any{"note": fmt.Sprintf(noteScoper, cfg.Scoper)})
+ 	}
+ 	root := location.WorktreePath()
+@@ -176,93 +177,142 @@ func runMutate(ctx context.Context, out io.Writer, request mutateRequest) int {
+ 	defer stop()
+ 	stopGuard, guardKilled := guardOwnTests(runCtx, cfg.MemoryQuit(), request.stderr)
+ 	defer stopGuard()
+-	cancelled := func() int {
+-		output.Err(out, "gate mutate: the call was cancelled; way forward: re-run the same command")
+-		return exitAfterSignal(caught, 1)
+-	}
+ 
+-	changed, err := impactset.ChangedPaths(runCtx, root, base)
++	found, err := mutationCall{
++		ctx: runCtx, cfg: cfg, location: location, root: root, module: module, fabric: fabric, prime: prime, base: base,
++		request: request, hubEnv: hubEnv, guardKilled: guardKilled, site: mutateSite,
++	}.run()
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: %v; way forward: re-run the same command", err))
++		if runCtx.Err() != nil {
++			output.Err(out, "gate mutate: the call was cancelled; way forward: re-run the same command")
++			return exitAfterSignal(caught, 1)
++		}
++		return output.Err(out, "gate mutate: "+err.Error())
+ 	}
+-	head := workingTree{root: root}
+-	funcs, err := changedFuncsAt(head, fabric, base, module, changed)
++	answer := map[string]any{"base": base, "prime": prime, "changed_functions": len(found.funcs)}
++	if len(found.funcs) == 0 {
++		answer["note"] = "the diff changes no function, so nothing was mutated"
++	}
++	return output.Ok(out, fillMutateAnswer(answer, found))
++}
++
++// mutationCall is one mutation check of a worktree's diff, as `lym gate mutate` and the mutation report step run it.
++type mutationCall struct {
++	ctx      context.Context
++	cfg      gateslot.Config
++	location *lymcwd.Location
++	// root is the worktree root, module the Go module the check judges and fabric the worktree's fabric.
++	root   string
++	module goModule
++	fabric *fabricengine.Fabric
++	// prime is set for a call in the hub's prime, which refreshes no map and reads the shared ones.
++	prime bool
++	// base is the commit the diff is taken from.
++	base string
++	// request holds the go command, the environment, the units and the grace of the builds and runs; its base is not read.
++	request mutateRequest
++	// hubEnv is the hub env module's config, whose variables the check's children start with.
++	hubEnv envconfig.Config
++	// guardKilled reports whether the memory guard killed the process with a pid; nil means it killed none.
++	guardKilled func(pid int) bool
++	// site labels the slot holder record of the check.
++	site string
++}
++
++// mutationFindings is what a mutationCall found.
++type mutationFindings struct {
++	// funcs are the functions the diff changes.
++	funcs   []testreach.ChangedFunc
++	outcome mutateOutcome
++	// notJudged are the changed packages left out before the check for their maps; the check's own are in outcome.
++	notJudged []MutationNotJudged
++	// refreshErrors are the error lines of the maps' refresh.
++	refreshErrors []string
++}
++
++// run finds the functions and lines the diff changes, refreshes the maps of their packages and runs the mutation check.
++// A diff that changes no function mutates nothing and returns findings with no function.
++// The error carries its own way forward.
++// Once the call's context is cancelled the error may be the context's own or one the cancel caused.
++func (c mutationCall) run() (mutationFindings, error) {
++	found := mutationFindings{outcome: newMutateOutcome(), notJudged: []MutationNotJudged{}}
++	changed, err := impactset.ChangedPaths(c.ctx, c.root, c.base)
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: find the changed functions: %v; way forward: fix the file it names, then re-run the same command", err))
++		return found, fmt.Errorf("%w; way forward: re-run the same command", err)
++	}
++	head := workingTree{root: c.root}
++	if found.funcs, err = changedFuncsAt(head, c.fabric, c.base, c.module, changed); err != nil {
++		return found, fmt.Errorf("find the changed functions: %w; way forward: fix the file it names, then re-run the same command", err)
+ 	}
+-	lines, err := changedLinesAt(head, fabric, base, module, changed)
++	lines, err := changedLinesAt(head, c.fabric, c.base, c.module, changed)
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: find the changed lines: %v; way forward: re-run the same command", err))
++		return found, fmt.Errorf("find the changed lines: %w; way forward: re-run the same command", err)
+ 	}
+-	answer := map[string]any{"base": base, "prime": prime, "changed_functions": len(funcs)}
+-	outcome := newMutateOutcome()
+-	if len(funcs) == 0 {
+-		answer["note"] = "the diff changes no function, so nothing was mutated"
+-		return output.Ok(out, fillMutateAnswer(answer, outcome, []mutateNotJudged{}, nil))
++	if len(found.funcs) == 0 {
++		return found, nil
+ 	}
+ 
+ 	step := reachStep{
+-		ctx: runCtx, stderr: request.stderr, cfg: cfg, location: location, root: root, environ: request.environ, goBinary: request.goBinary,
+-		minuteUnit: request.minuteUnit, secondUnit: request.secondUnit, grace: request.grace, guardKilled: guardKilled,
++		ctx: c.ctx, stderr: c.request.stderr, cfg: c.cfg, location: c.location, root: c.root, environ: c.request.environ, goBinary: c.request.goBinary,
++		minuteUnit: c.request.minuteUnit, secondUnit: c.request.secondUnit, grace: c.request.grace, guardKilled: c.guardKilled,
+ 	}
+ 	var refresh ReachReport
+-	step.refreshMaps(&refresh, module, funcs, prime)
+-	if runCtx.Err() != nil {
+-		return cancelled()
++	step.refreshMaps(&refresh, c.module, found.funcs, c.prime)
++	found.refreshErrors = refresh.Errors
++	if err := c.ctx.Err(); err != nil {
++		return found, err
+ 	}
+-	mapsDir, err := coverageMapsDir(location)
++	mapsDir, err := coverageMapsDir(c.location)
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: %v; way forward: re-run the same command", err))
++		return found, fmt.Errorf("%w; way forward: re-run the same command", err)
+ 	}
+-	fresh, notJudged, err := freshMaps(module, mapsDir, prime, changedPackages(module, funcs), refresh)
++	fresh, notJudged, err := freshMaps(c.module, mapsDir, c.prime, changedPackages(c.module, found.funcs), refresh)
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: %v", err))
++		return found, err
+ 	}
++	found.notJudged = notJudged
+ 	if len(fresh) == 0 {
+-		return output.Ok(out, fillMutateAnswer(answer, outcome, notJudged, refresh.Errors))
++		return found, nil
+ 	}
+-	reader, err := testreach.Open(reachModuleOf(module), testcover.Dir(fabricengine.BoltDir(location.HubPath)), step.worktreeMapsDir(prime))
++	reader, err := testreach.Open(reachModuleOf(c.module), testcover.Dir(fabricengine.BoltDir(c.location.HubPath)), step.worktreeMapsDir(c.prime))
+ 	if err != nil {
+-		return output.Err(out, fmt.Sprintf("gate mutate: read the coverage maps: %v; way forward: re-run the same command", err))
++		return found, fmt.Errorf("read the coverage maps: %w; way forward: re-run the same command", err)
+ 	}
+ 
+ 	holder := &mutationCheck{
+-		ctx: runCtx, request: request.checkRequest(), location: location, pool: hubgeom.GateSlots(location), tiers: mappedTierConfigs(cfg),
+-		moduleDir:    module.dir,
+-		buildTimeout: time.Duration(cfg.RedundancyBuildTimeoutMin) * request.minuteUnit,
+-		testTimeout:  time.Duration(cfg.RedundancyTestTimeoutSec) * request.secondUnit,
+-		testMemory:   cfg.RedundancyTestMemory(),
+-		guardKilled:  guardKilled,
+-		env:          gateEnv(request.environ, hubEnv),
+-		site:         mutateSite,
++		ctx: c.ctx, request: c.request.checkRequest(), location: c.location, pool: hubgeom.GateSlots(c.location), tiers: mappedTierConfigs(c.cfg),
++		moduleDir:    c.module.dir,
++		buildTimeout: time.Duration(c.cfg.RedundancyBuildTimeoutMin) * c.request.minuteUnit,
++		testTimeout:  time.Duration(c.cfg.RedundancyTestTimeoutSec) * c.request.secondUnit,
++		testMemory:   c.cfg.RedundancyTestMemory(),
++		guardKilled:  c.guardKilled,
++		env:          gateEnv(c.request.environ, c.hubEnv),
++		site:         c.site,
+ 	}
+ 	defer holder.close()
+ 	check := &diffMutation{
+-		holder: holder, module: module, reader: reader, fresh: fresh, changedLines: lines,
+-		maxMutants: cfg.MutationMaxMutants, budget: time.Duration(cfg.MutationBudgetMin) * request.minuteUnit,
+-		outcome: outcome,
++		holder: holder, module: c.module, reader: reader, fresh: fresh, changedLines: lines,
++		maxMutants: c.cfg.MutationMaxMutants, budget: time.Duration(c.cfg.MutationBudgetMin) * c.request.minuteUnit,
++		outcome: found.outcome,
+ 	}
+-	outcome, err = check.run()
++	outcome, err := check.run()
++	found.outcome = outcome
+ 	if err != nil {
+-		if runCtx.Err() != nil {
+-			return cancelled()
+-		}
+-		return output.Err(out, fmt.Sprintf("gate mutate: the mutation check failed: %v; way forward: fix the build or test failure it names, then re-run the same command", err))
++		return found, fmt.Errorf("the mutation check failed: %w; way forward: fix the build or test failure it names, then re-run the same command", err)
+ 	}
+-	return output.Ok(out, fillMutateAnswer(answer, outcome, notJudged, refresh.Errors))
++	return found, nil
+ }
+ 
+ // fillMutateAnswer fills answer with what the check found and returns it.
+-// notJudged are the changed packages left out before the check, and each package the check could not plan joins them.
+-// refreshErrors are the error lines of the maps' refresh.
+-func fillMutateAnswer(answer map[string]any, outcome mutateOutcome, notJudged []mutateNotJudged, refreshErrors []string) map[string]any {
+-	answer["errors"] = append([]string{}, refreshErrors...)
+-	answer["mutants"] = outcome.counts
+-	answer["runs"] = outcome.runs
+-	answer["survivors"] = outcome.survivors
+-	answer["unjudged_mutants"] = outcome.unjudged
+-	answer["uncovered_blocks"] = outcome.uncovered
+-	answer["not_judged"] = append(notJudged, outcome.notJudged...)
++// The packages left out before the check and each package the check could not plan are listed as not judged together.
++func fillMutateAnswer(answer map[string]any, found mutationFindings) map[string]any {
++	answer["errors"] = append([]string{}, found.refreshErrors...)
++	answer["mutants"] = found.outcome.counts
++	answer["runs"] = found.outcome.runs
++	answer["survivors"] = found.outcome.survivors
++	answer["unjudged_mutants"] = found.outcome.unjudged
++	answer["uncovered_blocks"] = found.outcome.uncovered
++	answer["not_judged"] = append(found.notJudged, found.outcome.notJudged...)
+ 	return answer
+ }
+ 
+@@ -271,12 +321,12 @@ func fillMutateAnswer(answer map[string]any, outcome mutateOutcome, notJudged []
+ // A task worktree reads its own maps, and a package the refresh left unrefreshed is not judged for the refresh's reason.
+ // The prime reads the hub's shared maps, which the refresh never touches.
+ // The error is a map that cannot be read.
+-func freshMaps(module goModule, mapsDir string, prime bool, packages []string, refresh ReachReport) (map[string]testcover.Map, []mutateNotJudged, error) {
++func freshMaps(module goModule, mapsDir string, prime bool, packages []string, refresh ReachReport) (map[string]testcover.Map, []MutationNotJudged, error) {
+ 	fresh := map[string]testcover.Map{}
+-	notJudged := []mutateNotJudged{}
++	notJudged := []MutationNotJudged{}
+ 	for _, pkg := range packages {
+ 		if reason := unrefreshedReason(refresh.Unrefreshed, pkg); reason != "" && !prime {
+-			notJudged = append(notJudged, mutateNotJudged{Package: pkg, Reason: reason})
++			notJudged = append(notJudged, MutationNotJudged{Package: pkg, Reason: reason})
+ 			continue
+ 		}
+ 		m, found, err := testreach.ReadPackageMap(mapsDir, pkg)
+@@ -301,7 +351,7 @@ func freshMaps(module goModule, mapsDir string, prime bool, packages []string, r
+ 				reason = reasonSharedMapStale
+ 			}
+ 		}
+-		notJudged = append(notJudged, mutateNotJudged{Package: pkg, Reason: reason})
++		notJudged = append(notJudged, MutationNotJudged{Package: pkg, Reason: reason})
+ 	}
+ 	return fresh, notJudged, nil
+ }
+diff --git a/internal/gatecli/mutate_integration_test.go b/internal/gatecli/mutate_integration_test.go
+index b6f2fe3e..2767a730 100644
+--- a/internal/gatecli/mutate_integration_test.go
++++ b/internal/gatecli/mutate_integration_test.go
+@@ -7,6 +7,7 @@ package gatecli
+ 
+ import (
+ 	"bytes"
++	"context"
+ 	"encoding/json"
+ 	"os"
+ 	"path/filepath"
+@@ -19,8 +20,11 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testcover"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -177,9 +181,10 @@ func editMutateCalc(t *testing.T, root, from, to string) {
+ }
+ 
+ // mutateGate returns the hub's gate.yaml with the top-level lines extra adds.
++// Its tier0 passes at once, so a gate call runs its report steps.
+ func mutateGate(extra string) string {
+ 	return "slots: 2\nscoper: go\nredundancy_test_timeout_sec: 20\nredundancy_test_memory_mb: 128\n" + extra +
+-		"tiers:\n  tier0: {command: x, timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
++		"tiers:\n  tier0: {command: 'true', timeout_min: 1, counter: go-json, env: {LYM_TEST_TIER: \"0\"}}\n"
+ }
+ 
+ // lineOf returns the 1-based number of the first line of text that holds needle.
+@@ -196,16 +201,16 @@ func lineOf(t *testing.T, text, needle string) int {
+ 
+ // mutateVerbAnswer is the part of a `lym gate mutate` envelope the rows compare.
+ type mutateVerbAnswer struct {
+-	OK              bool                   `json:"ok"`
+-	Error           string                 `json:"error"`
+-	Note            string                 `json:"note"`
+-	Base            string                 `json:"base"`
+-	Mutants         mutateCounts           `json:"mutants"`
+-	Runs            int                    `json:"runs"`
+-	Survivors       []mutateSurvivor       `json:"survivors"`
+-	UnjudgedMutants []mutateUnjudgedMutant `json:"unjudged_mutants"`
+-	UncoveredBlocks []mutateUncoveredBlock `json:"uncovered_blocks"`
+-	NotJudged       []mutateNotJudged      `json:"not_judged"`
++	OK              bool                     `json:"ok"`
++	Error           string                   `json:"error"`
++	Note            string                   `json:"note"`
++	Base            string                   `json:"base"`
++	Mutants         MutationCounts           `json:"mutants"`
++	Runs            int                      `json:"runs"`
++	Survivors       []MutationSurvivor       `json:"survivors"`
++	UnjudgedMutants []MutationUnjudgedMutant `json:"unjudged_mutants"`
++	UncoveredBlocks []MutationUncoveredBlock `json:"uncovered_blocks"`
++	NotJudged       []MutationNotJudged      `json:"not_judged"`
+ }
+ 
+ // runMutateVerb runs the command root over the directory cwd with args and returns its exit code and envelope.
+@@ -247,6 +252,26 @@ func unjudgedAt(answer mutateVerbAnswer, line int) string {
+ 	return ""
+ }
+ 
++// mutationStepAt returns the mutation report step of the worktree at root, with its location and its stderr buffer.
++func mutationStepAt(t *testing.T, root string) (mutationStep, *lymcwd.Location, *bytes.Buffer) {
++	t.Helper()
++	location, err := lymcwd.ResolveWorktree(root)
++	if err != nil {
++		t.Fatal(err)
++	}
++	cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(location))
++	if err != nil {
++		t.Fatal(err)
++	}
++	var stderr bytes.Buffer
++	step := mutationStep{reach: reachStep{
++		ctx: context.Background(), stderr: &stderr, cfg: cfg.WithDefaultDir(location.AnchorRel), location: location, root: location.WorktreePath(),
++		gateKey: "darn-write", environ: os.Environ(), goBinary: defaultGoBinary,
++		minuteUnit: time.Minute, secondUnit: time.Second, grace: defaultPipeWaitDelay,
++	}}
++	return step, location, &stderr
++}
++
+ // TestGateMutate mutates the diffs of a hub's module and reads the verdicts back, with real builds and runs.
+ func TestGateMutate(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -318,7 +343,7 @@ func TestGateMutate(t *testing.T) {
+ 		requireMutateAnswer(t, code, answer)
+ 		// Clamp alone changed since afterScale: its condition and its constant, each killed by one run.
+ 		// Both tests of Clamp cover each mutant's block, so a second run would show in the count.
+-		want := mutateCounts{Run: 2, Killed: 2}
++		want := MutationCounts{Run: 2, Killed: 2}
+ 		if answer.Mutants != want || answer.Runs != 2 || len(answer.Survivors) != 0 || len(answer.UnjudgedMutants) != 0 || len(answer.NotJudged) != 0 {
+ 			t.Errorf("lym gate mutate --base afterScale = %+v, %d runs, survivors %v, unjudged %v, not judged %v; want %+v from 2 runs and nothing else",
+ 				answer.Mutants, answer.Runs, answer.Survivors, answer.UnjudgedMutants, answer.NotJudged, want)
+@@ -330,7 +355,7 @@ func TestGateMutate(t *testing.T) {
+ 		code, answer := runMutateVerb(t, Command(), prime, "mutate", "--base", afterTallyHoardSpare)
+ 		requireMutateAnswer(t, code, answer)
+ 		// Scale joins Clamp: its two mutants survive, since TestScaleRuns runs Scale and checks nothing.
+-		want := mutateCounts{Run: 4, Killed: 2, Survived: 2}
++		want := MutationCounts{Run: 4, Killed: 2, Survived: 2}
+ 		if answer.Mutants != want || !slices.Equal(survivorLines(answer), []int{scaleLimit, scaleIf}) {
+ 			t.Fatalf("lym gate mutate --base afterTallyHoardSpare = %+v, survivors on lines %v; want %+v and survivors on lines %v",
+ 				answer.Mutants, survivorLines(answer), want, []int{scaleLimit, scaleIf})
+@@ -352,7 +377,7 @@ func TestGateMutate(t *testing.T) {
+ 		// Clamp's two mutants and Tally's condition, constant and dropped increment die.
+ 		// Scale's two survive.
+ 		// Tally's dropped decrement ends endless at the time bound and Hoard's negated loop at the memory cap.
+-		want := mutateCounts{Run: 9, Killed: 5, Survived: 2, Unjudged: 2}
++		want := MutationCounts{Run: 9, Killed: 5, Survived: 2, Unjudged: 2}
+ 		if answer.Mutants != want || !slices.Equal(survivorLines(answer), []int{scaleLimit, scaleIf}) {
+ 			t.Errorf("lym gate mutate --base seed = %+v, survivors on lines %v; want %+v and survivors on lines %v",
+ 				answer.Mutants, survivorLines(answer), want, []int{scaleLimit, scaleIf})
+@@ -365,7 +390,7 @@ func TestGateMutate(t *testing.T) {
+ 			t.Errorf("the negated loop on line %d is unjudged for %q; want the memory cap", hoardLoop, reason)
+ 		}
+ 		// Nothing runs Spare, so its changed block is uncovered and holds no mutant.
+-		if !slices.Contains(answer.UncoveredBlocks, mutateUncoveredBlock{Package: "calc", File: "calc.go", Function: "Spare"}) {
++		if !slices.Contains(answer.UncoveredBlocks, MutationUncoveredBlock{Package: "calc", File: "calc.go", Function: "Spare"}) {
+ 			t.Errorf("lym gate mutate uncovered blocks = %v; want Spare's", answer.UncoveredBlocks)
+ 		}
+ 		if reason := unjudgedAt(answer, spareReturn); reason != "" || slices.Contains(survivorLines(answer), spareReturn) {
+@@ -377,7 +402,7 @@ func TestGateMutate(t *testing.T) {
+ 		setGate("")
+ 		code, answer := runMutateVerb(t, Command(), prime, "mutate", "--base", gitkit.RevParse(t, prime, "HEAD"))
+ 		requireMutateAnswer(t, code, answer)
+-		if !strings.Contains(answer.Note, "the diff changes no function") || answer.Mutants != (mutateCounts{}) || answer.Runs != 0 {
++		if !strings.Contains(answer.Note, "the diff changes no function") || answer.Mutants != (MutationCounts{}) || answer.Runs != 0 {
+ 			t.Errorf("lym gate mutate --base HEAD = note %q, %+v, %d runs; want the changes-no-function note and no mutant", answer.Note, answer.Mutants, answer.Runs)
+ 		}
+ 	})
+@@ -389,7 +414,7 @@ func TestGateMutate(t *testing.T) {
+ 		code, answer := runMutateVerb(t, Command(), prime, "mutate", "--base", seed)
+ 		requireMutateAnswer(t, code, answer)
+ 		if len(answer.NotJudged) != 1 || answer.NotJudged[0].Package != "calc" || answer.NotJudged[0].Reason != reasonSharedMapStale ||
+-			answer.Mutants != (mutateCounts{}) {
++			answer.Mutants != (MutationCounts{}) {
+ 			t.Errorf("lym gate mutate = %+v, not judged %+v; want calc not judged for %q and no mutant", answer.Mutants, answer.NotJudged, reasonSharedMapStale)
+ 		}
+ 	})
+@@ -398,11 +423,11 @@ func TestGateMutate(t *testing.T) {
+ 		name  string
+ 		max   string
+ 		base  string
+-		want  mutateCounts
++		want  MutationCounts
+ 		lines []int
+ 	}{
+-		{name: "ACapOfOneRunsOneMutant", max: "1", base: seed, want: mutateCounts{Run: 1, Killed: 1}},
+-		{name: "ACapOfTwoOverTwoChangedFunctionsPlansOneMutantInEach", max: "2", base: afterTallyHoardSpare, want: mutateCounts{Run: 2, Killed: 1, Survived: 1}, lines: []int{scaleLimit}},
++		{name: "ACapOfOneRunsOneMutant", max: "1", base: seed, want: MutationCounts{Run: 1, Killed: 1}},
++		{name: "ACapOfTwoOverTwoChangedFunctionsPlansOneMutantInEach", max: "2", base: afterTallyHoardSpare, want: MutationCounts{Run: 2, Killed: 1, Survived: 1}, lines: []int{scaleLimit}},
+ 	}
+ 	for _, tt := range capRows {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -410,7 +435,7 @@ func TestGateMutate(t *testing.T) {
+ 			code, answer := runMutateVerb(t, Command(), prime, "mutate", "--base", tt.base)
+ 			requireMutateAnswer(t, code, answer)
+ 			// Every planned mutant that the cap leaves out is counted not run.
+-			wantAll := mutateCounts{Run: tt.want.Run, Killed: tt.want.Killed, Survived: tt.want.Survived}
++			wantAll := MutationCounts{Run: tt.want.Run, Killed: tt.want.Killed, Survived: tt.want.Survived}
+ 			notRun := answer.Mutants.NotRun
+ 			answer.Mutants.NotRun = 0
+ 			if answer.Mutants != wantAll || !slices.Equal(survivorLines(answer), tt.lines) || notRun == 0 {
+@@ -436,7 +461,7 @@ func TestGateMutate(t *testing.T) {
+ 		requireMutateAnswer(t, code, answer)
+ 		if len(answer.NotJudged) != 1 || answer.NotJudged[0].Package != "calc" ||
+ 			!strings.Contains(answer.NotJudged[0].Reason, "uncommitted file") || !strings.Contains(answer.NotJudged[0].Reason, "commit it") ||
+-			answer.Mutants != (mutateCounts{}) {
++			answer.Mutants != (MutationCounts{}) {
+ 			t.Errorf("lym gate mutate = %+v, not judged %+v; want calc not judged for its uncommitted file and no mutant", answer.Mutants, answer.NotJudged)
+ 		}
+ 	})
+@@ -444,7 +469,7 @@ func TestGateMutate(t *testing.T) {
+ 	t.Run("APackageWithAStaleWorktreeMapAndCommittedFilesIsRefreshedThenJudged", func(t *testing.T) {
+ 		code, answer := runMutateVerb(t, Command(), pair, "mutate")
+ 		requireMutateAnswer(t, code, answer)
+-		want := mutateCounts{Run: 1, Killed: 1}
++		want := MutationCounts{Run: 1, Killed: 1}
+ 		if answer.Mutants != want || len(answer.NotJudged) != 0 || len(answer.Survivors) != 0 {
+ 			t.Errorf("lym gate mutate = %+v, not judged %+v, survivors %v; want calc refreshed and its one mutant killed: %+v",
+ 				answer.Mutants, answer.NotJudged, answer.Survivors, want)
+@@ -459,7 +484,7 @@ func TestGateMutate(t *testing.T) {
+ 		t.Cleanup(func() { setGate("") })
+ 		code, answer := runMutateVerb(t, mutateCmd(defaultGoBinary, time.Millisecond, defaultPipeWaitDelay), pair)
+ 		requireMutateAnswer(t, code, answer)
+-		if answer.Mutants != (mutateCounts{Unjudged: 1}) || len(answer.UnjudgedMutants) != 1 ||
++		if answer.Mutants != (MutationCounts{Unjudged: 1}) || len(answer.UnjudgedMutants) != 1 ||
+ 			!strings.Contains(answer.UnjudgedMutants[0].Reason, "mutation_budget_min") {
+ 			t.Errorf("lym gate mutate = %+v, unjudged %+v; want the one planned mutant unjudged for mutation_budget_min", answer.Mutants, answer.UnjudgedMutants)
+ 		}
+@@ -472,11 +497,140 @@ func TestGateMutate(t *testing.T) {
+ 		code, answer := runMutateVerb(t, mutateCmd(defaultGoBinary, time.Nanosecond, defaultPipeWaitDelay), pair)
+ 		requireMutateAnswer(t, code, answer)
+ 		if len(answer.NotJudged) != 1 || answer.NotJudged[0].Package != "calc" || !strings.Contains(answer.NotJudged[0].Reason, "reach_budget_min") ||
+-			answer.Mutants != (mutateCounts{}) {
++			answer.Mutants != (MutationCounts{}) {
+ 			t.Errorf("lym gate mutate = %+v, not judged %+v; want calc not judged past reach_budget_min and no mutant", answer.Mutants, answer.NotJudged)
+ 		}
+ 	})
+ 
++	t.Run("AGateCallListingMutationWritesItsFindingsAndPrintsOneSummaryLine", func(t *testing.T) {
++		setGate("gates:\n  darn-write: {tiers: [0], scope: all, reports: [mutation]}\n")
++		t.Cleanup(func() { setGate("") })
++		var out, stderr bytes.Buffer
++		code := runTest(lymcwd.WithCwd(context.Background(), pair), &out, testRequest{
++			goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute,
++			secondUnit: time.Second, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay, stderr: &stderr, gate: "darn-write",
++		})
++		location, err := lymcwd.ResolveWorktree(pair)
++		if err != nil {
++			t.Fatal(err)
++		}
++		report, found, err := ReadMutationReport(location)
++		if code != 0 || err != nil || !found {
++			t.Fatalf("lym gate test --gate darn-write = exit %d, report found %v, error %v, stderr %s; want exit 0 and a report", code, found, err, stderr.String())
++		}
++		// The step refreshes the stale worktree map, and the one mutant of the pair's changed line in Clamp dies.
++		if report.GateKey != "darn-write" || report.Mutants != (MutationCounts{Run: 1, Killed: 1}) || len(report.Functions) != 1 || report.Functions[0].Func != "Clamp" {
++			t.Errorf("mutation report = %+v; want darn-write's, with Clamp's one mutant killed", report)
++		}
++		var summaries []string
++		for _, line := range strings.Split(stderr.String(), "\n") {
++			if strings.HasPrefix(line, "gate test: mutation report: ") {
++				summaries = append(summaries, line)
++			}
++		}
++		want := "gate test: mutation report: 1 mutants run, 1 killed, 0 survived, 0 unjudged, 0 uncovered changed blocks, 0 packages not judged; written to " +
++			mutationReportPath(location)
++		if !slices.Equal(summaries, []string{want}) {
++			t.Errorf("stderr mutation report lines = %q; want only %q", summaries, want)
++		}
++		if matches, err := MutationReportMatches(location, report, gitkit.RevParse(t, pair, "HEAD")); err != nil || !matches {
++			t.Errorf("MutationReportMatches(HEAD) = %v, %v; want the report to hold for the HEAD it was written at", matches, err)
++		}
++		// A commit that changes Clamp again leaves the report naming the Clamp it judged.
++		editMutateCalc(t, pair, "\t\treturn 0 // clamped again\n", "\t\treturn 0 // clamped once more\n")
++		gitkit.Git(t, pair, "commit", "-q", "-a", "-m", "annotate clamp once more")
++		if matches, err := MutationReportMatches(location, report, gitkit.RevParse(t, pair, "HEAD")); err != nil || matches {
++			t.Errorf("MutationReportMatches(a HEAD that changes Clamp again) = %v, %v; want false", matches, err)
++		}
++	})
++
++	t.Run("AGateCallListingMutationWritesTheSurvivorsAndUncoveredBlocksOfItsDiff", func(t *testing.T) {
++		editMutateCalc(t, pair, "limit := 100", "limit := 101")
++		editMutateCalc(t, pair, "return n + 5", "return n + 6")
++		gitkit.Git(t, pair, "commit", "-q", "-a", "-m", "change scale and spare")
++		setGate("gates:\n  darn-write: {tiers: [0], scope: all, reports: [mutation]}\n")
++		t.Cleanup(func() { setGate("") })
++		var out, stderr bytes.Buffer
++		code := runTest(lymcwd.WithCwd(context.Background(), pair), &out, testRequest{
++			goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute,
++			secondUnit: time.Second, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay, stderr: &stderr, gate: "darn-write",
++		})
++		location, err := lymcwd.ResolveWorktree(pair)
++		if err != nil {
++			t.Fatal(err)
++		}
++		report, found, err := ReadMutationReport(location)
++		if code != 0 || err != nil || !found {
++			t.Fatalf("lym gate test --gate darn-write = exit %d, report found %v, error %v, stderr %s; want exit 0 and a report", code, found, err, stderr.String())
++		}
++		// Scale's changed constant survives, since TestScaleRuns checks nothing, and Clamp's mutant dies.
++		want := MutationCounts{Run: 2, Killed: 1, Survived: 1}
++		if report.Mutants != want {
++			t.Errorf("mutation report mutants = %+v; want %+v", report.Mutants, want)
++		}
++		if len(report.Survivors) != 1 || report.Survivors[0].File != "calc/calc.go" || report.Survivors[0].Line != scaleLimit || report.Survivors[0].Function != "Scale" {
++			t.Errorf("mutation report survivors = %+v; want the one mutant of calc/calc.go's Scale on line %d", report.Survivors, scaleLimit)
++		}
++		// Nothing runs Spare, so its changed block is uncovered.
++		wantUncovered := []MutationUncoveredBlock{{Package: "calc", File: "calc.go", Function: "Spare"}}
++		if !slices.Equal(report.Uncovered, wantUncovered) {
++			t.Errorf("mutation report uncovered blocks = %v; want %v", report.Uncovered, wantUncovered)
++		}
++	})
++
++	judgesNothing := []struct {
++		name   string
++		red    bool
++		inHub  bool
++		scoper string
++		want   string
++	}{
++		{name: "ARedTier", red: true, inHub: true, want: noteRedGate},
++		{name: "ACallOutsideAHub", want: noteNoHub},
++		{name: "AScoperOtherThanGo", inHub: true, scoper: "none", want: "the hub's scoper is none, not go, so the step judged nothing"},
++	}
++	for _, tt := range judgesNothing {
++		t.Run("TheStepJudgesNothingFor"+tt.name, func(t *testing.T) {
++			step, location, stderr := mutationStepAt(t, pair)
++			if tt.scoper != "" {
++				step.reach.cfg.Scoper = tt.scoper
++			}
++			step.run(tt.red, tt.inHub)
++			report, found, err := ReadMutationReport(location)
++			if err != nil || !found {
++				t.Fatalf("ReadMutationReport = found %v, error %v; want a report", found, err)
++			}
++			wantLine := "gate test: mutation report: " + tt.want + "; written to " + mutationReportPath(location)
++			if report.Note != tt.want || report.RedGate != tt.red || len(report.Functions) != 0 || report.Mutants != (MutationCounts{}) ||
++				strings.TrimSuffix(stderr.String(), "\n") != wantLine {
++				t.Errorf("report = note %q, red gate %v, %d functions, %+v; stderr %q; want note %q, red gate %v, nothing judged and the line %q",
++					report.Note, report.RedGate, len(report.Functions), report.Mutants, stderr.String(), tt.want, tt.red, wantLine)
++			}
++		})
++	}
++
++	t.Run("ARedTierCallKeepsItsExitCodeAndWritesARedGateReport", func(t *testing.T) {
++		red := strings.Replace(mutateGate("gates:\n  darn-write: {tiers: [0], scope: all, reports: [mutation]}\n"), "command: 'true'", "command: 'false'", 1)
++		if err := os.WriteFile(configengine.ConfigFile(h.BoardDir(), "gate"), []byte(red), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { setGate("") })
++		var out, stderr bytes.Buffer
++		code := runTest(lymcwd.WithCwd(context.Background(), pair), &out, testRequest{
++			goBinary: defaultGoBinary, samplePeriod: defaultSamplePeriod, preTierCeiling: defaultPreTierCeiling, timeoutUnit: time.Minute,
++			secondUnit: time.Second, rerunDelay: defaultRerunDelay, pipeWaitDelay: defaultPipeWaitDelay, stderr: &stderr, gate: "darn-write",
++		})
++		location, err := lymcwd.ResolveWorktree(pair)
++		if err != nil {
++			t.Fatal(err)
++		}
++		report, found, err := ReadMutationReport(location)
++		if code != 1 || err != nil || !found || !report.RedGate || report.Note != noteRedGate {
++			t.Errorf("lym gate test --gate darn-write over a red tier = exit %d, report %+v, found %v, error %v; want exit 1 and a red-gate report with %q",
++				code, report, found, err, noteRedGate)
++		}
++	})
++
+ 	t.Run("APrimePackageWithNoMapIsNotJudgedAndAMutantTheCompilerRefusesIsCountedUnbuildable", func(t *testing.T) {
+ 		base := gitkit.RevParse(t, prime, "HEAD")
+ 		// Half's integer constant sits in a float context, where its mutant does not compile.
+@@ -495,11 +649,28 @@ func TestGateMutate(t *testing.T) {
+ 
+ 		code, answer := runMutateVerb(t, Command(), prime, "mutate", "--base", base)
+ 		requireMutateAnswer(t, code, answer)
+-		if !slices.Contains(answer.NotJudged, mutateNotJudged{Package: "unmapped", Reason: reasonNoMapToMutate}) {
++		if !slices.Contains(answer.NotJudged, MutationNotJudged{Package: "unmapped", Reason: reasonNoMapToMutate}) {
+ 			t.Errorf("lym gate mutate not judged = %+v; want unmapped for %q", answer.NotJudged, reasonNoMapToMutate)
+ 		}
+ 		if answer.Mutants.Unbuildable != 1 {
+ 			t.Errorf("lym gate mutate mutants = %+v; want the one mutant of Half counted unbuildable", answer.Mutants)
+ 		}
+ 	})
++
++	t.Run("ATaskWorktreeWithNoParentBranchJudgesNothing", func(t *testing.T) {
++		step, location, stderr := mutationStepAt(t, pair)
++		if err := os.Remove(fabricengine.OriginRecordPath(location)); err != nil {
++			t.Fatal(err)
++		}
++		step.run(false, true)
++		report, found, err := ReadMutationReport(location)
++		if err != nil || !found {
++			t.Fatalf("ReadMutationReport = found %v, error %v; want a report", found, err)
++		}
++		wantLine := "gate test: mutation report: " + noteNoParent + "; written to " + mutationReportPath(location)
++		if report.Note != noteNoParent || report.Prime || len(report.Functions) != 0 || strings.TrimSuffix(stderr.String(), "\n") != wantLine {
++			t.Errorf("report = note %q, prime %v, %d functions; stderr %q; want note %q, no function and the line %q",
++				report.Note, report.Prime, len(report.Functions), stderr.String(), noteNoParent, wantLine)
++		}
++	})
+ }
+diff --git a/internal/gatecli/mutate_test.go b/internal/gatecli/mutate_test.go
+new file mode 100644
+index 00000000..f7edf112
+--- /dev/null
++++ b/internal/gatecli/mutate_test.go
+@@ -0,0 +1,119 @@
++// mutate_test.go covers which changed packages the mutation check judges and how it lays out what it found.
++
++package gatecli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestFreshMaps_SortsPackagesIntoJudgedAndNotJudged(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	mapsDir := t.TempDir()
++	source := []byte("package calc\n")
++	for _, pkg := range []string{"calc", "stale"} {
++		if err := os.MkdirAll(filepath.Join(root, pkg), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(filepath.Join(root, pkg, pkg+".go"), source, 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	freshMap := testcover.Map{Files: map[string]string{"calc.go": testcover.ContentHash(source)}}
++	if err := testcover.WriteMap(mapsDir, "calc", freshMap); err != nil {
++		t.Fatal(err)
++	}
++	if err := testcover.WriteMap(mapsDir, "stale", testcover.Map{Files: map[string]string{"stale.go": "other-hash"}}); err != nil {
++		t.Fatal(err)
++	}
++	module := goModule{dir: root, rel: ".", path: "example.com/m"}
++	packages := []string{"calc", "stale", "unmapped", "unrefreshed"}
++	refresh := ReachReport{Unrefreshed: []string{"unrefreshed: the build failed"}}
++
++	tests := []struct {
++		name          string
++		prime         bool
++		wantFresh     []string
++		wantNotJudged []MutationNotJudged
++	}{
++		{
++			name:      "AWorktreeJudgesTheFreshMapAndGivesEachOtherPackageItsOwnReason",
++			wantFresh: []string{"calc"},
++			wantNotJudged: []MutationNotJudged{
++				{Package: "stale", Reason: reasonWorktreeMapStale},
++				{Package: "unmapped", Reason: reasonRefreshWroteNoMap},
++				{Package: "unrefreshed", Reason: "the build failed"},
++			},
++		},
++		{
++			name:      "ThePrimeReadsTheSharedMapsAndIgnoresTheRefreshsUnrefreshedList",
++			prime:     true,
++			wantFresh: []string{"calc"},
++			wantNotJudged: []MutationNotJudged{
++				{Package: "stale", Reason: reasonSharedMapStale},
++				{Package: "unmapped", Reason: reasonNoMapToMutate},
++				{Package: "unrefreshed", Reason: reasonNoMapToMutate},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fresh, notJudged, err := freshMaps(module, mapsDir, tt.prime, packages, refresh)
++			if err != nil {
++				t.Fatalf("freshMaps() error = %v; want none", err)
++			}
++			var gotFresh []string
++			for pkg := range fresh {
++				gotFresh = append(gotFresh, pkg)
++			}
++			if diff := cmp.Diff(tt.wantFresh, gotFresh); diff != "" {
++				t.Errorf("freshMaps() fresh packages mismatch (-want +got):\n%s", diff)
++			}
++			if diff := cmp.Diff(tt.wantNotJudged, notJudged); diff != "" {
++				t.Errorf("freshMaps() not judged mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++func TestFillMutateAnswer_ListsTheCheckAndTheNotJudgedPackagesOfBothStages(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	found := mutationFindings{
++		outcome: mutateOutcome{
++			survivors: []MutationSurvivor{{MutationMutant: MutationMutant{File: "calc/calc.go", Line: 3, Operator: "negate", Function: "Clamp"}}},
++			unjudged:  []MutationUnjudgedMutant{},
++			uncovered: []MutationUncoveredBlock{{Package: "calc", File: "calc.go", Function: "Clamp"}},
++			notJudged: []MutationNotJudged{{Package: "calc/sub", Reason: "plan failed"}},
++			counts:    MutationCounts{Run: 2, Killed: 1, Survived: 1},
++			runs:      5,
++		},
++		notJudged:     []MutationNotJudged{{Package: "calc", Reason: "pre-check"}},
++		refreshErrors: []string{"refresh: one package failed"},
++	}
++	want := map[string]any{
++		"base":             "abc",
++		"errors":           []string{"refresh: one package failed"},
++		"mutants":          found.outcome.counts,
++		"runs":             5,
++		"survivors":        found.outcome.survivors,
++		"unjudged_mutants": found.outcome.unjudged,
++		"uncovered_blocks": found.outcome.uncovered,
++		"not_judged":       []MutationNotJudged{{Package: "calc", Reason: "pre-check"}, {Package: "calc/sub", Reason: "plan failed"}},
++	}
++	got := fillMutateAnswer(map[string]any{"base": "abc"}, found)
++	if diff := cmp.Diff(want, got, cmp.AllowUnexported(MutationSurvivor{})); diff != "" {
++		t.Errorf("fillMutateAnswer() mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/gatecli/mutatecheck.go b/internal/gatecli/mutatecheck.go
+index 00e42123..4a6adc20 100644
+--- a/internal/gatecli/mutatecheck.go
++++ b/internal/gatecli/mutatecheck.go
+@@ -33,17 +33,17 @@ const (
+ 	reasonMutantBuild        = "the package's mutant binary did not build: %v"
+ )
+ 
+-// mutateMutant names one mutant by its worktree-relative file, line, operator and function.
+-type mutateMutant struct {
++// MutationMutant names one mutant by its worktree-relative file, line, operator and function.
++type MutationMutant struct {
+ 	File     string `json:"file"`
+ 	Line     int    `json:"line"`
+ 	Operator string `json:"operator"`
+ 	Function string `json:"function"`
+ }
+ 
+-// mutateSurvivor is a mutant every covering test passed.
+-type mutateSurvivor struct {
+-	mutateMutant
++// MutationSurvivor is a mutant every covering test passed.
++type MutationSurvivor struct {
++	MutationMutant
+ 	// PossibleKillers are the tests of other packages that the maps show reach the mutant's function, a fixed number at most.
+ 	// They are not run.
+ 	PossibleKillers []string `json:"possible_killers"`
+@@ -51,27 +51,27 @@ type mutateSurvivor struct {
+ 	MorePossibleKillers int `json:"more_possible_killers,omitempty"`
+ }
+ 
+-// mutateUnjudgedMutant is a mutant no verdict was reached for, with why.
+-type mutateUnjudgedMutant struct {
+-	mutateMutant
++// MutationUnjudgedMutant is a mutant no verdict was reached for, with why.
++type MutationUnjudgedMutant struct {
++	MutationMutant
+ 	Reason string `json:"reason"`
+ }
+ 
+-// mutateUncoveredBlock is a changed block no test of its package's map covers.
+-type mutateUncoveredBlock struct {
++// MutationUncoveredBlock is a changed block no test of its package's map covers.
++type MutationUncoveredBlock struct {
+ 	Package  string `json:"package"`
+ 	File     string `json:"file"`
+ 	Function string `json:"function"`
+ }
+ 
+-// mutateNotJudged is a changed package the check judged nothing of, with why.
+-type mutateNotJudged struct {
++// MutationNotJudged is a changed package the check judged nothing of, with why.
++type MutationNotJudged struct {
+ 	Package string `json:"package"`
+ 	Reason  string `json:"reason"`
+ }
+ 
+-// mutateCounts is how many mutants the check planned, ran and decided.
+-type mutateCounts struct {
++// MutationCounts is how many mutants the check planned, ran and decided.
++type MutationCounts struct {
+ 	// Run counts the mutants a covering test started on.
+ 	Run int `json:"run"`
+ 	// Killed and Survived count the mutants decided, and Unjudged those left without a verdict, run or not.
+@@ -86,12 +86,12 @@ type mutateCounts struct {
+ 
+ // mutateOutcome is what a diffMutation found.
+ type mutateOutcome struct {
+-	survivors []mutateSurvivor
+-	unjudged  []mutateUnjudgedMutant
+-	uncovered []mutateUncoveredBlock
++	survivors []MutationSurvivor
++	unjudged  []MutationUnjudgedMutant
++	uncovered []MutationUncoveredBlock
+ 	// notJudged are the packages the check could not plan.
+-	notJudged []mutateNotJudged
+-	counts    mutateCounts
++	notJudged []MutationNotJudged
++	counts    MutationCounts
+ 	// runs counts the test processes the check started.
+ 	runs int
+ }
+@@ -99,7 +99,7 @@ type mutateOutcome struct {
+ // newMutateOutcome returns an outcome whose lists are empty rather than nil, so each prints as a JSON list.
+ func newMutateOutcome() mutateOutcome {
+ 	return mutateOutcome{
+-		survivors: []mutateSurvivor{}, unjudged: []mutateUnjudgedMutant{}, uncovered: []mutateUncoveredBlock{}, notJudged: []mutateNotJudged{},
++		survivors: []MutationSurvivor{}, unjudged: []MutationUnjudgedMutant{}, uncovered: []MutationUncoveredBlock{}, notJudged: []MutationNotJudged{},
+ 	}
+ }
+ 
+@@ -174,35 +174,41 @@ type diffMutation struct {
+ // run judges every package of the fresh maps inside one gate slot and returns what it found.
+ // It waits for the slot, plans every package whatever the budget, takes the mutants the cap allows, and runs them.
+ // The error reports a slot, build or run failure, or the context's error once the call is cancelled.
++// An error after the slot is held comes with the findings made up to it; a slot error comes with none.
+ func (d *diffMutation) run() (mutateOutcome, error) {
+ 	if err := d.holder.holdSlot(); err != nil {
+-		return mutateOutcome{}, err
++		return d.outcome, err
+ 	}
+ 	d.deadline = time.Now().Add(d.budget)
+ 	var planned []*mutatedPackage
+ 	for i, pkg := range slices.Sorted(maps.Keys(d.fresh)) {
+ 		judged, err := d.planPackage(i, pkg)
+ 		if ctxErr := d.holder.ctx.Err(); ctxErr != nil {
+-			return mutateOutcome{}, ctxErr
++			return d.findingsSoFar(), ctxErr
+ 		}
+ 		if err != nil {
+ 			reason := fmt.Sprintf("%v; way forward: fix the failure it names, then run the verb again", err)
+-			d.outcome.notJudged = append(d.outcome.notJudged, mutateNotJudged{Package: pkg, Reason: reason})
++			d.outcome.notJudged = append(d.outcome.notJudged, MutationNotJudged{Package: pkg, Reason: reason})
+ 			continue
+ 		}
+ 		planned = append(planned, judged)
+ 		for _, key := range judged.uncovered {
+-			d.outcome.uncovered = append(d.outcome.uncovered, mutateUncoveredBlock{Package: pkg, File: key.File, Function: key.Func})
++			d.outcome.uncovered = append(d.outcome.uncovered, MutationUncoveredBlock{Package: pkg, File: key.File, Function: key.Func})
+ 		}
+ 	}
+ 	d.selectWithinCap(planned)
+ 	for _, judged := range planned {
+ 		if err := d.runPackage(judged); err != nil {
+-			return mutateOutcome{}, err
++			return d.findingsSoFar(), err
+ 		}
+ 	}
++	return d.findingsSoFar(), nil
++}
++
++// findingsSoFar returns the outcome with the test processes started so far counted in.
++func (d *diffMutation) findingsSoFar() mutateOutcome {
+ 	d.outcome.runs = int(d.runs.Load())
+-	return d.outcome, nil
++	return d.outcome
+ }
+ 
+ // planPackage builds the coverage binary of the package pkg and plans the mutants of its changed lines.
+@@ -247,6 +253,9 @@ func (d *diffMutation) planPackage(index int, pkg string) (*mutatedPackage, erro
+ 
+ // selectWithinCap takes up to maxMutants of the planned mutants, one changed function at a time in turn.
+ // The functions go in the order of their package, file and name, and a function's mutants in the order of its plan.
++// Each round takes the next mutant of every function that has one left.
++// A round with more such functions than the cap leaves takes functions spread evenly over that order.
++// So a diff with more changed functions than the cap is sampled evenly across its functions, not on its first functions.
+ // The mutants left over count as not run.
+ func (d *diffMutation) selectWithinCap(planned []*mutatedPackage) {
+ 	type group struct {
+@@ -274,21 +283,36 @@ func (d *diffMutation) selectWithinCap(planned []*mutatedPackage) {
+ 	})
+ 	taken := 0
+ 	for round := 0; taken < d.maxMutants; round++ {
+-		progressed := false
++		var open []group
+ 		for _, g := range groups {
+-			if round < len(g.ids) && taken < d.maxMutants {
+-				g.judged.selected[g.ids[round]] = true
+-				taken++
+-				progressed = true
++			if round < len(g.ids) {
++				open = append(open, g)
+ 			}
+ 		}
+-		if !progressed {
++		if len(open) == 0 {
+ 			break
+ 		}
++		for _, g := range spreadEvenly(open, d.maxMutants-taken) {
++			g.judged.selected[g.ids[round]] = true
++			taken++
++		}
+ 	}
+ 	d.outcome.counts.NotRun = total - taken
+ }
+ 
++// spreadEvenly returns items when n covers them all.
++// Otherwise it returns n of them spread evenly over their order, the first included.
++func spreadEvenly[T any](items []T, n int) []T {
++	if n >= len(items) {
++		return items
++	}
++	picked := make([]T, n)
++	for i := range picked {
++		picked[i] = items[i*len(items)/n]
++	}
++	return picked
++}
++
+ // runPackage builds one binary holding the package's selected mutants and judges each against its covering tests.
+ // Past the budget it starts no build and leaves every mutant unjudged for it.
+ // A build that fails leaves the package's mutants unjudged for that.
+@@ -446,19 +470,19 @@ func (d *diffMutation) record(judged *mutatedPackage, mutant testcover.Mutant, v
+ // recordUnjudged adds a mutant left without a verdict to the outcome.
+ func (d *diffMutation) recordUnjudged(judged *mutatedPackage, mutant testcover.Mutant, reason string) {
+ 	d.outcome.counts.Unjudged++
+-	d.outcome.unjudged = append(d.outcome.unjudged, mutateUnjudgedMutant{mutateMutant: d.site(judged, mutant), Reason: reason})
++	d.outcome.unjudged = append(d.outcome.unjudged, MutationUnjudgedMutant{MutationMutant: d.site(judged, mutant), Reason: reason})
+ }
+ 
+ // site names the mutant by its worktree-relative file, line, operator and function.
+-func (d *diffMutation) site(judged *mutatedPackage, mutant testcover.Mutant) mutateMutant {
+-	return mutateMutant{
++func (d *diffMutation) site(judged *mutatedPackage, mutant testcover.Mutant) MutationMutant {
++	return MutationMutant{
+ 		File: path.Join(packageDirOf(d.module.rel, judged.pkg), mutant.File), Line: mutant.Line, Operator: mutant.Operator, Function: mutant.FuncOf(),
+ 	}
+ }
+ 
+ // survivor returns the survivor entry of a mutant, with the tests of other packages that reach its function.
+-func (d *diffMutation) survivor(judged *mutatedPackage, mutant testcover.Mutant) mutateSurvivor {
+-	entry := mutateSurvivor{mutateMutant: d.site(judged, mutant), PossibleKillers: []string{}}
++func (d *diffMutation) survivor(judged *mutatedPackage, mutant testcover.Mutant) MutationSurvivor {
++	entry := MutationSurvivor{MutationMutant: d.site(judged, mutant), PossibleKillers: []string{}}
+ 	reaches := d.reader.TestsReaching(testcover.FuncKey{Package: judged.check.importPath, File: mutant.File, Func: mutant.FuncOf()})
+ 	for _, reach := range reaches {
+ 		switch {
+diff --git a/internal/gatecli/mutatecheck_test.go b/internal/gatecli/mutatecheck_test.go
+new file mode 100644
+index 00000000..522abb01
+--- /dev/null
++++ b/internal/gatecli/mutatecheck_test.go
+@@ -0,0 +1,73 @@
++// mutatecheck_test.go covers how the mutation check takes mutation_max_mutants of the planned mutants.
++
++package gatecli
++
++import (
++	"fmt"
++	"maps"
++	"slices"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// plannedMutants returns the planned package pkg whose functions, in order, hold the counts of mutants.
++// Its mutant IDs count from 1 in function order.
++func plannedMutants(pkg string, counts ...int) *mutatedPackage {
++	var mutants []testcover.Mutant
++	for function, count := range counts {
++		for range count {
++			key := fmt.Sprintf("f.go|F%d|hash|0", function)
++			mutants = append(mutants, testcover.Mutant{ID: len(mutants) + 1, File: "f.go", Blocks: []string{key}})
++		}
++	}
++	return &mutatedPackage{pkg: pkg, plan: &testcover.MutantPlan{Mutants: mutants}}
++}
++
++func TestDiffMutation_SelectWithinCap(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// Package a has four functions of two mutants each, and package b four functions of one each.
++	tests := []struct {
++		name       string
++		maxMutants int
++		// want holds the IDs the cap takes of each package.
++		want       map[string][]int
++		wantNotRun int
++	}{
++		{
++			name: "ACapBelowTheFunctionCountTakesFunctionsSpreadEvenlyOverBothPackages", maxMutants: 4,
++			want: map[string][]int{"a": {1, 5}, "b": {1, 3}}, wantNotRun: 8,
++		},
++		{
++			name: "ACapAboveTheFunctionCountTakesOneOfEachThenSpreadsTheNextRound", maxMutants: 10,
++			want: map[string][]int{"a": {1, 2, 3, 5, 6, 7}, "b": {1, 2, 3, 4}}, wantNotRun: 2,
++		},
++		{
++			name: "ACapAboveEveryMutantTakesThemAll", maxMutants: 20,
++			want: map[string][]int{"a": {1, 2, 3, 4, 5, 6, 7, 8}, "b": {1, 2, 3, 4}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			planned := []*mutatedPackage{plannedMutants("a", 2, 2, 2, 2), plannedMutants("b", 1, 1, 1, 1)}
++			check := &diffMutation{maxMutants: tt.maxMutants, outcome: newMutateOutcome()}
++			check.selectWithinCap(planned)
++			got := map[string][]int{}
++			for _, judged := range planned {
++				got[judged.pkg] = slices.Sorted(maps.Keys(judged.selected))
++			}
++			if diff := cmp.Diff(tt.want, got); diff != "" {
++				t.Errorf("selectWithinCap() under a cap of %d mismatch (-want +got):\n%s", tt.maxMutants, diff)
++			}
++			if got := check.outcome.counts.NotRun; got != tt.wantNotRun {
++				t.Errorf("selectWithinCap() under a cap of %d counts %d not run; want %d", tt.maxMutants, got, tt.wantNotRun)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/mutation.go b/internal/gatecli/mutation.go
+new file mode 100644
+index 00000000..7a6b79fa
+--- /dev/null
++++ b/internal/gatecli/mutation.go
+@@ -0,0 +1,139 @@
++// mutation.go runs the mutation report step a `--gate` key's reports list names, after the other report steps.
++// It runs the mutation check of `lym gate mutate` over the worktree's diff.
++// It writes every finding into its report and prints one summary line; nothing it meets changes the call's result.
++
++package gatecli
++
++import (
++	"errors"
++	"fmt"
++	"path"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/envconfig"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// mutationSite labels the slot holder record of the mutation report step.
++const mutationSite = siteLabelPrefix + " mutation"
++
++// mutationStep is one call's mutation report step.
++// It reads the call through the reach step's view of it, whose map refresh it runs too, and the hub env module's config.
++type mutationStep struct {
++	reach  reachStep
++	hubEnv envconfig.Config
++}
++
++// mutationStep returns the mutation report step of the call e runs.
++func (e *execution) mutationStep() mutationStep {
++	return mutationStep{reach: e.reachStep(), hubEnv: e.request.hubEnv}
++}
++
++// run writes the step's report into the worktree's gate directory and prints its summary line to stderr.
++// red tells a call one of whose runs failed, and inHub a call inside a hub; either way the report then judges nothing.
++// A report the step cannot write is logged at Warn, and the call's result stands.
++func (s mutationStep) run(red, inHub bool) {
++	path := mutationReportPath(s.reach.location)
++	var report MutationReport
++	switch {
++	case red:
++		report = MutationReport{RedGate: true, Note: noteRedGate}
++	case !inHub:
++		report = MutationReport{Note: noteNoHub}
++	case !s.reach.cfg.HasGoCoverageMaps():
++		report = MutationReport{Note: fmt.Sprintf(noteScoper, s.reach.cfg.Scoper)}
++	default:
++		report = s.answer()
++	}
++	report.GateKey = s.reach.gateKey
++	report.Written = time.Now()
++	if err := state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), report); err != nil {
++		logger.Warn("gate test: could not write the mutation report; the gate's result stands", "path", path, "cause", err)
++		return
++	}
++	printLine(s.reach.stderr, report.SummaryLine(path))
++}
++
++// answer returns the report for the worktree's diff.
++// The diff is from the merge base with the parent branch, or from HEAD in the prime.
++// A task worktree with no parent branch gets a report that judges nothing.
++func (s mutationStep) answer() MutationReport {
++	r := s.reach
++	var report MutationReport
++	module, err := redundancyModule(r.cfg, r.root)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report
++	}
++	report.ModuleDir = module.rel
++	fabric, err := fabricengine.Open(r.location)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report
++	}
++	prime, err := hubgeom.IsPrime(r.location)
++	if err != nil {
++		report.Errors = append(report.Errors, err.Error())
++		return report
++	}
++	report.Prime = prime
++	base, err := r.diffBase(fabric, prime)
++	switch {
++	case err != nil:
++		report.Errors = append(report.Errors, err.Error())
++		return report
++	case base == "":
++		report.Note = noteNoParent
++		return report
++	}
++	report.Base = base
++
++	found, err := mutationCall{
++		ctx: r.ctx, cfg: r.cfg, location: r.location, root: r.root, module: module, fabric: fabric, prime: prime, base: base,
++		request: mutateRequest{
++			goBinary: r.goBinary, environ: r.environ, secondUnit: r.secondUnit, minuteUnit: r.minuteUnit, grace: r.grace,
++			cappedParallel: memoryCappedParallel, stderr: r.stderr,
++		},
++		hubEnv: s.hubEnv, guardKilled: r.guardKilled, site: mutationSite,
++	}.run()
++	s.recordFindings(&report, module, found, err)
++	return report
++}
++
++// recordFindings adds what a mutation call found to report, and the error the call ended with, if any.
++// A call that ended in error records the error and its partial findings but no changed function or file hash,
++// so the report never matches a commit and no review reads its counts as a judgment of that tree.
++func (s mutationStep) recordFindings(report *MutationReport, module goModule, found mutationFindings, err error) {
++	report.Errors = append(report.Errors, found.refreshErrors...)
++	report.Mutants = found.outcome.counts
++	report.Survivors, report.Unjudged, report.Uncovered = found.outcome.survivors, found.outcome.unjudged, found.outcome.uncovered
++	report.NotJudged = append(found.notJudged, found.outcome.notJudged...)
++	if err != nil {
++		if s.reach.ctx.Err() != nil {
++			err = errors.New(reasonCancelled)
++		}
++		report.Errors = append(report.Errors, err.Error())
++		return
++	}
++	for _, fn := range found.funcs {
++		pkg := module.relativePackage(fn.Key.Package)
++		report.Functions = append(report.Functions, MutationFunction{
++			Package: pkg, File: path.Join(packageDirOf(module.rel, pkg), fn.Key.File), Func: fn.Key.Func, Hash: fn.Hash, New: fn.New,
++		})
++	}
++	for _, pkg := range changedPackages(module, found.funcs) {
++		hashes, err := goFileHashes(workingTree{root: s.reach.root}, packageDirOf(module.rel, pkg))
++		if err != nil {
++			report.Errors = append(report.Errors, fmt.Sprintf("hash the Go files of %s: %v", pkg, err))
++			continue
++		}
++		if report.FileHashes == nil {
++			report.FileHashes = map[string]map[string]string{}
++		}
++		report.FileHashes[pkg] = hashes
++	}
++}
+diff --git a/internal/gatecli/mutation_test.go b/internal/gatecli/mutation_test.go
+new file mode 100644
+index 00000000..00fc7d0a
+--- /dev/null
++++ b/internal/gatecli/mutation_test.go
+@@ -0,0 +1,100 @@
++// mutation_test.go covers what the mutation report step records of one mutation call's findings.
++
++package gatecli
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testreach"
++)
++
++func TestMutationStep_RecordFindings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	source := []byte("package calc\n")
++	if err := os.MkdirAll(filepath.Join(root, "calc"), 0o755); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(root, "calc", "calc.go"), source, 0o644); err != nil {
++		t.Fatal(err)
++	}
++	module := goModule{dir: root, rel: ".", path: "example.com/m"}
++	found := mutationFindings{
++		funcs: []testreach.ChangedFunc{{
++			Key: testcover.FuncKey{Package: "example.com/m/calc", File: "calc.go", Func: "Clamp"}, Hash: "clamp-hash", New: true,
++		}},
++		outcome: mutateOutcome{
++			counts:    MutationCounts{Run: 1, Killed: 1},
++			unjudged:  []MutationUnjudgedMutant{{MutationMutant: MutationMutant{File: "calc/calc.go", Line: 3, Operator: "negate", Function: "Clamp"}, Reason: "timed out"}},
++			notJudged: []MutationNotJudged{{Package: "calc/sub", Reason: "plan failed"}},
++		},
++		notJudged:     []MutationNotJudged{{Package: "calc", Reason: "pre-check"}},
++		refreshErrors: []string{"refresh: one package failed"},
++	}
++	wantUnjudged := []MutationUnjudgedMutant{{MutationMutant: MutationMutant{File: "calc/calc.go", Line: 3, Operator: "negate", Function: "Clamp"}, Reason: "timed out"}}
++	wantNotJudged := []MutationNotJudged{{Package: "calc", Reason: "pre-check"}, {Package: "calc/sub", Reason: "plan failed"}}
++	cancelled, cancel := context.WithCancel(context.Background())
++	cancel()
++
++	tests := []struct {
++		name string
++		ctx  context.Context
++		err  error
++		want MutationReport
++	}{
++		{
++			name: "AFailedCallRecordsItsErrorsAndPartialCountsButNoFunctionOrFileHash",
++			ctx:  context.Background(),
++			err:  errors.New("acquire a gate slot: refused"),
++			want: MutationReport{
++				Errors:    []string{"refresh: one package failed", "acquire a gate slot: refused"},
++				Mutants:   MutationCounts{Run: 1, Killed: 1},
++				Unjudged:  wantUnjudged,
++				NotJudged: wantNotJudged,
++			},
++		},
++		{
++			name: "ACancelledCallRecordsTheCancellationInPlaceOfTheContextError",
++			ctx:  cancelled,
++			err:  context.Canceled,
++			want: MutationReport{
++				Errors:    []string{"refresh: one package failed", reasonCancelled},
++				Mutants:   MutationCounts{Run: 1, Killed: 1},
++				Unjudged:  wantUnjudged,
++				NotJudged: wantNotJudged,
++			},
++		},
++		{
++			name: "ASuccessfulCallRecordsItsFunctionsAndTheFileHashesOfTheirPackages",
++			ctx:  context.Background(),
++			want: MutationReport{
++				Errors:     []string{"refresh: one package failed"},
++				Mutants:    MutationCounts{Run: 1, Killed: 1},
++				Unjudged:   wantUnjudged,
++				NotJudged:  wantNotJudged,
++				Functions:  []MutationFunction{{Package: "calc", File: "calc/calc.go", Func: "Clamp", Hash: "clamp-hash", New: true}},
++				FileHashes: map[string]map[string]string{"calc": {"calc.go": testcover.ContentHash(source)}},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var got MutationReport
++			mutationStep{reach: reachStep{ctx: tt.ctx, root: root}}.recordFindings(&got, module, found, tt.err)
++			if diff := cmp.Diff(tt.want, got); diff != "" {
++				t.Errorf("recordFindings() report mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/mutationreport.go b/internal/gatecli/mutationreport.go
+new file mode 100644
+index 00000000..830ecb52
+--- /dev/null
++++ b/internal/gatecli/mutationreport.go
+@@ -0,0 +1,148 @@
++// mutationreport.go declares the report the mutation report step writes into the worktree's gate directory.
++// It renders the step's summary line and the lines a review reads, and matches a report against a commit.
++
++package gatecli
++
++import (
++	"fmt"
++	"path/filepath"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// MutationReportFileName is the mutation report's file name in the worktree's gate directory.
++const MutationReportFileName = "mutation.json"
++
++// mutationReviewLineCap caps the lines a review reads of a report; a longer list ends with a line naming the report.
++const mutationReviewLineCap = 40
++
++// MutationReport is what one mutation report step of `lym gate test` found for the worktree's diff.
++// Its FileHashes cover the Go files of the changed packages only,
++// so a change to another file their tests read, such as testdata, leaves the report matching HEAD.
++type MutationReport struct {
++	// Written is when the step wrote the report.
++	Written time.Time `json:"written"`
++	// GateKey is the gate.yaml key whose call wrote the report.
++	GateKey string `json:"gate_key"`
++	// Note says why the step judged nothing, such as a red gate or no parent branch; empty when it judged.
++	Note string `json:"note,omitempty"`
++	// RedGate is set when a tier of the call was red, so the step judged nothing.
++	RedGate bool `json:"red_gate,omitempty"`
++	// Prime is set for a report written in the hub's prime, whose base is HEAD and which never matches a review's HEAD.
++	Prime bool `json:"prime,omitempty"`
++	// Base is the commit the step diffed from: the merge base with the parent branch, or HEAD in the prime.
++	Base string `json:"base,omitempty"`
++	// ModuleDir is the worktree-relative slash path of the Go module whose packages the report names.
++	ModuleDir string `json:"module_dir,omitempty"`
++	// Errors are the failures the step met, one line each; none changes the gate's result.
++	Errors []string `json:"errors,omitempty"`
++	// Functions are the functions the diff changes.
++	Functions []MutationFunction `json:"functions,omitempty"`
++	// FileHashes maps the package of each changed function to the ContentHash of each of its Go files.
++	// Packages are keyed by module-relative path, and files by name.
++	FileHashes map[string]map[string]string `json:"file_hashes,omitempty"`
++	// Mutants counts the mutants run, killed, survived and unjudged, those unbuildable and those the cap left out.
++	Mutants MutationCounts `json:"mutants"`
++	// Survivors are the mutants every covering test passed.
++	Survivors []MutationSurvivor `json:"survivors,omitempty"`
++	// Unjudged are the mutants left without a verdict, with why.
++	Unjudged []MutationUnjudgedMutant `json:"unjudged_mutants,omitempty"`
++	// Uncovered are the changed blocks no test of their package's map covers.
++	Uncovered []MutationUncoveredBlock `json:"uncovered_blocks,omitempty"`
++	// NotJudged are the changed packages the step judged nothing of, with why.
++	NotJudged []MutationNotJudged `json:"not_judged,omitempty"`
++}
++
++// MutationFunction is one function a mutation report's diff changes, with its text hash.
++type MutationFunction struct {
++	// Package is the module-relative slash path of the function's package, and File the worktree-relative path of its file.
++	Package string `json:"package"`
++	File    string `json:"file"`
++	// Func is the function's name, `Type.Method` for a method.
++	Func string `json:"func"`
++	// Hash is the ContentHash of the function's declaration text in the worktree.
++	Hash string `json:"hash"`
++	// New is set when the base holds no function it matches.
++	New bool `json:"new,omitempty"`
++}
++
++// mutationReportPath returns the path of the mutation report in the gate directory of the worktree at location.
++func mutationReportPath(location *lymcwd.Location) string {
++	return filepath.Join(gateslot.WaitDir(location.AnchorPath()), MutationReportFileName)
++}
++
++// ReadMutationReport reads the mutation report of the worktree at location, and reports whether one exists.
++// A key the record does not declare is ignored, never refused.
++func ReadMutationReport(location *lymcwd.Location) (MutationReport, bool, error) {
++	reportPath := mutationReportPath(location)
++	return state.ReadJSON[MutationReport](reportPath, lock.TrackedFileLockPath(reportPath, ".lock"))
++}
++
++// MutationReportMatches reports whether report still holds for the tree of the commit rev of the worktree at location.
++// A report that judged nothing, one marked red_gate or prime, and a worktree with no parent branch never match.
++// Otherwise it holds when the functions rev changes since the current merge base are those the report records.
++// Their hashes must match too, and so must the hashes of the Go files of their packages at rev.
++// A change to a non-Go file those packages' tests read, such as testdata, leaves the report matching.
++func MutationReportMatches(location *lymcwd.Location, report MutationReport, rev string) (bool, error) {
++	if report.Note != "" || report.RedGate || report.Prime {
++		return false, nil
++	}
++	recorded := make([]string, len(report.Functions))
++	for i, fn := range report.Functions {
++		recorded[i] = reachFunctionIdentity(fn.Package, fn.File, fn.Func, fn.Hash, fn.New)
++	}
++	return changedFunctionsMatch(location, report.ModuleDir, recorded, report.FileHashes, rev)
++}
++
++// SummaryLine returns the one stderr line the step prints for a report written at path: its note, or its counts.
++func (r MutationReport) SummaryLine(path string) string {
++	if r.Note != "" {
++		return fmt.Sprintf("gate test: mutation report: %s; written to %s", r.Note, path)
++	}
++	return fmt.Sprintf("gate test: mutation report: %s; written to %s", r.counts(), path)
++}
++
++// ReviewLines renders a report written at path as a review reads it, at most mutationReviewLineCap lines.
++// The first line holds the counts.
++// A line per survivor follows with its file, line, operator, function and possible killers.
++// A list over the cap is cut and ends with a line naming path.
++func (r MutationReport) ReviewLines(path string) []string {
++	lines := []string{"mutation: " + r.counts()}
++	for _, survivor := range r.Survivors {
++		lines = append(lines, fmt.Sprintf("mutation: survivor %s:%d, %s in %s; %s",
++			survivor.File, survivor.Line, survivor.Operator, survivor.Function, survivor.killers()))
++	}
++	if len(lines) > mutationReviewLineCap {
++		lines = append(lines[:mutationReviewLineCap-1], "mutation: list cut; the rest is in "+path)
++	}
++	return lines
++}
++
++// counts renders the mutants run, killed, survived and unjudged.
++// It also renders the uncovered changed blocks and the packages not judged.
++// The count of error lines follows when the report holds any.
++func (r MutationReport) counts() string {
++	text := fmt.Sprintf("%d mutants run, %d killed, %d survived, %d unjudged, %d uncovered changed blocks, %d packages not judged",
++		r.Mutants.Run, r.Mutants.Killed, r.Mutants.Survived, r.Mutants.Unjudged, len(r.Uncovered), len(r.NotJudged))
++	if len(r.Errors) > 0 {
++		text += fmt.Sprintf(", %d errors", len(r.Errors))
++	}
++	return text
++}
++
++// killers renders the tests of other packages that may kill the survivor, or says that none reaches its function.
++func (s MutationSurvivor) killers() string {
++	if len(s.PossibleKillers) == 0 {
++		return "no test of another package reaches its function"
++	}
++	list := "possible killers: " + strings.Join(s.PossibleKillers, ", ")
++	if s.MorePossibleKillers > 0 {
++		list += fmt.Sprintf(", and %d more", s.MorePossibleKillers)
++	}
++	return list
++}
+diff --git a/internal/gatecli/mutationreport_test.go b/internal/gatecli/mutationreport_test.go
+new file mode 100644
+index 00000000..174bedf6
+--- /dev/null
++++ b/internal/gatecli/mutationreport_test.go
+@@ -0,0 +1,135 @@
++// mutationreport_test.go covers the summary line the mutation report step prints and the lines a review reads.
++
++package gatecli
++
++import (
++	"fmt"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestMutationReport_SummaryLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const path = "/gate/mutation.json"
++	tests := []struct {
++		name   string
++		report MutationReport
++		want   string
++	}{
++		{
++			name: "AJudgedReportCountsItsMutantsBlocksAndPackages",
++			report: MutationReport{
++				Mutants:   MutationCounts{Run: 5, Killed: 3, Survived: 1, Unjudged: 2, NotRun: 4},
++				Uncovered: []MutationUncoveredBlock{{Package: "a", File: "a.go", Function: "Spare"}, {Package: "a", File: "a.go", Function: "Other"}},
++				NotJudged: []MutationNotJudged{{Package: "c", Reason: reasonNoMapToMutate}},
++			},
++			want: "gate test: mutation report: 5 mutants run, 3 killed, 1 survived, 2 unjudged, 2 uncovered changed blocks, 1 packages not judged; written to " + path,
++		},
++		{
++			name:   "ErrorLinesAreCountedLast",
++			report: MutationReport{Errors: []string{"read HEAD: gone"}},
++			want:   "gate test: mutation report: 0 mutants run, 0 killed, 0 survived, 0 unjudged, 0 uncovered changed blocks, 0 packages not judged, 1 errors; written to " + path,
++		},
++		{
++			name:   "AReportThatJudgedNothingPrintsItsNote",
++			report: MutationReport{RedGate: true, Note: noteRedGate},
++			want:   "gate test: mutation report: " + noteRedGate + "; written to " + path,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := tt.report.SummaryLine(path); got != tt.want {
++				t.Errorf("SummaryLine(%q) = %q; want %q", path, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestMutationReportMatches_RefusesAReportThatJudgedNothing pins the refusal that comes before any git read.
++func TestMutationReportMatches_RefusesAReportThatJudgedNothing(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		report MutationReport
++	}{
++		{name: "ANote", report: MutationReport{Note: noteNoParent}},
++		{name: "ARedGate", report: MutationReport{RedGate: true}},
++		{name: "APrime", report: MutationReport{Prime: true}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if matches, err := MutationReportMatches(nil, tt.report, "HEAD"); err != nil || matches {
++				t.Errorf("MutationReportMatches() = %v, %v; want false and no error", matches, err)
++			}
++		})
++	}
++}
++
++func TestMutationReport_ReviewLines(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const path = "/gate/mutation.json"
++	survivor := func(line int, function string, killers ...string) MutationSurvivor {
++		return MutationSurvivor{
++			MutationMutant:  MutationMutant{File: "a/a.go", Line: line, Operator: "negate condition", Function: function},
++			PossibleKillers: append([]string{}, killers...),
++		}
++	}
++	reached := survivor(12, "Run", "b.TestUses")
++	reached.MorePossibleKillers = 2
++	var many []MutationSurvivor
++	manyLines := []string{"mutation: 0 mutants run, 0 killed, 0 survived, 0 unjudged, 0 uncovered changed blocks, 0 packages not judged"}
++	for i := range mutationReviewLineCap + 5 {
++		many = append(many, survivor(i+1, "Run"))
++		if i < mutationReviewLineCap-2 {
++			manyLines = append(manyLines, fmt.Sprintf("mutation: survivor a/a.go:%d, negate condition in Run; no test of another package reaches its function", i+1))
++		}
++	}
++	manyLines = append(manyLines, "mutation: list cut; the rest is in "+path)
++
++	tests := []struct {
++		name   string
++		report MutationReport
++		want   []string
++	}{
++		{
++			name: "TheCountsThenEachSurvivorWithItsPossibleKillers",
++			report: MutationReport{
++				Mutants:   MutationCounts{Run: 3, Killed: 1, Survived: 2},
++				Survivors: []MutationSurvivor{reached, survivor(20, "Stop")},
++			},
++			want: []string{
++				"mutation: 3 mutants run, 1 killed, 2 survived, 0 unjudged, 0 uncovered changed blocks, 0 packages not judged",
++				"mutation: survivor a/a.go:12, negate condition in Run; possible killers: b.TestUses, and 2 more",
++				"mutation: survivor a/a.go:20, negate condition in Stop; no test of another package reaches its function",
++			},
++		},
++		{
++			name:   "AListOverTheCapEndsNamingTheReport",
++			report: MutationReport{Survivors: many},
++			want:   manyLines,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := tt.report.ReviewLines(path)
++			if diff := cmp.Diff(tt.want, got); diff != "" {
++				t.Errorf("ReviewLines(%q) mismatch (-want +got):\n%s", path, diff)
++			}
++			if len(got) > mutationReviewLineCap {
++				t.Errorf("ReviewLines(%q) holds %d lines; want at most %d", path, len(got), mutationReviewLineCap)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/reach.go b/internal/gatecli/reach.go
+index d190e044..e33f65ed 100644
+--- a/internal/gatecli/reach.go
++++ b/internal/gatecli/reach.go
+@@ -81,7 +81,7 @@ func (s reachStep) run(red, inHub bool) {
+ 		report = ReachReport{RedGate: true, Note: noteRedGate}
+ 	case !inHub:
+ 		report = ReachReport{Note: noteNoHub}
+-	case s.cfg.Scoper != "go":
++	case !s.cfg.HasGoCoverageMaps():
+ 		report = ReachReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
+ 	default:
+ 		report = s.answer()
+diff --git a/internal/gatecli/reachreport.go b/internal/gatecli/reachreport.go
+index 0d614f18..6859cebe 100644
+--- a/internal/gatecli/reachreport.go
++++ b/internal/gatecli/reachreport.go
+@@ -119,6 +119,20 @@ func ReachReportMatches(location *lymcwd.Location, report ReachReport, rev strin
+ 	if report.Note != "" || report.RedGate || report.Prime {
+ 		return false, nil
+ 	}
++	recorded := make([]string, len(report.Functions))
++	for i, fn := range report.Functions {
++		recorded[i] = reachFunctionIdentity(fn.Package, fn.File, fn.Func, fn.Hash, fn.New)
++	}
++	return changedFunctionsMatch(location, report.ModuleDir, recorded, report.FileHashes, rev)
++}
++
++// changedFunctionsMatch reports whether rev's changed functions are those recorded.
++// The changed functions are those the commit rev changes since the current merge base.
++// recorded holds the reachFunctionIdentity of each, so their hashes must match too.
++// moduleDir is the worktree-relative slash path of the Go module whose functions they are.
++// The Go files of each package fileHashes names must also hash at rev as it records.
++// A worktree with no parent branch never matches.
++func changedFunctionsMatch(location *lymcwd.Location, moduleDir string, recorded []string, fileHashes map[string]map[string]string, rev string) (bool, error) {
+ 	base, found, err := parentMergeBase(location)
+ 	if err != nil || !found {
+ 		return false, err
+@@ -132,11 +146,11 @@ func ReachReportMatches(location *lymcwd.Location, report ReachReport, rev strin
+ 		return false, err
+ 	}
+ 	tree := commitTree{fabric: fabric, rev: rev}
+-	goMod, found, err := tree.file(path.Join(report.ModuleDir, "go.mod"))
++	goMod, found, err := tree.file(path.Join(moduleDir, "go.mod"))
+ 	if err != nil || !found {
+ 		return false, err
+ 	}
+-	module := goModule{rel: report.ModuleDir, path: modfile.ModulePath(goMod)}
++	module := goModule{rel: moduleDir, path: modfile.ModulePath(goMod)}
+ 	if module.path == "" {
+ 		return false, nil
+ 	}
+@@ -149,17 +163,13 @@ func ReachReportMatches(location *lymcwd.Location, report ReachReport, rev strin
+ 		pkg := module.relativePackage(fn.Key.Package)
+ 		current[i] = reachFunctionIdentity(pkg, path.Join(packageDirOf(module.rel, pkg), fn.Key.File), fn.Key.Func, fn.Hash, fn.New)
+ 	}
+-	recorded := make([]string, len(report.Functions))
+-	for i, fn := range report.Functions {
+-		recorded[i] = reachFunctionIdentity(fn.Package, fn.File, fn.Func, fn.Hash, fn.New)
+-	}
+ 	slices.Sort(current)
+ 	slices.Sort(recorded)
+ 	if !slices.Equal(current, recorded) {
+ 		return false, nil
+ 	}
+-	for pkg, hashes := range report.FileHashes {
+-		atRev, err := goFileHashes(tree, packageDirOf(report.ModuleDir, pkg))
++	for pkg, hashes := range fileHashes {
++		atRev, err := goFileHashes(tree, packageDirOf(moduleDir, pkg))
+ 		if err != nil {
+ 			return false, err
+ 		}
+diff --git a/internal/gatecli/reachverb.go b/internal/gatecli/reachverb.go
+index f31cb2ba..16aea33b 100644
+--- a/internal/gatecli/reachverb.go
++++ b/internal/gatecli/reachverb.go
+@@ -146,7 +146,7 @@ func runReach(ctx context.Context, out io.Writer, request reachRequest) int {
+ 		return output.Err(out, fmt.Sprintf("gate reach: cannot read the hub's gate config: %v; way forward: take the step it names, then re-run the same command", err))
+ 	}
+ 	cfg = cfg.WithDefaultDir(location.AnchorRel)
+-	if cfg.Scoper != "go" {
++	if !cfg.HasGoCoverageMaps() {
+ 		return output.Ok(out, map[string]any{"lines": []string{"gate reach: " + fmt.Sprintf(noteScoper, cfg.Scoper)}})
+ 	}
+ 	module, err := redundancyModule(cfg, location.WorktreePath())
+diff --git a/internal/gatecli/redundancy.go b/internal/gatecli/redundancy.go
+index b06fd7f3..a6bec637 100644
+--- a/internal/gatecli/redundancy.go
++++ b/internal/gatecli/redundancy.go
+@@ -106,7 +106,7 @@ func (s redundancyStep) run(red, inHub bool) {
+ 		report = RedundancyReport{RedGate: true, Note: noteRedGate}
+ 	case !inHub:
+ 		report = RedundancyReport{Note: noteNoHub}
+-	case s.cfg.Scoper != "go":
++	case !s.cfg.HasGoCoverageMaps():
+ 		report = RedundancyReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
+ 	default:
+ 		judged, kept := s.judge(path)
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index c227d289..b985a59c 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -233,10 +233,12 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 				code, firstFailed = 1, lint.label
+ 			}
+ 		}
+-		// The report steps run last and never change the code; the reach step runs before the redundancy step.
++		// The report steps run last and never change the code.
++		// The reach step runs first, and the mutation step after the redundancy step.
+ 		reports := cfg.Gates[request.gate].Reports
+ 		runsReach, runsRedundancy := slices.Contains(reports, gateslot.ReportReach), slices.Contains(reports, gateslot.ReportRedundancy)
+-		if runsReach || runsRedundancy {
++		runsMutation := slices.Contains(reports, gateslot.ReportMutation)
++		if runsReach || runsRedundancy || runsMutation {
+ 			stopGuard, guardKilled := startMemoryGuard(runCtx, newMemoryGuard(request.memoryQuit, request.stderr), os.Getpid(), exe.request.memoryGuarding)
+ 			if runsReach {
+ 				reach := exe.reachStep()
+@@ -248,6 +250,11 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 				step.guardKilled = guardKilled
+ 				step.run(red, inHub)
+ 			}
++			if runsMutation {
++				step := exe.mutationStep()
++				step.reach.guardKilled = guardKilled
++				step.run(red, inHub)
++			}
+ 			stopGuard()
+ 		}
+ 	}
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 30a468e7..6255a023 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -691,6 +691,14 @@ func TestGateTest_Scopes(t *testing.T) {
+ 	})
+ 
+ 	t.Run("--gate with scope diff runs the computed scope", func(t *testing.T) {
++		// The gate declares no reports, so the tier commands are the only invocations the stand-in records.
++		config := scopesConfigWith(t, "go", func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"pr-review": map[string]any{"tiers": []int{0}, "scope": "diff", "reports": []string{}}}
++		})
++		if err := os.WriteFile(configPath, config, 0o644); err != nil {
++			t.Fatal(err)
++		}
++		defer writeScoper(t, "go")
+ 		edit(t, "lib/lib.go", "package lib\n\nfunc One() int { return 5 }\n")
+ 		g := gate(t, pair, nil, "--gate", "pr-review")
+ 		wantArgs(t, g, []string{"./lib", "./user"}, guardInvocation)
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 1643444f..a76d7d1c 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -47,12 +47,14 @@ type Config struct {
+ 	RedundancyMaxTests int `yaml:"redundancy_max_tests"`
+ 	// RedundancyBudgetMin is the minutes the redundancy report step may spend on builds and tests once it holds its slot.
+ 	RedundancyBudgetMin int `yaml:"redundancy_budget_min"`
+-	// ReachBudgetMin is the minutes the reach report step and `lym gate mutate` may spend on coverage maps.
++	// ReachBudgetMin is the minutes the reach and mutation report steps and `lym gate mutate` may spend on coverage maps.
+ 	// They spend it refreshing the worktree's maps, once they hold a slot.
+ 	ReachBudgetMin int `yaml:"reach_budget_min"`
+-	// MutationMaxMutants caps the mutants `lym gate mutate` runs for one diff, spread over the changed functions in turn.
++	// MutationMaxMutants caps the mutants `lym gate mutate` and the mutation report step run for one diff.
++	// They spread it over the changed functions in turn.
+ 	MutationMaxMutants int `yaml:"mutation_max_mutants"`
+-	// MutationBudgetMin is the minutes `lym gate mutate` may spend on its mutant builds and runs once it holds a slot.
++	// MutationBudgetMin is the minutes `lym gate mutate` and the mutation report step may spend on mutant builds and runs.
++	// It counts from the hold of their slot.
+ 	MutationBudgetMin int `yaml:"mutation_budget_min"`
+ 	// Tiers are the declared test tiers keyed tier0, tier1, and so on.
+ 	Tiers map[string]Tier `yaml:"tiers"`
+@@ -70,6 +72,15 @@ type Config struct {
+ 	InertPaths []string `yaml:"inert_paths"`
+ }
+ 
++// scoperHasGoCoverageMaps says, per scoper, whether it works on Go packages, whose coverage maps the gate reads.
++var scoperHasGoCoverageMaps = map[string]bool{"go": true, "none": false, "dotnet": false}
++
++// HasGoCoverageMaps reports whether the config's scoper works on Go packages.
++// A step that reads Go coverage maps judges nothing when it does not.
++func (c Config) HasGoCoverageMaps() bool {
++	return scoperHasGoCoverageMaps[c.Scoper]
++}
++
+ // BuildStep is the build a gate call runs once for every tier that sets shared_build.
+ type BuildStep struct {
+ 	// About is one line saying what the build produces.
+@@ -535,8 +546,8 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 			}
+ 		}
+ 		for _, report := range key.Reports {
+-			if report != ReportReach && report != ReportRedundancy {
+-				return nil, guidedError{fmt.Errorf("gate config key %q: report %q; want %s or %s; fix it with \"lym config gate\" from the prime%s", path, report, ReportReach, ReportRedundancy, roleClause)}
++			if report != ReportReach && report != ReportRedundancy && report != ReportMutation {
++				return nil, guidedError{fmt.Errorf("gate config key %q: report %q; want %s, %s or %s; fix it with \"lym config gate\" from the prime%s", path, report, ReportReach, ReportRedundancy, ReportMutation, roleClause)}
+ 			}
+ 		}
+ 		if key.Fixer != "" {
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index e659244c..85f0a175 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -78,10 +78,10 @@ var templateDefaults = Config{
+ 		"parent-align":    {Tiers: []int{0}, Scope: "all", Reports: []string{"reach", "redundancy"}},
+ 		"finalize":        {Tiers: []int{0}, Scope: "all"},
+ 		"adopt":           {Tiers: []int{0}, Scope: "all"},
+-		"webster-fix":     {Tiers: []int{0}, Scope: "diff"},
+-		"darn-write":      {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy"}},
+-		"code-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy"}},
+-		"pr-review":       {Tiers: []int{0}, Scope: "diff"},
++		"webster-fix":     {Tiers: []int{0}, Scope: "diff", Reports: []string{"mutation"}},
++		"darn-write":      {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}},
++		"code-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}},
++		"pr-review":       {Tiers: []int{0}, Scope: "diff", Reports: []string{"mutation"}},
+ 	},
+ 	Scoper: "none",
+ }
+@@ -140,6 +140,28 @@ func seedGateConfig(t *testing.T, contents string) string {
+ 	return baseDir
+ }
+ 
++// TestConfig_HasGoCoverageMaps pins that only the go scoper works on Go packages.
++func TestConfig_HasGoCoverageMaps(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		scoper string
++		want   bool
++	}{
++		{"go", true},
++		{"none", false},
++		{"dotnet", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.scoper, func(t *testing.T) {
++			t.Parallel()
++			if got := (Config{Scoper: tt.scoper}).HasGoCoverageMaps(); got != tt.want {
++				t.Errorf("Config{Scoper: %q}.HasGoCoverageMaps() = %v; want %v", tt.scoper, got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestResolveCommandDir pins the one base every hub command's dir resolves against:
+ // the anchor for no dir, the worktree root for a relative dir, and an absolute dir as written.
+ func TestResolveCommandDir(t *testing.T) {
+@@ -298,13 +320,12 @@ func TestLoadConfig(t *testing.T) {
+ 		{"reach_budget_min zero", baseKeys + "reach_budget_min: 0\n", Config{}, `gate config key "reach_budget_min": 0; want at least 1` + fixIt},
+ 		{"mutation_max_mutants zero", baseKeys + "mutation_max_mutants: 0\n", Config{}, `gate config key "mutation_max_mutants": 0; want at least 1` + fixIt},
+ 		{"mutation_budget_min zero", baseKeys + "mutation_budget_min: 0\n", Config{}, `gate config key "mutation_budget_min": 0; want at least 1` + fixIt},
+-		{"an unknown report", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [speed]}\n", Config{}, `gate config key "gates.webster": report "speed"; want reach or redundancy` + fixIt},
+-		{"mutation is no report yet", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [mutation]}\n", Config{}, `gate config key "gates.webster": report "mutation"; want reach or redundancy` + fixIt},
++		{"an unknown report", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [speed]}\n", Config{}, `gate config key "gates.webster": report "speed"; want reach, redundancy or mutation` + fixIt},
+ 		{
+-			"a key listing reach loads", baseKeys + "gates:\n  finalize: {tiers: [0], scope: all, reports: [reach]}\n",
++			"a key listing every report loads", baseKeys + "gates:\n  finalize: {tiers: [0], scope: all, reports: [reach, redundancy, mutation]}\n",
+ 			hubWith(func(c *Config) {
+ 				c.Gates = maps.Clone(templateDefaults.Gates)
+-				c.Gates["finalize"] = GateKey{Tiers: []int{0}, Scope: "all", Reports: []string{"reach"}}
++				c.Gates["finalize"] = GateKey{Tiers: []int{0}, Scope: "all", Reports: []string{"reach", "redundancy", "mutation"}}
+ 			}), "",
+ 		},
+ 		{
+@@ -321,7 +342,7 @@ func TestLoadConfig(t *testing.T) {
+ 			baseKeys + "gates:\n  darn-write: {tiers: [0, 1], scope: diff}\n  batch: {tiers: [0], scope: card}\n",
+ 			hubWith(func(c *Config) {
+ 				c.Gates = maps.Clone(templateDefaults.Gates)
+-				c.Gates["darn-write"] = GateKey{Tiers: []int{0, 1}, Scope: "diff", Reports: []string{"reach", "redundancy"}}
++				c.Gates["darn-write"] = GateKey{Tiers: []int{0, 1}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}}
+ 			}), "",
+ 		},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `gate config key "gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 2d3602d1..b27661cf 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -67,8 +67,8 @@
+ // That refresh runs the map run's measurement in the map run's slot ask.
+ // `lym gate redundant` is another.
+ // It waits for its slot once it has a candidate to check by mutation, and holds it to its end.
+-// `lym gate mutate` is a third.
+-// It waits for its slot after its refresh of the worktree's maps, and holds it to its end.
++// `lym gate mutate` is a third, and the mutation report step of `lym gate test` a fourth.
++// Each waits for its slot after its refresh of the worktree's maps, and holds it to its end.
+ //
+ // # Prebuilt store
+ //
+@@ -113,9 +113,10 @@
+ // A GateKey may also hold `lints`, the lint steps its call runs after its tiers, each LintComments or LintPattern.
+ // The template's `card` key lists both.
+ // A GateKey may also hold `reports`, the advisory steps its call runs after its lints.
+-// Each is ReportReach or ReportRedundancy.
++// Each is ReportReach, ReportRedundancy or ReportMutation.
+ // The template lists `reach` first on `batch`, `webster`, `parent-align`, `darn-write` and `code-burler-fix`.
+ // It lists `redundancy` after it on every one of those but `batch`.
++// It lists `mutation` last on every key of scope `diff`: `webster-fix`, `darn-write`, `code-burler-fix` and `pr-review`.
+ // Config load fills a template key a tuned `gates` entry lacks into that entry,
+ // so a hub base file that tunes one of those keys without `reports` still runs the step, and `reports: []` turns it off.
+ // `tiers` and `build` are executable keys, since a tier or build command runs any shell command in a task worktree.
+@@ -172,21 +173,22 @@
+ // a `tier_parallel` entry that is no integer of at least 1;
+ // a gate key whose scope is not `card`, `diff` or `all`, and the retired `coverage`, which names `lym fabric reconcile`;
+ // a `card` scope on any key but `card` and `batch`; a lint other than `comments` or `pattern`;
+-// a report other than ReportReach, `reach`, or ReportRedundancy, `redundancy`.
++// a report other than ReportReach, `reach`, ReportRedundancy, `redundancy`, or ReportMutation, `mutation`.
+ // A GateKey may also hold `fixer`, a model-spec naming the cold fixer an agent's red call hands its failures to.
+ // Only the `card` key may hold one; the template sets `sonnet[medium]` there, and an empty value turns the fixer off.
+ // `fixer_timeout_min` bounds how long the callers of a cold gate fixer wait for it.
+ // LoadConfig refuses a value below 1, and Config.FixerTimeout returns it as a duration.
+ // `lym gate test --map` builds coverage maps under three bounds.
+-// The reach report step refreshes a task worktree's own maps under them too.
++// The reach and mutation report steps refresh a task worktree's own maps under them too.
+ // `redundancy_build_timeout_min` bounds each build in minutes.
+ // `redundancy_test_timeout_sec` bounds each test in seconds.
+ // `redundancy_test_memory_mb` caps the memory of each test and of every process it starts, in megabytes.
+ // Config.RedundancyTestMemory returns it in bytes.
+ // The redundancy report step of `lym gate test` takes the three bounds too.
+-// So do the mutation checks of `lym gate redundant` and `lym gate mutate`.
++// So do the mutation checks of `lym gate redundant`, `lym gate mutate` and the mutation report step.
+ // In both verbs a mutant run past the test bound or the memory cap is unjudged, never a kill.
+-// `lym gate test --map`, `lym gate redundant` and `lym gate mutate` run fewer tests side by side when memory is short.
++// `lym gate test --map` runs fewer tests side by side when memory is short.
++// So do `lym gate redundant`, `lym gate mutate` and the mutation report step.
+ // So does the reach step's refresh.
+ // That is when the limit they sit under leaves less than the caps of those tests together.
+ // A map call runs each mapped tier's tests up to that tier's parallel.
+@@ -197,10 +199,13 @@
+ // `redundancy_max_tests` caps the tests it judges in one call.
+ // `redundancy_budget_min` bounds, in minutes, its builds and tests once it holds its slot.
+ // They are cross-pair keys, since every worktree of the hub reads the maps, and LoadConfig refuses a value below 1.
+-// Three more keys bound the reach report step and `lym gate mutate`, which refresh the worktree's own maps.
+-// `reach_budget_min` bounds, in minutes, the step's and the verb's refresh of those maps once they hold a slot.
+-// `mutation_max_mutants` caps the mutants `lym gate mutate` runs for one diff, spread over the changed functions in turn.
+-// `mutation_budget_min` bounds, in minutes, its mutant builds and runs once it holds a slot.
++// Three more keys bound the reach report step, the mutation report step and `lym gate mutate`.
++// Each of them refreshes the worktree's own maps.
++// `reach_budget_min` bounds, in minutes, each one's refresh of those maps once it holds a slot.
++// `mutation_max_mutants` caps the mutants the mutation report step and `lym gate mutate` run for one diff.
++// The cap is spread evenly over the changed functions when it is short of one mutant each.
++// `mutation_budget_min` bounds, in minutes, the mutation report step's and the verb's mutant builds and runs.
++// It counts from the hold of their slot.
+ // They are cross-pair keys too, and LoadConfig refuses each below 1.
+ // LoadConfig refuses a `fixer` on any key but `card`, and a `fixer` that `modelspec.Parse` rejects.
+ // Each refusal names the key and its way forward.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 096ec74f..66268c29 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -1,15 +1,15 @@
+ slots: 2  # how many gate builds and test runs the hub executes at once; a lowered count takes effect on the next acquire while a running holder finishes
+ busy_quit_sec: 120  # seconds a Go test binary under lym gate test may keep a CPU core at least 90 percent busy before it gets one SIGQUIT and dumps its goroutine stacks; 0 turns the watchdog off; raise it for a package that is CPU-bound but healthy
+-memory_quit_mb: 4096  # megabytes a Go test binary that lym gate test (its redundancy report step and the refresh of its reach report step included), lym gate redundant, lym gate mutate or lym gate test --map runs may hold, with every process it starts, before the memory guard kills them all and names its package; the guard also kills the largest test binary of 1024 MB or more once the memory limit lym sits under has less than a tenth left; 0 turns the guard off
++memory_quit_mb: 4096  # megabytes a Go test binary that lym gate test (its redundancy and mutation report steps and the refresh of its reach report step included), lym gate redundant, lym gate mutate or lym gate test --map runs may hold, with every process it starts, before the memory guard kills them all and names its package; the guard also kills the largest test binary of 1024 MB or more once the memory limit lym sits under has less than a tenth left; 0 turns the guard off
+ fixer_timeout_min: 30  # minutes a cold gate fixer may run before the call that spawned it stops waiting; it bounds the card gate's fixer and the row gate fixers, and webster's fix-verify keeps its own recovery_timeout_min
+-redundancy_build_timeout_min: 10  # minutes each coverage, mutant and lym build of a coverage map run, the reach report step's refresh, the redundancy report step, lym gate redundant or lym gate mutate may take before its process group is killed and the build counts as failed
+-redundancy_test_timeout_sec: 120  # seconds each test of those runs alone may take before its process group is killed; the test is left out, except a mutant run in lym gate redundant or lym gate mutate, which is then unjudged, never a kill
+-redundancy_test_memory_mb: 2048  # megabytes each test of those runs alone may hold, with every process it starts, before the kernel ends it or fails its allocation; the test is left out, recorded as failed by lym gate test --map, and a mutant run in lym gate redundant or lym gate mutate is unjudged, never a kill; lym gate redundant, lym gate mutate, lym gate test --map and the reach report step's refresh run fewer tests side by side when the memory limit they sit under leaves less than their caps together
++redundancy_build_timeout_min: 10  # minutes each coverage, mutant and lym build of a coverage map run, the reach report step's refresh, the redundancy and mutation report steps, lym gate redundant or lym gate mutate may take before its process group is killed and the build counts as failed
++redundancy_test_timeout_sec: 120  # seconds each test of those runs alone may take before its process group is killed; the test is left out, except a mutant run in lym gate redundant, lym gate mutate or the mutation report step, which is then unjudged, never a kill
++redundancy_test_memory_mb: 2048  # megabytes each test of those runs alone may hold, with every process it starts, before the kernel ends it or fails its allocation; the test is left out, recorded as failed by lym gate test --map, and a mutant run in lym gate redundant, lym gate mutate or the mutation report step is unjudged, never a kill; lym gate redundant, lym gate mutate, the mutation report step, lym gate test --map and the reach report step's refresh run fewer tests side by side when the memory limit they sit under leaves less than their caps together
+ redundancy_max_tests: 40  # the most new and changed tests the redundancy report step judges in one call, taken in file then name order; the rest are listed as not judged
+ redundancy_budget_min: 10  # minutes the redundancy report step may spend on its builds and tests once it holds its gate slot; past it the step starts no further build or test
+-reach_budget_min: 10  # minutes the reach report step and lym gate mutate may spend refreshing the worktree's coverage maps once they hold a gate slot; past it they start no further build or test
+-mutation_max_mutants: 40  # the most mutants lym gate mutate runs for one diff, spread over the changed functions in turn; the rest are listed as not run
+-mutation_budget_min: 20  # minutes lym gate mutate may spend on its mutant builds and runs once it holds its gate slot; past it it starts no further build or test
++reach_budget_min: 10  # minutes the reach and mutation report steps and lym gate mutate may spend refreshing the worktree's coverage maps once they hold a gate slot; past it they start no further build or test
++mutation_max_mutants: 40  # the most mutants lym gate mutate or the mutation report step runs for one diff, one per changed function in turn, spread evenly over the functions when the cap is short of one each; the rest are listed as not run
++mutation_budget_min: 20  # minutes lym gate mutate or the mutation report step may spend on its mutant builds and runs once it holds its gate slot; past it it starts no further build or test
+ 
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+@@ -24,7 +24,7 @@ tiers: {}
+ # The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix and pr-review (scope diff, the diff from the merge base).
+ # The scope card is only for the card and batch keys.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+-# A key may also hold reports, the advisory steps its call runs after the lints, which never change its result; reach runs before every other report step: reach (refreshes the worktree's coverage maps of the packages the diff changes and writes the changed functions no test reaches into the worktree's gate directory), redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory); reports: [] turns them off.
++# A key may also hold reports, the advisory steps its call runs after the lints, which never change its result; reach runs before every other report step and mutation after them: reach (refreshes the worktree's coverage maps of the packages the diff changes and writes the changed functions no test reaches into the worktree's gate directory), redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory), mutation (mutates the lines the diff changes in blocks a test covers, runs the tests covering each mutant, writes every survivor, unjudged mutant, uncovered changed block and package not judged into the worktree's gate directory and prints one summary line); reports: [] turns them off.
+ # The card key alone may also hold fixer, a model-spec such as sonnet[medium]: the cold fixer an agent's red lym gate test --gate card call hands its failures to; "" turns it off.
+ # No tier list may be empty.
+ # While tiers is empty, every key runs with nothing to run; once any tier is declared, each tier a key names must be declared too.
+@@ -35,10 +35,10 @@ gates:
+   parent-align: {tiers: [0], scope: all, reports: [reach, redundancy]}
+   finalize: {tiers: [0], scope: all}
+   adopt: {tiers: [0], scope: all}
+-  webster-fix: {tiers: [0], scope: diff}
+-  darn-write: {tiers: [0], scope: diff, reports: [reach, redundancy]}
+-  code-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy]}
+-  pr-review: {tiers: [0], scope: diff}
++  webster-fix: {tiers: [0], scope: diff, reports: [mutation]}
++  darn-write: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}
++  code-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}
++  pr-review: {tiers: [0], scope: diff, reports: [mutation]}
+ 
+ # How a computed, base or card scope maps to {targets}: go derives the impacted Go packages per module, dotnet derives the impacted C# test projects and classes from the type-name closure over test classes, none runs every tier whole.
+ scoper: none
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 42d074ac..d56e009e 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -108,7 +108,7 @@ type GateKey struct {
+ 	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
+ 	Lints []string `yaml:"lints"`
+ 	// Reports are the advisory report steps the key's call runs after its lints.
+-	// Each is ReportReach or ReportRedundancy; empty runs none.
++	// Each is ReportReach, ReportRedundancy or ReportMutation; empty runs none.
+ 	// A report step never changes the call's result.
+ 	Reports []string `yaml:"reports"`
+ 	// Fixer is the model-spec of the cold fixer that a red agent call of this key hands its verdict to; empty turns it off.
+@@ -151,6 +151,12 @@ const ReportReach = "reach"
+ // It writes the verdicts to the worktree.
+ const ReportRedundancy = "redundancy"
+ 
++// ReportMutation names the mutation report step a gate key's reports may hold.
++// It mutates the lines the diff changes in the blocks the coverage maps' tests cover, and runs the covering tests.
++// It writes every survivor and the counts to the worktree, and prints one summary line.
++// It runs after every other report step.
++const ReportMutation = "mutation"
++
+ // goReadGates are the gate keys the Go verify sites read, in the order TiersValue lists them.
+ var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "pr-review"}
+ 
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index b4d98ed7..18b2e78b 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -827,6 +827,12 @@
+ // The marker lists the report's note lines when `gatecli.ReachReportMatches` matches the report against HEAD.
+ // Otherwise it is one line saying no current report exists and why; a report written in the prime never matches.
+ //
++// The rubric's `mutation_report` marker is filled the same way from the worktree's mutation report.
++// A `lym gate test` call with the `mutation` report step writes that report.
++// The marker lists the report's counts and survivors when the report matches HEAD.
++// `gatecli.MutationReportMatches` decides that match.
++// Otherwise it is one line saying no current report exists and why; a report written in the prime never matches.
++//
+ // `wire` also tells the closure `gatecli.ReachPendingOf` builds to the recipe Env's `VerifyReach`.
+ // It tells the same closure to the weaver geometry's `ReachPending`.
+ // The verify gate of a row whose key lists `reach` and the weaver batch gate then hand the writer the reach note.
+diff --git a/internal/loomcli/landingdeps_verify_test.go b/internal/loomcli/landingdeps_verify_test.go
+index 6e7d46ec..46661ab4 100644
+--- a/internal/loomcli/landingdeps_verify_test.go
++++ b/internal/loomcli/landingdeps_verify_test.go
+@@ -33,7 +33,7 @@ func gateConfigWithTwoTiers() string {
+ 	return strings.NewReplacer(
+ 		"tiers: {}", tiers,
+ 		"  finalize: {tiers: [0], scope: all}", "  finalize: {tiers: [0, 1], scope: all}",
+-		"  code-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy]}", "  code-burler-fix: {tiers: [0, 1], scope: diff, reports: [reach, redundancy]}",
++		"  code-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}", "  code-burler-fix: {tiers: [0, 1], scope: diff, reports: [reach, redundancy, mutation]}",
+ 	).Replace(gateslot.ConfigTemplate())
+ }
+ 
+diff --git a/internal/loomcli/mutationnote.go b/internal/loomcli/mutationnote.go
+new file mode 100644
+index 00000000..3537b76f
+--- /dev/null
++++ b/internal/loomcli/mutationnote.go
+@@ -0,0 +1,70 @@
++// mutationnote.go renders the gate's mutation report as the note of a code review rubric's mutation_report marker.
++
++package loomcli
++
++import (
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++)
++
++// noCurrentMutationReport opens the note a review gets when no mutation report holds for HEAD.
++const noCurrentMutationReport = "No current mutation report"
++
++// mutationReportNote returns the closure that reads the mutation report of the worktree at location.
++// The closure reads it each time a review rubric carrying the marker is filled.
++// The note lists the report's counts and survivors when the report matches HEAD's tree.
++// Otherwise it says that no current report exists and why.
++func mutationReportNote(location *lymcwd.Location) func() string {
++	return func() string {
++		report, found, err := gatecli.ReadMutationReport(location)
++		if err != nil {
++			return fmt.Sprintf("%s: the report could not be read: %v.", noCurrentMutationReport, err)
++		}
++		return renderMutationReportNote(report, found, func() (bool, error) {
++			fabric, err := fabricengine.Open(location)
++			if err != nil {
++				return false, err
++			}
++			head, err := fabric.HeadSHA()
++			if err != nil {
++				return false, err
++			}
++			return gatecli.MutationReportMatches(location, report, head)
++		})
++	}
++}
++
++// renderMutationReportNote renders report as a code review reads it.
++// found is whether a report exists, and matchesHead reports whether it holds for HEAD's tree;
++// it is called only for a report that judged and was not written in the prime.
++// A matching report renders its review lines under one line naming the gate call that wrote it.
++// Any other renders one line saying no current report exists and why.
++// That line names the gate key of a report written on a red tier.
++func renderMutationReportNote(report gatecli.MutationReport, found bool, matchesHead func() (bool, error)) string {
++	if !found {
++		return noCurrentMutationReport + ": no gate call of this worktree has written one."
++	}
++	call := fmt.Sprintf("the `%s` gate call of %s", report.GateKey, report.Written.UTC().Format(time.RFC3339))
++	switch {
++	case report.RedGate:
++		return fmt.Sprintf("%s: a tier of %s was red, so its report judged nothing.", noCurrentMutationReport, call)
++	case report.Note != "":
++		return fmt.Sprintf("%s: the report of %s judged nothing: %s.", noCurrentMutationReport, call, report.Note)
++	case report.Prime:
++		return fmt.Sprintf("%s: the report of %s was written in the prime, which has no parent branch, so it matches no HEAD.", noCurrentMutationReport, call)
++	}
++	matched, err := matchesHead()
++	if err != nil {
++		return fmt.Sprintf("%s: the report of %s could not be matched against HEAD: %v.", noCurrentMutationReport, call, err)
++	}
++	if !matched {
++		return fmt.Sprintf("%s: the report of %s was written for a tree other than HEAD's.", noCurrentMutationReport, call)
++	}
++	lines := append([]string{fmt.Sprintf("The mutation report of %s matches HEAD's tree.", call)}, report.ReviewLines(gatecli.MutationReportFileName)...)
++	return strings.Join(lines, "\n")
++}
+diff --git a/internal/loomcli/mutationnote_test.go b/internal/loomcli/mutationnote_test.go
+new file mode 100644
+index 00000000..abf0497b
+--- /dev/null
++++ b/internal/loomcli/mutationnote_test.go
+@@ -0,0 +1,97 @@
++// mutationnote_test.go covers how a code review's mutation_report note renders the gate's mutation report.
++
++package loomcli
++
++import (
++	"errors"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gatecli"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRenderMutationReportNote(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	written := time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC)
++	judged := gatecli.MutationReport{
++		Written: written,
++		GateKey: "darn-write",
++		Mutants: gatecli.MutationCounts{Run: 2, Killed: 1, Survived: 1},
++		Survivors: []gatecli.MutationSurvivor{{
++			MutationMutant:  gatecli.MutationMutant{File: "alpha/alpha.go", Line: 7, Operator: "negate condition", Function: "One"},
++			PossibleKillers: []string{},
++		}},
++	}
++	// unmatched stands in for the HEAD match of a row whose report must be rendered without one.
++	unmatched := func() (bool, error) {
++		t.Error("matchesHead was called; want no match for a missing report, a red-gate one or one written in the prime")
++		return false, nil
++	}
++	tests := []struct {
++		name        string
++		report      gatecli.MutationReport
++		found       bool
++		matchesHead func() (bool, error)
++		want        string
++	}{
++		{
++			name:        "NoReport",
++			matchesHead: unmatched,
++			want:        "No current mutation report: no gate call of this worktree has written one.",
++		},
++		{
++			name:        "RedGateNamesTheGateKey",
++			report:      gatecli.MutationReport{Written: written, GateKey: "code-burler-fix", RedGate: true, Note: "a tier of the call was red"},
++			found:       true,
++			matchesHead: unmatched,
++			want:        "No current mutation report: a tier of the `code-burler-fix` gate call of 2026-11-09T20:00:00Z was red, so its report judged nothing.",
++		},
++		{
++			name:        "PrimeReportRendersThePrimeReasonWithNoMatch",
++			report:      gatecli.MutationReport{Written: written, GateKey: "darn-write", Prime: true},
++			found:       true,
++			matchesHead: unmatched,
++			want:        "No current mutation report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z was written in the prime, which has no parent branch, so it matches no HEAD.",
++		},
++		{
++			name:        "ANoteOtherThanARedGateRendersTheJudgedNothingLine",
++			report:      gatecli.MutationReport{Written: written, GateKey: "darn-write", Note: "the worktree has no parent branch"},
++			found:       true,
++			matchesHead: unmatched,
++			want:        "No current mutation report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z judged nothing: the worktree has no parent branch.",
++		},
++		{
++			name:        "AHeadMatchErrorIsNamed",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return false, errors.New("read HEAD: gone") },
++			want:        "No current mutation report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z could not be matched against HEAD: read HEAD: gone.",
++		},
++		{
++			name:        "OtherTree",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return false, nil },
++			want:        "No current mutation report: the report of the `darn-write` gate call of 2026-11-09T20:00:00Z was written for a tree other than HEAD's.",
++		},
++		{
++			name:        "MatchRendersTheCountsAndSurvivors",
++			report:      judged,
++			found:       true,
++			matchesHead: func() (bool, error) { return true, nil },
++			want: "The mutation report of the `darn-write` gate call of 2026-11-09T20:00:00Z matches HEAD's tree.\n" +
++				"mutation: 2 mutants run, 1 killed, 1 survived, 0 unjudged, 0 uncovered changed blocks, 0 packages not judged\n" +
++				"mutation: survivor alpha/alpha.go:7, negate condition in One; no test of another package reaches its function",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := renderMutationReportNote(tt.report, tt.found, tt.matchesHead); got != tt.want {
++				t.Errorf("renderMutationReportNote() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 1b3bf4db..f818146f 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -913,9 +913,10 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		// VerifyMergeBase and ReviewBase are nil for a standalone run, which records no parent branch.
+ 		VerifyMergeBase: verifyMergeBase,
+ 		ReviewBase:      verifyMergeBase,
+-		// RedundancyReport and ReachReport read the gate's reports at each rubric fill, never at wire time.
++		// RedundancyReport, ReachReport and MutationReport read the gate's reports at each rubric fill, never at wire time.
+ 		RedundancyReport: redundancyReportNote(location),
+ 		ReachReport:      reachReportNote(location),
++		MutationReport:   mutationReportNote(location),
+ 		VerifyHold:       verifytree.NewPauseHold(pauseGeom, nil),
+ 		VerifyReach:      gatecli.ReachPendingOf(location),
+ 		// GateFixer wraps the Darn-Write, Plan-Write and Discussion-Write gates of a pair run with a cold fixer.
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index dfd4c03e..fd1943e6 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -954,6 +954,11 @@ func TestWire_ReviewKeysReachTheEnv(t *testing.T) {
+ 	} else if got, want := c.env.ReachReport(), "No current reach report: no gate call of this worktree has written one."; got != want {
+ 		t.Errorf("c.env.ReachReport() = %q; want %q for a worktree with no report", got, want)
+ 	}
++	if c.env.MutationReport == nil {
++		t.Error("c.env.MutationReport = nil; want the closure over the worktree's mutation report")
++	} else if got, want := c.env.MutationReport(), "No current mutation report: no gate call of this worktree has written one."; got != want {
++		t.Errorf("c.env.MutationReport() = %q; want %q for a worktree with no report", got, want)
++	}
+ 	// Both seams are nil-legal in the Env, so a dropped assignment would turn the reach turn off unnoticed.
+ 	if c.env.VerifyReach == nil {
+ 		t.Error("c.env.VerifyReach = nil; want the loomshed verify gate's pending-report source")
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index e3a13314..df45ad5c 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -94,6 +94,9 @@ type BouncerConfig struct {
+ 	// ReachReport returns the note the rubric's reach_report marker is filled from.
+ 	// It is called each time the seed or judge reads a rubric carrying the marker; nil renders `none`.
+ 	ReachReport func() string
++	// MutationReport returns the note the rubric's mutation_report marker is filled from.
++	// It is called each time the seed or judge reads a rubric carrying the marker; nil renders `none`.
++	MutationReport func() string
+ 	// RubricStencil is the stencilstore name of the rubric this Bouncer's judge applies.
+ 	RubricStencil string
+ 	// Models holds the already-resolved seed and judge pairs, threaded verbatim into the shuttleengine.Spec of each pass.
+@@ -1690,7 +1693,7 @@ func (b *Bouncer) seedCall(ctx context.Context) (shedengine.Outcome, shedengine.
+ // rubricNotes gathers the notes that fill the rubric's markers.
+ // Each note is blank when no function is configured for it.
+ func (b *Bouncer) rubricNotes() RubricNotes {
+-	notes := RubricNotes{GateTiers: b.cfg.GateTiers, Amendment: AmendmentNote(b.cfg.RunDir), ReviewInput: ReviewInputNote(b.cfg.RunDir), RedundancyReport: b.cfg.RedundancyReport, ReachReport: b.cfg.ReachReport}
++	notes := RubricNotes{GateTiers: b.cfg.GateTiers, Amendment: AmendmentNote(b.cfg.RunDir), ReviewInput: ReviewInputNote(b.cfg.RunDir), RedundancyReport: b.cfg.RedundancyReport, ReachReport: b.cfg.ReachReport, MutationReport: b.cfg.MutationReport}
+ 	if b.cfg.WebsterRecord != nil {
+ 		notes.WebsterRecord = b.cfg.WebsterRecord()
+ 	}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 38431501..48e879e4 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -311,8 +311,9 @@
+ //     ReviewInputNote renders from the record of a full generation the note that fills the rubric's optional
+ //     `review_input` marker, naming each input the generation reads besides the diff.
+ //     AmendmentNote renders from the record the note that fills the rubric's optional `amendment` marker.
+-//     BouncerConfig.RedundancyReport and BouncerConfig.ReachReport return the notes that fill the optional
+-//     `redundancy_report` and `reach_report` markers; each is read only for a rubric carrying its marker.
++//     Three optional markers take a note each: BouncerConfig.RedundancyReport fills `redundancy_report`,
++//     BouncerConfig.ReachReport fills `reach_report` and BouncerConfig.MutationReport fills `mutation_report`;
++//     each is read only for a rubric carrying its marker.
+ //     The note scopes the seed, the reviewers and the judge to the change:
+ //     for a document it is the artifacts' change since the base commit;
+ //     for code it is the stored settle-record.patch against the working-tree diff at the current merge base.
+diff --git a/internal/shedadapters/rubric.go b/internal/shedadapters/rubric.go
+index 6417791a..75b4786f 100644
+--- a/internal/shedadapters/rubric.go
++++ b/internal/shedadapters/rubric.go
+@@ -20,6 +20,9 @@ const redundancyReportMarker = "redundancy_report"
+ // reachReportMarker is the marker the Code-Review rubric carries for the gate's reach report.
+ const reachReportMarker = "reach_report"
+ 
++// mutationReportMarker is the marker the Code-Review rubric carries for the gate's mutation report.
++const mutationReportMarker = "mutation_report"
++
+ // RubricNotes are the optional notes a rubric's markers are filled from.
+ // A blank note fills its marker as `none`, and a rubric with no such marker ignores it.
+ type RubricNotes struct {
+@@ -41,6 +44,10 @@ type RubricNotes struct {
+ 	// It is called only for a rubric carrying the marker, since reading the report matches it against a commit's tree.
+ 	// Nil and a blank answer render `none`.
+ 	ReachReport func() string
++	// MutationReport returns the note mutation_report is filled from, the gate's mutation report as review reads it.
++	// It is called only for a rubric carrying the marker, since reading the report matches it against a commit's tree.
++	// Nil and a blank answer render `none`.
++	MutationReport func() string
+ }
+ 
+ // ReadRubric reads the rubric stencil name from stencilsDir and strips its stamp banner.
+@@ -72,6 +79,10 @@ func ReadRubric(stencilsDir, name, specsDir string, notes RubricNotes) (string,
+ 	if err != nil {
+ 		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
+ 	}
++	mutationReport, err := markerNote([]byte(stripped), mutationReportMarker, notes.MutationReport)
++	if err != nil {
++		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
++	}
+ 	filled, err := stencil.Fill([]byte(stripped), map[string]string{
+ 		"specs_dir":            specsDir,
+ 		"stencils_dir":         stencilsDir,
+@@ -82,6 +93,7 @@ func ReadRubric(stencilsDir, name, specsDir string, notes RubricNotes) (string,
+ 		"review_base":          noteOrNone(notes.ReviewBase),
+ 		redundancyReportMarker: redundancyReport,
+ 		reachReportMarker:      reachReport,
++		mutationReportMarker:   mutationReport,
+ 	})
+ 	if err != nil {
+ 		return "", fmt.Errorf("shedadapters: read rubric %q: %w", name, err)
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index ff2889c4..d0c49a34 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -149,6 +149,7 @@
+ // BurlerReview and the Bouncer hand Env.RedundancyReport to the rubric's redundancy_report marker.
+ // The rubric reads it only when it carries the marker.
+ // They hand Env.ReachReport to the rubric's reach_report marker the same way.
++// They hand Env.MutationReport to its mutation_report marker.
+ //
+ // # The Drift rows
+ //
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index 03d5838c..abc3410f 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -297,6 +297,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 		ReviewBase:        env.ReviewBase,
+ 		RedundancyReport:  env.RedundancyReport,
+ 		ReachReport:       env.ReachReport,
++		MutationReport:    env.MutationReport,
+ 		GateTiers:         env.GateTiers,
+ 		RubricStencil:     rubricStencil,
+ 		Models:            segment.Bouncer,
+diff --git a/internal/shedrecipe/entries_bouncer_test.go b/internal/shedrecipe/entries_bouncer_test.go
+index 4ec6ab9f..e437a9fb 100644
+--- a/internal/shedrecipe/entries_bouncer_test.go
++++ b/internal/shedrecipe/entries_bouncer_test.go
+@@ -85,8 +85,11 @@ func TestBouncerEntry_HappyPath(t *testing.T) {
+ 	env.RedundancyReport = func() string { return redundancyReport }
+ 	const reachReport = "No current reach report: none written."
+ 	env.ReachReport = func() string { return reachReport }
++	const mutationReport = "No current mutation report: none written."
++	env.MutationReport = func() string { return mutationReport }
+ 	writeStencil(t, env.StencilsDir, "bouncer-template-seed", "{{.rubric}}\n")
+-	writeStencil(t, env.StencilsDir, "bouncer-rubric", "Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\nRedundancy: {{.redundancy_report}}\nReach: {{.reach_report}}\n")
++	writeStencil(t, env.StencilsDir, "bouncer-rubric",
++		"Record: {{.webster_record}}\nTiers:\n{{.gate_tiers}}\nRedundancy: {{.redundancy_report}}\nReach: {{.reach_report}}\nMutation: {{.mutation_report}}\n")
+ 	producer, err = bouncerEntry(reviewRow("review-bounce"), cfg, env)
+ 	if err != nil {
+ 		t.Fatalf("bouncerEntry() error = %v; want nil", err)
+@@ -107,6 +110,9 @@ func TestBouncerEntry_HappyPath(t *testing.T) {
+ 	if len(fake.Specs) != 1 || !strings.Contains(fake.Specs[0].Prompt, "Reach: "+reachReport) {
+ 		t.Errorf("seed specs = %+v; want one whose prompt carries the env's reach report note", fake.Specs)
+ 	}
++	if len(fake.Specs) != 1 || !strings.Contains(fake.Specs[0].Prompt, "Mutation: "+mutationReport) {
++		t.Errorf("seed specs = %+v; want one whose prompt carries the env's mutation report note", fake.Specs)
++	}
+ }
+ 
+ func TestBouncerEntry_RunDirectory(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index 3afdb2f4..ec6524a4 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -184,6 +184,7 @@ func reviewRubricNotes(row RowIdentity, env Env, runDir string) (shedadapters.Ru
+ 		ReviewInput:      shedadapters.ReviewInputNote(runDir),
+ 		RedundancyReport: env.RedundancyReport,
+ 		ReachReport:      env.ReachReport,
++		MutationReport:   env.MutationReport,
+ 	}
+ 	if env.WebsterRecord != nil {
+ 		notes.WebsterRecord = env.WebsterRecord()
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index ec40bff4..714207e8 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -288,14 +288,15 @@ func TestBurlerReviewEntry_RubricStencil(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("FillsTheReachReportNote", func(t *testing.T) {
++	t.Run("FillsTheReachAndMutationReportNotes", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		env.ReachReport = func() string { return "No current reach report: none written." }
+-		writeStencil(t, env.StencilsDir, "round-rubric", "Reach: {{.reach_report}}\n")
++		env.MutationReport = func() string { return "No current mutation report: none written." }
++		writeStencil(t, env.StencilsDir, "round-rubric", "Reach: {{.reach_report}}\nMutation: {{.mutation_report}}\n")
+ 
+ 		profile, _ := captureReview(t, "review-row", stencilCfg, env)
+-		if profile.Rubric != "Reach: No current reach report: none written.\n" {
+-			t.Errorf("profile.Rubric = %q; want the env's reach report note filled into the marker", profile.Rubric)
++		if profile.Rubric != "Reach: No current reach report: none written.\nMutation: No current mutation report: none written.\n" {
++			t.Errorf("profile.Rubric = %q; want the env's reach and mutation report notes filled into their markers", profile.Rubric)
+ 		}
+ 	})
+ 
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index ab8ce7ed..553a181d 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -319,6 +319,10 @@ type Env struct {
+ 	// It is filled into the reach_report marker.
+ 	// It is read only for a rubric carrying the marker; nil renders the marker as `none`.
+ 	ReachReport func() string
++	// MutationReport returns the gate's mutation report as a code review reads it.
++	// It is filled into the mutation_report marker.
++	// It is read only for a rubric carrying the marker; nil renders the marker as `none`.
++	MutationReport func() string
+ 	// ReflectFriction is the injected closure the FrictionReflect entry's producer calls once per Call.
+ 	// It returns the reflection's status string.
+ 	// It arrives as a closure because its dependencies are already resolved in internal/loomcli.
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index a69eb430..6632634e 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -71,7 +71,10 @@
+ // It keeps at most one mutant per changed line, the first site of this operator order:
+ // a negated condition or comparison, a deleted operand of a && or || chain.
+ // Then come a dropped statement and a shifted integer or rune constant.
+-// A string constant, a line of an embedded file and a dropped call into `internal/logger` get no mutant.
++// A string constant and a line of an embedded file get no mutant.
++// Nor does a site inside a statement that only logs.
++// Such a statement is a call into `internal/logger`, or an if with no call in its condition whose every branch only logs.
++// Nor does a site inside a comparison of `runtime.GOOS` with the name of a platform other than the build context's.
+ // A block that holds a changed line and that no covered key names gets none either, and comes back as an uncovered block.
+ // A block holds a line when it covers a byte of it that is neither blank nor a lone brace.
+ // The plan is a MutantPlan, so WriteOverlay, BuildMutantBinary, UnbuildableMutants and MutantEnv serve it unchanged.
+diff --git a/internal/testcover/linemutant.go b/internal/testcover/linemutant.go
+index aedcdf2c..bd38e80b 100644
+--- a/internal/testcover/linemutant.go
++++ b/internal/testcover/linemutant.go
+@@ -1,5 +1,6 @@
+ // linemutant.go plans the mutants of the lines a diff adds or changes, in the blocks a map's tests cover.
+ // It takes the sites PlanMutants scans and keeps one per changed line.
++// It leaves out those that only log or test another platform.
+ 
+ package testcover
+ 
+@@ -13,7 +14,8 @@ import (
+ 	"strings"
+ )
+ 
+-// loggerImportPath is the package whose dropped calls get no line mutant, since a log line changes nothing a test checks.
++// loggerImportPath is the package a statement that only logs calls into.
++// Such a statement gets no line mutant, since a log line changes nothing a test checks.
+ const loggerImportPath = "github.com/Knatte18/loomyard/internal/logger"
+ 
+ // PlanLineMutants returns the mutants of the lines changed names, in the blocks covered names.
+@@ -24,7 +26,11 @@ const loggerImportPath = "github.com/Knatte18/loomyard/internal/logger"
+ // At most one lands on a line: the first site of the operator order.
+ // The order is a negated condition or comparison, a deleted operand of a && or || chain.
+ // Then come a dropped statement and a shifted integer or rune constant.
+-// A string constant, a line of an embedded file and a dropped call into the logger package get none.
++// A string constant and a line of an embedded file get none.
++// Nor does a site inside a statement that only logs:
++// a call into the logger package,
++// or an if statement with no init statement and no call in its condition whose every branch only logs.
++// Nor does a site inside a == or != comparison of runtime.GOOS with another platform's name, which no test here can run.
+ // A block that holds a changed line and that covered does not name gets no mutant and comes back in the second result.
+ // A block holds a line when it covers a byte of it that is neither blank nor a lone brace,
+ // so a block that only shares a brace with a changed line's block does not hold it.
+@@ -75,12 +81,12 @@ func (m Mutant) FuncOf() string {
+ // mutatesBehavior reports whether the mutant is of a kind a line mutant keeps.
+ func (m Mutant) mutatesBehavior() bool {
+ 	switch {
+-	case m.Operator == OperatorChangeEmbeddedLine:
++	case m.noise, m.Operator == OperatorChangeEmbeddedLine:
+ 		return false
+ 	case m.Operator == OperatorChangeConstant && m.helper == literalHelper(token.STRING):
+ 		return false
+ 	}
+-	return m.callee != loggerImportPath
++	return true
+ }
+ 
+ // operatorRank orders the operators a line mutant chooses among, the first to be chosen lowest.
+diff --git a/internal/testcover/linemutant_test.go b/internal/testcover/linemutant_test.go
+index 79599d14..8ff0b46f 100644
+--- a/internal/testcover/linemutant_test.go
++++ b/internal/testcover/linemutant_test.go
+@@ -3,6 +3,7 @@ package testcover_test
+ import (
+ 	"os"
+ 	"path/filepath"
++	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -18,8 +19,16 @@ import (
+ // Line 35 holds an && chain and an integer constant, and line 39 a comparison and an integer constant.
+ // Line 43 holds a call on a local named like the logger package, and line 47 a call through an aliased logger import.
+ // Line 51 holds a rune constant.
++// Line 55 opens an if that only logs, line 56 logs inside it, and line 58 opens an if that logs and returns.
++// Line 66 compares runtime.GOOS with another platform.
++// Line 69 compares it with this one, whose name the fixture writes over HOSTOS.
++// Line 76 opens an if-else whose branches only log, and line 81 an if with an else-if, both only logging.
++// Line 89 opens an if with an init statement whose body only logs.
++// Line 95 compares runtime.GOOS with another platform, the literal first.
++// Line 99 does so on a parameter named runtime.
++// Line 107 opens an if whose condition calls a function and whose body only logs.
+ const lineMutantSource = `package lines
+-
++import "runtime"
+ import (
+ 	_ "embed"
+ 
+@@ -70,6 +79,64 @@ func Aliased() {
+ func Rune() rune {
+ 	return 'a'
+ }
++
++func Throttle(n int) int {
++	if n > 10 {
++		logger.Info("many", "n", n+1)
++	}
++	if n > 20 {
++		logger.Info("too many")
++		return 20
++	}
++	return n
++}
++
++func Platform() int {
++	if runtime.GOOS == "plan9" {
++		return 1
++	}
++	if runtime.GOOS != "HOSTOS" {
++		return 2
++	}
++	return 0
++}
++
++func Branches(n int) {
++	if n > 1 {
++		logger.Info("one")
++	} else {
++		logger.Info("other")
++	}
++	if n > 2 {
++		logger.Info("two")
++	} else if n > 4 {
++		logger.Info("four")
++	}
++}
++
++func Initialised(n int) {
++	if m := n + 1; m > 2 {
++		logger.Info("init")
++	}
++}
++
++func Reversed() bool {
++	return "plan9" == runtime.GOOS
++}
++
++func Shadowed(runtime struct{ GOOS string }) bool {
++	return runtime.GOOS == "plan9"
++}
++
++func tick(step int) int {
++	return step
++}
++
++func Counted() {
++	if tick(1) > 10 {
++		logger.Info("many")
++	}
++}
+ `
+ 
+ // Indexes of the fixture's blocks in lineMutantBlocks, in the order a coverage profile lists them.
+@@ -86,7 +153,8 @@ const (
+ func lineMutantFixture(t *testing.T) string {
+ 	t.Helper()
+ 	dir := t.TempDir()
+-	for name, text := range map[string]string{"lines.go": lineMutantSource, "lines.txt": "one\ntwo\n"} {
++	source := strings.ReplaceAll(lineMutantSource, "HOSTOS", runtime.GOOS)
++	for name, text := range map[string]string{"lines.go": source, "lines.txt": "one\ntwo\n"} {
+ 		if err := os.WriteFile(filepath.Join(dir, name), []byte(text), 0o644); err != nil {
+ 			t.Fatal(err)
+ 		}
+@@ -97,6 +165,7 @@ func lineMutantFixture(t *testing.T) string {
+ // lineMutantBlocks returns the coverage blocks of lineMutantSource.
+ // Each block spans the text from one marker to the end of another.
+ // The head and then blocks of Check share the brace that ends line 13.
++// No block starts or ends on the HOSTOS line, so its positions hold for the file the fixture writes.
+ func lineMutantBlocks(t *testing.T) []testcover.ProfileBlock {
+ 	t.Helper()
+ 	spans := [][2]string{
+@@ -111,6 +180,14 @@ func lineMutantBlocks(t *testing.T) []testcover.ProfileBlock {
+ 		{"{\n\tlogger.Info(\"shadow\")", "\"shadow\")\n}"},
+ 		{"{\n\tlogalias.Info", "\"aliased\")\n}"},
+ 		{"{\n\treturn 'a'", "'a'\n}"},
++		{"{\n\tif n > 10", "return n\n}"},
++		{"{\n\tif runtime.GOOS", "return 0\n}"},
++		{"{\n\tif n > 1", "\"four\")\n\t}\n}"},
++		{"{\n\tif m := n + 1", "\"init\")\n\t}\n}"},
++		{"{\n\treturn \"plan9\" == runtime.GOOS", "runtime.GOOS\n}"},
++		{"{\n\treturn runtime.GOOS == \"plan9\"", "\"plan9\"\n}"},
++		{"{\n\treturn step", "step\n}"},
++		{"{\n\tif tick(1)", "\"many\")\n\t}\n}"},
+ 	}
+ 	var blocks []testcover.ProfileBlock
+ 	for _, span := range spans {
+@@ -150,10 +227,13 @@ func TestPlanLineMutants(t *testing.T) {
+ 	}{
+ 		{
+ 			name: "EveryChangedLineGetsAtMostOneMutantByOperatorOrderAndNoneForAStringAnEmbeddedFileOrALoggerCall", changed: everyLine,
+-			wantLines: []int{13, 26, 31, 35, 39, 43, 51},
++			wantLines: []int{13, 26, 31, 35, 39, 43, 51, 58, 60, 67, 69, 70, 72, 89, 99, 107},
+ 			wantOperators: []string{
+ 				testcover.OperatorNegateCondition, testcover.OperatorDropStatement, testcover.OperatorChangeConstant,
+ 				testcover.OperatorDeleteClause, testcover.OperatorNegateComparison, testcover.OperatorDropStatement, testcover.OperatorChangeConstant,
++				testcover.OperatorNegateCondition, testcover.OperatorChangeConstant, testcover.OperatorChangeConstant,
++				testcover.OperatorNegateCondition, testcover.OperatorChangeConstant, testcover.OperatorChangeConstant,
++				testcover.OperatorNegateCondition, testcover.OperatorNegateComparison, testcover.OperatorNegateCondition,
+ 			},
+ 			wantText: []string{
+ 				"if lymMutantBool(n > 3, 1) {",
+@@ -184,6 +264,32 @@ func TestPlanLineMutants(t *testing.T) {
+ 		{
+ 			name: "ALineOfALoggerCallAStringAndAnEmbeddedFileUseGetsNone", changed: []int{20, 21, 22},
+ 		},
++		{
++			name: "AnIfThatOnlyLogsGetsNoneButAnIfThatAlsoReturnsKeepsItsCondition", changed: []int{55, 56, 58, 59},
++			wantLines: []int{58}, wantOperators: []string{testcover.OperatorNegateCondition},
++		},
++		{
++			name: "AComparisonOfTheOSWithAnotherPlatformGetsNoneButOneWithThisPlatformKeepsItsCondition", changed: []int{66, 69},
++			wantLines: []int{69}, wantOperators: []string{testcover.OperatorNegateCondition},
++		},
++		{
++			name: "AnIfWhoseBranchesAllOnlyLogGetsNoneThroughItsElseAndItsElseIf", changed: []int{76, 81, 83},
++		},
++		{
++			name: "AnIfWithAnInitStatementKeepsItsConditionEvenWhenItsBodyOnlyLogs", changed: []int{89},
++			wantLines: []int{89}, wantOperators: []string{testcover.OperatorNegateCondition},
++		},
++		{
++			name: "AComparisonWithTheLiteralFirstNamingAnotherPlatformGetsNone", changed: []int{95},
++		},
++		{
++			name: "AComparisonOnAParameterNamedRuntimeKeepsItsMutant", changed: []int{99},
++			wantLines: []int{99}, wantOperators: []string{testcover.OperatorNegateComparison},
++		},
++		{
++			name: "AnIfWhoseConditionCallsAFunctionKeepsItsConditionEvenWhenItsBodyOnlyLogs", changed: []int{107},
++			wantLines: []int{107}, wantOperators: []string{testcover.OperatorNegateCondition},
++		},
+ 		{
+ 			name: "AChangedLineInAnUncoveredBlockGetsNoMutantAndItsBlockComesBackUncovered", changed: []int{26},
+ 			uncoveredBlocks: []int{blockSpare}, wantUncovered: []string{"Spare"},
+diff --git a/internal/testcover/mutant.go b/internal/testcover/mutant.go
+index 98215edf..f34a4ad4 100644
+--- a/internal/testcover/mutant.go
++++ b/internal/testcover/mutant.go
+@@ -152,8 +152,8 @@ type Mutant struct {
+ 	// helper is the function the site's value passes through, empty for a dropped statement;
+ 	// args are the arguments the helper takes between the value and the ID.
+ 	helper, args string
+-	// callee is the import path of the callee's package for a dropped call statement, empty for any other site.
+-	callee string
++	// noise is set for a site inside a statement that only logs or inside a comparison of runtime.GOOS with another platform.
++	noise bool
+ }
+ 
+ // InBlocks reports whether blocks holds one of the mutant's blocks, so a run of those blocks reaches the mutant.
+@@ -206,9 +206,8 @@ type site struct {
+ 	helper, args string
+ 	// variables names the package-level variables whose value holds the site; it is empty for a site of a function body.
+ 	variables []string
+-	// callee is the import path of the callee's package for a dropped call statement of a package-qualified call.
+-	// It is empty for a local or method call and for every other operator.
+-	callee string
++	// noise is the Mutant field of the same name.
++	noise bool
+ }
+ 
+ // packageFile is one parsed non-test Go file of a package.
+@@ -360,7 +359,7 @@ func PlanMutants(dir, importPath string, profile []ProfileBlock, targets BlockSe
+ 			}
+ 			plan.Mutants = append(plan.Mutants, Mutant{
+ 				File: f.name, Line: f.tokenFile.Line(f.tokenFile.Pos(s.start)), lastLine: f.tokenFile.Line(f.tokenFile.Pos(s.end)),
+-				Operator: s.operator, Blocks: blocks, start: s.start, end: s.end, helper: s.helper, args: s.args, callee: s.callee,
++				Operator: s.operator, Blocks: blocks, start: s.start, end: s.end, helper: s.helper, args: s.args, noise: s.noise,
+ 			})
+ 			plan.sources[f.name] = f.text
+ 		}
+@@ -667,6 +666,8 @@ func variableValueReads(file *ast.File, decls packageDecls) map[string][]string
+ 
+ // fileSites returns the mutation sites of the function bodies and package-level variable values of file.
+ // They are ordered by start, the longer first at one start.
++// A site inside a statement that only logs is marked noise.
++// So is one inside a comparison of runtime.GOOS with another platform.
+ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site {
+ 	var sites []site
+ 	add := func(node ast.Node, operator, helper, args string, variables []string) {
+@@ -675,14 +676,21 @@ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site
+ 			helper: helper, args: args, variables: variables,
+ 		})
+ 	}
++	// noise holds the start and end offsets of each node whose sites are marked noise.
++	var noise [][2]int
++	addNoise := func(node ast.Node) {
++		noise = append(noise, [2]int{tokenFile.Offset(node.Pos()), tokenFile.Offset(node.End())})
++	}
+ 	conditions := map[ast.Expr]bool{}
+ 	fixed := map[ast.Node]bool{}
+ 	imported := importedPackages(file)
+ 	addStatements := func(list []ast.Stmt, locals map[string]bool) {
+ 		for _, stmt := range list {
++			if logsOnly(stmt, locals, imported) {
++				addNoise(stmt)
++			}
+ 			if droppable(stmt) {
+ 				add(stmt, OperatorDropStatement, "", "", nil)
+-				sites[len(sites)-1].callee = calleePackage(stmt, locals, imported)
+ 			}
+ 		}
+ 	}
+@@ -742,6 +750,9 @@ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site
+ 					}
+ 				case *ast.BinaryExpr:
+ 					markConstantIntegerExpression(n, locals, decls, fixed)
++					if comparesOtherPlatform(n, locals, imported) {
++						addNoise(n)
++					}
+ 					if isComparison(n.Op) && !conditions[n] {
+ 						add(n, OperatorNegateComparison, "lymMutantBool", "", nil)
+ 					}
+@@ -771,12 +782,80 @@ func fileSites(file *ast.File, tokenFile *token.File, decls packageDecls) []site
+ 			})
+ 		}
+ 	}
++	for i := range sites {
++		sites[i].noise = slices.ContainsFunc(noise, func(span [2]int) bool { return span[0] <= sites[i].start && sites[i].end <= span[1] })
++	}
+ 	slices.SortStableFunc(sites, func(a, b site) int {
+ 		return cmp.Or(cmp.Compare(a.start, b.start), cmp.Compare(b.end, a.end))
+ 	})
+ 	return sites
+ }
+ 
++// logsOnly reports whether stmt does nothing but log.
++// Such a statement is a call into the logger package,
++// or an if statement with no init statement and no call in its condition whose every branch holds only such statements.
++// A call in the condition may have an effect, so such an if is not log-only.
++// locals holds the names the enclosing function declares, and imported the names the file's imports bind.
++func logsOnly(stmt ast.Stmt, locals map[string]bool, imported map[string]string) bool {
++	switch s := stmt.(type) {
++	case *ast.ExprStmt:
++		return calleePackage(s, locals, imported) == loggerImportPath
++	case *ast.IfStmt:
++		if s.Init != nil || holdsCall(s.Cond) || !blockLogsOnly(s.Body, locals, imported) {
++			return false
++		}
++		switch branch := s.Else.(type) {
++		case nil:
++			return true
++		case *ast.BlockStmt:
++			return blockLogsOnly(branch, locals, imported)
++		default:
++			return logsOnly(branch, locals, imported)
++		}
++	}
++	return false
++}
++
++// holdsCall reports whether expr holds a call expression.
++func holdsCall(expr ast.Expr) bool {
++	found := false
++	ast.Inspect(expr, func(n ast.Node) bool {
++		if _, isCall := n.(*ast.CallExpr); isCall {
++			found = true
++		}
++		return !found
++	})
++	return found
++}
++
++// blockLogsOnly reports whether block holds a statement and every statement of it does nothing but log.
++func blockLogsOnly(block *ast.BlockStmt, locals map[string]bool, imported map[string]string) bool {
++	return len(block.List) > 0 && !slices.ContainsFunc(block.List, func(stmt ast.Stmt) bool { return !logsOnly(stmt, locals, imported) })
++}
++
++// comparesOtherPlatform reports whether expr compares runtime.GOOS with a string literal naming another platform.
++// The other platform is any but the one the default build context targets, which the mutants run on.
++// The comparison is == or !=, and runtime is reached through a name the file's imports bind that no local shadows.
++func comparesOtherPlatform(expr *ast.BinaryExpr, locals map[string]bool, imported map[string]string) bool {
++	if expr.Op != token.EQL && expr.Op != token.NEQ {
++		return false
++	}
++	for _, sides := range [][2]ast.Expr{{expr.X, expr.Y}, {expr.Y, expr.X}} {
++		selector, isSelector := sides[0].(*ast.SelectorExpr)
++		literal, isLiteral := sides[1].(*ast.BasicLit)
++		if !isSelector || !isLiteral || literal.Kind != token.STRING || selector.Sel.Name != "GOOS" {
++			continue
++		}
++		pkg, ok := selector.X.(*ast.Ident)
++		if !ok || locals[pkg.Name] || imported[pkg.Name] != "runtime" {
++			continue
++		}
++		platform, err := strconv.Unquote(literal.Value)
++		return err == nil && platform != build.Default.GOOS
++	}
++	return false
++}
++
+ // addClauses calls add with each operand of expr when expr is a && or || chain, and with the helper that deletes it:
+ // an operand of && turns true and one of || turns false.
+ // An operand that is itself a chain of the same operator passes on its own operands when it is visited.
+@@ -810,6 +889,7 @@ func importedPackages(file *ast.File) map[string]string {
+ }
+ 
+ // calleePackage returns the import path of the package a call statement calls into, or "" for any other statement.
++// It returns "" too for a local or method call.
+ // Only a call through a package name the file imports counts, and a local of that name shadows it.
+ func calleePackage(stmt ast.Stmt, locals map[string]bool, imported map[string]string) string {
+ 	exprStmt, ok := stmt.(*ast.ExprStmt)
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index a5108583..02651cdf 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -59,6 +59,7 @@ var nilLegal = map[string]bool{
+ 	"ReviewBase":                       true,
+ 	"RedundancyReport":                 true,
+ 	"ReachReport":                      true,
++	"MutationReport":                   true,
+ 	"VerifyReach":                      true,
+ 	"WeaverDeps.Geom.ReachPending":     true,
+ 	"VerifyTreeScope":                  true,
+diff --git a/pattern/PATTERN-coverage-map-reader.md b/pattern/PATTERN-coverage-map-reader.md
+index c1c9c15e..e0a26e57 100644
+--- a/pattern/PATTERN-coverage-map-reader.md
++++ b/pattern/PATTERN-coverage-map-reader.md
+@@ -38,7 +38,7 @@ It is stamped with the set of map files in the directory and each one's size and
+ 
+ Rule: A report step's review note: used by a review only when the report matches HEAD's tree.
+ 
+-The redundancy report, and the reach report that follows it, record the tree they judged.
++The redundancy, reach and mutation reports record the tree they judged.
+ Code-Review's rubric reads such a report only when it matches the reviewed HEAD's tree,
+ and otherwise reads a line saying the report is absent or stale, never a verdict from it.
+ A report written in the prime, which has no parent branch, is marked so and never matches a review's HEAD.
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index cb8e5f8a..1fa37212 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -224,7 +224,8 @@ so every run takes its slots, its timeout and its log.
+   The `reach` report step refreshes a task worktree's own anchor maps by the same measurement, in the map run's slot ask.
+   The map run, the refresh and the `redundancy` step run every test alone under a coverage binary, since coverage counters are process-wide.
+   `lym gate redundant` runs each test alone under a binary holding the mutants of its package, one mutant on per run.
+-  `lym gate mutate` does the same for the tests covering each mutant of the lines a diff changes, after it refreshed the worktree's own maps.
++  `lym gate mutate` and the `mutation` report step do the same for the tests covering each mutant of a changed line,
++  after they refreshed the worktree's own maps.
+ - A card `**Verify:**` line runs through the shared `internal/cardverify` runner,
+   and `cmd/testtiming` measures outside the gate because its modes measure what a tier run hides.
+ - A site or stencil names a gate key, never a tier list, scope form, test command or target list.
+@@ -332,6 +333,12 @@ this section keeps only what is project-specific or stricter here.
+   The prime refreshes nothing and answers from the shared maps.
+   The step is advisory: it never changes the gate's result.
+   Bound: a map older than the files, or a test that runs the function in another process, can make a function read as unreached.
++- A gate key whose `reports` lists `mutation` runs the report step after its other report steps.
++  It runs `lym gate mutate`'s refresh and check over the diff from the reach step's base,
++  and writes `mutation.json` in the worktree's gate directory.
++  The report lists every survivor, unjudged mutant, uncovered changed block and package not judged.
++  The step prints one summary line of their counts, and it never changes the gate's result.
++  Bound: a survivor is a check the diff's tests lack or a line no test can reasonably check, and review tells them apart.
+ - A gate key whose `reports` lists `redundancy` runs the report step after its tiers and lints.
+   It takes the diff's new and changed top-level tests against the merge base with the parent branch,
+   leaving out tier2 and tier3 tests, tests marked `//testtiming:keep` and tests that may run module code in another process.
