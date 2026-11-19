@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -27,7 +27,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (9)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light |  | 1h<br>0m | landing, stencil, burler, heddle, docs |
+
+## Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -44,14 +52,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
-### Enhancements (4)
+### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 1h<br>1h | landing, stencil |
 | E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 1h<br>1h | gate, testmap |
-| E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 1h<br>1h | burler, stencil |
-| E4 |  | **Shared vocabulary: one glossary, loaded only by the orch and Discussion**<br>• One glossary of lym terms and words never to use for them; the orch gets it via heddle orch-prompt, Discussion via its stencil | [`shared-vocabulary`](design-shared-vocabulary.md) | 5m<br>2m | heddle, stencil, docs |
 
 ### Features (2)
 
