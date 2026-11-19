@@ -1,6 +1,6 @@
 # Some test writes a .git into the shared temp directory and fails unrelated packages
 
-`stray-tmp-git-writer` · Task · bug, gate, tools · starting · Open-Window
+`stray-tmp-git-writer` · Task · bug, gate, tools · starting · Seed-IDE
 
 ## What was seen
 
