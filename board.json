@@ -491,6 +491,27 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "ff2184f772a28ef04f8417134dd9202e7908a38156fd986ce4ffc442a2d8a440"
+    },
+    {
+      "id": 1512,
+      "handle": "T2",
+      "slug": "single-repo-records-branches",
+      "title": "One-repository hubs redesigned: records on their own branches, the layout known only to fabric",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "fabric"
+      ],
+      "issues": [],
+      "recipe": "motif",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays",
+      "body": "## Why (operator, 2026-11-19)\n\n`single-repo-fabric-mode` (f06acf39) put `_lym` records as tracked files on each code branch.\nRecords commits then sit in the code history, so every module that reads git sees them,\nand `single-repo-code-identity` had to strip records paths in about 15 packages outside fabric.\nThat breaks the hub's rule: only fabric knows the layout.\nWhether `_lym` and `.lym` live in a sibling weft repository or elsewhere is invisible to every module but fabric.\n`single-repo-code-identity` was dropped for this reason.\n\n## Direction\n\nA one-repository hub keeps records off the code branches, the way the board already sits on the orphan branch `lym-bolt` checked out as `_bolt`:\nrecords live on their own branches of the same repository, each checked out as a worktree that `_lym` joins as weft does today.\nSeen from outside it is one repository and one remote; the code history holds code only, so no module outside fabric changes.\n\n## To decide in Discussion\n\n- The records branch scheme: one per task, one shared, or another, and how merges, landings, replay and teardown treat them.\n- What of f06acf39 stays (clone, `lym-bolt` and `_bolt`, the guarded prime push, merge and replay parts) and what is removed,\n  including its `lymcwd.OneRepository` branches in `battencli/commitstatus.go` and `loomcli/wiring.go`.\n- The layout probe that since f06acf39 warns on every board read about entries with no worktree on disk.\n",
+      "status": "draft",
+      "created": "2026-11-19T12:08:48Z",
+      "revised": "2026-11-19T12:08:48Z",
+      "project": "single-repo-hub"
     }
   ],
   "prime_owner": "neve",
