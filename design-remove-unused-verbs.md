@@ -13,9 +13,10 @@ The operator picks which candidates go; this body then lists them, and only thos
 Not yet decided (operator, 2026-11-18: a follow-up, not now).
 
 Strongest candidates, named by nothing outside their own package:
-`board rerender`, `ide menu`, `board retire-legacy`, `creel forward`, `creel hold`, `creel release`, `webster await-batch`, `loom restore-renumber`,
+`board rerender`, `ide menu`, `board retire-legacy`, `creel hold`, `creel release`, `webster await-batch`, `loom restore-renumber`,
 `orch withdraw`, `slack away`, `stencil promote`, `report raddle`, `fabric diff`, `config menu`.
 `claude account` is new (landed 2026-11-18) and is not a candidate.
+`creel forward` stays: the operator expects to need it, as it was designed for (operator, 2026-11-19).
 
 Weaker candidates, named by a stencil, recipe or another package: see the report's second table; each caller needs a look before removal.
 
