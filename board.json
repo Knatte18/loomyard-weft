@@ -407,6 +407,24 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "c55facf400f90007f6ce52a8dc1b4afb06e6f2eead5f799484ee01326311b83a"
+    },
+    {
+      "id": 1518,
+      "handle": "B1",
+      "slug": "shellguard-sh-c-rm-prompt",
+      "title": "A shell -c script that removes files stalls a run on a permission dialog",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "process"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The shell guard does not look inside a shell -c script, so Claude Code asks for permission and the run stalls until someone answers",
+      "body": "## Seen\n\n2026-11-19: in `hardener-campaign`, the verify fixer fork of Webster ran a loop inside a shell -c script that made a temp dir under the system temp root and removed a subdirectory of it by a variable path, to reproduce a mkdir race.\nClaude Code showed a dialog saying the shell -c script removes files and could not be checked, and the run stood still until the orch answered the dialog by hand.\nThe session rules already refuse a removal by a computed path and writes to the system temp root, but the guard does not look inside the shell -c script, so the command reached the dialog instead of a refusal with a way forward.\n\n## Idea\n\n`internal/shellguard` parses the script of a shell -c call like a top-level command and applies the same refusals, so the agent gets a refusal naming the way forward and no dialog stalls the run.\n",
+      "created": "2026-11-19T16:41:50Z",
+      "revised": "2026-11-19T16:41:50Z"
     }
   ],
   "prime_owner": "neve",
