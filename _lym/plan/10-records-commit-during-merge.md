@@ -1,11 +1,11 @@
 # Card 10 — records-commit-during-merge
 
 **Create:**
-- `plan:internal/fabricengine#commitRecordsAroundMerge` -> `func commitRecordsAroundMerge(rec *Mutations, worktree, anchorRel string, relPaths []string, msg string) (sha string, committed bool, err error)`
-- `plan:internal/fabricengine#MidMergeRecordsUnsettled` -> `const MidMergeRecordsUnsettled MidMergeKind = 3`
-- `plan:internal/fabricengine#mergeReasonRecordsUnsettled` -> `const mergeReasonRecordsUnsettled = "merge records step unfinished"`
-- `plan:internal/fabricengine#MergeStateOperation` -> `func MergeStateOperation(l *lymcwd.Location) (operation string, err error)`
-- `plan:internal/fabricengine_test#TestRecordsCommit_DuringMerge` -> `func TestRecordsCommit_DuringMerge(t *testing.T)`
+- `internal/fabricengine#commitRecordsAroundMerge`
+- `internal/fabricengine#MidMergeRecordsUnsettled`
+- `internal/fabricengine#mergeReasonRecordsUnsettled`
+- `internal/fabricengine#MergeStateOperation`
+- `internal/fabricengine_test#TestRecordsCommit_DuringMerge`
 
 **Edit:**
 - `internal/fabricengine#commitRecordsPathsHeld`

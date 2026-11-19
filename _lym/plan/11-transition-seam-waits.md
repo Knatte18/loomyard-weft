@@ -20,7 +20,7 @@
 **Uses:**
 - `internal/loomcli/doc.go`
 - `internal/lymcwd#OneRepository`
-- `plan:internal/fabricengine#MergeStateOperation`
+- `internal/fabricengine#MergeStateOperation`
 - `internal/fabricengine#IsPushProtected`
 - `internal/fabricengine#IsPrimeBranchRefusal`
 - `internal/hubforge#NewOneRepoHub`
