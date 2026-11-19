@@ -7,5 +7,6 @@
       "title": "Peer merge-probe run has landed",
       "digest": "569909cebec502f6289f2fa162fb3ca77b8d67ac93609339e510743e39f0a846"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
