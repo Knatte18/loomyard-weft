@@ -1,6 +1,6 @@
 # Some test writes a .git into the shared temp directory and fails unrelated packages
 
-`stray-tmp-git-writer` · Task · bug, gate, tools · running · Drift-Recheck
+`stray-tmp-git-writer` · Task · bug, gate, tools · running · Describe
 
 ## What was seen
 
