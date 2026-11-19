@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-19T11:32:40Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/empty-landing-not-flagged/_lym/landing/summary.md",
+      "at": "2026-11-19T12:02:59Z",
+      "started_at": "2026-11-19T11:32:46Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T11:40:05.341761217Z",
+          "end": "2026-11-19T11:40:05.373576124Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T11:53:30.129533601Z",
+          "end": "2026-11-19T11:53:30.176760901Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T11:40:05.530601395Z",
+          "end": "2026-11-19T11:52:57.090926799Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T11:52:57.778949279Z",
+          "end": "2026-11-19T11:53:30.031719116Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T11:53:30.303825271Z",
+          "end": "2026-11-19T12:01:47.094839757Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T12:01:47.186664265Z",
+          "end": "2026-11-19T12:01:47.574693796Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T12:01:47.649424903Z",
+          "end": "2026-11-19T12:01:47.653189126Z"
+        }
+      ]
     }
   ],
   "product": {
