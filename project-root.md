@@ -19,10 +19,10 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | halted · Darn-Write | neve | 1h<br>14m | shed |
-| T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Darn-Write | neve | 7m<br>5m | gate, dotnet, stencil, darn |
-| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Darn-Write | neve | 7m<br>5m | webster, gate, reed |
-| T6 | **Finalize halts on a pull request whose mergeability GitHub has not computed yet**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | darn · light | Darn-Write | neve | 7m<br>5m | landing |
-| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | Darn-Write | neve | 7m<br>5m | shed, process |
+| T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Darn-Write | neve | 8m<br>6m | gate, dotnet, stencil, darn |
+| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Darn-Write | neve | 8m<br>6m | webster, gate, reed |
+| T6 | **Finalize halts on a pull request whose mergeability GitHub has not computed yet**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | darn · light | Darn-Write | neve | 8m<br>6m | landing |
+| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | Darn-Write | neve | 8m<br>6m | shed, process |
 
 ### Ready (0)
 
@@ -30,7 +30,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (5)
+## Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -41,11 +41,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 2d<br>2d | shuttle |
 
+### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | 0m<br>0m | gate, testmap |
+
 ### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 7m<br>7m | burler, stencil |
+| E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 8m<br>8m | burler, stencil |
 
 ### Features (2)
 
