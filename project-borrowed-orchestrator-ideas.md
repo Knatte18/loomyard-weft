@@ -1,6 +1,6 @@
 # P2 Ideas borrowed from comparable agent orchestrators
 
-Rendered 2026-11-19 17:02 UTC; every age below is as of then.
+Rendered 2026-11-19 17:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 2d · Owner `neve`
@@ -29,4 +29,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>23m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>24m | burler, shed, orch, quarry, report |
