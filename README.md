@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 <details open>
 <summary><strong><a href="project-testmap-uses.md">P3 Put the per-test coverage maps to use</a> (0)</strong></summary>
 
-[`testmap-uses`](design-testmap-uses.md) · Age 14h · Owner `neve`
+[`testmap-uses`](design-testmap-uses.md) · Age 15h · Owner `neve`
 
 The reach note, the diff mutation check and failure triage, built on one reader of the maps
 
@@ -139,7 +139,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | darn · docs | Darn-Write | neve | 1h<br>21m |  |
+| T1 | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | darn · docs | Drift-Verify | neve | 1h<br>22m |  |
 
 #### Ready (0)
 
