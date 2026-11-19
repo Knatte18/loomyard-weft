@@ -1,0 +1,11 @@
+verdict: resume
+reason: >-
+  The bootstrap stop (trace 629fcd93810a7a35, step refused at 11:14:29) said the code tip
+  0d51a603e86dcead811715396a726719eb6711bf was not on origin yet. That condition has cleared:
+  `git ls-remote origin` (read at tackler time) returns
+  `0d51a603e86dcead811715396a726719eb6711bf refs/heads/stray-tmp-git-writer`, so the tip is on origin
+  and equals the commit the run's last transition names (the stop's own way forward was to re-run
+  `lym batten run stray-tmp-git-writer` once the push landed). The stop is an environment-side
+  bootstrap refusal, not a row error, and this is the first resume of it (drive report lists no prior
+  attempts). A plain re-launch settles it; no goto is needed. Local `git cat-file -t` confirms the
+  commit exists, and `remotes/origin/stray-tmp-git-writer` is present locally.

@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 5,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-19T11:14:29.520447852+01:00",
+  "deadline": "2026-11-19T11:24:29.520447852+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/stray-tmp-git-writer/drive-reports/drive-envelope-20261119-111429-9e24.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/stray-tmp-git-writer/drive-reports/drive-report-20261119-111429-ca7f.md",
+  "strand_guid": "6da18246c4fd084bb20c43f37e12ffa9"
+}

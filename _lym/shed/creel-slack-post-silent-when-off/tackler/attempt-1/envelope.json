@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop (trace f55d828d9e5359dc, refused at 10:53:30 local) said the code tip fe73fb3ea10601526e59136d2ca2d9c94d19943e was not on origin yet, with the way forward \"run lym batten run creel-slack-post-silent-when-off again once the code push lands\". Read now: git ls-remote origin refs/heads/creel-slack-post-silent-when-off returns fe73fb3ea10601526e59136d2ca2d9c94d19943e exactly, so the tip equals the remote tip and is present on origin. The cause has cleared; a plain re-launch of the batten run settles it. No goto is needed: the stop is bootstrap, not blocked, and the stop step's current_producer is Run-Shed.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/creel-slack-post-silent-when-off/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/creel-slack-post-silent-when-off/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
