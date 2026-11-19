@@ -7,7 +7,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.FillWith requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=d80df604585ea061ec1b716dfcb33e0731b436ad098963233ede9703473b43ce build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=906f113c78a2bcb1040da48e787011552ed393aa620eb40383cb1e8d837990b5 build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
 
 # Change description — write the one description this task lands under
 
@@ -53,7 +53,8 @@ Write exactly one file, `{{.description_path}}`, in the format of the final-summ
    - what changes for the user or the code, and why;
    - one `Closes #N` line per issue the task resolves;
    - the design decisions a reviewer needs to know;
-   - anything to check or run by hand that was not run.
+   - anything to check or run by hand that was not run;
+   - last, the `## Merge danger` section the spec defines, its door and blast radius called from the diff as it stands now.
 
 Never describe the pipeline's process: no batches, cards, forks, the Master, verify gates, glyph deviations or review rounds.
 Naming a module is fine when the change touches it.

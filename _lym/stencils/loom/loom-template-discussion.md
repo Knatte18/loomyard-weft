@@ -17,13 +17,14 @@
      twill_directive is an optional marker rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
+     glossary is a required marker: lym's glossary, which internal/heddleengine holds and the orch's prompt carries too.
      self_check is a required marker: the body of Step 6 up to its closing two lines.
      DiscussionTable fills it with the fragment that has the writer run the validator or,
      when the gate has a cold fixer, the one that has it run none.
      The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.yaml's subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax;
      only `{{` begins a template action.
-lym-stencil: sha256=176fc2a0e59d0790c538b590ca1c0d2b9e0b85127d788b435fc5dbd3cc3016d4 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=affdc3757a9e0f0f741844e7634f90afe00a804631500af277e0ab5b2fc9a79c build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -119,6 +120,15 @@ In interactive mode put it to the operator in the pane like any other question.
 
 {{.mode_rules}}
 {{.twill_directive}}
+## lym's words
+
+Hold the entry's words against the glossary below.
+A term the entry uses against its line is a question for the interview, asked through Step 4's channel:
+name the term and the line, and write the three files in the glossary's words.
+When the design settles what a lym term means, or adds one, record it as a decision that gives its glossary line,
+so the change adds the line to the glossary.
+
+{{.glossary}}
 ## Step 5 — Write the three output files
 
 Once the design is settled, write ALL THREE of the following files.

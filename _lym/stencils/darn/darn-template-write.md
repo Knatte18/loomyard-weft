@@ -16,7 +16,7 @@
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
      report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=4e1873587f322503911a11b114058243e4e3df0bc86ec4074d9c0b32a12c8f0c build=ffd2addb955992fa5d97cfd0462457e8d08affba time=2026-11-19T12:54:34Z -->
+lym-stencil: sha256=95dae367abe91d413bc006601814076a862be0805ce1d19da924a3071ae23f7f build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -71,6 +71,7 @@ Check whether landed work, another board entry or another run overtook or contra
 Write the change description to `{{.description_path}}`, in the format the final-summary spec defines at `{{.specs_dir}}/loom/loom-final-summary-spec.md`.
 Read that spec for the format; it is authoritative and this prompt does not restate it.
 Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
+Close it with the `## Merge danger` section the spec defines, its door and blast radius called from your diff.
 A claim that a result agrees with a reference, or that the change improves one, carries before and after figures from the current code, taken from your commits or the drift verdict.
 Leave out a claim that has none.
 
