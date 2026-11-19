@@ -26,5 +26,6 @@
       "title": "D6's workspace seam keeps the workspace schema in internal/vscode",
       "digest": "6d1ef01395dd017b5874c822389bbf178ffab783ce8e247036cc6b7a2a554382"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
