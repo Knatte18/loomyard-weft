@@ -1,0 +1,13 @@
+attempt: 1
+cap: 2
+command: lym gate test --wait --gate webster
+exit_code: 1
+failures:
+    - id: github.com/Knatte18/loomyard/internal/landingshed.TestFinalize_OverRealHub/resolves_a_conflict_and_squash_merges_into_the_parent
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/landingshed
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/single-repo-fabric-mode/.lym/verify/verify-2.log
+hint:
+    - 04-protected-push-class
+fixer: fork
