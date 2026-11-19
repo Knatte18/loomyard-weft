@@ -1,0 +1,629 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index c5e60221..871f5c93 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -271,6 +271,25 @@ a ruling of `does not match` or an uncaused check still stops the run for you.
+ Answer before the deadline: a late answer is refused, and the judge's rulings stand as written.
+ `judge_parent_timeout_min` sets the minutes to the deadline, capped to end before the judge's own timeout.
+ 
++## Questions from a run's agents
++
++Every autonomous agent of a run, a drift judge, Drift-Expect agent or review fixer included,
++puts each question it would ask the operator to you, its parent, as creel mail expecting a reply.
++Answer it with `lym creel post --reply <id> "<text>"`.
++Settle a run-level call yourself; put a design question to the operator first, then answer the agent with the operator's answer.
++An agent that asked in its pane instead reaches you as a hold notice; answer it as Messaging says.
++A session the operator chose to sit in, an interactive Discussion, PR-Review, sampler or `judge_interactive` judge, asks the operator in its pane.
++
++## Briefing a row's agent
++
++Mail from `<shortname>:LOOM` whose text holds `[row reached]` says a run reached a row you asked to hear of.
++Name the rows in `notify_parent_on`, a list of the recipe's row names such as `["Drift-Verify"]`, in `loom.yaml` or the task's `run_settings`.
++lym sends it as the run calls the row, once each time the run reaches it;
++a re-call after an escalation's answer or a resumed halt spawns a fresh agent and sends it again;
++a row the run skips sends none, and a call after a yield or a pause sends none.
++Brief the row's agent by creel once `lym reed list` shows its strand, ending the message with "Answer briefly, then continue your task."
++A name that is no row of the run's recipe refuses the run's steps, naming the recipe's rows.
++
+ ## Fixing a run
+ 
+ You diagnose; the run's own agents change the run.
+diff --git a/contracts/stencils/bouncer/bouncer-fragment-decision.md b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+index 1217d4b7..744d8584 100644
+--- a/contracts/stencils/bouncer/bouncer-fragment-decision.md
++++ b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+@@ -6,7 +6,7 @@
+ 
+ Each finding below is a question the review could not settle itself.
+ Where an arbiter runs, it settles each finding the board entry and the decision record answer before the parent sees it.
+-Put each remaining finding to the operator, unless a recorded operator decision answers it.
++Settle each remaining finding yourself when it is a run-level call, and put it to the operator only when it is a design question, unless a recorded operator decision answers it.
+ 
+ {{.decision_findings}}
+ 
+diff --git a/contracts/stencils/burler/burler-step-fix.md b/contracts/stencils/burler/burler-step-fix.md
+index 2f964937..1c2ec558 100644
+--- a/contracts/stencils/burler/burler-step-fix.md
++++ b/contracts/stencils/burler/burler-step-fix.md
+@@ -41,7 +41,7 @@ Give it exactly one of three dispositions, decided in this order.
+ 3. **Fix as proposed**: otherwise.
+    A `fix` key that is vague leaves the change to you and needs no mark.
+ 
+-The other legitimate reason to leave a finding unfixed is something you genuinely cannot do alone this round (an operator decision on a real tradeoff,
++The other legitimate reason to leave a finding unfixed is something you genuinely cannot do alone this round (a decision on a real tradeoff that belongs to the run's parent,
+ or a capability you do not have);
+ even then you must say so explicitly, with the specific reason, in the fixer-report's deferred section.
+ Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
+diff --git a/contracts/stencils/parent/parent-directive-operator-ban.md b/contracts/stencils/parent/parent-directive-operator-ban.md
+index 8b7261bb..397d6e1a 100644
+--- a/contracts/stencils/parent/parent-directive-operator-ban.md
++++ b/contracts/stencils/parent/parent-directive-operator-ban.md
+@@ -1,4 +1,4 @@
+ <!-- This is the operator-ban line.
+      internal/parentdirective.Directive fills it into parent-directive-parent as the operator_ban marker when the role is not interactive.
+      It declares no marker and must stay marker-free. -->
+-A question to the operator in your pane is never the way forward.
++Put every question you would ask the operator to your parent this way: it answers itself or asks the operator, and a question to the operator in your pane is never the way forward.
+diff --git a/docs/overview.md b/docs/overview.md
+index f42c2c84..67337762 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1486,6 +1486,9 @@ User-facing modules each get one `lym <module>` namespace:
+   A CONVERGED verdict is refused while the parent's report holds findings.
+   `code_review_parent_timeout_min` sets the minutes to that ask's deadline,
+   capped to end before the judge's own timeout, `run_timeout_min`; both are open to `run_settings`.
++  `notify_parent_on` lists recipe rows whose start lym mails the parent orch as a `[row reached]` line,
++  once each time the run reaches the row and again on a re-call after an escalation's answer or a resumed halt,
++  so the parent can brief the row's agent; it is open to `run_settings`.
+   `discussion_lenses` names the `lenses.yaml` fan whose lenses the Discussion-Write lead forks itself for.
+   Empty turns the forks off, and the key is closed to the local layer.
+   `subagent_model` names the model of the fresh subagents that Plan, Discussion-Write and darn writers hand lookups to.
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index 4459908a..7b710a2f 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -310,8 +310,22 @@ func (c *loomCLI) recipeRouting() (shedengine.Routing, error) {
+ }
+ 
+ // newShed builds the shed of the run's recipe over c.env and c.shedPaths.
++// The rows loom.yaml's notify_parent_on names mail the run's parent when the run reaches them,
++// and a name that is no row of the recipe is refused.
+ func (c *loomCLI) newShed() (*shedengine.Shed, error) {
+-	return loomrecipe.New(c.recipe, c.env, c.shedPaths)
++	shed, err := loomrecipe.New(c.recipe, c.env, c.shedPaths)
++	if err != nil || len(c.cfg.NotifyParentOn) == 0 {
++		return shed, err
++	}
++	paths := rowNoticePaths{
++		status:     c.shedPaths.StatusPath,
++		statusLock: c.shedPaths.StatusLockPath,
++		record:     shedrun.RowNoticeRecord(c.location, c.runID),
++	}
++	if err := watchRows(shed, c.cfg.NotifyParentOn, c.recipe, paths, c.env.NotifyParent); err != nil {
++		return nil, err
++	}
++	return shed, nil
+ }
+ 
+ // The engine names of the recipe rows loomcli's wiring keys on, and the tree-scope verify_source value.
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8ef7e553..4656ce1b 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -190,6 +190,16 @@
+ // Each posts as `<shortname>:LOOM`, tagged with the pair's run.
+ // The Drift rows' judge gets its parent seat in `driftDeps`, posting the same way.
+ //
++// The rows loom.yaml's `notify_parent_on` names tell the parent when the run reaches them.
++// `newShed` wraps each such row's producer.
++// The wrapper posts a `[row reached]` line through the env's `NotifyParent` before the row's call.
++// It posts once per visit: the visit is the count of verdicts the run's history holds, kept in `shedrun.RowNoticeRecord`,
++// so a call after a yield or a pause tells nothing again, and a row the entry gate skips is never called.
++// A re-call after an escalation's answer or a resumed halt counts as a new visit and posts again.
++// It spawns a fresh agent.
++// A name that is no row of the recipe refuses the shed, naming the recipe's rows.
++// A failed read, write or post only warns: a notice never stops the run.
++//
+ // # Start
+ //
+ // `lym loom start` works in order.
+diff --git a/internal/loomcli/rownotice.go b/internal/loomcli/rownotice.go
+new file mode 100644
+index 00000000..80f469ba
+--- /dev/null
++++ b/internal/loomcli/rownotice.go
+@@ -0,0 +1,104 @@
++// rownotice.go wraps the producers of the rows loom.yaml's notify_parent_on names.
++// lym mails the run's parent each time the run reaches one of them, so the parent can brief the row's agent.
++
++package loomcli
++
++import (
++	"context"
++	"fmt"
++	"slices"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// rowNoticePaths locates the files a row notice reads and writes.
++type rowNoticePaths struct {
++	// status and statusLock are the run's status file and its lock, whose history counts the visit.
++	status     string
++	statusLock string
++	// record is the run's row-notice record, holding the last visit told.
++	record string
++}
++
++// watchRows wraps the producer of every row of shed that rows names,
++// so the run reaching such a row mails notify a `[row reached]` line before the row's call.
++// A name that is no row of shed is refused, naming recipe and its rows as the way forward.
++func watchRows(shed *shedengine.Shed, rows []string, recipe string, paths rowNoticePaths, notify func(line string) error) error {
++	names := make([]string, len(shed.Producers))
++	for i, def := range shed.Producers {
++		names[i] = def.Name
++	}
++	for _, row := range rows {
++		if !slices.Contains(names, row) {
++			return fmt.Errorf("loom config key %q names %q, which is no row of the %s recipe; way forward: set notify_parent_on in loom.yaml or the task's run_settings to rows of that recipe: %s", "notify_parent_on", row, recipe, strings.Join(names, ", "))
++		}
++	}
++	for i, def := range shed.Producers {
++		if slices.Contains(rows, def.Name) {
++			shed.Producers[i].Producer = rowNoticeProducer{row: def.Name, inner: def.Producer, paths: paths, notify: notify}
++		}
++	}
++	return nil
++}
++
++// rowNoticeProducer tells the run's parent that the run reached row, once per visit, then calls the row's own producer.
++// A re-call after an escalation's answer or a resumed halt is a new visit, since it spawns a fresh agent.
++type rowNoticeProducer struct {
++	row    string
++	inner  shedengine.ShedProducer
++	paths  rowNoticePaths
++	notify func(line string) error
++}
++
++// Call implements shedengine.ShedProducer: it tells the parent of a new visit, then returns the row's own call.
++func (p rowNoticeProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
++	p.tell()
++	return p.inner.Call(ctx)
++}
++
++// tell mails the row's notice unless the record already holds this visit.
++// The visit is recorded before the mail goes out, so a failed post is never retried.
++// A failed read, write or post only warns: a notice never stops the run.
++func (p rowNoticeProducer) tell() {
++	st, found, err := state.ReadJSON[shedengine.Status](p.paths.status, p.paths.statusLock)
++	if err != nil || !found {
++		logger.Warn("loomcli: the row notice could not read the run status; no notice sent", "row", p.row, "found", found, "error", err)
++		return
++	}
++	visit := shedrun.RowNotice{Row: p.row, Visit: verdictCount(st.History)}
++	told, err := shedrun.ReadRowNotice(p.paths.record)
++	if err != nil {
++		logger.Warn("loomcli: the row notice could not read its record; no notice sent", "row", p.row, "error", err)
++		return
++	}
++	if told == visit {
++		return
++	}
++	if err := shedrun.WriteRowNotice(p.paths.record, visit); err != nil {
++		logger.Warn("loomcli: the row notice could not write its record; no notice sent", "row", p.row, "error", err)
++		return
++	}
++	if err := p.notify(rowReachedLine(p.row)); err != nil {
++		logger.Warn("loomcli: the row notice was not posted", "row", p.row, "error", err)
++	}
++}
++
++// verdictCount returns the number of verdicts history records, each folded repeat counted.
++// It grows with every recorded verdict and stays put across a yield or a pause, which record none.
++// An escalation or a halt records its verdict before the row is called again, so that re-call counts as a new visit.
++func verdictCount(history []shedengine.HistoryEntry) int {
++	count := 0
++	for _, entry := range history {
++		count += 1 + entry.Repeats
++	}
++	return count
++}
++
++// rowReachedLine renders the notice that the run reached row and calls it now.
++func rowReachedLine(row string) string {
++	return fmt.Sprintf("[row reached] the run reached %s and calls it now; brief the row's agent with lym creel post once lym reed list shows its strand, ending your message with \"Answer briefly, then continue your task.\"", row)
++}
+diff --git a/internal/loomcli/rownotice_test.go b/internal/loomcli/rownotice_test.go
+new file mode 100644
+index 00000000..fa9b7fe2
+--- /dev/null
++++ b/internal/loomcli/rownotice_test.go
+@@ -0,0 +1,256 @@
++// rownotice_test.go covers watchRows.
++// The parent hears of each visit of a watched row once, and an unknown row is refused.
++// Every test reads and writes a status file and record in its own temporary directory and spawns nothing.
++
++package loomcli
++
++import (
++	"context"
++	"errors"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/testkit/envkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// countingProducer is a stub producer that counts its calls and returns outcome, pointer and err.
++type countingProducer struct {
++	calls   *int
++	outcome shedengine.Outcome
++	pointer shedengine.OutputPointer
++	err     error
++}
++
++func (p countingProducer) Call(context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
++	*p.calls++
++	return p.outcome, p.pointer, p.err
++}
++
++// rowNoticeFixture builds a two-row shed, rows Darn-Write and Drift-Verify, over a status file in a temporary directory.
++// It returns the shed, the paths and a function that writes the status with the told history.
++func rowNoticeFixture(t *testing.T) (*shedengine.Shed, rowNoticePaths, func(history []shedengine.HistoryEntry), *int) {
++	t.Helper()
++	dir := t.TempDir()
++	paths := rowNoticePaths{
++		status:     filepath.Join(dir, "status.json"),
++		statusLock: filepath.Join(dir, "status.json.lock"),
++		record:     filepath.Join(dir, "scratch", "row-notice.json"),
++	}
++	calls := new(int)
++	shed := &shedengine.Shed{Producers: []shedengine.ProducerDef{
++		{Name: "Darn-Write", Producer: countingProducer{calls: calls, outcome: shedengine.Done}},
++		{Name: "Drift-Verify", Producer: countingProducer{calls: calls, outcome: shedengine.Yield}},
++	}}
++	writeStatus := func(history []shedengine.HistoryEntry) {
++		t.Helper()
++		if err := state.WriteJSON(paths.status, paths.statusLock, shedengine.Status{CurrentProducer: "Drift-Verify", State: shedengine.StateRunning, History: history}); err != nil {
++			t.Fatalf("state.WriteJSON = %v; want nil error", err)
++		}
++	}
++	return shed, paths, writeStatus, calls
++}
++
++// TestWatchRows_TellsParentOncePerVisit covers the notice count over a sequence of calls:
++// a call within the same visit tells nothing more, and a new verdict or a folded repeat opens a new visit.
++func TestWatchRows_TellsParentOncePerVisit(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	shed, paths, writeStatus, calls := rowNoticeFixture(t)
++	var lines []string
++	notify := func(line string) error {
++		lines = append(lines, line)
++		return nil
++	}
++	if err := watchRows(shed, []string{"Drift-Verify"}, "darn", paths, notify); err != nil {
++		t.Fatalf("watchRows = %v; want nil error", err)
++	}
++	darn := []shedengine.HistoryEntry{{Producer: "Darn-Write", Outcome: shedengine.Done}}
++	stuck := shedengine.HistoryEntry{Producer: "Drift-Verify", Outcome: shedengine.Stuck}
++	folded := stuck
++	folded.Repeats = 1
++	steps := []struct {
++		name      string
++		row       int
++		history   []shedengine.HistoryEntry
++		wantLines int
++	}{
++		{"FirstCallOfTheRow", 1, darn, 1},
++		{"CallAfterAYield", 1, darn, 1},
++		{"UnwatchedRow", 0, darn, 1},
++		{"CallAfterANewVerdict", 1, append(darn, stuck), 2},
++		{"CallAfterAFoldedRepeat", 1, append(darn, folded), 3},
++	}
++	for i, step := range steps {
++		writeStatus(step.history)
++		if _, _, err := shed.Producers[step.row].Producer.Call(context.Background()); err != nil {
++			t.Fatalf("%s: Call = %v; want nil error", step.name, err)
++		}
++		if len(lines) != step.wantLines {
++			t.Errorf("%s: notices = %d; want %d", step.name, len(lines), step.wantLines)
++		}
++		if *calls != i+1 {
++			t.Errorf("%s: producer calls = %d; want %d", step.name, *calls, i+1)
++		}
++	}
++	const prefix = "[row reached] the run reached Drift-Verify "
++	if len(lines) == 0 {
++		t.Fatal("notices = none; want at least one")
++	}
++	for _, line := range lines {
++		if !strings.HasPrefix(line, prefix) {
++			t.Errorf("notice = %q; want it to open %q", line, prefix)
++		}
++	}
++}
++
++// TestWatchRows_NoticeNeverStopsTheCall covers a refused post and an unreadable status:
++// the notice goes out before the row's call, and a failed post is not retried.
++// The row's own outcome, pointer and error stand.
++func TestWatchRows_NoticeNeverStopsTheCall(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name          string
++		statusPresent bool
++		wantPosts     int
++	}{
++		{"RefusedPost", true, 1},
++		{"MissingStatus", false, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			shed, paths, writeStatus, calls := rowNoticeFixture(t)
++			wantPath := "artifact.md"
++			wantErr := errors.New("row failed")
++			shed.Producers[0].Producer = countingProducer{
++				calls: calls, outcome: shedengine.Done, pointer: shedengine.OutputPointer{Path: wantPath}, err: wantErr,
++			}
++			posts, callsAtPost := 0, -1
++			notify := func(string) error {
++				posts++
++				callsAtPost = *calls
++				return errors.New("refused")
++			}
++			if err := watchRows(shed, []string{"Darn-Write"}, "darn", paths, notify); err != nil {
++				t.Fatalf("watchRows = %v; want nil error", err)
++			}
++			if tt.statusPresent {
++				writeStatus(nil)
++			}
++			for attempt := 1; attempt <= 2; attempt++ {
++				outcome, pointer, err := shed.Producers[0].Producer.Call(context.Background())
++				if outcome != shedengine.Done || pointer.Path != wantPath || !errors.Is(err, wantErr) {
++					t.Errorf("Call %d = %q, %q, %v; want %q, %q, %v", attempt, outcome, pointer.Path, err, shedengine.Done, wantPath, wantErr)
++				}
++				if *calls != attempt {
++					t.Errorf("producer calls after Call %d = %d; want %d", attempt, *calls, attempt)
++				}
++			}
++			if posts != tt.wantPosts {
++				t.Errorf("posts over two calls = %d; want %d", posts, tt.wantPosts)
++			}
++			if posts > 0 && callsAtPost != 0 {
++				t.Errorf("producer calls when the notice went out = %d; want 0, the notice before the call", callsAtPost)
++			}
++		})
++	}
++}
++
++// TestNewShed_WrapsTheRowsNotifyParentOnNames covers the activation from loom.yaml's notify_parent_on:
++// an empty list wraps nothing, a recipe row's producer is wrapped over the run's status and row-notice paths,
++// and a name that is no row of the recipe is refused with no shed.
++func TestNewShed_WrapsTheRowsNotifyParentOnNames(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name       string
++		pick       func(rows []string) []string
++		wantWrap   bool
++		wantRefuse bool
++	}{
++		{"EmptyList", func([]string) []string { return nil }, false, false},
++		{"RecipeRow", func(rows []string) []string { return rows[:1] }, true, false},
++		{"UnknownRow", func([]string) []string { return []string{"No-Such-Row"} }, false, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			loc := hubLocation(t, "pair", ".")
++			c := &loomCLI{runID: shedrun.SelfRunID}
++			if err := c.wire(loc, loc.AnchorPath()); err != nil {
++				t.Fatalf("wire() = %v; want nil", err)
++			}
++			// The landing deps are filled at arm time, after wire(); the Publish and Finalize rows refuse to build without them.
++			c.env.Landing = envkit.LandingDeps(t.TempDir())
++			plain, err := c.newShed()
++			if err != nil {
++				t.Fatalf("newShed() with no notify_parent_on = %v; want nil", err)
++			}
++			rows := make([]string, len(plain.Producers))
++			for i, def := range plain.Producers {
++				rows[i] = def.Name
++			}
++			watched := tt.pick(rows)
++			c.cfg.NotifyParentOn = watched
++
++			shed, err := c.newShed()
++			if tt.wantRefuse {
++				if err == nil || shed != nil {
++					t.Fatalf("newShed() = %v, %v; want a nil shed and a refusal", shed, err)
++				}
++				for _, want := range []string{watched[0], "way forward", rows[0]} {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("newShed error = %q; want it to contain %q", err, want)
++					}
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("newShed() = %v; want nil", err)
++			}
++			wrapped := 0
++			for _, def := range shed.Producers {
++				notice, isNotice := def.Producer.(rowNoticeProducer)
++				if isNotice != (tt.wantWrap && def.Name == watched[0]) {
++					t.Errorf("row %q wrapped = %v; want %v", def.Name, isNotice, !isNotice)
++				}
++				if !isNotice {
++					continue
++				}
++				wrapped++
++				if want := shedrun.RowNoticeRecord(loc, c.runID); notice.paths.record != want {
++					t.Errorf("row %q record path = %q; want %q", def.Name, notice.paths.record, want)
++				}
++				if notice.paths.status != c.shedPaths.StatusPath || notice.paths.statusLock != c.shedPaths.StatusLockPath {
++					t.Errorf("row %q status paths = %q, %q; want %q, %q",
++						def.Name, notice.paths.status, notice.paths.statusLock, c.shedPaths.StatusPath, c.shedPaths.StatusLockPath)
++				}
++			}
++			if wantWrapped := len(watched); wrapped != wantWrapped {
++				t.Errorf("wrapped rows = %d; want %d", wrapped, wantWrapped)
++			}
++		})
++	}
++}
++
++// TestWatchRows_UnknownRowNamesTheRecipeRows covers a name that is no row: the refusal names it, the recipe and its rows.
++func TestWatchRows_UnknownRowNamesTheRecipeRows(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	shed, paths, _, _ := rowNoticeFixture(t)
++	err := watchRows(shed, []string{"Drift-Verify", "Drift-Judge"}, "darn", paths, func(string) error { return nil })
++	if err == nil {
++		t.Fatal("watchRows = nil; want a refusal")
++	}
++	for _, want := range []string{`"notify_parent_on"`, `"Drift-Judge"`, "darn recipe", "way forward", "Darn-Write, Drift-Verify"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("watchRows error = %q; want it to contain %q", err, want)
++		}
++	}
++}
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 64a20f65..c55ed53e 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -559,6 +559,12 @@ type Config struct {
+ 	// The cap is the one run_timeout_min sets on the Bouncer's judge, which waits for the parent.
+ 	// It is a positive integer.
+ 	CodeReviewParentTimeoutMin int `yaml:"code_review_parent_timeout_min"`
++
++	// NotifyParentOn names the recipe rows whose start lym mails the run's parent orch.
++	// The parent can then brief the row's agent.
++	// lym mails once each time the run reaches a row, and again on a re-call after an escalation's answer or a resumed halt.
++	// It is open to the local layer, so a task's run_settings sets it for one run.
++	NotifyParentOn []string `yaml:"notify_parent_on"`
+ }
+ 
+ // DiscussionAdvisor is one Discussion-Write advisor: Name is its seat name and Model its model-spec.
+@@ -690,6 +696,7 @@ func ConfigSpec() configengine.Spec {
+ 			"discussion_review_parent_timeout_min": none,
+ 			"code_review_ask_parent":               none,
+ 			"code_review_parent_timeout_min":       none,
++			"notify_parent_on":                     none,
+ 		},
+ 		RetiredKeys: map[string]configengine.Category{
+ 			"fan_review": none,
+diff --git a/internal/loomengine/config_test.go b/internal/loomengine/config_test.go
+index 92c80bac..b6fcb738 100644
+--- a/internal/loomengine/config_test.go
++++ b/internal/loomengine/config_test.go
+@@ -239,6 +239,11 @@ review_timeout_min: 240
+ 			values: map[string]string{"code_review_ask_parent": "true", "code_review_parent_timeout_min": "1"},
+ 			mutate: func(c *Config) { c.CodeReviewAskParent, c.CodeReviewParentTimeoutMin = true, 1 },
+ 		},
++		{
++			name:   "notify_parent_on overridden",
++			values: map[string]string{"notify_parent_on": `["Drift-Verify"]`},
++			mutate: func(c *Config) { c.NotifyParentOn = []string{"Drift-Verify"} },
++		},
+ 		{
+ 			name:   "reviewer_model as a per-round list",
+ 			values: map[string]string{"reviewer_model": "\n  - sonnet[low]\n  - opus[high]"},
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index 26b60ecc..2d35b74a 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -58,3 +58,4 @@ discussion_review_ask_parent: false  # true has each Discussion-Review round ask
+ discussion_review_parent_timeout_min: 30  # minutes from a Discussion-Review round's ask to the parent orch to its deadline, capped so the reviewer keeps room to consolidate before review_timeout_min; a cap that leaves no room sends no ask; a positive integer, 30 by default; settable per run through run_settings
+ code_review_ask_parent: false  # true has every Code-Review round ask the parent orch to review the task's code change once the round's fixer report exists and before its Bouncer judges the round, naming the round's own review and fixer report, so the parent sees each ruling; the Bouncer's judge waits for the answer and keeps every finding the parent returns; false, the default, asks no parent; settable per run through run_settings
+ code_review_parent_timeout_min: 30  # minutes from a Code-Review round's ask to the parent orch to its deadline, capped so the Bouncer's judge, which waits for the answer, keeps room to finish before its own timeout, run_timeout_min; a cap that leaves no room sends no ask; a positive integer, 30 by default; settable per run through run_settings
++notify_parent_on: []  # recipe row names, such as ["Drift-Verify"], whose start lym mails the run's parent orch as a [row reached] line from LOOM, once each time the run reaches the row and again on a re-call after an escalation's answer or a resumed halt, so the parent can brief the row's agent; a row the run skips sends none, and a name that is no row of the run's recipe refuses the run's steps, naming the recipe's rows; an empty list, the default, mails nothing; settable per run through run_settings
+diff --git a/internal/shedrun/doc.go b/internal/shedrun/doc.go
+index f30925fd..755d7e39 100644
+--- a/internal/shedrun/doc.go
++++ b/internal/shedrun/doc.go
+@@ -75,6 +75,9 @@
+ // ReadWakeStamp reads it back by row, found only for the row that wrote it.
+ // The Go driver reads it to tell a loop that lived through a wake from one that kept dying.
+ //
++// RowNoticeRecord is the ephemeral row-notice record under ScratchDir:
++// the last row visit the run's parent was told of, which WriteRowNotice replaces and ReadRowNotice reads.
++//
+ // RunsRootRel names the anchor-relative run-records root,
+ // so a caller that needs the whole run-records tree need not name the shed segment itself.
+ // RunsRoot and ScratchRoot are its absolute durable and ephemeral forms.
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index a4f4855d..b64b08cb 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -95,6 +95,8 @@ func TestPathConstructors(t *testing.T) {
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "sampler.json.lock") }},
+ 		{"WakeRecord", func(l *lymcwd.Location) string { return WakeRecord(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "wake.json") }},
++		{"RowNoticeRecord", func(l *lymcwd.Location) string { return RowNoticeRecord(l, "self") },
++			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "row-notice.json") }},
+ 		{"LastCommitMarker", func(l *lymcwd.Location) string { return LastCommitMarker(l, "self") },
+ 			func(l *lymcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "last-commit") }},
+ 		{"BattenWatchedMarker", func(l *lymcwd.Location) string { return BattenWatchedMarker(l, "self") },
+diff --git a/internal/shedrun/rownotice.go b/internal/shedrun/rownotice.go
+new file mode 100644
+index 00000000..f9a86dac
+--- /dev/null
++++ b/internal/shedrun/rownotice.go
+@@ -0,0 +1,45 @@
++// rownotice.go holds a run's row-notice record: the last row visit lym told the run's parent of.
++// It keeps a row called again within one visit from telling the parent twice.
++
++package shedrun
++
++import (
++	"fmt"
++	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// RowNotice is one row visit the run's parent was told of.
++// Visit counts the verdicts the run's history held when the run reached Row,
++// so a later visit of the same row counts higher and a call within the same visit counts the same.
++// A re-call after an escalation's answer or a resumed halt counts higher too.
++// The call before it recorded a verdict.
++type RowNotice struct {
++	Row   string `json:"row"`
++	Visit int    `json:"visit"`
++}
++
++// RowNoticeRecord returns the path to the ephemeral, never-tracked row-notice record of the run.
++// The record is row-notice.json under ScratchDir(l, runID).
++func RowNoticeRecord(l *lymcwd.Location, runID string) string {
++	return filepath.Join(ScratchDir(l, runID), "row-notice.json")
++}
++
++// ReadRowNotice reads the row-notice record at path; an absent record reads as the zero RowNotice.
++func ReadRowNotice(path string) (RowNotice, error) {
++	notice, _, err := state.ReadJSON[RowNotice](path, path+".lock")
++	if err != nil {
++		return RowNotice{}, fmt.Errorf("shedrun: read the row-notice record: %w", err)
++	}
++	return notice, nil
++}
++
++// WriteRowNotice replaces the row-notice record at path with notice, atomically, creating its directory.
++func WriteRowNotice(path string, notice RowNotice) error {
++	if err := state.WriteJSON(path, path+".lock", notice); err != nil {
++		return fmt.Errorf("shedrun: write the row-notice record: %w", err)
++	}
++	return nil
++}
