@@ -627,9 +627,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af117bff08d503c0c.jsonl"
       ]
+    },
+    "6": {
+      "slug": "one-repository-add",
+      "cards": [
+        "06-one-repository-add",
+        "07-records-commit-on-code-branch"
+      ],
+      "cardHashes": {
+        "06-one-repository-add": "5756065dab6b9406cd9bc02d1fac8e5a5c966784e9433085e30b9ac5bea69bd5",
+        "07-records-commit-on-code-branch": "7bdd396a7e8d564f49b3d9ff24e10ca91758f1d8da77d0467d5824f7f5c7ab68"
+      },
+      "startSha": "5a1a72ecd3659e747cdfcb6a4550d650719898f7",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T07:20:24Z",
+      "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
