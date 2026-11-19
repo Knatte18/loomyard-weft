@@ -419,6 +419,12 @@ Decision: Confirmed: lym board open drops its refusal naming lym board rerender,
 
 Rationale: The operator agreed on 2026-11-19 that the arbiter keeps board.html and board-data.js; with the server serving the page, a missing board.html in the Bolt no longer has to stop the verb.
 
+### Added after Discussion (parent, 2026-11-19): Opener waited on through cmd.Wait, not proc.Reap
+
+Decision: The opener process is waited on through cmd.Wait in one goroutine rather than proc.Reap; card 6's startOpener bullet and the Shared Decisions bullet stand.
+
+Rationale: D5 requires a failed opener to return its error, which needs the exit status proc.Reap discards; PATTERN-child-processes' reap-children rule admits cmd.Wait.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
