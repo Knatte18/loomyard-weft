@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap refusal said the code tip 0931ab44cbdb0b69dfa6f5b8dd64b7c1830da6cd was not on origin yet. That is no longer true. `git ls-remote origin` (run at the time of this verdict) returns refs/heads/gatefix-darn-missing-include at 0931ab44cbdb0b69dfa6f5b8dd64b7c1830da6cd, which equals the named tip exactly. The local repository also has the commit (cat-file reports a commit; the branch origin/gatefix-darn-missing-include contains it). The push the refusal was waiting for has landed, so a plain re-launch of `lym batten run gatefix-darn-missing-include` settles the bootstrap stop. No goto is needed: the stop is bootstrap, not blocked, and the run's way forward is the re-run itself.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gatefix-darn-missing-include/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gatefix-darn-missing-include/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
