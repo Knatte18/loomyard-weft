@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 11:18 UTC; every age below is as of then.
+Rendered 2026-11-19 11:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | darn · light | Code-Burler-Review | neve | 1h<br>27m | loom, stencil |
-| T9 | **Burler review round fails hard on invalid review-file YAML frontmatter**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | darn · light | Code-Burler-Fix | neve | 1h<br>27m | burler, shed |
-| T12 | **Intake import drops the issue comments**<br>• lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`intake-drops-issue-comments`](design-intake-drops-issue-comments.md) | darn · light | Describe | neve | 1h<br>27m | board |
+| T4 | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | darn · light | Code-Burler-Review | neve | 1h<br>28m | loom, stencil |
+| T9 | **Burler review round fails hard on invalid review-file YAML frontmatter**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | darn · light | Code-Burler-Fix | neve | 1h<br>28m | burler, shed |
+| T12 | **Intake import drops the issue comments**<br>• lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`intake-drops-issue-comments`](design-intake-drops-issue-comments.md) | darn · light | PR-Review | neve | 1h<br>28m | board |
 
 ### Ready (0)
 
@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | T5 | 15h<br>1h | landing, darn |
-| T8 | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | darn · light | T9 | 1h<br>27m | shuttle, shed |
+| T8 | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | darn · light | T9 | 1h<br>28m | shuttle, shed |
 | T13 | **Settings to route code review and drift judge rulings to the run's parent**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | darn · solid | T9 | 1h<br>2m | loom, drift, burler |
 
 ### Layer B (1)
