@@ -138,7 +138,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | Drift-Expect | neve | 5h<br>1m | loom, shuttle, shed |
+| T2 | **Run agents ask their parent orch, and the parent can subscribe to a run reaching a named row**<br>• Every run agent question for the operator goes to the run parent by creel; the parent can ask lym to mail it when a run reaches a named producer or state<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | darn · light | Darn-Write | neve | 5h<br>1m | loom, shuttle, shed |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>3h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 #### Ready (0)
@@ -171,7 +171,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 1h<br>1h | landing, stencil |
 | E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 1h<br>1h | gate, testmap |
 | E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 1h<br>1h | burler, stencil |
-| E4 |  | **Shared vocabulary: one glossary, loaded only by the orch and Discussion**<br>• One glossary of lym terms and words never to use for them; the orch gets it via heddle orch-prompt, Discussion via its stencil | [`shared-vocabulary`](design-shared-vocabulary.md) | 4m<br>1m | heddle, stencil, docs |
+| E4 |  | **Shared vocabulary: one glossary, loaded only by the orch and Discussion**<br>• One glossary of lym terms and words never to use for them; the orch gets it via heddle orch-prompt, Discussion via its stencil | [`shared-vocabulary`](design-shared-vocabulary.md) | 5m<br>2m | heddle, stencil, docs |
 
 #### Features (2)
 
