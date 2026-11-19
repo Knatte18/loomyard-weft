@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Review",
+  "current_producer": "Finalize",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Review",
-    "last": "Describe → done",
+    "now": "Finalize",
+    "last": "PR-Review → done",
     "wait": ""
   },
   "history": [
@@ -230,6 +230,13 @@
           "end": "2026-11-19T12:44:10.754007792Z"
         }
       ]
+    },
+    {
+      "producer": "PR-Review",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-19T12:44:21Z",
+      "started_at": "2026-11-19T12:44:21Z"
     }
   ],
   "product": {
