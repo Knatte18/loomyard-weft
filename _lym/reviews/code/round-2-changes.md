@@ -1,0 +1,11 @@
+internal/battencli/overview_test.go
+internal/fabriccli/cli_test.go
+internal/fabricengine/boardweft.go
+internal/fabricengine/clone_adopt_test.go
+internal/fabricengine/doc.go
+internal/loomcli/wiring_commitstatus_integration_test.go
+internal/pairteardown/runread.go
+internal/pairteardown/runread_test.go
+internal/runfsm/act.go
+internal/runfsm/act_test.go
+pattern/PATTERN-run-fsm.md
