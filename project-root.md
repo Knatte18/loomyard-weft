@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (9)
+## Notes (10)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 2d<br>2d | shuttle |
 
-### Bugs (5)
+### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -46,6 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 0m<br>0m | stencil, darn, gate |
 | B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 0m<br>0m | landing |
 | B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 0m<br>0m | webster, gate |
+| B6 |  | **Flaky verify failure in internal/reedcli on the first integration-suite run** | [`reedcli-flaky-verify`](design-reedcli-flaky-verify.md) | 0m<br>0m | reed |
 
 ### Features (2)
 
