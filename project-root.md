@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Parts-Write | neve | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Parts-Plan-Write | neve | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Ready (0)
 
@@ -47,9 +47,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 10m<br>10m | landing, stencil |
-| E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 10m<br>10m | gate, testmap |
-| E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 10m<br>10m | burler, stencil |
+| E1 |  | **A Merge danger section in every change description: one-way or two-way door, and blast radius** | [`merge-danger-in-description`](design-merge-danger-in-description.md) | 11m<br>11m | landing, stencil |
+| E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 11m<br>11m | gate, testmap |
+| E3 |  | **Code review flags tests whose expected value is computed the way the code computes it** | [`tautological-test-finding`](design-tautological-test-finding.md) | 11m<br>11m | burler, stencil |
 
 ### Features (4)
 
