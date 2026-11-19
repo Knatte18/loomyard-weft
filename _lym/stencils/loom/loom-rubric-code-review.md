@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=d5b669a571274eadb40dee407697110d4aec7e8a3667cde87c36930603e4c63e build=49c494cb49596c90110a08078c34de94b2c139df time=2026-11-19T08:07:50Z -->
+lym-stencil: sha256=841a25ed78823422f4a3ea1448d29fd8768735e47bc933304f2cece236af70db build=6dbc7a058fb878439fb08410f2ef6265ab383c8e time=2026-11-19T11:16:21Z -->
 
 # Code-Review rubric
 
@@ -147,6 +147,17 @@ The note above is the advisory report `lym gate test` writes on the diff's chang
 Read it as evidence for "a behavior the diff adds with no coverage", and for naming a covering test in a redundancy finding.
 A function it lists as reached by no test is a candidate, never a finding by itself.
 When it is `none`, or says no current report exists, raise no finding about its absence.
+
+## Mutation report
+
+{{.mutation_report}}
+
+The note above is the advisory report `lym gate test` writes by mutating the lines the diff changes, read only when it still matches HEAD's tree.
+Each survivor is a changed line whose mutant every test covering it passed: a candidate for a missing check, never a finding by itself.
+Read each survivor's line and the tests that cover it.
+When a test could assert what the mutant changes, and that is the diff's own behavior or a contract its doc comment states, file a finding naming the line and the check the tests lack.
+A survivor no test can reasonably kill, such as a log field, a pure cache, a platform-only branch or a channel capacity, is no finding.
+When the note is `none`, or says no current report exists, raise no finding about its absence.
 
 ## Amendment
 
