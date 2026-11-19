@@ -50,4 +50,12 @@ Rationale: The keys live in drift.yaml, so a drift_ prefix only repeats the file
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - code-ask-misses-rounds-own-review (class design, severity BLOCKING, open in rounds 1, 2)
+  - judge-parent-block-embedded-in-go (class design, severity BLOCKING, open in rounds 2)
+  - judge-parent-wait-outlives-judge (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
