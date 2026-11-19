@@ -1,0 +1,14 @@
+{
+  "session_id": "4d9c93bb-dd00-41b5-8a0a-4d973aa0edf8",
+  "row": "Raddle-Write",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 10,
+  "cache_write_tokens": 19770,
+  "cache_read_tokens": 92841,
+  "output_tokens": 3245,
+  "cost_usd": 0.0050231600000000005,
+  "started": "2026-11-19T18:28:52Z",
+  "ended": "2026-11-19T18:29:12Z"
+}

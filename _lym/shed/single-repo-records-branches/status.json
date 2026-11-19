@@ -1,10 +1,9 @@
 {
   "current_producer": "Raddle-Write",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "entered_row": "Raddle-Write",
   "pause_requested": false,
-  "pause_reason": "goto to Raddle-Write by orch",
   "activity": {
     "now": "Raddle-Write",
     "last": "Raddle-Write → goto",
