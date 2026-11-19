@@ -6,6 +6,13 @@ Decision record: [Sketch](decision-single-repo-code-identity.md)
 
 Depends on: [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md)
 
+## Operator decision (2026-11-19)
+
+Stopped before its run: this design spreads records-path stripping over about 15 packages outside fabric, which is wrong.
+Only fabric knows the hub layout. Whether `_lym` and `.lym` are junctions into weft or tracked files on the code branch is invisible to every module but fabric.
+Redesign so the rest of lym reads code identity, diffs, dirtiness and pull request views through fabric with records already excluded, and no other package learns the layout.
+The landed `single-repo-fabric-mode` already branches on `lymcwd.OneRepository` in `battencli/commitstatus.go` and `loomcli/wiring.go`; move those behind fabric too.
+
 Filed from the Sketch `fabric-single-repo-mode`.
 
 Takes: single-repo-fabric-mode's exports: fabricengine.RecordsPathsAt, the records-only-commit and fabric-written-merge-commit predicates, the merge trailer constant, the lym-view/ ref prefix constant and hubforge's one-repository hub; landingshed after landingshed-design-simplify lands; verifytree.Verify and DirtyPaths, gatecli's green record and testmap head reads, gitrepo's ChangedFilesSince and WorktreeChangedFiles, weaverengine's verify, driftengine's head and dirty reads, websterengine's gitwrap.go card checks and reconcileHead, findingtext.go and audit.go, commentlint's diff, loomshed's and loomcli's dirty readers, landingshed's Finalize, finalize_pr.go, prreview.go and parentalign.go, beamcli's pr verb, pullrequest's merge-state head check, sheddriver's and shedarbiter's head comparisons, fabricengine's HoldsWork, ParentHoldsTaskWork, OriginParentHoldsTaskWork and ReadParentTips
