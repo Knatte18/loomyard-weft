@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Build the mutation gate report step with the trial bound changes**<br>• The mutation trial says build it: 26 of 44 survivors are real missing checks; first spread mutants over functions, skip log and other-OS lines, print one summary line<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-report-step`](design-mutation-report-step.md) | darn · solid | halted · Worktree-Create | neve | 22m<br>0m | gate, testmap |
 | T4 | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | darn · light | starting · Worktree-Create | neve | 14h<br>0m | gate, tools |
 | T8 | **A creel post to SLACK reports ok while Slack is disconnected**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | darn · light | starting · Worktree-Create | neve | 1h<br>0m | creel, slack |
-| T9 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md)<br>[Sketch](decision-hardener.md) | raddle | starting · Seed-Child | neve | 6w<br>0m | burler |
+| T9 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Design the campaign that runs a live-substrate module in a sandbox until it converges, on lym modules as they stand; crucible is a Millhouse-era account only | [`hardener`](design-hardener.md)<br>[Sketch](decision-hardener.md) | raddle | starting · Open-Window | neve | 6w<br>0m | burler |
 
 ### Ready (0)
 
@@ -69,4 +69,4 @@ Finished, awaiting `lym board prune --apply`.
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
-| T1 | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | 1h<br>43m |  |
+| T1 | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | 1h<br>44m |  |
