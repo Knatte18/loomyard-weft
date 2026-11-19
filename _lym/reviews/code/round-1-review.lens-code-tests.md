@@ -3,34 +3,46 @@ lens: code-tests
 outcome: reported
 ```
 
-Task: code-tests lens. For each behaviour the diff adds or changes, find the test row that would fail if the behaviour broke.
+I reviewed the diff's tests under the code-tests lens: for each behaviour the diff adds or changes, the test row that would fail if it broke.
 
-**Per behaviour, the test that pins it**
-- **`slackBridge.RelayPostReady`, a strand that is no orch is refused with its way forward:** `TestSlackBridge_RelayPostReady/AStrandThatIsNoOrchIsRefusedNamingItsOrch`. An EXTERNAL sender takes the same `!IsOrchStrand` branch and has no row of its own.
-- **`RelayPostReady`, an orch thread maps to its worktree's orch:** `/AnOrchThreadCountsAsTheOrchOfItsBeam` covers the beam case. A thread of the prime orch takes the same `TaskSlug` path and has no row.
-- **`RelayPostReady`, an orch with no button (a pair's orch) is refused:** `/APairsOrchIsRefusedNamingTheHubsOrch`.
-- **`RelayPostReady`, an orch whose button is off is refused:** `/AnOrchWhoseButtonIsOffIsRefusedNamingTheStatusBar`.
-- **`RelayPostReady`, live and down answers:** `/AnOrchWithItsButtonOnWhileTheRelayRunsIsLive` and `/…WhileTheRelayIsDownIsNotLive`.
-- **`RelayPostReady`, a failed read of the geometry, the beam listing, the forwarding file or `RelayLive` is passed back as the refusal:** no row.
-- **`Store.post` + `slackRelayCheck`, a refused sender stores nothing:** `TestStore_PostToTheSlackRelay/ASenderTheBridgeRefusesIsRefusedWithItsWayForwardAndNothingIsStored`. It checks `errors.Is` and counts zero `posted` entries.
-- **`post`, the relay state sets `ReceiverLive` and the exact warning:** `/AnOrchsPostWhileTheRelayRunsIsStoredAndLive` and `/AnOrchsPostWhileTheRelayIsDownIsStoredWithAWarningNamingSlackStart`. The second pins the full `relayDownWarning` text.
-- **`slackRelayCheck`, a program sender is not asked:** `/AProgramsPostAsksTheBridgeNothing`. The bridge refuses `batten`, so asking it would fail the row.
-- **`slackRelayCheck`, a store without a bridge is not asked:** `/AStoreWithoutTheBridgeStoresThePostAndAnswersNoLiveness`.
-- **`slackRelayCheck`, an EXTERNAL sender is asked like a strand:** none.
-- **`slackRelayCheck`, a receiver other than the relay program asks nothing and keeps its own liveness:** none.
-- **`post`, the relay check runs before `interruptBeforePost`:** none. The order is barely observable, since `strandTarget` refuses an interrupt of a program anyway. No finding.
-- **The relay state rides the waiting-post path (pending `ReceiverLive`, progress `Warning`):** this path is generic and the diff did not change it, so it is not a new behaviour. No finding.
-- **`creelfake.Bridge.RelayPostReady`, `SetRelayLive`, and `Refuse` keyed for both methods:** exercised by `TestStore_PostToTheSlackRelay`. These are test support, not a product behaviour.
-- **`postCmd` Long text, the doc comments and the file headers:** static prose, exempt.
+**Behaviour → pinning test**
+1. A strand's post to `ly:SLACK` with the relay live is stored and answers `receiver_live: true`: `TestStore_PostToTheSlackRelay/AnOrchsPostWhileTheRelayRunsIsStoredAndLive`.
+2. Relay down: the post is stored, answers `receiver_live: false` and carries the exact `relayDownWarning` text: `TestStore_PostToTheSlackRelay/AnOrchsPostWhileTheRelayIsDownIsStoredWithAWarningNamingSlackStart`.
+3. A bridge refusal is returned and nothing is journaled: `TestStore_PostToTheSlackRelay/ASenderTheBridgeRefusesIsRefusedWithItsWayForwardAndNothingIsStored`.
+4. A program sender asks the bridge nothing: `TestStore_PostToTheSlackRelay/AProgramsPostAsksTheBridgeNothing`. The fake is set to refuse and to report the relay down, so asking would fail the row.
+5. A daemon without the bridge stores the post and answers no liveness: `TestStore_PostToTheSlackRelay/AStoreWithoutTheBridgeStoresThePostAndAnswersNoLiveness`.
+6. `slackRelayCheck` asks only when the receiver is this hub's relay program: **none**.
+7. An EXTERNAL sender's post to `ly:SLACK` asks the bridge and is refused as "no orch": **none**.
+8. The relay check runs before `interruptBeforePost`, so a refused post stops no turn: **none**.
+9. A waiting post to `ly:SLACK` carries the relay warning in a progress response: no relay-specific row. `server_test.go:774` pins how `awaitOutcome` sends a stamp's warning, and that code is unchanged. Not a finding.
+10. `slackBridge.RelayPostReady` answers live and down for an orch whose button is on: `TestSlackBridge_RelayPostReady/AnOrchWithItsButtonOn…IsLive` and `…IsNotLive`.
+11. An orch thread maps to its beam's orch: `TestSlackBridge_RelayPostReady/AnOrchThreadCountsAsTheOrchOfItsBeam`.
+12. The button-off refusal: `TestSlackBridge_RelayPostReady/AnOrchWhoseButtonIsOffIsRefusedNamingTheStatusBar` (substring check).
+13. The no-button refusal for a pair's orch: `TestSlackBridge_RelayPostReady/APairsOrchIsRefusedNamingTheHubsOrch` (substring check).
+14. The non-orch refusal: `TestSlackBridge_RelayPostReady/AStrandThatIsNoOrchIsRefusedNamingItsOrch` (substring check).
+15. `RelayPostReady` passes on errors from `geometry`, `Format`, `hasButton` and `ForwardingOn`: **none**. These are plain pass-throughs of internal calls, not new trust-boundary behaviour, so no finding.
+16. In `creelfake.Bridge`, `Refuse` now covers `RelayPostReady`, and `SetRelayLive` sets the relay state: rows 2–4 of `TestStore_PostToTheSlackRelay` use both.
+17. The help text and doc comments are static prose and exempt. The help-size cap is the gate's (`cmd/lym/clitree_test.go:280`).
 
 **Findings**
 
-1. MEDIUM, class `design`. Location: `internal/creelengine/machinemail_test.go`, `TestStore_PostToTheSlackRelay`. Summary: no row pins that a post to a receiver other than `<shortname>:SLACK`, sent while a bridge is set, skips the bridge and keeps its own liveness. If the `receiver != relay` guard in `slackRelayCheck` were dropped or inverted, every local post in a daemon with the bridge would have its `ReceiverLive` and `Warning` overwritten by the relay state, or be refused by the bridge. No current test would fail. Evidence: the guard is at `internal/creelengine/verbs.go:226-229`. The tests that set a bridge and then post locally assert neither liveness nor a refusal: `verbs_test.go:1715-1718` (`ClaimedLineOfMachineMail…`, which posts alpha→orch and checks only the claimed lines), `deliver_test.go:301` and `deliver_test.go:1486`. Every row of the new test posts to `slack`. Fix: add a row that posts to a strand while the bridge refuses the sender or reports the relay down, and want it stored with the strand's own liveness.
+- **MEDIUM**, class `design`, `internal/creelengine/machinemail_test.go:285` (`TestStore_PostToTheSlackRelay` table)
+  - Summary: no row posts as EXTERNAL. The summary and `creelengine/doc.go` say an EXTERNAL post to `&lt;shortname&gt;:SLACK` asks the bridge, and `slackRelayCheck` excludes only `KindProgram`. Nothing would fail if EXTERNAL were treated like a program and skipped the check.
+  - Gap: `TestSlackBridge_RelayPostReady` (`internal/creelcli/slackbridge_test.go:33`) also has no `ly:EXTERNAL` row to pin its "no orch" refusal.
+  - Evidence: `internal/creelengine/verbs.go:223`; `internal/creelengine/seam.go:151` (EXTERNAL is `KindExternal`).
 
-2. LOW, class `design`. Location: `internal/creelengine/machinemail_test.go`, `TestStore_PostToTheSlackRelay`. Summary: no row pins that an EXTERNAL sender is asked by the bridge. The engine skips the check only for `KindProgram` (`verbs.go:222`). If that were widened to "anything not a strand", EXTERNAL posts to SLACK would go back to silent `ok`, and no row would fail. The bridge-side refusal of EXTERNAL is reached only through the generic non-orch row (`slackbridge_test.go:166`, `ly:pay:driver`). Fix: add an `external()` row with the bridge refusing that sender, and want the refusal with nothing stored.
+- **LOW**, class `design`, `internal/creelengine/verbs.go:193`
+  - Summary: the diff moves the relay check ahead of `interruptBeforePost` so a refused post interrupts nothing, but no row posts to `ly:SLACK` with `Interrupt`. Moving the check back after the interrupt would pass every test.
+  - Evidence: `internal/creelengine/verbs.go:193-203`; the test's `PostOptions{}` at `internal/creelengine/machinemail_test.go:314`.
 
-3. LOW, class `design`. Location: `internal/creelcli/slackbridge_test.go`, `TestSlackBridge_RelayPostReady`. Summary: no row reaches a failed bridge read. That covers `geometry()`, the `beams()` listing (only reached for a non-prime orch), `ForwardingOn`'s read error and `RelayLive`'s error. Each is passed back as the post's refusal, which is the behaviour the diff newly attaches to `lym creel post` to SLACK. Evidence: `slackbridge.go:97-99`, `hasButton` reaching `b.beams()` at `slackbridge.go:133-136`, `slackbridge.go:112-115` and `slackbridge.go:120`. The table's `geometry` and `beams` closures always answer nil errors (`slackbridge_test.go:62-63`). Fix: add a row whose `beams` (or `geometry`) answers an error, and want that error back.
+- **LOW**, class `design`, `internal/creelengine/verbs.go:226-228`
+  - Summary: nothing pins the receiver gate (`receiver != relay` returns nil).
+  - Why nothing catches it: every `TestStore_PostToTheSlackRelay` row posts to `slack`. The existing liveness rows (`verbs_test.go:280`, `server_test.go:752`) run without a bridge. If the check ran for every receiver, a post to a dormant strand with the bridge set would get `receiver_live: true` and lose its warning, and nothing would fail.
+  - Evidence: the `withBridge` uses listed by grep. None assert `ReceiverLive` on a strand receiver.
 
-Tool calls:
-1. `grep withBridge` across the `creelengine` tests: to find which existing tests post with a bridge set. The manifest held only two of them.
-2. Read of the four tests that set a bridge (`verbs_test.go:380-400`, `verbs_test.go:1708-1735`, `deliver_test.go:295-320`, `deliver_test.go:1480-1500`): to check whether any of them asserts liveness or a refusal on a non-SLACK local post. None was in context.
+- **NIT**, class `consistency`, `internal/creelcli/slackbridge_test.go:72-74`
+  - Summary: the refusal rows check a substring of the way-forward clause, not the whole message. The `scribe:testing` skill prefers exact equality, and a reworded state clause ("is no orch", "has no slack button", "is off") would still pass.
+  - Evidence: `strings.Contains(err.Error(), tt.wantErr)` at `slackbridge_test.go:73`.
+
+**Tool calls**
+1. Grepped `ReceiverLive`/`withBridge` in the creelengine tests and read `ValidateRole`. My context lacked which existing tests check liveness with a bridge set, and how an `EXTERNAL` role parses.

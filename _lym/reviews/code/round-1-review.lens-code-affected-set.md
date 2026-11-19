@@ -3,49 +3,55 @@ lens: code-affected-set
 outcome: reported
 ```
 
-Task: code-affected-set lens. I list what each change forces outside its own lines, then the members it leaves wrong.
+Lens: code-affected-set. For each change the diff makes, I traced what reads, calls or describes it outside the changed lines, and checked whether each of those is still right.
 
-**Per change, the affected set and whether it is covered:**
+**Per change: the set found, covered or not**
 
-- **`MachineBridge.RelayPostReady`, new interface method** (`crossmachine.go:29`). It has two implementers, `creelcli.slackBridge` and `creelfake.Bridge`, and both gain the method. No other type implements `SendReady`. Covered.
-- **`creelengine.post` now asks the bridge before it stores a post to `<shortname>:SLACK`** (`verbs.go:193-213`).
-  - In-process callers through `PostWith`:
-    - the daemon's `dispatch` VerbPost (`server.go:313-321`), which carries ReceiverLive and Warning on both the plain path and the waiting path through `postStamp`. Covered.
-    - the slack turn hook, `slackcli.replyHook` (`hook.go:173-194`). It posts to `<shortname>:SLACK` through `orchClient`, which is `creelcli.NewStrandClient` (`wiring.go:130-131`). That is a **strand** sender, so the new check now applies to it. Its own button check comes first, so in practice it is refused only when the bridge cannot read its files, or for a pair's orch. Either way it logs the reply as lost, which matches what the relay did before. The behaviour is acceptable, but the change description says otherwise (finding 1).
-  - Program senders through `NewProgramClient` (`wiring.go:255`) are the relay itself and are exempt. Covered.
-  - Docs:
-    - `creelengine/doc.go` and `creelcli/doc.go` are updated. Covered.
-    - The orch role file `contracts/orchrole/role-slack.md:7` still says mail posted to SLACK while the button is off "is dropped" (finding 2).
-- **CLI `postCmd` Long text** (`cli.go:376-404`). It is within the `maxLongBytes` cap (`cmd/lym/clitree_test.go:169`).
-  - The three removed facts are idle wake, the reply-command mark and the `--parent` resolved receiver.
-  - The behaviour behind each still exists: `deliver.go:325`, `reminder.go:51`, and `cli.go` setting `fields["receiver"]`.
-  - Each is still documented in `creelcli/doc.go` at lines 90, 22 and 72, as the cap test's message asks.
-  - Covered.
-- **`Response.ReceiverLive` and `Warning` doc comments** (`protocol.go:134-139`). No contract, spec or skill outside the two package docs mentions `receiver_live`. Covered.
-- **`creelfake.Bridge.Refuse` now keys both methods, and its parameter is renamed.** Two existing callers:
-  - `verbs_test.go:448` posts to machine addresses only.
-  - `machinemail_test.go:417` sends a Reply to a machine.
+1. **`MachineBridge` gains `RelayPostReady`** (`internal/creelengine/crossmachine.go`).
+   - It has two implementers, `slackBridge` (`internal/creelcli/slackbridge.go`) and `creelfake.Bridge`; both are updated, so this is covered.
+   - It is wired at `server.go:50` and `server.go:97` (`Options.Bridge` → `SetMachineBridge`), which need no change: covered.
+   - `creelengine/doc.go:804-806` describes the seam for machine mail only. The diff's new paragraph at `doc.go:105-110` names the relay use, so this is covered.
+2. **A post to `&lt;shortname&gt;:SLACK` from a strand or EXTERNAL is refused, or answers `receiver_live` plus a warning** (`verbs.go` `post` and `slackRelayCheck`).
+   - The Go callers that post to the relay are `slackcli/hook.go:188-192` (the slack turn hook) and `slackengine` (`bridgein.go`, `outbound.go`, `keeper.go`, `holder.go`, `relay.go`, `bridgechannel.go`).
+   - The `slackengine` callers post as the program `&lt;shortname&gt;:SLACK` to orchs, not to the relay, so they are unaffected.
+   - The turn hook is affected: it posts through `newStrandClient(strand)` as the orch strand (`hook.go:208-217`), not as a program. Its post now passes through `RelayPostReady`. See findings 2 and 3.
+   - The CLI print path (`cli.go:452-473`) and the daemon paths (`server.go:316-320` and `awaitOutcome` at `server.go:471-476`) already carry `ReceiverLive` and `Warning`: covered.
+   - The orch role file `contracts/orchrole/role-slack.md:7` describes this behaviour and is left wrong: finding 1.
+   - The relay's own doc, `slackengine/doc.go:82` ("drops the mail of an orch whose button is off"), stays true for program mail and for a button switched off after the post was stored: covered.
+   - The `PATTERN-agent-addressing` "Slack boundary" entry is unchanged in meaning: covered.
+3. **`Response.ReceiverLive` and `Warning` doc comments** (`protocol.go`) and **`PostResult.ReceiverLive`** (`verbs.go`).
+   - Readers are `server.go` and `cli.go:471`, plus the `creelcli/doc.go` envelope line, which the diff extends: covered.
+4. **`creelfake.Bridge.Refuse` now keys both `SendReady` and `RelayPostReady`, with its parameter renamed.**
+   - Its callers are `machinemail_test.go:309`, `machinemail_test.go:417` and `verbs_test.go:448`.
+   - None of the pre-existing callers posts to `ly:SLACK`, so the shared map has no effect on them: covered.
+5. **The `postCmd` Long text drops three facts** (idle wake, the mark shown beside the reply command, and the resolved `receiver` under `--parent`).
+   - Each fact is still documented: the idle wake at `creelcli/cli.go:82` (the creel root Long), the mark at `creelengine/doc.go:202`, and the `receiver` key at `creelcli/doc.go:72`. Covered.
+   - The cut was forced by the `maxLongBytes` cap in `cmd/lym/clitree_test.go:280`, whose message says to move long pages into the package doc.
+6. **Commit messages, departures and PATTERN.**
+   - No commit in the range carries a `Pattern-Departure:` or `Loosened-Check:` trailer, and none is needed: no test assertion at the review base was widened.
+   - The directive declares no PATTERN changes.
+   - `PATTERN-refusal-way-forward` binds only the webster, shed and loom packages, and the new creel refusals carry a `way forward:` clause anyway.
+   - Covered.
 
-  Neither reaches `RelayPostReady`, so there is no cross-effect. Covered.
-- **PATTERN entries.**
-  - `PATTERN-agent-addressing`'s Slack boundary says an agent reaches Slack only by creel mail to `<shortname>:SLACK`. The diff keeps that intact. Covered.
-  - `PATTERN-refusal-way-forward` binds only webster, shed and loom, so it does not bind creel. The new refusals carry a way forward anyway.
-  - No declared PATTERN changes. Covered.
-- **Commit messages.** There are no `Pattern-Departure:` or `Loosened-Check:` trailers, and none is needed. The commit message of `69a4e4ca` says "Program posts and a daemon without the bridge are unchanged", which is accurate. Covered.
+**Findings**
 
-**Findings:**
-
-1. MEDIUM, consistency, `_lym/landing/summary.md` ("What changes"):
-   - The change description says "lym's own program senders, such as the dobby reminders and the slack turn hook, keep their current behaviour".
-   - The slack turn hook is not a program sender. It posts as the orch strand, so the new bridge check now applies to it.
-   - Evidence: `internal/slackcli/hook.go:173,191,208-216` (`orchClient` uses `newStrandClient`) and `internal/slackcli/wiring.go:130-131` (`creelcli.NewStrandClient`).
-2. LOW, consistency, `contracts/orchrole/role-slack.md:7`:
-   - The orch role file still tells the orch that mail it posts to `<shortname>:SLACK` while its button is off "is dropped".
-   - The diff now refuses that post with a way forward, and adds a warning when the relay is down. The role text no longer describes what the orch sees.
-   - Evidence: `contracts/orchrole/role-slack.md:7`, `internal/creelcli/slackbridge.go:116-118`.
+1. **MEDIUM**, consistency.
+   - Location: `contracts/orchrole/role-slack.md:7`.
+   - Summary: the orch's Slack role file still says that mail posted to `&lt;shortname&gt;:SLACK` while the button is off "is dropped". After the diff, such a post is refused with a way forward. The file also never says that a post while the relay is down returns `receiver_live: false` with a warning. An orch reading it is told the old, silent behaviour the board entry set out to end.
+   - Evidence: `role-slack.md:7`; `slackbridge.go` `RelayPostReady` (the button-off refusal); `verbs.go` `post` and `relayDownWarning`.
+2. **MEDIUM**, consistency.
+   - Location: `_lym/landing/summary.md`, the "What changes" section.
+   - Summary: the description says lym's own program senders, "such as … the slack turn hook, keep their current behaviour". The turn hook is no program sender: it posts as the orch strand through `newStrandClient`, so its post now goes through `RelayPostReady`. The claim is not borne out by the diff.
+   - Evidence: `internal/slackcli/hook.go:173`, `hook.go:188-192` and `hook.go:208-217`; `verbs.go` `slackRelayCheck` (skips only `KindProgram`).
+3. **LOW**, design.
+   - Location: `internal/slackcli/hook.go:181-195`, reached through `verbs.go` `slackRelayCheck`.
+   - Summary: the turn hook reads the button itself, then posts. When the button turns off between that read and the post, the post is now refused rather than stored and dropped. The hook then returns an error and logs "the reply is lost to Slack", where before it took the silent drop.
+   - The outcome is the same (nothing reaches Slack), but the hook now reports it as a failure. Neither the hook nor the diff handles that path, and no test covers a hook post through the new check.
+   - Evidence: `hook.go:181-195`; `slackbridge.go` `RelayPostReady`.
 
 Tool calls:
-1. Searched for `SendReady(` implementers and for docs about posting to SLACK. The context had not swept every implementer or contract.
-2. Read `contracts/orchrole/role-slack.md` and searched specs, stencils and skills for `:SLACK`. The role doc was outside the manifest.
-3. Read `internal/slackcli/hook.go` and `wiring.go` client construction to check the sender kind of the slack turn hook, a caller one hop beyond the manifest.
-4. Searched contracts, plugins and other package docs for `receiver_live`, to find further readers of the changed output.
+1. Searched for `MachineBridge` implementers, `SLACK` docs in contracts and plugins, and the removed help facts elsewhere. The manifest lacked the docs and stencils outside the diff.
+2. Read `contracts/orchrole/role-slack.md`, the `SLACK` lines of `orch-role.md`, the relay paragraph of `slackengine/doc.go` and `creelengine/doc.go:795-812`, to check whether each doc still holds.
+3. Searched for Go callers that post to the relay, and for `SLACK` in contracts and plugins beyond the orch role, to find the senders the new check reaches.
+4. Read `slackcli/hook.go` `replyHook`, to learn the turn hook's post path.
+5. Read `slackcli/hook.go` `orchClient`, to learn the turn hook's sender kind.

@@ -3,47 +3,44 @@ lens: code-scope
 outcome: reported
 ```
 
-Task: the code-scope lens. It maps the diff's changes to the board entry's goal points and lists the scope findings.
+I'm reviewing the diff's trace to the board entry's goal points under the code-scope lens.
 
-**Decisions (goal points of the board entry under `## Goal`; the record has no `Added after Discussion` entries)**
-- **G1:** a post to SLACK while no relay runs says so. It either refuses with the state and a way forward (`lym slack start`) or answers ok with `delivered: false` and the reason.
-- **G2:** a post to SLACK while the sending orch's slack button is off says so. It either refuses with a way forward (press the button) or answers ok with `delivered: false` and the reason.
-- **G3:** the sender then reports the result in its pane. This is the purpose behind G1 and G2, and both carry it.
+**Decisions.** The record has no `## Decisions` content and no `Added after Discussion` entries. The goal points come from the board entry's `## Idea`:
+- **G1:** a post to SLACK while no relay runs says so. Either it is refused with the state and a way forward (`lym slack start`), or it answers ok with `delivered: false` and the reason.
+- **G2:** a post to SLACK while the sending orch's slack button is off says so. Either it is refused with the state and a way forward (press the button), or it answers ok with `delivered: false` and the reason.
+- **G3:** the sender is told, so it reports the result in its pane instead.
 
-**Per change**
-- **C1, engine check before store.** `MachineBridge.RelayPostReady`, `Store.slackRelayCheck`, `relayDownWarning` and the wiring in `post` (`internal/creelengine/crossmachine.go`, `internal/creelengine/verbs.go`). Traces to G1 and G2.
-- **C2, the bridge's sender and relay judgment.** `slackBridge.RelayPostReady` in `internal/creelcli/slackbridge.go`:
-  - The button-off refusal traces to G2.
-  - `slackengine.RelayLive` for the live/down answer traces to G1.
-  - The refusals of a non-orch strand, of EXTERNAL and of an orch with no button (a pair's) trace to no named goal point. They extend G2's intent to other senders the relay drops; see finding 1.
-- **C3, fake bridge.** `RelayPostReady`, `SetRelayLive` and the shared `Refuse` in `internal/testkit/creelfake/bridge.go`. Forced by C1's interface change.
-- **C4, tests.** `TestStore_PostToTheSlackRelay` and `TestSlackBridge_RelayPostReady`, plus the reworded file headers. Forced by C1 and C2.
-- **C5, doc comments.** `creelengine/doc.go`, `protocol.go`, the `PostResult` doc in `verbs.go`, and `creelcli/doc.go`. Forced by C1 and C2, since they make those docs stale.
-- **C6, `postCmd` Long in `internal/creelcli/cli.go`.**
-  - The new SLACK sentence is forced by C1 and C2.
-  - Commit `fe73fb3e` removed three lines: the idle-receiver wake, the reply-command mark and the `--parent` resolved receiver.
-  - That removal is forced: the new text pushed Long past `maxLongBytes` = 2000 (`cmd/lym/clitree_test.go:169`).
-  - All three facts are still true of the code and still documented in the package doc: `internal/creelcli/doc.go:22`, `:68-72` and `:90`. The cap's own message directs long text there (`clitree_test.go:281`). Not unrequested scope.
+**Per change:**
+- **C1, the engine seam and post check:** `MachineBridge.RelayPostReady`, `Store.slackRelayCheck`, `relayDownWarning`, and the `post` wiring that sets `ReceiverLive` and `Warning`. Traces to G1, G2 and G3.
+- **C2, the bridge implementation:** `slackBridge.RelayPostReady`, with the button-off refusal and `RelayLive`. Traces to G1 and G2.
+  - It also refuses a strand that is no orch, EXTERNAL, and an orch with no button. That part goes beyond G1 and G2 (finding 1).
+- **C3, help text for SLACK in `postCmd` Long:** forced by C1 and C2.
+  - Commit `fe73fb3e` removed three lines: idle wake, the reply-command mark, and the `--parent` resolved receiver. The cap test forced those removals (`cmd/lym/clitree_test.go:280`, whose message says to move the long page into the package doc).
+  - All three facts still hold and stay in the package doc: `internal/creelcli/doc.go:22`, `:68-72` and `:90`. So no fact was lost.
+- **C4, doc comments:** `creelengine/doc.go`, `creelcli/doc.go`, `protocol.go` `ReceiverLive`/`Warning`, `verbs.go` `PostResult`, and the `crossmachine.go` interface doc. All forced by C1 and C2.
+- **C5, tests and fake:** `TestStore_PostToTheSlackRelay`, `TestSlackBridge_RelayPostReady`, and `creelfake.Bridge` gaining `RelayPostReady`/`SetRelayLive` with `Refuse` widened. Forced by C1 and C2.
+- **C6, commit `d79b3f1a`:** comment re-wrapping in the files above. Forced by C4 and C5.
 
-**Per decision**
-- **G1:** C1 and C2 build it. They answer ok with `receiver_live: false` and a warning naming `lym slack start`, not a refusal. See finding 2 for the field form.
-- **G2:** C1 and C2 build it. The post is refused, naming "press the button on its status bar".
-- **G3:** C1 and C2 serve it. The refusal texts name "report the text in your pane".
+**Per decision:**
+- **G1:** built by C1 and C2. The post is stored with `receiver_live: false` and a warning naming `lym slack start`. It does not use the `delivered: false` form (finding 2).
+- **G2:** built by C2 and C1. The refusal names "press the button on its status bar".
+- **G3:** built by C1, C2 and C3. Each refusal and the warning tell the sender.
 
 **Findings**
 
-1. **LOW, scope.**
-   - **Location:** `internal/creelcli/slackbridge.go:96-111` (`RelayPostReady`).
-   - **Summary:** the bridge also refuses a strand that is no orch, EXTERNAL, and an orch with no slack button. The board entry names only two cases: no relay running, and the sending orch's button off.
-   - **Why LOW:** these refusals turn a stored post into a refused one for senders the entry never named. They do match the entry's purpose, since the relay drops these senders' mail without posting it.
-   - **Evidence:** the relay drops such mail at `internal/slackengine/outbound.go:197-200` and `:217-231`. The entry's text is at `_lym/discussion/decision-record.md:12-13`.
+1. **LOW, scope.** `internal/creelcli/slackbridge.go` `RelayPostReady` (refusal branches, around lines 96–118).
+   - **Summary:** the bridge refuses three sender kinds the board entry does not name: a strand that is no orch, EXTERNAL (for example the operator's terminal), and an orch with no slack button (a pair's).
+   - The entry asks only about "no relay runs" and "the sending orch has its slack button off".
+   - Before this diff, these posts were stored and then dropped by the relay (`internal/slackengine/outbound.go` `postMessages`/`outboundRoute`, around lines 196–232). Now they are refused.
+   - This changes behaviour for these senders, and no `Added after Discussion` entry records it. The change summary's own design decision is the writer's claim, not a license.
+   - It falls under the same "sender not told" problem the entry describes, so the rating is LOW. The parent should confirm or refuse it with `lym loom decision add`; the code needs no revert.
+   - **Evidence:** `internal/creelcli/slackbridge.go` (diff hunk at line 88 onward); `_lym/discussion/decision-record.md` `## Idea`.
 
-2. **LOW, scope.**
-   - **Location:** `internal/creelengine/verbs.go:212-214` (`post`), `internal/creelengine/verbs.go:234-240` (`relayDownWarning`), `internal/creelcli/cli.go:466-473`.
-   - **Summary:** when the relay is down, the entry asks for an ok answer with a `delivered: false` field and the reason. The diff instead answers `receiver_live: false`, and the reason appears only on the stderr `creel: warning:` line. The CLI's JSON envelope carries no reason field.
-   - **Weighing:** the summary at `_lym/landing/summary.md` justifies this, since the mail waits and is posted once the relay restarts. But the entry's field and reason-in-answer form is not what lands, and no `Added after Discussion` entry or parent decision records the substitution.
-   - **Evidence:** `_lym/discussion/decision-record.md:13`; `internal/creelcli/cli.go:455` writes the warning to stderr; `internal/creelcli/cli.go:466-473` builds the envelope fields with no warning.
+2. **LOW, scope.** `internal/creelengine/verbs.go` `post`/`relayDownWarning` (around lines 212–244) and `internal/creelcli/cli.go` post print path (around lines 451–473).
+   - **Summary:** for a relay that is down, the entry offers either a refusal or an ok answer with a `delivered: false` field and the reason. The diff does neither literally.
+   - It reuses `receiver_live: false` in the JSON answer and prints the reason only as a `creel: warning:` line on stderr. The JSON answer carries no reason and no `delivered` field.
+   - The intent, telling the sender, is met through the existing channel. The deviation is the field name and where the reason appears, and no added entry records it.
+   - **Evidence:** `internal/creelcli/cli.go:451-473`, where `warn` writes to stderr and `fields` holds only `id`, `sender`, `receiver_live`; `_lym/discussion/decision-record.md` `## Idea`.
 
-No unrequested-scope finding for the C6 help-text removals: they are forced by the size cap, and the facts survive in the package doc.
-
-No tool calls were made: everything this lens needed was already in context.
+Tool calls:
+1. Grepped `internal/creelcli/doc.go` for the help facts the last commit dropped, and ran `git show fe73fb3e` on `cli.go`. The context lacked the package doc's text, which I needed to tell whether the removals lost facts or were forced edits.
