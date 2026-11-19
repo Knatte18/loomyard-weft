@@ -1,63 +1,45 @@
-# Run agents ask their parent; the parent can hear of a named row's start
+# Run agents ask their parent orch; the parent can subscribe to rows
 
-Run agents now put any question they would ask the operator to the run's parent orch, and the parent answers itself or asks the operator.
-A parent can also name recipe rows in `notify_parent_on`, and lym mails it as the run reaches each one, so it can brief that row's agent without polling `lym loom status --watch`.
+A run's autonomous agents now put their questions to the run's parent orch by creel instead of to the operator in their pane.
+The parent can also ask lym to mail it when the run reaches a named row, so it can brief that row's agent as it starts.
+Both come from the comment on #153, where the parent saw an agent's question only after the operator relayed it,
+and had to poll `lym loom status --watch` to catch a row's start.
 
-## What changes
+## Questions go to the parent
 
-- **The parent directive.**
-  The operator-ban line every autonomous role's prompt carries (`contracts/stencils/parent/parent-directive-operator-ban.md`) now says what to do as well as what not to do.
-  The agent puts every question it would ask the operator to its parent with `lym creel post --parent --expect-reply`.
-  The parent answers itself or asks the operator.
-  A question in the agent's own pane is still never the way forward.
-  The drift judge, Drift-Expect, review fixers and every other seat that renders the directive get the line.
-- **Gate card fixer.**
-  `internal/gatecli`'s strand rig had no hold notifier, so a cold card fixer that asked in its pane held silently until its timeout.
-  It now mails each held turn end to the orch above the worktree through `orchcli.NotifyAsker`, signed `<shortname>:GATE`, as the loom, burler and webster runners already do.
-- **Stencils the parent reads.**
-  `bouncer-fragment-decision` now tells the parent to settle run-level findings itself and to take only design questions to the operator.
-  Before, it put every remaining finding to the operator.
-  `burler-step-fix` now defers a tradeoff decision to the run's parent, not the operator.
-- **`notify_parent_on`**, a new `loom.yaml` key, an empty list by default and open to `run_settings`.
-  It lists recipe row names, such as `["Drift-Verify"]`.
-  `newShed` (`internal/loomcli/arm.go`) wraps each named row's producer (`internal/loomcli/rownotice.go`).
-  Before the row's call, the wrapper mails the parent `loom <slug>: [row reached] the run reached <row> and calls it now; …`.
-  It mails once per visit.
-  A visit is the count of verdicts in the run's history, folded repeats included, and is kept in the new scratch record `shedrun.RowNoticeRecord`.
-  A call after a yield or a pause therefore mails nothing again, but a bounce back into the row mails again.
-  A row the entry gate skips is never called, so it mails nothing.
-  A name that is no row of the run's recipe refuses the shed, and the refusal lists the recipe's rows.
-  A failed read, write or post only warns.
-- `contracts/orchrole/orch-role.md` gains the sections "Questions from a run's agents" and "Briefing a row's agent".
-  `docs/overview.md` and the package docs of `loomcli`, `gatecli` and `shedrun` describe the new behavior.
+- `contracts/orchrole/orch-role.md` gains a "Questions from a run's agents" section.
+  The parent answers a run-level call itself and puts a design question to the operator first.
+  An agent that asked in its pane anyway reaches the parent as a hold notice.
+  An interactive session the operator chose to sit in, such as Discussion, PR-Review, a sampler or a `judge_interactive` judge, still asks in its pane.
+- `parent-directive-operator-ban.md` now tells the agent to put every question to its parent rather than only banning the pane question.
+- `bouncer-fragment-decision.md` and `burler-step-fix.md` no longer send a finding or a deferred decision to the operator.
+  The parent settles a run-level call and asks the operator only for a design question.
 
-## Design decisions
+## Row subscriptions
 
-The decision record holds no Discussion decisions, so these calls were made here.
+- New `notify_parent_on` key in `loom.yaml`, open to a task's `run_settings`: a list of the recipe's row names, empty by default.
+  `internal/loomengine` registers the key in `ConfigSpec` and `template.yaml`.
+- `newShed` in `internal/loomcli` wraps each named row's producer (`rownotice.go`).
+  Before the row's call it posts a `[row reached]` line to the parent as `<shortname>:LOOM`.
+- A name that is no row of the run's recipe refuses the run's steps and names the recipe's rows.
+- A failed status read, record read or write, or post only logs a warning; a notice never stops the run.
 
-- **A `run_settings` key, not a verb.**
-  The board entry left the choice between `lym loom notify <slug> --on …` and a key open.
-  The key reuses the existing config layers and per-run `run_settings`, and needs no new subscription store or verb.
-  It is a `CategoryNone` key because it only adds a mail and touches no gate.
-- **Rows only, not states.**
-  The key names recipe rows.
-  A run's halt states already reach the parent through batten and dobby notices.
-- **When the notice fires.**
-  The notice fires in the wrapped producer's call, after the entry gate.
-  Hooking the commit-status seam instead would have mailed for a gated row that is then skipped, such as a Drift row with drift off.
-  The visit record is persisted because a run's steps can run in separate processes, so in-memory state would mail again on every yielding step.
-- **Interactive sessions stay as they are.**
-  Interactive Discussion, PR-Review, sampler and `judge_interactive` are sessions the operator opts into and sits in.
-  The operator decision makes parent routing the default for run agents, so these opt-in modes keep asking in their pane, and the orch role says so.
-- **The held-turn notice stays the fallback.**
-  An agent that still asks in its pane already reaches its parent through shuttle's hold notice on every runner with a notifier.
-  The gate card fixer was the one run-agent spawn path without a notifier.
+### Design decisions
+
+- Rows only, no state subscriptions.
+  The need is briefing a row's agent as it starts.
+  Halt and other states already reach the parent through batten and dobby notices, so a state subscription would duplicate them.
+- The key is chosen over a `lym loom notify` verb, so a task can set it through `run_settings` with no extra command.
+- "Once per visit" is the count of verdicts the run's history holds when the row is called, kept in a new ephemeral `row-notice.json` under the run's scratch dir (`shedrun.RowNoticeRecord`).
+  A call after a yield or a pause records no verdict, so it sends no second notice.
+  A re-call after an escalation's answer or a resumed halt spawns a fresh agent and does send one.
+  A row the entry gate skips is never called and sends none.
+- The visit is recorded before the post, so a failed post is never retried.
 
 ## To check by hand
 
-- No new test ran in this change. The tests are `internal/loomcli/rownotice_test.go` and the existing `never the way forward` pins in `parentdirective`, `seatengine`, `burlerengine` and `loomengine`, and the verify gate runs them.
-- Set `{"loom": {"notify_parent_on": ["Drift-Verify"]}}` in a darn task's `run_settings`.
-  Confirm the parent gets one `[row reached]` mail when the run reaches Drift-Verify and none at a yield or resume within the row.
-  Confirm that a misspelt row refuses the run with the recipe's rows listed.
-- No run has exercised the gate card fixer's hold notice end to end.
-  Confirm that a held card fixer's question reaches the parent orch as a hold notice signed `<shortname>:GATE`.
+- `card-fixer-notifier-never-fires` (design, medium): a review finding that a fixer's notifier may never fire.
+  Confirm that a `notify_parent_on` row naming a review fixer sends its notice in a live run.
+- `newshed-notify-wiring-untested` (design, medium): a review finding that `newShed`'s notify wiring in `internal/loomcli/arm.go` lacked a test.
+  `rownotice_test.go` now covers the wrapper and its contracts; confirm it exercises the `newShed` wiring through `c.env.NotifyParent`.
+- No end-to-end run with `notify_parent_on` set was done: send a real run through a named row and confirm the parent receives the `[row reached]` mail.
