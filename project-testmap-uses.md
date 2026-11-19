@@ -1,6 +1,6 @@
 # P3 Put the per-test coverage maps to use
 
-Rendered 2026-11-19 08:08 UTC; every age below is as of then.
+Rendered 2026-11-19 08:09 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`testmap-uses`](design-testmap-uses.md) · Age 14h · Owner `neve`
@@ -29,11 +29,3 @@ _None._
 ## Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-## Done (1)
-
-Finished, awaiting `lym board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **Coverage map uses: reader, reach note, failure triage and lym gate mutate** | [`testmap-reach-triage-mutate`](design-testmap-reach-triage-mutate.md)<br>[Sketch](decision-testmap-reach-triage-mutate.md) | 12h<br>12h | testmap, gate, burler, darn, webster, loom, shed, stencil, pattern |
