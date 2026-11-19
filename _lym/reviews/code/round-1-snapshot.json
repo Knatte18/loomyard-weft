@@ -7,5 +7,6 @@
       "title": "scribe:testing rule left out of this run",
       "digest": "5f615177b81f87c209e2e4fa9c7ba794f706ba14ae3689876c158fe8b045a649"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
