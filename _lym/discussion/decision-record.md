@@ -468,6 +468,15 @@ Rationale: D5 requires a failed opener to return its error, which needs the exit
   With the server in place, the committed `board.html` and `board-data.js` serve only a page opened by hand at `file://`.
   For the run's parent: confirm the dropped refusal, and say whether the two committed render outputs should stay now that editing needs the server.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - board-html-not-pinned-to-lf (class design, severity MEDIUM, open in rounds 1)
+  - page-busy-loops-on-absent-board-json (class design, severity MEDIUM, open in rounds 1)
+  - verb-wiring-behaviors-untested (class design, severity MEDIUM, open in rounds 1)
+  - watch-loop-no-one-second-floor (class design, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a render's file map holds `board-data.js`; stripping its `window.BOARD = ` prefix and `;` suffix leaves JSON that decodes,
