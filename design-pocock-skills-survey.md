@@ -1,6 +1,6 @@
 # Survey Matt Pocock's skills repository for ideas that improve LoomYard
 
-`pocock-skills-survey` · Task · research · running · Drift-Verify
+`pocock-skills-survey` · Task · research · running · Code-Bouncer
 
 ## Question (operator, 2026-11-19)
 
