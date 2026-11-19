@@ -3,49 +3,39 @@ lens: code-correctness
 outcome: reported
 ```
 
-Lens: code-correctness. I traced every function and branch the diff adds or changes, using concrete inputs.
+Lens: code-correctness. I ran each function and branch the diff adds or changes with concrete inputs, including the failure of each call it makes.
 
 **Cases run**
-- `slackRelayCheck`, nil bridge: answers nil, nil, and `post` stores the post with no liveness. Correct.
-- `slackRelayCheck`, program sender `ly:BATTEN`: answers nil, nil, and the bridge is never asked. Correct, and it matches the relay posting a program's mail.
-- `slackRelayCheck`, receiver `ly:BEAM` (not the relay): answers nil, nil. Correct.
-- `slackRelayCheck`, receiver spelled differently, such as `SLACK` or `zz:SLACK`: no match, so it answers nil. `checkReceiverLocked` (pool.go:265) then accepts only an exact registered program name, so no other spelling reaches the relay's mail. Correct.
-- `slackRelayCheck`, `FormatProgram` fails: the error is swallowed and the check is skipped. It fails only on an invalid store shortname, and then no receiver can equal the relay name. Harmless.
-- `slackRelayCheck`, bridge refuses: the refusal is returned before `interruptBeforePost` and `storePost`, so nothing is journaled or interrupted. Correct.
-- `post`, `--interrupt` to `ly:SLACK`: the bridge is asked first. `strandTarget` then refuses a program receiver, so nothing is stored. Correct.
-- `post`, `storePost` fails: `err != nil`, so the relay state is not applied and the error is returned. Correct.
-- `post`, stored, relay down: `ReceiverLive=false` and the warning is set, overwriting the nil from `receiverLiveness`. Correct.
-- `post`, stored, relay live: `ReceiverLive=true` and the warning is empty. Correct.
-- Daemon, `Wait` post: the pending response carries `receiver_live` and the warning goes out as a progress response (server.go:471-476). The CLI prints it through `warn` (cli.go:452-456). Correct.
-- `relayDownWarning`: live gives ""; down gives a text naming the receiver and `lym slack start`. Correct.
-- `RelayPostReady`, EXTERNAL sender `ly:EXTERNAL`: `IsOrchStrand` is false, so it is refused as "no orch". This matches `outboundRoute` dropping EXTERNAL (outbound.go:228). Correct.
-- `RelayPostReady`, beam orch thread `ly:pay:orch-2`: `TaskSlug` gives "pay", which forms `ly:pay:orch`, the same mapping `outboundRoute` uses. Correct.
-- `RelayPostReady`, prime thread `ly:orch-2`: the slug is "", which forms `ly:orch`. Correct.
-- `RelayPostReady`, `Format` or `TaskSlug` failure: unreachable. `IsOrchStrand` already parsed the name, and a strand sender is of this hub's shortname. Correct.
-- `RelayPostReady`, pair orch `ly:zz:orch`: `hasButton` is false, so it is refused. The toggle refuses a pair's orch a button (toggle.go:173), so the relay would drop its mail too. Correct.
-- `RelayPostReady`, button off: refused naming the status bar. Correct.
-- `RelayPostReady`, button on: answers `RelayLive(geom)`. Correct.
-- `RelayPostReady`, beam listing fails for a beam orch: `hasButton` returns the error, so the post is refused and nothing is stored. Not correct; see finding 2.
-- `RelayPostReady`, `ForwardingOn` fails or `RelayLive` errors: the post is refused with a bare error. Not correct; see finding 2.
-- `Reply` (`post --reply &lt;id&gt;`) to mail from `ly:SLACK`: it appends a reply to `ly:SLACK` through `appendPostedLocked` (verbs.go:399) and never reaches `post` or `slackRelayCheck`. Not correct; see finding 1.
-- `creelfake.Bridge.RelayPostReady`: answers a refusal by name, else `!relayDown`. Correct.
-- `creelfake.Bridge.SetRelayLive`: correct.
+
+- `Store.post`, bridge nil, sender `ly:orch`, receiver `ly:SLACK`: `slackRelayCheck` returns nil, nil, and the post stores as before. Correct.
+- `Store.post`, a refused sender: the error comes back before `interruptBeforePost` and `storePost`, so nothing is interrupted or stored. Correct.
+- `Store.post`, live answer false, store succeeds: `storePost` sets `ReceiverLive` nil and no warning for a program receiver. Line 212 then overwrites them with `&false` and the relay-down warning. Correct.
+- `Store.post`, live answer, `storePost` fails (for example, `ly:SLACK` is not yet a known program): `err != nil` skips the overwrite and the error is returned. Correct.
+- `Store.post` with Wait: the server copies `posted.ReceiverLive` and `posted.Warning` into the `postStamp`. `awaitOutcome` writes the pending response with `receiver_live`, then the warning as a progress response (server.go:316, 471–476). Correct.
+- `Store.post` with Interrupt to `ly:SLACK`: the bridge check runs first. A refusal returns before any interrupt. Otherwise `interruptBeforePost` → `strandTarget` refuses the program receiver, with nothing interrupted. Correct.
+- `slackRelayCheck`, sender `Kind == KindProgram`: returns nil, nil. Correct.
+- `slackRelayCheck`, EXTERNAL sender (`KindExternal`, seam.go:156): the bridge is asked. `IsOrchStrand("ly:EXTERNAL")` is false, so it is refused, which matches the relay dropping EXTERNAL (outbound.go `outboundRoute`). Correct, though the advice "ask your orch to post it" is odd for EXTERNAL.
+- `slackRelayCheck`, `FormatProgram` error: swallowed and the check is skipped. It can only fail for an invalid shortname, which a running daemon's geometry never has. Correct in practice.
+- `slackRelayCheck`, receiver spelled differently (`ly:slack`, `ly:pay:SLACK`): the comparison is exact. The relay reads only `<shortname>:SLACK` and `checkReceiverLocked` does no normalising (pool.go:261), so no spelling reaches the relay unchecked. Correct.
+- `relayDownWarning`, live true gives an empty string; live false gives the text. See finding 2 on the wording.
+- `RelayPostReady`, `ly:orch` with button on, relay lock held: returns true, nil. Correct.
+- `RelayPostReady`, `ly:pay:orch-2`: `TaskSlug` gives `pay`, the orch is `ly:pay:orch`, and `hasButton` finds it through `beams`. Correct.
+- `RelayPostReady`, `ly:orch-2`: `TaskSlug` gives "", so the orch is `ly:orch`. Correct.
+- `RelayPostReady`, `ly:pay:driver`: refused as no orch. Correct.
+- `RelayPostReady`, a pair orch `ly:zz:orch` with its forwarding on: refused as having no slack button. The relay does not drop such mail; see finding 3.
+- `RelayPostReady`, failure of `geometry`, `beams`, `ForwardingOn` or `RelayLive`: the raw error is returned, so the post is refused with nothing stored. See finding 1.
+- `RelayPostReady`, relay lock directory missing: `RelayLive` returns false, nil. Correct.
+- `creelfake.Bridge.RelayPostReady`, `Refuse` and `SetRelayLive`: with nothing set, it answers live. The shared `refused` map has no cross-effect, because no existing test that calls `Refuse` posts to `ly:SLACK` (verbs_test.go:448 posts to machine addresses, machinemail_test.go:417 uses `Reply`). Correct.
 
 **Findings**
 
-1. **MEDIUM, design.** `internal/creelengine/verbs.go:350` (`Reply`). A reply to the operator's Slack mail skips the relay check entirely.
-   - `post --reply &lt;id&gt;` to a message from `ly:SLACK` stores the reply through `appendPostedLocked` (verbs.go:399) with no `RelayPostReady` call, no `receiver_live` and no warning.
-   - A reply from an orch whose button is off, or sent while the relay is down, still answers a silent ok. The board entry asks that any post to SLACK say so in that state.
-   - Evidence: verbs.go:392-406; the `VerbReply` dispatch in server.go never sees `slackRelayCheck`.
+1. **LOW**, `design`, `internal/creelcli/slackbridge.go:96-125` (`RelayPostReady` error paths). A failed read of the geometry, beam listing, forwarding file or relay lock now refuses the whole post to SLACK, with nothing stored and no `way forward:` clause. Before the diff these posts were stored and later relayed, so a transient read failure now loses mail the relay could still post. The board entry asks the post to report the relay state, not to fail closed on an unreadable state. Evidence: slackbridge.go:97-99, 109-111, 117-120 and 125, and verbs.go:230-233, where the error propagates and `storePost` never runs.
 
-2. **MEDIUM, design.** `internal/creelcli/slackbridge.go` (`RelayPostReady`). A failure to read the bridge's files refuses a post that would otherwise be stored, and the refusal names no way forward.
-   - An error from `b.geometry()`, from `b.beams()` inside `hasButton` for a beam orch, from `ForwardingOn` or from `RelayLive` returns as `err`. `slackRelayCheck` (verbs.go:229-231) then fails the whole post, and nothing is stored.
-   - Before this diff the post was stored. The relay itself tolerates an unreadable beam listing: it posts to an open channel (outbound.go, `channelFor` doc).
-   - A `RelayLive` error only means liveness is unknown, which should leave `receiver_live` absent, not refuse the post.
+2. **LOW**, `design`, `internal/creelengine/verbs.go:243` (`relayDownWarning`). The warning says the message "waits in its mail until the relay starts". The relay counts mail older than `staleMailAge` (24h) as stale and never posts it, so a relay started after a day drops the post the warning promised would wait. Evidence: verbs.go:243, outbound.go:30 (`staleMailAge = 24 * time.Hour`), and the stale branch in the outbound loop (`record.Stale++`, which never posts).
 
-3. **NIT, design.** `internal/creelengine/verbs.go:226-229` (`slackRelayCheck`). The `FormatProgram` error is swallowed with `err != nil` folded into `return nil, nil`.
-   - It is unreachable for a valid store shortname, and an invalid one could never match the relay name anyway, so it skips no check.
+3. **LOW**, `design`, `internal/creelcli/slackbridge.go:109-116` (`RelayPostReady` button rule). The bridge refuses an orch that is neither the hub's nor a listed beam's, and claims "the Slack relay drops its mail". The relay itself drops only on `outboundRoute` failure or a button that is off. For an orch whose forwarding is on but whose slug no beam lists, `channelFor` posts to the prime's channel instead of dropping. If such an orch can have its forwarding on, the refusal is wrong. Evidence: outbound.go `!sortedContains(forwarding, orch)` as the only button drop, and `channelFor`'s fallback "A beam the hub's beam listing does not name posts to the prime's channel".
+
+Outside this lens, for the handler: the change description says the slack turn hook keeps its behaviour as a program sender. The hook actually posts as the orch strand (slackcli/hook.go:177-196, via `client.Post`), so it now goes through the bridge check.
 
 Tool calls:
-1. `slackcli/toggle.go` button rule, the `Reply` header and `checkReceiverLocked`: my context lacked whether a pair's orch can have a button, whether `Reply` goes through `post`, and how a receiver name is matched.
-2. `verbs.go:370-420` (the `Reply` body) and `pool.go` `checkReceiverLocked`: needed to confirm that the reply path appends with no relay check, and that receivers match exactly.
+1. Read `staleMailAge`, `isOrchName`, the `ExternalSender` kind and `checkReceiverLocked`. My context had the call sites but not these definitions, which I needed to run the stale-mail, EXTERNAL and receiver-spelling cases.
