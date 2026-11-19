@@ -1,6 +1,6 @@
 # gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check
 
-`gatefix-darn-missing-include` · Task · bug, loom, stencil · draft
+`gatefix-darn-missing-include` · Task · bug, loom, stencil
 
 Imported from [issue #149](https://github.com/Knatte18/loomyard/issues/149).
 
