@@ -16,6 +16,12 @@ The session rules already refuse a removal by a computed path and writes to the 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): Shell keyword positions widen top-level rows too
+
+Decision: Accepted: the shell keywords do, then, else, if, elif, while and until open a command position at the top level as well as inside a shell -c script, so rows such as rm_after_do and sed_in_place_after_do apply in both.
+
+Rationale: A removal by a computed path inside a top-level loop or if stalls a run on the same dialog as one inside shell -c; one rule for both keeps the guard consistent, and a keyword only marks a command position, so it adds no refusal for a command the guard already allows.
+
 ## Constraints
 
 ## Auto-mode assumptions
