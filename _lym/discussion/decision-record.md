@@ -26,4 +26,18 @@ Rationale: Bug fixes run as darn by default on this hub; tapestry gates per Webs
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - base-run-keeps-non-go-inputs (class design, severity MEDIUM, open in rounds 1)
+  - entry-labels-has-no-behaviour-test (class design, severity MEDIUM, open in rounds 1)
+  - gate-covers-only-darn-unrecorded-narrowing (class decision, severity MEDIUM, open in rounds 1)
+  - judge-red-first-drops-named-failure-in-mixed-report (class design, severity MEDIUM, open in rounds 1)
+  - merge-danger-blast-radius-too-narrow (class consistency, severity MEDIUM, open in rounds 1)
+  - no-test-seam-and-bug-label-repeated-literals (class design, severity BLOCKING, open in rounds 1)
+  - non-go-hub-red-first-exits-zero (class design, severity BLOCKING, open in rounds 1)
+  - rubric-missing-trailer-clause-over-reaches (class consistency, severity MEDIUM, open in rounds 1)
+  - verify-site-tripwire-and-docs-miss-new-site (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
