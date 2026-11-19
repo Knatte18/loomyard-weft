@@ -728,6 +728,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-ac7bf0cf9ac21fa91.jsonl"
       ]
     },
+    "17": {
+      "slug": "teardown-sandbox-clear",
+      "cards": [
+        "17-teardown-sandbox-clear",
+        "18-treadle-callers",
+        "19-treadle-delete"
+      ],
+      "cardHashes": {
+        "17-teardown-sandbox-clear": "e4d20226f8e9e82ce2f3b9acf13a4258844c2bf6d41d96b00c645fc9ccab970b",
+        "18-treadle-callers": "416b9d5a73d71c169eb8a6cb1913773c24ea6ec77bf7a71060fdecce6b431c7a",
+        "19-treadle-delete": "fd3fdb91a7abea19a4927facbbecc62a83ef6eaf55edf35dff6cff8b16a02df2"
+      },
+      "startSha": "8beee889e2e6260fe32491bea32cc656e3e93de9",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T16:12:49Z",
+      "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "6": {
       "slug": "live-gate",
       "cards": [
@@ -829,7 +849,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
