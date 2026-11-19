@@ -1,6 +1,6 @@
 # Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings
 
-`single-repo-code-records-removal` · Task · enhancement, fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern · running · Drift-Verify
+`single-repo-code-records-removal` · Task · enhancement, fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern · running · Code-Bouncer
 
 Decision record: [Sketch](decision-single-repo-code-records-removal.md)
 
