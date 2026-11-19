@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | PR-Review | neve | 2h<br>47m | landing, stencil, burler, heddle, docs |
+| T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light | landing · Finalize | neve | 2h<br>47m | landing, stencil, burler, heddle, docs |
 | T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | Webster | neve | 5h<br>4h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Ready (0)
