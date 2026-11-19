@@ -1,6 +1,6 @@
 {
   "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
-  "planFingerprint": "b2a013e5c3dd58595588514caa6768333b8e77f573256ac860555a070e28e800",
+  "planFingerprint": "0a7397edace1614504b4d5c529c3b89965a74d24503438c2c84d8ef8e8846272",
   "planFileHashes": {
     "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
     "01-lymcwd-one-repository.md": "4129e3dc033151515eab5f0cc8f4919bd4d80c02b7196f191ad67532210fabc0",
@@ -16,7 +16,7 @@
     "11-transition-seam-waits.md": "b768ee84b5b50e1be2eb1f4c80ea990c317479373eb552f7b578f4174793b19e",
     "12-one-branch-push-and-teardown.md": "e1d855a5f2dd26ba53c1f1adbb8c63833d5318e43ce3ef5c999c0cb085f560f2",
     "13-records-only-replay.md": "30fe292a5e0beed58448e458a84fa70988cb8fe91b9c67730c72ab242e76c420",
-    "14-prime-records-push-guard.md": "e29650ca074f9fc930618824eeb02335f910d12cf33a7f4102227ae5c5c26999",
+    "14-prime-records-push-guard.md": "2cb35bd7a3e2d7d3954a70e700e898e0b00d98daef4bb1fbf1809a70b896c4fe",
     "15-one-repository-docs.md": "f44d2f496adf29562d5e3421f68ce382d33ba30e7abeb43fbe0b51f8e12a3a63",
     "16-pattern-single-repo-hub.md": "6c0287ba7f9429d09be278cc6281c5baaa0a53a726f488b2b0f850b8050f9b83"
   },
@@ -680,15 +680,36 @@
         "14-prime-records-push-guard"
       ],
       "cardHashes": {
-        "14-prime-records-push-guard": "e29650ca074f9fc930618824eeb02335f910d12cf33a7f4102227ae5c5c26999"
+        "14-prime-records-push-guard": "2cb35bd7a3e2d7d3954a70e700e898e0b00d98daef4bb1fbf1809a70b896c4fe"
       },
       "startSha": "13cf59313ac3ca02ce61bb89e6393fdb0113b06f",
       "kind": "fork",
       "spawnedAt": "2026-11-19T09:17:08Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-prime-records-push-guard",
+        "status": "done",
+        "head_sha": "d20b6b802ce648ee2cb83514a21f14944d606a03",
+        "deviations": [
+          "internal/fabricengine/primepushguard.go",
+          "internal/fabricengine/primepushguard_integration_test.go",
+          "internal/fabricengine/pushclassified.go",
+          "internal/pairteardown/runread.go",
+          "internal/pairteardown/runread_test.go"
+        ]
+      },
+      "cardShas": [
+        "d20b6b802ce648ee2cb83514a21f14944d606a03"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl"
+      ]
     },
     "4": {
       "slug": "protected-push-class",
@@ -854,7 +875,7 @@
       ]
     }
   },
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
@@ -866,6 +887,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1e1417929878a4b7.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ada9c27193c418a30.jsonl"
   ]
 }

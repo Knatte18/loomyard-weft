@@ -1,11 +1,11 @@
 # Card 14 — prime-records-push-guard
 
 **Create:**
-- `plan:internal/fabricengine#PushFailureOperatorUnpushed` -> `const PushFailureOperatorUnpushed PushFailureClass = "operator_unpushed"`
-- `plan:internal/fabricengine#primePushOperatorCommits` -> `func primePushOperatorCommits(prime, branch string) ([]string, error)`
-- `plan:internal/fabricengine#primeRunsCarried` -> `func primeRunsCarried(prime, branch string) ([]string, error)`
-- `plan:internal/fabricengine#holdPrimePushForOperator` -> `func holdPrimePushForOperator(hubPath, prime string, now time.Time) error`
-- `plan:internal/fabricengine_test#TestPrimePushGuard` -> `func TestPrimePushGuard(t *testing.T)`
+- `internal/fabricengine#PushFailureOperatorUnpushed`
+- `internal/fabricengine#primePushOperatorCommits`
+- `internal/fabricengine#primeRunsCarried`
+- `internal/fabricengine#holdPrimePushForOperator`
+- `internal/fabricengine_test#TestPrimePushGuard`
 
 **Edit:**
 - `internal/fabricengine#PushPairAnchored`
