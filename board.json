@@ -428,7 +428,7 @@
       "isolated": false,
       "brief": "",
       "body": "## What was seen\n\n2026-11-19: `lym creel post ly:SLACK \"\u003ctext\u003e\"` answered `{\"ok\":true}` (message 2035) while the operator had disconnected Slack.\n`lym slack status` showed `relay_live: false`, `connected: false` and an empty `forwarding` list, so the post reached no channel, and the sender was not told.\nThe orch believed the result was on Slack.\n\n## Idea\n\nA post to SLACK while no relay runs, or while the sending orch has its slack button off, should say so:\nrefuse with the state and a way forward (`lym slack start`, or press the button), or answer ok with a `delivered: false` field and the reason.\nThe sender then reports the result in its pane instead.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-19T07:41:17Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
