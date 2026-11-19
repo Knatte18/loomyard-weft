@@ -42,7 +42,7 @@
 - `internal/fabricengine#Fabric.resetMergeSides`
 - `internal/fabricengine#RecordsPathsAt`
 - `internal/fabricengine#oneRepositoryAt`
-- `plan:internal/fabricengine#retryHeldIndexLock`
+- `internal/fabricengine#retryHeldIndexLock`
 - `plan:internal/fabricengine#Fabric.SetAfterMergeStartForTest`
 - `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#NewHub`

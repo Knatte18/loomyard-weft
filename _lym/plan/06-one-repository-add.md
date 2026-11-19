@@ -1,7 +1,7 @@
 # Card 6 — one-repository-add
 
 **Create:**
-- `plan:internal/fabricengine_test#TestAdd_OneRepository` -> `func TestAdd_OneRepository(t *testing.T)`
+- `internal/fabricengine_test#TestAdd_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#Topology.Add`

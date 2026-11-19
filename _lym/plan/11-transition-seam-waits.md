@@ -22,7 +22,7 @@
 - `internal/lymcwd#OneRepository`
 - `plan:internal/fabricengine#MergeStateOperation`
 - `internal/fabricengine#IsPushProtected`
-- `plan:internal/fabricengine#IsPrimeBranchRefusal`
+- `internal/fabricengine#IsPrimeBranchRefusal`
 - `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#AddPairWith`
 - `internal/statuscommit#TestNew_MergeActiveSkips`

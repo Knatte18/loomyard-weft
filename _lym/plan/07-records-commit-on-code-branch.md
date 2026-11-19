@@ -1,13 +1,13 @@
 # Card 7 — records-commit-on-code-branch
 
 **Create:**
-- `plan:internal/fabricengine#indexLockRetryBound` -> `const indexLockRetryBound = 30 * time.Second`
-- `plan:internal/fabricengine#retryHeldIndexLock` -> `func retryHeldIndexLock(bound time.Duration, sleep func(time.Duration), commit func() error) error`
-- `plan:internal/fabricengine#ErrPrimeBranch` -> `type ErrPrimeBranch struct`
-- `plan:internal/fabricengine#IsPrimeBranchRefusal` -> `func IsPrimeBranchRefusal(err error) bool`
-- `plan:internal/fabricengine#refuseOffPrimeBranch` -> `func refuseOffPrimeBranch(worktree string) error`
-- `plan:internal/fabricengine#TestRetryHeldIndexLock` -> `func TestRetryHeldIndexLock(t *testing.T)`
-- `plan:internal/fabricengine_test#TestRecordsCommit_OneRepository` -> `func TestRecordsCommit_OneRepository(t *testing.T)`
+- `internal/fabricengine#indexLockRetryBound`
+- `internal/fabricengine#retryHeldIndexLock`
+- `internal/fabricengine#ErrPrimeBranch`
+- `internal/fabricengine#IsPrimeBranchRefusal`
+- `internal/fabricengine#refuseOffPrimeBranch`
+- `internal/fabricengine#TestRetryHeldIndexLock`
+- `internal/fabricengine_test#TestRecordsCommit_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#commitRecordsPathsHeld`
