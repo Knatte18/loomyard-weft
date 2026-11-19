@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 09:53 UTC; every age below is as of then.
+Rendered 2026-11-19 09:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Build the mutation gate report step with the trial bound changes**<br>• The mutation trial says build it: 26 of 44 survivors are real missing checks; first spread mutants over functions, skip log and other-OS lines, print one summary line<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-report-step`](design-mutation-report-step.md) | darn · solid | Darn-Write | neve | 49m<br>27m | gate, testmap |
-| T4 | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | darn · light | Darn-Write | neve | 14h<br>27m | gate, tools |
-| T8 | **A creel post to SLACK reports ok while Slack is disconnected**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | darn · light | Code-Bouncer | neve | 2h<br>27m | creel, slack |
+| T2 | **Build the mutation gate report step with the trial bound changes**<br>• The mutation trial says build it: 26 of 44 survivors are real missing checks; first spread mutants over functions, skip log and other-OS lines, print one summary line<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-report-step`](design-mutation-report-step.md) | darn · solid | Darn-Write | neve | 50m<br>28m | gate, testmap |
+| T4 | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | darn · light | Darn-Write | neve | 14h<br>28m | gate, tools |
+| T8 | **A creel post to SLACK reports ok while Slack is disconnected**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | darn · light | Code-Burler-Review | neve | 2h<br>28m | creel, slack |
 
 ### Ready (0)
 
@@ -34,7 +34,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | T5 | 13h<br>27m | landing, darn |
+| T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | T5 | 13h<br>28m | landing, darn |
 
 ### Draft (2)
 
@@ -62,14 +62,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check** | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | 25m<br>25m | loom, stencil |
 | B2 |  | **Loop ends without envelope or recorded exit after repeated 'session state disagrees' warnings** | [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md) | 25m<br>25m | shuttle, shed |
-| B3 |  | **Burler review round fails hard on invalid review-file YAML frontmatter** | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | 25m<br>24m | burler, shed |
+| B3 |  | **Burler review round fails hard on invalid review-file YAML frontmatter** | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | 25m<br>25m | burler, shed |
 | B4 |  | **Intake import drops the issue comments**<br>• lym board intake import keeps only the issue body; comments with further findings are lost unless fetched by hand | [`intake-drops-issue-comments`](design-intake-drops-issue-comments.md) | 24m<br>24m | board |
 
 ### Features (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Settings to route code review and drift judge rulings to the run's parent** | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | 24m<br>24m | loom, drift, burler |
+| F1 |  | **Settings to route code review and drift judge rulings to the run's parent** | [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md) | 25m<br>25m | loom, drift, burler |
 | F2 |  | **Send a run agent questions for the operator to the run parent instead**<br>• A setting that routes every question a run agent would ask the operator in its pane to the parent by creel, with the answer delivered back | [`agent-questions-to-parent`](design-agent-questions-to-parent.md) | 24m<br>24m | loom, shuttle |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 3d<br>1d | batten, loom, board |
 | F4 |  | **Mail the run parent when the run reaches a named row**<br>• A subscription verb or run_settings key so lym mails the parent when a run reaches a named producer, in place of polling | [`parent-notify-on-row`](design-parent-notify-on-row.md) | 24m<br>24m | loom, shed |
