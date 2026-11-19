@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-19 19:09 UTC; every age below is as of then.
+Rendered 2026-11-19 19:13 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -30,7 +30,7 @@ Not released; nothing starts it until its status is cleared.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid |  | 1d<br>7h | fabric, loom, board |
-| T11 | `draft` **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T1 | 22h<br>8h | docs |
+| T11 | `draft` **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T1 | 23h<br>8h | docs |
 
 ### Notes (0)
 
@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>5m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4w<br>9m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -111,7 +111,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid | Code-Burler-Fix | neve | 39m<br>39m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
+| T8 | **Remove f06acf39's records-on-code-branch layout and revert its two-repository widenings**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`single-repo-code-records-removal`](design-single-repo-code-records-removal.md)<br>[Sketch](decision-single-repo-code-records-removal.md) | darn · solid | Code-Burler-Fix | neve | 43m<br>43m | fabric, cwd, cli, batten, loom, landing, git, board, docs, pattern |
 
 #### Ready (0)
 
@@ -125,7 +125,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | T8 | 39m<br>39m | fabric, git, docs, pattern |
+| T9 | **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | T8 | 43m<br>43m | fabric, git, docs, pattern |
 
 ### Notes (0)
 
@@ -134,21 +134,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (6)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (5)</strong></summary>
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (0)
 
 Concrete and claimable; only a task can run.
-
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | landing · Finalize | neve | 5h<br>4h | gate, testmap |
 
 #### Ready (0)
 
@@ -171,7 +163,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | 41m<br>41m | shed |
+| B1 |  | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | 46m<br>46m | shed |
 
 #### Features (2)
 
@@ -179,5 +171,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 4d<br>1d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 2w<br>2w | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T4 | **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 5h<br>4h | gate, testmap |
 
 </details>
