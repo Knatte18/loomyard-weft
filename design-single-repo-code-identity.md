@@ -1,6 +1,6 @@
 # Records-free code identity and pull request views for one-repository hubs
 
-`single-repo-code-identity` · Task · feature, fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter
+`single-repo-code-identity` · Task · feature, fabric, cwd, gate, git, weaver, drift, webster, lint, loom, landing, pawl, shed, arbiter · draft
 
 Decision record: [Sketch](decision-single-repo-code-identity.md)
 
