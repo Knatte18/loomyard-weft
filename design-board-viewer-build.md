@@ -1,6 +1,6 @@
 # Board viewer rendered beside the README, opened by lym board open and a VS Code key
 
-`board-viewer-build` · Task · feature, board, ide, fabric · starting · Seed-Child
+`board-viewer-build` · Task · feature, board, ide, fabric · starting · Open-Window
 
 Decision record: [Sketch](decision-board-viewer-build.md)
 
