@@ -1,0 +1,628 @@
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 36855b47..9d3b5b85 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -41,6 +41,10 @@
+ // CreationTime is the exception: it reads a process's creation time by pid on Windows, where StartTime is unreadable.
+ // Elsewhere it is always the zero time and false.
+ //
++// BootID reads the id the kernel drew when the machine last booted, from /proc/sys/kernel/random/boot_id on Linux.
++// It changes at a boot and not with the clock, so two reads equal tell that no boot lay between them.
++// It reports false on Windows.
++//
+ // ReadTaskLimit reads `pids.current` and `pids.max` over the calling process's cgroup and its ancestors.
+ // It returns the cgroup v2 task limit closest to being reached.
+ // A caller uses it to hold back new work before every fork fails.
+diff --git a/internal/proc/proc_linux.go b/internal/proc/proc_linux.go
+index 1cc3af30..a95411d6 100644
+--- a/internal/proc/proc_linux.go
++++ b/internal/proc/proc_linux.go
+@@ -48,6 +48,21 @@ func StartTime(pid int) (string, bool) {
+ 	return fields[19], true
+ }
+ 
++// bootIDPath is the kernel's file holding the random id it draws at each boot.
++const bootIDPath = "/proc/sys/kernel/random/boot_id"
++
++// BootID returns the id the kernel drew when the machine last booted, which changes at a boot and at no other time.
++// A clock step does not move it.
++// It reports false when the file cannot be read or is empty.
++func BootID() (string, bool) {
++	data, err := os.ReadFile(bootIDPath)
++	if err != nil {
++		return "", false
++	}
++	id := strings.TrimSpace(string(data))
++	return id, id != ""
++}
++
+ // ParentPID returns the parent process id of the process identified by pid, field 4 of /proc/<pid>/stat.
+ // It reports false for a pid of 0 or below, a process that does not exist and a stat that cannot be parsed.
+ func ParentPID(pid int) (int, bool) {
+diff --git a/internal/proc/proc_linux_test.go b/internal/proc/proc_linux_test.go
+index 4c731868..9c7754cb 100644
+--- a/internal/proc/proc_linux_test.go
++++ b/internal/proc/proc_linux_test.go
+@@ -38,6 +38,20 @@ func TestStartTime(t *testing.T) {
+ 	}
+ }
+ 
++// TestBootID pins that the boot id is readable, non-empty and the same on every read of one boot.
++func TestBootID(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	first, ok := BootID()
++	if !ok || first == "" {
++		t.Fatalf("BootID() = %q, %v; want a non-empty id and true", first, ok)
++	}
++	if second, ok := BootID(); !ok || second != first {
++		t.Errorf("BootID() again = %q, %v; want %q, true", second, ok, first)
++	}
++}
++
+ func TestIsRunning(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/proc/proc_windows.go b/internal/proc/proc_windows.go
+index c967706b..e9556ee9 100644
+--- a/internal/proc/proc_windows.go
++++ b/internal/proc/proc_windows.go
+@@ -76,6 +76,11 @@ func CreationTime(pid int) (time.Time, bool) {
+ 	return time.Unix(0, creation.Nanoseconds()), true
+ }
+ 
++// BootID reports false on Windows, where no id that changes only at a boot is readable.
++func BootID() (string, bool) {
++	return "", false
++}
++
+ // ParentPID reports no parent on Windows, where identity is resolved from process ancestry on Linux only.
+ func ParentPID(pid int) (int, bool) {
+ 	return 0, false
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 2601a42c..11815724 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -152,7 +152,7 @@
+ // Its waiter sees its spawn exited and the lock held, and it adopts the holder's loop id from the pid file.
+ //
+ // The loop lock is the liveness record, held for the loop's life, and the pid file is the loop's record for the kill.
+-// The pid file holds the loop id and the loop's own pid and start time.
++// The pid file holds the loop id, the loop's own pid and process start time, and the id of the boot the loop started in.
+ // It also holds the in-flight child's record:
+ // its process tree, its trace id, and the status file's current_producer and history_length when that child started.
+ // The loop writes the pid file after taking the lock and removes it only after its envelope is on disk.
+@@ -221,6 +221,9 @@
+ // Such a signal comes from whatever ends the run's processes, as a cancel, a teardown or a reap does.
+ // Once the loop has seen the signal it writes no failed stop, runs no interrupt hook and writes no envelope;
+ // the dead-loop stop below reports it.
++// A loop that ends before its first step without an envelope marks the reason in the loop log.
++// Such an end comes from a refusal, a lock another loop holds, or a directory or pid file the loop cannot write.
++// A loop that cannot write its envelope marks the reason too.
+ // A mark opens its own line in the loop log, even after a last line of output that has no newline.
+ // The waiter that spawns a loop marks in the loop log that the loop is starting, before the keeper starts.
+ // It also marks the keeper's pid and exit status once it reaps the keeper.
+@@ -268,8 +271,15 @@
+ // The dead-loop stop therefore first waits a bounded time for it.
+ // First come the marks of the loop, its keeper and the waiter's spawn.
+ // Such a mark records a signal the loop received or the loop's exit status.
+-// With no marks the clause reads "loop exit: not recorded" and says why:
++// A mark about the steps the loop reconciled at its start is no exit record.
++// With no exit mark the clause reads "loop exit: not recorded" and says why:
+ // the log holds no starting mark for the loop, or no process marked the exit.
++// For an unmarked exit it sets the boot id the pid file records against the machine's boot id now.
++// The current boot id is read through Spec.Loop.BootID.
++// A different id names a stop of the machine as likely.
++// The same id names a kill of the loop and its keeper that no process can catch as likely.
++// An unknown id names both.
++// Reconciliation marks follow an unmarked exit's clause as "loop marks".
+ // Then comes an excerpt of the loop's own output, a Go crash's first lines or the last lines;
+ // a finished child's output is left out of it.
+ // A log with no starting mark for the loop gives the marks clause alone.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 91c05f12..d6bcd996 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -122,6 +122,11 @@ type LoopSpec struct {
+ 	Signals func() (<-chan os.Signal, func())
+ 	// Raise ends the loop process by sig once the loop has recorded it in the loop log; nil restores sig's default action and sends it to the process again, and exits with status 128 plus sig's number if the process outlives a second.
+ 	Raise func(sig os.Signal)
++	// LockGrace is how long the loop waits for the loop lock before it ends without an envelope.
++	// Zero selects the default of a few seconds.
++	LockGrace time.Duration
++	// BootID reports the id of the machine's current boot, and false when it cannot tell; nil selects proc.BootID.
++	BootID func() (string, bool)
+ }
+ 
+ // ChildRequest is everything a ChildRunner needs to start one child step.
+@@ -198,6 +203,8 @@ func (r childResult) ok() bool {
+ // LoopSpec.OnStart runs once in the loop after the start is logged and before the first step.
+ // LoopSpec.OnExit runs once at every stop kind but a terminating signal's while the loop steps, after the stop is final and before the envelope is written.
+ // A loop that cannot take the lock within the grace period, or that finds the teardown's mark, an undelivered envelope or a dead loop's pid file, returns 1 at once, before any step and without an envelope.
++// It marks the reason in the loop log, as it marks a failed write of its envelope.
++// The pid file records the boot the loop started in, by LoopSpec.BootID.
+ // A terminating signal is recorded in the loop log and then ends the process without an envelope, for the waiter's dead-loop stop to report;
+ // the loop writes no failed stop and runs no interrupt hook once it has seen the signal.
+ // A panic outside the stepping, in a hook or in the code after it, is not recovered and also ends the loop without an envelope.
+@@ -206,19 +213,24 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	stopRecordingSignals, endedBySignal := recordTerminatingSignals(loop, loopID)
+ 	defer stopRecordingSignals()
+ 	if err := os.MkdirAll(filepath.Dir(loop.LockPath), 0o755); err != nil {
+-		logger.Warn("shed: loop could not create its directory", "loop_id", loopID, "error", err.Error())
+-		return 1
++		return endWithoutEnvelope(loop, loopID, "could not create its directory: "+err.Error())
++	}
++	lockGrace := loop.LockGrace
++	if lockGrace == 0 {
++		lockGrace = loopLockGrace
+ 	}
+-	held, locked, err := lock.AcquireWriteLockWithin(loop.LockPath, loopLockGrace)
++	held, locked, err := lock.AcquireWriteLockWithin(loop.LockPath, lockGrace)
+ 	if err != nil || !locked {
+-		logger.Warn("shed: loop could not take the loop lock, so another loop owns the run", "loop_id", loopID, "error", errorText(err))
+-		return 1
++		reason := "could not take the loop lock, so another loop owns the run"
++		if err != nil {
++			reason += ": " + err.Error()
++		}
++		return endWithoutEnvelope(loop, loopID, reason)
+ 	}
+ 	defer held.Release()
+ 
+ 	if refusal := loopStartRefusal(loop); refusal != "" {
+-		logger.Warn("shed: loop refuses to step", "loop_id", loopID, "reason", refusal)
+-		return 1
++		return endWithoutEnvelope(loop, loopID, "refuses to step: "+refusal)
+ 	}
+ 	if loop.JobName != "" {
+ 		release, err := proc.HoldNamedJob(loop.JobName)
+@@ -230,10 +242,10 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	}
+ 
+ 	first, _ := readStatusFile(spec)
+-	pid := LoopPIDRecord{LoopID: loopID, Loop: proc.SelfRecord(), CurrentProducer: first.CurrentProducer, HistoryLength: len(first.History)}
++	bootID, _ := currentBootID(loop)
++	pid := LoopPIDRecord{LoopID: loopID, Loop: proc.SelfRecord(), BootID: bootID, CurrentProducer: first.CurrentProducer, HistoryLength: len(first.History)}
+ 	if err := WriteLoopPIDRecord(loop.PIDPath, pid); err != nil {
+-		logger.Warn("shed: loop could not write its pid file", "loop_id", loopID, "error", err.Error())
+-		return 1
++		return endWithoutEnvelope(loop, loopID, "could not write its pid file: "+err.Error())
+ 	}
+ 	logger.Info("shed: loop started", "loop_id", loopID, "pid", pid.Loop.PID)
+ 	if loop.OnStart != nil {
+@@ -242,7 +254,7 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	obj := loopObject{FirstProducer: first.CurrentProducer}
+ 	if loop.ReconcileOrphanedSteps != nil {
+ 		if note := loop.ReconcileOrphanedSteps(); note != "" {
+-			appendLoopLogMark(loop.LogPath, loopLogMark(loopID, "reconciled the steps whose process is gone: "+note))
++			appendLoopLogMark(loop.LogPath, loopLogMark(loopID, reconciledStepsMarkText+note))
+ 		}
+ 	}
+ 	run := stepUntilStop(ctx, spec, loopID, argv, &pid, first, &obj)
+@@ -347,6 +359,7 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 	}
+ 	if err := writeLoopEnvelopeFile(loop.EnvelopePath, loopID, buf.Bytes()); err != nil {
+ 		logger.Warn("shed: loop could not write its envelope", "path", loop.EnvelopePath, "error", err.Error())
++		appendLoopLogMark(loop.LogPath, loopLogMark(loopID, "could not write its envelope: "+err.Error()))
+ 	} else if err := os.Remove(loop.PIDPath); err != nil {
+ 		logger.Warn("shed: loop could not remove its pid file", "path", loop.PIDPath, "error", err.Error())
+ 	}
+@@ -527,6 +540,15 @@ func raiseSignal(sig os.Signal) {
+ 	os.Exit(status)
+ }
+ 
++// endWithoutEnvelope logs reason, why loop loopID ends before its first step without an envelope.
++// It also marks the reason in the loop log, where a waiter's stop reads it.
++// It returns the loop's exit code, 1.
++func endWithoutEnvelope(loop LoopSpec, loopID, reason string) int {
++	logger.Warn("shed: loop ends without an envelope", "loop_id", loopID, "reason", reason)
++	appendLoopLogMark(loop.LogPath, loopLogMark(loopID, "ends without an envelope: "+reason))
++	return 1
++}
++
+ // loopStartRefusal names the reason a loop that holds the loop lock must not step, or the empty string when it may.
+ // The teardown's mark bars every loop, a pid file with no envelope is a dead loop's record the next waiter reports, and an undelivered envelope is a finished loop's result a waiter has not printed.
+ func loopStartRefusal(loop LoopSpec) string {
+diff --git a/internal/shedverbs/loop_test.go b/internal/shedverbs/loop_test.go
+index 1d08d63a..0253d2cc 100644
+--- a/internal/shedverbs/loop_test.go
++++ b/internal/shedverbs/loop_test.go
+@@ -1566,6 +1566,68 @@ func TestLoop_TerminatingSignalIsMarkedInTheLoopLog(t *testing.T) {
+ 	}
+ }
+ 
++// TestLoop_EndWithoutAnEnvelopeIsMarkedInTheLoopLog pins the loop-log mark of a loop's own end.
++// The loop ends without an envelope for a reason of its own.
++// It also pins that the loop returns its exit code, and that the pid file a loop leaves records the boot it started in.
++func TestLoop_EndWithoutAnEnvelopeIsMarkedInTheLoopLog(t *testing.T) {
++	tiergate.Require(t, 0)
++	const loopBootID = "boot-a"
++	tests := []struct {
++		name string
++		// arrange readies the fixture so the loop ends without an envelope.
++		arrange  func(t *testing.T, fx *loopFixture)
++		wantMark string
++		wantCode int
++		// wantBootID is whether the pid file left behind is the loop's own, recording loopBootID.
++		wantBootID bool
++	}{
++		{
++			name: "a dead loop's pid file refuses the step",
++			arrange: func(t *testing.T, fx *loopFixture) {
++				if err := WriteLoopPIDRecord(fx.spec.Loop.PIDPath, LoopPIDRecord{LoopID: "dead-0"}); err != nil {
++					t.Fatalf("write the dead loop's pid file: %v", err)
++				}
++			},
++			wantMark: "ends without an envelope: refuses to step: the pid file records a loop that ended without an envelope",
++			wantCode: 1,
++		},
++		{
++			name: "an envelope path the loop cannot write",
++			arrange: func(t *testing.T, fx *loopFixture) {
++				if err := os.MkdirAll(fx.spec.Loop.EnvelopePath, 0o755); err != nil {
++					t.Fatalf("block the envelope path with a directory: %v", err)
++				}
++			},
++			wantMark:   "could not write its envelope: ",
++			wantCode:   0,
++			wantBootID: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			fx := newLoopFixture(t, halting(shedengine.StateDone, "", 1))
++			fx.spec.Loop.BootID = func() (string, bool) { return loopBootID, true }
++			tt.arrange(t, fx)
++
++			var out bytes.Buffer
++			if got := clihelp.Execute(stepCmd(stepTexts(), fx.spec), &out, detachedArgs(detachedLoopID)); got != tt.wantCode {
++				t.Errorf("step exit code = %d; want %d", got, tt.wantCode)
++			}
++
++			log, err := os.ReadFile(fx.spec.Loop.LogPath)
++			if want := loopLogMarkPrefix + detachedLoopID + " " + tt.wantMark; err != nil || !strings.Contains(string(log), want) {
++				t.Errorf("loop log = %q, %v; want the mark %q", log, err, want)
++			}
++			if !tt.wantBootID {
++				return
++			}
++			if rec, found, err := ReadLoopPIDRecord(fx.spec.Loop.PIDPath); err != nil || !found || rec.BootID != loopBootID {
++				t.Errorf("pid record = %+v, found %v, %v; want the loop's record with boot id %q", rec, found, err, loopBootID)
++			}
++		})
++	}
++}
++
+ func TestLoop_ChildStdoutIsMarkedInTheLoopLog(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const ownOutput = "the loop's own output"
+diff --git a/internal/shedverbs/loop_unix_integration_test.go b/internal/shedverbs/loop_unix_integration_test.go
+index b037a85b..f1bd4a8f 100644
+--- a/internal/shedverbs/loop_unix_integration_test.go
++++ b/internal/shedverbs/loop_unix_integration_test.go
+@@ -133,7 +133,7 @@ func TestLoopIntegration_PanicKillsTheInFlightStepTree(t *testing.T) {
+ 	fx.spec.Loop.Runner = func(context.Context, ChildRequest) (Child, error) {
+ 		return groupChild{record: proc.TreeRecord{PID: pid, PGID: pid, StartTime: startTime}}, nil
+ 	}
+-	// The loop reads its clock right after it records the child, so this panics with the child in flight.
++	// The loop reads its clock right after it records the child, so the read panics with the child in flight.
+ 	fx.spec.Loop.Now = func() time.Time { panic("boom") }
+ 
+ 	env, _ := fx.execute()
+@@ -200,7 +200,7 @@ func TestLoopIntegration_KeeperWaitsThroughATerminatingSignal(t *testing.T) {
+ 	}
+ 
+ 	want := regexp.MustCompile(`^; loop exit: lym shed: loop loop-x process [0-9]+ exited: exit status 3$`)
+-	if got := loopExitEvidence(spec.Loop.LogPath, "loop-x"); !want.MatchString(got) {
++	if got := loopExitEvidence(spec.Loop, "loop-x", ""); !want.MatchString(got) {
+ 		t.Errorf("loopExitEvidence = %q; want it to match %s", got, want)
+ 	}
+ }
+@@ -290,7 +290,7 @@ func TestLoopIntegration_ProcessExitsAreMarked(t *testing.T) {
+ 
+ 			tt.run(t, spec, tt.script, tt.wantCode, tt.wantStarts)
+ 
+-			if got := loopExitEvidence(spec.Loop.LogPath, "loop-x"); !tt.want.MatchString(got) {
++			if got := loopExitEvidence(spec.Loop, "loop-x", ""); !tt.want.MatchString(got) {
+ 				t.Errorf("loopExitEvidence = %q; want it to match %s", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/shedverbs/looppid.go b/internal/shedverbs/looppid.go
+index 62ce2fb0..2d60e74c 100644
+--- a/internal/shedverbs/looppid.go
++++ b/internal/shedverbs/looppid.go
+@@ -24,6 +24,9 @@ type LoopPIDRecord struct {
+ 	LoopID string `json:"loop_id"`
+ 	// Loop is the loop process's own pid and start time.
+ 	Loop proc.TreeRecord `json:"loop"`
++	// BootID is the id of the boot the loop started in; empty when unknown.
++	// A stop of the loop that no process marked sets it against the machine's boot id then.
++	BootID string `json:"boot_id,omitempty"`
+ 	// Child is the in-flight step child's process tree.
+ 	Child proc.TreeRecord `json:"child"`
+ 	// TraceID is the trace id the in-flight step child runs under; empty before the first child.
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index cba1641e..3b40809a 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -192,30 +192,53 @@ const loopLogMarkPrefix = "lym shed: loop "
+ // loopStartingMark is the text of the mark a spawn writes before it starts a loop's process; a loop's lines in the loop log follow its last such mark.
+ const loopStartingMark = "starting"
+ 
++// reconciledStepsMarkText opens the text of the mark a loop writes about the steps it reconciled at its start.
++// The mark is information about the loop's start and records no exit.
++const reconciledStepsMarkText = "reconciled the steps whose process is gone: "
++
+ // loopLogMark is the loop log line that records text about the process of loop loopID.
+ func loopLogMark(loopID, text string) string {
+ 	return loopLogMarkPrefix + loopID + " " + text + "\n"
+ }
+ 
+ // loopExitEvidence returns the clauses a gone loop's stop detail carries about how loop loopID ended.
+-// It reads the loop log at logPath after that loop's last starting mark.
++// It reads the loop log at loop.LogPath after that loop's last starting mark.
+ // The first clause lists the marks lym wrote about the loop's processes.
+-// Such marks include a terminating signal the loop received and the exit statuses of the loop and its keeper.
+-// With no mark it says the exit is not recorded and why:
++// Such marks include a terminating signal the loop received, the reason it ended without an envelope,
++// and the exit statuses of the loop and its keeper.
++// A mark about the steps the loop reconciled at its start is no exit record, so it does not count as one.
++// With no exit mark it says the exit is not recorded and why:
+ // the log holds no starting mark of the loop, or no process marked the exit.
++// An unmarked exit also names what ended the loop.
++// It judges by bootID, the id of the boot the loop started in, against the machine's boot id now.
++// bootID is empty when unknown.
++// It then lists the reconciliation marks as the loop's marks.
+ // When the loop has output of its own, a second clause carries an excerpt of it; a finished child's output is left out.
+ // The excerpt is a Go crash's first lines, or otherwise the last lines.
+ // A log with no starting mark for the loop yields the first clause alone, since its lines cannot be told from other loops' lines.
+-func loopExitEvidence(logPath, loopID string) string {
+-	marks, output, started := loopLogLinesOf(logPath, loopID)
++func loopExitEvidence(loop LoopSpec, loopID, bootID string) string {
++	marks, output, started := loopLogLinesOf(loop.LogPath, loopID)
++	reconciledPrefix := loopLogMarkPrefix + loopID + " " + reconciledStepsMarkText
++	var informational []string
++	exitRecorded := false
++	for _, mark := range marks {
++		if strings.HasPrefix(mark, reconciledPrefix) {
++			informational = append(informational, mark)
++		} else {
++			exitRecorded = true
++		}
++	}
+ 	var evidence string
+ 	switch {
+-	case len(marks) > 0:
++	case exitRecorded:
+ 		evidence = "; loop exit: " + strings.Join(marks, " | ")
+ 	case !started:
+ 		evidence = "; loop exit: not recorded, since the loop log holds no start mark of loop " + loopID
+ 	default:
+-		evidence = "; loop exit: not recorded, since no process marked the loop's exit, as after a kill of the loop and its keeper that no process can catch or a stop of the machine"
++		evidence = "; loop exit: not recorded, since no process marked the loop's exit" + unmarkedExitCause(loop, bootID)
++		if len(informational) > 0 {
++			evidence += "; loop marks: " + strings.Join(informational, " | ")
++		}
+ 	}
+ 	if excerpt := outputExcerpt(output); excerpt != "" {
+ 		evidence += "; loop log: " + excerpt
+@@ -223,6 +246,32 @@ func loopExitEvidence(logPath, loopID string) string {
+ 	return evidence
+ }
+ 
++// unmarkedExitCause returns the clause naming what ended a loop whose exit no process marked.
++// No process can mark a stop of the machine, nor a kill of both the loop and its keeper by a signal no process catches.
++// recordedBootID is the id of the boot the loop started in.
++// A machine whose boot id now differs from it has booted since, which names the stop.
++// One whose id equals it has not, which names the kill.
++// Either id unknown, the recorded one as the empty string, names both.
++// The causes are stated as likely, since a kill followed by a boot cannot be told from a boot that killed the loop.
++func unmarkedExitCause(loop LoopSpec, recordedBootID string) string {
++	if current, known := currentBootID(loop); known && recordedBootID != "" {
++		if current != recordedBootID {
++			return ", and the machine has booted since the loop started, so a stop of the machine likely ended it"
++		}
++		return ", and the machine has not booted since the loop started, so a kill of the loop and its keeper that no process can catch likely ended it, as by SIGKILL or the out-of-memory killer"
++	}
++	return ", as after a kill of the loop and its keeper that no process can catch or a stop of the machine"
++}
++
++// currentBootID returns the id of the machine's current boot through loop.BootID, or proc.BootID when that is nil.
++// It reports false when the id cannot be read.
++func currentBootID(loop LoopSpec) (string, bool) {
++	if loop.BootID == nil {
++		return proc.BootID()
++	}
++	return loop.BootID()
++}
++
+ // loopProcessExitRecorded reports whether the loop log at logPath holds the mark of the exit of loop loopID's process.
+ func loopProcessExitRecorded(logPath, loopID string) bool {
+ 	marks, _, _ := loopLogLinesOf(logPath, loopID)
+@@ -569,7 +618,7 @@ func deadLoopStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, out io.Wri
+ 			}
+ 		}
+ 		awaitLoopProcessExitMark(ctx, spec.Loop, rec.LoopID)
+-		detail += loopExitEvidence(spec.Loop.LogPath, rec.LoopID)
++		detail += loopExitEvidence(spec.Loop, rec.LoopID, rec.BootID)
+ 		if inFlight {
+ 			if _, stderrPath := recordedStopFiles(spec.Loop, rec); stderrPath != "" {
+ 				if excerpt := stderrExcerpt(stderrPath); excerpt != "" {
+@@ -606,7 +655,7 @@ func deadLoopStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, out io.Wri
+ // The waiter saw its own keeper exit, so the keeper's exit mark is already written and no wait for it is needed.
+ // It writes the run failed while the status file reads running, writes no loop envelope and leaves no pid file to retire.
+ func loopExitedEarlyStop(ctx context.Context, spec *Spec, loopID string, out io.Writer) int {
+-	detail := fmt.Sprintf("loop %s exited before it recorded itself; its output is in %s", loopID, spec.Loop.LogPath) + loopExitEvidence(spec.Loop.LogPath, loopID)
++	detail := fmt.Sprintf("loop %s exited before it recorded itself; its output is in %s", loopID, spec.Loop.LogPath) + loopExitEvidence(spec.Loop, loopID, "")
+ 	envelope, _ := loopExitStop(ctx, spec, LoopPIDRecord{LoopID: loopID}, detail)
+ 	_, _ = out.Write(envelope)
+ 	return 1
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index db80aa10..5496f1b1 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -541,8 +541,12 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 			// emptyProducer moves the status file to one whose current_producer is empty.
+ 			emptyProducer bool
+ 			// noChild records the child as exited, as the loop does once its child ends.
+-			noChild      bool
+-			wantProducer string
++			noChild bool
++			// recordedBootID is the boot id the pid file records, and currentBootID the machine's boot id now.
++			// Empty leaves either unknown.
++			recordedBootID string
++			currentBootID  string
++			wantProducer   string
+ 			// wantCause is what the cause carries after the loop log clause.
+ 			wantCause string
+ 			wantFile  func(w *waitWorld) string
+@@ -646,6 +650,45 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				wantCause:    "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit, as after a kill of the loop and its keeper that no process can catch or a stop of the machine",
+ 				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
+ 			},
++			{
++				name:           "UnmarkedExit_DifferentBootId_NamesAStopOfTheMachine",
++				loopLog:        "lym shed: loop dead-1 starting\n",
++				recordedBootID: "boot-a",
++				currentBootID:  "boot-b",
++				wantProducer:   "A",
++				wantCause: "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit" +
++					", and the machine has booted since the loop started, so a stop of the machine likely ended it",
++				wantFile: func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name:           "UnmarkedExit_SameBootId_NamesAKill",
++				loopLog:        "lym shed: loop dead-1 starting\n",
++				recordedBootID: "boot-a",
++				currentBootID:  "boot-a",
++				wantProducer:   "A",
++				wantCause: "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit" +
++					", and the machine has not booted since the loop started" +
++					", so a kill of the loop and its keeper that no process can catch likely ended it, as by SIGKILL or the out-of-memory killer",
++				wantFile: func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name:           "UnmarkedExit_RecordedBootIdCurrentUnknown_NamesBoth",
++				loopLog:        "lym shed: loop dead-1 starting\n",
++				recordedBootID: "boot-a",
++				wantProducer:   "A",
++				wantCause:      "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit, as after a kill of the loop and its keeper that no process can catch or a stop of the machine",
++				wantFile:       func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name: "ReconciliationMarkOnly_IsNoExitRecord",
++				loopLog: "lym shed: loop dead-1 starting\n" +
++					"lym shed: loop dead-1 reconciled the steps whose process is gone: stopped shuttle runs: a:1:plan\n",
++				wantProducer: "A",
++				wantCause: "; step A was in flight; loop exit: not recorded, since no process marked the loop's exit" +
++					", as after a kill of the loop and its keeper that no process can catch or a stop of the machine" +
++					"; loop marks: lym shed: loop dead-1 reconciled the steps whose process is gone: stopped shuttle runs: a:1:plan",
++				wantFile: func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
+ 			{
+ 				name:         "NoStartingMark_OnlyTheLoopExitClause",
+ 				loopLog:      "lym shed: loop old-1 starting\npanic: old crash\nlym shed: loop old-1 process 7 exited: exit status 2\n",
+@@ -671,7 +714,8 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 				if tt.noChild {
+ 					child = proc.TreeRecord{}
+ 				}
+-				w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: child, TraceID: tt.traceID, CurrentProducer: "A"})
++				w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: child, TraceID: tt.traceID, CurrentProducer: "A", BootID: tt.recordedBootID})
++				w.spec.Loop.BootID = func() (string, bool) { return tt.currentBootID, tt.currentBootID != "" }
+ 				var traceFiles []string
+ 				traceDir := t.TempDir()
+ 				for i, body := range tt.traceBodies {
+@@ -1047,6 +1091,27 @@ func TestUntilStop_LoserWaitsOnWinner(t *testing.T) {
+ 		w.assertNotFailed()
+ 	})
+ 
++	t.Run("a loop that cannot take the loop lock marks the reason in the loop log and steps nothing", func(t *testing.T) {
++		w := newWaitWorld(t, halting(shedengine.StateDone, "", 1))
++		holder, locked, err := lock.TryAcquireWriteLock(w.spec.Loop.LockPath)
++		if err != nil || !locked {
++			t.Fatalf("hold the loop lock = %v, locked %v; want held", err, locked)
++		}
++		t.Cleanup(func() { _ = holder.Release() })
++		w.spec.Loop.LockGrace = time.Millisecond
++
++		w.runDetached(detachedArgs("loser-1"))
++
++		log, err := os.ReadFile(w.spec.Loop.LogPath)
++		wantMark := loopLogMark("loser-1", "ends without an envelope: could not take the loop lock, so another loop owns the run")
++		if err != nil || string(log) != wantMark {
++			t.Errorf("loop log = %q, %v; want the loser's mark %q", log, err, wantMark)
++		}
++		if len(w.requests) != 0 {
++			t.Errorf("children started = %d; want none from a loop that never held the lock", len(w.requests))
++		}
++	})
++
+ 	t.Run("a waiter that polls before its loop takes the lock keeps waiting", func(t *testing.T) {
+ 		w := newWaitWorld(t, halting(shedengine.StateDone, "", 1))
+ 		started := make(chan struct{})
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index eba6997f..653838ba 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -1026,7 +1026,10 @@
+ // The fold's states also reach the caller on Result.SessionStates, in order, as a record the loop never branches on.
+ // It logs `shuttle: session state disagrees` at Warn once per disagreement, again only after either side changed, when the pair is outside the fixed mapping, and the line carries `stands=loop`:
+ // waiting and running read busy, held reads idle-stalled, idle-fresh or asking, done reads idle-done, died reads dead.
+-// Two pairings are expected and log nothing: a gate wait with every output present beside idle-done, and done beside busy on background work.
++// Three pairings are expected and log nothing:
++// a gate wait with every output present beside idle-done, and done or held beside busy on background work.
++// A turn end counted done or held leaves shells running that the loop no longer waits on.
++// That holds at once or once its shells pass the wait bound.
+ // The loop never branches on the state; an engine without the parser, an unreadable events file or a failed fact read logs once at Debug and changes no verdict, notice, wait mark or return.
+ // Event.At is the hook-side time of the line an event was parsed from, zero when the engine gives none, and Runner.ReadEvents is the only place that sets it.
+ // For an engine with the parser, ReadEvents parses events from the bytes the signal reading consumed only and advances the offset by that count, so a stamp read ahead of its Stop payload stays unconsumed and is read with it on the next call.
+diff --git a/internal/shuttleengine/waitshadow.go b/internal/shuttleengine/waitshadow.go
+index 210245b5..011c7b60 100644
+--- a/internal/shuttleengine/waitshadow.go
++++ b/internal/shuttleengine/waitshadow.go
+@@ -83,10 +83,12 @@ func (run *Run) loopClassification(outcome Outcome) string {
+ // loopAgreesWithState reports whether the fixed mapping allows the loop classification beside the session state:
+ // waiting and running read busy, held reads idle-stalled, idle-fresh or asking;
+ // done reads idle-done, died reads dead, api-error reads idle-stalled.
+-// Two further pairings are expected:
++// Three further pairings are expected:
+ // a pending gate entry waiting beside idle-done once every output exists;
+-// and a done run beside busy on background work.
+-// A turn end counted at once leaves the session running tasks the loop no longer waits on.
++// a done run beside busy on background work;
++// and a held run beside busy on background work.
++// A turn end counted done or held leaves the session running tasks the loop no longer waits on.
++// That holds at once or once its shells pass the wait bound.
+ func loopAgreesWithState(loop string, state SessionState, gatePending bool) bool {
+ 	busyOnBackground := state.Name == SessionBusy && state.Cause == SessionCauseBackground
+ 	switch loop {
+@@ -95,7 +97,7 @@ func loopAgreesWithState(loop string, state SessionState, gatePending bool) bool
+ 	case loopWaiting:
+ 		return state.Name == SessionBusy || (gatePending && state.Name == SessionIdleDone)
+ 	case loopHeld:
+-		return state.Name == SessionIdleStalled || state.Name == SessionIdleFresh || state.Name == SessionAsking
++		return state.Name == SessionIdleStalled || state.Name == SessionIdleFresh || state.Name == SessionAsking || busyOnBackground
+ 	case loopDone:
+ 		return state.Name == SessionIdleDone || busyOnBackground
+ 	case loopDied:
+diff --git a/internal/shuttleengine/waitshadow_test.go b/internal/shuttleengine/waitshadow_test.go
+index abeb1fff..c0c07aec 100644
+--- a/internal/shuttleengine/waitshadow_test.go
++++ b/internal/shuttleengine/waitshadow_test.go
+@@ -182,6 +182,15 @@ func TestWait_LogsSessionStateBesideItsClassification(t *testing.T) {
+ 			},
+ 			wantChanges: []string{"busy/turn running", "idle-stalled/no-output held", "idle-fresh/session-start held", "idle-done/done done"},
+ 		},
++		{
++			name:   "a gated turn end held with unawaited shells running reads busy on background beside the held loop without a disagreement",
++			events: "WAIT:background work\n", outstanding: shadowPayloadShell, liveness: LivenessAlive, timeout: time.Hour, jump: 2 * time.Hour,
++			gate: func() GateSpec {
++				pending := func() (GateResult, error) { return GateResult{Pending: true}, nil }
++				return GateSpec{{Name: "parent-review", Gate: pending, Final: pending, Attempts: 3, PassOnCap: true}}
++			},
++			wantChanges: []string{"busy/background held"},
++		},
+ 		{
+ 			name:   "done beside busy on background work is expected",
+ 			events: "WAIT:background work\n", outstanding: shadowPayloadShell, liveness: LivenessAlive, outputsAtStart: true, timeout: time.Hour,
