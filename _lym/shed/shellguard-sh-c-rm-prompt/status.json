@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-19T18:02:08Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/shellguard-sh-c-rm-prompt/_lym/landing/summary.md",
+      "at": "2026-11-19T18:23:19Z",
+      "started_at": "2026-11-19T18:02:13Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T18:09:32.220116264Z",
+          "end": "2026-11-19T18:09:32.242523384Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T18:15:39.433047673Z",
+          "end": "2026-11-19T18:15:39.450490109Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T18:09:32.350784138Z",
+          "end": "2026-11-19T18:15:17.735996303Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T18:15:18.239914762Z",
+          "end": "2026-11-19T18:15:39.371564682Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T18:15:39.510446856Z",
+          "end": "2026-11-19T18:22:05.709995132Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T18:22:05.810570312Z",
+          "end": "2026-11-19T18:22:06.152493357Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T18:22:06.241452245Z",
+          "end": "2026-11-19T18:22:06.24525171Z"
+        }
+      ]
     }
   ],
   "product": {
