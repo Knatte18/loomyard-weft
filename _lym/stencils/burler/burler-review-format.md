@@ -5,7 +5,7 @@
      They render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
      It carries no marker, so it names no path of either half.
-lym-stencil: sha256=c122e76109411d1458d0a04356fe0c9b66da4126f18cb7a155904166dd01dd53 build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
+lym-stencil: sha256=7a1b7f75e438074c30a813be45b1e2033dccf849183da0ec89a87f8d1ea9a7cb build=e6b40df6aab7b28ad215edd407c21cf6775e466d time=2026-11-19T11:36:55Z -->
 
 ## Review-file format
 
@@ -43,9 +43,14 @@ Frontmatter rules, all strict:
 - Every `id` is unique within the file.
 - A `BLOCKING` verdict requires at least one `BLOCKING`-severity finding.
 - Never write `APPROVED` while any finding is `BLOCKING` — a self-contradictory review file must never happen and must never look approved.
-- `summary` must be valid YAML.
-  If it needs to contain a `"` character (e.g. quoting a misspelled word or an error message), the ENTIRE value must be one double-quoted string covering the whole line — never a quoted fragment followed by unquoted trailing prose. `summary: "capital" is misspelled as "captial"` is INVALID YAML (the value ends at the first closing quote, and everything after it breaks the parse).
-  Either quote the whole line (`summary: "\"capital\" is misspelled as \"captial\""`) or, simpler, just don't use literal quote characters in the summary (`summary: capital is misspelled as captial`).
+- Every value must be valid YAML.
+  A value that holds `: ` (a colon followed by a space) must be ONE double-quoted string covering the whole value;
+  so must a value that opens with `"`, `'`, a backtick, `[`, `{`, `*`, `&`, `!`, `|`, `>`, `%`, `@` or `#`.
+  Inside it, escape each `"` and `\` with a backslash: `fix: "Print the \"creel: warning:\" line"`.
+  An unquoted `summary: the refusal prints a creel: warning: line` is INVALID YAML, and the round cannot read the review.
+- Never write a quoted fragment followed by unquoted trailing prose.
+  `summary: "capital" is misspelled as "captial"` is INVALID YAML (the value ends at the first closing quote, and everything after it breaks the parse).
+  Either quote the whole value (`summary: "\"capital\" is misspelled as \"captial\""`) or leave the quote characters out (`summary: capital is misspelled as captial`).
 - Omit `findings` entirely when you found nothing.
   Never invent a finding to pad the list.
 - In a cluster round, each finding also carries an `origin:` key — `lens:<name>` for a finding kept from a named fork, or `handler` for one you found yourself.
