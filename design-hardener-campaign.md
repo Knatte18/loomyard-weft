@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-hardener-campaign.md)
 
-Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md), [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md), [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md), [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md)
+Depends on: [`single-repo-fabric-mode`](design-single-repo-fabric-mode.md), [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md), [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md), [`loop-ends-without-envelope`](design-loop-ends-without-envelope.md), [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md)
 
 Filed from the Sketch `hardener`.
 
