@@ -642,6 +642,22 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-hardener-campaign/f7a2eedc-d7bf-4849-9ff2-2eb364872467/subagents/agent-a20ed03f6ab383083.jsonl"
       ]
     },
+    "13": {
+      "slug": "hardener-recipe",
+      "cards": [
+        "13-hardener-recipe"
+      ],
+      "cardHashes": {
+        "13-hardener-recipe": "dc437c895336bda1254235234418e896787eb70cae0d7cf50ded9757bc2a4fe6"
+      },
+      "startSha": "8ad607c6fc49e75afb965b9baf0bec51a1a26d78",
+      "kind": "fork",
+      "spawnedAt": "2026-11-19T15:37:54Z",
+      "sessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "6": {
       "slug": "live-gate",
       "cards": [
@@ -743,7 +759,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "47a513d5f7504f6247066334a419941b",
   "masterSessionId": "f7a2eedc-d7bf-4849-9ff2-2eb364872467",
   "masterEngine": "claude",
