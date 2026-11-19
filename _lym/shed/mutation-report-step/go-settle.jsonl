@@ -5,3 +5,5 @@
 {"stop_key":{"current_producer":"Worktree-Create","history_length":3,"state":"blocked"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-11-19T10:30:30.402988392+01:00","target":"Worktree-Create"}
 {"stop_key":{"current_producer":"Seed-Child","history_length":5,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-19T10:31:15.152695627+01:00","target":"attempt-3"}
 {"stop_key":{"current_producer":"Seed-Child","history_length":5,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-19T10:31:15.154017124+01:00"}
+{"stop_key":{"current_producer":"Run-Shed","history_length":9,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-19T12:08:51.043048587+01:00","target":"attempt-4"}
+{"stop_key":{"current_producer":"Run-Shed","history_length":9,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-19T12:08:51.044139948+01:00"}

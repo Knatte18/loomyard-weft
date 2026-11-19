@@ -1,0 +1,20 @@
+{
+  "number": 4,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 9,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-19T12:08:33.601437855+01:00",
+  "deadline": "2026-11-19T12:18:33.601437855+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-envelope-20261119-120833-a2a4.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-report-20261119-120833-a5d4.md",
+  "strand_guid": "b0543bf6575145f4fde8980c928e86e0"
+}
