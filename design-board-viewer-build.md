@@ -18,3 +18,10 @@ The part changes these packages:
 - internal/fabricengine (about 125 changed lines)
 - internal/ideengine (about 100 changed lines)
 - cmd/lym (about 3 changed lines)
+
+## Wanted next (operator, 2026-11-19)
+
+The viewer should also edit the board: create and edit tasks and notes, release tasks, promote notes, draft and undraft.
+It must refresh live when anything else writes the board, such as an agent, the orch or the dobby.
+Its writes go through boardengine like every other writer; the board already makes concurrent writes safe.
+A write from the page carries the revision it edited, and a stale one is refused and shows the fresh entry.
