@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-hardener-campaign.md)
 
-Depends on: [`parent-review-code-and-drift`](design-parent-review-code-and-drift.md)
-
 Filed from the Sketch `hardener`.
 
 Takes: the Sketch's decision record whole; the darn recipe and loomcli/darnwiring.go as the shape to copy; the closed recipe lists in shedrun/seed.go, shedcli/table.go, battencli/wire.go childRecipeSupported, loomrecipe (names.go, finalizerow.go, bouncerrows.go), reportengine (runs.go, timingspans.go) and boardengine/task.go; shedrecipe's BurlerFix entry and row gates (entries_burler.go, entries_gate.go), shedadapters' NewBouncer, settleUndecided and bouncerfacts.go; loomcli's loomSegmentPerches and reviewBudget; gatecli/run.go acquireSlot and gateslot.Pool.AcquireSlots; fabriccli.CloneAndWire, runproc.End, reedengine.ServerName and selfexec.LymBinary; single-repo-fabric-mode's landed pairteardown and loomcli wiring
