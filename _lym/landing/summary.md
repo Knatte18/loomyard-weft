@@ -1,57 +1,41 @@
-# Deliver the review gate's repair prompt past a cut pane label
+# Burler review: quote-colon guidance, halt-note routing, top-rule fix
 
-Issues #151 and #152 report runs that halted `failed` at `Code-Burler-Review` with `producer-hard-failure`,
-because the reviewer's review file had frontmatter that did not parse as YAML (`mapping values are not allowed in this context`).
-A third run, `creel-slack-post-silent-when-off`, halted the same way.
+A reviewer that writes an unquoted `: ` into review-file frontmatter still fails the round with an invalid-YAML error.
+This change makes the cause easier to avoid and to trace.
+It does not add a repair re-prompt, which both issues also asked for.
 
-## Root cause
-
-A repair path already exists.
-The review-parse gate entry re-prompts the reviewer up to three times with the parse error.
-In all three halted runs the trace shows the gate failing and the re-prompt never sent:
-`shuttle: gate: re-prompt held by a pane with no input box past the bound, ending the loop with the attempts spent so far`.
-
-The reviewer's pane did show an empty input box.
-Its top border carried the session label, which was too long for the pane, so Claude Code cut it with `…` and drew no rule glyphs before it:
-
-```
- ly:creel-slack-post-silent-when-off:code-burler… ─
-❯ 
-───────────────────────────────────────────────────
-```
-
-The Claude engine's `isTopBoxRule` accepted a labelled top rule only when it starts with `───`, so it found no box.
-Readiness then held every re-prompt as "no input box" until the bound expired.
-The review entry is pass-on-cap, so the run went on with an unrepaired file, and the strict parse in `acceptReview` failed the round.
+Closes #151
+Closes #152
 
 ## What changes
 
-- `internal/shuttleengine/claudeengine`: a line ending in a cut label and one rule glyph (`… ─`) counts as the input box's top rule.
-  The gate's re-prompt now reaches a reviewer in such a pane, so an invalid review file gets its repair turns before the round fails.
-  The fix is in the engine's box reader, so every send that reads the box gains it, not only the review gate.
-- `contracts/stencils/burler/burler-review-format.md`: the review format now states the rule for every frontmatter value, not only `summary`.
-  A value holding `: ` or opening with a YAML indicator character is one double-quoted string with its `"` and `\` escaped.
-- `internal/burlerengine`: a frontmatter parse error caused by an unquoted `: ` now carries a hint saying to quote the whole value.
-  The re-prompt and the halt reason both show it.
-  The existing hint for a quoted summary fragment is unchanged.
-- `internal/haltnote` and `internal/loomcli`: a halt note's history row for a step that handed the run on now ends with `routed to <producer>`.
-  `Code-Bouncer / stuck` before a `Code-Burler-Review` halt reads as `- Code-Bouncer / stuck / <at> / routed to Code-Burler-Review`,
-  so the note shows that the Stuck was a routine hand-off and the halted producer is the one whose output was invalid.
-  `Parse` reads the optional fourth field and still reads older three-field rows.
+- The review-format stencil (`contracts/stencils/burler/burler-review-format.md`) now says that every frontmatter value must be valid YAML.
+  A value holding `: `, or opening with a YAML indicator character, must be one double-quoted string, with `"` and `\` escaped inside it.
+  The existing rule against a quoted fragment followed by trailing prose is kept.
+- `burlerengine` (`verdict.go`) adds a hint to the invalid-YAML error when the parser reports `mapping values are not allowed`.
+  The hint tells the reviewer to quote the whole value.
+  `quotedSummaryHint` is renamed `quotingHint` and takes the parse error.
+  The quoted-summary pattern is tightened: it skips backslash-escaped quotes, stays on one line,
+  and no longer matches a fully quoted summary followed by a `#` comment.
+- The halt note (`haltnote`, `loomcli/halt.go`) gives each history row an optional `routed to <producer>` field.
+  A step that handed the run on, by a routed Stuck or a reroute, is now told apart from the step that stopped it.
+  This answers the `Code-Bouncer / stuck` row sitting next to a halt at `Code-Burler-Review`.
+  `Parse` still reads rows without the field.
+- `claudeengine/session.go`: `isTopBoxRule` also accepts an input-box top rule whose label is cut with an ellipsis
+  and leaves one rule glyph, as in ` ly:run:code-burler… ─`.
+  This is outside the issues' scope.
 
 ## Design decisions
 
-- The engine's top-rule check is the fix, not a fallback in the shed producer.
-  A fresh second reviewer attempt on an invalid file would repeat a whole review to fix a formatting slip, and the repair path the issues ask for already exists.
-- The issue's suggestion of a verb that writes the frontmatter for the reviewer is left out.
-  With the re-prompt delivered, the gate's repair turns and the stated quoting rule cover the slip; such a verb would change the reviewer's whole output contract.
-- The cut-label check matches only the ellipsis followed by a space and one rule glyph.
-  A label with no rule glyph after it still reads as no top rule, as before.
+- The halt note keeps the `producer` line as it was; the routing is carried on the history rows only.
+- The colon hint keys on the parser's error text, so a change in that wording in the YAML library would silence it without failing a build.
+  A test pins the current wording.
 
-## Tests
+## To check by hand
 
-- `TestInputBoxText` gains the halted pane's capture as a row that reads an empty box,
-  and a row where a cut label with no rule glyph after it is no top rule.
-- `TestParseReview` gains a row where an unquoted `: ` in a summary yields the quoting hint.
-- `TestRenderParse` gains a round-trip row for a routed Stuck row,
-  and `TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory` checks that the loom halt note carries a history entry's route.
+- Not done: sending the parse error back to the reviewer for a repair attempt, and writing the frontmatter through a serialising verb.
+  Confirm that deferring both is acceptable for closing #151 and #152.
+- `quoting-hint-fragment-regex-preempts-colon-hint` in `internal/burlerengine/verdict.go`:
+  `malformedQuotedSummary` is checked before the colon case in `quotingHint`.
+  A header that holds a quoted fragment and also an unquoted colon on another line gets only the fragment hint.
+  The diff has already narrowed the pattern; check whether a remaining header shape still hides the colon hint.
