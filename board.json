@@ -307,13 +307,23 @@
         "shed"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File",
       "body": "## Seen\n\n2026-11-19: raddle's proposal for `single-repo-records-branches` passed its checks and the operator approved it, but Raddle-File refused the part `single-repo-records-on-code-removal` because its slug is 35 characters and the board's limit is 32.\nThe run stopped with a question to the parent.\n\n## Idea\n\nThe proposal checks apply the board's slug rules, the length limit included, so a slug too long is caught before the operator approves.\n",
-      "status": "draft",
       "created": "2026-11-19T18:27:41Z",
-      "revised": "2026-11-19T18:27:41Z"
+      "revised": "2026-11-19T19:34:02Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1521,
