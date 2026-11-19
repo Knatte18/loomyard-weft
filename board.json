@@ -115,7 +115,7 @@
     {
       "id": 1438,
       "handle": "S2",
-      "slug": "board-viewer-build",
+      "slug": "board-viewer-editor",
       "title": "Board viewer rendered beside the README, opened by lym board open and a VS Code key",
       "kind": "note",
       "labels": [

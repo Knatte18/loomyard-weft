@@ -1,8 +1,8 @@
 # Board viewer rendered beside the README, opened by lym board open and a VS Code key
 
-`board-viewer-build` · Note · sketch, board, ide, fabric
+`board-viewer-editor` · Note · sketch, board, ide, fabric
 
-Decision record: [Sketch](decision-board-viewer-build.md)
+Decision record: [Sketch](decision-board-viewer-editor.md)
 
 Filed from the Sketch `board-viewer`.
 
