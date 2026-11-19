@@ -133,7 +133,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (9)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (10)</strong></summary>
 
 Owner `neve`
 
@@ -155,7 +155,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (8)
+### Notes (9)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -166,7 +166,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 2d<br>2d | shuttle |
 
-#### Bugs (4)
+#### Bugs (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -174,6 +174,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **lym gate test: unexplained test-host crash and false 'ran no test' verdict with a detailed console logger** | [`gate-verdict-from-trx`](design-gate-verdict-from-trx.md) | 0m<br>0m | gate, dotnet |
 | B3 |  | **Darn prompt tells agent to run lym gate test --gate darn-write, which the hub's gate config refuses** | [`darn-prompt-unknown-gate-key`](design-darn-prompt-unknown-gate-key.md) | 0m<br>0m | stencil, darn, gate |
 | B4 |  | **Finalize halts on a pull request whose mergeability GitHub has not computed yet** | [`finalize-mergeable-unknown`](design-finalize-mergeable-unknown.md) | 0m<br>0m | landing |
+| B5 |  | **Verify triage lists verify-command as a flaky identity with no failure output** | [`verify-triage-command-identity`](design-verify-triage-command-identity.md) | 0m<br>0m | webster, gate |
 
 #### Features (2)
 

@@ -437,6 +437,27 @@
       "body": "Imported from [issue #161](https://github.com/Knatte18/loomyard/issues/161).\n\n## What was seen\n\nA task run's Finalize halted with `landing stop: GitHub refused to merge pull request ...: Pull Request is not mergeable` and a way forward naming a second approval or a required check.\nRead a minute later, the pull request showed `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`, no required checks and no reviews; GitHub had not yet computed mergeability (`UNKNOWN`) when Finalize asked.\n\n## Workaround\n\nThe parent re-reads the pull request with `gh pr view --json mergeable,mergeStateStatus` and runs `lym loom resume` once it reads `MERGEABLE`.\n\n## Expected\n\nFinalize treats `mergeable: UNKNOWN` as pending: it polls the pull request for a bounded time before merging, and halts only on a definite refusal, naming the actual cause.\n",
       "created": "2026-11-19T19:40:48Z",
       "revised": "2026-11-19T19:40:48Z"
+    },
+    {
+      "id": 1527,
+      "handle": "B5",
+      "slug": "verify-triage-command-identity",
+      "title": "Verify triage lists verify-command as a flaky identity with no failure output",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "gate"
+      ],
+      "issues": [
+        160
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #160](https://github.com/Knatte18/loomyard/issues/160).\n\nThe integration-suite triage after a `lym webster` verify run wrote a friction note listing `verify-command` as a non-regression failure that \"failed the first verify run and passed or vanished on rerun (flaky)\".\nThe only other line in the note is \"Shell cwd was reset to \u003cworktree root\u003e\", which is the harness's cwd-reset notice, not a test result.\n\nThis is abnormal because the identity `verify-command` names the verify step itself rather than a test.\nA failure of the step itself, possibly caused by the cwd reset, is classified as a flaky test, so a lym-side verify problem is hidden as test flakiness.\nThe note does not say what the first run's failure was, so the cause can't be recovered from it.\n\nWhat to do:\n- Check how triage derives identities and whether `verify-command` can stand for a failure of the command rather than of a test.\n- Keep the first run's failure output in the triage note.\n- Keep a cwd-reset notice out of the failure identity and the note body.\n\nProvenance: task `miqp-baseline-oracle`, note `webster-verify-triage.md`.\n",
+      "created": "2026-11-19T19:40:50Z",
+      "revised": "2026-11-19T19:40:50Z"
     }
   ],
   "prime_owner": "neve",
