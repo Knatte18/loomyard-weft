@@ -29,6 +29,12 @@ Provenance: task `redundant-check-fixes`; note `loom-halt-2.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): Recast onto the version-skew cause
+
+Decision: The missing-include wiring is already fixed on main (72c3e192) and the asked-for test exists (loomcli TestFixerSpec, gatecli TestRunWithFixer), so make no change for that part. Instead fix the real cause found: a running lym binary that renders board stencil copies written by a newer binary fails mid-run with a bare template error. Make the stencil read detect that skew (a board stencil newer than the running binary's shipped set, ChangedPins or an equivalent version mark) and fail early with an error naming the skew and the way forward (restart the run's driver on the current binary), or fall back to the binary's own shipped stencil where that is safe. Keep it small; add a test for the skew case.
+
+Rationale: Dropping the run leaves the cause that killed redundant-check-fixes in place; the same skew can hit any long-running driver after update-plugins refreshes the board stencils.
+
 ## Constraints
 
 ## Auto-mode assumptions
