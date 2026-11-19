@@ -1,7 +1,0 @@
-verdict: resume
-reason: >-
-  Bootstrap stop: the run refused to act because the code tip de6e7135f50653242b830d736b2dc65d6d6f2005
-  was not on origin. The push has since landed. `git ls-remote origin refs/heads/review-frontmatter-hard-fail`
-  returns exactly de6e7135f50653242b830d736b2dc65d6d6f2005, so the commit is present on origin (equal to the tip,
-  not merely absent). The stop's own way forward is to re-run `lym batten run review-frontmatter-hard-fail` once the
-  push lands, which has now happened. A plain re-launch settles it; no goto is needed (kind is bootstrap, not blocked).
