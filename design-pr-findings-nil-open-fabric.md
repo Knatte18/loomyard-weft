@@ -1,6 +1,6 @@
 # pr-findings fails: NewFinalize Deps.OpenFabric must not be nil
 
-`pr-findings-nil-open-fabric` · Task · bug, loom, landing · running · Drift-Await
+`pr-findings-nil-open-fabric` · Task · bug, loom, landing · running · Drift-Expect
 
 Imported from [issue #155](https://github.com/Knatte18/loomyard/issues/155).
 

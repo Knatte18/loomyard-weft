@@ -636,7 +636,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #155](https://github.com/Knatte18/loomyard/issues/155).\n\n## What was seen\n\nIn a darn run's PR-Review row, `lym loom pr-findings` failed twice on a findings file that passes the burler format check, with: `loomrecipe: shedbuild: producer 13 \"Finalize\": landingshed: NewFinalize: Deps.OpenFabric must not be nil`.\n\n## Workaround\n\nThe PR-Review agent fixes the parent's findings by hand and commits, without `pr-findings`.\n\n## Expected\n\n`pr-findings` builds the recipe's shed with its fabric dependency set and runs the findings round.",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-19T11:21:27Z",
       "revised": "2026-11-19T11:21:38Z",
       "run_settings": {
