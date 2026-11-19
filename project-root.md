@@ -12,23 +12,22 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (4)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **pr-findings fails: NewFinalize Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | darn · light | Darn-Write | neve | 9m<br>8m | loom, landing |
+| T2 | **pr-findings fails: NewFinalize Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | darn · light | Darn-Write | neve | 9m<br>9m | loom, landing |
 | T4 | **gatefixer: gatefix-body-darn prompt fails on missing include loom-fragment-loosened-check**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gatefix-darn-missing-include`](design-gatefix-darn-missing-include.md) | darn · light | Code-Burler-Fix | neve | 2h<br>39m | loom, stencil |
+| T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light | starting · Worktree-Create | neve | 15h<br>2h | landing, darn |
 | T9 | **Burler review round fails hard on invalid review-file YAML frontmatter**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`review-frontmatter-hard-fail`](design-review-frontmatter-hard-fail.md) | darn · light | landing · Finalize | neve | 2h<br>39m | burler, shed |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T7 | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | darn · light |  | 15h<br>2h | landing, darn |
+_None._
 
 ### Layer A (2)
 
@@ -45,7 +44,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | T4<br>T9<br>T8<br>T13 | 1h<br>13m | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | T4<br>T9<br>T8<br>T13 | 1h<br>14m | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
 
 ### Draft (1)
 
