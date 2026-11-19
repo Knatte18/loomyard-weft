@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is blocked at Worktree-Create (step 1 of 8). The named cause was a held board lock that deferred the push of board commit 4212594afe996f45f7e04a66d874b958d1e169a6 (\"board: owner neve for mutation-report-step\"), leaving the board ahead of origin. The way forward it names is `lym board sync`, then re-run the verb.\nFacts checked read-only:\n- The board sync was spawned detached at 10:26:06 (trace 5f890247a6d21093, pid 3740376). That process no longer exists, so it has finished.\n- Commit 4212594a is an ancestor of origin main 28c5140f (`git -C /home/knatte/Code/loomyard-LYMHUB/_bolt merge-base --is-ancestor` exit 0). The board commit is therefore present on origin, and the cause no longer holds.\n- The records commit bdb3f5c6fb14ca5d2e49250cddc2bacc21e546e2 is an ancestor of origin main-weft tip 1d42f7c734469dc888f64bcf78f48ab7de63aee5 (exit 0, tip known locally). The records side is present on origin. The local main-weft branch is 2 commits ahead of that tip, which the fabric \"still unpushed\" warnings describe; a re-run pushes or retries them.\nA plain re-launch of Worktree-Create, which re-claims the board entry, should settle this.\nResidual notes, not blocking: the battencli warning at 10:26:43 says the task worktree /home/knatte/Code/loomyard-LYMHUB/mutation-report-step is absent while the durable status says it was already created. That is consistent with Worktree-Create not having created it yet (the stop is at step 1 of 8), and the warning only leaves the tackler and arbiter sessions unrecorded. The re-run should confirm this when it creates the worktree. If the re-run stops again with the same board reason, or on the records push, that is an unchanged return and should go to hand-back or escalate, not a second resume.\n",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}

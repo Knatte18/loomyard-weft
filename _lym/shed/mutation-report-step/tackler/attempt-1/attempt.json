@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-19T10:26:43.900452078+01:00",
+  "deadline": "2026-11-19T10:36:43.900452078+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-envelope-20261119-102643-6d6b.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/mutation-report-step/drive-reports/drive-report-20261119-102643-4037.md",
+  "strand_guid": "909df84dfbd7e4be5b5cb661a1638572"
+}
