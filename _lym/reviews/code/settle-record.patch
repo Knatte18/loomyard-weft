@@ -1,0 +1,1171 @@
+diff --git a/internal/fswatch/testmain_test.go b/internal/fswatch/testmain_test.go
+index 701842f1..e587f14d 100644
+--- a/internal/fswatch/testmain_test.go
++++ b/internal/fswatch/testmain_test.go
+@@ -1,7 +1,8 @@
+ // testmain_test.go runs the package's tests under tmuxkit.Main.
+ // Their temp files live in the process run directory and go with it.
++// It is an external test package because tmuxkit imports fswatch, which an in-package test file could not import back.
+ 
+-package fswatch
++package fswatch_test
+ 
+ import (
+ 	"os"
+diff --git a/internal/testkit/tmuxkit/gitentry.go b/internal/testkit/tmuxkit/gitentry.go
+new file mode 100644
+index 00000000..7f831113
+--- /dev/null
++++ b/internal/testkit/tmuxkit/gitentry.go
+@@ -0,0 +1,279 @@
++// gitentry.go holds Main's check for a `.git` that appears directly in a shared temp directory during a run.
++// It also holds the watch that names the test binaries and processes running at the moment the entry appeared.
++
++package tmuxkit
++
++import (
++	"errors"
++	"fmt"
++	"io"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"runtime"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/fswatch"
++)
++
++// gitEntryName is the repository marker.
++// Left directly in a shared temp directory, it turns everything below that directory into one repository.
++const gitEntryName = ".git"
++
++// testBinarySuffix ends the name of every binary `go test` builds.
++const testBinarySuffix = ".test"
++
++// maxArgvChars bounds how much of a process's argv a finding quotes.
++const maxArgvChars = 200
++
++// gitEntryCause is the part of every finding that says what wrote the entry and why it matters.
++const gitEntryCause = "a test or the code it drives wrote outside its own t.TempDir, often through a path joined onto an empty or parent directory, and go's VCS stamping and git's discovery read everything below it as one repository"
++
++// gitEntrySighting is what the watch saw when a `.git` appeared in a shared temp directory.
++type gitEntrySighting struct {
++	// at is when the watch saw the entry appear.
++	at time.Time
++	// attributed is false where the process table cannot be read or does not hold this binary.
++	// Then neither the other test binaries nor this binary's own processes are known.
++	attributed bool
++	// others describes each test binary running when the entry appeared, other than this one and its descendants.
++	others []string
++	// inDir describes each process whose working directory was the directory the entry appeared in.
++	inDir []string
++	// ownInDir reports whether this binary or one of its descendants had its working directory in that directory.
++	// It is the only evidence that ties the entry to this binary.
++	ownInDir bool
++}
++
++// processInfo is one process as the snapshot reads it.
++type processInfo struct {
++	pid  int
++	ppid int
++	argv []string
++	cwd  string
++}
++
++// sharedTempDirs returns the directories above the run directory dir that every test binary on the machine shares.
++// They are the lym temp root holding dir and the system temp directory holding that root.
++func sharedTempDirs(dir string) []string {
++	root := filepath.Dir(dir)
++	return []string{root, filepath.Dir(root)}
++}
++
++// presentGitEntries returns the set of `.git` paths that exist directly in dirs, whatever their type.
++func presentGitEntries(dirs []string) map[string]bool {
++	present := map[string]bool{}
++	for _, dir := range dirs {
++		path := filepath.Join(dir, gitEntryName)
++		if _, err := os.Lstat(path); err == nil {
++			present[path] = true
++		}
++	}
++	return present
++}
++
++// runCheckingGitEntries snapshots the `.git` entries in dirs, watches dirs while it calls run, and checks them after.
++// snapshot names the processes running at the moment the watch sees an entry appear.
++// It returns run's exit code, or 1 when the check blames this run for an entry, and names each finding on w.
++func runCheckingGitEntries(w io.Writer, dirs []string, snapshot func(dir string, at time.Time) gitEntrySighting, run func() int) int {
++	before := presentGitEntries(dirs)
++	stop := watchGitEntries(dirs, snapshot)
++	code := run()
++	return checkNewGitEntries(w, dirs, before, stop(), code)
++}
++
++// watchGitEntries watches dirs for a `.git` being created and calls snapshot the moment one is.
++// The returned stop ends the watches and returns every sighting per entry path, in the order they were taken.
++// A directory whose watch cannot be opened yields no sighting; its entries are still checked after the run.
++func watchGitEntries(dirs []string, snapshot func(dir string, at time.Time) gitEntrySighting) (stop func() map[string][]gitEntrySighting) {
++	var (
++		mu        sync.Mutex
++		sightings = map[string][]gitEntrySighting{}
++		consumers sync.WaitGroup
++		watchers  []*fswatch.Watcher
++	)
++	for _, dir := range dirs {
++		watcher, err := fswatch.Watch(dir, gitEntryName)
++		if err != nil {
++			continue
++		}
++		watchers = append(watchers, watcher)
++		consumers.Add(1)
++		go func() {
++			defer consumers.Done()
++			for event := range watcher.Events() {
++				if event.Op != "create" {
++					continue
++				}
++				sighting := snapshot(dir, time.Now())
++				mu.Lock()
++				path := filepath.Join(dir, gitEntryName)
++				sightings[path] = append(sightings[path], sighting)
++				mu.Unlock()
++			}
++		}()
++	}
++	return func() map[string][]gitEntrySighting {
++		for _, watcher := range watchers {
++			_ = watcher.Close()
++		}
++		consumers.Wait()
++		return sightings
++	}
++}
++
++// checkNewGitEntries reports each `.git` directly in dirs that appeared during the run, and returns the run's code.
++// An entry appeared when a sighting holds it or when it exists now and before does not hold it.
++// Every sighting of an entry is reported.
++// The code becomes 1 only for an entry seen appearing while this binary or a descendant worked in its directory.
++// Any other entry is a machine finding that names the binaries running beside this one and keeps the code.
++// An entry that still exists is removed when it is an empty directory, so it breaks no later build.
++// Any other existing entry is named for removal by hand.
++// The entries are reported in the order of dirs.
++func checkNewGitEntries(w io.Writer, dirs []string, before map[string]bool, sightings map[string][]gitEntrySighting, code int) int {
++	for _, dir := range dirs {
++		path := filepath.Join(dir, gitEntryName)
++		seen := sightings[path]
++		info, err := os.Lstat(path)
++		exists := err == nil
++		if len(seen) == 0 && (!exists || before[path]) {
++			continue
++		}
++		if len(seen) == 0 {
++			fmt.Fprintln(w, describeGitEntry(path, dir, gitEntrySighting{}, false))
++		}
++		for _, sighting := range seen {
++			fmt.Fprintln(w, describeGitEntry(path, dir, sighting, true))
++			if sighting.attributed && sighting.ownInDir {
++				code = 1
++			}
++		}
++		if exists {
++			fmt.Fprintln(w, removeStrayGitEntry(path, info))
++		}
++	}
++	return code
++}
++
++// describeGitEntry returns the finding line for the `.git` at path in dir, from the sighting when seen is true.
++func describeGitEntry(path, dir string, sighting gitEntrySighting, seen bool) string {
++	var line string
++	switch {
++	case !seen:
++		line = fmt.Sprintf("tmuxkit: machine finding, this package is not failed for it: %s appeared during this package's run, and no watch saw which test binaries ran when it appeared; %s", path, gitEntryCause)
++	case !sighting.attributed:
++		line = fmt.Sprintf("tmuxkit: machine finding, this package is not failed for it: %s appeared at %s, and the processes running then are unknown: this platform has no process table to read, or the one read does not hold this binary; %s", path, sighting.at.Format(time.TimeOnly+".000"), gitEntryCause)
++	case sighting.ownInDir:
++		line = fmt.Sprintf("tmuxkit: %s appeared at %s while a process of this package was working in %s, so it is blamed on this package; %s", path, sighting.at.Format(time.TimeOnly+".000"), dir, gitEntryCause)
++	default:
++		beside := "none"
++		if len(sighting.others) > 0 {
++			beside = strings.Join(sighting.others, ", ")
++		}
++		line = fmt.Sprintf("tmuxkit: machine finding, this package is not failed for it: %s appeared at %s with no process of this package working in %s; test binaries running beside this one: %s; the writer is one of them, this package or a process that is no test binary; %s", path, sighting.at.Format(time.TimeOnly+".000"), dir, beside, gitEntryCause)
++	}
++	if seen && len(sighting.inDir) > 0 {
++		line += fmt.Sprintf("; processes working in %s then: %s", dir, strings.Join(sighting.inDir, ", "))
++	}
++	return line
++}
++
++// removeStrayGitEntry removes the `.git` entry at path, described by info, when it is an empty directory.
++// It returns the line that says what became of it.
++// A symlink or file is never removed or followed.
++func removeStrayGitEntry(path string, info fs.FileInfo) string {
++	if !info.IsDir() {
++		return fmt.Sprintf("tmuxkit: %s is not a directory; remove it by hand", path)
++	}
++	err := os.Remove(path)
++	switch {
++	case err == nil:
++		return fmt.Sprintf("tmuxkit: removed the empty directory %s", path)
++	case errors.Is(err, fs.ErrNotExist):
++		return fmt.Sprintf("tmuxkit: %s was already removed by another process", path)
++	}
++	if entries, readErr := os.ReadDir(path); readErr == nil && len(entries) > 0 {
++		return fmt.Sprintf("tmuxkit: %s is not an empty directory; remove it by hand", path)
++	}
++	return fmt.Sprintf("tmuxkit: could not remove %s: %v; remove it by hand", path, err)
++}
++
++// snapshotProcesses returns the sighting of a `.git` that appeared in dir at at, read from /proc.
++// Off Linux it returns an unattributed sighting.
++// So it does when the table it reads holds no readable entry for this binary itself.
++func snapshotProcesses(dir string, at time.Time) gitEntrySighting {
++	if runtime.GOOS != "linux" {
++		return gitEntrySighting{at: at}
++	}
++	self := os.Getpid()
++	listedSelf := false
++	var procs []processInfo
++	for _, pid := range Pids() {
++		argv, ok := ProcArgv(pid)
++		if !ok || len(argv) == 0 {
++			continue
++		}
++		if pid == self {
++			listedSelf = true
++		}
++		ppid, _ := ProcPPID(pid)
++		cwd, _ := ProcCwd(pid)
++		procs = append(procs, processInfo{pid: pid, ppid: ppid, argv: argv, cwd: cwd})
++	}
++	if !listedSelf {
++		return gitEntrySighting{at: at}
++	}
++	others, inDir, ownInDir := classifyProcesses(self, dir, procs)
++	return gitEntrySighting{at: at, attributed: true, others: others, inDir: inDir, ownInDir: ownInDir}
++}
++
++// classifyProcesses splits procs for a `.git` that appeared in dir, seen by the process self.
++// others describes every test binary that is neither self nor a descendant of self, by pid and binary name.
++// inDir describes every process working in dir, by pid and argv.
++// ownInDir reports whether self or a descendant of self works in dir.
++func classifyProcesses(self int, dir string, procs []processInfo) (others, inDir []string, ownInDir bool) {
++	parents := make(map[int]int, len(procs))
++	for _, p := range procs {
++		parents[p.pid] = p.ppid
++	}
++	for _, p := range procs {
++		own := descendsFrom(p.pid, self, parents)
++		if p.cwd == dir {
++			inDir = append(inDir, fmt.Sprintf("pid %d %s", p.pid, quoteArgv(p.argv)))
++			ownInDir = ownInDir || own
++		}
++		if strings.HasSuffix(filepath.Base(p.argv[0]), testBinarySuffix) && !own {
++			others = append(others, fmt.Sprintf("pid %d %s", p.pid, filepath.Base(p.argv[0])))
++		}
++	}
++	return others, inDir, ownInDir
++}
++
++// descendsFrom reports whether pid is ancestor or one of its descendants, following parents.
++// A parent chain that loops or leaves the table ends the walk.
++func descendsFrom(pid, ancestor int, parents map[int]int) bool {
++	seen := map[int]bool{}
++	for pid > 0 && !seen[pid] {
++		if pid == ancestor {
++			return true
++		}
++		seen[pid] = true
++		next, ok := parents[pid]
++		if !ok {
++			return false
++		}
++		pid = next
++	}
++	return false
++}
++
++// quoteArgv returns argv quoted, cut to maxArgvChars characters.
++func quoteArgv(argv []string) string {
++	quoted := fmt.Sprintf("%q", argv)
++	if runes := []rune(quoted); len(runes) > maxArgvChars {
++		return string(runes[:maxArgvChars]) + "…"
++	}
++	return quoted
++}
+diff --git a/internal/testkit/tmuxkit/gitentry_test.go b/internal/testkit/tmuxkit/gitentry_test.go
+new file mode 100644
+index 00000000..376965a1
+--- /dev/null
++++ b/internal/testkit/tmuxkit/gitentry_test.go
+@@ -0,0 +1,419 @@
++// gitentry_test.go holds the tests of the shared-temp-directory `.git` check.
++// They cover its report, its watch and its process classification.
++
++package tmuxkit
++
++import (
++	"bytes"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"sync/atomic"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestSharedTempDirs_AreTheRootAndTheSystemTempDirectoryAboveIt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	system := t.TempDir()
++	root := filepath.Join(system, "lym-1000")
++	got := sharedTempDirs(filepath.Join(root, "rabcd"))
++	if len(got) != 2 || got[0] != root || got[1] != system {
++		t.Errorf("sharedTempDirs(%q) = %q; want [%q %q]", filepath.Join(root, "rabcd"), got, root, system)
++	}
++}
++
++func TestCheckNewGitEntries(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	at := time.Date(2026, 11, 18, 19, 23, 10, 250_000_000, time.UTC)
++	later := at.Add(time.Second)
++	otherBinaries := []string{"pid 7 reedcli.test", "pid 9 loomcli.test"}
++	ownChild := gitEntrySighting{at: at, attributed: true, ownInDir: true, inDir: []string{`pid 11 ["git" "init"]`}}
++	aloneNotInDir := gitEntrySighting{at: at, attributed: true}
++	beside := gitEntrySighting{at: at, attributed: true, others: otherBinaries}
++	besideWithOwnChild := gitEntrySighting{at: at, attributed: true, others: otherBinaries, ownInDir: true}
++	unread := gitEntrySighting{at: at}
++	tests := []struct {
++		name string
++		// seed creates the `.git` entry at path; a nil seed creates none.
++		seed        func(t *testing.T, path string)
++		preexisting bool
++		// sightings is what the watch saw for the entry, in order; none means it saw nothing.
++		sightings []gitEntrySighting
++		// inFirst seeds the first watched directory instead of the second.
++		inFirst bool
++		// skipWindows skips the row where creating its entry may need a privilege.
++		skipWindows bool
++		wantCode    int
++		wantOutput  []string
++		wantKept    bool
++	}{
++		{name: "NoEntryKeepsTheCode", wantCode: 0},
++		{
++			name:        "EntryPresentBeforeTheRunKeepsTheCodeAndTheEntry",
++			seed:        mkdirGit,
++			preexisting: true,
++			wantCode:    0,
++			wantKept:    true,
++		},
++		{
++			name:       "EntrySeenWhileAProcessOfThisPackageWorkedInItsDirectoryFailsAndIsRemoved",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{ownChild},
++			wantCode:   1,
++			wantOutput: []string{"appeared at 19:23:10.250 while a process of this package was working in", "removed the empty directory"},
++		},
++		{
++			name:       "EntrySeenInFirstDirectoryWhileAProcessOfThisPackageWorkedInItFails",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{ownChild},
++			inFirst:    true,
++			wantCode:   1,
++			wantOutput: []string{"so it is blamed on this package", "removed the empty directory"},
++		},
++		{
++			name:       "EntrySeenWithNoOtherTestBinaryAndNoProcessOfThisPackageInItKeepsTheCode",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{aloneNotInDir},
++			wantCode:   0,
++			wantOutput: []string{"machine finding, this package is not failed for it", "test binaries running beside this one: none", "removed the empty directory"},
++		},
++		{
++			name:      "EntrySeenBesideOtherTestBinariesKeepsTheCodeAndNamesThemAsCandidates",
++			seed:      mkdirGit,
++			sightings: []gitEntrySighting{beside},
++			wantCode:  0,
++			wantOutput: []string{
++				"machine finding, this package is not failed for it",
++				"test binaries running beside this one: pid 7 reedcli.test, pid 9 loomcli.test",
++				"the writer is one of them, this package or a process that is no test binary",
++				"removed the empty directory",
++			},
++		},
++		{
++			name:       "EntrySeenBesideOtherTestBinariesWhileAProcessOfThisPackageWorkedInItsDirectoryFails",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{besideWithOwnChild},
++			wantCode:   1,
++			wantOutput: []string{"so it is blamed on this package"},
++		},
++		{
++			name:       "EntrySeenNamesTheProcessesWorkingInItsDirectory",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{{at: at, attributed: true, others: otherBinaries, inDir: []string{`pid 11 ["git" "init"]`}}},
++			wantCode:   0,
++			wantOutput: []string{`then: pid 11 ["git" "init"]`},
++		},
++		{
++			name:       "EntrySeenWhereProcessesCannotBeReadKeepsTheCode",
++			seed:       mkdirGit,
++			sightings:  []gitEntrySighting{unread},
++			wantCode:   0,
++			wantOutput: []string{"machine finding", "the processes running then are unknown", "removed the empty directory"},
++		},
++		{
++			name:       "EntryNoWatchSawKeepsTheCode",
++			seed:       mkdirGit,
++			wantCode:   0,
++			wantOutput: []string{"machine finding", "no watch saw which test binaries ran", "removed the empty directory"},
++		},
++		{
++			name:       "EntrySeenAndAlreadyRemovedIsStillReported",
++			sightings:  []gitEntrySighting{beside},
++			wantCode:   0,
++			wantOutput: []string{"test binaries running beside this one"},
++		},
++		{
++			name:      "EntrySeenTwiceReportsEachSightingAndFailsOnEither",
++			seed:      mkdirGit,
++			sightings: []gitEntrySighting{beside, {at: later, attributed: true, ownInDir: true}},
++			wantCode:  1,
++			wantOutput: []string{
++				"appeared at 19:23:10.250 with no process of this package",
++				"appeared at 19:23:11.250 while a process of this package was working in",
++			},
++		},
++		{
++			name: "NewNonEmptyDirectoryIsKept",
++			seed: func(t *testing.T, path string) {
++				mkdirGit(t, path)
++				if err := os.WriteFile(filepath.Join(path, "HEAD"), []byte("ref: refs/heads/main\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			},
++			sightings:  []gitEntrySighting{ownChild},
++			wantCode:   1,
++			wantOutput: []string{"so it is blamed on this package", "is not an empty directory", "remove it by hand"},
++			wantKept:   true,
++		},
++		{
++			name: "NewGitfileIsKept",
++			seed: func(t *testing.T, path string) {
++				if err := os.WriteFile(path, []byte("gitdir: /elsewhere\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			},
++			sightings:  []gitEntrySighting{ownChild},
++			wantCode:   1,
++			wantOutput: []string{"so it is blamed on this package", "is not a directory", "remove it by hand"},
++			wantKept:   true,
++		},
++		{
++			name: "NewSymlinkIsKept",
++			seed: func(t *testing.T, path string) {
++				if err := os.Symlink(filepath.Join(t.TempDir(), "target"), path); err != nil {
++					t.Fatal(err)
++				}
++			},
++			sightings:   []gitEntrySighting{ownChild},
++			skipWindows: true,
++			wantCode:    1,
++			wantOutput:  []string{"so it is blamed on this package", "is not a directory", "remove it by hand"},
++			wantKept:    true,
++		},
++	}
++	for _, tt := range tests {
++		if tt.skipWindows && runtime.GOOS == "windows" {
++			continue
++		}
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := []string{t.TempDir(), t.TempDir()}
++			dir := dirs[1]
++			if tt.inFirst {
++				dir = dirs[0]
++			}
++			path := filepath.Join(dir, gitEntryName)
++			if tt.seed != nil && tt.preexisting {
++				tt.seed(t, path)
++			}
++			before := presentGitEntries(dirs)
++			if tt.seed != nil && !tt.preexisting {
++				tt.seed(t, path)
++			}
++			sightings := map[string][]gitEntrySighting{}
++			if len(tt.sightings) > 0 {
++				sightings[path] = tt.sightings
++			}
++
++			var out bytes.Buffer
++			got := checkNewGitEntries(&out, dirs, before, sightings, 0)
++
++			if got != tt.wantCode {
++				t.Errorf("checkNewGitEntries code = %d; want %d", got, tt.wantCode)
++			}
++			for _, want := range tt.wantOutput {
++				if !strings.Contains(out.String(), want) {
++					t.Errorf("checkNewGitEntries output = %q; want it to hold %q", out.String(), want)
++				}
++			}
++			if len(tt.wantOutput) == 0 && out.Len() != 0 {
++				t.Errorf("checkNewGitEntries output = %q; want none", out.String())
++			}
++			if len(tt.wantOutput) != 0 && !strings.Contains(out.String(), path) {
++				t.Errorf("checkNewGitEntries output = %q; want it to name %s", out.String(), path)
++			}
++			_, err := os.Lstat(path)
++			if kept := err == nil; kept != tt.wantKept {
++				t.Errorf("%s kept = %v; want %v", path, kept, tt.wantKept)
++			}
++		})
++	}
++}
++
++func TestRunCheckingGitEntries(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// preexisting creates the `.git` before the run starts.
++		preexisting bool
++		// duringRun makes the fake run create the `.git` and wait until the watch has taken its snapshot.
++		duringRun bool
++		// renameFirst makes the fake run move the preexisting `.git` away before it creates a new one.
++		renameFirst bool
++		// missingDir makes the first watched directory one that does not exist.
++		missingDir bool
++		// ownInDir is what the fake snapshot reports for the run's own processes working in the directory.
++		ownInDir bool
++		// others is what the fake snapshot reports as the other test binaries running.
++		others        []string
++		runCode       int
++		wantCode      int
++		wantSnapshots int
++	}{
++		{name: "RunLeavingNoEntryKeepsTheCode", runCode: 3, wantCode: 3},
++		{name: "RunCreatingAnEntryWithAProcessOfItsOwnInTheDirectoryFails", duringRun: true, ownInDir: true, wantCode: 1, wantSnapshots: 1},
++		{name: "RunCreatingAnEntryWithAProcessOfItsOwnInTheDirectoryKeepsAFailingCodeFailing", duringRun: true, ownInDir: true, runCode: 2, wantCode: 1, wantSnapshots: 1},
++		{name: "RunCreatingAnEntryWithNoProcessOfItsOwnInTheDirectoryKeepsTheCode", duringRun: true, runCode: 3, wantCode: 3, wantSnapshots: 1},
++		{name: "RunCreatingAnEntryBesideOtherBinariesKeepsTheCode", duringRun: true, others: []string{"pid 7 reedcli.test"}, runCode: 3, wantCode: 3, wantSnapshots: 1},
++		{name: "EntryPresentBeforeTheRunKeepsTheCode", preexisting: true, runCode: 0, wantCode: 0},
++		{name: "RunMovingTheEntryAwayAndCreatingAnotherStillFails", preexisting: true, renameFirst: true, duringRun: true, ownInDir: true, wantCode: 1, wantSnapshots: 1},
++		{name: "DirectoryWithNoWatchLeavesTheOtherWatched", missingDir: true, duringRun: true, ownInDir: true, wantCode: 1, wantSnapshots: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dirs := []string{t.TempDir(), t.TempDir()}
++			if tt.missingDir {
++				dirs[0] = filepath.Join(dirs[0], "absent")
++			}
++			target := dirs[0]
++			if tt.missingDir {
++				target = dirs[1]
++			}
++			path := filepath.Join(target, gitEntryName)
++			if tt.preexisting {
++				mkdirGit(t, path)
++			}
++			snapshotted := make(chan string, 8)
++			var taken atomic.Int32
++			snapshot := func(dir string, at time.Time) gitEntrySighting {
++				taken.Add(1)
++				snapshotted <- dir
++				return gitEntrySighting{at: at, attributed: true, others: tt.others, ownInDir: tt.ownInDir}
++			}
++			run := func() int {
++				if tt.renameFirst {
++					if err := os.Rename(path, path+"-moved"); err != nil {
++						t.Error(err)
++					}
++				}
++				if tt.duringRun {
++					mkdirGit(t, path)
++					select {
++					case dir := <-snapshotted:
++						if dir != target {
++							t.Errorf("snapshot dir = %q; want %q", dir, target)
++						}
++					case <-time.After(10 * time.Second):
++						t.Errorf("no snapshot within 10s of creating %s", path)
++					}
++				}
++				return tt.runCode
++			}
++
++			var out bytes.Buffer
++			got := runCheckingGitEntries(&out, dirs, snapshot, run)
++
++			if got != tt.wantCode {
++				t.Errorf("runCheckingGitEntries code = %d; want %d", got, tt.wantCode)
++			}
++			if named := strings.Contains(out.String(), path); named != tt.duringRun {
++				t.Errorf("runCheckingGitEntries output = %q; names %s = %v, want %v", out.String(), path, named, tt.duringRun)
++			}
++			if got := int(taken.Load()); got != tt.wantSnapshots {
++				t.Errorf("runCheckingGitEntries took %d snapshots; want %d", got, tt.wantSnapshots)
++			}
++		})
++	}
++}
++
++//testtiming:keep pins the exact other-test-binary list, the exclusion of a test-binary descendant of self and the pid-name format and order of others and inDir
++func TestClassifyProcesses(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const self = 100
++	dir := filepath.Join(string(filepath.Separator), "tmp")
++	tests := []struct {
++		name         string
++		procs        []processInfo
++		wantOthers   []string
++		wantInDir    []string
++		wantOwnInDir bool
++	}{
++		{
++			name: "SplitsTheTableIntoOtherBinariesAndProcessesInTheDirectory",
++			procs: []processInfo{
++				{pid: 1, ppid: 0, argv: []string{"/sbin/init"}, cwd: "/"},
++				{pid: 50, ppid: 1, argv: []string{"go", "test"}, cwd: "/repo"},
++				{pid: self, ppid: 50, argv: []string{"/build/b001/tmuxkit.test"}, cwd: "/repo/internal/testkit/tmuxkit"},
++				{pid: 101, ppid: self, argv: []string{"/build/b001/tmuxkit.test", "-test.run=Helper"}, cwd: "/repo"},
++				{pid: 102, ppid: 101, argv: []string{"git", "init"}, cwd: dir},
++				{pid: 200, ppid: 50, argv: []string{"/build/b002/reedcli.test", "-test.v"}, cwd: "/repo/internal/reedcli"},
++				{pid: 300, ppid: 1, argv: []string{"/build/b003/loomcli.test"}, cwd: dir},
++				{pid: 400, ppid: 999, argv: []string{"bash"}, cwd: "/home"},
++			},
++			wantOthers:   []string{"pid 200 reedcli.test", "pid 300 loomcli.test"},
++			wantInDir:    []string{`pid 102 ["git" "init"]`, `pid 300 ["/build/b003/loomcli.test"]`},
++			wantOwnInDir: true,
++		},
++		{
++			name: "NoProcessOfThisBinaryInTheDirectoryIsNotOwn",
++			procs: []processInfo{
++				{pid: self, ppid: 1, argv: []string{"/build/b001/tmuxkit.test"}, cwd: "/repo"},
++				{pid: 300, ppid: 1, argv: []string{"/build/b003/loomcli.test"}, cwd: dir},
++			},
++			wantOthers: []string{"pid 300 loomcli.test"},
++			wantInDir:  []string{`pid 300 ["/build/b003/loomcli.test"]`},
++		},
++		{
++			name: "ThisBinaryWorkingInTheDirectoryIsOwn",
++			procs: []processInfo{
++				{pid: self, ppid: 1, argv: []string{"/build/b001/tmuxkit.test"}, cwd: dir},
++			},
++			wantInDir:    []string{`pid 100 ["/build/b001/tmuxkit.test"]`},
++			wantOwnInDir: true,
++		},
++		{
++			name: "ParentChainThatLoopsCountsAsAnotherBinary",
++			procs: []processInfo{
++				{pid: self, ppid: 1, argv: []string{"/build/b001/tmuxkit.test"}, cwd: "/repo"},
++				{pid: 500, ppid: 501, argv: []string{"/build/b004/looping.test"}, cwd: "/repo"},
++				{pid: 501, ppid: 500, argv: []string{"sh"}, cwd: "/repo"},
++			},
++			wantOthers: []string{"pid 500 looping.test"},
++		},
++		{
++			name: "ParentMissingFromTheTableCountsAsAnotherBinary",
++			procs: []processInfo{
++				{pid: self, ppid: 1, argv: []string{"/build/b001/tmuxkit.test"}, cwd: "/repo"},
++				{pid: 600, ppid: 999, argv: []string{"/build/b005/orphan.test"}, cwd: "/repo"},
++			},
++			wantOthers: []string{"pid 600 orphan.test"},
++		},
++		{
++			name: "LongArgvIsCutAtTheLimit",
++			procs: []processInfo{
++				{pid: 700, ppid: 1, argv: []string{strings.Repeat("a", 300)}, cwd: dir},
++			},
++			wantInDir: []string{`pid 700 ["` + strings.Repeat("a", 198) + "…"},
++		},
++		{
++			name: "LongArgvIsCutAtACharacterNotInsideOne",
++			procs: []processInfo{
++				{pid: 700, ppid: 1, argv: []string{strings.Repeat("é", 300)}, cwd: dir},
++			},
++			wantInDir: []string{`pid 700 ["` + strings.Repeat("é", 198) + "…"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			others, inDir, ownInDir := classifyProcesses(self, dir, tt.procs)
++			if !slices.Equal(others, tt.wantOthers) {
++				t.Errorf("classifyProcesses others = %q; want %q", others, tt.wantOthers)
++			}
++			if !slices.Equal(inDir, tt.wantInDir) {
++				t.Errorf("classifyProcesses inDir = %q; want %q", inDir, tt.wantInDir)
++			}
++			if ownInDir != tt.wantOwnInDir {
++				t.Errorf("classifyProcesses ownInDir = %v; want %v", ownInDir, tt.wantOwnInDir)
++			}
++		})
++	}
++}
++
++// mkdirGit creates path as an empty directory.
++func mkdirGit(t *testing.T, path string) {
++	t.Helper()
++	if err := os.Mkdir(path, 0o755); err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index 960ff48e..08a2dc4b 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -34,12 +34,19 @@
+ // On every platform it then removes the directory, Windows included.
+ // A removal that fails is reported without changing the exit code,
+ // and a binary killed before it removes its directory leaves it for the next start's sweep.
+-// Main also fails the package for a `.git` that appeared during its run directly in a shared temp directory:
++// Main also checks for a `.git` that appears during its run directly in a shared temp directory:
+ // the lym temp root or the system temp directory above it, both shared by every test binary on the machine.
+ // Such an entry makes go's VCS stamping and git's repository discovery treat everything below it as one repository.
++// It watches both directories through fswatch, and on Linux it reads /proc the moment such an entry appears.
++// It fails the package only when the package's own binary or one of its descendants was working in that directory then.
++// Otherwise it reports a machine finding and keeps the exit code;
++// the finding names the other test binaries running then and every process working in the directory.
++// The binaries it names are candidates running at that moment, not the writer.
+ // It removes the entry when it is an empty directory and names it for removal by hand otherwise.
+-// Bound: a package running at the same time is failed for the same entry.
+-// The check cannot tell which binary wrote it.
++// Bound: the finding never fails the package off Linux.
++// It never does so either when the process table does not hold the binary itself.
++// It never does so when no watch saw the entry appear.
++// A writer that exits before the snapshot, or is no test binary, such as a daemon a finished test left, fails no package.
+ // A test binary re-executed as a helper inherits that environment,
+ // and its own run directory is made beside the inherited one, never inside it,
+ // so its socket paths do not grow past the limit.
+@@ -67,7 +74,6 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"io"
+-	"io/fs"
+ 	"net"
+ 	"os"
+ 	"os/exec"
+@@ -127,7 +133,7 @@ func Main(m *testing.M) int {
+ 
+ 	if runtime.GOOS == "windows" {
+ 		setTempEnv(dir)
+-		code := runCheckingGitEntries(os.Stderr, shared, m.Run)
++		code := runCheckingGitEntries(os.Stderr, shared, snapshotProcesses, m.Run)
+ 		return afterRun(os.Stderr, dir, code, leftoverGrace, func() {}, lymtemp.Remove)
+ 	}
+ 
+@@ -138,83 +144,11 @@ func Main(m *testing.M) int {
+ 	}
+ 	setEnv(dir)
+ 
+-	code := runCheckingGitEntries(os.Stderr, shared, m.Run)
++	code := runCheckingGitEntries(os.Stderr, shared, snapshotProcesses, m.Run)
+ 
+ 	return afterRun(os.Stderr, dir, code, leftoverGrace, func() { sweep(dir, os.Getuid()) }, lymtemp.Remove)
+ }
+ 
+-// gitEntryName is the repository marker.
+-// Left directly in a shared temp directory, it turns everything below that directory into one repository.
+-const gitEntryName = ".git"
+-
+-// sharedTempDirs returns the directories above the run directory dir that every test binary on the machine shares.
+-// They are the lym temp root holding dir and the system temp directory holding that root.
+-func sharedTempDirs(dir string) []string {
+-	root := filepath.Dir(dir)
+-	return []string{root, filepath.Dir(root)}
+-}
+-
+-// presentGitEntries returns the set of `.git` paths that exist directly in dirs, whatever their type.
+-func presentGitEntries(dirs []string) map[string]bool {
+-	present := map[string]bool{}
+-	for _, dir := range dirs {
+-		path := filepath.Join(dir, gitEntryName)
+-		if _, err := os.Lstat(path); err == nil {
+-			present[path] = true
+-		}
+-	}
+-	return present
+-}
+-
+-// runCheckingGitEntries snapshots the `.git` entries in dirs and calls run.
+-// It returns run's exit code, or 1 when the run left a new `.git` in dirs, naming it on w.
+-func runCheckingGitEntries(w io.Writer, dirs []string, run func() int) int {
+-	before := presentGitEntries(dirs)
+-	return checkNewGitEntries(w, dirs, before, run())
+-}
+-
+-// checkNewGitEntries fails the run for each `.git` directly in dirs that before does not hold.
+-// It names each on w and returns 1 when it found one, otherwise code.
+-// It removes such an entry when it is an empty directory,
+-// so the stray breaks no later build, and asks for its removal by hand otherwise.
+-// The entries are reported in the order of dirs.
+-func checkNewGitEntries(w io.Writer, dirs []string, before map[string]bool, code int) int {
+-	for _, dir := range dirs {
+-		path := filepath.Join(dir, gitEntryName)
+-		if before[path] {
+-			continue
+-		}
+-		info, err := os.Lstat(path)
+-		if err != nil {
+-			continue
+-		}
+-		fmt.Fprintf(w, "tmuxkit: %s appeared during the run of this package or one running beside it; a test or the code it drives wrote outside its own t.TempDir, often through a path joined onto an empty or parent directory, and go's VCS stamping and git's discovery read everything below it as one repository\n", path)
+-		fmt.Fprintln(w, removeStrayGitEntry(path, info))
+-		code = 1
+-	}
+-	return code
+-}
+-
+-// removeStrayGitEntry removes the `.git` entry at path, described by info, when it is an empty directory.
+-// It returns the line that says what became of it.
+-// A symlink or file is never removed or followed.
+-func removeStrayGitEntry(path string, info fs.FileInfo) string {
+-	if !info.IsDir() {
+-		return fmt.Sprintf("tmuxkit: %s is not a directory; remove it by hand", path)
+-	}
+-	err := os.Remove(path)
+-	switch {
+-	case err == nil:
+-		return fmt.Sprintf("tmuxkit: removed the empty directory %s", path)
+-	case errors.Is(err, fs.ErrNotExist):
+-		return fmt.Sprintf("tmuxkit: %s was already removed by another process", path)
+-	}
+-	if entries, readErr := os.ReadDir(path); readErr == nil && len(entries) > 0 {
+-		return fmt.Sprintf("tmuxkit: %s is not an empty directory; remove it by hand", path)
+-	}
+-	return fmt.Sprintf("tmuxkit: could not remove %s: %v; remove it by hand", path, err)
+-}
+-
+ // afterRun finishes a package's run: it checks the sockets under dir, then sweeps the servers.
+ // On Linux it kills every process still referencing dir;
+ // it fails the run for each one that is not a reed watchdog daemon, then calls remove to delete dir.
+diff --git a/internal/testkit/tmuxkit/tmuxkit_snapshot_linux_test.go b/internal/testkit/tmuxkit/tmuxkit_snapshot_linux_test.go
+new file mode 100644
+index 00000000..4fa5ce0b
+--- /dev/null
++++ b/internal/testkit/tmuxkit/tmuxkit_snapshot_linux_test.go
+@@ -0,0 +1,53 @@
++// tmuxkit_snapshot_linux_test.go holds the tier-1 test of the process snapshot.
++// The snapshot reads /proc, so the test runs only on Linux.
++
++package tmuxkit
++
++import (
++	"fmt"
++	"os"
++	"os/exec"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSnapshotProcesses_NamesAChildWorkingInTheDirectoryAndLeavesOutThisBinary reads the live process table.
++// A child started in the directory is named by pid and argv, and this test binary is never one of the others.
++func TestSnapshotProcesses_NamesAChildWorkingInTheDirectoryAndLeavesOutThisBinary(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	dir := t.TempDir()
++	child := exec.Command("sleep", "60")
++	child.Dir = dir
++	if err := child.Start(); err != nil {
++		t.Fatalf("start sleep: %v", err)
++	}
++	t.Cleanup(func() {
++		_ = child.Process.Kill()
++		_ = child.Wait()
++	})
++	at := time.Date(2026, 11, 19, 10, 0, 0, 0, time.UTC)
++
++	got := snapshotProcesses(dir, at)
++
++	if !got.attributed || !got.at.Equal(at) {
++		t.Errorf("snapshotProcesses(%q) attributed = %v, at = %v; want true, %v", dir, got.attributed, got.at, at)
++	}
++	if !got.ownInDir {
++		t.Errorf("snapshotProcesses(%q) ownInDir = false; want true for a child of this binary working there", dir)
++	}
++	want := []string{fmt.Sprintf("pid %d %q", child.Process.Pid, []string{"sleep", "60"})}
++	if !slices.Equal(got.inDir, want) {
++		t.Errorf("snapshotProcesses(%q) inDir = %q; want %q", dir, got.inDir, want)
++	}
++	self := fmt.Sprintf("pid %d ", os.Getpid())
++	for _, other := range got.others {
++		if strings.HasPrefix(other, self) {
++			t.Errorf("snapshotProcesses(%q) others = %q; want this binary left out", dir, got.others)
++		}
++	}
++}
+diff --git a/internal/testkit/tmuxkit/tmuxkit_snapshot_other_test.go b/internal/testkit/tmuxkit/tmuxkit_snapshot_other_test.go
+new file mode 100644
+index 00000000..632a9be1
+--- /dev/null
++++ b/internal/testkit/tmuxkit/tmuxkit_snapshot_other_test.go
+@@ -0,0 +1,24 @@
++//go:build !linux
++
++// tmuxkit_snapshot_other_test.go holds the tier-1 test of the process snapshot off Linux, where no process table is read.
++
++package tmuxkit
++
++import (
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestSnapshotProcesses_OffLinuxIsUnattributedAndKeepsTheTime(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	at := time.Date(2026, 11, 19, 10, 0, 0, 0, time.UTC)
++
++	got := snapshotProcesses(t.TempDir(), at)
++
++	if got.attributed || !got.at.Equal(at) || len(got.others) != 0 || len(got.inDir) != 0 || got.ownInDir {
++		t.Errorf("snapshotProcesses off Linux = %+v; want only at = %v", got, at)
++	}
++}
+diff --git a/internal/testkit/tmuxkit/tmuxkit_test.go b/internal/testkit/tmuxkit/tmuxkit_test.go
+index 9cebce4e..7b7890ef 100644
+--- a/internal/testkit/tmuxkit/tmuxkit_test.go
++++ b/internal/testkit/tmuxkit/tmuxkit_test.go
+@@ -5,7 +5,6 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
+-	"runtime"
+ 	"strconv"
+ 	"strings"
+ 	"testing"
+@@ -99,188 +98,6 @@ func TestMaxKeyBytes_HoldsReedServerName(t *testing.T) {
+ 	}
+ }
+ 
+-func TestSharedTempDirs_AreTheRootAndTheSystemTempDirectoryAboveIt(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-	system := t.TempDir()
+-	root := filepath.Join(system, "lym-1000")
+-	got := sharedTempDirs(filepath.Join(root, "rabcd"))
+-	if len(got) != 2 || got[0] != root || got[1] != system {
+-		t.Errorf("sharedTempDirs(%q) = %q; want [%q %q]", filepath.Join(root, "rabcd"), got, root, system)
+-	}
+-}
+-
+-func TestCheckNewGitEntries(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-	tests := []struct {
+-		name string
+-		// seed creates the `.git` entry at path; a nil seed creates none.
+-		seed        func(t *testing.T, path string)
+-		preexisting bool
+-		// inFirst seeds the first watched directory instead of the second.
+-		inFirst bool
+-		// skipWindows skips the row where creating its entry may need a privilege.
+-		skipWindows bool
+-		wantCode    int
+-		wantOutput  []string
+-		wantKept    bool
+-	}{
+-		{name: "NoEntryKeepsTheCode", wantCode: 0},
+-		{
+-			name:        "EntryPresentBeforeTheRunKeepsTheCodeAndTheEntry",
+-			seed:        mkdirGit,
+-			preexisting: true,
+-			wantCode:    0,
+-			wantKept:    true,
+-		},
+-		{
+-			name:       "NewEmptyDirectoryFailsAndIsRemoved",
+-			seed:       mkdirGit,
+-			wantCode:   1,
+-			wantOutput: []string{"appeared during the run", "removed the empty directory"},
+-		},
+-		{
+-			name:       "NewEmptyDirectoryInFirstDirectoryFailsAndIsRemoved",
+-			seed:       mkdirGit,
+-			inFirst:    true,
+-			wantCode:   1,
+-			wantOutput: []string{"appeared during the run", "removed the empty directory"},
+-		},
+-		{
+-			name: "NewNonEmptyDirectoryFailsAndIsKept",
+-			seed: func(t *testing.T, path string) {
+-				mkdirGit(t, path)
+-				if err := os.WriteFile(filepath.Join(path, "HEAD"), []byte("ref: refs/heads/main\n"), 0o644); err != nil {
+-					t.Fatal(err)
+-				}
+-			},
+-			wantCode:   1,
+-			wantOutput: []string{"appeared during the run", "is not an empty directory", "remove it by hand"},
+-			wantKept:   true,
+-		},
+-		{
+-			name: "NewGitfileFailsAndIsKept",
+-			seed: func(t *testing.T, path string) {
+-				if err := os.WriteFile(path, []byte("gitdir: /elsewhere\n"), 0o644); err != nil {
+-					t.Fatal(err)
+-				}
+-			},
+-			wantCode:   1,
+-			wantOutput: []string{"appeared during the run", "is not a directory", "remove it by hand"},
+-			wantKept:   true,
+-		},
+-		{
+-			name: "NewSymlinkFailsAndIsKept",
+-			seed: func(t *testing.T, path string) {
+-				if err := os.Symlink(filepath.Join(t.TempDir(), "target"), path); err != nil {
+-					t.Fatal(err)
+-				}
+-			},
+-			skipWindows: true,
+-			wantCode:    1,
+-			wantOutput:  []string{"appeared during the run", "is not a directory", "remove it by hand"},
+-			wantKept:    true,
+-		},
+-	}
+-	for _, tt := range tests {
+-		if tt.skipWindows && runtime.GOOS == "windows" {
+-			continue
+-		}
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			dirs := []string{t.TempDir(), t.TempDir()}
+-			dir := dirs[1]
+-			if tt.inFirst {
+-				dir = dirs[0]
+-			}
+-			path := filepath.Join(dir, gitEntryName)
+-			if tt.seed != nil && tt.preexisting {
+-				tt.seed(t, path)
+-			}
+-			before := presentGitEntries(dirs)
+-			if tt.seed != nil && !tt.preexisting {
+-				tt.seed(t, path)
+-			}
+-
+-			var out bytes.Buffer
+-			got := checkNewGitEntries(&out, dirs, before, 0)
+-
+-			if got != tt.wantCode {
+-				t.Errorf("checkNewGitEntries code = %d; want %d", got, tt.wantCode)
+-			}
+-			for _, want := range tt.wantOutput {
+-				if !strings.Contains(out.String(), want) {
+-					t.Errorf("checkNewGitEntries output = %q; want it to hold %q", out.String(), want)
+-				}
+-			}
+-			if len(tt.wantOutput) == 0 && out.Len() != 0 {
+-				t.Errorf("checkNewGitEntries output = %q; want none", out.String())
+-			}
+-			if len(tt.wantOutput) != 0 && !strings.Contains(out.String(), path) {
+-				t.Errorf("checkNewGitEntries output = %q; want it to name %s", out.String(), path)
+-			}
+-			_, err := os.Lstat(path)
+-			if kept := err == nil; kept != tt.wantKept {
+-				t.Errorf("%s kept = %v; want %v", path, kept, tt.wantKept)
+-			}
+-		})
+-	}
+-}
+-
+-func TestRunCheckingGitEntries(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-	tests := []struct {
+-		name string
+-		// preexisting creates the `.git` before the run starts.
+-		preexisting bool
+-		// duringRun makes the fake run create the `.git`.
+-		duringRun bool
+-		runCode   int
+-		wantCode  int
+-	}{
+-		{name: "RunLeavingNoEntryKeepsTheCode", runCode: 3, wantCode: 3},
+-		{name: "RunLeavingNewEntryFails", duringRun: true, wantCode: 1},
+-		{name: "RunLeavingNewEntryKeepsAFailingCodeFailing", duringRun: true, runCode: 2, wantCode: 1},
+-		{name: "EntryPresentBeforeTheRunKeepsTheCode", preexisting: true, runCode: 0, wantCode: 0},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			dirs := []string{t.TempDir(), t.TempDir()}
+-			path := filepath.Join(dirs[0], gitEntryName)
+-			if tt.preexisting {
+-				mkdirGit(t, path)
+-			}
+-			run := func() int {
+-				if tt.duringRun {
+-					mkdirGit(t, path)
+-				}
+-				return tt.runCode
+-			}
+-
+-			var out bytes.Buffer
+-			got := runCheckingGitEntries(&out, dirs, run)
+-
+-			if got != tt.wantCode {
+-				t.Errorf("runCheckingGitEntries code = %d; want %d", got, tt.wantCode)
+-			}
+-			if named := strings.Contains(out.String(), path); named != tt.duringRun {
+-				t.Errorf("runCheckingGitEntries output = %q; names %s = %v, want %v", out.String(), path, named, tt.duringRun)
+-			}
+-		})
+-	}
+-}
+-
+-// mkdirGit creates path as an empty directory.
+-func mkdirGit(t *testing.T, path string) {
+-	t.Helper()
+-	if err := os.Mkdir(path, 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-}
+-
+ func TestAfterRun_ReportsFailedRemovalKeepingTheCode(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
+index b9cb579f..812b573e 100644
+--- a/pattern/PATTERN-test-isolation.md
++++ b/pattern/PATTERN-test-isolation.md
+@@ -102,13 +102,21 @@ A test package never reaches the operator's global gitconfig or default tmux soc
+ - Bound: the check misses a test that points `TMUX_TMPDIR` elsewhere and a server started by a binary other than tmux.
+   It also misses a server that reed tore down itself within the run, since reed removes its server's socket file.
+   That holds in every tier.
+-- After the run `Main` fails the package with exit 1 for a `.git` that appeared during its run in one of two places:
++- `Main` checks for a `.git` that appears during its run in one of two places:
+   directly in the lym temp root, or directly in the system temp directory above it.
+   Both are shared by every test binary on the machine,
+   so such an entry makes go's VCS stamping and git's discovery read everything below it as one repository.
+   A test writes only under its own `t.TempDir`; the finding names the path.
++  `Main` watches both directories through `internal/fswatch` during the run.
++  On Linux, the moment such an entry appears, it reads `/proc` for the other test binaries running,
++  leaving out its own descendants, and for every process working in that directory.
++  It fails the package with exit 1 only when its own binary or a descendant of it was working in that directory then.
++  Otherwise it reports a machine finding that names the other test binaries and keeps the exit code:
++  the binaries named are candidates running at that moment, not the writer.
+   `Main` removes the entry when it is an empty directory and asks for its removal by hand otherwise.
+-  Bound: a concurrently running package fails for the same entry, since the check cannot tell which binary wrote it.
++  Bound: off Linux, when the process table does not hold the binary itself, or when no watch saw the entry appear,
++  the finding never fails the package.
++  A writer that exits before the snapshot, or is no test binary, such as a daemon a finished test left, fails no package.
+   An entry present before the run is no finding.
+ - Bound: a test binary killed by a panic or timeout skips the post-run check.
+ 
