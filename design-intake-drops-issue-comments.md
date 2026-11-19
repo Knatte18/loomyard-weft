@@ -1,6 +1,6 @@
 # Intake import drops the issue comments
 
-`intake-drops-issue-comments` · Task · bug, board · running · Record-Write
+`intake-drops-issue-comments` · Task · bug, board · running · Drift-Baseline
 
 ## What was seen
 
