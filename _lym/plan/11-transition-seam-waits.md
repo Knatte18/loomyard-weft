@@ -1,7 +1,7 @@
 # Card 11 — transition-seam-waits
 
 **Create:**
-- `plan:internal/statuscommit#TestNew_MergeOperationWaits` -> `func TestNew_MergeOperationWaits(t *testing.T)`
+- `internal/statuscommit#TestNew_MergeOperationWaits`
 
 **Edit:**
 - `internal/statuscommit#Deps`

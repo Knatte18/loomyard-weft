@@ -1,6 +1,6 @@
 {
   "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
-  "planFingerprint": "da7d93005784eebaf51f4d304adbf88eea8c1a38d43c8bdcc378ab70b0937505",
+  "planFingerprint": "f2b71bfe308198f3593b1d64f3d91042112f3fb04b059a77203f2ee7dc15f646",
   "planFileHashes": {
     "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
     "01-lymcwd-one-repository.md": "4129e3dc033151515eab5f0cc8f4919bd4d80c02b7196f191ad67532210fabc0",
@@ -13,7 +13,7 @@
     "08-one-repository-anchor-change.md": "79fb3d948152d36fc0e8ba6d073785a6a95ae4821fd647901922d5b5a5612f59",
     "09-merge-keeps-receiving-records.md": "002c0b65230fffaead01b555e2463830c05dcb07e76f0a1ec95bc40b63c189a8",
     "10-records-commit-during-merge.md": "e93c941fd04d49ec4fa5c0325db077f6da07af96f0db9afeff813590cbdf3daf",
-    "11-transition-seam-waits.md": "ab7e8a0b87b7e3e1b59d43d5bd47cd98b7732f34c662892dc72f81e46bf65695",
+    "11-transition-seam-waits.md": "b768ee84b5b50e1be2eb1f4c80ea990c317479373eb552f7b578f4174793b19e",
     "12-one-branch-push-and-teardown.md": "881181b918a26f795b341549989cf7e49c81030deaf32d1ecf222cd5799af8b7",
     "13-records-only-replay.md": "364da4b52f4b240be8013913b44fa4240c29766084dad08c3b9903cb190b13a1",
     "14-prime-records-push-guard.md": "e29650ca074f9fc930618824eeb02335f910d12cf33a7f4102227ae5c5c26999",
@@ -596,15 +596,36 @@
         "11-transition-seam-waits"
       ],
       "cardHashes": {
-        "11-transition-seam-waits": "ab7e8a0b87b7e3e1b59d43d5bd47cd98b7732f34c662892dc72f81e46bf65695"
+        "11-transition-seam-waits": "b768ee84b5b50e1be2eb1f4c80ea990c317479373eb552f7b578f4174793b19e"
       },
       "startSha": "c4877cb5f0fa7b92e82f1f7e7d03287b11427e42",
       "kind": "fork",
       "spawnedAt": "2026-11-19T08:25:45Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-transition-seam-waits",
+        "status": "done",
+        "head_sha": "f811661d1db72c702634d86e076367a5c4b999d7",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/battencli/overview_test.go",
+          "internal/loomcli/wiring_commitstatus_integration_test.go",
+          "internal/statuscommit/statuscommit.go",
+          "internal/statuscommit/statuscommit_test.go"
+        ]
+      },
+      "cardShas": [
+        "f811661d1db72c702634d86e076367a5c4b999d7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl"
+      ]
     },
     "4": {
       "slug": "protected-push-class",
@@ -770,7 +791,7 @@
       ]
     }
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
@@ -780,6 +801,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af117bff08d503c0c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a488ddd75d33042f1.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ad2439eafc6c9bbfa.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af106d0fa478ae57a.jsonl"
   ]
 }
