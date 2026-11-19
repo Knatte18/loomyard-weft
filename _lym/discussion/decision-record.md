@@ -283,6 +283,12 @@ The operator cleans the origin as that refusal names, then clones again with D3.
 Rationale: the layout landed on 2026-11-19 for the operator's own use, and the operator has ruled out migration code
 (`drop-compat-migration-code`, decided 2026-11-19); a refusal that names the cleanup is the cheap kind that entry keeps.
 
+### Added after Discussion (parent, 2026-11-19): Peer merge-probe run has landed
+
+Decision: two-repo-merge-probe-regression landed on main as c83fec49 before this split; the removal part starts from that main and deletes or rewrites its probe cache as D5 says. No ordering is needed.
+
+Rationale: The peer is no longer running, so there is nothing to order or narrow.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
