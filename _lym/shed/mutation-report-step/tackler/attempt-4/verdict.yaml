@@ -1,8 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop said the run's code tip e187b257fb0c7e8341841c5ba96b4052d358d285
-  was not on origin yet. That was true at the stop (12:08 local), but the push has since
-  landed: `git ls-remote origin refs/heads/mutation-report-step` now returns
-  e187b257fb0c7e8341841c5ba96b4052d358d285, equal to the commit the stop names. The
-  cause is cleared, and the step's own remedy ("run lym batten run mutation-report-step
-  again once the code push lands") is a plain re-launch, so no goto is needed.
