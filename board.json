@@ -274,7 +274,7 @@
       "isolated": false,
       "brief": "Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research",
       "body": "## What was seen (2026-11-18)\n\n`comment-trim-second-pass` (darn, profile `docs`) measured comment shares and wrote the result only into its change description (`_lym/landing/summary.md`).\nIt committed nothing to the repository, so Land landed an empty diff and dobby reported \"landed as 64e58795\", which was main's tip.\nThe finding then lived only in the archived records tag (`archive/comment-trim-second-pass/...`), where no one looks.\n\n## Idea\n\n- The darn writer stencil for profile `docs` requires the report as a committed file under `docs/research/`.\n- Land refuses, or at least flags in dobby's line, a run whose code diff against its parent is empty.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-18T20:11:01Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
@@ -335,7 +335,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #150](https://github.com/Knatte18/loomyard/issues/150).\n\n## What happened\n\n`lym shed step ... --until-stop` halted as `failed` with anomaly `interrupted-stop` while step `Drift-Await` was in flight.\nThe note read: `loop-exited: loop ... ended without an envelope`, with `loop exit: not recorded, since no process marked the loop's exit`.\nThe status file already read `Webster`, so the step's result and the loop's state disagreed.\nThe history ended at `Drift-Expect / skipped`, after `Plan-Bouncer / done` and `Drift-Await / skipped`.\n\nBefore the loop ended, the step stderr carried the same warning three times, at roughly 7 to 8 minute intervals:\n`shuttle: session state disagrees ... loop=held state=busy cause=background stands=loop`.\nThe stopped shuttle run was the `webster` strand.\n\n## Why it is abnormal\n\nThe warning repeated for over 15 minutes without lym resolving the disagreement between the held loop and the session state `busy` caused by `background`.\nThe loop then ended with no envelope and no recorded exit, so the halt note cannot tell a kill, a machine stop or a lym defect apart.\nA session reported `busy` by a background cause while the loop holds it looks like a stuck or misclassified state, which may have led to the loop being stopped.\n\n## What to do\n\n- Find out why the shuttle state check reported `loop=held state=busy cause=background` repeatedly, and whether that state should count as a real disagreement.\n- Make the loop record its exit, or at least a reason, on every path that ends it without an envelope, so a halt note can name the cause.\n- Have the repeated warning escalate or self-resolve rather than recur silently until the loop dies.\n\nProvenance: task `claude-accounts-per-worktree`, from note `loom-halt.md`.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-19T09:28:32Z",
       "revised": "2026-11-19T10:51:16Z",
       "run_settings": {
