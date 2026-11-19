@@ -22,7 +22,7 @@
 
 **Uses:**
 - `internal/testreach#Open`
-- `plan:internal/testreach#Reader.FuncsReachedBy`
+- `internal/testreach#Reader.FuncsReachedBy`
 - `internal/gatecli#changedFuncsAt`
 - `internal/gatecli#parentMergeBase`
 - `internal/gatecli#redundancyModule`

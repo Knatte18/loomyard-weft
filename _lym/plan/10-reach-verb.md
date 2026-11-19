@@ -1,13 +1,13 @@
 # Card 10 — reach-verb
 
 **Create:**
-- `plan:internal/testreach#Reader.FuncsReachedBy` -> `func (r *Reader) FuncsReachedBy(pkg, test string, among []testcover.FuncKey) ([]testcover.FuncKey, MapSource, bool)`
-- `plan:internal/fabricengine#FirstParentCommit` -> `type FirstParentCommit struct`
-- `plan:internal/fabricengine#Fabric.FirstParentCommits` -> `func (f *Fabric) FirstParentCommits(branch, since string, limit int) ([]FirstParentCommit, bool, error)`
-- `plan:internal/gatecli#reachRequest` -> `type reachRequest struct`
-- `plan:internal/gatecli#reachCmd` -> `func reachCmd() *cobra.Command`
-- `plan:internal/gatecli#runReach` -> `func runReach(ctx context.Context, out io.Writer, request reachRequest) int`
-- `plan:internal/gatecli#TestGateReach` -> `func TestGateReach(t *testing.T)`
+- `internal/testreach#Reader.FuncsReachedBy`
+- `internal/fabricengine#FirstParentCommit`
+- `internal/fabricengine#Fabric.FirstParentCommits`
+- `internal/gatecli#reachRequest`
+- `internal/gatecli#reachCmd`
+- `internal/gatecli#runReach`
+- `internal/gatecli#TestGateReach`
 
 **Edit:**
 - `internal/gatecli#newCommand`
