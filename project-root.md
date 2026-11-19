@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 13:27 UTC; every age below is as of then.
+Rendered 2026-11-19 13:28 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,13 +12,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid | starting · Worktree-Create | neve | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Hardener: the hardener recipe, its round rows, sandbox hubs and live gate, with treadle and crucible retired** | [`hardener-campaign`](design-hardener-campaign.md)<br>[Sketch](decision-hardener-campaign.md) | tapestry · solid |  | 3h<br>2h | shed, loom, burler, gate, batten, report, board, config, landing, stencil, preflight, pattern, docs |
+_None._
 
 ## Notes (10)
 
