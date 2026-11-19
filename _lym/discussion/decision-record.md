@@ -413,6 +413,12 @@ Decision: lym board open has no refusal for a missing board.html: D5 stands as w
 
 Rationale: The Delivers line's refusal guarded the old design, in which open handed the browser the committed board.html. The operator's 'Wanted next (operator, 2026-11-19)' section asks for writes from the page, which a file:// page cannot send (support log Turn 2), so open now opens the server's page, built from the embedded asset and a live projection (D2, D5). A refusal on a missing board.html would then stop open for a file it never reads, a refusal with no failure behind it. Dropping it removes no capability the entry asks for and widens nothing, and the rerender way forward still reaches the operator where a missing board-data.js does break a page.
 
+### Added after Discussion (parent, 2026-11-19): Open lym board open refusal dropped; committed render outputs stay
+
+Decision: Confirmed: lym board open drops its refusal naming lym board rerender, since the server serves the embedded page. board.html and board-data.js stay committed render outputs beside README.md, serving the read-only page opened by hand at file://.
+
+Rationale: The operator agreed on 2026-11-19 that the arbiter keeps board.html and board-data.js; with the server serving the page, a missing board.html in the Bolt no longer has to stop the verb.
+
 ## Constraints
 
 - `PATTERN-cwd-resolution`: nothing is linked or junctioned into a worktree; the hub path is resolved in lym.
