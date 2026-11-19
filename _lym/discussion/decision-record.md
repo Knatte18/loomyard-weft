@@ -50,6 +50,12 @@ There it is a skill steering a live chat; here it becomes structure.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-19): scribe:testing rule left out of this run
+
+Decision: Part 2's matching rule in scribe:testing is not built here: scribe is its own repository and hub, outside this worktree. This run builds only the Code-Review rubric bullet; the parent files the scribe:testing rule on the scribe hub's board.
+
+Rationale: A run changes only its own worktree; the rubric line alone catches the tautological test in review.
+
 ## Constraints
 
 ## Auto-mode assumptions
