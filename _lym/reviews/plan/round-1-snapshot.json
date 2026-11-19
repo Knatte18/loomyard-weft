@@ -37,5 +37,6 @@
       "title": "Open lym board open refusal dropped; committed render outputs stay",
       "digest": "2f580d1d237bd39abf15ff2ca3ffcfb55116bf5546739e7f0f94178c3050d87f"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
