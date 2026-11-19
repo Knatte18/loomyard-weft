@@ -405,22 +405,36 @@
     },
     {
       "id": 1516,
-      "handle": "E2",
+      "handle": "T4",
       "slug": "bug-red-first-gate",
       "title": "Bug runs prove their test was red before the fix, and name the root cause in a trailer",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "gate",
         "testmap"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hardener-campaign"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Source: `docs/research/survey/pocock-skills-2026-11-19/report.md` (survey of Matt Pocock's skills repository, 2026-11-19), candidate 2, which holds the design.\n\n## Idea\n\nFor an entry labelled `bug`, a gate step runs the tests the diff adds or changes (named by `testreach`) once on the merge-base tree and fails when every one passes there.\nThe fix commit carries a `Root-Cause:` trailer that Code-Review checks like `Loosened-Check:`.\nA bug with no seam for a test is a stop the record names, never a silent pass.",
+      "status": "draft",
       "created": "2026-11-19T13:18:24Z",
-      "revised": "2026-11-19T13:18:24Z"
+      "revised": "2026-11-19T14:42:49Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1517,

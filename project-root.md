@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -29,7 +29,15 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Merge danger in descriptions, tautological tests in review, and a shared vocabulary**<br>• A Merge danger section in every change description; Code-Review flags tautological tests; one glossary loaded by the orch and Discussion<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`merge-danger-tautology-glossary`](design-merge-danger-tautology-glossary.md) | darn · light |  | 1h<br>0m | landing, stencil, burler, heddle, docs |
 
-## Notes (6)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | `draft` **Bug runs prove their test was red before the fix, and name the root cause in a trailer**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bug-red-first-gate`](design-bug-red-first-gate.md) | darn · light | T10 | 1h<br>0m | gate, testmap |
+
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -45,12 +53,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 10d<br>10d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
-
-### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E2 |  | **Bug runs prove their test was red before the fix, and name the root cause in a trailer** | [`bug-red-first-gate`](design-bug-red-first-gate.md) | 1h<br>1h | gate, testmap |
 
 ### Features (2)
 
