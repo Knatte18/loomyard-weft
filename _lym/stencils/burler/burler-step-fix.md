@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=69cfbf1033d26588b4a965a20d25cb719561799ed99bfca79a3473d88be84c5d build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=b2be41e3fbd177b7500a15357f8519a9e5483df6868f1679c643f4735ec4585d build=e55618bb71373a82195f5dd7ab94c672c4d25e97 time=2026-11-19T15:24:07Z -->
 
 {{.friction_directive}}
 
@@ -42,7 +42,7 @@ Give it exactly one of three dispositions, decided in this order.
 3. **Fix as proposed**: otherwise.
    A `fix` key that is vague leaves the change to you and needs no mark.
 
-The other legitimate reason to leave a finding unfixed is something you genuinely cannot do alone this round (an operator decision on a real tradeoff,
+The other legitimate reason to leave a finding unfixed is something you genuinely cannot do alone this round (a decision on a real tradeoff that belongs to the run's parent,
 or a capability you do not have);
 even then you must say so explicitly, with the specific reason, in the fixer-report's deferred section.
 Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
