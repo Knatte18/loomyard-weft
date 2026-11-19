@@ -1,6 +1,6 @@
 # One-repository hubs redesigned: records on their own branches, the layout known only to fabric
 
-`single-repo-records-branches` · Task · feature, fabric · starting · Open-Window
+`single-repo-records-branches` · Task · feature, fabric · starting · Seed-IDE
 
 {"error":"invalid json: invalid character 's' looking for beginning of value","ok":false}
 
