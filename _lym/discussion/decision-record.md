@@ -341,6 +341,14 @@ Rationale: The hub's _bolt/_lym/config/gate.yaml lies outside the task worktree,
 
 - A round agent can still run `lym selfreport create` by hand, which files on the real upstream whatever the hub's config says; the committed override stops only the automatic paths, and the rubric forbids the call.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - archive-written-outside-anchor (class design, severity MEDIUM, open in rounds 1)
+  - archived-stray-report-unchecked (class design, severity MEDIUM, open in rounds 1)
+  - bouncer-red-live-and-halt-reap-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The `hardener` recipe builds under the loom contract, and a recipe holding two `HardenFix` rows, a `HardenFix` row whose segment's Bouncer lies before the record row,
