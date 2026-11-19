@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-19T10:54:06Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/intake-drops-issue-comments/_lym/landing/summary.md",
+      "at": "2026-11-19T11:04:05Z",
+      "started_at": "2026-11-19T10:54:20Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T10:56:34.369481352Z",
+          "end": "2026-11-19T10:56:34.416455128Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T10:56:34.51111414Z",
+          "end": "2026-11-19T11:02:01.3445033Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T11:02:01.741585909Z",
+          "end": "2026-11-19T11:02:02.498895624Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T11:02:02.768890599Z",
+          "end": "2026-11-19T11:02:02.770471686Z"
+        }
+      ]
     }
   ],
   "product": {
