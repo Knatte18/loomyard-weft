@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,40 @@
       "output": "",
       "at": "2026-11-19T08:43:59Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/mutation-trial/_lym/landing/summary.md",
+      "at": "2026-11-19T09:04:33Z",
+      "started_at": "2026-11-19T08:44:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T09:03:58.234831686Z",
+          "end": "2026-11-19T09:03:58.248263569Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T09:03:58.314838202Z",
+          "end": "2026-11-19T09:03:58.33429427Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-19T09:03:58.406678368Z",
+          "end": "2026-11-19T09:03:58.779890313Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-19T09:03:58.847558999Z",
+          "end": "2026-11-19T09:03:58.847678362Z"
+        }
+      ]
     }
   ],
   "product": {
