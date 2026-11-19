@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-19 08:09 UTC; every age below is as of then.
+Rendered 2026-11-19 08:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -40,7 +40,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Run the mutation trial with lym gate mutate**<br>• Replay about twenty landed diffs with lym gate mutate and decide whether to build the mutation report step | [`mutation-trial`](design-mutation-trial.md) | 36m<br>36m |  |
+| R1 |  | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step | [`mutation-trial`](design-mutation-trial.md) | 1h<br>0m |  |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 9d<br>9d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 1d<br>1d | shuttle |
 
@@ -48,9 +48,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 12h<br>12h | gate, tools |
-| B2 |  | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | 11h<br>11h | landing, darn |
-| B3 |  | **A creel post to SLACK reports ok while Slack is disconnected** | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | 28m<br>28m | creel, slack |
+| B1 |  | **Some test writes a .git into the shared temp directory and fails unrelated packages**<br>• tmuxkit fails every package running beside the writer; find the test that writes it and fix it | [`stray-tmp-git-writer`](design-stray-tmp-git-writer.md) | 13h<br>13h | gate, tools |
+| B2 |  | **A docs darn can land with an empty diff and its report only in the change description**<br>• Land accepts an empty diff silently and dobby reports main tip as the landing; a docs darn should commit its report under docs/research | [`empty-landing-not-flagged`](design-empty-landing-not-flagged.md) | 12h<br>12h | landing, darn |
+| B3 |  | **A creel post to SLACK reports ok while Slack is disconnected** | [`creel-slack-post-silent-when-off`](design-creel-slack-post-silent-when-off.md) | 1h<br>1h | creel, slack |
 
 ### Features (2)
 

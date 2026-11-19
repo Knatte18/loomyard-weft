@@ -6,7 +6,7 @@ Run the mutation trial the board entry asks for, with `lym gate mutate`, then de
 
 ## The trial
 
-Replay about twenty landed diffs of the repository with `lym gate mutate`, and count and read the survivors.
+Replay exactly 20 landed diffs of the repository with `lym gate mutate`, one run per diff and no repeats, and count and read the survivors.
 Each replay needs a worktree at the landing commit, which no implementer of the run that built the verb may create.
 In it, run `lym gate mutate --base <the landing's first parent>`.
 The verb refreshes a task worktree's own maps of the changed packages itself, so a worktree with a clean tree needs no map build first.
