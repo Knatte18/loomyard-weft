@@ -4,11 +4,8 @@
 
 {"error":"invalid json: invalid character 's' looking for beginning of value","ok":false}
 
-## What f06acf39 left, read 2026-11-19
+## Scope (operator, 2026-11-19)
 
-About 2,800 to 3,000 of its 3,765 added non-test Go lines exist only because records shared the code branch, and would go:
-`recordsduringmerge`, `mergerecords`, `recordspaths`, `primepushguard`, `recordscommit`, most of `clone_onerepository` and `onerepository`,
-the prime push guard with the `operator_unpushed` and `protected` classes, `lym.primeBranch`, the code-commit replay filter, the `Warp-SHA` rewording,
-the statuscommit wait and stall logic, `MidMergeRecordsUnsettled`, and the gated branches in about 40 files.
-Likely reusable: the `_bolt` worktree on orphan `lym-bolt` and `originHoldsBolt`; the `RecordsWorktree`, `RecordsRepoRoot` and `recordsBranchIn` seam with a new predicate behind it;
-the same-repo remote-refs lock skip in `judgeAgainstOrigin`; the `index.lock` retry; the protected-branch classifier; the archive-tag-then-delete teardown.
+The one-repository hub is for the operator's own use only.
+The two-repository hub stays the standard and the one used with other people: every trace of LoomYard lives in its own repository there.
+Extra branches in a one-repository hub are clutter to anyone else reading the repository; Discussion weighs keeping records and the board under a custom ref namespace such as `refs/lym/...`, which no default clone fetches and GitHub lists as no branch, against plain branches.

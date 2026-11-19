@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records on each code branch, the board on lym-bolt
 
-Rendered 2026-11-19 12:16 UTC; every age below is as of then.
+Rendered 2026-11-19 12:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 16h · Owner `neve`
@@ -26,7 +26,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md) | motif |  | 7m<br>3m | fabric |
+| T2 | `draft` **One-repository hubs redesigned: records on their own branches, the layout known only to fabric**<br>• Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays | [`single-repo-records-branches`](design-single-repo-records-branches.md) | motif |  | 10m<br>0m | fabric |
 
 ## Notes (0)
 

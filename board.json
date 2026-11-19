@@ -468,10 +468,10 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Redesign single-repo mode so records live on their own branches in the code repository, wired as _lym like weft, and decide what of f06acf39 stays",
-      "body": "{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n\n## What f06acf39 left, read 2026-11-19\n\nAbout 2,800 to 3,000 of its 3,765 added non-test Go lines exist only because records shared the code branch, and would go:\n`recordsduringmerge`, `mergerecords`, `recordspaths`, `primepushguard`, `recordscommit`, most of `clone_onerepository` and `onerepository`,\nthe prime push guard with the `operator_unpushed` and `protected` classes, `lym.primeBranch`, the code-commit replay filter, the `Warp-SHA` rewording,\nthe statuscommit wait and stall logic, `MidMergeRecordsUnsettled`, and the gated branches in about 40 files.\nLikely reusable: the `_bolt` worktree on orphan `lym-bolt` and `originHoldsBolt`; the `RecordsWorktree`, `RecordsRepoRoot` and `recordsBranchIn` seam with a new predicate behind it;\nthe same-repo remote-refs lock skip in `judgeAgainstOrigin`; the `index.lock` retry; the protected-branch classifier; the archive-tag-then-delete teardown.\n",
+      "body": "{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n\n## Scope (operator, 2026-11-19)\n\nThe one-repository hub is for the operator's own use only.\nThe two-repository hub stays the standard and the one used with other people: every trace of LoomYard lives in its own repository there.\nExtra branches in a one-repository hub are clutter to anyone else reading the repository; Discussion weighs keeping records and the board under a custom ref namespace such as `refs/lym/...`, which no default clone fetches and GitHub lists as no branch, against plain branches.\n",
       "status": "draft",
       "created": "2026-11-19T12:08:48Z",
-      "revised": "2026-11-19T12:13:39Z",
+      "revised": "2026-11-19T12:18:49Z",
       "project": "single-repo-hub"
     },
     {
