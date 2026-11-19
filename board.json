@@ -459,6 +459,25 @@
       "body": "Run the mutation trial the board entry asks for, with `lym gate mutate`, then decide whether the `mutation` report step is built.\n\n## The trial\n\nReplay about twenty landed diffs of the repository with `lym gate mutate`, and count and read the survivors.\nEach replay needs a worktree at the landing commit, which no implementer of the run that built the verb may create.\nIn it, run `lym gate mutate --base \u003cthe landing's first parent\u003e`.\nThe verb refreshes a task worktree's own maps of the changed packages itself, so a worktree with a clean tree needs no map build first.\nIn the prime it judges only the packages whose shared maps match the worktree, which `lym gate test --map` builds.\n\nPick landings that change Go production code, across several packages, small and large.\nPer diff, record the counts the envelope prints: mutants run, killed, survived and unjudged, the uncovered changed blocks and the packages not judged.\nRead a sample of the survivors and judge each: a missing check, or a mutant no test could reasonably kill.\nRead the unjudged mutants and the packages not judged too, since a high share of either says the verb's bounds need tuning before it can pay.\n\n## The decision\n\nFrom the counts, decide whether the `mutation` gate report step is built, as a later darn, and listed in the template's `diff` keys.\nThe step would write `mutation.json`, print one summary line and feed a `mutation_report` marker of the code review rubric.\nIt is built only if the survivors the trial reads are mostly findings a reviewer would act on, at a cost in build and run time that the gate's bounds accept.\n",
       "created": "2026-11-19T07:33:18Z",
       "revised": "2026-11-19T07:33:18Z"
+    },
+    {
+      "id": 1502,
+      "handle": "B3",
+      "slug": "creel-slack-post-silent-when-off",
+      "title": "A creel post to SLACK reports ok while Slack is disconnected",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "slack"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## What was seen\n\n2026-11-19: `lym creel post ly:SLACK \"\u003ctext\u003e\"` answered `{\"ok\":true}` (message 2035) while the operator had disconnected Slack.\n`lym slack status` showed `relay_live: false`, `connected: false` and an empty `forwarding` list, so the post reached no channel, and the sender was not told.\nThe orch believed the result was on Slack.\n\n## Idea\n\nA post to SLACK while no relay runs, or while the sending orch has its slack button off, should say so:\nrefuse with the state and a way forward (`lym slack start`, or press the button), or answer ok with a `delivered: false` field and the reason.\nThe sender then reports the result in its pane instead.\n",
+      "created": "2026-11-19T07:41:17Z",
+      "revised": "2026-11-19T07:41:17Z"
     }
   ],
   "prime_owner": "neve",
