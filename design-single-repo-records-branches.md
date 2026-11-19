@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-single-repo-records-branches.md)
 
-{"error":"invalid json: invalid character 's' looking for beginning of value","ok":false}
-
 ## Scope (operator, 2026-11-19)
 
 The one-repository hub is for the operator's own use only.
