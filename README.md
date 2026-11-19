@@ -95,7 +95,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 6h<br>6h | testmap, gate |
+| T5 | `draft` **Measure whether the reach and mutation reports change what runs land**<br>• Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`testmap-use-measure`](design-testmap-use-measure.md) | darn · docs |  | 7h<br>7h | testmap, gate |
 
 ### Notes (0)
 
@@ -155,7 +155,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | starting · Seed-IDE | neve | 1h<br>1m | shed |
+| T2 | **Raddle checks pass a part slug that Raddle-File then refuses as too long**<br>• The proposal checks do not test the board slug length limit, so an approved split stops at Raddle-File<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`raddle-slug-length-check`](design-raddle-slug-length-check.md) | darn · light | starting · Open-IDE | neve | 1h<br>1m | shed |
 
 #### Ready (0)
 

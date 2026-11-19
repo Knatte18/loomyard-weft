@@ -1,6 +1,6 @@
 # Raddle checks pass a part slug that Raddle-File then refuses as too long
 
-`raddle-slug-length-check` · Task · bug, shed · starting · Seed-IDE
+`raddle-slug-length-check` · Task · bug, shed · starting · Open-IDE
 
 ## Seen
 
