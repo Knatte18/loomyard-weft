@@ -1,6 +1,6 @@
 # Run the mutation trial with lym gate mutate
 
-`mutation-trial` · Task · research · draft
+`mutation-trial` · Task · research
 
 Run the mutation trial the board entry asks for, with `lym gate mutate`, then decide whether the `mutation` report step is built.
 

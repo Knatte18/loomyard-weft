@@ -12,19 +12,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | darn · docs |  | 1h<br>0m |  |
 
-### Draft (2)
+### Draft (1)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Run the mutation trial with lym gate mutate**<br>• Replay exactly 20 landed diffs with lym gate mutate and decide whether to build the mutation report step<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`mutation-trial`](design-mutation-trial.md) | darn · docs |  | 1h<br>0m |  |
 | T3 | `draft` **Board viewer rendered beside the README, opened by lym board open and a VS Code key** | [`board-viewer-build`](design-board-viewer-build.md)<br>[Sketch](decision-board-viewer-build.md) | sampler · solid |  | 1d<br>1d | board, ide, fabric |
 
 ## Notes (8)
