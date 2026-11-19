@@ -1,0 +1,38 @@
+# Finalize waits out a mergeability GitHub has not computed before halting
+
+GitHub refuses a merge with `405 Pull Request is not mergeable` while its `mergeable` field is still `UNKNOWN`, and `classifyRefusal` reads that message as `RefusalOther`.
+Finalize halted on every `RefusalOther` at once, with a way forward naming a second approval or a required check, even when the pull request turned `CLEAN` a few seconds later (issue #161).
+
+## What changes
+
+- `Finalize.mergeOnGitHub` (`internal/landingshed/finalize_pr.go`): a `RefusalOther` now has `pullrequest.ReadMergeState` read the pull request at the pushed task head against the parent branch.
+  That reading already polls while GitHub's `mergeable_state` is `unknown`, for up to `MergeRetryWindow`.
+  While the reading says the pull request can merge, the merge is retried inside the existing one-minute retry window, with the same backoff as a pending refusal.
+- `mergeRefusalReason` takes the reading and names each cause GitHub reports after GitHub's own message, as `GitHub reports: blocked: a review or a required check is still owed`, or `GitHub has not yet computed whether it can merge` when the poll ran out.
+  A refusal that outlasts the window while GitHub reports the pull request can merge halts naming `lym loom resume` alone, with no approval and no cancel.
+  A beam's halt carries the causes too.
+- `pullrequest.mergeCauses` names a head mismatch as "not the expected head" instead of "not the beam's head", since Finalize now reads it for runs that are not beams.
+  `ReadMergeState`'s `beamHead` parameter is renamed `wantHead`.
+
+Pending and method refusals take the same path as before.
+
+## Design decisions
+
+- The fix polls after a refusal, not before every merge.
+  A merge attempt is itself the cheapest probe, and the success path keeps its GitHub calls unchanged.
+- The retry is bounded by the window that already bounds pending refusals.
+  The merge-state poll can add up to one more minute, so a Finalize under the parent lock waits at most about two minutes before halting.
+
+## Tests
+
+`TestFinalize_PullRequest` gains three rows over the fake GitHub:
+a not-mergeable refusal while the state is `unknown` that merges once GitHub reports `clean` (red on the merge base, which halted);
+an `unknown` state that never resolves, which halts naming it;
+and a refusal that outlasts the window while GitHub reports `clean`, which halts naming only the resume.
+The two existing other-refusal rows now script a `blocked` reading and assert that the halt names it.
+`TestReadMergeState`'s head-mismatch row asserts the new wording.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** landing
