@@ -1,6 +1,6 @@
 {
   "runGuid": "8ba06dc3fe60ac386c8b73c02544c636",
-  "planFingerprint": "ec3b6b67fbc58ad17370aa145cfacb9afaa855267669c10e5dd74e8c1d86e6ec",
+  "planFingerprint": "1cbf1024a6441a44d3cdbf61ac972c59a9ad6d1fc50350ef43442ded3dfe725b",
   "planFileHashes": {
     "00-overview.md": "1f0de9d6070c260cc7330a68180a1abafced44dffcdb30c6a64b8618da42561a",
     "01-lymcwd-one-repository.md": "4129e3dc033151515eab5f0cc8f4919bd4d80c02b7196f191ad67532210fabc0",
@@ -10,9 +10,9 @@
     "05-one-repository-clone.md": "d38509545adb5903c18d2c25eeca6b00268ac08c6654520f5e20418c0d30e7ed",
     "06-one-repository-add.md": "fa458a093b9202a5dbcc4311dcf5cccfe92b2decba4f273dbb76bc442be46bc3",
     "07-records-commit-on-code-branch.md": "90dc508f384069a463113fab85ccde6269e605e569fa2bc7619d13ee821cb20f",
-    "08-one-repository-anchor-change.md": "88b92dc17ac7f530745de4faa46712471669d1d7731d129fc4cd62543c6f244f",
-    "09-merge-keeps-receiving-records.md": "93b452df1b5b420982f02c8100fb020148170b3a6ae8a2843488ccfbc858a1a1",
-    "10-records-commit-during-merge.md": "3235668411ab3d82f716acf22e2b994abceb25bffedc96bafb9bb4bba539afee",
+    "08-one-repository-anchor-change.md": "79fb3d948152d36fc0e8ba6d073785a6a95ae4821fd647901922d5b5a5612f59",
+    "09-merge-keeps-receiving-records.md": "002c0b65230fffaead01b555e2463830c05dcb07e76f0a1ec95bc40b63c189a8",
+    "10-records-commit-during-merge.md": "83852e2f5003149ae6a02aef4860ffbdf3a5362d1f97b79c6ac813d9cbdbd490",
     "11-transition-seam-waits.md": "46638f03fbcae36fbd82722f3b9dc34c11961f9d25c91cf94d25065c5ad70222",
     "12-one-branch-push-and-teardown.md": "881181b918a26f795b341549989cf7e49c81030deaf32d1ecf222cd5799af8b7",
     "13-records-only-replay.md": "364da4b52f4b240be8013913b44fa4240c29766084dad08c3b9903cb190b13a1",
@@ -674,19 +674,50 @@
         "09-merge-keeps-receiving-records"
       ],
       "cardHashes": {
-        "08-one-repository-anchor-change": "88b92dc17ac7f530745de4faa46712471669d1d7731d129fc4cd62543c6f244f",
-        "09-merge-keeps-receiving-records": "93b452df1b5b420982f02c8100fb020148170b3a6ae8a2843488ccfbc858a1a1"
+        "08-one-repository-anchor-change": "79fb3d948152d36fc0e8ba6d073785a6a95ae4821fd647901922d5b5a5612f59",
+        "09-merge-keeps-receiving-records": "002c0b65230fffaead01b555e2463830c05dcb07e76f0a1ec95bc40b63c189a8"
       },
       "startSha": "fe9d0cb8d560934af82be0eaa2c84302951a82f8",
       "kind": "fork",
       "spawnedAt": "2026-11-19T07:42:35Z",
       "sessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-one-repository-anchor-change",
+        "status": "done",
+        "head_sha": "a72537a0f014aa7f710170575235800f5627c734",
+        "deviations": [
+          "cmd/lym/gitrepoboundary_test.go",
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/anchorchange.go",
+          "internal/fabricengine/anchorchange_onerepository_integration_test.go",
+          "internal/fabricengine/anchorstop.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/export_test.go",
+          "internal/fabricengine/fabric.go",
+          "internal/fabricengine/merge_onerepository_integration_test.go",
+          "internal/fabricengine/mergeerrors.go",
+          "internal/fabricengine/mergelifecycle.go",
+          "internal/fabricengine/mergerecords.go",
+          "internal/fabricengine/moverecord.go",
+          "internal/fabricengine/onerepository.go",
+          "internal/gitrepo/merge.go"
+        ]
+      },
+      "cardShas": [
+        "a72537a0f014aa7f710170575235800f5627c734"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "f1bb91399db09f3ff654539d3c5eecfd",
   "masterSessionId": "56fc8007-b9ce-4dd3-813c-e823b6ce4789",
   "masterEngine": "claude",
@@ -694,6 +725,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab15a9dafa9470d73.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a1a9f3da5a5543a69.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-af117bff08d503c0c.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a488ddd75d33042f1.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-a488ddd75d33042f1.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-fabric-mode/56fc8007-b9ce-4dd3-813c-e823b6ce4789/subagents/agent-ab4c2140f06be183e.jsonl"
   ]
 }

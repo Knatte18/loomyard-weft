@@ -1,7 +1,7 @@
 # Card 8 — one-repository-anchor-change
 
 **Create:**
-- `plan:internal/fabricengine_test#TestAnchorChange_OneRepository` -> `func TestAnchorChange_OneRepository(t *testing.T)`
+- `internal/fabricengine_test#TestAnchorChange_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#moveWeftContent`

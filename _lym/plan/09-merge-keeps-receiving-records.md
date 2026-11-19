@@ -1,12 +1,12 @@
 # Card 9 — merge-keeps-receiving-records
 
 **Create:**
-- `plan:internal/gitrepo#Repo.MergeStartNoFastForward` -> `func (r *Repo) MergeStartNoFastForward(ref string, squash bool) (MergeOutcome, error)`
-- `plan:internal/fabricengine#Fabric.settleSourceRecords` -> `func (f *Fabric) settleSourceRecords(rec *Mutations, st *mergeState) ([]string, error)`
-- `plan:internal/fabricengine#ErrMarkerChange` -> `type ErrMarkerChange struct`
-- `plan:internal/fabricengine#refuseSourceMarkerChange` -> `func refuseSourceMarkerChange(repoDir, receiving, source string) error`
-- `plan:internal/fabricengine#Fabric.SetAfterMergeStartForTest` -> `func (f *Fabric) SetAfterMergeStartForTest(hook func() error)`
-- `plan:internal/fabricengine_test#TestMerge_OneRepository` -> `func TestMerge_OneRepository(t *testing.T)`
+- `internal/gitrepo#Repo.MergeStartNoFastForward`
+- `internal/fabricengine#Fabric.settleSourceRecords`
+- `internal/fabricengine#ErrMarkerChange`
+- `internal/fabricengine#refuseSourceMarkerChange`
+- `internal/fabricengine#Fabric.SetAfterMergeStartForTest`
+- `internal/fabricengine_test#TestMerge_OneRepository`
 
 **Edit:**
 - `internal/fabricengine#Fabric.Merge`
