@@ -274,7 +274,7 @@
       "isolated": false,
       "brief": "tmuxkit fails every package running beside the writer; find the test that writes it and fix it",
       "body": "## What was seen\n\nOn 2026-11-18 the Finalize fixer of `board-view-not-refreshing` met a red verify: `shedverbs` (tier 0) and `shedcli` (tier 1) failed outside any test,\nonly on `tmuxkit`'s check for a `.git` that appeared directly in the shared temp directory (`/tmp/.git`); no test failed.\nThe task's diff touched only `internal/boardengine`, and a rerun passed clean.\nThe fixer reports the same `/tmp/.git` finding in `_bolt` gate runs of unrelated packages since 2026-11-08.\n\n## Why it matters\n\nThe check in `internal/testkit/tmuxkit/tmuxkit.go` is machine-wide: it cannot tell which test binary wrote the entry,\nso it fails every package that runs at the same time, and each run's fixer spends a round on a failure its task did not cause.\nThe writer itself is a real bug: a test or the code it drives writes outside its own `t.TempDir`, often through a path joined onto an empty directory.\n\n## Idea\n\n1. Find the writer: record which packages were running when the entry appeared (the gate slots know), or watch the temp root for the create and name the process,\n   and fix that test.\n2. Make the check blame only the package that wrote the entry, or report it as a machine finding that does not fail a package whose own run did not create it.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-18T19:25:39Z",
       "revised": "2026-11-19T09:25:46Z",
       "run_settings": {
