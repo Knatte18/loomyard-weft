@@ -403,6 +403,38 @@
       "body": "## Seen\n\n2026-11-19: in `raddle-slug-length-check`, the red-first gate (landed with `bug-red-first-gate`) could not judge the diff because it also changed `contracts/specs/raddle-proposal-spec.md`.\nThe base overlay cannot put that file back, so the run asked the parent for a \"No test seam\" waiver although the bug has a Go seam: `TestRaddleBoardContext` and the new `TestCheck` rows fail on the merge base.\n\n## Idea\n\nThe overlay restores only the Go files the red-first check needs on the merge base and leaves non-Go files that no test reads at HEAD,\nor it puts back any tracked file, so a doc or spec update beside a fix no longer waives the gate.\n",
       "created": "2026-11-19T19:48:55Z",
       "revised": "2026-11-19T19:48:55Z"
+    },
+    {
+      "id": 1533,
+      "handle": "T2",
+      "slug": "drop-failure-triage-lines",
+      "title": "Remove the coverage-map triage lines from failure reports",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "gate",
+        "webster",
+        "stencil"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step",
+      "body": "## Why\n\nThe measurement in `docs/research/speed/testmap-use-measure-2026-11-21/report.md` (4c031f8b) found the failure-report triage line \"reaches none of this run's changes\" wrong in all 6 cases it showed:\neach failed test failed because of the run's own change, reached through a tree text scan, an embedded file or a nil seam the coverage maps cannot see.\nNo fixer used a triage line. The operator decided (2026-11-21) to remove triage lines, keep the reach turn and the mutation step as they are, and invest no more in the maps.\n\n## Change\n\n- Remove the triage lines from failure reports: `internal/gatecli/triage.go` and every caller and consumer (webster, loomshed, runplan verify reports and their stencils and specs).\n- Keep the reach note, the reach turn and the mutation step untouched.\n- Docs and specs that describe triage lines lose that text.\n",
+      "status": "draft",
+      "created": "2026-11-21T14:28:05Z",
+      "revised": "2026-11-21T14:28:05Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
