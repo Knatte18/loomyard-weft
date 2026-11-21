@@ -492,6 +492,26 @@
       "body": "Imported from [issue #169](https://github.com/Knatte18/loomyard/issues/169).\n\n`lym loom pr-findings \u003cfile\u003e` fails in a PR-Review session on a well-formed findings file, every time, so the parent's findings cannot be routed.\n\n## Where\n\nA PR-Review agent, the session spawned for a task's pull request after its landing opened it.\nThe parent orch sent two findings by creel; the agent wrote them in burler's review format under `.scratch/` and ran `lym loom pr-findings .scratch/parent-review-1.md`.\n\n## What happens\n\nThe file passes burler's format check (a first attempt with a wrong verdict was refused with a clear message, and the corrected file got past that check).\nThe verb then fails reading the send-back edge:\n\n```\n{\"error\":\"loom: pr-findings: read whether the send-back edge can fire: loomrecipe: shedbuild: producer 16 \\\"Parent-Align\\\": shedrecipe: ParentAlign: landingshed: NewParentAlign: Deps.OpenFabric must not be nil; way forward: run lym loom pr-findings .scratch/parent-review-1.md again, and tell the operator when it keeps failing\",\"ok\":false}\n```\n\nRunning it again gives the same error.\n\n## Expected\n\nThe verb answers send-back or fix-here.\n`NewParentAlign` looks to be built on this path without its `OpenFabric` dependency.\n\n## Workaround\n\nThe operator told the agent to fix the findings directly, bypassing the verb.\n",
       "created": "2026-11-21T17:29:42Z",
       "revised": "2026-11-21T17:29:42Z"
+    },
+    {
+      "id": 1543,
+      "handle": "B8",
+      "slug": "webster-create-stale-decision",
+      "title": "webster: Create check ignores a decision that drops the Create; recover-batch advised anyway",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        171
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #171](https://github.com/Knatte18/loomyard/issues/171).\n\n## What happened\n\nBatch 01 of a four-card batch failed `lym webster record-batch 01` and then `lym webster recover-batch 01` with the same `create-not-done[blocking]` finding: a card's Create target did not resolve (quarry answered `not_found`, \"the unit exists and the member is missing\").\nThe run's parent had recorded a decision (`lym loom decision add`) that drops that Create, so the member is meant never to exist.\nBoth refusals still gave the generic way forward: \"recover-batch 01 to build the target as the card names it\", or amend the card's Create target and run `lym webster rebaseline --card NN`.\nThe run then halted `blocked` at Webster (anomaly `escalation-to-human`) with the note \"the parent's decision drops that Create, so card 1 needs a plan amendment\".\n\n## Why it is abnormal\n\nThe verifier checks the card's Create target against the worktree and ignores the recorded decision that drops it.\n`recover-batch` is advised although it can only rebuild what the card names, which the decision forbids.\nThe refusal does not tell the operator or parent that a dropped Create needs a card amendment and rebaseline, nor does it say whether the decision record can retire the Create finding.\nThe result is a halt on a state the parent already resolved.\n\n## What to do\n\n- Make the Create check read the run's decision record and treat a Create dropped by a decision as satisfied, or report it as \"dropped by decision\" rather than `blocking`.\n- When a finding matches a dropped Create, make the way forward name the card amendment plus `lym webster rebaseline --card NN` and not offer `recover-batch` as the first option.\n\nProvenance: task `wemod-invariants`; notes `loom-halt.md`, `webster-refusal-record-batch.md`, `webster-refusal-recover-batch.md`.\n",
+      "created": "2026-11-21T17:29:47Z",
+      "revised": "2026-11-21T17:29:47Z"
     }
   ],
   "prime_owner": "neve",
