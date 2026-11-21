@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Plan-Burler-Fix","history_length":8,"state":"failed"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-11-21T14:55:02.796434756+01:00","build":"fd2620b2186f"}
+{"stop_key":{"current_producer":"Webster","history_length":16,"state":"blocked"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-11-21T15:32:58.708003286+01:00","build":"4c031f8b7a78"}
