@@ -45,6 +45,12 @@ Decision: Model the charter step on Crucible, retired in 7346d6a8 and readable w
 
 Rationale: Operator, 2026-11-21: Crucible worked very well from a one-line ask; Hardener must do what Crucible did, and the existing tests are already run elsewhere.
 
+### Added after Discussion (parent, 2026-11-21): The charter is the Harden-Bouncer seed pass, not a new step
+
+Decision: This replaces the placement in the decision 'The charter step is Crucible's orchestrator fill'; its content rules stand. Add no new row or charter step. The perch is a judge plus burler by design, so Hardener reuses it: the Harden-Bouncer's seed pass is Crucible's orchestrator fill, and the review rounds are the burler half. Rewrite Hardener's seed so the seeder reads the module named by packages (code, verbs, docs, existing tests) and writes into its focus what Crucible's filled review-prompt-template held: what to read, the high-yield invariants to drive live with repro steps, out of scope, the cost declaration and the teardown check. The judge's focus file after each round is Crucible's re-seed: the residual to close, an enumeration sweep when findings circle, unreached regions once classes close, then a safety pass. Give the seed and judge calls of the hardener recipe their own stencil text or rubric where the shared Bouncer seed stencil cannot carry this, keeping other recipes' Bouncers unchanged. A task body is an optional hint to the seeder.
+
+Rationale: Operator, 2026-11-21: the perch was designed as judge plus burler precisely so Hardener could reuse it; a hardener is an initial seeder, then the review rounds.
+
 ## Constraints
 
 ## Auto-mode assumptions
