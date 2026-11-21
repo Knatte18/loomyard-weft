@@ -2,8 +2,6 @@
 
 `burler-fix-round-defects` · Task · bug, burler, shuttle · starting · Seed-IDE
 
-Depends on: [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md)
-
 Imported from issues #176 and #177; read both with `gh issue view <n> --repo Knatte18/loomyard` for the full reports.
 
 ## Fixer reruns a finished round (#176)
