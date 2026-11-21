@@ -1,6 +1,6 @@
 # Webster and plan fix honour parent decisions; full halt reasons
 
-`webster-parent-calls-flow` · Task · bug, webster, burler, drift, loom · running · Drift-Await
+`webster-parent-calls-flow` · Task · bug, webster, burler, drift, loom · running · Drift-Expect
 
 {"error":"invalid json: invalid character 'w' looking for beginning of value","ok":false}
 
