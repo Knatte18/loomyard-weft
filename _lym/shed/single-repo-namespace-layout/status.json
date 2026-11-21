@@ -2,6 +2,7 @@
   "current_producer": "Webster",
   "state": "blocked",
   "error": "Batch 01-gitrepo-refspec-upstream: recover-batch refused with batch_failed: create-not-done/1-gitrepo-refspec-upstream[blocking]: Create target \"plan:internal/gitrepo#remoteTrackingRef\" still does not resolve; the fork reverted the refspec-following reads under the superseded no-merge-config decision, which the parent's later Option C decision (#2210) reverses.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
