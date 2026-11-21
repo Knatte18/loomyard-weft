@@ -1,20 +1,39 @@
-# Harden reap ends an orphan whose cwd is under the root's link target
+# hardenshed: reap orphans whose cwd sits under the root's link target
 
-Fixes [issue #164](https://github.com/Knatte18/loomyard/issues/164).
+`Reap` in `internal/hardenshed` now ends an orphan whose working directory is under the sandbox root's link target.
+Before, such a process escaped the reap when its command line did not name the root.
 
-The harden sandbox root is `<worktree>/.lym/harden-sandbox`, and a worktree's `.lym` is a link into its weft directory.
-`/proc/<pid>/cwd` reports a working directory with its links resolved,
-so `namesRoot` in `internal/hardenshed/reap.go` never matched a process whose working directory was under the root and whose command line did not name the root.
-Such a process escaped every reap.
+The root sits under a worktree's `.lym` link, and `/proc/<pid>/cwd` reports the link's target.
+The comparison against the root as written never matched.
+`rootProcesses` in `reap.go` now matches a process against the root as written and against the root with its links resolved by `filepath.EvalSymlinks`.
+When the root does not resolve, or resolves to itself, only the written root is used.
 
-## Changes
+Closes #164
 
-- `rootProcesses` in `internal/hardenshed/reap.go` resolves the root's links once with `filepath.EvalSymlinks` and counts a process as naming the root when it names either the root as written or the resolved root.
-  When the root does not resolve, as when it does not exist yet, only the written root is compared, as before.
-- `TestReap/EndsAnOrphanWhoseCwdIsUnderTheRootsLinkTarget` builds a worktree whose `.lym` is a link to another directory and reaps a process whose working directory is the resolved path, with no root on its command line.
-  It fails on the merge base: `EndProcess` is never called.
-- The `harden sandbox clear` integration test in `internal/hardencli/cli_integration_test.go` again starts its orphan with the root as its working directory and no root on its command line, instead of passing the root as the script's `$0`, which had hidden the gap.
-- `internal/hardenshed/doc.go` states that the root matches both as written and with its links resolved.
+## Design decisions
+
+- The root is matched in both forms rather than replaced by its resolved form.
+  A process that names the written path on its command line is still reaped, and so is one whose cwd the kernel reports resolved.
+- A failed `EvalSymlinks` is not an error.
+  Reap falls back to the written root, so a root that is already gone is handled as before.
+- `namesRoot` is unchanged; `rootProcesses` calls it once per root form.
+- `doc.go` states that a process names the root through its working directory, executable or command line, in both forms.
+- The orphan-kill case in `TestSandboxVerbs` (`internal/hardencli`) no longer names the root on the command line.
+  It starts the orphan with its working directory set to the root, which is the case that used to escape.
+
+## Tests
+
+`TestReap` in `reap_test.go` gains two cases:
+
+- A root under a `.lym` link: one orphan has its cwd under the link target, another names the written root on its command line, and a third is unrelated.
+  Only the first two are ended.
+- A root that does not resolve: an orphan with its cwd under the written root is ended, and an unrelated one is not.
+
+## To check by hand
+
+- Root resolution has two outcomes the unit tests pin: the written root when it does not resolve, and both forms when it does.
+  Confirm the two new `TestReap` cases cover both, since a review flagged these outcomes as untested.
+- `TestSandboxVerbs` runs the Linux orphan case only on Linux; it was not run on another platform here.
 
 ## Merge danger
 
