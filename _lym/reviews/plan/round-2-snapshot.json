@@ -25,5 +25,6 @@
       "title": "Add PATTERN-single-repo-hub anew",
       "digest": "918a8200ef3ecae9867652d891c16dbfe0b0b9c9e9c20634f0b1ca4aee361542"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
