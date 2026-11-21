@@ -1,6 +1,6 @@
 # Measure whether the reach and mutation reports change what runs land
 
-`testmap-use-measure` · Task · research, testmap, gate · running · Drift-Recheck
+`testmap-use-measure` · Task · research, testmap, gate · running · Describe
 
 ## When
 
