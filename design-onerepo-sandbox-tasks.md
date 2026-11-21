@@ -1,6 +1,6 @@
 # One-repository sandbox: run tasks to landing
 
-`onerepo-sandbox-tasks` · Task · research, fabric, landing · starting · Seed-Child
+`onerepo-sandbox-tasks` · Task · research, fabric, landing · starting · Open-Window
 
 ## Goal
 
