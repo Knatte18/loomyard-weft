@@ -19,8 +19,9 @@ Each bullet names its source project and the lym module it would touch.
 - **Requirement-to-card traceability** (Spec Kit, Kiro): parts already name the decisions they build;
   the Plan-Write gate could also refuse a card that traces to no decision.
 - **Criterion amendment ledger** (oh-my-claudecode): a card's acceptance text changes only through a recorded amendment in weft.
-- **Bugfix spec with a fail-on-base test** (Kiro): a bugfix stencil for Discussion-Write,
-  and a Go gate that the new test fails on the base commit and passes on the tip.
+- **Bugfix spec with a fail-on-base test** (Kiro): the Go gate is built (`lym gate red-first` on the `Darn-Write` row, task `bug-red-first-gate`):
+  a darn run of a `bug` entry must add or change a test that fails on the merge base, and the fix carries a `Root-Cause:` trailer.
+  Still open: a bugfix stencil for Discussion-Write.
 
 ## Review (burler, Bouncer)
 
