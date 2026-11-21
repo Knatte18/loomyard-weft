@@ -250,7 +250,7 @@
       "id": 1550,
       "handle": "T2",
       "slug": "harden-fabricengine",
-      "title": "Hardener campaign on fabricengine",
+      "title": "Hardener campaign on fabric, one-repository layout",
       "kind": "task",
       "labels": [
         "bug",
@@ -262,14 +262,15 @@
         "hardener-self-charter"
       ],
       "isolated": false,
-      "brief": "Hardener run on internal/fabricengine, both hub layouts",
-      "body": "Hardener campaign on `internal/fabricengine`, both hub layouts. The campaign writes its own charter.\n",
+      "brief": "Hardener run on the one-repository part of fabric only",
+      "body": "Harden only the one-repository hub layout of fabric: records and board under origin's `refs/lym/` (from 57015a52), the clone that seeds or joins that layout, its refspecs, push and pull, teardown and archive tags in that layout. The rest of fabric, the two-repository layout included, is out of scope.\n",
       "created": "2026-11-21T19:15:58Z",
-      "revised": "2026-11-21T19:22:09Z",
+      "revised": "2026-11-21T19:28:31Z",
       "run_settings": {
         "hardener": {
           "packages": [
-            "internal/fabricengine"
+            "internal/fabricengine",
+            "internal/fabriccli"
           ]
         }
       },
