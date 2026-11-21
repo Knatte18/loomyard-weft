@@ -133,15 +133,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (9)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
 
 Owner `neve`
 
-### Tasks (3)
+### Tasks (2)
 
 Concrete and claimable; only a task can run.
 
-#### Running (3)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -149,7 +149,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | gate, dotnet, stencil, darn |
 | T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | landing · Finalize | neve | 1d<br>1d | webster, gate, reed |
-| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | landing · Finalize | neve | 1d<br>1d | shed, process |
 
 #### Ready (0)
 
@@ -186,5 +185,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 5d<br>3d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2w | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | 1d<br>1d | shed, process |
 
 </details>
