@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 18:05 UTC; every age below is as of then.
+Rendered 2026-11-21 18:11 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -87,7 +87,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Darn-Write | neve | 37m<br>37m | fabric, landing |
+| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Darn-Write | neve | 43m<br>43m | fabric, landing |
 
 #### Ready (0)
 
@@ -101,7 +101,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 37m<br>37m | fabric, git |
+| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 43m<br>43m | fabric, git |
 
 ### Notes (0)
 
@@ -110,7 +110,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (7)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
 
 Owner `neve`
 
@@ -124,8 +124,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Darn-Write | neve | 36m<br>30m | webster, burler, drift, loom |
-| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Review | neve | 2h<br>30m | gate, loom, stencil, shed |
+| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Darn-Write | neve | 42m<br>36m | webster, burler, drift, loom |
+| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Review | neve | 2h<br>36m | gate, loom, stencil, shed |
 
 #### Ready (0)
 
@@ -139,9 +139,9 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 36m<br>24m | burler, shuttle |
+| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 42m<br>30m | burler, shuttle |
 
-### Notes (4)
+### Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -151,6 +151,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
+
+#### Bugs (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **Branch-rules 403 on a free private repo reads as no rule**<br>• GitHub plan-limited 403 on the rules API halts Finalize as a token fault | [`rules-403-plan-reads-no-rule`](design-rules-403-plan-reads-no-rule.md) | 0m<br>0m | landing |
 
 #### Features (2)
 

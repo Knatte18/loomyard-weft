@@ -423,6 +423,24 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1548,
+      "handle": "B1",
+      "slug": "rules-403-plan-reads-no-rule",
+      "title": "Branch-rules 403 on a free private repo reads as no rule",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "GitHub plan-limited 403 on the rules API halts Finalize as a token fault",
+      "body": "## Seen\n\nIn the one-repository sandbox hub (private repository on a free GitHub plan), `pull_request` was turned off at the default layer while the run greet-goodbye already held an open pull request.\nFinalize then read the parent branch's rules, `GET repos/{owner}/{repo}/rules/branches/main`, and GitHub answered 403 \"Upgrade to GitHub Pro or make this repository public to enable this feature\".\nFinalize took that as an unusable token and halted, since the run held a pull request record.\n\n## Idea\n\nThat 403 is a definite answer, not a token fault: repository rules are not available on that plan, so none are active.\nRead it as no rule in `RequiresPullRequest` and `RequiredChecks` (`internal/pullrequest/client.go`), and keep the halt for other 403s.\n",
+      "created": "2026-11-21T18:11:51Z",
+      "revised": "2026-11-21T18:11:51Z"
     }
   ],
   "prime_owner": "neve",
