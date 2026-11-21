@@ -16,6 +16,12 @@ or it puts back any tracked file, so a doc or spec update beside a fix no longer
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-21): No test seam for the installed red-first gate: it predates this fix
+
+Decision: Waive the red-first gate for this run and keep the stencil edit to contracts/stencils/darn/darn-template-write.md.
+
+Rationale: The installed lym holds the bug this task fixes, so it refuses the stencil edit as a non-Go file. The fix's own tests (TestBaseOverlay_ReplacesTheFilesOfTheModuleTheBasesBuildReads and the new TestGateRedFirst rows) fail on the merge base.
+
 ## Constraints
 
 ## Auto-mode assumptions
