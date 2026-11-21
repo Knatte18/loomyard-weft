@@ -18,7 +18,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (12)
+## Notes (13)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -29,7 +29,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
 
-### Bugs (8)
+### Bugs (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -41,6 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B6 |  | **loom-halt note and blocked reason name a gate-findings path that does not exist** | [`halt-names-missing-findings-path`](design-halt-names-missing-findings-path.md) | 0m<br>0m | loom, gate |
 | B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 0m<br>0m | loom |
 | B8 |  | **webster: Create check ignores a decision that drops the Create; recover-batch advised anyway** | [`webster-create-stale-decision`](design-webster-create-stale-decision.md) | 0m<br>0m | webster |
+| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 0m<br>0m | stencil, shed |
 
 ### Features (2)
 
