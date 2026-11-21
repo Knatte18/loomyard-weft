@@ -266,6 +266,12 @@ Decision: Card 8 adds PATTERN-single-repo-hub to PATTERN.md and writes pattern/P
 
 Rationale: The entry and its background file were deleted on main by 13cebe3d.
 
+### Added after Discussion (parent, 2026-11-21): No branch merge config in a one-repository records store
+
+Decision: A one-repository records store carries no branch.<b>.merge (nor branch.<b>.remote) setting at all. Fabric names the upstream itself: the tracking ref refs/remotes/origin/<b> that D1's fetch refspec fills, handed to every upstream read, push and lease through D2's one translation. A two-repository store keeps its git-native upstream config unchanged. Cards 1, 3 and 7 follow this; no go-git patch, fork or alternative read path.
+
+Rationale: go-git v5.19.1 validates branch.<b>.merge on every config read and refuses one outside refs/heads/, so the planned refs/lym/heads/<b> merge breaks every go-git read of the store. D2 already routes every remote ref through fabric's translation, so the upstream needs no git config: only fabric knows the layout, as the operator requires.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
@@ -290,6 +296,12 @@ Rationale: The entry and its background file were deleted on main by 13cebe3d.
 
 - The parent project `single-repo-hub` is titled for records on each code branch and the board on `lym-bolt`, which this design replaces;
   the parent may retitle it.
+
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card9-misses-namespace-sites (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Plan-Review -->
 
 ## Acceptance criteria
 
