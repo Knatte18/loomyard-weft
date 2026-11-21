@@ -51,6 +51,12 @@ Decision: This replaces the placement in the decision 'The charter step is Cruci
 
 Rationale: Operator, 2026-11-21: the perch was designed as judge plus burler precisely so Hardener could reuse it; a hardener is an initial seeder, then the review rounds.
 
+### Added after Discussion (parent, 2026-11-21): The operator can name the campaign's focus
+
+Decision: This narrows 'A task body is an optional hint to the seeder' in the decision 'The charter is the Harden-Bouncer seed pass, not a new step'. The operator must be able to name what a campaign hardens: one module, several modules, or a small part of a module, such as the one-repository layout of fabric. packages names the module directories (one or more). The task body, when it states a focus, binds the seeder: the seeder derives the charter inside that focus and lists everything else in the module as out of scope; the judge never steers a later round outside it. With no body, the seeder takes the whole of the named modules. The one-line ask stays enough: modules plus an optional sentence of focus, never a hand-written charter.
+
+Rationale: Operator, 2026-11-21: I must be able to say what to focus on, which module or modules, or a small part of a module.
+
 ## Constraints
 
 ## Auto-mode assumptions
