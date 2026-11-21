@@ -343,7 +343,7 @@
       "isolated": false,
       "brief": "",
       "body": "{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Red-first: d35d6556 removed the doc-file refusal, but `redFirstFailure` in `internal/loomshed/redfirstgate.go` still returns an ordinary failure for the unjudged and no-test exits, so each repeat spends a verify attempt; `GateResult.Pending` in `internal/shuttleengine/gate.go` is allowed only on PassOnCap or MayHold entries.\n- Way forward: `internal/loomcli/darnwiring.go` always appends the config-or-model-spec clause, also to the stencil build-version refusal from `internal/stencilstore/skew.go`.\n- Missing findings path: `internal/shedadapters/gateattempts.go` writes the file before the halt names it, so something removes it later; a suspect is the orphan scratch sweep in `internal/battencli/cleanup.go`, which empties a run's scratch when its records directory is missing. Reproduce before fixing.\n",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-21T15:33:40Z",
       "revised": "2026-11-21T17:35:06Z",
       "run_settings": {
