@@ -2,8 +2,6 @@
 
 `onerepo-sandbox-reclone` · Task · research, fabric, git · running · Preflight
 
-Depends on: [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md)
-
 ## Goal
 
 Third trial: a fresh clone of the sandbox hub and the hand check the one-repository landing (57015a52) left open.

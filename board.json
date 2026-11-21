@@ -214,38 +214,6 @@
       "project": "code-cleanup"
     },
     {
-      "id": 1535,
-      "handle": "T3",
-      "slug": "onerepo-sandbox-tasks",
-      "title": "One-repository sandbox: run tasks to landing",
-      "kind": "task",
-      "labels": [
-        "research",
-        "fabric",
-        "landing"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each",
-      "body": "## Goal\n\nSecond trial: run real tasks in the one-repository sandbox hub that the setup trial created (`/home/knatte/Code/lym-sandbox-onerepo-LYMHUB`).\n\n## Steps, exact cap\n\n- File three small tasks on the sandbox board, each a few lines of Go in the seed module, recipe darn, profile light, writer opus medium.\n- Run the first two one after the other to landing; run the third alongside a fourth trivial task, so two runs are in flight at once.\n- Start one more trivial task and abandon it: remove its pair and board entry.\n- After each landing and the abandon, record on origin: records branches and archive tags under `refs/lym/`, the board, and the code branch list GitHub shows.\n- Cap: at most five sandbox runs in total; no repeats.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-2-tasks-2026-11-21/report.md`, with each lym bug filed as a note on this hub's board.\n",
-      "status": "done",
-      "created": "2026-11-21T17:28:49Z",
-      "revised": "2026-11-21T17:28:49Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "docs",
-      "project": "single-repo-hub"
-    },
-    {
       "id": 1536,
       "handle": "T4",
       "slug": "onerepo-sandbox-reclone",
@@ -258,9 +226,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "onerepo-sandbox-tasks"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs",
       "body": "## Goal\n\nThird trial: a fresh clone of the sandbox hub and the hand check the one-repository landing (57015a52) left open.\n\n## Steps, exact cap\n\n- Clone `Knatte18/lym-sandbox-onerepo` once more, into a second hub directory, with plain `lym fabric clone \u003curl\u003e`; check it detects the one-repository layout and shows the board and the landed tasks' records.\n- Run one small task to landing from the second clone, then pull in the first hub and check it sees that landing.\n- Hand check from the landing commit: grep `internal/fabric*` and `internal/gitrepo` for origin ref names built from a bare `refs/heads/` or `refs/tags/` string on a records-store path; list each site and whether it is wrong.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md` that also sums up all three trials; each lym bug filed as a note on this hub's board.\n",
