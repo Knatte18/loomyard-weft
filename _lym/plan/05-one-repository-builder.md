@@ -23,8 +23,8 @@
 - `internal/hubforge#RegisterTeardown`
 - `internal/fabriccli#CloneAndWire`
 - `internal/fabricengine#CloneHub`
-- `plan:internal/fabricengine#SetSeedPushHookForTest`
-- `plan:internal/fabricengine#AbandonSeededClone`
+- `internal/fabricengine#SetSeedPushHookForTest`
+- `internal/fabricengine#AbandonSeededClone`
 - `internal/fabricengine#PrimeRecordsBranchKey`
 - `internal/fabricengine#NewBolt`
 - `internal/fabricengine#Bolt.Push`

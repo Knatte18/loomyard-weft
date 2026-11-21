@@ -1,13 +1,13 @@
 {
   "runGuid": "bc4180920879859ebe18169bff8f28f4",
-  "planFingerprint": "341c17747c448653a3b78271bf969473db37250fa020158208ec780ba1c4cf04",
+  "planFingerprint": "55d06f9d47d55791c98bd8456b03f1daa0ca4293cac722819b340e3c28288968",
   "planFileHashes": {
     "00-overview.md": "fa2fe7833db6bf3b24647c15a8de8672789f27a8e4e21b04752ec4bc241e89aa",
     "01-gitrepo-refspec-upstream.md": "a6fd921b533a867171bca740e279ecc6931cd999c31e7ba4e5622a417ea0b2f2",
     "02-namespaced-push-ops.md": "82c0066cbad0aa9a47159f6d6f1d149c3c95d87c3b3f690d68ce844ad431875c",
     "03-namespaced-remote-reads.md": "f8612a930c158864c7d9f90b048508b8d5a67023a799218053832bf38d659840",
-    "04-clone-one-repository.md": "ca543bf040578601b31e07824e92881ff310ec23190e30b56b683149e35e25e8",
-    "05-one-repository-builder.md": "a6ce7f406d471396f59dedf7696a19b5ac3dee56cf5f91909b00fca50ac44ed7",
+    "04-clone-one-repository.md": "71d38798298060b459d072cf14be4968993d533b1d8da78f165069a971cf1c29",
+    "05-one-repository-builder.md": "b85255b9975c437f07e41de5addff6943003a9e97d0a6025e1acd67ac35e3723",
     "06-prime-records-branch-key.md": "3408db43a55ab8ba6f74652701bd0e5604650166f0e67a4f1bca7fc763d057f8",
     "07-pair-lifecycle-namespace.md": "46b07062497a133ccb4153864bb8e7a1b52b673c179ea9e1e3a2c0d6e82269ae",
     "08-docs-and-pattern.md": "d65bfab75cfb19a794b9aa48ff431f6c5244db6c56d77d4da37eb93a8be84bb2"
@@ -288,23 +288,43 @@
       ],
       "cardHashes": {
         "03-namespaced-remote-reads": "f8612a930c158864c7d9f90b048508b8d5a67023a799218053832bf38d659840",
-        "04-clone-one-repository": "ca543bf040578601b31e07824e92881ff310ec23190e30b56b683149e35e25e8"
+        "04-clone-one-repository": "71d38798298060b459d072cf14be4968993d533b1d8da78f165069a971cf1c29"
       },
       "startSha": "e7b5e37a29a11e5ebb6f267602c623168265a20b",
       "kind": "fork",
       "spawnedAt": "2026-11-21T14:46:08Z",
       "sessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-namespaced-remote-reads",
+        "status": "done",
+        "head_sha": "7861135880ae58d00af36d11aede8f748ce0984c",
+        "deviations": [
+          "internal/fabricengine/clone.go",
+          "internal/fabricengine/clone_onerepository_test.go",
+          "internal/fabricengine/destroy.go"
+        ]
+      },
+      "cardShas": [
+        "7861135880ae58d00af36d11aede8f748ce0984c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-abd12863ff1d6c035.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-abd12863ff1d6c035.jsonl"
+      ]
     }
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
   "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-a4fd447fe6550d4ae.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-accb157194822d62f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-accb157194822d62f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-abd12863ff1d6c035.jsonl"
   ]
 }

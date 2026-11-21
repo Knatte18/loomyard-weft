@@ -1,19 +1,19 @@
 # Card 4 — clone-one-repository
 
 **Create:**
-- `plan:internal/fabricengine#legacyBoltBranch` -> `const legacyBoltBranch = "lym-bolt"`
-- `plan:internal/fabricengine#originLayout` -> `type originLayout struct`
-- `plan:internal/fabricengine#readOriginLayout` -> `func readOriginLayout(cwd, url string) (originLayout, error)`
-- `plan:internal/fabricengine#refuseOneURLClone` -> `func refuseOneURLClone(cwd string, layout originLayout, opts CloneOptions) error`
-- `plan:internal/fabricengine#probeCodeOriginRoot` -> `func probeCodeOriginRoot(cwd, url string) (bindingFound, recordsFound bool, err error)`
-- `plan:internal/fabricengine#initRecordsStore` -> `func initRecordsStore(url, dir string, fetch bool) error`
-- `plan:internal/fabricengine#cloneSeed` -> `type cloneSeed struct`
-- `plan:internal/fabricengine#PushCloneBoard` -> `func PushCloneBoard(res CloneResult, rec *Mutations) error`
-- `plan:internal/fabricengine#AbandonSeededClone` -> `func AbandonSeededClone(res CloneResult, rec *Mutations, cause error) error`
-- `plan:internal/fabricengine#pushCloneSeed` -> `func pushCloneSeed(rec *Mutations, seed *cloneSeed) error`
-- `plan:internal/fabricengine#seedPushHook` -> `var seedPushHook func(ref string)`
-- `plan:internal/fabricengine#SetSeedPushHookForTest` -> `func SetSeedPushHookForTest(t *testing.T, hook func(ref string))`
-- `plan:internal/fabricengine_test#TestCloneHub_OneURLRefusals` -> `func TestCloneHub_OneURLRefusals(t *testing.T)`
+- `internal/fabricengine#legacyBoltBranch`
+- `internal/fabricengine#originLayout`
+- `internal/fabricengine#readOriginLayout`
+- `internal/fabricengine#refuseOneURLClone`
+- `internal/fabricengine#probeCodeOriginRoot`
+- `internal/fabricengine#initRecordsStore`
+- `internal/fabricengine#cloneSeed`
+- `internal/fabricengine#PushCloneBoard`
+- `internal/fabricengine#AbandonSeededClone`
+- `internal/fabricengine#pushCloneSeed`
+- `internal/fabricengine#seedPushHook`
+- `internal/fabricengine#SetSeedPushHookForTest`
+- `internal/fabricengine_test#TestCloneHub_OneURLRefusals`
 
 **Edit:**
 - `internal/fabricengine#CloneOptions`
