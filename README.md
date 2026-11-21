@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 18:31 UTC; every age below is as of then.
+Rendered 2026-11-21 18:32 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | starting · Open-IDE | neve | 1h<br>1h | fabric, git |
+| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | Preflight | neve | 1h<br>1h | fabric, git |
 
 #### Ready (0)
 
@@ -148,7 +148,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 19m<br>3m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 20m<br>4m |  |
 
 #### Features (2)
 
