@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Hardener needs no hub-set gate keys**<br>• Hardener refuses to start until the hub sets three gate keys; the template should suffice | [`hardener-gate-keys-defaults`](design-hardener-gate-keys-defaults.md) | 0m<br>0m | gate |
+| E1 |  | **Hardener needs no hub-set gate keys**<br>• Hardener refuses to start until the hub sets three gate keys; the template should suffice | [`hardener-gate-keys-defaults`](design-hardener-gate-keys-defaults.md) | 1m<br>1m | gate |
 
 ### Features (2)
 

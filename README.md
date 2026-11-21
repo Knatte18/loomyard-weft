@@ -71,7 +71,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Harden-Bouncer | neve | 1m<br>1m | fabric |
+| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Harden-Burler-Review | neve | 1m<br>1m | fabric |
 
 #### Ready (0)
 
@@ -132,7 +132,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Hardener needs no hub-set gate keys**<br>• Hardener refuses to start until the hub sets three gate keys; the template should suffice | [`hardener-gate-keys-defaults`](design-hardener-gate-keys-defaults.md) | 0m<br>0m | gate |
+| E1 |  | **Hardener needs no hub-set gate keys**<br>• Hardener refuses to start until the hub sets three gate keys; the template should suffice | [`hardener-gate-keys-defaults`](design-hardener-gate-keys-defaults.md) | 1m<br>1m | gate |
 
 #### Features (2)
 
