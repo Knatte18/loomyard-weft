@@ -1,6 +1,7 @@
 round: 1
 fan: ""
 fix_fan: ""
+fans_recorded: true
 seed:
     - engine: claude
       model: sonnet
@@ -11,3 +12,4 @@ seed:
       tokens_known: true
       fresh_tokens: 15001
       cache_read_tokens: 121225
+attempt: "1"
