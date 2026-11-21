@@ -1,6 +1,6 @@
 # One-repository sandbox: run tasks to landing
 
-`onerepo-sandbox-tasks` · Task · research, fabric, landing · running · PR-Review
+`onerepo-sandbox-tasks` · Task · research, fabric, landing · landing · Finalize
 
 ## Goal
 
