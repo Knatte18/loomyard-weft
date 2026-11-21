@@ -1,6 +1,6 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Task · enhancement, docs · starting · Seed-IDE
+`doc-go-trim-pass` · Task · enhancement, docs · starting · Open-IDE
 
 Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md)
 
