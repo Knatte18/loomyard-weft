@@ -41,9 +41,6 @@ Each bullet names its source project and the lym module it would touch.
 - **Rate-limit wait**: the orch watcher wakes the orch after a usage reset; tender itself schedules no resume.
 - **Standing goals and scheduled routines** (ORCH, CAO, Fusion): periodic triage, dependency bumps or `selfreport` sweeps.
 
-## Worktrees (fabric, batten, landing)
-
-
 ## Agent sessions (reed, shuttle)
 
 - **Waiting-for-input signal** (agent-of-empires): shuttle has an awaiting-input state; screen heuristics still decide readiness and startup.
