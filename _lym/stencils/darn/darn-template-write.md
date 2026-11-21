@@ -16,7 +16,7 @@
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
      report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=b0ab983bb58242c28a3d16a0d2b1a28408599dcfc0c8bcfb4ac4766fe5f88c74 build=d35d65565241703eb371cffb4cddcfa3e67cd3e1 time=2026-11-21T15:56:23Z -->
+lym-stencil: sha256=d0ffca1620ff1bad9e4b19008715fc86231bec362348f5afcfc0d50aec0cd88d build=e6bc01f580442bd35515e59b5244ffc38d9f869b time=2026-11-21T18:36:54Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -108,8 +108,9 @@ When the change is intended, leave it: only the run's parent amends the expectat
 When the task's board entry is labelled `bug`, the fix's test must fail before the fix.
 Write a test that reaches the bug through code the merge base already has, so it fails on the merge base and passes with the fix.
 Once you end your turn, the row's red-first gate runs the tests your diff adds or changes once on the merge base's code.
-It fails when every one of them passes there, when the diff adds or changes no test,
-and when it cannot judge them, as on a hub whose scoper is not go.
+It fails when every one of them passes there.
+When the diff adds or changes no test, or the check cannot judge them, as on a hub whose scoper is not go,
+it holds your handoff without spending an attempt until a new commit or your parent's record lands.
 When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
 and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
 
