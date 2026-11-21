@@ -2,6 +2,7 @@
   "fix_scope": "source",
   "target_paths": null,
   "target_id": "ad3e68235022dc591dbdb66162317309ce5b27c1",
+  "post_fix_target_id": "d7b40f3f423b4778b820c9be65a68d71db128ee9",
   "added_decisions": [
     {
       "title": "Scope after the corrupted board body",

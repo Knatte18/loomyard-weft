@@ -1,0 +1,2904 @@
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index 88842467..23e21545 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -53,6 +53,9 @@ A record without the section is valid.
+ Each decision under `## Decisions` is one H3 headed `### D<n> — <title>`.
+ `n` is a positive integer, and ids are unique within the record.
+ An `### Added after Discussion` entry carries no id.
++An entry that drops a plan card's Create target carries one line `` Drops Create: `<target>` `` per target, after its Rationale paragraph.
++`<target>` is spelled as the card spells it, and `lym loom decision add --drops-create` writes the line;
++Webster's done-check skips a target some entry drops.
+ Any other H3 there is refused as a `decision-heading-malformed` finding.
+ A repeated id is a `decision-id-duplicate` finding.
+ Each id appears as a whole word in a bullet of `## Acceptance criteria`.
+diff --git a/contracts/stencils/burler/burler-assist-cluster-fan.md b/contracts/stencils/burler/burler-assist-cluster-fan.md
+index da9057a3..f6028b29 100644
+--- a/contracts/stencils/burler/burler-assist-cluster-fan.md
++++ b/contracts/stencils/burler/burler-assist-cluster-fan.md
+@@ -26,5 +26,5 @@ Write nothing to your report while any subagent is outstanding: consolidate only
+ Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
+ These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
+ 
+-Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
++Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
+ The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
+diff --git a/contracts/stencils/burler/burler-assist-consolidation.md b/contracts/stencils/burler/burler-assist-consolidation.md
+index 1f22e7c4..ec3a67bc 100644
+--- a/contracts/stencils/burler/burler-assist-consolidation.md
++++ b/contracts/stencils/burler/burler-assist-consolidation.md
+@@ -8,6 +8,6 @@
+ 
+ An assistant reviewer reviews the same target beside you and writes one report; your prompt names its report and its end marker.
+ Before you consolidate, and before you write anything to the review file, wait for the assistant's end marker as your prompt says.
+-When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}`, merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
++When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}` (a finding that raises the plan executor's halt reason keeps `origin: webster` instead), merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
+ When the marker reads anything else, consolidate without the assistant.
+ The verdict is yours alone: the assistant's verdict is one more opinion, never a vote.
+diff --git a/contracts/stencils/burler/burler-cluster-fan.md b/contracts/stencils/burler/burler-cluster-fan.md
+index f98d336b..1889a063 100644
+--- a/contracts/stencils/burler/burler-cluster-fan.md
++++ b/contracts/stencils/burler/burler-cluster-fan.md
+@@ -29,5 +29,5 @@ Then wait for the forks: {{template "engine-fork-wait"}}
+ Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+ These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
+ 
+-Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
+ The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
+diff --git a/contracts/stencils/burler/burler-review-format.md b/contracts/stencils/burler/burler-review-format.md
+index 9e27ee0a..c22209ae 100644
+--- a/contracts/stencils/burler/burler-review-format.md
++++ b/contracts/stencils/burler/burler-review-format.md
+@@ -55,6 +55,7 @@ Frontmatter rules, all strict:
+ - In a cluster round, each finding also carries an `origin:` key — `lens:<name>` for a finding kept from a named fork, or `handler` for one you found yourself.
+ - A finding kept from the parent orch's report carries `origin: parent` and an optional `parent_ids` list naming the report ids it covers, such as `parent_ids: [P1, P3]`.
+   No other finding carries `parent_ids`.
++- A finding that raises the plan executor's halt reason, when the review step quotes one, carries `origin: webster`.
+ - A finding's `location` opens with the file's path, followed by `:<line>` or `#<symbol>`.
+   It names the site the fix changes, which may lie apart from where the defect shows:
+   a wrong value that one file prints and another sets is located where it is set.
+@@ -71,6 +72,7 @@ Frontmatter rules, all strict:
+   Every `open` entry is carried by exactly one finding, and a finding with no `carries` is new.
+   A carried finding keeps its `class`, keeps or lowers its `severity`, and keeps its location path or moves to a file the changes file lists.
+ - In an incremental round a new finding is `BLOCKING` and sits on a changed hunk, in a file the changes file lists.
++  A card a listed added entry marked as amending the plan names is exempt from the file rule, and so is a new `origin: webster` finding.
+ 
+ Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
+ The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.
+diff --git a/contracts/stencils/burler/burler-step-review.md b/contracts/stencils/burler/burler-step-review.md
+index 5af1c229..2973dd51 100644
+--- a/contracts/stencils/burler/burler-step-review.md
++++ b/contracts/stencils/burler/burler-step-review.md
+@@ -52,3 +52,5 @@ a section without that heading has none of them.
+   When there is no changes file, name the moved site in the `summary` and the `fix`.
+ - In an incremental round, raise a new finding only at `BLOCKING`, and only on a changed hunk.
+   Locate a regression a fix caused in an untouched file at the changed line that causes it, and name the broken site in its `summary`.
++  A card that an added entry marked as amending the plan names may be located whether or not the changes file lists it.
++  A finding raising the plan executor's halt reason, when the section above quotes one, carries `origin: webster` and may sit outside the changed files.
+diff --git a/contracts/stencils/parent/parent-directive-parent.md b/contracts/stencils/parent/parent-directive-parent.md
+index af19565c..30c3a8b3 100644
+--- a/contracts/stencils/parent/parent-directive-parent.md
++++ b/contracts/stencils/parent/parent-directive-parent.md
+@@ -30,4 +30,5 @@ When you are the parent of a run yourself, keep its decision record current this
+ - change or withdraw an earlier decision on a run past its approval with `lym loom decision replace`, folding every added entry into the main decisions;
+   on a record whose `## Goal` is a fenced board body, as Record-Write renders it, the fold rewrites that body to carry the call, since darn and drift give precedence over the body to added entries alone;
+ - once a motif run has made a Sketch whose record holds added entries, fold them with `lym board upsert --record-file`;
+-- before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`.
++- before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`;
++  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`.
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 99e7c747..7bb35d49 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -11,6 +11,8 @@ Before you edit anything, read — in THIS turn — every card file this section
+ A decision notice in your inherited context, the one your parent directive admits, is your parent's call for this run.
+ Where it touches your cards, follow it over the card, inside your cards' targets;
+ a change it needs outside them is not yours to make.
++Where two decisions in your context differ, the later one supersedes the earlier one, whether it came as a notice or among the recorded decisions:
++follow the later one even where an earlier one told you to revert or drop work.
+ 
+ ## Prior-batch context
+ 
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 4c649473..adfba905 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -254,6 +254,8 @@ You read no decision record for it, and you edit no source, so the decision reac
+ 
+ The decisions your parent recorded for this run before this session started are below, `none` when there is none.
+ They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.
++They are in the order the parent recorded them, and where a later one differs from an earlier one the later one supersedes it, for you and every fork.
++The same holds between a decision notice and the recorded decisions: the later one wins, even where an earlier one told you to revert or drop work.
+ 
+ {{.parent_decisions}}
+ 
+diff --git a/internal/burlercli/validate.go b/internal/burlercli/validate.go
+index 09a4a663..9f39b3aa 100644
+--- a/internal/burlercli/validate.go
++++ b/internal/burlercli/validate.go
+@@ -13,8 +13,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomrecipe"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/spf13/cobra"
+ )
+@@ -112,7 +115,21 @@ func checkRoundInRunDirectory(cwd, reviewFile string) (refusal error, builderNot
+ 		return nil, ""
+ 	}
+ 
+-	roundContext, err := shedadapters.BuildRoundContext(runDir, round, loomengine.DiscussionDecisionRecord(location), location.AnchorPath())
++	paths := shedadapters.RoundContextSources{DecisionRecordPath: loomengine.DiscussionDecisionRecord(location), AnchorPath: location.AnchorPath()}
++	// The plan segment's review and fix rows share the run_subdir of its Bouncer row, which the loom recipe gives.
++	planSubdir, found, err := loomrecipe.BouncerRunSubdir(loomshed.NamePlanBouncer)
++	if err != nil {
++		return nil, fmt.Sprintf("the plan review run directory could not be read from the recipe, so the parse alone decided: %s", err)
++	}
++	if found && filepath.Clean(runDir) == filepath.Join(loomengine.LoomReviewsDir(location), planSubdir) {
++		amendmentPath := loomengine.LoomAmendmentRecord(location)
++		paths.AmendmentTitles = func() ([]string, error) {
++			record, _, err := loomshed.ReadAmendment(amendmentPath)
++			return record.Titles, err
++		}
++		paths.ConflictDir = runplan.ConflictDir(location.AnchorPath())
++	}
++	roundContext, err := shedadapters.BuildRoundContext(runDir, round, paths)
+ 	if err != nil {
+ 		return nil, fmt.Sprintf("the round context could not be built, so the parse alone decided: %s", err)
+ 	}
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 15fa64ef..67b205ef 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -599,6 +599,12 @@
+ // A finding of the review links the earlier one it carries forward with `carries`.
+ // CheckReviewRound judges the review against the context alone, so the package reads no format of its caller.
+ // RoundCheckGateEntry runs it with 3 attempts after the review-parse entry and lets the round through on its cap.
++// A plan card file that an entry of RoundContext.AmendingTexts names is exempt from the changed-file rule.
++// The match is the file's stem, with or without its leading number, as a whole token of the entry.
++// It applies to a stem of 4 characters or more.
++// Profile.HaltReason adds a halt-reason block to the review prompt.
++// RoundContext.HaltReason lets the finding it asks for sit outside the changed files.
++// That finding is tagged `origin: webster` (WebsterOrigin), and it must still be BLOCKING in an incremental round.
+ // A review that passes on the cap keeps its out-of-bound findings, and the fixer works them.
+ // ParseCurrentReview keeps the shape checks alone, so the strict parse after the gate accepts such a review.
+ package burlerengine
+diff --git a/internal/burlerengine/parentseat.go b/internal/burlerengine/parentseat.go
+index 21607dda..73d739a2 100644
+--- a/internal/burlerengine/parentseat.go
++++ b/internal/burlerengine/parentseat.go
+@@ -16,6 +16,10 @@ import (
+ // ParentOrigin is the origin a review finding kept from the parent's report carries.
+ const ParentOrigin = "parent"
+ 
++// WebsterOrigin is the origin of the review finding that raises the plan executor's halt reason.
++// That halt is what sent the run back to plan review.
++const WebsterOrigin = "webster"
++
+ // parentConsolidateStencil is the chair's parent consolidation part.
+ // parentRulesMarker is the review step's optional marker it fills.
+ const (
+diff --git a/internal/burlerengine/profile.go b/internal/burlerengine/profile.go
+index 5be79ccb..55fcdcaf 100644
+--- a/internal/burlerengine/profile.go
++++ b/internal/burlerengine/profile.go
+@@ -83,6 +83,9 @@ type Profile struct {
+ 	// Round is what the review is judged against when an earlier round is complete, and what the prior-findings block lists.
+ 	// Nil is a full round: the prior-rounds text and the round checks of a round with no earlier findings.
+ 	Round *RoundContext
++	// HaltReason is the stuck reason of the plan executor call that sent the run back to review, empty when none.
++	// A non-empty value makes the review prompt carry it as a finding the reviewer must raise.
++	HaltReason string
+ }
+ 
+ // rolePrefix returns base led by the profile's RolePrefix, or base alone when there is none.
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 3f25c48e..ff64d996 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -16,6 +16,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/friction"
+@@ -387,6 +388,9 @@ const priorFindingsHeading = "### Prior findings"
+ // heldByParentMark marks a prior finding that the run's parent rules on, not the fixer.
+ const heldByParentMark = "held by the parent: the run's parent rules on this finding"
+ 
++// amendsPlanMark leads an added decision record entry that is pending as a plan amendment.
++const amendsPlanMark = "(amends the plan) "
++
+ // rulingReportLabel labels a `ruling` disposition.
+ // It is the fixer's report of a ruling that reached it, never the parent's answer.
+ const rulingReportLabel = "the fixer's report of a ruling that reached it, never the parent's answer"
+@@ -397,6 +401,33 @@ const rulingReportLabel = "the fixer's report of a ruling that reached it, never
+ // A profile with prior-round files gets a bullet list of the prior review and fixer-report paths.
+ // That list is followed by the clean-room rule.
+ func priorRoundsBlock(p *Profile) string {
++	block := priorRoundsBase(p)
++	if p.HaltReason == "" {
++		return block
++	}
++	return block + "\n\n" + haltReasonBlock(p.HaltReason)
++}
++
++// haltReasonHeading is the heading line that opens the halt-reason block.
++const haltReasonHeading = "### Plan executor halt"
++
++// haltReasonBlock renders the block that makes the reviewer raise the plan executor's halt reason as a finding.
++// The reason is quoted verbatim.
++func haltReasonBlock(reason string) string {
++	var b strings.Builder
++	b.WriteString(haltReasonHeading)
++	b.WriteString("\n\n")
++	b.WriteString("The plan executor halted with the reason quoted below, and the run was sent back to plan review.\n")
++	fmt.Fprintf(&b, "Raise it as a BLOCKING finding with `origin: %s`, located on the card or file it names,\n", WebsterOrigin)
++	b.WriteString("whose fix is the plan edit the reason asks for.\n")
++	b.WriteString("When the plan already does what the reason asks, raise no finding and say so in the review summary.\n\n")
++	b.WriteString("> ")
++	b.WriteString(strings.ReplaceAll(strings.TrimRight(reason, "\n"), "\n", "\n> "))
++	return b.String()
++}
++
++// priorRoundsBase returns the prior-rounds text of p before any halt-reason block.
++func priorRoundsBase(p *Profile) string {
+ 	if p.Round != nil {
+ 		return priorFindingsBlock(p.Round)
+ 	}
+@@ -428,6 +459,7 @@ func priorRoundsBlock(p *Profile) string {
+ // priorFindingsBlock renders round as the prior-findings block.
+ // The block names the files of the round before and says whether this round is incremental.
+ // It lists each prior finding with the fixer's disposition of it, and the decision-record entries added since.
++// An entry that amends the plan is listed and marked whether it was added since or earlier.
+ func priorFindingsBlock(round *RoundContext) string {
+ 	var b strings.Builder
+ 	b.WriteString(priorFindingsHeading)
+@@ -447,16 +479,40 @@ func priorFindingsBlock(round *RoundContext) string {
+ 		writePriorFinding(&b, prior)
+ 	}
+ 	b.WriteString("\n")
+-	if len(round.AddedTexts) == 0 {
+-		b.WriteString("No entry was added to the decision record since the previous round.")
+-		return b.String()
+-	}
+-	b.WriteString("Entries added to the decision record since the previous round:\n\n")
+-	for _, text := range round.AddedTexts {
++	writeEntry := func(text string) {
+ 		b.WriteString("- ")
++		if slices.Contains(round.AmendingTexts, text) {
++			b.WriteString(amendsPlanMark)
++		}
+ 		b.WriteString(strings.ReplaceAll(strings.TrimRight(text, "\n"), "\n", "\n  "))
+ 		b.WriteString("\n")
+ 	}
++	if len(round.AddedTexts) == 0 {
++		b.WriteString("No entry was added to the decision record since the previous round.\n")
++	} else {
++		b.WriteString("Entries added to the decision record since the previous round:\n\n")
++		for _, text := range round.AddedTexts {
++			writeEntry(text)
++		}
++	}
++	// An amendment pending since an earlier round stays in force until the plan carries it, so it stays in the prompt.
++	var carriedAmendments []string
++	for _, text := range round.AmendingTexts {
++		if !slices.Contains(round.AddedTexts, text) {
++			carriedAmendments = append(carriedAmendments, text)
++		}
++	}
++	if len(carriedAmendments) > 0 {
++		b.WriteString("\nEntries added in an earlier round that still amend the plan:\n\n")
++		for _, text := range carriedAmendments {
++			writeEntry(text)
++		}
++	}
++	if len(round.AmendingTexts) > 0 {
++		b.WriteString("\nThe entries marked as amending the plan amend the approved plan.\n")
++		b.WriteString("A new BLOCKING finding on a card an amending entry names is admitted whether or not the changes file lists that card.\n")
++		b.WriteString("Raise one on each named card that does not yet carry the amendment.\n")
++	}
+ 	return strings.TrimRight(b.String(), "\n")
+ }
+ 
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 1059986c..f3d4c699 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -423,12 +423,20 @@ func TestComposePrompt_PriorRounds(t *testing.T) {
+ 		withChanges.ChangesPath = "/runs/round-2-changes.md"
+ 		twoAdded := round()
+ 		twoAdded.AddedTexts = []string{"first added entry text", "second added entry text"}
++		amended := round()
++		amended.AddedTexts = []string{"first added entry text", "second added entry text"}
++		amended.AmendingTexts = []string{"second added entry text"}
++
++		carried := round()
++		carried.AmendingTexts = []string{"entry from an earlier round"}
+ 
+ 		tests := []struct {
+-			name    string
+-			round   *RoundContext
+-			want    []string
+-			notWant []string
++			name  string
++			round *RoundContext
++			// haltReason is the profile's HaltReason.
++			haltReason string
++			want       []string
++			notWant    []string
+ 			// once holds texts the review step must hold exactly one time.
+ 			once []string
+ 		}{
+@@ -472,12 +480,29 @@ func TestComposePrompt_PriorRounds(t *testing.T) {
+ 				once: []string{"first added entry text", "second added entry text"},
+ 			},
+ 			{name: "NoAddedEntryIsSaid", round: round(), want: []string{"No entry was added"}},
++			{
++				name: "AmendingEntryIsMarkedAndExplained", round: amended,
++				want:    []string{amendsPlanMark + "second added entry text", "amend the approved plan", "whether or not the changes file lists that card"},
++				notWant: []string{amendsPlanMark + "first added entry text"},
++			},
++			{
++				name: "AmendmentFromAnEarlierRoundStaysMarkedAndExplained", round: carried,
++				want:    []string{"No entry was added", amendsPlanMark + "entry from an earlier round", "amend the approved plan"},
++				notWant: []string{"Entries added to the decision record since the previous round"},
++			},
++			{name: "NoAmendingEntryHasNoParagraph", round: twoAdded, notWant: []string{amendsPlanMark, "amend the approved plan"}},
++			{
++				name: "HaltReasonIsQuotedAsABlockingFinding", round: round(), haltReason: "card 14 misses the retry",
++				want: []string{haltReasonHeading, "> card 14 misses the retry", "`origin: " + WebsterOrigin + "`", "BLOCKING"},
++			},
++			{name: "NoHaltReasonHasNoBlock", round: round(), notWant: []string{haltReasonHeading}},
+ 		}
+ 		for _, engine := range []string{"claude", "codex"} {
+ 			for _, tt := range tests {
+ 				t.Run(engine+"_"+tt.name, func(t *testing.T) {
+ 					p := newComposableProfile(t)
+ 					p.Round = tt.round
++					p.HaltReason = tt.haltReason
+ 
+ 					prompt, err := composeReviewPrompt(stencilsDir, testSpecsDir, engine, &p, "", "", "", testReviewFiles)
+ 					if err != nil {
+diff --git a/internal/burlerengine/roundcheck.go b/internal/burlerengine/roundcheck.go
+index 0623a568..b6fa5b81 100644
+--- a/internal/burlerengine/roundcheck.go
++++ b/internal/burlerengine/roundcheck.go
+@@ -13,6 +13,7 @@ import (
+ 
+ 	"gopkg.in/yaml.v3"
+ 
++	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -62,6 +63,12 @@ type RoundContext struct {
+ 	// HasChanges is true when the round holds a changes file; Changed then lists its worktree-relative paths.
+ 	HasChanges bool
+ 	Changed    []string
++	// AmendingTexts holds the full text, heading included, of every decision record entry pending as a plan amendment.
++	// A plan card file such an entry names is exempt from the changed-file rule.
++	AmendingTexts []string
++	// HaltReason is the stuck reason of the plan executor call that sent the run back to review, empty when none.
++	// A new BLOCKING `origin: webster` finding is exempt from the changed-file rule while it is set.
++	HaltReason string
+ 	// ParentReportPath is the report of the round's parent-review ask, empty when the round holds none.
+ 	ParentReportPath string
+ 	// PriorReviewPath, PriorFixerReportPath and ChangesPath name the files the prior-findings block points at.
+@@ -98,6 +105,8 @@ func roundRefusal(problem, rewrite string) error {
+ // and a new finding in an incremental round that is not BLOCKING, is outside the changed files, or is not covered.
+ // A new `origin: parent` finding is exempt from the BLOCKING and changed-file rules.
+ // It is exempt only when its parent_ids are all ids of the round's parent report.
++// A carried or new finding located in a file that an entry of ctx.AmendingTexts names passes the changed-file rule.
++// A new BLOCKING finding with `origin: webster` passes it too, when ctx.HaltReason is set.
+ func CheckReviewRound(content []byte, ctx *RoundContext) error {
+ 	_, findings, err := ParseReview(content)
+ 	if err != nil {
+@@ -261,6 +270,9 @@ func (c *roundCheck) carriedFinding(f, earlier Finding) error {
+ 	if path == locationPath(earlier.Location, c.ctx.WorktreeRoot) {
+ 		return nil
+ 	}
++	if c.namedByAmendment(path) {
++		return nil
++	}
+ 	if !c.ctx.HasChanges {
+ 		return roundRefusal(fmt.Sprintf("finding %q carries %q but moves its location from the earlier path, and the round has no changes file", f.ID, earlier.ID),
+ 			fmt.Sprintf("with the location of %q keeping the path of %q", f.ID, earlier.ID))
+@@ -277,6 +289,7 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 	if !c.ctx.Incremental {
+ 		return nil
+ 	}
++	websterOutside := 0
+ 	for _, f := range findings {
+ 		if f.Carries != "" {
+ 			continue
+@@ -292,7 +305,17 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q at %s, but an incremental round raises a new finding only at BLOCKING", f.ID, f.Severity),
+ 				fmt.Sprintf("without %q, or with it at BLOCKING on a changed hunk", f.ID))
+ 		}
+-		if path := locationPath(f.Location, c.ctx.WorktreeRoot); c.ctx.HasChanges && !slices.Contains(c.ctx.Changed, path) {
++		path := locationPath(f.Location, c.ctx.WorktreeRoot)
++		outsideChanges := c.ctx.HasChanges && !slices.Contains(c.ctx.Changed, path) && !c.namedByAmendment(path)
++		if outsideChanges && f.Origin == WebsterOrigin && c.ctx.HaltReason != "" {
++			// The halt reason is one finding, so only one finding outside the changed files takes its exemption.
++			if websterOutside++; websterOutside == 1 {
++				continue
++			}
++			return roundRefusal(fmt.Sprintf("has a second new finding %q with `origin: webster` at %q, which the changes file does not list, but the plan executor's halt reason admits one", f.ID, path),
++				fmt.Sprintf("with %q located at a file the changes file lists, or without it", f.ID))
++		}
++		if outsideChanges {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q at %q, which the changes file does not list", f.ID, path),
+ 				fmt.Sprintf("with %q located at the changed line that causes it, or without it", f.ID))
+ 		}
+@@ -300,6 +323,65 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 	return nil
+ }
+ 
++// minAmendmentStemLength is the shortest file stem that namedByAmendment matches.
++// A shorter stem would match some text by accident.
++const minAmendmentStemLength = 4
++
++// namedByAmendment reports whether path is a plan card file named by a decision record entry pending as a plan amendment.
++// Two spellings of the card count.
++// One is its base name without extension; the other is that stem without a leading run of digits and one `-`.
++// Either appears in one of the round's AmendingTexts as a whole token, with no identifier character beside it.
++// Plan cards are files like `14-card-slug.md`, which an entry may name by `14-card-slug` or `card-slug`.
++func (c *roundCheck) namedByAmendment(path string) bool {
++	// The plan directory is `_lym/plan`.
++	// `_lym` is a link out of the worktree, so a location may spell it under another root.
++	dir := filepath.ToSlash(filepath.Dir(path))
++	if len(c.ctx.AmendingTexts) == 0 || dir != planparser.PlanDirRel() && !strings.HasSuffix(dir, "/"+planparser.PlanDirRel()) || filepath.Ext(path) != ".md" {
++		return false
++	}
++	base := filepath.Base(path)
++	if planparser.IsNonCardFileName(base) {
++		return false
++	}
++	stem := strings.TrimSuffix(base, filepath.Ext(base))
++	names := []string{stem}
++	if rest := strings.TrimLeft(stem, "0123456789"); rest != stem {
++		if slug, found := strings.CutPrefix(rest, "-"); found {
++			names = append(names, slug)
++		}
++	}
++	for _, name := range names {
++		if len(name) < minAmendmentStemLength {
++			continue
++		}
++		for _, text := range c.ctx.AmendingTexts {
++			if containsToken(text, name) {
++				return true
++			}
++		}
++	}
++	return false
++}
++
++// containsToken reports whether text holds token with no letter, digit, `-` or `_` directly before or after it.
++func containsToken(text, token string) bool {
++	isIdentifier := func(r byte) bool {
++		return r == '-' || r == '_' || r >= '0' && r <= '9' || r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z'
++	}
++	for offset := 0; ; {
++		found := strings.Index(text[offset:], token)
++		if found < 0 {
++			return false
++		}
++		start := offset + found
++		end := start + len(token)
++		if (start == 0 || !isIdentifier(text[start-1])) && (end == len(text) || !isIdentifier(text[end])) {
++			return true
++		}
++		offset = start + 1
++	}
++}
++
+ // parentCovered reports whether f is a finding kept from the round's parent report:
+ // its origin is parent, the round holds a parent report, and its parent_ids are non-empty and all ids of that report.
+ // A report that cannot be read has no ids.
+diff --git a/internal/burlerengine/roundcheck_test.go b/internal/burlerengine/roundcheck_test.go
+index 043e4a6d..7a032b60 100644
+--- a/internal/burlerengine/roundcheck_test.go
++++ b/internal/burlerengine/roundcheck_test.go
+@@ -79,6 +79,26 @@ func TestCheckReviewRound(t *testing.T) {
+ 			ctx.Prior[0].Disposition = &FindingDisposition{ID: "E1", Disposition: disposition}
+ 		}
+ 	}
++	amending := func(texts ...string) func(*RoundContext) {
++		return func(ctx *RoundContext) { ctx.AmendingTexts = texts }
++	}
++	halted := func(reason string) func(*RoundContext) {
++		return func(ctx *RoundContext) { ctx.HaltReason = reason }
++	}
++	changedWith := func(tweaks ...func(*RoundContext)) func(*RoundContext) {
++		return func(ctx *RoundContext) {
++			changed("c.go")(ctx)
++			for _, tweak := range tweaks {
++				tweak(ctx)
++			}
++		}
++	}
++	fromWebster := func(f Finding) Finding {
++		f.Origin = WebsterOrigin
++		return f
++	}
++	const planCard = "_lym/plan/14-card-slug.md"
++	const amendingEntry = "### Rework the slug card\n\nAmend plan card 14-card-slug to name the retry."
+ 	held := func(titles ...string) func(*RoundContext) {
+ 		return func(ctx *RoundContext) {
+ 			ctx.Prior[0].Held, ctx.AddedTitles = true, titles
+@@ -151,6 +171,25 @@ func TestCheckReviewRound(t *testing.T) {
+ 			name: "CarriedParentFindingNeedsNoAsk", ctx: round(nil), prior: []PriorEntry{entry("E1", PriorOpen)},
+ 			findings: []Finding{carrying(fromParent(finding("F1", SeverityMedium, "a.go:10"), "P1"), "E1")},
+ 		},
++		{name: "NewBlockingOnAPlanCardOutsideTheChangedFiles", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, planCard+":3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnAnAmendedCardPasses", ctx: round(changedWith(amending(amendingEntry))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, planCard+":3")}},
++		{name: "NewBlockingOnAnAmendedCardNamedBySlugPasses", ctx: round(changedWith(amending("Change the card-slug card"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, planCard+":3")}},
++		{name: "NewMediumOnAnAmendedCardIsStillRefused", ctx: round(changedWith(amending(amendingEntry))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityMedium, planCard+":3")}, wantErr: "only at BLOCKING"},
++		{name: "NewBlockingOnACardNoAmendmentNamesIsRefused", ctx: round(changedWith(amending("Amend plan card 15-other-card."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, planCard+":3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnACardWhoseSlugIsInsideALongerNamedSlugIsRefused", ctx: round(changedWith(amending("Amend plan card 14-card-slug-extra."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "_lym/plan/15-card-slug.md:3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnANonCardFileSharingACardStemIsRefused", ctx: round(changedWith(amending(amendingEntry))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "internal/card-slug.go:3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnThePlanOverviewNamedByAnAmendmentIsRefused", ctx: round(changedWith(amending(amendingEntry + " Revise the overview too."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "_lym/plan/00-overview.md:3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnThePlanAmendmentLogNamedByAnAmendmentIsRefused", ctx: round(changedWith(amending(amendingEntry + " Record it in amendments."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "_lym/plan/amendments.md:3")}, wantErr: "does not list"},
++		{name: "NewBlockingOnThePlanLensReviewNamedByAnAmendmentIsRefused", ctx: round(changedWith(amending(amendingEntry + " Update lens-review."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "_lym/plan/lens-review.md:3")}, wantErr: "does not list"},
++		{name: "SecondNewWebsterFindingUnderAHaltReasonIsRefused", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3")), fromWebster(finding("F2", SeverityBlocking, "_lym/plan/15-other.md:3"))}, wantErr: "halt reason admits one"},
++		{name: "NewBlockingOnAnAmendedCardSpelledThroughTheLinkPasses", ctx: round(changedWith(amending(amendingEntry))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "/elsewhere/"+planCard+":3")}},
++		{name: "WebsterFindingsOneOutsideAndOneInsideTheChangedFilesPass", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3")), fromWebster(finding("F2", SeverityBlocking, "c.go:4"))}},
++		{name: "NewBlockingOnAShortStemIsNotMatched", ctx: round(changedWith(amending("Rework plan card 1-a before the run."))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityBlocking, "_lym/plan/1-a.md:3")}, wantErr: "does not list"},
++		{name: "CarriedMovedToAnAmendedCardPasses", ctx: round(changedWith(amending(amendingEntry))), prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityMedium, planCard+":3"), "E1")}},
++		{name: "CarriedMovedToACardNoAmendmentNamesIsRefused", ctx: round(changedWith()), prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityMedium, planCard+":3"), "E1")}, wantErr: "does not list"},
++		{name: "NewWebsterFindingWithNoHaltReasonIsRefused", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}, wantErr: "does not list"},
++		{name: "NewWebsterFindingWithAHaltReasonPasses", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}},
++		{name: "NewWebsterFindingBelowBlockingIsRefused", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityMedium, planCard+":3"))}, wantErr: "only at BLOCKING"},
+ 		{
+ 			name: "HeldPairOneResolvedAndOneCarried",
+ 			ctx: round(func(ctx *RoundContext) {
+diff --git a/internal/discussionparser/append.go b/internal/discussionparser/append.go
+index b853a553..bf875ce6 100644
+--- a/internal/discussionparser/append.go
++++ b/internal/discussionparser/append.go
+@@ -8,6 +8,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"os"
++	"regexp"
+ 	"strings"
+ 	"time"
+ )
+@@ -33,6 +34,9 @@ type AddedDecision struct {
+ 	// WithdrawnPattern, when set, is the entry ID of a declared PATTERN change the decision takes back.
+ 	// Its bullet is struck with the decision's entry, which names the ID; it is never set with PatternChange.
+ 	WithdrawnPattern string
++	// DroppedCreates are the Create targets, as a plan card spells them, the decision drops.
++	// Each is written as its own `Drops Create: `<target>`` line after the Rationale paragraph.
++	DroppedCreates []string
+ }
+ 
+ // AppendDecisions adds every entry of ds, in order, at the end of the decision record's `## Decisions` section.
+@@ -111,13 +115,25 @@ func insertDecision(content string, d AddedDecision) (string, error) {
+ 		}
+ 	}
+ 
++	var drops strings.Builder
++	for _, target := range d.DroppedCreates {
++		target = strings.TrimSpace(target)
++		if target == "" || strings.ContainsAny(target, "`\n\r") {
++			return "", fmt.Errorf("dropped Create target %q is empty or holds a backtick or a newline", target)
++		}
++		if drops.Len() == 0 {
++			drops.WriteString("\n")
++		}
++		drops.WriteString("Drops Create: `" + target + "`\n")
++	}
++
+ 	at, err := decisionsInsertOffset(content)
+ 	if err != nil {
+ 		return "", err
+ 	}
+ 
+ 	entry := fmt.Sprintf("\n### Added after Discussion (%s, %s): %s\n\nDecision: %s\n\nRationale: %s\n",
+-		by, d.Date.UTC().Format("2006-01-02"), title, decision, rationale)
++		by, d.Date.UTC().Format("2006-01-02"), title, decision, rationale) + drops.String()
+ 	if at > 0 && content[at-1] != '\n' {
+ 		entry = "\n" + entry
+ 	}
+@@ -211,6 +227,49 @@ func AddedDecisionTexts(recordPath string) ([]string, error) {
+ 	return texts, nil
+ }
+ 
++// droppedCreateLine matches a line of an added-decision entry that drops a Create target, capturing the target.
++var droppedCreateLine = regexp.MustCompile("^Drops Create: `([^`]+)`$")
++
++// DroppedCreates returns the Create targets the added-decision entries of the record at recordPath drop.
++// Each target maps to the title of the entry whose `Drops Create: `<target>“ line names it;
++// when several entries drop the same target, the later entry's title is kept.
++// It reads only inside added-decision entries and outside fenced blocks.
++// An empty recordPath and a missing record return nil and no error; a read error is returned.
++func DroppedCreates(recordPath string) (map[string]string, error) {
++	if recordPath == "" {
++		return nil, nil
++	}
++	data, err := os.ReadFile(recordPath)
++	if err != nil {
++		if errors.Is(err, os.ErrNotExist) {
++			return nil, nil
++		}
++		return nil, err
++	}
++	lines := strings.Split(string(data), "\n")
++	fenced := fencedLines(lines)
++	_, spans := addedDecisionSpans(lines, fenced)
++	var dropped map[string]string
++	for _, span := range spans {
++		heading := strings.TrimRight(lines[span.first], " \t\r")
++		rest, _ := strings.CutPrefix(heading, addedDecisionHeadingPrefix)
++		// addedDecisionSpans keeps only headings that parse, so the parse cannot fail here.
++		entry, _ := parseAddedDecisionHeading(rest)
++		for i := span.first + 1; i <= span.last; i++ {
++			if fenced[i] {
++				continue
++			}
++			if match := droppedCreateLine.FindStringSubmatch(strings.TrimRight(lines[i], " \t\r")); match != nil {
++				if dropped == nil {
++					dropped = map[string]string{}
++				}
++				dropped[match[1]] = entry.Title
++			}
++		}
++	}
++	return dropped, nil
++}
++
+ // addedDecisionSpanText renders the added-decision entry at span as its lines joined by newlines.
+ // Trailing whitespace is trimmed.
+ func addedDecisionSpanText(lines []string, span lineSpan) string {
+diff --git a/internal/discussionparser/append_test.go b/internal/discussionparser/append_test.go
+index e8b414be..3ba5ff0a 100644
+--- a/internal/discussionparser/append_test.go
++++ b/internal/discussionparser/append_test.go
+@@ -2,8 +2,10 @@ package discussionparser
+ 
+ import (
+ 	"errors"
++	"maps"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -407,6 +409,7 @@ func TestAppendDecisions_WritesBatchWholeOrNothing(t *testing.T) {
+ 	}
+ }
+ 
++//testtiming:keep pins the exact parsed author, date and title of each entry in record order, which its covering test does not assert
+ func TestParseAddedDecisions(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -460,7 +463,7 @@ func TestParseAddedDecisions(t *testing.T) {
+ 				t.Fatalf("ParseAddedDecisions() = %+v; want %+v", got, tt.want)
+ 			}
+ 			for i := range got {
+-				if got[i] != tt.want[i] {
++				if !reflect.DeepEqual(got[i], tt.want[i]) {
+ 					t.Errorf("entry %d = %+v; want %+v", i, got[i], tt.want[i])
+ 				}
+ 			}
+@@ -468,6 +471,88 @@ func TestParseAddedDecisions(t *testing.T) {
+ 	}
+ }
+ 
++// TestAppendDecision_DroppedCreates asserts each dropped target renders as its own line after the Rationale paragraph.
++// A target is trimmed, and an empty one or one holding a backtick or a newline is an error that writes nothing.
++func TestAppendDecision_DroppedCreates(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name    string
++		targets []string
++		// want is the entry's text after the Decisions body; empty means the call must fail.
++		want string
++	}{
++		{"OneTarget", []string{"internal/x/a.go"}, wantEntry + "\nDrops Create: `internal/x/a.go`\n"},
++		{"TwoTargetsTrimmed", []string{" a.go ", "b.go\t"}, wantEntry + "\nDrops Create: `a.go`\nDrops Create: `b.go`\n"},
++		{"EmptyTarget", []string{"a.go", "  "}, ""},
++		{"BacktickInTarget", []string{"a`b.go"}, ""},
++		{"NewlineInTarget", []string{"a\nb.go"}, ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			decisionPath, supportPath := writeFixture(t, t.TempDir(), allSectionsContent(), "log")
++			d := addedDecision()
++			d.DroppedCreates = tt.targets
++
++			findings, err := AppendDecision(decisionPath, supportPath, d)
++			got := readFile(t, decisionPath)
++			if tt.want == "" {
++				if err == nil {
++					t.Fatal("AppendDecision() error = nil; want an error")
++				}
++				if got != allSectionsContent() {
++					t.Errorf("record changed:\n%q", got)
++				}
++				return
++			}
++			if err != nil || len(findings) != 0 {
++				t.Fatalf("AppendDecision() = %v, %v; want no findings and nil error", findings, err)
++			}
++			want := strings.Replace(allSectionsContent(), "## Decisions\n\nbody text.\n", "## Decisions\n\nbody text.\n"+tt.want, 1)
++			if got != want {
++				t.Errorf("record =\n%q\nwant\n%q", got, want)
++			}
++		})
++	}
++}
++
++// TestDroppedCreates asserts the targets of two added entries come back with their entries' titles.
++// A later entry's title replaces an earlier one's for the same target, a fenced line is ignored,
++// and a missing record and an empty path read as none.
++func TestDroppedCreates(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	record := "# Record\n\n## Decisions\n\n### Discussion call\n\nDrops Create: `ignored.go`\n\n" +
++		"### Added after Discussion (parent, 2026-03-01): First\n\nDecision: a.\n\nRationale: b.\n\n" +
++		"Drops Create: `a.go`\nDrops Create: `shared.go`\n\n" +
++		"```\nDrops Create: `fenced.go`\n```\n\n" +
++		"### Added after Discussion (parent, 2026-03-02): Second\n\nDecision: a.\n\nRationale: b.\n\n" +
++		"Drops Create: `shared.go`\n\n## Constraints\n\nDrops Create: `outside.go`\n"
++
++	dir := t.TempDir()
++	path := filepath.Join(dir, "decision-record.md")
++	if err := os.WriteFile(path, []byte(record), 0o644); err != nil {
++		t.Fatalf("write record: %v", err)
++	}
++
++	got, err := DroppedCreates(path)
++	if err != nil {
++		t.Fatalf("DroppedCreates() error = %v; want nil", err)
++	}
++	want := map[string]string{"a.go": "First", "shared.go": "Second"}
++	if !maps.Equal(got, want) {
++		t.Errorf("DroppedCreates() = %v; want %v", got, want)
++	}
++	for _, p := range []string{filepath.Join(dir, "missing.md"), ""} {
++		if got, err := DroppedCreates(p); got != nil || err != nil {
++			t.Errorf("DroppedCreates(%q) = %v, %v; want nil, nil", p, got, err)
++		}
++	}
++}
++
+ // TestAddedDecisionTexts asserts each added entry comes back whole, in record order.
+ // An entry runs from its heading to the next heading, and a fenced heading starts no entry.
+ // A record with no entry, a missing record and an empty path all read as none.
+diff --git a/internal/discussionparser/doc.go b/internal/discussionparser/doc.go
+index 2e6b50d9..37bb2052 100644
+--- a/internal/discussionparser/doc.go
++++ b/internal/discussionparser/doc.go
+@@ -15,6 +15,9 @@
+ // A call can instead withdraw a declared change:
+ // it strikes the entry's bullet and closes its added entry with a `Withdraws:` line.
+ // CheckAddedDecisionsKept reads that line as a strike rather than a drop.
++// A call can also drop plan Create targets:
++// the entry then carries one `Drops Create: `<target>“ line per target after its Rationale paragraph.
++// DroppedCreates returns each dropped target with the title of the entry that drops it.
+ //
+ // CheckDecisionIDs checks the record's decision headings and their acceptance coverage.
+ // Each H3 under `## Decisions` reads `### D<n> — <title>` with a unique id,
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index 5075c37d..b18f5084 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -89,6 +89,9 @@ const (
+ 	decisionWayFromKeys  = `way forward: set pattern_entry and pattern_action together, and pattern_text for adds or changes, never for withdraws, then re-run the verb`
+ 	decisionWayFromTwice = `way forward: give each entry of the --from file its own title and its own PATTERN entry, or record the second in a later call`
+ 
++	decisionWayDropsCreateAlone = `way forward: record the dropping decision as its own call`
++	decisionWayDropsCreateShape = `way forward: pass --drops-create with the Create target as the plan card spells it, without backticks or line breaks`
++
+ 	decisionWayFabricCommit    = `way forward: run "lym fabric commit" to commit the record; a session lym refuses the verb from reports status: FAILED and the orch runs it`
+ 	decisionWayStore           = `way forward: once the cause above is cleared, run "lym loom decision store" to copy the committed record onto the board entry`
+ 	decisionWayAmendsPlanRetry = `way forward: the entry and the amendment record are restored and nothing landed; re-run "lym loom decision add ... --amends-plan"`
+@@ -134,11 +137,13 @@ const decisionWayNoRecord = `way forward: the record exists once Discussion-Writ
+ // The three pattern fields are the optional PATTERN-change form and are all empty without it.
+ // from names the batch file whose entries replace the per-entry fields, and is empty for a one-entry call.
+ // amendsPlan marks a decision that amends the approved plan, so the call also writes the plan amendment record.
++// dropsCreate lists the Create targets of plan cards the call's one entry drops.
+ type decisionInput struct {
+ 	by, title, decision, rationale           string
+ 	patternEntry, patternAction, patternText string
+ 	from                                     string
+ 	amendsPlan                               bool
++	dropsCreate                              []string
+ }
+ 
+ // replaceInput holds the flag values of one `decision replace` call.
+@@ -924,6 +929,9 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	if refusal != "" {
+ 		return refuse("%s", refusal)
+ 	}
++	if refusal := dropsCreateRefusal(input.dropsCreate, len(entries)); refusal != "" {
++		return refuse("%s", refusal)
++	}
+ 	if refusal := decisionCallerRefusal(deps, input.by); refusal != "" {
+ 		return refuse("%s", refusal)
+ 	}
+@@ -1015,6 +1023,9 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 			Rationale: entry.Rationale,
+ 			Date:      date,
+ 		}
++		if len(entries) == 1 {
++			d.DroppedCreates = input.dropsCreate
++		}
+ 		switch id, action := strings.TrimSpace(entry.PatternEntry), strings.TrimSpace(entry.PatternAction); {
+ 		case action == discussionparser.PatternActionWithdraws:
+ 			d.WithdrawnPattern = id
+@@ -1120,6 +1131,24 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	return output.Ok(out, result)
+ }
+ 
++// dropsCreateRefusal returns the refusal text for --drops-create targets that cannot be recorded, or empty when they can.
++// The flag belongs to one entry, so a call recording several entries is refused,
++// and a target that is empty or holds a backtick or a line break cannot be written as a line.
++func dropsCreateRefusal(targets []string, entryCount int) string {
++	if len(targets) == 0 {
++		return ""
++	}
++	if entryCount > 1 {
++		return "--drops-create applies to one entry and this call records several; " + decisionWayDropsCreateAlone
++	}
++	for _, target := range targets {
++		if strings.TrimSpace(target) == "" || strings.ContainsAny(target, "`\n\r") {
++			return fmt.Sprintf("--drops-create target %q is empty or holds a backtick or a line break; %s", target, decisionWayDropsCreateShape)
++		}
++	}
++	return ""
++}
++
+ // entriesChangePattern reports whether any entry carries the PATTERN-change form.
+ func entriesChangePattern(entries []decisionEntry) bool {
+ 	for _, entry := range entries {
+@@ -1954,34 +1983,37 @@ Example:
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `add appends an entry under an "Added after Discussion" heading, carrying the
+ --by label and today's date, to the record's Decisions section, re-runs the
+-discussion check (restoring the record on a finding) and commits.
+-It changes neither the support log nor the plan. Past Discussion approval it
+-also copies the record onto the run's board entry; a failed copy is reported
+-as "record_store_error", never fails the verb. It then notifies the run's other
+-live agents ("notified", "notice_errors", "notice_held_back").
++discussion check and commits.
++Past Discussion approval it also copies the record onto the run's board entry;
++a failed copy is "record_store_error" and never fails the verb.
++It then notifies the run's other live agents.
+ 
+ --by is parent, operator or arbiter (the last only from the run's arbiter
+-strand). --title, --decision and --rationale are required without --from. A named session other than the run's parent orch, arbiter or sampler
+-session (--by operator only) is refused, as is any call while Discussion-Write
+-runs or, on a Record-Write recipe, before it has committed the record.
++strand). --title, --decision and --rationale are required without --from.
++A session other than the run's parent orch, arbiter or sampler session (--by
++operator only) is refused, as is any call while Discussion-Write runs or, on a
++Record-Write recipe, before it has committed the record.
+ 
+ --amends-plan marks a decision that amends the approved plan: the call also
+ appends the title to the plan amendment record in the same commit. It is
+ refused on a recipe with no Plan-Write row and with no approved plan.
+-Afterwards the parent runs "lym loom goto --to Plan-Burler-Review" and
+-"lym loom resume".
++Then the parent runs "lym loom goto --to Plan-Burler-Review", "lym loom resume".
+ 
+ A decision on a PATTERN entry also passes --pattern-entry <PATTERN-id>,
+ --pattern-action adds|changes|removes and, for adds or changes, --pattern-text
+ <new entry text>, which writes its bullet to the "## PATTERN changes" section.
+---pattern-action withdraws strikes the entry's declared bullet in the same
+-commit, takes no --pattern-text and is refused when the record declares none.
++--pattern-action withdraws strikes the declared bullet, takes no --pattern-text
++and is refused when the record declares none.
+ 
+ --from <file> records several decisions from a JSON array of objects with the
+ keys title, decision, rationale and optional pattern_entry, pattern_action,
+ pattern_text. --by and --amends-plan apply to every entry. All land in one
+ commit or none does; no two share a title or a PATTERN entry.
+ 
++--drops-create <target> (repeatable) records that the decision drops a Create
++target, as the card spells it, so Webster's done-check skips it. It applies to
++one entry; record the dropping decision as its own call.
++
+ Example:
+   lym loom decision add <slug> --by parent --title "T" --decision "D" --rationale "R"`,
+ 		Args: cobra.MaximumNArgs(1),
+@@ -2001,6 +2033,7 @@ Example:
+ 	add.Flags().StringVar(&st.input.patternAction, "pattern-action", "", "what the decision does to the entry: adds, changes, removes or withdraws")
+ 	add.Flags().StringVar(&st.input.patternText, "pattern-text", "", "the entry's new text, for adds or changes")
+ 	add.Flags().StringVar(&st.input.from, "from", "", "a JSON file of several decisions to record in one call, in place of the per-entry flags")
++	add.Flags().StringArrayVar(&st.input.dropsCreate, "drops-create", nil, "a Create target of a plan card the decision drops, as the card spells it; Webster's done-check then skips it")
+ 	add.Flags().BoolVar(&st.input.amendsPlan, "amends-plan", false, "the decision amends the approved plan: also record it in the plan amendment record")
+ 
+ 	store := &cobra.Command{
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index f782aa5f..7420786e 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -555,7 +556,10 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		perchWithoutFileRow bool
+ 		// judgeOpen makes the run's drift judge session read as open.
+ 		judgeOpen bool
++		// dropsCreate sets the --drops-create targets.
++		dropsCreate []string
+ 	}{
++		{name: "parent label dropping two Create targets", by: "parent", dropsCreate: []string{"a.go", "b.go"}},
+ 		{name: "a plain entry while a drift judge session is open", by: "parent", judgeOpen: true},
+ 		{name: "a raddle run outside perch mode at its Raddle-File row", by: "parent", atRaddleFile: true},
+ 		{name: "a perch-mode raddle run at its Raddle-Write row", by: "parent", perchAtRaddleWrite: true},
+@@ -602,6 +606,7 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			f.parent = hubgeom.Parent{Name: tc.parentName}
+ 			input := goodDecisionInput()
+ 			input.by = by
++			input.dropsCreate = tc.dropsCreate
+ 			if tc.pattern {
+ 				input.patternEntry, input.patternAction, input.patternText = "PATTERN-x", "adds", "New rule."
+ 			}
+@@ -617,6 +622,9 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			}
+ 
+ 			data := envelope.RequireOK(t, out.String()).Raw
++			if !slices.Equal(f.lastAdded.DroppedCreates, tc.dropsCreate) {
++				t.Errorf("appended DroppedCreates = %q; want %q", f.lastAdded.DroppedCreates, tc.dropsCreate)
++			}
+ 			if tc.withdraw {
+ 				if f.lastAdded.WithdrawnPattern != "PATTERN-x" {
+ 					t.Errorf("appended WithdrawnPattern = %q; want PATTERN-x", f.lastAdded.WithdrawnPattern)
+@@ -677,6 +685,19 @@ func TestDecisionVerb_Refusals(t *testing.T) {
+ 		afterCommit bool
+ 	}
+ 	tests := []refusalCase{
++		{
++			name:         "--drops-create on a call recording several entries",
++			from:         decisionBatchJSON,
++			setup:        func(_ *decisionFake, in *decisionInput) { in.dropsCreate = []string{"a.go"} },
++			inputRefusal: true,
++			want:         []string{"--drops-create applies to one entry", "way forward: record the dropping decision as its own call"},
++		},
++		{
++			name:         "--drops-create target holding a backtick",
++			setup:        func(_ *decisionFake, in *decisionInput) { in.dropsCreate = []string{"a`b.go"} },
++			inputRefusal: true,
++			want:         []string{"--drops-create target", "way forward:", "without backticks"},
++		},
+ 		{
+ 			name:    "no decision record",
+ 			setup:   func(f *decisionFake, _ *decisionInput) { f.appendErr = fmt.Errorf("read: %w", fs.ErrNotExist) },
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 2f04261d..053e09e1 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -776,6 +776,15 @@
+ // A `pattern_action` of `withdraws`, like `--pattern-action withdraws`, strikes a declared `## PATTERN changes` bullet.
+ // The strike lands in the entry's commit, and the envelope names the ID under `pattern_withdrawn`.
+ //
++// # Decision drops-create
++//
++// `lym loom decision add --drops-create <target>` (repeatable) records that the decision drops a Create target.
++// The target is spelled as the card spells it.
++// The entry gets one `Drops Create: `<target>“ line per target after its Rationale paragraph.
++// Webster's done-check skips a dropped target.
++// The flag applies to one entry: a call that records several is refused, naming a separate call as the way forward.
++// An empty target, or one holding a backtick or a line break, is refused.
++//
+ // # Decision amends-plan
+ //
+ // `lym loom decision add --amends-plan` records a decision that amends the approved plan:
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 8d390999..68d1171f 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -45,6 +45,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/samplerengine"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+@@ -920,6 +921,8 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		PreflightDrift:   preflightDrift,
+ 		Cwd:              cwd,
+ 		AnchorPath:       anchorPath,
++		AmendmentPath:    loomengine.LoomAmendmentRecord(location),
++		HaltConflictDir:  runplan.ConflictDir(websterGeom.AnchorRoot),
+ 		ConfigDirs:       fabricengine.ConfigDirs(location),
+ 		WorktreeRoot:     location.WorktreePath(),
+ 		// RunScratchDir is the directory the step envelope reports as scratch_dir.
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 4f1f5ba8..6b2f3ff0 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -233,6 +233,12 @@ var knownNonCardFiles = map[string]bool{
+ 	LensReviewFileName: true,
+ }
+ 
++// IsNonCardFileName reports whether name is the base name of a plan-directory file that holds no card:
++// the overview, the amendment log, the lens review or a lens report.
++func IsNonCardFileName(name string) bool {
++	return knownNonCardFiles[name] || IsLensReportFileName(name)
++}
++
+ // checkIndexFileConsistency implements index-file-mismatch.
+ // Every *.md file on disk must be named by a parsed card, except the plan-level and lens report files it exempts.
+ // Card numbers must run consecutively from first_card, which defaults to 1, with no gaps or duplicates.
+@@ -267,7 +273,7 @@ func checkIndexFileConsistency(plan *Plan) []ValidationError {
+ 	default:
+ 		var onDisk []string
+ 		for _, e := range entries {
+-			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || knownNonCardFiles[e.Name()] || IsLensReportFileName(e.Name()) {
++			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || IsNonCardFileName(e.Name()) {
+ 				continue
+ 			}
+ 			if !indexed[e.Name()] {
+diff --git a/internal/runplan/conflict.go b/internal/runplan/conflict.go
+index 059f81da..b04f3777 100644
+--- a/internal/runplan/conflict.go
++++ b/internal/runplan/conflict.go
+@@ -124,6 +124,9 @@ const (
+ 	ConflictRecordName = "plan-conflict.md"
+ 	// routedConflictName is the file holding the findings of the conflict last routed to plan review.
+ 	routedConflictName = "plan-conflict-routed.md"
++	// HaltReasonName is the file in the conflict directory holding the stuck reason of the latest stuck Webster call.
++	// A plan review the parent routes the run back to raises it as a finding; Webster removes it when a call ends done.
++	HaltReasonName = "webster-halt.md"
+ )
+ 
+ // ConflictDir returns the never-tracked directory under anchorRoot that holds the plan-conflict record.
+@@ -197,6 +200,40 @@ func RemoveRoutedConflict(scratchDir string) error {
+ 	return removeIfPresent(RoutedConflictPath(scratchDir))
+ }
+ 
++// HaltReasonPath returns the Webster halt reason's path under dir.
++func HaltReasonPath(dir string) string {
++	return filepath.Join(dir, HaltReasonName)
++}
++
++// WriteHaltReason writes reason, newline-terminated, as the Webster halt reason under dir.
++// It creates dir first, since no lock file sits in it.
++func WriteHaltReason(dir, reason string) error {
++	if err := os.MkdirAll(dir, 0o755); err != nil {
++		return fmt.Errorf("runplan: create halt-reason directory: %w", err)
++	}
++	if err := os.WriteFile(HaltReasonPath(dir), []byte(reason+"\n"), 0o644); err != nil {
++		return fmt.Errorf("runplan: write halt reason: %w", err)
++	}
++	return nil
++}
++
++// ReadHaltReason returns the trimmed Webster halt reason under dir, or "" when there is none.
++func ReadHaltReason(dir string) (string, error) {
++	data, err := os.ReadFile(HaltReasonPath(dir))
++	if os.IsNotExist(err) {
++		return "", nil
++	}
++	if err != nil {
++		return "", fmt.Errorf("runplan: read %s: %w", HaltReasonPath(dir), err)
++	}
++	return strings.TrimSpace(string(data)), nil
++}
++
++// RemoveHaltReason removes the Webster halt reason under dir, and is a no-op when it is absent.
++func RemoveHaltReason(dir string) error {
++	return removeIfPresent(HaltReasonPath(dir))
++}
++
+ // removeIfPresent removes the file at filePath and returns nil when there is none.
+ func removeIfPresent(filePath string) error {
+ 	if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
+diff --git a/internal/runplan/conflict_test.go b/internal/runplan/conflict_test.go
+new file mode 100644
+index 00000000..0670b60b
+--- /dev/null
++++ b/internal/runplan/conflict_test.go
+@@ -0,0 +1,36 @@
++// conflict_test.go covers the never-tracked Webster halt reason file in the conflict directory.
++// Tier 0: a temp directory.
++
++package runplan
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestHaltReason_RoundTrip(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	dir := filepath.Join(t.TempDir(), "conflict")
++	if got, err := ReadHaltReason(dir); err != nil || got != "" {
++		t.Fatalf("ReadHaltReason(absent) = %q, %v; want \"\", nil", got, err)
++	}
++	if err := WriteHaltReason(dir, "stuck on card 3"); err != nil {
++		t.Fatalf("WriteHaltReason: %v", err)
++	}
++	if got, err := ReadHaltReason(dir); err != nil || got != "stuck on card 3" {
++		t.Errorf("ReadHaltReason() = %q, %v; want %q, nil", got, err, "stuck on card 3")
++	}
++	if err := RemoveHaltReason(dir); err != nil {
++		t.Fatalf("RemoveHaltReason: %v", err)
++	}
++	if got, err := ReadHaltReason(dir); err != nil || got != "" {
++		t.Errorf("ReadHaltReason(removed) = %q, %v; want \"\", nil", got, err)
++	}
++	if err := RemoveHaltReason(dir); err != nil {
++		t.Errorf("RemoveHaltReason(absent) = %v; want nil", err)
++	}
++}
+diff --git a/internal/runplan/doc.go b/internal/runplan/doc.go
+index 1cb1b308..0593319f 100644
+--- a/internal/runplan/doc.go
++++ b/internal/runplan/doc.go
+@@ -10,6 +10,7 @@
+ // That record sits in the implementer-neutral ConflictDir.
+ // The post-batch checks cover the done checks, handle binding, the scope guard and drift repair.
+ // They also cover the renames that rewrite pending cards.
++// The done checks skip a Create target the run's decision record drops, and warn about it.
+ // The suspect-path checks, the batch digest and the card gate rendering belong to it as well.
+ // The done-card readers, DoneCards, EditedDoneCards and LastBegunCard, read the batch records alone.
+ // PendingPartition partitions the cards no done batch holds, and RecordBeginPartition records that partition.
+diff --git a/internal/runplan/postbatch.go b/internal/runplan/postbatch.go
+index 3b993fb5..948246ef 100644
+--- a/internal/runplan/postbatch.go
++++ b/internal/runplan/postbatch.go
+@@ -13,6 +13,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/batcher"
++	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+@@ -64,6 +65,9 @@ type CardNotDoneError struct {
+ 	GlyphRejected bool
+ 	// CreateNotDone is set for a Create target that still does not resolve, or for a Rename pair that did not happen.
+ 	CreateNotDone bool
++	// DroppableCreate is set for a Create target that still does not resolve.
++	// A decision can drop such a target, and it cannot drop a Rename pair.
++	DroppableCreate bool
+ 	// SignatureMismatch is set when a target's member is declared only with another parameter list.
+ 	SignatureMismatch bool
+ }
+@@ -117,6 +121,9 @@ type PostBatchInputs struct {
+ 	// StartSHA is the bracket record's captured start SHA and HeadSHA the reconciled report head.
+ 	StartSHA string
+ 	HeadSHA  string
++	// DecisionRecordPath is the run's decision record, whose dropped Create targets skip their done-check.
++	// Empty reads no decisions.
++	DecisionRecordPath string
+ 	// Label names the batch in warnings.
+ 	Label string
+ 	// Renames are the glyph renames the batch's report lists, which drift detection repairs in the cards not yet begun.
+@@ -185,7 +192,10 @@ func CardNotDoneFor(number int, cards []planparser.Card, findings []planindex.Fi
+ 			notDone.DeleteNotDone = true
+ 		case "glyph-rejected":
+ 			notDone.GlyphRejected = true
+-		case "create-not-done", "rename-not-done":
++		case "create-not-done":
++			notDone.CreateNotDone = true
++			notDone.DroppableCreate = true
++		case "rename-not-done":
+ 			notDone.CreateNotDone = true
+ 		case "signature-mismatch":
+ 			notDone.SignatureMismatch = true
+@@ -215,8 +225,50 @@ func rereadCards(plan *planparser.Plan, cards []planparser.Card) []planparser.Ca
+ 	return reread
+ }
+ 
++// withoutDroppedCreates returns cards with every Create target in dropped removed from its target groups.
++// A dropped target that a card declares through a `plan:` handle loses its declaration too.
++// The card then owns no handle for it.
++// Each such target adds a warning naming the card, the target and the decision that dropped it.
++// A card it changes is a copy: the caller's cards and their slices stay as given.
++func withoutDroppedCreates(cards []planparser.Card, dropped map[string]string) (kept []planparser.Card, warnings []string) {
++	kept = slices.Clone(cards)
++	for i, c := range kept {
++		groups := slices.Clone(c.TargetGroups)
++		droppedHandles := map[string]bool{}
++		for j, g := range groups {
++			if g.Type != planparser.CardTypeCreate {
++				continue
++			}
++			var refs []string
++			for _, ref := range g.Refs {
++				title, isDropped := dropped[ref]
++				if !isDropped {
++					refs = append(refs, ref)
++					continue
++				}
++				droppedHandles[ref] = true
++				warnings = append(warnings, fmt.Sprintf("card %s: Create target %q is dropped by the decision %q, so its done-check did not run", c.ID(), ref, title))
++			}
++			groups[j].Refs = refs
++			groups[j].Declarations = declarationsWithout(g.Declarations, droppedHandles)
++		}
++		kept[i].TargetGroups = groups
++		kept[i].Declarations = declarationsWithout(c.Declarations, droppedHandles)
++	}
++	return kept, warnings
++}
++
++// declarationsWithout returns a copy of declarations without those whose handle is in handles.
++func declarationsWithout(declarations []planparser.CardDeclaration, handles map[string]bool) []planparser.CardDeclaration {
++	return slices.DeleteFunc(slices.Clone(declarations), func(d planparser.CardDeclaration) bool { return handles[d.Handle] })
++}
++
+ // PostBatchChecks runs the mechanical pass every terminal batch owes, whichever path takes it terminal.
+ // It runs the card done-checks and carries a recorded C# re-sign into the plan.
++// The done-checks skip each Create target that an `Added after Discussion` decision in in.DecisionRecordPath drops,
++// and a warning names each such target.
++// Binding owns no handle for a dropped target either; drift detection and the scope guard still read the cards as given.
++// A decision record that cannot be read is an error with a way forward.
+ // It computes the single delta that the rest of the pass shares.
+ // It then binds handles, runs the glyph scope guard, and runs drift detection with its exact-tier auto-repair.
+ // It also runs the plan-staleness re-baseline each of those rewrites requires.
+@@ -246,7 +298,14 @@ func PostBatchChecks(in PostBatchInputs) (deviations, warnings []string, err err
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+-	doneFindings, err := index.DoneChecks(in.Plan, in.Cards, in.Geom.WorktreeRoot)
++	dropped, err := discussionparser.DroppedCreates(in.DecisionRecordPath)
++	if err != nil {
++		return nil, nil, fmt.Errorf("read the dropped Create targets of the decision record %s: %w; way forward: restore the decision record at that path, or have the run's parent replace it with `lym loom decision replace`, then re-run the verb that failed", in.DecisionRecordPath, err)
++	}
++	cardsToCheck, droppedWarnings := withoutDroppedCreates(in.Cards, dropped)
++	// Every return below carries the dropped-target warnings, so a refusal never hides them.
++	defer func() { warnings = append(droppedWarnings, warnings...) }()
++	doneFindings, err := index.DoneChecks(in.Plan, cardsToCheck, in.Geom.WorktreeRoot)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -325,7 +384,9 @@ func PostBatchChecks(in PostBatchInputs) (deviations, warnings []string, err err
+ 
+ 	// Binding runs after the done-checks above, so a card that already failed create-not-done is never bound.
+ 	// It applies its whole batch of substitutions in one RewriteRefs call.
+-	bindFindings, bindOutcomes, bindErr := delta.BindHandles(in.Plan, in.Geom.PlanDir, in.Cards)
++	// A dropped Create declares nothing the delta could create, so its handle is left out of the cards binding reads.
++	bindCards, _ := withoutDroppedCreates(in.Cards, dropped)
++	bindFindings, bindOutcomes, bindErr := delta.BindHandles(in.Plan, in.Geom.PlanDir, bindCards)
+ 	// The trace is logged before the restamp below, so a restamp failure still reports the bind that landed.
+ 	// The trace names the reason the pass decided.
+ 	// That reason overrides the outcomes BindHandles computed when there is no glyph language or no delta.
+diff --git a/internal/runplan/postbatch_test.go b/internal/runplan/postbatch_test.go
+new file mode 100644
+index 00000000..0a630006
+--- /dev/null
++++ b/internal/runplan/postbatch_test.go
+@@ -0,0 +1,216 @@
++// postbatch_test.go covers how the post-batch checks treat a Create target the decision record drops.
++// Tier 0: a fake index and a decision record in a temp directory.
++
++package runplan
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/planindex"
++	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// errPassReachedRebind is what the fake index's RebindResigns returns, so a test sees the pass get past the done-checks.
++var errPassReachedRebind = errors.New("pass reached the re-sign rebind")
++
++// errPassReachedBind is what the recording delta's BindHandles returns, so a test sees the pass reach handle binding.
++var errPassReachedBind = errors.New("pass reached handle binding")
++
++// doneCheckFakeIndex reports every Create target of the cards it is asked about as not done.
++// It ends the pass at the re-sign rebind.
++type doneCheckFakeIndex struct {
++	planindex.Index
++}
++
++func (doneCheckFakeIndex) DoneChecks(_ *planparser.Plan, cards []planparser.Card, _ string) ([]planindex.Finding, error) {
++	var findings []planindex.Finding
++	for _, c := range cards {
++		for _, g := range c.TargetGroups {
++			if g.Type != planparser.CardTypeCreate {
++				continue
++			}
++			for _, ref := range g.Refs {
++				findings = append(findings, planindex.Finding{Card: c.ID(), Check: "create-not-done", Severity: planindex.SeverityBlocking, Detail: ref})
++			}
++		}
++	}
++	return findings, nil
++}
++
++func (doneCheckFakeIndex) RebindResigns(*planparser.Plan, []planparser.Card, string) ([]planindex.Finding, error) {
++	return nil, errPassReachedRebind
++}
++
++// bindFakeIndex finds every card done and ends the pass at handle binding, recording the cards binding was asked about.
++type bindFakeIndex struct {
++	planindex.Index
++	bound *[]planparser.Card
++}
++
++func (bindFakeIndex) DoneChecks(*planparser.Plan, []planparser.Card, string) ([]planindex.Finding, error) {
++	return nil, nil
++}
++
++func (bindFakeIndex) RebindResigns(*planparser.Plan, []planparser.Card, string) ([]planindex.Finding, error) {
++	return nil, nil
++}
++
++func (i bindFakeIndex) Delta(string, string, string) (planindex.Delta, error) {
++	return recordingDelta{bound: i.bound}, nil
++}
++
++type recordingDelta struct {
++	planindex.Delta
++	bound *[]planparser.Card
++}
++
++func (d recordingDelta) BindHandles(_ *planparser.Plan, _ string, cards []planparser.Card) ([]planindex.Finding, []planindex.BindOutcome, error) {
++	*d.bound = cards
++	return nil, nil, errPassReachedBind
++}
++
++// writeDroppingRecord writes a decision record whose one added entry, titled "Drop it", drops each of targets.
++func writeDroppingRecord(t *testing.T, targets ...string) string {
++	t.Helper()
++	text := "## Decisions\n\n### Added after Discussion (parent, 2026-11-21): Drop it\n\nDecision: drop them.\nRationale: unneeded.\n"
++	for _, target := range targets {
++		text += "Drops Create: `" + target + "`\n"
++	}
++	record := filepath.Join(t.TempDir(), "decision.md")
++	if err := os.WriteFile(record, []byte(text), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	return record
++}
++
++func TestPostBatchChecks_DroppedCreateSkipsItsDoneCheck(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const ref = "internal/foo/foo.go"
++	const secondRef = "internal/foo/bar.go"
++	card := planparser.Card{
++		Number:       1,
++		Slug:         "foo",
++		TargetGroups: []planparser.TargetGroup{{Type: planparser.CardTypeCreate, Refs: []string{ref, secondRef}}},
++	}
++	inputs := func(recordPath string) PostBatchInputs {
++		return PostBatchInputs{
++			Geom:               Geometry{Index: doneCheckFakeIndex{}, PlanDir: t.TempDir()},
++			Number:             1,
++			Cards:              []planparser.Card{card},
++			DecisionRecordPath: recordPath,
++		}
++	}
++	warningFor := func(target string) string {
++		return `card 1-foo: Create target "` + target + `" is dropped by the decision "Drop it", so its done-check did not run`
++	}
++
++	_, _, err := PostBatchChecks(inputs(""))
++	if !errors.Is(err, ErrCardNotDone) {
++		t.Fatalf("PostBatchChecks without a decision record: err = %v; want ErrCardNotDone", err)
++	}
++
++	t.Run("DroppingEveryTargetUnblocksTheCard", func(t *testing.T) {
++		t.Parallel()
++		_, warnings, err := PostBatchChecks(inputs(writeDroppingRecord(t, ref, secondRef)))
++		if errors.Is(err, ErrCardNotDone) {
++			t.Fatalf("PostBatchChecks with both targets dropped: err = %v; want no ErrCardNotDone", err)
++		}
++		if !errors.Is(err, errPassReachedRebind) {
++			t.Errorf("PostBatchChecks with both targets dropped: err = %v; want the pass to reach the re-sign rebind", err)
++		}
++		for _, target := range []string{ref, secondRef} {
++			if !slices.Contains(warnings, warningFor(target)) {
++				t.Errorf("PostBatchChecks with both targets dropped: warnings = %q; want %q among them", warnings, warningFor(target))
++			}
++		}
++		if len(card.TargetGroups[0].Refs) != 2 {
++			t.Errorf("caller's card refs = %q; want both left in place", card.TargetGroups[0].Refs)
++		}
++	})
++
++	t.Run("DroppingOneTargetKeepsTheOtherBlocking", func(t *testing.T) {
++		t.Parallel()
++		_, warnings, err := PostBatchChecks(inputs(writeDroppingRecord(t, ref)))
++		if !errors.Is(err, ErrCardNotDone) {
++			t.Fatalf("PostBatchChecks with one target dropped: err = %v; want ErrCardNotDone", err)
++		}
++		if !strings.Contains(err.Error(), secondRef) || strings.Contains(err.Error(), ref) {
++			t.Errorf("PostBatchChecks with one target dropped: err = %q; want it to name only %q", err, secondRef)
++		}
++		if want := []string{warningFor(ref)}; !slices.Equal(warnings, want) {
++			t.Errorf("PostBatchChecks with one target dropped: warnings = %q; want %q", warnings, want)
++		}
++	})
++}
++
++// TestPostBatchChecks_DroppedHandleDeclarationIsNotBound proves a dropped Create declared through a plan: handle.
++// The card owns no handle for it, so binding is never asked about it.
++// Its sibling handle stays bound, so the pass never reports the unmatched handle as a bind-count mismatch.
++func TestPostBatchChecks_DroppedHandleDeclarationIsNotBound(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const droppedHandle = "plan:internal/foo#Dropped"
++	const keptHandle = "plan:internal/foo#Kept"
++	declarations := []planparser.CardDeclaration{{Handle: droppedHandle, Decl: "func Dropped()"}, {Handle: keptHandle, Decl: "func Kept()"}}
++	card := planparser.Card{
++		Number:       1,
++		Slug:         "foo",
++		Declarations: declarations,
++		TargetGroups: []planparser.TargetGroup{{Type: planparser.CardTypeCreate, Refs: []string{droppedHandle, keptHandle}, Declarations: declarations}},
++	}
++	var bound []planparser.Card
++
++	_, _, err := PostBatchChecks(PostBatchInputs{
++		State:              &State{},
++		Geom:               Geometry{Index: bindFakeIndex{bound: &bound}, PlanDir: t.TempDir(), RunDir: t.TempDir()},
++		Number:             1,
++		Cards:              []planparser.Card{card},
++		DecisionRecordPath: writeDroppingRecord(t, droppedHandle),
++	})
++
++	if !errors.Is(err, errPassReachedBind) {
++		t.Fatalf("PostBatchChecks err = %v; want the pass to reach handle binding", err)
++	}
++	if len(bound) != 1 {
++		t.Fatalf("binding was asked about %d cards; want 1", len(bound))
++	}
++	if got := planparser.OwnedHandles(bound[0]); !slices.Equal(got, []string{keptHandle}) {
++		t.Errorf("handles binding was asked about = %q; want only %q", got, keptHandle)
++	}
++	if len(card.Declarations) != 2 || len(card.TargetGroups[0].Declarations) != 2 {
++		t.Errorf("caller's card declarations = %d and %d; want both left in place", len(card.Declarations), len(card.TargetGroups[0].Declarations))
++	}
++}
++
++func TestPostBatchChecks_UnreadableDecisionRecordNamesTheWayForward(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// A directory in the record's place fails the read with an error that is not a missing file.
++	record := t.TempDir()
++
++	_, _, err := PostBatchChecks(PostBatchInputs{
++		Geom:               Geometry{Index: doneCheckFakeIndex{}, PlanDir: t.TempDir()},
++		Number:             1,
++		Cards:              []planparser.Card{{Number: 1, Slug: "foo"}},
++		DecisionRecordPath: record,
++	})
++
++	if err == nil || errors.Is(err, ErrCardNotDone) {
++		t.Fatalf("PostBatchChecks err = %v; want a read error that is no ErrCardNotDone", err)
++	}
++	for _, want := range []string{record, "way forward: ", "lym loom decision replace"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("PostBatchChecks err = %q; want it to contain %q", err, want)
++		}
++	}
++}
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index 0da39c8a..41b27744 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -19,6 +19,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+@@ -76,6 +77,14 @@ type BurlerHalfDeps struct {
+ 	Snapshot *TargetSnapshot
+ 	// DecisionRecordPath is the decision record whose added entries the round's start records; empty records none.
+ 	DecisionRecordPath string
++	// AmendmentTitles reads the titles of the pending amending decision entries.
++	// A later round's review may name findings against them.
++	// Nil for a segment that reads none.
++	AmendmentTitles func() ([]string, error)
++	// HaltConflictDir is the conflict directory holding the plan executor's halt-reason file.
++	// The review producer reads it on every call and puts the reason in the review prompt.
++	// Empty for a segment that reads none.
++	HaltConflictDir string
+ 	// Diff reads the unified diff a spawned reviewer is given in pieces, read by the review producer once per spawning call.
+ 	// Nil gives no diff, and so does a failed read, which is logged.
+ 	Diff func() (string, error)
+@@ -153,6 +162,10 @@ type BurlerReviewProducer struct {
+ 	snapshot *TargetSnapshot
+ 	// decisionRecordPath, when non-empty, is the decision record whose added entries each round's start records.
+ 	decisionRecordPath string
++	// amendmentTitles, when set, reads the pending amendment titles into each round's context.
++	amendmentTitles func() ([]string, error)
++	// haltConflictDir, when non-empty, is the conflict directory whose halt-reason file each call reads.
++	haltConflictDir string
+ 	// diff, when non-nil, reads the diff a spawned reviewer is given.
+ 	diff func() (string, error)
+ 	// rubric, when non-nil, reads each round's rubric.
+@@ -183,7 +196,7 @@ func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlereng
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, amendmentTitles: deps.AmendmentTitles, haltConflictDir: deps.HaltConflictDir, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // recordRoundStart writes round's snapshot record when none exists yet.
+@@ -256,7 +269,7 @@ func (p *BurlerReviewProducer) roundProfile(round int, fan, rubric string) burle
+ 	profile.PriorFixerReports = append(append([]string{}, p.profile.PriorFixerReports...), priorFixerReports...)
+ 	profile.ClusterExclude = nil
+ 	profile.ClusterExcludeHeld = nil
+-	roundContext, err := BuildRoundContext(p.runDir, round, p.decisionRecordPath, "")
++	roundContext, err := BuildRoundContext(p.runDir, round, RoundContextSources{DecisionRecordPath: p.decisionRecordPath, AmendmentTitles: p.amendmentTitles, ConflictDir: p.haltConflictDir})
+ 	if err != nil {
+ 		logger.Warn("shedadapters: burler review could not build the round context; the round is reviewed in full", "producer", p.name, "engine", burlerReviewEngineLabel, "round", round, "error", err)
+ 	}
+@@ -343,6 +356,13 @@ func (p *BurlerReviewProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 		}
+ 	}
+ 
++	haltReason := ""
++	if p.haltConflictDir != "" {
++		if haltReason, err = runplan.ReadHaltReason(p.haltConflictDir); err != nil {
++			return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): round %d: read the halt reason: %w", p.name, burlerReviewEngineLabel, round, err)
++		}
++	}
++
+ 	p.recordRoundStart(round)
+ 
+ 	fan, fixFan := p.profile.ClusterFan, ""
+@@ -356,9 +376,11 @@ func (p *BurlerReviewProducer) Call(ctx context.Context) (shedengine.Outcome, sh
+ 		}
+ 	}
+ 	profile := p.roundProfile(round, fan, rubric)
++	profile.HaltReason = haltReason
+ 	probeProfile := profile
+ 	if probeFan != fan {
+ 		probeProfile = p.roundProfile(round, probeFan, rubric)
++		probeProfile.HaltReason = haltReason
+ 	}
+ 	paths := []string{profile.ReviewPath, profile.FixerReportPath, roundAcceptancePath(p.runDir, round), burlerengine.AssistCopyPath(profile.ReviewPath, burlerengine.AssistSeatName), burlerengine.ParentCopyPath(profile.ReviewPath)}
+ 	archiveRound := func() {
+diff --git a/internal/shedadapters/burlerreview_halt_test.go b/internal/shedadapters/burlerreview_halt_test.go
+new file mode 100644
+index 00000000..bff683ba
+--- /dev/null
++++ b/internal/shedadapters/burlerreview_halt_test.go
+@@ -0,0 +1,81 @@
++// burlerreview_halt_test.go pins that BurlerReviewProducer hands the plan executor's halt reason to its reviewer.
++// That covers the reviewer it spawns, probes and resumes.
++
++package shedadapters
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/runplan"
++	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestBurlerReviewProducer_Call_HaltReasonReachesTheReviewer(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const reason = "card 14 misses the retry"
++	conflictDir := t.TempDir()
++	if err := runplan.WriteHaltReason(conflictDir, reason); err != nil {
++		t.Fatalf("WriteHaltReason() error = %v; want nil", err)
++	}
++
++	t.Run("SpawnedReviewerGetsIt", func(t *testing.T) {
++		t.Parallel()
++		spec := newHalfSpec()
++		spec.haltConflictDir = conflictDir
++		runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{reviewDone("d")}}
++		p := newReviewProducer(t, t.TempDir(), runner, spec)
++
++		shedfake.CallOK(t, p)
++
++		if got := runner.GotReviewProfiles[0].HaltReason; got != reason {
++			t.Errorf("spawned reviewer's HaltReason = %q; want %q", got, reason)
++		}
++	})
++
++	t.Run("ProbedAndResumedReviewerUnderADifferingFanGetsIt", func(t *testing.T) {
++		t.Parallel()
++		runDir := t.TempDir()
++		writeRoundFile(t, roundReviewPath(runDir, 1))
++		// The reviewer was spawned under a fan the lists no longer name, so the probe profile is built apart from the round's.
++		if err := writeRoundUsage(runDir, 1, roundUsage{Fan: "fan-old", FansRecorded: true, Review: &halfUsage{}}); err != nil {
++			t.Fatalf("writeRoundUsage: %v", err)
++		}
++		spec := newHalfSpec()
++		spec.haltConflictDir = conflictDir
++		spec.fans = &RoundFans{Review: []string{"fan-new"}, Fix: []string{""}}
++		runner := &shedfake.BurlerHalfRunner{
++			LiveReviews:         []burlerengine.LiveHalf{{State: burlerengine.HalfLive}},
++			ResumeReviewResults: []burlerengine.ReviewResult{reviewDone("resumed")},
++		}
++		p := newReviewProducer(t, runDir, runner, spec)
++
++		shedfake.CallOK(t, p)
++
++		if len(runner.GotProbeReviewProfiles) != 1 || len(runner.GotResumeReviewProfiles) != 1 {
++			t.Fatalf("probed %d and resumed %d reviewers; want 1 and 1", len(runner.GotProbeReviewProfiles), len(runner.GotResumeReviewProfiles))
++		}
++		probed := runner.GotProbeReviewProfiles[0]
++		if probed.ClusterFan != "fan-old" {
++			t.Errorf("probed reviewer's ClusterFan = %q; want the recorded %q", probed.ClusterFan, "fan-old")
++		}
++		if probed.HaltReason != reason || runner.GotResumeReviewProfiles[0].HaltReason != reason {
++			t.Errorf("probed and resumed reviewers' HaltReason = %q and %q; want %q for both", probed.HaltReason, runner.GotResumeReviewProfiles[0].HaltReason, reason)
++		}
++	})
++
++	t.Run("NoConflictDirectoryTellsNone", func(t *testing.T) {
++		t.Parallel()
++		runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{reviewDone("d")}}
++		p := newReviewProducer(t, t.TempDir(), runner, newHalfSpec())
++
++		shedfake.CallOK(t, p)
++
++		if got := runner.GotReviewProfiles[0].HaltReason; got != "" {
++			t.Errorf("HaltReason = %q; want none", got)
++		}
++	})
++}
+diff --git a/internal/shedadapters/burlerreview_test.go b/internal/shedadapters/burlerreview_test.go
+index 9f12d424..f78b526c 100644
+--- a/internal/shedadapters/burlerreview_test.go
++++ b/internal/shedadapters/burlerreview_test.go
+@@ -54,6 +54,8 @@ type halfProducerSpec struct {
+ 	diff func() (string, error)
+ 	// rubric is the deps' rubric reader; nil keeps the profile's rubric.
+ 	rubric func() (string, error)
++	// haltConflictDir is the deps' conflict directory holding the plan executor's halt reason; empty reads none.
++	haltConflictDir string
+ }
+ 
+ // newHalfSpec returns a spec over the minimal profile and a fixed clock.
+@@ -64,7 +66,7 @@ func newHalfSpec() halfProducerSpec {
+ // newReviewProducer builds a BurlerReviewProducer over runDir, failing the test on constructor error.
+ func newReviewProducer(t *testing.T, runDir string, runner *shedfake.BurlerHalfRunner, spec halfProducerSpec) *BurlerReviewProducer {
+ 	t.Helper()
+-	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath, NotifyParent: spec.notifyParent, DecisionsEscalated: spec.decisionsEscalated, Assist: spec.assist, Parent: spec.parent, Snapshot: spec.snapshot, DecisionRecordPath: spec.decisionRecordPath, Diff: spec.diff, Rubric: spec.rubric}, spec.profile, spec.opts, runDir, spec.now)
++	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath, NotifyParent: spec.notifyParent, DecisionsEscalated: spec.decisionsEscalated, Assist: spec.assist, Parent: spec.parent, Snapshot: spec.snapshot, DecisionRecordPath: spec.decisionRecordPath, Diff: spec.diff, Rubric: spec.rubric, HaltConflictDir: spec.haltConflictDir}, spec.profile, spec.opts, runDir, spec.now)
+ 	if err != nil {
+ 		t.Fatalf("NewBurlerReviewProducer() error = %v; want nil", err)
+ 	}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index ea04fc7b..d3975a62 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -32,6 +32,10 @@
+ //     and no record, an unreadable one or a failed write stays a plain Stuck with Master's reason.
+ //     The error outcomes never consult the record and never reroute.
+ //     Any other outcome value reaching Call is an engine-level error.
++//     Every Stuck writes its final reason to the halt-reason file in the conflict directory (runplan.WriteHaltReason),
++//     and Done removes the file.
++//     The plan segment's review row reads it, so the reviewer sees why the run was sent back.
++//     A failed write or removal is logged and never changes the outcome.
+ //     WebsterProducer is a gate carrier: its done and stuck pointers carry the gate count and spans of the master run.
+ //     The spans include the verify gate's entry.
+ //   - WeaverProducer: Weaver's "done" outcome maps to Done, and the pointer's path is Weaver's summary path.
+@@ -717,6 +721,11 @@
+ // A round N-1 that is not complete gives a nil context, and the round is reviewed in full with the prior-rounds text.
+ // A complete one gives each earlier finding with the fixer's disposition of it.
+ // It also gives the decision record entries added since round N-1's snapshot, and the round's changes file.
++// RoundContextSources names what it reads beyond the run directory; an empty path or a nil reader reads nothing.
++// AmendingTexts holds the full text of every added entry whose title the plan amendment record lists.
++// That includes entries added before the round's start.
++// The caller reads those titles through the record's own reader and passes the reader in.
++// HaltReason holds the plan executor's last stuck reason from the conflict directory.
+ // An amendment generation is never incremental.
+ // The review producer writes round-<N>-changes.md at an incremental round's start, one worktree-relative path per line.
+ // It lists the target paths changed since round N-1's snapshot, and a round with no answer writes no file.
+diff --git a/internal/shedadapters/roundcontext.go b/internal/shedadapters/roundcontext.go
+index 8da110a1..bbfa4ab5 100644
+--- a/internal/shedadapters/roundcontext.go
++++ b/internal/shedadapters/roundcontext.go
+@@ -9,12 +9,14 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ )
+ 
+@@ -82,16 +84,63 @@ func roundParentReportPath(runDir string, round int, files burlerengine.ParentRe
+ 	return files.ReportPath(ask.Number)
+ }
+ 
++// RoundContextSources names what BuildRoundContext reads beyond the run directory.
++// An empty path or a nil reader reads nothing.
++type RoundContextSources struct {
++	// DecisionRecordPath is the decision record whose added entries the context lists.
++	DecisionRecordPath string
++	// AnchorPath locates the run's parent-review files.
++	AnchorPath string
++	// AmendmentTitles reads the titles of the pending amending decision entries from the plan amendment record.
++	AmendmentTitles func() ([]string, error)
++	// ConflictDir is the directory holding the plan executor's halt-reason file.
++	ConflictDir string
++}
++
++// amendingEntryTexts returns the full text of every added entry of the decision record whose title amendmentTitles lists.
++// It covers all added entries, in record order, not only those added since an earlier round.
++func amendingEntryTexts(recordPath string, amendmentTitles func() ([]string, error)) ([]string, error) {
++	if amendmentTitles == nil {
++		return nil, nil
++	}
++	pending, err := amendmentTitles()
++	if err != nil {
++		return nil, fmt.Errorf("shedadapters: read the plan amendment record: %w", err)
++	}
++	if len(pending) == 0 {
++		return nil, err
++	}
++	digests, err := addedDecisionDigests(recordPath)
++	if err != nil || len(digests) == 0 {
++		return nil, err
++	}
++	entryTexts, err := discussionparser.AddedDecisionTexts(recordPath)
++	if err != nil {
++		return nil, fmt.Errorf("shedadapters: read the added entries of %q: %w", recordPath, err)
++	}
++	if len(entryTexts) != len(digests) {
++		return nil, fmt.Errorf("shedadapters: decision record %q changed while its added entries were read", recordPath)
++	}
++	var texts []string
++	for i, digest := range digests {
++		if slices.Contains(pending, digest.Title) {
++			texts = append(texts, entryTexts[i])
++		}
++	}
++	return texts, nil
++}
++
+ // BuildRoundContext returns what round's review is judged against.
+-// That is the findings of round-1, the fixer's answer to each, the decision record entries added since,
+-// and the files the fixes changed.
++// It holds the findings of round-1 and the fixer's answer to each.
++// It holds the decision record entries added since, and the texts of the entries pending as plan amendments.
++// It holds the plan executor's halt reason and the files the fixes changed.
+ // It returns nil, with a nil error, when round-1 is not complete:
+ // round is 1; round-1's review is absent or does not parse; its snapshot record is absent or holds no `decisions_routed`;
+ // or its fixer-report is neither one the engine wrote itself nor a fixer-written one that passes the fix check.
+ // A read error other than an absence is returned.
+ // The round is incremental unless the run directory's generation is an amendment.
+-// anchorPath locates the run's parent-review files; an empty anchorPath leaves ParentReportPath empty.
+-func BuildRoundContext(runDir string, round int, decisionRecordPath, anchorPath string) (*burlerengine.RoundContext, error) {
++// An empty paths.AnchorPath leaves ParentReportPath empty.
++func BuildRoundContext(runDir string, round int, paths RoundContextSources) (*burlerengine.RoundContext, error) {
+ 	if round < 2 {
+ 		return nil, nil
+ 	}
+@@ -128,10 +177,20 @@ func BuildRoundContext(runDir string, round int, decisionRecordPath, anchorPath
+ 		return nil, nil
+ 	}
+ 
+-	titles, texts, err := addedSincePreviousSnapshot(decisionRecordPath, snapshot.AddedDecisions)
++	titles, texts, err := addedSincePreviousSnapshot(paths.DecisionRecordPath, snapshot.AddedDecisions)
++	if err != nil {
++		return nil, err
++	}
++	amendingTexts, err := amendingEntryTexts(paths.DecisionRecordPath, paths.AmendmentTitles)
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	haltReason := ""
++	if paths.ConflictDir != "" {
++		if haltReason, err = runplan.ReadHaltReason(paths.ConflictDir); err != nil {
++			return nil, err
++		}
++	}
+ 	generation, _, err := readGenerationRecord(runDir)
+ 	if err != nil {
+ 		return nil, err
+@@ -158,6 +217,8 @@ func BuildRoundContext(runDir string, round int, decisionRecordPath, anchorPath
+ 		Prior:                prior,
+ 		AddedTitles:          titles,
+ 		AddedTexts:           texts,
++		AmendingTexts:        amendingTexts,
++		HaltReason:           haltReason,
+ 		HasChanges:           hasChanges,
+ 		Changed:              changed,
+ 		PriorReviewPath:      reviewPath,
+@@ -166,8 +227,8 @@ func BuildRoundContext(runDir string, round int, decisionRecordPath, anchorPath
+ 	if hasChanges {
+ 		context.ChangesPath = roundChangesPath(runDir, round)
+ 	}
+-	if anchorPath != "" {
+-		context.ParentReportPath = roundParentReportPath(runDir, round, burlerengine.ParentReviewFilesOf(anchorPath))
++	if paths.AnchorPath != "" {
++		context.ParentReportPath = roundParentReportPath(runDir, round, burlerengine.ParentReviewFilesOf(paths.AnchorPath))
+ 	}
+ 	return context, nil
+ }
+diff --git a/internal/shedadapters/roundcontext_test.go b/internal/shedadapters/roundcontext_test.go
+index 4f9ba866..7b381015 100644
+--- a/internal/shedadapters/roundcontext_test.go
++++ b/internal/shedadapters/roundcontext_test.go
+@@ -11,9 +11,31 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"gopkg.in/yaml.v3"
+ )
+ 
++// amendmentTitlesFile returns a reader of the `titles` the amendment record fixture at path lists.
++// The reader lists none when the fixture is absent.
++// It stands in for the record's own reader, which this package cannot import.
++func amendmentTitlesFile(path string) func() ([]string, error) {
++	return func() ([]string, error) {
++		content, err := os.ReadFile(path)
++		if os.IsNotExist(err) {
++			return nil, nil
++		}
++		if err != nil {
++			return nil, err
++		}
++		var record struct {
++			Titles []string `yaml:"titles"`
++		}
++		err = yaml.Unmarshal(content, &record)
++		return record.Titles, err
++	}
++}
++
+ const (
+ 	// contextReview is a parsing review holding a design finding F1 and a decision-class finding F2.
+ 	contextReview = "---\nverdict: BLOCKING\nfindings:\n" +
+@@ -81,7 +103,7 @@ func TestBuildRoundContext(t *testing.T) {
+ 
+ 	// env is what a row's setup lays out: the run directory, the decision record's path and the run's anchor.
+ 	type env struct {
+-		runDir, recordPath, anchor string
++		runDir, recordPath, anchor, amendment, conflictDir string
+ 	}
+ 	// complete lays round 1 out as complete, with decisions not routed, as most rows start.
+ 	complete := func(t *testing.T, e env) { writeCompleteRound(t, e.runDir, 1, false) }
+@@ -99,9 +121,11 @@ func TestBuildRoundContext(t *testing.T) {
+ 		setup func(t *testing.T, e env)
+ 		// withAnchor passes the run's anchor to the builder.
+ 		withAnchor bool
+-		wantNil    bool
+-		wantErr    bool
+-		check      func(t *testing.T, got *burlerengine.RoundContext, e env)
++		// withPlanPaths passes the amendment record and the conflict directory to the builder.
++		withPlanPaths bool
++		wantNil       bool
++		wantErr       bool
++		check         func(t *testing.T, got *burlerengine.RoundContext, e env)
+ 	}{
+ 		{name: "RoundOneHasNoEarlierRound", round: 1, setup: complete, wantNil: true},
+ 		{
+@@ -285,27 +309,98 @@ func TestBuildRoundContext(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "AmendingTextsHoldOnlyEntriesTheAmendmentRecordLists", withPlanPaths: true,
++			setup: then(func(t *testing.T, e env) {
++				writeDecisionRecord(t, e.recordPath, addedEntry("Fix the batch order", "swap cards 3 and 4"), addedEntry("Rename the flag", "use --force"))
++				writeRoundFileWith(t, e.amendment, "titles:\n  - Fix the batch order\nwritten_at: 2026-11-17T10:00:00Z\n")
++			}),
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if len(got.AmendingTexts) != 1 || !strings.Contains(got.AmendingTexts[0], "swap cards 3 and 4") || strings.Contains(got.AmendingTexts[0], "--force") {
++					t.Errorf("AmendingTexts = %q; want only the listed entry's text", got.AmendingTexts)
++				}
++			},
++		},
++		{
++			name: "AmendingTextsIncludeEntriesAlreadyInThePreviousSnapshot", withPlanPaths: true,
++			setup: then(func(t *testing.T, e env) {
++				writeDecisionRecord(t, e.recordPath, addedEntry("Fix the batch order", "swap cards 3 and 4"))
++				recordDigests(t, e.runDir, 1, e.recordPath)
++				writeRoundFileWith(t, e.amendment, "titles:\n  - Fix the batch order\n")
++			}),
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if len(got.AddedTexts) != 0 || len(got.AmendingTexts) != 1 {
++					t.Errorf("AddedTexts = %q and AmendingTexts = %q; want none added since and one amending", got.AddedTexts, got.AmendingTexts)
++				}
++			},
++		},
++		{
++			name: "NoAmendingTextsWhenNoAmendmentRecordExists", withPlanPaths: true,
++			setup: then(func(t *testing.T, e env) {
++				writeDecisionRecord(t, e.recordPath, addedEntry("Fix the batch order", "swap cards 3 and 4"))
++			}),
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if len(got.AmendingTexts) != 0 {
++					t.Errorf("AmendingTexts = %q; want none", got.AmendingTexts)
++				}
++			},
++		},
++		{
++			name: "HaltReasonComesFromTheHaltFile", withPlanPaths: true,
++			setup: then(func(t *testing.T, e env) {
++				if err := runplan.WriteHaltReason(e.conflictDir, "cards ran out"); err != nil {
++					t.Fatalf("WriteHaltReason() = %v; want nil", err)
++				}
++			}),
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if got.HaltReason != "cards ran out" {
++					t.Errorf("HaltReason = %q; want %q", got.HaltReason, "cards ran out")
++				}
++			},
++		},
++		{
++			name: "PlanPathsLeftEmptyReadNothing",
++			setup: then(func(t *testing.T, e env) {
++				writeDecisionRecord(t, e.recordPath, addedEntry("Fix the batch order", "swap cards 3 and 4"))
++				writeRoundFileWith(t, e.amendment, "titles:\n  - Fix the batch order\n")
++				if err := runplan.WriteHaltReason(e.conflictDir, "cards ran out"); err != nil {
++					t.Fatalf("WriteHaltReason() = %v; want nil", err)
++				}
++			}),
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if len(got.AmendingTexts) != 0 || got.HaltReason != "" {
++					t.Errorf("AmendingTexts = %q and HaltReason = %q; want neither", got.AmendingTexts, got.HaltReason)
++				}
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			root := t.TempDir()
+-			e := env{runDir: filepath.Join(root, "run"), recordPath: filepath.Join(root, "decisions.md"), anchor: filepath.Join(root, "anchor")}
++			e := env{
++				runDir: filepath.Join(root, "run"), recordPath: filepath.Join(root, "decisions.md"), anchor: filepath.Join(root, "anchor"),
++				amendment: filepath.Join(root, "amendment.yaml"), conflictDir: filepath.Join(root, "conflict"),
++			}
+ 			if err := os.MkdirAll(e.runDir, 0o755); err != nil {
+ 				t.Fatalf("MkdirAll(run dir) = %v; want nil", err)
+ 			}
+ 			if tt.setup != nil {
+ 				tt.setup(t, e)
+ 			}
+-			round, anchor := tt.round, ""
++			round := tt.round
+ 			if round == 0 {
+ 				round = 2
+ 			}
++			paths := RoundContextSources{DecisionRecordPath: e.recordPath}
+ 			if tt.withAnchor {
+-				anchor = e.anchor
++				paths.AnchorPath = e.anchor
++			}
++			if tt.withPlanPaths {
++				paths.AmendmentTitles, paths.ConflictDir = amendmentTitlesFile(e.amendment), e.conflictDir
+ 			}
+ 
+-			got, err := BuildRoundContext(e.runDir, round, e.recordPath, anchor)
++			got, err := BuildRoundContext(e.runDir, round, paths)
+ 
+ 			if (err != nil) != tt.wantErr {
+ 				t.Fatalf("BuildRoundContext() error = %v; want an error: %v", err, tt.wantErr)
+diff --git a/internal/shedadapters/webster.go b/internal/shedadapters/webster.go
+index 552256d6..ba781f02 100644
+--- a/internal/shedadapters/webster.go
++++ b/internal/shedadapters/webster.go
+@@ -1,5 +1,6 @@
+ // webster.go implements WebsterProducer, an adapter over websterengine.Run.
+ // It maps the run's RunResult and error onto the shedengine.ShedProducer contract.
++// It also keeps the halt-reason file: written with the reason of every Stuck, removed on Done.
+ 
+ package shedadapters
+ 
+@@ -9,6 +10,7 @@ import (
+ 	"fmt"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+@@ -57,6 +59,20 @@ func NewWebsterProducer(name string, run WebsterRunner, deps websterengine.RunDe
+ 	return &WebsterProducer{name: name, run: run, deps: deps}
+ }
+ 
++// recordHaltReason writes reason to the halt-reason file in the conflict directory; a failure is logged.
++func (p *WebsterProducer) recordHaltReason(reason string) {
++	if err := runplan.WriteHaltReason(p.deps.Geom.ConflictDir(), reason); err != nil {
++		logger.Warn("shedadapters: webster halt reason was not written", "producer", p.name, "engine", websterEngineLabel, "error", err)
++	}
++}
++
++// clearHaltReason removes the halt-reason file from the conflict directory; a failure is logged.
++func (p *WebsterProducer) clearHaltReason() {
++	if err := runplan.RemoveHaltReason(p.deps.Geom.ConflictDir()); err != nil {
++		logger.Warn("shedadapters: webster halt reason was not removed", "producer", p.name, "engine", websterEngineLabel, "error", err)
++	}
++}
++
+ // Call runs one iteration of the producer.
+ // It checks the context on entry.
+ // It invokes the run seam with Fresh false and AutoRebaseline true.
+@@ -73,6 +89,10 @@ func NewWebsterProducer(name string, run WebsterRunner, deps websterengine.RunDe
+ //
+ // No mid-run bridge is installed.
+ // A cancel goes unobserved until Master reaches a terminal outcome or its configured whole-run timeout elapses.
++//
++// Every Stuck writes its final reason to the halt-reason file in the conflict directory, and Done removes the file.
++// A plan review the run is sent back to reads the file, so the reviewer sees why the plan executor halted.
++// A failed write or removal is logged and never changes the outcome.
+ func (p *WebsterProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name, websterEngineLabel); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+@@ -86,6 +106,7 @@ func (p *WebsterProducer) Call(ctx context.Context) (shedengine.Outcome, shedeng
+ 			if cerr := cancelErr(ctx, p.name, websterEngineLabel); cerr != nil {
+ 				return "", shedengine.OutputPointer{}, cerr
+ 			}
++			p.recordHaltReason(err.Error())
+ 			return shedengine.Stuck, shedengine.OutputPointer{Reason: err.Error()}, nil
+ 		}
+ 
+@@ -100,6 +121,7 @@ func (p *WebsterProducer) Call(ctx context.Context) (shedengine.Outcome, shedeng
+ 		// A success verdict survives cancellation, the one outcome cancelErr never applies to.
+ 		// The summary is Webster's account of the whole run and is present on this outcome.
+ 		// The webster dir is taken from the producer's geometry, never derived.
++		p.clearHaltReason()
+ 		return shedengine.Done, shedengine.OutputPointer{Path: summaryparser.Path(p.deps.Geom.WebsterDir), GateAttempts: gateAttemptsPointer(result.Gate), GateSpans: gateSpansOf(result.Gate)}, nil
+ 
+ 	case websterOutcomeStuck:
+@@ -108,7 +130,9 @@ func (p *WebsterProducer) Call(ctx context.Context) (shedengine.Outcome, shedeng
+ 		}
+ 		logger.Warn("shedadapters: webster run is stuck", "producer", p.name, "engine", websterEngineLabel, "stuckReason", result.StuckReason, "batchesDone", result.BatchesDone)
+ 		ptr := shedengine.OutputPointer{GateAttempts: gateAttemptsPointer(result.Gate), GateSpans: gateSpansOf(result.Gate)}
+-		return shedengine.Stuck, claimConflict(p.name, websterEngineLabel, result.StuckReason, p.deps.Geom.ConflictDir(), ptr), nil
++		claimed := claimConflict(p.name, websterEngineLabel, result.StuckReason, p.deps.Geom.ConflictDir(), ptr)
++		p.recordHaltReason(claimed.Reason)
++		return shedengine.Stuck, claimed, nil
+ 
+ 	default:
+ 		if cerr := cancelErr(ctx, p.name, websterEngineLabel); cerr != nil {
+diff --git a/internal/shedadapters/webster_test.go b/internal/shedadapters/webster_test.go
+index b930e3fa..44b932b3 100644
+--- a/internal/shedadapters/webster_test.go
++++ b/internal/shedadapters/webster_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -65,7 +66,10 @@ func TestWebsterProducer_OutcomeDone(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			dir := t.TempDir()
+-			deps := websterengine.RunDeps{Geom: websterengine.Geometry{WebsterDir: dir}}
++			deps := websterengine.RunDeps{Geom: websterengine.Geometry{AnchorRoot: t.TempDir(), WebsterDir: dir}}
++			if err := runplan.WriteHaltReason(deps.Geom.ConflictDir(), "an earlier halt"); err != nil {
++				t.Fatalf("seed halt reason: %v", err)
++			}
+ 			ctx, cancel := context.WithCancel(context.Background())
+ 			defer cancel()
+ 			fake := &fakeWebsterRunner{result: websterengine.RunResult{Outcome: "done", Gate: gate}}
+@@ -98,6 +102,9 @@ func TestWebsterProducer_OutcomeDone(t *testing.T) {
+ 			if !fake.gotOptions.AutoRebaseline {
+ 				t.Error("Call() invoked the run seam with RunOptions.AutoRebaseline = false; want true")
+ 			}
++			if got, err := runplan.ReadHaltReason(deps.Geom.ConflictDir()); err != nil || got != "" {
++				t.Errorf("halt reason file = %q, %v; want it removed", got, err)
++			}
+ 		})
+ 	}
+ }
+@@ -261,6 +268,9 @@ func TestWebsterProducer_OutcomeStuck(t *testing.T) {
+ 					t.Errorf("Call() Reason = %q; want it not to contain %q", ptr.Reason, lack)
+ 				}
+ 			}
++			if got, err := runplan.ReadHaltReason(scratch); err != nil || got != strings.TrimSpace(ptr.Reason) {
++				t.Errorf("halt reason file = %q, %v; want the pointer's reason %q", got, err, ptr.Reason)
++			}
+ 			if strings.Contains(strings.ToLower(ptr.Reason), "question") {
+ 				t.Errorf("Call() pointer reason %q names a question; a stuck outcome is never reported as one", ptr.Reason)
+ 			}
+@@ -359,7 +369,7 @@ func TestWebsterProducer_PendingAuditFindingsIsStuck(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			dir := t.TempDir()
+-			deps := websterengine.RunDeps{Geom: websterengine.Geometry{WebsterDir: dir}, ReentryStep: tt.reentryStep}
++			deps := websterengine.RunDeps{Geom: websterengine.Geometry{AnchorRoot: t.TempDir(), WebsterDir: dir}, ReentryStep: tt.reentryStep}
+ 			fake := &fakeWebsterRunner{err: pendingAuditErr()}
+ 			p := NewWebsterProducer("loom", fake.run, deps)
+ 
+@@ -367,6 +377,9 @@ func TestWebsterProducer_PendingAuditFindingsIsStuck(t *testing.T) {
+ 			if ptr.Path != "" {
+ 				t.Errorf("Call() path = %q; want empty", ptr.Path)
+ 			}
++			if got, err := runplan.ReadHaltReason(deps.Geom.ConflictDir()); err != nil || got != ptr.Reason {
++				t.Errorf("halt reason file = %q, %v; want the refusal's text %q", got, err, ptr.Reason)
++			}
+ 			for _, want := range []string{"internal/x.go", "lym webster accept-audit", "re-step the loom row"} {
+ 				if !strings.Contains(ptr.Reason, want) {
+ 					t.Errorf("Reason = %q; want it to contain %q", ptr.Reason, want)
+@@ -395,7 +408,7 @@ func TestWebsterProducer_PendingAuditFindingsBlocksRun(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("seed status: %v", err)
+ 	}
+-	deps := websterengine.RunDeps{Geom: websterengine.Geometry{WebsterDir: dir}}
++	deps := websterengine.RunDeps{Geom: websterengine.Geometry{AnchorRoot: t.TempDir(), WebsterDir: dir}}
+ 	fake := &fakeWebsterRunner{err: pendingAuditErr()}
+ 	shed := &shedengine.Shed{
+ 		Producers:      []shedengine.ProducerDef{{Name: "Webster", Producer: NewWebsterProducer("Webster", fake.run, deps)}},
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index b3011e88..d289ae78 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -11,6 +11,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/hardenshed"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -179,7 +180,12 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	snapshot := reviewTargetSnapshot(env, runSubdir)
+ 	snapshot.Scope, snapshot.Paths = profile.FixScope, profile.Target.Paths
+ 	opts := burlerengine.RunOpts{Timeout: burlerRowTimeout(timeoutS, env), ReviewKey: segment.ReviewKey}
+-	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, Diff: diff, Rubric: rubric}, profile, opts, runDir, env.Now)
++	halfDeps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, Diff: diff, Rubric: rubric}
++	// Only the plan segment's review answers to the plan amendment record and the plan executor's halt reason.
++	if row.Name == loomshed.NamePlanBurlerReview {
++		halfDeps.AmendmentTitles, halfDeps.HaltConflictDir = amendmentTitlesAt(env.AmendmentPath), env.HaltConflictDir
++	}
++	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, halfDeps, profile, opts, runDir, env.Now)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("shedrecipe: BurlerReview: %w", err)
+ 	}
+@@ -189,6 +195,18 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	return producer, nil
+ }
+ 
++// amendmentTitlesAt returns a reader of the pending amending decision titles the plan amendment record at path lists.
++// An empty path gives a nil reader, which reads none.
++func amendmentTitlesAt(path string) func() ([]string, error) {
++	if path == "" {
++		return nil
++	}
++	return func() ([]string, error) {
++		record, _, err := loomshed.ReadAmendment(path)
++		return record.Titles, err
++	}
++}
++
+ // reviewRubricNotes gathers the notes that fill a review row's rubric stencil from env and the run directory's records.
+ // The row calls it at build and again at each round.
+ // The amendment and review input notes follow the generation record.
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index f9bcee6a..884ac8e3 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+@@ -67,6 +68,29 @@ func writeFixRound(t *testing.T, runDir string) {
+ 	}
+ }
+ 
++// writeJudgedRoundOne writes the files of a complete round 1 the segment's Bouncer judged CONTINUE into runDir,
++// so the next review call builds a round-2 context.
++// The fixer-report is the one the engine writes itself when no fixer is spawned.
++func writeJudgedRoundOne(t *testing.T, runDir string) {
++	t.Helper()
++	if err := os.MkdirAll(runDir, 0o755); err != nil {
++		t.Fatalf("create the run directory: %v", err)
++	}
++	files := map[string]string{
++		"round-1-review.md":          "---\nverdict: BLOCKING\nfindings:\n  - id: F1\n    severity: BLOCKING\n    class: design\n    location: a.go:1\n    summary: s1\n    fix: f1\n---\n",
++		"round-1-fixer-report.md":    "---\nspawned: false\ndispositions: []\n---\nnothing fixed\n",
++		"round-1-acceptance.md":      "---\nround: 1\ndigest: digest\n---\n",
++		"round-1-bouncer-verdict.md": "---\nverdict: CONTINUE\nrationale: because reasons\n---\n",
++		"round-1-bouncer-ledger.md":  "---\nround: 1\nledger: []\n---\nno open findings\n",
++		"round-1-snapshot.json":      `{"fix_scope":"source","target_paths":[],"decisions_routed":false}`,
++	}
++	for name, content := range files {
++		if err := os.WriteFile(filepath.Join(runDir, name), []byte(content), 0o644); err != nil {
++			t.Fatalf("write %s: %v", name, err)
++		}
++	}
++}
++
+ // captureReview constructs a BurlerReview entry from cfg and env, drives one Call so env.Burler's shedfake.BurlerHalfRunner records the Profile and RunOpts it was handed, and returns them.
+ // Call's own return values are ignored:
+ // the unscripted fake returns a zero burlerengine.ReviewResult with a nil error, which the producer's outcome switch does not recognise, so Call itself returns a non-nil error on every path here.
+@@ -154,6 +178,70 @@ func TestBurlerReviewEntry_ProfileMapping(t *testing.T) {
+ 		t.Errorf("opts.Gate = %+v; want none, the review row's only gate is the engine's review parse", opts.Gate)
+ 	}
+ 
++	// Only the plan segment's review row reads the plan executor's halt reason.
++	t.Run("HaltReasonReachesOnlyThePlanReviewRow", func(t *testing.T) {
++		const reason = "card 14 misses the retry"
++		tests := []struct{ row, want string }{
++			{"Plan-Burler-Review", reason},
++			{"review-row", ""},
++		}
++		for _, tt := range tests {
++			t.Run(tt.row, func(t *testing.T) {
++				env := newTestEnv(t)
++				env.HaltConflictDir = t.TempDir()
++				if err := runplan.WriteHaltReason(env.HaltConflictDir, reason); err != nil {
++					t.Fatalf("WriteHaltReason() error = %v; want nil", err)
++				}
++
++				profile, _ := captureReview(t, tt.row, minimalReviewConfig(), env)
++
++				if profile.HaltReason != tt.want {
++					t.Errorf("%s: profile.HaltReason = %q; want %q", tt.row, profile.HaltReason, tt.want)
++				}
++			})
++		}
++	})
++
++	// Only the plan segment's review row reads the plan amendment record.
++	t.Run("AmendmentReaderReachesOnlyThePlanReviewRow", func(t *testing.T) {
++		const amendedBody = "swap cards 3 and 4"
++		tests := []struct {
++			row         string
++			wantAmended bool
++		}{
++			{"Plan-Burler-Review", true},
++			{"review-row", false},
++		}
++		for _, tt := range tests {
++			t.Run(tt.row, func(t *testing.T) {
++				env := newTestEnv(t)
++				env.AmendmentPath = filepath.Join(t.TempDir(), "amendment.yaml")
++				entry := "### Added after Discussion (parent, 2026-11-17): Fix the batch order\n\nDecision: " + amendedBody + "\n"
++				if err := os.WriteFile(env.DecisionRecordPath, []byte("# Record\n\n## Decisions\n\n"+entry), 0o644); err != nil {
++					t.Fatalf("write the decision record: %v", err)
++				}
++				if err := os.WriteFile(env.AmendmentPath, []byte("titles:\n  - Fix the batch order\nwritten_at: 2026-11-17T10:00:00Z\n"), 0o644); err != nil {
++					t.Fatalf("write the amendment record: %v", err)
++				}
++				runDir := filepath.Join(env.RunRoot, "review-segment")
++				writeJudgedRoundOne(t, runDir)
++
++				profile, _ := captureReview(t, tt.row, minimalReviewConfig(), env)
++
++				if profile.Round == nil {
++					t.Fatalf("%s: profile.Round = nil; want the round-2 context", tt.row)
++				}
++				texts := profile.Round.AmendingTexts
++				if tt.wantAmended && (len(texts) != 1 || !strings.Contains(texts[0], amendedBody)) {
++					t.Errorf("%s: Round.AmendingTexts = %q; want the one listed entry", tt.row, texts)
++				}
++				if !tt.wantAmended && len(texts) != 0 {
++					t.Errorf("%s: Round.AmendingTexts = %q; want none", tt.row, texts)
++				}
++			})
++		}
++	})
++
+ 	t.Run("OverlayTargetRecordsTheRoundSnapshot", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		if err := os.WriteFile(filepath.Join(env.WorktreeRoot, "target.md"), []byte("one\n"), 0o644); err != nil {
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 9a77f3fe..2b93726a 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -88,6 +88,11 @@ type Env struct {
+ 	PreflightHarden func() error
+ 	// AnchorPath is the told anchor path, read by Webster, Bouncer and the gate resolver's "plan" gate.
+ 	AnchorPath string
++	// AmendmentPath is the told plan amendment record path, read by the Plan-Burler-Review row alone.
++	AmendmentPath string
++	// HaltConflictDir is the told conflict directory holding the plan executor's halt reason.
++	// Only the Plan-Burler-Review row reads it.
++	HaltConflictDir string
+ 	// ConfigDirs is the told geometry of a layered config load, read by Webster, which loads batcher through it.
+ 	ConfigDirs configengine.Dirs
+ 	// WorktreeRoot is the told worktree root, read by the gate resolver's "plan", "verify" and loom "discussion" gates.
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 0f56821d..8b0970ea 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -429,6 +429,8 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 		RunScratchDir:      mustMkdir(t, filepath.Join(dir, "run-scratch")),
+ 		GateFindingsFile:   func(row string) string { return filepath.Join(dir, "gate-findings", row+".md") },
+ 		DecisionRecordPath: filepath.Join(dir, "decision-record.md"),
++		AmendmentPath:      filepath.Join(dir, "plan-amendment.yaml"),
++		HaltConflictDir:    mustMkdir(t, filepath.Join(dir, "halt-conflict")),
+ 		PatternRecordPath:  filepath.Join(dir, "decision-record.md"),
+ 		RefuseRaw:          []string{"go test"},
+ 		SupportLogPath:     filepath.Join(dir, "support-log.md"),
+diff --git a/internal/weaverengine/record.go b/internal/weaverengine/record.go
+index a930f069..2718bd11 100644
+--- a/internal/weaverengine/record.go
++++ b/internal/weaverengine/record.go
+@@ -167,6 +167,7 @@ func checkRecordable(in recordInputs) (recordOutcome, error) {
+ 		Batches:                batches,
+ 		Number:                 number,
+ 		Cards:                  in.Batch.Cards,
++		DecisionRecordPath:     in.Geom.DecisionRecordPath,
+ 		StartSHA:               in.Record.StartSHA,
+ 		HeadSHA:                head,
+ 		Label:                  in.Label,
+diff --git a/internal/weaverengine/reentry_test.go b/internal/weaverengine/reentry_test.go
+index e9ebc068..e692203d 100644
+--- a/internal/weaverengine/reentry_test.go
++++ b/internal/weaverengine/reentry_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"slices"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+@@ -74,6 +75,26 @@ func TestRun_Reentry(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("StoppedBatchWithADroppedCreateIsRecordedDoneWithNoSpawn", func(t *testing.T) {
++		t.Parallel()
++		const target = "internal/x/one.go"
++		fx := newRunFixture(t, 1, "one")
++		stopFirstBatch(t, fx)
++		fx.git.commit("the parent repaired the batch")
++		fx.index.notDone = []planindex.Finding{{Check: "create-not-done", Card: "1-one", Severity: planindex.SeverityBlocking, Detail: target + " does not resolve"}}
++		fx.index.notDoneTarget = target
++		record := "## Decisions\n\n### Added after Discussion (parent, 2026-11-21): Drop it\n\nDecision: drop it.\nRationale: unneeded.\nDrops Create: `" + target + "`\n"
++		if err := os.WriteFile(fx.deps.Geom.DecisionRecordPath, []byte(record), 0o644); err != nil {
++			t.Fatal(err)
++		}
++
++		requireDone(t, mustRun(t, fx), 1)
++
++		if got := len(fx.runner.specs); got != 3 {
++			t.Errorf("strands started = %d; want the stopped batch's three, none to re-enter", got)
++		}
++	})
++
+ 	reentered := []struct {
+ 		name string
+ 		// setup shapes the fixture after the stop.
+diff --git a/internal/weaverengine/resume.go b/internal/weaverengine/resume.go
+index 54fde4b1..67775f50 100644
+--- a/internal/weaverengine/resume.go
++++ b/internal/weaverengine/resume.go
+@@ -445,6 +445,7 @@ func checkStoppedBatch(deps RunDeps, st *State, plan *planparser.Plan, batch *ru
+ 		Batches:                batches,
+ 		Number:                 number,
+ 		Cards:                  stopped.Cards,
++		DecisionRecordPath:     geom.DecisionRecordPath,
+ 		StartSHA:               batch.StartSHA,
+ 		HeadSHA:                head,
+ 		Label:                  label,
+diff --git a/internal/weaverengine/run_fixture_test.go b/internal/weaverengine/run_fixture_test.go
+index d31152a2..f3d37489 100644
+--- a/internal/weaverengine/run_fixture_test.go
++++ b/internal/weaverengine/run_fixture_test.go
+@@ -159,6 +159,8 @@ type fakeIndex struct {
+ 	planindex.Index
+ 	// notDone is what DoneChecks reports.
+ 	notDone []planindex.Finding
++	// notDoneTarget, when set, limits notDone to the asked cards that still name this Create target.
++	notDoneTarget string
+ 	// removed is what the delta reports as removed later targets.
+ 	removed []planindex.Finding
+ 	// removedOnlyWithLaterCards limits removed to a batch that has a card still to be built after it.
+@@ -173,8 +175,20 @@ func (i fakeIndex) ValidateDispatch(*planparser.Plan, string, []planparser.Card,
+ 	return i.dispatch, nil
+ }
+ 
+-func (i fakeIndex) DoneChecks(*planparser.Plan, []planparser.Card, string) ([]planindex.Finding, error) {
+-	return i.notDone, nil
++// DoneChecks reports notDone.
++// When notDoneTarget is set, it reports notDone only while a Create group of the asked cards still names that target.
++func (i fakeIndex) DoneChecks(_ *planparser.Plan, cards []planparser.Card, _ string) ([]planindex.Finding, error) {
++	if i.notDoneTarget == "" {
++		return i.notDone, nil
++	}
++	for _, c := range cards {
++		for _, g := range c.TargetGroups {
++			if g.Type == planparser.CardTypeCreate && slices.Contains(g.Refs, i.notDoneTarget) {
++				return i.notDone, nil
++			}
++		}
++	}
++	return nil, nil
+ }
+ 
+ func (fakeIndex) RebindResigns(*planparser.Plan, []planparser.Card, string) ([]planindex.Finding, error) {
+diff --git a/internal/weaverengine/run_test.go b/internal/weaverengine/run_test.go
+index a1751aa6..e6e3a20a 100644
+--- a/internal/weaverengine/run_test.go
++++ b/internal/weaverengine/run_test.go
+@@ -126,6 +126,25 @@ func TestRun(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("DroppedCreateTargetSkipsItsDoneCheck", func(t *testing.T) {
++		t.Parallel()
++		const target = "internal/x/one.go"
++		fx := newRunFixture(t, 1, "one")
++		fx.index.notDone = []planindex.Finding{{Check: "create-not-done", Card: "1-one", Severity: planindex.SeverityBlocking, Detail: target + " does not resolve"}}
++		fx.index.notDoneTarget = target
++		record := "## Decisions\n\n### Added after Discussion (parent, 2026-11-21): Drop it\n\nDecision: drop it.\nRationale: unneeded.\nDrops Create: `" + target + "`\n"
++		if err := os.WriteFile(fx.deps.Geom.DecisionRecordPath, []byte(record), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		fx.runner.scripts = []attemptScript{{report: runplan.Report{Journal: "tried"}}}
++
++		requireDone(t, mustRun(t, fx), 1)
++
++		if got := len(fx.runner.specs); got != 1 {
++			t.Errorf("strands started = %d; want 1, the dropped target blocking no attempt", got)
++		}
++	})
++
+ 	t.Run("BeginRecordsAreFixedAndLeaseIsReleased", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newRunFixture(t, 1, "one")
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 6322138d..d3398124 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -340,9 +340,10 @@
+ // With no batch left, Master tells its parent the decision reaches the code only through a gate fixer or plan amendment.
+ // The notice reaches only a Master already running, and never one whose run is halted.
+ // Run therefore renders every `Added after Discussion` entry of the decision record verbatim into the master prompt.
+-// The entries land in the `parent_decisions` marker (`none` without one):
++// The entries land in the `parent_decisions` marker (`none` without one), numbered `Decision 1:` onward in record order;
++// a later entry that differs from an earlier one supersedes it, for Master and every fork:
+ // a Master that a re-step starts after its parent answered an earlier stop is told that answer, and never asks it again.
+-// No refusal or prompt text names a loom verb.
++// Refusal and prompt text name a loom verb only as a step for the run's parent, never as a step for Master or a fork.
+ //
+ // validate, record-batch and recovery refuse a plan that changed before their own rewrites, instead of adopting it:
+ // each checks the plan against the recorded fingerprint (PlanEditError) before its first rewrite,
+@@ -492,10 +493,13 @@
+ // A glyph-rejected finding is a card target quarry rejects before resolving it.
+ // Its way forward is the same plan edit, with the card's target amended instead of the delete moved.
+ // Recovery re-runs the same check on the same plan.
+-// A create-not-done or rename-not-done finding offers that card amendment beside recover-batch.
++// A create-not-done finding offers three ways forward.
++// The first is that card amendment.
++// The second is a parent decision recorded with `--drops-create`, which makes the done-check skip the target.
++// The third is recover-batch, which builds the target as the card names it.
++// A rename-not-done finding offers the first and the third, since a decision drops only a Create target.
++// record-batch and recover-batch give the same ways forward.
+ // A signature-mismatch finding offers the amendment alone.
+-// So does a create-not-done or rename-not-done finding a recovery has already failed.
+-// recover-batch thus never names itself as the way past its own repeat.
+ // The delete-reference, glyph-rejected and create ways forward take the exhausted-batch steps.
+ // They do so once the batch has used its counted recoveries and holds no amendment a recovery has yet to render.
+ // PersistRecoveryTerminal fails a recovered batch the same way.
+@@ -1204,6 +1208,8 @@
+ // The stuck reason of a run whose gate spent its budget counts the failing entry's re-prompts against that budget.
+ // It names the command and what failed, and ends in a way forward.
+ // It quotes the output tail of a failure that named no test.
++// A run-level entry's failure quotes the head of its findings and names the report, which holds them all.
++// A drift entry's way forward also names the parent's `lym drift amend`, which accepts a drift the plan intends.
+ // It also carries the commits the fixer made since the pre-fix head and a hint:
+ // the cards, in trail order, whose commits changed a file directly in a failing package's directory.
+ // runplan.CardHint computes it over accumulatedCardSHAs.
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 08a4b794..886b4376 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -93,13 +93,19 @@ func glyphRejectedWayForward(number int, uncheckable, exhausted bool) string {
+ 
+ // createTargetWayForward is the way forward for a batch whose Create target or Rename pair is not done.
+ // It also covers a batch whose card names a member that its unit declares only with another parameter list.
+-// A recovery checks the same target again.
+-// So the way forward amends the target whenever the member may live under another unit or signature.
+-// The way forward leads with recover-batch only when no recovery has tried the batch and no declared signature differs.
++// The way forward is the same whichever verb failed the batch.
++// It offers three ways forward.
++// One amends the target.
++// One has the run's parent record a decision that drops the Create.
++// One has recover-batch build the target as named.
++// A finding that holds no unresolved Create target, as a Rename pair that did not happen does, leaves the drop out:
++// a decision drops only a Create target.
++// A declared signature that differs leaves the amendment alone.
++// Building the target as named would repeat the failure.
+ // A batch whose counted recoveries are used up takes the exhausted-batch steps.
+ // A failed batch records no amendment, so those steps apply.
+ // A record that recovery would refuse as uncheckable restarts the run instead.
+-func createTargetWayForward(number int, uncheckable, recovered, signatureMismatch, exhausted bool) string {
++func createTargetWayForward(number int, uncheckable, signatureMismatch, droppableCreate, exhausted bool) string {
+ 	if uncheckable {
+ 		return freshRestartSteps(stepRun)
+ 	}
+@@ -107,10 +113,13 @@ func createTargetWayForward(number int, uncheckable, recovered, signatureMismatc
+ 		return strings.TrimPrefix(exhaustedRecoveryWayForward(number), "way forward: ")
+ 	}
+ 	amend := fmt.Sprintf("amend the card's Create target or Rename new side to the unit, owner or parameter list the finding names the member declared with, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch %02d`", number)
+-	if recovered || signatureMismatch {
++	if signatureMismatch {
+ 		return amend
+ 	}
+-	return fmt.Sprintf("lym webster recover-batch %02d to build the target as the card names it; or, when the member is declared where the finding names it, %s", number, amend)
++	if !droppableCreate {
++		return fmt.Sprintf("%s; or `lym webster recover-batch %02d` to build the target as the card names it", amend, number)
++	}
++	return fmt.Sprintf("%s; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch %02d`, and the done-check skips that target; or `lym webster recover-batch %02d` to build the target as the card names it", amend, number, number)
+ }
+ 
+ // exhaustedRecoveryWayForward is the way forward for a batch that has used its counted recoveries.
+@@ -138,21 +147,22 @@ type cardNotDoneInputs struct {
+ // The reasons open with the batch's id and its card list, so a finding keyed on a later card reads as the batch's own.
+ // A Delete target that still resolves and an unbegun later card still references adds that reference to the reasons,
+ // and the way forward is then the plan edit, since recover-batch would only repeat the failure.
+-// A glyph-rejected finding, and a Create target that does not resolve, offer the card amendment.
+-// A Rename pair that did not happen does too.
+-// The amendment comes alone once a recover-batch call has tried the batch.
+-// It also comes alone when the member is declared with another parameter list.
++// A glyph-rejected finding offers the card amendment.
++// A Create target that does not resolve, and a Rename pair that did not happen, offer it too.
++// They also offer recover-batch, from either verb, and an unresolved Create target a parent decision that drops it.
++// The amendment comes alone when the member is declared with another parameter list.
+ // An exhausted batch takes the exhausted-batch steps instead.
+ // A batch is exhausted once its counted recoveries are used and no amendment is left to render.
+ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, error) {
+ 	var reasons []string
+-	var deleteNotDone, glyphRejected, createNotDone, signatureMismatch bool
++	var deleteNotDone, glyphRejected, createNotDone, droppableCreate, signatureMismatch bool
+ 	var notDone *runplan.CardNotDoneError
+ 	if errors.As(cause, &notDone) {
+ 		reasons = notDone.Reasons
+ 		deleteNotDone = notDone.DeleteNotDone
+ 		glyphRejected = notDone.GlyphRejected
+ 		createNotDone = notDone.CreateNotDone
++		droppableCreate = notDone.DroppableCreate
+ 		signatureMismatch = notDone.SignatureMismatch
+ 	} else {
+ 		reasons = strings.Split(strings.TrimPrefix(cause.Error(), ErrCardNotDone.Error()+": "), "; ")
+@@ -180,7 +190,7 @@ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, erro
+ 		wayForward = glyphRejectedWayForward(in.Number, len(in.Batch.Uncheckable) > 0, exhausted)
+ 	}
+ 	if wayForward == "" && (createNotDone || signatureMismatch) {
+-		wayForward = createTargetWayForward(in.Number, len(in.Batch.Uncheckable) > 0, in.Verb == "recover-batch", signatureMismatch, exhausted)
++		wayForward = createTargetWayForward(in.Number, len(in.Batch.Uncheckable) > 0, signatureMismatch, droppableCreate, exhausted)
+ 	}
+ 	return failBatch(failBatchInput{
+ 		State:      in.State,
+@@ -895,6 +905,7 @@ func postBatchInputs(geom Geometry, plan *planparser.Plan, batches []batcher.Bat
+ 		HeadSHA:                headSHA,
+ 		Label:                  runplan.CardID(planparser.Card{Number: number, Slug: slug}),
+ 		Renames:                renames,
++		DecisionRecordPath:     geom.DecisionRecordPath,
+ 		HandBackRemovedTargets: handBack,
+ 		HandBackWayForward:     laterTargetHandBackWayForward(number),
+ 		RecordWarning: func(id, class, detail string) (string, bool) {
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 594131ef..7b855360 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -1615,6 +1615,8 @@ func TestFailCardNotDone_WayForward(t *testing.T) {
+ 
+ 	const (
+ 		amend        = "amend the card's Create target or Rename new side to the unit, owner or parameter list the finding names the member declared with, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
++		createWays   = amend + "; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch 01`, and the done-check skips that target; or `lym webster recover-batch 01` to build the target as the card names it"
++		renameWays   = amend + "; or `lym webster recover-batch 01` to build the target as the card names it"
+ 		amendGlyph   = "amend the card's target to a spelling `lym quarry resolve` answers, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
+ 		moveDelete   = "move the delete to a card after the one that still references it, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
+ 		freshRestart = "1) lym webster reset --to start; 2) lym webster run"
+@@ -1641,24 +1643,22 @@ func TestFailCardNotDone_WayForward(t *testing.T) {
+ 		amended     []websterengine.AmendedCard
+ 	}{
+ 		{"SignatureMismatchAmendsAlone", []planindex.Finding{signatureMismatch}, "record-batch", 0, nil, nil, amend, nil},
+-		{"CreateNotDoneOffersRecoverAndAmend", []planindex.Finding{createNotDone}, "record-batch", 0, nil, nil,
+-			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
+-		{"RenameNotDoneOffersRecoverAndAmend", []planindex.Finding{renameNotDone}, "record-batch", 0, nil, nil,
+-			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
+-		{"CreateNotDoneAfterARecoveryAmendsAlone", []planindex.Finding{createNotDone}, "recover-batch", 0, nil, nil, amend, nil},
++		{"CreateNotDoneOffersAmendDropAndRecover", []planindex.Finding{createNotDone}, "record-batch", 0, nil, nil, createWays, nil},
++		{"RenameNotDoneOffersAmendAndRecoverWithoutTheDrop", []planindex.Finding{renameNotDone}, "record-batch", 0, nil, nil, renameWays, nil},
++		{"RenameBesideCreateNotDoneOffersTheDrop", []planindex.Finding{renameNotDone, createNotDone}, "record-batch", 0, nil, nil, createWays, nil},
++		{"CreateNotDoneAfterARecoveryOffersTheSameWays", []planindex.Finding{createNotDone}, "recover-batch", 0, nil, nil, createWays, nil},
+ 		{"UncheckableRestartsTheRun", []planindex.Finding{createNotDone}, "record-batch", 0, []string{"fabric-reference: Bash command references the fabric"}, nil, freshRestart, nil},
+ 		{"UncheckableSignatureMismatchRestartsTheRun", []planindex.Finding{signatureMismatch}, "record-batch", 0, []string{"fabric-reference: Bash command references the fabric"}, nil, freshRestart, nil},
+ 		{"ExhaustedRecoveriesTakeTheExhaustedSteps", []planindex.Finding{createNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
+ 		{"ExhaustedRecoveriesBeatRenameNotDone", []planindex.Finding{renameNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
+-		{"ExhaustedBatchWithAnUnrenderedAmendmentAmendsAlone", []planindex.Finding{createNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, amend,
++		{"ExhaustedBatchWithAnUnrenderedAmendmentOffersTheSameWays", []planindex.Finding{createNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, nil, createWays,
+ 			[]websterengine.AmendedCard{{Card: "1-json-flag", Rendered: false}}},
+ 		{"ExhaustedRecoveriesBeatSignatureMismatch", []planindex.Finding{signatureMismatch}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
+ 		{"ExhaustedRecoveriesBeatGlyphRejected", []planindex.Finding{glyphRejected}, "recover-batch", websterengine.MaxRecoveries, nil, nil, exhausted, nil},
+ 		{"ExhaustedRecoveriesBeatReferencedDelete", []planindex.Finding{deleteNotDone}, "recover-batch", websterengine.MaxRecoveries, nil, stillReferenced, exhausted, nil},
+ 		{"GlyphRejectedBeatsCreateNotDone", []planindex.Finding{createNotDone, glyphRejected}, "record-batch", 0, nil, nil, amendGlyph, nil},
+ 		{"ReferencedDeleteBeatsCreateNotDone", []planindex.Finding{createNotDone, deleteNotDone}, "record-batch", 0, nil, stillReferenced, moveDelete, nil},
+-		{"UnreferencedDeleteLeavesCreateNotDone", []planindex.Finding{deleteNotDone, createNotDone}, "record-batch", 0, nil, nil,
+-			"lym webster recover-batch 01 to build the target as the card names it; or, when the member is declared where the finding names it, " + amend, nil},
++		{"UnreferencedDeleteLeavesCreateNotDone", []planindex.Finding{deleteNotDone, createNotDone}, "record-batch", 0, nil, nil, createWays, nil},
+ 	}
+ 
+ 	for _, tt := range tests {
+@@ -1719,12 +1719,42 @@ func TestRecordBatch_DoneChecksBlockOnUnresolvedCreate(t *testing.T) {
+ 	if _, statErr := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))); !os.IsNotExist(statErr) {
+ 		t.Errorf("report still at its live path (stat err %v); want it archived", statErr)
+ 	}
+-	for _, want := range []string{"way forward: lym webster recover-batch 01 to build the target as the card names it", "amend the card's Create target", "lym webster rebaseline --card NN"} {
++	for _, want := range []string{"way forward: amend the card's Create target", "lym webster rebaseline --card NN", "--drops-create <target>", "lym webster recover-batch 01` to build the target as the card names it"} {
+ 		if !strings.Contains(err.Error(), want) {
+ 			t.Errorf("RecordBatch() error = %q; want it to contain %q", err.Error(), want)
+ 		}
+ 	}
+ 
++	// A decision record that drops the unresolved target lets the batch record, with a warning naming the drop.
++	t.Run("DroppedTargetRecordsTheBatchWithAWarning", func(t *testing.T) {
++		fx := newRecordFixture(t, []shuttleengine.ForkAudit{
++			{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
++		})
++		writeReport(t, fx.ReportsDir, validReport(fx.HeadSHA))
++		const target = "internal/foo#NeverLanded"
++		fx.Deps.Plan.Cards[0].TargetGroups = []planparser.TargetGroup{
++			{Type: planparser.CardTypeCreate, Refs: []string{target}},
++		}
++		record := filepath.Join(t.TempDir(), "decision.md")
++		text := "## Decisions\n\n### Added after Discussion (parent, 2026-11-21): Drop it\n\nDecision: drop it.\nRationale: unneeded.\nDrops Create: `" + target + "`\n"
++		if err := os.WriteFile(record, []byte(text), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		fx.Deps.Geom.DecisionRecordPath = record
++
++		result, err := websterengine.RecordBatch(fx.Deps, 1)
++		if err != nil {
++			t.Fatalf("RecordBatch() error = %v; want the batch recorded", err)
++		}
++		wantWarning := `Create target "` + target + `" is dropped by the decision "Drop it", so its done-check did not run`
++		if !strings.Contains(strings.Join(result.Warnings, "\n"), wantWarning) {
++			t.Errorf("RecordBatch() warnings = %q; want one containing %q", result.Warnings, wantWarning)
++		}
++		if bs := fx.Deps.State.Batches[1]; !bs.Terminal || bs.Status == websterengine.DigestStatusFailed {
++			t.Errorf("BatchState = terminal %v status %q; want terminal and not failed", bs.Terminal, bs.Status)
++		}
++	})
++
+ 	t.Run("ReasonsOpenWithTheBatchAndItsCards", func(t *testing.T) {
+ 		fx := newRecordFixture(t, []shuttleengine.ForkAudit{
+ 			{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index c82086cf..87a6b1fb 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -717,8 +717,8 @@ func TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch(t *testing
+ 	if bs.Digest == nil || len(bs.Digest.Reasons) == 0 {
+ 		t.Errorf("failed digest = %+v; want reasons naming the done-check finding", bs.Digest)
+ 	}
+-	if !strings.Contains(err.Error(), "way forward: amend the card's Create target") || strings.Contains(err.Error(), "to build the target as the card names it") {
+-		t.Errorf("RecoverBatch() second call error = %q; want the card amendment alone as its way forward", err)
++	if !strings.Contains(err.Error(), "way forward: amend the card's Create target") || !strings.Contains(err.Error(), "--drops-create <target>") || !strings.Contains(err.Error(), "to build the target as the card names it") {
++		t.Errorf("RecoverBatch() second call error = %q; want the card amendment, the dropping decision and recover-batch as its way forward", err)
+ 	}
+ 	if _, statErr := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))); !os.IsNotExist(statErr) {
+ 		t.Errorf("stat(live report) = %v; want the report archived away", statErr)
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 9a6a915b..92cc23ec 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -442,8 +442,9 @@ func masterPlanDirDisplay(paneCwd, planDir string) string {
+ // Master never edits code, only forks.
+ // patternChanges is the task's declared PATTERN changes as rendered bullet lines;
+ // it is passed to the pattern directive, and nil renders none.
+-// parentDecisions is every decision the run's parent recorded after the Discussion, each entry's text verbatim;
+-// it renders into {{.parent_decisions}}, so a fresh Master knows the answers its parent already gave;
++// parentDecisions is every decision the run's parent recorded after the Discussion, each entry's text verbatim.
++// It renders into {{.parent_decisions}} numbered in record order.
++// A fresh Master thereby knows the answers its parent already gave, and which later one supersedes an earlier one.
+ // nil renders `none`.
+ // parentName is the told parent agent name; an empty one renders parentdirective's no-parent variant.
+ // notePath is the caller-composed friction note path (friction.NotePath), or "" when Tier 2 is off;
+@@ -500,13 +501,18 @@ func RenderMasterPrompt(batches []batcher.Batch, st *State, outcomePath, summary
+ 	return prompt, nil
+ }
+ 
+-// renderParentDecisions renders the decisions for {{.parent_decisions}}:
+-// the entries in order, joined by a blank line, or `none` when there are none.
++// renderParentDecisions renders the decisions for {{.parent_decisions}} in record order, or `none` when there are none.
++// Each entry sits under its own `Decision N:` line, and a blank line joins the entries.
++// The numbers let a later entry that differs from an earlier one be named as superseding it.
+ func renderParentDecisions(decisions []string) string {
+ 	if len(decisions) == 0 {
+ 		return "none"
+ 	}
+-	return strings.Join(decisions, "\n\n")
++	numbered := make([]string, len(decisions))
++	for i, decision := range decisions {
++		numbered[i] = fmt.Sprintf("Decision %d:\n%s", i+1, decision)
++	}
++	return strings.Join(numbered, "\n\n")
+ }
+ 
+ // RenderBatchIndex renders batches as ordered-list text for {{.batch_index}}, one line per batch.
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index 9796c513..2446c29a 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -899,7 +899,7 @@ func TestRenderPrompts(t *testing.T) {
+ 			second := "### Added after Discussion (arbiter, 2026-10-26): Keep the seam\n\nDecision: keep it.\n\nRationale: two callers."
+ 			text, err := renderMasterWithDecisions(seamBatches, root, root, stencilsDir, "", "", nil, []string{first, second})
+ 			return promptCheck{text: text, err: err,
+-				inOrder:     []string{first + "\n\n" + second},
++				inOrder:     []string{"Decision 1:\n" + first + "\n\nDecision 2:\n" + second},
+ 				notContains: []string{"{{.parent_decisions}}"}}
+ 		}},
+ 		{"master renders none for no parent decision", func(t *testing.T) promptCheck {
+@@ -908,14 +908,9 @@ func TestRenderPrompts(t *testing.T) {
+ 			if err != nil {
+ 				return promptCheck{err: err}
+ 			}
+-			withNone, err := renderMasterWithDecisions(seamBatches, root, root, stencilsDir, "", "", nil, []string{"none"})
+-			if err != nil {
+-				return promptCheck{err: err}
+-			}
+-			if text != withNone {
+-				t.Error("master prompt with no parent decision differs from the one rendered with the decision none")
+-			}
+-			return promptCheck{text: text, notContains: []string{"{{.parent_decisions}}"}}
++			return promptCheck{text: text,
++				inOrder:     []string{"even where an earlier one told you to revert or drop work.\n\nnone\n\n## A plan defect goes"},
++				notContains: []string{"{{.parent_decisions}}", "Decision 1:"}}
+ 		}},
+ 		{"master and recovery for a codex launch carry the codex edit directive", func(t *testing.T) promptCheck {
+ 			root, stencilsDir := testLayout(t)
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 1d05bc0a..8ab7ae6f 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -549,11 +549,12 @@ func verifyGateStuckReason(reportsDir string, gate *shuttleengine.GateOutcome, r
+ 	if gate.Reason != "" {
+ 		return "verify gate failed: " + oneLine(gate.Reason) + "; " + wayForwardSteps("lym webster reset --to pre-fix", reentry)
+ 	}
+-	report, err := readVerifyGateReport(VerifyGateReportPath(reportsDir))
++	reportPath := VerifyGateReportPath(reportsDir)
++	report, err := readVerifyGateReport(reportPath)
+ 	if err != nil {
+ 		return fmt.Sprintf("verify gate did not pass after %d re-prompt(s); its report could not be read: %v; %s", failedEntryReprompts(gate), err, wayForwardSteps(reentry))
+ 	}
+-	return verifyGateStuckLead(gate, report.Cap) + ": " + verifyGateStuckFailure(report, reentry)
++	return verifyGateStuckLead(gate, report.Cap) + ": " + verifyGateStuckFailure(report, reportPath, reentry)
+ }
+ 
+ // verifyGateStuckLead opens the stuck reason of a verify gate that did not pass with no terminal reason.
+@@ -590,14 +591,25 @@ const verifyGateStuckTextBytes = 400
+ // A failure that named no identity says so.
+ // It quotes the tail of the command's output, or says the output was empty, since the gate itself may have erred.
+ // A run-level entry's failure names the entry and opens its findings.
++// It names reportPath, the verify-gate report holding all of them.
++// The drift entry's way forward closes with the parent's acceptance of the drift as the alternative to fixing it.
+ // After a CPU watchdog quit, the hang's own way forward replaces the general one.
+-func verifyGateStuckFailure(report VerifyGateReport, reentry string) string {
++func verifyGateStuckFailure(report VerifyGateReport, reportPath, reentry string) string {
+ 	fixStep := fmt.Sprintf("read %s and commit a fix on the task branch", report.LogPath)
+-	var what string
++	var what, alternative string
+ 	switch {
+ 	case report.Entry != "":
+-		what = fmt.Sprintf("the run-level %q entry failed: %s", report.Entry, oneLine(cutHead(report.Findings, verifyGateStuckTextBytes)))
++		findings := oneLine(cutHead(report.Findings, verifyGateStuckTextBytes))
++		if len(report.Findings) > verifyGateStuckTextBytes {
++			findings += "… (cut; the full findings are in " + reportPath + ")"
++		} else {
++			findings += "; the full report is " + reportPath
++		}
++		what = fmt.Sprintf("the run-level %q entry failed: %s", report.Entry, findings)
+ 		fixStep = fmt.Sprintf("fix what the %q entry's findings name and commit it on the task branch", report.Entry)
++		if report.Entry == driftGateEntry {
++			alternative = "; or, when the drift is the change the plan intends, the run's parent accepts it with `lym drift amend <slug> --entries <file>`, then runs `lym loom resume`"
++		}
+ 	case len(report.Dirty) > 0:
+ 		what = "the worktree held uncommitted paths " + strings.Join(report.Dirty, ", ")
+ 		fixStep = "commit or remove those paths on the task branch"
+@@ -618,9 +630,12 @@ func verifyGateStuckFailure(report VerifyGateReport, reentry string) string {
+ 		what = fmt.Sprintf("the verify command exited with code %d and its output named no failing test, so the gate itself may have erred; %s; see %s",
+ 			report.ExitCode, output, report.LogPath)
+ 	}
+-	return withCommand(report.Command, what) + "; " + wayForwardSteps(fixStep, reentry)
++	return withCommand(report.Command, what) + "; " + wayForwardSteps(fixStep, reentry) + alternative
+ }
+ 
++// driftGateEntry is the run-level gate entry name a recipe gives the drift check.
++const driftGateEntry = "drift"
++
+ // withCommand opens what with the verify command it failed under, and returns what alone when command is empty.
+ func withCommand(command, what string) string {
+ 	if command == "" {
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index de46d7e3..234bda6c 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -725,6 +725,9 @@ func TestVerifyGateStuckReason_NamesTheFailureAndAWayForward(t *testing.T) {
+ 		cmd  = "lym gate test --gate webster"
+ 		lead = "verify gate did not pass after 2 of 2 re-prompt(s): "
+ 		fix  = "way forward: 1) read " + log + " and commit a fix on the task branch; 2) lym webster run"
++
++		reportPath  = "<verify-gate-report>"
++		driftAccept = "or, when the drift is the change the plan intends, the run's parent accepts it with `lym drift amend <slug> --entries <file>`, then runs `lym loom resume`"
+ 	)
+ 	tests := []struct {
+ 		name   string
+@@ -777,8 +780,14 @@ func TestVerifyGateStuckReason_NamesTheFailureAndAWayForward(t *testing.T) {
+ 		{
+ 			name:   "a long entry findings text is cut to its first bytes on a rune boundary",
+ 			report: VerifyGateReport{Attempt: 3, Cap: 2, Entry: "drift", Findings: strings.Repeat("a", verifyGateStuckTextBytes-1) + "étail"},
+-			want: lead + `the run-level "drift" entry failed: ` + strings.Repeat("a", verifyGateStuckTextBytes-1) + `; ` +
+-				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run`,
++			want: lead + `the run-level "drift" entry failed: ` + strings.Repeat("a", verifyGateStuckTextBytes-1) + `… (cut; the full findings are in ` + reportPath + `); ` +
++				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run; ` + driftAccept,
++		},
++		{
++			name:   "a long findings text of a non-drift entry is cut and names the report without the drift route",
++			report: VerifyGateReport{Attempt: 3, Cap: 2, Entry: "expectation", Findings: strings.Repeat("a", verifyGateStuckTextBytes+1)},
++			want: lead + `the run-level "expectation" entry failed: ` + strings.Repeat("a", verifyGateStuckTextBytes) + `… (cut; the full findings are in ` + reportPath + `); ` +
++				`way forward: 1) fix what the "expectation" entry's findings name and commit it on the task branch; 2) lym webster run`,
+ 		},
+ 		{
+ 			name:   "a long output tail is cut to its last bytes",
+@@ -794,8 +803,8 @@ func TestVerifyGateStuckReason_NamesTheFailureAndAWayForward(t *testing.T) {
+ 		{
+ 			name:   "a run-level entry's failure names the entry and its findings",
+ 			report: VerifyGateReport{Attempt: 3, Cap: 2, Entry: "drift", Findings: "cell a.txt:3 moved\nsee expected.yaml"},
+-			want: lead + `the run-level "drift" entry failed: cell a.txt:3 moved see expected.yaml; ` +
+-				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run`,
++			want: lead + `the run-level "drift" entry failed: cell a.txt:3 moved see expected.yaml; the full report is ` + reportPath + `; ` +
++				`way forward: 1) fix what the "drift" entry's findings name and commit it on the task branch; 2) lym webster run; ` + driftAccept,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -808,7 +817,8 @@ func TestVerifyGateStuckReason_NamesTheFailureAndAWayForward(t *testing.T) {
+ 			}
+ 			gate := &shuttleengine.GateOutcome{Attempts: 2, Entries: []shuttleengine.GateEntryOutcome{{Name: verifyGateName, Attempts: 2, State: shuttleengine.GateEntryFailed}}}
+ 
+-			got := verifyGateStuckReason(reportsDir, gate, "lym webster run")
++			// The report lives in a per-test temp directory; the stable reportPath stands in for it in the expectation.
++			got := strings.ReplaceAll(verifyGateStuckReason(reportsDir, gate, "lym webster run"), VerifyGateReportPath(reportsDir), reportPath)
+ 
+ 			if got != tt.want {
+ 				t.Errorf("verifyGateStuckReason() = %q; want %q", got, tt.want)
