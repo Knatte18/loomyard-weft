@@ -366,6 +366,28 @@
       },
       "profile": "docs",
       "project": "single-repo-hub"
+    },
+    {
+      "id": 1537,
+      "handle": "B2",
+      "slug": "plan-amendment-not-carried",
+      "title": "Plan amendment to an unchanged card is approved without being carried into it",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "webster",
+        "loom"
+      ],
+      "issues": [
+        168
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #168](https://github.com/Knatte18/loomyard/issues/168).\n\n## Seen\n\nOn a tapestry run in Webster, the parent recorded `lym loom decision add \u003cslug\u003e --by parent --amends-plan` naming a concrete change to one card (new Edit targets and a changed Intent), then ran `lym loom goto --to Plan-Burler-Review` and `lym loom resume`.\nPlan-Burler-Review approved in one round without editing the card.\nIts review said the amendment was not carried into the card, but that \"the round's check admits a new finding only on a changed hunk in a file the changes file lists\", and the changes file listed only `00-overview.md` from an earlier amendment round.\nWebster then began the batch again, its fork stopped on the unamended card, and the run blocked at Webster.\nAn earlier amendment on the same run, which added new cards, did go through the same path.\n\n## Workaround\n\nA second parent decision, without `--amends-plan`, told Webster that the batch's fork follows the amending decision over the card, editing the extra targets, and records the batch without a plan edit.\nThen `lym loom resume`.\n\n## Expected\n\nAn `--amends-plan` decision routed to `amendment_target` lets the plan review raise findings on the cards the amendment names, even when those cards have no changed hunk, so the fixer edits them.\n",
+      "created": "2026-11-21T17:29:27Z",
+      "revised": "2026-11-21T17:29:27Z"
     }
   ],
   "prime_owner": "neve",

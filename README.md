@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (5)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (6)</strong></summary>
 
 Owner `neve`
 
@@ -118,7 +118,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-### Notes (5)
+### Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -129,11 +129,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
 
-#### Bugs (1)
+#### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 1h<br>0m | gate, loom |
+| B2 |  | **Plan amendment to an unchanged card is approved without being carried into it** | [`plan-amendment-not-carried`](design-plan-amendment-not-carried.md) | 0m<br>0m | burler, webster, loom |
 
 #### Features (2)
 
