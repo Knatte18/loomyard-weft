@@ -43,8 +43,6 @@ Each bullet names its source project and the lym module it would touch.
 
 ## Worktrees (fabric, batten, landing)
 
-- **Lifecycle hooks** (dmux): hub-configured hooks after pair creation and around Merge-In and landing.
-- **Free a paused run's worktree** (claude-squad): commit, remove the worktree and keep the branch; the weft sibling makes it harder.
 
 ## Agent sessions (reed, shuttle)
 
