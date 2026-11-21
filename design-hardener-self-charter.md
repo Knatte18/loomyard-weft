@@ -1,6 +1,6 @@
 # Hardener writes its own charter, drives either hub layout
 
-`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · running · Record-Write
+`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · running · Drift-Baseline
 
 ## Seen
 
