@@ -1,6 +1,6 @@
 # Hardener campaign on fabricengine, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · draft
+`harden-fabricengine` · Task · bug, fabric
 
 ## Goal
 
