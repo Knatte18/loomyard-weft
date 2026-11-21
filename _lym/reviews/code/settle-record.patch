@@ -1,0 +1,1750 @@
+diff --git a/contracts/stencils/darn/darn-fragment-make-change-gated.md b/contracts/stencils/darn/darn-fragment-make-change-gated.md
+index 1e64854d..bf0fbdc0 100644
+--- a/contracts/stencils/darn/darn-fragment-make-change-gated.md
++++ b/contracts/stencils/darn/darn-fragment-make-change-gated.md
+@@ -4,6 +4,7 @@
+      The writer asks its parent for the single run of the test a task's reported failure names, before it diagnoses it.
+      internal/darnengine's DarnTable reads it for the writer's engine,
+      fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
++     fills the {{.measure_call}} marker with the measuring call the hub's gate config can run,
+      then fills the result whole into darn-template-write's make_change marker. -->
+ 
+ 1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
+@@ -22,9 +23,9 @@
+    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
+ 3. Run no `lym gate test` yourself.
+    The one exception is a value the change needs that only a test run shows, such as a golden test's output:
+-   run that one test class once through `lym gate test --gate darn-write <its package or test project> -- <args>`,
++   run that one test class once through `{{.measure_call}}`,
+    with the args by which the tier's runner selects one class.
+-   The args reach every tier the key lists, so they must suit each of them.
++   The args reach every tier the call runs, so they must suit each of them.
+    Never run a raw test command for it: a raw run can exit 0 with no output when no test ran, and only the gate's report says so.
+    When that report says a project ran no test, the property that makes it run is the one its project file's `IsTestProject` condition names.
+    When the tier's command holds `{args}`, run the same gate call once more with `-p:<property>=true` among the args after `--`,
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index 559b41a3..4f14fa00 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -65,7 +65,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"loom-fragment-self-check-discussion", LoomFragmentSelfCheckDiscussion, nil},
+ 		{"loom-fragment-self-check-discussion-gated", LoomFragmentSelfCheckDiscussionGated, nil},
+ 		{"darn-fragment-make-change", DarnFragmentMakeChange, nil},
+-		{"darn-fragment-make-change-gated", DarnFragmentMakeChangeGated, nil},
++		{"darn-fragment-make-change-gated", DarnFragmentMakeChangeGated, []string{"measure_call"}},
+ 		{"twill-judge-critical", TwillJudgeCritical, []string{"disposition_place", "dispute_evidence", "governing_input"}},
+ 		{"twill-judge-plain", TwillJudgePlain, []string{"disposition_place", "rejection_rule"}},
+ 		{"twill-writer-fork", TwillWriterFork, []string{"disposition_place", "explore_step", "files_dir", "format_step", "input_record", "last_file", "reviewed_files", "self_check_command", "self_check_step"}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 809f0387..d2aa11a7 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -52,6 +52,7 @@ var DarnFragmentMakeChange []byte
+ 
+ // DarnFragmentMakeChangeGated is the darn writer prompt's Step 4 list when the verify gate has a cold fixer.
+ // The writer and its subagents run no gate in it, except the writer's single measuring run of one test class.
++// That run's call fills its measure_call marker, rendered from the hub's gate config.
+ // The writer asks its parent for the single run of the test a task's reported failure names, before it diagnoses it.
+ //
+ //go:embed darn/darn-fragment-make-change-gated.md
+diff --git a/docs/dotnet-hub.md b/docs/dotnet-hub.md
+index e31ea55d..7f2ce7dd 100644
+--- a/docs/dotnet-hub.md
++++ b/docs/dotnet-hub.md
+@@ -35,9 +35,10 @@ A tier's command holds `{targets}`, `{filter}` and optionally `{args}`:
+ tiers:
+   tier0:
+     about: fast tests of the whole solution
+-    command: dotnet test {targets} --no-build {filter}
++    command: dotnet test {targets} --no-build {filter} {args}
+     all_targets: NORCE.Models.Tests/NORCE.Models.Tests.csproj NORCE.Models.Gated/NORCE.Models.Gated.csproj
+     counter: vstest
++    results: trx
+     shared_build: true
+     filter: "Category!=Slow"
+     timeout_min: 30
+@@ -53,6 +54,14 @@ A landing tier uses its `filter` only to exclude categories, such as `Category!=
+ The filter applies at whole scope too,
+ and a filter that matches no test passes the tier vacuously and writes a green entry that later gates carry.
+ 
++`results: trx` makes the gate read the run from a TRX results file instead of the console text.
++It fits only a `vstest` tier whose command holds `{args}`,
++since the gate puts `--results-directory <dir> --logger trx;LogFilePrefix=gate --blame` at the front of the `{args}` words.
++The file then decides the counts and failed tests, whatever console logger the call's own words after `--` choose,
++and a crashed test host's cause reaches the gate log.
++A call whose own words hold a results directory or a `trx` logger is refused, since the gate owns them.
++A tier without `results` keeps counting the console summary and logs no crash cause.
++
+ `shared_build: true` makes the tier depend on the hub's `build` step, which lym runs once per call before it,
+ so the tier's command carries `--no-build`.
+ A command without `--no-build` builds again inside its own run, since lym does not read the command.
+@@ -150,6 +159,7 @@ tiers:
+     timeout_min: 120
+ ```
+ 
++The tier sets no `results`, so the gate adds no result words to the benchmark program's `{args}`.
+ `slots: all` waits for every running holder to finish.
+ It then blocks every new gate run of the hub until the tier ends,
+ so other worktrees' gate runs wait while their agents keep working.
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index 3c4e67fb..93eddfe8 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -87,8 +87,11 @@
+ // The writer asks its parent for the single run of the test a task's reported failure names.
+ // That run comes before the writer diagnoses the failure, so a failure that no longer reproduces costs no diagnosis.
+ // Without one, the step has them run the gate after each commit.
++// With a cold fixer the caller also tells DarnTable the measuring run's gate call, rendered from the hub's gate config,
++// so the prompt never names a gate key or target form that config cannot run.
+ // The seat engine renders the parent and edit directives, so DarnTable reads no parent name.
+ // DarnTable refuses an empty required field by name and a writer model-spec the registry cannot resolve.
++// The measuring call is required only with a cold fixer.
+ //
+ // The package is told every path it reads and imports no resolver.
+ package darnengine
+diff --git a/internal/darnengine/spec.go b/internal/darnengine/spec.go
+index 91349258..1eccd366 100644
+--- a/internal/darnengine/spec.go
++++ b/internal/darnengine/spec.go
+@@ -73,6 +73,9 @@ type DarnInputs struct {
+ 	// so the writer and its subagents run no gate, except the writer's single measuring run of one test class,
+ 	// and the writer asks its parent for a reported failure's single run.
+ 	GateFixed bool
++	// MeasureCall is the gate call the writer runs to measure one test class, in a form the hub's gate config can run.
++	// Only the Step 4 list of a writer whose verify gate has a cold fixer names it, so only a GateFixed writer needs it.
++	MeasureCall string
+ }
+ 
+ // DarnTable builds the seatengine.Table of one darn writer spawn: one lead that writes the change description.
+@@ -101,6 +104,9 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 		{"ConditionStopMarkerPath", in.ConditionStopMarkerPath},
+ 		{"SubagentModel", in.SubagentModel},
+ 	}
++	if in.GateFixed {
++		required = append(required, struct{ field, value string }{"MeasureCall", in.MeasureCall})
++	}
+ 	for _, r := range required {
+ 		if r.value == "" {
+ 			return seatengine.Table{}, fmt.Errorf("darn: DarnTable: %s must not be empty", r.field)
+@@ -126,7 +132,7 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ 		frictionDirective = ""
+ 	}
+ 	engine := shuttleengine.NewModelChoice(resolved).Engine
+-	makeChange, err := makeChangeList(in.StencilsDir, engine, in.GateFixed, in.SubagentModel)
++	makeChange, err := makeChangeList(in.StencilsDir, engine, in.GateFixed, in.SubagentModel, in.MeasureCall)
+ 	if err != nil {
+ 		return seatengine.Table{}, fmt.Errorf("darn: DarnTable: Step 4 list: %w", err)
+ 	}
+@@ -164,10 +170,10 @@ func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Ta
+ }
+ 
+ // makeChangeList returns the writer prompt's Step 4 list, worded for engine, the engine the writer launches on.
+-// It reads the list at call time from stencilsDir and fills subagentModel into it;
+-// only the Claude wording names that model.
++// It reads the list at call time from stencilsDir and fills subagentModel and measureCall into it;
++// only the Claude wording names that model, and only the gated fragment names the call.
+ // It uses the gated fragment when gateFixed is set, and the ungated one otherwise.
+-func makeChangeList(stencilsDir, engine string, gateFixed bool, subagentModel string) (string, error) {
++func makeChangeList(stencilsDir, engine string, gateFixed bool, subagentModel, measureCall string) (string, error) {
+ 	name := makeChangeStencil
+ 	if gateFixed {
+ 		name = makeChangeGatedStencil
+@@ -176,7 +182,7 @@ func makeChangeList(stencilsDir, engine string, gateFixed bool, subagentModel st
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	filled, err := stencil.Fill(content, map[string]string{"subagent_model": subagentModel})
++	filled, err := stencil.Fill(content, map[string]string{"subagent_model": subagentModel, "measure_call": measureCall})
+ 	if err != nil {
+ 		return "", fmt.Errorf("fill stencil %s: %w", name, err)
+ 	}
+diff --git a/internal/darnengine/spec_test.go b/internal/darnengine/spec_test.go
+index 0cc6b312..1fd401da 100644
+--- a/internal/darnengine/spec_test.go
++++ b/internal/darnengine/spec_test.go
+@@ -36,9 +36,13 @@ func newSpecInputs(t *testing.T) DarnInputs {
+ 
+ 		ConditionStopMarkerPath: filepath.Join(t.TempDir(), "condition-stop-marker"),
+ 		SubagentModel:           "haiku",
++		MeasureCall:             measureCall,
+ 	}
+ }
+ 
++// measureCall is the measuring call the inputs carry, a form no stencil spells itself.
++const measureCall = "lym gate test --tier 0 -- <args>"
++
+ // newTestRegistry loads an empty-directory model registry, which still resolves the built-in aliases.
+ func newTestRegistry(t *testing.T) modelspec.Registry {
+ 	t.Helper()
+@@ -113,7 +117,7 @@ func TestDarnSpec(t *testing.T) {
+ 			wantInPrompt: func(in DarnInputs) []string {
+ 				return []string{"fix-the-thing", in.DescriptionPath, filepath.ToSlash(in.SpecsDir), in.DecisionRecordPath, in.StopMarkerPath, in.ConditionStopMarkerPath, `model: "haiku"`, ungatedTestStep, ungatedSubagentGate}
+ 			},
+-			wantNotInPrompt: []string{gatedNoGateStep, reportPath},
++			wantNotInPrompt: []string{gatedNoGateStep, reportPath, measureCall},
+ 			wantNone:        1,
+ 			wantNoParent:    true,
+ 		},
+@@ -126,13 +130,22 @@ func TestDarnSpec(t *testing.T) {
+ 			wantNone:       1,
+ 			wantNoParent:   true,
+ 		},
++		{
++			name:      "an ungated writer builds with no measuring call",
++			configure: func(in *DarnInputs) { in.MeasureCall = "" },
++			wantInPrompt: func(in DarnInputs) []string {
++				return []string{ungatedTestStep}
++			},
++			wantNone:     1,
++			wantNoParent: true,
++		},
+ 		{
+ 			name:      "a cold fixer on the verify gate has the writer and its subagents run no gate",
+ 			configure: func(in *DarnInputs) { in.GateFixed = true },
+ 			wantInPrompt: func(in DarnInputs) []string {
+-				return []string{`model: "haiku"`, gatedNoGateStep}
++				return []string{`model: "haiku"`, gatedNoGateStep, "run that one test class once through `" + measureCall + "`"}
+ 			},
+-			wantNotInPrompt: []string{ungatedTestStep, ungatedSubagentGate},
++			wantNotInPrompt: []string{ungatedTestStep, ungatedSubagentGate, "--gate darn-write"},
+ 			wantNone:        1,
+ 			wantNoParent:    true,
+ 		},
+@@ -286,6 +299,10 @@ func TestDarnSpec_Refusals(t *testing.T) {
+ 		{"empty StopMarkerPath", func(t *testing.T, in *DarnInputs, cfg *Config) { in.StopMarkerPath = "" }, "StopMarkerPath"},
+ 		{"empty ConditionStopMarkerPath", func(t *testing.T, in *DarnInputs, cfg *Config) { in.ConditionStopMarkerPath = "" }, "ConditionStopMarkerPath"},
+ 		{"empty SubagentModel", func(t *testing.T, in *DarnInputs, cfg *Config) { in.SubagentModel = "" }, "SubagentModel"},
++		{"empty MeasureCall of a gate-fixed writer", func(t *testing.T, in *DarnInputs, cfg *Config) {
++			in.GateFixed = true
++			in.MeasureCall = ""
++		}, "MeasureCall"},
+ 		{"malformed writer spec", func(t *testing.T, in *DarnInputs, cfg *Config) { cfg.Writer = "opus[effort=high" }, "writer model-spec"},
+ 		{"missing stencil", func(t *testing.T, in *DarnInputs, cfg *Config) { stencilkit.Remove(t, in.StencilsDir, darnStencilName) }, darnStencilName},
+ 		{"missing Step 4 fragment", func(t *testing.T, in *DarnInputs, cfg *Config) {
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 87ab7762..419e0c42 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -201,6 +201,8 @@ type testRequest struct {
+ 
+ 	// hubEnv is the hub's env.yaml variables, which the call's children run with.
+ 	hubEnv envconfig.Config
++	// sessionEnv is the environment of the session that started the call, against which each tier's env is compared.
++	sessionEnv []string
+ 	// root is the worktree root the tiers' dirs and a prebuild are relative to.
+ 	root string
+ 	// prebuiltStore is the hub's store of prebuilt `lym` binaries; empty outside a hub.
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index a98ad2fb..dcf35021 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -452,6 +452,7 @@ func (c *goJSONCounter) handle(line []byte, terminated bool) error {
+ // vstestCounter passes every line through and sums the counts of the VSTest summary lines.
+ // It also reads each failed test's block, which opens with the `Failed <name> [<duration>]` line.
+ // The block runs up to a blank line, the next result line or a summary line.
++// An invocation whose results file the gate read has its console counts and failures replaced by the file's.
+ type vstestCounter struct {
+ 	lines  lineReader
+ 	counts tierCounts
+@@ -459,6 +460,43 @@ type vstestCounter struct {
+ 	failures []runFailure
+ 	// inFailure is set while the lines read belong to the block of the last failed test.
+ 	inFailure bool
++	// invocationCounts and invocationFailures are the counts and the number of failures before the invocation in progress.
++	// Its results file replaces whatever its console output added past them.
++	invocationCounts   tierCounts
++	invocationFailures int
++	// runMessages holds the run-level messages of every results file read, in order.
++	runMessages []string
++}
++
++// startInvocation marks the counts and failures so far as those before the invocation about to run.
++func (c *vstestCounter) startInvocation() {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	c.invocationCounts, c.invocationFailures = c.counts, len(c.failures)
++	c.inFailure = false
++}
++
++// replaceInvocation replaces what the invocation since startInvocation counted from its console output with results.
++func (c *vstestCounter) replaceInvocation(results trxResults) {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	before := c.invocationCounts
++	c.counts = tierCounts{
++		discovered: before.discovered + results.counts.discovered,
++		passed:     before.passed + results.counts.passed,
++		failed:     before.failed + results.counts.failed,
++		skipped:    before.skipped + results.counts.skipped,
++	}
++	c.failures = append(c.failures[:c.invocationFailures:c.invocationFailures], results.failures...)
++	c.runMessages = append(c.runMessages, results.runMessages...)
++	c.inFailure = false
++}
++
++// RunMessages returns a copy of the run-level messages of every results file read.
++func (c *vstestCounter) RunMessages() []string {
++	c.lines.mu.Lock()
++	defer c.lines.mu.Unlock()
++	return slices.Clone(c.runMessages)
+ }
+ 
+ func (c *vstestCounter) Write(p []byte) (int, error) { return c.lines.Write(p) }
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 6142b6cc..4532c821 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -137,6 +137,11 @@
+ // They are the hub's with this machine's override inside a hub, and the worktree's own outside every hub.
+ // `proc.BuildServerOffEnv` replaces an inherited or env module value, so the module never undoes a build-server switch.
+ // The tier's `env`, with `{parallel}` filled, replaces an env module value.
++// A tier run with an invocation first prints and logs one line.
++// The line names each `env` variable that the session's environment sets to another value, with the tier's value only.
++// It prints once for a `--copies` run, and never prints the session's value, which may be a secret.
++// A result the tier gives reflects the tier's values, so a session measuring through the gate learns it measured those.
++// A variable the session leaves unset is not named.
+ // The lease's `gateslot.InheritEnv` and the enclosing-gate pid are added last.
+ // The tier's `dir`, relative to the worktree root, is the run directory.
+ // A tier that sets no `dir` runs in the worktree's anchor.
+@@ -542,6 +547,22 @@
+ // The `vstest` counter keeps each test a `Failed <name> [<duration>]` line reports, with no package.
+ // It keeps the first lines of the test's block, which hold its error message and stack trace;
+ // the block's section headings are left out.
++// A `vstest` tier that sets `results: trx` gets its results from a file the gate asks for instead.
++// Each invocation's `{args}` open with `--results-directory <dir> --logger trx;LogFilePrefix=gate --blame`.
++// That is the `dotnet test` spelling, over a fresh `lymtemp` directory, ahead of the call's own words after `--`.
++// A call whose own words hold a results directory or a `trx` logger is refused, since the gate owns those words.
++// Once the command ends, its console output is read to the end.
++// The TRX files there then replace the counts and failed tests its console output gave.
++// A console logger among the call's own words so never changes the verdict.
++// The directory is then removed.
++// A test counts as passed for the outcome Passed, failed for Failed, Error, Timeout and Aborted, and skipped otherwise.
++// A failed test keeps the first lines of its error message and stack trace.
++// A failed run prints and logs each run-level message of outcome Error in those files.
++// Such a message is a test host crash with the test the blame collector saw running.
++// The failure report lists it among the causes.
++// An invocation that wrote no readable TRX file keeps the console counts.
++// A `vstest` tier that sets no `results` gets no results file, so it keeps the console counts and logs no crash cause.
++// Adding `results: trx` and `{args}` to its command gives it both.
+ // The record carries each failed test with its first line as `failures`.
+ // A `go-json` tier under the `go` scoper fails when a package holding a test under the tier's tag ran none;
+ // the tier's command then lacks its tag.
+@@ -562,7 +583,7 @@
+ // The line covers an invocation whose whole output reported no test.
+ // It cannot see a disabled project beside a project that ran.
+ // It cannot see a gated class in a project that ran other tests.
+-// It cannot name the property behind a skip: the counter reads only each invocation's total.
++// It cannot name the property behind a skip: the line reads only each invocation's total.
+ //
+ // # Stray files
+ //
+diff --git a/internal/gatecli/green.go b/internal/gatecli/green.go
+index e2702762..f1a1bd82 100644
+--- a/internal/gatecli/green.go
++++ b/internal/gatecli/green.go
+@@ -67,7 +67,7 @@ type greenRecord struct {
+ }
+ 
+ // tierFingerprint hashes tier's declaration without its parallel, timeouts and slots.
+-// A changed command, env, targets, counter, filter or carry setting therefore never carries a pass over.
++// A changed command, env, targets, counter, results, filter or carry setting therefore never carries a pass over.
+ // build is hashed only for a tier with shared_build, and inert only when non-empty.
+ // Optional keys are hashed only at a non-default value, so a tier that sets none of them keeps its fingerprint.
+ func tierFingerprint(tier gateslot.Tier, build gateslot.BuildStep, inert []string) string {
+@@ -81,6 +81,7 @@ func tierFingerprint(tier gateslot.Tier, build gateslot.BuildStep, inert []strin
+ 		Covers      []int
+ 		PrebuiltLym bool
+ 		Manual      bool
++		Results     string              `json:",omitempty"`
+ 		Filter      string              `json:",omitempty"`
+ 		SharedBuild bool                `json:",omitempty"`
+ 		NoCarry     bool                `json:",omitempty"`
+@@ -88,7 +89,7 @@ func tierFingerprint(tier gateslot.Tier, build gateslot.BuildStep, inert []strin
+ 		Inert       []string            `json:",omitempty"`
+ 	}{
+ 		About: tier.About, Command: tier.Command, Dir: tier.Dir, Env: tier.Env, AllTargets: tier.AllTargets, Counter: tier.Counter, Covers: tier.Covers, PrebuiltLym: tier.PrebuiltLym, Manual: tier.Manual,
+-		Filter: tier.Filter, SharedBuild: tier.SharedBuild, NoCarry: tier.NoCarry, Inert: inert,
++		Results: tier.Results, Filter: tier.Filter, SharedBuild: tier.SharedBuild, NoCarry: tier.NoCarry, Inert: inert,
+ 	}
+ 	if tier.SharedBuild {
+ 		declaration.Build = &build
+diff --git a/internal/gatecli/green_test.go b/internal/gatecli/green_test.go
+index 0c9f647c..8ab3c21f 100644
+--- a/internal/gatecli/green_test.go
++++ b/internal/gatecli/green_test.go
+@@ -60,6 +60,7 @@ func TestGreenRecord(t *testing.T) {
+ 			"env":          tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.Env = map[string]string{"GOFLAGS": "-trimpath"} }), noBuild, nil),
+ 			"all_targets":  tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.AllTargets = "./internal/..." }), noBuild, nil),
+ 			"counter":      tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.Counter = "vstest" }), noBuild, nil),
++			"results":      tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.Results = gateslot.ResultsTRX }), noBuild, nil),
+ 			"filter":       tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.Filter = "Category!=Slow" }), noBuild, nil),
+ 			"shared_build": tierFingerprint(sharedBuild, noBuild, nil),
+ 			"carry":        tierFingerprint(withTier(base, func(tier *gateslot.Tier) { tier.NoCarry = true }), noBuild, nil),
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index f6d3b79a..4df61407 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -101,6 +101,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	request.busyQuit = cfg.Limits().BusyQuit
+ 	request.memoryQuit = cfg.MemoryQuit()
+ 	request.hubEnv = hubEnv
++	request.sessionEnv = os.Environ()
+ 
+ 	green := openGreen(gateslot.WaitDir(location.AnchorPath()), request.root, request.goBinary, cfg)
+ 	sc, err := computeScope(preCtx, cfg, location, request.root, request, green)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 7d7cf649..55ba8344 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -398,8 +398,9 @@ func startGate(t *testing.T, run gateRun) *runningGate {
+ 	t.Cleanup(cancel)
+ 	g.cmd = exec.CommandContext(ctx, os.Args[0], run.args...)
+ 	// The outer environment's slot, enclosing gate or strand, must not make the gate think it is nested or an agent's.
++	// Its GOFLAGS is dropped too: a session value differing from the tier's would add an env line to every run.
+ 	g.cmd.Env = slices.DeleteFunc(os.Environ(), func(entry string) bool {
+-		return strings.HasPrefix(entry, gateslot.InheritEnv+"=") || strings.HasPrefix(entry, enclosingGateEnv+"=") || strings.HasPrefix(entry, agentname.StrandNameEnv+"=")
++		return strings.HasPrefix(entry, gateslot.InheritEnv+"=") || strings.HasPrefix(entry, enclosingGateEnv+"=") || strings.HasPrefix(entry, agentname.StrandNameEnv+"=") || strings.HasPrefix(entry, "GOFLAGS=")
+ 	})
+ 	g.cmd.Env = append(g.cmd.Env, helperEnv+"="+helperRoleGate, helperCwdEnv+"="+run.cwd, helperRecordEnv+"="+g.record)
+ 	if !run.realGo {
+@@ -1140,17 +1141,35 @@ func TestGateTest_Scenario(t *testing.T) {
+ 
+ 	t.Run("a tier's own env overrides the MSBuild variables the gate sets", func(t *testing.T) {
+ 		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
+-			cfg["tiers"].(map[string]any)["tier6"].(map[string]any)["env"] = map[string]string{"MSBUILDDISABLENODEREUSE": "0"}
++			cfg["tiers"].(map[string]any)["tier6"].(map[string]any)["env"] = map[string]string{"MSBUILDDISABLENODEREUSE": "0", "ENV_LINE_MARK": "tier"}
+ 		}))
+ 		defer writeConfig(t, gateConfig)
+ 
+-		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}})
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: []string{"ENV_LINE_MARK=session"}})
+ 		if code := g.wait(t); code != 0 {
+ 			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
+ 		}
+ 		if record := g.standIn(t); record.NodeReuse != "0" || record.MSBuildServer != "0" {
+ 			t.Errorf("tier environment MSBUILDDISABLENODEREUSE = %q, DOTNET_CLI_USE_MSBUILD_SERVER = %q; want the tier's 0 and the gate's 0", record.NodeReuse, record.MSBuildServer)
+ 		}
++		// The gate's own session environment holds a value of the mark that the tier's env overrides.
++		const envLineOpening = "gate test: tier6 runs with env values that differ from this session's environment: "
++		_, log := runRecordOf(t, g.stdout.String(), 6)
++		// The gate helper hands the verb's stderr lines to its stdout.
++		for name, text := range map[string]string{"gate output": g.stdout.String(), "tier log": log} {
++			if !strings.Contains(text, envLineOpening) || !strings.Contains(text, "ENV_LINE_MARK=tier") || strings.Contains(text, "ENV_LINE_MARK=session") {
++				t.Errorf("%s = %q; want the env line naming ENV_LINE_MARK=tier and not the session's value", name, text)
++			}
++		}
++		requireFree(t)
++
++		equal := startGate(t, gateRun{cwd: prime, args: []string{"test", "--tier", "6", "./pkg"}, env: []string{"ENV_LINE_MARK=tier"}})
++		if code := equal.wait(t); code != 0 {
++			t.Fatalf("exit code with an equal session value = %d, stdout %q; want 0", code, equal.stdout.String())
++		}
++		if strings.Contains(equal.stdout.String(), "ENV_LINE_MARK") {
++			t.Errorf("gate output with an equal session value = %q; want no env line naming ENV_LINE_MARK", equal.stdout.String())
++		}
+ 		requireFree(t)
+ 	})
+ 
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 498ad6bf..5d580b8c 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -30,6 +30,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/impactset"
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/verifyrun"
+ )
+@@ -70,6 +71,8 @@ type tierResult struct {
+ // A run with an invocation lists the worktree's untracked, non-ignored files before and after it.
+ // It fails when the run left a file the first listing lacked.
+ // A worktree git cannot list is not checked.
++// A run with an invocation first prints envOverrideLine for the tier's env against the session's.
++// The line is printed once, whatever the copies, and heads the result's log.
+ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	before, listed := untrackedBeforeRun(run, request.root)
+ 	return runTierChecked(ctx, out, run, env, request, before, listed)
+@@ -81,12 +84,22 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ // A caller that reruns the tier passes the same listing to every attempt,
+ // so a file an earlier attempt left still fails the run.
+ func runTierChecked(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest, before map[string]bool, listed bool) tierResult {
++	envLine := ""
++	if len(run.invocations) > 0 {
++		envLine = envOverrideLine(tierName(run.number), renderTierEnv(run.tier), request.sessionEnv)
++	}
++	if envLine != "" {
++		printLine(request.stderr, envLine)
++	}
+ 	var result tierResult
+ 	if request.copiesRun > 0 {
+ 		result = runTierCopies(ctx, run, env, request)
+ 	} else {
+ 		result = runTierCommands(ctx, out, run, env, request)
+ 	}
++	if envLine != "" && result.refusal == "" {
++		result.log = append([]byte(envLine+"\n"), result.log...)
++	}
+ 	if !listed || result.refusal != "" {
+ 		return result
+ 	}
+@@ -104,6 +117,8 @@ func runTierChecked(ctx context.Context, out io.Writer, run tierRun, env []strin
+ // and it returns that line for the caller to print.
+ // Every command's GOFLAGS then opens with gateslot.TestCacheOffFlag, so `go test` keeps no test result cache.
+ // A passing `vstest` invocation that reported no test prints the line naming it to stderr and the log.
++// A failed run prints and logs each run-level message its test results files report, such as a test host crash.
++// It counts each among the causes.
+ // A run with no invocation passes at once with nothing discovered.
+ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	started := time.Now()
+@@ -140,6 +155,14 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 	}
+ 
+ 	var causes []string
++	if exit != 0 {
++		// A crashed test host fails the run with no failed test, so its results file's message is the only cause.
++		for _, line := range resultsFileLines(counter, tierName(run.number)) {
++			logBuffer.WriteString(line + "\n")
++			printLine(request.stderr, line)
++			causes = append(causes, line)
++		}
++	}
+ 	timedOut := ctx.Err() == nil && errors.Is(tierCtx.Err(), context.DeadlineExceeded) && exit != 0
+ 	if timedOut {
+ 		exit = 1
+@@ -207,6 +230,42 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 	}
+ }
+ 
++// envOverrideLine returns the line naming each entry of tierEnv whose variable session sets to another value.
++// tierEnv holds the tier's own env entries, and session the environment of the session that started the call.
++// A result the tier gives reflects the tier's values, so a session that measures through the gate must know them.
++// The line names each variable with the tier's value only, since the session's value may be a secret the tier overrides.
++// A variable the session leaves unset is not named, since the session reads no value of its own for it.
++// Variable names compare without case on Windows, where the environment does.
++// It returns "" when no entry differs.
++func envOverrideLine(tier string, tierEnv, session []string) string {
++	envName := func(name string) string {
++		if runtime.GOOS == "windows" {
++			return strings.ToUpper(name)
++		}
++		return name
++	}
++	sessionValues := make(map[string]string, len(session))
++	for _, entry := range session {
++		if name, value, ok := strings.Cut(entry, "="); ok {
++			sessionValues[envName(name)] = value
++		}
++	}
++	var differing []string
++	for _, entry := range tierEnv {
++		name, value, _ := strings.Cut(entry, "=")
++		if held, set := sessionValues[envName(name)]; set && held != value {
++			differing = append(differing, name+"="+value)
++		}
++	}
++	if len(differing) == 0 {
++		return ""
++	}
++	return fmt.Sprintf("gate test: %s runs with env values that differ from this session's environment: %s; "+
++		"a result of %s reflects the tier's values, not the session's; "+
++		"way forward: read the result under those values, or change tiers.%s.env with \"lym config gate\" from the prime",
++		tier, strings.Join(differing, ", "), tier, tier)
++}
++
+ // runStops is what the guards over a tier's commands stopped.
+ type runStops struct {
+ 	// processCap is the process cap's line once it killed the run's processes, empty otherwise.
+@@ -393,6 +452,10 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ // While a command runs, the process cap watches every process carrying env's run marker, when env sets one,
+ // and the memory guard watches its test binaries, when the request turns it on.
+ // A tier with memory_mb runs each command under that cap, and a command that cannot be started under it is a refusal.
++// A tier with `results: trx` opens each invocation's {args} with vstestResultsArgs over a fresh temp directory.
++// It refuses a call whose own args hold a results directory or a trx logger, since the gate owns those words.
++// Once the command ends, the counter reads its whole output.
++// The results files there then replace the counts and failures its console output gave, and the directory is removed.
+ // After each passing invocation it hands notice the line of noTestNotice, when that line is not empty.
+ // It returns that exit code, the commands it rendered, what the guards stopped,
+ // and a refusal when a command could not be run at all.
+@@ -400,6 +463,9 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 	if len(run.invocations) == 0 {
+ 		return 0, nil, runStops{}, ""
+ 	}
++	if refusal := resultsArgsRefusal(run.number, run.tier, run.args); refusal != "" {
++		return 0, nil, runStops{}, refusal
++	}
+ 	if run.tier.PrebuiltLym {
+ 		bin, cleanup, err := prebuildLym(ctx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore, request.pipeWaitDelay, nil)
+ 		if err != nil {
+@@ -434,8 +500,21 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 				continue
+ 			}
+ 		}
+-		command, err := renderTierCommand(run.number, run.tier, invocation.targets, testTargets, invocation.terms, run.args)
++		args, resultsDir := run.args, ""
++		var vstest *vstestCounter
++		if run.tier.Results == gateslot.ResultsTRX {
++			vstest = counter.(*vstestCounter)
++			if dir, err := lymtemp.MkdirTemp("gate-vstest-"); err != nil {
++				logger.Warn("gate test: could not make the vstest results directory; the console counts stand", "tier", tierName(run.number), "cause", err)
++			} else {
++				resultsDir = dir
++				args = append(vstestResultsArgs(dir), run.args...)
++				vstest.startInvocation()
++			}
++		}
++		command, err := renderTierCommand(run.number, run.tier, invocation.targets, testTargets, invocation.terms, args)
+ 		if err != nil {
++			removeResultsDir(resultsDir)
+ 			return 0, commands, runStops{}, err.Error()
+ 		}
+ 		commands = append(commands, command)
+@@ -480,6 +559,16 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		}
+ 		exit = tierExitCodeOf(runErr)
+ 		logger.Info("gate test: tier command ended", "tier", tierName(run.number), "exit", exit, "error", runErr, "memory_cap_kill", capKilled)
++		if resultsDir != "" {
++			// A last console line without a newline is still pending, and would count on top of the file's results.
++			if err := counter.Flush(); err != nil {
++				logger.Warn("gate test: could not flush the tier's output", "tier", tierName(run.number), "cause", err)
++			}
++			if results, read := readTRXResults(resultsDir); read {
++				vstest.replaceInvocation(results)
++			}
++			removeResultsDir(resultsDir)
++		}
+ 		if errors.Is(runErr, proc.ErrMemoryCap) && ctx.Err() == nil {
+ 			return 0, commands, runStops{}, tierMemoryCapRefusal(tierName(run.number), run.tier.MemoryMB, dir, runErr)
+ 		}
+@@ -496,6 +585,16 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 	return 0, commands, runStops{}, ""
+ }
+ 
++// removeResultsDir removes a vstest invocation's results directory, doing nothing for an empty dir.
++func removeResultsDir(dir string) {
++	if dir == "" {
++		return
++	}
++	if err := os.RemoveAll(dir); err != nil {
++		logger.Warn("gate test: could not remove the vstest results directory", "dir", dir, "cause", err)
++	}
++}
++
+ // noTestNotice returns the line of a passing `vstest` invocation whose output reported no test, or "" for any other.
+ // discovered is the number of tests the invocation's output reported, and dir is its run directory.
+ // A test project that sets IsTestProject false unless an MSBuild property is passed builds and exits 0 this way,
+diff --git a/internal/gatecli/tierrun_spawn_test.go b/internal/gatecli/tierrun_spawn_test.go
+new file mode 100644
+index 00000000..a9429088
+--- /dev/null
++++ b/internal/gatecli/tierrun_spawn_test.go
+@@ -0,0 +1,337 @@
++//go:build !windows
++
++// tierrun_spawn_test.go covers the tier runs that start a POSIX shell and a tool such as cp.
++// They cover a vstest tier's verdict on the results file the gate asks for, and the env line of a tier run.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"fmt"
++	"io"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// linesOf returns the lines of the file at path, or none when the file does not exist.
++func linesOf(t *testing.T, path string) []string {
++	t.Helper()
++	data, err := os.ReadFile(path)
++	if os.IsNotExist(err) {
++		return nil
++	}
++	if err != nil {
++		t.Fatal(err)
++	}
++	return strings.Split(strings.TrimSuffix(string(data), "\n"), "\n")
++}
++
++// TestRunTierReadsTheVSTestResultsFile pins a vstest tier's verdict on the TRX file the gate asks for.
++// The command records its args and the results directory it finds among them, and copies a fixture TRX file there.
++// It then prints a console summary, which a row sets to disagree with the file, and exits.
++func TestRunTierReadsTheVSTestResultsFile(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	trx := func(results, runInfos string) string {
++		return `<?xml version="1.0" encoding="utf-8"?>
++<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
++  <Results>` + results + `</Results>
++  <ResultSummary outcome="Completed"><RunInfos>` + runInfos + `</RunInfos></ResultSummary>
++</TestRun>
++`
++	}
++	const passed = `<UnitTestResult testName="Ns.Tests.Kept" outcome="Passed" />`
++	const failed = `<UnitTestResult testName="Ns.Tests.Broken" outcome="Failed"><Output><ErrorInfo>
++<Message>Assert.That failed
++  Expected: 1</Message><StackTrace>   at Ns.Tests.Broken() in Tests.cs:line 9</StackTrace></ErrorInfo></Output></UnitTestResult>`
++	failedOther := strings.ReplaceAll(failed, "Broken", "Other")
++	const otherOutcomes = `<UnitTestResult testName="Ns.Tests.Errored" outcome="Error" />
++<UnitTestResult testName="Ns.Tests.TimedOut" outcome="Timeout" />
++<UnitTestResult testName="Ns.Tests.Aborted" outcome="Aborted" />
++<UnitTestResult testName="Ns.Tests.NotRun" outcome="NotExecuted" />`
++	const crash = `<RunInfo outcome="Error"><Text>The active test run was aborted. Reason: Test host process crashed : Fatal error.
++The test running when the crash occurred: Ns.Tests.Kept</Text></RunInfo>`
++	const warning = `<RunInfo outcome="Warning"><Text>No test matches the given testcase filter</Text></RunInfo>`
++	crashLine := "gate test: the test results file of tier0 reports: The active test run was aborted. Reason: Test host process crashed : Fatal error.; The test running when the crash occurred: Ns.Tests.Kept"
++	const (
++		detailedConsole = `echo 'Total tests: 1'; echo '     Passed: 1'`
++		summaryOfNine   = `echo 'Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 1 s - a.dll (net8.0)'`
++		summaryOfFour   = `echo 'Passed!  - Failed:     0, Passed:     3, Skipped:     1, Total:     4, Duration: 1 s - a.dll (net8.0)'`
++	)
++	refusal := func(word string) string {
++		return fmt.Sprintf("gate test: the words after \"--\" hold %s, which the gate sets itself because tier0 reads its results file; way forward: drop %s from the words after \"--\", then re-run the same command", word, word)
++	}
++	tests := []struct {
++		name string
++		// files is the results file each invocation's command copies, "" for an invocation whose command copies none.
++		files []string
++		// console is the shell text that prints the console summary; empty means detailedConsole.
++		console string
++		// args are the call's own words after `--`; nil means a detailed console logger.
++		args         []string
++		exit         int
++		wantRecord   gateslot.RunRecord
++		wantFailures []runFailure
++		// wantLine is the line stderr, the log and the causes hold, or "" when stderr stays empty and no cause is named.
++		wantLine string
++		// wantRefusal is the refusal that ends the run before any command starts.
++		wantRefusal string
++	}{
++		{
++			name:       "ADetailedConsoleLoggerLeavesTheCountsToTheResultsFile",
++			files:      []string{trx(passed, "")},
++			wantRecord: gateslot.RunRecord{Discovered: 1, Passed: 1},
++		},
++		{
++			name:         "AFailedTestIsReadFromTheResultsFile",
++			files:        []string{trx(passed+failed, "")},
++			exit:         1,
++			wantRecord:   gateslot.RunRecord{ExitCode: 1, Discovered: 2, Passed: 1, Failed: 1},
++			wantFailures: []runFailure{{test: "Ns.Tests.Broken", lines: []string{"Assert.That failed", "Expected: 1", "at Ns.Tests.Broken() in Tests.cs:line 9"}}},
++		},
++		{
++			name:         "EveryOutcomeButPassedCountsAsFailedOrSkipped",
++			files:        []string{trx(otherOutcomes, "")},
++			exit:         1,
++			wantRecord:   gateslot.RunRecord{ExitCode: 1, Discovered: 4, Failed: 3, Skipped: 1},
++			wantFailures: []runFailure{{test: "Ns.Tests.Errored"}, {test: "Ns.Tests.TimedOut"}, {test: "Ns.Tests.Aborted"}},
++		},
++		{
++			name:       "ACrashedTestHostNamesItsCauseAndNotAWarning",
++			files:      []string{trx("", crash+warning)},
++			exit:       1,
++			wantRecord: gateslot.RunRecord{ExitCode: 1},
++			wantLine:   crashLine,
++		},
++		{
++			name:       "APassingRunKeepsItsRunMessagesOutOfTheCauses",
++			files:      []string{trx(passed, crash)},
++			wantRecord: gateslot.RunRecord{Discovered: 1, Passed: 1},
++		},
++		{
++			name:       "EachInvocationReplacesOnlyItsOwnConsoleCounts",
++			files:      []string{trx(passed+failed, ""), trx(passed+failedOther, "")},
++			console:    summaryOfNine,
++			wantRecord: gateslot.RunRecord{Discovered: 4, Passed: 2, Failed: 2},
++			wantFailures: []runFailure{
++				{test: "Ns.Tests.Broken", lines: []string{"Assert.That failed", "Expected: 1", "at Ns.Tests.Broken() in Tests.cs:line 9"}},
++				{test: "Ns.Tests.Other", lines: []string{"Assert.That failed", "Expected: 1", "at Ns.Tests.Other() in Tests.cs:line 9"}},
++			},
++		},
++		{
++			name:       "AnInvocationThatWritesNoFileKeepsTheConsoleCounts",
++			files:      []string{""},
++			console:    summaryOfFour,
++			wantRecord: gateslot.RunRecord{Discovered: 4, Passed: 3, Skipped: 1},
++		},
++		{
++			name:       "AMalformedFileKeepsTheConsoleCounts",
++			files:      []string{"<TestRun"},
++			console:    summaryOfFour,
++			wantRecord: gateslot.RunRecord{Discovered: 4, Passed: 3, Skipped: 1},
++		},
++		{
++			name:        "ACallThatSetsTheResultsDirectoryIsRefused",
++			files:       []string{""},
++			args:        []string{"--results-directory", "/elsewhere"},
++			wantRefusal: refusal("--results-directory"),
++		},
++		{
++			name:        "ACallThatSetsATRXLoggerIsRefused",
++			files:       []string{""},
++			args:        []string{"--logger", "trx;LogFileName=mine.trx"},
++			wantRefusal: refusal("--logger trx;LogFileName=mine.trx"),
++		},
++		{
++			name:        "AJoinedTRXLoggerIsRefused",
++			files:       []string{""},
++			args:        []string{"--logger:trx"},
++			wantRefusal: refusal("--logger:trx"),
++		},
++		{
++			name:        "AJoinedResultsDirectoryIsRefused",
++			files:       []string{""},
++			args:        []string{"--results-directory=/elsewhere"},
++			wantRefusal: refusal("--results-directory=/elsewhere"),
++		},
++		{
++			name:        "AShortTRXLoggerIsRefused",
++			files:       []string{""},
++			args:        []string{"-l", "trx"},
++			wantRefusal: refusal("-l trx"),
++		},
++		{
++			name:       "ARuntimeOptionIsNotARefusedWord",
++			files:      []string{trx(passed, "")},
++			args:       []string{"-r", "linux-x64"},
++			wantRecord: gateslot.RunRecord{Discovered: 1, Passed: 1},
++		},
++		{
++			name:       "ALastConsoleLineWithNoNewlineIsReadBeforeTheFileReplacesTheCounts",
++			files:      []string{trx(passed, "")},
++			console:    `printf 'Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 1 s - a.dll (net8.0)'`,
++			wantRecord: gateslot.RunRecord{Discovered: 1, Passed: 1},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			argsLog, seenLog := filepath.Join(dir, "args"), filepath.Join(dir, "results-dirs")
++			var invocations []invocation
++			for i, content := range tt.files {
++				one := invocation{dir: dir}
++				if content != "" {
++					fixture := filepath.Join(dir, fmt.Sprintf("fixture%d.trx", i))
++					if err := os.WriteFile(fixture, []byte(content), 0o644); err != nil {
++						t.Fatal(err)
++					}
++					one.targets = []string{fixture}
++				}
++				invocations = append(invocations, one)
++			}
++			console, args := tt.console, tt.args
++			if console == "" {
++				console = detailedConsole
++			}
++			if args == nil {
++				args = []string{"--logger", "console;verbosity=detailed"}
++			}
++			command := fmt.Sprintf(`printf '%%s\n' {args} >> %[1]q; set -- {args}; while [ $# -gt 0 ] && [ "$1" != --results-directory ]; do shift; done; printf '%%s\n' "$2" >> %[2]q; fixture={targets}; if [ -n "$fixture" ]; then cp "$fixture" "$2/gate_net8.0_1.trx"; fi; %[3]s; exit %[4]d`, argsLog, seenLog, console, tt.exit)
++			var stderr bytes.Buffer
++			request := testRequest{root: dir, stderr: &stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay, args: args}
++			run := tierRun{
++				number:      0,
++				tier:        gateslot.Tier{Command: command, Counter: counterVSTest, Results: gateslot.ResultsTRX, TimeoutMin: 1},
++				invocations: invocations,
++				args:        args,
++			}
++
++			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++			if tt.wantRefusal != "" {
++				if result.refusal != tt.wantRefusal {
++					t.Errorf("runTier() refusal = %q; want %q", result.refusal, tt.wantRefusal)
++				}
++				if ran := linesOf(t, seenLog); len(ran) != 0 {
++					t.Errorf("runTier() ran the command, which saw the results directories %q; want a refusal before any command", ran)
++				}
++				return
++			}
++			if result.refusal != "" {
++				t.Fatalf("runTier() refusal = %q; want none", result.refusal)
++			}
++			got := result.record
++			want := tt.wantRecord
++			if got.ExitCode != want.ExitCode || got.Discovered != want.Discovered || got.Passed != want.Passed || got.Failed != want.Failed || got.Skipped != want.Skipped {
++				t.Errorf("runTier() record = exit %d, discovered %d, passed %d, failed %d, skipped %d; want exit %d, discovered %d, passed %d, failed %d, skipped %d",
++					got.ExitCode, got.Discovered, got.Passed, got.Failed, got.Skipped, want.ExitCode, want.Discovered, want.Passed, want.Failed, want.Skipped)
++			}
++			if diff := cmp.Diff(tt.wantFailures, result.failures, cmp.AllowUnexported(runFailure{})); diff != "" {
++				t.Errorf("runTier() failures mismatch (-want +got):\n%s", diff)
++			}
++			wantStderr := ""
++			var wantCauses []string
++			if tt.wantLine != "" {
++				wantStderr, wantCauses = tt.wantLine+"\n", []string{tt.wantLine}
++				if !strings.Contains(string(result.log), tt.wantLine+"\n") {
++					t.Errorf("runTier() log = %q; want it to hold %q", result.log, tt.wantLine)
++				}
++			}
++			if stderr.String() != wantStderr {
++				t.Errorf("runTier() stderr = %q; want %q", stderr.String(), wantStderr)
++			}
++			if diff := cmp.Diff(wantCauses, result.causes); diff != "" {
++				t.Errorf("runTier() causes mismatch (-want +got):\n%s", diff)
++			}
++
++			seen := linesOf(t, seenLog)
++			if len(seen) != len(tt.files) {
++				t.Fatalf("the command saw the results directories %q; want one per invocation, %d", seen, len(tt.files))
++			}
++			var wantArgs []string
++			for _, resultsDir := range seen {
++				wantArgs = append(wantArgs, "--results-directory", resultsDir, "--logger", "trx;LogFilePrefix=gate", "--blame")
++				wantArgs = append(wantArgs, args...)
++				if _, err := os.Stat(resultsDir); !os.IsNotExist(err) {
++					t.Errorf("results directory %s after the run: stat error %v; want it removed", resultsDir, err)
++				}
++			}
++			if diff := cmp.Diff(wantArgs, linesOf(t, argsLog)); diff != "" {
++				t.Errorf("the command's args mismatch (-want +got), want the gate's result words before the call's own:\n%s", diff)
++			}
++		})
++	}
++}
++
++// TestRunTierNamesEnvThatDiffersFromTheSession pins the env line of a tier run.
++// The line names each env value the session sets otherwise, with the tier's value and never the session's.
++// It prints once, however many copies the run starts.
++func TestRunTierNamesEnvThatDiffersFromTheSession(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const sessionValue = "/session/CommonLib"
++	session := []string{"COMMONLIB_REPO=" + sessionValue, "SAME=x"}
++	const differingLine = "gate test: tier1 runs with env values that differ from this session's environment: COMMONLIB_REPO=/tier/CommonLib; " +
++		"a result of tier1 reflects the tier's values, not the session's; " +
++		"way forward: read the result under those values, or change tiers.tier1.env with \"lym config gate\" from the prime"
++	tests := []struct {
++		name   string
++		env    map[string]string
++		copies int
++		// wantLine is the line stderr and the log hold, or "" when stderr stays empty.
++		wantLine string
++	}{
++		{
++			name:     "AValueTheSessionSetsOtherwiseIsNamedWithoutTheSessionsValue",
++			env:      map[string]string{"COMMONLIB_REPO": "/tier/CommonLib", "SAME": "x", "ONLY_TIER": "y"},
++			wantLine: differingLine,
++		},
++		{
++			name:     "CopiesPrintTheLineOnce",
++			env:      map[string]string{"COMMONLIB_REPO": "/tier/CommonLib"},
++			copies:   2,
++			wantLine: differingLine,
++		},
++		{name: "ValuesTheSessionSharesOrLacksNameNothing", env: map[string]string{"SAME": "x", "ONLY_TIER": "y"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			var stderr bytes.Buffer
++			request := testRequest{root: dir, stderr: &stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay, sessionEnv: session, copiesRun: tt.copies}
++			run := tierRun{number: 1, tier: gateslot.Tier{Command: "true", Env: tt.env, Counter: counterGoJSON, TimeoutMin: 1}, invocations: []invocation{{dir: dir}}}
++
++			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++			if result.refusal != "" || result.record.ExitCode != 0 {
++				t.Fatalf("runTier() = refusal %q, exit %d; want exit 0 and no refusal", result.refusal, result.record.ExitCode)
++			}
++			wantStderr := ""
++			if tt.wantLine != "" {
++				wantStderr = tt.wantLine + "\n"
++			}
++			if stderr.String() != wantStderr {
++				t.Errorf("runTier() stderr = %q; want %q", stderr.String(), wantStderr)
++			}
++			if tt.wantLine != "" && !strings.Contains(string(result.log), tt.wantLine+"\n") {
++				t.Errorf("runTier() log = %q; want it to hold %q", result.log, tt.wantLine)
++			}
++			if strings.Contains(stderr.String(), sessionValue) || strings.Contains(string(result.log), sessionValue) {
++				t.Errorf("runTier() stderr = %q, log = %q; want the session's value %q in neither", stderr.String(), result.log, sessionValue)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 3ff0789f..021a5641 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -116,6 +116,10 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		if len(request.args) > 0 && !strings.Contains(tier.Command, "{args}") {
+ 			return nil, configRefusal("words after \"--\" were given, but the command of %s holds no {args}", tierName(number))
+ 		}
++		// The call fails here, before the tier takes its slots and the shared build runs.
++		if refusal := resultsArgsRefusal(number, tier, request.args); refusal != "" {
++			return nil, errors.New(refusal)
++		}
+ 		share := sc.forTier(number)
+ 		if share.noTests && !tier.SharedBuild {
+ 			printLine(request.stderr, fmt.Sprintf("gate test: the scope selected no test class, so %s runs whole", tierName(number)))
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index 4b35a6a3..70bad902 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -544,6 +544,16 @@ func TestPlanTierRuns(t *testing.T) {
+ 			request: testRequest{guards: true},
+ 			exact:   `gate test: --guards needs the go scoper to find the guard tests, but gate.yaml's scoper is "dotnet"; way forward: drop --guards, then re-run the same command`,
+ 		},
++		{
++			name: "words after -- that set the results directory of a tier with results trx",
++			mutate: func(cfg *gateslot.Config) {
++				t0 := cfg.Tiers["tier0"]
++				t0.Command, t0.Counter, t0.Results = "dotnet test {targets} {args}", "vstest", gateslot.ResultsTRX
++				cfg.Tiers["tier0"] = t0
++			},
++			request: testRequest{args: []string{"--results-directory", "/elsewhere"}},
++			exact:   `gate test: the words after "--" hold --results-directory, which the gate sets itself because tier0 reads its results file; way forward: drop --results-directory from the words after "--", then re-run the same command`,
++		},
+ 	}
+ 	for _, tc := range refusals {
+ 		t.Run("refuses "+tc.name, func(t *testing.T) {
+diff --git a/internal/gatecli/trx.go b/internal/gatecli/trx.go
+new file mode 100644
+index 00000000..ca396864
+--- /dev/null
++++ b/internal/gatecli/trx.go
+@@ -0,0 +1,190 @@
++// trx.go reads the VSTest results files a vstest tier's invocation writes into a directory the gate names.
++// The tier's counts, failures and run messages then come from a file the gate asked for.
++// They never come from console text whose shape a logger among the call's own args changes.
++
++package gatecli
++
++import (
++	"encoding/xml"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// trxLogFilePrefix opens the name of every results file the gate asks for.
++// VSTest adds the target framework and a timestamp to it, so the projects of one invocation never share a file.
++const trxLogFilePrefix = "gate"
++
++// vstestResultsArgs returns the words a vstest invocation's {args} opens with, so the run writes its results to dir:
++// a TRX results file per test project, and the blame collector's report of the test a crashed test host was running.
++func vstestResultsArgs(dir string) []string {
++	return []string{"--results-directory", dir, "--logger", "trx;LogFilePrefix=" + trxLogFilePrefix, "--blame"}
++}
++
++// trxResults is what the results files of one invocation report.
++type trxResults struct {
++	counts   tierCounts
++	failures []runFailure
++	// runMessages are the texts of the run-level messages of outcome Error, such as a test host crash and its running test.
++	runMessages []string
++}
++
++// trxFile is the part of a TRX results file the gate reads.
++type trxFile struct {
++	Results  []trxTestResult `xml:"Results>UnitTestResult"`
++	RunInfos []trxRunInfo    `xml:"ResultSummary>RunInfos>RunInfo"`
++}
++
++// trxRunInfo is one run-level message in a TRX results file, with the outcome that says how serious it is.
++type trxRunInfo struct {
++	Outcome string `xml:"outcome,attr"`
++	Text    string `xml:"Text"`
++}
++
++// resultsArgsRefusal returns the refusal of a call whose own args hold a word the gate owns for the tier numbered number.
++// Only a tier with results: trx owns such words.
++// It returns "" for a call that holds none.
++func resultsArgsRefusal(number int, tier gateslot.Tier, args []string) string {
++	if tier.Results != gateslot.ResultsTRX {
++		return ""
++	}
++	word := conflictingResultsWord(args)
++	if word == "" {
++		return ""
++	}
++	return fmt.Sprintf("gate test: the words after \"--\" hold %s, which the gate sets itself because %s reads its results file; way forward: drop %s from the words after \"--\", then re-run the same command", word, tierName(number), word)
++}
++
++// conflictingResultsWord returns the first word of args that sets the results directory or a trx logger, or "" for none.
++// The gate owns those words for a tier that reads a results file,
++// and a call's own copy could move the file out of the gate's directory.
++// A logger word keeps its value, as `--logger trx;LogFileName=a.trx`.
++func conflictingResultsWord(args []string) string {
++	for i, arg := range args {
++		name, value, joined := arg, "", false
++		if cut := strings.IndexAny(arg, "=:"); cut >= 0 {
++			name, value, joined = arg[:cut], arg[cut+1:], true
++		}
++		switch name {
++		case "--results-directory":
++			return arg
++		case "--logger", "-l":
++			word := arg
++			if !joined && i+1 < len(args) {
++				value, word = args[i+1], arg+" "+args[i+1]
++			}
++			if strings.HasPrefix(strings.ToLower(value), "trx") {
++				return word
++			}
++		}
++	}
++	return ""
++}
++
++// trxTestResult is one test's result in a TRX results file.
++type trxTestResult struct {
++	TestName   string `xml:"testName,attr"`
++	Outcome    string `xml:"outcome,attr"`
++	Message    string `xml:"Output>ErrorInfo>Message"`
++	StackTrace string `xml:"Output>ErrorInfo>StackTrace"`
++}
++
++// readTRXResults sums the `.trx` files directly under dir and reports whether any of them could be read.
++// A test counts as passed for the outcome Passed.
++// It counts as failed for Failed, Error, Timeout and Aborted, and as skipped otherwise.
++// A failed test keeps the first failureLines non-empty lines of its error message and stack trace.
++// A file that cannot be read or parsed is left out with a warning, so the console counts stand when none is read.
++func readTRXResults(dir string) (trxResults, bool) {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		logger.Warn("gate test: could not list the vstest results directory; the console counts stand", "dir", dir, "cause", err)
++		return trxResults{}, false
++	}
++	var results trxResults
++	read := false
++	for _, entry := range entries {
++		if entry.IsDir() || filepath.Ext(entry.Name()) != ".trx" {
++			continue
++		}
++		path := filepath.Join(dir, entry.Name())
++		file, err := parseTRXFile(path)
++		if err != nil {
++			logger.Warn("gate test: could not read a vstest results file; it is left out", "path", path, "cause", err)
++			continue
++		}
++		read = true
++		results.add(file)
++	}
++	return results, read
++}
++
++// parseTRXFile reads and decodes the TRX results file at path.
++func parseTRXFile(path string) (trxFile, error) {
++	data, err := os.ReadFile(path)
++	if err != nil {
++		return trxFile{}, err
++	}
++	var file trxFile
++	if err := xml.Unmarshal(data, &file); err != nil {
++		return trxFile{}, fmt.Errorf("decode %s: %w", path, err)
++	}
++	return file, nil
++}
++
++// add folds one results file into r.
++func (r *trxResults) add(file trxFile) {
++	for _, result := range file.Results {
++		r.counts.discovered++
++		switch result.Outcome {
++		case "Passed":
++			r.counts.passed++
++		case "Failed", "Error", "Timeout", "Aborted":
++			r.counts.failed++
++			r.failures = append(r.failures, runFailure{test: result.TestName, lines: firstLines(failureLines, result.Message, result.StackTrace)})
++		default:
++			r.counts.skipped++
++		}
++	}
++	for _, info := range file.RunInfos {
++		if info.Outcome != "Error" {
++			continue
++		}
++		if lines := firstLines(-1, info.Text); len(lines) > 0 {
++			r.runMessages = append(r.runMessages, strings.Join(lines, "; "))
++		}
++	}
++}
++
++// firstLines returns the trimmed non-empty lines of texts in order, at most limit of them, or all when limit is negative.
++func firstLines(limit int, texts ...string) []string {
++	var lines []string
++	for _, text := range texts {
++		for _, line := range strings.Split(text, "\n") {
++			if limit >= 0 && len(lines) == limit {
++				return lines
++			}
++			if line = strings.TrimSpace(line); line != "" {
++				lines = append(lines, line)
++			}
++		}
++	}
++	return lines
++}
++
++// resultsFileLines returns one line per run-level message the results files of c's run reported, naming tier.
++// It returns nil for a counter that reads no results file.
++func resultsFileLines(c counter, tier string) []string {
++	vstest, ok := c.(*vstestCounter)
++	if !ok {
++		return nil
++	}
++	var lines []string
++	for _, message := range vstest.RunMessages() {
++		lines = append(lines, fmt.Sprintf("gate test: the test results file of %s reports: %s", tier, message))
++	}
++	return lines
++}
+diff --git a/internal/gatecli/trx_test.go b/internal/gatecli/trx_test.go
+new file mode 100644
+index 00000000..e051407a
+--- /dev/null
++++ b/internal/gatecli/trx_test.go
+@@ -0,0 +1,77 @@
++// trx_test.go covers reading the TRX results files of a vstest invocation and folding them into the vstest counter.
++// It reads fixture files from a temporary directory and starts no process.
++
++package gatecli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func writeTRX(t *testing.T, dir, name, content string) {
++	t.Helper()
++	if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o644); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestReadTRXResults(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const file = `<?xml version="1.0" encoding="utf-8"?>
++<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
++  <Results>
++    <UnitTestResult testName="A" outcome="Passed" />
++    <UnitTestResult testName="B" outcome="Failed"><Output><ErrorInfo><Message>boom
++  second</Message><StackTrace>at B()</StackTrace></ErrorInfo></Output></UnitTestResult>
++    <UnitTestResult testName="C" outcome="NotExecuted" />
++  </Results>
++  <ResultSummary outcome="Failed"><RunInfos>
++    <RunInfo outcome="Error"><Text>host crashed
++running: A</Text></RunInfo>
++    <RunInfo outcome="Warning"><Text>no match</Text></RunInfo>
++  </RunInfos></ResultSummary>
++</TestRun>
++`
++	t.Run("sums the files, maps the outcomes and keeps only error run messages", func(t *testing.T) {
++		t.Parallel()
++		dir := t.TempDir()
++		writeTRX(t, dir, "a.trx", file)
++		writeTRX(t, dir, "b.trx", file)
++		writeTRX(t, dir, "ignored.txt", "not a results file")
++
++		got, read := readTRXResults(dir)
++
++		if !read {
++			t.Fatal("readTRXResults() read = false; want true")
++		}
++		if want := (tierCounts{discovered: 6, passed: 2, failed: 2, skipped: 2}); got.counts != want {
++			t.Errorf("readTRXResults() counts = %+v; want %+v", got.counts, want)
++		}
++		wantFailure := runFailure{test: "B", lines: []string{"boom", "second", "at B()"}}
++		if diff := cmp.Diff([]runFailure{wantFailure, wantFailure}, got.failures, cmp.AllowUnexported(runFailure{})); diff != "" {
++			t.Errorf("readTRXResults() failures mismatch (-want +got):\n%s", diff)
++		}
++		wantMessage := "host crashed; running: A"
++		if diff := cmp.Diff([]string{wantMessage, wantMessage}, got.runMessages); diff != "" {
++			t.Errorf("readTRXResults() run messages mismatch (-want +got):\n%s", diff)
++		}
++	})
++
++	t.Run("reports nothing read for a malformed file, a missing directory and an empty one", func(t *testing.T) {
++		t.Parallel()
++		malformed := t.TempDir()
++		writeTRX(t, malformed, "bad.trx", "<TestRun")
++		for name, dir := range map[string]string{"malformed": malformed, "missing": filepath.Join(t.TempDir(), "none"), "empty": t.TempDir()} {
++			if _, read := readTRXResults(dir); read {
++				t.Errorf("readTRXResults(%s) read = true; want false", name)
++			}
++		}
++	})
++}
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 37811eb4..78301d56 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -409,6 +409,15 @@ inert_paths: ["*.md", "docs/*"]
+ 		},
+ 		{"test_timeout_min on a command with no {test_timeout}", baseKeys + `tiers: {tier0: {command: x, test_timeout_min: 25, timeout_min: 5, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.test_timeout_min": set, but the command holds no {test_timeout}; want {test_timeout} in the command or no test_timeout_min` + fixIt},
+ 		{"test_timeout_min 0", baseKeys + `tiers: {tier0: {command: "t {test_timeout}", test_timeout_min: 0, timeout_min: 5, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.test_timeout_min": 0; want at least 1` + fixIt},
++		{
++			"results trx loads on a vstest tier whose command holds {args}", baseKeys + `tiers: {tier0: {command: "dotnet test {args}", results: trx, timeout_min: 5, counter: vstest}}`,
++			hubWith(func(c *Config) {
++				c.Tiers["tier0"] = Tier{Command: "dotnet test {args}", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Results: ResultsTRX}
++			}), "",
++		},
++		{"results other than trx", baseKeys + `tiers: {tier0: {command: "dotnet test {args}", results: xml, timeout_min: 5, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.results": "xml"; want trx or no results` + fixIt},
++		{"results trx on a go-json tier", baseKeys + `tiers: {tier0: {command: "go test {args}", results: trx, timeout_min: 5, counter: go-json}}`, Config{}, `gate config key "tiers.tier0.results": "trx", but the counter is "go-json"; want counter vstest or no results` + fixIt},
++		{"results trx on a command with no {args}", baseKeys + `tiers: {tier0: {command: "dotnet test", results: trx, timeout_min: 5, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.results": "trx", but the command holds no {args}; want {args} in the command, where the gate puts the options that write the results file, or no results` + fixIt},
+ 		{"build without command", baseKeys + "build: {dir: x, timeout_min: 5}\n", Config{}, `gate config key "build.command": missing; want the shell command the build runs` + fixIt},
+ 		{"build without timeout_min", baseKeys + "build: {command: b}\n", Config{}, `gate config key "build.timeout_min": missing; want at least 1` + fixIt},
+ 		{"build with timeout_min 0", baseKeys + "build: {command: b, timeout_min: 0}\n", Config{}, `gate config key "build.timeout_min": 0; want at least 1` + fixIt},
+@@ -971,8 +980,66 @@ func TestConfig_TierUse(t *testing.T) {
+ 		if err != nil || !slices.Equal(got.Tiers, []int{0, 1}) || got.Scope != "diff" {
+ 			t.Errorf("Gate(push) = (%+v, %v); want tiers [0 1] and scope diff", got, err)
+ 		}
+-		if _, err := twoTier.Gate("nope"); err == nil || !strings.Contains(err.Error(), `gates holds no key "nope"`) {
+-			t.Errorf("Gate(nope) error = %v; want the no-such-key refusal", err)
++		wantHeld := `gates holds no key "nope"; the keys it holds are batch, card, dangling, empty, finalize, push, webster, webster-fix`
++		if _, err := twoTier.Gate("nope"); err == nil || !strings.Contains(err.Error(), wantHeld) {
++			t.Errorf("Gate(nope) error = %v; want the no-such-key refusal naming the keys the config holds, %q", err, wantHeld)
++		}
++		if _, err := (Config{}).Gate("nope"); err == nil || !strings.Contains(err.Error(), `gates holds no key "nope"; it holds no key at all`) {
++			t.Errorf("Config{}.Gate(nope) error = %v; want the no-such-key refusal saying the config holds no key", err)
++		}
++	})
++
++	t.Run("MeasureCall", func(t *testing.T) {
++		t.Parallel()
++		cfg := Config{
++			Tiers: map[string]Tier{
++				"tier0": {Command: "dotnet test {targets} {args}"}, "tier1": {Command: "dotnet test All.sln {args}"}, "tier2": {Command: "dotnet test All.sln"},
++				"tier4": {Command: "dotnet test All.sln {args}", Covers: []int{0, 2}},
++			},
++			Gates: map[string]GateKey{
++				"covered": {Tiers: []int{0, 4}, Scope: "diff"}, "coverednoargs": {Tiers: []int{2, 4}, Scope: "diff"},
++				"darn-write": {Tiers: []int{0}, Scope: "diff"}, "whole": {Tiers: []int{1}, Scope: "diff"}, "mixed": {Tiers: []int{0, 1}, Scope: "diff"},
++				"noargs": {Tiers: []int{2}, Scope: "diff"}, "cardkey": {Tiers: []int{0}, Scope: "card"}, "dangling": {Tiers: []int{3}, Scope: "diff"},
++			},
++		}
++		withoutTier0 := Config{
++			Tiers: map[string]Tier{"tier1": {Command: "dotnet test All.sln {args}"}},
++			Gates: map[string]GateKey{"darn-write": {Tiers: []int{1}, Scope: "diff"}},
++		}
++		tests := []struct {
++			name string
++			cfg  Config
++			key  string
++			want string
++			// wantErr is a part of the refusal, empty for a key the call can name.
++			wantErr string
++		}{
++			{name: "a key whose tier takes targets names the target", cfg: cfg, key: "darn-write", want: "lym gate test --gate darn-write <its package or test project> -- <args>"},
++			{name: "a key whose tiers take no targets names none", cfg: cfg, key: "whole", want: "lym gate test --gate whole -- <args>"},
++			{name: "a key mixing a tier that takes targets with one that does not names the target", cfg: cfg, key: "mixed", want: "lym gate test --gate mixed <its package or test project> -- <args>"},
++			{name: "a covered tier that takes targets adds no target word", cfg: cfg, key: "covered", want: "lym gate test --gate covered -- <args>"},
++			{name: "a covered tier whose command holds no {args} is not refused", cfg: cfg, key: "coverednoargs", want: "lym gate test --gate coverednoargs -- <args>"},
++			{name: "a hub that declares no tier keeps the key with no target", cfg: Config{Gates: cfg.Gates}, key: "darn-write", want: "lym gate test --gate darn-write -- <args>"},
++			{name: "a key the config does not hold is refused", cfg: cfg, key: "nope", wantErr: `gates holds no key "nope"`},
++			{name: "a key naming an undeclared tier is refused", cfg: cfg, key: "dangling", wantErr: "gates.dangling lists tier3, which the hub does not declare"},
++			{name: "a hub that declares tiers but no tier0 is refused", cfg: withoutTier0, key: "darn-write", wantErr: "the hub declares no tier0"},
++			{name: "a key of scope card is refused", cfg: cfg, key: "cardkey", wantErr: "gates.cardkey has scope card"},
++			{name: "a key whose tier takes no {args} is refused", cfg: cfg, key: "noargs", wantErr: "gates.noargs lists tier2, whose command holds no {args}"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				got, err := tt.cfg.MeasureCall(tt.key)
++				if tt.wantErr != "" {
++					if err == nil || !strings.Contains(err.Error(), tt.wantErr) || got != "" {
++						t.Errorf("MeasureCall(%q) = %q, %v; want no call and a refusal holding %q", tt.key, got, err, tt.wantErr)
++					}
++					return
++				}
++				if err != nil || got != tt.want {
++					t.Errorf("MeasureCall(%q) = %q, %v; want %q, nil", tt.key, got, err, tt.want)
++				}
++			})
+ 		}
+ 	})
+ 
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index a18141fd..634fefa6 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -134,6 +134,8 @@
+ // `build` is an open map, so its sub-keys travel whole through the layer stack and reconcile never prunes a hub's build.
+ // A tier may also hold `filter`, its own test-filter expression.
+ // It may hold `shared_build: true`, which makes the tier depend on the build step.
++// A tier with counter `vstest` and `{args}` in its command may hold `results: trx`, ResultsTRX.
++// The gate then asks each invocation for a TRX results file, and the file decides the run's counts and failures.
+ // It may hold `carry: false`, which keeps a green run from being carried over an unchanged tree.
+ // Tier.NoCarry is the negative form, so a zero Tier carries.
+ // A tier whose command holds TestTimeoutPlaceholder may hold `test_timeout_min`.
+@@ -173,6 +175,7 @@
+ // `manual: true` on `tier0`, the tier a call with no tier flag runs;
+ // `parallel`, `timeout_min` or `memory_mb` below 1, `slots` neither `all` nor at least 1;
+ // a counter other than `go-json` or `vstest`, a scoper other than `go`, `none` or `dotnet`;
++// a `results` other than `trx`, or `trx` on a tier whose counter is not `vstest` or whose command holds no `{args}`;
+ // a tier `filter` whose command holds no `{filter}`;
+ // a `test_timeout_min` below 1 or on a command that holds no `{test_timeout}`;
+ // a non-empty `build` lacking `command` or `timeout_min`, a build `timeout_min` below 1;
+@@ -226,7 +229,7 @@
+ // The template and a hub whose gate keys name an undeclared tier therefore both load.
+ //
+ // At use, Config.Gate returns a key's tiers and scope.
+-// It refuses a key the config does not hold; an empty tier list;
++// It refuses a key the config does not hold, naming the keys it holds; an empty tier list;
+ // a hub that declares tiers but no `tier0`; and a listed tier the hub does not declare.
+ // A hub that declares no tier at all, as the template does, gets the key with no tiers and no refusal,
+ // so the gate calls of a fresh hub with no tests yet run the key's lints and no tier.
+@@ -237,6 +240,12 @@
+ // Its `--wait` form is for a call Go runs.
+ // Config.AgentGateCall renders the same call without `--wait`, the form for a call an agent runs.
+ // Config.AgentGateCallWithMainPackages renders the agent call with `--main-packages` last.
++// Config.MeasureCall renders the call an agent runs to measure one test class through a key:
++// `lym gate test --gate <key>`, a target word only when a tier the call runs takes targets, and `-- <args>`.
++// A tier that a higher tier of the key covers is not run by the call,
++// so it counts for neither the target word nor `{args}`.
++// It refuses what Gate refuses, a key of scope `card`, and a key that runs a tier whose command holds no `{args}`,
++// so a prompt names only a form the hub's config can run.
+ // StopOnFailCall adds `--stop-on-fail` to a call, which ends it at its first failed run.
+ // FailedTestsCall renders the command that runs a failure report's failed tests alone:
+ // one `--wait` call per tier, joined by `&&`, each over the tier's packages with a `-run` pattern of its test names.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 16bd79f7..c06b6a9e 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -16,6 +16,7 @@ mutation_budget_min: 20  # minutes lym gate mutate or the mutation report step m
+ # It holds command (with {targets}, {test_targets}, {parallel}, {args} and {test_timeout} placeholders; {test_targets} is {targets} narrowed to the packages holding a test of the tier, for go test), timeout_min (at least 1) and counter (go-json or vstest), and all_targets when the command holds {targets} or {test_targets}.
+ # It may also hold about, dir (absolute or relative to the worktree root, the base drift.yaml's dir uses too; default the worktree's anchor; a hub write refuses one that is no existing directory in the prime), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lym and manual (true keeps a tier above tier0 out of lym gate test --upto, so it runs only when --tier names it).
+ # Five more keys: filter (the tier's own test-filter expression, allowed only when the command holds {filter}), shared_build (true runs the hub's build step first, once per call), carry (false keeps a green run from being carried over an unchanged tree; default true), test_timeout_min (the minutes {test_timeout} renders as, such as 20m for go test -timeout {test_timeout}, at least 1, allowed only when the command holds {test_timeout}; default 20) and memory_mb (the megabytes the tier's command may hold with every process it starts, its builds and test binaries together, before the kernel kills the largest of them and the run fails; at least 1; default uncapped; on a host whose user manager cannot cap a scope, each process gets memory_mb alone as its data segment limit, nothing is killed and no cap line prints).
++# A tier with counter vstest and {args} in its command may hold results: trx, which makes the gate put the options that write a TRX results file at the front of {args} and take the run's counts, failed tests and a crashed test host's cause from that file; a call's own words after -- may then hold no results directory and no trx logger.
+ # Inside the mapping a value holding a brace, comma or bracket is a double-quoted string.
+ # One key of a declared tier is set alone with its dotted path: lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0
+ tiers: {}
+@@ -24,6 +25,7 @@ tiers: {}
+ # The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live, harden-live-copies and pr-review (scope diff, the diff from the merge base).
+ # The two harden live keys name tier 0, the tier a key may name before the hub declares more; a hub that runs the hardener recipe sets both to its live tier.
+ # The scope card is only for the card and batch keys.
++# The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+ # A key may also hold reports, the advisory steps its call runs after the lints, which never change its result; reach runs before every other report step and mutation after them: reach (refreshes the worktree's coverage maps of the packages the diff changes and writes the changed functions no test reaches into the worktree's gate directory), redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory), mutation (mutates the lines the diff changes in blocks a test covers, runs the tests covering each mutant, writes every survivor, unjudged mutant, uncovered changed block and package not judged into the worktree's gate directory and prints one summary line); reports: [] turns them off.
+ # The card key alone may also hold fixer, a model-spec such as sonnet[medium]: the cold fixer an agent's red lym gate test --gate card call hands its failures to; "" turns it off.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 71dd2f5d..d1783b6b 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -37,6 +37,10 @@ type Tier struct {
+ 	TestTimeoutMin int
+ 	// Counter names how the command's output is counted: go-json or vstest.
+ 	Counter string
++	// Results is ResultsTRX or empty.
++	// ResultsTRX makes the gate ask the command for a TRX results file, which then decides the run's counts and failures.
++	// It fits only a vstest tier whose command holds {args}, where the gate puts the options that write the file.
++	Results string
+ 	// Covers lists lower tier numbers this tier's command runs anyway.
+ 	Covers []int
+ 	// Slots is how many gate slots the tier holds; 0 means every slot.
+@@ -71,6 +75,7 @@ type tierFile struct {
+ 	TimeoutMin     *int              `yaml:"timeout_min"`
+ 	TestTimeoutMin *int              `yaml:"test_timeout_min"`
+ 	Counter        string            `yaml:"counter"`
++	Results        string            `yaml:"results"`
+ 	Covers         []int             `yaml:"covers"`
+ 	Slots          yaml.Node         `yaml:"slots"`
+ 	PrebuiltLym    bool              `yaml:"prebuilt_lym"`
+@@ -90,6 +95,9 @@ const TestTimeoutPlaceholder = "{test_timeout}"
+ // It stands where the targets reach `go test`, so a run starts no test binary that would find no test to run.
+ const TestTargetsPlaceholder = "{test_targets}"
+ 
++// ResultsTRX is the Tier.Results value that makes the gate ask a vstest tier for a TRX results file.
++const ResultsTRX = "trx"
++
+ // HoldsTargets reports whether command takes a run's targets, through {targets} or TestTargetsPlaceholder.
+ func HoldsTargets(command string) bool {
+ 	return strings.Contains(command, "{targets}") || strings.Contains(command, TestTargetsPlaceholder)
+@@ -204,6 +212,7 @@ func decodeTier(key string, number int, file tierFile) (Tier, error) {
+ 		AllTargets:  file.AllTargets,
+ 		Parallel:    1,
+ 		Counter:     file.Counter,
++		Results:     file.Results,
+ 		Covers:      file.Covers,
+ 		Slots:       1,
+ 		PrebuiltLym: file.PrebuiltLym,
+@@ -265,6 +274,18 @@ func decodeTier(key string, number int, file tierFile) (Tier, error) {
+ 	default:
+ 		return Tier{}, refuse("counter", fmt.Sprintf("%q; want go-json or vstest", tier.Counter))
+ 	}
++	switch tier.Results {
++	case "":
++	case ResultsTRX:
++		if tier.Counter != "vstest" {
++			return Tier{}, refuse("results", fmt.Sprintf("%q, but the counter is %q; want counter vstest or no results", tier.Results, tier.Counter))
++		}
++		if !strings.Contains(tier.Command, "{args}") {
++			return Tier{}, refuse("results", fmt.Sprintf("%q, but the command holds no {args}; want {args} in the command, where the gate puts the options that write the results file, or no results", tier.Results))
++		}
++	default:
++		return Tier{}, refuse("results", fmt.Sprintf("%q; want %s or no results", tier.Results, ResultsTRX))
++	}
+ 	for _, covered := range tier.Covers {
+ 		if covered < 0 || covered >= number {
+ 			return Tier{}, refuse("covers", fmt.Sprintf("%d; want tier numbers lower than %d", covered, number))
+@@ -372,12 +393,17 @@ func (c Config) Tier(number int) (Tier, error) {
+ // Gate returns the named gate key's tiers and scope.
+ // A hub that declares no tier at all gets the key with no tiers.
+ // A fresh hub with no tests yet then runs its gates with the key's lints and no tier.
+-// It refuses a missing key, an empty list, a hub that declares tiers but no tier0, or an undeclared tier.
++// It refuses a missing key, naming the keys the config holds;
++// an empty list, a hub that declares tiers but no tier0, or an undeclared tier.
+ // Each refusal names lym config gate.
+ func (c Config) Gate(key string) (GateKey, error) {
+ 	gate, ok := c.Gates[key]
+ 	if !ok {
+-		return GateKey{}, useRefusal("gates holds no key %q", key)
++		held := "it holds no key at all"
++		if len(c.Gates) > 0 {
++			held = "the keys it holds are " + strings.Join(sortedKeys(c.Gates), ", ")
++		}
++		return GateKey{}, useRefusal("gates holds no key %q; %s", key, held)
+ 	}
+ 	if len(gate.Tiers) == 0 {
+ 		return GateKey{}, useRefusal("gates.%s is empty, and every gate verifies at least one tier", key)
+@@ -422,6 +448,53 @@ func (c Config) AgentGateCall(key string, cards ...string) (string, error) {
+ 	return c.renderGateCall(key, false, cards)
+ }
+ 
++// MeasureCall renders the call an agent runs to measure one test class through the named gate key.
++// It is `lym gate test --gate <key>`.
++// A tier the call runs that takes targets adds `<its package or test project>`.
++// Then comes `-- <args>` for the words by which the tier's runner selects the class.
++// A tier that a higher tier of the key covers is not run by the call, so it counts for neither check below.
++// It refuses, with the refusals Gate gives, a key the config cannot run.
++// It also refuses a key of scope card, which a call runs only with a card or targets it carries,
++// and a key that runs a tier whose command holds no {args}, which refuses the words after `--`.
++// The call it returns is therefore one the hub's gate config can run.
++func (c Config) MeasureCall(key string) (string, error) {
++	gate, err := c.Gate(key)
++	if err != nil {
++		return "", err
++	}
++	if gate.Scope == scopeCard {
++		return "", useRefusal("gates.%s has scope card, which a call runs only over the cards or targets it names, so no measuring call can name it", key)
++	}
++	ran := c.tiersRunBy(gate.Tiers)
++	for _, number := range ran {
++		if !strings.Contains(c.Tiers[tierKey(number)].Command, "{args}") {
++			return "", useRefusal("gates.%s lists %s, whose command holds no {args}, so the words after \"--\" that select a test class reach no command", key, tierKey(number))
++		}
++	}
++	words := []string{"lym", "gate", "test", "--gate", key}
++	if slices.ContainsFunc(ran, func(number int) bool { return HoldsTargets(c.Tiers[tierKey(number)].Command) }) {
++		words = append(words, "<its package or test project>")
++	}
++	return strings.Join(append(words, "--", "<args>"), " "), nil
++}
++
++// tiersRunBy returns numbers sorted ascending and without repeats, minus each tier a higher listed tier covers.
++// A covered tier runs inside the tier that covers it, never on its own.
++func (c Config) tiersRunBy(numbers []int) []int {
++	listed := slices.Clone(numbers)
++	slices.Sort(listed)
++	listed = slices.Compact(listed)
++	var kept []int
++	for i := len(listed) - 1; i >= 0; i-- {
++		number := listed[i]
++		if !slices.ContainsFunc(kept, func(higher int) bool { return slices.Contains(c.Tiers[tierKey(higher)].Covers, number) }) {
++			kept = append(kept, number)
++		}
++	}
++	slices.Reverse(kept)
++	return kept
++}
++
+ // MainPackagesFlag is the `lym gate test` flag, without its dashes, that adds the main packages to a --card scope.
+ const MainPackagesFlag = "main-packages"
+ 
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index a1f41ad1..5a6c27f4 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -312,6 +312,19 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 		if err != nil {
+ 			return seatengine.Table{}, err
+ 		}
++		// Only a writer whose gate has a cold fixer names the measuring call, so only its table needs one.
++		// The call follows the hub's gate config, so the prompt names only a form that config can run.
++		var measureCall string
++		if gateFixed {
++			gateCfg, err := gateslot.LoadConfig(dirs)
++			if err != nil {
++				return seatengine.Table{}, err
++			}
++			measureCall, err = gateCfg.MeasureCall(darnWriteGateKey)
++			if err != nil {
++				return seatengine.Table{}, err
++			}
++		}
+ 		table, err := darnengine.DarnTable(darnengine.DarnInputs{
+ 			StencilsDir:        stencilsDir,
+ 			SpecsDir:           specsDir,
+@@ -325,6 +338,7 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 			LanguageSkills:     c.languageSkills,
+ 			SubagentModel:      subagentModel,
+ 			GateFixed:          gateFixed,
++			MeasureCall:        measureCall,
+ 
+ 			ConditionStopMarkerPath: shedrun.ConditionStopMarker(location, c.runID),
+ 		}, cfg, registry)
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index a6a7fa15..6d27afac 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -315,6 +315,100 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the writer's measuring call follows the hub's gate config", func(t *testing.T) {
++		t.Parallel()
++
++		tests := []struct {
++			name       string
++			gateConfig string
++			// fixerOff turns darn.yaml's gate_fixer off, so the writer is ungated and names no measuring call.
++			fixerOff bool
++			// omitGateConfig leaves the hub with no gate.yaml.
++			omitGateConfig bool
++			wantCall       string
++			// wantErr is a part of the error the table build fails with, empty for a table that builds.
++			wantErr string
++		}{
++			{
++				name:       "a darn-write tier that takes no {args} still builds the table of an ungated writer",
++				gateConfig: strings.Replace(gateConfigWithTwoTiers(), `  tier0: {command: "go test -json {targets} {args}"`, `  tier0: {command: "go test -json {targets}"`, 1),
++				fixerOff:   true,
++			},
++			{
++				name:           "an absent gate.yaml fails the table of a gated writer",
++				omitGateConfig: true,
++				wantErr:        "gate config absent",
++			},
++			{
++				name:       "a darn-write tier that takes no {args} fails the table of a gated writer",
++				gateConfig: strings.Replace(gateConfigWithTwoTiers(), `  tier0: {command: "go test -json {targets} {args}"`, `  tier0: {command: "go test -json {targets}"`, 1),
++				wantErr:    "gates.darn-write lists tier0, whose command holds no {args}",
++			},
++			{
++				name:       "a darn-write tier that takes targets names the target",
++				gateConfig: gateConfigWithTwoTiers(),
++				wantCall:   "lym gate test --gate darn-write <its package or test project> -- <args>",
++			},
++			{
++				name:       "a darn-write tier that takes no targets names none",
++				gateConfig: strings.Replace(gateConfigWithTwoTiers(), `  tier0: {command: "go test -json {targets} {args}"`, `  tier0: {command: "dotnet test All.sln {args}"`, 1),
++				wantCall:   "lym gate test --gate darn-write -- <args>",
++			},
++			{
++				name:       "a darn-write key that lists an undeclared tier fails the table",
++				gateConfig: strings.Replace(gateConfigWithTwoTiers(), "  darn-write: {tiers: [0], scope: diff,", "  darn-write: {tiers: [0, 7], scope: diff,", 1),
++				wantErr:    "gates.darn-write lists tier7, which the hub does not declare",
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				loc := hubLocation(t, "pair", ".")
++				var replacements []string
++				if tt.fixerOff {
++					replacements = []string{"gate_fixer: sonnet[medium]", `gate_fixer: ""`}
++				}
++				seedDarnHubConfig(t, loc.HubPath, "3", replacements...)
++				if !tt.omitGateConfig {
++					writeHubGateConfig(t, loc.HubPath, tt.gateConfig)
++				}
++				recordPath := fabricengine.OriginRecordPath(loc)
++				if err := os.MkdirAll(filepath.Dir(recordPath), 0o755); err != nil {
++					t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(recordPath), err)
++				}
++				if err := os.WriteFile(recordPath, []byte("{}"), 0o644); err != nil {
++					t.Fatalf("WriteFile(%q) = %v; want nil", recordPath, err)
++				}
++				c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
++				if err := c.wire(loc, loc.AnchorPath()); err != nil {
++					t.Fatalf("wire() = %v; want nil", err)
++				}
++
++				table, err := c.env.DarnTable(loomshed.DarnTold{})
++
++				if tt.wantErr != "" {
++					if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++						t.Errorf("c.env.DarnTable() = _, %v; want an error holding %q", err, tt.wantErr)
++					}
++					return
++				}
++				if err != nil {
++					t.Fatalf("c.env.DarnTable() = _, %v; want nil", err)
++				}
++				step := table.Values["make_change"]
++				if tt.fixerOff {
++					if !strings.Contains(step, "3. Test with `lym gate test` after the last edit of each commit") {
++						t.Errorf("Step 4 list = %q; want the ungated test step", step)
++					}
++					return
++				}
++				if !strings.Contains(step, "`"+tt.wantCall+"`") {
++					t.Errorf("Step 4 list = %q; want it to run the measuring call `%s`", step, tt.wantCall)
++				}
++			})
++		}
++	})
++
+ 	t.Run("a local loom override sets a darn run's perch budget and hard cap", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index bed5dbbc..e92b5368 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -1218,7 +1218,7 @@ func TestWire_LanguageSkills(t *testing.T) {
+ 			wantTools:     []string{"gopls rename"},
+ 		},
+ 		{
+-			name:          "no gate.yaml wires and renders the gate tiers as none",
++			name:          "no gate.yaml wires and renders the gate tiers as none, and an ungated darn table still builds",
+ 			content:       "skills: []\n",
+ 			wantSkills:    []string{},
+ 			wantGateTiers: "none",
+diff --git a/internal/shuttleparity/seats.go b/internal/shuttleparity/seats.go
+index 3e66e38f..96106ff9 100644
+--- a/internal/shuttleparity/seats.go
++++ b/internal/shuttleparity/seats.go
+@@ -209,10 +209,15 @@ func buildDarn(env SeatEnv) ([]seatengine.Table, error) {
+ 		ConditionStopMarkerPath: standInPath(env, "condition-stop-marker"),
+ 		LanguageSkills:          skills,
+ 		SubagentModel:           standInModel,
++		MeasureCall:             measureCallStandIn,
+ 	}, cfg, env.Registry)
+ 	return []seatengine.Table{table}, err
+ }
+ 
++// measureCallStandIn is the measuring call the darn builder is given.
++// It is the call a hub with no tier gives its darn-write key.
++const measureCallStandIn = "lym gate test --gate darn-write -- <args>"
++
+ func buildDescribe(env SeatEnv) ([]seatengine.Table, error) {
+ 	cfg, err := landingshed.LoadConfig(env.Dirs, "landing")
+ 	if err != nil {
