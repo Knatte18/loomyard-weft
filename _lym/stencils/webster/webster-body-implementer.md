@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b737d42bbe18a7aefe43150c2b9dc481d7ece232089d0b5d39f573e9eeec61ce build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+<!-- lym-stencil: sha256=03b0cbee328f0cbc21de04355f1484e71eace8a8afa333141485e14f56a12203 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -13,6 +13,8 @@ Before you edit anything, read — in THIS turn — every card file this section
 A decision notice in your inherited context, the one your parent directive admits, is your parent's call for this run.
 Where it touches your cards, follow it over the card, inside your cards' targets;
 a change it needs outside them is not yours to make.
+Where two decisions in your context differ, the later one supersedes the earlier one, whether it came as a notice or among the recorded decisions:
+follow the later one even where an earlier one told you to revert or drop work.
 
 ## Prior-batch context
 

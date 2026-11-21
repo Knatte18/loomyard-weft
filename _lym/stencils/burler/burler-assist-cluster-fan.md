@@ -1,8 +1,13 @@
-<!-- This is burler's fanned cluster-rules part for an assistant reviewer: the lens fan, the subagent rules and the consolidation rules the assistant's review step carries when its round names an assistant fan.
-     internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it in place of burler-cluster-fan for the assistant, and the result becomes the review step's cluster_rules marker value.
-     The spawn, the subagents' inherited context and the in-turn wait come from the engine-assist-fan engine block of the assistant's engine.
-     It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each subagent's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format.
-lym-stencil: sha256=ed36e9aaf5bbcfd8b7f3ffb99bcd401ec9fd0294bc8e95eb93f56227a55b5ec6 build=77e7a9c7596b21a9365de716da58550c73a2ab9b time=2026-11-06T13:02:35Z -->
+<!-- This is burler's fanned cluster-rules part for an assistant reviewer.
+     It carries the lens fan, the subagent rules and the consolidation rules of an assistant's fanned review step.
+     `clusterRulesBlock` (internal/burlerengine/prompt.go) fills it instead of burler-cluster-fan for an assistant.
+     The result becomes the review step's cluster_rules marker value.
+     The engine-assist-fan engine block supplies the spawn, the subagents' inherited context and the in-turn wait.
+     It declares three required markers.
+     {{.lens_list}} is the round's lenses as one bullet per lens in fan order;
+     {{.lens_report_path}} is the path each subagent's report is saved at;
+     and {{.lens_report_spec_path}} is the deployed spec of that report's format.
+lym-stencil: sha256=8cba15ac75b0d994ca3734afff87ab12a394a78234a1bbf02cbf6dac2ac428d0 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 This is a cluster round: after exploring the target fully, run one subagent per lens listed here, inside this one turn.
 
 Lenses for this round:
@@ -22,5 +27,5 @@ Write nothing to your report while any subagent is outstanding: consolidate only
 Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
 These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
 
-Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
+Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
 The consolidated report is your ONE report, and the review is complete once it is fully written to disk.

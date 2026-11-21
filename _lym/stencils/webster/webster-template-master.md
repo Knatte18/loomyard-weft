@@ -16,7 +16,7 @@
      pattern_directive and friction_directive each render as nothing when their own tier is inactive.
      parent_directive is rendered by internal/parentdirective and is optional too.
      edit_directive is required and is rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=609362b24a7a730e8930d0727207a05724529ad8c532d00c7a73988ca29b9fe3 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=8fb72bd64673e99cff8f4834956f91c417564caabf4ac61acb0b30605eec4226 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -255,6 +255,8 @@ You read no decision record for it, and you edit no source, so the decision reac
 
 The decisions your parent recorded for this run before this session started are below, `none` when there is none.
 They are answers your parent already gave, often to an earlier stop of this run: follow each like a decision notice, so every fork you spawn inherits it, and never raise a question one of them answers.
+They are in the order the parent recorded them, and where a later one differs from an earlier one the later one supersedes it, for you and every fork.
+The same holds between a decision notice and the recorded decisions: the later one wins, even where an earlier one told you to revert or drop work.
 
 {{.parent_decisions}}
 

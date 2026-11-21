@@ -1,11 +1,14 @@
-<!-- This is burler's assistant consolidation part: the rules the review step carries, after the cluster rules, when the round runs an assistant reviewer beside the chair.
-     internal/burlerengine's assistRulesBlock (assist.go) reads and fills it, and the result becomes the review step's optional assist_rules marker value; a round with no assistant renders the review step without it.
-     It declares one required marker: {{.assist_origin}}, the origin value a kept assistant finding carries.
-lym-stencil: sha256=b620cab6664ed5e78480590eb336df558fc378c33ef7a639b286c63ffe160867 build=935fb407d46b918a520439401a144eb28d3de274 time=2026-11-03T17:43:20Z -->
+<!-- This is burler's assistant consolidation part: the review step's rules for a round with an assistant reviewer.
+     The review step carries it after the cluster rules.
+     `assistRulesBlock` (internal/burlerengine/assist.go) fills it.
+     The result becomes the review step's optional assist_rules marker value.
+     A round with no assistant renders the review step without it.
+     It declares one required marker, {{.assist_origin}}, the origin value a kept assistant finding carries.
+lym-stencil: sha256=74e11d6c18e18755279ab0afff90a78a461690afe9c9f4a8cd372e580ae3bac5 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 ### The assistant reviewer
 
 An assistant reviewer reviews the same target beside you and writes one report; your prompt names its report and its end marker.
 Before you consolidate, and before you write anything to the review file, wait for the assistant's end marker as your prompt says.
-When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}`, merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
+When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}` (a finding that raises the plan executor's halt reason keeps `origin: webster` instead), merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
 When the marker reads anything else, consolidate without the assistant.
 The verdict is yours alone: the assistant's verdict is one more opinion, never a vote.

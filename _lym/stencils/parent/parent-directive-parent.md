@@ -4,7 +4,7 @@
      Its markers are the parent name and the operator-ban line,
      which Directive fills from parent-directive-operator-ban and leaves empty for an interactive role.
      The decision-notice lines quote the openings internal/loomcli's add and replace notices start with; a loomcli test pins them together.
-lym-stencil: sha256=795e8b2ef8a1a3d99609579d51c35cef4058f167c85413558eaa01d6fa22a5f0 build=95418a15cf7d83b78f359f70483490f907394f5a time=2026-11-17T19:19:57Z -->
+lym-stencil: sha256=c6359f7f75618ee51a96492198f8328813ebdd3ad88ad37c372a0d022c080a58 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 
 ## Your parent
 
@@ -31,4 +31,5 @@ When you are the parent of a run yourself, keep its decision record current this
 - change or withdraw an earlier decision on a run past its approval with `lym loom decision replace`, folding every added entry into the main decisions;
   on a record whose `## Goal` is a fenced board body, as Record-Write renders it, the fold rewrites that body to carry the call, since darn and drift give precedence over the body to added entries alone;
 - once a motif run has made a Sketch whose record holds added entries, fold them with `lym board upsert --record-file`;
-- before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`.
+- before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`;
+  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`.
