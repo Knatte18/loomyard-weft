@@ -291,6 +291,12 @@ Rationale: The entry and its background file were deleted on main by 13cebe3d.
 - The parent project `single-repo-hub` is titled for records on each code branch and the board on `lym-bolt`, which this design replaces;
   the parent may retitle it.
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-2-review.md; fixer report: _lym/reviews/plan/round-2-fixer-report.md.
+  - card9-misses-namespace-sites (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - D1, D3: `lym fabric clone --single-repo` over a bare origin with no namespace puts the board and the prime's records branch
