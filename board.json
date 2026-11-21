@@ -182,25 +182,6 @@
       "project": "code-cleanup"
     },
     {
-      "id": 1485,
-      "handle": "P3",
-      "slug": "testmap-uses",
-      "title": "Put the per-test coverage maps to use",
-      "kind": "project",
-      "labels": [
-        "feature",
-        "testmap",
-        "gate"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The reach note, the diff mutation check and failure triage, built on one reader of the maps",
-      "body": "The uses the map study ranked worth building (`docs/research/speed/testmap-use-cases-2026-11-18/report.md`, `884424fb`).\nWhat only the maps give is the lookup between a function and the tests that reach it, across packages; none of the uses saves test time.\n\nBuild order: the reach note first, since the other two read the maps through its reader; then failure triage; then the diff mutation check, starting with its hand trial.\nThe maps need no upkeep per landing for these: a stored map stays sound for days, and the packages a diff touches are mapped fresh in seconds.\n",
-      "created": "2026-11-18T18:04:30Z",
-      "revised": "2026-11-18T18:07:14Z"
-    },
-    {
       "id": 1496,
       "handle": "P4",
       "slug": "single-repo-hub",
