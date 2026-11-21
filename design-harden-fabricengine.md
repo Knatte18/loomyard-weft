@@ -1,6 +1,6 @@
 # Hardener campaign on fabricengine, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · running · Record-Write
+`harden-fabricengine` · Task · bug, fabric · running · Harden-Bouncer
 
 ## Goal
 
