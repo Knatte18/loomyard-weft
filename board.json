@@ -298,10 +298,10 @@
     },
     {
       "id": 1532,
-      "handle": "B1",
+      "handle": "T2",
       "slug": "red-first-overlay-non-go-files",
       "title": "Red-first gate cannot judge a diff that also changes non-Go files",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "gate",
@@ -312,6 +312,7 @@
       "isolated": false,
       "brief": "The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived",
       "body": "## Seen\n\n2026-11-19: in `raddle-slug-length-check`, the red-first gate (landed with `bug-red-first-gate`) could not judge the diff because it also changed `contracts/specs/raddle-proposal-spec.md`.\nThe base overlay cannot put that file back, so the run asked the parent for a \"No test seam\" waiver although the bug has a Go seam: `TestRaddleBoardContext` and the new `TestCheck` rows fail on the merge base.\n\n## Idea\n\nThe overlay restores only the Go files the red-first check needs on the merge base and leaves non-Go files that no test reads at HEAD,\nor it puts back any tracked file, so a doc or spec update beside a fix no longer waives the gate.\n",
+      "status": "draft",
       "created": "2026-11-19T19:48:55Z",
       "revised": "2026-11-19T19:48:55Z"
     }

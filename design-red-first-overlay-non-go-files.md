@@ -1,6 +1,6 @@
 # Red-first gate cannot judge a diff that also changes non-Go files
 
-`red-first-overlay-non-go-files` · Note · bug, gate, testmap
+`red-first-overlay-non-go-files` · Task · bug, gate, testmap · draft
 
 ## Seen
 
