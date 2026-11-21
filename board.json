@@ -410,6 +410,27 @@
       "body": "Imported from [issue #172](https://github.com/Knatte18/loomyard/issues/172).\n\n## What happened\n\nA run halted `blocked` at Webster (anomaly `escalation-to-human`) after the plan changed and was rebaselined on entry, keeping 1 begun batch.\nThe verify gate then failed: \"verify gate did not pass after 3 of 3 re-prompt(s): the run-level \"drift\" entry failed: unexpected cell: changed in case ...\".\nThe drift findings were numeric cells in a captured baseline file that moved in the sixth significant digit (for example an integer value changing in its last digits and a rate changing in its last decimal).\nThe halt note's message is cut off mid-finding, in the middle of a quoted value, and the way-forward text (\"1) fix what the \"drift\" entry's findings name and commit it on the task branch; 2) re-step the Webster row\") is cut off after step 2.\n\n## Why it is abnormal\n\n1. The halt note truncates the gate message, so the full list of drifted cells and the complete way forward are not in the note.\n2. Drift in the last digits of a captured numeric baseline is the shape of a legitimate behaviour change from the card's own work.\n   Three re-prompts of the implementing agent cannot \"fix\" it, and the way forward offers no route to accept it as expected.\n   The gate looped to its re-prompt limit on a finding that needs an operator or parent decision.\n\n## What to do\n\n- Stop truncating the halt note's message, or write the full gate report to a file under the friction directory and name it in the note.\n- Offer an explicit way to accept an expected drift (for example a re-baseline verb for the \"drift\" entry), and say so in the way forward.\n- Consider ending the re-prompt loop early when the same drift findings come back unchanged after a re-prompt.\n\nProvenance: task `wemod-invariants`; note `loom-halt-2.md`.\n",
       "created": "2026-11-21T17:29:31Z",
       "revised": "2026-11-21T17:29:31Z"
+    },
+    {
+      "id": 1539,
+      "handle": "B4",
+      "slug": "fork-git-guard-scratch-repo",
+      "title": "Burler-fix halts failed when a fork runs git in a scratch repo under .scratch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "shuttle"
+      ],
+      "issues": [
+        177
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #177](https://github.com/Knatte18/loomyard/issues/177).\n\nWhat happened: loom halted `failed` at Plan-Burler-Fix (anomaly `producer-hard-failure`, round 1 attempt 1).\nThe reason: the twill fixer fork ran a git-mutating command and the guard refused it with \"a fork must never run a state-mutating git command\".\nThe command created a throwaway probe directory under the worktree's `.scratch/`, ran `git init` for a bare repo and a work repo there, committed to the work repo, and pushed to the bare repo with `--force-with-lease`.\nIt never touched the task repository's own refs or working tree.\nThe fork was probing git push behaviour for a finding.\n\nWhy abnormal: the guard treats any `git init`, `commit` or `push` as mutating, including against a repo the fork created inside its own scratch directory.\nThe way forward it names (\"inspect the target's working-tree changes, revert what the fork wrote\") has nothing to revert here, so a harmless probe ends a run as hard failure.\n\nWhat to do: scope the mutating-git check to the target repository and its remotes.\nAllow git commands whose repo is a directory under `.scratch/`, or, if forks must not run them at all, say so in the fork prompt and give forks a sanctioned way to probe git behaviour.\nAlso make the halt message say when no target change was found.\n\nProvenance: task single-repo-namespace-layout; notes loom-halt.md.",
+      "created": "2026-11-21T17:29:34Z",
+      "revised": "2026-11-21T17:29:34Z"
     }
   ],
   "prime_owner": "neve",
