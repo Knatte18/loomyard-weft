@@ -1,6 +1,6 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Task · enhancement, docs · running · Drift-Baseline
+`doc-go-trim-pass` · Task · enhancement, docs · running · Drift-Await
 
 Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md)
 
