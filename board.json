@@ -431,6 +431,26 @@
       "body": "Imported from [issue #177](https://github.com/Knatte18/loomyard/issues/177).\n\nWhat happened: loom halted `failed` at Plan-Burler-Fix (anomaly `producer-hard-failure`, round 1 attempt 1).\nThe reason: the twill fixer fork ran a git-mutating command and the guard refused it with \"a fork must never run a state-mutating git command\".\nThe command created a throwaway probe directory under the worktree's `.scratch/`, ran `git init` for a bare repo and a work repo there, committed to the work repo, and pushed to the bare repo with `--force-with-lease`.\nIt never touched the task repository's own refs or working tree.\nThe fork was probing git push behaviour for a finding.\n\nWhy abnormal: the guard treats any `git init`, `commit` or `push` as mutating, including against a repo the fork created inside its own scratch directory.\nThe way forward it names (\"inspect the target's working-tree changes, revert what the fork wrote\") has nothing to revert here, so a harmless probe ends a run as hard failure.\n\nWhat to do: scope the mutating-git check to the target repository and its remotes.\nAllow git commands whose repo is a directory under `.scratch/`, or, if forks must not run them at all, say so in the fork prompt and give forks a sanctioned way to probe git behaviour.\nAlso make the halt message say when no target change was found.\n\nProvenance: task single-repo-namespace-layout; notes loom-halt.md.",
       "created": "2026-11-21T17:29:34Z",
       "revised": "2026-11-21T17:29:34Z"
+    },
+    {
+      "id": 1540,
+      "handle": "B5",
+      "slug": "burler-fixer-rerun-no-reason",
+      "title": "Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler"
+      ],
+      "issues": [
+        176
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #176](https://github.com/Knatte18/loomyard/issues/176).\n\nWhat happened: the Plan-Burler-Fix step for round 1 started a fixer session after an earlier fixer session had already fixed every finding and run its self-check.\nThe earlier fixer's report sat under a timestamped name (`round-1-fixer-report-\u003cUTC timestamp\u003e.md`) rather than the expected `round-1-fixer-report.md`.\nThe prompt gave no reason for the second run, so the fixer had to read every card to tell \"re-run because the report was misnamed or rejected\" from \"re-run for new work\".\nIt wrote the expected report from the earlier dispositions and spawned no forks.\n\nWhy abnormal: the step's report-name expectation and the name the first fixer wrote disagree, so a finished round looks unfinished and costs a full fixer session.\nThe prompt also never states why a step runs again.\n\nWhat to do: find why the first fixer's report landed under the timestamped name and was not accepted as the round's report (archiving on write, or a name mismatch).\nEither accept the archived report, or state the re-run reason (misnamed or rejected report versus new work) in the fixer prompt.\n\nProvenance: task single-repo-namespace-layout; notes burler-plan-r1.md.",
+      "created": "2026-11-21T17:29:36Z",
+      "revised": "2026-11-21T17:29:36Z"
     }
   ],
   "prime_owner": "neve",
