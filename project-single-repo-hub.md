@@ -34,7 +34,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 32m<br>19m | fabric |
+| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 32m<br>20m | fabric |
 
 ## Notes (0)
 
