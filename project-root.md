@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 42m<br>30m | burler, shuttle |
 
-## Notes (5)
+## Notes (6)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -46,11 +46,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
 
-### Bugs (1)
+### Bugs (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Branch-rules 403 on a free private repo reads as no rule**<br>• GitHub plan-limited 403 on the rules API halts Finalize as a token fault | [`rules-403-plan-reads-no-rule`](design-rules-403-plan-reads-no-rule.md) | 0m<br>0m | landing |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private repo of a free account; Finalize halts naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 0m<br>0m |  |
 
 ### Features (2)
 
