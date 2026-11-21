@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,58 @@
       "output": "",
       "at": "2026-11-21T14:29:49Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/drop-failure-triage-lines/_lym/landing/summary.md",
+      "at": "2026-11-21T14:41:32Z",
+      "started_at": "2026-11-21T14:29:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T14:34:53.022179327Z",
+          "end": "2026-11-21T14:34:53.052534119Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T14:40:44.25855182Z",
+          "end": "2026-11-21T14:40:44.270150414Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T14:34:53.136045234Z",
+          "end": "2026-11-21T14:39:42.877402439Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T14:40:44.313178098Z",
+          "end": "2026-11-21T14:40:44.889658263Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T14:40:44.934425228Z",
+          "end": "2026-11-21T14:40:44.938380633Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T14:40:44.983243718Z",
+          "end": "2026-11-21T14:40:45.2415918Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T14:40:45.298647039Z",
+          "end": "2026-11-21T14:40:45.298781531Z"
+        }
+      ]
     }
   ],
   "product": {
