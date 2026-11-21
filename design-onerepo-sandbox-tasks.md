@@ -1,6 +1,6 @@
 # One-repository sandbox: run tasks to landing
 
-`onerepo-sandbox-tasks` · Task · research, fabric, landing · halted · Worktree-Create
+`onerepo-sandbox-tasks` · Task · research, fabric, landing · starting · Worktree-Create
 
 Depends on: [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md)
 
