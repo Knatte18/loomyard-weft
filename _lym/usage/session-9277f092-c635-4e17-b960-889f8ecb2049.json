@@ -1,0 +1,14 @@
+{
+  "session_id": "9277f092-c635-4e17-b960-889f8ecb2049",
+  "row": "PR-Review",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 10,
+  "cache_write_tokens": 24475,
+  "cache_read_tokens": 76190,
+  "output_tokens": 2826,
+  "cost_usd": 0.005235275,
+  "started": "2026-11-21T18:29:55Z",
+  "ended": "2026-11-21T18:30:13Z"
+}
