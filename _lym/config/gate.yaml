@@ -53,3 +53,5 @@ gates:
         tiers: [0, 1]
     harden-live-copies:
         tiers: [0, 1]
+    harden-burler-fix:
+        tiers: [0, 1]
