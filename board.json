@@ -434,7 +434,7 @@
       "isolated": false,
       "brief": "For a bug entry, Discussion records the fault, root cause and the test that will fail on base",
       "body": "From F17's Kiro lead (bugfix spec with a fail-on-base test).\nThe Go gate half has landed: `lym gate red-first` on the `Darn-Write` row, and the `Root-Cause:` trailer.\n\n## Idea\n\nWhen Discussion-Write runs for an entry labelled `bug`, its stencil asks for and records:\n\n- the observed fault and how to reproduce it;\n- the root cause, or what is still unknown about it;\n- the test that will fail on the merge base and pass after the fix, or why no test seam exists.\n\nThe decision record then states up front what the red-first gate later checks.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-21T14:38:17Z",
       "revised": "2026-11-21T14:38:21Z",
       "run_settings": {
