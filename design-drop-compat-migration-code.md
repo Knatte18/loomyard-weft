@@ -1,6 +1,6 @@
 # Remove compatibility and migration code no hub needs any more
 
-`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · running · Drift-Verify
+`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · running · Code-Bouncer
 
 ## What was seen
 
