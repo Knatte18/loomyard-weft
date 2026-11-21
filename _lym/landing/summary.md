@@ -30,6 +30,7 @@ So the base overlay can put such a file back, and the refusal had no reason to e
   A changed non-Go file nothing embeds now leaves the verdict to the tests, which is green.
   A changed `text.txt` with a new test reading the embedded text exits 0, with that test red on the base's text.
   On the merge base, both rows get the unjudged exit instead.
+- `TestRedFirstGate_VerdictPerLabelRecordAndExitCode` pins the exit-5 failure text to the scoper alone.
 
 ## Design decisions
 
@@ -38,6 +39,9 @@ So the base overlay can put such a file back, and the refusal had no reason to e
   That would count as red and pass the gate with no proof.
 - Embed patterns are read with a line scan of `//go:embed` directives, not `go list`.
   This keeps the verb free of another child process, and it reads the base's text, which is what the overlay builds.
+- This run's own red-first gate is waived by the parent's recorded "No test seam" decision.
+  The installed `lym` still holds the bug this change fixes, so it refused the stencil edit as a non-Go file it cannot put back.
+  The new tests above fail on the merge base.
 
 ## Merge danger
 
