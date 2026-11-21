@@ -1,3 +1,4 @@
 titles:
     - No branch merge config in a one-repository records store
-written_at: 2026-11-21T14:26:06.445710431Z
+    - Tolerant config read keeps git-native upstream (supersedes No branch merge config)
+written_at: 2026-11-21T14:32:31.173025614Z

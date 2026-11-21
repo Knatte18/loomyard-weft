@@ -272,6 +272,12 @@ Decision: A one-repository records store carries no branch.<b>.merge (nor branch
 
 Rationale: go-git v5.19.1 validates branch.<b>.merge on every config read and refuses one outside refs/heads/, so the planned refs/lym/heads/<b> merge breaks every go-git read of the store. D2 already routes every remote ref through fabric's translation, so the upstream needs no git config: only fabric knows the layout, as the operator requires.
 
+### Added after Discussion (parent, 2026-11-21): Tolerant config read keeps git-native upstream (supersedes No branch merge config)
+
+Decision: Option C. This supersedes the earlier added decision 'No branch merge config in a one-repository records store'. A namespaced records branch keeps branch.<b>.merge = refs/lym/heads/<b> as cards 1 and 2 planned, so git's own @{u}, HasUnpushed and HasUnpulled work unchanged. gitrepo reads repository config through one new helper that decodes it with go-git's format decoder and no branch validation; Upstream, UpstreamSHA, resolvePushDestination, RemoteURL and RemoteFetchRefspecs use it. Card 1's targets widen to RemoteURL, RemoteFetchRefspecs, resolvePushDestination and that helper; restore card 1 and card 2's merge setting reverted in b78b3a2b.
+
+Rationale: The no-upstream shape leaves every @{u} read wrong for a namespaced branch and spreads upstream naming over callers; keeping git's own upstream config valid for the git CLI and reading it through one tolerant decode confines the go-git limitation to one gitrepo helper.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
