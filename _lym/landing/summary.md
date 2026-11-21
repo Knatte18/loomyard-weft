@@ -1,30 +1,42 @@
-# Burler: joint commits for shared-file findings, location names fix site
+# burler: commit shared-file findings jointly; review names the fix site
 
-Closes #159.
+A burler fix round on the source scope now has a sanctioned way to commit findings that change the same files, and a review's `location` now names the site the fix changes.
+Before, the fix prompt demanded one commit per finding, so a fixer facing findings that overlapped on files improvised its own grouping.
+Before, `location` named where a defect showed, so a fixer could spend a round reading unrelated files to find the real site.
 
-A burler fixer in source scope had one commit rule: each finding on its own.
-A round whose findings change the same files cannot follow it, and the fixer had to invent a grouping.
-Separately, a finding's `location` could name where a defect shows rather than the site the fix changes,
-which left the fixer searching unrelated files before it could edit.
+Closes #159
 
 ## What changes
 
-- `internal/burlerengine/prompt.go` (`fixScopeRules`, source scope): findings whose changes touch a file in common form one group.
-  The group is fixed together and committed once, green, with a subject naming every id:
-  `<module-or-target>: fix <finding-id>, <finding-id> — <one-line what/why>`.
-  A finding that shares no changed file with another keeps its own commit.
-  The package doc's FixScope section states the same rule.
-- `contracts/stencils/burler/burler-review-format.md`: a finding's `location` names the site the fix changes,
-  which may lie apart from where the defect shows.
-  A reviewer that did not find that site names where the defect shows and opens the `fix` key with `site not found —`.
-- `contracts/stencils/burler/burler-step-fix.md`: a `fix` key opening `site not found —` tells the fixer to find the site before it edits.
+- **Joint commits** (`internal/burlerengine/prompt.go`, `doc.go`):
+  the `FixScopeSource` rules have the fixer form groups before it starts fixing.
+  Findings whose changes touch a file in common are fixed together and committed as one commit,
+  with the subject `<module-or-target>: fix <id>, <id> — <what/why>`.
+  A finding that shares no file keeps its own commit and the old subject format.
+  The overlay scope is unchanged: it runs no git.
+- **Review `location`** (`burler-review-format.md`, `Finding` in `verdict.go`):
+  `location` names the site the fix changes, which may lie apart from where the defect shows.
+  When the reviewer did not find that site, `location` names where the defect shows and `fix` opens with `site not found —`.
+  A carried finding keeps its location path and names a fix site outside it in `summary` and `fix`.
+- **Fix step** (`burler-step-fix.md`):
+  a `fix` key opening with `site not found —` tells the fixer to find the site before editing.
+  The never-push paragraph no longer calls the source rules commit-per-fix.
 
 ## Design decisions
 
-- The grouping unit is a shared file, not a shared hunk: a fixer has no interactive staging to split one file's changes between commits.
-- The `site not found —` marker uses a dash, not a colon, so an unquoted `fix` value stays valid YAML.
-- The marker is prose for the fixer; `verdict.go` does not validate it, so existing reviews stay valid.
-- The issue's side notes on the judge-call timeout mismatch and parent-finding enforcement are not addressed here; they are separate defects the entry's "what to do" does not ask for.
+- Groups chain: a finding touching a file any group member changes joins that whole group, so every finding lands in exactly one commit.
+- A finding whose change reaches a file an earlier commit already changed is committed on its own, never folded into that commit.
+  This keeps a landed commit from being amended and keeps `git log` an accurate record of what landed if the round dies.
+- The `site not found —` prefix is a convention in the prompt text only; no parser reads it.
+- `TestComposePrompt_FixScope` drops its `requireNotContains(…, "commit each fix")` on the overlay output,
+  since the source rules no longer use that phrase.
+
+## To check by hand
+
+- The group-formation rule in `fixScopeRules` is prose a fixer follows, with no test pinning it.
+  A review left one finding open: joint-commit groups do not chain (class design, severity MEDIUM).
+  Check that the chaining sentence in `fixScopeRules` and `doc.go` reads unambiguously.
+- No fix round was run against the new prompt, so the joint-commit behavior is unobserved.
 
 ## Merge danger
 
