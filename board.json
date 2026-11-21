@@ -263,7 +263,7 @@
       "isolated": false,
       "brief": "Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin",
       "body": "## Goal\n\nFirst of three trials of the one-repository hub layout (57015a52) in a new sandbox, driven from this task's worktree; the run acts as the sandbox's operator and orch.\n\n## Steps, exact cap\n\n- Create one private GitHub repository `Knatte18/lym-sandbox-onerepo` with `gh repo create --private` (operator approved, 2026-11-21), seeded with a tiny Go module (one package, one test) on `main`.\n- Clone it once as a one-repository hub with `lym fabric clone --single-repo` under `/home/knatte/Code/lym-sandbox-onerepo-LYMHUB`.\n- Check and record: `gh api` branch and tag lists show only the code branch; `git ls-remote` shows the board and prime records branch under `refs/lym/heads/`; `lym board list` and `lym fabric` status work in the hub.\n- No other repository is created; nothing is deleted.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-1-setup-2026-11-21/report.md`: each command, its outcome and every friction or failure.\nEach lym bug found is filed as a note on this hub's board (kind note, labels from `lym board labels`).\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-21T17:28:49Z",
       "revised": "2026-11-21T17:28:49Z",
       "run_settings": {
