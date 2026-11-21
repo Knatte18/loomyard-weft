@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 18:48 UTC; every age below is as of then.
+Rendered 2026-11-21 18:49 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Bouncer | neve | 1h<br>1h | webster, burler, drift, loom |
+| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Burler-Review | neve | 1h<br>1h | webster, burler, drift, loom |
 
 ### Ready (0)
 
