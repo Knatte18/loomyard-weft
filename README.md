@@ -87,7 +87,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | Describe | neve | 1d<br>1d | fabric, git, docs, pattern |
+| T9 | **One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric** | [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)<br>[Sketch](decision-single-repo-namespace-layout.md) | tapestry · solid | PR-Review | neve | 1d<br>1d | fabric, git, docs, pattern |
 
 #### Ready (0)
 
@@ -131,7 +131,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 26m<br>26m | gate, loom |
+| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 27m<br>27m | gate, loom |
 
 #### Features (2)
 
