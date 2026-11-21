@@ -1,6 +1,6 @@
 # Bugfix section in the Discussion-Write stencil
 
-`bugfix-discussion-stencil` · Task · enhancement, stencil, loom · starting · Open-IDE
+`bugfix-discussion-stencil` · Task · enhancement, stencil, loom · running · Preflight
 
 From F17's Kiro lead (bugfix spec with a fail-on-base test).
 The Go gate half has landed: `lym gate red-first` on the `Darn-Write` row, and the `Root-Cause:` trailer.
