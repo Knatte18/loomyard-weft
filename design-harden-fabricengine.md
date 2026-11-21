@@ -1,6 +1,6 @@
 # Hardener campaign on fabricengine, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · starting · Seed-Child
+`harden-fabricengine` · Task · bug, fabric · starting · Seed-IDE
 
 ## Goal
 
