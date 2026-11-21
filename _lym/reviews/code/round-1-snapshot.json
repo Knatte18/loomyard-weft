@@ -7,5 +7,6 @@
       "title": "Scope after the corrupted board body",
       "digest": "5704056f1d585032d800df257bd5e915331f69ed7d3d527e450cc464e3620ec4"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
