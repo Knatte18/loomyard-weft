@@ -1,6 +1,6 @@
 # Finalize halts on a private free-plan repo: rules read 403 read as a bad token
 
-`rules-read-plan-gated-403` · Task · bug, landing · starting · Seed-IDE
+`rules-read-plan-gated-403` · Task · bug, landing · starting · Open-IDE
 
 Found by onerepo-sandbox-tasks (sandbox `Knatte18/lym-sandbox-onerepo`, private, free plan); report at `docs/research/single-repo/sandbox-2-tasks-2026-11-21/report.md`.
 
