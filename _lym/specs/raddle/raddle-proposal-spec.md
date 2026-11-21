@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=acd09956c0268628a78e6c339f1b337e79fff96faf59f4ddf5a32e5cd5268e13 build=77b47ae10d761ff2d7d723891ab483dceb71f9d9 time=2026-11-17T11:05:23Z -->
+<!-- lym-stencil: sha256=05032c8ae79171d04c77ec75e4a67af69f24bb02a9cd73c2ce1dc52c2bd3779f build=cefa47e4eeee47124c448f26ed4a54239260e8ef time=2026-11-21T13:41:01Z -->
 
 # Raddle proposal-spec — how a Sketch splits into filed entries
 
@@ -64,7 +64,7 @@ A part holds:
 - `cells` — the `lym report cost` cells both figures rest on, each `{recipe, profile, stored_record}`.
 
 Shape `tapestry` has exactly one part, which builds every decision.
-Every filed slug, each part's and the project's, is new: free on the board and in the raddle store, and not the Sketch's.
+Every filed slug, each part's and the project's, is new, and one the board's slug rules admit: free on the board and in the raddle store, and not the Sketch's.
 The one exception is a perch-mode run's project, whose slug is the run's own entry.
 
 ## Perch mode
@@ -109,6 +109,7 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
 - `slug-taken` — a new slug already on the board or in the raddle store; the run's own entry is exempt, which `slug-sketch` judges.
 - `slug-sketch` — a filed slug equal to the Sketch's; a perch-mode project whose slug is the run's own entry is exempt.
 - `slug-duplicate` — a slug that two filed entries share.
+- `slug-invalid` — a filed slug the board's slug rules refuse: one over the board's slug length limit, the reserved `root`, or one the pair slug rule refuses, which `lym board` writes and pair creation apply; its way forward is a slug the board admits.
 - `shape-invalid` — a `tapestry` shape with other than one part or with a part that does not build every decision, a `project` or `beam` shape with no project, or another shape with one.
 - `perch-outcome` — in perch mode, a proposal that is neither one task nor one project under the run's own entry.
 - `cost-missing` — a missing proposal cost line or next-best cost line.
