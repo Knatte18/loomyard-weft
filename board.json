@@ -451,6 +451,27 @@
       "body": "Imported from [issue #176](https://github.com/Knatte18/loomyard/issues/176).\n\nWhat happened: the Plan-Burler-Fix step for round 1 started a fixer session after an earlier fixer session had already fixed every finding and run its self-check.\nThe earlier fixer's report sat under a timestamped name (`round-1-fixer-report-\u003cUTC timestamp\u003e.md`) rather than the expected `round-1-fixer-report.md`.\nThe prompt gave no reason for the second run, so the fixer had to read every card to tell \"re-run because the report was misnamed or rejected\" from \"re-run for new work\".\nIt wrote the expected report from the earlier dispositions and spawned no forks.\n\nWhy abnormal: the step's report-name expectation and the name the first fixer wrote disagree, so a finished round looks unfinished and costs a full fixer session.\nThe prompt also never states why a step runs again.\n\nWhat to do: find why the first fixer's report landed under the timestamped name and was not accepted as the round's report (archiving on write, or a name mismatch).\nEither accept the archived report, or state the re-run reason (misnamed or rejected report versus new work) in the fixer prompt.\n\nProvenance: task single-repo-namespace-layout; notes burler-plan-r1.md.",
       "created": "2026-11-21T17:29:36Z",
       "revised": "2026-11-21T17:29:36Z"
+    },
+    {
+      "id": 1541,
+      "handle": "B6",
+      "slug": "halt-names-missing-findings-path",
+      "title": "loom-halt note and blocked reason name a gate-findings path that does not exist",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "gate"
+      ],
+      "issues": [
+        174
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #174](https://github.com/Knatte18/loomyard/issues/174).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/shed/`, `.lym/shuttle/`.\n\n**What happened.**\nThe halt reason for a Darn-Write gate failure says \"findings:\" followed by a path under `.lym/shed/\u003cslug\u003e/gate-findings/Darn-Write.md`.\nThat file does not exist; the `.lym/shed/\u003cslug\u003e` directory is empty.\nThe trace log names a different path, `.lym/shuttle/\u003crun\u003e/gate-findings.md`, and that run directory is gone too.\n\n**Why abnormal.**\nThe halt note and the `lym loom resume` way forward point the operator at findings that cannot be read.\nThe cause of the block is only recoverable from the trace log.\n\n**What to do.**\nCopy the findings file to the stable path the halt reason names before the shuttle run directory is removed, or name the path that survives.\n\nProvenance: task raddle-slug-length-check; note loom-halt.md.\n",
+      "created": "2026-11-21T17:29:39Z",
+      "revised": "2026-11-21T17:29:39Z"
     }
   ],
   "prime_owner": "neve",
