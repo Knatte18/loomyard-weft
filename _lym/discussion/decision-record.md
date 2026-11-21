@@ -14,6 +14,12 @@
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-21): Scope after the corrupted board body
+
+Decision: The board body was lost in a merge (orch error); only the triage section survived. Scope: (1) red-first: an unjudged or no-test refusal that only the parent can lift does not spend a verify attempt; the gate waits for the parent's decision (seen 2026-11-21 on gate-dotnet-fixes and red-first-overlay-non-go-files, which spent three attempts in two minutes while the parent's decision add was committing; issue #173). (2) issue #175: a stencil build-version refusal at Preflight carries only its own way forward, not the generic config-or-model-spec clause from internal/loomcli/darnwiring.go. (3) issue #174: a halt names a gate-findings path that no longer exists; reproduce what removes the file (suspect: the orphan scratch sweep in internal/battencli/cleanup.go) and fix that, or make the halt name a path that survives. Read issues #173, #174 and #175 with gh issue view for detail.
+
+Rationale: The issues and the surviving triage section hold the lost notes' content.
+
 ## Constraints
 
 ## Auto-mode assumptions
