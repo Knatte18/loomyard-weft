@@ -403,7 +403,7 @@
       "isolated": false,
       "brief": "The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step",
       "body": "## Why\n\nThe measurement in `docs/research/speed/testmap-use-measure-2026-11-21/report.md` (4c031f8b) found the failure-report triage line \"reaches none of this run's changes\" wrong in all 6 cases it showed:\neach failed test failed because of the run's own change, reached through a tree text scan, an embedded file or a nil seam the coverage maps cannot see.\nNo fixer used a triage line. The operator decided (2026-11-21) to remove triage lines, keep the reach turn and the mutation step as they are, and invest no more in the maps.\n\n## Change\n\n- Remove the triage lines from failure reports: `internal/gatecli/triage.go` and every caller and consumer (webster, loomshed, runplan verify reports and their stencils and specs).\n- Keep the reach note, the reach turn and the mutation step untouched.\n- Docs and specs that describe triage lines lose that text.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-21T14:28:05Z",
       "revised": "2026-11-21T14:28:05Z",
       "run_settings": {

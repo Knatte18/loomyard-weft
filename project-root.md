@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 14:28 UTC; every age below is as of then.
+Rendered 2026-11-21 14:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | starting · Seed-IDE | neve | 0m<br>0m | gate, webster, stencil |
+| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | starting · Open-IDE | neve | 0m<br>0m | gate, webster, stencil |
 | T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | gate, dotnet, stencil, darn |
 
 ### Ready (0)
