@@ -1,0 +1,11 @@
+verdict: resume
+reason: >-
+  The bootstrap stop (trace 88c274403656123e) refused because code tip
+  35f8b6d41502efd2bc3626dda3021ce37bc13c88 was not on origin yet. Read now,
+  `git ls-remote origin` answers refs/heads/finalize-mergeable-unknown at
+  35f8b6d41502efd2bc3626dda3021ce37bc13c88, equal to the named commit, so the
+  push has landed. The refusal's own way forward was to run
+  `lym batten run finalize-mergeable-unknown` again once the push landed.
+  This is the first stop for this run (no prior resume in the drive report),
+  so a plain re-launch with no goto settles it. The refused step is a
+  bootstrap, so no goto is needed.
