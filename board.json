@@ -258,13 +258,15 @@
         "gate",
         "loom"
       ],
-      "issues": [],
+      "issues": [
+        173
+      ],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\n2026-11-21, in `gate-dotnet-fixes` and `red-first-overlay-non-go-files`: the darn writer asked the parent for a \"No test seam\" decision, then re-ran the verify gate at once.\nThe unjudged red-first refusal repeated, the run spent its three verify attempts within about two minutes and stopped with a question,\nwhile the parent's `lym loom decision add` was still committing. The parent then had to resume the run by hand.\n\n## Idea\n\nAn unjudged red-first refusal (exit `RedFirstUnjudgedExit`) does not spend a verify attempt; the writer waits for the parent's reply,\nor the gate waits for the decision record to change before it re-runs.\n",
+      "body": "## Seen\n\n2026-11-21, in `gate-dotnet-fixes` and `red-first-overlay-non-go-files`: the darn writer asked the parent for a \"No test seam\" decision, then re-ran the verify gate at once.\nThe unjudged red-first refusal repeated, the run spent its three verify attempts within about two minutes and stopped with a question,\nwhile the parent's `lym loom decision add` was still committing. The parent then had to resume the run by hand.\n\n## Idea\n\nAn unjudged red-first refusal (exit `RedFirstUnjudgedExit`) does not spend a verify attempt; the writer waits for the parent's reply,\nor the gate waits for the decision record to change before it re-runs.\n\n\n## From issue #173\n\nImported from [issue #173](https://github.com/Knatte18/loomyard/issues/173).\n\n**What happened.**\nDarn-Write halted blocked (anomaly escalation-to-human) after the chair's `lym gate red-first --gate darn-write` failed 3 attempts in a row with the same error.\nThe error: the diff changes a contracts spec markdown file, which the overlay cannot put back, so the base run cannot judge the tests.\nThe refusal's way forward is for the run's parent to record a `lym loom decision add` entry titled \"No test seam\".\n\n**Why abnormal.**\nThe agent receiving the findings cannot resolve this itself; it needs a parent decision.\nThe gate re-prompted the agent three times, so the whole verify budget went on an identical, deterministic refusal, and the run ended blocked.\nA diff that pairs a Go test with a doc update is ordinary; the gate treats the doc as making the whole check unjudgeable.\n\n**What to do.**\nMake the red-first check ignore non-Go doc files that cannot affect test outcomes, or restore only the Go files on the base.\nWhen it must refuse, escalate to the parent on the first attempt instead of re-prompting the agent through the full budget with an unactionable finding.\n\nProvenance: task raddle-slug-length-check; note loom-halt.md.\n",
       "created": "2026-11-21T15:33:40Z",
-      "revised": "2026-11-21T15:33:40Z"
+      "revised": "2026-11-21T17:29:22Z"
     },
     {
       "id": 1534,
