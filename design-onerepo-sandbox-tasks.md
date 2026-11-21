@@ -1,6 +1,6 @@
 # One-repository sandbox: run tasks to landing
 
-`onerepo-sandbox-tasks` · Task · research, fabric, landing · draft
+`onerepo-sandbox-tasks` · Task · research, fabric, landing
 
 Depends on: [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md)
 

@@ -1,6 +1,6 @@
 # One-repository sandbox: second clone and namespace hand check
 
-`onerepo-sandbox-reclone` · Task · research, fabric, git · draft
+`onerepo-sandbox-reclone` · Task · research, fabric, git
 
 Depends on: [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md)
 
