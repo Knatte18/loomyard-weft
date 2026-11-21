@@ -230,7 +230,7 @@
       "isolated": false,
       "brief": "Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs",
       "body": "## Goal\n\nThird trial: a fresh clone of the sandbox hub and the hand check the one-repository landing (57015a52) left open.\n\n## Steps, exact cap\n\n- Clone `Knatte18/lym-sandbox-onerepo` once more, into a second hub directory, with plain `lym fabric clone \u003curl\u003e`; check it detects the one-repository layout and shows the board and the landed tasks' records.\n- Run one small task to landing from the second clone, then pull in the first hub and check it sees that landing.\n- Hand check from the landing commit: grep `internal/fabric*` and `internal/gitrepo` for origin ref names built from a bare `refs/heads/` or `refs/tags/` string on a records-store path; list each site and whether it is wrong.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md` that also sums up all three trials; each lym bug filed as a note on this hub's board.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-21T17:28:49Z",
       "revised": "2026-11-21T17:28:49Z",
       "run_settings": {
