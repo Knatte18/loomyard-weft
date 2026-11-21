@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -145,6 +144,47 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/landing/summary.md",
+      "at": "2026-11-21T13:39:51Z",
+      "started_at": "2026-11-21T13:38:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T13:38:45.039187235Z",
+          "end": "2026-11-21T13:38:45.117558303Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T13:38:45.331136502Z",
+          "end": "2026-11-21T13:38:46.202773572Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T13:38:46.329339523Z",
+          "end": "2026-11-21T13:38:46.335354226Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T13:38:46.426826577Z",
+          "end": "2026-11-21T13:38:46.832343156Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T13:38:46.919959292Z",
+          "end": "2026-11-21T13:38:46.920201518Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
