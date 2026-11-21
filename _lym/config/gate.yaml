@@ -51,3 +51,5 @@ gates:
     code-burler-fix: {tiers: [0, 1, 2], scope: diff}
     harden-live:
         tiers: [0, 1]
+    harden-live-copies:
+        tiers: [0, 1]
