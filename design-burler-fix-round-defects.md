@@ -1,6 +1,6 @@
 # Burler fix round: rerun reason and fork git in its own scratch repo
 
-`burler-fix-round-defects` · Task · bug, burler, shuttle
+`burler-fix-round-defects` · Task · bug, burler, shuttle · starting · Worktree-Create
 
 Depends on: [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md)
 
