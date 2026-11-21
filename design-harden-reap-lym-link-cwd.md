@@ -1,6 +1,6 @@
 # hardenshed reaper misses orphans whose cwd is under a _lym link
 
-`harden-reap-lym-link-cwd` · Task · bug, shed, process · running · Describe
+`harden-reap-lym-link-cwd` · Task · bug, shed, process · running · PR-Review
 
 Imported from [issue #164](https://github.com/Knatte18/loomyard/issues/164).
 
