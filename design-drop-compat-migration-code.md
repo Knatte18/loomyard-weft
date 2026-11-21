@@ -1,6 +1,6 @@
 # Remove compatibility and migration code no hub needs any more
 
-`drop-compat-migration-code` · Task · enhancement, fabric, loom, board
+`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · starting · Worktree-Create
 
 Depends on: [`single-repo-namespace-layout`](design-single-repo-namespace-layout.md)
 
