@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -202,6 +202,22 @@
       "output": "",
       "at": "2026-11-21T15:38:39Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/burler-fix-shared-file-commits/_lym/landing/summary.md",
+      "at": "2026-11-21T15:39:09Z",
+      "started_at": "2026-11-21T15:38:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T15:39:08.84588762Z",
+          "end": "2026-11-21T15:39:08.845968982Z"
+        }
+      ]
     }
   ],
   "product": {
