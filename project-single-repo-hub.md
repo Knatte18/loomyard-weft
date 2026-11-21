@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
-Rendered 2026-11-21 17:24 UTC; every age below is as of then.
+Rendered 2026-11-21 17:28 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 2d · Owner `neve`
@@ -10,7 +10,7 @@ Groups the entries filed from the Sketch `fabric-single-repo-mode`: single-repo-
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (0)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
@@ -19,6 +19,14 @@ Concrete and claimable; only a task can run.
 Waits on nothing open; can start now.
 
 _None._
+
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **One-repository sandbox: create the repo and clone the hub**<br>• Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md) | darn · docs |  | 0m<br>0m | fabric |
 
 ## Notes (0)
 
