@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -47,6 +47,26 @@
       "output": "",
       "at": "2026-11-19T19:34:30Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Plan-Burler-Fix",
+      "at": "2026-11-21T13:54:58Z",
+      "started_at": "2026-11-21T13:54:58Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Plan-Burler-Fix",
+      "at": "2026-11-21T13:55:12Z",
+      "started_at": "2026-11-21T13:55:12Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
       "machine": "neve"
     }
   ]
