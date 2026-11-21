@@ -1,71 +1,25 @@
-# Trim every package doc.go to overview, contracts and why
+# Trim superfluous text from every package doc.go
 
-Every package `doc.go` is cut down to what the operator's decision keeps:
-a short package overview, the package's contracts and invariants, and a "why" the code does not show.
-Text that restated a symbol's own doc comment, narrated mechanism step by step, repeated itself or recorded history is gone.
-The change touches comments only; no code, test or other file changes.
+The package `doc.go` files held 27,301 comment lines, and the earlier comment rewrite did not shrink them.
+This change cuts what is superfluous in 130 `doc.go` files: text that restates function or type docs,
+narrates how the code works step by step, repeats itself, or records history.
+Each file keeps a short package overview, the package's contracts and invariants, and a "why" the code alone does not show.
 
-## Size
-
-Comment lines across all `doc.go` files, counted with `git grep -h -E '^\s*//' <rev> -- '*doc.go' | wc -l`:
-
-| | Before | After |
-|---|---|---|
-| Comment lines in `doc.go` files | 27,842 | 11,688 |
-| Total lines of the 162 `doc.go` files | 28,032 | 11,874 |
-
-The largest files, lines before → after:
-
-| Package | Before | After |
-|---|---|---|
-| `fabricengine` | 2,502 | 558 |
-| `gatecli` | 1,563 | 819 |
-| `websterengine` | 1,286 | 303 |
-| `reedengine` | 1,174 | 230 |
-| `shuttleengine` | 1,072 | 234 |
-
-130 of the 162 files changed.
-The rest are mostly 15 lines or fewer and had nothing superfluous.
-
-## What was cut and what stays
-
-Cut:
-- paragraphs restating what an exported symbol's own doc comment says;
-- mechanism a caller never relies on: unexported functions and fields, internal step order, timings, retry counts, log lines;
-- enumerated consumer lists, examples, measurements, version notes and retired-key history;
-- paragraphs that restated a `PATTERN.md` rule, now one sentence naming the entry.
-
-Kept, shortened where possible:
-- every guarantee, refusal and "never does" statement a caller outside the package needs;
-- every `Bound:` hazard that is a real limit of the package;
-- every heading, invariant name and sentence another live file cites.
-  Examples: fabricengine's mutation-record section and the raw write and destroy tokens that the
-  `cmd/lym` destructive-guard and uncontained-write allowlist reasons rely on;
-  reedengine's `display-message` contract that its integration test cites;
-  the Shuttle Provider-Seam, Told-Geometry, Fabric Vocabulary and Glyph Conversion Chokepoint invariants;
-  configengine's `# Layers` and orchengine's `Continuing after a reboot`, which other docs point at.
+The diff touches only `doc.go` files and only comments: 4,812 lines added, 21,016 removed.
+The largest cuts are in `websterengine`, `reedengine`, `shuttleengine`, `shuttleengine/claudeengine` and `shedadapters`.
+No code changes, and comments in other files are out of scope.
 
 ## Design decisions
 
-- The work ran as two passes over Agent-tool subagents on Sonnet at medium effort, as the operator's decision asks.
-  The first pass, with a "when unsure, keep it" rule, cut only 5–15 % of most large files.
-  A second pass then had a section-by-section method: for each paragraph, ask whether a caller outside the package needs it
-  and whether no exported symbol's doc says it; keep guarantees, refusals and design reasons; cut the rest.
-  The largest files each had a subagent of their own in both passes.
-- References were checked by grepping live `.go`, `.md` and spec files for each removed heading or phrase.
-  `docs/research/` reports were treated as dated records, not live citations.
-- The trimmed text is re-broken at sentence and clause boundaries so `lym loom lint-comments --base 3d3b4812` passes.
+- The cut applies to every `doc.go`, not to a chosen set of packages.
+- Where a `doc.go` and a symbol doc said the same thing, the symbol doc stays and the `doc.go` text goes.
 
-## Risks for review
+## To check by hand
 
-- The cuts are judgement calls by many agents.
-  A sentence a caller relied on may have gone with the mechanism around it;
-  the per-file diffs are the place to check a package you know well.
-- `docs/overview.md` points at "the state matrix, the verb table, and the sabotage-proof table" in fabricengine's doc.
-  Those tables were already absent before this change, so the pointer was dangling before and still is.
-- Several runs in flight edit `doc.go` files this change also rewrites,
-  among them `burlerengine`, `loomcli`, `shedadapters`, `websterengine`, `loomshed`, `shedrecipe`, `runplan` and `discussionparser`.
-  Whichever lands second meets a textual conflict in those files.
+- `internal/adoptcli/doc.go`: the adopt's step order and the envelope fields it names are complete and match the code.
+- `internal/batcher/doc.go`: it no longer restates the docs of `Active` and `PeakContext`, and it defines the start base.
+- `internal/yamlengine/doc.go`: it no longer restates function docs, and the `Reconcile` rationale reads correctly.
+- Skim the largest cuts for a contract or invariant removed along with the narration.
 
 ## Merge danger
 
