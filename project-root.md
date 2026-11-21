@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 14:39 UTC; every age below is as of then.
+Rendered 2026-11-21 14:40 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 11m<br>11m | gate, webster, stencil |
-| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | Preflight | neve | 1m<br>1m | stencil, loom |
+| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 12m<br>12m | gate, webster, stencil |
+| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | halted · Preflight | neve | 1m<br>1m | stencil, loom |
 
 ### Ready (0)
 
