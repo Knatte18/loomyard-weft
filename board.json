@@ -264,7 +264,7 @@
       "isolated": false,
       "brief": "Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each",
       "body": "## Goal\n\nSecond trial: run real tasks in the one-repository sandbox hub that the setup trial created (`/home/knatte/Code/lym-sandbox-onerepo-LYMHUB`).\n\n## Steps, exact cap\n\n- File three small tasks on the sandbox board, each a few lines of Go in the seed module, recipe darn, profile light, writer opus medium.\n- Run the first two one after the other to landing; run the third alongside a fourth trivial task, so two runs are in flight at once.\n- Start one more trivial task and abandon it: remove its pair and board entry.\n- After each landing and the abandon, record on origin: records branches and archive tags under `refs/lym/`, the board, and the code branch list GitHub shows.\n- Cap: at most five sandbox runs in total; no repeats.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-2-tasks-2026-11-21/report.md`, with each lym bug filed as a note on this hub's board.\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-21T17:28:49Z",
       "revised": "2026-11-21T17:28:49Z",
       "run_settings": {
