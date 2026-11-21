@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "4ff69e63bdd370dc6f57a19e28a40670a1c0b890",
+  "added_decisions": [
+    {
+      "title": "No test seam for the red-first overlay: the diff changes a non-Go spec",
+      "digest": "ed67fb393175c8611a11d5a9f236aa1b8d3850b0f3f885ee584d6df7090a125a"
+    }
+  ]
+}
