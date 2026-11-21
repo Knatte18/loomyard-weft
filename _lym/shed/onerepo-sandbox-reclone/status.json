@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-21T18:32:40Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/onerepo-sandbox-reclone/_lym/landing/summary.md",
+      "at": "2026-11-21T18:45:32Z",
+      "started_at": "2026-11-21T18:32:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T18:44:06.649355746Z",
+          "end": "2026-11-21T18:44:06.671259939Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T18:44:06.758325073Z",
+          "end": "2026-11-21T18:44:07.119588971Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T18:44:07.237948866Z",
+          "end": "2026-11-21T18:44:07.240779709Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T18:44:07.347066962Z",
+          "end": "2026-11-21T18:44:07.809614397Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T18:44:07.895254728Z",
+          "end": "2026-11-21T18:44:07.895452337Z"
+        }
+      ]
     }
   ],
   "product": {
