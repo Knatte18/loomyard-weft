@@ -1,6 +1,6 @@
 # One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric
 
-`single-repo-namespace-layout` · Task · feature, fabric, git, docs, pattern · running · Webster
+`single-repo-namespace-layout` · Task · feature, fabric, git, docs, pattern · halted · Webster
 
 Decision record: [Sketch](decision-single-repo-namespace-layout.md)
 
