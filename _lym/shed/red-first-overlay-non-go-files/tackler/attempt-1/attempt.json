@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Run-Shed",
+    "history_length": 6,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-21T16:32:54.265287401+01:00",
+  "deadline": "2026-11-21T16:42:54.265287401+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/red-first-overlay-non-go-files/drive-reports/drive-envelope-20261121-163254-91c2.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/red-first-overlay-non-go-files/drive-reports/drive-report-20261121-163254-8662.md",
+  "strand_guid": "bd6c2bc6b86aa882e221c66e2ca35416"
+}

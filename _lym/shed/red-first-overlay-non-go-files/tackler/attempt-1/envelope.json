@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop (trace 7f8dbb7dd051bf55, kind=bootstrap, transient unset) refused the Run-Shed step because the run's last transition names code tip fe4aa05710d6d49f35126f337656acf65b4497d2, which was not on origin at 16:32:53 (trace-20261121T153253Z-7f8dbb7dd051bf55-515882.log; status.json error field). The cause has since cleared: `git ls-remote origin refs/heads/red-first-overlay-non-go-files` now returns fe4aa05710d6d49f35126f337656acf65b4497d2, so the remote tip equals the named commit, and the commit is present on origin. The refusal's own way forward is to run `lym batten run red-first-overlay-non-go-files` again once the code push lands, which is a plain re-launch. No scope or design choice is involved, and no row needs a move back, so no goto is given.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/red-first-overlay-non-go-files/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/red-first-overlay-non-go-files/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
