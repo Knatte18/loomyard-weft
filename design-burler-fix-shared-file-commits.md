@@ -1,6 +1,6 @@
 # Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam
 
-`burler-fix-shared-file-commits` · Task · enhancement, burler, stencil · running · Drift-Baseline
+`burler-fix-shared-file-commits` · Task · enhancement, burler, stencil · running · Drift-Await
 
 Imported from [issue #159](https://github.com/Knatte18/loomyard/issues/159).
 
