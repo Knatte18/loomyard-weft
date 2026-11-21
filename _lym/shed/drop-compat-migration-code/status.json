@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -256,6 +256,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/drop-compat-migration-code/_lym/reviews/code/round-2-review.md",
+      "at": "2026-11-21T18:18:05Z",
+      "started_at": "2026-11-21T18:02:23Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T18:07:41.551376204Z",
+          "end": "2026-11-21T18:07:41.568038271Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T18:07:59.078718969Z",
+          "end": "2026-11-21T18:07:59.095285326Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T18:07:41.678049033Z",
+          "end": "2026-11-21T18:07:46.498931532Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-21T18:07:46.970946977Z",
+          "end": "2026-11-21T18:07:59.028747305Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T18:07:59.152862822Z",
+          "end": "2026-11-21T18:18:04.841987886Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-21T18:18:04.902462005Z",
+          "end": "2026-11-21T18:18:04.902958563Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
