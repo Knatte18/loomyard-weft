@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 14:54 UTC; every age below is as of then.
+Rendered 2026-11-21 14:55 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -116,7 +116,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | Drift-Recheck | neve | 16m<br>16m | stencil, loom |
+| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | Describe | neve | 16m<br>16m | stencil, loom |
 
 #### Ready (0)
 
