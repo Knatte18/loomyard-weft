@@ -1,6 +1,6 @@
 # Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning
 
-`gate-dotnet-fixes` · Task · bug, gate, dotnet, stencil, darn · running · Darn-Write
+`gate-dotnet-fixes` · Task · bug, gate, dotnet, stencil, darn · halted · Darn-Write
 
 ## Gate verdict from a parsed result, and crash cause in the log
 
