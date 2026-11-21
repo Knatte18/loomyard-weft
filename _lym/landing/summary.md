@@ -1,0 +1,53 @@
+# Hardener writes its own charter and drives one-repository sandbox hubs
+
+A `hardener` task now needs only the modules to harden: `hardener.packages` in the task's `run_settings`, or a title and labels that name them, plus an optional sentence of focus in the body.
+The Harden-Bouncer's seed pass reads the modules and writes the campaign's charter itself, the way Crucible's orchestrator filled its review-prompt template.
+Preflight passes on a hub with no `hardener.yaml` and no harden gate keys of its own.
+`lym harden sandbox new --single-repo` builds a one-repository sandbox hub, so a campaign can drive either layout.
+
+## What changes
+
+- **The seed pass is the charter step.**
+  The hardener recipe's Harden-Bouncer names its own seed template, `harden-template-seed`, through the Bouncer's new `seed_stencil` key; other recipes' Bouncers keep the shared `bouncer-template-seed`.
+  The seeder reads the modules' code, verbs, docs and existing tests, then writes round 1's focus file:
+  one `focus` entry per high-yield invariant with repro steps, and prose sections for modules and focus, what to read, layouts, out of scope, the live-substrate cost declaration, the teardown check and the round context.
+  A focus the task body states binds the charter, and everything else in the modules goes under out of scope.
+- **The module brief.**
+  `hardenshed.Campaign.SeedBrief` fills the template's `seed_brief` marker: the config's packages, or, when it names none, the board entry's title and labels read through the campaign's new `Entry` seam.
+  `shedadapters.BouncerConfig` gains `SeedStencil`, probed at construction like the rubric, and `SeedBrief`.
+- **The rubric carries Crucible's rules.**
+  `harden-rubric-review` now holds what the retired Crucible template and README had and the rubric lacked:
+  the existing tests are the fix gate and never the review, the clean room, driving the verbs yourself, every charted layout, the focus list as a floor with improvised adversarial scenarios, cost never a reason not to drive, cutting waste but never driving, proving a scenario reached the code, counting an enumerated class, judging and fixing every finding (NIT included) with large ones deferred, and leaving a live regression test.
+  Its judge section re-seeds each round from the residue (residual, enumeration sweep, unreached regions, safety pass), carries the charter's standing sections forward, and never steers outside the operator's focus.
+  The review row's target and fasit instructions point at the charter in the focus file and the operator's ask in the decision record.
+- **No hub gate writes.**
+  `CheckCampaign` no longer refuses an empty package list or a live gate key the hub's `gate.yaml` leaves at its template value; the template's tier 0 for all three harden keys passes.
+  `gateslot.HubSetsGate`, whose only caller was that check, is removed with its test.
+- **Live gate without packages.**
+  With no packages, the `harden-live` call runs the key's own scope, the copies call is skipped (a `--copies` call needs explicit targets), and a pass that started no test binary is green rather than red.
+  With packages named, behaviour is unchanged.
+- **One-repository sandboxes.**
+  `fabricengine.SeedLocalOrigin` seeds the one bare of a one-repository hub, and `fabriccli.CloneAndWireFromLocalOrigin` clones it with `SingleRepo`.
+  `lym harden sandbox new --single-repo` uses them; its JSON answer carries `single_repo`.
+
+## Design decisions
+
+- **The copies key is not folded or derived.**
+  The record allowed either deriving the copies run's single tier or folding the key into `harden-live`.
+  `lym gate test --gate` refuses `--tier`, so neither fits without changing gate's own refusals.
+  The template already gives `harden-live-copies` one tier, which `--copies` accepts, so no hub write is needed.
+  A hub that raises `harden-live` to a higher tier still sets the copies key itself if it wants copies on that tier.
+- **The judge keeps the shared template.**
+  The re-seed and charter carry-forward rules sit in the rubric's judge section, which the shared judge template already interpolates, so no judge stencil key was added.
+- **An entry the board lacks fails the seed brief** with a way forward naming `hardener.packages`, rather than seeding with an empty title.
+
+## Not verified live
+
+No hardener run was driven end to end.
+The done-when's second half, a first round whose review file shows improvised probes on a sandbox hub of each charted layout, depends on the seed and review agents following the new stencil and rubric, and only a real campaign shows it.
+The sandbox verb's integration test builds a hub of each layout and checks that the one-repository hub's bare holds `refs/lym/`.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** hardener
