@@ -1,6 +1,6 @@
 # One-repository sandbox: create the repo and clone the hub
 
-`onerepo-sandbox-setup` · Task · research, fabric · running · Preflight
+`onerepo-sandbox-setup` · Task · research, fabric · running · Record-Write
 
 ## Goal
 
