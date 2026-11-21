@@ -16,8 +16,6 @@ Each bullet names its source project and the lym module it would touch.
 - **Symbol leases between concurrent tasks** (Fusion, ORCH): expiring leases on symbol keys serialize overlapping tasks,
   with a deterministic tie-break; lym keeps overlapping tasks apart by board labels.
 - **Commit-time reservation guard** (ntm): a pre-commit hook refuses a commit touching what another task holds; needs leases first.
-- **Requirement-to-card traceability** (Spec Kit, Kiro): parts already name the decisions they build;
-  the Plan-Write gate could also refuse a card that traces to no decision.
 - **Criterion amendment ledger** (oh-my-claudecode): a card's acceptance text changes only through a recorded amendment in weft.
 - **Bugfix spec with a fail-on-base test** (Kiro): the Go gate is built (`lym gate red-first` on the `Darn-Write` row, task `bug-red-first-gate`):
   a darn run of a `bug` entry must add or change a test that fails on the merge base, and the fix carries a `Root-Cause:` trailer.
@@ -33,11 +31,9 @@ Each bullet names its source project and the lym module it would touch.
 ## Engine, recipes and governance (shed, tender, orch, board)
 
 - **Cross-run quarantine** (Bernstein): a task that fails three times across runs is held, unless the failures were the host's.
-- **Abandon as a terminal state** (Bernstein): distinct from failed, with dependents marked blocked by it.
 - **Fork a run from a step with a tree snapshot** (Bernstein): `shed goto` moves the cursor but does not restore the warp tree.
 - **Warm retry guarded by a workspace hash** (Bernstein): resume the native session only when the tree is unchanged.
 - **Evidence reuse by input identity** (yylo): verify is skipped on the same tree; a changed review prompt could rerun only the review.
-- **Recipe validator** (Conductor): route targets are checked; reachability and stencil output names are not.
 - **Guidance at the next step boundary** (Conductor): a queue of operator guidance for the next producer's prompt.
   Partly met since 2026-11-19: `notify_parent_on` in `loom.yaml` mails the run's parent when a named row is reached,
   so the parent can brief that row's agent as it starts; there is still no queue of guidance lym itself folds into the prompt.
@@ -70,9 +66,6 @@ Each bullet names its source project and the lym module it would touch.
 
 ## Operator attention (orch, dobby, reed)
 
-- **Read-only web dashboard** (agent-of-empires, ralphex): a view over the board, runs and creel; Slack relay and wait marks exist.
-  The board part has landed as task `board-viewer-server` (a loopback board page, editable, opened by `lym board open` or `alt+shift+9`);
-  a view of runs and creel is still open.
 - **Attention feed with acknowledgement states** (ntm): dobby's wait reminders have no seen, snoozed or acknowledged states.
 
 ## Discussion review (Discussion-Write, stencils, pattern)

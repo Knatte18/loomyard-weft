@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 14:33 UTC; every age below is as of then.
+Rendered 2026-11-21 14:37 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>36m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>0m | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -116,7 +116,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 5m<br>5m | gate, webster, stencil |
+| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 9m<br>9m | gate, webster, stencil |
 | T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | landing · Finalize | neve | 1d<br>1d | gate, dotnet, stencil, darn |
 
 #### Ready (0)
