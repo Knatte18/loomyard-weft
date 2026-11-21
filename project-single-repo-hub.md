@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
-Rendered 2026-11-21 19:28 UTC; every age below is as of then.
+Rendered 2026-11-21 19:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 2d · Owner `neve`
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Hardener writes its own charter, drives either hub layout**<br>• Hardener derives its campaign from the module, builds one-repo sandbox hubs, needs no hub gate writes<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-self-charter`](design-hardener-self-charter.md) | darn · solid | Darn-Write | neve | 12m<br>6m | shed, burler, gate, stencil, fabric |
+| T3 | **Hardener writes its own charter, drives either hub layout**<br>• Hardener derives its campaign from the module, builds one-repo sandbox hubs, needs no hub gate writes<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-self-charter`](design-hardener-self-charter.md) | darn · solid | Darn-Write | neve | 13m<br>7m | shed, burler, gate, stencil, fabric |
 
 ### Ready (0)
 
@@ -34,7 +34,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 12m<br>0m | fabric |
+| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 13m<br>0m | fabric |
 
 ## Notes (0)
 
