@@ -246,6 +246,12 @@ Decision: Declare a PATTERN-code-conventions change: the Branch rule governs cod
 
 Rationale: The rule exists so lym never guesses the operator's code branches; D1 fixes the board branch so a renamed code default cannot hide the board, and D10 must recognise the old layout by its fixed name. Neither name is read from git by design, and only fabric knows the hub layout, so one fabric-owned constant each keeps the rule's intent.
 
+### Added after Discussion (parent, 2026-11-21): Declare the PATTERN-code-conventions change for lym-owned branch names
+
+Decision: Declare the change the earlier ruling on lym's records-namespace branch names makes, in the record's PATTERN changes section.
+
+Rationale: The earlier ruling went in as an added entry only, so validate-plan finds no declared bullet for card 8's PATTERN edit.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
@@ -311,3 +317,4 @@ Rationale: The rule exists so lym never guesses the operator's code branches; D1
 ## PATTERN changes
 
 - `PATTERN-single-repo-hub` — changes: Running a hub as one repository: a code store and a records store of one origin, records and the board under origin's `refs/lym/`, mapped by the records store's refspecs; only fabric reads the layout.
+- `PATTERN-code-conventions` — changes: Writing code: a package's `doc.go` documents only that package; a name or path that can go stale is one named constant; no language, engine or code branch is hard-coded, and a branch lym owns in its records namespace is one named constant in fabric. — added after Discussion (parent, 2026-11-21)
