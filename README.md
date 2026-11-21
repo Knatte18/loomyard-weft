@@ -1,47 +1,41 @@
 # Board
 
-Rendered 2026-11-21 18:19 UTC; every age below is as of then.
+Rendered 2026-11-21 18:23 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
 <details open>
-<summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (2)</strong></summary>
+<summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (1)</strong></summary>
 
 [`code-cleanup`](design-code-cleanup.md) · Age 3d · Owner `neve`
 
 Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features
 
-### Tasks (2)
+### Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
-
-Held by a run; its scope is locked until the run ends.
-
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | landing · Finalize | neve | 3d<br>1d | fabric, loom, board |
-
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
-
-#### Layer A (1)
-
-Waits only on Running, Ready or Draft entries.
-
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | T1 | 2d<br>2d | docs |
+| T11 | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid |  | 2d<br>2d | docs |
 
 ### Notes (0)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | 3d<br>1d | fabric, loom, board |
 
 </details>
 
@@ -87,7 +81,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Darn-Write | neve | 50m<br>50m | fabric, landing |
+| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Darn-Write | neve | 55m<br>55m | fabric, landing |
 
 #### Ready (0)
 
@@ -101,7 +95,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 50m<br>50m | fabric, git |
+| T4 | **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 55m<br>55m | fabric, git |
 
 ### Notes (0)
 
@@ -124,8 +118,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Burler-Review | neve | 50m<br>44m | webster, burler, drift, loom |
-| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Fix | neve | 2h<br>44m | gate, loom, stencil, shed |
+| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Burler-Review | neve | 54m<br>48m | webster, burler, drift, loom |
+| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Fix | neve | 2h<br>48m | gate, loom, stencil, shed |
 
 #### Ready (0)
 
@@ -139,7 +133,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 50m<br>38m | burler, shuttle |
+| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 54m<br>42m | burler, shuttle |
 
 ### Notes (5)
 
@@ -156,7 +150,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private repo of a free account; Finalize halts naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 7m<br>7m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private repo of a free account; Finalize halts naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 11m<br>11m |  |
 
 #### Features (2)
 

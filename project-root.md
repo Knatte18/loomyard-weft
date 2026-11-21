@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 18:19 UTC; every age below is as of then.
+Rendered 2026-11-21 18:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Burler-Review | neve | 50m<br>44m | webster, burler, drift, loom |
-| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Fix | neve | 2h<br>44m | gate, loom, stencil, shed |
+| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | Code-Burler-Review | neve | 54m<br>48m | webster, burler, drift, loom |
+| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light | Code-Burler-Fix | neve | 2h<br>48m | gate, loom, stencil, shed |
 
 ### Ready (0)
 
@@ -33,7 +33,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 50m<br>38m | burler, shuttle |
+| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 54m<br>42m | burler, shuttle |
 
 ## Notes (5)
 
@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private repo of a free account; Finalize halts naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 7m<br>7m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private repo of a free account; Finalize halts naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 11m<br>11m |  |
 
 ### Features (2)
 

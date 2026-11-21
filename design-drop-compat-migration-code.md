@@ -1,6 +1,6 @@
 # Remove compatibility and migration code no hub needs any more
 
-`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · landing · Finalize
+`drop-compat-migration-code` · Task · enhancement, fabric, loom, board · done
 
 ## What was seen
 
