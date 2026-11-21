@@ -1,0 +1,57 @@
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index 12892c02..88842467 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -119,6 +119,19 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as
+ - **No italic prose-coaching.**
+   Write terse, structured prose the plan writer can act on, not a template with meta-commentary about how to fill it in.
+ 
++### A bug entry's record
++
++The Discussion-Write lead's record for a `bug` entry states up front what the red-first gate later checks:
++
++- `## Goal` names the observed fault and the steps that reproduce it.
++- `## Constraints` states the root cause and the evidence it rests on, or names what is still unknown about it.
++- An `## Acceptance criteria` bullet names the test that fails on the merge base and passes after the fix,
++  or states why no test seam exists.
++  The test reaches the bug through code the merge base already has.
++
++A record's statement that no test seam exists does not lift the red-first gate;
++only the parent's `### Added after Discussion` entry whose title opens `No test seam` does.
++
+ ### Parts no writer authors
+ 
+ - `### Added after Discussion (<by>, <date>): <title>` entries under `## Decisions` are appended only by `lym loom decision add`.
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index b8d80e95..93e32d86 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -44,6 +44,11 @@ Do not flag any of the following as a finding:
+   A Decision or Constraint that rests on how git or another tool behaves states the observed result and where it is pinned:
+   a test, a recorded command and its output, or the tool's documentation.
+   One that states the behavior without the result or the pin is a finding, because every later round repeats the experiment to check it.
++- **A bug entry's record without its fault, cause or test.**
++  For a board entry labelled `bug`, the record states the observed fault and how to reproduce it,
++  the root cause or what is still unknown about it,
++  and the test that fails on the merge base or why no test seam exists.
++  A record that omits one of them is a finding.
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
+   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index ec20c672..3ecacb42 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -99,6 +99,12 @@ Cover:
+   Phrase each acceptance criterion as behavior a test can check;
+   a criterion about wording in a stencil, spec, doc or other prose is a review check, marked as the discussion spec's acceptance-criteria rule says, never a test of that prose.
+ 
++When the entry is labelled `bug`, the design also settles the observed fault and how to reproduce it,
++its root cause or what is still unknown about it,
++and the test that will fail on the merge base and pass after the fix, or why no test seam exists.
++The fault and its cause are facts Step 2 researches, never interview questions;
++the record states all three as the discussion spec's bug-entry rule says.
++
+ For every question, give your **recommended answer**.
+ Where there are distinct viable approaches, propose 2–3 with explicit trade-offs, leading with the recommendation.
+ Challenge the problem itself, not just the proposed solution — "is this the right thing to build" is always a valid question.
