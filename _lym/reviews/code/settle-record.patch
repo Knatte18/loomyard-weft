@@ -1,0 +1,600 @@
+diff --git a/contracts/specs/loom-final-summary-spec.md b/contracts/specs/loom-final-summary-spec.md
+index 9a12b773..1e1009ad 100644
+--- a/contracts/specs/loom-final-summary-spec.md
++++ b/contracts/specs/loom-final-summary-spec.md
+@@ -89,4 +89,4 @@ The contract makes no distinction between the heading-adjacent prose and anythin
+ 
+ ## See also
+ 
+-- [webster-spec.md](webster-spec.md) — webster's own writer-side additions: when the artifact is required, its archive-never-refuse discipline, the flaky-failure section the verify gate appends for identities that passed on rerun, and the "Verify gate fixes" section Merriam writes after a verify-gate fixer.
++- [webster-spec.md](webster-spec.md) — webster's own writer-side additions: when the artifact is required, its archive-never-refuse discipline, the flaky-failure section the verify gate appends for identities, and verify command failures, that passed on rerun, and the "Verify gate fixes" section Merriam writes after a verify-gate fixer.
+diff --git a/contracts/specs/webster-spec.md b/contracts/specs/webster-spec.md
+index 459224b7..841d15b4 100644
+--- a/contracts/specs/webster-spec.md
++++ b/contracts/specs/webster-spec.md
+@@ -69,6 +69,7 @@ A long-lived Master session alone has full oversight of what shipped, which is w
+ A `summary.md` may additionally carry two sections the verify gate produces.
+ When the gate's rerun passes a failing plan-level verify, the identities that failed once are flaky.
+ `internal/websterengine`'s `AppendIntegrationTriage` appends an `## Integration suite triage` section listing them.
++A first run whose output named no failing test or package is listed apart, by its log, as a failure of the verify command.
+ The run keeps its outcome.
+ When the gate sends a failure back to Merriam, Merriam answers with one fixer, a fork or the cold fixer.
+ Merriam then rewrites `summary.md` with a `## Verify gate fixes` section.
+@@ -85,7 +86,8 @@ A `gate.yaml` that cannot be loaded, or a `webster` key naming an undeclared tie
+ The error names `lym config gate`.
+ Merriam's strand role is `webster`, so its agent name is `<shortname>:<slug>:webster`.
+ A failing run is rerun once;
+-a pass on the rerun passes the gate and records the failing identities as flaky.
++a pass on the rerun passes the gate and records the failing identities as flaky,
++each with the first run's log path and output tail, which the `webster-verify-triage` friction note keeps.
+ A run that exceeds the verify timeout is not rerun, since a hang is not flakiness:
+ it fails the gate at once with the timeout, the log path and the log tail as findings.
+ A failure that survives the rerun, or a tree that is not clean, is returned to Merriam as findings.
+diff --git a/contracts/stencils/landing/landing-template-describe.md b/contracts/stencils/landing/landing-template-describe.md
+index 9f622be5..ea97c7f5 100644
+--- a/contracts/stencils/landing/landing-template-describe.md
++++ b/contracts/stencils/landing/landing-template-describe.md
+@@ -33,6 +33,7 @@ Read only these sources, and use read-only git for the diff:
+   A manual-check item from an older generation still counts when the live change does not make it obsolete.
+   When a record carries an `## Integration suite failed` section, carry that failure into your description as an item for the reviewer to check.
+   When a record carries an `## Integration suite triage` section, carry it into your description as an item for the reviewer to check too, naming the flaky and pre-existing identities it lists.
++  Name each verify command failure the section lists by its first run's log, as a failure of the verify step rather than a flaky test.
+   When a record carries an `## Integration suite fix` section, carry it into your description as an item for the reviewer to check, naming the fix commits and the identities they cleared.
+ 
+ ## The regression check
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index f90b071d..248238da 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -989,6 +989,9 @@
+ // A failure is parsed from the log and rerun once:
+ // a rerun pass passes the gate, and the identities that failed once are flaky.
+ // Run reports them after the wait as a warning, a summary.md section and a friction note (VerifyGateNotes.Apply).
++// The friction note keeps each one's first-run log path and output tail.
++// A first run that named no failing test or package is reported as a failure of the verify command.
++// It is never reported as a flaky test.
+ // A failure that survives the rerun returns findings.
+ // Each failure goes to a fixer.
+ // The cold fixer takes the failure that reaches the attempt budget;
+diff --git a/internal/websterengine/summary.go b/internal/websterengine/summary.go
+index 3890f0c4..f5841aea 100644
+--- a/internal/websterengine/summary.go
++++ b/internal/websterengine/summary.go
+@@ -43,15 +43,18 @@ func ArchiveStaleSummary(websterDir string, now func() time.Time) (archivedTo st
+ 	return target, nil
+ }
+ 
+-// AppendIntegrationTriage appends a section listing the flaky identities the verify gate passed on rerun.
+-// It lists identities only, and is a no-op when flaky is empty.
+-func AppendIntegrationTriage(websterDir string, flaky []string) error {
+-	if len(flaky) == 0 {
++// AppendIntegrationTriage appends a section listing what the verify gate passed on rerun.
++// flaky holds the failing test and package identities;
++// commandLogs holds the first-run logs of verify command failures that named no failing test.
++// It is a no-op when both are empty.
++func AppendIntegrationTriage(websterDir string, flaky, commandLogs []string) error {
++	if len(flaky) == 0 && len(commandLogs) == 0 {
+ 		return nil
+ 	}
+ 	var b strings.Builder
+ 	b.WriteString("\n\n## Integration suite triage\n\nThe `final` gate failed, but webster's triage did not attribute the failure to this run.\n")
+ 	writeTriageList(&b, "Flaky (passed on rerun)", flaky)
++	writeTriageList(&b, "Verify command failed naming no failing test (passed on rerun), first run's log", commandLogs)
+ 	return appendToSummary(websterDir, "integration triage", b.String())
+ }
+ 
+diff --git a/internal/websterengine/summary_test.go b/internal/websterengine/summary_test.go
+index 6f188273..ff88f27e 100644
+--- a/internal/websterengine/summary_test.go
++++ b/internal/websterengine/summary_test.go
+@@ -79,16 +79,24 @@ func TestAppendSummarySections(t *testing.T) {
+ 		},
+ 		{
+ 			name:   "integration triage: empty is a no-op",
+-			append: func(dir string) error { return websterengine.AppendIntegrationTriage(dir, nil) },
++			append: func(dir string) error { return websterengine.AppendIntegrationTriage(dir, nil, nil) },
+ 			want:   "# S\n",
+ 		},
+ 		{
+ 			name: "integration triage: flaky tests are listed by identity",
+ 			append: func(dir string) error {
+-				return websterengine.AppendIntegrationTriage(dir, []string{"TestF1", "TestF2"})
++				return websterengine.AppendIntegrationTriage(dir, []string{"TestF1", "TestF2"}, nil)
+ 			},
+ 			want: "# S\n" + triageSectionHead + "\nFlaky (passed on rerun):\n\n- `TestF1`\n- `TestF2`\n",
+ 		},
++		{
++			name: "integration triage: a verify command failure is listed apart by its first run's log",
++			append: func(dir string) error {
++				return websterengine.AppendIntegrationTriage(dir, []string{"TestF1"}, []string{"/v/1.log"})
++			},
++			want: "# S\n" + triageSectionHead + "\nFlaky (passed on rerun):\n\n- `TestF1`\n" +
++				"\nVerify command failed naming no failing test (passed on rerun), first run's log:\n\n- `/v/1.log`\n",
++		},
+ 		{
+ 			name: "fix commits: each fix commit and departure line follows the existing content",
+ 			append: func(dir string) error {
+diff --git a/internal/websterengine/triage.go b/internal/websterengine/triage.go
+index 769ac163..8d813c03 100644
+--- a/internal/websterengine/triage.go
++++ b/internal/websterengine/triage.go
+@@ -1,5 +1,5 @@
+ // triage.go holds the verify gate's flaky-failure notes:
+-// the warning and the friction note that name the identities failing once and passing on rerun.
++// the warning and the friction note that name the failures of a first verify run that passed on rerun.
+ 
+ package websterengine
+ 
+@@ -13,18 +13,50 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+-// triageWarnings returns the warning naming the flaky identities, or nil when there are none.
+-func triageWarnings(flaky []string) []string {
+-	if len(flaky) == 0 {
+-		return nil
++// flakyFailure is one failure of a first verify run whose rerun passed.
++type flakyFailure struct {
++	failure VerifyFailure
++	// log is the first run's verify log.
++	log string
++}
++
++// commandFailure reports whether f named no test or package, so the verify command itself failed.
++func (f flakyFailure) commandFailure() bool {
++	return f.failure.Kind == FailureKindOpaque
++}
++
++// splitFlaky returns the ids of the flaky test and package failures, and the logs of the flaky verify command failures.
++func splitFlaky(flaky []flakyFailure) (ids, commandLogs []string) {
++	for _, f := range flaky {
++		if f.commandFailure() {
++			commandLogs = append(commandLogs, f.log)
++			continue
++		}
++		ids = append(ids, f.failure.ID)
+ 	}
+-	return []string{"integration verify: flaky failures passed or vanished on rerun: " + strings.Join(flaky, ", ")}
++	return ids, commandLogs
+ }
+ 
+-// writeTriageFrictionNote records the flaky identities as a friction note.
+-// A failure that vanishes on rerun is environment trouble, which the hub collects from friction notes.
++// triageWarnings returns the warnings naming the flaky failures, or nil when there are none.
++// A first run that named no failing test or package is reported as a failure of the verify command.
++// It is never reported as a flaky test.
++func triageWarnings(flaky []flakyFailure) []string {
++	ids, commandLogs := splitFlaky(flaky)
++	var warnings []string
++	if len(ids) > 0 {
++		warnings = append(warnings, "integration verify: flaky failures passed or vanished on rerun: "+strings.Join(ids, ", "))
++	}
++	for _, log := range commandLogs {
++		warnings = append(warnings, "integration verify: the verify command failed naming no failing test and passed on rerun; first run's log: "+log)
++	}
++	return warnings
++}
++
++// writeTriageFrictionNote records the flaky failures as a friction note, each with its first run's log and output tail.
++// A failure that vanishes on rerun is environment trouble, which the hub collects from friction notes,
++// and the kept output is what lets a reader find its cause.
+ // It is a no-op when frictionDir is empty or flaky is empty.
+-func writeTriageFrictionNote(frictionDir string, flaky []string) error {
++func writeTriageFrictionNote(frictionDir string, flaky []flakyFailure) error {
+ 	if frictionDir == "" || len(flaky) == 0 {
+ 		return nil
+ 	}
+@@ -34,19 +66,63 @@ func writeTriageFrictionNote(frictionDir string, flaky []string) error {
+ 		return nil
+ 	}
+ 
++	var tests, commands strings.Builder
++	for _, f := range flaky {
++		if f.commandFailure() {
++			fmt.Fprintf(&commands, "- first run's log %s\n", f.log)
++			writeFailureOutput(&commands, f.failure.Tail)
++			continue
++		}
++		fmt.Fprintf(&tests, "- %s, first run's log %s\n", f.failure.ID, f.log)
++		writeFailureOutput(&tests, f.failure.Tail)
++	}
++
+ 	var b strings.Builder
+ 	b.WriteString("Integration-suite triage: non-regression verify failures\n\n")
+-	b.WriteString("These identities failed the first verify run and passed or vanished on rerun (flaky):\n\n")
+-	for _, id := range flaky {
+-		b.WriteString("- " + id + "\n")
++	if tests.Len() > 0 {
++		b.WriteString("These identities failed the first verify run and passed or vanished on rerun (flaky):\n\n")
++		b.WriteString(tests.String())
++	}
++	if commands.Len() > 0 {
++		b.WriteString("The verify command failed its first run naming no failing test, and passed on rerun; the failure may be the verify step's own, not a test's:\n\n")
++		b.WriteString(commands.String())
+ 	}
+-	b.WriteString("\n")
+ 	if err := os.WriteFile(path, []byte(b.String()), 0o644); err != nil {
+ 		return fmt.Errorf("webster: triage: write friction note %s: %w", path, err)
+ 	}
+ 	return nil
+ }
+ 
++// writeFailureOutput writes a first run's output tail under its bullet as a fenced block, or says the output was empty.
++// The fence is one backtick longer than the longest backtick run in the tail, and never shorter than three.
++// A fence line inside the output therefore cannot close the block early.
++func writeFailureOutput(b *strings.Builder, tail string) {
++	if strings.TrimSpace(tail) == "" {
++		b.WriteString("\n  Its output was empty.\n\n")
++		return
++	}
++	fence := strings.Repeat("`", max(3, longestBacktickRun(tail)+1))
++	b.WriteString("\n  " + fence + "text\n")
++	for _, line := range strings.Split(tail, "\n") {
++		b.WriteString("  " + line + "\n")
++	}
++	b.WriteString("  " + fence + "\n\n")
++}
++
++// longestBacktickRun returns the length of the longest run of consecutive backticks in s.
++func longestBacktickRun(s string) int {
++	longest, run := 0, 0
++	for _, r := range s {
++		if r == '`' {
++			run++
++			longest = max(longest, run)
++			continue
++		}
++		run = 0
++	}
++	return longest
++}
++
+ // backgroundShellOutcome records how a run ended with a background shell still outstanding.
+ // It says what finally ends the shell.
+ type backgroundShellOutcome struct {
+diff --git a/internal/websterengine/triage_test.go b/internal/websterengine/triage_test.go
+index f6779a4a..6a6e0206 100644
+--- a/internal/websterengine/triage_test.go
++++ b/internal/websterengine/triage_test.go
+@@ -15,14 +15,28 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// testFlaky returns a flaky failure of kind with id, its first run's log and its output tail.
++func testFlaky(id, kind, log, tail string) flakyFailure {
++	return flakyFailure{failure: VerifyFailure{ID: id, Kind: kind, Tail: tail}, log: log}
++}
++
+ func TestTriageWarnings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	cases := []struct {
+ 		name string
+-		in   []string
++		in   []flakyFailure
+ 		want []string
+ 	}{
+-		{"flaky", []string{"p.A", "p.B"}, []string{"integration verify: flaky failures passed or vanished on rerun: p.A, p.B"}},
++		{
++			"flaky tests",
++			[]flakyFailure{testFlaky("p.A", FailureKindTest, "/v/1.log", "boom"), testFlaky("p", FailureKindPackage, "/v/1.log", "")},
++			[]string{"integration verify: flaky failures passed or vanished on rerun: p.A, p"},
++		},
++		{
++			"a verify command failure is no flaky test",
++			[]flakyFailure{testFlaky(opaqueFailureID, FailureKindOpaque, "/v/1.log", "gate error")},
++			[]string{"integration verify: the verify command failed naming no failing test and passed on rerun; first run's log: /v/1.log"},
++		},
+ 		{"none", nil, nil},
+ 	}
+ 	for _, c := range cases {
+@@ -36,7 +50,49 @@ func TestWriteTriageFrictionNote(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("content", func(t *testing.T) {
+ 		dir := filepath.Join(t.TempDir(), "friction")
+-		if err := writeTriageFrictionNote(dir, []string{"p.A", "p.B"}); err != nil {
++		flaky := []flakyFailure{
++			testFlaky("p.A", FailureKindTest, "/v/1.log", "a_test.go:3: boom\nmore"),
++			testFlaky("p", FailureKindPackage, "/v/1.log", ""),
++			testFlaky(opaqueFailureID, FailureKindOpaque, "/v/3.log", "gate test: build failed"),
++		}
++		if err := writeTriageFrictionNote(dir, flaky); err != nil {
++			t.Fatal(err)
++		}
++		got, err := os.ReadFile(filepath.Join(dir, "webster-verify-triage.md"))
++		if err != nil {
++			t.Fatal(err)
++		}
++		want := "Integration-suite triage: non-regression verify failures\n\n" +
++			"These identities failed the first verify run and passed or vanished on rerun (flaky):\n\n" +
++			"- p.A, first run's log /v/1.log\n\n  ```text\n  a_test.go:3: boom\n  more\n  ```\n\n" +
++			"- p, first run's log /v/1.log\n\n  Its output was empty.\n\n" +
++			"The verify command failed its first run naming no failing test, and passed on rerun; the failure may be the verify step's own, not a test's:\n\n" +
++			"- first run's log /v/3.log\n\n  ```text\n  gate test: build failed\n  ```\n\n"
++		if string(got) != want {
++			t.Errorf("note = %q; want %q", got, want)
++		}
++	})
++	t.Run("command failures only", func(t *testing.T) {
++		dir := filepath.Join(t.TempDir(), "friction")
++		flaky := []flakyFailure{testFlaky(opaqueFailureID, FailureKindOpaque, "/v/3.log", "gate test: build failed")}
++		if err := writeTriageFrictionNote(dir, flaky); err != nil {
++			t.Fatal(err)
++		}
++		got, err := os.ReadFile(filepath.Join(dir, "webster-verify-triage.md"))
++		if err != nil {
++			t.Fatal(err)
++		}
++		want := "Integration-suite triage: non-regression verify failures\n\n" +
++			"The verify command failed its first run naming no failing test, and passed on rerun; the failure may be the verify step's own, not a test's:\n\n" +
++			"- first run's log /v/3.log\n\n  ```text\n  gate test: build failed\n  ```\n\n"
++		if string(got) != want {
++			t.Errorf("note = %q; want %q", got, want)
++		}
++	})
++	t.Run("a backtick fence in the tail", func(t *testing.T) {
++		dir := filepath.Join(t.TempDir(), "friction")
++		flaky := []flakyFailure{testFlaky("p.A", FailureKindTest, "/v/1.log", "before\n```\nafter")}
++		if err := writeTriageFrictionNote(dir, flaky); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		got, err := os.ReadFile(filepath.Join(dir, "webster-verify-triage.md"))
+@@ -44,7 +100,8 @@ func TestWriteTriageFrictionNote(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		want := "Integration-suite triage: non-regression verify failures\n\n" +
+-			"These identities failed the first verify run and passed or vanished on rerun (flaky):\n\n- p.A\n- p.B\n\n"
++			"These identities failed the first verify run and passed or vanished on rerun (flaky):\n\n" +
++			"- p.A, first run's log /v/1.log\n\n  ````text\n  before\n  ```\n  after\n  ````\n\n"
+ 		if string(got) != want {
+ 			t.Errorf("note = %q; want %q", got, want)
+ 		}
+@@ -52,7 +109,7 @@ func TestWriteTriageFrictionNote(t *testing.T) {
+ 	t.Run("empty dir", func(t *testing.T) {
+ 		cwd := t.TempDir()
+ 		t.Chdir(cwd)
+-		if err := writeTriageFrictionNote("", []string{"p.A"}); err != nil {
++		if err := writeTriageFrictionNote("", []flakyFailure{testFlaky("p.A", FailureKindTest, "/v/1.log", "")}); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		if entries, _ := os.ReadDir(cwd); len(entries) != 0 {
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 9777425a..7c7d4717 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -35,7 +35,7 @@ const verifyGateSite = "webster gate"
+ const verifyGateCrashFindingsPrefix = "The verify command's test runner crashed"
+ 
+ // VerifyGateNotes collects what a gate's evaluations observed that is not a failure:
+-// the identities that failed once and passed on rerun, and the commits made above the pre-fix head.
++// the failures that passed on rerun, each with its first run's log, and the commits made above the pre-fix head.
+ // It is applied after the gate's wait, so a flaky pass reaches the warnings, summary.md and a friction note,
+ // and the fixer's commits reach summary.md.
+ // It also holds the fixer the latest failure went to, which the re-prompt line names.
+@@ -43,7 +43,7 @@ type VerifyGateNotes struct {
+ 	frictionDir string
+ 
+ 	mu      sync.Mutex
+-	flaky   []string
++	flaky   []flakyFailure
+ 	commits []CommitLogEntry
+ 	fixer   string
+ }
+@@ -93,38 +93,39 @@ func (n *VerifyGateNotes) FixCommits() []CommitLogEntry {
+ 	return kept
+ }
+ 
+-// addFlaky records ids as flaky, skipping any already recorded.
+-func (n *VerifyGateNotes) addFlaky(ids []string) {
++// addFlaky records failures, parsed from the first run's log, as flaky, skipping any identity already recorded.
++func (n *VerifyGateNotes) addFlaky(failures []VerifyFailure, log string) {
+ 	n.mu.Lock()
+ 	defer n.mu.Unlock()
+-	for _, id := range ids {
++	for _, failure := range failures {
+ 		found := false
+ 		for _, have := range n.flaky {
+-			found = found || have == id
++			found = found || have.failure.ID == failure.ID
+ 		}
+ 		if !found {
+-			n.flaky = append(n.flaky, id)
++			n.flaky = append(n.flaky, flakyFailure{failure: failure, log: log})
+ 		}
+ 	}
+ }
+ 
+-// Flaky returns the identities recorded as flaky, in first-seen order.
+-func (n *VerifyGateNotes) Flaky() []string {
++// flakyFailures returns the failures recorded as flaky, in first-seen order.
++func (n *VerifyGateNotes) flakyFailures() []flakyFailure {
+ 	n.mu.Lock()
+ 	defer n.mu.Unlock()
+-	return append([]string(nil), n.flaky...)
++	return append([]flakyFailure(nil), n.flaky...)
+ }
+ 
+-// Apply writes the flaky identities into the summary.md under websterDir and a friction note.
++// Apply writes the flaky failures into the summary.md under websterDir and a friction note.
+ // It returns the warnings that name them.
+-// It writes the flaky identities only when some were flaky, and returns no warnings otherwise.
++// It writes the flaky failures only when some were flaky, and returns no warnings otherwise.
+ // It then appends the fixer's commits to summary.md.
+ // The gate's wait precedes this call, so the section lands after Master's last rewrite of summary.md.
+ // The friction note is best-effort: a failed note is logged and never fails the run.
+ func (n *VerifyGateNotes) Apply(websterDir string) ([]string, error) {
+ 	var warnings []string
+-	if flaky := n.Flaky(); len(flaky) > 0 {
+-		if err := AppendIntegrationTriage(websterDir, flaky); err != nil {
++	if flaky := n.flakyFailures(); len(flaky) > 0 {
++		ids, commandLogs := splitFlaky(flaky)
++		if err := AppendIntegrationTriage(websterDir, ids, commandLogs); err != nil {
+ 			return nil, err
+ 		}
+ 		if err := writeTriageFrictionNote(n.frictionDir, flaky); err != nil {
+@@ -480,14 +481,21 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 			return failHung(res, firstOutput, hang)
+ 		}
+ 		first := runplan.ParseVerifyRun(firstOutput, false)
++		firstLog := res.Log
+ 		res, err = s.verify(site, command)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("websterengine: verify gate: %w", err)
+ 		}
+ 		switch res.Status {
+ 		case verifytree.StatusPassed, verifytree.StatusSkipped:
+-			notes.addFlaky(failureIDs(first))
+-			logger.Warn("websterengine: verify gate failures passed on rerun", "flaky", strings.Join(failureIDs(first), ", "))
++			notes.addFlaky(first, firstLog)
++			ids, commandLogs := splitFlaky(notes.flakyFailures())
++			if len(ids) > 0 {
++				logger.Warn("websterengine: verify gate failures passed on rerun", "flaky", strings.Join(ids, ", "))
++			}
++			if len(commandLogs) > 0 {
++				logger.Warn("websterengine: verify command failure passed on rerun", "verify_command_failed", strings.Join(commandLogs, ", "))
++			}
+ 			return pass()
+ 		case verifytree.StatusDirty:
+ 			return fail(VerifyGateReport{Dirty: res.Dirty})
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index 8477b07f..2c8bee7d 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -13,6 +13,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+@@ -173,32 +174,97 @@ func TestVerifyGate_PassesWithoutVerifying(t *testing.T) {
+ 	}
+ }
+ 
+-//testtiming:keep pins the rerun's flaky note naming the failing package and every verify site's gate label and attempt; the run-level verify-gate test observes only the pass
++// TestVerifyGate_FlakyFailurePassesOnRerunWithNote pins a first-run failure whose rerun passes.
++// The gate passes, and the applied notes keep the first run's log path and output tail in the friction note.
++// A first run that names no failing test is a failure of the verify command, never a flaky test.
++//
++//testtiming:keep pins the rerun's flaky notes with the first run's log and output, and every verify site's gate label and attempt; the run-level verify-gate test observes only the pass
+ func TestVerifyGate_FlakyFailurePassesOnRerunWithNote(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	f := &gateFake{
+-		outcome: outcomeDone,
+-		command: "go test ./...",
+-		results: []verifytree.Result{failedResult(), passedResult()},
+-		logs:    []string{failingPackageLog},
+-	}
+-	notes := &VerifyGateNotes{}
+-	gate := newVerifyGate(t.TempDir(), 3, notes, testFixPromptPath, f.seams())
++	t.Parallel()
+ 
+-	res, err := gate()
+-	if err != nil || !res.Passed {
+-		t.Fatalf("gate() = %+v, %v; want a pass on rerun", res, err)
+-	}
+-	if f.verifyCalls != 2 {
+-		t.Errorf("verify ran %d time(s); want the run and one rerun", f.verifyCalls)
+-	}
+-	if want := []string{"example.com/mod/internal/a"}; !reflect.DeepEqual(notes.Flaky(), want) {
+-		t.Errorf("notes.Flaky() = %v; want %v", notes.Flaky(), want)
++	tests := []struct {
++		name      string
++		firstLog  string
++		wantWarns []string
++		// wantNote are the lines the friction note holds.
++		wantNote []string
++		// wantSummary is the summary.md line that lists the failure.
++		wantSummary string
++	}{
++		{
++			name:        "a failing package",
++			firstLog:    "    tmuxkit: a stray entry\n" + failingPackageLog,
++			wantWarns:   []string{"integration verify: flaky failures passed or vanished on rerun: example.com/mod/internal/a"},
++			wantNote:    []string{"(flaky):", "- example.com/mod/internal/a, first run's log /verify/verify-1.log", "      tmuxkit: a stray entry"},
++			wantSummary: "- `example.com/mod/internal/a`",
++		},
++		{
++			name:        "a verify command that named no failing test",
++			firstLog:    "gate test: failed runs: build (exit 1)\n",
++			wantWarns:   []string{"integration verify: the verify command failed naming no failing test and passed on rerun; first run's log: /verify/verify-1.log"},
++			wantNote:    []string{"The verify command failed its first run naming no failing test", "- first run's log /verify/verify-1.log", "  gate test: failed runs: build (exit 1)"},
++			wantSummary: "- `/verify/verify-1.log`",
++		},
+ 	}
+-	for _, site := range f.sites {
+-		if site.Label != "webster gate" || site.Attempt != 1 {
+-			t.Errorf("verify site = %+v; want label %q, attempt 1", site, "webster gate")
+-		}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			f := &gateFake{
++				outcome: outcomeDone,
++				command: "go test ./...",
++				results: []verifytree.Result{failedResult(), passedResult()},
++				logs:    []string{tt.firstLog, "rerun output only\n"},
++			}
++			frictionDir := filepath.Join(t.TempDir(), "friction")
++			notes := &VerifyGateNotes{frictionDir: frictionDir}
++			gate := newVerifyGate(t.TempDir(), 3, notes, testFixPromptPath, f.seams())
++
++			res, err := gate()
++			if err != nil || !res.Passed {
++				t.Fatalf("gate() = %+v, %v; want a pass on rerun", res, err)
++			}
++			if f.verifyCalls != 2 {
++				t.Errorf("verify ran %d time(s); want the run and one rerun", f.verifyCalls)
++			}
++			for _, site := range f.sites {
++				if site.Label != "webster gate" || site.Attempt != 1 {
++					t.Errorf("verify site = %+v; want label %q, attempt 1", site, "webster gate")
++				}
++			}
++
++			websterDir := t.TempDir()
++			if err := os.WriteFile(summaryparser.Path(websterDir), []byte("# S\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			warnings, err := notes.Apply(websterDir)
++			if err != nil {
++				t.Fatalf("Apply() error = %v", err)
++			}
++			if !reflect.DeepEqual(warnings, tt.wantWarns) {
++				t.Errorf("Apply() warnings = %q; want %q", warnings, tt.wantWarns)
++			}
++			note, err := os.ReadFile(filepath.Join(frictionDir, "webster-verify-triage.md"))
++			if err != nil {
++				t.Fatalf("read friction note: %v", err)
++			}
++			for _, want := range tt.wantNote {
++				if !strings.Contains(string(note), want) {
++					t.Errorf("friction note = %q; want %q in it", note, want)
++				}
++			}
++			if strings.Contains(string(note), "rerun output only") {
++				t.Errorf("friction note = %q; want the first run's output, not the rerun's", note)
++			}
++			summary, err := os.ReadFile(summaryparser.Path(websterDir))
++			if err != nil {
++				t.Fatal(err)
++			}
++			if !slices.Contains(strings.Split(string(summary), "\n"), tt.wantSummary) {
++				t.Errorf("summary = %q; want the line %q", summary, tt.wantSummary)
++			}
++		})
+ 	}
+ }
+ 
+@@ -290,8 +356,8 @@ func TestVerifyGate_HungVerifyFailsAtOnceWithoutRerun(t *testing.T) {
+ 			if tt.wantHang == "" {
+ 				return
+ 			}
+-			if flaky := notes.Flaky(); len(flaky) != 0 {
+-				t.Errorf("notes.Flaky() = %v; want none for a hang", flaky)
++			if flaky := notes.flakyFailures(); len(flaky) != 0 {
++				t.Errorf("notes.flakyFailures() = %v; want none for a hang", flaky)
+ 			}
+ 			if !strings.Contains(res.Findings, "not re-run") || !strings.Contains(res.Findings, tt.wantHang) {
+ 				t.Errorf("findings = %q; want them to say the step was not re-run and name %q", res.Findings, tt.wantHang)
