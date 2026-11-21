@@ -1,6 +1,6 @@
 # P1 Code cleanup: cut and simplify lym code and tests
 
-Rendered 2026-11-21 18:59 UTC; every age below is as of then.
+Rendered 2026-11-21 19:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`code-cleanup`](design-code-cleanup.md) · Age 3d · Owner `neve`
@@ -37,7 +37,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | Describe | neve | 2d<br>2d | docs |
+| T11 | **Trim every package doc.go of what is superfluous**<br>• The comment rewrite did not shrink doc.go files (27,301 lines); cut what is superfluous in all of them, fanned out over many small Sonnet agents<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`doc-go-trim-pass`](design-doc-go-trim-pass.md) | darn · solid | PR-Review | neve | 2d<br>2d | docs |
 
 ### Ready (0)
 
