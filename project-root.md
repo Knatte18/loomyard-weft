@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 14:37 UTC; every age below is as of then.
+Rendered 2026-11-21 14:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 9m<br>9m | gate, webster, stencil |
+| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | Darn-Write | neve | 10m<br>10m | gate, webster, stencil |
 
 ### Ready (0)
 
@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (6)
+## Notes (7)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -43,11 +43,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | 1d<br>1d | gate, testmap |
 
-### Enhancements (1)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam** | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | 1d<br>1d | burler, stencil |
+| E2 |  | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | 0m<br>0m | stencil, loom |
 
 ### Features (2)
 
