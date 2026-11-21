@@ -240,6 +240,12 @@ Decision: two-repo-merge-probe-regression landed on main as c83fec49 before this
 
 Rationale: The peer is no longer running, so there is nothing to order or narrow.
 
+### Added after Discussion (parent, 2026-11-21): PATTERN change: lym's own records-namespace branch names are named constants
+
+Decision: Declare a PATTERN-code-conventions change: the Branch rule governs code branches; a branch lym itself owns inside its records namespace (the one-repository board branch main under refs/lym/heads/, and the f06acf39 layout's lym-bolt that D3's refusal names) is a named constant defined once in fabric, never a literal at a use site. Add it to the overview's PATTERN changes and have card 10 write it into PATTERN.md and pattern/PATTERN-code-conventions.md beside PATTERN-single-repo-hub.
+
+Rationale: The rule exists so lym never guesses the operator's code branches; D1 fixes the board branch so a renamed code default cannot hide the board, and D10 must recognise the old layout by its fixed name. Neither name is read from git by design, and only fabric knows the hub layout, so one fabric-owned constant each keeps the rule's intent.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
