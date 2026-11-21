@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 16:00 UTC; every age below is as of then.
+Rendered 2026-11-21 16:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -33,7 +33,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 27m<br>27m | gate, loom |
+| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 30m<br>30m | gate, loom |
 
 ### Features (2)
 
