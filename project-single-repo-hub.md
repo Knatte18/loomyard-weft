@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Preflight | neve | 0m<br>0m | fabric |
+| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Record-Write | neve | 0m<br>0m | fabric |
 
 ### Ready (0)
 
