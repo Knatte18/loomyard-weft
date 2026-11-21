@@ -167,7 +167,7 @@
       "isolated": false,
       "brief": "Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest",
       "body": "## What was seen\n\nOutside tests, \"retired\" appears in 127 files, \"migrat\" in 57 and \"legacy\" in 65 (2026-11-18);\n`fabricengine` leads with 18 files, then `loomcli` 11 and `boardengine` 10.\nSome of it is a deliberate refusal of an old name or key with a pointer to the new one, which is cheap and stays.\nSome is real migration code: `landingshed` alone carries about 100 lines (the retired `Merge-In` row name,\na scratch-to-records attempt migration, a key-rename migration).\n\n## Idea\n\nA mechanical pass, module by module: classify each hit as a refusal (keep) or a migration or compatibility path\nwhose data no hub still holds (delete).\n\n## Decided\n\n- All migration code goes: the operator confirmed no hub needs it (operator, 2026-11-19).\n- `lym board retire-legacy` is part of it: a one-off migration of `tasks.json` and `notes.json` into `board.json` that every hub has run.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-18T17:23:24Z",
       "revised": "2026-11-19T19:21:38Z",
       "run_settings": {
