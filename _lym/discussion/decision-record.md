@@ -309,6 +309,13 @@ Rationale: The no-upstream shape leaves every @{u} read wrong for a namespaced b
   - card9-misses-namespace-sites (class design, severity MEDIUM, open in rounds 1, 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - leftover-refusal-short-branch-delete (class consistency, severity MEDIUM, open in rounds 1)
+  - records-archive-tag-manual-push-no-destination (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1, D3: `lym fabric clone --single-repo` over a bare origin with no namespace puts the board and the prime's records branch
