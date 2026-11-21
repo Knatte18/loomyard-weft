@@ -207,7 +207,7 @@
       "isolated": false,
       "brief": "",
       "body": "{\"error\":\"invalid json: invalid character 'w' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Create check: `internal/planglyph/donecheck.go:108` reports create-not-done without reading the decision record; `createTargetWayForward` in `internal/websterengine/recordbatch.go` gives the two verbs different ways forward.\n- Drift halt: `internal/websterengine/verifygate.go` cuts findings at `verifyGateStuckTextBytes` (400 bytes) and names no report file; nothing lets the parent accept expected drift.\n- Plan amendment: `internal/burlerengine/roundcheck.go` refuses a finding in a file the changes file does not list, with no exemption for an `--amends-plan` decision, and Webster's halt reason never reaches Plan-Burler-Fix as a finding.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-21T17:29:27Z",
       "revised": "2026-11-21T17:35:05Z",
       "run_settings": {
