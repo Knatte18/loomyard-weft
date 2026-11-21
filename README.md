@@ -71,7 +71,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | starting · Seed-IDE | neve | 0m<br>0m | fabric |
+| T2 | **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | starting · Open-IDE | neve | 0m<br>0m | fabric |
 
 #### Ready (0)
 
@@ -100,7 +100,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light | Darn-Write | neve | 1h<br>11m | landing |
+| T1 | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light | Drift-Verify | neve | 1h<br>11m | landing |
 | T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid | landing · Finalize | neve | 1h<br>1h | webster, burler, drift, loom |
 
 #### Ready (0)
