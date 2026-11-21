@@ -7,7 +7,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.FillWith requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=906f113c78a2bcb1040da48e787011552ed393aa620eb40383cb1e8d837990b5 build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
+lym-stencil: sha256=ded2d80225c6f2341c64cf7c9bbb0658cd42e4ac3b718f8a5b4e70e6a20c2207 build=1181fcca04eac3a9f24ae361e1e87136b73df7a2 time=2026-11-21T13:58:36Z -->
 
 # Change description — write the one description this task lands under
 
@@ -34,6 +34,7 @@ Read only these sources, and use read-only git for the diff:
   A manual-check item from an older generation still counts when the live change does not make it obsolete.
   When a record carries an `## Integration suite failed` section, carry that failure into your description as an item for the reviewer to check.
   When a record carries an `## Integration suite triage` section, carry it into your description as an item for the reviewer to check too, naming the flaky and pre-existing identities it lists.
+  Name each verify command failure the section lists by its first run's log, as a failure of the verify step rather than a flaky test.
   When a record carries an `## Integration suite fix` section, carry it into your description as an item for the reviewer to check, naming the fix commits and the identities they cleared.
 
 ## The regression check
