@@ -1,15 +1,15 @@
 {
   "runGuid": "bc4180920879859ebe18169bff8f28f4",
-  "planFingerprint": "55d06f9d47d55791c98bd8456b03f1daa0ca4293cac722819b340e3c28288968",
+  "planFingerprint": "1a8a8c353bfa4e06140c25e8946e596469329824d9f0c0694eefe03a88473ea5",
   "planFileHashes": {
     "00-overview.md": "fa2fe7833db6bf3b24647c15a8de8672789f27a8e4e21b04752ec4bc241e89aa",
     "01-gitrepo-refspec-upstream.md": "a6fd921b533a867171bca740e279ecc6931cd999c31e7ba4e5622a417ea0b2f2",
     "02-namespaced-push-ops.md": "82c0066cbad0aa9a47159f6d6f1d149c3c95d87c3b3f690d68ce844ad431875c",
     "03-namespaced-remote-reads.md": "f8612a930c158864c7d9f90b048508b8d5a67023a799218053832bf38d659840",
     "04-clone-one-repository.md": "71d38798298060b459d072cf14be4968993d533b1d8da78f165069a971cf1c29",
-    "05-one-repository-builder.md": "b85255b9975c437f07e41de5addff6943003a9e97d0a6025e1acd67ac35e3723",
-    "06-prime-records-branch-key.md": "3408db43a55ab8ba6f74652701bd0e5604650166f0e67a4f1bca7fc763d057f8",
-    "07-pair-lifecycle-namespace.md": "46b07062497a133ccb4153864bb8e7a1b52b673c179ea9e1e3a2c0d6e82269ae",
+    "05-one-repository-builder.md": "28beb1c6884992ec9a37b92417cf423a7b469fa2ec2dc6ebbc026d9e2f73c489",
+    "06-prime-records-branch-key.md": "fc3c528fb660bf0a7d1be95f1b1c216d113b50e1177e8d5aec8453ac8f584b03",
+    "07-pair-lifecycle-namespace.md": "eca39962ac54225dbdf2bd4c049634e1e4c70e94b95fe7bd0cf3446380489a53",
     "08-docs-and-pattern.md": "d65bfab75cfb19a794b9aa48ff431f6c5244db6c56d77d4da37eb93a8be84bb2"
   },
   "planOverviewFrameHash": "eec3760f72fbab10066d459ac476fe01a266597a41661b2f0d2f8a83c4ccf3e8",
@@ -325,26 +325,46 @@
         "07-pair-lifecycle-namespace"
       ],
       "cardHashes": {
-        "05-one-repository-builder": "b85255b9975c437f07e41de5addff6943003a9e97d0a6025e1acd67ac35e3723",
-        "06-prime-records-branch-key": "3408db43a55ab8ba6f74652701bd0e5604650166f0e67a4f1bca7fc763d057f8",
-        "07-pair-lifecycle-namespace": "46b07062497a133ccb4153864bb8e7a1b52b673c179ea9e1e3a2c0d6e82269ae"
+        "05-one-repository-builder": "28beb1c6884992ec9a37b92417cf423a7b469fa2ec2dc6ebbc026d9e2f73c489",
+        "06-prime-records-branch-key": "fc3c528fb660bf0a7d1be95f1b1c216d113b50e1177e8d5aec8453ac8f584b03",
+        "07-pair-lifecycle-namespace": "eca39962ac54225dbdf2bd4c049634e1e4c70e94b95fe7bd0cf3446380489a53"
       },
       "startSha": "7861135880ae58d00af36d11aede8f748ce0984c",
       "kind": "fork",
       "spawnedAt": "2026-11-21T15:01:38Z",
       "sessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-one-repository-builder",
+        "status": "done",
+        "head_sha": "16cafa3481f816646335e73eda47d01b91213dfa",
+        "deviations": [
+          "internal/fabricengine/clone_singlerepo_integration_test.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/onerepository_lifecycle_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "16cafa3481f816646335e73eda47d01b91213dfa"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-a9e6701543731d081.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-a9e6701543731d081.jsonl"
+      ]
     }
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
   "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-a4fd447fe6550d4ae.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-accb157194822d62f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-abd12863ff1d6c035.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-abd12863ff1d6c035.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-a9e6701543731d081.jsonl"
   ]
 }

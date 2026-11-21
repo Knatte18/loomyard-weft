@@ -1,12 +1,12 @@
 # Card 5 — one-repository-builder
 
 **Create:**
-- `plan:internal/hubforge#OneRepoOptions` -> `type OneRepoOptions struct`
-- `plan:internal/hubforge#CopyCodeBare` -> `func CopyCodeBare(tb testing.TB, defaultBranch string) string`
-- `plan:internal/hubforge#NewOneRepoHub` -> `func NewOneRepoHub(tb testing.TB, opts OneRepoOptions) *Hub`
-- `plan:internal/fabricengine_test#TestCloneSingleRepo_SeedsTheNamespace` -> `func TestCloneSingleRepo_SeedsTheNamespace(t *testing.T)`
-- `plan:internal/fabricengine_test#TestCloneOneURL_JoinsTheNamespacedHub` -> `func TestCloneOneURL_JoinsTheNamespacedHub(t *testing.T)`
-- `plan:internal/fabricengine_test#TestCloneSingleRepo_FailedSeedPushLeavesNothing` -> `func TestCloneSingleRepo_FailedSeedPushLeavesNothing(t *testing.T)`
+- `internal/hubforge#OneRepoOptions`
+- `internal/hubforge#CopyCodeBare`
+- `internal/hubforge#NewOneRepoHub`
+- `internal/fabricengine_test#TestCloneSingleRepo_SeedsTheNamespace`
+- `internal/fabricengine_test#TestCloneOneURL_JoinsTheNamespacedHub`
+- `internal/fabricengine_test#TestCloneSingleRepo_FailedSeedPushLeavesNothing`
 
 **Edit:**
 - `internal/hubforge#cloneHub` -> `func cloneHub(tb testing.TB, anchor, warpBare, weftBare, container string, singleRepo bool) (*Hub, string)`

@@ -11,7 +11,7 @@
 **Uses:**
 - `internal/fabricengine#originNamespaceAt`
 - `internal/fabricengine#PrimeRecordsBranchKey`
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/fabricengine#RecordsRepoRoot`
 - `internal/fabricengine#Topology.Checkout`
 

@@ -1,16 +1,16 @@
 # Card 7 — pair-lifecycle-namespace
 
 **Create:**
-- `plan:internal/fabricengine_test#TestOneRepositoryPair_RecordsLiveInTheNamespace` -> `func TestOneRepositoryPair_RecordsLiveInTheNamespace(t *testing.T)`
-- `plan:internal/fabricengine_test#TestOneRepositoryOrigin_ReconcileAndCleanupSeeTheNamespace` -> `func TestOneRepositoryOrigin_ReconcileAndCleanupSeeTheNamespace(t *testing.T)`
-- `plan:internal/fabricengine_test#TestOneRepositorySecondMachine_AdoptPullAndReplay` -> `func TestOneRepositorySecondMachine_AdoptPullAndReplay(t *testing.T)`
-- `plan:internal/fabricengine_test#TestOneRepositoryMerge_LeavesNoRecordsOnTheCodeBranch` -> `func TestOneRepositoryMerge_LeavesNoRecordsOnTheCodeBranch(t *testing.T)`
+- `internal/fabricengine_test#TestOneRepositoryPair_RecordsLiveInTheNamespace`
+- `internal/fabricengine_test#TestOneRepositoryOrigin_ReconcileAndCleanupSeeTheNamespace`
+- `internal/fabricengine_test#TestOneRepositorySecondMachine_AdoptPullAndReplay`
+- `internal/fabricengine_test#TestOneRepositoryMerge_LeavesNoRecordsOnTheCodeBranch`
 
 **Edit:**
 - `internal/fabricengine_test#TestCleanup_NeverPushedOrphanIsIdempotentOnRemote`
 
 **Uses:**
-- `plan:internal/hubforge#NewOneRepoHub`
+- `internal/hubforge#NewOneRepoHub`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPair`
 - `internal/hubforge#AddPairWith`
