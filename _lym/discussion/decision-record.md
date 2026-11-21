@@ -63,6 +63,12 @@ Decision: Waive the red-first gate for this run and keep the stencil change.
 
 Rationale: The diff changes contracts/stencils/darn/darn-fragment-make-change-gated.md, a non-Go file the red-first overlay cannot restore on the merge base. The fix's Go tests reach the bug through base code. The overlay gap is filed as note red-first-overlay-non-go-files.
 
+### Added after Discussion (parent, 2026-11-21): Drop the MeasureCall tier fallback
+
+Decision: Config.MeasureCall takes no --tier fallback: when Gate refuses the key it returns Gate's refusal as an error, as AgentGateCall does, and the darn prompt render fails with it. No PATTERN change.
+
+Rationale: A darn run whose hub cannot run the darn-write key fails its own verify anyway, so the fallback only hides a misconfigured hub behind a tier spelling PATTERN-test-speed forbids; Gate's refusal already names the config fix.
+
 ## Constraints
 
 ## Auto-mode assumptions
