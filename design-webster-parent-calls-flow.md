@@ -1,6 +1,6 @@
 # Webster and plan fix honour parent decisions; full halt reasons
 
-`webster-parent-calls-flow` · Task · bug, webster, burler, drift, loom · starting · Open-IDE
+`webster-parent-calls-flow` · Task · bug, webster, burler, drift, loom · running · Preflight
 
 {"error":"invalid json: invalid character 'w' looking for beginning of value","ok":false}
 
