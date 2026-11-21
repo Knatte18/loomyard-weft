@@ -116,7 +116,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | Code-Bouncer | neve | 16m<br>16m | stencil, loom |
+| T4 | **Bugfix section in the Discussion-Write stencil**<br>• For a bug entry, Discussion records the fault, root cause and the test that will fail on base<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`bugfix-discussion-stencil`](design-bugfix-discussion-stencil.md) | darn · light | Drift-Recheck | neve | 16m<br>16m | stencil, loom |
 
 #### Ready (0)
 
