@@ -1,0 +1,1143 @@
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index a98ad2fb..6c961ac7 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -80,13 +80,6 @@ type runFailure struct {
+ 	// lines are the failure's first printed lines, trimmed and without go test's status lines, at most failureLines.
+ 	// A lint finding has its one line.
+ 	lines []string
+-	// triage holds the failure's triage lines, each opening with gateslot.TriageLinePrefix; empty when it has none.
+-	triage []string
+-}
+-
+-// isTest reports whether the failure is a failed test of a named package, the kind a coverage map can hold.
+-func (f runFailure) isTest() bool {
+-	return f.pkg != "" && f.test != ""
+ }
+ 
+ const (
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 6142b6cc..15e6b3a4 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -888,17 +888,6 @@
+ // A failed test shows as its package and test path, and a `vstest` test as its name alone.
+ // A package that failed outside any test, such as by a build error or a crash in `TestMain`, shows as its package.
+ // A lint finding shows as its own `file:line` line.
+-// Under a failed test, first, come its triage lines: four-space lines opening with `gateslot.TriageLinePrefix`.
+-// They exist in a hub whose scoper is `go`, built once per report from the coverage maps.
+-// A test a map holds gets a line naming the changed functions it reaches and the map's commit.
+-// The line names at most five functions, then the count of the rest.
+-// A test reaching none gets a line saying so with the map's commit.
+-// It then gets a line holding the `lym gate reach --test` command.
+-// The prime and a worktree with no parent branch have no change set, and a line says so and why, with no command.
+-// A test no map holds gets one line saying it is not in the coverage maps.
+-// The lines are advisory: they count after every other line, and a failure's lines stay whole or are dropped,
+-// so a triage line never causes a cut and is dropped before any test output line is cut.
+-// Bound: a stored map may lack a function the run added, and a stale entry can show a reach the test no longer has.
+ // Each carries up to `failureLines` lines it printed beside go test's own status and summary lines,
+ // so an error's got and want, a panic's first frames or a .NET exception's message show.
+ // A bare file name a test printed is prefixed with its package's worktree-relative directory.
+diff --git a/internal/gatecli/failurereport.go b/internal/gatecli/failurereport.go
+index 2de64eac..d822b970 100644
+--- a/internal/gatecli/failurereport.go
++++ b/internal/gatecli/failurereport.go
+@@ -189,9 +189,6 @@ func touchedFiles(ctx context.Context, location *lymcwd.Location, root string, i
+ // A run lists its cause lines, such as a timeout.
+ // Then, when no failure was read, it lists the first lines of output no test event carried,
+ // or it says that its log holds the cause.
+-// A failed test's triage lines follow its own line, as four-space lines.
+-// They are advisory: they count after every other line, and the report keeps a failure's lines whole or not at all,
+-// so a triage line never causes a cut and the others are dropped first.
+ // Past failureReportLines lines the report stops with a line saying how many lines each run lost and where to read them.
+ // The touched-files line closes it, naming at most touchedFilesListed files.
+ func renderFailureReport(runs []failedRun, touched []string) []string {
+@@ -200,10 +197,9 @@ func renderFailureReport(runs []failedRun, touched []string) []string {
+ 	}
+ 	lines := []string{failureReportHeader}
+ 	budget := failureReportLines
+-	triageKept := triageFailuresKept(runs)
+ 	var cut []cutRun
+-	for i, run := range runs {
+-		block := run.reportLines(triageKept[i])
++	for _, run := range runs {
++		block := run.reportLines()
+ 		kept := min(len(block), budget)
+ 		for _, line := range block[:kept] {
+ 			lines = append(lines, capLine(line))
+@@ -235,31 +231,9 @@ type cutRun struct {
+ 	lines int
+ }
+ 
+-// triageFailuresKept returns, per run, how many of its leading failures keep their triage lines in the report.
+-// It counts the lines of every run without triage first.
+-// It then keeps triage lines in report order while the budget holds them whole.
+-func triageFailuresKept(runs []failedRun) []int {
+-	room := failureReportLines
+-	for _, run := range runs {
+-		room -= len(run.reportLines(0))
+-	}
+-	kept := make([]int, len(runs))
+-	for i, run := range runs {
+-		for j, failure := range run.failures {
+-			if len(failure.triage) > room {
+-				return kept
+-			}
+-			room -= len(failure.triage)
+-			kept[i] = j + 1
+-		}
+-	}
+-	return kept
+-}
+-
+ // reportLines returns the report's lines for the run: its header, its failures, then its causes.
+-// The first triageKept failures put their triage lines first under their test line.
+ // The output no test event carried follows them.
+-func (run failedRun) reportLines(triageKept int) []string {
++func (run failedRun) reportLines() []string {
+ 	header := fmt.Sprintf("%s (%s)", run.label, run.outcome)
+ 	if run.wayForward != "" {
+ 		header += "; way forward: " + run.wayForward
+@@ -268,17 +242,12 @@ func (run failedRun) reportLines(triageKept int) []string {
+ 		header += ", log " + run.log
+ 	}
+ 	body := []string{header + ":"}
+-	for i, failure := range run.failures {
++	for _, failure := range run.failures {
+ 		indent := "  "
+ 		switch {
+ 		case failure.test != "":
+ 			body = append(body, "  "+strings.TrimSpace(failure.pkg+" "+failure.test)+":")
+ 			indent = "    "
+-			if i < triageKept {
+-				for _, line := range failure.triage {
+-					body = append(body, indent+line)
+-				}
+-			}
+ 		case failure.pkg != "":
+ 			body = append(body, fmt.Sprintf("  %s%s:", failure.pkg, gateslot.ReportOutsideAnyTestSuffix))
+ 			indent = "    "
+diff --git a/internal/gatecli/failurereport_test.go b/internal/gatecli/failurereport_test.go
+index e4d81db5..59ffda56 100644
+--- a/internal/gatecli/failurereport_test.go
++++ b/internal/gatecli/failurereport_test.go
+@@ -9,7 +9,6 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+-	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -132,23 +131,6 @@ func TestRenderFailureReport(t *testing.T) {
+ 				"  a.go:3: // wrapped at the",
+ 			},
+ 		},
+-		{
+-			name: "a failed test's triage lines come first under its test line, as four-space lines, with its output after them",
+-			runs: []failedRun{{
+-				label: "tier0", outcome: "exit 1", log: "/logs/tier0.log",
+-				failures: []runFailure{{
+-					pkg: "example.com/m/p", test: "TestA", lines: []string{"a_test.go:1: boom"},
+-					triage: []string{gateslot.TriageLinePrefix + "not in the coverage maps"},
+-				}},
+-			}},
+-			want: []string{
+-				failureReportHeader,
+-				"tier0 (exit 1), log /logs/tier0.log:",
+-				"  example.com/m/p TestA:",
+-				"    triage: not in the coverage maps",
+-				"    a_test.go:1: boom",
+-			},
+-		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -212,35 +194,6 @@ func TestRenderFailureReport(t *testing.T) {
+ 			t.Errorf("cut line is %d bytes; want a case longer than the %d-byte line cap, which the cut line is exempt from", len(want), failureReportLineBytes)
+ 		}
+ 	})
+-
+-	t.Run("triage lines are dropped before any test output line, and are kept while the line cap holds them whole", func(t *testing.T) {
+-		t.Parallel()
+-		// Each failure takes two lines, its test line and its one output line, so the run leaves one line of the cap free.
+-		failures := make([]runFailure, (failureReportLines-1)/2)
+-		for i := range failures {
+-			failures[i] = runFailure{pkg: "example.com/p", test: fmt.Sprintf("Test%d", i), lines: []string{"x"}}
+-		}
+-		render := func(triage map[int][]string) []string {
+-			withTriage := slices.Clone(failures)
+-			for i, lines := range triage {
+-				withTriage[i].triage = lines
+-			}
+-			return renderFailureReport([]failedRun{{label: "tier0", outcome: "exit 1", log: "/l", failures: withTriage}}, nil)
+-		}
+-		triageLine := func(text string) string { return gateslot.TriageLinePrefix + text }
+-
+-		without := render(nil)
+-		if got := render(map[int][]string{0: {triageLine("a"), triageLine("b")}}); !slices.Equal(got, without) {
+-			t.Errorf("renderFailureReport() with triage lines that do not fit = %q; want the report without them, %q", got, without)
+-		}
+-		got := render(map[int][]string{0: {triageLine("a")}, 1: {triageLine("b")}})
+-		if len(got) != len(without)+1 || got[3] != "    "+triageLine("a") {
+-			t.Errorf("renderFailureReport() = %q; want one triage line, the first failure's, under its test line", got)
+-		}
+-		if slices.Contains(got, "    "+triageLine("b")) {
+-			t.Errorf("renderFailureReport() = %q; want the second failure's triage line dropped once the cap holds no more", got)
+-		}
+-	})
+ }
+ 
+ func TestLintFailedRun(t *testing.T) {
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index f6d3b79a..00538011 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -565,12 +565,10 @@ type execution struct {
+ 
+ // printReport writes the failure report of the call's failed runs to stderr, and nothing when no run failed.
+ // The report names the files the change touches.
+-// It holds triage lines under the failed tests the coverage maps can judge.
+ func (e *execution) printReport(inHub bool) {
+ 	if len(e.failed) == 0 {
+ 		return
+ 	}
+-	e.addTriage(inHub)
+ 	printFailureReport(e.request.stderr, e.failed, touchedFiles(e.ctx, e.location, e.request.root, inHub))
+ }
+ 
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 7d7cf649..294ad939 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -29,7 +29,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -40,7 +39,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+-	"github.com/Knatte18/loomyard/internal/testcover"
+ 	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
+@@ -1440,12 +1438,6 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			"broken/broken.go":      "package broken\n\nvar x = undefinedThing\n",
+ 			"broken/broken_test.go": "package broken\n\nimport \"testing\"\n\nfunc TestBuilds(t *testing.T) {}\n",
+ 		})
+-		// The triage lines read the coverage maps of the module in tier0's directory, which is the prime's root.
+-		primeModule := filepath.Join(prime, "go.mod")
+-		if err := os.WriteFile(primeModule, []byte("module example.com/hub\n\ngo 1.21\n"), 0o644); err != nil {
+-			t.Fatal(err)
+-		}
+-		t.Cleanup(func() { _ = os.Remove(primeModule) })
+ 		code, stdout := runGate(t, gateRun{cwd: t.TempDir(), realGo: true, args: []string{"test", "--tier", "5", "-C", module, "./..."}})
+ 		if code != 1 {
+ 			t.Errorf("exit code = %d, stdout %q; want 1", code, stdout)
+@@ -1468,48 +1460,6 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if report, closing := strings.Index(stdout, failureReportHeader), strings.Index(stdout, gateslot.FailedRunsPrefix); report < 0 || closing < report {
+ 			t.Errorf("stdout %q; want the failure report before the closing line", stdout)
+ 		}
+-		// No coverage map holds the test, so its first line under it is the triage line saying so.
+-		if want := "  example.com/report/p TestFails:\n    " + gateslot.TriageLinePrefix + triageNotInMaps + "\n    report/p/p_test.go:6"; !strings.Contains(stdout, want) {
+-			t.Errorf("stdout %q lacks %q", stdout, want)
+-		}
+-		requireFree(t)
+-	})
+-
+-	t.Run("a failing test a prime's coverage map holds gets the no-change-set line naming the missing parent branch and no reach command", func(t *testing.T) {
+-		module := writeModule(t, "reportmapped", map[string]string{
+-			"p/p.go":      "package p\n",
+-			"p/p_test.go": "package p\n\nimport \"testing\"\n\nfunc TestFails(t *testing.T) {\n\tt.Errorf(\"got %d; want %d\", 1, 2)\n}\n",
+-		})
+-		primeModule := filepath.Join(prime, "go.mod")
+-		if err := os.WriteFile(primeModule, []byte("module example.com/hub\n\ngo 1.21\n"), 0o644); err != nil {
+-			t.Fatal(err)
+-		}
+-		t.Cleanup(func() { _ = os.Remove(primeModule) })
+-		// The module is outside the prime's own, so the map is keyed by the test package's import path.
+-		sharedDir := testcover.Dir(fabricengine.BoltDir(h.Location.HubPath))
+-		const mapCommit = "mapcommit"
+-		heldTest := testcover.Map{
+-			Commit: mapCommit, BuiltAt: time.Now().Add(-time.Hour),
+-			Blocks: []testcover.BlockKey{{File: "p.go", Func: "F", Hash: "h"}},
+-			Tests:  []testcover.MapTest{{Name: "TestFails", FuncHash: "x", Seconds: 0.01, Blocks: []int{0}}},
+-		}
+-		if err := testcover.WriteMap(sharedDir, "example.com/reportmapped/p", heldTest); err != nil {
+-			t.Fatal(err)
+-		}
+-		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(sharedDir, "example.com")) })
+-
+-		code, stdout := runGate(t, gateRun{cwd: t.TempDir(), realGo: true, args: []string{"test", "--tier", "5", "-C", module, "./..."}})
+-		if code != 1 {
+-			t.Errorf("exit code = %d, stdout %q; want 1", code, stdout)
+-		}
+-		want := "  example.com/reportmapped/p TestFails:\n    " + gateslot.TriageLinePrefix + "no change set exists, " + triageReasonNoParent +
+-			"; map commit " + mapCommit + "\n    reportmapped/p/p_test.go:6"
+-		if !strings.Contains(stdout, want) {
+-			t.Errorf("stdout %q lacks %q", stdout, want)
+-		}
+-		if strings.Contains(stdout, "lym gate reach --test") {
+-			t.Errorf("stdout %q holds a reach command; want none for a test with no change set", stdout)
+-		}
+ 		requireFree(t)
+ 	})
+ 
+diff --git a/internal/gatecli/triage.go b/internal/gatecli/triage.go
+deleted file mode 100644
+index 1d041d81..00000000
+--- a/internal/gatecli/triage.go
++++ /dev/null
+@@ -1,175 +0,0 @@
+-// triage.go builds the triage lines a failing call's failure report holds under each failed test.
+-// A triage line says whether the test reaches a function the call's change set touches, read from the coverage maps.
+-
+-package gatecli
+-
+-import (
+-	"fmt"
+-	"slices"
+-	"strings"
+-
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+-	"github.com/Knatte18/loomyard/internal/gateslot"
+-	"github.com/Knatte18/loomyard/internal/hubgeom"
+-	"github.com/Knatte18/loomyard/internal/impactset"
+-	"github.com/Knatte18/loomyard/internal/logger"
+-	"github.com/Knatte18/loomyard/internal/testcover"
+-	"github.com/Knatte18/loomyard/internal/testreach"
+-)
+-
+-// The caps and phrases of the triage lines.
+-const (
+-	// triageMaxFunctions caps the changed functions one triage line names; the count of the rest follows.
+-	triageMaxFunctions = 5
+-	// triageNotInMaps is the line of a failed test no coverage map holds.
+-	triageNotInMaps = "not in the coverage maps"
+-	// triageReachesNone says a mapped test reaches none of the call's changes.
+-	triageReachesNone = "reaches none of this run's changes"
+-	// triageReasonNoParent and the two reasons after it say why a mapped test's line has no change set to judge against.
+-	triageReasonNoParent        = "no parent branch"
+-	triageReasonMergeBaseFailed = "the merge base read failed"
+-	triageReasonChangeSetFailed = "the changed functions could not be read"
+-	// triageLastGreenPlaceholder stands in the line's `lym gate reach` command for the commit the reader fills in.
+-	triageLastGreenPlaceholder = "<last green commit>"
+-)
+-
+-// triageLookup answers, for a failed test, the triage lines of the failure report.
+-// It reads one coverage map reader and the change set of one call.
+-type triageLookup struct {
+-	reader *testreach.Reader
+-	// changed holds the keys of the functions the call changes; it is empty when noChangeReason is set.
+-	changed []testcover.FuncKey
+-	// noChangeReason says why the call has no change set; it is empty when the call has one.
+-	noChangeReason string
+-	// relative maps an import path to the module-relative path the maps are keyed by.
+-	// newTriageLookup sets the identity, for a caller whose paths are module-relative already.
+-	relative func(importPath string) string
+-}
+-
+-// newTriageLookup returns the triage lookup of one call, and false when open fails, so the report carries no triage line.
+-// open opens the coverage maps.
+-// mergeBase returns the merge base with the parent branch and whether the call has a parent branch.
+-// changed returns the functions the call changes against that base.
+-// A call with no parent branch, a failed merge base read or a failed read of the changed functions has no change set:
+-// its lines then say so and why.
+-func newTriageLookup(
+-	open func() (*testreach.Reader, error),
+-	mergeBase func() (string, bool, error),
+-	changed func(base string) ([]testreach.ChangedFunc, error),
+-) (triageLookup, bool) {
+-	reader, err := open()
+-	if err != nil {
+-		logger.Warn("gate test: could not read the coverage maps; the failure report carries no triage line", "cause", err)
+-		return triageLookup{}, false
+-	}
+-	lookup := triageLookup{reader: reader, relative: func(importPath string) string { return importPath }}
+-	base, found, err := mergeBase()
+-	switch {
+-	case err != nil:
+-		logger.Warn("gate test: could not read the merge base for the triage lines", "cause", err)
+-		lookup.noChangeReason = triageReasonMergeBaseFailed
+-	case !found:
+-		lookup.noChangeReason = triageReasonNoParent
+-	default:
+-		funcs, err := changed(base)
+-		if err != nil {
+-			logger.Warn("gate test: could not find the changed functions for the triage lines", "base", base, "cause", err)
+-			lookup.noChangeReason = triageReasonChangeSetFailed
+-			break
+-		}
+-		for _, fn := range funcs {
+-			lookup.changed = append(lookup.changed, fn.Key)
+-		}
+-	}
+-	return lookup, true
+-}
+-
+-// lines returns the triage lines of the failed test test of the package pkg, each opening with gateslot.TriageLinePrefix.
+-// A subtest path is cut at its first slash, since a map holds top-level tests.
+-// A test no map holds gets one line saying so.
+-// A mapped test gets one line naming the changed functions it reaches.
+-// The line names at most triageMaxFunctions of them, then the count of the rest.
+-// A mapped test reaching none gets a line saying so, then a line holding the command that finds the landing to blame.
+-// With no change set, a mapped test gets one line saying why none exists.
+-// Each line about a mapped test names the commit of the map that holds it.
+-func (l triageLookup) lines(pkg, test string) []string {
+-	pkg = l.relative(pkg)
+-	top, _, _ := strings.Cut(test, "/")
+-	reached, source, held := l.reader.FuncsReachedBy(pkg, top, l.changed)
+-	if !held {
+-		return []string{gateslot.TriageLinePrefix + triageNotInMaps}
+-	}
+-	switch {
+-	case l.noChangeReason != "":
+-		return []string{fmt.Sprintf("%sno change set exists, %s; map commit %s", gateslot.TriageLinePrefix, l.noChangeReason, source.Commit)}
+-	case len(reached) == 0:
+-		return []string{
+-			fmt.Sprintf("%s%s; map commit %s", gateslot.TriageLinePrefix, triageReachesNone, source.Commit),
+-			fmt.Sprintf("%slym gate reach --test %s.%s --since %s", gateslot.TriageLinePrefix, pkg, top, triageLastGreenPlaceholder),
+-		}
+-	}
+-	names := make([]string, 0, min(len(reached), triageMaxFunctions))
+-	for _, key := range reached[:min(len(reached), triageMaxFunctions)] {
+-		names = append(names, l.relative(key.Package)+"."+key.Func)
+-	}
+-	named := strings.Join(names, ", ")
+-	if rest := len(reached) - len(names); rest > 0 {
+-		named += fmt.Sprintf(" and %d more", rest)
+-	}
+-	return []string{fmt.Sprintf("%sreaches changed functions: %s; map commit %s", gateslot.TriageLinePrefix, named, source.Commit)}
+-}
+-
+-// addTriage fills the triage lines of the failed tests of the call's failed runs.
+-// It does so only in a hub whose scoper is go, and only when a run failed a test.
+-// A map or change set it cannot read leaves the report without triage lines.
+-func (e *execution) addTriage(inHub bool) {
+-	if !inHub || e.cfg.Scoper != "go" || !slices.ContainsFunc(e.failed, func(run failedRun) bool {
+-		return slices.ContainsFunc(run.failures, runFailure.isTest)
+-	}) {
+-		return
+-	}
+-	module, err := redundancyModule(e.cfg, e.request.root)
+-	if err != nil {
+-		logger.Warn("gate test: no Go module holds the coverage maps; the failure report carries no triage line", "cause", err)
+-		return
+-	}
+-	prime, err := hubgeom.IsPrime(e.location)
+-	if err != nil {
+-		logger.Warn("gate test: could not tell whether the worktree is the prime; the failure report carries no triage line", "cause", err)
+-		return
+-	}
+-	step := reachStep{location: e.location, root: e.request.root}
+-	lookup, ok := newTriageLookup(
+-		func() (*testreach.Reader, error) {
+-			return testreach.Open(reachModuleOf(module), testcover.Dir(fabricengine.BoltDir(e.location.HubPath)), step.worktreeMapsDir(prime))
+-		},
+-		func() (string, bool, error) {
+-			if prime {
+-				return "", false, nil
+-			}
+-			return parentMergeBase(e.location)
+-		},
+-		func(base string) ([]testreach.ChangedFunc, error) {
+-			fabric, err := fabricengine.Open(e.location)
+-			if err != nil {
+-				return nil, err
+-			}
+-			paths, err := impactset.ChangedPaths(e.ctx, e.request.root, base)
+-			if err != nil {
+-				return nil, err
+-			}
+-			return changedFuncsAt(workingTree{root: e.request.root}, fabric, base, module, paths)
+-		},
+-	)
+-	if !ok {
+-		return
+-	}
+-	lookup.relative = module.relativePackage
+-	for i := range e.failed {
+-		for j := range e.failed[i].failures {
+-			if failure := &e.failed[i].failures[j]; failure.isTest() {
+-				failure.triage = lookup.lines(failure.pkg, failure.test)
+-			}
+-		}
+-	}
+-}
+diff --git a/internal/gatecli/triage_test.go b/internal/gatecli/triage_test.go
+deleted file mode 100644
+index a8bb9da7..00000000
+--- a/internal/gatecli/triage_test.go
++++ /dev/null
+@@ -1,129 +0,0 @@
+-// triage_test.go covers the triage lines a failed test gets from the coverage maps.
+-
+-package gatecli
+-
+-import (
+-	"errors"
+-	"path/filepath"
+-	"strings"
+-	"testing"
+-	"time"
+-
+-	"github.com/google/go-cmp/cmp"
+-
+-	"github.com/Knatte18/loomyard/internal/testcover"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-	"github.com/Knatte18/loomyard/internal/testreach"
+-)
+-
+-func TestTriageLookup_Lines(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	const (
+-		modulePath = "ex.com/m"
+-		mapCommit  = "c1abc"
+-	)
+-	funcNames := []string{"F", "G", "H", "I", "J", "K"}
+-	var changeSet []testreach.ChangedFunc
+-	var blocks []testcover.BlockKey
+-	var everyBlock []int
+-	for i, name := range funcNames {
+-		changeSet = append(changeSet, testreach.ChangedFunc{Key: testcover.FuncKey{Package: modulePath + "/a", File: "a.go", Func: name}})
+-		blocks = append(blocks, testcover.BlockKey{File: "a.go", Func: name, Hash: "h"})
+-		everyBlock = append(everyBlock, i)
+-	}
+-	blocks = append(blocks, testcover.BlockKey{File: "z.go", Func: "Z", Hash: "h"})
+-	sharedDir := filepath.Join(t.TempDir(), "shared")
+-	if err := testcover.WriteMap(sharedDir, "a", testcover.Map{
+-		Commit: mapCommit, BuiltAt: time.Now().Add(-time.Hour), Blocks: blocks,
+-		Tests: []testcover.MapTest{
+-			{Name: "TestSix", Blocks: everyBlock},
+-			{Name: "TestTwo", Blocks: []int{0, 1}},
+-			{Name: "TestNone", Blocks: []int{len(funcNames)}},
+-		},
+-	}); err != nil {
+-		t.Fatal(err)
+-	}
+-	module := testreach.Module{Dir: t.TempDir(), Path: modulePath}
+-	open := func() (*testreach.Reader, error) { return testreach.Open(module, sharedDir, "") }
+-	changedSet := func(string) ([]testreach.ChangedFunc, error) { return changeSet, nil }
+-	withBase := func() (string, bool, error) { return "base", true, nil }
+-	prefix := "triage: "
+-
+-	tests := []struct {
+-		name      string
+-		open      func() (*testreach.Reader, error)
+-		mergeBase func() (string, bool, error)
+-		changed   func(string) ([]testreach.ChangedFunc, error)
+-		test      string
+-		want      []string
+-		wantNone  bool
+-	}{
+-		{
+-			name: "A test reaching two changed functions names them and the map's commit",
+-			open: open, mergeBase: withBase, changed: changedSet, test: "TestTwo",
+-			want: []string{prefix + "reaches changed functions: a.F, a.G; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A test reaching six names five and the count of the rest",
+-			open: open, mergeBase: withBase, changed: changedSet, test: "TestSix",
+-			want: []string{prefix + "reaches changed functions: a.F, a.G, a.H, a.I, a.J and 1 more; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A test reaching none says so and gives the command for its own line",
+-			open: open, mergeBase: withBase, changed: changedSet, test: "TestNone",
+-			want: []string{
+-				prefix + "reaches none of this run's changes; map commit " + mapCommit,
+-				prefix + "lym gate reach --test a.TestNone --since <last green commit>",
+-			},
+-		},
+-		{
+-			name: "A subtest is looked up by its top-level test",
+-			open: open, mergeBase: withBase, changed: changedSet, test: "TestTwo/sub/deeper",
+-			want: []string{prefix + "reaches changed functions: a.F, a.G; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A test no map holds is not in the coverage maps",
+-			open: open, mergeBase: withBase, changed: changedSet, test: "TestUnmapped",
+-			want: []string{prefix + "not in the coverage maps"},
+-		},
+-		{
+-			name: "No parent branch gives a line with its reason and no command",
+-			open: open, mergeBase: func() (string, bool, error) { return "", false, nil }, test: "TestNone",
+-			want: []string{prefix + "no change set exists, no parent branch; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A failed merge base read gives a line with its reason and no command",
+-			open: open, mergeBase: func() (string, bool, error) { return "", false, errors.New("git broke") }, test: "TestNone",
+-			want: []string{prefix + "no change set exists, the merge base read failed; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A failed read of the changed functions gives a line with its reason and no command",
+-			open: open, mergeBase: withBase, test: "TestNone",
+-			changed: func(string) ([]testreach.ChangedFunc, error) { return nil, errors.New("read broke") },
+-			want:    []string{prefix + "no change set exists, the changed functions could not be read; map commit " + mapCommit},
+-		},
+-		{
+-			name: "A failed open builds no lookup",
+-			open: func() (*testreach.Reader, error) { return nil, errors.New("maps broke") }, mergeBase: withBase, changed: changedSet,
+-			test: "TestTwo", wantNone: true,
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			lookup, ok := newTriageLookup(tt.open, tt.mergeBase, tt.changed)
+-			if ok == tt.wantNone {
+-				t.Fatalf("newTriageLookup() ok = %v; want %v", ok, !tt.wantNone)
+-			}
+-			if !ok {
+-				return
+-			}
+-			lookup.relative = func(importPath string) string { return strings.TrimPrefix(importPath, modulePath+"/") }
+-			if diff := cmp.Diff(tt.want, lookup.lines(modulePath+"/a", tt.test)); diff != "" {
+-				t.Errorf("lines(a, %s) mismatch (-want +got):\n%s", tt.test, diff)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index a18141fd..16efb06f 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -302,10 +302,6 @@
+ // FailureReportHeader opens the failure report a failing call prints.
+ // FailedTests reads the report's failed tests, each with the tier of the run that failed it.
+ // It reports false unless every failure of the report is a named test of a tier or guard run.
+-// TriageLinePrefix opens each advisory triage line a failure report holds under a failed test;
+-// FailedTests reads past such a line as it does any four-space output line.
+-// TriageLines reads them back, per failed test as `<package>.<Test>`, for a report that re-renders failures.
+-// RenderTriageSection renders them as the `Triage:` section of a findings text.
+ // TierRunFailures reads every failure of the report, each opened by its run's label.
+ // It reports false unless every run the report lists is a tier or guard run.
+ // It also reports false for a package that failed outside any test, such as by a compile error, which a rerun repeats.
+diff --git a/internal/gateslot/failedtests_test.go b/internal/gateslot/failedtests_test.go
+index 2f782c6e..e363ff20 100644
+--- a/internal/gateslot/failedtests_test.go
++++ b/internal/gateslot/failedtests_test.go
+@@ -90,20 +90,6 @@ func TestFailedTests(t *testing.T) {
+ 			want:   []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}, {Tier: 0, Package: "example.com/m/b", Test: "TestB"}, {Tier: 1, Package: "example.com/m/g", Test: "TestGuard"}},
+ 			wantOK: true,
+ 		},
+-		{
+-			name: "triage lines under a failed test change nothing about the tests the report names",
+-			log: report(
+-				"tier0 (exit 1), log /runs/a.log:",
+-				"  example.com/m/a TestA/sub:",
+-				"    "+TriageLinePrefix+"not in the coverage maps",
+-				"    a_test.go:3: got 1; want 2",
+-				"  example.com/m/b TestB:",
+-				"    "+TriageLinePrefix+"reaches none of this run's changes; map commit c1",
+-				"    "+TriageLinePrefix+"lym gate reach --test b.TestB --since <last green commit>",
+-			),
+-			want:   []FailedTest{{Tier: 0, Package: "example.com/m/a", Test: "TestA"}, {Tier: 0, Package: "example.com/m/b", Test: "TestB"}},
+-			wantOK: true,
+-		},
+ 		{
+ 			name: "a log with no report names none",
+ 			log:  "--- FAIL: TestA (0.00s)\nFAIL\texample.com/m/a\t0.1s\n",
+@@ -220,67 +206,6 @@ func TestNamedFailedTests(t *testing.T) {
+ 	}
+ }
+ 
+-// TestTriageLines pins which triage lines a failure report yields per failed test, and that a log with none yields none.
+-func TestTriageLines(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	report := func(lines ...string) string {
+-		return "=== RUN   TestA\nFAIL\n" + FailureReportHeader + "\n" + strings.Join(lines, "\n") + "\n" +
+-			FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
+-	}
+-	notMapped := TriageLinePrefix + "not in the coverage maps"
+-	tests := []struct {
+-		name string
+-		log  string
+-		want map[string][]string
+-	}{
+-		{
+-			name: "triage lines under two tests, a subtest named by its path, keep their prefix and their order",
+-			log: report(
+-				"tier0 (exit 1), log /runs/a.log:",
+-				"  example.com/m/a TestA/sub:",
+-				"    "+notMapped,
+-				"    a_test.go:3: got 1; want 2",
+-				"  example.com/m/b TestB:",
+-				"    "+TriageLinePrefix+"reaches none of this run's changes; map commit c1",
+-				"    "+TriageLinePrefix+"lym gate reach --test b.TestB --since <last green commit>",
+-				"guard tier1 (exit 1), log /runs/g.log:",
+-				"  example.com/m/g TestGuard:",
+-				"    "+notMapped,
+-			),
+-			want: map[string][]string{
+-				"example.com/m/a.TestA/sub": {notMapped},
+-				"example.com/m/b.TestB": {
+-					TriageLinePrefix + "reaches none of this run's changes; map commit c1",
+-					TriageLinePrefix + "lym gate reach --test b.TestB --since <last green commit>",
+-				},
+-				"example.com/m/g.TestGuard": {notMapped},
+-			},
+-		},
+-		{
+-			name: "a report with no triage line yields none",
+-			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/a TestA:", "    a_test.go:3: boom"),
+-		},
+-		{
+-			name: "a triage-shaped line under a failure outside any test belongs to no test",
+-			log:  report("tier0 (exit 1), log /runs/a.log:", "  example.com/m/b, failed outside any test:", "    "+notMapped),
+-		},
+-		{
+-			name: "a log with no report yields none",
+-			log:  "--- FAIL: TestA (0.00s)\n    " + notMapped + "\nFAIL\texample.com/m/a\t0.1s\n",
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			if got := TriageLines(tt.log); !reflect.DeepEqual(got, tt.want) {
+-				t.Errorf("TriageLines() = %q; want %q", got, tt.want)
+-			}
+-		})
+-	}
+-}
+-
+ // TestTierRunFailures pins which failure reports list tier and guard runs alone, and how each failure is named.
+ func TestTierRunFailures(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index d215a0f8..7bc166c8 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -277,10 +277,6 @@ const ReportCutPrefix = "... "
+ // ReportOutputLine, indented under a run, opens the output lines no test event carried; it names no failure.
+ const ReportOutputLine = "its output:"
+ 
+-// TriageLinePrefix opens each triage line the failure report holds under a failed test, as an advisory four-space line.
+-// A triage line says whether the failed test reaches a function the call's change set touches.
+-const TriageLinePrefix = "triage: "
+-
+ // ReportOutsideAnyTestSuffix ends the package a failure report names as failed outside any test, before its colon.
+ const ReportOutsideAnyTestSuffix = ", failed outside any test"
+ 
+diff --git a/internal/gateslot/triage.go b/internal/gateslot/triage.go
+deleted file mode 100644
+index 3ef5d2bc..00000000
+--- a/internal/gateslot/triage.go
++++ /dev/null
+@@ -1,77 +0,0 @@
+-// triage.go reads the triage lines out of a failure report and renders them as a findings section.
+-
+-package gateslot
+-
+-import (
+-	"fmt"
+-	"maps"
+-	"slices"
+-	"strings"
+-)
+-
+-// TriageLines returns, per failed test, the triage lines the first failure report in log holds under it.
+-// A test is named `<package>.<Test>` as the report's two-space test line names it, a subtest path included.
+-// Each line keeps its TriageLinePrefix.
+-// It returns nil when log holds no report or the report holds no triage line.
+-func TriageLines(log string) map[string][]string {
+-	lines := strings.Split(strings.ReplaceAll(log, "\r\n", "\n"), "\n")
+-	start := slices.Index(lines, FailureReportHeader)
+-	if start < 0 {
+-		return nil
+-	}
+-	var triage map[string][]string
+-	test := ""
+-	for _, line := range lines[start+1:] {
+-		if line == "" || strings.HasPrefix(line, failureReportEnd) {
+-			break
+-		}
+-		switch {
+-		case strings.HasPrefix(line, "    "):
+-			text := strings.TrimPrefix(line, "    ")
+-			if test == "" || !strings.HasPrefix(text, TriageLinePrefix) {
+-				continue
+-			}
+-			if triage == nil {
+-				triage = map[string][]string{}
+-			}
+-			triage[test] = append(triage[test], text)
+-		case strings.HasPrefix(line, "  "):
+-			test = reportTestIdentity(line)
+-		default:
+-			test = ""
+-		}
+-	}
+-	return triage
+-}
+-
+-// reportTestIdentity returns `<package>.<Test>` for a failure report's `  <package> <test>:` line, subtest path included.
+-// Any other line under a run, such as a failure outside any test or a cause, names none.
+-func reportTestIdentity(line string) string {
+-	fields := strings.Fields(line)
+-	if len(fields) != 2 || !strings.HasSuffix(fields[1], ":") {
+-		return ""
+-	}
+-	test := strings.TrimSuffix(fields[1], ":")
+-	if top, _, _ := strings.Cut(test, "/"); !strings.HasPrefix(top, "Test") {
+-		return ""
+-	}
+-	return fields[0] + "." + test
+-}
+-
+-// RenderTriageSection returns the `Triage:` section of a findings text.
+-// It lists each test of triage, sorted, with its lines under it.
+-// It returns "" when triage holds no line.
+-func RenderTriageSection(triage map[string][]string) string {
+-	if len(triage) == 0 {
+-		return ""
+-	}
+-	var b strings.Builder
+-	b.WriteString("Triage:\n")
+-	for _, test := range slices.Sorted(maps.Keys(triage)) {
+-		fmt.Fprintf(&b, "- %s\n", test)
+-		for _, line := range triage[test] {
+-			fmt.Fprintf(&b, "    %s\n", line)
+-		}
+-	}
+-	return b.String()
+-}
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 903e0c3f..60771a76 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -131,8 +131,6 @@
+ // `lym gate test`'s closing line of failed runs follows them.
+ // A log that names none is quoted as its tail instead.
+ // When the whole log holds the CPU watchdog's line, the findings add a paragraph naming the window.
+-// A log whose failure report holds triage lines adds a Triage section after the failures.
+-// That section puts each failed test's lines under its identity.
+ // `lym gate test` prints that line after it quits a busy test binary.
+ // A watchdog quit of a healthy package has no code fix:
+ // the way forward is raising `busy_quit_sec` through `lym config gate` from the prime, then re-stepping the row.
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index 9d01c7d0..4632a40c 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -282,7 +282,6 @@ func commentLintFindings(findings []commentlint.Finding) string {
+ // verifyFailureFindings renders a StatusFailed result with its exit code, timeout or runner crash, and log path.
+ // It quotes each failing test and package the log names, with its own output.
+ // It also quotes the gate's closing line of failed runs.
+-// When the log's failure report holds triage lines, a Triage section lists them under each failed test's identity.
+ // A log that names no failing test or package is quoted as its tail instead.
+ // In the output of parallel packages, the last lines need not hold the failures.
+ // When the whole log holds the CPU watchdog's line, the rendered text adds a paragraph after its first sentence.
+@@ -313,9 +312,6 @@ func verifyFailureFindings(res verifytree.Result, logPath string) string {
+ 	} else if tail := logTail(log); tail != "" {
+ 		fmt.Fprintf(&b, "\nLog tail:\n\n%s\n", tail)
+ 	}
+-	if section := gateslot.RenderTriageSection(gateslot.TriageLines(string(log))); section != "" {
+-		fmt.Fprintf(&b, "\n%s", section)
+-	}
+ 	return b.String()
+ }
+ 
+diff --git a/internal/loomshed/verifygate_test.go b/internal/loomshed/verifygate_test.go
+index 26131f62..cf4ae7f2 100644
+--- a/internal/loomshed/verifygate_test.go
++++ b/internal/loomshed/verifygate_test.go
+@@ -96,16 +96,6 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 			failures: true,
+ 			want:     []string{"example.com/mod/a.TestOne:\nfirst", "example.com/mod/a.TestTwo:\nsecond"},
+ 		},
+-		{
+-			name:   "a log whose failure report holds triage lines lists them under their test in a Triage section after the failures",
+-			result: verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
+-			log: "=== RUN   TestA\n    a_test.go:9: boom\n--- FAIL: TestA (0.00s)\nFAIL\nFAIL\texample.com/mod/a\t0.1s\n" +
+-				gateslot.FailureReportHeader + "\ntier0 (exit 1), log /runs/a.log:\n  example.com/mod/a TestA:\n    " + gateslot.TriageLinePrefix + "not in the coverage maps\n    a_test.go:9: boom\n" +
+-				gateslot.FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n",
+-			failures: true,
+-			want:     []string{"Failures:", "\nTriage:\n- example.com/mod/a.TestA\n    " + gateslot.TriageLinePrefix + "not in the coverage maps\n"},
+-			wantNot:  []string{"Log tail:"},
+-		},
+ 		{
+ 			name:     "an oversized failure is cut on a rune boundary and the failures after it are left to the full log",
+ 			result:   verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
+@@ -146,10 +136,6 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 			if !slices.Contains(tt.want, "busy_quit_sec") {
+ 				tt.wantNot = append(tt.wantNot, "busy_quit_sec")
+ 			}
+-			// Only a log whose failure report holds triage lines gets the section.
+-			if !slices.ContainsFunc(tt.want, func(want string) bool { return strings.Contains(want, "Triage:") }) {
+-				tt.wantNot = append(tt.wantNot, "Triage:")
+-			}
+ 			for _, unwanted := range tt.wantNot {
+ 				if strings.Contains(got, unwanted) {
+ 					t.Errorf("findings %q contain %q", got, unwanted)
+diff --git a/internal/runplan/doc.go b/internal/runplan/doc.go
+index f2dd9341..1cb1b308 100644
+--- a/internal/runplan/doc.go
++++ b/internal/runplan/doc.go
+@@ -14,8 +14,6 @@
+ // The done-card readers, DoneCards, EditedDoneCards and LastBegunCard, read the batch records alone.
+ // PendingPartition partitions the cards no done batch holds, and RecordBeginPartition records that partition.
+ // The bounded wait for a batch report, the recovery strand stop and the verify-failure record belong to it too.
+-// The verify-failure record carries the triage lines of its failed tests.
+-// It renders them as a Triage section of its findings.
+ //
+ // Every piece is told its paths through Geometry: the implementer's run, reports, prompts and scratch directories,
+ // and the scratch directory its state-mutation lease sits in.
+diff --git a/internal/runplan/verifyreport.go b/internal/runplan/verifyreport.go
+index 783bb757..ffe10c85 100644
+--- a/internal/runplan/verifyreport.go
++++ b/internal/runplan/verifyreport.go
+@@ -52,9 +52,6 @@ type VerifyGateReport struct {
+ 	WatchdogWindow string `yaml:"watchdog_window,omitempty"`
+ 	// Failures lists the failing identities the verify output parsed to.
+ 	Failures []VerifyFailure `yaml:"failures,omitempty"`
+-	// Triage maps each failed test to its triage lines.
+-	// The key is `<package>.<Test>`; the lines are those the verify log's failure report holds under that test.
+-	Triage map[string][]string `yaml:"triage,omitempty"`
+ 	// LogPath is the full verify log.
+ 	LogPath string `yaml:"log_path,omitempty"`
+ 	// Hint lists the NN-slug labels of the cards whose commits touched a failing package, in trail order.
+@@ -163,7 +160,6 @@ func LogTail(output string) string {
+ // A timeout carries the log path and tail.
+ // A hang carries its matched marker, identities, log path and tail.
+ // Identities carry their output tail, the full log path and the hint.
+-// A report holding triage lines adds them as a Triage section after the identities.
+ // A timeout or hang says the step was not re-run.
+ // A watchdog quit also names the window and the operator's way forward.
+ func RenderVerifyGateFindings(r VerifyGateReport, wayForward string) string {
+@@ -202,7 +198,6 @@ func RenderVerifyGateFindings(r VerifyGateReport, wayForward string) string {
+ 		}
+ 		fmt.Fprintf(&b, "Matched: %s\n", r.Hang)
+ 		writeFailingIdentities(&b, r.Failures)
+-		b.WriteString(gateslot.RenderTriageSection(r.Triage))
+ 		writeLogLocation(&b, r)
+ 		return b.String()
+ 	}
+@@ -214,7 +209,6 @@ func RenderVerifyGateFindings(r VerifyGateReport, wayForward string) string {
+ 	}
+ 
+ 	writeFailingIdentities(&b, r.Failures)
+-	b.WriteString(gateslot.RenderTriageSection(r.Triage))
+ 	writeLogLocation(&b, r)
+ 	if len(r.Hint) > 0 {
+ 		fmt.Fprintf(&b, "Cards whose commits touched a failing package: %s\n", strings.Join(r.Hint, ", "))
+diff --git a/internal/weaverengine/doc.go b/internal/weaverengine/doc.go
+index 1e3c5e60..fbc4fe24 100644
+--- a/internal/weaverengine/doc.go
++++ b/internal/weaverengine/doc.go
+@@ -48,7 +48,6 @@
+ // After the last batch, the plan-level verify runs the hub's verify gate call through `verifytree.Verify`.
+ // A failure is rerun once, and a pass on the rerun is flaky.
+ // A failure that survives writes the verify-failure record and goes to one cold verify fixer on the next ladder rung.
+-// The record carries the triage lines the verify log's failure report holds under its failed tests.
+ // Weaver runs the verify again after it.
+ // The fixer carries no gates, since the re-run of the verify judges it.
+ // RunDeps is everything the row's producer is told.
+diff --git a/internal/weaverengine/export_test.go b/internal/weaverengine/export_test.go
+index 4f757678..8a0adfb7 100644
+--- a/internal/weaverengine/export_test.go
++++ b/internal/weaverengine/export_test.go
+@@ -6,14 +6,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+-	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+-// FailureReport returns the verify-failure record of a failed run of command.
+-func FailureReport(command string, attempt, budget int, res verifytree.Result, output string) runplan.VerifyGateReport {
+-	return failureReport(command, attempt, budget, res, output)
+-}
+-
+ // RunPlanOf returns the shared machinery's view of g.
+ func RunPlanOf(g Geometry) runplan.Geometry { return g.runPlan() }
+ 
+diff --git a/internal/weaverengine/failurereport_test.go b/internal/weaverengine/failurereport_test.go
+deleted file mode 100644
+index b3c4d665..00000000
+--- a/internal/weaverengine/failurereport_test.go
++++ /dev/null
+@@ -1,52 +0,0 @@
+-// failurereport_test.go pins the verify-failure record a failed batch gate run builds from its log.
+-
+-package weaverengine_test
+-
+-import (
+-	"testing"
+-
+-	"github.com/google/go-cmp/cmp"
+-
+-	"github.com/Knatte18/loomyard/internal/gateslot"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-	"github.com/Knatte18/loomyard/internal/verifytree"
+-	"github.com/Knatte18/loomyard/internal/weaverengine"
+-)
+-
+-func TestFailureReport(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	const failedPackage = "FAIL\texample.com/m/p\t0.01s\n"
+-	triaged := failedPackage + gateslot.FailureReportHeader + "\n" +
+-		"tier0 (exit 1), log /runs/a.log:\n" +
+-		"  example.com/m/p TestA:\n" +
+-		"    " + gateslot.TriageLinePrefix + "not in the coverage maps\n" +
+-		"    a_test.go:3: boom\n" +
+-		gateslot.FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
+-	failed := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
+-	timedOut := verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, TimedOut: true, Detail: "gate tier0 exceeded timeout_min 30m0s and was killed"}
+-
+-	tests := []struct {
+-		name   string
+-		result verifytree.Result
+-		output string
+-		want   map[string][]string
+-	}{
+-		{
+-			name: "AnOutputWithTriageLinesFillsTriage", result: failed, output: triaged,
+-			want: map[string][]string{"example.com/m/p.TestA": {gateslot.TriageLinePrefix + "not in the coverage maps"}},
+-		},
+-		{name: "ATimedOutRunLeavesTriageEmpty", result: timedOut, output: triaged},
+-		{name: "AnOutputWithoutTriageLinesLeavesTriageEmpty", result: failed, output: failedPackage},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			got := weaverengine.FailureReport("lym gate test --wait --gate batch", 1, 2, tt.result, tt.output)
+-			if diff := cmp.Diff(tt.want, got.Triage); diff != "" {
+-				t.Errorf("FailureReport().Triage mismatch (-want +got):\n%s", diff)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/weaverengine/strand.go b/internal/weaverengine/strand.go
+index 2e6fddac..0a0db1d7 100644
+--- a/internal/weaverengine/strand.go
++++ b/internal/weaverengine/strand.go
+@@ -200,7 +200,6 @@ func readVerifyLog(path string) (string, error) {
+ // failureReport builds the verify-failure record of a failed run of command.
+ // A timed-out run carries its timeout and the log tail.
+ // A failure that names no test carries the log tail alone, and any other carries its failing identities.
+-// A log whose failure report holds triage lines under its failed tests adds them to the record.
+ func failureReport(command string, attempt, budget int, res verifytree.Result, output string) runplan.VerifyGateReport {
+ 	report := runplan.VerifyGateReport{Attempt: attempt, Cap: budget, Command: command, ExitCode: res.ExitCode, LogPath: res.Log}
+ 	if res.TimedOut {
+@@ -208,7 +207,6 @@ func failureReport(command string, attempt, budget int, res verifytree.Result, o
+ 		report.LogTail = runplan.LogTail(output)
+ 		return report
+ 	}
+-	report.Triage = gateslot.TriageLines(output)
+ 	failures := runplan.ParseVerifyRun(output, false)
+ 	if len(failures) == 1 && failures[0].Kind == runplan.FailureKindOpaque {
+ 		report.LogTail = runplan.LogTail(output)
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 248238da..6322138d 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -1199,7 +1199,6 @@
+ // The report carries the attempt and the cap.
+ // It also carries the verify command and its exit code.
+ // It lists the failing identities or the dirty paths, and the verify log's path.
+-// It also carries the triage lines the log's failure report holds under its failed tests, rendered as a Triage section.
+ // The cap is the entry's re-prompt budget, so the evaluation that spends it is numbered one past the cap.
+ // A failure whose log names no failing identity keeps the log's tail, since only its output shows what failed.
+ // The stuck reason of a run whose gate spent its budget counts the failing entry's re-prompts against that budget.
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 7c7d4717..1d05bc0a 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -395,7 +395,6 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 	failHung := func(res verifytree.Result, output string, hang verifyHang) (shuttleengine.GateResult, error) {
+ 		return fail(VerifyGateReport{
+ 			Failures:       runplan.ParseVerifyRun(output, false),
+-			Triage:         gateslot.TriageLines(output),
+ 			LogPath:        res.Log,
+ 			LogTail:        runplan.LogTail(output),
+ 			Hang:           hang.Matched,
+@@ -513,7 +512,7 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if hang, hung := classifyHang(res, rerunOutput); hung {
+ 			return failHung(res, rerunOutput, hang)
+ 		}
+-		report := VerifyGateReport{Failures: runplan.ParseVerifyRun(rerunOutput, false), Triage: gateslot.TriageLines(rerunOutput), LogPath: res.Log, ExitCode: res.ExitCode}
++		report := VerifyGateReport{Failures: runplan.ParseVerifyRun(rerunOutput, false), LogPath: res.Log, ExitCode: res.ExitCode}
+ 		if len(report.Failures) == 1 && report.Failures[0].Kind == FailureKindOpaque {
+ 			// A failure that names no test, such as a build error or the gate tool's own error, is shown by its output alone.
+ 			report.Failures = nil
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index 2c8bee7d..de46d7e3 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -108,14 +108,6 @@ func (f *gateFake) seams() verifyGateSeams {
+ 
+ const failingPackageLog = "FAIL\texample.com/mod/internal/a\t0.01s\n"
+ 
+-// triagedPackageLog is failingPackageLog followed by a failure report with a triage line under the failed test.
+-var triagedPackageLog = failingPackageLog + gateslot.FailureReportHeader + "\n" +
+-	"tier0 (exit 1), log /runs/a.log:\n" +
+-	"  example.com/mod/internal/a TestA:\n" +
+-	"    " + gateslot.TriageLinePrefix + "not in the coverage maps\n" +
+-	"    a_test.go:3: boom\n" +
+-	gateslot.FailedRunsPrefix + "tier0 (exit 1); the exit code is tier0's\n"
+-
+ func failedResult() verifytree.Result {
+ 	return verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1}
+ }
+@@ -469,31 +461,6 @@ func TestVerifyGate_FailedEvaluationWritesReport(t *testing.T) {
+ 	if !strings.HasPrefix(second.Findings, verifyGateWayForward(FixerFork, testFixPromptPath)+"\n") {
+ 		t.Errorf("findings = %q; want them to open with the way forward naming %s", second.Findings, testFixPromptPath)
+ 	}
+-	if len(report.Triage) != 0 || strings.Contains(second.Findings, "Triage:") {
+-		t.Errorf("report triage = %v, findings %q; want none for a log with no triage line", report.Triage, second.Findings)
+-	}
+-
+-	// A log whose failure report holds a triage line puts it in the report of a first evaluation and of one that fails again.
+-	triaged := &gateFake{outcome: outcomeDone, command: "go test ./...", head: "head0", results: []verifytree.Result{failedResult()}, logs: []string{triagedPackageLog}}
+-	triagedReports := t.TempDir()
+-	triagedGate := newVerifyGate(triagedReports, 3, &VerifyGateNotes{}, testFixPromptPath, triaged.seams())
+-	wantTriage := map[string][]string{"example.com/mod/internal/a.TestA": {gateslot.TriageLinePrefix + "not in the coverage maps"}}
+-	for evaluation := 1; evaluation <= 2; evaluation++ {
+-		result, err := triagedGate()
+-		if err != nil || result.Passed {
+-			t.Fatalf("triaged gate() evaluation %d = %+v, %v; want a failure", evaluation, result, err)
+-		}
+-		triagedReport, err := readVerifyGateReport(VerifyGateReportPath(triagedReports))
+-		if err != nil {
+-			t.Fatalf("readVerifyGateReport() error = %v", err)
+-		}
+-		if !reflect.DeepEqual(triagedReport.Triage, wantTriage) {
+-			t.Errorf("evaluation %d report triage = %v; want %v", evaluation, triagedReport.Triage, wantTriage)
+-		}
+-		if !strings.Contains(result.Findings, "Triage:\n- example.com/mod/internal/a.TestA\n") {
+-			t.Errorf("evaluation %d findings = %q; want the Triage section", evaluation, result.Findings)
+-		}
+-	}
+ }
+ 
+ // TestVerifyGate_RoutesFailuresToFixer pins which fixer each failure goes to.
+diff --git a/internal/websterengine/verifygatereport_test.go b/internal/websterengine/verifygatereport_test.go
+index e5f799ca..56cbaedf 100644
+--- a/internal/websterengine/verifygatereport_test.go
++++ b/internal/websterengine/verifygatereport_test.go
+@@ -240,15 +240,6 @@ func TestRenderVerifyGateFindings(t *testing.T) {
+ 		}
+ 	}
+ 
+-	if strings.Contains(got, "Triage:") {
+-		t.Errorf("findings without triage lines must carry no Triage section:\n%s", got)
+-	}
+-	triaged := r
+-	triaged.Triage = map[string][]string{"m/a.TestX": {"triage: not in the coverage maps"}}
+-	if got := renderVerifyGateFindings(triaged, fixPromptPath); !strings.Contains(got, "Triage:\n- m/a.TestX\n    triage: not in the coverage maps\n") {
+-		t.Errorf("findings with triage lines should render the Triage section:\n%s", got)
+-	}
+-
+ 	r.Hint = nil
+ 	if got := renderVerifyGateFindings(r, fixPromptPath); !strings.Contains(got, "No recorded card touched a failing package") {
+ 		t.Errorf("findings without a hint should say no card touched a failing package:\n%s", got)
