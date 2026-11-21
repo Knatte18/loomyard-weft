@@ -39,6 +39,12 @@ A board task with `recipe: hardener`, a title naming a module and no body, passe
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-21): The charter step is Crucible's orchestrator fill
+
+Decision: Model the charter step on Crucible, retired in 7346d6a8 and readable with git show 7346d6a8^:crucible/README.md, crucible/orchestrator-prompt.md and crucible/review-prompt-template.md. In Crucible the operator only said: do crucible on module X, read the crucible README. The orchestrator then read the module and filled every placeholder of review-prompt-template.md itself: what to read, the high-yield focus list of invariants to drive live with repro steps, out of scope, the live-substrate cost declaration and the teardown check. Hardener's charter step does that same fill before round 1, and the round prompt carries the template's live-driving rules: drive the real substrate directly, the focus list is a floor and the round improvises many more adversarial scenarios (crash and rebirth, cross-hub scope, dead-but-present state, mid-operation orphans, rapid churn), log as you go, never treat time or token cost as a reason not to drive. Rerunning the module's existing tests is the fix gate only, never the review. Carry over every rule of the template and README that Hardener's rubric and stencils lack.
+
+Rationale: Operator, 2026-11-21: Crucible worked very well from a one-line ask; Hardener must do what Crucible did, and the existing tests are already run elsewhere.
+
 ## Constraints
 
 ## Auto-mode assumptions
