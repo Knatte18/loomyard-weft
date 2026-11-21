@@ -252,6 +252,14 @@ Decision: Declare the change the earlier ruling on lym's records-namespace branc
 
 Rationale: The earlier ruling went in as an added entry only, so validate-plan finds no declared bullet for card 8's PATTERN edit.
 
+### Added after Discussion (parent, 2026-11-21): Withdraw the PATTERN-single-repo-hub change bullet
+
+Decision: Withdraw the changes bullet for PATTERN-single-repo-hub; a following decision re-declares it as adds.
+
+Rationale: single-repo-code-records-removal (13cebe3d) deleted PATTERN-single-repo-hub, so this run adds the entry back rather than changing it.
+
+Withdraws: `PATTERN-single-repo-hub`
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
@@ -316,5 +324,4 @@ Rationale: The earlier ruling went in as an added entry only, so validate-plan f
 
 ## PATTERN changes
 
-- `PATTERN-single-repo-hub` — changes: Running a hub as one repository: a code store and a records store of one origin, records and the board under origin's `refs/lym/`, mapped by the records store's refspecs; only fabric reads the layout.
 - `PATTERN-code-conventions` — changes: Writing code: a package's `doc.go` documents only that package; a name or path that can go stale is one named constant; no language, engine or code branch is hard-coded, and a branch lym owns in its records namespace is one named constant in fabric. — added after Discussion (parent, 2026-11-21)
