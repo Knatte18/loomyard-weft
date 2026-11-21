@@ -110,13 +110,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (2)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | darn · light | starting · Worktree-Create | neve | 1d<br>0m | gate, testmap |
+
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | darn · light |  | 1d<br>0m | gate, testmap |
 | T3 | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | darn · light |  | 1d<br>0m | burler, stencil |
 
 ### Notes (4)
