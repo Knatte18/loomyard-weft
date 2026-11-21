@@ -141,21 +141,20 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Running (1)
+#### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light | starting · Worktree-Create | neve | 0m<br>0m | gate, webster, stencil |
 | T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | gate, dotnet, stencil, darn |
 
-#### Ready (1)
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Remove the coverage-map triage lines from failure reports**<br>• The reaches-none triage line was wrong every time; drop triage lines, keep reach turn and mutation step<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-failure-triage-lines`](design-drop-failure-triage-lines.md) | darn · light |  | 0m<br>0m | gate, webster, stencil |
+_None._
 
 ### Notes (6)
 
