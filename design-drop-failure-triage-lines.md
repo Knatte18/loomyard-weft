@@ -1,6 +1,6 @@
 # Remove the coverage-map triage lines from failure reports
 
-`drop-failure-triage-lines` · Task · enhancement, gate, webster, stencil · starting · Worktree-Create
+`drop-failure-triage-lines` · Task · enhancement, gate, webster, stencil · starting · Seed-Child
 
 ## Why
 
