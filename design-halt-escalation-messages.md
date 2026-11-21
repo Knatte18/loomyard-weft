@@ -1,6 +1,6 @@
 # Parent-only refusals stop retrying; halt messages name real files and ways
 
-`halt-escalation-messages` · Task · bug, gate, loom, stencil, shed · running · Drift-Verify
+`halt-escalation-messages` · Task · bug, gate, loom, stencil, shed · running · Code-Bouncer
 
 {"error":"invalid json: invalid character 'h' looking for beginning of value","ok":false}
 
