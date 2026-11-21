@@ -1,6 +1,6 @@
 # One-repository hubs with records and board under origin's refs/lym/, the layout read only by fabric
 
-`single-repo-namespace-layout` · Task · feature, fabric, git, docs, pattern · halted · Plan-Burler-Fix
+`single-repo-namespace-layout` · Task · feature, fabric, git, docs, pattern · running · Plan-Burler-Fix
 
 Decision record: [Sketch](decision-single-repo-namespace-layout.md)
 
