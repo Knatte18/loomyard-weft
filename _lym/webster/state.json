@@ -279,9 +279,27 @@
         "e5db88bc-7cdb-479b-8ae6-afc113088a03": "claude"
       },
       "recoveryStartSha": "b78b3a2b3112af656fd5ebbd675f5a4978af9e5e"
+    },
+    "3": {
+      "slug": "namespaced-remote-reads",
+      "cards": [
+        "03-namespaced-remote-reads",
+        "04-clone-one-repository"
+      ],
+      "cardHashes": {
+        "03-namespaced-remote-reads": "f8612a930c158864c7d9f90b048508b8d5a67023a799218053832bf38d659840",
+        "04-clone-one-repository": "ca543bf040578601b31e07824e92881ff310ec23190e30b56b683149e35e25e8"
+      },
+      "startSha": "e7b5e37a29a11e5ebb6f267602c623168265a20b",
+      "kind": "fork",
+      "spawnedAt": "2026-11-21T14:46:08Z",
+      "sessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
   "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",
