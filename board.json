@@ -263,7 +263,7 @@
       "isolated": false,
       "brief": "Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin",
       "body": "## Goal\n\nFirst of three trials of the one-repository hub layout (57015a52) in a new sandbox, driven from this task's worktree; the run acts as the sandbox's operator and orch.\n\n## Steps, exact cap\n\n- Create one private GitHub repository `Knatte18/lym-sandbox-onerepo` with `gh repo create --private` (operator approved, 2026-11-21), seeded with a tiny Go module (one package, one test) on `main`.\n- Clone it once as a one-repository hub with `lym fabric clone --single-repo` under `/home/knatte/Code/lym-sandbox-onerepo-LYMHUB`.\n- Check and record: `gh api` branch and tag lists show only the code branch; `git ls-remote` shows the board and prime records branch under `refs/lym/heads/`; `lym board list` and `lym fabric` status work in the hub.\n- No other repository is created; nothing is deleted.\n\n## Output\n\nA report under `docs/research/single-repo/sandbox-1-setup-2026-11-21/report.md`: each command, its outcome and every friction or failure.\nEach lym bug found is filed as a note on this hub's board (kind note, labels from `lym board labels`).\n",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-21T17:28:49Z",
       "revised": "2026-11-21T17:28:49Z",
       "run_settings": {
@@ -442,7 +442,7 @@
       "isolated": false,
       "brief": "",
       "body": "{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Red-first: d35d6556 removed the doc-file refusal, but `redFirstFailure` in `internal/loomshed/redfirstgate.go` still returns an ordinary failure for the unjudged and no-test exits, so each repeat spends a verify attempt; `GateResult.Pending` in `internal/shuttleengine/gate.go` is allowed only on PassOnCap or MayHold entries.\n- Way forward: `internal/loomcli/darnwiring.go` always appends the config-or-model-spec clause, also to the stencil build-version refusal from `internal/stencilstore/skew.go`.\n- Missing findings path: `internal/shedadapters/gateattempts.go` writes the file before the halt names it, so something removes it later; a suspect is the orphan scratch sweep in `internal/battencli/cleanup.go`, which empties a run's scratch when its records directory is missing. Reproduce before fixing.\n",
-      "status": "running · Preflight",
+      "status": "running · Record-Write",
       "created": "2026-11-21T15:33:40Z",
       "revised": "2026-11-21T17:35:06Z",
       "run_settings": {
