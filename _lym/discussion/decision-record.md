@@ -57,6 +57,12 @@ Provenance: task cuttings-bed-decay-parity, note Darn-Write.md.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-21): No test seam for the red-first overlay: the diff changes a darn stencil
+
+Decision: Waive the red-first gate for this run and keep the stencil change.
+
+Rationale: The diff changes contracts/stencils/darn/darn-fragment-make-change-gated.md, a non-Go file the red-first overlay cannot restore on the merge base. The fix's Go tests reach the bug through base code. The overlay gap is filed as note red-first-overlay-non-go-files.
+
 ## Constraints
 
 ## Auto-mode assumptions
