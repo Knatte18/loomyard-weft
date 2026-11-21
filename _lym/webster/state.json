@@ -355,9 +355,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/538401b4-b697-4d2e-afb8-6516b8ea3c12/subagents/agent-a9e6701543731d081.jsonl"
       ]
+    },
+    "8": {
+      "slug": "docs-and-pattern",
+      "cards": [
+        "08-docs-and-pattern"
+      ],
+      "cardHashes": {
+        "08-docs-and-pattern": "d65bfab75cfb19a794b9aa48ff431f6c5244db6c56d77d4da37eb93a8be84bb2"
+      },
+      "startSha": "16cafa3481f816646335e73eda47d01b91213dfa",
+      "kind": "fork",
+      "spawnedAt": "2026-11-21T15:25:46Z",
+      "sessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
   "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",
