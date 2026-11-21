@@ -41,7 +41,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B6 |  | **loom-halt note and blocked reason name a gate-findings path that does not exist** | [`halt-names-missing-findings-path`](design-halt-names-missing-findings-path.md) | 3m<br>3m | loom, gate |
 | B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 3m<br>3m | loom |
 | B8 |  | **webster: Create check ignores a decision that drops the Create; recover-batch advised anyway** | [`webster-create-stale-decision`](design-webster-create-stale-decision.md) | 3m<br>3m | webster |
-| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 2m<br>2m | stencil, shed |
+| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 3m<br>3m | stencil, shed |
 
 ### Features (2)
 
