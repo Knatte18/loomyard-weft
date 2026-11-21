@@ -1,6 +1,6 @@
 # Red-first gate cannot judge a diff that also changes non-Go files
 
-`red-first-overlay-non-go-files` · Task · bug, gate, testmap · running · Record-Write
+`red-first-overlay-non-go-files` · Task · bug, gate, testmap · running · Drift-Baseline
 
 ## Seen
 
