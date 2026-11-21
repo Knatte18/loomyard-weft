@@ -118,7 +118,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (7)</strong></summary>
 
 Owner `neve`
 
@@ -126,23 +126,24 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (2)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid |  | 5m<br>0m | webster, burler, drift, loom |
+| T7 | **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light |  | 2h<br>0m | gate, loom, stencil, shed |
 
-#### Draft (3)
+#### Layer A (1)
 
-Not released; nothing starts it until its status is cleared.
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid |  | 5m<br>0m | webster, burler, drift, loom |
-| T6 | `draft` **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light |  | 5m<br>0m | burler, shuttle |
-| T7 | `draft` **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light |  | 2h<br>0m | gate, loom, stencil, shed |
+| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | T5<br>T7 | 5m<br>0m | burler, shuttle |
 
-### Notes (5)
+### Notes (4)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -152,12 +153,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
-
-#### Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 5m<br>5m | loom |
 
 #### Features (2)
 

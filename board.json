@@ -345,26 +345,6 @@
       "project": "single-repo-hub"
     },
     {
-      "id": 1542,
-      "handle": "B7",
-      "slug": "pr-findings-nil-open-fabric",
-      "title": "loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [
-        169
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #169](https://github.com/Knatte18/loomyard/issues/169).\n\n`lym loom pr-findings \u003cfile\u003e` fails in a PR-Review session on a well-formed findings file, every time, so the parent's findings cannot be routed.\n\n## Where\n\nA PR-Review agent, the session spawned for a task's pull request after its landing opened it.\nThe parent orch sent two findings by creel; the agent wrote them in burler's review format under `.scratch/` and ran `lym loom pr-findings .scratch/parent-review-1.md`.\n\n## What happens\n\nThe file passes burler's format check (a first attempt with a wrong verdict was refused with a clear message, and the corrected file got past that check).\nThe verb then fails reading the send-back edge:\n\n```\n{\"error\":\"loom: pr-findings: read whether the send-back edge can fire: loomrecipe: shedbuild: producer 16 \\\"Parent-Align\\\": shedrecipe: ParentAlign: landingshed: NewParentAlign: Deps.OpenFabric must not be nil; way forward: run lym loom pr-findings .scratch/parent-review-1.md again, and tell the operator when it keeps failing\",\"ok\":false}\n```\n\nRunning it again gives the same error.\n\n## Expected\n\nThe verb answers send-back or fix-here.\n`NewParentAlign` looks to be built on this path without its `OpenFabric` dependency.\n\n## Workaround\n\nThe operator told the agent to fix the findings directly, bypassing the verb.\n",
-      "created": "2026-11-21T17:29:42Z",
-      "revised": "2026-11-21T17:29:42Z"
-    },
-    {
       "id": 1545,
       "handle": "T5",
       "slug": "webster-parent-calls-flow",
@@ -389,7 +369,6 @@
       "isolated": false,
       "brief": "",
       "body": "{\"error\":\"invalid json: invalid character 'w' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Create check: `internal/planglyph/donecheck.go:108` reports create-not-done without reading the decision record; `createTargetWayForward` in `internal/websterengine/recordbatch.go` gives the two verbs different ways forward.\n- Drift halt: `internal/websterengine/verifygate.go` cuts findings at `verifyGateStuckTextBytes` (400 bytes) and names no report file; nothing lets the parent accept expected drift.\n- Plan amendment: `internal/burlerengine/roundcheck.go` refuses a finding in a file the changes file does not list, with no exemption for an `--amends-plan` decision, and Webster's halt reason never reaches Plan-Burler-Fix as a finding.\n",
-      "status": "draft",
       "created": "2026-11-21T17:29:27Z",
       "revised": "2026-11-21T17:35:05Z",
       "run_settings": {
@@ -419,13 +398,15 @@
         177
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "webster-parent-calls-flow",
+        "halt-escalation-messages"
+      ],
       "isolated": false,
       "brief": "",
-      "body": "## From burler-fixer-rerun-no-reason\n\n{\"error\":\"invalid json: invalid character 'b' looking for beginning of value\",\"ok\":false}\n\n## From fork-git-guard-scratch-repo\n\n{\"error\":\"invalid json: invalid character 'o' in literal false (expecting 'a')\",\"ok\":false}\n\n",
-      "status": "draft",
+      "body": "{\"error\":\"invalid json: invalid character 'b' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Rerun: `internal/shedadapters/burlerfix.go` renames a leftover round fixer report to a timestamped name before each attempt; the fixer prompt never says why the step runs again.\n- Fork git: 27498365 lets a fork run git in a repository it created, but `internal/burlerengine/cluster.go` still refuses every push, and the halt text still says revert.\n",
       "created": "2026-11-21T17:29:34Z",
-      "revised": "2026-11-21T17:34:51Z",
+      "revised": "2026-11-21T17:35:06Z",
       "run_settings": {
         "darn": {
           "writer": "opus[medium]"
@@ -459,10 +440,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## From red-first-unjudged-burns-tries\n\n{\"error\":\"invalid json: invalid character 'r' looking for beginning of value\",\"ok\":false}\n\n## From stencil-version-way-forward\n\n{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n\n## From halt-names-missing-findings-path\n\n{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n\n",
-      "status": "draft",
+      "body": "{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n\n## Triage against main (2026-11-21)\n\n- Red-first: d35d6556 removed the doc-file refusal, but `redFirstFailure` in `internal/loomshed/redfirstgate.go` still returns an ordinary failure for the unjudged and no-test exits, so each repeat spends a verify attempt; `GateResult.Pending` in `internal/shuttleengine/gate.go` is allowed only on PassOnCap or MayHold entries.\n- Way forward: `internal/loomcli/darnwiring.go` always appends the config-or-model-spec clause, also to the stencil build-version refusal from `internal/stencilstore/skew.go`.\n- Missing findings path: `internal/shedadapters/gateattempts.go` writes the file before the halt names it, so something removes it later; a suspect is the orphan scratch sweep in `internal/battencli/cleanup.go`, which empties a run's scratch when its records directory is missing. Reproduce before fixing.\n",
       "created": "2026-11-21T15:33:40Z",
-      "revised": "2026-11-21T17:34:52Z",
+      "revised": "2026-11-21T17:35:06Z",
       "run_settings": {
         "darn": {
           "writer": "opus[medium]"
