@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -224,6 +224,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/raddle-slug-length-check/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-21T13:35:44Z",
+      "started_at": "2026-11-19T19:58:06Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T20:01:57.451394727Z",
+          "end": "2026-11-19T20:01:57.468612814Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T20:02:06.390710127Z",
+          "end": "2026-11-19T20:02:06.41034852Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T20:01:57.570657616Z",
+          "end": "2026-11-19T20:01:57.673677381Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-19T20:01:58.269455917Z",
+          "end": "2026-11-19T20:02:06.311667538Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T20:02:06.535788941Z",
+          "end": "2026-11-21T13:35:43.168583188Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-21T13:35:43.280213941Z",
+          "end": "2026-11-21T13:35:43.281399908Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
