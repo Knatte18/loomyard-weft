@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=033959a68c0c168048fa49260e73f6d3022eaa977b8a4fc87507e8ee4fedec43 build=6d3a916f455f00d6e662d3074e98ce13019247b3 time=2026-11-19T15:34:33Z -->
+<!-- lym-stencil: sha256=c36515bf6d1b7d17ce751064a4889a2cd835d6327391a092e20615ea7cf8ebd6 build=1181fcca04eac3a9f24ae361e1e87136b73df7a2 time=2026-11-21T13:58:36Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -91,4 +91,4 @@ The contract makes no distinction between the heading-adjacent prose and anythin
 
 ## See also
 
-- [webster-spec.md](webster-spec.md) — webster's own writer-side additions: when the artifact is required, its archive-never-refuse discipline, the flaky-failure section the verify gate appends for identities that passed on rerun, and the "Verify gate fixes" section Merriam writes after a verify-gate fixer.
+- [webster-spec.md](webster-spec.md) — webster's own writer-side additions: when the artifact is required, its archive-never-refuse discipline, the flaky-failure section the verify gate appends for identities, and verify command failures, that passed on rerun, and the "Verify gate fixes" section Merriam writes after a verify-gate fixer.
