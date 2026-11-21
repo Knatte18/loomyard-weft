@@ -1,6 +1,6 @@
 # Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test
 
-`verify-flaky-triage` · Task · bug, webster, gate, reed · running · Code-Burler-Fix
+`verify-flaky-triage` · Task · bug, webster, gate, reed · running · Code-Bouncer
 
 ## Verify triage names the verify step as a flaky test and drops its output
 

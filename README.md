@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 13:51 UTC; every age below is as of then.
+Rendered 2026-11-21 13:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -148,7 +148,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning**<br>• Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`gate-dotnet-fixes`](design-gate-dotnet-fixes.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | gate, dotnet, stencil, darn |
-| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Code-Burler-Fix | neve | 1d<br>1d | webster, gate, reed |
+| T4 | **Verify triage keeps first-run failure output and names real identities; fix the flaky reedcli test**<br>• Triage calls the verify step flaky and drops the failure output; the reedcli package fails the first verify run<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-flaky-triage`](design-verify-flaky-triage.md) | darn · light | Code-Bouncer | neve | 1d<br>1d | webster, gate, reed |
 | T7 | **hardenshed reaper misses orphans whose cwd is under a _lym link**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-reap-lym-link-cwd`](design-harden-reap-lym-link-cwd.md) | darn · light | landing · Finalize | neve | 1d<br>1d | shed, process |
 
 #### Ready (0)
