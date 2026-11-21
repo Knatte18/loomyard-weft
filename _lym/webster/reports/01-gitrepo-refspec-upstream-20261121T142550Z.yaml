@@ -1,0 +1,3 @@
+status: NEEDS_PARENT
+head_sha: 8accc5d32cb2479747628e1ac7147f7245e7df61
+need: plan decision on D2's upstream setting - go-git v5.19.1 refuses to read any config holding branch.<b>.merge outside refs/heads/ (config.Branch.Validate "invalid merge", checked on every Config read), so the planned branch.<b>.merge = refs/lym/heads/<b> makes every go-git read of that store fail, card 1's namespaced TestUpstreamSHA and TestParity rows included; the batch gate's tier1 run fails on exactly those two, and the plan must pick another upstream shape or a go-git read path that tolerates the merge ref
