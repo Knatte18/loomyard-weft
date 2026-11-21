@@ -1,6 +1,6 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Task · enhancement, docs · running · Drift-Recheck
+`doc-go-trim-pass` · Task · enhancement, docs · running · Describe
 
 ## What was measured (2026-11-18, `comment-trim-second-pass`)
 
