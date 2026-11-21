@@ -249,38 +249,6 @@
       "project": "code-cleanup"
     },
     {
-      "id": 1514,
-      "handle": "T5",
-      "slug": "testmap-use-measure",
-      "title": "Measure whether the reach and mutation reports change what runs land",
-      "kind": "task",
-      "labels": [
-        "research",
-        "testmap",
-        "gate"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Over 10 landed darn runs, count how often the reach note, reach turn and mutation survivors led to added tests or fixes",
-      "body": "## When\n\nRelease on or after 2026-11-21 (operator, 2026-11-19), once at least 10 darn runs have landed since `mutation-report-step` (6dbc7a05).\nThe board has no start date; the orch releases it by hand.\n\n## Question\n\nSince 6dbc7a05 every darn gate writes `reach.json` and `mutation.json`, a reach turn can send the writer back for unreached functions,\nfailure reports carry triage lines, and the code review rubric gets `reach_report` and `mutation_report` markers.\nDo they change what lands?\n\n## Method, exact cap\n\nThe 10 most recent darn runs landed after 6dbc7a05, one pass each, no repeats, no tests run.\nFor each run, from its records (gate reports, reviews, fixer reports, decision record, commits):\n\n- reach turns taken, and whether the writer added tests after one;\n- mutation survivors reported, and how many a review raised as a finding and a fixer acted on;\n- triage lines in failure reports, and whether a fixer used one to call a failure unrelated;\n- time and spend the reach and mutation steps added to the gate, where the records show it.\n\n## Output\n\nA report under `docs/research/speed/testmap-use-measure-\u003cdate\u003e/report.md` with a table per run and a verdict:\nkeep the steps as they are, tune them, or turn some off.\n",
-      "status": "done",
-      "created": "2026-11-19T12:35:06Z",
-      "revised": "2026-11-19T12:35:06Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "docs",
-      "project": "testmap-uses"
-    },
-    {
       "id": 1522,
       "handle": "T9",
       "slug": "single-repo-namespace-layout",
@@ -327,44 +295,6 @@
       "body": "Imported from [issue #159](https://github.com/Knatte18/loomyard/issues/159).\n\nA burler fix agent reported two frictions in a code round that applied a review's findings.\n\n1. The per-finding commit rule fought the change set.\n   Several findings touched the same files as each other and as other findings in the round.\n   The agent grouped findings by file and named each group in the commit, which departs from the per-finding rule.\n   The burler fix instructions give no sanctioned way to commit findings that share files.\n\n2. A finding's `location` key did not name the seam the fix had to reach.\n   The agent had to read several unrelated files to find the real site before one edit could start, which cost most of the round.\n   Separately, the fix-check rubric and fork results surfaced two problems that the review's `fix` keys did not show:\n   a timeout setting mismatch on the judge call, and missing enforcement of parent findings.\n\nWhy it is abnormal: the fix instructions should let a round commit shared-file findings without improvising,\nand review findings should point at the code site the fix needs, or say that the site must be found.\n\nWhat to do:\n- Decide the commit rule for findings that share files, and state it in the burler fix prompt.\n- Consider having the review's `location` and `fix` keys carry the seam a fix reaches, or let the review flag findings whose site is not named.\n\nProvenance: task `parent-review-code-and-drift`, note `burler-code-r1.md`.\n",
       "created": "2026-11-19T19:40:55Z",
       "revised": "2026-11-19T19:40:55Z"
-    },
-    {
-      "id": 1530,
-      "handle": "T3",
-      "slug": "gate-dotnet-fixes",
-      "title": "Gate fixes: verdict from parsed results, only declared gate keys in prompts, env override warning",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet",
-        "stencil",
-        "darn"
-      ],
-      "issues": [
-        163,
-        156,
-        162,
-        157
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Three gate faults seen in .NET hubs: a console logger flips the verdict, prompts name an undeclared gate key, and tier env overrides go unreported",
-      "body": "## Gate verdict from a parsed result, and crash cause in the log\n\nImported from [issue #163](https://github.com/Knatte18/loomyard/issues/163).\n\nDuring diagnostic runs of `lym gate test --tier 1 -- --filter ...`:\n\n1. The first run aborted with \"Test host process crashed\" and the gate log gave no cause. The identical command passed on the next try.\n2. With a detailed console logger among the pass-through args, the gate reported \"ran no test\" although the run's own output showed `Passed: 1`. The verdict line was wrong for that call.\n\nThis is abnormal because the gate verdict is what agents rely on; a verdict contradicting the test output, and a crash with no captured cause, force agents to distrust it.\nFix: parse the test result from the TRX or a logger the gate controls instead of console text, so user-supplied loggers cannot change the verdict; and capture the test host's crash dump or stderr in the gate log when the host crashes.\n\nProvenance: task bed-erosion-rate-gap, note Darn-Write.md.\n## Darn prompt names a gate key the hub does not declare\n\nImported from [issue #156](https://github.com/Knatte18/loomyard/issues/156).\n\nA darn agent was told to run a single test class through `lym gate test --gate darn-write \u003cproject\u003e -- \u003cargs\u003e`.\nThe hub's `gate.yaml` has no `darn-write` key and its tiers hold no `{targets}` placeholder, so both forms were refused.\nOnly `lym gate test --tier 1 -- --filter ...` worked, after the agent dropped the targets.\n\nThis is abnormal: the prompt instructs a command form the hub's own gate config cannot satisfy, and the agent spent calls discovering that.\nFix: make the darn prompt name only a form valid for the hub's gate config, or have the prompt builder check the key and `{targets}` against `gate.yaml` and fall back to the `--tier` form.\n\nProvenance: task cuttings-bed-decay-parity, note Darn-Write.md.\n\n### From issue #162\n\nImported from [issue #162](https://github.com/Knatte18/loomyard/issues/162).\n\nA Darn-Write agent's instructions said to run a needed test class through `lym gate test --gate darn-write`.\nThe hub's `gate.yaml` declares only `finalize` and `adopt`, so the named gate key does not exist.\nThe agent fell back to `lym gate test --tier 1 -- --filter ...`.\n\nThis is abnormal because a prompt should name only gate keys the hub declares.\nFix: either generate the Darn-Write prompt from the declared gate keys, or declare a `darn-write` key; also have `lym gate test` refuse an unknown `--gate` with a list of declared keys.\n\nProvenance: task bed-erosion-rate-gap, note Darn-Write.md.\n## Gate tier env overrides that differ from the session\n\nImported from [issue #157](https://github.com/Knatte18/loomyard/issues/157).\n\nA darn agent measured a tolerance with the slow gate tier.\nThe tier's `COMMONLIB_REPO` names a different CommonLib checkout than the session's own environment, and the two checkouts give different series.\nNeither the prompt nor the gate's report says so; the agent found it only by reading `lym config gate --print`, after measuring against the wrong checkout.\n\nThis is abnormal: a gate run silently uses an environment that differs from the session's, and a result from it misleads.\nFix: have `lym gate test` report the tier's env overrides that differ from the session's environment, or list them in the prompt for a gate-driven task.\n\nProvenance: task cuttings-bed-decay-parity, note Darn-Write.md.\n",
-      "status": "done",
-      "created": "2026-11-19T19:40:40Z",
-      "revised": "2026-11-19T19:42:44Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "solid"
     },
     {
       "id": 1532,
