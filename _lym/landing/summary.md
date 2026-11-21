@@ -1,50 +1,57 @@
-# Webster and plan review honour parent decisions; full halt findings
+# Webster and plan fix honour parent decisions; full halt reasons
 
-Parent decisions now reach the checks that used to ignore them, and Webster halts name the files and routes a parent needs.
-Issues #168, #170, #171, #172 and #178.
+A parent's recorded decision now reaches the places that halted a run without it, and halt reasons no longer lose their findings.
+Three halts forced a parent to hand-edit the plan or the report to get past a call it had already made.
 
 ## What changes
 
-**A decision can drop a Create (#171, #178).**
-`lym loom decision add --drops-create <target>` (repeatable, one entry per call) writes a ``Drops Create: `<target>` `` line into the added entry.
-`discussionparser.DroppedCreates` reads those lines.
-`runplan.PostBatchChecks` takes the decision record through the new `PostBatchInputs.DecisionRecordPath` field.
-It runs the done-checks on a copy of the batch's cards without the dropped Create refs, and returns a warning per skipped target, so the batch no longer blocks on a member the parent decided never to build.
-Webster and weaver both pass the path.
-`createTargetWayForward` no longer depends on the calling verb:
-record-batch and recover-batch both offer, in order, the card amendment plus `lym webster rebaseline --card NN`, the `--drops-create` decision, and recover-batch to build the target as the card names it.
-A signature mismatch still offers the amendment alone.
+**Create check reads the decision record.**
+A decision that drops a Create target now carries it: `lym loom decision add --drops-create <target>` (repeatable) writes a `Drops Create:` line into the entry.
+`internal/planglyph` skips the done-check for each dropped target and reports it as a warning naming the card, the target and the decision, instead of blocking.
+A dropped target that a card declares through a `plan:` handle loses that declaration too, so binding owns no handle for it.
+The flag applies to one entry, and a call that records several entries, or a target that is empty or holds a backtick or line break, is refused.
+`record-batch` and `recover-batch` give the same way forward through `createTargetWayForward`:
+amend the target, have the parent record a dropping decision, or have `recover-batch` build the target as named.
+The drop is offered only for an unresolved Create target, never for a Rename pair that did not happen or a signature mismatch.
 
-**Verify-gate halts name the full report (#172).**
-A run-level entry's stuck reason still quotes the first 400 bytes of its findings, then names `verify-gate.yaml`, which holds them all, and marks a cut.
-A failure of the `drift` entry closes its way forward with the parent's `lym drift amend <slug> --entries <file>` route for a drift the plan intends.
+**Drift halt names a full report.**
+`internal/websterengine/verifygate.go` no longer drops findings silently at 400 bytes.
+A cut halt reason names the verify-gate report that holds every finding, and the drift entry's way forward adds the alternative to fixing it:
+the parent accepts intended drift with `lym drift amend <slug> --entries <file>`, then runs `lym loom resume`.
 
-**Plan review admits amended cards (#168).**
-`burlerengine.RoundContext` gains `AmendingTexts`: the added entries whose titles the plan amendment record lists as pending.
-In an incremental round, a finding on a card whose file stem, or stem without its number, appears in such an entry passes the changed-file rule; it must still be BLOCKING.
-The prior-findings block marks amending entries and tells the reviewer to raise a finding on each named card that does not yet carry the amendment.
+**Plan amendment passes the round check.**
+In `internal/burlerengine/roundcheck.go`, a finding located in a plan card file that an `--amends-plan` decision names is exempt from the changed-file rule.
+Webster's halt reason is written to a halt-reason file in the conflict directory on every Stuck and removed on Done.
+A plan review the run returns to reads it, so a new BLOCKING `origin: webster` finding passes the changed-file rule while a halt reason is set.
+The Burler review stencils and `shedadapters` carry the reason into the review prompt.
 
-**Webster's halt reason reaches the plan fixer (#170).**
-`WebsterProducer` writes its final stuck reason to `.lym/implementer/webster-halt.md` (`runplan.WriteHaltReason`) and removes it when a call ends done.
-Plan-Burler-Review reads it on every round into `Profile.HaltReason` and `RoundContext.HaltReason`.
-The review prompt then asks for a BLOCKING finding with `origin: webster` (`burlerengine.WebsterOrigin`), which the round check admits outside the changed files, so the fixer works it.
-Only the plan segment is wired: `shedrecipe` sets the amendment reader and conflict directory for `Plan-Burler-Review` alone, and `lym burler validate-review` does the same for the plan review run directory.
+**Later decisions supersede earlier ones.**
+The batch fork's prompt and the Master template number every parent decision in record order (`{{.parent_decisions}}`).
+They state that a later decision, whether a notice or a recorded entry, overrides an earlier one it differs from, even where the earlier one said to revert or drop work.
+This is the part of #178 that cost a halt on a run in an earlier task.
 
-**A later parent decision wins (#178).**
-The master prompt numbers recorded parent decisions `Decision 1:` onward in record order.
-The master and implementer stencils state that a later decision that differs from an earlier one supersedes it.
+Out of scope: the automatic rebaseline after a fix (#170, second point).
+
+Closes #168
+Closes #170
+Closes #171
+Closes #172
+Closes #178
 
 ## Design decisions
 
-- A dropped Create is named by an explicit flag, not inferred from decision prose, so a decision that merely mentions a target never unblocks its done-check.
-- `shedadapters` cannot import `loomshed`, which imports it, so the amendment titles reach `BuildRoundContext` as a reader func that the callers build on `loomshed.ReadAmendment`. That keeps the record to one decoder.
-- `BuildRoundContext` takes a `RoundContextSources` struct in place of its two trailing path arguments.
-- Left out per the parent's scope decision: running `lym webster rebaseline --card N` automatically after a plan fix (#170, second bullet), and stopping the verify-gate re-prompt loop early on unchanged drift findings (#172, a "consider" item).
-- #170's suggestion to refuse a Plan-Bouncer approval while the halt finding stands is not built. The halt reaches the fixer as a finding, and the round checks keep that finding open across rounds like any other.
+- A drop is an explicit per-entry flag, not inferred from decision prose, so the done-check never guesses.
+- `--drops-create` is recorded on a decision entry, so a parent that folds the record and re-adds its calls passes the flag again;
+  the parent directive stencil says so.
+- The halt-reason exemption is bounded to `origin: webster` BLOCKING findings while a halt reason exists, so it cannot excuse unrelated out-of-scope findings.
+- Done-checks skip dropped targets, but drift detection and the scope guard still read the cards as given.
+
+## To check by hand
+
+- `lym drift amend` was not run end to end against a real drift halt; the way-forward text names it as written in `verifyGateStuckFailure`.
+- A decision-record read failure in the Create check is an error with a way forward; no fixture exercises an unreadable record file on a live run.
 
 ## Merge danger
 
 **Door:** one-way
-**Blast radius:** webster
-
-The `Drops Create:` line is a new line kind in the decision record, which other lym binaries read; an older binary treats it as entry text.
+**Blast radius:** websterengine
