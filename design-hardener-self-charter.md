@@ -1,6 +1,6 @@
 # Hardener writes its own charter, drives either hub layout
 
-`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · starting · Seed-Child
+`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · starting · Open-Window
 
 ## Seen
 
