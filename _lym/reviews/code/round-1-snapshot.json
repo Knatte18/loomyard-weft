@@ -7,5 +7,6 @@
       "title": "No test seam for the red-first overlay: the diff changes a darn stencil",
       "digest": "57031a7340995674ec900e5f4cf7e9425606d39f4a5c9430e7c115b20dd15992"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
