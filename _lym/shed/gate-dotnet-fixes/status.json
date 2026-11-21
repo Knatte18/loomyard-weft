@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/.lym/shed/gate-dotnet-fixes/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Darn-Write → stuck",
+    "wait": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/.lym/shed/gate-dotnet-fixes/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
   },
   "history": [
     {
@@ -43,6 +43,107 @@
       "output": "",
       "at": "2026-11-19T19:45:52Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/landing/summary.md",
+      "at": "2026-11-21T13:37:22Z",
+      "started_at": "2026-11-19T19:46:04Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-19T19:55:11.304229298Z",
+          "end": "2026-11-19T19:55:11.326994539Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T13:36:58.036409837Z",
+          "end": "2026-11-21T13:36:58.048843119Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:09.328196279Z",
+          "end": "2026-11-21T13:37:09.382395426Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:19.698079428Z",
+          "end": "2026-11-21T13:37:19.727209877Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-19T19:55:11.416157622Z",
+          "end": "2026-11-21T13:36:31.147969264Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T13:36:58.119316076Z",
+          "end": "2026-11-21T13:36:58.511063495Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:09.454394512Z",
+          "end": "2026-11-21T13:37:09.926556224Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:19.808104178Z",
+          "end": "2026-11-21T13:37:20.481029632Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T13:36:31.24063831Z",
+          "end": "2026-11-21T13:36:31.388803356Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T13:36:31.914435085Z",
+          "end": "2026-11-21T13:36:57.976785401Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T13:36:58.578575403Z",
+          "end": "2026-11-21T13:36:58.730836536Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T13:36:59.192610475Z",
+          "end": "2026-11-21T13:37:09.227786025Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:09.981709124Z",
+          "end": "2026-11-21T13:37:10.137567351Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T13:37:10.573934772Z",
+          "end": "2026-11-21T13:37:19.609216723Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T13:37:20.6681418Z",
+          "end": "2026-11-21T13:37:21.090075468Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
