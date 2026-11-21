@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 17:29 UTC; every age below is as of then.
+Rendered 2026-11-21 17:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -81,21 +81,22 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 Concrete and claimable; only a task can run.
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **One-repository sandbox: create the repo and clone the hub**<br>• Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md) | darn · docs |  | 3m<br>3m | fabric |
 
-#### Draft (3)
+#### Draft (2)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **One-repository sandbox: create the repo and clone the hub**<br>• Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md) | darn · docs |  | 1m<br>1m | fabric |
-| T3 | `draft` **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | T2 | 1m<br>1m | fabric, landing |
-| T4 | `draft` **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 1m<br>1m | fabric, git |
+| T3 | `draft` **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | T2 | 3m<br>3m | fabric, landing |
+| T4 | `draft` **One-repository sandbox: second clone and namespace hand check**<br>• Clone the sandbox again, land a task from it, and grep fabric and gitrepo for un-namespaced records refs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-reclone`](design-onerepo-sandbox-reclone.md) | darn · docs | T3 | 3m<br>3m | fabric, git |
 
 ### Notes (0)
 
@@ -133,15 +134,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 1h<br>0m | gate, loom |
-| B2 |  | **Plan amendment to an unchanged card is approved without being carried into it** | [`plan-amendment-not-carried`](design-plan-amendment-not-carried.md) | 0m<br>0m | burler, webster, loom |
-| B3 |  | **webster: halt note truncates drift gate message; no way to accept expected drift** | [`webster-drift-halt-truncated`](design-webster-drift-halt-truncated.md) | 0m<br>0m | webster, drift |
-| B4 |  | **Burler-fix halts failed when a fork runs git in a scratch repo under .scratch** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 0m<br>0m | burler, shuttle |
-| B5 |  | **Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt** | [`burler-fixer-rerun-no-reason`](design-burler-fixer-rerun-no-reason.md) | 0m<br>0m | burler |
-| B6 |  | **loom-halt note and blocked reason name a gate-findings path that does not exist** | [`halt-names-missing-findings-path`](design-halt-names-missing-findings-path.md) | 0m<br>0m | loom, gate |
-| B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 0m<br>0m | loom |
-| B8 |  | **webster: Create check ignores a decision that drops the Create; recover-batch advised anyway** | [`webster-create-stale-decision`](design-webster-create-stale-decision.md) | 0m<br>0m | webster |
-| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 0m<br>0m | stencil, shed |
+| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 1h<br>2m | gate, loom |
+| B2 |  | **Plan amendment to an unchanged card is approved without being carried into it** | [`plan-amendment-not-carried`](design-plan-amendment-not-carried.md) | 2m<br>2m | burler, webster, loom |
+| B3 |  | **webster: halt note truncates drift gate message; no way to accept expected drift** | [`webster-drift-halt-truncated`](design-webster-drift-halt-truncated.md) | 2m<br>2m | webster, drift |
+| B4 |  | **Burler-fix halts failed when a fork runs git in a scratch repo under .scratch** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 2m<br>2m | burler, shuttle |
+| B5 |  | **Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt** | [`burler-fixer-rerun-no-reason`](design-burler-fixer-rerun-no-reason.md) | 2m<br>2m | burler |
+| B6 |  | **loom-halt note and blocked reason name a gate-findings path that does not exist** | [`halt-names-missing-findings-path`](design-halt-names-missing-findings-path.md) | 2m<br>2m | loom, gate |
+| B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 2m<br>2m | loom |
+| B8 |  | **webster: Create check ignores a decision that drops the Create; recover-batch advised anyway** | [`webster-create-stale-decision`](design-webster-create-stale-decision.md) | 2m<br>2m | webster |
+| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 2m<br>2m | stencil, shed |
 
 #### Features (2)
 
