@@ -248,27 +248,6 @@
       "project": "code-cleanup"
     },
     {
-      "id": 1533,
-      "handle": "B1",
-      "slug": "red-first-unjudged-burns-tries",
-      "title": "Unjudged red-first refusal burns the verify attempts before the parent answers",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "loom"
-      ],
-      "issues": [
-        173
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\n2026-11-21, in `gate-dotnet-fixes` and `red-first-overlay-non-go-files`: the darn writer asked the parent for a \"No test seam\" decision, then re-ran the verify gate at once.\nThe unjudged red-first refusal repeated, the run spent its three verify attempts within about two minutes and stopped with a question,\nwhile the parent's `lym loom decision add` was still committing. The parent then had to resume the run by hand.\n\n## Idea\n\nAn unjudged red-first refusal (exit `RedFirstUnjudgedExit`) does not spend a verify attempt; the writer waits for the parent's reply,\nor the gate waits for the decision record to change before it re-runs.\n\n\n## From issue #173\n\nImported from [issue #173](https://github.com/Knatte18/loomyard/issues/173).\n\n**What happened.**\nDarn-Write halted blocked (anomaly escalation-to-human) after the chair's `lym gate red-first --gate darn-write` failed 3 attempts in a row with the same error.\nThe error: the diff changes a contracts spec markdown file, which the overlay cannot put back, so the base run cannot judge the tests.\nThe refusal's way forward is for the run's parent to record a `lym loom decision add` entry titled \"No test seam\".\n\n**Why abnormal.**\nThe agent receiving the findings cannot resolve this itself; it needs a parent decision.\nThe gate re-prompted the agent three times, so the whole verify budget went on an identical, deterministic refusal, and the run ended blocked.\nA diff that pairs a Go test with a doc update is ordinary; the gate treats the doc as making the whole check unjudgeable.\n\n**What to do.**\nMake the red-first check ignore non-Go doc files that cannot affect test outcomes, or restore only the Go files on the base.\nWhen it must refuse, escalate to the parent on the first attempt instead of re-prompting the agent through the full budget with an unactionable finding.\n\nProvenance: task raddle-slug-length-check; note loom-halt.md.\n",
-      "created": "2026-11-21T15:33:40Z",
-      "revised": "2026-11-21T17:29:22Z"
-    },
-    {
       "id": 1534,
       "handle": "T2",
       "slug": "onerepo-sandbox-setup",
@@ -366,68 +345,6 @@
       "project": "single-repo-hub"
     },
     {
-      "id": 1539,
-      "handle": "B4",
-      "slug": "fork-git-guard-scratch-repo",
-      "title": "Burler-fix halts failed when a fork runs git in a scratch repo under .scratch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "shuttle"
-      ],
-      "issues": [
-        177
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #177](https://github.com/Knatte18/loomyard/issues/177).\n\nWhat happened: loom halted `failed` at Plan-Burler-Fix (anomaly `producer-hard-failure`, round 1 attempt 1).\nThe reason: the twill fixer fork ran a git-mutating command and the guard refused it with \"a fork must never run a state-mutating git command\".\nThe command created a throwaway probe directory under the worktree's `.scratch/`, ran `git init` for a bare repo and a work repo there, committed to the work repo, and pushed to the bare repo with `--force-with-lease`.\nIt never touched the task repository's own refs or working tree.\nThe fork was probing git push behaviour for a finding.\n\nWhy abnormal: the guard treats any `git init`, `commit` or `push` as mutating, including against a repo the fork created inside its own scratch directory.\nThe way forward it names (\"inspect the target's working-tree changes, revert what the fork wrote\") has nothing to revert here, so a harmless probe ends a run as hard failure.\n\nWhat to do: scope the mutating-git check to the target repository and its remotes.\nAllow git commands whose repo is a directory under `.scratch/`, or, if forks must not run them at all, say so in the fork prompt and give forks a sanctioned way to probe git behaviour.\nAlso make the halt message say when no target change was found.\n\nProvenance: task single-repo-namespace-layout; notes loom-halt.md.",
-      "created": "2026-11-21T17:29:34Z",
-      "revised": "2026-11-21T17:29:34Z"
-    },
-    {
-      "id": 1540,
-      "handle": "B5",
-      "slug": "burler-fixer-rerun-no-reason",
-      "title": "Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler"
-      ],
-      "issues": [
-        176
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #176](https://github.com/Knatte18/loomyard/issues/176).\n\nWhat happened: the Plan-Burler-Fix step for round 1 started a fixer session after an earlier fixer session had already fixed every finding and run its self-check.\nThe earlier fixer's report sat under a timestamped name (`round-1-fixer-report-\u003cUTC timestamp\u003e.md`) rather than the expected `round-1-fixer-report.md`.\nThe prompt gave no reason for the second run, so the fixer had to read every card to tell \"re-run because the report was misnamed or rejected\" from \"re-run for new work\".\nIt wrote the expected report from the earlier dispositions and spawned no forks.\n\nWhy abnormal: the step's report-name expectation and the name the first fixer wrote disagree, so a finished round looks unfinished and costs a full fixer session.\nThe prompt also never states why a step runs again.\n\nWhat to do: find why the first fixer's report landed under the timestamped name and was not accepted as the round's report (archiving on write, or a name mismatch).\nEither accept the archived report, or state the re-run reason (misnamed or rejected report versus new work) in the fixer prompt.\n\nProvenance: task single-repo-namespace-layout; notes burler-plan-r1.md.",
-      "created": "2026-11-21T17:29:36Z",
-      "revised": "2026-11-21T17:29:36Z"
-    },
-    {
-      "id": 1541,
-      "handle": "B6",
-      "slug": "halt-names-missing-findings-path",
-      "title": "loom-halt note and blocked reason name a gate-findings path that does not exist",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "gate"
-      ],
-      "issues": [
-        174
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #174](https://github.com/Knatte18/loomyard/issues/174).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/shed/`, `.lym/shuttle/`.\n\n**What happened.**\nThe halt reason for a Darn-Write gate failure says \"findings:\" followed by a path under `.lym/shed/\u003cslug\u003e/gate-findings/Darn-Write.md`.\nThat file does not exist; the `.lym/shed/\u003cslug\u003e` directory is empty.\nThe trace log names a different path, `.lym/shuttle/\u003crun\u003e/gate-findings.md`, and that run directory is gone too.\n\n**Why abnormal.**\nThe halt note and the `lym loom resume` way forward point the operator at findings that cannot be read.\nThe cause of the block is only recoverable from the trace log.\n\n**What to do.**\nCopy the findings file to the stable path the halt reason names before the shuttle run directory is removed, or name the path that survives.\n\nProvenance: task raddle-slug-length-check; note loom-halt.md.\n",
-      "created": "2026-11-21T17:29:39Z",
-      "revised": "2026-11-21T17:29:39Z"
-    },
-    {
       "id": 1542,
       "handle": "B7",
       "slug": "pr-findings-nil-open-fabric",
@@ -446,27 +363,6 @@
       "body": "Imported from [issue #169](https://github.com/Knatte18/loomyard/issues/169).\n\n`lym loom pr-findings \u003cfile\u003e` fails in a PR-Review session on a well-formed findings file, every time, so the parent's findings cannot be routed.\n\n## Where\n\nA PR-Review agent, the session spawned for a task's pull request after its landing opened it.\nThe parent orch sent two findings by creel; the agent wrote them in burler's review format under `.scratch/` and ran `lym loom pr-findings .scratch/parent-review-1.md`.\n\n## What happens\n\nThe file passes burler's format check (a first attempt with a wrong verdict was refused with a clear message, and the corrected file got past that check).\nThe verb then fails reading the send-back edge:\n\n```\n{\"error\":\"loom: pr-findings: read whether the send-back edge can fire: loomrecipe: shedbuild: producer 16 \\\"Parent-Align\\\": shedrecipe: ParentAlign: landingshed: NewParentAlign: Deps.OpenFabric must not be nil; way forward: run lym loom pr-findings .scratch/parent-review-1.md again, and tell the operator when it keeps failing\",\"ok\":false}\n```\n\nRunning it again gives the same error.\n\n## Expected\n\nThe verb answers send-back or fix-here.\n`NewParentAlign` looks to be built on this path without its `OpenFabric` dependency.\n\n## Workaround\n\nThe operator told the agent to fix the findings directly, bypassing the verb.\n",
       "created": "2026-11-21T17:29:42Z",
       "revised": "2026-11-21T17:29:42Z"
-    },
-    {
-      "id": 1544,
-      "handle": "B9",
-      "slug": "stencil-version-way-forward",
-      "title": "Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil",
-        "shed"
-      ],
-      "issues": [
-        175
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #175](https://github.com/Knatte18/loomyard/issues/175).\n\nA loom run halted `blocked` at Preflight because the stencil store refused a stencil written by a newer lym build than the running one.\n\nThe refusal text ends with two way-forward clauses:\n\n```\nway forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board; way forward: fix the config or model spec it names, then re-step\n```\n\nThe first clause is correct for this cause.\nThe second is a generic suffix that the halt path appends, and it does not apply: no config or model spec is named, and the cause is a stale binary.\nFollowing it sends the operator to look for a config fault that does not exist.\n\nThe halt anomaly was `escalation-to-human`, and the run history holds a single `Preflight / stuck` entry.\n\nExpected: a build-version refusal from `stencilstore` carries only its own way forward, without the generic config/model-spec suffix.\n\nFull error as recorded:\n\n```\nseat stencils check failed: build the darn writer table: darn: DarnTable: Step 4 list: stencilstore: stencil \"darn-fragment-make-change-gated\" was written by lym build fded58794f7b02939b6bf8675b87c64fb3fa987d, which is newer than the running build 4c031f8b7a781e3f4fb17f48632782ded92f3a01, and this process may not render it\n```\n\nProvenance: task `bugfix-discussion-stencil`, from `loom-halt.md`.\n",
-      "created": "2026-11-21T17:29:52Z",
-      "revised": "2026-11-21T17:29:52Z"
     },
     {
       "id": 1545,
@@ -506,6 +402,77 @@
         }
       },
       "profile": "solid"
+    },
+    {
+      "id": 1546,
+      "handle": "T6",
+      "slug": "burler-fix-round-defects",
+      "title": "Burler fix round: rerun reason and fork git in its own scratch repo",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "burler",
+        "shuttle"
+      ],
+      "issues": [
+        176,
+        177
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## From burler-fixer-rerun-no-reason\n\n{\"error\":\"invalid json: invalid character 'b' looking for beginning of value\",\"ok\":false}\n\n## From fork-git-guard-scratch-repo\n\n{\"error\":\"invalid json: invalid character 'o' in literal false (expecting 'a')\",\"ok\":false}\n\n",
+      "status": "draft",
+      "created": "2026-11-21T17:29:34Z",
+      "revised": "2026-11-21T17:34:51Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
+    },
+    {
+      "id": 1547,
+      "handle": "T7",
+      "slug": "halt-escalation-messages",
+      "title": "Parent-only refusals stop retrying; halt messages name real files and ways",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate",
+        "loom",
+        "stencil",
+        "shed"
+      ],
+      "issues": [
+        173,
+        175,
+        174
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## From red-first-unjudged-burns-tries\n\n{\"error\":\"invalid json: invalid character 'r' looking for beginning of value\",\"ok\":false}\n\n## From stencil-version-way-forward\n\n{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n\n## From halt-names-missing-findings-path\n\n{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n\n",
+      "status": "draft",
+      "created": "2026-11-21T15:33:40Z",
+      "revised": "2026-11-21T17:34:52Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",

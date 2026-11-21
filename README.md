@@ -118,11 +118,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
 
 Owner `neve`
 
-### Tasks (1)
+### Tasks (3)
 
 Concrete and claimable; only a task can run.
 
@@ -132,15 +132,17 @@ Waits on nothing open; can start now.
 
 _None._
 
-#### Draft (1)
+#### Draft (3)
 
 Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | `draft` **Webster and plan fix honour parent decisions; full halt reasons**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md) | darn · solid |  | 5m<br>0m | webster, burler, drift, loom |
+| T6 | `draft` **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light |  | 5m<br>0m | burler, shuttle |
+| T7 | `draft` **Parent-only refusals stop retrying; halt messages name real files and ways**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`halt-escalation-messages`](design-halt-escalation-messages.md) | darn · light |  | 2h<br>0m | gate, loom, stencil, shed |
 
-### Notes (10)
+### Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -151,16 +153,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
 
-#### Bugs (6)
+#### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 2h<br>5m | gate, loom |
-| B4 |  | **Burler-fix halts failed when a fork runs git in a scratch repo under .scratch** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 5m<br>5m | burler, shuttle |
-| B5 |  | **Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt** | [`burler-fixer-rerun-no-reason`](design-burler-fixer-rerun-no-reason.md) | 5m<br>5m | burler |
-| B6 |  | **loom-halt note and blocked reason name a gate-findings path that does not exist** | [`halt-names-missing-findings-path`](design-halt-names-missing-findings-path.md) | 5m<br>5m | loom, gate |
 | B7 |  | **loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil** | [`pr-findings-nil-open-fabric`](design-pr-findings-nil-open-fabric.md) | 5m<br>5m | loom |
-| B9 |  | **Stencil build-version refusal at Preflight appends an inapplicable config/model-spec way forward** | [`stencil-version-way-forward`](design-stencil-version-way-forward.md) | 4m<br>4m | stencil, shed |
 
 #### Features (2)
 
