@@ -1,6 +1,6 @@
 # Hardener campaign on fabricengine, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · starting · Open-IDE
+`harden-fabricengine` · Task · bug, fabric · running · Preflight
 
 ## Goal
 
