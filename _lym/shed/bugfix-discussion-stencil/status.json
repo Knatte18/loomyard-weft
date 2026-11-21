@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -52,6 +52,46 @@
       "output": "",
       "at": "2026-11-21T14:40:51Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/bugfix-discussion-stencil/_lym/landing/summary.md",
+      "at": "2026-11-21T14:45:38Z",
+      "started_at": "2026-11-21T14:40:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T14:42:22.765832714Z",
+          "end": "2026-11-21T14:42:22.779742009Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T14:42:22.82997875Z",
+          "end": "2026-11-21T14:44:53.500774262Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T14:44:53.551456016Z",
+          "end": "2026-11-21T14:44:53.553321864Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T14:44:53.591133766Z",
+          "end": "2026-11-21T14:44:53.82159394Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T14:44:53.860673252Z",
+          "end": "2026-11-21T14:44:53.864402193Z"
+        }
+      ]
     }
   ],
   "product": {
