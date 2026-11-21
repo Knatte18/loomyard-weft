@@ -1,6 +1,6 @@
 # Remove the coverage-map triage lines from failure reports
 
-`drop-failure-triage-lines` · Task · enhancement, gate, webster, stencil · running · Drift-Recheck
+`drop-failure-triage-lines` · Task · enhancement, gate, webster, stencil · running · Describe
 
 ## Why
 
