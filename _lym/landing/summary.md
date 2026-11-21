@@ -1,85 +1,57 @@
-# Red-first holds on parent-only refusals; halts name real files and ways
+# Parent-only refusals hold, not retry; halts name real files and ways
 
-Three fixes for runs that halted on refusals the writer could not lift, or with halt messages that pointed at the wrong thing (issues #173, #174, #175).
+Three halt-message defects in the darn run are fixed.
 
-## Red-first holds on a refusal only a commit or the parent lifts (#173)
+## What changes
 
-`lym gate red-first` exits `RedFirstNoTestExit` when the diff adds or changes no test,
-and `RedFirstUnjudgedExit` when the hub's scoper is not go.
-`redFirstFailure` turned both into ordinary failing results,
-so the writer was re-prompted with the same refusal until the entry's attempts ran out.
-The gate-dotnet-fixes and red-first-overlay-non-go-files runs spent three attempts in two minutes this way,
-while the parent's `lym loom decision add` was still committing.
+- **Red-first holds instead of retrying.**
+  A bug-labelled entry whose diff adds no test, or whose check cannot judge the tests, used to fail the gate as an ordinary failure.
+  Each repeat spent a verify attempt, so three attempts went in two minutes while the parent's `No test seam` decision was still committing.
+  Now `redFirstGate` in `internal/loomshed/redfirstgate.go` answers pending on those two exits.
+  The run holds without spending an attempt until HEAD's tree changes or the parent's record lands.
+  While HEAD's tree is the one the refusal judged, the gate answers pending without running the command again.
+  Other failures, a timeout or a runner crash included, still fail as before.
+- **One hold line, offered until delivered.**
+  The hold's pending answer sends the writer one line telling it the way forward.
+  `GateResult` in `internal/shuttleengine/gate.go` gains a `Delivered` flag that the loop sets once the send lands.
+  A send that failed is offered again at the next evaluation, and a delivered one is not repeated.
+- **Stencil build-version refusal keeps its own way forward.**
+  `preflightTableError` in `internal/loomcli/darnwiring.go` no longer appends the "fix the config or model spec" clause to a `stencilstore.NewerBoardCopyError`, since no config is at fault.
+  Any other table-build error keeps the clause.
+- **A halt never names a removed gate-findings file.**
+  The producers no longer remove the file when a later call's gate passes, so the path in a Stuck reason survives.
+  `clearGateFindings` and its call in `internal/shedadapters/burlerreview.go` are deleted.
+  `latestDarnOutcome` names the findings path only for a Stuck entry, and only when the file was not last written before that Stuck's spawn began.
+  A Stuck that wrote no findings of its own therefore names none.
 
-`loomshed.NewRedFirstGate` now returns a `RedFirstGate` with two closures:
+The darn recipe comment, the darn write stencil and `docs/overview.md` describe the new red-first behaviour.
 
-- `Gate` answers either exit **pending**, so the shuttle wait loop holds the run without counting a failure.
-  The hold's first arrival sends the writer one line naming the way forward:
-  add a failing test, or ask the parent for a `No test seam` record.
-  Later arrivals send nothing.
-  While HEAD's tree is the one the refusal judged, `Gate` answers pending again without running the check,
-  so the 5-second idle re-check never re-runs `lym gate red-first` or fills the verify log directory.
-  A new commit runs the check again, and the parent's `No test seam` record lifts the hold through the existing record check.
-- `Final` runs at a deadline or liveness finalize.
-  It answers the same exits as a failure whose findings name the same way forward, so a run that ends while held still halts with readable findings.
-
-`shedrecipe` builds the `red-first` entry with `MayHold: true` and that `Final`, since `evaluateGate` refuses a pending result from any other must-pass entry.
-`verifytree.HeadTree`, the former unexported `headTree`, is exported so the gate can compare trees.
-The green exit, a timeout, a runner crash and every other exit behave as before.
-
-## A halt's gate findings file survives a later pass (#174)
-
-Reproduced from the archived raddle-slug-length-check trace.
-The Darn-Write halt at 20:48:28 wrote `.lym/shed/<slug>/gate-findings/Darn-Write.md` and named it in the reason.
-The tackler resumed the run, and the respawned Darn-Write passed its gate at 20:49:51.
-`clearGateFindings` then deleted the file that the halt note still named.
-The orphan scratch sweep in `battencli/cleanup.go`, the triage's suspect, plays no part:
-it runs on the prime's scratch only.
-
-`clearGateFindings` and its three call sites are removed (`MultiLLMProducer`, `BurlerReviewProducer` and `BurlerFixProducer`).
-A later failure still overwrites the file.
-The one reader that relied on the clearing, `latestDarnOutcome` in `loomcli`,
-now names the kept file in the writer's prior-work note only when the latest Darn-Write entry is a Stuck.
-A spawn after a pass is therefore never pointed at old findings.
-
-## Preflight's stencil build-version refusal keeps only its own way forward (#175)
-
-`wireDarn`'s `PreflightStencils` appended "way forward: fix the config or model spec it names, then re-step" to every error from building the writer's table.
-A `*stencilstore.NewerBoardCopyError` already ends with its own way forward (restart the driver on a current binary),
-so the refusal carried two clauses, the second naming a config fault that does not exist.
-The new `preflightTableError` keeps that error's own clause alone and appends the config clause to every other build error.
-The error reaches it through `%w` wrapping all the way from `stencilstore`.
+Closes #173
+Closes #174
+Closes #175
 
 ## Design decisions
 
-- **The red-first refusals hold instead of halting terminally.**
-  The run's added decision "Scope after the corrupted board body" says the gate waits for the parent's decision.
-  A terminal result would have halted the run and needed a `lym loom resume` after the record.
-  The hold lets the run go on by itself once the record or a test commit lands.
-- **The no-test exit holds too, though the writer can lift it by adding a test.**
-  The decision names both exits.
-  The hold's line names both ways forward,
-  and a writer's commit re-runs the check at its next turn end, so the writer loses nothing by the hold.
-- **The findings file is kept rather than copied to a per-halt path.**
-  A history entry does not record its Stuck reason, so a per-halt path could not be found again for the prior-work note.
-  Keeping one file per row, gated on the latest entry being a Stuck, keeps every halt's named path readable
-  and needs no new layout.
+- **Red-first now has two closures.**
+  `NewRedFirstGate` returns a `RedFirstGate` with `Gate` and `Final` sharing one attempt count.
+  `Gate` answers pending on the held refusal, so its `GateEntry` is `MayHold`, which `GateResult.Pending` requires outside `PassOnCap` entries.
+  `Final` runs in a final evaluation and fails on that same refusal with findings naming the same way forward, so a held run that ends does not pass silently.
+- **`verifytree.HeadTree` is exported** so the gate can tell whether the tree a verify judged is still HEAD's.
+- **Issue #174's cause is not reproduced.**
+  The decision record named the orphan scratch sweep in `internal/battencli/cleanup.go` as a suspect, and that code is untouched.
+  The removal this change deletes was the producer's own clear on a passing call.
+  The reviewer should judge whether that accounts for the reported missing file.
 
-## Tests
+## To check by hand
 
-- `TestRedFirstGate_VerdictPerLabelRecordAndExitCode`: the no-test and unjudged exits are pending with a one-line `Send` naming the way forward.
-  New rows cover `Final` answering both exits as failures with the old findings.
-- `TestRedFirstGate_HoldRunsNothingUntilACommitOrTheRecordLands`: the first refusal holds and sends; a second arrival on the same tree runs nothing and sends nothing;
-  a new commit re-runs the check; the `No test seam` record passes.
-- `TestResolveGateSpec_RedFirstEntryMayHoldAndCarriesAFinal` pins the entry's `MayHold` and `Final`.
-- The multillm, burler-fix and burler-review rows that asserted the findings file was removed on a pass now assert it is kept,
-  and so does `shedrecipe`'s `TestBurlerHalfEntries_RunDirectory/ReviewWhoseGatePassedKeepsTheRowsFindingsFile`.
-  `TestClearGateFindings` goes with the function.
-- `TestLatestDarnOutcome` gains a row: a Done latest entry names no findings file an earlier halt kept.
-- `TestPreflightTableError_KeepsANewerStencilRefusalsOwnWayForward`: a wrapped `NewerBoardCopyError` carries exactly one way forward and no config clause;
-  any other error gains the config clause.
+None of these was run end to end against a live run.
+
+- Confirm that the producer's clear on a passing call, not the scratch sweep in `internal/battencli/cleanup.go`, removed the file in issue #174.
+- Failed hold-line send is never retried by the loop itself (`internal/loomshed/redfirstgate.go`, `internal/shuttleengine/wait.go`): a failed send is offered again only at the next pending evaluation.
+- The send-failed title is a literal in the hold path (`internal/loomshed/redfirstgate.go`, `redFirstHoldSendFailed`); check it matches the way the neighbouring gate messages are named.
+- A Stuck from a non-gate cause that follows a gate Stuck can still name the kept findings file when it was written after that spawn began (`latestDarnOutcome` in `internal/loomcli/darnwiring.go`).
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** loom
+**Blast radius:** loomshed
