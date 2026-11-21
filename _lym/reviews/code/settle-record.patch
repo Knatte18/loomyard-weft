@@ -1,0 +1,140 @@
+diff --git a/docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md b/docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md
+index 5f7fc232..42410c27 100644
+--- a/docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md
++++ b/docs/research/single-repo/sandbox-3-reclone-2026-11-21/report.md
+@@ -25,7 +25,7 @@ result: every check passed; no lym bug found, so no note was filed
+ - `greet-reclone` ran from the second hub to landing with no halt, landed as `1c74466`, and tore down as trial 2's landings did.
+ - `lym fabric pull` in the first hub brought its code store and records store level with the landing.
+   The first hub's board caught up only at `lym board sync`, because the pull moves the pair and not the board
+-  (see [The first hub after the pull](#the-first-hub-after-the-pull)).
++  (see [The first hub after the pull](#3-the-first-hub-after-the-pull)).
+ - The hand check found no origin ref built from a bare `refs/heads/` or `refs/tags/` on a records-store path.
+ 
+ As in trials 1 and 2, the orch ran the steps the task session is refused: the clone, filing and releasing the task, and the dobby start.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 0edc3664..dbb5604d 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -149,6 +149,7 @@
+ // Both rows read those rules, `GET repos/{owner}/{repo}/rules/branches/{branch}`, only in one case:
+ // beam.yaml and the field give a no for a task branch with commits and an origin a pull request could be opened on.
+ // They then ask the resolver again with the rules.
++// A repository whose plan has no repository rules has none, so GitHub's 403 for it reads as no rule, never a failure.
+ // A cancelled context and a transient failure of that read are errors the driver re-steps.
+ // Any other failure of the read is a Halt when the run holds a pull request record;
+ // an unusable token is the exception.
+diff --git a/internal/pullrequest/client.go b/internal/pullrequest/client.go
+index 0ba946cb..87ee0c1f 100644
+--- a/internal/pullrequest/client.go
++++ b/internal/pullrequest/client.go
+@@ -18,6 +18,21 @@ import (
+ // listPageSize is the page size the list calls request, GitHub's maximum.
+ const listPageSize = 100
+ 
++// planGatedMessagePrefix opens GitHub's message on a 403 for a feature the repository's plan lacks.
++// Repository rules on a private repository under a free plan are one such feature.
++const planGatedMessagePrefix = "Upgrade to GitHub"
++
++// rulesFeatureUnavailable reports whether err is GitHub's 403 for a repository whose plan has no repository rules.
++// GitHub answers it for every token, so it says nothing about the token;
++// a repository without the rules feature has no rules.
++func rulesFeatureUnavailable(err error) bool {
++	var resp *github.ErrorResponse
++	if !errors.As(err, &resp) || resp.Response == nil {
++		return false
++	}
++	return resp.Response.StatusCode == http.StatusForbidden && strings.HasPrefix(resp.Message, planGatedMessagePrefix)
++}
++
+ // State is where a pull request stands on GitHub.
+ type State string
+ 
+@@ -296,10 +311,14 @@ func (c *Client) graphQL(ctx context.Context, query string, variables map[string
+ 
+ // RequiresPullRequest reports whether the repository rules active on branch include a pull_request rule.
+ // It reads the rules one page at a time and stops at the first page with a pull_request rule.
++// A repository whose plan has no repository rules has none, so GitHub's 403 for it reads as false.
+ func (c *Client) RequiresPullRequest(ctx context.Context, branch string) (bool, error) {
+ 	opts := &github.ListOptions{PerPage: listPageSize}
+ 	for {
+ 		rules, resp, err := c.gh.Repositories.GetRulesForBranch(ctx, c.owner, c.repo, branch, opts)
++		if rulesFeatureUnavailable(err) {
++			return false, nil
++		}
+ 		if err != nil {
+ 			return false, fmt.Errorf("pullrequest: read the rules active on branch %s: %w", branch, err)
+ 		}
+@@ -319,11 +338,15 @@ func (c *Client) RequiresPullRequest(ctx context.Context, branch string) (bool,
+ // A pending commit status reads as unfinished, with an empty conclusion.
+ // A context with neither is reported as missing.
+ // When base requires no status checks, it returns no checks, without reading check runs or commit statuses.
++// A repository whose plan has no repository rules requires none, so GitHub's 403 for it reads as no checks.
+ func (c *Client) RequiredChecks(ctx context.Context, base, head string) ([]Check, error) {
+ 	var contexts []string
+ 	ruleOpts := &github.ListOptions{PerPage: listPageSize}
+ 	for {
+ 		rules, resp, err := c.gh.Repositories.GetRulesForBranch(ctx, c.owner, c.repo, base, ruleOpts)
++		if rulesFeatureUnavailable(err) {
++			return nil, nil
++		}
+ 		if err != nil {
+ 			return nil, fmt.Errorf("pullrequest: read the rules active on branch %s: %w", base, err)
+ 		}
+diff --git a/internal/pullrequest/client_test.go b/internal/pullrequest/client_test.go
+index a9e27e0f..7c2edffc 100644
+--- a/internal/pullrequest/client_test.go
++++ b/internal/pullrequest/client_test.go
+@@ -125,6 +125,10 @@ func (s *scriptedServer) handle(w http.ResponseWriter, r *http.Request) {
+ 		reply(200, `[{"type": "required_linear_history", "ruleset_source_type": "Repository", "ruleset_source": "owner/repo", "ruleset_id": 1}]`)
+ 	case "GET " + rulesPath + "/bare":
+ 		reply(200, `[]`)
++	case "GET " + rulesPath + "/plan":
++		reply(403, `{"message": "Upgrade to GitHub Pro or make this repository public to enable this feature."}`)
++	case "GET " + rulesPath + "/forbidden":
++		reply(403, `{"message": "Resource not accessible by integration"}`)
+ 	case "GET " + rulesPath + "/gated":
+ 		reply(200, `[{"type": "required_status_checks", "ruleset_source_type": "Repository", "ruleset_source": "owner/repo", "ruleset_id": 1, "parameters": {"required_status_checks": [{"context": "build"}, {"context": "lint"}, {"context": "deploy"}, {"context": "ci/status"}, {"context": "ci/slow"}], "strict_required_status_checks_policy": false}}]`)
+ 	case "GET /repos/owner/repo/commits/h9/check-runs":
+@@ -271,6 +275,8 @@ func TestClient_Calls(t *testing.T) {
+ 			{branch: "guarded", want: true},
+ 			{branch: "linear", want: false},
+ 			{branch: "bare", want: false},
++			{branch: "plan", want: false},
++			{branch: "forbidden", wantErr: true},
+ 			{branch: "unknown", wantErr: true},
+ 		}
+ 		for _, tt := range tests {
+@@ -301,8 +307,17 @@ func TestClient_Calls(t *testing.T) {
+ 		if sent := server.all()[before:]; len(sent) != 1 || sent[0].path != rulesPath+"/bare" {
+ 			t.Errorf("RequiredChecks(bare, h9) sent %d requests; want only the rules read", len(sent))
+ 		}
+-		if _, err := client.RequiredChecks(ctx, "unknown", "h9"); err == nil {
+-			t.Error("RequiredChecks(unknown, h9) error = nil; want the failure of the rules read")
++		before = len(server.all())
++		if got, err := client.RequiredChecks(ctx, "plan", "h9"); err != nil || got != nil {
++			t.Errorf("RequiredChecks(plan, h9) = %+v, %v; want none", got, err)
++		}
++		if sent := server.all()[before:]; len(sent) != 1 || sent[0].path != rulesPath+"/plan" {
++			t.Errorf("RequiredChecks(plan, h9) sent %d requests; want only the rules read", len(sent))
++		}
++		for _, base := range []string{"forbidden", "unknown"} {
++			if _, err := client.RequiredChecks(ctx, base, "h9"); err == nil {
++				t.Errorf("RequiredChecks(%s, h9) error = nil; want the failure of the rules read", base)
++			}
+ 		}
+ 	})
+ 
+diff --git a/internal/pullrequest/doc.go b/internal/pullrequest/doc.go
+index e746f75d..4ff9a5ef 100644
+--- a/internal/pullrequest/doc.go
++++ b/internal/pullrequest/doc.go
+@@ -23,6 +23,9 @@
+ // RequiresPullRequest reports whether a branch's active rules include a pull_request rule.
+ // GitHub refuses a direct push under such a rule.
+ // It reads `GET repos/{owner}/{repo}/rules/branches/{branch}`.
++// GitHub answers that read with a 403 opening "Upgrade to GitHub" when the repository's plan has no rules.
++// A private repository under a free plan is one such case, and the answer is the same whatever the token.
++// Both rules reads take that 403 as no rules: no pull_request rule and no required checks.
+ // SetDraft changes a pull request's draft state, since the REST API cannot.
+ // It runs the GraphQL `convertPullRequestToDraft` or `markPullRequestReadyForReview` on the node id.
+ // An error GitHub lists in the GraphQL response is a failure.
