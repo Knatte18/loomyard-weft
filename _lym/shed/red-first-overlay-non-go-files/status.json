@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "gate did not pass after 4 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/red-first-overlay-non-go-files/.lym/shed/red-first-overlay-non-go-files/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Darn-Write → stuck",
+    "wait": "gate did not pass after 4 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/red-first-overlay-non-go-files/.lym/shed/red-first-overlay-non-go-files/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
   },
   "history": [
     {
@@ -43,6 +43,125 @@
       "output": "",
       "at": "2026-11-21T15:13:40Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/red-first-overlay-non-go-files/_lym/landing/summary.md",
+      "at": "2026-11-21T15:32:47Z",
+      "started_at": "2026-11-21T15:13:48Z",
+      "gate_attempts": 4,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:18:45.258367658Z",
+          "end": "2026-11-21T15:18:45.272988222Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:27:46.258596366Z",
+          "end": "2026-11-21T15:27:46.271362195Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:27.693888727Z",
+          "end": "2026-11-21T15:32:27.707926314Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:33.584961662Z",
+          "end": "2026-11-21T15:32:33.593587721Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:45.507815641Z",
+          "end": "2026-11-21T15:32:45.530230311Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:18:45.320933457Z",
+          "end": "2026-11-21T15:27:25.716542311Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-21T15:27:26.155726208Z",
+          "end": "2026-11-21T15:27:46.219767256Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:27:46.326076688Z",
+          "end": "2026-11-21T15:32:17.060672745Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:27.761074969Z",
+          "end": "2026-11-21T15:32:27.952332914Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:33.634312476Z",
+          "end": "2026-11-21T15:32:33.799787874Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:45.628936918Z",
+          "end": "2026-11-21T15:32:45.94516078Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:17.114114889Z",
+          "end": "2026-11-21T15:32:17.228120211Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T15:32:17.625009958Z",
+          "end": "2026-11-21T15:32:27.656074293Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:28.000079349Z",
+          "end": "2026-11-21T15:32:28.126501006Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T15:32:28.550304064Z",
+          "end": "2026-11-21T15:32:33.556786201Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:33.836188495Z",
+          "end": "2026-11-21T15:32:33.945521581Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-21T15:32:34.342374839Z",
+          "end": "2026-11-21T15:32:45.420802638Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T15:32:46.057315852Z",
+          "end": "2026-11-21T15:32:46.367863911Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
