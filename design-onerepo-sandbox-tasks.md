@@ -2,8 +2,6 @@
 
 `onerepo-sandbox-tasks` · Task · research, fabric, landing · starting · Seed-Child
 
-Depends on: [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md)
-
 ## Goal
 
 Second trial: run real tasks in the one-repository sandbox hub that the setup trial created (`/home/knatte/Code/lym-sandbox-onerepo-LYMHUB`).
