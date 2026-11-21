@@ -11,5 +11,6 @@
       "title": "Drop the MeasureCall tier fallback",
       "digest": "2d6e6f2157f403910d4af119c16f62c4a441231dfcbca22adfe8da0bbf6de614"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
