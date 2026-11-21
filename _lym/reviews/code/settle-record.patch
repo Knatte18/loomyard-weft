@@ -1,0 +1,314 @@
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index a81cbc6a..df266edf 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -632,10 +632,21 @@
+ // Once the parent-side landing completes, `DropBeamRecord` drops a spent recorded pull request from the landing record;
+ // a failed drop is logged only.
+ // A refused merge of a beam's pull request names GitHub's message, `lym beam pr status <slug>` and `lym loom resume`.
++// A refusal outlasting the window while GitHub reports the pull request can merge names `lym loom resume` alone.
+ // It never names `lym batten cancel`.
+ // A merge GitHub refuses as pending is retried for at most a minute under the lock.
+ // A method refusal names `lym config landing --set squash=<true|false>`, or the repository's settings under MergeAtOnce.
+-// Any other refusal names a second person's approval or a settled check or conflict, and `lym batten cancel`.
++// Any other refusal has `pullrequest.ReadMergeState` read the pull request.
++// That reading waits out a mergeability not yet computed.
++// While that reading says the pull request can merge, a retry is scheduled only while the minute has not passed.
++// Each reading can wait up to a further minute.
++// A scheduled retry sleeps its backoff first.
++// So Finalize halts within about two and a half minutes.
++// Past the minute the halt names `lym loom resume` alone.
++// A reading whose only cause is a mergeability GitHub never computed halts naming GitHub's message and that cause.
++// Its way forward is waiting for GitHub and running `lym loom resume`, with no approval or cancel.
++// A reading that says it cannot merge for any other cause halts naming each cause it reports.
++// The halt also names a second person's approval or a settled check or conflict, and `lym batten cancel`.
+ // The retry after a merge-in-required error never merges on GitHub a second time.
+ // Every GitHub failure is judged as PR-Review judges one, with each halt opening with LandingStopPrefix.
+ //
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index 90c7b44c..07c8335d 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -18,7 +18,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ )
+ 
+-// prMergeRetryWindow is how long a merge GitHub refuses as pending is retried under the lock.
++// prMergeRetryWindow is how long retries are scheduled under the lock.
++// It bounds the retries of a pending refusal.
++// It also bounds those of a refusal whose merge-state reading says the pull request can merge.
+ const prMergeRetryWindow = pullrequest.MergeRetryWindow
+ 
+ // prLanding is what the decision about the run's pull request hands the landing.
+@@ -456,6 +458,12 @@ func pullRequestCommitTitle(title string, number int) string {
+ // The commit title is the title with the pull request's number in parentheses;
+ // the commit message is the message passed in.
+ // A merge that GitHub refuses as pending is retried for up to `prMergeRetryWindow`, on `PullRequest.Now`'s clock.
++// Any other refusal but a method one has GitHub's merge state read, waiting out a mergeability not yet computed;
++// the merge is retried while that state reports the pull request can merge.
++// A retry is scheduled only while the window has not passed.
++// Each merge-state reading can wait up to a further window.
++// A scheduled retry sleeps its backoff first.
++// So Finalize halts within about two and a half windows.
+ // It then fetches the parent's upstream and fast-forwards the parent pair to it,
+ // so the parent-side merge that follows finds the parent holding the task's work.
+ // It returns nil when the landing goes on; each halt opens with LandingStopPrefix.
+@@ -493,14 +501,26 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 		if !errors.As(err, &refusal) {
+ 			return fz.githubFailure(ctx, "merge the pull request", err)
+ 		}
+-		if refusal.Kind == pullrequest.RefusalPending && pr.Now().Before(deadline) {
++		retry := refusal.Kind == pullrequest.RefusalPending
++		var state *pullrequest.MergeState
++		if refusal.Kind == pullrequest.RefusalOther {
++			// GitHub refuses a merge as not mergeable while it has not yet computed mergeability,
++			// so its own reading of the pull request decides whether the refusal lasts.
++			read, err := pullrequest.ReadMergeState(ctx, landing.api, landing.record.Number, head, fz.deps.ParentBranch, pr.Now, pr.Sleep)
++			if err != nil {
++				return fz.githubFailure(ctx, "read whether the pull request can merge", err)
++			}
++			state = &read
++			retry = read.MergeableNow
++		}
++		if retry && pr.Now().Before(deadline) {
+ 			if err := pr.Sleep(ctx, wait); err != nil {
+ 				return fail(ctx, finalizeName, fmt.Errorf("landingshed: %s: sleep before retrying the merge: %w", finalizeName, err))
+ 			}
+ 			wait = nextPRWait(wait, false)
+ 			continue
+ 		}
+-		return halt(ctx, finalizeName, LandingStopPrefix+fz.mergeRefusalReason(landing, refusal))
++		return halt(ctx, finalizeName, LandingStopPrefix+fz.mergeRefusalReason(landing, refusal, state))
+ 	}
+ 
+ 	if _, err := fz.deps.ReadParentTips(true); err != nil {
+@@ -554,15 +574,36 @@ func (fz *Finalize) openAtOnce(ctx context.Context, api pullrequest.API, head, t
+ // mergeRefusalReason is the Stuck reason for a merge GitHub refused for good.
+ // It also covers a merge GitHub kept refusing as pending past the retry window.
+ // A method refusal names the squash setting, or the repository's settings for a parent that always squashes.
+-// A beam's refusal never names a cancel: it names GitHub's message, the pull request's status verb and the resume.
+-func (fz *Finalize) mergeRefusalReason(landing prLanding, refusal *pullrequest.MergeRefusal) string {
++// A beam's refusal never names a cancel.
++// It names GitHub's message, the pull request's status verb and the resume.
++// The exception is a refusal outlasting the window while GitHub reports the pull request can merge.
++// That one names the resume alone.
++// state is GitHub's merge state read after the refusal, nil when none was read;
++// each cause it names follows GitHub's message.
++// A state that can merge names the resume alone;
++// a state whose only cause is a mergeability GitHub has not computed names waiting for it, with no approval or cancel.
++func (fz *Finalize) mergeRefusalReason(landing prLanding, refusal *pullrequest.MergeRefusal, state *pullrequest.MergeState) string {
+ 	rec := landing.record
++	reported := ""
++	if state != nil {
++		if state.MergeableNow {
++			return fmt.Sprintf("GitHub refused to merge pull request %s: %s, yet GitHub now reports it can merge; way forward: run lym loom resume, which retries the merge", rec.URL, refusal.Message)
++		}
++		reported = "; GitHub reports: " + strings.Join(state.Causes, ", ")
++		if state.MergeabilityUncomputed() {
++			wait := "wait until GitHub computes whether the pull request can merge"
++			if fz.deps.PullRequest.BeamRecord != nil {
++				wait += fmt.Sprintf(", which lym beam pr status %s shows", fz.deps.Slug)
++			}
++			return fmt.Sprintf("GitHub refused to merge pull request %s: %s%s; way forward: %s, then run lym loom resume", rec.URL, refusal.Message, reported, wait)
++		}
++	}
+ 	if fz.deps.PullRequest.BeamRecord != nil {
+ 		check := fmt.Sprintf("check the pull request with lym beam pr status %s, then run lym loom resume", fz.deps.Slug)
+ 		if refusal.Kind == pullrequest.RefusalMethod {
+ 			return fmt.Sprintf("GitHub refused the squash merge of pull request %s: %s; way forward: allow squash merging in the repository's settings on GitHub, since a beam always lands by squash, then %s", rec.URL, refusal.Message, check)
+ 		}
+-		return fmt.Sprintf("GitHub refused to merge pull request %s: %s; way forward: settle on GitHub what the message names, then %s", rec.URL, refusal.Message, check)
++		return fmt.Sprintf("GitHub refused to merge pull request %s: %s%s; way forward: settle on GitHub what the message names, then %s", rec.URL, refusal.Message, reported, check)
+ 	}
+ 	if refusal.Kind == pullrequest.RefusalMethod && landing.atOnce {
+ 		return fmt.Sprintf("GitHub refused the squash merge of pull request %s: %s; way forward: allow squash merging in the repository's settings on GitHub, since a parent whose beam.yaml pull_request is merge always squashes, then run lym loom resume", rec.URL, refusal.Message)
+@@ -570,7 +611,7 @@ func (fz *Finalize) mergeRefusalReason(landing prLanding, refusal *pullrequest.M
+ 	if refusal.Kind == pullrequest.RefusalMethod {
+ 		return fmt.Sprintf("GitHub refused the merge method for pull request %s: %s; way forward: set landing.yaml's squash to the method the repository allows with lym config landing --set squash=<true|false> in the prime worktree, or allow the method in the repository's settings, then run lym loom resume", rec.URL, refusal.Message)
+ 	}
+-	return fmt.Sprintf("GitHub refused to merge pull request %s: %s; way forward: a second person approves the pull request again or settles the required check or conflict on GitHub, then runs lym loom resume; or the operator runs lym batten cancel %s", rec.URL, refusal.Message, fz.deps.Slug)
++	return fmt.Sprintf("GitHub refused to merge pull request %s: %s%s; way forward: a second person approves the pull request again or settles the required check or conflict on GitHub, then runs lym loom resume; or the operator runs lym batten cancel %s", rec.URL, refusal.Message, reported, fz.deps.Slug)
+ }
+ 
+ // mergedButNotPulledReason is the Stuck reason for a pull request GitHub merged that the parent pair could not take in.
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index 123c6b5f..bcd91e27 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -62,6 +62,13 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 	mergeScript := func(open scriptedCall, calls ...scriptedCall) map[string][]scriptedCall {
+ 		return map[string][]scriptedCall{"Status": {open}, "Merge": calls}
+ 	}
++	// openAt is an open pull request at the task head in GitHub's mergeable state mergeable.
++	openAt := func(mergeable string) scriptedCall {
++		return scriptedCall{status: pullrequest.Status{State: pullrequest.StateOpen, HeadSHA: "task-head", MergeableState: mergeable}}
++	}
++	notMergeable := refusal(pullrequest.RefusalOther, "Pull Request is not mergeable")
++	// mergeStateRead is the GitHub calls of one merge-state reading of a pull request GitHub has computed.
++	mergeStateRead := []string{"Status 7", "RequiredChecks main task-head"}
+ 
+ 	tests := []struct {
+ 		name       string
+@@ -290,9 +297,41 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Merge commits are not allowed", "lym config landing --set squash=<true|false>", "lym loom resume"}, wantCalls: []string{"Status 7", wantGitHubMerge},
+ 		},
+ 		{
+-			name: "AnotherRefusalHaltsNamingGitHubsMessageAndTheCancel", parentMode: "on", record: recorded(),
+-			scripts:     mergeScript(open, refusal(pullrequest.RefusalOther, "Required status check is expected")),
+-			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Required status check is expected", "lym batten cancel me"}, wantCalls: []string{"Status 7", wantGitHubMerge},
++			name: "AnotherRefusalHaltsNamingGitHubsMessageTheCauseGitHubReportsAndTheCancel", parentMode: "on", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("blocked")}, "Merge": {refusal(pullrequest.RefusalOther, "Required status check is expected")}},
++			wantOutcome: shedengine.Stuck, wantHalt: true,
++			wantReason: []string{"Required status check is expected", "GitHub reports: blocked: a review or a required check is still owed", "lym batten cancel me"},
++			wantCalls:  append([]string{"Status 7", wantGitHubMerge}, mergeStateRead...),
++		},
++		{
++			name: "ANotMergeableRefusalWhileGitHubComputesMergeabilityWaitsItOutAndMerges", parentMode: "on", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("unknown"), openAt("clean")}, "Merge": {notMergeable, {}}},
++			wantOutcome: shedengine.Done, wantMerges: 1, wantOrder: "task-push,fast-forward,merge,push,mark",
++			wantCalls: slices.Concat([]string{"Status 7", wantGitHubMerge, "Status 7"}, mergeStateRead, []string{wantGitHubMerge}),
++		},
++		{
++			name: "AMergeabilityGitHubNeverComputesHaltsNamingItAfterTheWindow", parentMode: "on", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("unknown")}, "Merge": {notMergeable}},
++			wantOutcome: shedengine.Stuck, wantHalt: true,
++			wantReason:      []string{"Pull Request is not mergeable", "GitHub reports: GitHub has not yet computed whether it can merge", "lym loom resume"},
++			wantNotInReason: []string{"approves", "lym batten cancel"},
++			// The reading sleeps 1, 2, 4, 8, 16 and then 29 seconds, the rest of the minute, so it reads the status seven times.
++			wantCalls: slices.Concat([]string{"Status 7", wantGitHubMerge}, slices.Repeat([]string{"Status 7"}, 7), []string{"RequiredChecks main task-head"}),
++		},
++		{
++			name: "AFailedMergeStateReadAfterANotMergeableRefusalHaltsAndMergesNoSecondTime", parentMode: "on", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {open, {err: errors.New("404 Not Found")}}, "Merge": {notMergeable}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"read whether the pull request can merge", "404 Not Found"},
++			wantCalls: []string{"Status 7", wantGitHubMerge, "Status 7"},
++		},
++		{
++			name: "ARefusalThatOutlastsTheWindowWhileGitHubReportsItCanMergeHaltsNamingOnlyTheResume", parentMode: "on", record: recorded(),
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("clean")}, "Merge": {notMergeable}},
++			wantOutcome: shedengine.Stuck, wantHalt: true,
++			wantReason:      []string{"Pull Request is not mergeable", "GitHub now reports it can merge", "lym loom resume"},
++			wantNotInReason: []string{"lym batten cancel", "approves"},
++			// Retries sleep 1, 2, 4, 8, 16 and 32 seconds, so the seventh refusal is the first past the minute.
++			wantCalls: append([]string{"Status 7"}, slices.Repeat(append([]string{wantGitHubMerge}, mergeStateRead...), 7)...),
+ 		},
+ 		{
+ 			name: "ATransientMergeFailureIsAnError", parentMode: "on", record: recorded(),
+@@ -379,11 +418,20 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			wantNotInReason: []string{"lym batten cancel"},
+ 			wantCalls:       append([]string{"Status 7"}, slices.Repeat([]string{wantGitHubMerge}, 7)...),
+ 		},
++		{
++			name: "ABeamsUncomputedMergeabilityHaltsNamingTheWaitTheStatusVerbAndNotACancel", parentMode: "on",
++			beam: true, beamPR: recordedBeam,
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("unknown")}, "Merge": {notMergeable}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"GitHub has not yet computed", "wait until GitHub computes", "lym beam pr status me", "lym loom resume"},
++			wantNotInReason: []string{"lym batten cancel", "approves"},
++			wantCalls:       slices.Concat([]string{"Status 7", wantGitHubMerge}, slices.Repeat([]string{"Status 7"}, 7), []string{"RequiredChecks main task-head"}),
++		},
+ 		{
+ 			name: "ABeamsOtherRefusalHaltsNamingTheStatusVerbAndNotACancel", parentMode: "on",
+-			beam: true, beamPR: recordedBeam, scripts: mergeScript(open, refusal(pullrequest.RefusalOther, "Required status check is expected")),
+-			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Required status check is expected", "lym beam pr status me", "lym loom resume"},
+-			wantNotInReason: []string{"lym batten cancel"}, wantCalls: []string{"Status 7", wantGitHubMerge},
++			beam: true, beamPR: recordedBeam,
++			scripts:     map[string][]scriptedCall{"Status": {open, openAt("blocked")}, "Merge": {refusal(pullrequest.RefusalOther, "Required status check is expected")}},
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"Required status check is expected", "GitHub reports: blocked", "lym beam pr status me", "lym loom resume"},
++			wantNotInReason: []string{"lym batten cancel"}, wantCalls: append([]string{"Status 7", wantGitHubMerge}, mergeStateRead...),
+ 		},
+ 		{
+ 			name: "ABeamsMethodRefusalNamesTheRepositorySettingsTheStatusVerbAndNotACancel", parentMode: "on",
+diff --git a/internal/pullrequest/client.go b/internal/pullrequest/client.go
+index c27fdef8..0ba946cb 100644
+--- a/internal/pullrequest/client.go
++++ b/internal/pullrequest/client.go
+@@ -72,8 +72,8 @@ const (
+ 	RefusalMethod RefusalKind = "method"
+ 	// RefusalPending means the base branch moved or GitHub is still computing mergeability, so a retry may succeed.
+ 	RefusalPending RefusalKind = "pending"
+-	// RefusalOther covers every other refusal:
+-	// a moved head, a missing approval, a required check or a conflict, none of which a retry clears.
++	// RefusalOther covers every other refusal, such as a moved head, a missing approval, a required check or a conflict.
++	// It also covers GitHub's "not mergeable" while mergeability is still being computed, which a retry can clear.
+ 	RefusalOther RefusalKind = "other"
+ )
+ 
+diff --git a/internal/pullrequest/mergestate.go b/internal/pullrequest/mergestate.go
+index 5d232749..1dcddd03 100644
+--- a/internal/pullrequest/mergestate.go
++++ b/internal/pullrequest/mergestate.go
+@@ -43,19 +43,19 @@ type MergeState struct {
+ 	// Checks are the required checks of the base branch, each with its conclusion at Head.
+ 	Checks []Check
+ 	// MergeableNow reports whether GitHub would merge the pull request now.
+-	// It must be open, not a draft, at the beam's head, and in a mergeable state of clean, has_hooks or unstable.
++	// It must be open, not a draft, at the expected head, and in a mergeable state of clean, has_hooks or unstable.
+ 	MergeableNow bool
+ 	// Causes name what stops the merge, one per cause; empty exactly when MergeableNow.
+ 	Causes []string
+ }
+ 
+ // ReadMergeState reads pull request number and the required checks of base at its head.
+-// It judges whether the pull request can merge now, with beamHead as the head it must be at.
++// It judges whether the pull request can merge now, with wantHead as the head it must be at.
+ // A mergeable_state that GitHub has not yet computed is read again after sleep, doubling from one second.
+ // Reads stop once MergeRetryWindow of the now clock has passed since the first read,
+ // and the unknown state is then reported as a cause.
+ // A failed GitHub call, and a failed sleep, are returned.
+-func ReadMergeState(ctx context.Context, api API, number int, beamHead, base string, now func() time.Time, sleep func(ctx context.Context, d time.Duration) error) (MergeState, error) {
++func ReadMergeState(ctx context.Context, api API, number int, wantHead, base string, now func() time.Time, sleep func(ctx context.Context, d time.Duration) error) (MergeState, error) {
+ 	started := now()
+ 	status, err := api.Status(ctx, number)
+ 	if err != nil {
+@@ -80,7 +80,7 @@ func ReadMergeState(ctx context.Context, api API, number int, beamHead, base str
+ 		return MergeState{}, fmt.Errorf("pullrequest: read the required checks of %s at %s: %w", base, status.HeadSHA, err)
+ 	}
+ 
+-	causes := mergeCauses(status, beamHead, checks)
++	causes := mergeCauses(status, wantHead, checks)
+ 	return MergeState{
+ 		State:          status.State,
+ 		Draft:          status.Draft,
+@@ -93,10 +93,16 @@ func ReadMergeState(ctx context.Context, api API, number int, beamHead, base str
+ 	}, nil
+ }
+ 
+-// mergeCauses names every reason a pull request in status cannot merge with beamHead as its head.
++// MergeabilityUncomputed reports whether the only thing stopping the merge is that GitHub has not computed mergeability.
++// Such a state is pending, not a definite refusal: the pull request is open, not a draft, and at the expected head.
++func (s MergeState) MergeabilityUncomputed() bool {
++	return s.State == StateOpen && s.MergeableState == mergeableUnknown && len(s.Causes) == 1
++}
++
++// mergeCauses names every reason a pull request in status cannot merge with wantHead as its head.
+ // The reasons come in the order a reader fixes them.
+ // A pull request not open gets no mergeable_state cause, since GitHub's mergeable_state says nothing of one.
+-func mergeCauses(status Status, beamHead string, checks []Check) []string {
++func mergeCauses(status Status, wantHead string, checks []Check) []string {
+ 	var causes []string
+ 	switch status.State {
+ 	case StateClosed:
+@@ -107,8 +113,8 @@ func mergeCauses(status Status, beamHead string, checks []Check) []string {
+ 	if status.Draft {
+ 		causes = append(causes, "draft")
+ 	}
+-	if status.HeadSHA != beamHead {
+-		causes = append(causes, fmt.Sprintf("head %s is not the beam's head %s", status.HeadSHA, beamHead))
++	if status.HeadSHA != wantHead {
++		causes = append(causes, fmt.Sprintf("head %s is not the expected head %s", status.HeadSHA, wantHead))
+ 	}
+ 	if status.State != StateOpen {
+ 		return causes
+diff --git a/internal/pullrequest/mergestate_test.go b/internal/pullrequest/mergestate_test.go
+index f1239877..9db96c02 100644
+--- a/internal/pullrequest/mergestate_test.go
++++ b/internal/pullrequest/mergestate_test.go
+@@ -72,7 +72,7 @@ func TestReadMergeState(t *testing.T) {
+ 		{
+ 			name:       "HeadMismatchNamesBothHeads",
+ 			statuses:   []pullrequest.Status{with(open("clean"), func(s *pullrequest.Status) { s.HeadSHA = "other" })},
+-			wantCauses: []string{"head other is not the beam's head beam1"},
++			wantCauses: []string{"head other is not the expected head beam1"},
+ 		},
+ 		{name: "DirtyNamesTheConflict", statuses: []pullrequest.Status{open("dirty")}, wantCauses: []string{"dirty"}},
+ 		{
