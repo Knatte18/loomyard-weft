@@ -20,7 +20,6 @@ Sources:
 | `CLAUDE.local.md` | **repo** | `nicknames` | Nicknames |
 | `AGENTS.override.md` | lym | `lym-batching` | Batch your calls |
 | `AGENTS.override.md` | lym | `lym-plan-edits-before-gate` | Make every round of edits in this order |
-| `AGENTS.override.md` | **repo** | `nicknames` | Nicknames |
 | `.claude/settings.local.json` | lym | `lym-no-attribution` | `attribution` |
 | `.claude/settings.local.json` | lym | `lym-plugins` | `enabledPlugins`, `extraKnownMarketplaces` |
 | `.claude/settings.local.json` | lym | `lym-tool-deny` | `permissions` |
@@ -99,19 +98,6 @@ Rendered at every worktree's anchor.
 ## `AGENTS.override.md`
 
 Rendered at every worktree's anchor.
-
-### From this repository
-
-#### `nicknames`
-
-```markdown
-## Nicknames
-
-- Read "Sketch" (capital S) as the decision record: the approved record a Discussion writes, stored on the board for a discussed entry.
-- Read "Merriam" as webster's long-lived master session, which forks one implementer per batch.
-- Use every nickname in this list freely with the operator.
-- Keep the formal names in code, files, verbs and specs.
-```
 
 ### From lym
 
