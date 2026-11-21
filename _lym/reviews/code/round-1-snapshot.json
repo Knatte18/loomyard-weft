@@ -7,5 +7,6 @@
       "title": "No test seam for the red-first overlay: the diff changes a non-Go spec",
       "digest": "ed67fb393175c8611a11d5a9f236aa1b8d3850b0f3f885ee584d6df7090a125a"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
