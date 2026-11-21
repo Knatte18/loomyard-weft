@@ -39,6 +39,12 @@ Provenance: task single-repo-fabric-mode, note webster-verify-triage.md.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-21): No test seam for the red-first overlay: the diff changes a non-Go spec
+
+Decision: Waive the red-first gate for this run and keep the spec commit 87f6be00.
+
+Rationale: The diff updates contracts/specs/webster-spec.md, which the red-first overlay cannot restore on the merge base. The Go test TestVerifyGate_FlakyFailurePassesOnRerunWithNote reaches the bug through base code (newVerifyGate and VerifyGateNotes.Apply). A stale spec is worse than a waived gate; the overlay gap is filed as note red-first-overlay-non-go-files.
+
 ## Constraints
 
 ## Auto-mode assumptions
