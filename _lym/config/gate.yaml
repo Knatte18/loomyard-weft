@@ -49,3 +49,5 @@ gates:
     adopt: {tiers: [0, 1, 2], scope: all}
     darn-write: {tiers: [0, 1, 2], scope: diff}
     code-burler-fix: {tiers: [0, 1, 2], scope: diff}
+    harden-live:
+        tiers: [0, 1]
