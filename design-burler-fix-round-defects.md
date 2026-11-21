@@ -2,7 +2,7 @@
 
 `burler-fix-round-defects` · Task · bug, burler, shuttle
 
-Depends on: [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md), [`halt-escalation-messages`](design-halt-escalation-messages.md)
+Depends on: [`webster-parent-calls-flow`](design-webster-parent-calls-flow.md)
 
 Imported from issues #176 and #177; read both with `gh issue view <n> --repo Knatte18/loomyard` for the full reports.
 
