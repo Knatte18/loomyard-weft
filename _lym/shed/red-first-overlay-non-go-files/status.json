@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → stuck",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -163,6 +162,47 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/red-first-overlay-non-go-files/_lym/landing/summary.md",
+      "at": "2026-11-21T15:35:18Z",
+      "started_at": "2026-11-21T15:33:37Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-21T15:34:11.576830458Z",
+          "end": "2026-11-21T15:34:11.605587577Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:34:11.712732832Z",
+          "end": "2026-11-21T15:34:12.055499382Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-21T15:34:12.155014762Z",
+          "end": "2026-11-21T15:34:12.159391605Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T15:34:12.245863156Z",
+          "end": "2026-11-21T15:34:12.668384207Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-21T15:34:12.735795209Z",
+          "end": "2026-11-21T15:34:12.736002687Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
