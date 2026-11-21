@@ -1,6 +1,6 @@
 # One-repository sandbox: second clone and namespace hand check
 
-`onerepo-sandbox-reclone` · Task · research, fabric, git · running · Drift-Baseline
+`onerepo-sandbox-reclone` · Task · research, fabric, git · running · Drift-Await
 
 ## Goal
 
