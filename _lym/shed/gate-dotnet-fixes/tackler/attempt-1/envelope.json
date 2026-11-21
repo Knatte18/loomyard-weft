@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "Stop is a blocked stop at Darn-Write: the gate did not pass after 3 attempts. The cause is named in .lym/loom/driver.log (lines 4-11, trace 98cc2e1d29d8000b): the Darn-Write red-first gate exits 5 on every attempt (verify-2.log to verify-5.log) because the diff changes contracts/stencils/darn/darn-fragment-make-change-gated.md, a non-Go file the overlay cannot put back on the merge base. The red-first check therefore cannot judge the diff's tests. The gate's own way forward is to record a \"No test seam\" decision, which is a scope/design choice for the run's parent. A plain resume (re-spawn Darn-Write with a fresh verify budget) would meet the same diff and the same red-first failure, so it does not settle the stop. A goto to Darn-Write does not change the diff either. The run's parent must choose between recording the bug as having no reachable test seam, or having the writer restructure the change so the red-first gate can judge it.",
+  "question": "The Darn-Write red-first gate cannot judge this run's diff, because the diff changes contracts/stencils/darn/darn-fragment-make-change-gated.md, a non-Go file the overlay cannot restore on the base (driver.log lines 4-11, verify-2.log to verify-5.log). Which do you want: (a) record the bug as having no test seam, with `lym loom decision add` under a title opening \"No test seam\" naming this reason, and then let the run land without a red-first test; or (b) have Darn-Write restructure the change so the red-first gate can judge it, for example by making the fix in Go code that a test can reach, and re-run?",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/shed/gate-dotnet-fixes/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/shed/gate-dotnet-fixes/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}

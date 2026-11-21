@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Darn-Write",
+    "history_length": 6,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "2b395b654e7d7d8ba29c5e3dd365fe6b86396a4c",
+    "branch": "gate-dotnet-fixes",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-21T14:37:27.86807886+01:00",
+  "deadline": "2026-11-21T14:47:27.86807886+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/shed/gate-dotnet-fixes/drive-reports/drive-envelope-20261121-143727-aebe.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/gate-dotnet-fixes/_lym/shed/gate-dotnet-fixes/drive-reports/drive-report-20261121-143727-9374.md",
+  "strand_guid": "b6e4fcbaea1ad4391a35b42555f16fcc"
+}
