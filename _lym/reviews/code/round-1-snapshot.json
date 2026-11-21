@@ -1,0 +1,35 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "e7cdcf9b7f834c0c332ebdf116bbf1e4b74febde",
+  "added_decisions": [
+    {
+      "title": "Peer merge-probe run has landed",
+      "digest": "569909cebec502f6289f2fa162fb3ca77b8d67ac93609339e510743e39f0a846"
+    },
+    {
+      "title": "PATTERN change: lym's own records-namespace branch names are named constants",
+      "digest": "128354ec06d5ef6da383512a65ef112b18ba52b9ae8d395b35b26431fcf6aa00"
+    },
+    {
+      "title": "Declare the PATTERN-code-conventions change for lym-owned branch names",
+      "digest": "1ced9f5399d22d5addb528b91635dbc0dc5706e0955ef5d8e69e928c0a83341d"
+    },
+    {
+      "title": "Withdraw the PATTERN-single-repo-hub change bullet",
+      "digest": "0f059e01c354b5ce4a7d9aa23b41c773874c59a86bfc468e8537ddee39e72435"
+    },
+    {
+      "title": "Add PATTERN-single-repo-hub anew",
+      "digest": "918a8200ef3ecae9867652d891c16dbfe0b0b9c9e9c20634f0b1ca4aee361542"
+    },
+    {
+      "title": "No branch merge config in a one-repository records store",
+      "digest": "3138eb0e2b614c83091548118a1f6bfc87ec2543f9ec740c2aa779aab89f1c32"
+    },
+    {
+      "title": "Tolerant config read keeps git-native upstream (supersedes No branch merge config)",
+      "digest": "4230792a3d85318e3c834023e03ab0254ef194ba553b69037cf694f43546d59e"
+    }
+  ]
+}
