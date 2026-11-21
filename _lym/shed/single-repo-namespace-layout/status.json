@@ -68,6 +68,26 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Webster",
+      "at": "2026-11-21T14:32:56Z",
+      "started_at": "2026-11-21T14:32:56Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Webster",
+      "at": "2026-11-21T14:33:06Z",
+      "started_at": "2026-11-21T14:33:06Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }
