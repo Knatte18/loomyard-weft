@@ -77,7 +77,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Hardener campaign on fabricengine, one-repository layout**<br>• First hardener run: drive internal/fabricengine live, one-repo refs/lym layout included<br>• `hardener: max_bounces 3`<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener |  | 6m<br>6m | fabric |
+| T2 | `draft` **Hardener campaign on fabricengine**<br>• Hardener run on internal/fabricengine, both hub layouts<br>• `hardener: packages ["internal/fabricengine"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener |  | 6m<br>0m | fabric |
 | T3 | `draft` **Hardener writes its own charter, drives either hub layout**<br>• Hardener derives its campaign from the module, builds one-repo sandbox hubs, needs no hub gate writes<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-self-charter`](design-hardener-self-charter.md) | darn · solid |  | 5m<br>0m | shed, burler, gate, stencil, fabric |
 
 ### Notes (0)
