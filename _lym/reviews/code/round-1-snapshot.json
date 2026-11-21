@@ -31,5 +31,6 @@
       "title": "Tolerant config read keeps git-native upstream (supersedes No branch merge config)",
       "digest": "4230792a3d85318e3c834023e03ab0254ef194ba553b69037cf694f43546d59e"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
