@@ -1,13 +1,13 @@
 {
   "current_producer": "Preflight",
-  "state": "blocked",
-  "error": "seat stencils check failed: build the darn writer table: darn: DarnTable: Step 4 list: stencilstore: stencil \"darn-fragment-make-change-gated\" was written by lym build fded58794f7b02939b6bf8675b87c64fb3fa987d, which is newer than the running build 4c031f8b7a781e3f4fb17f48632782ded92f3a01, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board; way forward: fix the config or model spec it names, then re-step",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Preflight",
     "last": "Preflight → stuck",
-    "wait": "seat stencils check failed: build the darn writer table: darn: DarnTable: Step 4 list: stencilstore: stencil \"darn-fragment-make-change-gated\" was written by lym build fded58794f7b02939b6bf8675b87c64fb3fa987d, which is newer than the running build 4c031f8b7a781e3f4fb17f48632782ded92f3a01, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board; way forward: fix the config or model spec it names, then re-step"
+    "wait": ""
   },
   "history": [
     {
