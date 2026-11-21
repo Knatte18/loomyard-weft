@@ -17,9 +17,6 @@ Each bullet names its source project and the lym module it would touch.
   with a deterministic tie-break; lym keeps overlapping tasks apart by board labels.
 - **Commit-time reservation guard** (ntm): a pre-commit hook refuses a commit touching what another task holds; needs leases first.
 - **Criterion amendment ledger** (oh-my-claudecode): a card's acceptance text changes only through a recorded amendment in weft.
-- **Bugfix spec with a fail-on-base test** (Kiro): the Go gate is built (`lym gate red-first` on the `Darn-Write` row, task `bug-red-first-gate`):
-  a darn run of a `bug` entry must add or change a test that fails on the merge base, and the fix carries a `Root-Cause:` trailer.
-  Still open: a bugfix stencil for Discussion-Write.
 
 ## Review (burler, Bouncer)
 
