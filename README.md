@@ -87,7 +87,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **One-repository sandbox: create the repo and clone the hub**<br>• Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md) | darn · docs | starting · Worktree-Create | neve | 3m<br>3m | fabric |
+| T2 | **One-repository sandbox: create the repo and clone the hub**<br>• Create a private sandbox repo with gh, clone it as a one-repository hub, check refs on origin<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-setup`](design-onerepo-sandbox-setup.md) | darn · docs | starting · Seed-Child | neve | 3m<br>3m | fabric |
 
 #### Ready (0)
 

@@ -1,6 +1,6 @@
 # One-repository sandbox: create the repo and clone the hub
 
-`onerepo-sandbox-setup` · Task · research, fabric · starting · Worktree-Create
+`onerepo-sandbox-setup` · Task · research, fabric · starting · Seed-Child
 
 ## Goal
 
