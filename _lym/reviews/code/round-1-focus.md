@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Deleted migration versus kept refusal: the decision record keeps cheap refusals of an old name or key with a pointer to the new one and deletes migration paths. Check that the diff removes a refusal or a still-live read path (for example retired-key errors in `internal/batcher`, `internal/shuttleengine/config.go`, `internal/runprofile`, `internal/loomengine`) only where the answer key licenses it, and that no refusal that should stay was dropped."
+  - "Data still read after its migration was removed: in `internal/configsync`, `internal/configengine`, `internal/boardengine` (`Store.Load`, `loadedStoreFile.UnmarshalJSON`, `ParseBoardTasks`), `internal/gateslot/config.go` and `internal/hubreconcile`, settle whether any file format, key or marker a current hub still writes or reads lost its reader, so that a path now fails or silently drops data."
+  - "`lym board retire-legacy`: settle that the verb and its `tasks.json` and `notes.json` handling are gone from `internal/boardcli` and `internal/boardengine`, with no caller left (Delete group: assert-no-callers), and that help text, docs and the sandbox suite no longer name it."
+  - "Fabric gap fixed in `467b8093`: read the `internal/fabricengine` changes (`junction.go` `namesWiredInSiblingWorktrees`, `recordsgit.go` `seedWeftArtifactExcludes`, scratch link, `portals.go` removal) for correctness; the mutation report lists survivors there, so settle which behavior is unasserted and whether the commit's message carries a valid `Root-Cause:` trailer."
+  - "Behavior changes beyond deletion in the largest non-deleting edits: `internal/shuttleengine/attach.go` (`Runner.reconstruct`), `internal/shedrun/resolve.go`, `internal/shedbuild/recipe.go`, `internal/verifytree/failure.go`, `internal/tendercli/runintents.go`, `internal/landingshed` and `internal/battencli`. Settle whether each edit only removes a compatibility branch or also changes live behavior."
+  - "Rewritten tests that existed at the base (`internal/hubreconcile/ensure_integration_test.go`, `internal/configsync/configsync_test.go`, `internal/boardengine/board_test.go`, `internal/shuttleengine/attach_asking_test.go`): settle whether an assertion was widened or removed beyond the deleted behavior without a `Loosened-Check:` trailer, and whether each test still checks what its name states."
+  - "Docs and PATTERN files in the same diff (`pattern/PATTERN-*.md`, `tools/sandbox/SANDBOX-FABRIC-SUITE.md`, `doc.go` files): settle that they match the code left behind, and that the declared PATTERN changes land."
+  - "Change description `_lym/landing/summary.md`: check its claims and its `## Merge danger` door against the diff, in particular the deletions of record or board formats another binary reads and config keys whose meaning changed."
+---
+
+The diff is almost entirely deletion across more than 400 files, so the highest risk is over-deletion, a live path losing its reader, rather than leftover code.
+The decision record's body is the measuring stick; its other sections are empty.
