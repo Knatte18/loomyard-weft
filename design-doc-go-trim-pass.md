@@ -2,8 +2,6 @@
 
 `doc-go-trim-pass` · Task · enhancement, docs · running · Darn-Write
 
-Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md)
-
 ## What was measured (2026-11-18, `comment-trim-second-pass`)
 
 Production code has 103,762 comment lines against 268,614 code lines, a 27.9 % share.
