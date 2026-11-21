@@ -24,7 +24,7 @@
      The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.yaml's subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax;
      only `{{` begins a template action.
-lym-stencil: sha256=339bd7ca24672e0d6625523dbcf8a571f95cc39582c73ceb196fc4f5027c3fbe build=86145ecf7bd69eef6b1342cec056181deceda2f6 time=2026-11-21T14:59:20Z -->
+lym-stencil: sha256=7a8b20754ca7186c79236a71849c8b01a90679a666988c541d8ff79590a05bbb build=3d3b48127d0bbb6a48c2351ed4168bd9bf5974a1 time=2026-11-21T18:23:39Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -166,7 +166,7 @@ Everything else in the worktree is read-only to you. In particular, never write,
 - **`_lym/config/`** — this is the driver's own configuration, read fresh on every invocation.
   Editing it changes how the run that spawned you behaves, and how the next one does.
   `lym config reconcile --apply` counts as editing it.
-- **`_lym/shed/<slug>/`** (and the legacy `_lym/shed/self/`) — the phase machine's status file. The driver owns it; a write from here corrupts orchestration state.
+- **`_lym/shed/<slug>/`** — the phase machine's status file. The driver owns it; a write from here corrupts orchestration state.
 - **`_lym/plan/`** — a later phase's artifact, not yours.
 - **repository source files**, and **git history**: no `git add`, `git commit`, `git checkout`, `git restore`, or any other mutating git command.
   Committing your two files is the loop owner's job, not yours.
