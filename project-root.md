@@ -12,21 +12,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Ready (2)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | darn · light |  | 1d<br>0m | gate, testmap |
-
-### Draft (1)
-
-Not released; nothing starts it until its status is cleared.
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | `draft` **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | darn · light |  | 1d<br>0m | burler, stencil |
+| T3 | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | darn · light |  | 1d<br>0m | burler, stencil |
 
 ## Notes (4)
 
