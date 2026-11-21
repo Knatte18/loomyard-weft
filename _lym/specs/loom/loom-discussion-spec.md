@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=5703f2bcfb79deba8fb2e492fb056ca5dc0f99566c1b45b07b42953c20f2e111 build=86145ecf7bd69eef6b1342cec056181deceda2f6 time=2026-11-21T14:59:20Z -->
+<!-- lym-stencil: sha256=d3fc556581b583dbdf07f411c55f570b61d6819ecc66c9b1113f69932df60c96 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -55,6 +55,9 @@ A record without the section is valid.
 Each decision under `## Decisions` is one H3 headed `### D<n> — <title>`.
 `n` is a positive integer, and ids are unique within the record.
 An `### Added after Discussion` entry carries no id.
+An entry that drops a plan card's Create target carries one line `` Drops Create: `<target>` `` per target, after its Rationale paragraph.
+`<target>` is spelled as the card spells it, and `lym loom decision add --drops-create` writes the line;
+Webster's done-check skips a target some entry drops.
 Any other H3 there is refused as a `decision-heading-malformed` finding.
 A repeated id is a `decision-id-duplicate` finding.
 Each id appears as a whole word in a bullet of `## Acceptance criteria`.
