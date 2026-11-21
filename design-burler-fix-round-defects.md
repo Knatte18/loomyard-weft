@@ -1,6 +1,6 @@
 # Burler fix round: rerun reason and fork git in its own scratch repo
 
-`burler-fix-round-defects` · Task · bug, burler, shuttle · running · Drift-Verify
+`burler-fix-round-defects` · Task · bug, burler, shuttle · running · Code-Bouncer
 
 Imported from issues #176 and #177; read both with `gh issue view <n> --repo Knatte18/loomyard` for the full reports.
 
