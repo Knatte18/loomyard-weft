@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 01-gitrepo-refspec-upstream: recover-batch refused with batch_failed: create-not-done/1-gitrepo-refspec-upstream[blocking]: Create target \"plan:internal/gitrepo#remoteTrackingRef\" still does not resolve; the fork reverted the refspec-following reads under the superseded no-merge-config decision, which the parent's later Option C decision (#2210) reverses.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 01-gitrepo-refspec-upstream: recover-batch refused with batch_failed: create-not-done/1-gitrepo-refspec-upstream[blocking]: Create target \"plan:internal/gitrepo#remoteTrackingRef\" still does not resolve; the fork reverted the refspec-following reads under the superseded no-merge-config decision, which the parent's later Option C decision (#2210) reverses."
   },
   "history": [
     {
@@ -205,6 +205,29 @@
       "output": "",
       "at": "2026-11-21T14:10:54Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-21T14:32:53Z",
+      "started_at": "2026-11-21T14:10:59Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T14:32:52.490932399Z",
+          "end": "2026-11-21T14:32:52.762931395Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T14:32:52.809118939Z",
+          "end": "2026-11-21T14:32:52.809228474Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
