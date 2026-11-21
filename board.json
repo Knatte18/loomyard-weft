@@ -297,6 +297,7 @@
         }
       },
       "profile": "docs",
+      "notify_on_land": true,
       "project": "testmap-uses"
     },
     {
