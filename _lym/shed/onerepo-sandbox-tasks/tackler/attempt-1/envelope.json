@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is a transient ref race on the records repo, not a real outage. Worktree-Create's board-claim push to refs/heads/main of loomyard-weft was refused three times with \"cannot lock ref 'refs/heads/main': is at X but expected Y\", and each time the remote had moved to a commit made by a concurrent \"board sync\" on this same machine (neve). That sync was spawned at 18:37:55 (pid 292550, trace 7664753e39c45b74, .lym/logs/trace-20261121T173717Z-96e51db72c94d52d-220872.log lines 32-35) and pushed the records side at 18:38:03. The claim commit itself, 4aaae93383 \"board: owner neve for onerepo-sandbox-tasks\" (trace step line 27; stderr.log lines 1-3), is an ancestor of the remote tip 9d547bbe591c, read by git ls-remote on 2026-11-21, so the claim is not lost. The \"origin is unreachable\" wording is wrong: the remote answered every push. Remote history since then is only \"board sync\" commits, and the way-forward text (run lym board sync and retry) is what the concurrent sync already did. A plain re-launch of Worktree-Create, from the step's own goto, re-runs the claim against the current tip and should settle it. The absent task worktree at /home/knatte/Code/loomyard-LYMHUB/onerepo-sandbox-tasks is only a warning about recording tackler and arbiter sessions (trace line 4). The stop is not caused by it, and Worktree-Create is still at step 1 of 8, so the worktree is expected not to exist yet. Stop history length is 1, so this is a first resume, not a repeat.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/onerepo-sandbox-tasks/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/onerepo-sandbox-tasks/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
