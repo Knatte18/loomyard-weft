@@ -1,0 +1,22 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "battencli: claim the board entry of \"onerepo-sandbox-tasks\": board: origin is unreachable, so the owner write was not pushed: gitrepo: git push: gitrepo: push retries exhausted after 4 attempts: git push https://github.com/Knatte18/loomyard-weft.git refs/heads/main:refs/heads/main: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]       main -\u003e main (cannot lock ref 'refs/heads/main': is at 2b0eda1cebd724cac79d8c9510f724ccbe96d265 but expected b73a7a643387d60a847e143f70714c2f5642e322) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; way forward: run `lym board sync` from the prime worktree to retry the push",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "battencli: claim the board entry of \"onerepo-sandbox-tasks\": board: origin is unreachable, so the owner write was not pushed: gitrepo: git push: gitrepo: push retries exhausted after 4 attempts: git push https://github.com/Knatte18/loomyard-weft.git refs/heads/main:refs/heads/main: exit 1: To https://github.com/Knatte18/loomyard-weft.git  ! [remote rejected]       main -\u003e main (cannot lock ref 'refs/heads/main': is at 2b0eda1cebd724cac79d8c9510f724ccbe96d265 but expected b73a7a643387d60a847e143f70714c2f5642e322) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft.git'; way forward: run `lym board sync` from the prime worktree to retry the push"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-21T17:37:55Z",
+      "started_at": "2026-11-21T17:37:24Z",
+      "budget_exempt": true,
+      "machine": "neve"
+    }
+  ]
+}
