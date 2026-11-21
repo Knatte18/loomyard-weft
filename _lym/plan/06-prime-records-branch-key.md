@@ -9,8 +9,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#originNamespaceAt`
-- `plan:internal/fabricengine#PrimeRecordsBranchKey`
+- `internal/fabricengine#originNamespaceAt`
+- `internal/fabricengine#PrimeRecordsBranchKey`
 - `plan:internal/hubforge#NewOneRepoHub`
 - `internal/fabricengine#RecordsRepoRoot`
 - `internal/fabricengine#Topology.Checkout`

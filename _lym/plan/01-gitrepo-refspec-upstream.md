@@ -1,7 +1,7 @@
 # Card 1 — gitrepo-refspec-upstream
 
 **Create:**
-- `plan:internal/gitrepo#remoteTrackingRef` -> `func remoteTrackingRef(cfg *config.Config, remote string, merge plumbing.ReferenceName) (plumbing.ReferenceName, bool)`
+- `internal/gitrepo#remoteTrackingRef`
 
 **Edit:**
 - `internal/gitrepo#Repo.Upstream`

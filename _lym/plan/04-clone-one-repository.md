@@ -35,12 +35,12 @@
 - `internal/fabriccli/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#oneRepositoryNamespace`
-- `plan:internal/fabricengine#OneRepositoryBoardBranch`
-- `plan:internal/fabricengine#PrimeRecordsBranchKey`
-- `plan:internal/fabricengine#RecordsNamespaceRoot`
-- `plan:internal/fabricengine#RecordsNamespaceHeads`
-- `plan:internal/fabricengine#RecordsNamespaceTags`
+- `internal/fabricengine#oneRepositoryNamespace`
+- `internal/fabricengine#OneRepositoryBoardBranch`
+- `internal/fabricengine#PrimeRecordsBranchKey`
+- `internal/fabricengine#RecordsNamespaceRoot`
+- `internal/fabricengine#RecordsNamespaceHeads`
+- `internal/fabricengine#RecordsNamespaceTags`
 - `internal/fabricengine#teardownHub`
 - `internal/fabricengine#checkPathRequest`
 - `internal/fabricengine#ownedFreshlyCreatedPath`

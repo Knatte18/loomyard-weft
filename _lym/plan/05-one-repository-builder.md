@@ -25,7 +25,7 @@
 - `internal/fabricengine#CloneHub`
 - `plan:internal/fabricengine#SetSeedPushHookForTest`
 - `plan:internal/fabricengine#AbandonSeededClone`
-- `plan:internal/fabricengine#PrimeRecordsBranchKey`
+- `internal/fabricengine#PrimeRecordsBranchKey`
 - `internal/fabricengine#NewBolt`
 - `internal/fabricengine#Bolt.Push`
 - `internal/fabricengine#Bolt.HasUnpushed`

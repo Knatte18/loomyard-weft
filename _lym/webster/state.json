@@ -1,14 +1,14 @@
 {
   "runGuid": "bc4180920879859ebe18169bff8f28f4",
-  "planFingerprint": "851f2114b1a91a634a2ccd437137357fa5633feb6ef3a5b53c53495f05d127cb",
+  "planFingerprint": "341c17747c448653a3b78271bf969473db37250fa020158208ec780ba1c4cf04",
   "planFileHashes": {
     "00-overview.md": "fa2fe7833db6bf3b24647c15a8de8672789f27a8e4e21b04752ec4bc241e89aa",
-    "01-gitrepo-refspec-upstream.md": "ac5f7659b76609a456dd6eb708385349f4c908fbecf01f437a150498cbc02767",
-    "02-namespaced-push-ops.md": "59792197de1b1cf5ce2b39102e2570be979f8a42e4805376c3b1042dd85ceacb",
-    "03-namespaced-remote-reads.md": "6226daa8ccabe0454fb3e86632fefa124b4299df5d2b4c86b3083ea58bc08de3",
-    "04-clone-one-repository.md": "297b92b584e03a7180e10c5db945097c4930905c7401ba40f7d7fe66e8985fc7",
-    "05-one-repository-builder.md": "aca9b5c50d814700b024ed0ca7f2d641105b8819a61ce5b04b3f533a9c49b9a8",
-    "06-prime-records-branch-key.md": "84af5847918d773f7af692ec88460492f613bd1409331c4b6d2a525996ef4e87",
+    "01-gitrepo-refspec-upstream.md": "a6fd921b533a867171bca740e279ecc6931cd999c31e7ba4e5622a417ea0b2f2",
+    "02-namespaced-push-ops.md": "82c0066cbad0aa9a47159f6d6f1d149c3c95d87c3b3f690d68ce844ad431875c",
+    "03-namespaced-remote-reads.md": "f8612a930c158864c7d9f90b048508b8d5a67023a799218053832bf38d659840",
+    "04-clone-one-repository.md": "ca543bf040578601b31e07824e92881ff310ec23190e30b56b683149e35e25e8",
+    "05-one-repository-builder.md": "a6ce7f406d471396f59dedf7696a19b5ac3dee56cf5f91909b00fca50ac44ed7",
+    "06-prime-records-branch-key.md": "3408db43a55ab8ba6f74652701bd0e5604650166f0e67a4f1bca7fc763d057f8",
     "07-pair-lifecycle-namespace.md": "46b07062497a133ccb4153864bb8e7a1b52b673c179ea9e1e3a2c0d6e82269ae",
     "08-docs-and-pattern.md": "d65bfab75cfb19a794b9aa48ff431f6c5244db6c56d77d4da37eb93a8be84bb2"
   },
@@ -234,14 +234,33 @@
         "02-namespaced-push-ops"
       ],
       "cardHashes": {
-        "01-gitrepo-refspec-upstream": "ac5f7659b76609a456dd6eb708385349f4c908fbecf01f437a150498cbc02767",
-        "02-namespaced-push-ops": "59792197de1b1cf5ce2b39102e2570be979f8a42e4805376c3b1042dd85ceacb"
+        "01-gitrepo-refspec-upstream": "a6fd921b533a867171bca740e279ecc6931cd999c31e7ba4e5622a417ea0b2f2",
+        "02-namespaced-push-ops": "82c0066cbad0aa9a47159f6d6f1d149c3c95d87c3b3f690d68ce844ad431875c"
       },
       "startSha": "13cebe3d2ad9925b62c0d1595ce7ec38e6ccc1cc",
       "kind": "recovery",
       "spawnedAt": "2026-11-21T14:33:42Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gitrepo-refspec-upstream",
+        "status": "done",
+        "head_sha": "e7b5e37a29a11e5ebb6f267602c623168265a20b",
+        "deviations": [
+          "go.mod",
+          "internal/fabricengine/pushclassified.go",
+          "internal/fabricengine/recordslayout_integration_test.go",
+          "internal/gitrepo/gogit.go",
+          "internal/gitrepo/gogit_test.go",
+          "internal/gitrepo/push.go",
+          "internal/gitrepo/pushretry.go",
+          "internal/gitrepo/refnamespace.go",
+          "internal/gitrepo/worktree.go"
+        ]
+      },
+      "cardShas": [
+        "e7b5e37a29a11e5ebb6f267602c623168265a20b"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-a4fd447fe6550d4ae.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-accb157194822d62f.jsonl"
@@ -262,7 +281,7 @@
       "recoveryStartSha": "b78b3a2b3112af656fd5ebbd675f5a4978af9e5e"
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
   "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",

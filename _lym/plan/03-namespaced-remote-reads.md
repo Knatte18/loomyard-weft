@@ -21,10 +21,10 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#originNamespaceAt`
-- `plan:internal/gitrepo#RefNamespace.Branch`
-- `plan:internal/gitrepo#RefNamespace.Tag`
-- `plan:internal/gitrepo#RefNamespace.LocalRef`
+- `internal/fabricengine#originNamespaceAt`
+- `internal/gitrepo#RefNamespace.Branch`
+- `internal/gitrepo#RefNamespace.Tag`
+- `internal/gitrepo#RefNamespace.LocalRef`
 
 **Intent:**
 Carry D2's namespace through every ref name fabric itself sends to, or reads back from, a records store's origin: `ls-remote` patterns and output, fetch sources, and tag names.

@@ -1,22 +1,22 @@
 # Card 2 — namespaced-push-ops
 
 **Create:**
-- `plan:internal/gitrepo#RefNamespace` -> `type RefNamespace struct`
-- `plan:internal/gitrepo#RefNamespace.Branch` -> `func (n RefNamespace) Branch(name string) string`
-- `plan:internal/gitrepo#RefNamespace.Tag` -> `func (n RefNamespace) Tag(name string) string`
-- `plan:internal/gitrepo#RefNamespace.LocalRef` -> `func (n RefNamespace) LocalRef(ref string) (string, bool)`
-- `plan:internal/gitrepo#Repo.RemoteFetchRefspecs` -> `func (r *Repo) RemoteFetchRefspecs(name string) ([]string, error)`
-- `plan:internal/gitrepo_test#TestRefNamespace` -> `func TestRefNamespace(t *testing.T)`
-- `plan:internal/gitrepo_test#TestRemoteFetchRefspecs` -> `func TestRemoteFetchRefspecs(t *testing.T)`
-- `plan:internal/fabricengine#RecordsNamespaceRoot` -> `const RecordsNamespaceRoot = "refs/lym/"`
-- `plan:internal/fabricengine#RecordsNamespaceHeads` -> `const RecordsNamespaceHeads = "heads/"`
-- `plan:internal/fabricengine#RecordsNamespaceTags` -> `const RecordsNamespaceTags = "tags/"`
-- `plan:internal/fabricengine#OneRepositoryBoardBranch` -> `const OneRepositoryBoardBranch = "main"`
-- `plan:internal/fabricengine#PrimeRecordsBranchKey` -> `const PrimeRecordsBranchKey = "lym.primeRecordsBranch"`
-- `plan:internal/fabricengine#oneRepositoryNamespace` -> `func oneRepositoryNamespace() gitrepo.RefNamespace`
-- `plan:internal/fabricengine#namespaceAnswers` -> `var namespaceAnswers sync.Map`
-- `plan:internal/fabricengine#originNamespaceAt` -> `func originNamespaceAt(dir string) (gitrepo.RefNamespace, error)`
-- `plan:internal/fabricengine#TestOriginNamespaceAt` -> `func TestOriginNamespaceAt(t *testing.T)`
+- `internal/gitrepo#RefNamespace`
+- `internal/gitrepo#RefNamespace.Branch`
+- `internal/gitrepo#RefNamespace.Tag`
+- `internal/gitrepo#RefNamespace.LocalRef`
+- `internal/gitrepo#Repo.RemoteFetchRefspecs`
+- `internal/gitrepo_test#TestRefNamespace`
+- `internal/gitrepo_test#TestRemoteFetchRefspecs`
+- `internal/fabricengine#RecordsNamespaceRoot`
+- `internal/fabricengine#RecordsNamespaceHeads`
+- `internal/fabricengine#RecordsNamespaceTags`
+- `internal/fabricengine#OneRepositoryBoardBranch`
+- `internal/fabricengine#PrimeRecordsBranchKey`
+- `internal/fabricengine#oneRepositoryNamespace`
+- `internal/fabricengine#namespaceAnswers`
+- `internal/fabricengine#originNamespaceAt`
+- `internal/fabricengine#TestOriginNamespaceAt`
 
 **Edit:**
 - `internal/gitrepo#Repo.Push` -> `func (r *Repo) Push(ns RefNamespace) error`
