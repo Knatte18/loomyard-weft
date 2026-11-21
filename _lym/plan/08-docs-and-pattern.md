@@ -1,17 +1,18 @@
-# Card 10 — docs-and-pattern
+# Card 8 — docs-and-pattern
 
 **Create:**
 - `pattern/PATTERN-single-repo-hub.md`
 
 **Edit:**
 - `docs/getting-started.md`
+- `PATTERN.md`
+- `pattern/PATTERN-code-conventions.md`
 
 **Extends:**
 - `README.md`
-- `PATTERN.md`
 
 **Intent:**
-Describe the one-repository hub as cards 1 to 9 build it (D9), and restore its PATTERN entry with the text `## PATTERN changes` declares.
+Describe the one-repository hub as the earlier cards build it (D9), restore its PATTERN entry, and declare the `PATTERN-code-conventions` change, each with the text `## PATTERN changes` declares.
 
 `docs/getting-started.md`'s "Build and make a hub" section today says a hub needs two repositories.
 It is rewritten to offer both: the two-URL clone, and `lym fabric clone --single-repo --shortname <short> <project-url>` for one repository,
@@ -36,10 +37,21 @@ the layout (two local stores of one origin, the namespace, the fixed board branc
 the layout as the records store's fetch refspec, read and cached only by fabric's `originNamespaceAt`;
 the namespace passed to every records-store remote operation in `gitrepo` and fabric, with no bare push;
 the clone's check, refusals and leased, ordered seed push; and the pair lifecycle running the two-repository paths.
-Each rule names the test that holds it from cards 2, 5, 7, 8 and 9; its rules carry no `(test)` marker, since the entry line carries none.
+Each rule names the test that holds it from cards 2, 4, 5, 6 and 7; its rules carry no `(test)` marker, since the entry line carries none.
+
+`PATTERN.md`'s `PATTERN-code-conventions` line, beside the restored entry, takes the summary `## PATTERN changes` declares:
+
+```
+- `PATTERN-code-conventions` — Writing code: a package's `doc.go` documents only that package; a name or path that can go stale is one named constant; no language, engine or code branch is hard-coded, and a branch lym owns in its records namespace is one named constant in fabric. — [background](pattern/PATTERN-code-conventions.md)
+```
+
+`pattern/PATTERN-code-conventions.md` takes the same summary line, and its "No hard-coded choice" section's **Branch** bullet is rewritten:
+the rule governs code branches, read from git or from lym's own records;
+a branch lym itself owns inside its records namespace (the one-repository board branch `main` under `refs/lym/heads/`, and the f06acf39 layout's `lym-bolt` that the clone's refusal names)
+is a named constant defined once in fabric, never a literal at a use site, since neither is read from git by design and only fabric knows the hub layout.
 
 The one-repository paragraphs D9 drops from `PATTERN-fabric-boundary`, `PATTERN-lym-files`, `PATTERN-pair-remote`, `PATTERN-cwd-resolution` and `PATTERN-run-fsm`,
 and the records-on-code-branch text of `docs/overview.md` and `internal/fabricengine/doc.go`, were removed by 13cebe3d; none is left, so no card edits them.
 No doc or PATTERN text in the tree describes records on a code branch or `lym-bolt`.
 
-**ImpactSummary:** Docs and PATTERN only: one rewritten section, one added paragraph, one restored overview entry within the headroom, and its new background file; no code reads them.
+**ImpactSummary:** Docs and PATTERN only: one rewritten section, one added paragraph, one restored overview entry within the headroom and its new background file, and one rewritten PATTERN rule with its overview line; no code reads them.

@@ -1,4 +1,4 @@
-# Card 8 — prime-records-branch-key
+# Card 6 — prime-records-branch-key
 
 **Edit:**
 - `internal/fabricengine#primaryWeftBranch`
