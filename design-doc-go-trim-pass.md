@@ -1,6 +1,6 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Task · enhancement, docs · running · Code-Burler-Fix
+`doc-go-trim-pass` · Task · enhancement, docs · running · Code-Bouncer
 
 ## What was measured (2026-11-18, `comment-trim-second-pass`)
 

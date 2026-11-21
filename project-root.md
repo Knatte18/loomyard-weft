@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-21 18:54 UTC; every age below is as of then.
+Rendered 2026-11-21 18:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -43,13 +43,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
-| R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 3d<br>3d | shuttle |
+| R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
 ### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 42m<br>26m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 47m<br>31m |  |
 
 ### Features (2)
 
