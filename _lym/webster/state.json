@@ -1,0 +1,253 @@
+{
+  "runGuid": "bc4180920879859ebe18169bff8f28f4",
+  "planFingerprint": "851f2114b1a91a634a2ccd437137357fa5633feb6ef3a5b53c53495f05d127cb",
+  "planFileHashes": {
+    "00-overview.md": "fa2fe7833db6bf3b24647c15a8de8672789f27a8e4e21b04752ec4bc241e89aa",
+    "01-gitrepo-refspec-upstream.md": "ac5f7659b76609a456dd6eb708385349f4c908fbecf01f437a150498cbc02767",
+    "02-namespaced-push-ops.md": "59792197de1b1cf5ce2b39102e2570be979f8a42e4805376c3b1042dd85ceacb",
+    "03-namespaced-remote-reads.md": "6226daa8ccabe0454fb3e86632fefa124b4299df5d2b4c86b3083ea58bc08de3",
+    "04-clone-one-repository.md": "297b92b584e03a7180e10c5db945097c4930905c7401ba40f7d7fe66e8985fc7",
+    "05-one-repository-builder.md": "aca9b5c50d814700b024ed0ca7f2d641105b8819a61ce5b04b3f533a9c49b9a8",
+    "06-prime-records-branch-key.md": "84af5847918d773f7af692ec88460492f613bd1409331c4b6d2a525996ef4e87",
+    "07-pair-lifecycle-namespace.md": "46b07062497a133ccb4153864bb8e7a1b52b673c179ea9e1e3a2c0d6e82269ae",
+    "08-docs-and-pattern.md": "d65bfab75cfb19a794b9aa48ff431f6c5244db6c56d77d4da37eb93a8be84bb2"
+  },
+  "planOverviewFrameHash": "eec3760f72fbab10066d459ac476fe01a266597a41661b2f0d2f8a83c4ccf3e8",
+  "partition": [
+    {
+      "cards": [
+        "01-gitrepo-refspec-upstream",
+        "02-namespaced-push-ops"
+      ],
+      "profile": "wide",
+      "estimate": 290736,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55108,
+        "read_union": 44252,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 444,
+            "reads": {
+              "file:internal/gitrepo/doc.go": 3720,
+              "package:internal/gitrepo": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 50,
+            "written": 15444
+          },
+          {
+            "card": 2,
+            "card_text": 2232,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29856,
+              "file:internal/gitrepo/doc.go": 3720,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 579,
+            "written": 175932
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-namespaced-remote-reads",
+        "04-clone-one-repository"
+      ],
+      "profile": "wide",
+      "estimate": 274636,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62108,
+        "read_union": 44276,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 660,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29856,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 219,
+            "written": 66360
+          },
+          {
+            "card": 4,
+            "card_text": 2292,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 2724,
+              "file:internal/fabricengine/boardweft.go": 744,
+              "file:internal/fabricengine/doc.go": 29856,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 332,
+            "written": 101892
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-one-repository-builder",
+        "06-prime-records-branch-key",
+        "07-pair-lifecycle-namespace"
+      ],
+      "profile": "wide",
+      "estimate": 276224,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69108,
+        "read_union": 41696,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1020,
+            "reads": {
+              "file:internal/hubforge/doc.go": 1320,
+              "package:internal/fabricengine": 2000,
+              "package:internal/hubforge": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/hubforge": 2000
+            },
+            "messages": 209,
+            "written": 63720
+          },
+          {
+            "card": 6,
+            "card_text": 540,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 29856,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 149,
+            "written": 45240
+          },
+          {
+            "card": 7,
+            "card_text": 960,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 185,
+            "written": 56460
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-docs-and-pattern"
+      ],
+      "profile": "wide",
+      "estimate": 102100,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76108,
+        "read_union": 16308,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 684,
+            "reads": {
+              "file:PATTERN.md": 708,
+              "file:README.md": 2088,
+              "file:docs/getting-started.md": 540,
+              "file:pattern/PATTERN-code-conventions.md": 288,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 30,
+            "written": 9684
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "gitrepo-refspec-upstream",
+      "cards": [
+        "01-gitrepo-refspec-upstream",
+        "02-namespaced-push-ops"
+      ],
+      "cardHashes": {
+        "01-gitrepo-refspec-upstream": "ac5f7659b76609a456dd6eb708385349f4c908fbecf01f437a150498cbc02767",
+        "02-namespaced-push-ops": "59792197de1b1cf5ce2b39102e2570be979f8a42e4805376c3b1042dd85ceacb"
+      },
+      "startSha": "13cebe3d2ad9925b62c0d1595ce7ec38e6ccc1cc",
+      "kind": "fork",
+      "spawnedAt": "2026-11-21T14:11:22Z",
+      "sessionId": "c858257c-1ba2-4e39-a57d-f50f29439ed2",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "fb8ef14ff3dc22ea27f98fb6a14241b9",
+  "masterSessionId": "c858257c-1ba2-4e39-a57d-f50f29439ed2",
+  "masterEngine": "claude"
+}
