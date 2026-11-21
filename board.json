@@ -288,6 +288,9 @@
       "created": "2026-11-19T12:35:06Z",
       "revised": "2026-11-19T12:35:06Z",
       "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
         "loom": {
           "code_assist_reviewer_fan": "review-code",
           "code_assist_reviewer_model": "astra[medium]"
