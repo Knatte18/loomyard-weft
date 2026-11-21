@@ -1,6 +1,6 @@
 # Trim every package doc.go of what is superfluous
 
-`doc-go-trim-pass` · Task · enhancement, docs · starting · Worktree-Create
+`doc-go-trim-pass` · Task · enhancement, docs · starting · Seed-Child
 
 Depends on: [`drop-compat-migration-code`](design-drop-compat-migration-code.md)
 
