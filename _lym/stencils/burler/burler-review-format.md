@@ -5,7 +5,7 @@
      They render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
      It carries no marker, so it names no path of either half.
-lym-stencil: sha256=7a1b7f75e438074c30a813be45b1e2033dccf849183da0ec89a87f8d1ea9a7cb build=e6b40df6aab7b28ad215edd407c21cf6775e466d time=2026-11-19T11:36:55Z -->
+lym-stencil: sha256=a994f45a426d03b1d16b2da3d49b61a9cb5410def4ae1996b3c2fbb17bd93686 build=39c7ea47f357acd6a057c926134086443a1d7a99 time=2026-11-21T15:42:29Z -->
 
 ## Review-file format
 
@@ -57,6 +57,11 @@ Frontmatter rules, all strict:
 - A finding kept from the parent orch's report carries `origin: parent` and an optional `parent_ids` list naming the report ids it covers, such as `parent_ids: [P1, P3]`.
   No other finding carries `parent_ids`.
 - A finding's `location` opens with the file's path, followed by `:<line>` or `#<symbol>`.
+  It names the site the fix changes, which may lie apart from where the defect shows:
+  a wrong value that one file prints and another sets is located where it is set.
+  When you did not find that site, `location` names where the defect shows,
+  and the `fix` key opens with `site not found —` and names what the fixer must find.
+  A carried finding keeps the location path the carry rules allow and names a fix site outside it in its `summary` and `fix`.
 - `prior` is a list, written only when the review step's prior-rounds section lists prior findings.
   It holds one entry per listed finding, each with its `id`, a `status` and an optional `answer`.
   `status` is exactly one of `resolved`, `open`, `outdated`, `withdrawn`.

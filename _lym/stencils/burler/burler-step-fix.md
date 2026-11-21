@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=b2be41e3fbd177b7500a15357f8519a9e5483df6868f1679c643f4735ec4585d build=e55618bb71373a82195f5dd7ab94c672c4d25e97 time=2026-11-19T15:24:07Z -->
+lym-stencil: sha256=13a2f881c957fb07aa16cd5412839cf3c03575b67b84602839bbaa5d666b7cd2 build=39c7ea47f357acd6a057c926134086443a1d7a99 time=2026-11-21T15:42:29Z -->
 
 {{.friction_directive}}
 
@@ -25,6 +25,8 @@ lym-stencil: sha256=b2be41e3fbd177b7500a15357f8519a9e5483df6868f1679c643f4735ec4
 Every finding in the review gets fixed — all severities, including LOW and NIT.
 Severity affects how a finding is reported, not whether it gets fixed.
 The files to change are the ones the findings' `location` keys name, or the gate findings name.
+A `fix` key that opens with `site not found —` marks a finding whose `location` names only where the defect shows:
+find the site the change belongs at before you edit.
 Weigh each finding twice: its premise, and the change its `fix` key proposes.
 Give it exactly one of three dispositions, decided in this order.
 
@@ -94,5 +96,5 @@ The round is not done until `{{.fixer_report_path}}` exists on disk — a skippe
 
 You must never push,
 and you must never run any git command against a `_lym` path — those are owned by the loop that spawned you, not by this round.
-If your fix-scope rules above name commit-per-fix on the repo, stay inside the working tree;
+If your fix-scope rules above have you commit on the repo, stay inside the working tree;
 nothing here ever authorizes an `_lym` commit.
