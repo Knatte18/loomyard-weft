@@ -314,6 +314,24 @@
         }
       },
       "project": "single-repo-hub"
+    },
+    {
+      "id": 1551,
+      "handle": "E1",
+      "slug": "hardener-gate-keys-defaults",
+      "title": "Hardener needs no hub-set gate keys",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hardener refuses to start until the hub sets three gate keys; the template should suffice",
+      "body": "## Seen\n\nA hardener run is refused at Preflight until the hub sets three gate keys itself, `harden-live`, `harden-live-copies` and `harden-burler-fix`, though each has a template value.\nSetting them for the first hardener run (harden-fabricengine) also ran into the rule that the copies key may name one tier only, which the template does not hint at.\n\n## Idea\n\nLet the template values stand, so a hardener run needs no hub gate write, or derive the tiers from the campaign's packages; fold the copies key into `harden-live` with a copies count instead of a key of its own.\n",
+      "created": "2026-11-21T19:16:09Z",
+      "revised": "2026-11-21T19:16:09Z"
     }
   ],
   "prime_owner": "neve",
