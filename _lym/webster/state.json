@@ -239,39 +239,32 @@
       },
       "startSha": "13cebe3d2ad9925b62c0d1595ce7ec38e6ccc1cc",
       "kind": "recovery",
-      "spawnedAt": "2026-11-21T14:31:00Z",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-gitrepo-refspec-upstream",
-        "status": "failed",
-        "head_sha": "b78b3a2b3112af656fd5ebbd675f5a4978af9e5e",
-        "reasons": [
-          "batch 01-gitrepo-refspec-upstream holds cards 1-gitrepo-refspec-upstream, 2-namespaced-push-ops",
-          "create-not-done/1-gitrepo-refspec-upstream[blocking]: Create target \"plan:internal/gitrepo#remoteTrackingRef\" still does not resolve: looked up \"internal/gitrepo#remoteTrackingRef\", quarry answered not_found (the unit exists and the member is missing); quarry searched 24 files of unit internal/gitrepo; no declaration named remoteTrackingRef exists anywhere in the worktree"
-        ]
-      },
+      "spawnedAt": "2026-11-21T14:33:42Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-a4fd447fe6550d4ae.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-accb157194822d62f.jsonl"
       ],
-      "strandGuid": "923d57e3c068debdcd0799af3c02e010",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYMHUB/single-repo-namespace-layout/.lym/shuttle/de0cd93d5e6b3fd77fa21f46a0cfff4e",
-      "eventsPath": "/home/knatte/Code/loomyard-LYMHUB/single-repo-namespace-layout/.lym/shuttle/de0cd93d5e6b3fd77fa21f46a0cfff4e/events.jsonl",
-      "eventsOffset": 2396,
-      "recoveries": 1,
+      "strandGuid": "5bb64ed0330039e8898a36c902fdfe1a",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYMHUB/single-repo-namespace-layout/.lym/shuttle/11b6883350a9ed7ff193418e0d714f13",
+      "eventsPath": "/home/knatte/Code/loomyard-LYMHUB/single-repo-namespace-layout/.lym/shuttle/11b6883350a9ed7ff193418e0d714f13/events.jsonl",
+      "eventsOffset": 2395,
+      "recoveries": 2,
       "recoverySessions": [
-        "03a7e531-4e2d-41a1-87a5-a8f2fd991237"
+        "03a7e531-4e2d-41a1-87a5-a8f2fd991237",
+        "e5db88bc-7cdb-479b-8ae6-afc113088a03"
       ],
       "recoveryEngines": {
-        "03a7e531-4e2d-41a1-87a5-a8f2fd991237": "claude"
+        "03a7e531-4e2d-41a1-87a5-a8f2fd991237": "claude",
+        "e5db88bc-7cdb-479b-8ae6-afc113088a03": "claude"
       },
       "recoveryStartSha": "b78b3a2b3112af656fd5ebbd675f5a4978af9e5e"
     }
   },
-  "currentBatch": 0,
-  "masterStrand": "fb8ef14ff3dc22ea27f98fb6a14241b9",
-  "masterSessionId": "c858257c-1ba2-4e39-a57d-f50f29439ed2",
+  "currentBatch": 1,
+  "masterStrand": "36f9b2325599384c7b9a0f2e536c4fa6",
+  "masterSessionId": "538401b4-b697-4d2e-afb8-6516b8ea3c12",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-single-repo-namespace-layout/c858257c-1ba2-4e39-a57d-f50f29439ed2/subagents/agent-a4fd447fe6550d4ae.jsonl",
