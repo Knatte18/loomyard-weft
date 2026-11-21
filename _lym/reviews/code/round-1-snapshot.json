@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "f0cb59077d22624ce2c2428d2dec3774a144e6cf",
+  "added_decisions": [
+    {
+      "title": "No test seam for the installed red-first gate: it predates this fix",
+      "digest": "a01e1a88e75d8a362b5428791cfacb602cf35c246de4e3c08b31c4b4117384af"
+    }
+  ]
+}
