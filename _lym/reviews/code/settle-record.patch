@@ -1,0 +1,328 @@
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index 8d5455e9..4f9f7506 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -62,7 +62,7 @@ A part holds:
+ - `cells` — the `lym report cost` cells both figures rest on, each `{recipe, profile, stored_record}`.
+ 
+ Shape `tapestry` has exactly one part, which builds every decision.
+-Every filed slug, each part's and the project's, is new: free on the board and in the raddle store, and not the Sketch's.
++Every filed slug, each part's and the project's, is new, and one the board's slug rules admit: free on the board and in the raddle store, and not the Sketch's.
+ The one exception is a perch-mode run's project, whose slug is the run's own entry.
+ 
+ ## Perch mode
+@@ -107,6 +107,7 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
+ - `slug-taken` — a new slug already on the board or in the raddle store; the run's own entry is exempt, which `slug-sketch` judges.
+ - `slug-sketch` — a filed slug equal to the Sketch's; a perch-mode project whose slug is the run's own entry is exempt.
+ - `slug-duplicate` — a slug that two filed entries share.
++- `slug-invalid` — a filed slug the board's slug rules refuse: one over the board's slug length limit, the reserved `root`, or one the pair slug rule refuses, which `lym board` writes and pair creation apply; its way forward is a slug the board admits.
+ - `shape-invalid` — a `tapestry` shape with other than one part or with a part that does not build every decision, a `project` or `beam` shape with no project, or another shape with one.
+ - `perch-outcome` — in perch mode, a proposal that is neither one task nor one project under the run's own entry.
+ - `cost-missing` — a missing proposal cost line or next-best cost line.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index f3382b8f..f4e82cb2 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -259,6 +259,8 @@
+ //
+ // # Slug rule
+ //
++// ValidateEntrySlug is the length limit and root reservation every new slug passes.
++// It is exported so a caller that plans entries refuses a slug before the write would.
+ // Config.ValidateSlug is how the board applies the pair slug rule to the task and project slugs a write makes.
+ // A nil ValidateSlug checks nothing.
+ // Board copies it, and the write critical section runs it after the mutation.
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 1f9d60ef..ad436903 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -404,6 +404,15 @@ func validateSlugNotReserved(slug string) error {
+ 	return nil
+ }
+ 
++// ValidateEntrySlug applies the length limit and the root reservation every board write applies to a new slug.
++// A caller that plans entries checks their slugs with it before a write refuses one.
++func ValidateEntrySlug(slug string) error {
++	if err := validateSlugLength(slug); err != nil {
++		return err
++	}
++	return validateSlugNotReserved(slug)
++}
++
+ // NewTask builds a Task from a raw field map, assigning nextID.
+ // The fields pass through a JSON round-trip, so their types are validated exactly as they are on disk.
+ // Unknown fields are not rejected here; the caller validates them.
+@@ -418,10 +427,7 @@ func NewTask(fields map[string]any, nextID int) (Task, error) {
+ 		return Task{}, fmt.Errorf("slug must be a non-empty string")
+ 	}
+ 
+-	if err := validateSlugLength(slugStr); err != nil {
+-		return Task{}, err
+-	}
+-	if err := validateSlugNotReserved(slugStr); err != nil {
++	if err := ValidateEntrySlug(slugStr); err != nil {
+ 		return Task{}, err
+ 	}
+ 
+diff --git a/internal/loomcli/raddlecontext.go b/internal/loomcli/raddlecontext.go
+index 28896567..b3dfb172 100644
+--- a/internal/loomcli/raddlecontext.go
++++ b/internal/loomcli/raddlecontext.go
+@@ -30,6 +30,8 @@ import (
+ // TypeLabels holds the board config's type labels, and LabelVocabulary its module labels.
+ // Profiles names the profiles that hold a block for each recipe a part may name.
+ // LivePattern answers from the worktree's PATTERN.md, and a worktree with none holds no live entry.
++// ValidateSlug applies the board's length and root rules and the pair slug rule with the hub's junction names.
++// The pair rule is the one that `lym board` writes and pair creation refuse a slug by.
+ // The filing flag goes to the context unchanged.
+ // Perch is set when the run's raddle state records perch mode; a run with no state yet is not in it.
+ // A board with no entry for the run is an error naming the way forward.
+@@ -56,6 +58,10 @@ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.Bo
+ 	if err != nil {
+ 		return raddleparser.BoardContext{}, err
+ 	}
++	fabricConfig, err := fabricengine.LoadConfig(dirs)
++	if err != nil {
++		return raddleparser.BoardContext{}, err
++	}
+ 	overview, err := os.ReadFile(pattern.File(location.WorktreePath()))
+ 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+ 		return raddleparser.BoardContext{}, fmt.Errorf("read PATTERN.md: %w", err)
+@@ -76,6 +82,12 @@ func raddleBoardContext(location *lymcwd.Location, filing bool) (raddleparser.Bo
+ 			_, live := pattern.EntryBullet(overview, id)
+ 			return live
+ 		},
++		ValidateSlug: func(slug string) error {
++			if err := boardengine.ValidateEntrySlug(slug); err != nil {
++				return err
++			}
++			return fabricengine.ValidatePairSlug(slug, fabricConfig.Dirs())
++		},
+ 	}
+ 	found := false
+ 	for _, task := range tasks {
+diff --git a/internal/loomcli/raddlecontext_integration_test.go b/internal/loomcli/raddlecontext_integration_test.go
+index 3530383c..c87e2cd5 100644
+--- a/internal/loomcli/raddlecontext_integration_test.go
++++ b/internal/loomcli/raddlecontext_integration_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+@@ -27,6 +28,8 @@ func TestRaddleBoardContext(t *testing.T) {
+ 
+ 	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	hubforge.AddPair(t, hub, "the-sketch")
++	// "docs" is no structural reservation, so only the hub's configured junction names refuse it.
++	hubforge.SeedFabricConfig(t, hub, "pathspec: docs\n")
+ 
+ 	// A board write cannot file an entry with a label the config lacks,
+ 	// so the entries are written to the board file directly.
+@@ -108,6 +111,21 @@ func TestRaddleBoardContext(t *testing.T) {
+ 			t.Errorf("Profiles[%s] = none; want the profiles that hold a block for it", recipe)
+ 		}
+ 	}
++	for _, tt := range []struct {
++		slug        string
++		wantRefused bool
++	}{
++		{"part-a", false},
++		{strings.Repeat("a", boardengine.MaxSlugLength), false},
++		{strings.Repeat("a", boardengine.MaxSlugLength+1), true},
++		{boardengine.RootSubject, true},
++		{"part/a", true},
++		{"docs", true},
++	} {
++		if err := got.ValidateSlug(tt.slug); (err != nil) != tt.wantRefused {
++			t.Errorf("ValidateSlug(%q) = %v; want refused %v", tt.slug, err, tt.wantRefused)
++		}
++	}
+ }
+ 
+ // forgeRaddleRun forges a hub with a pair worktree for slug and writes board as its board.json.
+diff --git a/internal/raddleparser/check.go b/internal/raddleparser/check.go
+index feab2473..b88db263 100644
+--- a/internal/raddleparser/check.go
++++ b/internal/raddleparser/check.go
+@@ -42,6 +42,7 @@ const (
+ 	CheckSlugTaken              = "slug-taken"
+ 	CheckSlugSketch             = "slug-sketch"
+ 	CheckSlugDuplicate          = "slug-duplicate"
++	CheckSlugInvalid            = "slug-invalid"
+ 	CheckShapeInvalid           = "shape-invalid"
+ 	CheckPerchOutcome           = "perch-outcome"
+ 	CheckCostMissing            = "cost-missing"
+@@ -94,6 +95,8 @@ type BoardEntry struct {
+ // Perch is true in a perch-mode run, whose split perch approves the proposal in place of the operator:
+ // the checks then allow only one task, or one project whose slug is the run's own entry.
+ // LivePattern reports whether the run's PATTERN.md holds the entry id.
++// ValidateSlug returns the refusal of a filed slug by the board's slug rules and the pair slug rule.
++// It returns nil for a slug they admit, and a nil ValidateSlug checks nothing.
+ type BoardContext struct {
+ 	Sketch          string
+ 	Entry           string
+@@ -106,6 +109,7 @@ type BoardContext struct {
+ 	Filing          bool
+ 	Perch           bool
+ 	LivePattern     func(id string) bool
++	ValidateSlug    func(slug string) error
+ }
+ 
+ // decisionIDPattern matches a decision id as a whole word;
+@@ -481,7 +485,7 @@ func (c *checker) perchProject() bool {
+ 	return c.board.Perch && p.Shape == ShapeProject && p.Project != nil && p.Project.Slug == c.board.Entry
+ }
+ 
+-// slugs reports a filed slug that is the Sketch's, taken, or used twice.
++// slugs reports a filed slug that is the Sketch's, taken, used twice, or refused by the board's slug rules.
+ // A perch run's project slug that is the run's own entry is not reported as the Sketch's;
+ // the run's own entry is never reported as taken.
+ func (c *checker) slugs() []Finding {
+@@ -499,6 +503,11 @@ func (c *checker) slugs() []Finding {
+ 		if slices.Contains(seen, slug) {
+ 			findings = append(findings, Finding{Check: CheckSlugDuplicate, Part: slug, Detail: fmt.Sprintf("the slug %q is filed twice", slug)})
+ 		}
++		if c.board.ValidateSlug != nil {
++			if err := c.board.ValidateSlug(slug); err != nil {
++				findings = append(findings, Finding{Check: CheckSlugInvalid, Part: slug, Detail: fmt.Sprintf("the board refuses the slug: %v; way forward: pick a slug the board admits, then run lym loom raddle-propose again", err)})
++			}
++		}
+ 		seen = append(seen, slug)
+ 	}
+ 	return findings
+diff --git a/internal/raddleparser/check_test.go b/internal/raddleparser/check_test.go
+index cda01c41..c36cc2f4 100644
+--- a/internal/raddleparser/check_test.go
++++ b/internal/raddleparser/check_test.go
+@@ -116,6 +116,15 @@ func TestCheck(t *testing.T) {
+ 		{"SlugFiledTwice", func(p *Proposal, _ *BoardContext) {
+ 			p.Parts = append(p.Parts, Part{Slug: "part-b", Type: "feature", Labels: []string{"mod-a"}, Recipe: RecipeTapestry, Profile: "standard", Packages: []Package{{Path: "internal/c", Size: 1}}})
+ 		}, []string{CheckSlugDuplicate}},
++		{"SlugTheBoardRefuses", func(p *Proposal, _ *BoardContext) { p.Parts[1].Slug = refusedSlug }, []string{CheckSlugInvalid}},
++		{"ProjectSlugTheBoardRefuses", func(p *Proposal, _ *BoardContext) {
++			p.Shape = ShapeProject
++			p.Project = &Project{Slug: refusedSlug, Title: "Project", Type: "feature"}
++		}, []string{CheckSlugInvalid}},
++		{"NoSlugRuleChecksNothing", func(p *Proposal, b *BoardContext) {
++			p.Parts[1].Slug = refusedSlug
++			b.ValidateSlug = nil
++		}, nil},
+ 		{"TapestryWithTwoParts", func(p *Proposal, _ *BoardContext) { p.Shape = ShapeTapestry }, []string{CheckShapeInvalid}},
+ 		{"ProjectShapeWithNoProject", func(p *Proposal, _ *BoardContext) { p.Shape = ShapeProject }, []string{CheckShapeInvalid}},
+ 		{"TasksShapeWithAProject", func(p *Proposal, _ *BoardContext) { p.Project = &Project{Slug: "proj-new", Type: "feature"} }, []string{CheckShapeInvalid}},
+@@ -173,29 +182,49 @@ func TestCheck(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCheck_DependsOnNoteDetailNamesTheWayForward pins the text that tells the author how to proceed.
+-func TestCheck_DependsOnNoteDetailNamesTheWayForward(t *testing.T) {
++// TestCheck_DetailNamesTheWayForward pins the text that tells the author how to proceed past a refusal.
++//
++//testtiming:keep pins each refusal's detail text, its reason and way forward, which TestCheck never asserts
++func TestCheck_DetailNamesTheWayForward(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	proposal, board := validProposal(), validBoard()
+-	board.Entries = append(board.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
+-	proposal.Parts[1].DependsOn = append(proposal.Parts[1].DependsOn, "idea")
+-
+-	var details []string
+-	for _, finding := range Check(proposal, checkRecord, board) {
+-		if finding.Check == CheckDependsNote {
+-			details = append(details, finding.Detail)
+-		}
++	tests := []struct {
++		name   string
++		check  string
++		mutate func(p *Proposal, b *BoardContext)
++		want   []string
++	}{
++		{"DependsOnNote", CheckDependsNote, func(p *Proposal, b *BoardContext) {
++			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
++			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
++		}, []string{`the note "idea"`, "drop the dependency", `lym board promote '{"slug":"idea"}'`}},
++		{"SlugInvalid", CheckSlugInvalid, func(p *Proposal, _ *BoardContext) { p.Parts[1].Slug = refusedSlug }, []string{
++			`slug "refused-slug" is refused`, "pick a slug the board admits", "lym loom raddle-propose",
++		}},
+ 	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			proposal, board := validProposal(), validBoard()
++			tt.mutate(&proposal, &board)
+ 
+-	if len(details) != 1 {
+-		t.Fatalf("Check() depends-note details = %q; want exactly one", details)
+-	}
+-	for _, want := range []string{`the note "idea"`, "drop the dependency", `lym board promote '{"slug":"idea"}'`} {
+-		if !strings.Contains(details[0], want) {
+-			t.Errorf("depends-note detail = %q; want it to contain %q", details[0], want)
+-		}
++			var details []string
++			for _, finding := range Check(proposal, checkRecord, board) {
++				if finding.Check == tt.check {
++					details = append(details, finding.Detail)
++				}
++			}
++
++			if len(details) != 1 {
++				t.Fatalf("Check() %s details = %q; want exactly one", tt.check, details)
++			}
++			for _, want := range tt.want {
++				if !strings.Contains(details[0], want) {
++					t.Errorf("%s detail = %q; want it to contain %q", tt.check, details[0], want)
++				}
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/raddleparser/doc.go b/internal/raddleparser/doc.go
+index 49d71dbb..cd689b15 100644
+--- a/internal/raddleparser/doc.go
++++ b/internal/raddleparser/doc.go
+@@ -12,6 +12,8 @@
+ //
+ // Check is pure.
+ // It judges a Proposal against the decision record's bytes and a BoardContext the caller builds.
++// The board's slug rules reach it as a function in the BoardContext.
++// So a slug the board would refuse fails before approval.
+ // It returns one Finding per broken rule of the spec.
+ // A BoardContext with Perch set is a perch-mode run's, whose split perch approves the proposal:
+ // Check then allows one task or one project whose slug is the run's own entry, which the slug rules exempt.
+diff --git a/internal/raddleparser/fixture_test.go b/internal/raddleparser/fixture_test.go
+index adfc74e1..1c73fd57 100644
+--- a/internal/raddleparser/fixture_test.go
++++ b/internal/raddleparser/fixture_test.go
+@@ -4,6 +4,7 @@
+ package raddleparser
+ 
+ import (
++	"fmt"
+ 	"slices"
+ 	"strings"
+ )
+@@ -76,9 +77,18 @@ func validBoard() BoardContext {
+ 		LabelVocabulary: []string{"mod-a", "mod-b", "mod-z"},
+ 		Profiles:        map[string][]string{RecipeTapestry: {"standard"}, RecipeDarn: {"quick"}},
+ 		LivePattern:     func(id string) bool { return id == "PATTERN-live" },
++		ValidateSlug: func(slug string) error {
++			if slug == refusedSlug {
++				return fmt.Errorf("slug %q is refused", slug)
++			}
++			return nil
++		},
+ 	}
+ }
+ 
++// refusedSlug is the one slug the board context of validBoard refuses.
++const refusedSlug = "refused-slug"
++
+ // checkNames returns the sorted check names of findings.
+ func checkNames(findings []Finding) []string {
+ 	names := make([]string, len(findings))
