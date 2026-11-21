@@ -79,7 +79,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Drift-Verify | neve | 1h<br>1h | fabric, landing |
+| T3 | **One-repository sandbox: run tasks to landing**<br>• Run sequential, concurrent and abandoned tasks in the sandbox hub and check origin after each<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`onerepo-sandbox-tasks`](design-onerepo-sandbox-tasks.md) | darn · docs | Code-Bouncer | neve | 1h<br>1h | fabric, landing |
 
 #### Ready (0)
 
@@ -148,7 +148,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 17m<br>1m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 18m<br>2m |  |
 
 #### Features (2)
 

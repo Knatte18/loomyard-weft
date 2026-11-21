@@ -50,7 +50,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 17m<br>1m |  |
+| B2 |  | **Finalize halts on a private free-plan repo: rules read 403 read as a bad token**<br>• GET rules/branches answers 403 "Upgrade to GitHub Pro" on a private free-plan repo; a run holding a PR record halts at Finalize naming the token | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | 18m<br>2m |  |
 
 ### Features (2)
 
