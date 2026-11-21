@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "3060782201997fa009948ee71b2ea2abb4dad991",
+  "added_decisions": [
+    {
+      "title": "No test seam for the red-first overlay: the diff changes a darn stencil",
+      "digest": "57031a7340995674ec900e5f4cf7e9425606d39f4a5c9430e7c115b20dd15992"
+    },
+    {
+      "title": "Drop the MeasureCall tier fallback",
+      "digest": "2d6e6f2157f403910d4af119c16f62c4a441231dfcbca22adfe8da0bbf6de614"
+    }
+  ]
+}
