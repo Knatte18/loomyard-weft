@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 15:24 UTC; every age below is as of then.
+Rendered 2026-11-21 15:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -117,7 +117,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Red-first gate cannot judge a diff that also changes non-Go files**<br>• The base overlay of the red-first gate cannot put back a changed spec or doc file, so a bug fix with a Go seam is waived<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-overlay-non-go-files`](design-red-first-overlay-non-go-files.md) | darn · light | Darn-Write | neve | 1d<br>13m | gate, testmap |
-| T3 | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | darn · light | Code-Bouncer | neve | 1d<br>12m | burler, stencil |
+| T3 | **Burler fix round: per-finding commit rule conflicts with shared files; review location misses the seam**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-shared-file-commits`](design-burler-fix-shared-file-commits.md) | darn · light | Code-Burler-Review | neve | 1d<br>13m | burler, stencil |
 
 #### Ready (0)
 
