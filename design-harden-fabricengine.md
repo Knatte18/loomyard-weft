@@ -1,6 +1,6 @@
 # Hardener campaign on fabricengine, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric
+`harden-fabricengine` · Task · bug, fabric · starting · Worktree-Create
 
 ## Goal
 
