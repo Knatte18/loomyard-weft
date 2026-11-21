@@ -1,0 +1,32 @@
+# Read GitHub's plan-gated 403 on a rules read as no rules
+
+On a private repository under a free plan, GitHub answers `GET repos/{owner}/{repo}/rules/branches/{branch}` with
+`403 Upgrade to GitHub Pro or make this repository public to enable this feature.` for every token.
+Finalize reads that endpoint when beam.yaml and the entry say "no pull request" for a task with commits.
+A run that already held a pull request record halted there,
+and `landingshed.githubHaltReason` mapped the 403 to "GitHub refused the token",
+naming a way forward (fix the token, resume) that hits the same 403 again.
+The sandbox task greet-goodbye halted this way after its orch set `pull_request` off while it held PR #1.
+
+## Change
+
+- `pullrequest.Client.RequiresPullRequest` and `RequiredChecks` now treat a 403 whose message opens `Upgrade to GitHub` as a repository with no rules:
+  `false, nil` and `nil, nil`.
+  A repository without the rules feature has no rules, so this is the true answer, not a fallback.
+  Finalize then closes the recorded pull request and lands, as a run with no record already did after logging the 403 as a warning.
+- Any other 403, such as `Resource not accessible by integration`, is still an error and still halts as before.
+- The match is on GitHub's message prefix (`planGatedMessagePrefix`), since the status alone cannot tell a plan gate from a refused token;
+  the prefix also covers the organisation wording, `Upgrade to GitHub Team`.
+- Package docs of `pullrequest` and `landingshed` state the new reading.
+
+## Tests
+
+`TestClient_Calls` in `internal/pullrequest` gains a scripted `plan` branch answering the plan-gated 403 and a `forbidden` branch answering another 403.
+`RequiresPullRequest(plan)` must return `false, nil`, and `RequiredChecks(plan, …)` no checks with only the rules read sent;
+both fail on the merge base, which returned the 403 as an error.
+The `forbidden` rows pin that any other 403 stays an error.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** landing
