@@ -260,6 +260,12 @@ Rationale: single-repo-code-records-removal (13cebe3d) deleted PATTERN-single-re
 
 Withdraws: `PATTERN-single-repo-hub`
 
+### Added after Discussion (parent, 2026-11-21): Add PATTERN-single-repo-hub anew
+
+Decision: Card 8 adds PATTERN-single-repo-hub to PATTERN.md and writes pattern/PATTERN-single-repo-hub.md fresh.
+
+Rationale: The entry and its background file were deleted on main by 13cebe3d.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: every git operation on either store stays in `internal/fabricengine`, with `gitrepo` as its client;
@@ -325,3 +331,4 @@ Withdraws: `PATTERN-single-repo-hub`
 ## PATTERN changes
 
 - `PATTERN-code-conventions` — changes: Writing code: a package's `doc.go` documents only that package; a name or path that can go stale is one named constant; no language, engine or code branch is hard-coded, and a branch lym owns in its records namespace is one named constant in fabric. — added after Discussion (parent, 2026-11-21)
+- `PATTERN-single-repo-hub` — adds: Running a hub as one repository: a code store and a records store of one origin, records and the board under origin's `refs/lym/`, mapped by the records store's refspecs; only fabric reads the layout. — added after Discussion (parent, 2026-11-21)
