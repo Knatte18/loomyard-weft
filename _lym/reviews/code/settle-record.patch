@@ -1,0 +1,1442 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 706f5e96..2cc3a1a8 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -136,7 +136,9 @@ producers:
+         # or changes fails on the merge base: it runs `lym gate red-first` over the row's gate key, which
+         # runs those tests once on the merge base's code. An entry without the label passes it at once,
+         # and so does a bug the parent recorded, with lym loom decision add, under a title opening
+-        # "No test seam". It has no fixer: only the writer can make a test show the bug.
++        # "No test seam". A diff that adds no test, and a check that cannot judge the tests, hold the run
++        # without spending an attempt until a new commit or that record lands. It has no fixer: only the
++        # writer can make a test show the bug.
+         - name: red-first
+           attempts: 3
+         # The drift gate runs the drift check over the committed code against the sealed expectation and
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 4f6cb834..8ba2a770 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -107,8 +107,9 @@ When the change is intended, leave it: only the run's parent amends the expectat
+ When the task's board entry is labelled `bug`, the fix's test must fail before the fix.
+ Write a test that reaches the bug through code the merge base already has, so it fails on the merge base and passes with the fix.
+ Once you end your turn, the row's red-first gate runs the tests your diff adds or changes once on the merge base's code.
+-It fails when every one of them passes there, when the diff adds or changes no test,
+-and when it cannot judge them, as on a hub whose scoper is not go.
++It fails when every one of them passes there.
++When the diff adds or changes no test, or the check cannot judge them, as on a hub whose scoper is not go,
++it holds your handoff without spending an attempt until a new commit or your parent's record lands.
+ When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
+ and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 6f0e2230..8aecd1e3 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1107,6 +1107,7 @@ User-facing modules each get one `lym <module>` namespace:
+   its `drift` gate entry checks the code's changes against that expectation.
+   For an entry labelled `bug`, its `red-first` gate entry runs `lym gate red-first` and holds the handoff until a test the diff adds or changes fails on the merge base,
+   unless the parent recorded an added decision titled `No test seam`;
++  a diff with no test, or a check that cannot judge the tests, holds the handoff without spending an attempt until a new commit or that record;
+   the fix's commit carries a `Root-Cause:` trailer that the `Code-Review` perch checks.
+   `Drift-Verify` checks the writer's code by containment and has a judge rule on the expected changes.
+   The judge also rules on each loosened check, an assertion, tolerance or limit widened in a test existing at the review base, as caused or uncaused.
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 5a6c27f4..e710b923 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -28,6 +28,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ )
+ 
+@@ -122,8 +123,10 @@ func darnTreeScope(l *lymcwd.Location, trees func() (map[string]string, error))
+ 
+ // latestDarnOutcome returns the latest Darn-Write history entry of the status file at statusPath.
+ // The status file is read under the lock at statusLockPath.
+-// The returned `FindingsPath` is findingsPath when that file exists, and empty otherwise:
++// The returned `FindingsPath` is findingsPath when the entry is a Stuck and that file exists, and empty otherwise:
+ // the kept findings outlive the resume write that clears the status file's error before the row is called.
++// The file also outlives a later call whose gate passed, so an entry that did not halt names none.
++// A Stuck whose spawn began after the file was last written wrote no findings of its own, so it names none either.
+ // Reroute, goto and skipped entries record no spawn that did work, so they are passed over.
+ // An absent status file, or a history with no Darn-Write entry besides the passed-over ones, reports not found.
+ func latestDarnOutcome(statusPath, statusLockPath, findingsPath string) (loomshed.DarnOutcome, bool, error) {
+@@ -141,8 +144,14 @@ func latestDarnOutcome(statusPath, statusLockPath, findingsPath string) (loomshe
+ 			continue
+ 		}
+ 		latest := loomshed.DarnOutcome{Outcome: entry.Outcome}
+-		if _, err := os.Stat(findingsPath); err == nil {
+-			latest.FindingsPath = findingsPath
++		if entry.Outcome != shedengine.Stuck {
++			return latest, true, nil
++		}
++		info, err := os.Stat(findingsPath)
++		if err == nil {
++			if !fileWrittenBeforeSpawn(info.ModTime(), entry.StartedAt) {
++				latest.FindingsPath = findingsPath
++			}
+ 		} else if !errors.Is(err, fs.ErrNotExist) {
+ 			return loomshed.DarnOutcome{}, false, err
+ 		}
+@@ -152,6 +161,13 @@ func latestDarnOutcome(statusPath, statusLockPath, findingsPath string) (loomshe
+ 	return loomshed.DarnOutcome{}, false, nil
+ }
+ 
++// fileWrittenBeforeSpawn reports whether a file last written at modTime is older than the spawn that began at startedAt.
++// A start time that is empty or not RFC 3339 cannot be compared, so the file is not counted older.
++func fileWrittenBeforeSpawn(modTime time.Time, startedAt string) bool {
++	started, err := time.Parse(time.RFC3339, startedAt)
++	return err == nil && modTime.Before(started)
++}
++
+ // discussionRecordCheck returns the record check a recipe's agent rows run over the decision record.
+ // The check also reads the support log and the committed history of the record that recipe keeps.
+ // It reads on demand and opens nothing at build time.
+@@ -290,6 +306,7 @@ func (c *loomCLI) treeScopeSettings(location *lymcwd.Location) (int, loomshed.Ve
+ // the writer's seams, its table, and Preflight's stencils check.
+ // That check builds the table a first spawn reads and refuses a marker of its stencils no value fills.
+ // A stencil newer than the running binary, or a blank value, halts the run at Preflight, before any agent row.
++// The newer stencil's refusal keeps its own way forward alone.
+ // It loads the hub-wide darn.yaml strictly.
+ // So start, run, step and resume refuse an absent or malformed file before any row builds.
+ // A malformed tree_scope key is refused with the editor way forward, since --set cannot remove a key the hub file holds.
+@@ -349,12 +366,23 @@ func (c *loomCLI) wireDarn(location *lymcwd.Location, stencilsDir, specsDir, fri
+ 	}
+ 	c.env.DarnTable = darnTable
+ 	c.env.PreflightStencils = func() error {
+-		table, err := darnTable(loomshed.DarnTold{})
++		table, err := c.env.DarnTable(loomshed.DarnTold{})
+ 		if err != nil {
+-			return fmt.Errorf("build the darn writer table: %w; way forward: fix the config or model spec it names, then re-step", err)
++			return preflightTableError(err)
+ 		}
+ 		return table.CheckMarkers(stencilsDir, c.shuttleCfg.Engine)
+ 	}
+ 
+ 	return nil
+ }
++
++// preflightTableError wraps a failed build of the darn writer's table for the Preflight stencils check.
++// A refusal of a stencil that a newer lym build wrote keeps its own way forward alone, since no config is at fault.
++// Any other build error gains the way forward that fixes the config or model spec it names.
++func preflightTableError(err error) error {
++	var newer *stencilstore.NewerBoardCopyError
++	if errors.As(err, &newer) {
++		return fmt.Errorf("build the darn writer table: %w", err)
++	}
++	return fmt.Errorf("build the darn writer table: %w; way forward: fix the config or model spec it names, then re-step", err)
++}
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 6d27afac..5248ae81 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -3,11 +3,12 @@
+ // It covers the early refusals of a malformed or absent darn.yaml and the routing per recipe.
+ // It covers the rename of retired darn rows when a verb arms and the Darn-Write row's status and failure-record seams.
+ // It covers which recipes tell the Drift expect agent a plan directory.
+-// Every test is Tier 1: wire resolves no cwd and spawns no process over a hand-built hub.
++// Every test that calls wire is Tier 1: wire resolves no cwd and spawns no process over a hand-built hub.
+ 
+ package loomcli
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -24,6 +25,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/samplerengine"
++	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -249,6 +251,39 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the wired stencils check keeps a newer stencil's own way forward and adds the config clause to any other build error", func(t *testing.T) {
++		t.Parallel()
++		const configClause = "fix the config or model spec it names"
++		newer := &stencilstore.NewerBoardCopyError{Stencil: "darn-fragment-make-change-gated", WrittenBy: "newer-build", Running: "running-build"}
++		tests := []struct {
++			name             string
++			err              error
++			wantConfigClause bool
++		}{
++			{name: "a stencil a newer build wrote keeps its own way forward alone", err: fmt.Errorf("darn: DarnTable: Step 4 list: %w", newer)},
++			{name: "any other build error gains the config or model-spec way forward", err: errors.New("darn: DarnTable: writer model-spec: unknown alias"), wantConfigClause: true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				c := wireDarnHub(t)
++				c.env.DarnTable = func(loomshed.DarnTold) (seatengine.Table, error) { return seatengine.Table{}, tt.err }
++
++				got := c.env.PreflightStencils()
++
++				if !errors.Is(got, tt.err) {
++					t.Fatalf("c.env.PreflightStencils() = %v; want it to wrap %v", got, tt.err)
++				}
++				if has := strings.Contains(got.Error(), configClause); has != tt.wantConfigClause {
++					t.Errorf("c.env.PreflightStencils() = %q; want the config clause %v", got.Error(), tt.wantConfigClause)
++				}
++				if n := strings.Count(got.Error(), "way forward:"); n != 1 {
++					t.Errorf("c.env.PreflightStencils() = %q names %d ways forward; want 1", got.Error(), n)
++				}
++			})
++		}
++	})
++
+ 	t.Run("with a tree listed the verify gate's told command stays the row key's whole call", func(t *testing.T) {
+ 		t.Parallel()
+ 		loc := hubLocation(t, "pair", ".")
+@@ -843,8 +878,10 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 		status *shedengine.Status
+ 		// findingsKept writes the row's gate findings file before the read.
+ 		findingsKept bool
+-		wantFound    bool
+-		want         loomshed.DarnOutcome
++		// findingsWritten, when set, is the RFC 3339 time the kept findings file was last written.
++		findingsWritten string
++		wantFound       bool
++		want            loomshed.DarnOutcome
+ 		// wantFindings expects the outcome to name the kept findings file.
+ 		wantFindings bool
+ 		// invalidPath gives the findings path a NUL byte, so stat fails with an invalid-argument error on every platform.
+@@ -859,6 +896,13 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 			wantFound: true,
+ 			want:      loomshed.DarnOutcome{Outcome: shedengine.Done},
+ 		},
++		{
++			name:         "a Done latest entry names no findings file an earlier halt kept",
++			status:       &shedengine.Status{CurrentProducer: loomshed.NameFinalize, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.Done}}},
++			findingsKept: true,
++			wantFound:    true,
++			want:         loomshed.DarnOutcome{Outcome: shedengine.Done},
++		},
+ 		{
+ 			name:         "a resumed run, its error cleared, names the kept findings",
+ 			status:       &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}}},
+@@ -867,6 +911,29 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 			want:         loomshed.DarnOutcome{Outcome: shedengine.Stuck},
+ 			wantFindings: true,
+ 		},
++		{
++			name: "a later Stuck whose own gate wrote no findings names no file an earlier halt kept",
++			status: &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{
++				{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck, StartedAt: "2026-11-20T10:00:00Z"},
++				{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Done, StartedAt: "2026-11-20T11:00:00Z"},
++				{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck, StartedAt: "2026-11-20T12:00:00Z"},
++			}},
++			findingsKept:    true,
++			findingsWritten: "2026-11-20T10:30:00Z",
++			wantFound:       true,
++			want:            loomshed.DarnOutcome{Outcome: shedengine.Stuck},
++		},
++		{
++			name: "a Stuck whose own gate wrote the findings names the file",
++			status: &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{
++				{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck, StartedAt: "2026-11-20T12:00:00Z"},
++			}},
++			findingsKept:    true,
++			findingsWritten: "2026-11-20T12:30:00Z",
++			wantFound:       true,
++			want:            loomshed.DarnOutcome{Outcome: shedengine.Stuck},
++			wantFindings:    true,
++		},
+ 		{
+ 			name:         "a Darn-Write reroute entry is skipped for the last real entry",
+ 			status:       &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateBlocked, Error: "verify gate failed", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
+@@ -911,6 +978,15 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 					t.Fatalf("write the findings file: %v", err)
+ 				}
+ 			}
++			if tt.findingsWritten != "" {
++				written, err := time.Parse(time.RFC3339, tt.findingsWritten)
++				if err != nil {
++					t.Fatalf("parse findingsWritten: %v", err)
++				}
++				if err := os.Chtimes(findingsPath, written, written); err != nil {
++					t.Fatalf("Chtimes(%q) = %v; want nil", findingsPath, err)
++				}
++			}
+ 			if tt.invalidPath {
+ 				findingsPath = filepath.Join(dir, "Darn-Write\x00.findings.md")
+ 			}
+diff --git a/internal/loomshed/darnwrite.go b/internal/loomshed/darnwrite.go
+index 3a895c32..7c115020 100644
+--- a/internal/loomshed/darnwrite.go
++++ b/internal/loomshed/darnwrite.go
+@@ -66,7 +66,8 @@ type DarnTold struct {
+ type DarnOutcome struct {
+ 	// Outcome is the result the history entry recorded for the spawn.
+ 	Outcome shedengine.Outcome
+-	// FindingsPath is the row's kept gate findings file, which holds the last failed gate's text; empty when none is kept.
++	// FindingsPath is the row's kept gate findings file, which holds the last failed gate's text.
++	// It is empty when no file is kept, when the entry is not a Stuck, or when the file predates the Stuck's spawn.
+ 	FindingsPath string
+ }
+ 
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 0d663e3e..7f3f869c 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -173,9 +173,13 @@
+ // That entry is the parent's recorded stop for a bug no test can reach.
+ // Exit 0 passes.
+ // Exit gateslot.RedFirstGreenExit fails with the way forward of a test that passed on the merge base.
+-// Exit gateslot.RedFirstNoTestExit fails with the way forward of a diff that adds or changes no test;
+-// it names the `lym creel post --parent --expect-reply` ask for the parent's no-test-seam record.
+-// Exit gateslot.RedFirstUnjudgedExit fails with that same ask, for a hub whose scoper is not go.
++// Exit gateslot.RedFirstNoTestExit, a diff that adds or changes no test, holds the run without spending an attempt.
++// So does exit gateslot.RedFirstUnjudgedExit, a hub whose scoper is not go.
++// The hold lasts until a new commit or the parent's no-test-seam record.
++// Its first arrival sends the writer one line with the way forward.
++// That line names the `lym creel post --parent --expect-reply` ask for that record.
++// An arrival on the same HEAD tree runs nothing.
++// The entry's Final closure answers either exit as a failure naming the same way forward.
+ // Any other exit code, a timeout or a runner crash judged no test and fails terminally.
+ // A labels or record read error is the gate's returned error.
+ //
+@@ -215,7 +219,8 @@
+ // The producer removes the condition stop marker before each session too.
+ // The note, written in Go, is told whenever the run's history holds a Darn-Write entry.
+ // It says the change is already under way on the task branch.
+-// It names that entry's outcome and the row's kept gate findings file when one exists.
++// It names that entry's outcome,
++// and the row's kept gate findings file only when that entry is a Stuck the file postdates.
+ // It lets a decision recorded after the Discussion win over a finding it forbids fixing.
+ // It reads no halt reason, because the shed's resume write clears the status error before the row is called.
+ // Each Darn-Write gate entry re-prompts with DarnGateReprompt's line.
+diff --git a/internal/loomshed/redfirstgate.go b/internal/loomshed/redfirstgate.go
+index 67b99e0b..20ec8a91 100644
+--- a/internal/loomshed/redfirstgate.go
++++ b/internal/loomshed/redfirstgate.go
+@@ -17,66 +17,229 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+-// NewRedFirstGate returns a must-pass shuttleengine.Gate that proves a bug fix's test was red before the fix.
+-// At each arrival it reads the entry's labels, and an entry without gateslot.BugLabel passes at once and runs nothing.
++// RedFirstGate holds the two closures of a red-first gate entry, which share one attempt count.
++type RedFirstGate struct {
++	// Gate is the closure each arrival runs.
++	// It answers pending on a refusal the writer's next turn may not lift, so its entry must be MayHold.
++	Gate shuttleengine.Gate
++	// Final is the closure a final evaluation runs in place of Gate: it fails on that refusal with its findings.
++	Final shuttleengine.Gate
++}
++
++// NewRedFirstGate returns the closures of a must-pass gate entry that proves a bug fix's test was red before the fix.
++// Each call reads the entry's labels, and an entry without gateslot.BugLabel passes at once and runs nothing.
+ // It then reads the decision record at recordPath.
+ // An added entry whose title opens with gateslot.NoTestSeamTitle passes at once and runs nothing.
+ // The title is compared case-insensitively.
+ // Otherwise it runs command through verifytree.Verify over worktreeRoot, keeping its record, marker and log in verifyDir.
+ // command is the site's own `lym gate red-first --gate <key>` call.
+-// siteLabel names the call site in the running marker, and the closure's own count of its calls is the attempt.
++// siteLabel names the call site in the running marker, and the closures' shared count of their calls is the attempt.
+ // hold is the told pause hold of the worktree's scope; nil holds nothing.
+ //
+ // `StatusPassed` and `StatusSkipped` pass, and `StatusDirty` fails with the dirty paths.
+ // A `StatusFailed` run whose exit code is gateslot.RedFirstGreenExit fails with the way forward of a green test.
+-// One whose exit code is gateslot.RedFirstNoTestExit fails with the way forward of a diff that holds no test.
+-// One whose exit code is gateslot.RedFirstUnjudgedExit fails with the way forward of a check that cannot judge the diff.
++// An exit of gateslot.RedFirstNoTestExit or gateslot.RedFirstUnjudgedExit waits on a new commit or the parent's record.
++// Gate answers it pending, so the run holds without spending an attempt.
++// A hold's pending answers carry one line telling the writer its way forward until the loop reports it delivered;
++// later ones send nothing.
++// While HEAD's tree stays the one the refusal judged, Gate answers pending again without running command.
++// Final answers that refusal as a failure whose findings name the same way forward.
++// On that same tree it runs no command again.
+ // Any other failed run, a timeout or a runner crash included, judged none of the diff's tests and fails terminally:
+ // no change to the code mends it, and resuming the run runs the check again.
+-// A labels read error, a record read or parse error and a verify error are returned errors.
+-func NewRedFirstGate(worktreeRoot, verifyDir, siteLabel, command string, labels func() ([]string, error), recordPath string, hold *verifytree.PauseHold) shuttleengine.Gate {
+-	attempt := 0
+-	paths := verifytree.NewPaths(worktreeRoot, verifyDir)
+-	return func() (shuttleengine.GateResult, error) {
+-		attempt++
+-		entryLabels, err := labels()
+-		if err != nil {
+-			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: read the entry's labels: %w", err)
+-		}
+-		if !slices.Contains(entryLabels, gateslot.BugLabel) {
+-			return shuttleengine.GateResult{Passed: true}, nil
+-		}
+-		record, err := os.ReadFile(recordPath)
+-		if err != nil {
+-			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: read the decision record: %w", err)
+-		}
+-		added, err := discussionparser.ParseAddedDecisions(record)
++// A labels read error, a record read or parse error, a HEAD read error and a verify error are returned errors.
++func NewRedFirstGate(worktreeRoot, verifyDir, siteLabel, command string, labels func() ([]string, error), recordPath string, hold *verifytree.PauseHold) RedFirstGate {
++	g := &redFirstGate{
++		paths:        verifytree.NewPaths(worktreeRoot, verifyDir),
++		worktreeRoot: worktreeRoot,
++		siteLabel:    siteLabel,
++		command:      command,
++		labels:       labels,
++		recordPath:   recordPath,
++		hold:         hold,
++	}
++	return RedFirstGate{Gate: g.arrival, Final: g.final}
++}
++
++// redFirstGate is the state a red-first entry's closures share.
++type redFirstGate struct {
++	paths        verifytree.Paths
++	worktreeRoot string
++	siteLabel    string
++	command      string
++	labels       func() ([]string, error)
++	recordPath   string
++	hold         *verifytree.PauseHold
++	// attempt counts the closures' calls.
++	attempt int
++	// heldTree is the HEAD tree a held refusal judged, empty while the gate holds nothing.
++	heldTree string
++	// heldResult is the refusal the hold judged on heldTree.
++	heldResult verifytree.Result
++	// holdLine is the line the hold offers the writer until told.
++	holdLine string
++	// told reports that the loop delivered holdLine to the writer.
++	told bool
++}
++
++// arrival is the entry's Gate closure.
++func (g *redFirstGate) arrival() (shuttleengine.GateResult, error) {
++	g.attempt++
++	exempt, err := g.exempt()
++	if err != nil {
++		return shuttleengine.GateResult{}, err
++	}
++	if exempt {
++		g.heldTree = ""
++		return shuttleengine.GateResult{Passed: true}, nil
++	}
++	if g.heldTree != "" {
++		tree, err := verifytree.HeadTree(g.worktreeRoot)
+ 		if err != nil {
+-			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: parse the decision record's added entries: %w", err)
++			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: %w", err)
+ 		}
+-		for _, entry := range added {
+-			if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(gateslot.NoTestSeamTitle)) {
+-				logger.Info("loomshed: red-first gate ran nothing, the decision record names a bug no test can reach", "gate", siteLabel, "attempt", attempt, "title", entry.Title)
+-				return shuttleengine.GateResult{Passed: true}, nil
+-			}
++		if tree == g.heldTree {
++			return g.holdResult(), nil
+ 		}
++	}
+ 
+-		site := verifytree.Site{Label: siteLabel, Attempt: attempt, BaseCommand: command, Hold: hold}
+-		res, err := verifytree.Verify(context.Background(), paths, site, command)
++	res, verdict, err := g.verify()
++	if err != nil {
++		return shuttleengine.GateResult{}, err
++	}
++	if verdict != nil {
++		g.heldTree = ""
++		return *verdict, nil
++	}
++	if !holdsForCommitOrRecord(res) {
++		g.heldTree = ""
++		return redFirstFailure(res), nil
++	}
++	if g.heldTree == "" {
++		logger.Info("loomshed: red-first gate holds until a new commit or the parent's record", "gate", g.siteLabel, "attempt", g.attempt, "exitCode", res.ExitCode, "log", res.Log)
++		g.told = false
++	}
++	if !g.told {
++		g.holdLine = redFirstHoldLine(res)
++	}
++	g.heldTree = res.Tree
++	g.heldResult = res
++	return g.holdResult(), nil
++}
++
++// holdResult is the pending answer of a hold.
++// It offers the hold line until the loop reports it delivered.
++func (g *redFirstGate) holdResult() shuttleengine.GateResult {
++	result := shuttleengine.GateResult{Pending: true, SendFailedWayForward: redFirstHoldSendFailed, Delivered: &g.told}
++	if !g.told {
++		result.Send = g.holdLine
++	}
++	return result
++}
++
++// final is the entry's Final closure.
++func (g *redFirstGate) final() (shuttleengine.GateResult, error) {
++	g.attempt++
++	exempt, err := g.exempt()
++	if err != nil {
++		return shuttleengine.GateResult{}, err
++	}
++	if exempt {
++		return shuttleengine.GateResult{Passed: true}, nil
++	}
++	if g.heldTree != "" {
++		tree, err := verifytree.HeadTree(g.worktreeRoot)
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("loomshed: red-first gate: %w", err)
+ 		}
+-		switch res.Status {
+-		case verifytree.StatusPassed, verifytree.StatusSkipped:
+-			return shuttleengine.GateResult{Passed: true}, nil
+-		case verifytree.StatusDirty:
+-			return dirtyResult(res, siteLabel, attempt), nil
++		if tree == g.heldTree {
++			return redFirstFailure(g.heldResult), nil
+ 		}
+-		logger.Warn("loomshed: red-first gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "timedOut", res.TimedOut, "runnerCrash", res.RunnerCrash, "log", res.Log)
+-		return redFirstFailure(res), nil
+ 	}
++	res, verdict, err := g.verify()
++	if err != nil {
++		return shuttleengine.GateResult{}, err
++	}
++	if verdict != nil {
++		return *verdict, nil
++	}
++	return redFirstFailure(res), nil
+ }
+ 
++// exempt reports whether the entry needs no red-first check:
++// it is not labelled a bug, or the parent recorded that the bug has no test seam.
++func (g *redFirstGate) exempt() (bool, error) {
++	entryLabels, err := g.labels()
++	if err != nil {
++		return false, fmt.Errorf("loomshed: red-first gate: read the entry's labels: %w", err)
++	}
++	if !slices.Contains(entryLabels, gateslot.BugLabel) {
++		return true, nil
++	}
++	record, err := os.ReadFile(g.recordPath)
++	if err != nil {
++		return false, fmt.Errorf("loomshed: red-first gate: read the decision record: %w", err)
++	}
++	added, err := discussionparser.ParseAddedDecisions(record)
++	if err != nil {
++		return false, fmt.Errorf("loomshed: red-first gate: parse the decision record's added entries: %w", err)
++	}
++	for _, entry := range added {
++		if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(gateslot.NoTestSeamTitle)) {
++			logger.Info("loomshed: red-first gate ran nothing, the decision record names a bug no test can reach", "gate", g.siteLabel, "attempt", g.attempt, "title", entry.Title)
++			return true, nil
++		}
++	}
++	return false, nil
++}
++
++// verify runs the red-first command.
++// It returns the verdict of a run that passed, was skipped or found the tree dirty,
++// and a nil verdict with the result of a run that failed.
++func (g *redFirstGate) verify() (verifytree.Result, *shuttleengine.GateResult, error) {
++	site := verifytree.Site{Label: g.siteLabel, Attempt: g.attempt, BaseCommand: g.command, Hold: g.hold}
++	res, err := verifytree.Verify(context.Background(), g.paths, site, g.command)
++	if err != nil {
++		return verifytree.Result{}, nil, fmt.Errorf("loomshed: red-first gate: %w", err)
++	}
++	switch res.Status {
++	case verifytree.StatusPassed, verifytree.StatusSkipped:
++		return res, &shuttleengine.GateResult{Passed: true}, nil
++	case verifytree.StatusDirty:
++		dirty := dirtyResult(res, g.siteLabel, g.attempt)
++		return res, &dirty, nil
++	}
++	logger.Warn("loomshed: red-first gate failed", "gate", g.siteLabel, "attempt", g.attempt, "exitCode", res.ExitCode, "timedOut", res.TimedOut, "runnerCrash", res.RunnerCrash, "log", res.Log)
++	return res, nil, nil
++}
++
++// holdsForCommitOrRecord reports whether a failed red-first run is a refusal the writer's next turn may not lift.
++// Only a commit that adds a failing test, or the parent's no-test-seam record, lifts a diff with no test;
++// only that record lifts a check that cannot judge the tests.
++func holdsForCommitOrRecord(res verifytree.Result) bool {
++	if res.TimedOut || res.RunnerCrash {
++		return false
++	}
++	return res.ExitCode == gateslot.RedFirstNoTestExit || res.ExitCode == gateslot.RedFirstUnjudgedExit
++}
++
++// redFirstHoldLine is the one line a hold's first arrival sends the writer, naming the way forward of res's refusal.
++func redFirstHoldLine(res verifytree.Result) string {
++	if res.ExitCode == gateslot.RedFirstNoTestExit {
++		return fmt.Sprintf("The red-first gate holds your handoff, spending no attempt, since the diff adds or changes no test (log: %s): "+
++			"add and commit a test that fails on the merge base and passes with the fix, then end your turn; "+
++			"when the bug has no seam a test can reach, %s", res.Log, noSeamAsk())
++	}
++	return fmt.Sprintf("The red-first gate holds your handoff, spending no attempt, since it cannot judge the diff's tests on the merge base: "+
++		"the hub's scoper is not go (log: %s); %s", res.Log, noSeamAsk())
++}
++
++// redFirstHoldSendFailed is the way forward the wait loop logs when the hold's line cannot reach the writer.
++// The hold offers the line again until it is delivered.
++const redFirstHoldSendFailed = "the writer was not told why the red-first gate holds; " +
++	"the hold lifts on a commit that adds a failing test or on the parent's `lym loom decision add` record under a title opening \"" +
++	gateslot.NoTestSeamTitle + "\""
++
+ // redFirstFailure renders a StatusFailed red-first result as a failing verdict.
+ // Only a run that exited with one of the gateslot red-first exit codes is one the writer, or its parent, can mend.
+ func redFirstFailure(res verifytree.Result) shuttleengine.GateResult {
+diff --git a/internal/loomshed/redfirstgate_test.go b/internal/loomshed/redfirstgate_test.go
+index 578306b6..b2f3d7cd 100644
+--- a/internal/loomshed/redfirstgate_test.go
++++ b/internal/loomshed/redfirstgate_test.go
+@@ -19,8 +19,6 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	const noTestSeamRecord = validDecisionRecord +
+-		"\n### Added after Discussion (parent, 2026-11-19): No test seam: the bug lives in a tmux race\n\nDecision text.\n"
+ 	const lowerCaseNoTestSeamRecord = validDecisionRecord +
+ 		"\n### Added after Discussion (parent, 2026-11-19): no test seam: the bug lives in a tmux race\n\nDecision text.\n"
+ 	labelsErr := errors.New("board unreadable")
+@@ -37,9 +35,14 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 		command      string
+ 		wantErr      error
+ 		wantPassed   bool
++		wantPending  bool
+ 		wantTerminal bool
++		// final runs the entry's Final closure in place of its Gate.
++		final        bool
+ 		wantRan      bool
+ 		wantFindings []string
++		// wantSend are substrings of the pending result's one line to the writer.
++		wantSend []string
+ 	}{
+ 		{
+ 			name:       "an entry without the bug label passes and runs nothing",
+@@ -88,10 +91,39 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:    "a check that exits 4 fails naming the No test seam record",
++			name:        "a check that exits 4 holds the run and tells the writer to add a test or ask for the No test seam record",
++			labels:      bugLabels,
++			record:      validDecisionRecord,
++			command:     "exit 4",
++			wantPending: true,
++			wantRan:     true,
++			wantSend: []string{
++				"holds your handoff, spending no attempt, since the diff adds or changes no test",
++				"add and commit a test that fails on the merge base and passes with the fix",
++				"lym creel post --parent --expect-reply",
++				`under a title opening "No test seam"`,
++			},
++		},
++		{
++			name:        "a check that exits 5 holds the run and tells the writer to ask for the No test seam record",
++			labels:      bugLabels,
++			record:      validDecisionRecord,
++			command:     "exit 5",
++			wantPending: true,
++			wantRan:     true,
++			wantSend: []string{
++				"cannot judge the diff's tests on the merge base: the hub's scoper is not go",
++				"`lym loom decision add`",
++				`under a title opening "No test seam"`,
++				"then end your turn.",
++			},
++		},
++		{
++			name:    "a final evaluation of a check that exits 4 fails naming the No test seam record",
+ 			labels:  bugLabels,
+ 			record:  validDecisionRecord,
+ 			command: "exit 4",
++			final:   true,
+ 			wantRan: true,
+ 			wantFindings: []string{
+ 				"The diff adds or changes no test, so nothing shows the bug the fix fixes.",
+@@ -103,10 +135,11 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:    "a check that exits 5 fails naming the scoper it cannot judge under and the No test seam record",
++			name:    "a final evaluation of a check that exits 5 fails naming the scoper it cannot judge under and the No test seam record",
+ 			labels:  bugLabels,
+ 			record:  validDecisionRecord,
+ 			command: "exit 5",
++			final:   true,
+ 			wantRan: true,
+ 			wantFindings: []string{
+ 				"The red-first check cannot judge the diff's tests on the merge base: the hub's scoper is not go.",
+@@ -117,6 +150,39 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 				"Full log: ",
+ 			},
+ 		},
++		{
++			name:         "a check that exits 4 after a tier timeout fails terminally instead of holding",
++			labels:       bugLabels,
++			record:       validDecisionRecord,
++			command:      "cat " + timeoutLog + "; exit 4",
++			wantTerminal: true,
++			wantRan:      true,
++			wantFindings: []string{"The red-first check timed out"},
++		},
++		{
++			name:         "a check that exits 5 after a tier timeout fails terminally instead of holding",
++			labels:       bugLabels,
++			record:       validDecisionRecord,
++			command:      "cat " + timeoutLog + "; exit 5",
++			wantTerminal: true,
++			wantRan:      true,
++			wantFindings: []string{"The red-first check timed out"},
++		},
++		{
++			name:       "a final evaluation of an entry without the bug label passes and runs nothing",
++			labels:     func() ([]string, error) { return []string{"feature"}, nil },
++			command:    "exit 4",
++			final:      true,
++			wantPassed: true,
++		},
++		{
++			name:       "a final evaluation of a record whose added entry opens No test seam passes and runs nothing",
++			labels:     bugLabels,
++			record:     noTestSeamRecord,
++			command:    "exit 4",
++			final:      true,
++			wantPassed: true,
++		},
+ 		{
+ 			name:         "a check whose log holds the tier timeout line fails terminally",
+ 			labels:       bugLabels,
+@@ -161,22 +227,169 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 				}
+ 			}
+ 
+-			got, err := NewRedFirstGate(worktree, verifyDir, "Darn-Write red-first gate", tt.command, tt.labels, recordPath, nil)()
++			gate := NewRedFirstGate(worktree, verifyDir, "Darn-Write red-first gate", tt.command, tt.labels, recordPath, nil)
++			closure := gate.Gate
++			if tt.final {
++				closure = gate.Final
++			}
++
++			got, err := closure()
+ 
+ 			if !errors.Is(err, tt.wantErr) {
+ 				t.Fatalf("gate() error = %v; want %v", err, tt.wantErr)
+ 			}
+-			if got.Passed != tt.wantPassed || got.Terminal != tt.wantTerminal {
+-				t.Errorf("gate() = passed %v, terminal %v; want passed %v, terminal %v (findings %q)", got.Passed, got.Terminal, tt.wantPassed, tt.wantTerminal, got.Findings)
++			if got.Passed != tt.wantPassed || got.Pending != tt.wantPending || got.Terminal != tt.wantTerminal {
++				t.Errorf("gate() = passed %v, pending %v, terminal %v; want passed %v, pending %v, terminal %v (findings %q)", got.Passed, got.Pending, got.Terminal, tt.wantPassed, tt.wantPending, tt.wantTerminal, got.Findings)
+ 			}
+ 			for _, want := range tt.wantFindings {
+ 				if !strings.Contains(got.Findings, want) {
+ 					t.Errorf("Findings = %q; want it to contain %q", got.Findings, want)
+ 				}
+ 			}
++			for _, want := range tt.wantSend {
++				if !strings.Contains(got.Send, want) {
++					t.Errorf("Send = %q; want it to contain %q", got.Send, want)
++				}
++			}
++			if strings.Contains(got.Send, "\n") {
++				t.Errorf("Send = %q; want one line", got.Send)
++			}
+ 			if ran := len(verifyLogs(t, verifyDir)) > 0; ran != tt.wantRan {
+ 				t.Errorf("command ran = %v; want %v", ran, tt.wantRan)
+ 			}
+ 		})
+ 	}
+ }
++
++// noTestSeamRecord is a decision record whose added entry records the bug as having no test seam.
++const noTestSeamRecord = validDecisionRecord +
++	"\n### Added after Discussion (parent, 2026-11-19): No test seam: the bug lives in a tmux race\n\nDecision text.\n"
++
++// TestRedFirstGate_FinalOnTheHeldTreeFailsFromTheHoldWithoutRunningTheCheck pins the final evaluation of a held tree.
++// It answers the hold's refusal as a failure with its findings.
++// It runs the check no second time.
++func TestRedFirstGate_FinalOnTheHeldTreeFailsFromTheHoldWithoutRunningTheCheck(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	worktree, verifyDir := t.TempDir(), t.TempDir()
++	gitkit.Git(t, worktree, "init", "-b", "main")
++	gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++	gitkit.Git(t, worktree, "config", "user.name", "Test")
++	gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++	recordPath := filepath.Join(t.TempDir(), "decision-record.md")
++	if err := os.WriteFile(recordPath, []byte(validDecisionRecord), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	bugLabels := func() ([]string, error) { return []string{gateslot.BugLabel}, nil }
++	gate := NewRedFirstGate(worktree, verifyDir, "Darn-Write red-first gate", "exit 4", bugLabels, recordPath, nil)
++	if held, err := gate.Gate(); err != nil || !held.Pending {
++		t.Fatalf("Gate() = %+v, %v; want a pending hold", held, err)
++	}
++
++	got, err := gate.Final()
++
++	if err != nil {
++		t.Fatalf("Final() error = %v; want nil", err)
++	}
++	if got.Passed || got.Pending || got.Terminal {
++		t.Errorf("Final() = passed %v, pending %v, terminal %v; want a plain failure", got.Passed, got.Pending, got.Terminal)
++	}
++	if want := "The diff adds or changes no test, so nothing shows the bug the fix fixes."; !strings.Contains(got.Findings, want) {
++		t.Errorf("Findings = %q; want it to contain %q", got.Findings, want)
++	}
++	if runs := len(verifyLogs(t, verifyDir)); runs != 1 {
++		t.Errorf("the check ran %d times; want 1", runs)
++	}
++}
++
++// TestRedFirstGate_HoldRunsNothingUntilACommitOrTheRecordLands pins the hold on a refusal.
++// Only a commit or the parent's record lifts it.
++// The writer is offered one line until the loop reports it delivered.
++// The check runs again only on a new HEAD tree.
++// A refusal after a passing run holds afresh, and the parent's record lifts the hold.
++func TestRedFirstGate_HoldRunsNothingUntilACommitOrTheRecordLands(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	worktree, verifyDir := t.TempDir(), t.TempDir()
++	gitkit.Git(t, worktree, "init", "-b", "main")
++	gitkit.Git(t, worktree, "config", "user.email", "test@test.com")
++	gitkit.Git(t, worktree, "config", "user.name", "Test")
++	gitkit.CommitFile(t, worktree, "a.txt", "a\n", "init")
++	recordPath := filepath.Join(t.TempDir(), "decision-record.md")
++	writeRecord := func(text string) {
++		t.Helper()
++		if err := os.WriteFile(recordPath, []byte(text), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeRecord(validDecisionRecord)
++	bugLabels := func() ([]string, error) { return []string{gateslot.BugLabel}, nil }
++	exitCodePath := filepath.Join(t.TempDir(), "exit-code")
++	writeExitCode := func(code string) {
++		t.Helper()
++		if err := os.WriteFile(exitCodePath, []byte(code), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeExitCode("5")
++	gate := NewRedFirstGate(worktree, verifyDir, "Darn-Write red-first gate", "exit $(cat "+exitCodePath+")", bugLabels, recordPath, nil).Gate
++
++	steps := []struct {
++		name        string
++		before      func()
++		wantPassed  bool
++		wantPending bool
++		wantSend    bool
++		// deliver reports the pending answer's line as delivered, as the loop does after a send that landed.
++		deliver  bool
++		wantRuns int
++	}{
++		{name: "the first refusal holds and offers the writer a line, the send failing", wantPending: true, wantSend: true, wantRuns: 1},
++		{name: "a re-check on the same tree offers the line again and runs nothing", wantPending: true, wantSend: true, deliver: true, wantRuns: 1},
++		{name: "an arrival on the same tree holds silently and runs nothing", wantPending: true, wantRuns: 1},
++		{
++			name:        "an arrival on a new commit runs the check again and holds silently",
++			before:      func() { gitkit.CommitFile(t, worktree, "b.txt", "b\n", "next") },
++			wantPending: true,
++			wantRuns:    2,
++		},
++		{
++			name:       "a commit that makes the check pass lifts the hold",
++			before:     func() { writeExitCode("0"); gitkit.CommitFile(t, worktree, "c.txt", "c\n", "fix") },
++			wantPassed: true,
++			wantRuns:   3,
++		},
++		{
++			name:        "a refusal after the passing run holds afresh and offers the line again",
++			before:      func() { writeExitCode("5"); gitkit.CommitFile(t, worktree, "d.txt", "d\n", "regress") },
++			wantPending: true,
++			wantSend:    true,
++			deliver:     true,
++			wantRuns:    4,
++		},
++		{name: "the parent's No test seam record lifts the hold", before: func() { writeRecord(noTestSeamRecord) }, wantPassed: true, wantRuns: 4},
++	}
++	for _, step := range steps {
++		if step.before != nil {
++			step.before()
++		}
++
++		got, err := gate()
++
++		if err != nil {
++			t.Fatalf("%s: gate() error = %v; want nil", step.name, err)
++		}
++		if got.Passed != step.wantPassed || got.Pending != step.wantPending || (got.Send != "") != step.wantSend {
++			t.Errorf("%s: gate() = passed %v, pending %v, send %q; want passed %v, pending %v, a send %v", step.name, got.Passed, got.Pending, got.Send, step.wantPassed, step.wantPending, step.wantSend)
++		}
++		if runs := len(verifyLogs(t, verifyDir)); runs != step.wantRuns {
++			t.Errorf("%s: the check ran %d times; want %d", step.name, runs, step.wantRuns)
++		}
++		if step.wantSend && got.Delivered == nil {
++			t.Errorf("%s: the pending answer has no Delivered flag; want one so the loop reports the delivery", step.name)
++		}
++		if step.deliver && got.Delivered != nil {
++			*got.Delivered = true
++		}
++	}
++}
+diff --git a/internal/shedadapters/burlerfix.go b/internal/shedadapters/burlerfix.go
+index ca660870..d9c2c8fb 100644
+--- a/internal/shedadapters/burlerfix.go
++++ b/internal/shedadapters/burlerfix.go
+@@ -331,9 +331,6 @@ func (p *BurlerFixProducer) fixedExit(ctx context.Context, round int, result bur
+ 		logger.Warn("shedadapters: burler fix's gate did not pass", "producer", p.name, "engine", burlerFixEngineLabel, "round", round, "attempts", result.Gate.Attempts, "findingsPath", result.Gate.FindingsPath)
+ 		return shedengine.Stuck, shedengine.OutputPointer{GateAttempts: gateAttemptsPointer(result.Gate), GateSpans: gateSpansOf(result.Gate), Reason: gateFailedReason(result.Gate, p.gateFindingsPath)}, nil
+ 	}
+-	if result.Gate != nil {
+-		clearGateFindings(p.gateFindingsPath)
+-	}
+ 	if cerr := cancelErr(ctx, p.name, burlerFixEngineLabel); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, cerr
+ 	}
+diff --git a/internal/shedadapters/burlerfix_test.go b/internal/shedadapters/burlerfix_test.go
+index 66bfe3e5..5e81d613 100644
+--- a/internal/shedadapters/burlerfix_test.go
++++ b/internal/shedadapters/burlerfix_test.go
+@@ -388,10 +388,11 @@ func TestBurlerFixProducer_Call_GateFailedAndChangedReviewArchiveTheWholeRound(t
+ 			wantFindings: "the gate's findings",
+ 		},
+ 		{
+-			name:         "a passed gate removes a findings file left by an earlier call",
++			name:         "a passed gate keeps the findings file an earlier halt names",
+ 			result:       burlerengine.FixResult{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Passed: true, Attempts: 1}},
+ 			keepFindings: true,
+ 			preWritten:   true,
++			wantFindings: "x",
+ 			finished:     true,
+ 		},
+ 		{name: "a changed review", err: burlerengine.ErrReviewChanged, wantErrIs: burlerengine.ErrReviewChanged, wantErrEnd: wayForwardToReview},
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index 0da39c8a..c4b608c8 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -57,7 +57,7 @@ type BurlerHalfDeps struct {
+ 	// RequiresFans makes the fix producer read the review producer's recorded fan names and refuse a round with none.
+ 	RequiresFans bool
+ 	// GateFindingsPath is the file an exhausted gate's findings are kept in and the Stuck reason names;
+-	// the producer removes it on a call whose gate passed.
++	// a later call whose gate passed leaves it in place.
+ 	// Empty keeps no findings file.
+ 	GateFindingsPath string
+ 	// NotifyParent posts one line to the run's parent.
+@@ -157,7 +157,7 @@ type BurlerReviewProducer struct {
+ 	diff func() (string, error)
+ 	// rubric, when non-nil, reads each round's rubric.
+ 	rubric func() (string, error)
+-	// gateFindingsPath, when non-empty, is the file cleared once the review's gate has passed.
++	// gateFindingsPath, when non-empty, is the file an exhausted gate's findings are kept in.
+ 	gateFindingsPath string
+ 	profile          burlerengine.Profile
+ 	opts             burlerengine.RunOpts
+@@ -558,9 +558,6 @@ func (p *BurlerReviewProducer) acceptedExit(ctx context.Context, round int, resu
+ 	if cerr := cancelErr(ctx, p.name, burlerReviewEngineLabel); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, cerr
+ 	}
+-	if result.Gate != nil && result.Gate.Passed {
+-		clearGateFindings(p.gateFindingsPath)
+-	}
+ 	review, _ := p.models.Pick(round)
+ 	half := reviewHalfUsage(review, result.Review)
+ 	err := mergeRoundUsage(p.runDir, round, p.now, func(u *roundUsage) {
+diff --git a/internal/shedadapters/burlerreview_test.go b/internal/shedadapters/burlerreview_test.go
+index 9f12d424..8fb15fcc 100644
+--- a/internal/shedadapters/burlerreview_test.go
++++ b/internal/shedadapters/burlerreview_test.go
+@@ -766,8 +766,8 @@ func requireAcceptedReviewRecorded(t *testing.T, engine string) {
+ 
+ 	ptr := shedfake.RequireOutcome(t, p, shedengine.Stuck)
+ 
+-	if _, err := os.Stat(spec.gateFindingsPath); !os.IsNotExist(err) {
+-		t.Errorf("findings file stat error = %v; want it removed by a review whose gate passed", err)
++	if got, err := os.ReadFile(spec.gateFindingsPath); err != nil || string(got) != "x" {
++		t.Errorf("findings file = %q, %v; want the earlier halt's %q kept by a review whose gate passed", got, err, "x")
+ 	}
+ 	if ptr.Path != roundReviewPath(runDir, 1) || !ptr.BudgetExempt || ptr.GateAttempts == nil || *ptr.GateAttempts != 1 {
+ 		t.Errorf("Call() pointer = %+v; want round 1's review, BudgetExempt and the review gate's one attempt", ptr)
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index ea04fc7b..4c06363b 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -51,7 +51,8 @@
+ //     The fix row's gate-failed exit is counted against its own MaxBounces.
+ //     A gated producer told a findings path keeps an exhausted gate's findings in that file.
+ //     The path is MultiLLMProducer.KeepGateFindings or BurlerHalfDeps.GateFindingsPath.
+-//     Such a producer names the file in the Stuck reason and removes it on a call whose gate passed.
++//     Such a producer names the file in the Stuck reason and leaves it in place on a later call whose gate passed,
++//     so a halt never names a removed file.
+ //     Both rows are gate carriers.
+ //     The review row's hand-on pointer carries the gate count and spans of the reviewer's review-parse gate.
+ //     That holds for a spawned and a resumed review alike.
+diff --git a/internal/shedadapters/gateattempts.go b/internal/shedadapters/gateattempts.go
+index 136a6ab7..b81b4146 100644
+--- a/internal/shedadapters/gateattempts.go
++++ b/internal/shedadapters/gateattempts.go
+@@ -1,14 +1,11 @@
+ // gateattempts.go holds the helpers that gated producers share.
+ // They carry a gate's attempt count and spans onto shedengine.OutputPointer.
+-// The findings-file helpers keep an exhausted gate's findings in a file and name it in the Stuck reason,
+-// and they clear it once a gate passes.
++// The findings-file helper keeps an exhausted gate's findings in a file and names it in the Stuck reason.
+ 
+ package shedadapters
+ 
+ import (
+-	"errors"
+ 	"fmt"
+-	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -27,7 +24,8 @@ const gateFindingsReasonLimit = 400
+ // The gated producers share it so the wording never diverges.
+ // A terminal entry's own explanation (GateOutcome.Reason) replaces the generic text and writes no file.
+ // A run that ended with re-prompts left says why, so a gate that failed its first check never reads as a spent budget.
+-// With a non-empty findingsPath it keeps gate.Findings there, overwriting an earlier file, and names that file;
++// With a non-empty findingsPath it keeps gate.Findings there, overwriting an earlier file, and names that file.
++// The file outlives a later call whose gate passed, so a halt's reason never names a removed file;
+ // a failed write is logged and the reason carries the findings text, cut to one line, in place of the path.
+ // With an empty findingsPath the reason names gate.FindingsPath.
+ func gateFailedReason(gate *shuttleengine.GateOutcome, findingsPath string) string {
+@@ -65,17 +63,6 @@ func gateFailedLead(gate *shuttleengine.GateOutcome) string {
+ 	}
+ }
+ 
+-// clearGateFindings removes the gate findings file at path, so a call whose gate passed leaves none behind.
+-// An empty path and an absent file are no-ops, and any other removal failure is logged and changes no verdict.
+-func clearGateFindings(path string) {
+-	if path == "" {
+-		return
+-	}
+-	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+-		logger.Warn("shedadapters: gate findings file was not removed", "findingsPath", path, "error", err)
+-	}
+-}
+-
+ // gateAttemptsPointer returns a pointer to gate.Attempts, or nil when gate is nil.
+ // A nil pointer means the producer applied no gate to the call,
+ // so an ungated call and a gate that passed on its first attempt stay apart.
+diff --git a/internal/shedadapters/gateattempts_test.go b/internal/shedadapters/gateattempts_test.go
+index 9a1fef35..6f019548 100644
+--- a/internal/shedadapters/gateattempts_test.go
++++ b/internal/shedadapters/gateattempts_test.go
+@@ -129,66 +129,3 @@ func TestGateFailedReason_NamesAttemptsAndFindingsPath(t *testing.T) {
+ 		})
+ 	}
+ }
+-
+-// TestClearGateFindings pins that an existing file is removed, that an absent file or an empty path is no error,
+-// and that a removal failure leaves the target in place without panicking.
+-func TestClearGateFindings(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-	tests := []struct {
+-		name string
+-		// setup builds the path under dir, creating what the case needs.
+-		setup func(t *testing.T, dir string) string
+-		// wantGone reports whether the path must not exist afterwards.
+-		wantGone bool
+-	}{
+-		{
+-			name: "an existing file is removed",
+-			setup: func(t *testing.T, dir string) string {
+-				t.Helper()
+-				path := filepath.Join(dir, "row.md")
+-				if err := os.WriteFile(path, []byte("findings"), 0o644); err != nil {
+-					t.Fatalf("WriteFile() error = %v", err)
+-				}
+-				return path
+-			},
+-			wantGone: true,
+-		},
+-		{
+-			name:     "an absent file is no error",
+-			setup:    func(t *testing.T, dir string) string { return filepath.Join(dir, "absent.md") },
+-			wantGone: true,
+-		},
+-		{
+-			name:  "an empty path does nothing",
+-			setup: func(t *testing.T, dir string) string { return "" },
+-		},
+-		{
+-			name: "a non-empty directory fails the removal and stays",
+-			setup: func(t *testing.T, dir string) string {
+-				t.Helper()
+-				path := filepath.Join(dir, "row.md")
+-				if err := os.MkdirAll(filepath.Join(path, "inner"), 0o755); err != nil {
+-					t.Fatalf("MkdirAll() error = %v", err)
+-				}
+-				return path
+-			},
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			path := tt.setup(t, t.TempDir())
+-
+-			clearGateFindings(path)
+-
+-			if path == "" {
+-				return
+-			}
+-			_, err := os.Stat(path)
+-			if gone := os.IsNotExist(err); gone != tt.wantGone {
+-				t.Errorf("after clearGateFindings(%q) path gone = %v; want %v", path, gone, tt.wantGone)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/shedadapters/multillm.go b/internal/shedadapters/multillm.go
+index 788be1ef..22612025 100644
+--- a/internal/shedadapters/multillm.go
++++ b/internal/shedadapters/multillm.go
+@@ -85,7 +85,7 @@ func NewMultiLLMProducerSourced(name string, tables TableSource, seats SeatRunne
+ 
+ // KeepGateFindings sets the file an exhausted chair gate's findings are kept in, which the Stuck reason names.
+ // It returns the producer so a constructor call can chain it.
+-// A call whose chair gate passed removes the file; an empty path keeps no findings file.
++// A later call whose chair gate passed leaves the file in place; an empty path keeps no findings file.
+ func (p *MultiLLMProducer) KeepGateFindings(path string) *MultiLLMProducer {
+ 	p.gateFindingsPath = path
+ 	return p
+@@ -188,9 +188,6 @@ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, result seatengine.Res
+ 			logger.Warn("shedadapters: chair's gate did not pass", "producer", p.name, "engine", multiLLMEngineLabel, "attempts", chair.Gate.Attempts, "findingsPath", chair.Gate.FindingsPath, "sessionID", chair.SessionID, "strandGUID", chair.StrandGUID)
+ 			return shedengine.Stuck, shedengine.OutputPointer{Path: result.ChairOutputs[0], GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate), Reason: gateFailedReason(chair.Gate, p.gateFindingsPath)}, nil
+ 		}
+-		if chair.Gate != nil {
+-			clearGateFindings(p.gateFindingsPath)
+-		}
+ 		return shedengine.Done, shedengine.OutputPointer{Path: result.ChairOutputs[0], GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate)}, nil
+ 
+ 	case shuttleengine.OutcomeDied, shuttleengine.OutcomeTimeout:
+diff --git a/internal/shedadapters/multillm_test.go b/internal/shedadapters/multillm_test.go
+index f71d6902..2b795d63 100644
+--- a/internal/shedadapters/multillm_test.go
++++ b/internal/shedadapters/multillm_test.go
+@@ -331,12 +331,13 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 			wantFindings: "the gate's findings",
+ 		},
+ 		{
+-			name:         "done with a passing gate removes a findings file left by an earlier call",
++			name:         "done with a passing gate keeps the findings file an earlier halt names",
+ 			result:       shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Passed: true, Attempts: 1}},
+ 			wantOutcome:  shedengine.Done,
+ 			wantAttempts: &one,
+ 			keepFindings: true,
+ 			preWritten:   true,
++			wantFindings: "an earlier call's findings",
+ 		},
+ 		{name: "died", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}, wantErr: "shuttle run outcome died", wantDied: true},
+ 		{name: "timeout", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout}, wantErr: "shuttle run outcome timeout"},
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index 66748ec9..bb36abf0 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -207,6 +207,8 @@
+ // It holds it until a test the diff adds or changes fails on the merge base.
+ // The parent may instead record a decision titled `No test seam`.
+ // That fits a bug no test can reach, or a check that cannot judge the tests.
++// A diff that adds no test, and a check that cannot judge the tests, hold the run without spending an attempt.
++// The hold lasts until a new commit or that record, so its entry is MayHold.
+ // It reads the entry's labels through Env.EntryLabels at each arrival.
+ // It runs the call Env.RedFirstCommand renders for the row's gate key.
+ // An entry without the label passes at once.
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index f9bcee6a..b8f84450 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -851,7 +851,7 @@ func TestBurlerHalfEntries_RunDirectory(t *testing.T) {
+ 		})
+ 	}
+ 
+-	t.Run("ReviewWhoseGatePassedRemovesTheRowsFindingsFile", func(t *testing.T) {
++	t.Run("ReviewWhoseGatePassedKeepsTheRowsFindingsFile", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		withGateFindingsFile(&env, t.TempDir())
+ 		env.Burler = &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{{
+@@ -873,8 +873,9 @@ func TestBurlerHalfEntries_RunDirectory(t *testing.T) {
+ 
+ 		shedfake.RequireOutcome(t, producer, shedengine.Stuck)
+ 
+-		if _, err := os.Stat(findings); !os.IsNotExist(err) {
+-			t.Errorf("os.Stat(%q) error = %v; want the findings file removed", findings, err)
++		const earlierFindings = "an earlier call's findings"
++		if got, err := os.ReadFile(findings); err != nil || string(got) != earlierFindings {
++			t.Errorf("os.ReadFile(%q) = %q, %v; want the earlier findings %q kept", findings, got, err, earlierFindings)
+ 		}
+ 	})
+ 
+diff --git a/internal/shedrecipe/entries_gate.go b/internal/shedrecipe/entries_gate.go
+index 843958f0..9404aa11 100644
+--- a/internal/shedrecipe/entries_gate.go
++++ b/internal/shedrecipe/entries_gate.go
+@@ -59,8 +59,9 @@ var gateEntryKeys = []string{"name", "attempts", "pass_on_cap"}
+ // "judgement" returns driftengine.NewJudgementGate over env.Drift, which reads only its Paths and requires no seam;
+ // "red-first" requires the absolute env.WorktreeRoot, env.VerifyDir and env.DecisionRecordPath,
+ // and the non-nil env.EntryLabels and env.RedFirstCommand;
+-// it returns loomshed.NewRedFirstGate over the call env.RedFirstCommand renders for the row's gate key;
++// it returns loomshed.NewRedFirstGate's closures over the call env.RedFirstCommand renders for the row's gate key;
+ // the site label is "<row name> red-first gate" and the hold is env.VerifyHold;
++// its entry is MayHold, since the gate holds the run on a refusal its writer may not lift, and carries the gate's Final;
+ // any other value is an error naming the key and every legal value.
+ // A name may appear once per list.
+ //
+@@ -147,11 +148,21 @@ func resolveGateEntry(entry, row, gateKey string, index int, elem Config, env En
+ 	if err != nil {
+ 		return shuttleengine.GateEntry{}, wrap(err)
+ 	}
+-	closure, err := resolvePlainGateClosure(entry, row, gateKey, index, name, env)
+-	if err != nil {
+-		return shuttleengine.GateEntry{}, err
++	var closure, final shuttleengine.Gate
++	if name == "red-first" {
++		redFirst, err := resolveRedFirstGate(entry, row, gateKey, env)
++		if err != nil {
++			return shuttleengine.GateEntry{}, err
++		}
++		closure, final = redFirst.Gate, redFirst.Final
++	} else {
++		closure, err = resolvePlainGateClosure(entry, row, gateKey, index, name, env)
++		if err != nil {
++			return shuttleengine.GateEntry{}, err
++		}
+ 	}
+-	resolved := shuttleengine.GateEntry{Name: name, Gate: closure, Attempts: attempts, PassOnCap: passOnCap}
++	// Only the red-first gate carries a Final closure, and its Gate answers pending, so its entry holds.
++	resolved := shuttleengine.GateEntry{Name: name, Gate: closure, Final: final, MayHold: final != nil, Attempts: attempts, PassOnCap: passOnCap}
+ 	if name == "verify" && env.VerifyReach != nil {
+ 		resolved.Rerun = &shuttleengine.RerunMark{}
+ 		resolved.Gate = verifytree.WithReachTurn(closure, verifytree.ReachTurn{
+@@ -318,22 +329,26 @@ func resolvePlainGateClosure(entry, row, gateKey string, index int, name string,
+ 		return driftengine.NewExpectationGate(driftDepsFrom(env)), nil
+ 	case "judgement":
+ 		return driftengine.NewJudgementGate(driftDepsFrom(env)), nil
+-	case "red-first":
+-		for _, root := range []struct{ field, value string }{
+-			{"WorktreeRoot", env.WorktreeRoot}, {"VerifyDir", env.VerifyDir}, {"DecisionRecordPath", env.DecisionRecordPath},
+-		} {
+-			if err := requireAbsRoot(entry, root.field, root.value); err != nil {
+-				return nil, err
+-			}
+-		}
+-		if err := requireSeam(entry, "EntryLabels", env.EntryLabels); err != nil {
+-			return nil, err
+-		}
+-		if err := requireSeam(entry, "RedFirstCommand", env.RedFirstCommand); err != nil {
+-			return nil, err
+-		}
+-		return loomshed.NewRedFirstGate(env.WorktreeRoot, env.VerifyDir, row+" red-first gate", env.RedFirstCommand(gateKey), env.EntryLabels, env.DecisionRecordPath, env.VerifyHold), nil
+ 	default:
+ 		return nil, fmt.Errorf("shedrecipe: %s: config key %q element %d: config key %q must be %q, %q, %q, %q, %q, %q, %q, %q, %q, %q or %q, got %q", entry, "gates", index, "name", "clean", "discussion", "plan", "parts", "raddle", "description", "verify", "drift", "expectation", "judgement", "red-first", name)
+ 	}
+ }
++
++// resolveRedFirstGate checks the Env the "red-first" gate requires and returns its closures.
++// They run the call env.RedFirstCommand renders for gateKey, labelled "<row> red-first gate" and held by env.VerifyHold.
++func resolveRedFirstGate(entry, row, gateKey string, env Env) (loomshed.RedFirstGate, error) {
++	for _, root := range []struct{ field, value string }{
++		{"WorktreeRoot", env.WorktreeRoot}, {"VerifyDir", env.VerifyDir}, {"DecisionRecordPath", env.DecisionRecordPath},
++	} {
++		if err := requireAbsRoot(entry, root.field, root.value); err != nil {
++			return loomshed.RedFirstGate{}, err
++		}
++	}
++	if err := requireSeam(entry, "EntryLabels", env.EntryLabels); err != nil {
++		return loomshed.RedFirstGate{}, err
++	}
++	if err := requireSeam(entry, "RedFirstCommand", env.RedFirstCommand); err != nil {
++		return loomshed.RedFirstGate{}, err
++	}
++	return loomshed.NewRedFirstGate(env.WorktreeRoot, env.VerifyDir, row+" red-first gate", env.RedFirstCommand(gateKey), env.EntryLabels, env.DecisionRecordPath, env.VerifyHold), nil
++}
+diff --git a/internal/shedrecipe/entries_gate_test.go b/internal/shedrecipe/entries_gate_test.go
+index 3dd9ba38..05578e12 100644
+--- a/internal/shedrecipe/entries_gate_test.go
++++ b/internal/shedrecipe/entries_gate_test.go
+@@ -417,6 +417,17 @@ func TestResolveGateSpec_RedFirstRendersTheCallOfTheRowsOwnGateKey(t *testing.T)
+ 	}
+ }
+ 
++func TestResolveGateSpec_RedFirstEntryMayHoldAndCarriesAFinal(t *testing.T) {
++	tiergate.Require(t, 0)
++	spec, err := resolveGateSpec("Row", gatesCfg("red-first", 3), newTestEnv(t))
++	if err != nil {
++		t.Fatalf("resolveGateSpec() error = %v; want nil", err)
++	}
++	if !spec[0].MayHold || spec[0].Final == nil {
++		t.Errorf("resolveGateSpec()[0] MayHold = %v, Final set = %v; want true, true, since the gate holds the run on a refusal its writer may not lift", spec[0].MayHold, spec[0].Final != nil)
++	}
++}
++
+ func TestResolveGateSpec_CleanRequiresAbsoluteWorktreeRoot(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	for _, root := range []string{"", "relative/worktree"} {
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index c8accd92..e5ea936d 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -301,7 +301,7 @@ func BattenWatchedMarker(l *lymcwd.Location, runID string) string {
+ // GateFindingsFile returns the path to the ephemeral gate findings file of the row named row.
+ // It sits under ScratchDir(l, runID).
+ // There is one file per row: the row's producer writes it when its gate is exhausted,
+-// and the row's next call whose gates pass removes it.
++// and a later call whose gates pass leaves it in place.
+ // A goto, a resume and a pause leave the scratch directory alone, so the file outlives them.
+ func GateFindingsFile(l *lymcwd.Location, runID, row string) string {
+ 	return filepath.Join(ScratchDir(l, runID), gateFindingsDirName, row+gateFindingsFileSuffix)
+diff --git a/internal/shuttleengine/gate.go b/internal/shuttleengine/gate.go
+index fca53130..c8e448f1 100644
+--- a/internal/shuttleengine/gate.go
++++ b/internal/shuttleengine/gate.go
+@@ -33,6 +33,9 @@ type GateResult struct {
+ 	Send string
+ 	// SendFailedWayForward is the clause the loop's Warn quotes when sending Send fails.
+ 	SendFailedWayForward string
++	// Delivered, when non-nil, is set true by the loop each time it has delivered Send to the writer.
++	// A closure that offers Send until it is delivered reads it to stop offering.
++	Delivered *bool
+ 	// Terminal marks a failing result the run finalizes at once, with no re-prompt.
+ 	// The entry's failure count is not incremented for it.
+ 	// Its Findings text rides GateOutcome.Reason to the producer:
+diff --git a/internal/shuttleengine/gate_pending_test.go b/internal/shuttleengine/gate_pending_test.go
+index 444e2aea..07774df1 100644
+--- a/internal/shuttleengine/gate_pending_test.go
++++ b/internal/shuttleengine/gate_pending_test.go
+@@ -144,7 +144,8 @@ func TestGatePending_FailedSendWarnsAndStaysPending(t *testing.T) {
+ 	buf := logcapture.CaptureVerbose(t)
+ 	logger.SetVerbosity(2)
+ 	var calls int
+-	pending := GateResult{Pending: true, Send: pendingSendText, SendFailedWayForward: "tell the parent by hand"}
++	var delivered bool
++	pending := GateResult{Pending: true, Send: pendingSendText, SendFailedWayForward: "tell the parent by hand", Delivered: &delivered}
+ 	gate := scriptedPending(&calls, pending, pending, pending, pending, GateResult{Passed: true})
+ 	// The send heals once two pending sends have failed.
+ 	healAfterTwoFailures := func(f *pendingFixture) {
+@@ -170,6 +171,9 @@ func TestGatePending_FailedSendWarnsAndStaysPending(t *testing.T) {
+ 	if calls != 4 {
+ 		t.Errorf("gate ran %d times, want 4 (two failed sends and the delivered one each re-evaluate at the boundary, then the run settles)", calls)
+ 	}
++	if !delivered {
++		t.Error("Delivered stayed false, want the loop to set it once the send landed")
++	}
+ 	logged := buf.String()
+ 	for _, want := range []string{"parent-review", "pane gone", "tell the parent by hand"} {
+ 		if !strings.Contains(logged, want) {
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index f65caaf0..27f57a68 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -458,12 +458,13 @@ type Run struct {
+ 	gateHeldAt      int
+ 	gateHeldSince   time.Time
+ 	// gatePending reports that the last real evaluation stopped at a pending entry, whose index is gatePendingAt;
+-	// gatePendingSend and gatePendingWayForward carry that result's Send and SendFailedWayForward.
+-	// Every real evaluation resets all four; Wait's helper clears the memo, so poll ticks re-evaluate on fresh state.
++	// gatePendingSend, gatePendingWayForward and gatePendingDelivered carry that result's fields of the same names.
++	// Every real evaluation resets all five; Wait's helper clears the memo, so poll ticks re-evaluate on fresh state.
+ 	gatePending           bool
+ 	gatePendingAt         int
+ 	gatePendingSend       string
+ 	gatePendingWayForward string
++	gatePendingDelivered  *bool
+ 	// gateAtBoundary is the turn-boundary state: the writer's last arrival was Done and the loop has sent it nothing since.
+ 	// It is false for a fresh run and for one AttachGated reconstructs, and becomes true at the first gated Done arrival;
+ 	// every gate send and every pending re-evaluation happens only while it is true.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 7d53bc4a..100ebc9e 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -558,6 +558,7 @@ func gateEntryError(name, problem string) error {
+ // A resume refused or failed before its strand registers ends the loop, naming both failures.
+ // Any other re-prompt send failure ends the loop.
+ // A pending result sends its Send text when non-empty and keeps polling.
++// It sets the result's Delivered once the text is delivered.
+ // A failed pending send warns once per entry and episode, naming the entry, the error and the closure's way-forward.
+ // It logs Debug while it keeps failing and Info when it is delivered.
+ // It leaves the entry pending and the writer at the boundary, and never ends the loop.
+@@ -579,6 +580,9 @@ func (run *Run) handleGatedBoundary() (Result, bool, error) {
+ 			return Result{}, false, nil
+ 		}
+ 		run.failures.Recover(pendingKey, "shuttle: gate: pending send delivered again", "strandGUID", run.state.StrandGUID, "gate", run.gate[run.gatePendingAt].Name)
++		if run.gatePendingDelivered != nil {
++			*run.gatePendingDelivered = true
++		}
+ 		run.gateAtBoundary = false
+ 		run.boundaryHeld = false
+ 		return Result{}, false, nil
+@@ -1840,6 +1844,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 	failedAt := -1
+ 	pendingAt := -1
+ 	pendingSend, pendingWayForward := "", ""
++	var pendingDelivered *bool
+ 	findingsPath, findings := "", ""
+ 	terminal, reason := false, ""
+ 	for i, entry := range run.gate {
+@@ -1888,6 +1893,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 				pendingAt = i
+ 				pendingSend = result.Send
+ 				pendingWayForward = result.SendFailedWayForward
++				pendingDelivered = result.Delivered
+ 				break
+ 			}
+ 			if result.Passed {
+@@ -1940,6 +1946,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 	run.gatePendingAt = pendingAt
+ 	run.gatePendingSend = pendingSend
+ 	run.gatePendingWayForward = pendingWayForward
++	run.gatePendingDelivered = pendingDelivered
+ 	return outcome, nil
+ }
+ 
+diff --git a/internal/verifytree/verify.go b/internal/verifytree/verify.go
+index d3f457fe..498be096 100644
+--- a/internal/verifytree/verify.go
++++ b/internal/verifytree/verify.go
+@@ -339,7 +339,7 @@ func Verify(ctx context.Context, p Paths, site Site, command string) (Result, er
+ 			return Result{Status: StatusDirty, Dirty: dirty}, nil
+ 		}
+ 
+-		tree, err := headTree(p.Worktree)
++		tree, err := HeadTree(p.Worktree)
+ 		if err != nil {
+ 			return Result{}, err
+ 		}
+@@ -444,7 +444,7 @@ func runAndRecord(ctx context.Context, p Paths, site Site, command, tree, commit
+ 
+ 	// A commit that landed mid-run means the command may have read a tree other than the one it started on,
+ 	// so the pass is not recorded.
+-	afterTree, err := headTree(p.Worktree)
++	afterTree, err := HeadTree(p.Worktree)
+ 	if err != nil {
+ 		return Result{}, false, err
+ 	}
+@@ -539,8 +539,8 @@ func runnerCrashDetail(logPath string) (bool, string) {
+ 	return true, "gate test runner crashed with no failing test: " + runs
+ }
+ 
+-// headTree returns HEAD's tree SHA in worktree.
+-func headTree(worktree string) (string, error) {
++// HeadTree returns HEAD's tree SHA in worktree, so a caller can tell whether the tree a verify judged is still HEAD's.
++func HeadTree(worktree string) (string, error) {
+ 	out, err := gitexec.Run([]string{"rev-parse", "HEAD^{tree}"}, worktree)
+ 	if err != nil {
+ 		return "", fmt.Errorf("verifytree: resolve HEAD tree in %s: %w", worktree, err)
+diff --git a/internal/verifytree/verify_integration_test.go b/internal/verifytree/verify_integration_test.go
+index 6a298cc6..8e85e770 100644
+--- a/internal/verifytree/verify_integration_test.go
++++ b/internal/verifytree/verify_integration_test.go
+@@ -676,7 +676,7 @@ func TestVerify_PauseHold(t *testing.T) {
+ 		}},
+ 		{"a record naming HEAD's tree written during the stop's pause skips after the resume", false, func(t *testing.T, e *pauseEnv) {
+ 			out := stopAndWait(t, e)
+-			tree, err := headTree(e.p.Worktree)
++			tree, err := HeadTree(e.p.Worktree)
+ 			if err != nil {
+ 				t.Fatal(err)
+ 			}
