@@ -472,6 +472,26 @@
       "body": "Imported from [issue #174](https://github.com/Knatte18/loomyard/issues/174).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/shed/`, `.lym/shuttle/`.\n\n**What happened.**\nThe halt reason for a Darn-Write gate failure says \"findings:\" followed by a path under `.lym/shed/\u003cslug\u003e/gate-findings/Darn-Write.md`.\nThat file does not exist; the `.lym/shed/\u003cslug\u003e` directory is empty.\nThe trace log names a different path, `.lym/shuttle/\u003crun\u003e/gate-findings.md`, and that run directory is gone too.\n\n**Why abnormal.**\nThe halt note and the `lym loom resume` way forward point the operator at findings that cannot be read.\nThe cause of the block is only recoverable from the trace log.\n\n**What to do.**\nCopy the findings file to the stable path the halt reason names before the shuttle run directory is removed, or name the path that survives.\n\nProvenance: task raddle-slug-length-check; note loom-halt.md.\n",
       "created": "2026-11-21T17:29:39Z",
       "revised": "2026-11-21T17:29:39Z"
+    },
+    {
+      "id": 1542,
+      "handle": "B7",
+      "slug": "pr-findings-nil-open-fabric",
+      "title": "loom pr-findings fails in PR-Review: NewParentAlign Deps.OpenFabric must not be nil",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [
+        169
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #169](https://github.com/Knatte18/loomyard/issues/169).\n\n`lym loom pr-findings \u003cfile\u003e` fails in a PR-Review session on a well-formed findings file, every time, so the parent's findings cannot be routed.\n\n## Where\n\nA PR-Review agent, the session spawned for a task's pull request after its landing opened it.\nThe parent orch sent two findings by creel; the agent wrote them in burler's review format under `.scratch/` and ran `lym loom pr-findings .scratch/parent-review-1.md`.\n\n## What happens\n\nThe file passes burler's format check (a first attempt with a wrong verdict was refused with a clear message, and the corrected file got past that check).\nThe verb then fails reading the send-back edge:\n\n```\n{\"error\":\"loom: pr-findings: read whether the send-back edge can fire: loomrecipe: shedbuild: producer 16 \\\"Parent-Align\\\": shedrecipe: ParentAlign: landingshed: NewParentAlign: Deps.OpenFabric must not be nil; way forward: run lym loom pr-findings .scratch/parent-review-1.md again, and tell the operator when it keeps failing\",\"ok\":false}\n```\n\nRunning it again gives the same error.\n\n## Expected\n\nThe verb answers send-back or fix-here.\n`NewParentAlign` looks to be built on this path without its `OpenFabric` dependency.\n\n## Workaround\n\nThe operator told the agent to fix the findings directly, bypassing the verb.\n",
+      "created": "2026-11-21T17:29:42Z",
+      "revised": "2026-11-21T17:29:42Z"
     }
   ],
   "prime_owner": "neve",
