@@ -1,46 +1,56 @@
 # Remove compatibility and migration code no hub needs any more
 
-Every hub has run every one-off migration and holds no data in an old layout, name, key or file format (operator, 2026-11-19).
-This change deletes the code that read, rewrote or tolerated such data across the packages that held it.
-A cheap refusal that meets an old name, flag or key and names the new one stays.
+The code carried one-off migrations, key renames and readers for formats that no hub still holds.
+The operator confirmed that no hub needs any of it, so this change deletes it module by module.
+It removes about 19,000 lines and adds about 2,100, mostly in tests and docs.
 
-## What goes
+## What changes
 
-- **Board:** the `tasks.json`/`notes.json` migration with `lym board retire-legacy`, the `legacy_done` fold, the tier/type-to-kind/labels conversion and its tidy, the `draft_status` and `discussed`-status migrations, and the `.gitignore` lock-pattern strip.
-  `ParseBoardTasks` is now a decode plus the version check; an old key in `board.json` passes through as an unknown key.
-- **Config:** every module `Migrate` and `MigrateHubBase` hook (batcher, darn, drift, gate including `SeedAdoptGate`, landing, loom, orch, run profiles, shuttle), `movekeys.go` with `KeyMoves`/`KeyCopies`, the `warp.yaml`/`weft.yaml` fold-in, the former-template-value tables, the one-time base strip behind `_lym/config/base-sparse`, the worktree sparse migration behind `_lym/config/sparse`, the hub-wide copy retirement, `Spec.MigrateLayer`, and every concrete reinterpretation (agents, creel, drift, fabric/heddle, shuttle).
-  `configsync.Result` and the `lym config reconcile` envelope lose every field only those paths filled.
-  The `yamlengine` rename, drop and floor helpers go with their last callers.
-- **Fabric:** the hub-wide Bolt anchor marker retirement and read fallback, the `_portals`/`_launchers` sweeps and the `launchers` cleanup segment, the warp-binding backfill write, the `self` run-directory fallback, the legacy bare-name and lock-file exclude lines, and the root `.scratch` link retirement.
-- **Shed, loom and pawl:** retired row names everywhere (the recipe `retired:` map, `RenameProducers`, `Shed.RetiredMove`, `pawlengine.MoveOffRetired`, `loomrecipe.RetiredRows`, reportengine's retired-row tables), the `Merge-In` attempt and fixer-report fallbacks, the scratch-to-records attempt and pull-request record moves, the `APPROVED`/`BLOCKING` verdict words, cause-less circling files, the single `review_input` key, retired verify failure kinds, `LegacyLoomDriverStrandName`, and `lym loom start --no-attach`.
-  A run parked on a row the recipe no longer has meets the shed's plain missing-producer refusal.
-- **Dobby and pause:** the upgrade first read with `tendercli.RecordPauseIntent` and the whole `fixtries` package, kept-cancel marking, and the `adopt`, `adopt-hold` and `owner` pause callers with `OwnerHeld` and the parent-lock exemption.
-- **Shuttle, reed, creel, Slack, orch, heddle:** the legacy `asking` run outcome, the tmux `M-z` unbind and `window-resized` unpin an older build needed, the single-channel Slack setup fallback, the `withheld` journal event, the retired orch notice paths, and the unversioned `heddle.json` upgrade.
-- **Docs:** each touched package's `doc.go`, `docs/overview.md`, `docs/shared-libs/lymcwd.md`, the recipe contract comments and the sandbox fabric suite's retired-container scenario.
+- **Deleted migrations and compatibility readers.**
+  Examples are the `landingshed` retired `Merge-In` row name, the scratch-to-records attempt migration and the key-rename migration.
+  Others are `loomengine.MigrateConfig` with its producer-key, skip-merge-review, fan-review and review-key renames,
+  and `configsync`'s `movekeys.go` and its `Migrate` option.
+  `dobbyengine/upgrade.go`, `fabricengine/portals.go`, `retiredlaunchers.go`, `pawlengine/retiredmove.go`,
+  `runprofile/migrate.go`, `boardengine/legacy.go` and `migrate.go`,
+  the `yamlengine` rename, drop and floor helpers, and the `reinterpret.go` files of `agentconfig`, `creelconfig` and `shuttleengine` go too.
+  `driftengine` loses its stored old-Drift scope readers (partial scope, compare, waiver-render and acceptance fields),
+  `diffmode.go`, `dirbase.go` and `accepted.go`.
+- **`lym board retire-legacy` is gone.**
+  It was a one-off migration of `tasks.json` and `notes.json` into `board.json`, and every hub has run it.
+- **Refusals that point to the new name stay.**
+  A retired key or verb still fails with a way forward.
+  `loomengine` now refuses a `plan` key (and the other tapestry plan keys) in run settings and names the `tapestry` module as the place for it.
+  `batcher` offers `lym config reconcile --layer default --apply` as the way forward only for a profile the template names.
+- **Reconcile no longer strips or moves.**
+  `configsync` drops `Migrate` and `StripBase`, the sparse-marker bookkeeping and the settle-pair warnings.
+  `hubreconcile` walks with the plain `Apply` and `SeedDefaults` options.
+  `applyReinterpretations` takes its module list as an argument so a test can pin it, with `reinterpretationModules` as the production seam.
+- **Fabric.**
+  A stale-anchor marker is committed in the prime's weft worktree, and the remedy for it is adoptable.
+  The recorded-merge guard stops evaluating the weft side.
+- **Docs, patterns, recipes and the sandbox suite** drop their descriptions of the deleted migrations.
+  `migrateRunSettings` is renamed `validateRunSettings`.
+- **Tests.**
+  Tests of the deleted paths go.
+  New tests pin the surviving refusals, the registered shuttle engine modules,
+  the walk-after-failed-reinterpretation case and the sibling walk over real hubs.
 
 ## Design decisions
 
-- **The reinterpretation mechanism stays.**
-  `PATTERN-config-layers` requires a meaning change to ship a `configreg.Reinterpretation`, so the type, hubreconcile's apply step, its board marker and the orch notifier stay with no module registering one.
-  Its integration tests now drive a test-only reinterpretation through `hubreconcile.SetReinterpretationModulesForTest`; those tests do not run in parallel because the seam is package state.
-- **A retired key in a base or worktree file is an unknown key.**
-  Loads used to drop it silently and every reconcile pruned it.
-  It is now warned like any key the template lacks, kept by automatic reconciles, and removed by `lym config reconcile --apply`.
-  `Spec.RetiredKeys` with `RetiredWayForward` stays as the refusal of a local or machine override, and refusal texts no longer claim a reconcile renames or migrates anything.
-- **Run profiles name their tapestry keys directly.**
-  The shipped `runprofile/template.yaml` relied on a key move to carry `plan_*` keys from `loom` to `tapestry`; its profile blocks now set them under `tapestry:`.
-- **Kept on purpose:** the clone-time `.fabric-anchor` refusal and its probe, `treeAnchor`'s derivation for a markerless branch that `fabric add` can still adopt, the `reed.json` anchor remap (a stored `below-parent` would otherwise be laid out in the shell window), shell-window placement (a fresh boot needs it), creel's unmarked-waiter branch, webster's empty `PlanFileHashes` guards, and every retired-label and retired-placeholder refusal.
-- **A gap the removal exposed is fixed.**
-  With no sparse marker committed in a worktree, run records can be the only tracked content under a weft's `_lym`.
-  `fabric add`'s anchor move now commits a name whose only change is a staged deletion, so those records no longer stay staged after the move.
-- **Left for a follow-up:** hubreconcile's per-worktree commit leg no longer has a production input that changes a tracked worktree file, since only the sparse migration fed it.
+- A hit counted as a refusal when it rejects an old name or key and points to the new one, which is cheap, so it stayed.
+  It counted as migration when it rewrote or read data in the old shape, so it went.
+- A hub that still holds an old key or file shape is now refused, not rewritten.
+  The operator's confirmation that no such hub exists is the basis for this.
 
-## PATTERN changes
+## To check by hand
 
-- `PATTERN-config-layers`: the sparse-hub-base rule drops the one-time strip, and keys the template lacks no longer carry a retired-key exception.
-- `PATTERN-cwd-resolution`, `PATTERN-fabric-boundary` and `PATTERN-shed-driver`: the Bolt-marker fallback, retired container sweeps, lock-pattern removal and `self` directory fallback are gone from their backgrounds.
+- `driftengine`: the compatibility readers for the old Drift record shape were removed in stages.
+  Confirm that no reader of the old scope, compare, waiver-render or acceptance fields remains under `internal/driftengine`,
+  and that no remaining compatibility reader sits in another module.
+- No regression check ran for this task, and nothing was run beyond the repository's own gates.
+  Run `lym board` and `lym config reconcile` once against a real hub to confirm that neither reaches a removed path.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** hub
+**Blast radius:** config
