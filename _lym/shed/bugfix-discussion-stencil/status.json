@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -24,6 +24,13 @@
       "at": "2026-11-21T14:40:30Z",
       "started_at": "2026-11-21T14:40:29Z",
       "by": "shed"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/bugfix-discussion-stencil/_lym/discussion/decision-record.md",
+      "at": "2026-11-21T14:40:35Z",
+      "started_at": "2026-11-21T14:40:35Z"
     }
   ],
   "product": {
