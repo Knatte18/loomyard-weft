@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 17:07 UTC; every age below is as of then.
+Rendered 2026-11-21 17:24 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-code-cleanup.md">P1 Code cleanup: cut and simplify lym code and tests</a> (2)</strong></summary>
 
-[`code-cleanup`](design-code-cleanup.md) · Age 2d · Owner `neve`
+[`code-cleanup`](design-code-cleanup.md) · Age 3d · Owner `neve`
 
 Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features
 
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | Code-Burler-Review | neve | 2d<br>1d | fabric, loom, board |
+| T1 | **Remove compatibility and migration code no hub needs any more**<br>• Retired names, key renames and one-off data migrations still in the code; keep the cheap refusals that point to the new name, delete the rest<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`drop-compat-migration-code`](design-drop-compat-migration-code.md) | darn · solid | Code-Burler-Fix | neve | 3d<br>1d | fabric, loom, board |
 
 #### Ready (0)
 
