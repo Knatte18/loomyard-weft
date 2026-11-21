@@ -4,7 +4,7 @@
      and the Discussion-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=91c97ba3bd2caafd7052188adeaee1b578943c5a030d48d081a2aee00ea8a4e3 build=7ecfcaeb3c698adbd2a491476a0e6a6a68c4c600 time=2026-11-18T07:57:47Z -->
+lym-stencil: sha256=3d0eee0adae243bea36c64a423062976a1c83e8a54674cb235a4682e6e60f488 build=86145ecf7bd69eef6b1342cec056181deceda2f6 time=2026-11-21T14:59:20Z -->
 
 # Discussion-Review rubric
 
@@ -45,6 +45,11 @@ Do not flag any of the following as a finding:
   A Decision or Constraint that rests on how git or another tool behaves states the observed result and where it is pinned:
   a test, a recorded command and its output, or the tool's documentation.
   One that states the behavior without the result or the pin is a finding, because every later round repeats the experiment to check it.
+- **A bug entry's record without its fault, cause or test.**
+  For a board entry labelled `bug`, the record states the observed fault and how to reproduce it,
+  the root cause or what is still unknown about it,
+  and the test that fails on the merge base or why no test seam exists.
+  A record that omits one of them is a finding.
 - **A Decision that edits the task's own board entry.**
   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
