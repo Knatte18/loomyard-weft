@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -229,6 +228,29 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/single-repo-namespace-layout/_lym/webster/summary.md",
+      "at": "2026-11-21T15:32:26Z",
+      "started_at": "2026-11-21T14:33:13Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-21T15:27:44.262268812Z",
+          "end": "2026-11-21T15:27:44.563235857Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-21T15:27:44.612021855Z",
+          "end": "2026-11-21T15:32:25.360342086Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
