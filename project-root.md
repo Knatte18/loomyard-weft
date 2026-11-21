@@ -33,8 +33,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 1h<br>2m | gate, loom |
-| B2 |  | **Plan amendment to an unchanged card is approved without being carried into it** | [`plan-amendment-not-carried`](design-plan-amendment-not-carried.md) | 2m<br>2m | burler, webster, loom |
+| B1 |  | **Unjudged red-first refusal burns the verify attempts before the parent answers** | [`red-first-unjudged-burns-tries`](design-red-first-unjudged-burns-tries.md) | 1h<br>3m | gate, loom |
+| B2 |  | **Plan amendment to an unchanged card is approved without being carried into it** | [`plan-amendment-not-carried`](design-plan-amendment-not-carried.md) | 3m<br>2m | burler, webster, loom |
 | B3 |  | **webster: halt note truncates drift gate message; no way to accept expected drift** | [`webster-drift-halt-truncated`](design-webster-drift-halt-truncated.md) | 2m<br>2m | webster, drift |
 | B4 |  | **Burler-fix halts failed when a fork runs git in a scratch repo under .scratch** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 2m<br>2m | burler, shuttle |
 | B5 |  | **Burler fixer step re-runs on a round an earlier fixer finished, with no reason in the prompt** | [`burler-fixer-rerun-no-reason`](design-burler-fixer-rerun-no-reason.md) | 2m<br>2m | burler |
