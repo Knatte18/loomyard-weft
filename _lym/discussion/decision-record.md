@@ -23,6 +23,12 @@ Discussion checks that a takeover of a run whose start rows were not pushed redo
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-22): Only an uninterrupted start skips the push
+
+Decision: The start rows from Seed-Child to Run-Shed push nothing on an uninterrupted start; a start row resumed after a pause or halt pushes as every other transition does.
+
+Rationale: The operator's aim is a fast normal start; a resumed start is rare, and a pause or halt is where another machine may take the run over, so its pushed state stays current there.
+
 ## Constraints
 
 ## Auto-mode assumptions
