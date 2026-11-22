@@ -250,7 +250,7 @@
       "isolated": false,
       "brief": "Declutter the rendered board README in a sampler session",
       "body": "## Goal (operator, 2026-11-22)\n\nMake the rendered board README less cluttered, tried out with the operator in a sampler session:\n\n- **Beam marker**: mark each project that has a beam, in its heading and in any project list.\n- **No empty sections**: render no section, heading or table that holds no entry, such as a project's empty Tasks and Ready.\n- **No Notes level**: drop the Notes heading above the type groups; Features, Bugs, Enhancements and the other type groups become sections of their own.\n\nThe session shows the operator renderings of the current board and keeps what the operator picks.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-22T09:55:43Z",
       "revised": "2026-11-22T09:56:33Z"
     },
@@ -301,7 +301,7 @@
       "isolated": false,
       "brief": "A renderer of board markdown carries no layout tests; delete the README goldens and keep only tests of behaviour other code relies on.",
       "body": "## Decision (operator, 2026-11-22)\n\nOutput only a human reads, such as the rendered README, gets no test of its layout or wording.\nThe general rule goes into `scribe:testing` through the scribe hub; this entry runs as darn light once that rule has landed.\n\n## What to do\n\n- Delete the README layout goldens in `internal/boardengine/render_test.go` and the heading parsing in `view_test.go`; do not move them to testdata files.\n- Keep the tests of behaviour other code relies on, without pinning the layout: `RenderToDisk` rewriting a file in place and its manifest cleanup, and `board-data.js` holding each entry, which `board.html` reads.\n- Sweep the repository for other renderers of human-read output carrying layout goldens, and delete those too.\n\n## What was seen\n\nIn `readme-declutter` the format change touched about 200 lines of `render.go` and about 480 lines of `render_test.go`.\nOn main, `render_test.go` is longer than `render.go`: each run covered its format change with a new golden, and reviewers flag a change without a test.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-22T11:14:43Z",
       "revised": "2026-11-22T11:28:44Z",
       "run_settings": {
