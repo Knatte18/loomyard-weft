@@ -1,11 +1,11 @@
 # Card 10 — pr-review-session-autonomy
 
 **Create:**
-- `plan:internal/loomcli#prReviewAsker` -> `func prReviewAsker(l *lymcwd.Location, rec pullrequest.Record) (landingshed.PRReviewAsker, error)`
+- `internal/loomcli#prReviewAsker`
 - `contracts/stencils/landing/landing-block-pr-review-operator.md`
 - `contracts/stencils/landing/landing-block-pr-review-autonomous.md`
-- `plan:contracts/stencils#LandingBlockPRReviewOperator` -> `var LandingBlockPRReviewOperator []byte`
-- `plan:contracts/stencils#LandingBlockPRReviewAutonomous` -> `var LandingBlockPRReviewAutonomous []byte`
+- `contracts/stencils#LandingBlockPRReviewOperator`
+- `contracts/stencils#LandingBlockPRReviewAutonomous`
 
 **Edit:**
 - `internal/landingshed#PullRequestDeps`

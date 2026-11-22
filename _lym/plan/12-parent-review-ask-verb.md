@@ -1,8 +1,8 @@
 # Card 12 — parent-review-ask-verb
 
 **Create:**
-- `plan:internal/loomcli#parentReviewAskVerb` -> `func parentReviewAskVerb(out io.Writer, slug string, deps parentReviewDeps) int`
-- `plan:internal/loomcli#TestParentReviewAskVerb` -> `func TestParentReviewAskVerb(t *testing.T)`
+- `internal/loomcli#parentReviewAskVerb`
+- `internal/loomcli#TestParentReviewAskVerb`
 
 **Edit:**
 - `internal/loomcli#parentReviewDeps`
@@ -17,7 +17,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomcli#prReviewAsker`
+- `internal/loomcli#prReviewAsker`
 - `internal/loomcli#parentReviewWayDecision`
 - `internal/loomcli#parentReviewAnswerVerb`
 - `internal/loomcli#openParentAsk`

@@ -1,6 +1,6 @@
 {
   "runGuid": "f8f0a338638e32b910aeff0b25f7b6f5",
-  "planFingerprint": "fb90e6e32c9fe21a6aba8e9845c0cc2b6c4a71082358cff0c03c22396a69bb1a",
+  "planFingerprint": "eb404fb6ffda5f19aa43a321f4fccd35545012b5634412e2a850b6f9d2d221c5",
   "planFileHashes": {
     "00-overview.md": "a757238b43385608f47e340cc0f43a9f198325519762385e8593d0ed40d8708f",
     "01-beam-autonomy-key.md": "7cec0a2313bd1289f706234e8d9bc01cf77b56f14ec396a3d73075730ea70e1c",
@@ -12,9 +12,9 @@
     "07-loom-autonomy-forcing.md": "e277b3674e6aefa150b1126f10c75df0e62c24ee9c62023fcda7bb326b0437ad",
     "08-pr-record-autonomy.md": "cdd3ab0c4ba9f6c31fafc8d617973dac9310a1a70bb2691e2f9984b2f852c2db",
     "09-pr-review-ask-helpers.md": "fb447501e3f4194f07b61a16b9216869ad0e0c5cb83b2b16f999f2c57e92f8d5",
-    "10-pr-review-session-autonomy.md": "ea58b88478ac9b64e4ee97feafefd314494ab3e38fcd1eaaa12872e4978099a2",
+    "10-pr-review-session-autonomy.md": "516305534043f040929b778bbed5216b3215b9a2cb3cf37566830fcba1d5600f",
     "11-pr-review-ending-autonomy.md": "a260453b81b67b5102322e0508dcbc69685b732b7efc225e3d884680e455fa03",
-    "12-parent-review-ask-verb.md": "27f96085e0215b04cb0eb724321b43b1a6bccd5ff8a572926ed97d10b4bbd922",
+    "12-parent-review-ask-verb.md": "59aca5eb314731d730555aaffb5c7ae587d1dafaeb647a4c8e78d1fb18547cfc",
     "13-pr-continue-autonomy.md": "248ffbc2f64d6944e3c9efe4b1daa7b8864f15306db7f7b3cc3be0413434bbc2",
     "14-goto-clears-pr-review.md": "dc843ccd8486ec6ab57da1502648471dd609a0263cfd8203d60aadc3fc6307eb",
     "15-beam-await-drained.md": "dcde92a84e2e19b6a263320a49463df4cb7e2716bc0cd50d45c2ac24e76e6f72",
@@ -494,17 +494,40 @@
         "12-parent-review-ask-verb"
       ],
       "cardHashes": {
-        "10-pr-review-session-autonomy": "ea58b88478ac9b64e4ee97feafefd314494ab3e38fcd1eaaa12872e4978099a2",
+        "10-pr-review-session-autonomy": "516305534043f040929b778bbed5216b3215b9a2cb3cf37566830fcba1d5600f",
         "11-pr-review-ending-autonomy": "a260453b81b67b5102322e0508dcbc69685b732b7efc225e3d884680e455fa03",
-        "12-parent-review-ask-verb": "27f96085e0215b04cb0eb724321b43b1a6bccd5ff8a572926ed97d10b4bbd922"
+        "12-parent-review-ask-verb": "59aca5eb314731d730555aaffb5c7ae587d1dafaeb647a4c8e78d1fb18547cfc"
       },
       "startSha": "eb09cc98a9f15ae57a9288b2b6c5f2d3ed4463af",
       "kind": "fork",
       "spawnedAt": "2026-11-22T19:22:49Z",
       "sessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-pr-review-session-autonomy",
+        "status": "done",
+        "head_sha": "289a5e0fea5b043ac709748f43a0003119ac41b5",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/landingshed/prreview.go",
+          "internal/landingshed/prreview_session_test.go",
+          "internal/landingshed/prreview_test.go",
+          "internal/landingshed/prsession.go",
+          "internal/loomcli/parentreview.go",
+          "internal/loomcli/parentreview_test.go"
+        ]
+      },
+      "cardShas": [
+        "289a5e0fea5b043ac709748f43a0003119ac41b5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a8b2865944dd6caea.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a8b2865944dd6caea.jsonl"
+      ]
     },
     "6": {
       "slug": "drift-autonomy",
@@ -556,12 +579,13 @@
       ]
     }
   },
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "8bef3fde2058a415283720270d09e363",
   "masterSessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a0666e58a13caac9e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-ad7486d0e12c7878a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-ad7486d0e12c7878a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a8b2865944dd6caea.jsonl"
   ]
 }
