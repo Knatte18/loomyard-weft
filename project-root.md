@@ -39,7 +39,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A beam pull request updates its description after each member landing**<br>• Dobby runs the beam describe step itself when a member lands under a recorded pull request, instead of asking the orch through the landed line | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | 11m<br>9m | dobby, landing |
+| E1 |  | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | 11m<br>0m | dobby, landing |
 
 ## Features (1)
 
