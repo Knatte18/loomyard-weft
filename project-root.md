@@ -8,7 +8,7 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (1)
+## Tasks (2)
 
 Concrete and claimable; only a task can run.
 
@@ -26,7 +26,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (6)
+### Draft (1)
+
+Not released; nothing starts it until its status is cleared.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | darn |  | 9m<br>9m | claude, gate, config, orch |
+
+## Notes (5)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -37,11 +45,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
-### Bugs (2)
+### Bugs (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | 8m<br>8m | claude, gate, config, orch |
 | B2 |  | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | 4m<br>4m | fabric, batten, dobby |
 
 ### Features (2)
