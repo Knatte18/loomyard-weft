@@ -94,13 +94,19 @@ Owner `neve`
 
 Concrete and claimable; only a task can run.
 
-#### Ready (1)
+#### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | starting · Worktree-Create | neve | 1h<br>0m | orch, drift, landing, dobby, batten, pawl, config |
+
+#### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif |  | 1h<br>0m | orch, drift, landing, dobby, batten, pawl, config |
+_None._
 
 ### Notes (6)
 
