@@ -32,6 +32,12 @@ Fix each place found in this run, and pin each fix with a test as above.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-22): F5: bounded reads keep the old join results
+
+Decision: Restore the old landing join results within the bound, as the review's restoring path names: collect landing checkpoints from a walk that does not depend on run seeds, so widening for another run no longer changes them, and in readBoardHistory keep reading older board commits for each claimed slug the floor's board lacks until its entry is found or the history ends, keeping only its labels. The bound limits memory; it never changes what the report answers.
+
+Rationale: The goal is to stop the report freezing the machine, not to change its figures; a report whose results depend on which other runs widened the walk is wrong.
+
 ## Constraints
 
 ## Auto-mode assumptions
