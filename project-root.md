@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 19:39 UTC; every age below is as of then.
+Rendered 2026-11-22 19:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | Code-Burler-Review | neve | 35m<br>23m | gate, darn |
+| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | Code-Burler-Fix | neve | 43m<br>31m | gate, darn |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Webster | neve | 8h<br>7h | orch, landing, loom, pawl, drift |
 
 ## Layer A (3)

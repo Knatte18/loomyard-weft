@@ -1,6 +1,6 @@
 # Run a verify gate's reports alongside its tests
 
-`verify-tail-alongside-tests` · Task · enhancement, gate, darn · running · Code-Burler-Review
+`verify-tail-alongside-tests` · Task · enhancement, gate, darn · running · Code-Burler-Fix
 
 ## Seen
 
