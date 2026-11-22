@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 15:41 UTC; every age below is as of then.
+Rendered 2026-11-22 15:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -22,18 +22,18 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 5h<br>5h | fabric, batten, dobby |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | T3 | 4h<br>3h | orch, landing, loom, pawl, drift |
 
+## Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | `draft` **A killed seed leaves board sync naming a false, looping way forward**<br>• After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused. | [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md) | darn | T2 | 4m<br>0m | fabric |
+
 ## Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
-
-## Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **A killed seed leaves board sync naming a false, looping way forward**<br>• After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused. | [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md) | 3m<br>3m | fabric |
 
 ## Features (2)
 
