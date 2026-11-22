@@ -11,7 +11,21 @@ The note orchestrator-survey-ideas holds the remaining leads; each other member 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Features (1)
+## Tasks (0)
+
+Concrete and claimable; only a task can run.
+
+### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
+
+## Notes (1)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
