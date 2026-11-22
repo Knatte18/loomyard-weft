@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | PR-Review | neve | 58m<br>46m | gate, darn |
+| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | landing · Finalize | neve | 58m<br>46m | gate, darn |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Webster | neve | 8h<br>8h | orch, landing, loom, pawl, drift |
 
 ## Layer A (3)
