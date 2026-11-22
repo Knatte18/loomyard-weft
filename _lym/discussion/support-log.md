@@ -63,7 +63,43 @@ Six forks reviewed the first record; every fork returned a report. Judgement per
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding fixed in the record:
+
+- F1: D5 names the `PairPush` mode that writes no owed-class record; D8 rests on it; D3's bound drops the sides clause.
+- F2: D6 has the prime's pusher read every unpushed batten run's takeover before a replay and leave a taken-over run's commits out of it.
+- F3: D7 has a pause stop the pusher's push; D3 and D5 start no pusher while a pause covers the run.
+- F4: D3 registers the pusher under `runproc.HubOwner` with role `runproc.RolePush`.
+- F5: D6 names `InsidePair` per pusher; a pair's pusher exits, the prime's goes on with the other runs, since it serves them too.
+- F6: Scope and D1 take in the driver-stop record commits.
+- F7: D6 has the owner machine's code-tip read skip a tip its local code branch holds.
+- F8: D5 accepts that a refused prime push holds every batten run's pushes.
+- F9: Worktree-Teardown pushes before it takes the prime lock.
+- F10: D1 points at D5's exception; the second Auto-mode assumption dropped.
+- F11: D4 became a Constraint and a regression criterion; D5 to D8 keep their numbers so the review's references hold.
+- F12, F13, F14, F15: worded as the review gave.
+
+The fixer's self-check forks found ways forward and claims the fix left open, all fixed:
+D3 names the start conditions once, a hand-over mark and a gone worktree included;
+D6 names the archive and replay changes and treats a failed takeover read, archive or hand-over as owed;
+D5 reads a deferral from the returned error, posts a notice at the 60 s backoff, tells a pruned branch by its upstream,
+and has Worktree-Teardown shut the session down before its push and re-check the tips before removal;
+D7 drops the verb's check before its commit.
+
+### Round 2
+
+Every finding fixed in the record:
+
+- F1: D7 names the tender pause the pre-push check writes, `tendercli.PausePair`'s slug-scoped entry in the hub pause record,
+  and defines a pause covering the run as that record's coverage read through `pauserecord.ReadCoverage`;
+  the driver meets it through `runfsm`'s `PauseCovers`.
+- F2: D5's dobby tick counts a pair ahead when its local code branch holds the code tip its records tip names and origin lacks it,
+  and its criterion covers a level records branch with that tip unpushed;
+  D6 says the tick, not the code-tip settle, carries the owner machine's restart of a held code tip.
+
+The fixer's self-check forks found that counting any code branch ahead would restart a refused code push on every tick and push code no transition names:
+D3's refusal gate now reads the code branch too, and the tick counts only a transition's code tip.
 
 ## Question ledger
 
