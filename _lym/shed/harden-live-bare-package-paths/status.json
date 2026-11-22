@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-22T11:30:59Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-live-bare-package-paths/_lym/landing/summary.md",
+      "at": "2026-11-22T11:45:34Z",
+      "started_at": "2026-11-22T11:31:10Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:32:34.227136195Z",
+          "end": "2026-11-22T11:32:34.247068691Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:32:34.35102783Z",
+          "end": "2026-11-22T11:43:25.636672773Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-22T11:43:25.740615005Z",
+          "end": "2026-11-22T11:44:01.448756353Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-22T11:44:01.625095789Z",
+          "end": "2026-11-22T11:44:02.290524663Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-22T11:44:02.462801112Z",
+          "end": "2026-11-22T11:44:02.463183517Z"
+        }
+      ]
     }
   ],
   "product": {
