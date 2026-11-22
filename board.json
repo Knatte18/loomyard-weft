@@ -301,7 +301,7 @@
       "isolated": false,
       "brief": "A renderer of board markdown carries no layout tests; delete the README goldens and keep only tests of behaviour other code relies on.",
       "body": "## Decision (operator, 2026-11-22)\n\nOutput only a human reads, such as the rendered README, gets no test of its layout or wording.\nThe general rule goes into `scribe:testing` through the scribe hub; this entry runs as darn light once that rule has landed.\n\n## What to do\n\n- Delete the README layout goldens in `internal/boardengine/render_test.go` and the heading parsing in `view_test.go`; do not move them to testdata files.\n- Keep the tests of behaviour other code relies on, without pinning the layout: `RenderToDisk` rewriting a file in place and its manifest cleanup, and `board-data.js` holding each entry, which `board.html` reads.\n- Sweep the repository for other renderers of human-read output carrying layout goldens, and delete those too.\n\n## What was seen\n\nIn `readme-declutter` the format change touched about 200 lines of `render.go` and about 480 lines of `render_test.go`.\nOn main, `render_test.go` is longer than `render.go`: each run covered its format change with a new golden, and reviewers flag a change without a test.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-22T11:14:43Z",
       "revised": "2026-11-22T11:28:44Z",
       "run_settings": {
