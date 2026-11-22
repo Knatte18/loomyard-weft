@@ -280,6 +280,25 @@
       "body": "## Goal\n\nFind out whether the hardener recipe does what it is for: drive the modules its focus names, find real faults, fix them with tests that hold, and converge.\n\n## Evidence\n\n- The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.\n- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.\n- Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-\u003cn\u003e-focus.md`, `round-\u003cn\u003e-review.md`, `round-\u003cn\u003e-acceptance.md`, `round-\u003cn\u003e-usage.yaml` and the snapshots, beside its decision record and the landed commits.\n\n## Questions\n\n- **Findings**: for each finding, is it a real fault, a false positive or a matter of taste? Do its repro steps show it?\n- **Fixes**: does each fix cure its finding? Does its regression test fail with the fix broken, as the fix rules demand? Was the package doc updated?\n- **Focus**: did each round stay inside the campaign's focus? Did the focus files steer later rounds to what was left unverified?\n- **Convergence**: did the Bouncer end the campaign on a sound verdict? Were deferred findings filed as open risks and on the board?\n- **Misses**: which faults in the same code turned up after the campaign landed, outside it (such as the killed-seed way forward in `0e4782373` and the fetch prune in `f660ac101`), and could the campaign have reached them?\n- **Cost**: tokens and wall time per round, from the usage files and the run's records.\n\n## Bounds\n\n- Mostly a study of records and commits.\n- At most three findings are reproduced, on a sandbox hub against the commit before their fix, one try each; no other trial runs.\n- The report ends with a verdict and a short list of concrete changes to the hardener recipe or its stencils, each a candidate note.\n",
       "created": "2026-11-22T17:52:12Z",
       "revised": "2026-11-22T17:52:18Z"
+    },
+    {
+      "id": 1570,
+      "handle": "B1",
+      "slug": "held-decision-lands-unruled",
+      "title": "A decision finding held for the parent lets the run land unruled",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A Burler decision-class finding routed to the parent does not gate, so budget acceptance lands the run before the parent or operator rules",
+      "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` with its Code-Burler finding F12, `member-line-overrides-explicit-off`, never ruled on.\nF12 was a `decision`-class finding, routed to the run's parent and marked held: the fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\n\nRound 2's Bouncer verdict states it: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round's circling decision then accepted on budget (`decision: accept`, `cause: budget`, `automatic: true`), and the run went on to land.\nThe held finding ended in the change description's \"Check by hand\" list and in the decision record's open risks, with the exception it questioned still in the code.\n\n## Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, then the next round carries the ruling out.\n\n## Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- The circling decision in `internal/loomcli/circling.go` that accepts on budget.\n",
+      "created": "2026-11-22T18:02:16Z",
+      "revised": "2026-11-22T18:02:16Z"
     }
   ],
   "prime_owner": "neve",
