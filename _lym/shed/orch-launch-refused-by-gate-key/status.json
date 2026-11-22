@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -141,6 +140,55 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-launch-refused-by-gate-key/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-22T11:00:17Z",
+      "started_at": "2026-11-22T10:51:20Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T10:56:04.368356689Z",
+          "end": "2026-11-22T10:56:04.378167584Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T10:56:13.029631818Z",
+          "end": "2026-11-22T10:56:13.043703538Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T10:56:04.432054162Z",
+          "end": "2026-11-22T10:56:04.546065231Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T10:56:04.970829219Z",
+          "end": "2026-11-22T10:56:12.999948535Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T10:56:13.094403979Z",
+          "end": "2026-11-22T11:00:16.430402393Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-22T11:00:16.485818037Z",
+          "end": "2026-11-22T11:00:16.486481078Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer",
+      "by": "shed"
     }
   ],
   "product": {
