@@ -1,6 +1,6 @@
 # Run a verify gate's reports alongside its tests
 
-`verify-tail-alongside-tests` · Task · enhancement, gate, darn · running · Drift-Baseline
+`verify-tail-alongside-tests` · Task · enhancement, gate, darn · running · Drift-Await
 
 ## Seen
 
