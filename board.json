@@ -258,20 +258,31 @@
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit",
       "body": "## What was seen (2026-11-22)\n\nThe hub gate.yaml held a key the hardener rebuild (2dbfdc31) retired, `gates.harden-live-copies`, with no `scope`.\n`lym s` then failed to resume the orch session: claudeengine refused to prepare the orch launch over that one gate key, so the hub had no orch until the key was removed by hand.\n`lym config` has no verb to remove a key, so only the interactive editor could fix it.\n\n## Idea\n\n- An orch or other session that runs no gate should not refuse its launch over a gate key it never uses; warn and launch.\n- The gate reinterpretation that retires `harden-live-copies` should also cover an entry with no scope.\n- Give `lym config` a non-interactive way to remove a key.\n",
       "status": "draft",
       "created": "2026-11-22T09:42:36Z",
-      "revised": "2026-11-22T09:42:36Z"
+      "revised": "2026-11-22T09:51:57Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     },
     {
       "id": 1554,
-      "handle": "B2",
+      "handle": "T4",
       "slug": "stale-records-ref-blocks-rerun",
       "title": "A stale records tracking ref blocks a cancelled slug from running again",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric",
@@ -279,12 +290,26 @@
         "dobby"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "harden-fabricengine"
+      ],
       "isolated": false,
       "brief": "OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start",
       "body": "## What was seen (2026-11-22)\n\n`harden-fabricengine` was cancelled with `lym batten cancel --remove` on 2026-11-21 and released again after the hardener rebuild landed.\nDobby refused to start it three times: `the code tip 3a9f8d84 the run's last transition names is not on origin yet`, though 3a9f8d84 is on origin/main.\n\nCause: the records repository still held the remote-tracking ref `origin/harden-fabricengine-weft` of the cancelled run, while origin had deleted the branch.\n`fabricengine.OriginCodeTip` reads that ref, finds the old run's last transition and judges its code tip missing.\n\nWorkaround: `git -C \u003chub\u003e/loomyard-weft fetch --prune origin`, which also dropped two other stale refs.\n\n## Expected\n\n- `lym batten cancel --remove` and the remote cleanup drop the local remote-tracking ref of a deleted records branch, or the records fetch prunes.\n- `OriginCodeTip` reads no records branch origin no longer holds, so a cancelled slug can run again.\n- The refusal's way forward names the real cause, not a code push that will never land.\n",
+      "status": "draft",
       "created": "2026-11-22T09:47:11Z",
-      "revised": "2026-11-22T09:47:11Z"
+      "revised": "2026-11-22T09:51:58Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
