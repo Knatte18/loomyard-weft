@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Bouncer",
+  "current_producer": "Harden-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Bouncer",
-    "last": "Harden-Burler-Fix → bounced to Harden-Bouncer",
+    "now": "Harden-Burler-Review",
+    "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -273,6 +273,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Harden-Bouncer"
+    },
+    {
+      "producer": "Harden-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabricengine/_lym/reviews/harden/round-2-bouncer-ledger.md",
+      "at": "2026-11-22T11:59:30Z",
+      "started_at": "2026-11-22T11:58:27Z",
+      "routed_to": "Harden-Burler-Review"
     }
   ],
   "product": {
