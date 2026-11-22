@@ -54,7 +54,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn |  | 11m<br>11m | gate, darn |
+| T6 | `draft` **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light |  | 11m<br>0m | gate, darn |
 | T7 | `draft` **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | darn |  | 11m<br>11m | burler, lenses |
 
 ### Research (3)
