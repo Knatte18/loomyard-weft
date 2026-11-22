@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 10:51 UTC; every age below is as of then.
+Rendered 2026-11-22 10:52 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | Discussion-Burler-Review | neve | 2h<br>1h | orch, drift, landing, dobby, batten, pawl, config |
 | T3 | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | claude, gate, config, orch |
 | T5 | **Board README: beam marker, no empty sections, no Notes level**<br>• Declutter the rendered board README in a sampler session | [`readme-declutter`](design-readme-declutter.md) | sampler | Sampler-Session | neve | 56m<br>55m | board |
-| T6 | **lym report convergence stays within bounded memory**<br>• convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`convergence-report-memory`](design-convergence-report-memory.md) | darn · light | Drift-Baseline | neve | 4m<br>1m | report |
+| T6 | **lym report convergence stays within bounded memory**<br>• convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`convergence-report-memory`](design-convergence-report-memory.md) | darn · light | Drift-Await | neve | 4m<br>1m | report |
 
 ### Ready (0)
 
@@ -35,7 +35,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 1h<br>59m | fabric, batten, dobby |
+| T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 1h<br>1h | fabric, batten, dobby |
 
 ## Notes (7)
 
@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Hardener rounds may run fabric verbs in their own sandbox hubs**<br>• The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs | [`harden-sandbox-fabric-verbs`](design-harden-sandbox-fabric-verbs.md) | 48m<br>48m | fabric, shed |
-| B2 |  | **Sampler session loads the language skills before it edits code**<br>• The sampler spec carries no language skills, so the sampler edits Go without scribe:golang-* and code-quality. | [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md) | 34m<br>34m | loom, shuttle |
+| B2 |  | **Sampler session loads the language skills before it edits code**<br>• The sampler spec carries no language skills, so the sampler edits Go without scribe:golang-* and code-quality. | [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md) | 35m<br>35m | loom, shuttle |
 | B3 |  | **Hardener live check passes packages go can resolve**<br>• hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round. | [`harden-live-bare-package-paths`](design-harden-live-bare-package-paths.md) | 26m<br>26m | gate, loom |
 
 ### Features (2)
