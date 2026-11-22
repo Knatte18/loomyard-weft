@@ -1,12 +1,11 @@
 {
-  "current_producer": "Sampler-Session",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Sampler-Session",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Sampler-Session → done",
     "wait": ""
   },
   "history": [
@@ -44,6 +43,14 @@
       "output": "",
       "at": "2026-11-22T09:58:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Sampler-Session",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-22T15:30:20Z",
+      "started_at": "2026-11-22T10:51:21Z",
+      "by": "shed"
     }
   ],
   "product": {

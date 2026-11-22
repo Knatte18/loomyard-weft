@@ -4,11 +4,11 @@
   "role": "sampler",
   "model": "claude-opus-5-5",
   "engine": "claude",
-  "input_tokens": 156,
-  "cache_write_tokens": 377176,
-  "cache_read_tokens": 4841210,
-  "output_tokens": 77023,
-  "cost_usd": 4.395205999999999,
-  "started": "2026-11-22T10:44:06Z",
-  "ended": "2026-11-22T10:51:11Z"
+  "input_tokens": 224,
+  "cache_write_tokens": 1036429,
+  "cache_read_tokens": 9325003,
+  "output_tokens": 83885,
+  "cost_usd": 8.725741600000001,
+  "started": "2026-11-22T10:51:21Z",
+  "ended": "2026-11-22T15:29:13Z"
 }
