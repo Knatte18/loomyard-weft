@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
-Rendered 2026-11-22 16:32 UTC; every age below is as of then.
+Rendered 2026-11-22 16:33 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 3d · Owner `neve`
@@ -10,8 +10,24 @@ Groups the entries filed from the Sketch `fabric-single-repo-mode`: single-repo-
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Layer A (1)
+## Tasks (1)
+
+Concrete and claimable; only a task can run.
+
+### Ready (0)
+
+Waits on nothing open; can start now.
+
+_None._
+
+### Layer A (1)
+
+Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | T1 | 26m<br>26m | fabric |
+| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | T1 | 27m<br>27m | fabric |
+
+## Notes (0)
+
+Not tasks: ideas and observations, merged into a task when one is promoted.
