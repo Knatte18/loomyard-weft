@@ -2,8 +2,6 @@
 
 `harden-fabric-single-repo-verbs` · Task · bug, fabric · starting · Open-IDE
 
-Depends on: [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md)
-
 ## Focus
 
 Second hardener campaign on the one-repository hub layout that 57015a52 added: one origin holds the code under `refs/heads/` and `refs/tags/`, and the records and board under `refs/lym/heads/` and `refs/lym/tags/`.
