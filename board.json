@@ -246,7 +246,7 @@
       "isolated": false,
       "brief": "After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused.",
       "body": "## What was seen\n\nRound 3 of `harden-fabricengine` killed the seeding `lym` with `kill -9` while a `pre-receive` hook slept on one ref.\nOrigin then held the whole seed, yet `lym board sync` refused with \"has no upstream in a one-repository hub, so it was never seeded onto origin\" and named `lym fabric clone --single-repo ... --reset` (`internal/fabricengine/pushclassified.go`).\nThe sentence is false, and a one-URL clone onto an origin that already holds a namespaced board is refused, so the way forward may loop.\nThe `--reset` path was not driven, since a task session may not run `lym fabric clone`.\n\nA related wording gap: a killed seed push that took the records branch and withdrew it says nothing of the withdrawal, where the declined-board message does.\n\n## Idea\n\nMake the message read origin before it claims the board was never seeded, and name a way forward that works when origin holds the seed.\nDrive it in the second hardener campaign, after `harden-sandbox-fabric-verbs` lands.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Drift-Verify",
       "created": "2026-11-22T15:38:08Z",
       "revised": "2026-11-22T15:42:28Z",
       "run_settings": {
