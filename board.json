@@ -295,57 +295,23 @@
     },
     {
       "id": 1555,
-      "handle": "E1",
-      "slug": "readme-beam-marker",
-      "title": "Board README marks projects that have a beam",
-      "kind": "note",
+      "handle": "T5",
+      "slug": "readme-declutter",
+      "title": "Board README: beam marker, no empty sections, no Notes level",
+      "kind": "task",
       "labels": [
         "enhancement",
         "board"
       ],
       "issues": [],
+      "recipe": "sampler",
       "depends_on": [],
       "isolated": false,
-      "brief": "Show which projects run as beams",
-      "body": "## What was seen (operator, 2026-11-22)\n\nThe rendered board README does not show which projects have a beam, a long-lived pair that spawns its members from its own worktree.\n\n## Idea\n\nMark each project that has a beam, in its heading and in any project list, so a reader sees at once which projects run as beams.\n",
+      "brief": "Declutter the rendered board README in a sampler session",
+      "body": "## Goal (operator, 2026-11-22)\n\nMake the rendered board README less cluttered, tried out with the operator in a sampler session:\n\n- **Beam marker**: mark each project that has a beam, in its heading and in any project list.\n- **No empty sections**: render no section, heading or table that holds no entry, such as a project's empty Tasks and Ready.\n- **No Notes level**: drop the Notes heading above the type groups; Features, Bugs, Enhancements and the other type groups become sections of their own.\n\nThe session shows the operator renderings of the current board and keeps what the operator picks.\n",
+      "status": "draft",
       "created": "2026-11-22T09:55:43Z",
-      "revised": "2026-11-22T09:55:43Z"
-    },
-    {
-      "id": 1556,
-      "handle": "E2",
-      "slug": "readme-hide-empty-sections",
-      "title": "Board README hides empty sections",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "No heading or table for a section with no entries",
-      "body": "## What was seen (operator, 2026-11-22)\n\nEmpty sections render in the board README, such as a project's Tasks and Ready headings with nothing under them; P2 shows only its features, but its empty sections still take room.\n\n## Idea\n\nRender no section, heading or table that holds no entry.\n",
-      "created": "2026-11-22T09:55:43Z",
-      "revised": "2026-11-22T09:55:43Z"
-    },
-    {
-      "id": 1557,
-      "handle": "E3",
-      "slug": "readme-flatten-note-groups",
-      "title": "Board README drops the Notes level above the type groups",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Features, bugs and enhancements as their own sections",
-      "body": "## What was seen (operator, 2026-11-22)\n\nThe board README groups features, bugs and enhancements under a Notes heading, as subsections.\nEvery reader knows those are notes, so the extra level adds nothing.\n\n## Idea\n\nDrop the Notes level: render Features, Bugs, Enhancements and the other type groups as sections of their own.\n",
-      "created": "2026-11-22T09:55:43Z",
-      "revised": "2026-11-22T09:55:43Z"
+      "revised": "2026-11-22T09:56:33Z"
     }
   ],
   "prime_owner": "neve",
