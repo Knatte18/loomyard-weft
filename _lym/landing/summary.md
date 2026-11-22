@@ -1,83 +1,56 @@
-# Burler fix: tell a rerun fixer why; let forks push between own repos
+# Burler fix: name the rerun reason, let forks push to scratch repos
 
-Closes two defects from one burler fix round (issues #176 and #177).
+A fix round that runs its fixer again now tells the fixer so, and the mutating-git guard lets a fork push inside a repository it created.
 
-## Fixer reruns with no reason (#176)
+Closes #176
+Closes #177
 
-When the fix producer set a round's fixer report aside before the round finished, the next fixer over the same review had no way to know why it ran.
-It happened on a failure exit, which archives the report alone so a resume skips the reviewer.
-It also happened on the pre-attempt archive, when a died or timed-out first attempt had already written a report.
-The report then sat under a timestamped name, the round looked unfinished, and the fixer had to read every card to tell a misnamed or rejected report from new work.
+## Fixer rerun (#176)
 
-- `burlerengine.RunOpts` gains `Rerun`, a `FixRerun` holding a reason and the archived report's path.
-  `fixWork` appends a paragraph when it is set.
-  The paragraph says the fix runs again, not for new work, gives the reason, and names the archived report.
-  It tells the fixer to keep each change that holds and to carry over each disposition that still applies.
-- `BurlerFixProducer` keeps the reason in the round's snapshot record (`fixer_rerun`) under the accepted review's digest:
-  - a failure exit records `the round halted: <error>`;
-  - a cancelled exit records the cancellation;
-  - the pre-attempt archive records the outcome of the attempt that left the report.
-  The next call reads the record and passes it as `Rerun`.
-  A record under another review's digest is never passed, so a fresh review is never described as a rerun.
-- A retry whose died first attempt left no report is told the outcome alone.
-- `archiveStaleOutput` is the single-file form of `archiveStaleOutputs` and returns the archived path, so the producer can name it.
+Before each attempt, `BurlerFixProducer` in `internal/shedadapters/burlerfix.go` renames a leftover round fixer report to a timestamped name.
+The fixer prompt never said why the step ran again, so the second session could not tell a finished round from an unfinished one.
 
-## Fork git in its own scratch repositories (#177)
+- `burlerengine.RunOpts.Rerun` (a `FixRerun` with `Reason` and `Report`) makes `fixWork` append a paragraph to the fixer's work.
+  It says the fix runs again, not for new work, why, and where the earlier report was archived.
+  The fixer is told to check each finding against the target as it stands, keep the changes that hold, and write the report afresh.
+- `archiveStaleOutput` in `archive.go` is split out of `archiveStaleOutputs` and returns the archived path.
+- The reason is kept in the round snapshot (`fixer_rerun` in `round-<n>-snapshot.json`), keyed by the digest of the accepted review.
+  A record under another digest is never told.
+  A failure exit of the fix producer records its halt as the reason, even when it archived no report, and keeps the report an earlier call recorded.
+  A retired round, archived whole or by the review producer, drops the record.
+- A failed read or write of the record is logged and never fails the round; the next fixer is then told nothing of the rerun.
 
-27498365 already let a fork run git inside a repository it created, but every `git push` still counted as mutating.
-A fork that pushed from a scratch work repository to a scratch bare repository halted the round as a hard failure.
-The halt's way forward said to revert what the fork wrote when nothing in the target had changed.
+## Fork git in its own scratch repo (#177)
 
-- A push now passes when its destination leads into a repository the fork created.
-  That is a remote the fork pointed there with `git remote add`, `git remote set-url` or `git clone`, or a destination written as a path into one.
-- `git clone` now records the repository it creates, at its directory operand or the name git derives from the source.
-  Its origin, or the remote `--origin` names, leads in only when the source is a fork-created repository.
-- A push still counts when it has:
-  - no destination, or `--repo`;
-  - a URL or a bare remote name the fork never pointed;
-  - a remote renamed, or re-pointed outside;
-  - a preceding `git config` or `-c` that names a `remote.`, `url.` or `branch.` key.
-- `forkViolation` returns a `forkViolationError` that knows whether any fork wrote a file or ran a state-changing git invocation outside its own repositories.
-  `auditFixRound`'s way forward now has three forms:
-  - when the audit found no target change, it says so and its way forward is to resume;
-  - when the violation was a push from a fork-created repository, it says to check that the push's destination is none of the target's remotes, then resume;
-  - otherwise it keeps the old instruction to inspect and revert.
-- `firstMutatingGitCommand` became `mutatingGitCommands`, which returns every violating command with the fork-created repository it pushed from.
-  The way forward needs every violation, not only the first.
+`internal/burlerengine/cluster.go` already let a fork run mutating git in a repository it created, but every `git push` was refused.
+
+- A repository counts as the fork's own when the fork made it with `git init`, `git clone` or `git worktree add`.
+- A `git push` passes when its destination leads into such a repository:
+  a remote that `git remote add`, `git remote set-url` or `git clone` pointed into one, or a path into one.
+  A push with no destination, or after a config key that may redirect it (`remote.`, `url.` or `branch.`), never passes.
+  `--git-dir`, `--work-tree` and unresolvable directories never pass either.
+- The hard-failure halt now says when the audit found no target change, instead of telling the fork to revert something that does not exist.
+- `internal/burlerengine/doc.go` documents both rules.
 
 ## Design decisions
 
-- The rerun reason is persisted in the round snapshot record rather than re-derived from archived siblings.
-  Only the producer knows why it set a report aside, and the digest key keeps a record from leaking into a later review of the same round.
-- The issue offered accepting the archived report instead of rerunning.
-  That is not taken: a report set aside by a failure exit, a fork violation for one, may be wrong.
-  A report left by a died session never passed the fixer gate.
-- Every push destination that is a bare word must be a remote the fork pointed.
-  Treating an unknown bare word as a path would let a push to a remote set outside the transcript's view pass.
+- The guard errs toward refusing: a remote it cannot resolve to a fork-created repository is treated as the target's.
+- The rerun reason is stored beside the round's other snapshot data, so it survives a resume and is dropped with the round it answered.
 
-## Known gaps
+## To check
 
-- The audit stays lexical.
-  A remote set by editing `.git/config` from the shell, or a `GIT_CONFIG_*` environment variable, is not seen.
-  A push to such a remote passes only if its destination is also written as a path into a fork-created repository.
-- A clone's relative source is resolved against the clone command's directory, while git resolves a remote's relative URL at push time.
-  A push from a subdirectory of the clone can therefore reach elsewhere than the audit assumes.
+Findings the code review left open, to check by hand against `internal/burlerengine/cluster.go` and `internal/shedadapters/burlerfix.go`:
 
-## Tests
+- `git clone` of a remote whose name looks like a git repository sets the redirect flag.
+- A config key passed in its attached `-c`/env form may bypass the redirect check.
+- A failure exit that has no fixer report may record no reason.
+- The push halt may claim the target repository is unchanged when it is not.
+- Lexical ownership of a path admits symlinks and failed clones as fork-created repositories.
+- The pre-attempt archive record has no test.
+- A relative push path may be resolved from the wrong directory.
+- Remote tracking may mark a push safe while git pushes elsewhere.
 
-- `TestFirstMutatingGitCommandScopesToForkRepositories` gains rows for the issue's scratch push probe, a path push, clone origins, `--origin`, and each push form that still counts.
-- `TestAuditClusterRound` asserts each fix-round violation's way forward:
-  - the revert text for a write;
-  - the no-change text for a named fork spawn;
-  - the push text for a push from a fork-made repository;
-  - the revert text when a push and a target commit share one command, or when a nested spawn sits beside a fork's target commit.
-- `TestFixWork_Rerun` pins the rerun paragraph with and without an archived report, and its absence on a first fix.
-  `TestEngine_Fix_TableShapeAndFiles` pins that `Engine.Fix` passes `RunOpts.Rerun` into the fix step.
-- `TestBurlerFixProducer_Call_TellsARerunFixerWhy` covers four cases:
-  - the reason and report after a halted call;
-  - the same after a died attempt that wrote its report;
-  - the reason alone after a died attempt that left none;
-  - nothing for a record under another review's digest.
+Not run by hand: a real fixer session through a rerun, and a fork pushing to a scratch repository.
 
 ## Merge danger
 
