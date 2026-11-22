@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Drift-Verify → skipped",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → skipped",
     "wait": ""
   },
   "history": [
@@ -58,6 +58,13 @@
       "output": "",
       "at": "2026-11-22T15:30:25Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-22T15:30:32Z",
+      "reason": "sampler.code_review = false"
     }
   ],
   "product": {
