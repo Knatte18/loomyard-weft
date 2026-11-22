@@ -299,7 +299,7 @@
       "isolated": false,
       "brief": "The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs",
       "body": "## What was seen (2026-11-22)\n\nRound 1 of `harden-fabricengine` built a one-repository sandbox hub with `lym harden sandbox new --single-repo` and drove it live.\nEvery mutating `lym fabric` verb was refused from its round agent: add, push, pull, sync, reconcile, checkout, remove, clone and cleanup --apply.\nThe refusal is `sandboxedRoleRefusal` in `internal/fabriccli/roleguard.go`, which reads only the strand name, so it also refuses verbs run inside the round's own sandbox hub.\nSeven of twelve charter items ended as could not verify: the join, the refusals, two clones, the remote delete, pair crash and rebirth, URL variations and every pair verb.\n\n## Idea\n\nLet a hardener round's agent run the mutating fabric verbs in a hub under its own sandbox root, `\u003cworktree\u003e/.lym/harden-sandbox`, and keep the refusal everywhere else.\nThe guard then checks the hub the verb resolves, not only the strand name, so a verb aimed at the real hub stays refused.\n",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-22T10:03:27Z",
       "revised": "2026-11-22T11:28:18Z",
       "run_settings": {
