@@ -1,0 +1,10 @@
+{
+  "round": 2,
+  "head": "c25e17ac28c27c9469cbb0b33018004a286e15ca",
+  "commits": [
+    "8a8ff40 fabricengine: fix gate finding — open the unanswered-push rule's second line with a clause the comment lint reads",
+    "e9d677c fabric sandbox suite: cover a killed records push, the kept hub and two more records-store faults",
+    "ba00dc2 fabricengine: fix F7 — the prime-key refusals name the clone-time records branch through RecordsBranchName and refuse a key that is no records branch",
+    "704c7ae fabricengine: fix F6, F8 — read origin before rolling back an unanswered records push, and read a branch's merge setting as a records-store mark"
+  ]
+}
