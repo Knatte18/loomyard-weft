@@ -1,7 +1,7 @@
 # Card 13 — pr-continue-autonomy
 
 **Create:**
-- `plan:internal/loomcli#prContinueReview` -> `type prContinueReview struct`
+- `internal/loomcli#prContinueReview`
 
 **Edit:**
 - `internal/loomcli/prcontinue.go`

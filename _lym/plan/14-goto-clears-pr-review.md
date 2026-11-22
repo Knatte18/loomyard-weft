@@ -1,11 +1,11 @@
 # Card 14 — goto-clears-pr-review
 
 **Create:**
-- `plan:internal/loomcli#prReviewEntryReset` -> `func prReviewEntryReset(reset func() error) func(target string) error`
-- `plan:internal/loomcli#loomCLI.prReviewGotoAdmitted` -> `func (c *loomCLI) prReviewGotoAdmitted() func(target string) error`
-- `plan:internal/loomcli#clearPRReviewOnGoto` -> `func clearPRReviewOnGoto(recordPath, lockPath string, stopLiveSession func(guid string) error, commit func() error) error`
-- `plan:internal/loomcli#TestPRReviewEntryReset` -> `func TestPRReviewEntryReset(t *testing.T)`
-- `plan:internal/loomcli#TestClearPRReviewOnGoto` -> `func TestClearPRReviewOnGoto(t *testing.T)`
+- `internal/loomcli#prReviewEntryReset`
+- `internal/loomcli#loomCLI.prReviewGotoAdmitted`
+- `internal/loomcli#clearPRReviewOnGoto`
+- `internal/loomcli#TestPRReviewEntryReset`
+- `internal/loomcli#TestClearPRReviewOnGoto`
 
 **Edit:**
 - `internal/shedengine#GotoRequest`

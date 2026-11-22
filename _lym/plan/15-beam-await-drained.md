@@ -1,8 +1,8 @@
 # Card 15 — beam-await-drained
 
 **Create:**
-- `plan:internal/pawlengine#DrainMarkerName` -> `const DrainMarkerName = "drain-posted"`
-- `plan:internal/pawlengine#awaitRun.noticeDrain` -> `func (r *awaitRun) noticeDrain()`
+- `internal/pawlengine#DrainMarkerName`
+- `internal/pawlengine#awaitRun.noticeDrain`
 
 **Edit:**
 - `internal/pawlengine#Deps`
