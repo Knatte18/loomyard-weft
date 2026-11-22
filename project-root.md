@@ -8,17 +8,12 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (1)
+## Running (2)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs | starting · Worktree-Create | neve | 0m<br>0m | darn, gate |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 6h<br>6h | orch, landing, loom, pawl, drift |
-
-## Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs |  | 0m<br>0m | darn, gate |
 
 ## Layer A (3)
 
