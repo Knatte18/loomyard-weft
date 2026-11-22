@@ -35,7 +35,7 @@ Owner `neve`
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | Darn-Write | neve | 27m<br>15m | gate, darn |
-| T7 | **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | darn · docs | Drift-Recheck | neve | 27m<br>15m | burler, lenses |
+| T7 | **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | darn · docs | Describe | neve | 27m<br>15m | burler, lenses |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Webster | neve | 7h<br>7h | orch, landing, loom, pawl, drift |
 
 ### Layer A (3)
