@@ -1,6 +1,6 @@
 # Hardener campaign on fabric, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · landing · Finalize
+`harden-fabricengine` · Task · bug, fabric · done
 
 ## Focus
 
