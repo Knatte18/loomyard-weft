@@ -326,7 +326,16 @@
       "status": "draft",
       "created": "2026-11-22T16:51:58Z",
       "revised": "2026-11-22T16:51:58Z",
-      "profile": "light",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "docs",
       "discussed": true,
       "record_body_sha256": "c3d94bd83987d8c5f08c3bee07c0fa5de89258ea9112d75b18326b63e6ce77b4"
     },
