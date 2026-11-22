@@ -1,8 +1,8 @@
 # A killed seed leaves board sync naming a false, looping way forward
 
-`seed-killed-way-forward-loops` · Task · bug, fabric · draft
+`seed-killed-way-forward-loops` · Task · bug, fabric
 
-Depends on: [`harden-fabricengine`](design-harden-fabricengine.md)
+Depends on: [`harden-fabricengine`](design-harden-fabricengine.md), [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
 
 ## What was seen
 
