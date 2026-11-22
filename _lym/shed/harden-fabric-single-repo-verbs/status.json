@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Bouncer",
+  "current_producer": "Harden-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Bouncer",
-    "last": "Record-Write → done",
+    "now": "Harden-Burler-Review",
+    "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -31,6 +31,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/discussion/decision-record.md",
       "at": "2026-11-22T17:19:23Z",
       "started_at": "2026-11-22T17:19:23Z"
+    },
+    {
+      "producer": "Harden-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-22T17:20:48Z",
+      "started_at": "2026-11-22T17:19:29Z",
+      "routed_to": "Harden-Burler-Review"
     }
   ],
   "product": {
