@@ -1,6 +1,6 @@
 # Measure where darn runs lost time since 2026-11-18
 
-`darn-slowdown-measure` · Task · research, darn, gate · landing · Finalize
+`darn-slowdown-measure` · Task · research, darn, gate · done
 
 ## Goal
 
