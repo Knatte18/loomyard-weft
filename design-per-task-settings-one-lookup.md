@@ -1,6 +1,6 @@
 # Per-task beam settings use one lookup from the worktree up
 
-`per-task-settings-one-lookup` · Task · enhancement, dobby, config, board, landing · draft
+`per-task-settings-one-lookup` · Task · enhancement, dobby, config, board, landing
 
 ## Rule (operator, 2026-11-22)
 
