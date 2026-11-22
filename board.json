@@ -296,6 +296,25 @@
       "status": "running · Discussion-Burler-Fix",
       "created": "2026-11-22T16:56:55Z",
       "revised": "2026-11-22T17:28:51Z"
+    },
+    {
+      "id": 1569,
+      "handle": "R1",
+      "slug": "hardener-works-study",
+      "title": "Study whether the hardener finds and fixes real faults",
+      "kind": "note",
+      "labels": [
+        "research",
+        "burler",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost",
+      "body": "## Goal\n\nFind out whether the hardener recipe does what it is for: drive the modules its focus names, find real faults, fix them with tests that hold, and converge.\n\n## Evidence\n\n- The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.\n- The second, `harden-fabricengine-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.\n- Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-\u003cn\u003e-focus.md`, `round-\u003cn\u003e-review.md`, `round-\u003cn\u003e-acceptance.md`, `round-\u003cn\u003e-usage.yaml` and the snapshots, beside its decision record and the landed commits.\n\n## Questions\n\n- **Findings**: for each finding, is it a real fault, a false positive or a matter of taste? Do its repro steps show it?\n- **Fixes**: does each fix cure its finding? Does its regression test fail with the fix broken, as the fix rules demand? Was the package doc updated?\n- **Focus**: did each round stay inside the campaign's focus? Did the focus files steer later rounds to what was left unverified?\n- **Convergence**: did the Bouncer end the campaign on a sound verdict? Were deferred findings filed as open risks and on the board?\n- **Misses**: which faults in the same code turned up after the campaign landed, outside it (such as the killed-seed way forward in `0e4782373` and the fetch prune in `f660ac101`), and could the campaign have reached them?\n- **Cost**: tokens and wall time per round, from the usage files and the run's records.\n\n## Bounds\n\n- Mostly a study of records and commits.\n- At most three findings are reproduced, on a sandbox hub against the commit before their fix, one try each; no other trial runs.\n- The report ends with a verdict and a short list of concrete changes to the hardener recipe or its stencils, each a candidate note.\n",
+      "created": "2026-11-22T17:52:12Z",
+      "revised": "2026-11-22T17:52:12Z"
     }
   ],
   "prime_owner": "neve",
