@@ -1,0 +1,1 @@
+Review segment of task `move-task-by-handback` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/move-task-by-handback/_lym/reviews/discussion/round-3-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept move-task-by-handback".
