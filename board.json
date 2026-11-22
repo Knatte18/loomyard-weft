@@ -414,7 +414,7 @@
       "isolated": false,
       "brief": "lym turns on remote control for every orch it launches; it must stay off until the operator turns it on.",
       "body": "## What was seen (operator, 2026-11-22)\n\nBringing up the scribe hub's orch with `lym beam start` turned on Claude Code's remote control for it, because `internal/orchengine/template.yaml` ships `remote_control: true`.\nThe operator decides when a session gets remote control; lym must never turn it on by itself.\n\n## Fix\n\n- `remote_control` defaults to `false` in the orch template, so no hub gets remote control on any launch or resume unless its config turns it on.\n- Every hub that has no explicit value takes the new default; ship the reinterpretation `PATTERN-config-layers` asks for a meaning change.\n- The RC button of a pane stays the operator's way to turn it on for one agent.\n- Check that no other launch path, such as a beam orch or a respawn, turns remote control on by its own default.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-22T11:21:57Z",
       "revised": "2026-11-22T11:21:57Z",
       "run_settings": {
