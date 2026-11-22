@@ -1,0 +1,1 @@
+{"stop_key":{"current_producer":"Sampler-Session","history_length":5,"state":"failed"},"settler":"go-rule","action":"restep","outcome":"an interrupted step under the reinvoke policy: re-step","at":"2026-11-22T11:43:58.768720655+01:00"}
