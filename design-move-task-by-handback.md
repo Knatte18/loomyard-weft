@@ -1,6 +1,6 @@
 # Move a running task by hand-back and a fresh run, not a re-parent verb
 
-`move-task-by-handback` · Task · sketch, batten, loom, board · starting · Seed-Child
+`move-task-by-handback` · Task · sketch, batten, loom, board · starting · Open-Window
 
 Decision record: [Sketch](decision-move-task-by-handback.md)
 
