@@ -1,6 +1,6 @@
 # Run a verify gate's reports alongside its tests
 
-`verify-tail-alongside-tests` · Task · enhancement, gate, darn · starting · Worktree-Create
+`verify-tail-alongside-tests` · Task · enhancement, gate, darn · starting · Seed-Child
 
 ## Seen
 
