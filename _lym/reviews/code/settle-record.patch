@@ -1,0 +1,1309 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 251427671..b1ac7faf2 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -511,7 +511,9 @@ User-facing modules each get one `lym <module>` namespace:
+   Loom's `reviewer_model` and tapestry's `plan_reviewer_model` are such keys.
+   For example, `lym config tapestry --set 'plan_reviewer_model=["opus[medium]", "sonnet[high]"]'`.
+   A bracketed value that is not a list of scalars is refused.
+-  Every `--set` write is loaded through the module's own loader.
++  `lym config <module> --unset key` (repeatable) removes a key, or one entry of a map, from the layer's file the same way.
++  For example, `lym config gate --unset gates.harden-live-copies` removes a retired gate key.
++  Every `--set` and `--unset` write is loaded through the module's own loader.
+   A value the loader refuses, such as a list given to loom's single-model `plan`, is refused with the key named.
+   The file is left as it was.
+   A module resolves key by key through its layers.
+diff --git a/docs/shared-libs/configengine.md b/docs/shared-libs/configengine.md
+index b08c1c71f..9c027e6e3 100644
+--- a/docs/shared-libs/configengine.md
++++ b/docs/shared-libs/configengine.md
+@@ -248,6 +248,19 @@ and a nil error.
+ This list is nil/empty when no such orphaned key was present.
+ On any error return, the returned `[]string` is always nil.
+ 
++### `Unset(dirs Dirs, spec Spec, layer Layer, keys []string) error`
++
++Removes dotted keys from one layer's file of a module, through `yamlengine.RemoveKeys`.
++It is the non-interactive path of `lym config <module> --unset key`, so a removed key's value resolves from the layers below and the template.
++A key the template lacks, a retired key included, is removed like any other.
++A mapping the removal leaves empty is removed with its key.
++
++**Error cases:**
++
++- **Not initialized:** Propagates `FindBaseDir`'s error.
++- **Layer does not apply:** Returns an error saying the layer of the module's config does not apply here.
++- **Absent file or key:** Returns an error naming the file and `lym config <module> --resolved`, and writes nothing.
++
+ ### `Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error`
+ 
+ Opens one layer's file of a module in an editor, validates the YAML syntax, and loops on a validation failure.
+diff --git a/internal/configcli/configcli.go b/internal/configcli/configcli.go
+index 5f5691d78..9d1036966 100644
+--- a/internal/configcli/configcli.go
++++ b/internal/configcli/configcli.go
+@@ -200,12 +200,30 @@ func parseSetFlags(raw []string) ([]yamlengine.KV, error) {
+ 	return pairs, nil
+ }
+ 
+-// setModule writes pairs into a single config module's file and optionally syncs on success.
+-// It applies them with no editor: configengine.Set performs the write non-interactively in one call.
++// layerWrite makes one non-interactive change to the layer's file of a module under dirs.
++// It returns the pre-existing keys the template lacks that the write preserved.
++type layerWrite func(dirs configengine.Dirs, spec configengine.Spec, layer configengine.Layer) ([]string, error)
++
++// setPairs returns the write of pairs through configengine.Set.
++func setPairs(pairs []yamlengine.KV) layerWrite {
++	return func(dirs configengine.Dirs, spec configengine.Spec, layer configengine.Layer) ([]string, error) {
++		return configengine.Set(dirs, spec, layer, pairs)
++	}
++}
++
++// unsetKeys returns the write that removes keys through configengine.Unset, which preserves no key.
++func unsetKeys(keys []string) layerWrite {
++	return func(dirs configengine.Dirs, spec configengine.Spec, layer configengine.Layer) ([]string, error) {
++		return nil, configengine.Unset(dirs, spec, layer, keys)
++	}
++}
++
++// setModule applies write to a single config module's file and optionally syncs on success.
++// It opens no editor: write changes the file non-interactively in one call.
+ // A default-layer file is written at the board dir and committed in the Bolt checkout;
+ // a local override is written uncommitted, and a worktree file syncs fabric.
+-// A value the module's loader refuses leaves the file as it was.
+-func setModule(dirs configDirs, out io.Writer, module string, pairs []yamlengine.KV, sync syncFunc, commit hubCommitFunc) int {
++// A result the module's loader newly refuses leaves the file as it was.
++func setModule(dirs configDirs, out io.Writer, module string, write layerWrite, sync syncFunc, commit hubCommitFunc) int {
+ 	// Look up the module; its declared open maps let --set add or rewrite one entry.
+ 	mod, ok := configreg.Lookup(module)
+ 	if !ok {
+@@ -220,19 +238,19 @@ func setModule(dirs configDirs, out io.Writer, module string, pairs []yamlengine
+ 		if exitCode, refused := dirs.refuseHubWrite(out); refused {
+ 			return exitCode
+ 		}
+-		return setHubWide(dirs, out, mod, pairs, commit)
++		return setHubWide(dirs, out, mod, write, commit)
+ 	case configengine.LayerMachine:
+ 		if exitCode, refused := dirs.refuseHubWrite(out); refused {
+ 			return exitCode
+ 		}
+-		return setMachine(dirs, out, mod, path, pairs)
++		return setMachine(dirs, out, mod, path, write)
+ 	case configengine.LayerLocal:
+-		return setLocal(dirs, out, mod, path, pairs)
++		return setLocal(dirs, out, mod, path, write)
+ 	}
+ 
+-	// Apply pairs directly, with no editor invocation;
++	// Apply the write directly, with no editor invocation;
+ 	// a worktree file under a board is sparse and holds only the keys set.
+-	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerWorktree, path, pairs)
++	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerWorktree, path, write)
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
+@@ -263,17 +281,17 @@ func setModule(dirs configDirs, out io.Writer, module string, pairs []yamlengine
+ 	return output.Err(out, fmt.Sprintf("edited _lym/config/%s.yaml but fabric sync failed: %s", module, buf.String()))
+ }
+ 
+-// setChecked writes pairs into the layer's file of module at path and checks the result with the module's own loader.
++// setChecked applies write to the layer's file of module at path and checks the result with the module's own loader.
+ // A write that leaves the stack failing to load with a new error is undone, and path is put back as it was.
+ // The error names the module and carries the loader's, which names the key.
+ // A stack that already failed to load lets a write through that leaves that same failure in place.
+-func setChecked(dirs configengine.Dirs, module configreg.Module, layer configengine.Layer, path string, pairs []yamlengine.KV) ([]string, error) {
++func setChecked(dirs configengine.Dirs, module configreg.Module, layer configengine.Layer, path string, write layerWrite) ([]string, error) {
+ 	snap, err := snapshotFile(path)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	before := module.CheckLoad(dirs)
+-	preserved, err := configengine.Set(dirs, module.Spec(), layer, pairs)
++	preserved, err := write(dirs, module.Spec(), layer)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -289,14 +307,14 @@ func newLoadFailure(module configreg.Module, before, after error) error {
+ 	if after == nil || (before != nil && before.Error() == after.Error()) {
+ 		return nil
+ 	}
+-	return fmt.Errorf("the %s config would not load with this value: %w; way forward: --set the key to a value it takes", module.Name, after)
++	return fmt.Errorf("the %s config would not load after this write: %w; way forward: --set the keys it leaves invalid to values the loader takes, or leave the key as it is", module.Name, after)
+ }
+ 
+-// setLocal writes pairs into a module's local override file at path.
++// setLocal applies write to a module's local override file at path.
+ // A local override is never committed and runs no fabric sync.
+ // A key the local layer refuses, or a value the module's loader refuses, leaves the file as it was.
+-func setLocal(dirs configDirs, out io.Writer, mod configreg.Module, path string, pairs []yamlengine.KV) int {
+-	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerLocal, path, pairs)
++func setLocal(dirs configDirs, out io.Writer, mod configreg.Module, path string, write layerWrite) int {
++	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerLocal, path, write)
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
+@@ -310,12 +328,12 @@ func setLocal(dirs configDirs, out io.Writer, mod configreg.Module, path string,
+ 	return output.Ok(out, fields)
+ }
+ 
+-// setMachine writes pairs into a module's machine override file at path.
++// setMachine applies write to a module's machine override file at path.
+ // A machine override is never committed and runs no fabric sync.
+ // A key the machine layer refuses leaves the file as it was.
+ // So does a value the module's loader refuses over the prime's worktree stack.
+-func setMachine(dirs configDirs, out io.Writer, mod configreg.Module, path string, pairs []yamlengine.KV) int {
+-	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerMachine, path, pairs)
++func setMachine(dirs configDirs, out io.Writer, mod configreg.Module, path string, write layerWrite) int {
++	preserved, err := setChecked(dirs.engineDirs(), mod, configengine.LayerMachine, path, write)
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
+@@ -371,19 +389,19 @@ func editLocal(dirs configDirs, out io.Writer, mod configreg.Module, path string
+ 	})
+ }
+ 
+-// dispatch routes the config command to one of three paths.
+-// It takes the --set path when setFlags is non-empty.
++// dispatch routes the config command to one of four paths.
++// It takes the --set path when setFlags is non-empty, and the --unset path when unsetFlags is.
+ // It takes the print path when printOnly is true, and otherwise editOne when a module is given.
+ //
+ // The print path is read-only: it writes the on-disk YAML to out and never opens an editor.
+-// The --set path writes without calling edit and is mutually exclusive with --print.
++// The --set and --unset paths write without calling edit; each is mutually exclusive with --print and with the other.
+ // layer is the --layer value, empty or one of the four layer names.
+ // Any other value is refused before anything is read or written.
+ // hubWriteGuard is called before a default-layer write and refuses it with its message; a nil guard allows every write.
+ // terminal reports whether the command's input is an interactive terminal.
+ // Without one, an editor path is refused before the layer is dispatched,
+ // so no guard is consulted, no file is scaffolded and no editor runs.
+-func dispatch(l *lymcwd.Location, out io.Writer, args []string, edit configengine.EditorFunc, sync syncFunc, commit hubCommitFunc, printOnly bool, setFlags []string, layer string, hubWriteGuard func() (string, error), terminal bool) int {
++func dispatch(l *lymcwd.Location, out io.Writer, args []string, edit configengine.EditorFunc, sync syncFunc, commit hubCommitFunc, printOnly bool, setFlags, unsetFlags []string, layer string, hubWriteGuard func() (string, error), terminal bool) int {
+ 	if !validLayer(layer) {
+ 		return output.Err(out, fmt.Sprintf("unknown --layer %q; use default, worktree, machine or local", layer))
+ 	}
+@@ -391,20 +409,33 @@ func dispatch(l *lymcwd.Location, out io.Writer, args []string, edit configengin
+ 	dirs.layer = layer
+ 	dirs.hubWriteGuard = hubWriteGuard
+ 
+-	// The --set path never opens the editor, so its validation runs before the --print and edit branches can act:
+-	// mutual exclusivity with --print, and a module being required.
+-	if len(setFlags) > 0 && printOnly {
+-		return output.Err(out, "--print and --set are mutually exclusive")
++	// The --set and --unset paths never open the editor,
++	// so their validation runs before the --print and edit branches can act:
++	// mutual exclusivity with --print and with each other, and a module being required.
++	writeFlag := ""
++	switch {
++	case len(setFlags) > 0 && len(unsetFlags) > 0:
++		return output.Err(out, "--set and --unset are mutually exclusive")
++	case len(setFlags) > 0:
++		writeFlag = "--set"
++	case len(unsetFlags) > 0:
++		writeFlag = "--unset"
+ 	}
+-	if len(setFlags) > 0 && len(args) < 1 {
+-		return output.Err(out, "module required with --set")
++	if writeFlag != "" && printOnly {
++		return output.Err(out, "--print and "+writeFlag+" are mutually exclusive")
++	}
++	if writeFlag != "" && len(args) < 1 {
++		return output.Err(out, "module required with "+writeFlag)
+ 	}
+ 	if len(setFlags) > 0 {
+ 		pairs, err := parseSetFlags(setFlags)
+ 		if err != nil {
+ 			return output.Err(out, err.Error())
+ 		}
+-		return setModule(dirs, out, args[0], pairs, sync, commit)
++		return setModule(dirs, out, args[0], setPairs(pairs), sync, commit)
++	}
++	if len(unsetFlags) > 0 {
++		return setModule(dirs, out, args[0], unsetKeys(unsetFlags), sync, commit)
+ 	}
+ 
+ 	// The --print path is read-only and never opens the editor, so it runs before any edit dispatch.
+@@ -477,10 +508,11 @@ func buildConfigLong() string {
+ 		"or a key inside it, e.g.\n" +
+ 		"  lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0\n" +
+ 		"Keys the template lacks are preserved (JSON \"preserved\" field);\n" +
+-		"\"lym config reconcile --layer default --apply\" from the prime removes them from the\n" +
+-		"board dir's files, and \"lym config reconcile --apply\" from a worktree file.\n\n" +
+-		"--layer default|worktree|machine|local picks the file to print or write: default is the board's\n" +
+-		"repo default, committed from the prime; local is an untracked override.\n\n" +
++		"\"lym config reconcile --apply\" removes them, with --layer default from the prime.\n\n" +
++		"--unset key (repeatable) removes a key or a map entry with no editor, e.g.\n" +
++		"  lym config gate --unset gates.harden-live-copies\n\n" +
++		"--layer default|worktree|machine|local picks the file; default is committed from the prime,\n" +
++		"local is untracked.\n\n" +
+ 		"deny_python=false lets Python through and drops the notice at launch, from the prime:\n" +
+ 		"  lym config shuttle --layer default --set " + string(shellguard.SwitchDenyPython) + "=false\n\n" +
+ 		"--resolved <module> prints the merged result, each unit annotated with its\n" +
+@@ -489,12 +521,14 @@ func buildConfigLong() string {
+ }
+ 
+ // resolvedRefusal returns why --resolved cannot run beside the other flags and arguments, or "" when it can.
+-func resolvedRefusal(args []string, printOnly bool, setFlags []string, layer string) string {
++func resolvedRefusal(args []string, printOnly bool, setFlags, unsetFlags []string, layer string) string {
+ 	switch {
+ 	case printOnly:
+ 		return "--resolved and --print are mutually exclusive"
+ 	case len(setFlags) > 0:
+ 		return "--resolved and --set are mutually exclusive"
++	case len(unsetFlags) > 0:
++		return "--resolved and --unset are mutually exclusive"
+ 	case layer != "":
+ 		return "--resolved and --layer are mutually exclusive"
+ 	case len(args) < 1:
+@@ -619,6 +653,7 @@ func Command() *cobra.Command {
+ 	}
+ 	configCmd.Flags().Bool("print", false, "print on-disk config as YAML without launching the editor")
+ 	configCmd.Flags().StringArray("set", nil, "set config key=value directly, bypassing the editor (repeatable)")
++	configCmd.Flags().StringArray("unset", nil, "remove a config key from the layer's file, bypassing the editor (repeatable)")
+ 	configCmd.Flags().Bool("resolved", false, "print the module's resolved config, each unit annotated with the layer it came from")
+ 	configCmd.Flags().String("layer", "", "the layer to print or write: default, worktree, machine or local (default: the module's own file); machine is a module's never-tracked override of its machine keys under the board dir's .lym, written from the prime")
+ 	// The RunE closure captures configCmd so the --print and --set flags are readable without consulting os.Args.
+@@ -628,15 +663,16 @@ func Command() *cobra.Command {
+ 		}
+ 		printOnly, _ := cmd.Flags().GetBool("print")
+ 		setFlags, _ := cmd.Flags().GetStringArray("set")
++		unsetFlags, _ := cmd.Flags().GetStringArray("unset")
+ 		layer, _ := cmd.Flags().GetString("layer")
+ 		resolved, _ := cmd.Flags().GetBool("resolved")
+ 		if resolved {
+-			if refusal := resolvedRefusal(args, printOnly, setFlags, layer); refusal != "" {
++			if refusal := resolvedRefusal(args, printOnly, setFlags, unsetFlags, layer); refusal != "" {
+ 				clihelp.SetExit(cmd.Context(), output.Err(cmd.OutOrStdout(), refusal))
+ 				return nil
+ 			}
+ 		}
+-		if len(args) == 0 && !printOnly && len(setFlags) == 0 {
++		if len(args) == 0 && !printOnly && len(setFlags) == 0 && len(unsetFlags) == 0 {
+ 			return cmd.Help()
+ 		}
+ 		if len(args) > 0 {
+@@ -648,7 +684,7 @@ func Command() *cobra.Command {
+ 			clihelp.SetExit(cmd.Context(), runResolved(cmd.Context(), cmd.OutOrStdout(), args[0]))
+ 			return nil
+ 		}
+-		clihelp.SetExit(cmd.Context(), runConfig(cmd.Context(), cmd.InOrStdin(), cmd.OutOrStdout(), args, printOnly, setFlags, layer))
++		clihelp.SetExit(cmd.Context(), runConfig(cmd.Context(), cmd.InOrStdin(), cmd.OutOrStdout(), args, printOnly, setFlags, unsetFlags, layer))
+ 		return nil
+ 	}
+ 
+@@ -675,9 +711,10 @@ an absent one from the prime. Keys the template lacks are removed.
+ outside a task session, and commits the files in ` + fabricengine.BoltDirName + ` and pushes.
+ Reconcile is refused in the board dir itself.
+ 
+-This verb is the one way to remove a key the template lacks, a retired key
+-included: the reconcile a start verb, a clone or fabric reconcile runs keeps
+-such a key, since a newer lym binary may have written it.`,
++Beside "lym config <module> --unset <key>", this verb is the one way to remove
++a key the template lacks, a retired key included: the reconcile a start verb,
++a clone or fabric reconcile runs keeps such a key, since a newer lym binary may
++have written it.`,
+ 	}
+ 	apply := reconcileCmd.Flags().Bool("apply", false, "apply changes to disk (default: dry-run)")
+ 	reconcileLayer := reconcileCmd.Flags().String("layer", "", "default reconciles the files under the hub's board dir (default: this worktree's own and local files)")
+@@ -712,13 +749,14 @@ such a key, since a newer lym binary may have written it.`,
+ // It does not re-derive the cwd from process state.
+ // When printOnly is true the command is read-only: it prints on-disk YAML without opening an editor or running sync.
+ // setFlags carries the raw "key=value" strings collected from repeated --set flags.
+-func runConfig(ctx context.Context, in io.Reader, out io.Writer, args []string, printOnly bool, setFlags []string, layer string) int {
++// unsetFlags carries the keys collected from repeated --unset flags.
++func runConfig(ctx context.Context, in io.Reader, out io.Writer, args []string, printOnly bool, setFlags, unsetFlags []string, layer string) int {
+ 	l, realSync, realCommit, err := resolveReal(ctx)
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+ 	}
+ 
+-	return dispatch(l, out, args, configengine.DefaultEditor, realSync, realCommit, printOnly, setFlags, layer, realHubWriteGuard(l), stdinIsTerminal(in))
++	return dispatch(l, out, args, configengine.DefaultEditor, realSync, realCommit, printOnly, setFlags, unsetFlags, layer, realHubWriteGuard(l), stdinIsTerminal(in))
+ }
+ 
+ // realHubWriteGuard returns the guard over l and the calling session's strand name from the environment.
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index f750e7136..e4138cfac 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -81,7 +81,7 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		}
+ 
+ 		var out bytes.Buffer
+-		code := dispatch(codeLayout, &out, []string{"loom"}, fakeEdit, injectedSync, nil, false, nil, "", nil, true)
++		code := dispatch(codeLayout, &out, []string{"loom"}, fakeEdit, injectedSync, nil, false, nil, nil, "", nil, true)
+ 		if code != 0 {
+ 			t.Errorf("dispatch() = %d; want 0; output: %s", code, out.String())
+ 		}
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index 8945ad5cf..09b379c3e 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -480,7 +480,7 @@ func TestPrint(t *testing.T) {
+ 			}
+ 
+ 			var out bytes.Buffer
+-			code := dispatch(makeLayoutAt(baseDir), &out, tt.args, makeNeverCalledEditor(t), nil, nil, true, nil, "", nil, true)
++			code := dispatch(makeLayoutAt(baseDir), &out, tt.args, makeNeverCalledEditor(t), nil, nil, true, nil, nil, "", nil, true)
+ 
+ 			if code != tt.wantCode {
+ 				t.Errorf("dispatch(print=true, %v) = %d; want %d; output: %q", tt.args, code, tt.wantCode, out.String())
+@@ -503,26 +503,30 @@ func TestPrint(t *testing.T) {
+ 	}
+ }
+ 
+-// TestDispatchSet pins the --set path on a per-worktree module.
+-// It never opens the editor, and it syncs once for a successful write but never for a refused one.
+-// It keeps an orphan key of a sparse worktree file and omits the "preserved" field.
++// TestDispatchSet pins the --set and --unset paths on a per-worktree module.
++// They never open the editor, and they sync once for a successful write but never for a refused one.
++// --set keeps an orphan key of a sparse worktree file and omits the "preserved" field.
+ // It refuses an unknown key, a --print/--set pair, a missing module, and a value without '='.
++// --unset is refused beside --set or --print.
+ func TestDispatchSet(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name string
+ 		// seed is the loom.yaml content; empty seeds nothing.
+-		seed      string
+-		args      []string
+-		printOnly bool
+-		setFlags  []string
+-		wantCode  int
+-		wantSyncs int
++		seed       string
++		args       []string
++		printOnly  bool
++		setFlags   []string
++		unsetFlags []string
++		wantCode   int
++		wantSyncs  int
+ 		// wantErr is a substring of the error envelope; empty means a success envelope naming loom.
+ 		wantErr string
+ 		// wantPreserved is the "preserved" field; nil means the field must be absent.
+ 		wantPreserved []string
++		// wantGone is a key the loom.yaml must no longer hold after a successful write.
++		wantGone string
+ 	}{
+ 		{
+ 			name:      "set on a clean file syncs once and reports nothing preserved",
+@@ -567,6 +571,44 @@ func TestDispatchSet(t *testing.T) {
+ 			wantCode: 1,
+ 			wantErr:  "expected key=value",
+ 		},
++		{
++			name:       "unset on a worktree file syncs once",
++			seed:       "discussion_timeout_min: 480\n",
++			args:       []string{"loom"},
++			unsetFlags: []string{"discussion_timeout_min"},
++			wantSyncs:  1,
++			wantGone:   "discussion_timeout_min",
++		},
++		{
++			name:       "unset with no module is refused",
++			unsetFlags: []string{"discussion_timeout_min"},
++			wantCode:   1,
++			wantErr:    "module required with --unset",
++		},
++		{
++			name:       "unset of a key the worktree file does not hold is refused",
++			seed:       "# no units\n",
++			args:       []string{"loom"},
++			unsetFlags: []string{"discussion_timeout_min"},
++			wantCode:   1,
++			wantErr:    "no key discussion_timeout_min",
++		},
++		{
++			name:       "set and unset are mutually exclusive",
++			args:       []string{"loom"},
++			setFlags:   []string{"discussion_timeout_min=60"},
++			unsetFlags: []string{"discussion_timeout_min"},
++			wantCode:   1,
++			wantErr:    "--set and --unset are mutually exclusive",
++		},
++		{
++			name:       "print and unset are mutually exclusive",
++			args:       []string{"loom"},
++			printOnly:  true,
++			unsetFlags: []string{"discussion_timeout_min"},
++			wantCode:   1,
++			wantErr:    "--print and --unset are mutually exclusive",
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
+@@ -591,7 +633,7 @@ func TestDispatchSet(t *testing.T) {
+ 				syncCalls++
+ 				return 0
+ 			}
+-			code := dispatch(layout, &out, tt.args, countingEditor(&editorCalls), sync, nil, tt.printOnly, tt.setFlags, "", nil, true)
++			code := dispatch(layout, &out, tt.args, countingEditor(&editorCalls), sync, nil, tt.printOnly, tt.setFlags, tt.unsetFlags, "", nil, true)
+ 
+ 			if code != tt.wantCode {
+ 				t.Fatalf("dispatch(--set) = %d; want %d; output: %q", code, tt.wantCode, out.String())
+@@ -607,6 +649,15 @@ func TestDispatchSet(t *testing.T) {
+ 				return
+ 			}
+ 			assertJSONOkContains(t, out.String(), map[string]any{"module": "loom"})
++			if tt.wantGone != "" {
++				data, err := os.ReadFile(configengine.ConfigFile(baseDir, "loom"))
++				if err != nil && !os.IsNotExist(err) {
++					t.Fatalf("read loom.yaml: %v", err)
++				}
++				if strings.Contains(string(data), tt.wantGone) {
++					t.Errorf("loom.yaml = %q; want %q removed", data, tt.wantGone)
++				}
++			}
+ 
+ 			var env map[string]any
+ 			if err := json.Unmarshal([]byte(strings.TrimSpace(out.String())), &env); err != nil {
+@@ -666,11 +717,12 @@ func TestDispatchHubWideBoard(t *testing.T) {
+ 		// absent leaves the board dir file unwritten before the dispatch.
+ 		absent bool
+ 		// layer is the --layer value the row dispatches with.
+-		layer     string
+-		printOnly bool
+-		setFlags  []string
+-		editor    func(fx hubFixture) configengine.EditorFunc
+-		commitErr error
++		layer      string
++		printOnly  bool
++		setFlags   []string
++		unsetFlags []string
++		editor     func(fx hubFixture) configengine.EditorFunc
++		commitErr  error
+ 		// guard is the hub-wide write guard; nil allows the write.
+ 		guard       func() (string, error)
+ 		wantCode    int
+@@ -901,7 +953,7 @@ func TestDispatchHubWideBoard(t *testing.T) {
+ 					t.Errorf("hub file = %q; want the header alone %q", hubFile, configengine.SparseBaseHeader)
+ 				}
+ 				var printed bytes.Buffer
+-				code := dispatch(fx.layout, &printed, []string{"loom"}, makeNeverCalledEditor(t), (&fakeSyncTracker{}).syncFunc(), (&fakeHubCommit{}).commitFunc(), true, nil, "default", nil, true)
++				code := dispatch(fx.layout, &printed, []string{"loom"}, makeNeverCalledEditor(t), (&fakeSyncTracker{}).syncFunc(), (&fakeHubCommit{}).commitFunc(), true, nil, nil, "default", nil, true)
+ 				if code != 0 || printed.String() != configengine.SparseBaseHeader {
+ 					t.Errorf("print --layer default = %d, %q; want 0, %q", code, printed.String(), configengine.SparseBaseHeader)
+ 				}
+@@ -985,6 +1037,65 @@ func TestDispatchHubWideBoard(t *testing.T) {
+ 				assertJSONErrContains(t, out, filepath.Join(fx.layout.WorktreePath(), "gone"))
+ 			},
+ 		},
++		{
++			name:        "unset of a scope-less gate key the load refuses writes a file that loads",
++			module:      "gate",
++			seed:        "gates:\n  harden-live-copies:\n    tiers: [1]\n  darn-write: {tiers: [0], scope: diff}\n",
++			unsetFlags:  []string{"gates.harden-live-copies"},
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if strings.Contains(hubFile, "harden-live-copies") || !strings.Contains(hubFile, "darn-write: {tiers: [0], scope: diff}") {
++					t.Errorf("hub file = %q; want darn-write alone", hubFile)
++				}
++				if _, err := gateslot.LoadConfig(configengine.Dirs{Board: fx.board}); err != nil {
++					t.Errorf("LoadConfig() after the unset error = %v; want nil", err)
++				}
++			},
++		},
++		{
++			name:        "unset of the last entry of a map drops the emptied map",
++			unsetFlags:  []string{"labels.old"},
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if strings.Contains(hubFile, "labels") || !strings.Contains(hubFile, "readme: Home.md") {
++					t.Errorf("hub file = %q; want readme kept and labels gone", hubFile)
++				}
++			},
++		},
++		{
++			name:        "unset of a key the file does not hold is refused and leaves the file",
++			unsetFlags:  []string{"labels.absent"},
++			wantCode:    1,
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if hubFile != seeded {
++					t.Errorf("hub file changed on a refused unset; got %q", hubFile)
++				}
++				assertJSONErrContains(t, out, "no key labels.absent")
++			},
++		},
++		{
++			name:        "unset of a present key beside an absent one removes nothing",
++			unsetFlags:  []string{"labels.old", "labels.absent"},
++			wantCode:    1,
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if hubFile != seeded {
++					t.Errorf("hub file changed on a refused unset; got %q", hubFile)
++				}
++				assertJSONErrContains(t, out, "no key labels.absent")
++			},
++		},
++		{
++			name:        "unset of a key named twice removes it once",
++			unsetFlags:  []string{"labels.old", "labels.old"},
++			wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, hubFile, out string) {
++				if strings.Contains(hubFile, "labels") || !strings.Contains(hubFile, "readme: Home.md") {
++					t.Errorf("hub file = %q; want readme kept and labels gone", hubFile)
++				}
++			},
++		},
+ 		{
+ 			name:   "drift editor save of a dir missing in the prime is refused and the staging copy kept",
+ 			module: "drift",
+@@ -1092,7 +1203,7 @@ func TestDispatchHubWideBoard(t *testing.T) {
+ 			sync := &fakeSyncTracker{}
+ 			var out bytes.Buffer
+ 
+-			code := dispatch(fx.layout, &out, []string{module}, edit, sync.syncFunc(), commit.commitFunc(), row.printOnly, row.setFlags, row.layer, row.guard, true)
++			code := dispatch(fx.layout, &out, []string{module}, edit, sync.syncFunc(), commit.commitFunc(), row.printOnly, row.setFlags, row.unsetFlags, row.layer, row.guard, true)
+ 
+ 			if code != row.wantCode {
+ 				t.Errorf("dispatch = %d; want %d; output: %q", code, row.wantCode, out.String())
+@@ -1172,6 +1283,8 @@ func assertDarnSaveWritten(t *testing.T, fx hubFixture, hubFile, saved string) {
+ // A JSON object adds a profile or replaces one whole, leaving the others,
+ // and an absent hub file starts from the template's profiles.
+ // A value that is not an object, or a profile no module takes, is refused with the file left as it was.
++//
++//testtiming:keep pins the profiles module's written bytes and its profile validation refusals, which TestDispatchLayers does not assert
+ func TestDispatchSetProfiles(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -1258,7 +1371,7 @@ func TestDispatchSetProfiles(t *testing.T) {
+ 			sync := &fakeSyncTracker{}
+ 			var out bytes.Buffer
+ 
+-			code := dispatch(fx.layout, &out, []string{"profiles"}, makeNeverCalledEditor(t), sync.syncFunc(), commit.commitFunc(), false, []string{row.setFlag}, row.layer, nil, true)
++			code := dispatch(fx.layout, &out, []string{"profiles"}, makeNeverCalledEditor(t), sync.syncFunc(), commit.commitFunc(), false, []string{row.setFlag}, nil, row.layer, nil, true)
+ 
+ 			if code != row.wantCode {
+ 				t.Errorf("dispatch = %d; want %d; output: %q", code, row.wantCode, out.String())
+@@ -1305,7 +1418,7 @@ func TestDispatchLayers(t *testing.T) {
+ 		t.Fatalf("agentname.Format: %v", err)
+ 	}
+ 	const refused = "refused: write from the prime"
+-	const loadWayForward = "way forward: --set the key to a value it takes"
++	const loadWayForward = "way forward: --set the keys it leaves invalid to values the loader takes, or leave the key as it is"
+ 	refusingGuard := func(hubFixture) func() (string, error) {
+ 		return func() (string, error) { return refused, nil }
+ 	}
+@@ -1539,7 +1652,7 @@ func TestDispatchLayers(t *testing.T) {
+ 			setFlags: []string{"tree_scope.tools/=x"}, seedBoard: darnWithTreeScope("\n  tools: ./tools/..."), wantCode: 1, wantCommits: 1,
+ 			wantErr: `"tools" and "tools/"`,
+ 			check: func(t *testing.T, fx hubFixture, out string) {
+-				assertJSONErrContains(t, out, "way forward: --set the key to a value it takes")
++				assertJSONErrContains(t, out, loadWayForward)
+ 				if data, _ := os.ReadFile(configengine.ConfigFile(fx.board, "darn")); string(data) != darnWithTreeScope("\n  tools: ./tools/...") {
+ 					t.Errorf("board darn.yaml = %q; want it unchanged", data)
+ 				}
+@@ -1860,7 +1973,7 @@ func TestDispatchLayers(t *testing.T) {
+ 			sync := func(io.Writer) int { syncs++; return 0 }
+ 			var out bytes.Buffer
+ 
+-			code := dispatch(fx.layout, &out, []string{row.module}, editor, sync, commit.commitFunc(), row.printOnly, row.setFlags, row.layer, guard, !row.noTerminal)
++			code := dispatch(fx.layout, &out, []string{row.module}, editor, sync, commit.commitFunc(), row.printOnly, row.setFlags, nil, row.layer, guard, !row.noTerminal)
+ 
+ 			if code != row.wantCode {
+ 				t.Errorf("dispatch = %d; want %d; output: %q", code, row.wantCode, out.String())
+@@ -1884,7 +1997,7 @@ func TestDispatchLayers(t *testing.T) {
+ // TestPrintResolved pins that --resolved prints a module's resolved configuration.
+ // Each unit is annotated by the layer it came from.
+ // It refuses an unknown module and an absent base layer with an error envelope,
+-// and it refuses --resolved beside --print, --set or --layer, or without a module.
++// and it refuses --resolved beside --print, --set, --unset or --layer, or without a module.
+ func TestPrintResolved(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -1953,6 +2066,7 @@ func TestPrintResolved(t *testing.T) {
+ 		wantErr string
+ 	}{
+ 		{name: "beside --set", args: []string{"loom", "--resolved", "--set", "review_max_bounces=2"}, wantErr: "--resolved and --set are mutually exclusive"},
++		{name: "beside --unset", args: []string{"loom", "--resolved", "--unset", "review_max_bounces"}, wantErr: "--resolved and --unset are mutually exclusive"},
+ 		{name: "beside --print", args: []string{"loom", "--resolved", "--print"}, wantErr: "--resolved and --print are mutually exclusive"},
+ 		{name: "beside --layer", args: []string{"loom", "--resolved", "--layer", "local"}, wantErr: "--resolved and --layer are mutually exclusive"},
+ 		{name: "without a module", args: []string{"--resolved"}, wantErr: "module required with --resolved"},
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index 22d8c2f36..2faa51299 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -29,7 +29,7 @@
+ // Under a board every file layer of a module that is not seed-only is sparse, so `--set` writes only the keys set.
+ // `--print --layer <name>` prints that layer's file verbatim.
+ // `lym config <module> --resolved` prints the merged result through `configengine.Provenance`.
+-// It is read-only and refused beside `--print`, `--set` or `--layer` and without a module.
++// It is read-only and refused beside `--print`, `--set`, `--unset` or `--layer` and without a module.
+ //
+ // Every write path to the default or the machine layer is guarded.
+ // A write is refused from any worktree that is not the hub's prime.
+@@ -50,21 +50,24 @@
+ // `--set key=value` (repeatable) writes values through `configengine.Set` with no editor and syncs once.
+ // Keys under a declared open map (`configreg.Module.OpenMaps`) add or rewrite one entry.
+ // A value whose first non-blank character is `{` or `[` writes the entry as a YAML flow mapping or list.
+-// Removing an entry stays an editor edit.
+ // Any other key must exist in the template; pre-existing keys the template lacks are preserved and reported.
+ // A spec that sets `configengine.Spec.JSONEntries` takes a top-level name and a JSON object, or a dotted key below one.
+ // A dot in a key always separates levels.
+ // A hub worktree write that picks a template overlay layer the base does not pick is refused.
+ // The refusal names `--layer default` from the prime.
+ //
+-// A `--set` write on any layer and a hub-wide editor save are then checked by the module's own loader.
++// `--unset key` (repeatable) removes a key, or one entry of a map, from the layer's file through `configengine.Unset`,
++// so its value resolves from the layers below; a key the template lacks, a retired key included, is removed the same way.
++// It takes the guard, the commit or sync and the load check `--set` takes, and is refused beside `--set` or `--print`.
++//
++// A `--set` or `--unset` write on any layer and a hub-wide editor save are then checked by the module's own loader.
+ // This is `configreg.Module.CheckLoad`, and the written file is put back when the load fails.
+ // A write is refused only when the load after it fails with a different error than the load before it.
+ // A refused hub-wide editor save keeps the staging copy, and its refusal names the copy's path.
+ //
+ // `lym config reconcile` drops or fills keys across every module against its template.
+ // It is a dry run unless applied.
+-// A key the template lacks, a retired key included, is pruned only by this verb.
++// A key the template lacks, a retired key included, is pruned only by this verb or removed by `--unset`.
+ // With no `--layer` it reconciles the worktree's own and local files;
+ // `--layer default` reconciles every file under the Bolt checkout's `_lym/config/` instead.
+ // A seed-only file, such as `profiles`, is never pruned down to the template.
+diff --git a/internal/configcli/hubwide.go b/internal/configcli/hubwide.go
+index 7f986cdf3..d5ef6c6c7 100644
+--- a/internal/configcli/hubwide.go
++++ b/internal/configcli/hubwide.go
+@@ -23,7 +23,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+-	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+ 
+ // configDirs holds what a config verb addresses:
+@@ -358,11 +357,11 @@ func reportHubWrite(out io.Writer, module, path string, commitErr, writeErr erro
+ 	return output.Ok(out, fields)
+ }
+ 
+-// setHubWide writes pairs into a hub-wide module's file at the board dir and commits it in the Bolt checkout.
++// setHubWide applies write to a hub-wide module's file at the board dir and commits it in the Bolt checkout.
+ // The file is validated strictly before the commit, then loaded alone through the module's own loader.
+ // Its command dirs are checked against the prime, and the file is restored on any failure.
+ // The check refuses the write only with a failure the file did not already have.
+-func setHubWide(dirs configDirs, out io.Writer, module configreg.Module, pairs []yamlengine.KV, commit hubCommitFunc) int {
++func setHubWide(dirs configDirs, out io.Writer, module configreg.Module, write layerWrite, commit hubCommitFunc) int {
+ 	path := configengine.ConfigFile(dirs.board, module.Name)
+ 	boardDirs := configengine.Dirs{Board: dirs.board}
+ 	var preserved []string
+@@ -371,7 +370,7 @@ func setHubWide(dirs configDirs, out io.Writer, module configreg.Module, pairs [
+ 		snap, err := snapshotFile(path)
+ 		if err == nil {
+ 			before := checkHubModule(dirs, module)
+-			preserved, err = configengine.Set(boardDirs, module.Spec(), configengine.LayerDefault, pairs)
++			preserved, err = write(boardDirs, module.Spec(), configengine.LayerDefault)
+ 			if err == nil {
+ 				err = validateHubFile(dirs.board, module)
+ 			}
+diff --git a/internal/configcli/reconcile_integration_test.go b/internal/configcli/reconcile_integration_test.go
+index 0bcb5693c..ea7f2084f 100644
+--- a/internal/configcli/reconcile_integration_test.go
++++ b/internal/configcli/reconcile_integration_test.go
+@@ -112,7 +112,7 @@ func TestConfigReconcileInGitRepo(t *testing.T) {
+ 		seedModuleConfig(t, tmpDir, "loom", "discussion_timeout_min: 480\nlegacy_key: keepme\n")
+ 
+ 		var setOut bytes.Buffer
+-		setCode := dispatch(makeLayoutAt(tmpDir), &setOut, []string{"loom"}, makeNeverCalledEditor(t), (&fakeSyncTracker{exitCode: 0}).syncFunc(), nil, false, []string{"discussion_timeout_min=60"}, "", nil, true)
++		setCode := dispatch(makeLayoutAt(tmpDir), &setOut, []string{"loom"}, makeNeverCalledEditor(t), (&fakeSyncTracker{exitCode: 0}).syncFunc(), nil, false, []string{"discussion_timeout_min=60"}, nil, "", nil, true)
+ 		if setCode != 0 {
+ 			t.Fatalf("dispatch(--set) = %d; want 0; output: %q", setCode, setOut.String())
+ 		}
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index e42167256..d17c2b476 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -15,6 +15,7 @@
+ //
+ // [Set] writes dotted key=value pairs into a module's file with no editor and no validation loop.
+ // It scaffolds an absent standalone or seed-only base from the template and writes a hub's base sparse.
++// [Unset] removes dotted keys from a module's file the same way, so their values resolve from the layers below.
+ // [Edit] is the interactive counterpart.
+ // An editor that leaves the file empty or whitespace-only aborts the edit with [ErrAborted],
+ // so a layer cannot be emptied through the editor.
+@@ -67,7 +68,8 @@
+ // A [Spec]'s `RetiredKeys` map keys the module no longer reads to the category they held;
+ // such a unit is judged by that category alone, with its value shape unchecked.
+ // `RetiredWayForward` and `HubOnlyWayForward` texts end the matching refusal.
+-// In a default or worktree layer a retired key is an unknown key: only `lym config reconcile --apply` removes it.
++// In a default or worktree layer a retired key is an unknown key:
++// only `lym config reconcile --apply` or [Unset] removes it.
+ //
+ // # Open maps
+ //
+diff --git a/internal/configengine/set.go b/internal/configengine/set.go
+index adb051639..6411d9ddb 100644
+--- a/internal/configengine/set.go
++++ b/internal/configengine/set.go
+@@ -1,5 +1,5 @@
+-// set.go implements the non-interactive `lym config <module> --set key=value` write path.
+-// It writes one layer's file with a single mutation, without opening an editor or looping on validation.
++// set.go implements the non-interactive `lym config <module> --set key=value` and `--unset key` write paths.
++// Each writes one layer's file with a single mutation, without opening an editor or looping on validation.
+ // A standalone or seed-only base is scaffolded from the template when absent,
+ // and a freshly scaffolded file is removed when the write fails.
+ // A hub's base and every layer above it are sparse and hold only the keys set.
+@@ -106,6 +106,33 @@ func Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, er
+ 	return result.Preserved, nil
+ }
+ 
++// Unset removes each dotted key from the layer's file of spec under dirs, with no editor,
++// so the key's value resolves from the layers below and the template.
++// It removes a key the template lacks, a retired key included, as it removes any other.
++// A mapping the removal leaves empty is removed with its key.
++// An absent file, or a key the file does not hold, is an error naming the file, and nothing is written.
++func Unset(dirs Dirs, spec Spec, layer Layer, keys []string) error {
++	path, owner, err := layerPath(dirs, spec, layer)
++	if err != nil {
++		return err
++	}
++	if _, err := FindBaseDir(owner); err != nil {
++		return err
++	}
++	existing, err := os.ReadFile(path)
++	if os.IsNotExist(err) {
++		return fmt.Errorf("%s does not exist, so it holds no key to remove; way forward: \"lym config %s --resolved\" names the layer holding each value", path, spec.Name)
++	}
++	if err != nil {
++		return err
++	}
++	removed, err := yamlengine.RemoveKeys(existing, keys)
++	if err != nil {
++		return fmt.Errorf("%s: %w; way forward: \"lym config %s --resolved\" names the layer holding each value", path, err, spec.Name)
++	}
++	return os.WriteFile(path, removed, 0o644)
++}
++
+ // setEntries writes each pair into the layer file at path:
+ // an undotted key as a whole top-level entry, a dotted key as the one value below an entry it names.
+ // An absent base file starts from the template and any other absent file from nothing;
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index fb179dfeb..74b3823f6 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -15,6 +15,7 @@ import (
+ 	"gopkg.in/yaml.v3"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+@@ -257,6 +258,38 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	return cfg, nil
+ }
+ 
++// LoadRefuseRaw returns the refuse_raw list of the gate config under dirs, for a session launch's shell guard.
++// A launch runs no gate, so a key it does not read never refuses it:
++// when the full load fails past the layer merge, the list is read from the merged stack alone,
++// and the failure is logged as a warning naming its way forward.
++// An absent hub file yields an empty list.
++// A stack that does not merge returns the full load's error.
++// A refuse_raw list that is itself invalid returns that list's error with the gate config's way forward.
++func LoadRefuseRaw(dirs configengine.Dirs) ([]string, error) {
++	cfg, loadErr := LoadConfig(dirs)
++	if loadErr == nil {
++		return cfg.RefuseRaw, nil
++	}
++	if errors.Is(loadErr, ErrConfigAbsent) {
++		return nil, nil
++	}
++	resolved, err := configengine.Load(dirs, ConfigSpec())
++	if err != nil {
++		return nil, loadErr
++	}
++	var file struct {
++		RefuseRaw []string `yaml:"refuse_raw"`
++	}
++	if err := yaml.Unmarshal(resolved, &file); err != nil {
++		return nil, loadErr
++	}
++	if err := decodeRefuseRaw(file.RefuseRaw); err != nil {
++		return nil, withConfigWayForward(err, ConfigFiles(dirs), "")
++	}
++	logger.Warn("gate config: the config does not load, so the launch reads its refuse_raw list alone; every gate call refuses until it is fixed", "error", loadErr)
++	return file.RefuseRaw, nil
++}
++
+ // holdsUnits reports whether the layer file at path is readable and holds at least one config unit.
+ // An empty or comment-only file is one the load drops, so removing it fixes nothing;
+ // an unparsable file counts as holding units, since the load fails naming it.
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 534e89966..9cda09936 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -67,6 +67,8 @@
+ // LoadConfig reads the file strictly and refuses a retired key naming it.
+ // It also refuses an invalid or inconsistent tier, build, gate key or bound naming the key and `lym config gate`.
+ // An absent hub file is ErrConfigAbsent with the way forward `lym fabric reconcile`.
++// LoadRefuseRaw is the session launch's read: it needs `refuse_raw` alone,
++// so a failure in any other key is logged as a warning and the list is read from the merged stack.
+ //
+ // `tiers` and `build` are executable keys, since a tier or build command runs any shell command in a task worktree.
+ // `gates`, `scoper`, `refuse_raw` and `inert_paths` are guard keys.
+diff --git a/internal/gateslot/reinterpret.go b/internal/gateslot/reinterpret.go
+index 22190f117..50051dd1e 100644
+--- a/internal/gateslot/reinterpret.go
++++ b/internal/gateslot/reinterpret.go
+@@ -16,7 +16,10 @@ const RetiredCopiesReinterpretationID = "gate-harden-live-copies-retired"
+ // RetireHardenLiveCopies carries a hub gate.yaml across the retirement of its gates.harden-live-copies entry.
+ // The hardener's concurrent copies now run under gates.harden-live, which must name one tier below BilledTier.
+ // An entry that equals that one tier is removed, since harden-live already says the same.
+-// An entry that differs is left in place, as harden-live keeps its own value, and is flagged with the way forward.
++// An entry that stops the whole gate config loading is removed whatever its tiers.
++// It does so when the gate config's own entry check refuses it, a scope-less entry included;
++// when its tiers differ from harden-live's one tier, the removal is also flagged with the way forward for harden-live.
++// Any other entry that differs is left in place, as harden-live keeps its own value, and is flagged with the way forward.
+ // A file with no such entry is returned unchanged.
+ // The worktree root and anchored directory arguments are unused, as the rewrite judges the file alone.
+ func RetireHardenLiveCopies(existing []byte, _, _ string) (rewritten []byte, rewrote, flagged []string, err error) {
+@@ -36,17 +39,22 @@ func RetireHardenLiveCopies(existing []byte, _, _ string) (rewritten []byte, rew
+ 		return existing, nil, nil, nil
+ 	}
+ 
+-	copiesTiers := gateKeyTiers(gates.Content[at+1])
++	copies, copiesDecode := decodeGateKey(gates.Content[at+1])
+ 	liveTiers := []int{0}
+ 	if live := mappingValue(gates, "harden-live"); live != nil {
+-		liveTiers = gateKeyTiers(live)
++		liveKey, _ := decodeGateKey(live)
++		liveTiers = liveKey.Tiers
+ 	}
+-	if len(liveTiers) != 1 || liveTiers[0] >= BilledTier || !slices.Equal(liveTiers, copiesTiers) {
++	setLive := fmt.Sprintf("the hardener's copies now run under gates.harden-live, "+
++		"which must name one tier below tier%d: set it with `lym config gate --set 'gates.harden-live={tiers: [<live tier>], scope: diff}'` from the prime",
++		BilledTier)
++	matches := len(liveTiers) == 1 && liveTiers[0] < BilledTier && slices.Equal(liveTiers, copies.Tiers)
++	_, loadErr := decodeGates(map[string]yaml.Node{"harden-live-copies": *gates.Content[at+1]})
++	if !matches && loadErr == nil {
+ 		return existing, nil, []string{fmt.Sprintf(
+-			"gates.harden-live-copies is retired and gates.harden-live names the tiers %v, but the hardener's copies now run under gates.harden-live, "+
+-				"which must name one tier below tier%d: set it with `lym config gate --set 'gates.harden-live={tiers: [<live tier>], scope: diff}'` "+
+-				"from the prime, then delete the gates.harden-live-copies entry from the hub's gate.yaml, which nothing reads now",
+-			liveTiers, BilledTier)}, nil
++			"gates.harden-live-copies is retired and gates.harden-live names the tiers %v, but %s, "+
++				"then remove the entry, which nothing reads now, with `lym config gate --unset gates.harden-live-copies` from the prime",
++			liveTiers, setLive)}, nil
+ 	}
+ 
+ 	gates.Content = slices.Delete(gates.Content, at, at+2)
+@@ -59,14 +67,26 @@ func RetireHardenLiveCopies(existing []byte, _, _ string) (rewritten []byte, rew
+ 	if err := encoder.Close(); err != nil {
+ 		return nil, nil, nil, fmt.Errorf("write the gate config: %w", err)
+ 	}
+-	return out.Bytes(), []string{fmt.Sprintf("removed gates.harden-live-copies, which names the tier harden-live already names, tier %d", liveTiers[0])}, nil, nil
++	if matches {
++		return out.Bytes(), []string{fmt.Sprintf("removed gates.harden-live-copies, which names the tier harden-live already names, tier %d", liveTiers[0])}, nil, nil
++	}
++	copiesNamed := fmt.Sprintf("named the tiers %v", copies.Tiers)
++	if !copiesDecode {
++		copiesNamed = "did not decode"
++	}
++	return out.Bytes(),
++		[]string{"removed gates.harden-live-copies, which stopped the gate config loading"},
++		[]string{fmt.Sprintf("the removed gates.harden-live-copies %s and gates.harden-live names the tiers %v; %s",
++			copiesNamed, liveTiers, setLive)},
++		nil
+ }
+ 
+-// gateKeyTiers returns the tier numbers a gates entry names, or nil when the entry holds no readable tiers list.
+-func gateKeyTiers(entry *yaml.Node) []int {
++// decodeGateKey returns the gates entry decoded and whether it decoded.
++// When the entry does not decode it returns the zero GateKey, which names no tiers and no scope, and false.
++func decodeGateKey(entry *yaml.Node) (GateKey, bool) {
+ 	var key GateKey
+ 	if err := entry.Decode(&key); err != nil {
+-		return nil
++		return GateKey{}, false
+ 	}
+-	return key.Tiers
++	return key, true
+ }
+diff --git a/internal/gateslot/reinterpret_test.go b/internal/gateslot/reinterpret_test.go
+index 1166e06bd..8e929609c 100644
+--- a/internal/gateslot/reinterpret_test.go
++++ b/internal/gateslot/reinterpret_test.go
+@@ -3,6 +3,7 @@
+ package gateslot_test
+ 
+ import (
++	"fmt"
+ 	"strings"
+ 	"testing"
+ 
+@@ -14,14 +15,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestRetireHardenLiveCopies pins the three outcomes of the rewrite.
++// TestRetireHardenLiveCopies pins the outcomes of the rewrite.
+ // An entry equal to harden-live's one tier is removed.
+-// A differing entry is flagged and left.
++// A differing entry that stops the gate config loading is removed and flagged.
++// Such an entry has no scope, an invalid scope, or tiers that do not decode.
++// Any other differing entry is flagged and left, with the step that removes it.
+ // A file with no entry is unchanged.
+ func TestRetireHardenLiveCopies(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	const wayForward = "`lym config gate --set 'gates.harden-live={tiers: [<live tier>], scope: diff}'`"
++	billedTierClause := fmt.Sprintf("one tier below tier%d", gateslot.BilledTier)
++	const unsetStep = "`lym config gate --unset gates.harden-live-copies`"
+ 	tests := []struct {
+ 		name          string
+ 		input         string
+@@ -29,6 +34,8 @@ func TestRetireHardenLiveCopies(t *testing.T) {
+ 		wantGates     map[string]gateslot.GateKey
+ 		wantRewrote   []string
+ 		wantFlagged   []string
++		// wantUnsetStep says whether every flagged line names the step that removes the left entry.
++		wantUnsetStep bool
+ 	}{
+ 		{
+ 			name:  "EqualOneTierIsRemoved",
+@@ -44,17 +51,44 @@ func TestRetireHardenLiveCopies(t *testing.T) {
+ 			wantGates:   map[string]gateslot.GateKey{},
+ 			wantRewrote: []string{"removed gates.harden-live-copies, which names the tier harden-live already names, tier 0"},
+ 		},
++		{
++			name:  "ScopelessDifferingEntryIsRemovedAndFlagged",
++			input: "gates:\n  harden-live:\n    tiers: [0, 1]\n  harden-live-copies:\n    tiers: [1]\n",
++			wantGates: map[string]gateslot.GateKey{
++				"harden-live": {Tiers: []int{0, 1}},
++			},
++			wantRewrote: []string{"removed gates.harden-live-copies, which stopped the gate config loading"},
++			wantFlagged: []string{"the removed gates.harden-live-copies named the tiers [1] and gates.harden-live names the tiers [0 1]"},
++		},
++		{
++			name:  "UndecodableTiersWithAScopeAreRemovedAndFlagged",
++			input: "gates:\n  harden-live: {tiers: [0, 1], scope: diff}\n  harden-live-copies: {tiers: [oops], scope: diff}\n",
++			wantGates: map[string]gateslot.GateKey{
++				"harden-live": {Tiers: []int{0, 1}, Scope: "diff"},
++			},
++			wantRewrote: []string{"removed gates.harden-live-copies, which stopped the gate config loading"},
++			wantFlagged: []string{"the removed gates.harden-live-copies did not decode and gates.harden-live names the tiers [0 1]"},
++		},
++		{
++			name:        "RetiredScopeIsRemovedAndFlagged",
++			input:       "gates:\n  harden-live-copies: {tiers: [1], scope: coverage}\n",
++			wantGates:   map[string]gateslot.GateKey{},
++			wantRewrote: []string{"removed gates.harden-live-copies, which stopped the gate config loading"},
++			wantFlagged: []string{"the removed gates.harden-live-copies named the tiers [1] and gates.harden-live names the tiers [0]"},
++		},
+ 		{
+ 			name:          "SeveralLiveTiersAreFlaggedAndLeft",
+ 			input:         "gates:\n  harden-live: {tiers: [0, 1], scope: diff}\n  harden-live-copies: {tiers: [1], scope: diff}\n",
+ 			wantUnchanged: true,
+ 			wantFlagged:   []string{"gates.harden-live-copies is retired and gates.harden-live names the tiers [0 1]"},
++			wantUnsetStep: true,
+ 		},
+ 		{
+ 			name:          "BilledTierIsFlaggedAndLeft",
+ 			input:         "gates:\n  harden-live: {tiers: [3], scope: diff}\n  harden-live-copies: {tiers: [3], scope: diff}\n",
+ 			wantUnchanged: true,
+ 			wantFlagged:   []string{"gates.harden-live-copies is retired and gates.harden-live names the tiers [3]"},
++			wantUnsetStep: true,
+ 		},
+ 		{
+ 			name:          "NoCopiesKeyIsUnchanged",
+@@ -94,6 +128,12 @@ func TestRetireHardenLiveCopies(t *testing.T) {
+ 				if !strings.Contains(flagged[i], want) || !strings.Contains(flagged[i], wayForward) {
+ 					t.Errorf("flagged line = %q; want it to hold %q and %q", flagged[i], want, wayForward)
+ 				}
++				if !strings.Contains(flagged[i], billedTierClause) {
++					t.Errorf("flagged line = %q; want it to hold %q", flagged[i], billedTierClause)
++				}
++				if got := strings.Contains(flagged[i], unsetStep); got != tt.wantUnsetStep {
++					t.Errorf("flagged line = %q; names the unset step = %v; want %v", flagged[i], got, tt.wantUnsetStep)
++				}
+ 			}
+ 		})
+ 	}
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index 31851de41..745c76e19 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -19,7 +19,8 @@
+ // A failed render of heddle targets or of the overview is logged and never fails the walk.
+ //
+ // The walk removes no key the running binary's template lacks, so an older binary never strips a newer one's settings.
+-// `lym config reconcile --apply` is the one way to remove such a key; a local override file is pruned of every one.
++// The operator removes such a key with `lym config reconcile --apply` or `lym config <module> --unset <key>`;
++// a local override file is pruned of every one.
+ // Every non-seed-only base file stays sparse over the template (PATTERN-config-layers).
+ // A seed-only file follows its template changes and keeps every value the operator set.
+ //
+diff --git a/internal/shuttleengine/claudeengine/claudeengine.go b/internal/shuttleengine/claudeengine/claudeengine.go
+index f40f08088..fbd1d6ecf 100644
+--- a/internal/shuttleengine/claudeengine/claudeengine.go
++++ b/internal/shuttleengine/claudeengine/claudeengine.go
+@@ -8,7 +8,6 @@ package claudeengine
+ 
+ import (
+ 	"crypto/rand"
+-	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -135,7 +134,10 @@ func validateSessionID(id string) error {
+ // A spec that names skills carries the skill-load message on the launch line instead and returns the pointer as Launch.PromptLine, for shuttle to send after the skills load.
+ // A spec that sets SkipSkillLoadTurn keeps the pointer on the launch line, whatever skills it names.
+ // It returns no Launch.PromptLine.
+-// It loads claude.yaml and the hub's gate config, whose refuse_raw list the run's shell guard installs and whose failure to load refuses the spawn, then validates spec.Effort, spec.Model, spec.PermissionMode, spec.ResumeSessionID, the prompt-cache TTL config, the keep-warm caps and the batching nudge before writing any artifacts.
++// It loads claude.yaml and the hub gate config's refuse_raw list, which the run's shell guard installs.
++// A gate key the launch does not read never refuses it.
++// It then validates spec.Effort, spec.Model, spec.PermissionMode and spec.ResumeSessionID before writing any artifacts.
++// It validates the prompt-cache TTL config, the keep-warm caps and the batching nudge before then too.
+ // With the batching nudge on it also seeds the nudge's state file beside the settings.
+ // The settings carry the session's scope, resolved from claude.yaml's session_scope, spec.Skills and spec.Role.
+ // A spec with no effort takes the one cfg.Agents gives spec.ConfigRole on spec.Model.
+@@ -157,12 +159,12 @@ func (c *Claude) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengi
+ 		return shuttleengine.Launch{}, err
+ 	}
+ 
+-	// The refuse list lives in the hub's gate config; an absent file means the hub refuses nothing, and any other load failure refuses the spawn.
+-	gate, err := gateslot.LoadConfig(c.dirs)
+-	if err != nil && !errors.Is(err, gateslot.ErrConfigAbsent) {
++	// The refuse list lives in the hub's gate config; an absent file means the hub refuses nothing.
++	refuseRaw, err := gateslot.LoadRefuseRaw(c.dirs)
++	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("claudeengine: %w", err)
+ 	}
+-	cfg.RefuseRaw = gate.RefuseRaw
++	cfg.RefuseRaw = refuseRaw
+ 
+ 	// A spec whose model-spec names no effort takes the one agents.yaml gives its role and model.
+ 	spec.Effort = effortFor(cfg.Agents, spec.ConfigRole, spec.Effort, spec.Model)
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index bb1310eb7..913545db7 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -256,11 +256,13 @@
+ // The publish row is installed only for a run whose spec sets `DenyPublish`.
+ // The refuse-raw row denies a Bash command starting with a prefix the hub lists in `gate.yaml`'s `refuse_raw`,
+ // so every test run in an agent session goes through `lym gate test`.
+-// Prepare loads `gate.yaml` over the engine's dirs.
++// Prepare reads `gate.yaml`'s `refuse_raw` over the engine's dirs through `gateslot.LoadRefuseRaw`.
+ // It fills `shuttleengine.Config.RefuseRaw` on its copy of the config.
+ // It renders `standingDeniesFor(cfg.RefuseRaw, lymPath)`.
+-// An absent file leaves the list empty and renders no row;
+-// any other load failure refuses the spawn with the loader's way forward before an artifact is written.
++// An absent file leaves the list empty and renders no row.
++// A failure in a key the launch does not read is logged as a warning and the launch goes on.
++// A file that does not merge refuses the spawn with the loader's way forward before an artifact is written.
++// So does an invalid `refuse_raw`.
+ // Settings render at spawn, so a running session keeps the list it started with.
+ //
+ // The open launch (Claude.OpenLaunch) starts a named interactive session with no prompt.
+diff --git a/internal/shuttleengine/claudeengine/settings_test.go b/internal/shuttleengine/claudeengine/settings_test.go
+index c5ba0438f..132085a06 100644
+--- a/internal/shuttleengine/claudeengine/settings_test.go
++++ b/internal/shuttleengine/claudeengine/settings_test.go
+@@ -966,8 +966,8 @@ func TestPrepare_WritesArtifactsAndReturnsConsistentLaunch(t *testing.T) {
+ 	}
+ 
+ 	// The refuse list comes from the gate config under the engine's dirs:
+-	// a seeded list reaches settings.json and the notice, an absent file adds no row,
+-	// and an unparsable file refuses the spawn before any artifact.
++	// a seeded list reaches settings.json and the notice, also when a gate key the launch does not read fails to load;
++	// an absent file adds no row, and an unparsable file refuses the spawn before any artifact.
+ 	var refuseRow shellguard.Row
+ 	for _, row := range shellguard.Rows(bashForegroundPhrase, []string{"go test"}) {
+ 		if row.Name == "refuse-raw" {
+@@ -982,9 +982,10 @@ func TestPrepare_WritesArtifactsAndReturnsConsistentLaunch(t *testing.T) {
+ 		wantErr     bool
+ 	}{
+ 		{"SeededRefuseRawReachesSettingsAndNotice", "slots: 2\nrefuse_raw: [\"go test\"]\n", 8, true, false},
++		{"ScopelessGateKeyStillLaunchesWithRefuseRaw", "slots: 2\nrefuse_raw: [\"go test\"]\ngates:\n  harden-live-copies:\n    tiers: [1]\n", 8, true, false},
+ 		{"AbsentGateConfigRendersNoRefuseRawRow", "", 7, false, false},
+ 		{"UnparsableGateConfigRefusesBeforeArtifacts", "slots: [\n", 0, false, true},
+-	}
++		{"InvalidRefuseRawBesideAScopelessGateKeyRefusesBeforeArtifacts", "slots: 2\nrefuse_raw: [\"go  test\"]\ngates:\n  harden-live-copies:\n    tiers: [1]\n", 0, false, true}}
+ 	for _, tt := range gateTests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			engine, anchor := engineWithAnchor(t)
+diff --git a/internal/shuttleengine/codexengine/codexengine.go b/internal/shuttleengine/codexengine/codexengine.go
+index 6c39e17e3..338f0b77d 100644
+--- a/internal/shuttleengine/codexengine/codexengine.go
++++ b/internal/shuttleengine/codexengine/codexengine.go
+@@ -6,7 +6,6 @@
+ package codexengine
+ 
+ import (
+-	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -124,8 +123,10 @@ func validateChoice(choice shuttleengine.ModelChoice, permissionMode string, cod
+ 
+ // Prepare readies a Codex launch for the run in runDir and returns it.
+ // It first refuses a spec whose prompt was not rendered for Codex, unless the prompt is marked hand-written.
+-// Before anything is written, it validates the spec and loads the hub's gate config.
+-// A gate config that fails to load refuses the launch, and so does a checkout that Codex rules refuse.
++// Before anything is written, it validates the spec and reads the hub gate config's refuse_raw list.
++// A gate key the launch does not read never refuses it.
++// A gate config that does not merge or holds an invalid refuse_raw refuses the launch.
++// So does a checkout that Codex rules refuse.
+ // It readies the lym home, settles the sandbox and writes prompt.md into runDir.
+ // Under codex.yaml's workspace-write, a sandbox that cannot start on the machine refuses the launch, naming the cause.
+ // The prompt file holds the spec's prompt alone.
+@@ -167,8 +168,8 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 		return shuttleengine.Launch{}, err
+ 	}
+ 	// The refuse list lives in the hub's gate config; an absent file means the hub refuses nothing.
+-	gate, err := gateslot.LoadConfig(c.dirs)
+-	if err != nil && !errors.Is(err, gateslot.ErrConfigAbsent) {
++	refuseRaw, err := gateslot.LoadRefuseRaw(c.dirs)
++	if err != nil {
+ 		return shuttleengine.Launch{}, fmt.Errorf("codexengine: %w", err)
+ 	}
+ 	// The python guard hook runs this binary by path, so a lym of another version on PATH never answers it.
+@@ -178,7 +179,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	}
+ 	guardIn := guardInputs{denyPython: cfg.DenyPython, denyPublish: spec.DenyPublish}
+ 	tools := toolHooks{
+-		guards:       installedGuards(gate.RefuseRaw, guardIn),
++		guards:       installedGuards(refuseRaw, guardIn),
+ 		lymPath:      lymPath,
+ 		questionDeny: !spec.Interactive,
+ 	}
+@@ -288,7 +289,7 @@ func (c *Codex) Prepare(runDir string, spec shuttleengine.Spec, cfg shuttleengin
+ 	err = writeLaunchManifest(launchFacts{
+ 		spec:            spec,
+ 		codex:           codex,
+-		refuseRaw:       gate.RefuseRaw,
++		refuseRaw:       refuseRaw,
+ 		lymPath:         lymPath,
+ 		setup:           setup,
+ 		standing:        standing,
+diff --git a/internal/shuttleengine/codexengine/prepare_test.go b/internal/shuttleengine/codexengine/prepare_test.go
+index 5c30c0a5d..82a916bb4 100644
+--- a/internal/shuttleengine/codexengine/prepare_test.go
++++ b/internal/shuttleengine/codexengine/prepare_test.go
+@@ -313,8 +313,9 @@ func TestPrepare_ExpandsHomeInWritableRoots(t *testing.T) {
+ // TestPrepare_InstallsGuardsFromItsInputs pins which inputs reach the installed guard rows.
+ // The python switch decides only whether the deny notice names the python row, which every launch installs;
+ // the publish guard installs its own row alone;
+-// a seeded refuse_raw list of the hub's gate config reaches the hook and the developer instructions' deny notice;
+-// and a gate config that is present but does not load refuses the launch before the prompt file is written.
++// a seeded refuse_raw list of the hub's gate config reaches the hook and the developer instructions' deny notice.
++// It does so also when a gate key the launch does not read fails to load;
++// and a gate config that does not parse refuses the launch before the prompt file is written.
+ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -332,8 +333,9 @@ func TestPrepare_InstallsGuardsFromItsInputs(t *testing.T) {
+ 		{name: "PythonSwitchAlone", denyPython: true, wantInputs: guardInputs{denyPython: true}},
+ 		{name: "PublishGuardAlone", denyPublish: true, wantInputs: guardInputs{denyPublish: true}},
+ 		{name: "SeededRefuseRaw", gate: "slots: 2\nrefuse_raw: [\"go test\", \"dotnet test\"]\n", wantRefuse: []string{"go test", "dotnet test"}},
+-		{name: "GateConfigThatDoesNotLoad", gate: "slots: [\n", wantErr: true},
+-	}
++		{name: "ScopelessGateKeyStillLaunches", gate: "slots: 2\nrefuse_raw: [\"go test\"]\ngates:\n  harden-live-copies:\n    tiers: [1]\n", wantRefuse: []string{"go test"}},
++		{name: "GateConfigThatDoesNotParse", gate: "slots: [\n", wantErr: true},
++		{name: "InvalidRefuseRawBesideAScopelessGateKeyStillRefuses", gate: "slots: 2\nrefuse_raw: [\"go  test\"]\ngates:\n  harden-live-copies:\n    tiers: [1]\n", wantErr: true}}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+diff --git a/internal/yamlengine/doc.go b/internal/yamlengine/doc.go
+index e6d81ea24..382cf289b 100644
+--- a/internal/yamlengine/doc.go
++++ b/internal/yamlengine/doc.go
+@@ -14,6 +14,7 @@
+ //   - [Strip] removes from an upper layer every unit equal to the lower layer's, and reports the removed paths.
+ //   - [SetSparse] writes only the set keys into a sparse layer, never scaffolding from the template.
+ //   - [Prune] removes from a sparse layer every unit the template does not know, and adds nothing.
++//   - [RemoveKeys] removes the named dotted keys from a layer, whatever the template holds.
+ //   - [DropTemplateEqualNames] removes from a sparse layer every per-name entry whose value equals the template's.
+ //     It reports the removed P.<name> paths, adds nothing, and leaves an untouched layer byte for byte.
+ //   - [LeafPaths] lists the sorted dotted paths of every unit of a document.
+diff --git a/internal/yamlengine/layers.go b/internal/yamlengine/layers.go
+index 76c99689d..26fe1643b 100644
+--- a/internal/yamlengine/layers.go
++++ b/internal/yamlengine/layers.go
+@@ -447,6 +447,59 @@ func Prune(template, existing []byte, perNameMaps []string, openMaps ...string)
+ 	return pruned, removed, kept, nil
+ }
+ 
++// RemoveKeys removes the value at each dotted key from existing, whatever the template holds, and returns the result.
++// A mapping the removal leaves empty is removed with its key, and an existing left with nothing returns empty bytes.
++// A key existing does not hold is an error naming it, and nothing is removed.
++// A key named more than once is removed once.
++func RemoveKeys(existing []byte, keys []string) ([]byte, error) {
++	doc, root, err := parseMappingRoot(existing, "existing")
++	if err != nil {
++		return nil, err
++	}
++	var missing []string
++	seen := make(map[string]bool, len(keys))
++	for _, key := range keys {
++		if seen[key] {
++			continue
++		}
++		seen[key] = true
++		if root == nil || !removeKey(root, strings.Split(key, ".")) {
++			missing = append(missing, key)
++		}
++	}
++	if len(missing) > 0 {
++		return nil, fmt.Errorf("no key %s in the file", strings.Join(missing, ", "))
++	}
++	if len(root.Content) == 0 {
++		return []byte{}, nil
++	}
++	removed, err := yaml.Marshal(doc)
++	if err != nil {
++		return nil, fmt.Errorf("marshal YAML: %w", err)
++	}
++	return removed, nil
++}
++
++// removeKey removes the entry at the path of segments under mapping and reports whether the mapping held it.
++// A mapping on the path left empty is removed with its key.
++func removeKey(mapping *yaml.Node, segments []string) bool {
++	at := mappingIndex(mapping, segments[0])
++	if at < 0 {
++		return false
++	}
++	if len(segments) > 1 {
++		child := mapping.Content[at+1]
++		if child.Kind != yaml.MappingNode || !removeKey(child, segments[1:]) {
++			return false
++		}
++		if len(child.Content) > 0 {
++			return true
++		}
++	}
++	mapping.Content = slices.Delete(mapping.Content, at, at+2)
++	return true
++}
++
+ // pruneMapping removes in place, from the existing mapping, every unit the template mapping does not know.
+ // It records the path of each removed unit.
+ // A name under a per-name map stays whole, and one the template lacks is recorded in kept.
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index b72f478e4..4656b7da1 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -4,7 +4,7 @@ Loading, writing or changing the meaning of config: layers only through `confige
+ 
+ ## Layers
+ 
+-Rule: Loading config: only `configengine` reads, stacks, locates and judges layers against the template; callers use `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; only `lym config reconcile` prunes unknown base-layer keys.
++Rule: Loading config: only `configengine` reads, stacks, locates and judges layers against the template; callers use `Load` or `LoadOrTemplate`, bar `runprofile`; only `hubreconcile.Ensure` reconciles on a binary change; no step removes an unknown base-layer key but the operator's `lym config reconcile` or `lym config <module> --unset <key>`.
+ 
+ Only `internal/configengine` reads or stacks a module's layer files and forms their paths.
+ Every category but None closes a key to the local override layer.
+@@ -70,9 +70,10 @@ Reconciling a hub's config after a binary change goes only through `hubreconcile
+ 
+ ### Keys the template lacks
+ 
+-Only the operator's `lym config reconcile` removes a key the running template lacks, from a hub base or worktree file.
++Only the operator removes a key the running template lacks, from a hub base or worktree file.
++`lym config reconcile` prunes every such key, and `lym config <module> --unset <key>`, through `configengine.Unset`, removes one by name.
+ A key a module retired is such a key like any other: the load warns of it and no loader reads it.
+-The command alone sets `configsync`'s `PruneUnknown`.
++The reconcile command alone sets `configsync`'s `PruneUnknown`.
+ Every other reconcile keeps such a key and carries it in `configsync`'s `Result.Preserved`.
+ That covers the binary-change walk, a clone and `lym fabric reconcile`.
+ The walk logs it when it writes the file.
