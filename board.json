@@ -202,7 +202,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from issues #176 and #177; read both with `gh issue view \u003cn\u003e --repo Knatte18/loomyard` for the full reports.\n\n## Fixer reruns a finished round (#176)\n\nPlan-Burler-Fix started a second fixer session for round 1 after the first had fixed every finding.\nThe first fixer's report sat under a timestamped name, not `round-1-fixer-report.md`, so the round looked unfinished, and the prompt gave no reason for the rerun.\nFix: accept the finished report, or state in the fixer prompt why the step runs again (misnamed or rejected report versus new work).\n\n## Fork git in its own scratch repo (#177)\n\nA fixer fork ran `git init`, commit and push in a throwaway repo under `.scratch/` to probe push behaviour; the mutating-git guard ended the run as a hard failure, and its way forward said to revert, with nothing to revert.\nFix: scope the guard to the target repository and its remotes, so git in a repo the fork created under `.scratch/` passes; make the halt say when no target change was found.\n\n## Triage against main (2026-11-21)\n\n- Rerun: `internal/shedadapters/burlerfix.go` renames a leftover round fixer report to a timestamped name before each attempt; the fixer prompt never says why the step runs again.\n- Fork git: 27498365 lets a fork run git in a repository it created, but `internal/burlerengine/cluster.go` still refuses every push, and the halt text still says revert.\n",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-21T17:29:34Z",
       "revised": "2026-11-21T17:41:16Z",
       "run_settings": {
