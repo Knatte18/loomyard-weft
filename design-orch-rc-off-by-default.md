@@ -1,6 +1,6 @@
 # Orch remote control is off by default
 
-`orch-rc-off-by-default` · Task · bug, orch, config · starting · Worktree-Create
+`orch-rc-off-by-default` · Task · bug, orch, config · starting · Seed-Child
 
 ## What was seen (operator, 2026-11-22)
 
