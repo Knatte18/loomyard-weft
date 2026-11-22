@@ -63,15 +63,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (14)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (13)</strong></summary>
 
 Owner `neve`
 
-### Tasks (10)
+### Tasks (9)
 
 Concrete and claimable; only a task can run.
 
-#### Running (7)
+#### Running (6)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -80,8 +80,7 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Orch remote control is off by default**<br>• lym turns on remote control for every orch it launches; it must stay off until the operator turns it on.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md) | darn · light | Darn-Write | neve | 12m<br>12m | orch, config |
 | T3 | **Sampler session loads the language skills before it edits code**<br>• The sampler spec carries no language skills, so the sampler edits code without the skills of the repository's languages.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md) | darn · light | landing · Finalize | neve | 1h<br>25m | loom, shuttle |
 | T5 | **Board README: beam marker, no empty sections, no Notes level**<br>• Declutter the rendered board README in a sampler session | [`readme-declutter`](design-readme-declutter.md) | sampler | Sampler-Session | neve | 1h<br>1h | board |
-| T6 | **lym report convergence stays within bounded memory**<br>• convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`convergence-report-memory`](design-convergence-report-memory.md) | darn · light | Code-Burler-Fix | neve | 46m<br>43m | report |
-| T7 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md)<br>[Sketch](decision-orch-full-autonomy-mode.md) | raddle | Raddle-File | neve | 2h<br>8m | orch, drift, landing, dobby, batten, pawl, config |
+| T6 | **lym report convergence stays within bounded memory**<br>• convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`convergence-report-memory`](design-convergence-report-memory.md) | darn · light | Code-Burler-Fix | neve | 46m<br>44m | report |
 | T8 | **Hardener rounds may run fabric verbs in their own sandbox hubs**<br>• The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-sandbox-fabric-verbs`](design-harden-sandbox-fabric-verbs.md) | darn · light | Darn-Write | neve | 1h<br>6m | fabric, shed |
 | T9 | **Hardener live check passes packages go can resolve**<br>• hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-live-bare-package-paths`](design-harden-live-bare-package-paths.md) | darn · light | Darn-Write | neve | 1h<br>6m | gate, loom |
 
@@ -126,5 +125,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 6d<br>4d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2w | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+Finished, awaiting `lym board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T7 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md)<br>[Sketch](decision-orch-full-autonomy-mode.md) | 2h<br>9m | orch, drift, landing, dobby, batten, pawl, config |
 
 </details>
