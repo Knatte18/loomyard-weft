@@ -131,23 +131,6 @@
       "revised": "2026-11-17T18:54:35Z"
     },
     {
-      "id": 1476,
-      "handle": "P1",
-      "slug": "code-cleanup",
-      "title": "Code cleanup: cut and simplify lym code and tests",
-      "kind": "project",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Make lym smaller without changing behaviour: fewer tests, leaner design, no dead compatibility code, no unused features",
-      "body": "Make lym smaller without changing what it does, one mechanical pass at a time.\n\nBackground: `docs/research/rewrite/shrink-estimate-2026-11-18/report.md` found almost no copy-paste duplication (under 1 %).\nThe size sits in tests (about 2 test lines per code line), comments,\nnear-identical helpers a duplicate detector misses, design that makes every caller handle more than it needs,\ncompatibility and migration code, and features nobody uses.\nA clean-room rewrite was judged too large for the gain (2026-11-18); this project cuts in place instead.\n\n## Order\n\nDecided by the operator, 2026-11-19:\n\n1. `drop-compat-migration-code` first, once the single-repo tasks and `hardener-campaign` have landed, since they change the same packages.\n2. `doc-go-trim-pass` last, so it trims docs that describe the code after the pass above.\n\n`design-simplify-callers` was dropped (operator, 2026-11-19): its `landingshed-design-simplify` pilot saved 278 lines against an estimate of 600–800.\n",
-      "created": "2026-11-18T17:23:24Z",
-      "revised": "2026-11-19T10:49:43Z"
-    },
-    {
       "id": 1496,
       "handle": "P4",
       "slug": "single-repo-hub",
