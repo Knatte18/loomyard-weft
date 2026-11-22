@@ -2,8 +2,6 @@
 
 `later-transition-push-wait` · Task · enhancement, batten, fabric · running · Discussion-Write
 
-Depends on: [`transition-push-slows-rows`](design-transition-push-slows-rows.md)
-
 ## What was seen
 
 Since `71d6ee1a0` every batten transition pushes its records to origin before the run acts, at about 10 to 20 seconds each.
