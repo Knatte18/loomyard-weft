@@ -1,0 +1,555 @@
+diff --git a/cmd/lym/checkedcall_test.go b/cmd/lym/checkedcall_test.go
+index 1cb6f66e5..14863094f 100644
+--- a/cmd/lym/checkedcall_test.go
++++ b/cmd/lym/checkedcall_test.go
+@@ -33,7 +33,7 @@ var checkedCallRawTokens = []string{
+ // A zero is listed explicitly rather than omitted.
+ // A package with no entry counts as pinned zero, not skipped.
+ var checkedCallPinnedRawSites = map[string]int{
+-	"internal/gitrepo":       3, // run's own body, Pull, Fetch
++	"internal/gitrepo":       4, // run's own body, Pull, Fetch's plain call, Fetch's pruning call
+ 	"internal/fabricengine":  0,
+ 	"internal/lymcwd":        0,
+ 	"internal/fabriccli":     0,
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index c8ba114a5..cac80e1d6 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/hubreconcile"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+@@ -628,17 +629,46 @@ func (c *battenCLI) refuseContinuePass() error {
+ // They resume a shed pause themselves, so a shed state of paused never makes them wait.
+ var runAside = runfsm.Aside{ShedPause: true}
+ 
+-// hubRunVerdict returns a reader of the act rule's verdict for slug's run over the hub of location.
++// hubRunVerdict returns a reader of the act rule's verdict for slug's run over the hub of the prime location.
+ // The verdict is judged over the run's tracked records and this machine's inputs, with runAside set aside.
++// A code-tip wait fetches the run's records and code refs from origin and is judged again.
+ func hubRunVerdict(location *lymcwd.Location, slug string) func() (runfsm.Verdict, error) {
+-	return func() (runfsm.Verdict, error) {
+-		records, inputs, err := pairteardown.ReadRun(location, slug)
++	read := func() (runfsm.Records, runfsm.Inputs, error) { return pairteardown.ReadRun(location, slug) }
++	fetch := func() error {
++		if err := fetchRunForCatchUp(location, slug); err != nil {
++			return err
++		}
++		if err := gitrepo.New(location.WorktreePath()).Fetch(); err != nil {
++			return fmt.Errorf("%w: %v", dobbyengine.ErrOriginUnreachable, err)
++		}
++		return nil
++	}
++	return func() (runfsm.Verdict, error) { return judgeAfterCodeTipFetch(read, fetch) }
++}
++
++// judgeAfterCodeTipFetch judges the run read returns, with runAside set aside.
++// A code-tip wait is read from the refs the last fetch left, which can keep a records branch origin has deleted,
++// so it calls fetch and judges a fresh read; the fetch prunes such a branch's ref.
++// A failed fetch keeps the first verdict, whose refusal names the way forward.
++// It returns the error of a failed read.
++func judgeAfterCodeTipFetch(read func() (runfsm.Records, runfsm.Inputs, error), fetch func() error) (runfsm.Verdict, error) {
++	judge := func() (runfsm.Verdict, error) {
++		records, inputs, err := read()
+ 		if err != nil {
+ 			return runfsm.Verdict{}, err
+ 		}
+ 		_, verdict := runfsm.Judge(records, inputs, runAside)
+ 		return verdict, nil
+ 	}
++	verdict, err := judge()
++	if err != nil || verdict.Reason != runfsm.ReasonCodeTip {
++		return verdict, err
++	}
++	if err := fetch(); err != nil {
++		logger.Debug("battencli: the fetch before judging a code-tip wait again failed, so the wait stands", "error", err)
++		return verdict, nil
++	}
++	return judge()
+ }
+ 
+ // refuseByAct asks the act rule whether this run may act and returns its refusal when it may not.
+diff --git a/internal/battencli/arm_runverdict_test.go b/internal/battencli/arm_runverdict_test.go
+new file mode 100644
+index 000000000..dab44e571
+--- /dev/null
++++ b/internal/battencli/arm_runverdict_test.go
+@@ -0,0 +1,92 @@
++// arm_runverdict_test.go pins judgeAfterCodeTipFetch over fake reads: when a verdict fetches and is judged again.
++
++package battencli
++
++import (
++	"errors"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestJudgeAfterCodeTipFetch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	missingTip := runfsm.Inputs{CodeTipMissing: true, CodeTip: "abc123", CodeTipPairAbsent: true}
++	clean := runfsm.Inputs{}
++	readFailed := errors.New("records unreadable")
++
++	tests := []struct {
++		name string
++		// inputs are what each read answers in turn; the last repeats.
++		inputs []runfsm.Inputs
++		// readErrs is what each read fails with in turn, nil for a read that succeeds; the last repeats.
++		readErrs   []error
++		fetchErr   error
++		wantAnswer runfsm.Answer
++		wantReason runfsm.Reason
++		wantFetch  int
++		wantReads  int
++		wantErr    error
++	}{
++		{
++			name:   "AFetchThatDropsAStaleRecordsRefLetsTheRunAct",
++			inputs: []runfsm.Inputs{missingTip, clean}, wantAnswer: runfsm.AnswerAct, wantFetch: 1, wantReads: 2,
++		},
++		{
++			name:   "ATipStillMissingAfterTheFetchWaits",
++			inputs: []runfsm.Inputs{missingTip}, wantAnswer: runfsm.AnswerWait, wantReason: runfsm.ReasonCodeTip, wantFetch: 1, wantReads: 2,
++		},
++		{
++			name:   "AFailedFetchKeepsTheCodeTipWait",
++			inputs: []runfsm.Inputs{missingTip, clean}, fetchErr: errors.New("origin unreachable"),
++			wantAnswer: runfsm.AnswerWait, wantReason: runfsm.ReasonCodeTip, wantFetch: 1, wantReads: 1,
++		},
++		{
++			name:   "AnotherWaitFetchesNothing",
++			inputs: []runfsm.Inputs{{Held: true}}, wantAnswer: runfsm.AnswerWait, wantReason: runfsm.ReasonHeld, wantReads: 1,
++		},
++		{
++			name:   "AnActVerdictFetchesNothing",
++			inputs: []runfsm.Inputs{clean}, wantAnswer: runfsm.AnswerAct, wantReads: 1,
++		},
++		{
++			name:     "AFailedReadReturnsItsError",
++			readErrs: []error{readFailed}, wantReads: 1, wantErr: readFailed,
++		},
++		{
++			name:   "AFailedReadAfterTheFetchReturnsItsError",
++			inputs: []runfsm.Inputs{missingTip}, readErrs: []error{nil, readFailed}, wantFetch: 1, wantReads: 2, wantErr: readFailed,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reads, fetches := 0, 0
++			read := func() (runfsm.Records, runfsm.Inputs, error) {
++				reads++
++				if len(tt.readErrs) > 0 {
++					if err := tt.readErrs[min(reads, len(tt.readErrs))-1]; err != nil {
++						return runfsm.Records{}, runfsm.Inputs{}, err
++					}
++				}
++				return runfsm.Records{}, tt.inputs[min(reads, len(tt.inputs))-1], nil
++			}
++			fetch := func() error { fetches++; return tt.fetchErr }
++
++			verdict, err := judgeAfterCodeTipFetch(read, fetch)
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Fatalf("judgeAfterCodeTipFetch() error = %v; want %v", err, tt.wantErr)
++			}
++			if tt.wantErr == nil && (verdict.Answer != tt.wantAnswer || verdict.Reason != tt.wantReason) {
++				t.Errorf("judgeAfterCodeTipFetch() = %q, %q; want %q, %q", verdict.Answer, verdict.Reason, tt.wantAnswer, tt.wantReason)
++			}
++			if fetches != tt.wantFetch || reads != tt.wantReads {
++				t.Errorf("judgeAfterCodeTipFetch() fetched %d and read %d times; want %d and %d", fetches, reads, tt.wantFetch, tt.wantReads)
++			}
++		})
++	}
++}
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 10fe8e544..5adeb4188 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -39,6 +39,7 @@
+ // It does not create, clone, or manage repo topology.
+ //
+ //   - Fetch refreshes remote-tracking refs without merging, so it never moves the local branch.
++//     It prunes the tracking ref of every branch the remote deleted, and never a local tag.
+ //   - HoldRemoteRefs takes the remote-refs lock, a file in the common git dir that every worktree shares.
+ //     Fetch, FetchWithArgs, Pull and DropRemoteTracking run under it and wait while it is held.
+ //     Push methods transfer outside the lock and take it only to write the tracking ref or upstream afterwards.
+diff --git a/internal/gitrepo/fetch_integration_test.go b/internal/gitrepo/fetch_integration_test.go
+index 30ee0fab9..fc3f68629 100644
+--- a/internal/gitrepo/fetch_integration_test.go
++++ b/internal/gitrepo/fetch_integration_test.go
+@@ -1,10 +1,12 @@
+-// fetch_integration_test.go covers Repo.Fetch and the remote-failure paths of Fetch and Pull.
++// fetch_integration_test.go covers Repo.Fetch and its pruning of deleted branches.
++// It also covers the remote-failure paths of Fetch and Pull.
+ // Its tests run against real git repositories.
+ // Its fixtures are `newBareRemote`, `newRepoWithRemote` and `cloneFromBare` from push_test.go.
+ 
+ package gitrepo_test
+ 
+ import (
++	"errors"
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
+@@ -67,6 +69,96 @@ func TestFetch_RemoteAdvanced_UpdatesTrackingRefWithoutMovingHEAD(t *testing.T)
+ 	}
+ }
+ 
++// TestFetch_BranchDeletedOnRemote_DropsItsTrackingRef checks that Fetch prunes the tracking ref of a deleted branch.
++// A clone that fetched a branch before another clone deleted it on the remote must not keep reading it as present.
++func TestFetch_BranchDeletedOnRemote_DropsItsTrackingRef(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	container := t.TempDir()
++	bareRemote := newBareRemote(t, container)
++
++	cloneAPath, repoA := newRepoWithRemote(t, container, "cloneA", bareRemote)
++	writeFile(t, cloneAPath, "a.txt", "from A")
++	commitAll(t, cloneAPath, "commit from A")
++	if err := repoA.Push(gitrepo.RefNamespace{}); err != nil {
++		t.Fatalf("Push() (establish upstream) error = %v; want nil", err)
++	}
++	gitkit.MustRun(t, cloneAPath, "git", "push", "origin", "main:refs/heads/removed-run")
++
++	_, repoB := cloneFromBare(t, container, "cloneB", bareRemote)
++	const trackingRef = "refs/remotes/origin/removed-run"
++	if _, err := repoB.RefSHA(trackingRef); err != nil {
++		t.Fatalf("RefSHA(%q) before the delete error = %v; want the clone to hold it", trackingRef, err)
++	}
++	gitkit.MustRun(t, cloneAPath, "git", "push", "origin", "--delete", "removed-run")
++
++	if err := repoB.Fetch(); err != nil {
++		t.Fatalf("Fetch() error = %v; want nil", err)
++	}
++
++	if sha, err := repoB.RefSHA(trackingRef); !errors.Is(err, gitrepo.ErrRefNotFound) {
++		t.Errorf("RefSHA(%q) after Fetch() = %q, %v; want ErrRefNotFound", trackingRef, sha, err)
++	}
++	if _, err := repoB.RefSHA("refs/remotes/origin/main"); err != nil {
++		t.Errorf("RefSHA(refs/remotes/origin/main) after Fetch() error = %v; want the live branch kept", err)
++	}
++}
++
++// TestFetch_RecordsRefspecs_PrunesTrackingRefsButKeepsLocalTags checks that Fetch prunes only under refs/remotes/.
++// The clone is configured as a one-repository records store is.
++// It maps the remote's refs/lym/heads/ to tracking refs.
++// It maps the remote's refs/lym/tags/ to local tags.
++// A branch deleted on the remote loses its tracking ref.
++// A local-only tag survives, and a remote tag is fetched.
++func TestFetch_RecordsRefspecs_PrunesTrackingRefsButKeepsLocalTags(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	container := t.TempDir()
++	bareRemote := newBareRemote(t, container)
++
++	cloneAPath, repoA := newRepoWithRemote(t, container, "cloneA", bareRemote)
++	writeFile(t, cloneAPath, "a.txt", "from A")
++	commitAll(t, cloneAPath, "commit from A")
++	if err := repoA.Push(gitrepo.RefNamespace{}); err != nil {
++		t.Fatalf("Push() (establish upstream) error = %v; want nil", err)
++	}
++	gitkit.MustRun(t, cloneAPath, "git", "push", "origin", "main:refs/lym/heads/removed-run", "main:refs/lym/heads/kept-run")
++
++	cloneBPath, repoB := cloneFromBare(t, container, "cloneB", bareRemote)
++	gitkit.MustRun(t, cloneBPath, "git", "config", "--unset-all", "remote.origin.fetch")
++	gitkit.MustRun(t, cloneBPath, "git", "config", "--add", "remote.origin.fetch", "+refs/lym/heads/*:refs/remotes/origin/*")
++	gitkit.MustRun(t, cloneBPath, "git", "config", "--add", "remote.origin.fetch", "+refs/lym/tags/*:refs/tags/*")
++	if err := repoB.Fetch(); err != nil {
++		t.Fatalf("Fetch() (first) error = %v; want nil", err)
++	}
++	const removedTracking = "refs/remotes/origin/removed-run"
++	if _, err := repoB.RefSHA(removedTracking); err != nil {
++		t.Fatalf("RefSHA(%q) before the delete error = %v; want the clone to hold it", removedTracking, err)
++	}
++	gitkit.MustRun(t, cloneBPath, "git", "tag", "set-aside/x/abc", "HEAD")
++	gitkit.MustRun(t, cloneAPath, "git", "push", "origin", "--delete", "refs/lym/heads/removed-run")
++	gitkit.MustRun(t, cloneAPath, "git", "push", "origin", "main:refs/lym/tags/archive/y")
++
++	if err := repoB.Fetch(); err != nil {
++		t.Fatalf("Fetch() (second) error = %v; want nil", err)
++	}
++
++	if sha, err := repoB.RefSHA(removedTracking); !errors.Is(err, gitrepo.ErrRefNotFound) {
++		t.Errorf("RefSHA(%q) after Fetch() = %q, %v; want ErrRefNotFound", removedTracking, sha, err)
++	}
++	if _, err := repoB.RefSHA("refs/remotes/origin/kept-run"); err != nil {
++		t.Errorf("RefSHA(refs/remotes/origin/kept-run) after Fetch() error = %v; want the live branch kept", err)
++	}
++	if _, err := repoB.RefSHA("refs/tags/set-aside/x/abc"); err != nil {
++		t.Errorf("RefSHA(refs/tags/set-aside/x/abc) after Fetch() error = %v; want the local-only tag kept", err)
++	}
++	if _, err := repoB.RefSHA("refs/tags/archive/y"); err != nil {
++		t.Errorf("RefSHA(refs/tags/archive/y) after Fetch() error = %v; want the remote tag fetched", err)
++	}
++}
++
+ // TestRemoteFailurePaths covers how Fetch and Pull report a repository whose remote is missing or unreachable.
+ // Bare `git fetch` with no remote configured exits 0 having done nothing, because it never needs a merge target.
+ // Fetch's error path is exercised with a remote whose URL cannot be reached.
+diff --git a/internal/gitrepo/pull.go b/internal/gitrepo/pull.go
+index 2beca1b30..fb90818fc 100644
+--- a/internal/gitrepo/pull.go
++++ b/internal/gitrepo/pull.go
+@@ -1,13 +1,26 @@
+ // pull.go implements the fast-forward-only pull and the fetch beside it.
+ // Pull runs `git pull --ff-only` against this checkout.
+ // It refuses to create a merge commit when the local branch has diverged from its upstream.
+-// Fetch refreshes the remote-tracking refs and never touches the local branch.
++// Fetch refreshes the remote-tracking refs and drops those of branches the remote deleted.
++// It prunes remote-tracking refs only and never a local tag.
++// It never touches the local branch.
+ // A caller uses it to inspect what changed upstream before it reconciles.
+ // Both run git under the repository's remote-refs lock, since both write remote-tracking refs.
+ 
+ package gitrepo
+ 
+-import "fmt"
++import (
++	"errors"
++	"fmt"
++	"strings"
++)
++
++// fetchRemote is the remote whose fetch refspecs Fetch reads to prune.
++// A checkout with no remote of this name is fetched but never pruned.
++const fetchRemote = "origin"
++
++// remoteTrackingPrefix opens the destination of a fetch refspec that writes remote-tracking refs.
++const remoteTrackingPrefix = "refs/remotes/"
+ 
+ // Pull fast-forwards the current branch from upstream via `git pull --ff-only` and refuses a diverged branch.
+ // Errors name the repo path and git's exit code, and give the command that reproduces git's own diagnosis.
+@@ -30,20 +43,62 @@ func (r *Repo) Pull() error {
+ }
+ 
+ // Fetch refreshes remote-tracking refs via `git fetch` and leaves the local branch where it is.
++// It then drops the tracking ref of every branch the remote no longer holds,
++// so a reader of the fetched refs never sees a branch deleted on the remote as present.
++// The prune covers only the remote's fetch refspecs whose destination is under refs/remotes/,
++// so a local tag is never pruned, even one a configured refspec fetches into refs/tags/.
+ // Errors name the repo path and git's exit code, and give the command that reproduces git's own diagnosis.
+ // Raw stderr stays out of the error.
+ func (r *Repo) Fetch() error {
+ 	var code int
+-	err := r.withRemoteRefs(func() (runErr error) {
++	var failedCommand string
++	err := r.withRemoteRefs(func() error {
++		var runErr error
++		failedCommand = "fetch"
+ 		//gitexec:raw — a non-zero exit here IS a failure, but folding git's stderr into the message would break fetch_integration_test.go's test-enforced no-`fatal:`-leak surface; the reproduction pointer stands in for the stderr.
+ 		_, _, code, runErr = r.run("fetch")
++		if runErr != nil || code != 0 {
++			return runErr
++		}
++		refspecs, runErr := r.RemoteFetchRefspecs(fetchRemote)
++		if errors.Is(runErr, ErrRemoteNotConfigured) {
++			return nil
++		}
++		if runErr != nil {
++			return runErr
++		}
++		pruned := remoteTrackingRefspecs(refspecs)
++		if len(pruned) == 0 {
++			return nil
++		}
++		args := append([]string{"fetch", "--prune", "--no-tags", fetchRemote}, pruned...)
++		quoted := make([]string, len(pruned))
++		for i, refspec := range pruned {
++			quoted[i] = "'" + refspec + "'"
++		}
++		failedCommand = strings.Join(append([]string{"fetch", "--prune", "--no-tags", fetchRemote}, quoted...), " ")
++		//gitexec:raw — same justification as the plain fetch above.
++		_, _, code, runErr = r.run(args...)
+ 		return runErr
+ 	})
+ 	if err != nil {
+ 		return fmt.Errorf("gitrepo: fetch in %s: %w", r.path, err)
+ 	}
+ 	if code != 0 {
+-		return fmt.Errorf("gitrepo: fetch in %s: git exited %d (run `git -C %s fetch` for git's own diagnosis)", r.path, code, r.path)
++		return fmt.Errorf("gitrepo: fetch in %s: git exited %d (run `git -C %s %s` for git's own diagnosis)", r.path, code, r.path, failedCommand)
+ 	}
+ 	return nil
+ }
++
++// remoteTrackingRefspecs returns the refspecs whose destination lies under refs/remotes/.
++// A refspec with no destination, such as a negative one, never qualifies.
++func remoteTrackingRefspecs(refspecs []string) []string {
++	var kept []string
++	for _, refspec := range refspecs {
++		_, destination, hasDestination := strings.Cut(refspec, ":")
++		if hasDestination && strings.HasPrefix(destination, remoteTrackingPrefix) {
++			kept = append(kept, refspec)
++		}
++	}
++	return kept
++}
+diff --git a/internal/pairteardown/runread.go b/internal/pairteardown/runread.go
+index e557acfc2..dab6d718a 100644
+--- a/internal/pairteardown/runread.go
++++ b/internal/pairteardown/runread.go
+@@ -246,6 +246,7 @@ func (r runReader) read(slug string) (runfsm.Records, runfsm.Inputs, error) {
+ 		inputs.CodeTipMissing = true
+ 		inputs.CodeTip = tip.Tip
+ 		inputs.CodeTipMachine = tip.Machine
++		inputs.CodeTipPairAbsent = !pairHere
+ 	}
+ 
+ 	switch {
+diff --git a/internal/pairteardown/runread_test.go b/internal/pairteardown/runread_test.go
+index 948dfbd5c..4423db0a3 100644
+--- a/internal/pairteardown/runread_test.go
++++ b/internal/pairteardown/runread_test.go
+@@ -323,9 +323,15 @@ func TestReadRun(t *testing.T) {
+ 		{
+ 			name:      "AMissingCodeTipSetsTheThreeCodeTipInputs",
+ 			fakes:     runFakes{codeTip: fabricengine.CodeTipReading{Tip: "abc123", Missing: true, Machine: "oslo"}},
+-			wantIn:    runfsm.Inputs{CodeTipMissing: true, CodeTip: "abc123", CodeTipMachine: "oslo"},
++			wantIn:    runfsm.Inputs{CodeTipMissing: true, CodeTip: "abc123", CodeTipMachine: "oslo", CodeTipPairAbsent: true},
+ 			wantCalls: []string{"child-origin"},
+ 		},
++		{
++			name:      "AMissingCodeTipWithAPairHereLeavesThePairAbsentInputClear",
++			fakes:     runFakes{pairHere: true, codeTip: fabricengine.CodeTipReading{Tip: "abc123", Missing: true, Machine: "oslo"}},
++			wantIn:    runfsm.Inputs{CodeTipMissing: true, CodeTip: "abc123", CodeTipMachine: "oslo"},
++			wantCalls: []string{"child-here"},
++		},
+ 		{
+ 			name:      "ACodeTipOriginHoldsSetsNoCodeTipInput",
+ 			fakes:     runFakes{codeTip: fabricengine.CodeTipReading{Tip: "abc123", Machine: "oslo"}},
+diff --git a/internal/runfsm/act.go b/internal/runfsm/act.go
+index 467f15bb9..cb3647582 100644
+--- a/internal/runfsm/act.go
++++ b/internal/runfsm/act.go
+@@ -44,6 +44,8 @@ type Inputs struct {
+ 	CodeTip string
+ 	// CodeTipMachine is the machine whose transition named CodeTip, for the code-tip refusal.
+ 	CodeTipMachine string
++	// CodeTipPairAbsent is true when no pair of the run stands on this machine, for the code-tip refusal.
++	CodeTipPairAbsent bool
+ 	// PastParentMerge is true when origin's fetched parent branch holds the task's work.
+ 	PastParentMerge bool
+ }
+@@ -85,12 +87,13 @@ type Verdict struct {
+ 	Owner        string
+ 	AdoptSubject string
+ 	// PushOwedError, PushOwedWorktree and PushOwedWayForward are copied from the inputs for the push-owed refusal.
+-	// CodeTip and CodeTipMachine are copied from the inputs for the code-tip refusal.
++	// CodeTip, CodeTipMachine and CodeTipPairAbsent are copied from the inputs for the code-tip refusal.
+ 	PushOwedError      string
+ 	PushOwedWorktree   string
+ 	PushOwedWayForward string
+ 	CodeTip            string
+ 	CodeTipMachine     string
++	CodeTipPairAbsent  bool
+ 	// CancelMachine and CancelRemove are the record's cancel intent, for the cancelling refusal; Judge fills them.
+ 	CancelMachine string
+ 	CancelRemove  bool
+@@ -110,7 +113,7 @@ func Act(in Inputs) Verdict {
+ 	verdict := Verdict{
+ 		Answer: AnswerWait, State: in.State, Owner: in.Owner, AdoptSubject: in.AdoptSubject,
+ 		PushOwedError: in.PushOwedError, PushOwedWorktree: in.PushOwedWorktree, PushOwedWayForward: in.PushOwedWayForward,
+-		CodeTip: in.CodeTip, CodeTipMachine: in.CodeTipMachine, HoldMachine: in.HoldMachine,
++		CodeTip: in.CodeTip, CodeTipMachine: in.CodeTipMachine, CodeTipPairAbsent: in.CodeTipPairAbsent, HoldMachine: in.HoldMachine,
+ 	}
+ 	switch {
+ 	case in.PushOwed:
+@@ -159,17 +162,7 @@ func (v Verdict) Refusal(slug, retry string) error {
+ 		reason = fmt.Sprintf("machine %s owns the run", v.Owner)
+ 		wayForward = fmt.Sprintf("run the same verb on %s, or run `lym adopt %s` on this machine first", v.Owner, v.AdoptSubject)
+ 	case ReasonCodeTip:
+-		reason = "the code tip the run's last transition names is not on origin yet"
+-		if v.CodeTip != "" {
+-			reason = fmt.Sprintf("the code tip %s the run's last transition names is not on origin yet", v.CodeTip)
+-		}
+-		if v.CodeTipMachine != "" {
+-			reason += fmt.Sprintf("; machine %s owes it", v.CodeTipMachine)
+-			wayForward = fmt.Sprintf("run `lym fabric push` in the task worktree on machine %s, then run %s again once the code push lands",
+-				v.CodeTipMachine, retry)
+-		} else {
+-			wayForward = fmt.Sprintf("run %s again once the code push lands", retry)
+-		}
++		reason, wayForward = v.codeTipRefusal(slug, retry)
+ 	case ReasonHeld:
+ 		machine := v.HoldMachine
+ 		if machine == "" {
+@@ -202,6 +195,29 @@ func (v Verdict) Refusal(slug, retry string) error {
+ 	return fmt.Errorf("run %q cannot act: %s; way forward: %s", slug, reason, wayForward)
+ }
+ 
++// codeTipRefusal words the reason and the way forward of a code-tip wait.
++// With no pair of the run on this machine, the transition may come from a records branch origin has deleted.
++// This machine kept that branch's fetched ref, so the way forward fetches origin's records before any push.
++func (v Verdict) codeTipRefusal(slug, retry string) (reason, wayForward string) {
++	reason = "the code tip the run's last transition names is not on origin yet"
++	if v.CodeTip != "" {
++		reason = fmt.Sprintf("the code tip %s the run's last transition names is not on origin yet", v.CodeTip)
++	}
++	wayForward = fmt.Sprintf("run %s again once the code push lands", retry)
++	if v.CodeTipMachine != "" {
++		reason += fmt.Sprintf("; machine %s owes it", v.CodeTipMachine)
++		wayForward = fmt.Sprintf("run `lym fabric push` in the task worktree on machine %s, then run %s again once the code push lands",
++			v.CodeTipMachine, retry)
++	}
++	if !v.CodeTipPairAbsent {
++		return reason, wayForward
++	}
++	reason += fmt.Sprintf("; no pair of the run stands on this machine, so the transition may be read from a records branch origin has deleted, "+
++		"as `lym batten cancel %s --remove` does", slug)
++	fetch := fmt.Sprintf("run `lym fabric pull` in the prime, which fetches origin's records and drops the ref of a deleted records branch, then run %s again", retry)
++	return reason, fetch + "; if the refusal stays, " + wayForward
++}
++
+ // terminalRefusal words the refusal of a landed or cancelled run.
+ func (v Verdict) terminalRefusal(slug string) error {
+ 	if v.State == Cancelled {
+diff --git a/internal/runfsm/act_test.go b/internal/runfsm/act_test.go
+index c6e8b6001..b0d5e6737 100644
+--- a/internal/runfsm/act_test.go
++++ b/internal/runfsm/act_test.go
+@@ -36,11 +36,19 @@ func TestAct(t *testing.T) {
+ 		codeTip       = `run "slug" cannot act: the code tip abc123 the run's last transition names is not on origin yet; machine neve owes it; way forward: run ` +
+ 			"`lym fabric push`" + ` in the task worktree on machine neve, then run the verb again once the code push lands`
+ 		codeTipNoMachine = `run "slug" cannot act: the code tip abc123 the run's last transition names is not on origin yet; way forward: run the verb again once the code push lands`
+-		held             = `run "slug" cannot act: an adopt on machine another machine holds the hub; way forward: wait for that adopt's hold to clear, then run the verb again; if machine another machine has stopped, ask the operator`
+-		heldNamed        = `run "slug" cannot act: an adopt on machine neve holds the hub; way forward: wait for that adopt's hold to clear, then run the verb again; if machine neve has stopped, ask the operator`
+-		pauseCover       = "run \"slug\" cannot act: a pause covers the run; way forward: run `lym tender resume slug`, then run the verb again"
+-		pausedIntent     = "run \"slug\" cannot act: the run is paused; way forward: run `lym tender resume slug`, then run the verb again"
+-		pausedShed       = "run \"slug\" cannot act: the run is paused; way forward: run `lym batten run slug` from the prime to resume the run, " +
++		codeTipNoPair    = `run "slug" cannot act: the code tip abc123 the run's last transition names is not on origin yet; machine neve owes it; ` +
++			`no pair of the run stands on this machine, so the transition may be read from a records branch origin has deleted, as ` + "`lym batten cancel slug --remove`" + ` does; ` +
++			`way forward: run ` + "`lym fabric pull`" + ` in the prime, which fetches origin's records and drops the ref of a deleted records branch, then run the verb again; ` +
++			`if the refusal stays, run ` + "`lym fabric push`" + ` in the task worktree on machine neve, then run the verb again once the code push lands`
++		codeTipNoPairNoTip = `run "slug" cannot act: the code tip the run's last transition names is not on origin yet; ` +
++			`no pair of the run stands on this machine, so the transition may be read from a records branch origin has deleted, as ` + "`lym batten cancel slug --remove`" + ` does; ` +
++			`way forward: run ` + "`lym fabric pull`" + ` in the prime, which fetches origin's records and drops the ref of a deleted records branch, then run the verb again; ` +
++			`if the refusal stays, run the verb again once the code push lands`
++		held         = `run "slug" cannot act: an adopt on machine another machine holds the hub; way forward: wait for that adopt's hold to clear, then run the verb again; if machine another machine has stopped, ask the operator`
++		heldNamed    = `run "slug" cannot act: an adopt on machine neve holds the hub; way forward: wait for that adopt's hold to clear, then run the verb again; if machine neve has stopped, ask the operator`
++		pauseCover   = "run \"slug\" cannot act: a pause covers the run; way forward: run `lym tender resume slug`, then run the verb again"
++		pausedIntent = "run \"slug\" cannot act: the run is paused; way forward: run `lym tender resume slug`, then run the verb again"
++		pausedShed   = "run \"slug\" cannot act: the run is paused; way forward: run `lym batten run slug` from the prime to resume the run, " +
+ 			"or `lym loom resume` in the task worktree to resume the inner run"
+ 		cancelKeep   = "run \"slug\" cannot act: a cancel started on machine neve has not finished; way forward: run `lym batten cancel slug` on machine neve to finish it"
+ 		cancelRemove = "run \"slug\" cannot act: a cancel started on machine neve has not finished; way forward: run `lym batten cancel slug --remove` on machine neve to finish it"
+@@ -63,6 +71,8 @@ func TestAct(t *testing.T) {
+ 			{"OwnedElsewhereLandingPastMergeHandsOver", runfsm.Inputs{State: runfsm.Landing, PastParentMerge: true, OwnedElsewhere: true, Owner: "neve", AdoptSubject: "sub"}, runfsm.AnswerHandOver, runfsm.ReasonOwnedElsewhere, owned},
+ 			{"MissingCodeTipWaits", runfsm.Inputs{State: runfsm.Running, CodeTipMissing: true, CodeTip: "abc123", CodeTipMachine: "neve"}, runfsm.AnswerWait, runfsm.ReasonCodeTip, codeTip},
+ 			{"MissingCodeTipWithoutMachineLeavesOutThePushClause", runfsm.Inputs{State: runfsm.Running, CodeTipMissing: true, CodeTip: "abc123"}, runfsm.AnswerWait, runfsm.ReasonCodeTip, codeTipNoMachine},
++			{"MissingCodeTipWithNoPairHereNamesTheRecordsFetchFirst", runfsm.Inputs{State: runfsm.Running, CodeTipMissing: true, CodeTip: "abc123", CodeTipMachine: "neve", CodeTipPairAbsent: true}, runfsm.AnswerWait, runfsm.ReasonCodeTip, codeTipNoPair},
++			{"MissingCodeTipWithNoPairAndNoTipOrMachineKeepsTheBareRetryClause", runfsm.Inputs{State: runfsm.Running, CodeTipMissing: true, CodeTipPairAbsent: true}, runfsm.AnswerWait, runfsm.ReasonCodeTip, codeTipNoPairNoTip},
+ 			{"HeldLandingPastMergeActs", runfsm.Inputs{State: runfsm.Landing, PastParentMerge: true, Held: true}, runfsm.AnswerAct, "", ""},
+ 			{"HeldLandingPastMergeWithCoveringPauseWaits", runfsm.Inputs{State: runfsm.Landing, PastParentMerge: true, Held: true, PauseCovers: true}, runfsm.AnswerWait, runfsm.ReasonHeld, held},
+ 			{"LandingPastMergeWithCoveringPauseWaits", runfsm.Inputs{State: runfsm.Landing, PastParentMerge: true, PauseCovers: true}, runfsm.AnswerWait, runfsm.ReasonPauseCovers, pauseCover},
