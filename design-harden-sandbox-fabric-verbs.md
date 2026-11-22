@@ -1,6 +1,6 @@
 # Hardener rounds may run fabric verbs in their own sandbox hubs
 
-`harden-sandbox-fabric-verbs` · Task · bug, fabric, shed · running · Code-Burler-Fix
+`harden-sandbox-fabric-verbs` · Task · bug, fabric, shed · running · Code-Bouncer
 
 ## What was seen (2026-11-22)
 
