@@ -1,6 +1,6 @@
 # Hardener campaign on fabric, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · running · Harden-Burler-Review
+`harden-fabricengine` · Task · bug, fabric · running · Harden-Burler-Fix
 
 ## Focus
 
