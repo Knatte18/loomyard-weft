@@ -21,6 +21,12 @@ Wire `LanguageSkills` from `loomcli/samplerwiring.go` into `SessionInputs` and o
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-22): Sampler carries the same language skills as every writer
+
+Decision: The sampler session loads exactly the same language skills as every other writer in the repository (darn writer, webster, weaver, fixers), from the same source, the hub's LanguageSkills; no sampler-specific list and no fixed language. The test pins that the sampler carries the same skills as the darn writer.
+
+Rationale: Operator, 2026-11-22: one source of language skills for every writer in the repo.
+
 ## Constraints
 
 ## Auto-mode assumptions
