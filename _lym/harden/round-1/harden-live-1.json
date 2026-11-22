@@ -1,0 +1,22 @@
+{
+  "round": 1,
+  "mark": "red",
+  "live": {
+    "passed": false,
+    "started": 3,
+    "failing_lines": [
+      "FAIL\tinternal/fabriccli [setup failed]",
+      "FAIL\tinternal/fabricengine [setup failed]",
+      "FAIL\tinternal/gitrepo [setup failed]"
+    ]
+  },
+  "copies": {
+    "passed": false,
+    "started": 9
+  },
+  "deferred": [
+    "FAIL\tinternal/fabriccli [setup failed]",
+    "FAIL\tinternal/fabricengine [setup failed]",
+    "FAIL\tinternal/gitrepo [setup failed]"
+  ]
+}
