@@ -1,6 +1,6 @@
 # Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge
 
-`orch-full-autonomy-mode` · Task · feature, orch, drift, landing, dobby, batten, pawl, config · running · Discussion-Bouncer
+`orch-full-autonomy-mode` · Task · feature, orch, drift, landing, dobby, batten, pawl, config · running · Discussion-Burler-Review
 
 ## Goal (operator, 2026-11-22)
 
