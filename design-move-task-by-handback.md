@@ -23,7 +23,7 @@ Instead, end the run and start a new one with more information:
 What the design must settle:
 
 - Whether the new run re-uses the old commits (a cherry-pick, which brings back the study's ancestry question) or only reads them.
-- Whether this is a recipe step, a `lym batten` verb, or orch guidance alone.
+- Whether this is a `lym batten` verb or orch guidance alone; it is never a recipe step (operator, 2026-11-22).
 
 The adopt redesign (`adopt-redesign`) has landed, and so has `run-fsm-tracked-records` (`27eefef6`, one run FSM over tracked records).
 The project `adopt-build-resplit` has landed whole: its members `transition-push-takeover`, `machine-registry-holds-catchup`, `adopt-foreground` and `leftover-pairs-teardown` are in (`71d6ee1a`),
