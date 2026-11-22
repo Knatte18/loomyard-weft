@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 17:42 UTC; every age below is as of then.
+Rendered 2026-11-22 17:43 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,14 +12,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Per-task beam settings use one lookup from the worktree up**<br>• One lookup for per-task beam settings: the task worktree's own value, else its parent's up to the hub; pull_request and land_notice move onto it.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md) | darn · solid | Code-Bouncer | neve | 5h<br>5h | dobby, config, board, landing |
-| T6 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md) | motif | Discussion-Write | neve | 45m<br>13m | batten, fabric |
+| T3 | **Per-task beam settings use one lookup from the worktree up**<br>• One lookup for per-task beam settings: the task worktree's own value, else its parent's up to the hub; pull_request and land_notice move onto it.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md) | darn · solid | Drift-Recheck | neve | 5h<br>5h | dobby, config, board, landing |
+| T6 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md) | motif | Discussion-Write | neve | 46m<br>14m | batten, fabric |
 
 ## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch procedure to move a running task by a move note and a fresh run**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-move-running-task`](design-orch-move-running-task.md)<br>[Sketch](decision-orch-move-running-task.md) | darn · docs | T3 | 50m<br>50m | orch, heddle |
+| T4 | **Orch procedure to move a running task by a move note and a fresh run**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-move-running-task`](design-orch-move-running-task.md)<br>[Sketch](decision-orch-move-running-task.md) | darn · docs | T3 | 51m<br>51m | orch, heddle |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | T3 | 6h<br>5h | orch, landing, loom, pawl, drift |
 
 ## Research (2)
@@ -33,4 +33,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>28m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>29m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
