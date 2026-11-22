@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (8)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (10)</strong></summary>
 
 Owner `neve`
 
@@ -94,7 +94,7 @@ Waits only on Running, Ready or Draft entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 8m<br>3m | fabric, batten, dobby |
 
-### Notes (5)
+### Notes (7)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -105,11 +105,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 12d<br>12d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
-#### Enhancements (1)
+#### Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Board README marks projects that have a beam**<br>• Show which projects run as beams | [`readme-beam-marker`](design-readme-beam-marker.md) | 0m<br>0m | board |
+| E2 |  | **Board README hides empty sections**<br>• No heading or table for a section with no entries | [`readme-hide-empty-sections`](design-readme-hide-empty-sections.md) | 0m<br>0m | board |
+| E3 |  | **Board README drops the Notes level above the type groups**<br>• Features, bugs and enhancements as their own sections | [`readme-flatten-note-groups`](design-readme-flatten-note-groups.md) | 0m<br>0m | board |
 
 #### Features (2)
 

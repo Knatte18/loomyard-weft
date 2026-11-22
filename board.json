@@ -310,6 +310,42 @@
       "body": "## What was seen (operator, 2026-11-22)\n\nThe rendered board README does not show which projects have a beam, a long-lived pair that spawns its members from its own worktree.\n\n## Idea\n\nMark each project that has a beam, in its heading and in any project list, so a reader sees at once which projects run as beams.\n",
       "created": "2026-11-22T09:55:43Z",
       "revised": "2026-11-22T09:55:43Z"
+    },
+    {
+      "id": 1556,
+      "handle": "E2",
+      "slug": "readme-hide-empty-sections",
+      "title": "Board README hides empty sections",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "No heading or table for a section with no entries",
+      "body": "## What was seen (operator, 2026-11-22)\n\nEmpty sections render in the board README, such as a project's Tasks and Ready headings with nothing under them; P2 shows only its features, but its empty sections still take room.\n\n## Idea\n\nRender no section, heading or table that holds no entry.\n",
+      "created": "2026-11-22T09:55:43Z",
+      "revised": "2026-11-22T09:55:43Z"
+    },
+    {
+      "id": 1557,
+      "handle": "E3",
+      "slug": "readme-flatten-note-groups",
+      "title": "Board README drops the Notes level above the type groups",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Features, bugs and enhancements as their own sections",
+      "body": "## What was seen (operator, 2026-11-22)\n\nThe board README groups features, bugs and enhancements under a Notes heading, as subsections.\nEvery reader knows those are notes, so the extra level adds nothing.\n\n## Idea\n\nDrop the Notes level: render Features, Bugs, Enhancements and the other type groups as sections of their own.\n",
+      "created": "2026-11-22T09:55:43Z",
+      "revised": "2026-11-22T09:55:43Z"
     }
   ],
   "prime_owner": "neve",
