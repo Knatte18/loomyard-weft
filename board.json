@@ -341,6 +341,24 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1576,
+      "handle": "B1",
+      "slug": "harden-fabric-undriven-cases",
+      "title": "Drive the four teardown and archive cases the one-repository hardener left undriven",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags",
+      "body": "## Seen\n\n`harden-fabric-single-repo-verbs` approved in round 3 with part of its focus undriven (`round-3-focus.md` and `round-3-review.md` in its archived records, Coverage section):\n\n- The discard half of a killed teardown, re-run through the command its pending record prints; only a hubforge test with a Topology seam covers it.\n- Whether a teardown now pushes to origin a local `archive/\u003cslug\u003e/*` tag the operator kept local on purpose, and whether any verb output or help text names it.\n- A failed remote step without a kill keeping its pending record (O3's fix).\n- `lym adopt --archives` over owner-archive tags pushed by the real `ArchiveOwnerTips` path, with the code side's new `refs/lym/code-tags/` prefix.\n\nAlso left: code-side archive tags in plain `refs/tags/archive/` that an earlier binary pushed are named by no reader verb.\n\n## Idea\n\nA short live drive of these cases in a one-repository sandbox hub, fixing what fails with a test.\n",
+      "created": "2026-11-22T20:36:41Z",
+      "revised": "2026-11-22T20:36:41Z"
     }
   ],
   "prime_owner": "neve",
