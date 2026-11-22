@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-22 19:28 UTC; every age below is as of then.
+Rendered 2026-11-22 19:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -24,7 +24,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Bouncer | neve | 3h<br>3h | fabric |
+| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Review | neve | 3h<br>3h | fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (11)
 
@@ -34,8 +34,8 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | Darn-Write | neve | 24m<br>12m | gate, darn |
-| T7 | **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | darn · docs | Darn-Write | neve | 24m<br>12m | burler, lenses |
+| T6 | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | darn · light | Darn-Write | neve | 25m<br>14m | gate, darn |
+| T7 | **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | darn · docs | Darn-Write | neve | 25m<br>14m | burler, lenses |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Webster | neve | 7h<br>7h | orch, landing, loom, pawl, drift |
 
 ### Layer A (3)
