@@ -1,6 +1,6 @@
 # Sampler session loads the language skills before it edits code
 
-`sampler-loads-language-skills` · Task · bug, loom, shuttle · starting · Open-Window
+`sampler-loads-language-skills` · Task · bug, loom, shuttle · starting · Seed-IDE
 
 ## What was seen (operator, 2026-11-22)
 
