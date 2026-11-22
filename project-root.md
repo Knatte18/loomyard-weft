@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 16:56 UTC; every age below is as of then.
+Rendered 2026-11-22 16:57 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,18 +8,13 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (2)
+## Running (3)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A killed seed leaves board sync naming a false, looping way forward**<br>• After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | fabric |
+| T2 | **Each run transition waits for a push to origin, so a run starts about a minute slower**<br>• Since 71d6ee1a0 every batten row pushes its records before acting; a run start went from ~7 s to ~60 s.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`transition-push-slows-rows`](design-transition-push-slows-rows.md) | darn · light | starting · Worktree-Create | neve | 10m<br>0m | batten, fabric |
 | T3 | **Per-task beam settings use one lookup from the worktree up**<br>• One lookup for per-task beam settings: the task worktree's own value, else its parent's up to the hub; pull_request and land_notice move onto it.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md) | darn · solid | Code-Burler-Fix | neve | 5h<br>5h | dobby, config, board, landing |
-
-## Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Each run transition waits for a push to origin, so a run starts about a minute slower**<br>• Since 71d6ee1a0 every batten row pushes its records before acting; a run start went from ~7 s to ~60 s.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`transition-push-slows-rows`](design-transition-push-slows-rows.md) | darn · light |  | 10m<br>0m | batten, fabric |
 
 ## Layer A (1)
 
