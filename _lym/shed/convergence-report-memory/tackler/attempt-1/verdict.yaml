@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  The stop is a bootstrap refusal: the step said the run's last transition names code tip
+  2edb8ba9a8ad937e30d61a583714e79b501edd31, which was not on origin yet. That cause has cleared.
+  `git ls-remote origin` now lists refs/heads/convergence-report-memory at exactly
+  2edb8ba9a8ad937e30d61a583714e79b501edd31, and the commit exists locally (subject: "Keep the timing
+  walk test's doc comment on one line"). The stop's own way forward is to re-run the batten once the
+  code push lands, which has happened. No goto is needed: the stop is not blocked, and the
+  run's history shows only the intended Open-IDE skip (batten.open_ide = false), so nothing else is
+  pending.
