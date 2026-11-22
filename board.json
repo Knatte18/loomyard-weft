@@ -208,6 +208,12 @@
             "internal/fabriccli",
             "internal/gitrepo"
           ]
+        },
+        "loom": {
+          "notify_parent_on": [
+            "Harden-Bouncer",
+            "Harden-Burler-Fix"
+          ]
         }
       },
       "project": "single-repo-hub"
