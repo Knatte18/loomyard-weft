@@ -1,6 +1,6 @@
 # Each run transition waits for a push to origin, so a run starts about a minute slower
 
-`transition-push-slows-rows` · Task · enhancement, batten, fabric · running · Code-Burler-Review
+`transition-push-slows-rows` · Task · enhancement, batten, fabric · running · Code-Burler-Fix
 
 ## What was seen
 
