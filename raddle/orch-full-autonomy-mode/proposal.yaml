@@ -1,0 +1,109 @@
+{
+  "sketch": "orch-full-autonomy-mode",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "orch-rc-off-by-default", "revised": "2026-11-22T11:21:57Z"},
+    {"slug": "stale-records-ref-blocks-rerun", "revised": "2026-11-22T09:51:58Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-05T17:03:32Z"},
+    {"slug": "orchestrator-survey-ideas", "revised": "2026-11-21T15:32:07Z"},
+    {"slug": "move-task-by-handback", "revised": "2026-11-18T07:59:44Z"}
+  ],
+  "parts": [
+    {
+      "slug": "orch-autonomy-mode",
+      "title": "Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge",
+      "type": "feature",
+      "labels": ["dobby", "config", "orch", "loom", "landing", "burler", "drift", "shed", "batten", "webster", "pawl", "workspaces", "slack", "stencil", "heddle"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 80},
+        {"path": "internal/orchcli", "size": 120},
+        {"path": "internal/loomcli", "size": 450},
+        {"path": "internal/landingshed", "size": 500},
+        {"path": "internal/pullrequest", "size": 60},
+        {"path": "internal/burlerengine", "size": 80},
+        {"path": "internal/loomengine", "size": 120},
+        {"path": "internal/driftengine", "size": 200},
+        {"path": "internal/configreg", "size": 60},
+        {"path": "internal/sheddriver", "size": 40},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/webstercli", "size": 20},
+        {"path": "internal/burlercli", "size": 20},
+        {"path": "internal/adoptcli", "size": 30},
+        {"path": "internal/beamcli", "size": 120},
+        {"path": "internal/pawlengine", "size": 250},
+        {"path": "internal/slackcli", "size": 100},
+        {"path": "internal/orchengine", "size": 150},
+        {"path": "contracts/orchrole", "size": 250},
+        {"path": "contracts/stencils", "size": 60},
+        {"path": "internal/heddleengine", "size": 2}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; beam.yaml's ConfigSpec in dobbyengine, the halt-notice posters behind orchcli, loom's and drift's LoadConfig and configreg.SettingLookup, the PR-Review row and its pull request record, burlerengine's run-wide ask record, Beam-Await's Notify seam, the Slack reply hook, the orch pointers and the orchrole embeds",
+        "delivers": "a Guard `autonomy` key in beam.yaml with a run reader and an orch reader; halt notices carrying `autonomy:`; the five forced keys and the Drift-Verify halt on an ended judge ask; PR-Review ended only by a recorded satisfied PR-Review ask under recorded autonomy; the `[beam drained]` line; the Slack hook's `[operator]` filter; the autonomy line on every orch pointer; role-autonomy.md with the severe-halt list and the merge-ready steps; two glossary lines",
+        "exports": "the run and orch autonomy readers, `lym loom parent-review ask`, the loom key `pr_review_parent_timeout_min`, the pawlengine drain marker name, contracts/orchrole/role-autonomy.md"
+      },
+      "depends_on": ["orch-rc-off-by-default", "sampler-loads-language-skills"],
+      "open_risks": [],
+      "criteria": [
+        "D1: `beam.yaml`'s template carries `autonomy: false`; the key is classified `CategoryGuard`; a task's `run_settings` of `{\"beam\":{\"autonomy\":true}}` is refused by the local-layer check.",
+        "D1: a worktree layer of `false` over a default layer of `true` resolves `false` for that worktree.",
+        "D1: Finalize's config-change notice for a landing whose worktree file changed `autonomy` does not name `autonomy`.",
+        "D2: a run's reader answers `true` when its parent worktree's `beam.yaml` resolves `autonomy: true`, `false` when it resolves `false`, and `false` with a warning when the stack fails to load.",
+        "D2: an orch's reader answers from its own worktree's stack, not its parent's.",
+        "D2: a halt notice of a run carries the run's autonomy read when the notice is built.",
+        "Review: D2 — `role-autonomy.md` has the orch handle a halt under the value its notice carries:\nwith the run's parent worktree `false` and its orch down, the prime orch under `true` relays the halt to the operator;\nwith it `true`, an ancestor orch under `false` settles it.",
+        "D3: with the parent worktree autonomous and layers holding `pr_review_ask_parent: false`, `judge_ask_parent: false`, `judge_interactive: true`, `discussion_interactive: true` and `raddle_auto_approve: false`,\nPR-Review asks the parent, Drift-Verify runs its parent-agreement gate, the judge and the Discussion lead spawn non-interactive with autonomous mode text, and a raddle proposal files with no approval.",
+        "D3: a profile's raddle block holding `raddle_auto_approve: false` reads `true` under autonomy.",
+        "D3: with autonomy off, each of those keys keeps its own layered value; a raddle run already past its first Raddle-Write call keeps its recorded mode.",
+        "D3: under autonomy, a judge ask that ends timeout past `judge_parent_timeout_min`, not-sent or no-parent stops the run at Drift-Verify with a halt naming `lym loom resume`,\nand the resume sends a new ask over the same rulings; without autonomy the rulings stand in each case.",
+        "D4: under autonomy the PR-Review session spec has `Interactive` false; without autonomy it has `Interactive` true.",
+        "D4: under autonomy each `[pr-review request]` line names `lym loom parent-review answer <slug> --ask <n>` as its answer.",
+        "D4: `lym loom parent-review ask` records a PR-Review ask in the run's ask record, with its tag and the head it read;\nit is refused outside a PR-Review session whose record holds autonomy `true`, and while the newest PR-Review ask stands unanswered at the current head;\nafter that ask reaches its deadline unanswered, the answer is refused naming the session's next request as its way forward, and a new `parent-review ask` is recorded.",
+        "D4: under autonomy, with an earlier Code-Review or judge ask in the run, `lym loom parent-review answer <slug> --ask <n> --satisfied` for the newest PR-Review ask is recorded,\nand `lym loom pr-continue` then ends the review.",
+        "D4: under autonomy `lym loom pr-continue` refuses with no satisfied answer, and refuses when the newest satisfied ask was sent at an older head; it succeeds after a satisfied answer at the current head.",
+        "D4: under autonomy, a commit after a passing `lym loom pr-continue` leaves the review open, with the continue flag cleared and the session mailed to ask again, until a new ask at the new head is answered satisfied.",
+        "D4: under autonomy, a pull request closed on GitHub while PR-Review waits halts PR-Review and `lym loom pr-continue` is refused on it;\none closed after the review ended halts Finalize, which reopens neither.",
+        "D4: under autonomy, a GitHub approval of the gated head ends the review with no parent answer, as today.",
+        "D4: under autonomy, with a mailed head standing and no satisfied answer, `lym loom pr-continue` clears the mailed head and leaves the review open, and the row gates that head again.",
+        "D4: a toggle of autonomy while a PR-Review session runs changes neither the session's interactivity, after a pause or a judging stop resumes the session, nor `pr-continue`'s check, which read the value recorded once for the review.",
+        "D4: under autonomy, with the newest ask unanswered at the current head, `lym loom pr-continue`'s refusal names waiting for the parent's answer, and the gate-failure hint names no operator.",
+        "D4: `lym loom goto` onto PR-Review clears the record's autonomy and session fields, so the session the re-entry starts after autonomy turned off is new and interactive.",
+        "D4: after autonomy turns off while a review waits, the operator's unnamed shell answers the newest PR-Review ask with `lym loom parent-review answer`.",
+        "D4: without autonomy `lym loom pr-continue` succeeds with no parent answer, as today.",
+        "Review: D4 — the PR-Review stencil, under autonomy, asks the parent after each fix with `lym loom parent-review ask`, waits with `lym loom parent-review await`,\nand runs `lym loom pr-continue` only on its satisfied answer.",
+        "Review: D4 — `orch-role.md`'s \"Reviewing a pull request\" names `role-autonomy.md` as its exception, and `role-autonomy.md` gives the `lym loom parent-review answer` answer.",
+        "Review: D5 — `role-autonomy.md` lists exactly the six severe-halt classes, the `[operator] severe halt <slug>:` opening,\nand class 5's count of earlier halts at the row from the run's status history, each halt entry, a Stuck with no `routed_to`, counting as one halt plus its `repeats`.",
+        "D6: with the beam's orch autonomous, Beam-Await posts one `[beam drained] <slug>` line on the first wake after its last open member lands,\nand none on later wakes, after the row is re-entered or after a dobby-down notice is sent and cleared.",
+        "D6: a member that opens and lands again after a drain causes one further line;\na beam with no commits beyond its parent, a standing ready record, an open draft member, or autonomy off causes none.",
+        "Review: D7 — `role-autonomy.md` gives the four steps starting at the first not done, step 1 only on a conflict refusal with a beam only behind its parent going to step 2,\nthe `[operator] merge ready <slug>:` notice and `lym beam ready` waiting for the operator's word.",
+        "D8: with the presence slack and the orch's worktree autonomous, the reply hook forwards a reply opening `[operator]` and drops one that does not; with autonomy off it forwards both.",
+        "Review: D8 — `role-autonomy.md` has the orch post each severe-halt relay and merge-ready notice to `<shortname>:SLACK` with `lym creel post`, one relay per turn opening its own reply;\n`role-slack.md` has it open every reply meant for the operator with `[operator]` while the presence is slack.",
+        "D9: the start, resume and reload pointers and the pending resume after a handoff carry the orch's autonomy line, on and off, under a slack and a terminal presence.",
+        "D9: after a value change made outside `lym config beam --set`, such as a hand-edited worktree file, the next halt notice carries the new value.",
+        "Review: D9 — `orch-role.md` points to `role-autonomy.md`;\nits operator-word rules, its go-ahead working rule and its \"Reviewing a pull request\" section, `role-slack.md`'s forwarding rule,\nwhich also gains D8's marker rule,\nand the `lym beam pr` and `lym beam describe` help in `internal/beamcli/cli.go` name it as their exception.",
+        "Review: D10 — `internal/heddleengine/glossary.md` carries the two lines."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 41,
+      "cost_line": "tapestry/solid stored-record fit, 32.03 fixed plus 0.32 per 100 lines over about 2750 changed lines with tests (17 runs, correlation 0.67)"
+    }
+  ],
+  "cost": {
+    "expected_usd": 41,
+    "line": "one tapestry/solid part on the stored-record fit: 32.03 fixed plus 0.32 per 100 lines over about 2750 lines",
+    "next_best": {
+      "split": "two parts: a tapestry/solid part for D1-D4 (config, readers, notices, forced keys, PR-Review) and a darn/solid part for D5-D10 (Beam-Await drain, Slack filter, orch pointers, role files, glossary) depending on it",
+      "expected_usd": 56,
+      "line": "tapestry/solid fit over about 2000 lines (32.03 + 6.4) plus the darn/solid stored-record fit over about 750 lines (17.20 fixed, near-flat per line; 9 runs)"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
