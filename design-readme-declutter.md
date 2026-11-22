@@ -1,6 +1,6 @@
 # Board README: beam marker, no empty sections, no Notes level
 
-`readme-declutter` · Task · enhancement, board · starting · Open-Window
+`readme-declutter` · Task · enhancement, board · starting · Seed-IDE
 
 ## Goal (operator, 2026-11-22)
 
