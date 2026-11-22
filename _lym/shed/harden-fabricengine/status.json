@@ -1,13 +1,13 @@
 {
   "current_producer": "Harden-Burler-Review",
-  "state": "failed",
-  "error": "shedverbs: step Harden-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step harden-fabricengine --until-stop",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Harden-Burler-Review",
     "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
-    "wait": "shedverbs: step Harden-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step harden-fabricengine --until-stop"
+    "wait": ""
   },
   "history": [
     {
