@@ -210,24 +210,24 @@
     },
     {
       "id": 1568,
-      "handle": "T6",
+      "handle": "S1",
       "slug": "later-transition-push-wait",
       "title": "Later run transitions still wait for a records push to origin",
-      "kind": "task",
+      "kind": "note",
       "labels": [
-        "enhancement",
+        "sketch",
         "batten",
         "fabric"
       ],
       "issues": [],
-      "recipe": "motif",
       "depends_on": [],
       "isolated": false,
       "brief": "After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it.",
       "body": "## What was seen\n\nSince `71d6ee1a0` every batten transition pushes its records to origin before the run acts, at about 10 to 20 seconds each.\n`transition-push-slows-rows` removes the push from the start rows only; Land, Worktree-Teardown and every other later transition still wait for it.\n\n## Idea\n\nPush only at the transitions a takeover reads from, batch several transitions into one push, or push in the background and wait only before a row whose effect a second machine could repeat.\nThe design must show which transitions adopt needs pushed before the act.\n\n## Loom rows pay it too\n\nSkipped loom rows sat about 2 seconds apart before `71d6ee1a0` (runs of 2026-11-12 and 2026-11-17) and about 6 seconds apart after it (2026-11-19, 2026-11-21, 2026-11-22), read from the `at` times of the Drift rows in archived `status.json` files.\nA darn walks about 25 rows, so the waits add a few minutes per run.\n",
-      "status": "running · Discussion-Bouncer",
       "created": "2026-11-22T16:56:55Z",
-      "revised": "2026-11-22T17:28:51Z"
+      "revised": "2026-11-22T18:14:54Z",
+      "discussed": true,
+      "record_body_sha256": "d4bfef00c8742f22f96456c89ee14d37dc715dd371b32139d04a04f83fae3b82"
     },
     {
       "id": 1569,

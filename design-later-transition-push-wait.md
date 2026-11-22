@@ -1,6 +1,8 @@
 # Later run transitions still wait for a records push to origin
 
-`later-transition-push-wait` · Task · enhancement, batten, fabric · running · Discussion-Bouncer
+`later-transition-push-wait` · Note · sketch, batten, fabric
+
+Decision record: [Sketch](decision-later-transition-push-wait.md)
 
 ## What was seen
 
