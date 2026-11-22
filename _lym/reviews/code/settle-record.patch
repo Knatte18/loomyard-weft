@@ -1,0 +1,3086 @@
+diff --git a/contracts/recipes/hardener-recipe.yaml b/contracts/recipes/hardener-recipe.yaml
+index 3d76e3f0..d69f294e 100644
+--- a/contracts/recipes/hardener-recipe.yaml
++++ b/contracts/recipes/hardener-recipe.yaml
+@@ -4,8 +4,10 @@
+ # It is embedded into the binary by the sibling recipes.go rather than read from disk. The row names below are the
+ # durable on-disk identities pinned against internal/loomshed's Name* constants.
+ #
+-# The decision record's `## Goal` is the campaign's charter: the module under test, its code paths and its scenarios.
+-# The ring's answer key is that record alone, and its open findings land in the record's `## Open risks`.
++# The Harden-Bouncer's seed pass writes the campaign's charter into round 1's focus file:
++# it reads the modules hardener.yaml's packages name, or that the task's title and labels name, and each judge carries the charter forward.
++# The decision record's `## Goal` holds the operator's optional focus, which binds the charter.
++# The ring's open findings land in the record's `## Open risks`.
+ # The recipe has no Drift rows and no writer row: the fix row of the ring is the one build row.
+ #
+ # Harden-Bouncer, Harden-Burler-Review and Harden-Burler-Fix are the Harden-Review ring.
+@@ -57,11 +59,13 @@ producers:
+       role_prefix: harden
+       reviewer_fan_setting: hardener.reviewer_fan
+       auto_accept_setting: hardener.auto_accept
+-      # The subject under review is the campaign's code, which artifact_paths cannot name; the key
+-      # names the answer key instead: the decision record. The rubric names the code as the subject.
++      # The subject under review is the modules' behaviour, which artifact_paths cannot name; the key
++      # names the operator's ask instead: the decision record. The rubric names the behaviour as the subject.
+       artifact_paths:
+         - _lym/discussion/decision-record.md
+       rubric_stencil: harden-rubric-review
++      # seed_stencil names the hardener's own seed template, whose seed pass reads the modules and writes the charter.
++      seed_stencil: harden-template-seed
+       # commit_seam names the campaign's commit seam, which commits each round's files.
+       commit_seam: harden
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+@@ -86,18 +90,20 @@ producers:
+       harden_round: true
+       profile:
+         target:
+-          # No paths key: the charter's code paths sit in the decision record, which the instructions name.
++          # No paths key: the charter in the round's focus file names the modules and their code paths.
+           instructions: >
+-            The subject under review is the code the charter in the decision record names:
+-            read the record's `## Goal` for the module under test and its code paths, and review those paths.
++            The subject under review is the behaviour of the modules the campaign's charter names.
++            The charter is this round's focus file: read it first for the modules and their focus, what to read,
++            the hub layouts to drive and what is out of scope, then drive those modules.
+             The rubric supplied in this prompt is the single definition of the review range.
+         fasit:
+           paths:
+             - _lym/discussion/decision-record.md
+           instructions: >
+-            The decision record named above is the campaign's charter: the board entry's body under
++            The decision record named above holds the operator's ask: the board entry's body under
+             `## Goal`, as amended by the record's `Added after Discussion` entries, which win where
+-            they differ. The round's job is to find and fix behaviour that departs from that charter.
++            they differ. A focus it states binds the campaign. The round's job is to find and fix
++            behaviour of the modules that departs from what their docs, verbs and invariants promise.
+         rubric_stencil: harden-rubric-review
+         # fix-scope: source: the target is the repo's own source files, and a fixer that cannot
+         # write and commit source cannot fix the module under test.
+@@ -121,7 +127,24 @@ producers:
+       review_row: Harden-Burler-Review
+       # No gates key: the engine fixes the row's gates to clean, verify and live.
+       profile:
+-        # No target key: the fixer finds its files from the review's findings and the gates' findings alone.
++        target:
++          # No paths key: the fixer finds its files from the review's findings and the gates' findings alone.
++          # The burler fix prompt carries no rubric, so the fix half's rules reach the fixer through these instructions.
++          instructions: >
++            A finding whose fix is large, such as a feature, a subsystem or a refactor outside the campaign's modules,
++            is deferred with that reason and never fixed in the round.
++            Sabotage-prove each new regression test: break the fix, see the new test fail at its intended assertion, restore the fix,
++            and read the neighbouring code while you prepare each sabotage.
++            After every source change, build the sandbox's lym again through `lym harden sandbox new` before you drive a sandbox hub.
++            A defect found live leaves behind a test that drives the failing scenario on the real substrate:
++            its first statement requires tier 2, or tier 3 when it spawns a real LLM,
++            and it waits on the state change with a deadline, never a fixed sleep.
++            Prove such a test's determinism by running it many times in parallel under load, never once.
++            When `tools/sandbox/` holds a `SANDBOX-<MODULE>-SUITE.md` for the module,
++            extend it with the behaviour the review surfaced and keep the sandbox coverage test green in the same change;
++            with no such file, creating one is not required.
++            Update the module's package doc in the same commit as the fix,
++            and `docs/overview.md` and `PATTERN.md` too when invariants or the module table move.
+         fix-scope: source
+         # The round fixes code, so its seat loads the hub's language skills after its own.
+         language-skills: true
+diff --git a/contracts/stencils/harden/harden-rubric-review.md b/contracts/stencils/harden/harden-rubric-review.md
+index 335e3edd..8e4d7c38 100644
+--- a/contracts/stencils/harden/harden-rubric-review.md
++++ b/contracts/stencils/harden/harden-rubric-review.md
+@@ -1,54 +1,117 @@
+ <!-- This is the Hardener rubric.
+      The Harden-Bouncer row and the Harden-Burler-Review row read it, in the hardener recipe.
+-     The Harden-Bouncer row interpolates it as the rubric marker value of bouncer-template-seed.md and bouncer-template-judge.md,
++     The Harden-Bouncer row interpolates it as the rubric marker value of harden-template-seed.md and bouncer-template-judge.md,
+      and the Harden-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
+      It is a marker VALUE, never a template: it carries no top-level stencil markers,
+      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it. -->
+ 
+ # Hardener rubric
+ 
+-A hardener campaign drives one module of this repository against throwaway sandbox hubs, round after round.
+-The subject under review is the module's behaviour on a live substrate, never only its code.
++A hardener campaign drives one or more modules of this repository against throwaway sandbox hubs, round after round.
++The subject under review is the modules' behaviour on a live substrate, never only their code.
++The campaign's charter is round 1's focus file, which the seed pass wrote from the modules, and every later focus file carries it forward.
++It names the modules and their focus, what to read, the hub layouts to drive, what is out of scope, the live-substrate cost declaration, the teardown check and the round's assignment.
+ Each round has a review half, a fix half and Go's own live gate, which runs the campaign's live tests after the fix.
+-The judge reads the round's facts file, which carries the models, the live report, the strays, the fix commits and the deferred findings.
++The judge reads the round's facts file, which carries the models, the live report, the strays, the fix commits and the deferred findings,
++and the paths of the round's focus file, the charter, and of the decision record, the operator's ask.
++
++## Scope
++
++- **The operator's focus binds.**
++  When the decision record's `## Goal` states a focus, the campaign stays inside it, and the charter's out-of-scope section lists the rest of the modules.
++  No round reviews outside it, and no focus file steers a round outside it.
++- **The existing tests are not the review.**
++  The modules' existing tests run in the fix row's gates.
++  Rerunning them checks a fix; it never stands in for a scenario driven on a sandbox hub.
+ 
+ ## Rules of a round
+ 
+ - **Review before fix.**
+   The review half only reviews and writes its review file.
+   It changes no source file and commits nothing.
++  A fix made before the review is saved turns the review into a defence of edits already made.
++- **Clean room.**
++  Form your own findings before you open any earlier round's review or fixer report.
++  Read the focus file first; it never licenses opening those files.
++  Once your findings are written, read them to re-drive earlier fixes and to re-judge the findings an earlier round deferred.
+ - **Log as you go.**
+   Record each probe, its command and what it observed in the review file as you make it, never at the end of the round.
+   A probe that is not recorded did not happen.
+ - **Deploy first.**
+   After every source change, build the sandbox's lym through `lym harden sandbox new`, and invoke only the `.dev-bin` lym it prints against a sandbox hub.
+   A lym found on the path is the wrong binary.
+-- **Drive the real substrate.**
+-  Run the module against a sandbox hub and read what it did, rather than tracing the code to guess it.
++- **Drive the real substrate, yourself.**
++  Run the modules' own verbs against a sandbox hub, in the foreground, waiting for each to return, and read what they did, rather than tracing the code to guess it.
++  Handing the scenarios to another agent session is not driving them.
+   A finding rests on an observed result.
+-- **Sabotage-prove every new regression test.**
+-  Break the fix, see the new test fail, and restore the fix.
++- **Drive every charted layout.**
++  Make a hub of each layout the charter names:
++  `lym harden sandbox new` builds a two-repository hub, and `lym harden sandbox new --single-repo` a one-repository hub.
++- **The focus list is a floor.**
++  Walk every focus entry and record OK, WARN or FAIL for each.
++  Then improvise many more adversarial scenarios of your own:
++  crash and rebirth, scope across hubs and worktrees, dead-but-present state, orphans of an operation that failed midway, rapid churn,
++  and verbs combined in orders nothing has tried.
++  Chase anything the code makes you suspicious of.
++- **Cost is never a reason not to drive.**
++  A real substrate session takes real minutes and tokens; that cost is budgeted, never a reason to skip a scenario or to read code instead of driving it.
++  "Could not verify" is legitimate only where a human's eyes are required or the environment lacks something, such as a binary or a login.
++  Check for that first, and name what blocked you.
++- **Cut waste, never driving.**
++  Read large files in spans, batch independent commands, script repetitive fixtures, and never read a verbose command's whole output back.
++  None of that cuts a fixture per destructive scenario, a sabotage proof, the live reproduction of a BLOCKING finding or the final gates.
++- **Prove the scenario reached the code.**
++  A green drive counts only once it is shown to have entered the mechanism it claims to exercise:
++  sabotage the mechanism and watch the scenario fail, or instrument the write and see it happen.
++  A drive that stays green under sabotage leaves the scenario unproven, not the code proven.
++- **Re-drive earlier fixes.**
+   Re-drive each prior round's fixes against the sandbox, so an earlier fix that a later change undid is found.
+ - **Prove a concurrency claim twice.**
+   A claim about concurrent behaviour needs a sequential control, and a second hub that runs the same drive beside the first.
++- **Hold the merge bar.**
++  Correctness in the normal single-instance flow is the gate.
++  A timeout under the concurrent copies' CPU peg is a diagnostic, never a defect.
++- **Count an enumerated class.**
++  When the focus assigns a sweep, list every site of the class in a table, the correct sites with the reason,
++  and state the total, the reproducible command that enumerated it and what that command cannot see.
++  The focus states no count, so the round never starts from one.
+ - **Run a real LLM test alone.**
+-  For a module that drives a real LLM session, run one named tier-3 test at a time.
++  For a module that drives a real LLM session, run one named tier-3 test at a time, never two live runs at once,
++  and never a test the charter's cost declaration bans.
+ - **Keep the sandbox clean.**
+   Make every hub through `lym harden sandbox new`, and make none outside the sandbox root.
++  Run the charter's teardown check at the end of the round and record its output.
+   Leave zero stray state: no server, no process and no directory the round's reaps would have to remove.
+ - **Never run `lym selfreport create`.**
+   A campaign files no issue of its own.
+-- **Defer what is not the module's.**
+-  A finding whose fix is a feature, or a refactor outside the module, is deferred by the fixer and never fixed in the round.
++- **Judge each finding.**
++  Give each finding its file and line, a concrete failure scenario, a severity of BLOCKING, MEDIUM, LOW or NIT, and a suggested fix.
++  Mark it CONFIRMED when reproduced, or PLAUSIBLE when it looks wrong but is unverified.
++- **Record every finding, large or small.**
++  Severity decides how a finding is reported, never whether it is fixed.
++  A finding whose fix is large, such as a feature, a subsystem or a refactor outside the modules, is recorded like any other.
+ 
+ ## The judge
+ 
+ - **Converged.**
+   The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding, whose live gate is green, and whose reviewer model differs from the previous round's.
+   It reads all three from the round's facts.
+-- **Circling.**
+-  When the open findings repeat a shape, the focus file assigns an enumeration sweep of that shape before the judge rules CIRCLING.
+-- **Focus.**
+-  The focus file derives the next round's assignment from what the last round left standing.
++- **Re-seed from the residue.**
++  The focus file derives the next round's assignment from what this round left standing, never "review it again":
++  - the residual to close: each open finding with its site and scenario, fixed at the right layer with a regression test;
++  - an enumeration sweep when the open findings repeat a shape: every site of that shape counted, before the judge rules CIRCLING;
++  - the regions no round has driven, once the countable classes are closed;
++  - a safety pass once no residual is known: a clean-room pass to find what every round missed, or to confirm the campaign converged,
++    with the closed and verified items listed so they are not re-litigated.
++    No new defects is the expected outcome of a safety pass, and the round never invents work.
++- **Carry the charter forward.**
++  The round's facts name its focus file, the charter to read, and the decision record, the operator's ask.
++  These two files are the one exception to the judge's rule against opening the artifacts: read both.
++  Each focus file restates the charter's standing sections:
++  the modules and focus, what to read, the layouts, what is out of scope, the live-substrate cost declaration and the teardown check.
++  It rewrites only the round context, and it never steers a round outside the focus the decision record states.
++- **Grade on evidence.**
++  A concurrency claim with no sequential control and no second-hub run, or a green drive with no proof that it reached the code, proves nothing;
++  the focus file asks the next round for the missing proof.
+ - **Coverage.**
+-  A convergence verdict states what the campaign did not drive.
++  A convergence verdict states what the campaign did not drive, and what its method failed to show about itself.
+diff --git a/contracts/stencils/harden/harden-template-seed.md b/contracts/stencils/harden/harden-template-seed.md
+new file mode 100644
+index 00000000..9bea2cd4
+--- /dev/null
++++ b/contracts/stencils/harden/harden-template-seed.md
+@@ -0,0 +1,101 @@
++<!-- This is the Harden-Bouncer's seed prompt: the charter pass that runs before round 1 of a hardener campaign.
++     The hardener recipe's Harden-Bouncer row names it through its seed_stencil key, in place of bouncer-template-seed.md.
++     It is filled via internal/stencil.Fill and handed to the shuttle as the agent's entire instruction set.
++     The call runs as a single clean-room agent told only "read this file and do exactly what it says".
++     Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each one non-empty.
++     {{.seed_brief}} is the campaign's module brief, rendered by internal/hardenshed's Campaign.SeedBrief.
++     The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}) are rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go.
++     There are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Harden-Bouncer — seed pass: write the campaign's charter
++
++You are the charter writer of a hardener campaign.
++The campaign drives one or more modules of this repository against throwaway sandbox hubs, round after round, and fixes what each round finds.
++No round has run yet.
++Your job is to read the modules and write the charter every round works from, into one file.
++You review nothing yourself, and you change no source or test file.
++
++{{.parent_directive}}
++{{.edit_directive}}
++
++## Rubric
++
++The rubric below is what every round of the campaign follows; write the charter so a round can follow it.
++
++{{.rubric}}
++
++## The modules
++
++{{.seed_brief}}
++
++## The operator's ask
++
++`{{.artifacts}}` is a newline-separated list of absolute paths; read each.
++The decision record among them holds the board entry's body under `## Goal`, amended by the record's `Added after Discussion` entries, which win where they differ.
++The body is optional, and it is never the charter: you write the charter.
++When the body states a focus, such as one part of a module, one hub layout or a few verbs, the focus binds the charter.
++Derive every invariant inside the focus, and list everything else in the modules as out of scope.
++With no body, or a body that states no focus, the charter covers the whole of the named modules.
++
++## Read the modules first
++
++Read each module before you write a line of the charter:
++
++- its code: every file of its packages;
++- its verbs: the `lym` commands that drive it, read from its CLI package and from their `--help`;
++- its docs: each package's `doc.go`, its entry in the repository's overview document, the `PATTERN.md` entries that touch it, and any study of it that the repository's research index lists;
++- its existing tests, and the tier each live test requires.
++
++The existing tests already run in the fix row's gates.
++They are never the campaign's subject: the charter plans what they do not cover.
++
++## Write the charter
++
++Write `{{.focus_path}}` as `---`-delimited YAML frontmatter over the charter's prose:
++
++```
++---
++round: 1
++{{.focus_example_lists}}
++---
++```
++
++Frontmatter rules, all strict:
++
++- `round` is a positive integer, here {{.round}}.
++{{.focus_list_rules}}
++- This format is parsed mechanically, and any deviation from it fails the parse;
++  a file the parser rejects is discarded and replaced with an empty-lists fallback.
++
++Each `focus` entry is one high-yield invariant a round drives live:
++the behaviour that must hold, how it fails, and the repro steps that drive it on a sandbox hub.
++Aim the entries where the modules' real defects live: composed, stateful, timing-sensitive behaviour that the hermetic tests never exercise.
++Cover each of these kinds the modules have:
++
++- a stateful edge case and its failure mode;
++- a crash, restart or rebirth path, such as a server or process killed mid-operation and the next command after it;
++- a scope boundary between hubs, worktrees or instances that share a resource;
++- a mid-operation failure that may leave an orphan, report dishonestly or leak environment.
++
++An entry names where to look and which question to settle.
++It never caps severity, and it never pre-states a verdict.
++
++Below the closing `---`, write the charter's prose under these headings, each filled for these modules:
++
++- `## Modules and focus`: the modules, the operator's focus when the body states one, and the packages and code paths in scope.
++- `## What to read`: the code paths, verbs, docs and tests a round reads first.
++- `## Layouts`: the sandbox hub layouts the modules serve, and why.
++  Name the two-repository hub that `lym harden sandbox new` builds, the one-repository hub that `lym harden sandbox new --single-repo` builds, or both.
++  A round drives a hub of every layout named here.
++- `## Out of scope`: what lies outside the focus or the modules, and every absence that is correct, so no round flags it.
++- `## Live-substrate cost declaration`: whether any live test or verb of the modules spawns a real LLM session rather than a tmux pane or a plain process.
++  When one does, list by name each test that requires tier 3 and how many real sessions one run of it spawns.
++  Put each test that spawns more than one under an execution ban, with its reason: simultaneous real sessions exhaust the host's memory.
++  Leave a fan or cluster test off the ban only when the operator's focus is that fan or cluster path.
++- `## Teardown check`: the exact commands that confirm zero stray state once a round ends,
++  naming the servers, processes and directories the modules can leave and ending with `lym harden sandbox list`.
++- `## Round context`: round 1's assignment, a full adversarial review of the scope above.
++
++The charter is a floor, not a ceiling: it tells a round where to start, never where to stop.
++
++Write only that one file: `{{.focus_path}}`.
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index 4f14fa00..a9dde733 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -87,6 +87,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"bouncer-fragment-decide-capped", BouncerFragmentDecideCapped, []string{"slug"}},
+ 		{"bouncer-fragment-parent-review", BouncerFragmentParentReview, nil},
+ 		{"bouncer-fragment-decision", BouncerFragmentDecision, []string{"blocking_findings", "decide_verbs", "decision_findings", "refusal", "slug"}},
++		{"harden-template-seed", HardenTemplateSeed, []string{"artifacts", "edit_directive", "focus_example_lists", "focus_list_rules", "focus_path", "parent_directive", "round", "rubric", "seed_brief"}},
+ 		{"pattern-fragment-changes", PatternFragmentChanges, []string{"pattern_change_list"}},
+ 		{"loom-directive-project-record", LoomDirectiveProjectRecord, []string{"project_records"}},
+ 	}
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index d2aa11a7..abb4b974 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -234,6 +234,12 @@ var LoomRubricCodeReview []byte
+ //go:embed harden/harden-rubric-review.md
+ var HardenRubricReview []byte
+ 
++// HardenTemplateSeed is the Harden-Bouncer's shipped-default seed prompt:
++// the pass that reads the campaign's modules and writes its charter into round 1's focus file.
++//
++//go:embed harden/harden-template-seed.md
++var HardenTemplateSeed []byte
++
+ // LoomTemplatePriorPlan is the prior-plan block appended to the end of the Plan prompt on a respawn.
+ //
+ //go:embed loom/loom-template-prior-plan.md
+@@ -932,6 +938,7 @@ var entries = []registryEntry{
+ 	{"loom-rubric-raddle-review", &LoomRubricRaddleReview},
+ 	{"loom-rubric-code-review", &LoomRubricCodeReview},
+ 	{"harden-rubric-review", &HardenRubricReview},
++	{"harden-template-seed", &HardenTemplateSeed},
+ 	{"loom-template-prior-plan", &LoomTemplatePriorPlan},
+ 	{"burler-step-1-explore", &BurlerStep1Explore},
+ 	{"burler-template-reviewer", &BurlerTemplateReviewer},
+@@ -1070,7 +1077,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"fix-reviewer":         {"landing-template-fix-review"},
+ 	"pr-reviewer":          {"landing-template-pr-review"},
+ 	"bouncer-judge":        {"bouncer-template-judge"},
+-	"bouncer-seed":         {"bouncer-template-seed"},
++	"bouncer-seed":         {"bouncer-template-seed", "harden-template-seed"},
+ 	"friction":             {"friction-template-reflection"},
+ 	"describe":             {"landing-template-describe"},
+ 	"darn":                 {"darn-template-write"},
+diff --git a/docs/overview.md b/docs/overview.md
+index c311e199..25142767 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1670,6 +1670,8 @@ User-facing modules each get one `lym <module>` namespace:
+ - **hardener** — the `hardener` loom recipe, an autonomous behaviour-review campaign.
+   It *runs* a live-substrate module against throwaway sandbox hubs round after round,
+   through the Bouncer, the `burler` review row and a fix row gated by a Go-run live gate, and lands the fixes through Finalize.
++  The Bouncer's seed pass reads the modules and writes the campaign's charter, so a task needs only the modules and an optional focus.
++  `lym harden sandbox new` builds the sandbox hubs, two-repository or, with `--single-repo`, one-repository.
+   See the `internal/hardenshed` package documentation, which also holds the campaign's method.
+ - **batten** — drives one task worktree's whole lifecycle as a single Shed run from the hub's prime worktree.
+   The lifecycle is to create the worktree, seed the child's own inner run from the Board task's own `recipe`,
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 3da6cb18..22a7ef37 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -84,6 +84,7 @@
+ //
+ // The fixer carries no rubric, fasit, PATTERN directive, focus file or prior rounds,
+ // so `premise false` means false against the code it reads.
++// The profile's target instructions are the one row-specific text it does carry, after the fix step's work statement.
+ // The fixer is the round's only friction-note writer.
+ //
+ // # The fixer fan (twill fixer)
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 3f25c48e..a617ed42 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -187,7 +187,7 @@ func composeReviewPrompt(stencilsDir, specsDir, engine string, p *Profile, patte
+ // composeFixPrompt builds the fix half's prompt for p, rendered for the fixer's engine:
+ // the review-file format and the fix step.
+ // frictionDirective is the caller-resolved Tier 2 note directive, empty when Tier 2 is off.
+-// work is the fix step's statement of what to fix.
++// work is the fix step's statement of what to fix, followed by the target's instructions when p sets any.
+ // specsDir holds the deployed lens report spec a fixer fan's fixer saves its fork reports in the format of.
+ // The fixer's files hold no rubric, fasit, PATTERN directive, focus file, prior rounds or explore step;
+ // p is assumed already validated by validateFix.
+@@ -203,7 +203,7 @@ func composeFixPrompt(stencilsDir, specsDir, engine string, p *Profile, friction
+ 	}
+ 	fix, err := stencil.FillWith(fixTemplate, fixBlocks, map[string]string{
+ 		friction.MarkerName: frictionDirective,
+-		"work":              work,
++		"work":              workWithInstructions(work, p.Target.Instructions),
+ 		"fix_scope_rules":   fixScopeRules(p),
+ 		"review_path":       p.ReviewPath,
+ 		"fixer_report_path": p.FixerReportPath,
+@@ -226,6 +226,15 @@ func composeFixPrompt(stencilsDir, specsDir, engine string, p *Profile, friction
+ 	}, nil
+ }
+ 
++// workWithInstructions returns work followed by instructions, the row's own rules for the fixer.
++// Blank instructions leave work unchanged.
++func workWithInstructions(work, instructions string) string {
++	if strings.TrimSpace(instructions) == "" {
++		return work
++	}
++	return work + "\n\n" + strings.TrimSpace(instructions)
++}
++
+ // fixWork returns the fix step's required work statement.
+ // With no gate-findings path the review's findings are the work;
+ // with one, the review holds no findings but the round's gates failed, so the work is what that file names.
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 1059986c..0884f031 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -224,6 +224,24 @@ func TestComposePrompt_FocusDirective(t *testing.T) {
+ 	})
+ }
+ 
++// TestComposeFixPrompt_TargetInstructions proves the profile's target instructions follow the fix step's work statement.
++func TestComposeFixPrompt_TargetInstructions(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const instructions = "Leave a live regression test for a defect found live."
++	p := newComposableProfile(t)
++	p.Target.Instructions = instructions
++
++	fix := composeFix(t, newTestStencilsDir(t), &p, "")
++
++	content := fix.Files[fixStepFile].Content
++	work, at := fixWork(p.ReviewPath, "", false), strings.Index(content, instructions)
++	if at < 0 || at < strings.Index(content, work) {
++		t.Errorf("fix step = %q; want the instructions %q after the work statement %q", content, instructions, work)
++	}
++}
++
+ // TestComposePrompt_MinimalProfile proves a minimal valid profile composes both halves cleanly through stencil:
+ // no unfilled-marker error is raised.
+ // The review half's combined prompt carries the profile's content: the review path and the verbatim rubric text.
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 4ff17f71..b2b99e0d 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -147,7 +147,7 @@ func Modules() []Module {
+ 		{Name: "drift", Template: driftengine.ConfigTemplate, OpenMaps: driftengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoad(driftengine.LoadConfig), CheckDirs: driftengine.CheckDirs, Spec: driftengine.ConfigSpec},
+ 		{Name: "env", Template: envconfig.ConfigTemplate, PerNameMaps: envconfig.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(envconfig.LoadConfig), Spec: envconfig.ConfigSpec},
+ 		{Name: "fabric", Template: fabricengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(fabricengine.LoadConfig), Spec: fabricengine.ConfigSpec},
+-		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Spec: gateslot.ConfigSpec},
++		{Name: "gate", Template: gateslot.ConfigTemplate, OpenMaps: gateslot.ConfigOpenMaps(), PerNameMaps: gateslot.ConfigPerNameMaps(), HubWide: true, CheckLoad: checkLoad(gateslot.LoadConfig), CheckDirs: gateslot.CheckDirs, Reinterpretations: []Reinterpretation{{ID: gateslot.RetiredCopiesReinterpretationID, Rewrite: gateslot.RetireHardenLiveCopies}}, Spec: gateslot.ConfigSpec},
+ 		{Name: hardenshed.ConfigModule, Template: hardenshed.ConfigTemplate, OpenMaps: hardenshed.ConfigOpenMaps(), HubWide: true, CheckValues: hardenshed.CheckValues, CheckLoad: checkLoadNamed(hardenshed.LoadConfig, hardenshed.ConfigModule), Spec: hardenshed.ConfigSpec},
+ 		{Name: "heddle", Template: heddleengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(heddleengine.LoadConfig), Spec: heddleengine.ConfigSpec},
+ 		{Name: "hibernate", Template: hibernateconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(hibernateconfig.LoadConfig), Spec: hibernateconfig.ConfigSpec},
+diff --git a/internal/fabriccli/clone.go b/internal/fabriccli/clone.go
+index e22b64a9..68082db5 100644
+--- a/internal/fabriccli/clone.go
++++ b/internal/fabriccli/clone.go
+@@ -30,6 +30,18 @@ func CloneAndWireFromLocalBares(container, codeBare, recordsBare, shortname stri
+ 	return res.HubPath, res.PrimeCwd, err
+ }
+ 
++// CloneAndWireFromLocalOrigin clones a one-repository hub named shortname under container from one local bare repository.
++// It wires the hub as CloneAndWire does, and the clone seeds the hub's records and board into origin under refs/lym/.
++// It returns the hub's path and its prime's cwd; the clone is left intact on error, as CloneAndWire leaves it.
++func CloneAndWireFromLocalOrigin(container, origin, shortname string) (hubPath, primeCwd string, err error) {
++	res, err := CloneAndWire(container, fabricengine.CloneOptions{
++		WeftURL:    origin,
++		Shortname:  shortname,
++		SingleRepo: true,
++	})
++	return res.HubPath, res.PrimeCwd, err
++}
++
+ // CloneAndWire clones a hub and wires it, so that a successful clone needs no reconcile.
+ // It materializes the hub-wide config, then commits it on weft:main and pushes it through `fabricengine.PushCloneBoard`.
+ // That verb pushes a two-repository clone's and a join's board as any board is pushed.
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index d8264f07..79030cc4 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -548,7 +548,8 @@
+ // `internal/fslink` and `PATTERN-lym-files` currently assert the opposite.
+ //
+ // **Local bares.** `SeedLocalBares` creates a bare warp with one commit on `main` and an empty bare weft.
+-// It is the shape `CloneHub` clones a hub from, so a throwaway hub needs no remote and no work tree.
++// `SeedLocalOrigin` creates the one bare of a one-repository hub, holding the same commit.
++// They are the shapes `CloneHub` clones a hub from, so a throwaway hub of either layout needs no remote and no work tree.
+ //
+ // **Test layout.**
+ // A test builds its hub through `internal/hubforge` only, never a package-local fixture type.
+diff --git a/internal/fabricengine/seedlocalbares.go b/internal/fabricengine/seedlocalbares.go
+index 7fd35ade..109bf2e3 100644
+--- a/internal/fabricengine/seedlocalbares.go
++++ b/internal/fabricengine/seedlocalbares.go
+@@ -1,4 +1,4 @@
+-// seedlocalbares.go builds the local bare repositories a throwaway hub is cloned from.
++// seedlocalbares.go builds the local bare repositories a throwaway hub is cloned from, for either hub layout.
+ 
+ package fabricengine
+ 
+@@ -9,35 +9,55 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ )
+ 
+-// The directory names of the two bares SeedLocalBares creates, and the one file the warp bare's commit holds.
++// The directory names of the bares the seeders create, and the one file a seeded code bare's commit holds.
+ const (
+-	seededWarpDirName  = "warp-bare"
+-	seededWeftDirName  = "weft-bare"
+-	seededReadmeName   = "README"
+-	seededReadmeText   = "a seeded local warp\n"
+-	seededCommitAuthor = "lym"
+-	seededCommitEmail  = "lym@localhost"
+-	seededBranch       = "main"
++	seededWarpDirName   = "warp-bare"
++	seededWeftDirName   = "weft-bare"
++	seededOriginDirName = "origin-bare"
++	seededReadmeName    = "README"
++	seededReadmeText    = "a seeded local warp\n"
++	seededCommitAuthor  = "lym"
++	seededCommitEmail   = "lym@localhost"
++	seededBranch        = "main"
+ )
+ 
+-// SeedLocalBares creates the bare repositories a hub is cloned from under dir, which must exist, and returns their paths.
++// SeedLocalBares creates the bare repositories a two-repository hub is cloned from under dir, which must exist.
++// It returns their paths.
+ // The warp bare holds one commit with a root README on main, and its HEAD names main.
+ // The weft bare is empty and holds no ref.
+ // It is the shape CloneHub clones a hub from, built with no remote and no work tree.
+ func SeedLocalBares(dir string) (warp, weft string, err error) {
+ 	warp = filepath.Join(dir, seededWarpDirName)
+ 	weft = filepath.Join(dir, seededWeftDirName)
+-	for _, bare := range []string{warp, weft} {
+-		if err := initQuietBare(dir, bare); err != nil {
+-			return "", "", err
+-		}
++	if err := seedReadmeBare(dir, warp); err != nil {
++		return "", "", err
+ 	}
+-	if err := commitReadmeOnMain(warp); err != nil {
++	if err := initQuietBare(dir, weft); err != nil {
+ 		return "", "", err
+ 	}
+ 	return warp, weft, nil
+ }
+ 
++// SeedLocalOrigin creates the one bare repository a one-repository hub is cloned from under dir, which must exist.
++// It returns its path.
++// The bare holds one commit with a root README on main, and its HEAD names main.
++// It is the origin a SingleRepo CloneHub seeds a hub's records into, built with no remote and no work tree.
++func SeedLocalOrigin(dir string) (string, error) {
++	origin := filepath.Join(dir, seededOriginDirName)
++	if err := seedReadmeBare(dir, origin); err != nil {
++		return "", err
++	}
++	return origin, nil
++}
++
++// seedReadmeBare creates a bare repository at bare holding one commit with a root README on main.
++func seedReadmeBare(cwd, bare string) error {
++	if err := initQuietBare(cwd, bare); err != nil {
++		return err
++	}
++	return commitReadmeOnMain(bare)
++}
++
+ // initQuietBare creates a bare repository at bare on main, with background maintenance off.
+ func initQuietBare(cwd, bare string) error {
+ 	if _, err := gitexec.Run([]string{"init", "--bare", "--initial-branch=" + seededBranch, bare}, cwd); err != nil {
+diff --git a/internal/fabricengine/seedlocalbares_integration_test.go b/internal/fabricengine/seedlocalbares_integration_test.go
+index 3f5f3819..84c90d06 100644
+--- a/internal/fabricengine/seedlocalbares_integration_test.go
++++ b/internal/fabricengine/seedlocalbares_integration_test.go
+@@ -1,4 +1,5 @@
+-// seedlocalbares_integration_test.go pins the bare pair SeedLocalBares builds and that CloneHub clones a hub from it.
++// seedlocalbares_integration_test.go pins the bares SeedLocalBares and SeedLocalOrigin build,
++// and that CloneHub clones a hub from each.
+ 
+ package fabricengine_test
+ 
+@@ -44,3 +45,23 @@ func TestSeedLocalBares(t *testing.T) {
+ 		t.Errorf("CloneHub over the seeded bares error = %v", err)
+ 	}
+ }
++
++func TestSeedLocalOrigin(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	origin, err := fabricengine.SeedLocalOrigin(t.TempDir())
++	if err != nil {
++		t.Fatalf("SeedLocalOrigin() error = %v", err)
++	}
++	if got := gitOutput(t, origin, "rev-parse", "--is-bare-repository"); got != "true" {
++		t.Errorf("origin is bare = %q; want true", got)
++	}
++	if got := gitOutput(t, origin, "ls-tree", "--name-only", "main"); got != "README" {
++		t.Errorf("origin main holds %q; want only README", got)
++	}
++
++	if _, err := fabricengine.CloneHub(t.TempDir(), fabricengine.CloneOptions{WeftURL: origin, Shortname: "tst", SingleRepo: true}); err != nil {
++		t.Errorf("CloneHub of a one-repository hub over the seeded origin error = %v", err)
++	}
++}
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index db738dcf..fb179dfe 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -215,25 +215,6 @@ func ConfigFiles(dirs configengine.Dirs) []string {
+ 	return files
+ }
+ 
+-// HubSetsGate reports whether the hub's own gate.yaml sets gates.<key>.
+-// It reads only the hub base layer, through the layer stack under the board dir alone:
+-// a template default, a worktree layer and a machine layer never count.
+-// It returns an error when the hub file is unreadable or does not parse.
+-func HubSetsGate(dirs configengine.Dirs, key string) (bool, error) {
+-	stack, err := configengine.StackLayers(configengine.Dirs{Board: dirs.Board}, ConfigSpec())
+-	if err != nil {
+-		return false, err
+-	}
+-	var document struct {
+-		Gates map[string]yaml.Node `yaml:"gates"`
+-	}
+-	if err := yaml.Unmarshal(stack.Doc, &document); err != nil {
+-		return false, fmt.Errorf("unmarshal the hub gate config: %w", err)
+-	}
+-	_, set := document.Gates[key]
+-	return set, nil
+-}
+-
+ // LoadConfig loads the gate config strictly through the hub-wide layer stack under dirs, machine override included:
+ // an absent hub file is ErrConfigAbsent, and a value out of range fails naming its key.
+ // Outside every hub, where dirs name no board, the file is the worktree's own.
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 9daa1118..8731698f 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -83,9 +83,8 @@ var templateDefaults = Config{
+ 		"code-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}},
+ 		"pr-review":       {Tiers: []int{0}, Scope: "diff", Reports: []string{"mutation"}},
+ 
+-		"harden-live":        {Tiers: []int{0}, Scope: "diff"},
+-		"harden-live-copies": {Tiers: []int{0}, Scope: "diff"},
+-		"harden-burler-fix":  {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}},
++		"harden-live":       {Tiers: []int{0}, Scope: "diff"},
++		"harden-burler-fix": {Tiers: []int{0}, Scope: "diff", Reports: []string{"reach", "redundancy", "mutation"}},
+ 	},
+ 	Scoper: "none",
+ }
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 904e4d3e..534e8996 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -74,7 +74,6 @@
+ // `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier.
+ // `gates` is a per-name map from a gate key to a GateKey,
+ // so a hub file that sets one key keeps the template's value for every other.
+-// HubSetsGate reports whether the hub's own gate.yaml, its base layer alone, sets `gates.<key>`.
+ // A GateKey may hold `lints` and `reports`, the steps its call runs after its tiers.
+ // It may also hold a `fixer` on the `card` key only.
+ // Config load fills a template key a tuned `gates` entry lacks into that entry, and `reports: []` turns the reports off.
+diff --git a/internal/gateslot/hubsetsgate_test.go b/internal/gateslot/hubsetsgate_test.go
+deleted file mode 100644
+index 8177f2b5..00000000
+--- a/internal/gateslot/hubsetsgate_test.go
++++ /dev/null
+@@ -1,65 +0,0 @@
+-// hubsetsgate_test.go covers HubSetsGate, which reads the hub's own gate.yaml alone.
+-
+-package gateslot
+-
+-import (
+-	"os"
+-	"path/filepath"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/configengine"
+-	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-func TestHubSetsGate(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	const key = "harden-live"
+-	tests := []struct {
+-		name string
+-		hub  string
+-		// worktreeLayer is written as the worktree's local gate layer over the hub file.
+-		worktreeLayer string
+-		unreadable    bool
+-		want          bool
+-		wantErr       bool
+-	}{
+-		{name: "HubFileWithoutTheKey", hub: baseKeys + "gates:\n  card: {tiers: [0], scope: card}\n", want: false},
+-		{name: "HubFileSettingTheKey", hub: baseKeys + "gates:\n  harden-live: {tiers: [2], scope: diff}\n", want: true},
+-		{
+-			name: "WorktreeLayerSettingTheKeyOverAHubFileWithout", hub: baseKeys,
+-			worktreeLayer: "gates:\n  harden-live: {tiers: [2], scope: diff}\n", want: false,
+-		},
+-		{name: "UnreadableHubFile", hub: baseKeys, unreadable: true, wantErr: true},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			board := seedGateConfig(t, tt.hub)
+-			anchor := t.TempDir()
+-			if tt.worktreeLayer != "" {
+-				layer := configengine.LocalFile(anchor, "gate")
+-				if err := os.MkdirAll(filepath.Dir(layer), 0o755); err != nil {
+-					t.Fatal(err)
+-				}
+-				if err := os.WriteFile(layer, []byte(tt.worktreeLayer), 0o644); err != nil {
+-					t.Fatal(err)
+-				}
+-			}
+-			if tt.unreadable {
+-				permkit.Chmod(t, configengine.ConfigFile(board, "gate"), 0)
+-			}
+-
+-			got, err := HubSetsGate(configengine.Dirs{Board: board, Anchor: anchor}, key)
+-
+-			if (err != nil) != tt.wantErr {
+-				t.Fatalf("HubSetsGate(%q) error = %v; want error %v", key, err, tt.wantErr)
+-			}
+-			if got != tt.want {
+-				t.Errorf("HubSetsGate(%q) = %v; want %v", key, got, tt.want)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/gateslot/reinterpret.go b/internal/gateslot/reinterpret.go
+new file mode 100644
+index 00000000..22190f11
+--- /dev/null
++++ b/internal/gateslot/reinterpret.go
+@@ -0,0 +1,72 @@
++// reinterpret.go carries a hub's gate.yaml across the retirement of the harden-live-copies gate key.
++
++package gateslot
++
++import (
++	"bytes"
++	"fmt"
++	"slices"
++
++	"gopkg.in/yaml.v3"
++)
++
++// RetiredCopiesReinterpretationID names the change that retired the harden-live-copies gate key.
++const RetiredCopiesReinterpretationID = "gate-harden-live-copies-retired"
++
++// RetireHardenLiveCopies carries a hub gate.yaml across the retirement of its gates.harden-live-copies entry.
++// The hardener's concurrent copies now run under gates.harden-live, which must name one tier below BilledTier.
++// An entry that equals that one tier is removed, since harden-live already says the same.
++// An entry that differs is left in place, as harden-live keeps its own value, and is flagged with the way forward.
++// A file with no such entry is returned unchanged.
++// The worktree root and anchored directory arguments are unused, as the rewrite judges the file alone.
++func RetireHardenLiveCopies(existing []byte, _, _ string) (rewritten []byte, rewrote, flagged []string, err error) {
++	var document yaml.Node
++	if err := yaml.Unmarshal(existing, &document); err != nil {
++		return nil, nil, nil, fmt.Errorf("parse the gate config: %w", err)
++	}
++	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 || document.Content[0].Kind != yaml.MappingNode {
++		return existing, nil, nil, nil
++	}
++	gates := mappingValue(document.Content[0], "gates")
++	if gates == nil || gates.Kind != yaml.MappingNode {
++		return existing, nil, nil, nil
++	}
++	at := mappingKeyIndex(gates, "harden-live-copies")
++	if at < 0 {
++		return existing, nil, nil, nil
++	}
++
++	copiesTiers := gateKeyTiers(gates.Content[at+1])
++	liveTiers := []int{0}
++	if live := mappingValue(gates, "harden-live"); live != nil {
++		liveTiers = gateKeyTiers(live)
++	}
++	if len(liveTiers) != 1 || liveTiers[0] >= BilledTier || !slices.Equal(liveTiers, copiesTiers) {
++		return existing, nil, []string{fmt.Sprintf(
++			"gates.harden-live-copies is retired and gates.harden-live names the tiers %v, but the hardener's copies now run under gates.harden-live, "+
++				"which must name one tier below tier%d: set it with `lym config gate --set 'gates.harden-live={tiers: [<live tier>], scope: diff}'` "+
++				"from the prime, then delete the gates.harden-live-copies entry from the hub's gate.yaml, which nothing reads now",
++			liveTiers, BilledTier)}, nil
++	}
++
++	gates.Content = slices.Delete(gates.Content, at, at+2)
++	var out bytes.Buffer
++	encoder := yaml.NewEncoder(&out)
++	encoder.SetIndent(2)
++	if err := encoder.Encode(&document); err != nil {
++		return nil, nil, nil, fmt.Errorf("write the gate config: %w", err)
++	}
++	if err := encoder.Close(); err != nil {
++		return nil, nil, nil, fmt.Errorf("write the gate config: %w", err)
++	}
++	return out.Bytes(), []string{fmt.Sprintf("removed gates.harden-live-copies, which names the tier harden-live already names, tier %d", liveTiers[0])}, nil, nil
++}
++
++// gateKeyTiers returns the tier numbers a gates entry names, or nil when the entry holds no readable tiers list.
++func gateKeyTiers(entry *yaml.Node) []int {
++	var key GateKey
++	if err := entry.Decode(&key); err != nil {
++		return nil
++	}
++	return key.Tiers
++}
+diff --git a/internal/gateslot/reinterpret_test.go b/internal/gateslot/reinterpret_test.go
+new file mode 100644
+index 00000000..1166e06b
+--- /dev/null
++++ b/internal/gateslot/reinterpret_test.go
+@@ -0,0 +1,100 @@
++// reinterpret_test.go covers RetireHardenLiveCopies over hub gate.yaml bytes.
++
++package gateslot_test
++
++import (
++	"strings"
++	"testing"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRetireHardenLiveCopies pins the three outcomes of the rewrite.
++// An entry equal to harden-live's one tier is removed.
++// A differing entry is flagged and left.
++// A file with no entry is unchanged.
++func TestRetireHardenLiveCopies(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const wayForward = "`lym config gate --set 'gates.harden-live={tiers: [<live tier>], scope: diff}'`"
++	tests := []struct {
++		name          string
++		input         string
++		wantUnchanged bool
++		wantGates     map[string]gateslot.GateKey
++		wantRewrote   []string
++		wantFlagged   []string
++	}{
++		{
++			name:  "EqualOneTierIsRemoved",
++			input: "slots: 2\ngates:\n  harden-live: {tiers: [1], scope: diff}\n  harden-live-copies: {tiers: [1], scope: diff}\n",
++			wantGates: map[string]gateslot.GateKey{
++				"harden-live": {Tiers: []int{1}, Scope: "diff"},
++			},
++			wantRewrote: []string{"removed gates.harden-live-copies, which names the tier harden-live already names, tier 1"},
++		},
++		{
++			name:        "AbsentLiveKeyReadsTheTemplateTierZero",
++			input:       "gates:\n  harden-live-copies: {tiers: [0], scope: diff}\n",
++			wantGates:   map[string]gateslot.GateKey{},
++			wantRewrote: []string{"removed gates.harden-live-copies, which names the tier harden-live already names, tier 0"},
++		},
++		{
++			name:          "SeveralLiveTiersAreFlaggedAndLeft",
++			input:         "gates:\n  harden-live: {tiers: [0, 1], scope: diff}\n  harden-live-copies: {tiers: [1], scope: diff}\n",
++			wantUnchanged: true,
++			wantFlagged:   []string{"gates.harden-live-copies is retired and gates.harden-live names the tiers [0 1]"},
++		},
++		{
++			name:          "BilledTierIsFlaggedAndLeft",
++			input:         "gates:\n  harden-live: {tiers: [3], scope: diff}\n  harden-live-copies: {tiers: [3], scope: diff}\n",
++			wantUnchanged: true,
++			wantFlagged:   []string{"gates.harden-live-copies is retired and gates.harden-live names the tiers [3]"},
++		},
++		{
++			name:          "NoCopiesKeyIsUnchanged",
++			input:         "gates:\n  harden-live: {tiers: [0, 1], scope: diff}\n",
++			wantUnchanged: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, rewrote, flagged, err := gateslot.RetireHardenLiveCopies([]byte(tt.input), "", "")
++			if err != nil {
++				t.Fatalf("RetireHardenLiveCopies() error = %v; want nil", err)
++			}
++			if tt.wantUnchanged {
++				if string(got) != tt.input {
++					t.Errorf("RetireHardenLiveCopies() rewrote the file to %q; want it unchanged", got)
++				}
++			} else {
++				var decoded struct {
++					Gates map[string]gateslot.GateKey `yaml:"gates"`
++				}
++				if err := yaml.Unmarshal(got, &decoded); err != nil {
++					t.Fatalf("rewritten file does not parse: %v", err)
++				}
++				if diff := cmp.Diff(tt.wantGates, decoded.Gates); diff != "" {
++					t.Errorf("RetireHardenLiveCopies() gates mismatch (-want +got):\n%s", diff)
++				}
++			}
++			if diff := cmp.Diff(tt.wantRewrote, rewrote); diff != "" {
++				t.Errorf("RetireHardenLiveCopies() rewrote mismatch (-want +got):\n%s", diff)
++			}
++			if len(flagged) != len(tt.wantFlagged) {
++				t.Fatalf("RetireHardenLiveCopies() flagged %d lines; want %d: %v", len(flagged), len(tt.wantFlagged), flagged)
++			}
++			for i, want := range tt.wantFlagged {
++				if !strings.Contains(flagged[i], want) || !strings.Contains(flagged[i], wayForward) {
++					t.Errorf("flagged line = %q; want it to hold %q and %q", flagged[i], want, wayForward)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index c06b6a9e..72c813e5 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -22,8 +22,8 @@ mutation_budget_min: 20  # minutes lym gate mutate or the mutation report step m
+ tiers: {}
+ 
+ # Gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+-# The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live, harden-live-copies and pr-review (scope diff, the diff from the merge base).
+-# The two harden live keys name tier 0, the tier a key may name before the hub declares more; a hub that runs the hardener recipe sets both to its live tier.
++# The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base).
++# The two harden keys name tier 0, the tier a key may name before the hub declares more, so a hardener run needs no gate write; a hub whose live tests sit in a higher tier may point harden-live at one tier below tier3, since the run's concurrent copies call runs that same key.
+ # The scope card is only for the card and batch keys.
+ # The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+@@ -42,7 +42,6 @@ gates:
+   darn-write: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}
+   code-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}
+   harden-live: {tiers: [0], scope: diff}
+-  harden-live-copies: {tiers: [0], scope: diff}
+   harden-burler-fix: {tiers: [0], scope: diff, reports: [reach, redundancy, mutation]}
+   pr-review: {tiers: [0], scope: diff, reports: [mutation]}
+ 
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 8b5fae50..b86511f7 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -166,7 +166,7 @@ const ReportRedundancy = "redundancy"
+ const ReportMutation = "mutation"
+ 
+ // goReadGates are the gate keys the Go verify sites read, in the order TiersValue lists them.
+-var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "harden-burler-fix", "harden-live", "harden-live-copies", "pr-review"}
++var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "harden-burler-fix", "harden-live", "pr-review"}
+ 
+ var (
+ 	tierKeyPattern   = regexp.MustCompile(`^tier(0|[1-9][0-9]*)$`)
+diff --git a/internal/hardencli/cli.go b/internal/hardencli/cli.go
+index 0c831dc7..40f80963 100644
+--- a/internal/hardencli/cli.go
++++ b/internal/hardencli/cli.go
+@@ -37,6 +37,9 @@ const (
+ // sandboxShortname is the repository short name a sandbox hub is cloned under.
+ const sandboxShortname = "sbx"
+ 
++// singleRepoFlag is the flag of `lym harden sandbox new` that builds a one-repository hub.
++const singleRepoFlag = "single-repo"
++
+ // notHardenerWayForward closes the refusal of a verb run outside a hardener run's worktree.
+ const notHardenerWayForward = "way forward: run lym harden sandbox in a hardener run's worktree"
+ 
+@@ -129,16 +132,20 @@ func resolveTarget(cmd *cobra.Command, clear bool) (sandboxTarget, bool) {
+ 
+ // newVerb builds `lym harden sandbox new`.
+ func newVerb(deps cliDeps) *cobra.Command {
+-	return &cobra.Command{
++	var singleRepo bool
++	cmd := &cobra.Command{
+ 		Use:         "new",
+ 		Short:       "build a throwaway sandbox hub under the worktree's sandbox root",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `new builds a throwaway hub from two local bare repositories under the
+-worktree's sandbox root, with no GitHub remote, and records it in the root's hub
+-list. Its prime records commit a loom.yaml with Tier 2 self-reporting off. The
+-worktree's .dev-bin lym is rebuilt only when it is not built
+-from the worktree's HEAD or is modified. It prints the hub's path and the
+-absolute path of the .dev-bin lym.`,
++		Long: `new builds a throwaway hub under the worktree's sandbox root, with no GitHub
++remote, and records it in the root's hub list. By default the hub is a
++two-repository hub cloned from two local bare repositories; with --single-repo
++it is a one-repository hub cloned from one local bare repository, which then
++holds the code on its branches and the records and board under refs/lym/. Its
++prime records commit a loom.yaml with Tier 2 self-reporting off. The worktree's
++.dev-bin lym is rebuilt only when it is not built from the worktree's HEAD or is
++modified. It prints the hub's path, the absolute path of the .dev-bin lym and
++whether the hub is a one-repository hub.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -148,16 +155,18 @@ absolute path of the .dev-bin lym.`,
+ 			if !ok {
+ 				return nil
+ 			}
+-			hub, err := hardenshed.NewSandbox(sandboxDeps(target, deps))
++			hub, err := hardenshed.NewSandbox(sandboxDeps(target, deps, singleRepo))
+ 			if err != nil {
+ 				output.Err(cmd.OutOrStdout(), err.Error())
+ 				clihelp.Abort(cmd.Context(), 1)
+ 				return nil
+ 			}
+-			output.Ok(cmd.OutOrStdout(), map[string]any{"hub": hub.Hub, "lym": hub.Lym})
++			output.Ok(cmd.OutOrStdout(), map[string]any{"hub": hub.Hub, "lym": hub.Lym, "single_repo": singleRepo})
+ 			return nil
+ 		},
+ 	}
++	cmd.Flags().BoolVar(&singleRepo, singleRepoFlag, false, "build a one-repository hub from one local bare repository, its records under refs/lym/")
++	return cmd
+ }
+ 
+ // listVerb builds `lym harden sandbox list`.
+@@ -223,8 +232,9 @@ prints what it ended.`,
+ }
+ 
+ // sandboxDeps builds the seams NewSandbox needs for the worktree of target.
+-// The hub is cloned over local bares, and its prime records commit the sandbox config override.
+-func sandboxDeps(target sandboxTarget, deps cliDeps) hardenshed.SandboxDeps {
++// The hub is cloned over two local bares, or over one with singleRepo.
++// Its prime records commit the sandbox config override.
++func sandboxDeps(target sandboxTarget, deps cliDeps, singleRepo bool) hardenshed.SandboxDeps {
+ 	worktreeRoot := target.location.WorktreePath()
+ 	lymName := devBinLymName
+ 	if runtime.GOOS == "windows" {
+@@ -232,7 +242,7 @@ func sandboxDeps(target sandboxTarget, deps cliDeps) hardenshed.SandboxDeps {
+ 	}
+ 	devBinLym := filepath.Join(worktreeRoot, devBinDirName, lymName)
+ 	var primeCwd string
+-	return hardenshed.SandboxDeps{
++	sandbox := hardenshed.SandboxDeps{
+ 		Root: target.root,
+ 		Seed: fabricengine.SeedLocalBares,
+ 		Clone: func(codeBare, recordsBare, container string) (string, error) {
+@@ -258,6 +268,18 @@ func sandboxDeps(target sandboxTarget, deps cliDeps) hardenshed.SandboxDeps {
+ 		},
+ 		Deploy: func() error { return deps.Deploy(worktreeRoot) },
+ 	}
++	if singleRepo {
++		sandbox.Seed = func(dir string) (string, string, error) {
++			origin, err := fabricengine.SeedLocalOrigin(dir)
++			return origin, "", err
++		}
++		sandbox.Clone = func(origin, _, container string) (string, error) {
++			hubPath, cloneCwd, err := fabriccli.CloneAndWireFromLocalOrigin(container, origin, sandboxShortname)
++			primeCwd = cloneCwd
++			return hubPath, err
++		}
++	}
++	return sandbox
+ }
+ 
+ // commitSandboxConfig writes the sandbox's loom.yaml override into the prime at primeCwd and commits it on its records.
+diff --git a/internal/hardencli/cli_integration_test.go b/internal/hardencli/cli_integration_test.go
+index 9744f2eb..87595e9d 100644
+--- a/internal/hardencli/cli_integration_test.go
++++ b/internal/hardencli/cli_integration_test.go
+@@ -1,4 +1,5 @@
+-// cli_integration_test.go drives the sandbox verbs over a hub fixture: it builds a real sandbox hub through the verbs.
++// cli_integration_test.go drives the sandbox verbs over a hub fixture.
++// It builds a real sandbox hub of each layout through the verbs.
+ 
+ package hardencli
+ 
+@@ -17,6 +18,7 @@ import (
+ 	"gopkg.in/yaml.v3"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hardenshed"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -46,11 +48,11 @@ func TestSandboxVerbs(t *testing.T) {
+ 		}
+ 		return location
+ 	}
+-	// run executes `lym harden sandbox <verb>` in the worktree and returns the exit code and the last JSON line.
+-	run := func(t *testing.T, location *lymcwd.Location, verb string) (int, map[string]any) {
++	// run executes `lym harden sandbox <verb> <flags>` in the worktree and returns the exit code and the last JSON line.
++	run := func(t *testing.T, location *lymcwd.Location, verb string, flags ...string) (int, map[string]any) {
+ 		t.Helper()
+ 		var out bytes.Buffer
+-		code := clihelp.ExecuteIn(newCommand(deps), location.AnchorPath(), &out, []string{"sandbox", verb})
++		code := clihelp.ExecuteIn(newCommand(deps), location.AnchorPath(), &out, append([]string{"sandbox", verb}, flags...))
+ 		lines := strings.Split(strings.TrimSpace(out.String()), "\n")
+ 		var answer map[string]any
+ 		if err := json.Unmarshal([]byte(lines[len(lines)-1]), &answer); err != nil {
+@@ -108,15 +110,47 @@ func TestSandboxVerbs(t *testing.T) {
+ 		if !holdsOverride {
+ 			t.Errorf("none of %v holds the friction key empty; want the committed override", overrides)
+ 		}
++		if answer["single_repo"] != false {
++			t.Errorf("single_repo = %v; want false for a hub made without --single-repo", answer["single_repo"])
++		}
++		bares, err := filepath.Glob(filepath.Join(filepath.Dir(hubPath), "*-bare"))
++		if err != nil || len(bares) != 2 {
++			t.Errorf("Glob(the container's bares) = %v, %v; want exactly two, the code bare and the records bare", bares, err)
++		}
+ 	}) {
+ 		return
+ 	}
+ 
+-	if !t.Run("list shows the hub a second command made", func(t *testing.T) {
++	var singleRepoHub string
++	if !t.Run("new --single-repo builds a one-repository hub whose one bare holds the records under refs/lym/", func(t *testing.T) {
++		code, answer := run(t, hardener, "new", "--"+singleRepoFlag)
++		if code != 0 {
++			t.Fatalf("`harden sandbox new --%s` = exit %d, %v; want 0", singleRepoFlag, code, answer)
++		}
++		singleRepoHub, _ = answer["hub"].(string)
++		if answer["single_repo"] != true {
++			t.Errorf("single_repo = %v; want true", answer["single_repo"])
++		}
++		container := filepath.Dir(singleRepoHub)
++		if filepath.Dir(container) != root {
++			t.Fatalf("hub = %q; want a hub in a container directly under the sandbox root %q", singleRepoHub, root)
++		}
++		bares, err := filepath.Glob(filepath.Join(container, "*-bare"))
++		if err != nil || len(bares) != 1 {
++			t.Fatalf("Glob(the container's bares) = %v, %v; want exactly one bare", bares, err)
++		}
++		if refs := gitkit.Git(t, bares[0], "for-each-ref", "--format=%(refname)", "refs/lym/"); strings.TrimSpace(refs) == "" {
++			t.Errorf("git for-each-ref refs/lym/ in %s = %q; want the hub's records under refs/lym/", bares[0], refs)
++		}
++	}) {
++		return
++	}
++
++	if !t.Run("list shows the hubs later commands made, in the order they were made", func(t *testing.T) {
+ 		code, answer := run(t, hardener, "list")
+ 		hubs, _ := answer["hubs"].([]any)
+-		if code != 0 || len(hubs) != 1 || hubs[0] != hubPath {
+-			t.Errorf("`harden sandbox list` = exit %d, %v; want exit 0 listing %q", code, answer, hubPath)
++		if code != 0 || len(hubs) != 2 || hubs[0] != hubPath || hubs[1] != singleRepoHub {
++			t.Errorf("`harden sandbox list` = exit %d, %v; want exit 0 listing %q then %q", code, answer, hubPath, singleRepoHub)
+ 		}
+ 	}) {
+ 		return
+@@ -159,8 +193,10 @@ func TestSandboxVerbs(t *testing.T) {
+ 				t.Errorf("`harden sandbox clear` ended %v; want it to report process %d", ended, orphan.Process.Pid)
+ 			}
+ 		}
+-		if _, err := os.Stat(hubPath); !os.IsNotExist(err) {
+-			t.Errorf("Stat(%q) = %v; want the hub removed", hubPath, err)
++		for _, hub := range []string{hubPath, singleRepoHub} {
++			if _, err := os.Stat(hub); !os.IsNotExist(err) {
++				t.Errorf("Stat(%q) = %v; want the hub removed", hub, err)
++			}
+ 		}
+ 		if hubs, err := hardenshed.ListSandbox(root); err != nil || len(hubs) != 0 {
+ 			t.Errorf("ListSandbox() = %v, %v; want no hub", hubs, err)
+diff --git a/internal/hardencli/doc.go b/internal/hardencli/doc.go
+index f5e21879..23b17c6c 100644
+--- a/internal/hardencli/doc.go
++++ b/internal/hardencli/doc.go
+@@ -9,10 +9,13 @@
+ // `clear` also runs in a worktree whose sandbox root exists, whatever its run record says,
+ // so a teardown can clear a root its run record no longer names; `new` and `list` get no such exception.
+ //
+-// `lym harden sandbox new` builds a throwaway hub under the worktree's sandbox root.
+-// The hub is cloned from two local bare repositories, with no GitHub remote and no wiki,
+-// and its prime records commit a `loom.yaml` that turns Tier 2 self-reporting off.
+-// It prints the hub's path and the absolute path of the `.dev-bin` lym, as JSON, and writes only under the root.
++// `lym harden sandbox new` builds a throwaway hub under the worktree's sandbox root, with no GitHub remote and no wiki.
++// By default the hub is a two-repository hub cloned from two local bare repositories.
++// With `--single-repo` it is a one-repository hub cloned from one local bare repository.
++// That repository holds the records and the board under `refs/lym/`.
++// Its prime records commit a `loom.yaml` that turns Tier 2 self-reporting off.
++// It prints the hub's path, the absolute path of the `.dev-bin` lym and `single_repo`, as JSON.
++// It writes only under the root.
+ //
+ // `lym harden sandbox list` prints the root's hub list, as JSON.
+ //
+diff --git a/internal/hardenshed/campaign.go b/internal/hardenshed/campaign.go
+index 25e67d2b..ed795684 100644
+--- a/internal/hardenshed/campaign.go
++++ b/internal/hardenshed/campaign.go
+@@ -12,16 +12,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ )
+ 
+-// The gate keys the campaign's live gate runs: its merge-bar run, and its concurrent copies.
+-const (
+-	LiveGateKey       = "harden-live"
+-	LiveCopiesGateKey = "harden-live-copies"
+-)
++// LiveGateKey is the gate key the campaign's live gate runs, for its merge-bar run and for its concurrent copies.
++const LiveGateKey = "harden-live"
+ 
+-// LiveKey is what the campaign check reads of one live gate key.
++// LiveKey is what the campaign check reads of one live gate key, as the hub's gate config resolves it, template included.
+ type LiveKey struct {
+-	// Set says whether the hub's own gate.yaml sets the key.
+-	Set bool
+ 	// Tiers are the key's own tiers.
+ 	Tiers []int
+ 	// Tested are the tiers a run of the key tests.
+@@ -35,10 +30,8 @@ type CampaignCheck struct {
+ 	Config Config
+ 	// WorktreeRoot is the absolute root of the worktree the campaign's packages are relative to.
+ 	WorktreeRoot string
+-	// Live is the `harden-live` key.
++	// Live is the `harden-live` key, which the copies run through too.
+ 	Live LiveKey
+-	// Copies is the `harden-live-copies` key, read only when copies run.
+-	Copies LiveKey
+ 	// HoldsTierTest reports whether the package directory dir holds a test that a run of tiers executes.
+ 	HoldsTierTest func(dir string, tiers []int) bool
+ 	// Route returns the way forward that changes the config key, by the layer the key's value comes from.
+@@ -48,61 +41,38 @@ type CampaignCheck struct {
+ // CheckCampaign returns the first refusal of a campaign Preflight must not start, or nil.
+ // Each refusal names its way forward and ends with `lym loom resume`.
+ // The refusals come in this order:
+-// no package, or one whose directory the worktree lacks;
+-// a live key the hub's gate.yaml does not set;
+-// a live key naming the billed tier, or the copies key naming more than one tier when copies run;
+-// a package holding no test of a tier a live key runs;
++// a package whose directory the worktree lacks;
++// the live key naming the billed tier, or naming more than one tier when copies run;
++// a package holding no test of a tier the live key runs;
+ // an empty reviewer or fixer list;
+ // a reviewer list of one entry, or one whose cyclic expansion repeats a model in neighbouring rounds;
+ // and a soft cap of review rounds above the hard cap.
+-// Copies run when the live tests drive no LLM session and the concurrency is above 1.
++// A config naming no package passes, since the seed pass then finds the module from the task's title and labels.
++// The template's live key passes, so a campaign needs no gate write of the hub's.
+ func CheckCampaign(in CampaignCheck) error {
+ 	cfg := in.Config
+-	copiesRun := !cfg.LLMDriving && cfg.Concurrency > 1
+-	keys := []struct {
+-		name string
+-		key  LiveKey
+-	}{{LiveGateKey, in.Live}}
+-	if copiesRun {
+-		keys = append(keys, struct {
+-			name string
+-			key  LiveKey
+-		}{LiveCopiesGateKey, in.Copies})
+-	}
+ 
+-	if len(cfg.Packages) == 0 {
+-		return in.refuseKey("packages", "the hardener config names no package")
+-	}
+ 	for _, pkg := range cfg.Packages {
+ 		if info, err := os.Stat(filepath.Join(in.WorktreeRoot, pkg)); err != nil || !info.IsDir() {
+ 			return in.refuseKey("packages", fmt.Sprintf("the hardener config names package %q, which the worktree has no directory for", pkg))
+ 		}
+ 	}
+-	for _, live := range keys {
+-		if !live.key.Set {
+-			return refuse(fmt.Sprintf("the hub's gate.yaml sets no gates.%s key", live.name), gateWrite(live.name))
+-		}
+-	}
+-	for _, live := range keys {
+-		if slices.Contains(live.key.Tiers, gateslot.BilledTier) {
+-			return refuse(fmt.Sprintf("gates.%s names tier%d, which drives a billed LLM session", live.name, gateslot.BilledTier), gateWrite(live.name))
+-		}
++	if slices.Contains(in.Live.Tiers, gateslot.BilledTier) {
++		return refuse(fmt.Sprintf("gates.%s names tier%d, which drives a billed LLM session", LiveGateKey, gateslot.BilledTier), gateWrite())
+ 	}
+-	if copiesRun && len(in.Copies.Tiers) > 1 {
+-		return refuse(fmt.Sprintf("gates.%s names the tiers %v, and --copies runs one tier", LiveCopiesGateKey, in.Copies.Tiers), gateWrite(LiveCopiesGateKey))
++	if copiesRun(cfg.LLMDriving, cfg.Concurrency, cfg.Packages) && len(in.Live.Tiers) > 1 {
++		return refuse(fmt.Sprintf("gates.%s names the tiers %v, and --copies runs one tier", LiveGateKey, in.Live.Tiers), gateWrite())
+ 	}
+-	for _, live := range keys {
+-		for _, pkg := range cfg.Packages {
+-			if in.HoldsTierTest(filepath.Join(in.WorktreeRoot, pkg), live.key.Tested) {
+-				continue
+-			}
+-			route, err := in.Route("packages")
+-			if err != nil {
+-				return err
+-			}
+-			return refuse(fmt.Sprintf("package %q holds no test of the tiers %v that gates.%s runs", pkg, live.key.Tested, live.name),
+-				fmt.Sprintf("list only packages that hold such a test: %s; or point the key at a tier the package tests: %s", route, gateWrite(live.name)))
++	for _, pkg := range cfg.Packages {
++		if in.HoldsTierTest(filepath.Join(in.WorktreeRoot, pkg), in.Live.Tested) {
++			continue
++		}
++		route, err := in.Route("packages")
++		if err != nil {
++			return err
+ 		}
++		return refuse(fmt.Sprintf("package %q holds no test of the tiers %v that gates.%s runs", pkg, in.Live.Tested, LiveGateKey),
++			fmt.Sprintf("list only packages that hold such a test: %s; or point the key at a tier the package tests: %s", route, gateWrite()))
+ 	}
+ 	for _, list := range []struct {
+ 		key     string
+@@ -121,6 +91,13 @@ func CheckCampaign(in CampaignCheck) error {
+ 	return nil
+ }
+ 
++// copiesRun reports whether the live gate runs its concurrent copies.
++// They run when the live tests drive no LLM session, the concurrency is above 1 and the campaign names packages.
++// A copies call runs the same explicit packages in every copy.
++func copiesRun(llmDriving bool, concurrency int, packages []string) bool {
++	return !llmDriving && concurrency > 1 && len(packages) > 0
++}
++
+ // refuseKey returns the refusal of detail whose way forward changes the config key, by the route the told Route names.
+ func (in CampaignCheck) refuseKey(key, detail string) error {
+ 	route, err := in.Route(key)
+@@ -135,9 +112,9 @@ func refuse(detail, wayForward string) error {
+ 	return fmt.Errorf("hardener campaign: %s; way forward: %s, then run \"lym loom resume\"", detail, wayForward)
+ }
+ 
+-// gateWrite returns the write that sets a live gate key in the hub's gate.yaml.
+-func gateWrite(key string) string {
+-	return fmt.Sprintf("run `lym config gate --set 'gates.%s={tiers: [<live tier>], scope: diff}'` from the prime", key)
++// gateWrite returns the write that sets the live gate key in the hub's gate.yaml.
++func gateWrite() string {
++	return fmt.Sprintf("run `lym config gate --set 'gates.%s={tiers: [<live tier>], scope: diff}'` from the prime", LiveGateKey)
+ }
+ 
+ // reviewerRepeat returns what is wrong with a reviewer list, or "" when no round repeats the model of its neighbour.
+diff --git a/internal/hardenshed/campaign_rows.go b/internal/hardenshed/campaign_rows.go
+index fafb8707..c29cb5fa 100644
+--- a/internal/hardenshed/campaign_rows.go
++++ b/internal/hardenshed/campaign_rows.go
+@@ -1,5 +1,6 @@
+ // campaign_rows.go holds Campaign, the bundle of one run's config and seams that the Harden rows are built from.
+-// It also renders the facts the Harden-Bouncer judge reads about a round and answers whether a round's live gate is red.
++// It also renders the module brief of the Harden-Bouncer's seed and the facts its judge reads about a round.
++// It answers whether a round's live gate is red.
+ 
+ package hardenshed
+ 
+@@ -29,6 +30,8 @@ type Campaign struct {
+ 	WorktreeRoot string
+ 	// AnchorPath is the absolute anchor path of the run's worktree, which the round archive lands under.
+ 	AnchorPath string
++	// DecisionRecordPath is the absolute path of the run's decision record, which holds the operator's ask.
++	DecisionRecordPath string
+ 	// RunDir is the run directory the Harden rows share, which a halt writes its strays into.
+ 	RunDir string
+ 	// RunLive makes one `lym gate test` call of the live gate key, with the copies and packages, in its own slots.
+@@ -41,6 +44,38 @@ type Campaign struct {
+ 	Commits func(from string) ([]string, error)
+ 	// Commit commits the anchor-relative paths of a round archive.
+ 	Commit func(relPaths []string, message string) error
++	// Entry reads the title and labels of the run's board entry, which name the module when the config names no package.
++	Entry func() (title string, labels []string, err error)
++}
++
++// SeedBrief renders the module brief of the Harden-Bouncer's seed: which modules the campaign hardens.
++// A config naming packages lists them as module directories under the worktree root.
++// A config naming none gives the board entry's title and labels instead, for the seed to find the modules from.
++// An error reading the board entry is returned.
++func (c *Campaign) SeedBrief() (string, error) {
++	if len(c.Config.Packages) > 0 {
++		return fmt.Sprintf("The hardener config names the module directories the campaign hardens, relative to the worktree root `%s`: %s.",
++			c.WorktreeRoot, backtickList(c.Config.Packages)), nil
++	}
++	title, labels, err := c.Entry()
++	if err != nil {
++		return "", fmt.Errorf("read the run's board entry: %w", err)
++	}
++	labelText := "none"
++	if len(labels) > 0 {
++		labelText = backtickList(labels)
++	}
++	return fmt.Sprintf("The hardener config names no module directory. The task's title is %q and its labels are %s: find the module or modules they name under the worktree root `%s`.",
++		title, labelText, c.WorktreeRoot), nil
++}
++
++// backtickList returns items as a comma-separated list, each in backticks.
++func backtickList(items []string) string {
++	quoted := make([]string, len(items))
++	for i, item := range items {
++		quoted[i] = "`" + item + "`"
++	}
++	return strings.Join(quoted, ", ")
+ }
+ 
+ // LiveGate returns the live gate of the fix row that works in runDir.
+@@ -130,11 +165,19 @@ func (c *Campaign) ArchiveFinal(runDir string) error {
+ }
+ 
+ // RoundFacts renders the Hardener section of round's facts, one bullet per fact.
++// It opens with the path of the round's focus file, which holds the charter.
++// It then names the decision record, which holds the operator's ask.
++// The judge so carries the charter forward and keeps to the operator's focus.
+ // A file the round lacks is named as absent.
+ // A live report that is absent is also named red when LiveRed reads it red.
+ func (c *Campaign) RoundFacts(runDir string, round int) (string, error) {
+ 	var facts strings.Builder
+ 
++	fmt.Fprintf(&facts, "- Charter: `%s`, the focus file this round ran under; the next focus file restates its standing sections.\n",
++		shedadapters.FocusPath(runDir, round))
++	fmt.Fprintf(&facts, "- Operator's ask: `%s`; the focus its `## Goal` states, as its `Added after Discussion` entries amend it, binds the next focus file.\n",
++		c.DecisionRecordPath)
++
+ 	models, found, err := readRoundRecord[RoundModels](runDir, "models", round)
+ 	if err != nil {
+ 		return "", err
+diff --git a/internal/hardenshed/campaign_rows_test.go b/internal/hardenshed/campaign_rows_test.go
+index b5e68b41..670afbf4 100644
+--- a/internal/hardenshed/campaign_rows_test.go
++++ b/internal/hardenshed/campaign_rows_test.go
+@@ -1,9 +1,10 @@
+-// campaign_rows_test.go covers the facts a Campaign renders for a round, its live-red answer and its halt.
++// campaign_rows_test.go covers the seed brief and the round facts a Campaign renders, its live-red answer and its halt.
+ 
+ package hardenshed
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -119,6 +120,29 @@ func TestCampaignRoundFacts(t *testing.T) {
+ 	}
+ }
+ 
++func TestCampaignRoundFactsNameTheCharterAndTheOperatorsAsk(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	for _, round := range []int{1, 2} {
++		t.Run(fmt.Sprintf("Round%d", round), func(t *testing.T) {
++			t.Parallel()
++			runDir := t.TempDir()
++			campaign := &Campaign{DecisionRecordPath: "/anchor/_lym/discussion/decision-record.md"}
++
++			got, err := campaign.RoundFacts(runDir, round)
++			if err != nil {
++				t.Fatalf("RoundFacts() error = %v; want nil", err)
++			}
++			for _, want := range []string{filepath.Join(runDir, fmt.Sprintf("round-%d-focus.md", round)), campaign.DecisionRecordPath} {
++				if !strings.Contains(got, want) {
++					t.Errorf("RoundFacts(round %d) = %q; want it to name %q", round, got, want)
++				}
++			}
++		})
++	}
++}
++
+ // fullRound writes every file one round of a campaign leaves in runDir.
+ func fullRound(t *testing.T, runDir string) {
+ 	t.Helper()
+@@ -147,6 +171,58 @@ func fullRound(t *testing.T, runDir string) {
+ 	}
+ }
+ 
++func TestCampaignSeedBrief(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	entryErr := errors.New("board unreadable")
++	entry := func(title string, labels []string, err error) func() (string, []string, error) {
++		return func() (string, []string, error) { return title, labels, err }
++	}
++	tests := []struct {
++		name     string
++		packages []string
++		entry    func() (string, []string, error)
++		want     string
++		wantErr  error
++	}{
++		{
++			name:     "PackagesAreListedAsModuleDirectories",
++			packages: []string{"internal/a", "internal/b"},
++			want:     "The hardener config names the module directories the campaign hardens, relative to the worktree root `/wt`: `internal/a`, `internal/b`.",
++		},
++		{
++			name:  "NoPackageNamesTheTitleAndLabels",
++			entry: entry("Hardener campaign on fabricengine", []string{"bug", "fabric"}, nil),
++			want:  "The hardener config names no module directory. The task's title is \"Hardener campaign on fabricengine\" and its labels are `bug`, `fabric`: find the module or modules they name under the worktree root `/wt`.",
++		},
++		{
++			name:  "NoPackageAndNoLabelsNamesNone",
++			entry: entry("Harden fabric", nil, nil),
++			want:  "The hardener config names no module directory. The task's title is \"Harden fabric\" and its labels are none: find the module or modules they name under the worktree root `/wt`.",
++		},
++		{name: "AnEntryErrorIsReturned", entry: entry("", nil, entryErr), wantErr: entryErr},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			campaign := &Campaign{Config: Config{Packages: tt.packages}, WorktreeRoot: "/wt", Entry: tt.entry}
++
++			got, err := campaign.SeedBrief()
++
++			if tt.wantErr != nil {
++				if !errors.Is(err, tt.wantErr) {
++					t.Errorf("SeedBrief() error = %v; want it to wrap %v", err, tt.wantErr)
++				}
++				return
++			}
++			if err != nil || got != tt.want {
++				t.Errorf("SeedBrief() = %q, %v; want %q, nil", got, err, tt.want)
++			}
++		})
++	}
++}
++
+ func TestCampaignLiveRed(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/hardenshed/campaign_test.go b/internal/hardenshed/campaign_test.go
+index 23dddecb..6f9be043 100644
+--- a/internal/hardenshed/campaign_test.go
++++ b/internal/hardenshed/campaign_test.go
+@@ -30,14 +30,12 @@ func TestCheckCampaign(t *testing.T) {
+ 				Reviewer: []string{"opus", "fable", "sonnet"}, Fixer: []string{"sonnet", "opus"}, Concurrency: 3,
+ 			},
+ 			WorktreeRoot:  root,
+-			Live:          LiveKey{Set: true, Tiers: []int{2}, Tested: []int{2}},
+-			Copies:        LiveKey{Set: true, Tiers: []int{2}, Tested: []int{2}},
++			Live:          LiveKey{Tiers: []int{2}, Tested: []int{2}},
+ 			HoldsTierTest: func(string, []int) bool { return true },
+ 			Route:         func(key string) (string, error) { return "ROUTE(" + key + ")", nil },
+ 		}
+ 	}
+ 	liveWrite := "gates." + LiveGateKey + "={tiers: [<live tier>], scope: diff}"
+-	copiesWrite := "gates." + LiveCopiesGateKey + "={tiers: [<live tier>], scope: diff}"
+ 
+ 	tests := []struct {
+ 		name     string
+@@ -46,9 +44,12 @@ func TestCheckCampaign(t *testing.T) {
+ 	}{
+ 		{name: "PassingCampaign", mutate: func(*CampaignCheck) {}},
+ 		{
+-			name:     "NoPackage",
+-			mutate:   func(in *CampaignCheck) { in.Config.Packages = nil },
+-			wantSubs: []string{"names no package", "ROUTE(packages)"},
++			name: "NoPackagePassesAndRunsNoCopiesOrTierTestCheck",
++			mutate: func(in *CampaignCheck) {
++				in.Config.Packages = nil
++				in.Live.Tiers = []int{1, 2}
++				in.HoldsTierTest = func(string, []int) bool { return false }
++			},
+ 		},
+ 		{
+ 			name:     "PackageDirectoryMissing",
+@@ -56,22 +57,8 @@ func TestCheckCampaign(t *testing.T) {
+ 			wantSubs: []string{`package "absent"`, "ROUTE(packages)"},
+ 		},
+ 		{
+-			name:     "LiveKeyNotSetByTheHub",
+-			mutate:   func(in *CampaignCheck) { in.Live.Set = false },
+-			wantSubs: []string{"sets no gates." + LiveGateKey, liveWrite, "from the prime"},
+-		},
+-		{
+-			name:     "CopiesKeyNotSetByTheHubWhenCopiesRun",
+-			mutate:   func(in *CampaignCheck) { in.Copies.Set = false },
+-			wantSubs: []string{"sets no gates." + LiveCopiesGateKey, copiesWrite},
+-		},
+-		{
+-			name:   "CopiesKeyNotSetWhenTheTestsDriveAnLLM",
+-			mutate: func(in *CampaignCheck) { in.Copies.Set = false; in.Config.LLMDriving = true },
+-		},
+-		{
+-			name:   "CopiesKeyNotSetWhenConcurrencyIsOne",
+-			mutate: func(in *CampaignCheck) { in.Copies.Set = false; in.Config.Concurrency = 1 },
++			name:   "TemplateLiveKeyPassesAndTheCopiesRunOnItsTier",
++			mutate: func(in *CampaignCheck) { in.Live = LiveKey{Tiers: []int{0}, Tested: []int{0}} },
+ 		},
+ 		{
+ 			name:     "LiveKeyNamesTheBilledTier",
+@@ -79,18 +66,17 @@ func TestCheckCampaign(t *testing.T) {
+ 			wantSubs: []string{"gates." + LiveGateKey + " names tier3", liveWrite},
+ 		},
+ 		{
+-			name:     "CopiesKeyNamesTheBilledTier",
+-			mutate:   func(in *CampaignCheck) { in.Copies.Tiers = []int{3} },
+-			wantSubs: []string{"gates." + LiveCopiesGateKey + " names tier3", copiesWrite},
++			name:     "LiveKeyNamesTwoTiersWhenCopiesRun",
++			mutate:   func(in *CampaignCheck) { in.Live.Tiers = []int{1, 2} },
++			wantSubs: []string{"gates." + LiveGateKey + " names the tiers [1 2]", liveWrite},
+ 		},
+ 		{
+-			name:     "CopiesKeyNamesTwoTiersWhenCopiesRun",
+-			mutate:   func(in *CampaignCheck) { in.Copies.Tiers = []int{1, 2} },
+-			wantSubs: []string{"gates." + LiveCopiesGateKey + " names the tiers [1 2]", copiesWrite},
++			name:   "LiveKeyNamesTwoTiersWhenTheTestsDriveAnLLM",
++			mutate: func(in *CampaignCheck) { in.Live.Tiers = []int{1, 2}; in.Config.LLMDriving = true },
+ 		},
+ 		{
+-			name:   "CopiesKeyNamesTwoTiersWhenTheTestsDriveAnLLM",
+-			mutate: func(in *CampaignCheck) { in.Copies.Tiers = []int{1, 2}; in.Config.LLMDriving = true },
++			name:   "LiveKeyNamesTwoTiersWhenConcurrencyIsOne",
++			mutate: func(in *CampaignCheck) { in.Live.Tiers = []int{1, 2}; in.Config.Concurrency = 1 },
+ 		},
+ 		{
+ 			name: "PackageHoldsNoTestOfTheLiveTier",
+@@ -99,19 +85,10 @@ func TestCheckCampaign(t *testing.T) {
+ 			},
+ 			wantSubs: []string{`package "pkg"`, "gates." + LiveGateKey, "ROUTE(packages)", liveWrite},
+ 		},
+-		{
+-			name: "PackageHoldsNoTestOfTheCopiesTier",
+-			mutate: func(in *CampaignCheck) {
+-				in.Copies.Tested = []int{1}
+-				in.HoldsTierTest = func(_ string, tiers []int) bool { return !slices.Contains(tiers, 1) }
+-			},
+-			wantSubs: []string{`package "pkg"`, "gates." + LiveCopiesGateKey, "ROUTE(packages)", copiesWrite},
+-		},
+ 		{
+ 			name: "PackageTestedOnlyThroughACoveredTier",
+ 			mutate: func(in *CampaignCheck) {
+ 				in.Live.Tested = []int{2, 1}
+-				in.Copies.Tested = []int{2, 1}
+ 				in.HoldsTierTest = func(_ string, tiers []int) bool { return slices.Contains(tiers, 1) }
+ 			},
+ 		},
+diff --git a/internal/hardenshed/doc.go b/internal/hardenshed/doc.go
+index 8220af29..7908c029 100644
+--- a/internal/hardenshed/doc.go
++++ b/internal/hardenshed/doc.go
+@@ -19,17 +19,30 @@
+ //
+ // CheckCampaign is Preflight's check of a campaign, and returns the first refusal in a fixed order.
+ // Each refusal names its way forward and ends with `lym loom resume`.
+-// Copies run when the live tests drive no LLM session and the concurrency is above 1.
++// A campaign needs no config of the hub's: a config naming no package passes, and so does the template's live gate key.
++// Copies run when the live tests drive no LLM session, the concurrency is above 1 and the config names packages.
++// They run through the `harden-live` key, so a hub that points the key at its live tier runs the copies there too,
++// and the key then names one tier.
+ // Rotate expands a per-round model list cyclically, so a round past the list's length never clamps to its last entry.
+ //
++// # Charter
++//
++// The Harden-Bouncer's seed pass writes the campaign's charter into round 1's focus file.
++// Campaign.SeedBrief tells it which modules to read.
++// Those are the config's packages, or the board entry's title and labels to find them from when the config names none.
++// Each judge carries the charter forward into the next round's focus file.
++// Campaign.RoundFacts names the round's focus file and the decision record.
++// The judge so reads the charter and the operator's focus.
++//
+ // # Live gate
+ //
+ // NewLiveGate is Go's independent check of each fix round, run through `lym gate test` calls that take their own slots.
+-// Each call runs the `harden-live` key once, then the `harden-live-copies` key when copies run.
+-// The gate names keys only, never a tier.
++// Each call runs the `harden-live` key once, then again with the concurrent copies when copies run.
++// The gate names keys only, never a tier, and the config's packages as targets; with none, the key's own scope applies.
+ // It writes the round's live report, `harden-live-<round>.json` in the run directory.
+ // ReadLiveReport is the report's sole reader.
+-// The report's mark is red when the `harden-live` run failed or started no test binary, and green otherwise.
++// The report's mark is red when the `harden-live` run failed, or started no test binary for a config naming packages.
++// It is green otherwise.
+ // A copies run never changes the mark: a red copies run, one that started none and a refused one are recorded beside it.
+ // A refused `harden-live` call, or a call that could not run, is returned as an error and writes no report.
+ //
+@@ -37,7 +50,9 @@
+ //
+ // NewSandbox makes a throwaway hub for the live tests, writing only under the run's sandbox root.
+ // SandboxRoot derives that root from the worktree root, so every process of a run names the same directory.
+-// The package names the hub's two bares by role, the code bare and the records bare, and never by side name.
++// The package names a hub's bares by role, never by side name:
++// the code bare, and the records bare a two-repository hub has beside it.
++// A one-repository hub's code bare is its one origin.
+ // The root's hub list, `hubs.json`, records every hub made, and ListSandbox reads it alone.
+ // A failure after the container is made removes the container before the error returns.
+ //
+diff --git a/internal/hardenshed/live.go b/internal/hardenshed/live.go
+index 97651376..ccc9c911 100644
+--- a/internal/hardenshed/live.go
++++ b/internal/hardenshed/live.go
+@@ -17,9 +17,9 @@ import (
+ 
+ // The marks a live report carries.
+ const (
+-	// MarkRed says the round's `harden-live` run failed or started no test binary.
++	// MarkRed says the round's `harden-live` run failed, or started no test binary for a campaign that names packages.
+ 	MarkRed = "red"
+-	// MarkGreen says the round's `harden-live` run passed and started a test binary.
++	// MarkGreen says the round's `harden-live` run passed, and started a test binary when the campaign names packages.
+ 	MarkGreen = "green"
+ )
+ 
+@@ -83,7 +83,7 @@ type LiveReport struct {
+ 	Mark string `json:"mark"`
+ 	// Live is the `harden-live` call.
+ 	Live LiveRunReport `json:"live"`
+-	// Copies is the `harden-live-copies` call, nil when none was made.
++	// Copies is the `harden-live` call run with the concurrent copies, nil when none was made.
+ 	Copies *LiveRunReport `json:"copies,omitempty"`
+ 	// OutsideStrayCover are the packages whose test files hold no `tmuxkit.Main(` call.
+ 	OutsideStrayCover []string `json:"outside_stray_cover,omitempty"`
+@@ -154,10 +154,14 @@ func packagesOutsideStrayCover(root string, packages []string) ([]string, error)
+ }
+ 
+ // NewLiveGate returns the live gate, which runs the campaign's live tests after a fix round and reports the round.
+-// Each call runs `harden-live` once.
+-// It then runs `harden-live-copies` when the tests drive no LLM session and concurrency is above 1.
++// Each call runs `harden-live` once, over the campaign's packages, or over the key's own scope when it names none.
++// It then runs `harden-live` again with the concurrent copies when copies run,
++// so the copies run on the tier the key names:
++// the tests drive no LLM session, concurrency is above 1 and the campaign names packages.
+ // It writes the round's live report and fails when the mark is red.
+-// The mark is red when the `harden-live` run failed or started no test binary.
++// The mark is red when the `harden-live` run failed.
++// It is also red when the run started no test binary for a campaign that names packages;
++// with none named, a scope that holds no test starts none.
+ // A refused `harden-live` call, or a call that could not run, returns an error and writes no report.
+ // A refused copies call is recorded as refused and leaves the mark alone.
+ func NewLiveGate(deps LiveDeps) shuttleengine.Gate {
+@@ -174,10 +178,10 @@ func NewLiveGate(deps LiveDeps) shuttleengine.Gate {
+ 			return shuttleengine.GateResult{}, fmt.Errorf("live gate: %w", errors.New(live.Refused))
+ 		}
+ 		report := LiveReport{Round: round, Live: reportRun(live)}
+-		if !deps.LLMDriving && deps.Concurrency > 1 {
+-			copies, err := deps.Run(LiveCopiesGateKey, deps.Concurrency, deps.Packages)
++		if copiesRun(deps.LLMDriving, deps.Concurrency, deps.Packages) {
++			copies, err := deps.Run(LiveGateKey, deps.Concurrency, deps.Packages)
+ 			if err != nil {
+-				return shuttleengine.GateResult{}, fmt.Errorf("live gate: run %s: %w; %s", LiveCopiesGateKey, err, liveWayForward)
++				return shuttleengine.GateResult{}, fmt.Errorf("live gate: run %s with %d copies: %w; %s", LiveGateKey, deps.Concurrency, err, liveWayForward)
+ 			}
+ 			copiesReport := reportRun(copies)
+ 			report.Copies = &copiesReport
+@@ -188,7 +192,7 @@ func NewLiveGate(deps LiveDeps) shuttleengine.Gate {
+ 
+ 		path := liveReportPath(deps.RunDir, round)
+ 		report.Mark = MarkGreen
+-		if !report.Live.Passed || report.Live.Started == 0 {
++		if !report.Live.Passed || (report.Live.Started == 0 && len(deps.Packages) > 0) {
+ 			report.Mark = MarkRed
+ 			report.Deferred = report.Live.FailingLines
+ 			if len(report.Deferred) == 0 {
+diff --git a/internal/hardenshed/live_test.go b/internal/hardenshed/live_test.go
+index c27b60bb..0a98d230 100644
+--- a/internal/hardenshed/live_test.go
++++ b/internal/hardenshed/live_test.go
+@@ -22,16 +22,21 @@ func TestLiveGate(t *testing.T) {
+ 	green := LiveRun{Passed: true, Output: started("tier2", 2)}
+ 	clamp := "gate test: --copies asked for 3 copies of tier2 and 2 ran, as the pool's slots hold no more"
+ 	noFailingLine := "the `harden-live` run failed or started no test binary and its output names no failing test; read {report}"
++	// copiesCall names a `harden-live` call made with the concurrent copies.
++	// It runs under the same key as the merge-bar call.
++	const copiesCall = LiveGateKey + " with copies"
+ 
+ 	tests := []struct {
+ 		name        string
+ 		llmDriving  bool
+ 		concurrency int
+-		live        LiveRun
+-		liveErr     error
+-		copies      LiveRun
+-		copiesErr   error
+-		withMain    bool
++		// noPackages runs the campaign with no package named; otherwise it names the package pkg.
++		noPackages bool
++		live       LiveRun
++		liveErr    error
++		copies     LiveRun
++		copiesErr  error
++		withMain   bool
+ 
+ 		wantPassed     bool
+ 		wantErr        []string
+@@ -78,13 +83,13 @@ func TestLiveGate(t *testing.T) {
+ 		{
+ 			name: "RedCopiesStaysGreenAndIsRecorded", concurrency: 3, withMain: true, live: green,
+ 			copies:     LiveRun{Passed: false, Output: started("tier2 copy 1", 1) + started("tier2 copy 2", 1) + "--- FAIL: TestB\n" + clamp + "\n"},
+-			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, LiveCopiesGateKey},
++			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, copiesCall},
+ 			wantCopies: &LiveRunReport{Started: 2, FailingLines: []string{"--- FAIL: TestB"}, Clamp: clamp},
+ 		},
+ 		{
+ 			name: "CopiesStartingNoneStaysGreenAndIsRecorded", concurrency: 3, withMain: true, live: green,
+ 			copies:     LiveRun{Passed: true, Output: started("tier2 copy 1", 0)},
+-			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, LiveCopiesGateKey},
++			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, copiesCall},
+ 			wantCopies: &LiveRunReport{Passed: true},
+ 		},
+ 		{
+@@ -94,9 +99,20 @@ func TestLiveGate(t *testing.T) {
+ 		{
+ 			name: "RefusedCopiesIsRecordedNotFailed", concurrency: 3, withMain: true, live: green,
+ 			copies:     LiveRun{Refused: "gate test: refused; way forward: lower the copies"},
+-			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, LiveCopiesGateKey},
++			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey, copiesCall},
+ 			wantCopies: &LiveRunReport{Refused: "gate test: refused; way forward: lower the copies"},
+ 		},
++		{
++			name: "NoPackageRunsNoCopiesAndAPassStartingNoBinaryIsGreen", noPackages: true, concurrency: 3,
++			live:       LiveRun{Passed: true, Output: started("tier0", 0)},
++			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey},
++		},
++		{
++			name: "NoPackageFailedRunIsRed", noPackages: true, concurrency: 3,
++			live:     LiveRun{Passed: false, Output: started("tier0", 1) + "--- FAIL: TestA (0.1s)\n"},
++			wantMark: MarkRed, wantCallKeys: []string{LiveGateKey},
++			wantDeferred: []string{"--- FAIL: TestA (0.1s)"},
++		},
+ 		{
+ 			name: "PackageWithoutTmuxkitMainIsOutsideTheCover", concurrency: 1, live: green,
+ 			wantPassed: true, wantMark: MarkGreen, wantCallKeys: []string{LiveGateKey}, wantOutside: []string{"pkg"},
+@@ -114,7 +130,7 @@ func TestLiveGate(t *testing.T) {
+ 		},
+ 		{
+ 			name: "CopiesRunErrorCarriesItsWayForwardAndWritesNoReport", concurrency: 3, withMain: true, live: green,
+-			copiesErr: errors.New("wait failed"), wantNoReport: true, wantCallKeys: []string{LiveGateKey, LiveCopiesGateKey},
++			copiesErr: errors.New("wait failed"), wantNoReport: true, wantCallKeys: []string{LiveGateKey, copiesCall},
+ 			wantErr: []string{"wait failed", "way forward:"},
+ 		},
+ 	}
+@@ -134,22 +150,27 @@ func TestLiveGate(t *testing.T) {
+ 				t.Fatal(err)
+ 			}
+ 
++			named := []string{"pkg"}
++			if tt.noPackages {
++				named = nil
++			}
+ 			var keys []string
+ 			gate := NewLiveGate(LiveDeps{
+-				RunDir: runDir, WorktreeRoot: root, Packages: []string{"pkg"},
++				RunDir: runDir, WorktreeRoot: root, Packages: named,
+ 				Round:      func() (int, error) { return 1, nil },
+ 				LLMDriving: tt.llmDriving, Concurrency: tt.concurrency,
+ 				Run: func(key string, copies int, packages []string) (LiveRun, error) {
+-					keys = append(keys, key)
+-					if !reflect.DeepEqual(packages, []string{"pkg"}) {
+-						t.Errorf("Run(%s) packages = %v; want [pkg]", key, packages)
++					if !reflect.DeepEqual(packages, named) {
++						t.Errorf("Run(%s) packages = %v; want %v", key, packages, named)
+ 					}
+-					if wantCopies := map[string]int{LiveGateKey: 0, LiveCopiesGateKey: tt.concurrency}[key]; copies != wantCopies {
+-						t.Errorf("Run(%s) copies = %d; want %d", key, copies, wantCopies)
+-					}
+-					if key == LiveCopiesGateKey {
++					if copies > 0 {
++						keys = append(keys, key+" with copies")
++						if copies != tt.concurrency {
++							t.Errorf("Run(%s) copies = %d; want %d", key, copies, tt.concurrency)
++						}
+ 						return tt.copies, tt.copiesErr
+ 					}
++					keys = append(keys, key)
+ 					return tt.live, tt.liveErr
+ 				},
+ 			})
+diff --git a/internal/hardenshed/sandbox.go b/internal/hardenshed/sandbox.go
+index 85076155..d5a6df94 100644
+--- a/internal/hardenshed/sandbox.go
++++ b/internal/hardenshed/sandbox.go
+@@ -29,9 +29,11 @@ func SandboxRoot(worktreeRoot string) string {
+ type SandboxDeps struct {
+ 	// Root is the sandbox root; NewSandbox writes only under it.
+ 	Root string
+-	// Seed creates the code bare and the records bare a hub is cloned from under dir.
++	// Seed creates the bares a hub is cloned from under dir:
++	// the code bare, and the records bare a two-repository hub has beside it.
++	// The records bare is empty for a one-repository hub, whose code bare is its one origin.
+ 	Seed func(dir string) (codeBare, recordsBare string, err error)
+-	// Clone clones a hub from the two bares into container, with no GitHub remote, and returns the hub's path.
++	// Clone clones a hub from the bares Seed made into container, with no GitHub remote, and returns the hub's path.
+ 	Clone func(codeBare, recordsBare, container string) (hubPath string, err error)
+ 	// CommitOverride commits the hub's sandbox config onto its prime records before any pair exists.
+ 	CommitOverride func(hubPath string) error
+@@ -66,7 +68,7 @@ func hubListPaths(root string) (path, lockPath string) {
+ }
+ 
+ // NewSandbox makes a fresh throwaway hub under deps.Root, records it in the root's hub list, and returns it with its lym.
+-// It seeds the two bares and clones the hub in a container of its own, then has the sandbox config committed.
++// It seeds the hub's bares and clones the hub in a container of its own, then has the sandbox config committed.
+ // It rebuilds the `.dev-bin` lym only when its revision is not the worktree HEAD's or it is marked modified.
+ // The hub list is written under a lock, so another process lists the hub.
+ // A failure after the container is made removes the container, the seeded bares included, before the error returns.
+diff --git a/internal/hardenshed/template.yaml b/internal/hardenshed/template.yaml
+index 1e41d894..8ba3599f 100644
+--- a/internal/hardenshed/template.yaml
++++ b/internal/hardenshed/template.yaml
+@@ -1,4 +1,4 @@
+-packages: []  # worktree-relative directories of the packages the campaign drives against its throwaway sandbox hubs, one list entry per package; an empty list halts a hardener run at Preflight
++packages: []  # worktree-relative directories of the modules the campaign hardens against its throwaway sandbox hubs, one list entry per package, usually set in the task's run_settings; the seed pass writes the campaign's charter from them, and the live gate and its concurrent copies run over them; an empty list leaves the seed pass to find the modules from the task's title and labels, and the live gate runs over its key's own scope with no copies
+ llm_driving: false  # whether the live tests drive a billed LLM session, which turns the concurrent copies of the live gate off
+ max_bounces: 7  # the soft cap of review rounds of the campaign; 0 means no review round
+ hard_max_bounces: 10  # the hard cap of review rounds, which the soft cap may not pass
+diff --git a/internal/loomcli/hardenwiring.go b/internal/loomcli/hardenwiring.go
+index 2eac5286..4b36e9e5 100644
+--- a/internal/loomcli/hardenwiring.go
++++ b/internal/loomcli/hardenwiring.go
+@@ -21,6 +21,7 @@ import (
+ 
+ 	"gopkg.in/yaml.v3"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
+@@ -130,15 +131,16 @@ func resolveHardenModel(key shuttleengine.ModelKey, raw string, registry modelsp
+ }
+ 
+ // hardenCampaign builds the run's campaign over cfg.
+-// Its seams are the live gate's spawn, the reap, the head and commit reads, and the archive commit.
++// Its seams are the live gate's spawn, the reap, the head and commit reads, the archive commit and the board entry read.
+ // runDir is the run directory the Harden rows share.
+ func hardenCampaign(location *lymcwd.Location, cfg hardenshed.Config, runDir string) *hardenshed.Campaign {
+ 	return &hardenshed.Campaign{
+-		Config:       cfg,
+-		WorktreeRoot: location.WorktreePath(),
+-		AnchorPath:   location.AnchorPath(),
+-		RunDir:       runDir,
+-		RunLive:      hardenLiveRunner(location),
++		Config:             cfg,
++		WorktreeRoot:       location.WorktreePath(),
++		AnchorPath:         location.AnchorPath(),
++		RunDir:             runDir,
++		RunLive:            hardenLiveRunner(location),
++		DecisionRecordPath: loomengine.DiscussionDecisionRecord(location),
+ 		Reap: func(row string, point hardenshed.ReapPoint) ([]hardenshed.StrayEntry, error) {
+ 			deps, err := HardenReapDeps(location, row, point)
+ 			if err != nil {
+@@ -164,6 +166,37 @@ func hardenCampaign(location *lymcwd.Location, cfg hardenshed.Config, runDir str
+ 			_, _, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), location, relPaths, message, fabricengine.EnvSyncOptions())
+ 			return err
+ 		},
++		Entry: hardenBoardEntry(location),
++	}
++}
++
++// boardTaskReader is the one board read the campaign's entry seam makes.
++type boardTaskReader interface {
++	GetTask(idOrSlug any) (boardengine.Task, bool, error)
++}
++
++// readBoardEntry returns the title and labels of the board entry slug, read through the board that open returns.
++// An entry the board lacks is refused with a way forward that names the modules through hardener.packages.
++func readBoardEntry(open func() (boardTaskReader, error), slug string) (string, []string, error) {
++	board, err := open()
++	if err != nil {
++		return "", nil, fmt.Errorf("open the board: %w", err)
++	}
++	task, found, err := board.GetTask(slug)
++	if err != nil {
++		return "", nil, fmt.Errorf("read the board entry %q: %w", slug, err)
++	}
++	if !found {
++		return "", nil, fmt.Errorf("the board holds no entry %q; way forward: name the modules in the task's run_settings with hardener.packages, then run \"lym loom resume\"", slug)
++	}
++	return task.Title, task.Labels, nil
++}
++
++// hardenBoardEntry returns the campaign's entry seam.
++// It reads the title and labels of the worktree's own entry on the hub's board.
++func hardenBoardEntry(location *lymcwd.Location) func() (string, []string, error) {
++	return func() (string, []string, error) {
++		return readBoardEntry(func() (boardTaskReader, error) { return boardengine.OpenHub(location.HubPath) }, seedSlug(location.WorktreeName))
+ 	}
+ }
+ 
+@@ -276,26 +309,25 @@ func hardenLiveRunner(location *lymcwd.Location) func(key string, copies int, pa
+ 
+ // hardenPreflight returns the campaign check Preflight runs for a hardener run over cfg.
+ // It reads the hub's gate config at each call, so a gate.yaml edit between two steps takes effect.
+-func hardenPreflight(location *lymcwd.Location, cfg hardenshed.Config) func() error {
++// A hub with no gate.yaml is refused with the config's own way forward, since the live gate could not run.
++// A config naming no package reads the run's board entry through entry.
++// A missing one is so refused before any agent spends tokens.
++func hardenPreflight(location *lymcwd.Location, cfg hardenshed.Config, entry func() (string, []string, error)) func() error {
+ 	return func() error {
+ 		dirs := fabricengine.ConfigDirs(location)
+ 		gateCfg, err := gateslot.LoadConfig(dirs)
+-		if err != nil && !errors.Is(err, gateslot.ErrConfigAbsent) {
+-			return err
+-		}
+-		live, err := hardenLiveKey(dirs, gateCfg, hardenshed.LiveGateKey)
+ 		if err != nil {
+ 			return err
+ 		}
+-		copies, err := hardenLiveKey(dirs, gateCfg, hardenshed.LiveCopiesGateKey)
+-		if err != nil {
+-			return err
++		if len(cfg.Packages) == 0 {
++			if _, _, err := entry(); err != nil {
++				return err
++			}
+ 		}
+ 		return hardenshed.CheckCampaign(hardenshed.CampaignCheck{
+ 			Config:        cfg,
+ 			WorktreeRoot:  location.WorktreePath(),
+-			Live:          live,
+-			Copies:        copies,
++			Live:          hardenLiveKey(gateCfg, hardenshed.LiveGateKey),
+ 			HoldsTierTest: impactset.HoldsTierTest,
+ 			Route: func(key string) (string, error) {
+ 				return reviewbudget.Route(dirs, hardenshed.ConfigSpec(), key)
+@@ -304,26 +336,19 @@ func hardenPreflight(location *lymcwd.Location, cfg hardenshed.Config) func() er
+ 	}
+ }
+ 
+-// hardenLiveKey reads what the campaign check needs of the gate key name:
+-// whether the hub's own gate.yaml sets it, its tiers, and the tiers a run of it tests, each tier's covers included.
+-func hardenLiveKey(dirs configengine.Dirs, gateCfg gateslot.Config, name string) (hardenshed.LiveKey, error) {
+-	set, err := gateslot.HubSetsGate(dirs, name)
+-	if err != nil {
+-		return hardenshed.LiveKey{}, fmt.Errorf("read the hub's gates.%s key: %w; way forward: fix the hub's gate.yaml with lym config gate from the prime, %s", name, err, hardenResumeClause)
+-	}
+-	key := hardenshed.LiveKey{Set: set}
++// hardenLiveKey reads what the campaign check needs of the gate key name as gateCfg resolves it, template included:
++// its tiers, and the tiers a run of it tests, each tier's covers included.
++func hardenLiveKey(gateCfg gateslot.Config, name string) hardenshed.LiveKey {
+ 	gate, found := gateCfg.Gates[name]
+ 	if !found {
+-		return key, nil
++		return hardenshed.LiveKey{}
+ 	}
+-	key.Tiers = gate.Tiers
+ 	tested := slices.Clone(gate.Tiers)
+ 	for _, tier := range gate.Tiers {
+ 		tested = append(tested, gateCfg.Tiers[fmt.Sprintf("tier%d", tier)].Covers...)
+ 	}
+ 	slices.Sort(tested)
+-	key.Tested = slices.Compact(tested)
+-	return key, nil
++	return hardenshed.LiveKey{Tiers: gate.Tiers, Tested: slices.Compact(tested)}
+ }
+ 
+ // wireHarden fills the Env fields a hardener run reads: the Harden-Review segment, the campaign and Preflight's check.
+@@ -349,8 +374,9 @@ func (c *loomCLI) wireHarden(location *lymcwd.Location, loomCfg loomengine.Confi
+ 		return fmt.Errorf("loomcli: the hardener recipe's %s row has no run_subdir, so this lym build is broken", loomshed.NameHardenBouncer)
+ 	}
+ 	c.env.Segments[hardenReviewSegment] = settings
+-	c.env.Harden = hardenCampaign(location, cfg, filepath.Join(loomengine.LoomReviewsDir(location), subdir))
+-	c.env.PreflightHarden = hardenPreflight(location, cfg)
++	campaign := hardenCampaign(location, cfg, filepath.Join(loomengine.LoomReviewsDir(location), subdir))
++	c.env.Harden = campaign
++	c.env.PreflightHarden = hardenPreflight(location, cfg, campaign.Entry)
+ 	return nil
+ }
+ 
+diff --git a/internal/loomcli/hardenwiring_test.go b/internal/loomcli/hardenwiring_test.go
+index d365ab30..c0ca59a4 100644
+--- a/internal/loomcli/hardenwiring_test.go
++++ b/internal/loomcli/hardenwiring_test.go
+@@ -5,6 +5,7 @@
+ package loomcli
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -13,6 +14,7 @@ import (
+ 
+ 	"gopkg.in/yaml.v3"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -50,10 +52,10 @@ func TestHardenLiveArgs(t *testing.T) {
+ 	})
+ 	t.Run("the copies call carries --copies before the packages", func(t *testing.T) {
+ 		t.Parallel()
+-		got := hardenLiveArgs(hardenshed.LiveCopiesGateKey, 3, packages)
+-		want := []string{"gate", "test", "--wait", "--gate", "harden-live-copies", "--copies", "3", "internal/a", "internal/b"}
++		got := hardenLiveArgs(hardenshed.LiveGateKey, 3, packages)
++		want := []string{"gate", "test", "--wait", "--gate", "harden-live", "--copies", "3", "internal/a", "internal/b"}
+ 		if !slices.Equal(got, want) {
+-			t.Errorf("hardenLiveArgs(%q, 3, packages) = %v; want %v", hardenshed.LiveCopiesGateKey, got, want)
++			t.Errorf("hardenLiveArgs(%q, 3, packages) = %v; want %v", hardenshed.LiveGateKey, got, want)
+ 		}
+ 	})
+ 	t.Run("the environment drops the held slot and keeps every other variable", func(t *testing.T) {
+@@ -119,23 +121,159 @@ func TestHardenLiveKey(t *testing.T) {
+ 		},
+ 		{name: "AbsentGateConfigTestsNoTier", gateCfg: gateslot.Config{}},
+ 	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			key := hardenLiveKey(tt.gateCfg, hardenshed.LiveGateKey)
++
++			if !slices.Equal(key.Tiers, tt.wantTiers) || !slices.Equal(key.Tested, tt.wantTested) {
++				t.Errorf("hardenLiveKey() = %+v; want tiers %v and tested %v", key, tt.wantTiers, tt.wantTested)
++			}
++		})
++	}
++}
++
++// TestHardenPreflight pins that a hub whose sparse gate.yaml sets no harden key passes the campaign check.
++// It passes with the template's harden keys, which the sparse file leaves to the template.
++// A package the worktree lacks, a board entry that cannot be read and a hub with no gate.yaml are each refused.
++func TestHardenPreflight(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	var template hardenshed.Config
++	if err := yaml.Unmarshal([]byte(hardenshed.ConfigTemplate()), &template); err != nil {
++		t.Fatalf("unmarshal the hardener template = %v; want nil", err)
++	}
++	const sparseGateConfig = "slots: 2\ngates:\n  card: {tiers: [0], scope: card}\n"
++	tests := []struct {
++		name         string
++		packages     []string
++		noGateConfig bool
++		entryErr     error
++		wantErr      string
++	}{
++		{name: "TheTemplateWithNoPackagePasses"},
++		{name: "APackageTheWorktreeLacksIsRefused", packages: []string{"internal/absent"}, wantErr: `package "internal/absent"`},
++		{name: "ANoPackageCampaignWhoseBoardEntryCannotBeReadIsRefused", entryErr: errors.New("the board holds no entry"), wantErr: "the board holds no entry"},
++		{name: "AHubWithNoGateConfigIsRefused", noGateConfig: true, wantErr: "lym fabric reconcile"},
++	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			loc := hubLocation(t, "pair", ".")
++			if !tt.noGateConfig {
++				writeHubGateConfig(t, loc.HubPath, sparseGateConfig)
++			}
++			cfg := template
++			cfg.Packages = tt.packages
++			entry := func() (string, []string, error) { return "Harden fabric", nil, tt.entryErr }
+ 
+-			key, err := hardenLiveKey(fabricengine.ConfigDirs(loc), tt.gateCfg, hardenshed.LiveGateKey)
++			err := hardenPreflight(loc, cfg, entry)()
+ 
+-			if err != nil {
+-				t.Fatalf("hardenLiveKey() error = %v; want nil", err)
++			if tt.wantErr == "" {
++				if err != nil {
++					t.Errorf("hardenPreflight() = %v; want nil", err)
++				}
++				return
++			}
++			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++				t.Errorf("hardenPreflight() = %v; want a refusal holding %q", err, tt.wantErr)
++			}
++		})
++	}
++}
++
++// fakeBoardReader answers a board entry read with fixed values.
++type fakeBoardReader struct {
++	task  boardengine.Task
++	found bool
++	err   error
++}
++
++func (f fakeBoardReader) GetTask(any) (boardengine.Task, bool, error) { return f.task, f.found, f.err }
++
++func TestReadBoardEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name       string
++		open       func() (boardTaskReader, error)
++		wantTitle  string
++		wantLabels []string
++		wantErr    []string
++	}{
++		{
++			name: "AnEntryTheBoardHoldsGivesItsTitleAndLabels",
++			open: func() (boardTaskReader, error) {
++				return fakeBoardReader{task: boardengine.Task{Title: "Harden fabric", Labels: []string{"fabric"}}, found: true}, nil
++			},
++			wantTitle:  "Harden fabric",
++			wantLabels: []string{"fabric"},
++		},
++		{
++			name:    "AnEntryTheBoardLacksIsRefusedWithItsWayForward",
++			open:    func() (boardTaskReader, error) { return fakeBoardReader{}, nil },
++			wantErr: []string{`"pair"`, "hardener.packages", `then run "lym loom resume"`},
++		},
++		{
++			name:    "AReadFailureIsRefusedNamingTheEntry",
++			open:    func() (boardTaskReader, error) { return fakeBoardReader{err: errors.New("store unreadable")}, nil },
++			wantErr: []string{`read the board entry "pair"`, "store unreadable"},
++		},
++		{
++			name:    "ABoardThatDoesNotOpenIsRefused",
++			open:    func() (boardTaskReader, error) { return nil, errors.New("no board config") },
++			wantErr: []string{"open the board", "no board config"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			title, labels, err := readBoardEntry(tt.open, "pair")
++
++			if len(tt.wantErr) > 0 {
++				if err == nil {
++					t.Fatalf("readBoardEntry() error = nil; want one holding %v", tt.wantErr)
++				}
++				for _, want := range tt.wantErr {
++					if !strings.Contains(err.Error(), want) {
++						t.Errorf("readBoardEntry() error = %q; want it to hold %q", err, want)
++					}
++				}
++				return
+ 			}
+-			if key.Set || !slices.Equal(key.Tiers, tt.wantTiers) || !slices.Equal(key.Tested, tt.wantTested) {
+-				t.Errorf("hardenLiveKey() = %+v; want unset, tiers %v and tested %v", key, tt.wantTiers, tt.wantTested)
++			if err != nil || title != tt.wantTitle || !slices.Equal(labels, tt.wantLabels) {
++				t.Errorf("readBoardEntry() = %q, %v, %v; want %q, %v, nil", title, labels, err, tt.wantTitle, tt.wantLabels)
+ 			}
+ 		})
+ 	}
+ }
+ 
++func TestHardenCampaign_EntryRefusesAnEntryTheHubsBoardLacks(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	loc := hubLocation(t, "pair", ".")
++	boardConfig := configengine.ConfigFile(fabricengine.BoardDir(loc.HubPath), "board")
++	if err := os.WriteFile(boardConfig, []byte(boardengine.ConfigTemplate()), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", boardConfig, err)
++	}
++
++	_, _, err := hardenCampaign(loc, hardenshed.Config{}, t.TempDir()).Entry()
++
++	if err == nil {
++		t.Fatal("Entry() error = nil; want a refusal")
++	}
++	for _, want := range []string{`"pair"`, "hardener.packages", `then run "lym loom resume"`} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("Entry() error = %q; want it to hold %q", err, want)
++		}
++	}
++}
++
+ func TestHardenSegmentSettings_RefusesAnUnresolvableModelSpec(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/loomrecipe/fixture_test.go b/internal/loomrecipe/fixture_test.go
+index 620fcffd..23a6bb27 100644
+--- a/internal/loomrecipe/fixture_test.go
++++ b/internal/loomrecipe/fixture_test.go
+@@ -363,7 +363,7 @@ func writeBouncerJudge(spec shuttleengine.Spec, verdict string) (shuttleengine.R
+ 		return shuttleengine.Result{}, fmt.Errorf("loom shuttle: write bouncer ledger %s: %w", spec.OutputFiles[1], err)
+ 	}
+ 
+-	// The focus file targets round+1, the path shedadapters.focusPath(runDir, round+1) names.
++	// The focus file targets round+1, the path shedadapters.FocusPath(runDir, round+1) names.
+ 	// Bouncer.settle never reads it on a CONVERGED verdict,
+ 	// so this write matters only when the verdict scripts a CONTINUE round.
+ 	focusContent := fmt.Sprintf("---\nround: %d\nexclude_lenses: []\nfocus: []\n---\n", round+1)
+diff --git a/internal/loomrecipe/hardenerrecipe_test.go b/internal/loomrecipe/hardenerrecipe_test.go
+index c2dadc1d..92c8c173 100644
+--- a/internal/loomrecipe/hardenerrecipe_test.go
++++ b/internal/loomrecipe/hardenerrecipe_test.go
+@@ -65,7 +65,7 @@ func TestHardenerRecipe(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("the review row reads source with tools and the harden rubric, and the fix row declares no gates", func(t *testing.T) {
++	t.Run("the review row reads source with tools and the harden rubric, the fix row declares no gates, and the Bouncer seeds the charter", func(t *testing.T) {
+ 		profile, _ := rows[loomshed.NameHardenBurlerReview].Config["profile"].(map[string]any)
+ 		if got := profile["tool-use"]; got != true {
+ 			t.Errorf("review profile tool-use = %v; want true", got)
+@@ -79,6 +79,9 @@ func TestHardenerRecipe(t *testing.T) {
+ 		if _, present := rows[loomshed.NameHardenBurlerFix].Config["gates"]; present {
+ 			t.Errorf("%s config has a gates key; want none, the engine fixes its gates", loomshed.NameHardenBurlerFix)
+ 		}
++		if got := rows[loomshed.NameHardenBouncer].Config["seed_stencil"]; got != "harden-template-seed" {
++			t.Errorf("%s config seed_stencil = %v; want harden-template-seed, the seed that writes the charter", loomshed.NameHardenBouncer, got)
++		}
+ 	})
+ 
+ 	t.Run("every setting a ring row reads comes from hardener.yaml", func(t *testing.T) {
+diff --git a/internal/shedadapters/attachprobe_test.go b/internal/shedadapters/attachprobe_test.go
+index 29417556..ad57efa5 100644
+--- a/internal/shedadapters/attachprobe_test.go
++++ b/internal/shedadapters/attachprobe_test.go
+@@ -63,7 +63,7 @@ func TestBouncer_JudgeCall_AttachesToLiveJudgeInsteadOfRespawning(t *testing.T)
+ 	// The round's report is a file the archive step would not touch.
+ 	// The focus file for round 2 is one it would.
+ 	// Pre-writing that focus file proves the archive did not run on the attach branch.
+-	staleNextFocus := focusPath(cfg.RunDir, 2)
++	staleNextFocus := FocusPath(cfg.RunDir, 2)
+ 	if err := os.WriteFile(staleNextFocus, []byte("---\nround: 2\nexclude_lenses: []\nfocus: []\n---\n"), 0o644); err != nil {
+ 		t.Fatalf("WriteFile(stale next focus) = %v; want nil", err)
+ 	}
+@@ -140,7 +140,7 @@ func TestBouncer_EntryProbe_AttachedJudgeSettlesInsteadOfClearingOrReplaying(t *
+ 			// and a replay would have synthesized two empty lists over this path before it ever landed.
+ 			realFocus := "---\nround: 2\nexclude_lenses: []\nfocus: [\"the finding the judge actually targeted\"]\n---\n"
+ 			attach.DuringAttach = func() {
+-				_ = os.WriteFile(focusPath(cfg.RunDir, 2), []byte(realFocus), 0o644)
++				_ = os.WriteFile(FocusPath(cfg.RunDir, 2), []byte(realFocus), 0o644)
+ 			}
+ 
+ 			ptr := shedfake.RequireOutcome(t, b, tt.wantOutcome)
+@@ -156,14 +156,14 @@ func TestBouncer_EntryProbe_AttachedJudgeSettlesInsteadOfClearingOrReplaying(t *
+ 			if _, err := os.Stat(verdictPath(cfg.RunDir, 1)); err != nil {
+ 				t.Errorf("round 1's verdict file was moved (stat = %v); want it untouched -- the clear would archive it out from under the live judge", err)
+ 			}
+-			got, err := os.ReadFile(focusPath(cfg.RunDir, 2))
++			got, err := os.ReadFile(FocusPath(cfg.RunDir, 2))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-2-focus.md) = %v; want nil", err)
+ 			}
+ 			if string(got) != realFocus {
+ 				t.Errorf("round-2-focus.md = %q; want the live judge's own targeting %q -- a synthetic file written over it drops the judge's targeting for the next round", got, realFocus)
+ 			}
+-			if n := stampedSiblingCount(t, cfg.RunDir, filepath.Base(focusPath(cfg.RunDir, 2))); n != 0 {
++			if n := stampedSiblingCount(t, cfg.RunDir, filepath.Base(FocusPath(cfg.RunDir, 2))); n != 0 {
+ 				t.Errorf("stamped archive siblings = %d; want 0 -- the attached branch must not archive the live judge's own output", n)
+ 			}
+ 			assertNoArchivedRunDirSibling(t, cfg.RunDir)
+@@ -223,7 +223,7 @@ func TestBouncer_EntryProbe_SpecNamesTheJudgesOwnOutputFiles(t *testing.T) {
+ 
+ 			shedfake.CallOK(t, b)
+ 
+-			want := []string{verdictPath(cfg.RunDir, 1), ledgerPath(cfg.RunDir, 1), focusPath(cfg.RunDir, 2)}
++			want := []string{verdictPath(cfg.RunDir, 1), ledgerPath(cfg.RunDir, 1), FocusPath(cfg.RunDir, 2)}
+ 			got := attach.GotAttachSpec.OutputFiles
+ 			if len(got) != len(want) || got[0] != want[0] || got[1] != want[1] || got[2] != want[2] {
+ 				t.Errorf("attach spec OutputFiles = %v; want %v", got, want)
+@@ -256,7 +256,7 @@ func TestBouncer_SeedCall_ProbesForALiveSeed(t *testing.T) {
+ 			b, cfg := newBouncerFixture(t, withShuttle(attach)).Build()
+ 			// A parseable round-1 focus file would make Call take its re-bounce branch instead of seeding,
+ 			// so the in-progress file here is unparseable, the way a half-written focus file is.
+-			focus := focusPath(cfg.RunDir, 1)
++			focus := FocusPath(cfg.RunDir, 1)
+ 			if err := os.WriteFile(focus, []byte("---\nround: 1\n"), 0o644); err != nil {
+ 				t.Fatalf("WriteFile(partial focus) = %v; want nil", err)
+ 			}
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index fe189c2a..227e5209 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -99,6 +99,12 @@ type BouncerConfig struct {
+ 	MutationReport func() string
+ 	// RubricStencil is the stencilstore name of the rubric this Bouncer's judge applies.
+ 	RubricStencil string
++	// SeedStencil is the stencilstore name of the seed pass's prompt template; empty takes the shared seed template.
++	SeedStencil string
++	// SeedBrief returns the value of the seed template's seed_brief marker, which only a recipe's own seed template carries.
++	// An error fails the seed prompt with it.
++	// Nil is the absent value and fills no seed_brief marker.
++	SeedBrief func() (string, error)
+ 	// Models holds the already-resolved seed and judge pairs, threaded verbatim into the shuttleengine.Spec of each pass.
+ 	// They are resolved at the caller's own config-load time.
+ 	Models BouncerModels
+@@ -261,7 +267,7 @@ type Bouncer struct {
+ }
+ 
+ // NewBouncer returns a Bouncer built from cfg.
+-// It validates every field before returning, and it probes cfg.RubricStencil eagerly,
++// It validates every field before returning, and it probes cfg.RubricStencil and a named cfg.SeedStencil eagerly,
+ // so a wiring typo fails at construction rather than mid-run.
+ //
+ // Budget rule: a Bouncer whose segment MaxBounces is N gets N judged rounds,
+@@ -353,9 +359,9 @@ func NewBouncer(cfg BouncerConfig) (*Bouncer, error) {
+ 	// The once-per-process seed pass only seeds registry-registered names.
+ 	// So an unregistered or mistyped rubric name would degrade every judge call to Stuck.
+ 	// The whole segment's bounce budget is then spent on those Stucks.
+-	// Probing only the rubric is enough.
++	// Probing the rubric and a named seed template is enough.
+ 	// The two generic templates are registry-guaranteed and covered by contracts/stencils/registry_test.go,
+-	// so the caller-supplied rubric name is the only one that can be wrong.
++	// so the caller-supplied names are the only ones that can be wrong.
+ 	// This stays a bare stencilstore.Read rather than a ReadRubric call.
+ 	// It is a construction-time readability check that discards the bytes, so it needs no fill.
+ 	// Converting it would make construction fail on an empty SpecsDir for a rubric with no marker at all.
+@@ -363,6 +369,11 @@ func NewBouncer(cfg BouncerConfig) (*Bouncer, error) {
+ 	if _, err := stencilstore.Read(cfg.StencilsDir, cfg.RubricStencil); err != nil {
+ 		return nil, fmt.Errorf("shedadapters: NewBouncer: RubricStencil %q: %w", cfg.RubricStencil, err)
+ 	}
++	if cfg.SeedStencil != "" {
++		if _, err := stencilstore.Read(cfg.StencilsDir, cfg.SeedStencil); err != nil {
++			return nil, fmt.Errorf("shedadapters: NewBouncer: SeedStencil %q: %w", cfg.SeedStencil, err)
++		}
++	}
+ 
+ 	return &Bouncer{cfg: cfg}, nil
+ }
+@@ -863,7 +874,7 @@ func (b *Bouncer) settledEntry() (action int, settled settleRecord, base string,
+ // Parsing is required, not mere presence.
+ // A present but unparseable focus file with no report on disk is still a seed call.
+ func (b *Bouncer) round1FocusSeeded() bool {
+-	content, err := os.ReadFile(focusPath(b.cfg.RunDir, 1))
++	content, err := os.ReadFile(FocusPath(b.cfg.RunDir, 1))
+ 	if err != nil {
+ 		return false
+ 	}
+@@ -968,7 +979,7 @@ func (b *Bouncer) awaitLiveJudge(round int) (shuttleengine.Result, bool, error)
+ // otherwise a logged attach could become unattributable.
+ func (b *Bouncer) awaitLiveSeed() (shuttleengine.Result, bool, error) {
+ 	spec := shuttleengine.Spec{
+-		OutputFiles: []string{focusPath(b.cfg.RunDir, 1)},
++		OutputFiles: []string{FocusPath(b.cfg.RunDir, 1)},
+ 		Role:        b.role(bouncerSeedRole),
+ 		Segment:     b.colorSegment(),
+ 		Round:       "1",
+@@ -1031,7 +1042,7 @@ func (b *Bouncer) degrade(ctx context.Context, msg string, args ...any) (shedeng
+ // A failure to write the next round's targeting hint must not retract a verdict already decided,
+ // so it never reaches the caller.
+ func (b *Bouncer) ensureFocus(round int) {
+-	path := focusPath(b.cfg.RunDir, round)
++	path := FocusPath(b.cfg.RunDir, round)
+ 	content, err := os.ReadFile(path)
+ 	if err == nil {
+ 		if _, perr := parseFocus(content); perr == nil {
+@@ -1731,7 +1742,7 @@ func (b *Bouncer) escalationReason(round int, cause EscalationCause, briefPath s
+ // That mark restarts the row's bounce count.
+ // A degraded seed returns before that point and never carries the mark.
+ func (b *Bouncer) seedCall(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+-	path := focusPath(b.cfg.RunDir, 1)
++	path := FocusPath(b.cfg.RunDir, 1)
+ 
+ 	// A Bouncer told a Subject seam that answers keeps a generation record from its first seed on, generation 1 included.
+ 	generationStart := false
+@@ -1867,12 +1878,23 @@ func renderFailureCause(err error) error {
+ 	return err
+ }
+ 
+-// RenderSeedPrompt fills the seed pass's prompt for the named engine.
+-// The prompt names focusPath as the file the seed writes and carries the rubric, the artifacts and the directives.
++// defaultSeedStencil is the seed template of a Bouncer told no SeedStencil.
++const defaultSeedStencil = "bouncer-template-seed"
++
++// seedBriefMarker is the marker a recipe's own seed template carries the told SeedBrief in.
++const seedBriefMarker = "seed_brief"
++
++// RenderSeedPrompt fills the seed pass's prompt for the named engine, from SeedStencil or the shared seed template.
++// The prompt names focusPath as the file the seed writes and carries the rubric, the artifacts and the directives,
++// and the seed brief when SeedBrief is set.
+ // The edit directive is the engine's own copy.
+-// It fails when the template, rubric or a directive cannot be read or filled.
++// It fails when the template, rubric, seed brief or a directive cannot be read or filled.
+ func (b *Bouncer) RenderSeedPrompt(engine, focusPath string) (string, error) {
+-	seedTemplate, err := stencilstore.Read(b.cfg.StencilsDir, "bouncer-template-seed")
++	seedStencil := b.cfg.SeedStencil
++	if seedStencil == "" {
++		seedStencil = defaultSeedStencil
++	}
++	seedTemplate, err := stencilstore.Read(b.cfg.StencilsDir, seedStencil)
+ 	if err != nil {
+ 		return "", &promptRenderError{"shedadapters: bouncer seed template unreadable", err}
+ 	}
+@@ -1900,6 +1922,13 @@ func (b *Bouncer) RenderSeedPrompt(engine, focusPath string) (string, error) {
+ 		parentdirective.MarkerName: parentDirective,
+ 		editdirective.MarkerName:   editDirective,
+ 	}
++	if b.cfg.SeedBrief != nil {
++		brief, err := b.cfg.SeedBrief()
++		if err != nil {
++			return "", &promptRenderError{"shedadapters: bouncer seed brief unreadable", err}
++		}
++		seedValues[seedBriefMarker] = brief
++	}
+ 	// The seed judges no round, so there is nothing settled for it to exclude;
+ 	// only the judge call is asked for exclude_lenses.
+ 	maps.Copy(seedValues, focusSchemaMarkers(false))
+diff --git a/internal/shedadapters/bouncer_circling_test.go b/internal/shedadapters/bouncer_circling_test.go
+index 975c4ffa..9181ff8f 100644
+--- a/internal/shedadapters/bouncer_circling_test.go
++++ b/internal/shedadapters/bouncer_circling_test.go
+@@ -183,7 +183,7 @@ func TestBouncer_Circling_RecordedDecision(t *testing.T) {
+ 				if shuttle.Called {
+ 					t.Error("Call() spawned a run; want none")
+ 				}
+-				if _, err := os.Stat(focusPath(cfg.RunDir, 3)); err != nil {
++				if _, err := os.Stat(FocusPath(cfg.RunDir, 3)); err != nil {
+ 					t.Errorf("round-3 focus file = %v; want ensureFocus to have written it", err)
+ 				}
+ 				return
+@@ -400,7 +400,7 @@ func TestBouncer_CirclingGuard(t *testing.T) {
+ 				t.Errorf("readCirclingDecision exists = %v, err = %v; want the guard to record no decision", exists, err)
+ 			}
+ 			if tt.want == shedengine.Stuck {
+-				if _, err := os.Stat(focusPath(cfg.RunDir, tt.round+1)); err != nil {
++				if _, err := os.Stat(FocusPath(cfg.RunDir, tt.round+1)); err != nil {
+ 					t.Errorf("next-round focus file = %v; want ensureFocus to have written it", err)
+ 				}
+ 			}
+diff --git a/internal/shedadapters/bouncer_clear_test.go b/internal/shedadapters/bouncer_clear_test.go
+index 1cf92242..08911bb6 100644
+--- a/internal/shedadapters/bouncer_clear_test.go
++++ b/internal/shedadapters/bouncer_clear_test.go
+@@ -213,7 +213,7 @@ func TestBouncer_Clear_NonTriggeringCasesLeaveRunDirUntouched(t *testing.T) {
+ 		shuttle := &shedfake.Shuttle{Result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}}
+ 		b, cfg := newBouncerFixture(t, withNestedRunDir(), withShuttle(shuttle)).Build()
+ 		seeded := "---\nround: 1\nexclude_lenses: []\nfocus: [\"already seeded\"]\n---\n"
+-		if err := os.WriteFile(focusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
++		if err := os.WriteFile(FocusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
+ 			t.Fatalf("WriteFile(...) = %v; want nil", err)
+ 		}
+ 
+@@ -432,7 +432,7 @@ func TestBouncer_Clear_EndToEndSequence(t *testing.T) {
+ 		t.Error("Call() (re-entry) did not invoke the shuttle seam; want the seed spawn")
+ 	}
+ 
+-	freshRaw, err := os.ReadFile(focusPath(cfg.RunDir, 1))
++	freshRaw, err := os.ReadFile(FocusPath(cfg.RunDir, 1))
+ 	if err != nil {
+ 		t.Fatalf("ReadFile(round-1-focus.md in the fresh run dir) = %v; want nil", err)
+ 	}
+diff --git a/internal/shedadapters/bouncer_decision_test.go b/internal/shedadapters/bouncer_decision_test.go
+index 7de4dffa..ff2466ca 100644
+--- a/internal/shedadapters/bouncer_decision_test.go
++++ b/internal/shedadapters/bouncer_decision_test.go
+@@ -385,7 +385,7 @@ func TestBouncer_DecisionEscalation(t *testing.T) {
+ 				if ptr.BudgetExempt != tt.wantExempt {
+ 					t.Errorf("BudgetExempt = %v; want %v", ptr.BudgetExempt, tt.wantExempt)
+ 				}
+-				if _, err := os.Stat(focusPath(cfg.RunDir, 3)); err != nil {
++				if _, err := os.Stat(FocusPath(cfg.RunDir, 3)); err != nil {
+ 					t.Errorf("round-3 focus file = %v; want it present", err)
+ 				}
+ 				assertNoArchivedRunDirSibling(t, cfg.RunDir)
+@@ -453,7 +453,7 @@ func TestBouncer_DecisionEscalation(t *testing.T) {
+ 			t.Error("the re-judge Stuck is BudgetExempt; want a counted bounce unit")
+ 		}
+ 		requireReasonContains(t, ptr.Reason, `review finding "F1" is BLOCKING`)
+-		for _, path := range []string{verdictPath(cfg.RunDir, 2), ledgerPath(cfg.RunDir, 2), focusPath(cfg.RunDir, 3)} {
++		for _, path := range []string{verdictPath(cfg.RunDir, 2), ledgerPath(cfg.RunDir, 2), FocusPath(cfg.RunDir, 3)} {
+ 			requireFileAbsent(t, path)
+ 		}
+ 		for _, path := range []string{escalationPath(cfg.RunDir, 2), circlingDecisionPath(cfg.RunDir, 2)} {
+@@ -536,7 +536,7 @@ func TestBouncer_DecisionEscalation(t *testing.T) {
+ 					return
+ 				}
+ 				shedfake.RequireOutcome(t, b, shedengine.Stuck)
+-				focus, err := os.ReadFile(focusPath(cfg.RunDir, 3))
++				focus, err := os.ReadFile(FocusPath(cfg.RunDir, 3))
+ 				if err != nil {
+ 					t.Fatalf("ReadFile(round-3 focus) = %v; want nil", err)
+ 				}
+diff --git a/internal/shedadapters/bouncer_escalation_test.go b/internal/shedadapters/bouncer_escalation_test.go
+index 0de85e81..8d88ec07 100644
+--- a/internal/shedadapters/bouncer_escalation_test.go
++++ b/internal/shedadapters/bouncer_escalation_test.go
+@@ -170,7 +170,7 @@ func TestBouncer_Escalation_AwaitsWithTheRecordAndLeavesItUntouched(t *testing.T
+ 			} else if !strings.Contains(string(brief), "lym loom circling continue my-task") {
+ 				t.Errorf("escalation brief = %q; want it to offer the continue verb", brief)
+ 			}
+-			if _, err := os.Stat(focusPath(cfg.RunDir, 3)); err != nil {
++			if _, err := os.Stat(FocusPath(cfg.RunDir, 3)); err != nil {
+ 				t.Errorf("round-3 focus file = %v; want ensureFocus to have written it", err)
+ 			}
+ 			if shuttle.Called {
+diff --git a/internal/shedadapters/bouncer_judge_test.go b/internal/shedadapters/bouncer_judge_test.go
+index ee21b60c..669b74e0 100644
+--- a/internal/shedadapters/bouncer_judge_test.go
++++ b/internal/shedadapters/bouncer_judge_test.go
+@@ -60,7 +60,7 @@ func layoutBouncerRun(t *testing.T, cfg BouncerConfig, fixtures []bouncerJudgeFi
+ 			}
+ 		}
+ 		if f.focus != "" {
+-			if err := os.WriteFile(focusPath(cfg.RunDir, f.round), []byte(f.focus), 0o644); err != nil {
++			if err := os.WriteFile(FocusPath(cfg.RunDir, f.round), []byte(f.focus), 0o644); err != nil {
+ 				t.Fatalf("WriteFile(focus round %d) = %v; want nil", f.round, err)
+ 			}
+ 		}
+@@ -353,13 +353,13 @@ func TestBouncer_JudgeCall_Verdicts(t *testing.T) {
+ 			if judge == cfg.Models.Seed {
+ 				t.Errorf("fixture judge pair equals the seed pair %+v; want them distinct", judge)
+ 			}
+-			for _, path := range []string{verdictPath(cfg.RunDir, 1), ledgerPath(cfg.RunDir, 1), focusPath(cfg.RunDir, 2)} {
++			for _, path := range []string{verdictPath(cfg.RunDir, 1), ledgerPath(cfg.RunDir, 1), FocusPath(cfg.RunDir, 2)} {
+ 				if _, err := os.Stat(path); err != nil {
+ 					t.Errorf("os.Stat(%q) = %v; want nil (all three files exist)", path, err)
+ 				}
+ 			}
+ 
+-			raw, err := os.ReadFile(focusPath(cfg.RunDir, 2))
++			raw, err := os.ReadFile(FocusPath(cfg.RunDir, 2))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-2-focus.md) = %v; want nil", err)
+ 			}
+@@ -854,7 +854,7 @@ func TestBouncer_JudgeCall_Harvest(t *testing.T) {
+ 		if ptr.Path != wantPointer {
+ 			t.Errorf("Call() pointer = %q; want %q", ptr.Path, wantPointer)
+ 		}
+-		if _, err := os.Stat(focusPath(cfg.RunDir, 2)); err != nil {
++		if _, err := os.Stat(FocusPath(cfg.RunDir, 2)); err != nil {
+ 			t.Errorf("os.Stat(round-2-focus.md) = %v; want nil (synthesized on the CONTINUE branch)", err)
+ 		}
+ 	})
+@@ -934,7 +934,7 @@ func TestBouncer_JudgeCall_DebrisIsNotJudged(t *testing.T) {
+ 				return map[string]string{
+ 					verdictPath(cfg.RunDir, 1): "garbage, not frontmatter (stale verdict)",
+ 					ledgerPath(cfg.RunDir, 1):  "garbage, not frontmatter (stale ledger)",
+-					focusPath(cfg.RunDir, 2):   "garbage, not frontmatter (stale focus)",
++					FocusPath(cfg.RunDir, 2):   "garbage, not frontmatter (stale focus)",
+ 				}
+ 			},
+ 		},
+diff --git a/internal/shedadapters/bouncer_replay_test.go b/internal/shedadapters/bouncer_replay_test.go
+index 0f20dff6..ce17f273 100644
+--- a/internal/shedadapters/bouncer_replay_test.go
++++ b/internal/shedadapters/bouncer_replay_test.go
+@@ -56,7 +56,7 @@ func TestBouncer_Replay_Blocking(t *testing.T) {
+ 		t.Error("Call() did not log a warning on a CONTINUE replay")
+ 	}
+ 
+-	if _, err := os.Stat(focusPath(cfg.RunDir, 2)); err != nil {
++	if _, err := os.Stat(FocusPath(cfg.RunDir, 2)); err != nil {
+ 		t.Errorf("os.Stat(round-2-focus.md) = %v; want nil (synthesized when absent)", err)
+ 	}
+ 
+@@ -107,13 +107,13 @@ func TestBouncer_FocusSynthesis_OverUnparseableFile(t *testing.T) {
+ 				}})
+ 			}
+ 			malformed := fmt.Sprintf("garbage, not frontmatter (malformed round-%d focus)", round)
+-			if err := os.WriteFile(focusPath(cfg.RunDir, round), []byte(malformed), 0o644); err != nil {
++			if err := os.WriteFile(FocusPath(cfg.RunDir, round), []byte(malformed), 0o644); err != nil {
+ 				t.Fatalf("WriteFile(malformed focus) = %v; want nil", err)
+ 			}
+ 
+ 			shedfake.CallOK(t, b)
+ 
+-			archived := archivedSiblingPath(focusPath(cfg.RunDir, round), bouncerJudgeTestClock)
++			archived := archivedSiblingPath(FocusPath(cfg.RunDir, round), bouncerJudgeTestClock)
+ 			got, err := os.ReadFile(archived)
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(archived sibling %q) = %v; want nil", archived, err)
+@@ -122,7 +122,7 @@ func TestBouncer_FocusSynthesis_OverUnparseableFile(t *testing.T) {
+ 				t.Errorf("archived sibling content = %q; want %q (the malformed content survives)", got, malformed)
+ 			}
+ 
+-			synthRaw, err := os.ReadFile(focusPath(cfg.RunDir, round))
++			synthRaw, err := os.ReadFile(FocusPath(cfg.RunDir, round))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-%d-focus.md) = %v; want nil", round, err)
+ 			}
+diff --git a/internal/shedadapters/bouncer_seed_test.go b/internal/shedadapters/bouncer_seed_test.go
+index c2f59397..bcaff27d 100644
+--- a/internal/shedadapters/bouncer_seed_test.go
++++ b/internal/shedadapters/bouncer_seed_test.go
+@@ -83,7 +83,7 @@ func TestBouncer_SeedCall_HappyPath(t *testing.T) {
+ 		}
+ 	}
+ 
+-	focusRaw, err := os.ReadFile(focusPath(cfg.RunDir, 1))
++	focusRaw, err := os.ReadFile(FocusPath(cfg.RunDir, 1))
+ 	if err != nil {
+ 		t.Fatalf("ReadFile(round-1-focus.md) = %v; want nil", err)
+ 	}
+@@ -103,6 +103,66 @@ func TestBouncer_SeedCall_HappyPath(t *testing.T) {
+ 	}
+ }
+ 
++// TestBouncer_RenderSeedPrompt_NamedSeedStencil pins that a named SeedStencil replaces the shared seed template.
++// It also pins that SeedBrief fills its seed_brief marker, and that a SeedStencil no stencil answers fails construction.
++func TestBouncer_RenderSeedPrompt_NamedSeedStencil(t *testing.T) {
++	tiergate.Require(t, 0)
++	const ownSeed = "harden-template-seed"
++	const focus = "/abs/round-1-focus.md"
++	brief := func() (string, error) { return "BRIEF TEXT", nil }
++
++	tests := []struct {
++		name string
++		// override replaces the shipped seed template's body; empty renders the shipped one.
++		override  string
++		brief     func() (string, error)
++		wantSubs  []string
++		wantError string
++	}{
++		{name: "TheBriefFillsTheNamedTemplate", override: "own seed: {{.seed_brief}} {{.focus_path}}\n", brief: brief, wantSubs: []string{"own seed: BRIEF TEXT " + focus}},
++		{name: "TheShippedHardenSeedFills", brief: brief, wantSubs: []string{"BRIEF TEXT", focus}},
++		{name: "ABriefErrorFailsThePrompt", override: "{{.seed_brief}}\n", brief: func() (string, error) { return "", errors.New("board unreadable") }, wantError: "board unreadable"},
++		{name: "NoBriefLeavesTheMarkerUnfilled", override: "{{.seed_brief}}\n", wantError: "bouncer seed prompt fill failed"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			opts := []bouncerFixtureOpt{withShuttle(&shedfake.Shuttle{})}
++			if tt.override != "" {
++				opts = append(opts, withStencilOverrides(map[string]string{ownSeed: tt.override}))
++			}
++			fx := newBouncerFixture(t, opts...)
++			fx.Config.SeedStencil = ownSeed
++			fx.Config.SeedBrief = tt.brief
++			b, _ := fx.Build()
++
++			prompt, err := b.RenderSeedPrompt("s", focus)
++
++			if tt.wantError != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantError) {
++					t.Errorf("RenderSeedPrompt() error = %v; want one holding %q", err, tt.wantError)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("RenderSeedPrompt() error = %v; want nil", err)
++			}
++			for _, want := range tt.wantSubs {
++				if !strings.Contains(prompt, want) {
++					t.Errorf("RenderSeedPrompt() = %q; want it to hold %q", prompt, want)
++				}
++			}
++		})
++	}
++
++	t.Run("AnUnknownSeedStencilFailsConstruction", func(t *testing.T) {
++		fx := newBouncerFixture(t, withShuttle(&shedfake.Shuttle{}))
++		fx.Config.SeedStencil = "harden-template-absent"
++		if _, err := NewBouncer(fx.Config); err == nil || !strings.Contains(err.Error(), `SeedStencil "harden-template-absent"`) {
++			t.Errorf("NewBouncer() error = %v; want one naming the SeedStencil", err)
++		}
++	})
++}
++
+ //testtiming:keep pins that a present but unparseable focus file is archived and re-seeded rather than treated as a re-bounce
+ func TestBouncer_SeedDiscriminator_ParsesRatherThanStats(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -110,7 +170,7 @@ func TestBouncer_SeedDiscriminator_ParsesRatherThanStats(t *testing.T) {
+ 	b, cfg := newBouncerFixture(t, withShuttle(shuttle)).Build()
+ 
+ 	// round-1-focus.md present but unparseable, with no report on disk.
+-	if err := os.WriteFile(focusPath(cfg.RunDir, 1), []byte("not frontmatter at all"), 0o644); err != nil {
++	if err := os.WriteFile(FocusPath(cfg.RunDir, 1), []byte("not frontmatter at all"), 0o644); err != nil {
+ 		t.Fatalf("WriteFile(...) = %v; want nil", err)
+ 	}
+ 
+@@ -224,7 +284,7 @@ func TestBouncer_SeedCall_SpawnProducedNothingUsable(t *testing.T) {
+ 				t.Errorf("Call() pointer = %+v; want empty", ptr)
+ 			}
+ 
+-			focusRaw, err := os.ReadFile(focusPath(cfg.RunDir, 1))
++			focusRaw, err := os.ReadFile(FocusPath(cfg.RunDir, 1))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-1-focus.md) = %v; want nil (ensureFocus must synthesize a fallback)", err)
+ 			}
+@@ -273,7 +333,7 @@ func TestBouncer_SeedSideHarvest_SurvivesALateFailure(t *testing.T) {
+ 
+ 			shedfake.RequireOutcome(t, b, shedengine.Stuck)
+ 
+-			got, err := os.ReadFile(focusPath(cfg.RunDir, 1))
++			got, err := os.ReadFile(FocusPath(cfg.RunDir, 1))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-1-focus.md) = %v; want nil", err)
+ 			}
+@@ -316,7 +376,7 @@ func TestBouncer_ReBounceProbesForALiveSeed(t *testing.T) {
+ 			fx.Config.RolePrefix = tt.rolePrefix
+ 			b, cfg := fx.Build()
+ 
+-			if err := os.WriteFile(focusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
++			if err := os.WriteFile(FocusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
+ 				t.Fatalf("WriteFile(...) = %v; want nil", err)
+ 			}
+ 
+@@ -325,7 +385,7 @@ func TestBouncer_ReBounceProbesForALiveSeed(t *testing.T) {
+ 			if !shuttle.AttachCalled {
+ 				t.Fatal("Call() returned from the re-bounce without probing for a live seed; a live seed agent would be abandoned in its pane")
+ 			}
+-			wantOutputs := []string{focusPath(cfg.RunDir, 1)}
++			wantOutputs := []string{FocusPath(cfg.RunDir, 1)}
+ 			if !slices.Equal(shuttle.GotAttachSpec.OutputFiles, wantOutputs) {
+ 				t.Errorf("re-bounce probe OutputFiles = %v; want %v -- Attach matches on this set alone, so it must equal the seed spawn's own", shuttle.GotAttachSpec.OutputFiles, wantOutputs)
+ 			}
+@@ -346,7 +406,7 @@ func TestBouncer_ReBounceProbesForALiveSeed(t *testing.T) {
+ 			if want := "bouncer segment already seeded; round producer returned no report"; ptr.Reason != want {
+ 				t.Errorf("Call() Reason = %q; want %q", ptr.Reason, want)
+ 			}
+-			got, err := os.ReadFile(focusPath(cfg.RunDir, 1))
++			got, err := os.ReadFile(FocusPath(cfg.RunDir, 1))
+ 			if err != nil {
+ 				t.Fatalf("ReadFile(round-1-focus.md) = %v; want nil", err)
+ 			}
+@@ -369,7 +429,7 @@ func TestBouncer_ReBounceDegradesOnAnUndeterminableProbe(t *testing.T) {
+ 	b, cfg := newBouncerFixture(t, withShuttle(shuttle)).Build()
+ 
+ 	seeded := "---\nround: 1\nexclude_lenses: []\nfocus: [\"already seeded\"]\n---\n"
+-	if err := os.WriteFile(focusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
++	if err := os.WriteFile(FocusPath(cfg.RunDir, 1), []byte(seeded), 0o644); err != nil {
+ 		t.Fatalf("WriteFile(...) = %v; want nil", err)
+ 	}
+ 
+diff --git a/internal/shedadapters/bouncer_skip_test.go b/internal/shedadapters/bouncer_skip_test.go
+index 296cb50c..c8b1028d 100644
+--- a/internal/shedadapters/bouncer_skip_test.go
++++ b/internal/shedadapters/bouncer_skip_test.go
+@@ -46,7 +46,7 @@ func TestBouncer_Skip_TrueSpawnsNothingAndApprovesBeforeCommit(t *testing.T) {
+ 	if shuttle.Called || shuttle.AttachCalled {
+ 		t.Errorf("shuttle called = %v, attach called = %v; want neither", shuttle.Called, shuttle.AttachCalled)
+ 	}
+-	if _, err := os.Stat(focusPath(cfg.RunDir, 1)); !os.IsNotExist(err) {
++	if _, err := os.Stat(FocusPath(cfg.RunDir, 1)); !os.IsNotExist(err) {
+ 		t.Errorf("round 1 focus file stat error = %v; want not-exist", err)
+ 	}
+ 	if len(callLog) != 2 || callLog[0] != "approve" || callLog[1] != "commit" {
+@@ -93,7 +93,7 @@ func TestBouncer_Skip_FalseOrErrorSeedsRoundOne(t *testing.T) {
+ 			if approveCalls != 0 {
+ 				t.Errorf("Approve call count = %d; want 0", approveCalls)
+ 			}
+-			if _, err := os.Stat(focusPath(cfg.RunDir, 1)); err != nil {
++			if _, err := os.Stat(FocusPath(cfg.RunDir, 1)); err != nil {
+ 				t.Errorf("round 1 focus file stat error = %v; want it present", err)
+ 			}
+ 		})
+diff --git a/internal/shedadapters/bouncer_verdict_test.go b/internal/shedadapters/bouncer_verdict_test.go
+index 0b48a70e..574fadb4 100644
+--- a/internal/shedadapters/bouncer_verdict_test.go
++++ b/internal/shedadapters/bouncer_verdict_test.go
+@@ -93,7 +93,7 @@ func TestBouncer_Verdict_CirclingWithLiveJudgeAttachesAndHarvests(t *testing.T)
+ 	})
+ 	realFocus := "---\nround: 3\nexclude_lenses: []\nfocus: [\"the judge's own targeting\"]\n---\n"
+ 	attach.DuringAttach = func() {
+-		_ = os.WriteFile(focusPath(cfg.RunDir, 3), []byte(realFocus), 0o644)
++		_ = os.WriteFile(FocusPath(cfg.RunDir, 3), []byte(realFocus), 0o644)
+ 	}
+ 
+ 	shedfake.RequireOutcome(t, b, shedengine.Awaiting)
+@@ -103,7 +103,7 @@ func TestBouncer_Verdict_CirclingWithLiveJudgeAttachesAndHarvests(t *testing.T)
+ 	if attach.Called {
+ 		t.Error("Run was called; want a live judge attached to, never respawned over")
+ 	}
+-	got, err := os.ReadFile(focusPath(cfg.RunDir, 3))
++	got, err := os.ReadFile(FocusPath(cfg.RunDir, 3))
+ 	if err != nil {
+ 		t.Fatalf("ReadFile(round-3-focus.md) = %v; want nil", err)
+ 	}
+diff --git a/internal/shedadapters/focus.go b/internal/shedadapters/focus.go
+index efb2932e..cc2ef159 100644
+--- a/internal/shedadapters/focus.go
++++ b/internal/shedadapters/focus.go
+@@ -34,7 +34,7 @@ type RoundFocus struct {
+ // readRoundFocus reads round's focus file in runDir and returns the RoundFocus it names,
+ // identifying itself as name in every warning it logs.
+ //
+-// It reads focusPath(runDir, round) through parseFocus.
++// It reads FocusPath(runDir, round) through parseFocus.
+ // The Bouncer writes the file with the same builder and parser, so reader and writer agree on its name and shape.
+ //
+ // It is fail-safe end to end and never returns an error: an absent file, a read failure, or a file
+@@ -49,7 +49,7 @@ type RoundFocus struct {
+ // delivering it would hand the next round an empty document asserting nothing,
+ // so an empty directive stays empty.
+ func readRoundFocus(name, runDir string, round int) RoundFocus {
+-	path := focusPath(runDir, round)
++	path := FocusPath(runDir, round)
+ 
+ 	content, err := os.ReadFile(path)
+ 	if err != nil {
+@@ -66,7 +66,7 @@ func readRoundFocus(name, runDir string, round int) RoundFocus {
+ 		logger.Warn("shedadapters: focus file malformed", "producer", name, "engine", burlerEngineLabel, "path", path, "reason", err.Error())
+ 		return RoundFocus{}
+ 	}
+-	// The frontmatter round must agree with the round the filename encodes, focusPath(runDir, round).
++	// The frontmatter round must agree with the round the filename encodes, FocusPath(runDir, round).
+ 	// A file that disagrees with itself about which round it targets is malformed, so it fails safe like any other.
+ 	if parsed.Round != round {
+ 		logger.Warn("shedadapters: focus file's own round does not match its filename", "producer", name, "engine", burlerEngineLabel, "path", path, "fileRound", round, "frontmatterRound", parsed.Round)
+diff --git a/internal/shedadapters/focus_test.go b/internal/shedadapters/focus_test.go
+index d72c8bfd..e168f184 100644
+--- a/internal/shedadapters/focus_test.go
++++ b/internal/shedadapters/focus_test.go
+@@ -40,7 +40,7 @@ func stringSlicesEqual(got, want []string) bool {
+ // A fixture can therefore never assert a shape the writer does not produce.
+ func writeFocusFile(t *testing.T, runDir string, round int, f focusFile) string {
+ 	t.Helper()
+-	path := focusPath(runDir, round)
++	path := FocusPath(runDir, round)
+ 	if err := writeFocus(path, f); err != nil {
+ 		t.Fatalf("writeFocus(%s): %v", path, err)
+ 	}
+@@ -51,7 +51,7 @@ func writeFocusFile(t *testing.T, runDir string, round int, f focusFile) string
+ // It serves the malformed-input rows, which cannot go through the renderer.
+ func writeFocusFileRaw(t *testing.T, runDir string, round int, content string) string {
+ 	t.Helper()
+-	path := focusPath(runDir, round)
++	path := FocusPath(runDir, round)
+ 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+ 		t.Fatalf("WriteFile(%s): %v", path, err)
+ 	}
+@@ -155,7 +155,7 @@ func TestReadRoundFocus_DegradesToTheZeroDirective(t *testing.T) {
+ 		// A directory at the focus file's own path produces a deterministic read failure;
+ 		// file
+ 		// permissions do not fail for a privileged test process.
+-		if err := os.Mkdir(focusPath(dir, 1), 0o755); err != nil {
++		if err := os.Mkdir(FocusPath(dir, 1), 0o755); err != nil {
+ 			t.Fatalf("Mkdir: %v", err)
+ 		}
+ 		got := readRoundFocus("bouncer", dir, 1)
+@@ -197,7 +197,7 @@ func TestReadRoundFocus_DegradesToTheZeroDirective(t *testing.T) {
+ func TestReadRoundFocus_FrontmatterRoundMustMatchItsOwnFilename(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	dir := t.TempDir()
+-	// The file lands at round-3-focus.md, per focusPath(dir, 3), but its frontmatter claims round: 1.
++	// The file lands at round-3-focus.md, per FocusPath(dir, 3), but its frontmatter claims round: 1.
+ 	path := writeFocusFile(t, dir, 3, focusFile{Round: 1, ExcludeLenses: []string{"lensA"}, Focus: []string{"a directive"}})
+ 
+ 	got := readRoundFocus("bouncer", dir, 3)
+diff --git a/internal/shedadapters/parentseat.go b/internal/shedadapters/parentseat.go
+index 0f655690..146e82c6 100644
+--- a/internal/shedadapters/parentseat.go
++++ b/internal/shedadapters/parentseat.go
+@@ -61,7 +61,7 @@ const parentDeadlineLayout = "2006-01-02 15:04:05 MST"
+ // The time is in RFC 3339 with nanoseconds.
+ // A fresh start, a new generation and a clear each write that file anew; a goto, a resume and a restarted row keep it.
+ func roundSeed(runDir string) (string, error) {
+-	info, err := os.Stat(focusPath(runDir, 1))
++	info, err := os.Stat(FocusPath(runDir, 1))
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/shedadapters/parentseat_test.go b/internal/shedadapters/parentseat_test.go
+index 4c03d766..9f00e8ad 100644
+--- a/internal/shedadapters/parentseat_test.go
++++ b/internal/shedadapters/parentseat_test.go
+@@ -297,7 +297,7 @@ func TestBurlerReviewProducer_Call_ParentAskingRule(t *testing.T) {
+ 				}
+ 			}
+ 			if tt.focusOffset != 0 {
+-				setNanosecondWriteTime(t, focusPath(f.runDir, 1), parentSeedTime.Add(tt.focusOffset))
++				setNanosecondWriteTime(t, FocusPath(f.runDir, 1), parentSeedTime.Add(tt.focusOffset))
+ 			}
+ 			seed := parentSeedTime.Add(tt.focusOffset).Format(time.RFC3339Nano)
+ 			if tt.rewritten {
+@@ -365,7 +365,7 @@ func TestBurlerReviewProducer_Call_ParentRecordOrSeedUnreadable(t *testing.T) {
+ 	}{
+ 		{"a missing round-1 focus file", func(t *testing.T, f *parentFixture) {
+ 			t.Helper()
+-			if err := os.Remove(focusPath(f.runDir, 1)); err != nil {
++			if err := os.Remove(FocusPath(f.runDir, 1)); err != nil {
+ 				t.Fatalf("remove the focus file: %v", err)
+ 			}
+ 		}},
+diff --git a/internal/shedadapters/round.go b/internal/shedadapters/round.go
+index fe7d614a..41c579fe 100644
+--- a/internal/shedadapters/round.go
++++ b/internal/shedadapters/round.go
+@@ -109,15 +109,15 @@ func judgeOutputs(runDir string, round int) []string {
+ 	return []string{
+ 		verdictPath(runDir, round),
+ 		ledgerPath(runDir, round),
+-		focusPath(runDir, round+1),
++		FocusPath(runDir, round+1),
+ 	}
+ }
+ 
+-// focusPath returns the path of the focus file for round inside runDir.
++// FocusPath returns the path of the focus file for round inside runDir.
+ // round is the round the file targets, not the round that wrote it.
+ // A judge call for round N writes round-<N+1>-focus.md,
+ // so the round producer reads its own round's focus file with no off-by-one reasoning.
+-func focusPath(runDir string, round int) string {
++func FocusPath(runDir string, round int) string {
+ 	return filepath.Join(runDir, fmt.Sprintf("round-%d-focus.md", round))
+ }
+ 
+diff --git a/internal/shedadapters/round_test.go b/internal/shedadapters/round_test.go
+index 7f09e92c..aadff969 100644
+--- a/internal/shedadapters/round_test.go
++++ b/internal/shedadapters/round_test.go
+@@ -124,7 +124,7 @@ func TestRoundPathHelpers_PinExactFilenameSpellings(t *testing.T) {
+ 	}{
+ 		{name: "verdictPath", fn: verdictPath, want: "round-5-bouncer-verdict.md"},
+ 		{name: "ledgerPath", fn: ledgerPath, want: "round-5-bouncer-ledger.md"},
+-		{name: "focusPath", fn: focusPath, want: "round-5-focus.md"},
++		{name: "FocusPath", fn: FocusPath, want: "round-5-focus.md"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index 0bfce953..0e817222 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -32,8 +32,9 @@ func rolePrefixKey(entry string, cfg Config) (string, error) {
+ // It validates cfg and env, and it creates the run directory the segment's rows share.
+ // It resolves each seam key to the Env closure it names, and an absent key leaves that closure unset.
+ // It returns shedadapters.NewBouncer(cfg).
++// The optional key "seed_stencil" names the seed pass's template in place of the shared one.
+ // The optional bool key "harden_round", set true, refuses a nil Env.Harden.
+-// It then fills the Bouncer's round facts, live-red and halt seams from the campaign.
++// It then fills the Bouncer's seed brief, round facts, live-red and halt seams from the campaign.
+ // Its commit_seam value "harden" requires Env.Harden and commits through the campaign's final ledger archive.
+ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	runSubdir, err := configString(cfg, "run_subdir", true)
+@@ -48,6 +49,10 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	seedStencil, err := configString(cfg, "seed_stencil", false)
++	if err != nil {
++		return nil, err
++	}
+ 	commitSeam, err := configString(cfg, "commit_seam", false)
+ 	if err != nil {
+ 		return nil, err
+@@ -100,7 +105,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if err := configRejectUnknown(cfg, "run_subdir", "artifact_paths", "rubric_stencil", "commit_seam", "approve_seam", "skip_seam", "carry_over", "subject", "cluster_excludes", "blocking_escalates", "escalate_decisions", "zero_rounds", "color_segment", "role_prefix", "reviewer_fan_setting", "auto_accept_setting", "harden_round"); err != nil {
++	if err := configRejectUnknown(cfg, "run_subdir", "artifact_paths", "rubric_stencil", "seed_stencil", "commit_seam", "approve_seam", "skip_seam", "carry_over", "subject", "cluster_excludes", "blocking_escalates", "escalate_decisions", "zero_rounds", "color_segment", "role_prefix", "reviewer_fan_setting", "auto_accept_setting", "harden_round"); err != nil {
+ 		return nil, err
+ 	}
+ 	if hardenRound {
+@@ -323,6 +328,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 		MutationReport:    env.MutationReport,
+ 		GateTiers:         env.GateTiers,
+ 		RubricStencil:     rubricStencil,
++		SeedStencil:       seedStencil,
+ 		Models:            segment.Bouncer,
+ 		ClusterExcludes:   clusterExcludes,
+ 		ClusterFans:       clusterFans,
+@@ -359,6 +365,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 	}
+ 
+ 	if hardenRound {
++		bouncerCfg.SeedBrief = env.Harden.SeedBrief
+ 		bouncerCfg.RoundFacts = func(round int) (string, error) { return env.Harden.RoundFacts(runDir, round) }
+ 		bouncerCfg.LiveRed = func(round int) (bool, error) { return env.Harden.LiveRed(runDir, round) }
+ 		bouncerCfg.OnHalt = func() error { return env.Harden.Halt(row.Name) }
+diff --git a/internal/shedrecipe/entries_harden_test.go b/internal/shedrecipe/entries_harden_test.go
+index fe788541..fbd32453 100644
+--- a/internal/shedrecipe/entries_harden_test.go
++++ b/internal/shedrecipe/entries_harden_test.go
+@@ -192,6 +192,35 @@ func TestHardenRoundKey(t *testing.T) {
+ 		assertErrContains(t, err, "Env.Harden")
+ 	})
+ 
++	t.Run("BouncerRowSeedsFromTheNamedStencilFilledWithTheCampaignsBrief", func(t *testing.T) {
++		env := newTestEnv(t)
++		env.Harden, _ = newTestCampaign(t, env)
++		writeStencil(t, env.StencilsDir, "harden-seed-stub", "{{.seed_brief}} {{.focus_path}}\n")
++		cfg := minimalBouncerConfig(t, env)
++		cfg["harden_round"] = true
++		cfg["seed_stencil"] = "harden-seed-stub"
++
++		producer, err := bouncerEntry(reviewRow("review-bounce"), cfg, env)
++		if err != nil {
++			t.Fatalf("bouncerEntry() error = %v; want nil", err)
++		}
++		if _, _, err := producer.Call(context.Background()); err != nil {
++			t.Fatalf("Call() error = %v; want nil", err)
++		}
++
++		fake := env.Shuttle.(*shedfake.Shuttle)
++		if len(fake.Specs) != 1 {
++			t.Fatalf("len(fake.Specs) = %d; want 1, the seed spawn from the named stencil", len(fake.Specs))
++		}
++		brief, err := env.Harden.SeedBrief()
++		if err != nil {
++			t.Fatalf("SeedBrief() error = %v; want nil", err)
++		}
++		if !strings.Contains(fake.Specs[0].Prompt, brief) {
++			t.Errorf("seed prompt = %q; want it to hold the campaign's brief %q", fake.Specs[0].Prompt, brief)
++		}
++	})
++
+ 	t.Run("BouncerRowCarriesTheCampaignsFactsInItsFactsFile", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		env.Shuttle = judgeSeamShuttle()
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index b3861c4f..4b660cdd 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -55,7 +55,7 @@ No site spells a tier list, a scope or a test command.
+ | `adopt` | `lym adopt check <subject>`, in-process through `gatecli.RunGate` in the subject's worktree | `all` |
+ | `darn-write`, `code-burler-fix` | darn's writer and the Code-Burler-Fix rows | `diff` |
+ | `harden-burler-fix` | Harden-Burler-Fix's `verify` gate | `diff` |
+-| `harden-live`, `harden-live-copies` | Harden-Burler-Fix's `live` gate: its merge-bar run and its concurrent copies | `diff` |
++| `harden-live` | Harden-Burler-Fix's `live` gate: its merge-bar run and its concurrent copies | `diff` |
+ | `pr-review` | PR-Review's gate over the agent's commits | `diff` |
+ | By hand | the `tier3` tier | |
+ 
