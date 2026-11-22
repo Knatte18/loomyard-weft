@@ -54,7 +54,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 2h<br>13m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 2h<br>14m | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
@@ -62,8 +62,8 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 13m<br>13m | fabric |
-| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 8m<br>8m | burler, arbiter, shed |
+| B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 14m<br>14m | fabric |
+| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 8m<br>0m | burler, arbiter, shed |
 
 ### Enhancements (1)
 

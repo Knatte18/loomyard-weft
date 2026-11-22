@@ -18,6 +18,13 @@ Operator, 2026-11-22: a hardener round never approves unless everything is in pl
 - The arbiter rules first: order another round over the undriven entries, or accept with a stated reason per entry.
 - When the arbiter cannot rule, the run stops and asks the parent, which orders another round or accepts.
 
+## Cause
+
+Not the model. The hardener rubric (`contracts/stencils/harden/harden-rubric-review.md`) says to walk every focus entry and record OK, WARN or FAIL,
+but the shared review format (`contracts/stencils/burler/burler-review-format.md`) lets an incremental round raise only BLOCKING findings on changed hunks,
+and the verdict is APPROVED whenever no finding is BLOCKING.
+An undriven or WARN focus entry has no way to block, so round 3 recorded its gaps under Rejected and Coverage and could only answer APPROVED.
+
 ## Where
 
 - The hardener recipe `contracts/recipes/hardener-recipe.yaml` and its Bouncer row (`harden_round`).
