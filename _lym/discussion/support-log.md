@@ -69,25 +69,69 @@ and `orchcli.ParentStrand` sends a pair's notices to the nearest live orch of it
 - Forcing `code_review_ask_parent` and `discussion_review_ask_parent`: they add a veto per round but remove no operator wait, at a cost per round.
 - lym opening the beam's pull request from dobby without the orch: the description is the orch's to write, and only `lym beam pr` may open the pull request.
 - The operator merging the beam's pull request on GitHub: PATTERN-landing keeps the merge in Finalize.
-- Telling the orch its autonomy only at launch: the lens review showed the call-time reads drift from it after a change, so D9 also mails the orch on a change.
+- Telling the orch its autonomy only at launch: the lens review showed the call-time reads drift from it after a change.
+- Mailing each live orch on a `lym config beam --set` write of `autonomy`: the editor save, a reconcile, a hand edit and a pulled default layer change the value without it, so D9 has the orch read at call time instead.
+- The orch judging a halt by its own worktree's value: a halt reaching an ancestor or prime orch while the run's own orch is down would bypass the run's opt-out, so D2 carries the run's value on the notice.
 - A PR-Review ending by the session's own reading of a creel answer: prose only, so D4 records the answer through the parent-review seat.
+- A PR-Review branch of `parent-review answer` writing the pull request record: it would need a second ask store, numbering and lock beside the run's ask record, which already serves the answer, the caller check and the await.
 - Counting class 5 in the orch's memory or note: a context cycle loses it; the decision record holds the count.
-- Accepted trade-off: under autonomy no operator sits in a PR-Review or Discussion of a run under that worktree; an operator who wants to turns autonomy off first.
+- Accepted trade-off: under autonomy no operator sits in a PR-Review or Discussion of a run under that worktree; an operator who wants to turns autonomy off first, takes a waiting PR-Review over by answering its asks from their own shell, and gets an interactive session only through a goto onto PR-Review of a run halted there or later.
 - Accepted trade-off: the orch's design picks under D5 reach no operator before landing; the beam's pull request is the operator's review of them.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised 21 findings, two of them BLOCKING; each was checked against the code it cites and holds.
+
+- F1: D7 step 1 runs merge-parent only on `lym beam pr open`'s conflict refusal; a beam only behind its parent goes to step 2.
+- F2, F15: every halt notice carries the run's autonomy, and the orch handles the halt under it; D2 states the down-orch bound.
+- F3, F4, F5, F6: D4 names `lym loom parent-review ask` (new), records each ask's head and the session's autonomy in the pull request record, changes the request line's answer, and splits `pr-continue`'s re-gate from the ending.
+- F7, F8: D3 stops the run on an expired judge ask under autonomy, forces the setting lookup too, and names Raddle-Write's fixed mode.
+- F9, F19: Scope Out names what stays the operator's; D7 bounds merge-parent; D5 files the bug with `lym selfreport create`.
+- F10, F11: D5 counts class 5 from the run's status history, which every halt writes whatever verb settles it, and adds class 6 for a halt with no settling action.
+- F12: D6 keeps the drain marker in a file of its own under `.lym/beam/`.
+- F13, F14, F18: D9 drops the change mail for call-time reads; D8 has the orch mark every operator reply under a slack presence and post relays to SLACK directly.
+- F16, F17: D9 names the pointers that carry the line and adds the `lym beam pr` and `describe` help to its exceptions.
+- F20: D1 pins the inheritance to the weft branch's fork point.
+- F21: the Auto-mode assumption is cut.
+- Turn 3's lines on the change mail (interactions 2), on the orch hearing of a broken `beam.yaml` (interactions 5) and on every orch pointer (bound-breaker 6) are superseded by F13, F15 and F16.
+
+The fixer's self-check forks (fix-consistency, fix-claims, fix-proposal, fix-way-forward) led to these further changes:
+class 5 counts halts in the run's status history rather than `--by parent` entries, which drift and darn read as decisions;
+D9 names `lym config beam --resolved` and puts D8's marker rule in `role-slack.md`;
+D3's resume sends a new judge ask; D4 names waiting on an unanswered ask, the gate hint's wording and a goto as the operator's takeover;
+D5 class 2 and D2's call-time rule agree with Scope Out and D4.
+
+### Round 2
+
+The review raised seven findings, three of them BLOCKING; each was checked against the code it cites and holds.
+
+- F22: PR-Review asks live in burlerengine's run-wide ask record under their own tag, with the head in `Digest` and a deadline from `pr_review_parent_timeout_min` (new); the answer verb records as today.
+- F23: the row's `judge` checks the satisfied answer at the gated head before it ends on the continue flag, and clears the flag otherwise.
+- F24: under autonomy `pr-continue` is refused on a closed pull request and the row never records `ReviewEnded` there; Finalize halts on a closed pull request whose record holds autonomy.
+- F25: class 5 counts each halt entry, a Stuck with no `routed_to`, as one halt plus its `repeats`.
+- F26: the autonomy is recorded once per review; a goto onto PR-Review of a halted run clears it and the session fields.
+- F27: under autonomy a not-sent or no-parent judge ask halts as a timed-out one does.
+- F28: D9's autonomy line is appended beside the presence step, whatever the presence.
+
+The fixer's self-check forks led to these further changes:
+the review's first ask carries the run's next number, not 1;
+a waiting review is taken over by the operator's own answers, since `lym tender pause` leaves PR-Review holding inside its call, where goto is refused;
+an ended PR-Review ask's refusal names the session's next request, and the row mails the session when it clears the continue flag;
+Finalize halts on any closed pull request whose record holds autonomy;
+the Bound names GitHub's own approval and merge;
+class 5 counts only halt entries, since a bounce folds too.
 
 ## Question ledger
 
 - Q1 (resolved, auto-pick): where the per-beam switch lives. Pick: `beam.yaml` key `autonomy`, read from the parent worktree; its default layer serves a hub and the prime's worktree layer the root tasks. Rationale: the existing per-worktree module whose layers already give each scope.
 - Q2 (resolved, auto-pick): its config category. Pick: Guard. Rationale: it lets the parent's answer stand for the operator's approval at PR-Review.
 - Q3 (resolved, auto-pick): which existing keys autonomy sets. Pick: `pr_review_ask_parent` and `judge_ask_parent` on, `judge_interactive` and `discussion_interactive` off, `raddle_auto_approve` on. Rationale: those move or remove an operator wait.
-- Q11 (resolved, auto-pick): whose value applies to a halt. Pick: a run reads its parent worktree's value, an orch its own. Rationale: the run's notices reach that orch.
+- Q11 (resolved, auto-pick): whose value applies to a halt. Pick: a run reads its parent worktree's value and its halt notices carry it; an orch's own steps read its own worktree's. Rationale: a halt may reach an ancestor or prime orch when the run's own orch is down.
 - Q12 (resolved, auto-pick): inheritance of a worktree's value at fork. Pick: inherited, opt-out by setting `false`; never re-applied upward on a landing. Rationale: per-worktree files are inherited today.
 - Q4 (resolved, auto-pick): member PR review under autonomy. Pick: reviewed by the parent, ended by its satisfied answer; the resolver unchanged. Rationale: keeps PATTERN-landing and the member trail.
-- Q5 (resolved, auto-pick): which halts the orch may settle and how a halt is marked severe. Pick: all but a closed list of five classes, classified by the orch, relayed with `[operator] severe halt <slug>:`. Rationale: severity is mostly judgment.
+- Q5 (resolved, auto-pick): which halts the orch may settle and how a halt is marked severe. Pick: all but a closed list of six classes, classified by the orch, relayed with `[operator] severe halt <slug>:`. Rationale: severity is mostly judgment.
 - Q6 (resolved, auto-pick): how lym learns a beam is ready to merge. Pick: Beam-Await posts `[beam drained]` once per drain under autonomy; the orch runs the landing steps up to `lym beam pr open` and notifies the operator. Rationale: Beam-Await already wakes and notifies.
 - Q7 (resolved, auto-pick): who merges. Pick: Finalize after `lym beam ready`, run by the orch on the operator's word. Rationale: PATTERN-landing.
 - Q8 (resolved, auto-pick): how the operator is notified. Pick: the orch's pane reply, with the Slack hook forwarding only `[operator]` replies under autonomy. Rationale: keeps Slack to the two cases.
