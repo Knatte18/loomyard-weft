@@ -1,2 +1,0 @@
-{"stop_key":{"current_producer":"Open-Window","history_length":2,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-22T17:45:16.830430208+01:00","target":"attempt-1"}
-{"stop_key":{"current_producer":"Open-Window","history_length":2,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-22T17:45:16.830833472+01:00"}

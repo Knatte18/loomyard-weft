@@ -1,3 +1,0 @@
-verdict: resume
-reason: >-
-  The stop is a bootstrap refusal (trace 19b1ffa67b04de13, envelope drive-envelope-20261122-174500-1e1f.json). It said the code tip f660ac101279ab085ffbc815ebb3d1422d894030 was not on origin and that machine neve owed the push. That condition has now cleared. `git ls-remote origin` (read-only, run just now) returns f660ac101279ab085ffbc815ebb3d1422d894030 as refs/heads/main and as refs/heads/move-task-by-handback, so the tip is on origin. The commit is also an ancestor of local HEAD on main. Nothing in the stop points to a code or scope fault, so a plain re-launch of `lym batten run move-task-by-handback` should settle it. No goto is needed because the stop is not blocked.
