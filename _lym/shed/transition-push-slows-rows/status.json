@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -98,6 +98,30 @@
       "at": "2026-11-22T17:04:55Z",
       "started_at": "2026-11-22T17:04:33Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/transition-push-slows-rows/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-22T17:13:07Z",
+      "started_at": "2026-11-22T17:05:02Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-22T17:12:51.617727067Z",
+          "end": "2026-11-22T17:12:51.618224707Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-22T17:12:51.675854723Z",
+          "end": "2026-11-22T17:12:51.676763852Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
