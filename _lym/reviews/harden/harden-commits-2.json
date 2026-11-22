@@ -1,0 +1,12 @@
+{
+  "round": 2,
+  "head": "8a8b8debb3323f2fed4fbea6c4c988904c5fb15e",
+  "commits": [
+    "3366b8b fabricengine: fix gate findings — end this round's two wrapped comment lines at sentence boundaries",
+    "1207f0b tools/sandbox: fix G1, G2, G3, G4 — extend the fabric suite's one-repository scenario with this round's behaviours",
+    "bacdd32 fabricengine: fix O1, O2 — name the seed for an origin a stopped seed left, and name a clone directory that is not there",
+    "3a5e28e fabricengine: fix G2 — read the records layout before the board's pull, so reconcile names the refspecs to restore",
+    "a1d8b87 fabricengine: fix G3, O3 — push the archive tags a dead teardown left locally before any origin delete, and keep the pending record of a failed step",
+    "bb29278 fabricengine: fix G1, G4 — give a one-repository hub's code store its own archive-tag prefix, whatever URL it spells origin by"
+  ]
+}
