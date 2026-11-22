@@ -317,36 +317,6 @@
       "profile": "light"
     },
     {
-      "id": 1559,
-      "handle": "T6",
-      "slug": "convergence-report-memory",
-      "title": "lym report convergence stays within bounded memory",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "report"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.",
-      "body": "## What was seen (Neve, 2026-11-22)\n\n`lym report convergence --since 2026-10-20 --format markdown`, run from the prime, grew by about 2 GB every 15 seconds to 9.5 GB resident within two minutes.\nBeside the hub's runs it filled the 16 GB user slice and its swap; the load reached 112 and the machine froze at 11:27 and needed a hard restart.\nThe `memsample` lines in the journal of boot `518480c4e3544695b00b6cff201b8af5` show the growth sample by sample.\n\n## Cause\n\n`readLandings` (`internal/reportengine/landings.go`) walks the whole board branch with no window, `src.Board.Log(src.BoardTip, gitrepo.LogQuery{})`: about 26 000 commits, since every board write is a commit.\n`boardDoneAfter` and `labelsOf` then read `board.json` at board commits one by one, a git read each, through `tasksAt`.\n`tasksAt` keeps every parsed board in `boardTasks` for the whole report and never drops one, so memory grows with the board's history.\nEach `boardDoneAfter` call walks every board commit after its run opened, once per run, so the work grows with runs times board commits.\n\n## Fix\n\nRead the board history once, bounded by the report window, and keep only what the joins need:\nper slug, the time its entry first reads done after a given point, and its labels at a landing.\nNo parsed board is held past the read of its commit.\nA test pins the bound: the joins read each board commit at most once, and hold no board beyond the one being read.\n\n## Sweep of the rest of reportengine (operator, 2026-11-22)\n\nGo through every report in `internal/reportengine`, timing, cost, raddle and replies included, for the same pattern:\na git history walk with no window, a read per commit where one read would do, or a cache that keeps every parsed revision for the whole report.\nFix each place found in this run, and pin each fix with a test as above.\n",
-      "status": "done",
-      "created": "2026-11-22T10:47:37Z",
-      "revised": "2026-11-22T10:50:27Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1560,
       "handle": "T10",
       "slug": "board-readme-golden-tests",
