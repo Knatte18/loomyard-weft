@@ -185,7 +185,7 @@
       "isolated": false,
       "brief": "OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start",
       "body": "## What was seen (2026-11-22)\n\n`harden-fabricengine` was cancelled with `lym batten cancel --remove` on 2026-11-21 and released again after the hardener rebuild landed.\nDobby refused to start it three times: `the code tip 3a9f8d84 the run's last transition names is not on origin yet`, though 3a9f8d84 is on origin/main.\n\nCause: the records repository still held the remote-tracking ref `origin/harden-fabricengine-weft` of the cancelled run, while origin had deleted the branch.\n`fabricengine.OriginCodeTip` reads that ref, finds the old run's last transition and judges its code tip missing.\n\nWorkaround: `git -C \u003chub\u003e/loomyard-weft fetch --prune origin`, which also dropped two other stale refs.\n\n## Expected\n\n- `lym batten cancel --remove` and the remote cleanup drop the local remote-tracking ref of a deleted records branch, or the records fetch prunes.\n- `OriginCodeTip` reads no records branch origin no longer holds, so a cancelled slug can run again.\n- The refusal's way forward names the real cause, not a code push that will never land.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-22T09:47:11Z",
       "revised": "2026-11-22T09:51:58Z",
       "run_settings": {
