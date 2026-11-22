@@ -1,0 +1,12 @@
+{
+  "round": 1,
+  "mark": "green",
+  "live": {
+    "passed": true,
+    "started": 3
+  },
+  "copies": {
+    "passed": true,
+    "started": 9
+  }
+}

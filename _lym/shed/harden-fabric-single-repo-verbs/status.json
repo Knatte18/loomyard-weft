@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Burler-Fix",
+  "current_producer": "Harden-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Burler-Fix",
-    "last": "Harden-Burler-Review → bounced to Harden-Burler-Fix",
+    "now": "Harden-Bouncer",
+    "last": "Harden-Burler-Fix → bounced to Harden-Bouncer",
     "wait": ""
   },
   "history": [
@@ -63,6 +63,78 @@
       ],
       "budget_exempt": true,
       "routed_to": "Harden-Burler-Fix"
+    },
+    {
+      "producer": "Harden-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/reviews/harden/round-1-review.md",
+      "at": "2026-11-22T18:05:57Z",
+      "started_at": "2026-11-22T17:32:25Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:51:21.738614361Z",
+          "end": "2026-11-22T17:51:21.74809641Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:51:52.572532096Z",
+          "end": "2026-11-22T17:51:52.585444288Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:57:45.301661072Z",
+          "end": "2026-11-22T17:57:45.335935346Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:51:21.795991591Z",
+          "end": "2026-11-22T17:51:22.035749937Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T17:51:22.452124097Z",
+          "end": "2026-11-22T17:51:52.5356735Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:51:52.640679253Z",
+          "end": "2026-11-22T17:54:32.009712601Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T17:54:32.471267768Z",
+          "end": "2026-11-22T17:57:45.241452487Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:57:45.436769529Z",
+          "end": "2026-11-22T18:03:23.048294355Z"
+        },
+        {
+          "gate": "live",
+          "kind": "gate",
+          "start": "2026-11-22T18:03:23.110619788Z",
+          "end": "2026-11-22T18:05:56.42473323Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-22T18:05:56.483328286Z",
+          "end": "2026-11-22T18:05:56.488433419Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Harden-Bouncer"
     }
   ],
   "product": {
