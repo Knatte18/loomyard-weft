@@ -18,6 +18,12 @@ The operator decides when a session gets remote control; lym must never turn it 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-22): F1: no transition window for remote control
+
+Decision: The window is refused. In this run, reed's revival of an orch strand (Resume in internal/reedengine/lifecycle.go and the absent-pane relaunch in strand.go) drops the remote-control argument from the stored resume line while orch.yaml's remote_control is off, so no launch, resume or revival turns remote control on unless the hub's config asks.
+
+Rationale: The operator: lym must never turn remote control on by itself, not on any path; the entry says no launch or resume.
+
 ## Constraints
 
 ## Auto-mode assumptions
