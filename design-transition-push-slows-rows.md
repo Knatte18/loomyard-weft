@@ -10,8 +10,7 @@ Each row now waits for a push to origin of about 10 to 20 seconds; the start row
 
 Measured from the `batten: <row> -> running` commits on the records branches (`git log --all --grep`).
 
-## Idea
+## Decision (operator, 2026-11-22)
 
-Keep the pushed state that a takeover needs while cutting the wait per row:
-push only at the transitions a takeover reads from, batch several transitions into one push, or push in the background and wait only before a row whose effect a second machine could repeat.
-The design must show which transitions adopt needs pushed before the act.
+A run pushes nothing to origin before it starts: the start rows from Seed-Child to Run-Shed act without a records push.
+The design settles which later transitions a takeover needs pushed before the act.
