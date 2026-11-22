@@ -1,6 +1,6 @@
 # lym report convergence stays within bounded memory
 
-`convergence-report-memory` · Task · bug, report · running · Darn-Write
+`convergence-report-memory` · Task · bug, report · running · Drift-Verify
 
 ## What was seen (Neve, 2026-11-22)
 
