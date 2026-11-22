@@ -1,3 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop at Seed-Child says the code tip 3a9f8d8419fbcd415992ca15a8c6e9d25822015e is not on origin yet and that machine neve owes a push. That is no longer true. `git ls-remote origin refs/heads/harden-fabricengine` returns 2dbfdc314b13ae35f459c80406748bc8e6bbfdce, and `git merge-base --is-ancestor 3a9f8d8419fbcd415992ca15a8c6e9d25822015e 2dbfdc314b13ae35f459c80406748bc8e6bbfdce` exits 0, so the named commit is present on origin as an ancestor of the remote tip. The push the stop was waiting for has landed. Nothing in the run needs changing, so a plain re-launch of `lym batten run harden-fabricengine` (no goto) should let Seed-Child proceed. This is the first stop on this attempt, so it is not a repeat of an unchanged resume.
