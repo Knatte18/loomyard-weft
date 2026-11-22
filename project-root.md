@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 15:52 UTC; every age below is as of then.
+Rendered 2026-11-22 15:54 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -19,7 +19,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A killed seed leaves board sync naming a false, looping way forward**<br>• After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md) | darn · light | T4 | 14m<br>10m | fabric |
+| T1 | **A killed seed leaves board sync naming a false, looping way forward**<br>• After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md) | darn · light | T4 | 16m<br>11m | fabric |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | T3 | 4h<br>3h | orch, landing, loom, pawl, drift |
 
 ## Research (2)
@@ -35,9 +35,3 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 7d<br>4d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2w | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T10 | **The board README renderer carries tests for pure cosmetics**<br>• A renderer of board markdown carries no layout tests; delete the README goldens and keep only tests of behaviour other code relies on.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-readme-golden-tests`](design-board-readme-golden-tests.md) | 4h<br>4h | board |
