@@ -1,6 +1,6 @@
 # The board README renderer carries tests for pure cosmetics
 
-`board-readme-golden-tests` · Task · bug, board · running · Drift-Baseline
+`board-readme-golden-tests` · Task · bug, board · running · Drift-Await
 
 ## Decision (operator, 2026-11-22)
 
