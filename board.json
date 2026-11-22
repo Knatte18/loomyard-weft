@@ -292,6 +292,24 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1555,
+      "handle": "E1",
+      "slug": "readme-beam-marker",
+      "title": "Board README marks projects that have a beam",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Show which projects run as beams",
+      "body": "## What was seen (operator, 2026-11-22)\n\nThe rendered board README does not show which projects have a beam, a long-lived pair that spawns its members from its own worktree.\n\n## Idea\n\nMark each project that has a beam, in its heading and in any project list, so a reader sees at once which projects run as beams.\n",
+      "created": "2026-11-22T09:55:43Z",
+      "revised": "2026-11-22T09:55:43Z"
     }
   ],
   "prime_owner": "neve",
