@@ -1,14 +1,23 @@
 {
   "current_producer": "Preflight",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "hardener campaign check failed: hardener campaign: gates.harden-live names the tiers [0 1], and --copies runs one tier; way forward: run `lym config gate --set 'gates.harden-live={tiers: [\u003clive tier\u003e], scope: diff}'` from the prime, then run \"lym loom resume\"",
   "pause_requested": false,
   "activity": {
     "now": "Preflight",
-    "last": "",
-    "wait": ""
+    "last": "Preflight → stuck",
+    "wait": "hardener campaign check failed: hardener campaign: gates.harden-live names the tiers [0 1], and --copies runs one tier; way forward: run `lym config gate --set 'gates.harden-live={tiers: [\u003clive tier\u003e], scope: diff}'` from the prime, then run \"lym loom resume\""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-22T17:18:38Z",
+      "started_at": "2026-11-22T17:18:38Z",
+      "budget_exempt": true
+    }
+  ],
   "product": {
     "slug": "harden-fabric-single-repo-verbs",
     "parent": "main",
