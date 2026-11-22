@@ -357,6 +357,26 @@
       "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` after round 2 of its Code-Burler accepted on budget, with these findings open.\nThe full findings, with locations and proposed fixes, are in round 2's review in the run's archived records:\n`git -C loomyard-weft show archive/per-task-settings-one-lookup/d3f72e425e2a:_lym/reviews/code/round-2-review.md`.\n\n## Findings\n\n- **F26 `reinterpret-discovers-worktrees-and-anchors`** (BLOCKING): `settingPlaces` in `internal/dobbyengine/reinterpret.go` lists the hub dir for `.git` entries and derives each anchor from the prime's.\n  The weft siblings count as worktrees, and a pair with its own anchor is read and written at the wrong dir, against PATTERN-cwd-resolution.\n  The reinterpretation should get the code worktrees as told geometry from `hubreconcile`.\n- **F2 `per-task-keys-declared-at-several-sites`** (BLOCKING): the literal `\"beam\"` remains in `dobbyengine.ConfigSpec`, the configreg registration and `beamcli` `mergeParent`, beside `beamsetting.Module`.\n- **F27 `registration-test-lacks-keep-marker`** (BLOCKING): `TestLookup_BeamCarriesThePerTaskSettingsReinterpretation` needs `//testtiming:keep` with its reason.\n- **F28 `duplicate-row-in-prepare-run-settings`** (BLOCKING): a duplicate row in `TestPrepareRunSettings` in `internal/configreg/runsettings_test.go`.\n- **F5 `carry-misses-runs-in-flight`** (MEDIUM): the one-time carry of the retired board fields into seeded runs misses a run on another machine and one behind an early board save, since board verbs run no reconcile and the marker is hub-wide.\n- **F13 `beam-project-notify-on-land-dropped`** (MEDIUM): a beam project's `notify_on_land` is folded away on load, so a board save before the carry loses it.\n\nF5 and F13 only matter while a hub still holds the retired board fields; check first whether any hub does.\n",
       "created": "2026-11-22T18:03:09Z",
       "revised": "2026-11-22T18:03:09Z"
+    },
+    {
+      "id": 1574,
+      "handle": "B4",
+      "slug": "spent-budget-blocking-asks",
+      "title": "A spent code review budget with BLOCKING findings open asks the parent",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "darn",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Code-Bouncer auto-accepts a round at a spent budget with BLOCKING findings open; it should halt and ask the run parent instead",
+      "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` with four BLOCKING Code-Burler findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`), and it accepts open findings, BLOCKING ones included.\n\n## Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n## Pointers\n\n- The Bouncer already has `blocking_escalates` (`internal/shedadapters/bouncer.go`, `BlockingEscalates`): it sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it; the Code-Bouncer rows of `darn-recipe.yaml` and `tapestry-recipe.yaml` are the places to check, along with whether the soft-cap rule then escalates to the parent with cause budget.\n- `escalate_decisions`, set today only in the motif and arras recipes, is the near relative for decision findings (`held-decision-lands-unruled`).\n",
+      "created": "2026-11-22T18:04:44Z",
+      "revised": "2026-11-22T18:04:44Z"
     }
   ],
   "prime_owner": "neve",
