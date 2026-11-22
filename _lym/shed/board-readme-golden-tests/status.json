@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/board-readme-golden-tests/.lym/shed/board-readme-golden-tests/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Darn-Write → stuck",
+    "wait": "gate did not pass after 3 attempts; findings: /home/knatte/Code/loomyard-LYMHUB/board-readme-golden-tests/.lym/shed/board-readme-golden-tests/gate-findings/Darn-Write.md; way forward: run \"lym loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
   },
   "history": [
     {
@@ -43,6 +43,107 @@
       "output": "",
       "at": "2026-11-22T11:36:49Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/board-readme-golden-tests/_lym/landing/summary.md",
+      "at": "2026-11-22T11:47:41Z",
+      "started_at": "2026-11-22T11:37:03Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:40:40.295651565Z",
+          "end": "2026-11-22T11:40:40.397356943Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:46:42.905207737Z",
+          "end": "2026-11-22T11:46:42.916473333Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:05.9952059Z",
+          "end": "2026-11-22T11:47:06.008410161Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:30.185621507Z",
+          "end": "2026-11-22T11:47:30.196752481Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:40:40.707424979Z",
+          "end": "2026-11-22T11:46:02.065099766Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:46:42.973406612Z",
+          "end": "2026-11-22T11:46:43.338344789Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:06.08317327Z",
+          "end": "2026-11-22T11:47:06.503197923Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:30.249643192Z",
+          "end": "2026-11-22T11:47:30.64366373Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-22T11:46:02.173185435Z",
+          "end": "2026-11-22T11:46:16.220999399Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-22T11:46:16.669944851Z",
+          "end": "2026-11-22T11:46:42.87300976Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-22T11:46:43.408965753Z",
+          "end": "2026-11-22T11:47:00.506803339Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-22T11:47:00.953370654Z",
+          "end": "2026-11-22T11:47:05.960235219Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:06.565967336Z",
+          "end": "2026-11-22T11:47:20.643379585Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-22T11:47:21.103717029Z",
+          "end": "2026-11-22T11:47:30.142987637Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-22T11:47:30.709278783Z",
+          "end": "2026-11-22T11:47:40.95456522Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
