@@ -1,0 +1,24 @@
+# Relevant files
+
+- `internal/dobbyengine/config.go` `Config`, `ConfigSpec`, `LoadConfig` — beam.yaml, the per-worktree module that gains `autonomy`
+- `internal/dobbyengine/template.yaml` — beam.yaml's template, where the key and its comment go
+- `internal/loomcli/landingdeps.go` `parentPullRequestMode` — reads the parent worktree's beam.yaml; the model for D2's reader, and the PR-Review `ParentReviewWanted` seam
+- `internal/landingshed/prsession.go` `PRReview.sessionSpec` — PR-Review session spec with `Interactive` true today
+- `internal/landingshed/prreview.go` `PRReview.askParentReview`, `PRReview.judge` — the parent ask and the Continue ending of PR-Review
+- `internal/landingshed/pullrequestmode.go` `ResolvePullRequest` — sole pull-request resolver, left unchanged
+- `internal/configreg/runsettings.go` `PrepareRunSettings`, `checkLocalDocument` — run_settings go to the local layer, which refuses a Guard key
+- `internal/battenshed/seamchild.go` `seedChildProducer.writeRunSettings` — Seed-Child writes run_settings as the pair's local layer
+- `internal/configengine/layers.go` `LayerFile` — default, worktree, machine and local layers of a per-worktree module
+- `internal/pawlengine/beamawait.go` `BeamAwait.Call`, `NewBeamAwait` — Beam-Await's wake loop and `Notify` seam, where D6's line goes
+- `internal/loomshed/operatorwait.go` `OperatorWaitRows` — the rows that wait on the operator
+- `internal/slackcli/hook.go` `slackCLI.replyHook` — forwards each orch turn reply while the presence is slack; D8's filter
+- `internal/orchengine/prompt.go` `RenderRoleFile` — renders the orch role and its on-demand files
+- `internal/orchcli/notify.go` `ParentStrand` — a pair's notices go to the nearest live orch of its parent worktree, which D2 rests on
+- `contracts/orchrole/orch-role.md` — the orch role: notices, escalations, PR review, drift judge asks, working rules
+- `contracts/orchrole/role-beams.md` — the beam landing steps D7 automates
+- `contracts/orchrole/role-landing-halts.md` — landing halts, including the beam Finalize GitHub halts
+- `contracts/orchrole/role-slack.md` — the Slack relay and reply forwarding
+- `contracts/stencils/landing/landing-template-pr-review.md` — PR-Review stencil: parent review and the operator's ending
+- `internal/driftengine/config.go` `Config` — `judge_ask_parent` and `judge_interactive`
+- `internal/loomengine/config.go` `Config` — `pr_review_ask_parent`, `code_review_ask_parent`, `discussion_interactive`
+- `internal/heddleengine/glossary.md` — the glossary that gains two lines
