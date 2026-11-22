@@ -1,0 +1,777 @@
+diff --git a/internal/fabricengine/cleanup.go b/internal/fabricengine/cleanup.go
+index 5139d673e..56bd5beb8 100644
+--- a/internal/fabricengine/cleanup.go
++++ b/internal/fabricengine/cleanup.go
+@@ -339,6 +339,10 @@ func (t *Topology) cleanupOrphan(rec *Mutations, l *lymcwd.Location, warpBranch
+ //
+ // A hub whose primary cannot be read is refused rather than swept:
+ // deletions are irreversible, so an unreadable board branch, layout or key must fail closed.
++// A key naming a branch the records store does not hold fails closed too: it would leave the real prime unprotected.
++// So does a key whose value is not a records branch name, such as the board's branch.
++// A key naming another pair's records branch cannot be told from the right one,
++// so each refusal says which branch to name.
+ func primaryWeftBranch(l *lymcwd.Location) (string, error) {
+ 	recordsDir, err := RecordsRepoRoot(l)
+ 	if err != nil {
+@@ -349,15 +353,31 @@ func primaryWeftBranch(l *lymcwd.Location) (string, error) {
+ 		return "", fmt.Errorf("cannot read the records store at %s (%w); refusing to enumerate orphan weft branches", recordsDir, err)
+ 	}
+ 	if namespace != (gitrepo.RefNamespace{}) {
++		wayForward := fmt.Sprintf("way forward: set it with `git -C %s config %s %s`, naming the prime pair's own records branch: "+
++			"the one of the code branch this hub was cloned on, never of the branch the prime pair is on now; "+
++			"fabric cannot tell a wrong records branch from the right one, and a wrong one leaves the right one open to the sweep",
++			recordsDir, PrimeRecordsBranchKey, RecordsBranchName("<clone-time-code-branch>"))
++
+ 		out, err := gitexec.Run([]string{"config", "--default", "", "--get", PrimeRecordsBranchKey}, recordsDir)
+ 		if err != nil {
+ 			return "", fmt.Errorf("cannot read the records store at %s (%w); refusing to enumerate orphan weft branches", recordsDir, err)
+ 		}
+ 		primeRecordsBranch := strings.TrimSpace(out)
+ 		if primeRecordsBranch == "" {
+-			return "", fmt.Errorf(
+-				"the records store at %s has no %s; refusing to enumerate orphan weft branches — set it with `git -C %s config %s` to <prime-branch>-weft",
+-				recordsDir, PrimeRecordsBranchKey, recordsDir, PrimeRecordsBranchKey)
++			return "", fmt.Errorf("the records store at %s has no %s; refusing to enumerate orphan weft branches; %s",
++				recordsDir, PrimeRecordsBranchKey, wayForward)
++		}
++		exists, err := gitrepo.New(recordsDir).BranchExists(primeRecordsBranch)
++		if err != nil {
++			return "", fmt.Errorf("cannot read the records store at %s (%w); refusing to enumerate orphan weft branches", recordsDir, err)
++		}
++		if !exists {
++			return "", fmt.Errorf("the records store at %s names %q in %s, but holds no branch of that name; refusing to enumerate orphan weft branches; %s",
++				recordsDir, primeRecordsBranch, PrimeRecordsBranchKey, wayForward)
++		}
++		if _, isRecordsBranch := WeftWarpSlug(primeRecordsBranch); !isRecordsBranch {
++			return "", fmt.Errorf("the records store at %s names %q in %s, which is not a records branch name; refusing to enumerate orphan weft branches; %s",
++				recordsDir, primeRecordsBranch, PrimeRecordsBranchKey, wayForward)
+ 		}
+ 		return primeRecordsBranch, nil
+ 	}
+diff --git a/internal/fabricengine/cleanup_primary_integration_test.go b/internal/fabricengine/cleanup_primary_integration_test.go
+index 05dc46b32..d14b04dde 100644
+--- a/internal/fabricengine/cleanup_primary_integration_test.go
++++ b/internal/fabricengine/cleanup_primary_integration_test.go
+@@ -21,6 +21,16 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// checkoutPrimePairOnAlt moves h's prime pair off its default branch, onto a new branch alt.
++func checkoutPrimePairOnAlt(t *testing.T, h *hubforge.Hub) {
++	t.Helper()
++
++	gitkit.MustRun(t, h.Location.WorktreePath(), "git", "branch", "alt")
++	if _, err := h.Topology.Checkout(h.Location, "alt"); err != nil {
++		t.Fatalf("Checkout(alt) error = %v", err)
++	}
++}
++
+ // TestCleanup_ProtectsPrimaryWeftBranchAfterCheckout moves the prime pair off the default branch.
+ // The test starts from a real hub whose primary weft branch is the default branch plus "-weft".
+ // It asserts cleanup reports the primary weft branch as protected and leaves it on disk, even under --apply --force.
+@@ -53,13 +63,8 @@ func TestCleanup_ProtectsPrimaryWeftBranchAfterCheckout(t *testing.T) {
+ 			build: func(t *testing.T) *hubforge.Hub {
+ 				return hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{DefaultBranch: "master"})
+ 			},
+-			defaultBranch: "master",
+-			moveOffDefault: func(t *testing.T, h *hubforge.Hub) {
+-				gitkit.MustRun(t, h.Location.WorktreePath(), "git", "branch", "alt")
+-				if _, err := h.Topology.Checkout(h.Location, "alt"); err != nil {
+-					t.Fatalf("Checkout(alt) error = %v", err)
+-				}
+-			},
++			defaultBranch:  "master",
++			moveOffDefault: checkoutPrimePairOnAlt,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -103,7 +108,8 @@ func TestCleanup_ProtectsPrimaryWeftBranchAfterCheckout(t *testing.T) {
+ 
+ // TestCleanup_RefusesWhenPrimaryWeftBranchIsUndeterminable asserts that a hub gets no orphan sweep at all.
+ // The cases covered are a two-repository hub whose board worktree is not a readable git checkout,
+-// and a one-repository hub whose records store holds no prime key or cannot be read.
++// and a one-repository hub whose records store cannot be read or holds no usable prime key.
++// An unusable key is unset, names no branch, or names the board's branch.
+ // Cleanup's deletions are irreversible, so an undeterminable primary branch must fail closed.
+ func TestCleanup_RefusesWhenPrimaryWeftBranchIsUndeterminable(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -134,6 +140,32 @@ func TestCleanup_RefusesWhenPrimaryWeftBranchIsUndeterminable(t *testing.T) {
+ 			},
+ 			wantErrorFormats: []string{"git -C %s config " + fabricengine.PrimeRecordsBranchKey},
+ 		},
++		{
++			name:  "OneRepositoryKeyNamesNoBranch",
++			build: func(t *testing.T) *hubforge.Hub { return hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{}) },
++			spoil: func(t *testing.T, h *hubforge.Hub, recordsDir string) {
++				// With the prime pair off main, the key is the prime records branch's only protection.
++				checkoutPrimePairOnAlt(t, h)
++				gitkit.Git(t, recordsDir, "config", fabricengine.PrimeRecordsBranchKey, "nosuch-weft")
++			},
++			wantErrorFormats: []string{
++				`the records store at %s names "nosuch-weft"`,
++				"git -C %s config " + fabricengine.PrimeRecordsBranchKey,
++			},
++		},
++		{
++			name:  "OneRepositoryKeyNamesTheBoardBranch",
++			build: func(t *testing.T) *hubforge.Hub { return hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{}) },
++			spoil: func(t *testing.T, h *hubforge.Hub, recordsDir string) {
++				// The board's branch exists in the records store, and no records branch can carry its name.
++				checkoutPrimePairOnAlt(t, h)
++				gitkit.Git(t, recordsDir, "config", fabricengine.PrimeRecordsBranchKey, fabricengine.OneRepositoryBoardBranch)
++			},
++			wantErrorFormats: []string{
++				`the records store at %s names "main" in ` + fabricengine.PrimeRecordsBranchKey + ", which is not a records branch name",
++				"git -C %s config " + fabricengine.PrimeRecordsBranchKey,
++			},
++		},
+ 		{
+ 			name:  "OneRepositoryConfigUnparsable",
+ 			build: func(t *testing.T) *hubforge.Hub { return hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{}) },
+diff --git a/internal/fabricengine/clone.go b/internal/fabricengine/clone.go
+index ad8de9ff5..3214c9d15 100644
+--- a/internal/fabricengine/clone.go
++++ b/internal/fabricengine/clone.go
+@@ -890,7 +890,8 @@ func readJoinedBoardRecords(recordsPath, url string) (warp string, warpFound boo
+ // A two-repository clone and a join push it as any board is pushed.
+ // A SingleRepo clone's result carries the seed mark.
+ // Its push is the leased, ordered seed of origin's records namespace.
+-// A failed seed push has already removed the hub, and its error names the way forward.
++// A failed seed push has already removed the hub, or kept it while origin may still take a pushed ref.
++// Its error names the way forward.
+ func PushCloneBoard(res CloneResult, rec *Mutations) error {
+ 	if res.seed == nil {
+ 		return NewBolt(res.BoardDir).PushRecorded(SyncOptions{}, rec)
+diff --git a/internal/fabricengine/clone_singlerepo_integration_test.go b/internal/fabricengine/clone_singlerepo_integration_test.go
+index 1dbe1b2c9..1634759f1 100644
+--- a/internal/fabricengine/clone_singlerepo_integration_test.go
++++ b/internal/fabricengine/clone_singlerepo_integration_test.go
+@@ -152,7 +152,12 @@ func TestCloneSingleRepo_SeedsTheNamespace(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("resolve the prime: %v", err)
+ 			}
+-			requireOneRepositoryLayout(t, res.BoardDir, fabricengine.RecordsWorktree(l), res.PrimeCwd, bare, tt.recordsBranch)
++			recordsDir := fabricengine.RecordsWorktree(l)
++			requireOneRepositoryLayout(t, res.BoardDir, recordsDir, res.PrimeCwd, bare, tt.recordsBranch)
++			wantUpstream := "refs/remotes/origin/" + tt.recordsBranch
++			if got := gitkit.Git(t, recordsDir, "rev-parse", "--symbolic-full-name", tt.recordsBranch+"@{u}"); got != wantUpstream {
++				t.Errorf("the seeded records branch's upstream = %q; want %q", got, wantUpstream)
++			}
+ 			if unpushed, err := board.HasUnpushed(); err != nil || unpushed {
+ 				t.Errorf("HasUnpushed() = %v, %v; want false after the board's push", unpushed, err)
+ 			}
+@@ -339,8 +344,11 @@ func TestCloneSingleRepo_FailedSeedPushLeavesNothing(t *testing.T) {
+ 		container := t.TempDir()
+ 
+ 		_, err := cloneSingleRepo(t, container, bare, "")
+-		if err == nil || !strings.Contains(err.Error(), "use a host that accepts refs outside refs/heads/ and refs/tags/") {
+-			t.Fatalf("clone over a host refusing the board error = %v; want the refused-host way forward", err)
++		if err == nil || !strings.Contains(err.Error(), "its hooks or rules declined the board ref "+namespaceBoardRef) {
++			t.Fatalf("clone over a hook declining the board error = %v; want the declined-board way forward", err)
++		}
++		if strings.Contains(err.Error(), "use a host that accepts refs") {
++			t.Errorf("clone error = %q; a host that took the records branch must not be named as refusing refs outside refs/heads/", err.Error())
+ 		}
+ 		requireEmptyDirectory(t, container)
+ 		if got := refLines(t, bare, "%(refname)", fabricengine.RecordsNamespaceRoot); len(got) != 0 {
+diff --git a/internal/fabricengine/clone_singlerepo_killedpush_integration_test.go b/internal/fabricengine/clone_singlerepo_killedpush_integration_test.go
+new file mode 100644
+index 000000000..e84219534
+--- /dev/null
++++ b/internal/fabricengine/clone_singlerepo_killedpush_integration_test.go
+@@ -0,0 +1,141 @@
++// clone_singlerepo_killedpush_integration_test.go drives --single-repo seeds whose push client is killed mid-push.
++// Its tier2 test is kept apart from the tier1 clone tests.
++// It shares their helpers in clone_singlerepo_integration_test.go.
++
++package fabricengine_test
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// killPushClientHook returns a receive hook that kills the client `git push` when it is handed an update of ref.
++// It sends SIGKILL to the client it finds by walking up from receive-pack through /proc, then exits with exitCode.
++// It ignores a deletion of ref.
++// Installed as post-receive, it kills the client after origin applied the update.
++// Installed as pre-receive with a non-zero exitCode, it also declines the update, so origin never applies it.
++func killPushClientHook(ref string, exitCode int) string {
++	return fmt.Sprintf(`#!/bin/sh
++while read old new ref; do
++	[ "$ref" = "%s" ] || continue
++	case "$new" in *[!0]*) ;; *) continue ;; esac
++	pid=$PPID
++	while [ "$pid" -gt 1 ]; do
++		if tr '\0' ' ' < /proc/$pid/cmdline | grep -q '^git push '; then
++			kill -KILL "$pid"
++			exit %d
++		fi
++		pid=$(awk '/^PPid:/ { print $2 }' /proc/$pid/status)
++	done
++done
++exit 0
++`, ref, exitCode)
++}
++
++// TestCloneSingleRepo_SeedPushKilledBeforeOriginsAnswer kills the client of one seed push before origin answers it.
++// A push origin had applied must be withdrawn, leaving no hub and nothing under origin's records namespace.
++// A push origin had not applied may still land,
++// so the hub must be kept and the error must name the refs origin may hold.
++func TestCloneSingleRepo_SeedPushKilledBeforeOriginsAnswer(t *testing.T) {
++	tiergate.Require(t, 2)
++	if runtime.GOOS != "linux" {
++		t.Skip("the hook finds the pushing client through /proc, which only Linux has")
++	}
++	t.Parallel()
++
++	const recordsRef = namespaceHeadsPrefix + "main-weft"
++	tests := []struct {
++		name string
++		// hook is the receive hook the kill runs in.
++		hook string
++		// killedRef is the origin ref whose push is killed.
++		killedRef string
++		// hookExit is the hook's exit code after the kill; non-zero in a pre-receive hook declines the update.
++		hookExit int
++		// wantHubKept reports whether the clone must keep its hub.
++		wantHubKept bool
++		// wantErrorHas are substrings of the clone's error.
++		wantErrorHas []string
++		// wantNamespace is what origin's records namespace must hold afterwards.
++		wantNamespace []string
++	}{
++		{
++			name:         "BoardLanded",
++			hook:         "post-receive",
++			killedRef:    namespaceBoardRef,
++			wantErrorHas: []string{"the seed push of the board failed", "way forward: run the same clone again"},
++		},
++		{
++			name:         "RecordsBranchLanded",
++			hook:         "post-receive",
++			killedRef:    recordsRef,
++			wantErrorHas: []string{"the seed push of the records branch failed", "way forward: run the same clone again"},
++		},
++		{
++			name:        "BoardNotApplied",
++			hook:        "pre-receive",
++			killedRef:   namespaceBoardRef,
++			hookExit:    1,
++			wantHubKept: true,
++			wantErrorHas: []string{
++				"the seed push of the board ended without origin's answer",
++				"origin may hold " + namespaceBoardRef + " and " + recordsRef + ";",
++				"ls-remote origin " + namespaceBoardRef + " " + recordsRef + "`",
++			},
++			wantNamespace: []string{recordsRef},
++		},
++		{
++			name:        "RecordsBranchNotApplied",
++			hook:        "pre-receive",
++			killedRef:   recordsRef,
++			hookExit:    1,
++			wantHubKept: true,
++			wantErrorHas: []string{
++				"the seed push of the records branch ended without origin's answer",
++				"origin may hold " + recordsRef + ";",
++				"ls-remote origin " + recordsRef + "`",
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			bare := hubforge.CopyCodeBare(t, "")
++			hook := killPushClientHook(tt.killedRef, tt.hookExit)
++			if err := os.WriteFile(filepath.Join(bare, "hooks", tt.hook), []byte(hook), 0o755); err != nil {
++				t.Fatalf("write the %s hook: %v", tt.hook, err)
++			}
++			container := t.TempDir()
++
++			_, err := cloneSingleRepo(t, container, bare, "")
++			if err == nil {
++				t.Fatalf("clone whose push of %s was killed = nil error; want a failure", tt.killedRef)
++			}
++			for _, want := range tt.wantErrorHas {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("clone error = %q; want it to contain %q", err.Error(), want)
++				}
++			}
++			if !tt.wantHubKept {
++				requireEmptyDirectory(t, container)
++			} else if entries, readErr := os.ReadDir(container); readErr != nil || len(entries) != 1 {
++				t.Errorf("the container holds %v (read error %v); want the one kept hub", entries, readErr)
++			} else if kept := "the hub at " + filepath.Join(container, entries[0].Name()) + " is kept"; !strings.Contains(err.Error(), kept) {
++				t.Errorf("clone error = %q; want it to contain %q", err.Error(), kept)
++			}
++			if got := refLines(t, bare, "%(refname)", fabricengine.RecordsNamespaceRoot); !slices.Equal(got, tt.wantNamespace) {
++				t.Errorf("origin's records namespace = %v; want %v", got, tt.wantNamespace)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/destroy.go b/internal/fabricengine/destroy.go
+index 7501c462a..54353b515 100644
+--- a/internal/fabricengine/destroy.go
++++ b/internal/fabricengine/destroy.go
+@@ -1680,9 +1680,9 @@ var seedPushHook func(ref string)
+ // Containment and ownership prove the hub is the directory this clone created,
+ // and the ref must be the prime's records branch or the board branch, leased at a tip this seed knows.
+ // Dirtiness is not applicable, since an origin ref carries no checkout file, and force is never set.
+-// lease is the tip the push or restore is leased on.
+-// pushedRecordsTip is the tip the seed pushed, empty before it did.
+-func checkSeedPush(seed *cloneSeed, branch, lease, pushedRecordsTip string) error {
++// lease is the tip the push, restore or delete is leased on.
++// pushedTip is the tip the seed pushed to branch, empty before it did.
++func checkSeedPush(seed *cloneSeed, branch, lease, pushedTip string) error {
+ 	req := pathRequest{
+ 		what:      "push the --single-repo seed",
+ 		container: seed.container,
+@@ -1698,9 +1698,9 @@ func checkSeedPush(seed *cloneSeed, branch, lease, pushedRecordsTip string) erro
+ 	leaseKnown := false
+ 	switch branch {
+ 	case seed.recordsBranch:
+-		leaseKnown = lease == seed.observedTip || (pushedRecordsTip != "" && lease == pushedRecordsTip)
++		leaseKnown = lease == seed.observedTip || (pushedTip != "" && lease == pushedTip)
+ 	case OneRepositoryBoardBranch:
+-		leaseKnown = lease == ""
++		leaseKnown = lease == "" || (pushedTip != "" && lease == pushedTip)
+ 	}
+ 	if !leaseKnown {
+ 		return &destructiveRefusal{Check: CheckOwnership, What: req.what, Target: branch, Reason: fmt.Sprintf("%s is not a ref of this seed, or its lease %q is not a tip the seed knows", branch, lease)}
+@@ -1711,8 +1711,11 @@ func checkSeedPush(seed *cloneSeed, branch, lease, pushedRecordsTip string) erro
+ // pushCloneSeed pushes a --single-repo clone's records branch and then its board to origin's records namespace.
+ // The records branch is leased on the tip the precondition check observed, or on its absence.
+ // The board's branch goes last, leased on absence: it is the key by which a layout is detected, so it lands only whole.
+-// Once the board lands, the board branch takes its upstream, so its later pushes are default pushes.
++// Once the board lands, both branches take their upstreams, so their later pushes are default pushes.
+ // A failed push removes the hub, and a records push that had landed is first returned to what the check observed.
++// A push that ended without origin's answer may still land, so origin's ref is read before anything is rolled back.
++// A ref at the seed's tip is withdrawn first, a landed board before the records branch is restored.
++// A ref origin does not hold at that tip yet keeps the hub, with an error naming the refs origin may hold.
+ func pushCloneSeed(rec *Mutations, seed *cloneSeed) error {
+ 	ns := oneRepositoryNamespace()
+ 	records := gitrepo.New(seed.recordsPath)
+@@ -1749,35 +1752,124 @@ func pushCloneSeed(rec *Mutations, seed *cloneSeed) error {
+ 		seedPushHook(ns.Branch(seed.recordsBranch))
+ 	}
+ 	if err := records.UpdateRemoteBranchLeased(originRemoteName, seed.recordsBranch, recordsTip, seed.observedTip, ns); err != nil {
++		if seedPushOutcomeUnknown(err) {
++			restoreRecords := func() error { return restoreSeededRecordsBranch(seed, recordsTip) }
++			if keepErr := withdrawUnansweredSeedPush(seed, seed.recordsBranch, recordsTip, restoreRecords, err); keepErr != nil {
++				return keepErr
++			}
++		}
+ 		return fail(seedPushCause("records branch", false, err), "")
+ 	}
+ 	rec.AppendRef(KindRemoteBranchUpdated, originRemoteName+"/"+seed.recordsBranch, recordsTip)
+ 
+-	if err := checkSeedPush(seed, OneRepositoryBoardBranch, "", recordsTip); err != nil {
++	if err := checkSeedPush(seed, OneRepositoryBoardBranch, "", ""); err != nil {
+ 		return fail(err, recordsTip)
+ 	}
+ 	if seedPushHook != nil {
+ 		seedPushHook(ns.Branch(OneRepositoryBoardBranch))
+ 	}
+ 	if err := records.UpdateRemoteBranchLeased(originRemoteName, OneRepositoryBoardBranch, boardTip, "", ns); err != nil {
++		if seedPushOutcomeUnknown(err) {
++			deleteBoard := func() error { return deleteSeededBoard(seed, boardTip) }
++			if keepErr := withdrawUnansweredSeedPush(seed, OneRepositoryBoardBranch, boardTip, deleteBoard, err); keepErr != nil {
++				return keepErr
++			}
++		}
+ 		return fail(seedPushCause("board", true, err), recordsTip)
+ 	}
+ 	rec.AppendRef(KindRemoteBranchUpdated, originRemoteName+"/"+OneRepositoryBoardBranch, boardTip)
+ 
+-	upstream := [][2]string{
+-		{"branch." + OneRepositoryBoardBranch + ".remote", originRemoteName},
+-		{"branch." + OneRepositoryBoardBranch + ".merge", ns.Branch(OneRepositoryBoardBranch)},
+-	}
+-	for _, setting := range upstream {
+-		if _, err := gitexec.Run([]string{"config", setting[0], setting[1]}, seed.recordsPath); err != nil {
+-			return fmt.Errorf("set the upstream of the board branch after seeding origin: %w; "+
+-				"way forward: origin now holds the seeded hub, so run `lym fabric clone <url>` to join it, "+
+-				"or set branch.%s.remote and branch.%s.merge in the records store by hand", err, OneRepositoryBoardBranch, OneRepositoryBoardBranch)
++	for _, branch := range []string{OneRepositoryBoardBranch, seed.recordsBranch} {
++		upstream := [][2]string{
++			{"branch." + branch + ".remote", originRemoteName},
++			{"branch." + branch + ".merge", ns.Branch(branch)},
++		}
++		for _, setting := range upstream {
++			if _, err := gitexec.Run([]string{"config", setting[0], setting[1]}, seed.recordsPath); err != nil {
++				return fmt.Errorf("set the upstream of the branch %s after seeding origin: %w; "+
++					"way forward: origin now holds the seeded hub, so run `lym fabric clone <url>` to join it, "+
++					"or set branch.%s.remote and branch.%s.merge in the records store by hand", branch, err, branch, branch)
++			}
+ 		}
+ 	}
+ 	return nil
+ }
+ 
++// seedPushOutcomeUnknown reports whether a failed seed push may have landed on origin all the same.
++// A git killed before it exited, or one that exited printing no rejection line, leaves that open:
++// origin's receive-pack can apply the update after its client is gone.
++// A lost lease, a rejection, a stall origin never answered and a git that never ran each leave origin as it was.
++func seedPushOutcomeUnknown(cause error) bool {
++	if errors.Is(cause, gitrepo.ErrLeaseRejected) {
++		return false
++	}
++	var gitErr *gitexec.GitError
++	if !errors.As(cause, &gitErr) || gitErr.Stalled {
++		return false
++	}
++	if gitErr.ExitCode == -1 {
++		return true
++	}
++	return !strings.Contains(gitErr.Stderr, "[remote rejected]") && !strings.Contains(gitErr.Stderr, "! [rejected]")
++}
++
++// withdrawUnansweredSeedPush takes one seed push off origin again after it ended without origin's answer.
++// branch is the pushed branch, the board's or the prime's records branch.
++// pushedTip is the tip the seed pushed to it, and withdraw is the act that removes that tip from origin.
++// It returns nil once origin holds no pushedTip on branch, and the caller may then roll back and remove the hub.
++// A branch at a tip that is neither pushedTip nor the push's lease is another clone's, and is left alone.
++// It returns the error to stop on, with the hub kept, when origin's branch cannot be read or withdrawn.
++// It returns that error too while origin's branch still stands as the push was leased on it.
++// A push origin is still applying can land after the read.
++// Rolling back before it lands would leave origin a ref of this seed with no hub.
++// cause is the failed push's error.
++func withdrawUnansweredSeedPush(seed *cloneSeed, branch, pushedTip string, withdraw func() error, cause error) error {
++	ns := oneRepositoryNamespace()
++	ref := ns.Branch(branch)
++	what, leasedTip, mayHold := "records branch", seed.observedTip, []string{ref}
++	if branch == OneRepositoryBoardBranch {
++		// The board is pushed on a lease of absence once the records branch landed, so origin may hold both refs.
++		what, leasedTip, mayHold = "board", "", []string{ref, ns.Branch(seed.recordsBranch)}
++	}
++	keep := func(reason string) error {
++		return fmt.Errorf("the seed push of the %s ended without origin's answer: %w; %s, so the hub at %s is kept and origin may hold %s; "+
++			"way forward: list what origin holds with `git -C %s ls-remote origin %s`, delete each ref listed with `git -C %s push origin --delete <ref>`, "+
++			"then remove the hub at %s and run the same clone again",
++			what, cause, reason, seed.hubPath, strings.Join(mayHold, " and "), seed.recordsPath, strings.Join(mayHold, " "), seed.recordsPath, seed.hubPath)
++	}
++
++	listing, err := gitexec.Run([]string{"ls-remote", originRemoteName, ref}, seed.recordsPath)
++	if err != nil {
++		return keep(fmt.Sprintf("origin's %s could not be read afterwards (%v)", what, err))
++	}
++	listedTip := ""
++	for _, line := range strings.Split(listing, "\n") {
++		if sha, name, found := strings.Cut(strings.TrimSpace(line), "\t"); found && name == ref {
++			listedTip = sha
++		}
++	}
++	switch listedTip {
++	case pushedTip:
++		if err := withdraw(); err != nil {
++			return keep(fmt.Sprintf("origin took the %s, and withdrawing it failed (%v)", what, err))
++		}
++		return nil
++	case leasedTip:
++		return keep(fmt.Sprintf("origin does not hold the pushed %s yet, and may still take it", what))
++	default:
++		return nil
++	}
++}
++
++// deleteSeededBoard deletes the board the seed pushed from origin.
++// It is leased on pushedTip, so a board another push moved since stays as that push left it.
++func deleteSeededBoard(seed *cloneSeed, pushedTip string) error {
++	if err := checkSeedPush(seed, OneRepositoryBoardBranch, pushedTip, pushedTip); err != nil {
++		return err
++	}
++	return gitrepo.New(seed.recordsPath).DeleteRemoteBranchLeased(originRemoteName, OneRepositoryBoardBranch, pushedTip, oneRepositoryNamespace())
++}
++
+ // restoreSeededRecordsBranch returns the prime's records branch on origin to what the precondition check observed.
+ // It is leased on pushedTip, so a branch another push moved since stays as that push left it.
+ // It deletes the branch when origin held none, and moves it back to the observed tip otherwise.
+@@ -1795,10 +1887,18 @@ func restoreSeededRecordsBranch(seed *cloneSeed, pushedTip string) error {
+ 
+ // seedPushCause wraps the failure of one seed push with the way forward its kind calls for.
+ // what names the pushed ref in the message, and board is true for the board push.
++// The board push runs only once the records push landed.
+ // An origin that refuses the ref outright is told apart from a lost board lease.
++// A refused records push says the host takes no ref outside refs/heads/ and refs/tags/.
++// A refused board push says origin's own hooks or rules declined that one ref.
++// It cannot be the host's refusal, since origin took the records branch beside it.
+ // Every other cause, a lost records lease and a transient refusal included, is one a rerun of the same clone settles.
+ func seedPushCause(what string, board bool, cause error) error {
+ 	switch {
++	case board && seedRefusedByOrigin(cause):
++		boardRef := oneRepositoryNamespace().Branch(OneRepositoryBoardBranch)
++		return fmt.Errorf("origin took the records branch, but its hooks or rules declined the board ref %s: %w; "+
++			"way forward: fix or lift the rule that declines %s, then run the same clone again", boardRef, cause, boardRef)
+ 	case seedRefusedByOrigin(cause):
+ 		return fmt.Errorf("origin refused the seed push of the %s: %w; way forward: use a host that accepts refs outside refs/heads/ and refs/tags/, "+
+ 			"or make a two-repository hub with `lym fabric clone <records-url> <code-url>`", what, cause)
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 79030cc46..5d6827fc5 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -516,6 +516,9 @@
+ // A one-repository hub keeps its records store's branches and tags on the code store's origin, under `refs/lym/`.
+ // Its only spelling is the constants `RecordsNamespaceRoot`, `RecordsNamespaceHeads` and `RecordsNamespaceTags`.
+ // The layout is the records store's origin fetch refspec, read per repository by `originNamespaceAt(dir)`.
++// A store whose prime key, push refspecs or a branch's merge setting names the namespace is a records store.
++// Its layout read fails when no fetch refspec maps the namespace or when it has no origin.
++// The error names the refspecs to restore; read as the identity layout, its board would push to the code branches.
+ // Every push, listing and fetch of the records side names origin refs through that namespace.
+ // A board push whose board branch has no upstream is refused with no failed-push record.
+ // Pushing it unleased could replace another hub's board.
+@@ -525,8 +528,13 @@
+ // With `--single-repo` it also refuses one that already holds a board, the warp binding or the anchor marker.
+ // The one URL is the code repository, cloned as the prime, and the records store is a `git init` of its own.
+ // An origin holding the board is joined; one holding none is seeded, with no commit written to any code branch.
+-// `PushCloneBoard` pushes a seeded clone's records branch and board under leases,
+-// and a failed push removes the hub, as `AbandonSeededClone` does for a failure before it.
++// `PushCloneBoard` pushes a seeded clone's records branch and board under leases, then gives both their upstreams.
++// A failed push removes the hub, as `AbandonSeededClone` does for a failure before it.
++// A push of either ref that ended without origin's answer may still land,
++// so the ref on origin is read before any rollback.
++// A ref at the seed's tip is withdrawn first: the board is deleted,
++// and the records branch returns to the tip the clone's check observed.
++// A ref origin does not hold at that tip yet keeps the hub, with a way forward naming the refs origin may hold.
+ //
+ // **Platform verification: Linux only.**
+ // Fabric is written cross-platform,
+diff --git a/internal/fabricengine/recordslayout.go b/internal/fabricengine/recordslayout.go
+index 8822b49e2..b1ee46cb9 100644
+--- a/internal/fabricengine/recordslayout.go
++++ b/internal/fabricengine/recordslayout.go
+@@ -51,7 +51,11 @@ var namespaceAnswers sync.Map
+ // A dir that does not exist or holds no .git entry answers identity and is not cached,
+ // so a store created there later is read then.
+ // A repository with no origin remote answers identity, and a read of an existing store is cached for the process.
+-// A failed config read is returned as an error and not cached.
++// A store that holds the prime's records branch key or a push refspec into the namespace is a records store.
++// So is one with a branch whose merge setting names a ref under the namespace.
++// For such a store a missing namespaced fetch refspec or a missing origin is an error naming the way forward:
++// read as identity, its board would push to origin's code branches.
++// A failed config read is returned as an error, and no error is cached.
+ func originNamespaceAt(dir string) (gitrepo.RefNamespace, error) {
+ 	key := filepath.Clean(dir)
+ 	if cached, found := namespaceAnswers.Load(key); found {
+@@ -64,22 +68,74 @@ func originNamespaceAt(dir string) (gitrepo.RefNamespace, error) {
+ 	}
+ 
+ 	refspecs, err := gitrepo.New(key).RemoteFetchRefspecs(originRemoteName)
+-	if err != nil && !errors.Is(err, gitrepo.ErrRemoteNotConfigured) {
++	originMissing := errors.Is(err, gitrepo.ErrRemoteNotConfigured)
++	if err != nil && !originMissing {
+ 		return gitrepo.RefNamespace{}, fmt.Errorf("fabricengine: read the layout of the repository at %s: %w", key, err)
+ 	}
+ 
++	ns := oneRepositoryNamespace()
+ 	answer := gitrepo.RefNamespace{}
+ 	for _, refspec := range refspecs {
+ 		source, _, _ := strings.Cut(strings.TrimPrefix(refspec, "+"), ":")
+-		if strings.HasPrefix(source, RecordsNamespaceRoot+RecordsNamespaceHeads) {
+-			answer = oneRepositoryNamespace()
++		if strings.HasPrefix(source, ns.Heads) {
++			answer = ns
+ 			break
+ 		}
+ 	}
++	if answer == (gitrepo.RefNamespace{}) {
++		claim, err := recordsStoreClaim(key)
++		if err != nil {
++			return gitrepo.RefNamespace{}, fmt.Errorf("fabricengine: read the layout of the repository at %s: %w", key, err)
++		}
++		if claim != "" {
++			restoreFetch := fmt.Sprintf("`git -C %s config --replace-all remote.%s.fetch '+%s*:refs/remotes/%s/*'` and `git -C %s config --add remote.%s.fetch '+%s*:refs/tags/*'`",
++				key, originRemoteName, ns.Heads, originRemoteName, key, originRemoteName, ns.Tags)
++			if originMissing {
++				return gitrepo.RefNamespace{}, fmt.Errorf("fabricengine: the repository at %s holds %s, so it is a one-repository records store, but it has no %s remote; "+
++					"way forward: add it with `git -C %s remote add --no-tags %s <code-url>`, restore its fetch refspecs with %s, "+
++					"and its push refspecs `refs/heads/*:%s*` and `refs/tags/*:%s*`",
++					key, claim, originRemoteName, key, originRemoteName, restoreFetch, ns.Heads, ns.Tags)
++			}
++			return gitrepo.RefNamespace{}, fmt.Errorf("fabricengine: the repository at %s holds %s, so it is a one-repository records store, "+
++				"but no %s fetch refspec maps %s; way forward: restore its fetch refspecs with %s",
++				key, claim, originRemoteName, ns.Heads, restoreFetch)
++		}
++	}
+ 	namespaceAnswers.Store(key, answer)
+ 	return answer, nil
+ }
+ 
++// recordsStoreClaim names the setting that marks the repository at dir a one-repository records store.
++// It returns empty when no setting does.
++// A non-empty prime's records branch key marks it, and so does an origin push refspec into the records namespace.
++// A branch whose merge setting names a ref under that namespace marks it too.
++func recordsStoreClaim(dir string) (string, error) {
++	pushKey := "remote." + originRemoteName + ".push"
++	pattern := "^(" + strings.ReplaceAll(pushKey, ".", `\.`) + "|" + strings.ReplaceAll(strings.ToLower(PrimeRecordsBranchKey), ".", `\.`) + `|branch\..+\.merge)$`
++	listing, err := gitexec.Run([]string{"config", "--get-regexp", pattern}, dir)
++	var gitErr *gitexec.GitError
++	if errors.As(err, &gitErr) && gitErr.ExitCode == 1 {
++		// git config exits 1 when no key matches.
++		return "", nil
++	}
++	if err != nil {
++		return "", err
++	}
++	for _, line := range strings.Split(listing, "\n") {
++		name, value, _ := strings.Cut(strings.TrimSpace(line), " ")
++		value = strings.TrimSpace(value)
++		switch {
++		case name == strings.ToLower(PrimeRecordsBranchKey) && value != "":
++			return fmt.Sprintf("%s %s", PrimeRecordsBranchKey, value), nil
++		case name == pushKey && strings.Contains(value, RecordsNamespaceRoot):
++			return fmt.Sprintf("the push refspec %s", value), nil
++		case strings.HasPrefix(name, "branch.") && strings.HasSuffix(name, ".merge") && strings.HasPrefix(value, RecordsNamespaceRoot):
++			return fmt.Sprintf("the upstream setting %s %s", name, value), nil
++		}
++	}
++	return "", nil
++}
++
+ // OriginRefNamesAt returns the origin ref names of branch and of the tag under the layout of the repository at dir.
+ // A one-repository records store keeps both under its refs/lym/ namespace;
+ // any other repository keeps them under refs/heads/ and refs/tags/.
+diff --git a/internal/fabricengine/recordslayout_integration_test.go b/internal/fabricengine/recordslayout_integration_test.go
+index 575095943..1938e418e 100644
+--- a/internal/fabricengine/recordslayout_integration_test.go
++++ b/internal/fabricengine/recordslayout_integration_test.go
+@@ -1,5 +1,6 @@
+ // recordslayout_integration_test.go covers originNamespaceAt against real repositories:
+-// the namespace it reads from the origin fetch refspecs, its quiet answer for a missing store, and its cache.
++// the namespace it reads from the origin fetch refspecs, its quiet answer for a missing store, its cache,
++// and its error for a records store whose origin config no longer maps the namespace.
+ // It is an internal-package test because the read and its process-wide cache are unexported.
+ 
+ package fabricengine
+@@ -8,6 +9,7 @@ import (
+ 	"bytes"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+@@ -95,6 +97,57 @@ func TestOriginNamespaceAt(t *testing.T) {
+ 		requireNamespace(t, dir, identity)
+ 	})
+ 
++	t.Run("a records store without its namespaced fetch refspec or its origin is an error", func(t *testing.T) {
++		tests := []struct {
++			name string
++			// spoil faults the store's config and leaves a setting that marks it a records store.
++			spoil func(t *testing.T, dir string)
++			// wantErrorHas is the way forward the error must name.
++			wantErrorHas string
++		}{
++			{
++				name:         "FetchRefspecUnset",
++				spoil:        func(t *testing.T, dir string) { gitkit.Git(t, dir, "config", "--unset-all", "remote.origin.fetch") },
++				wantErrorHas: "config --replace-all remote.origin.fetch '+refs/lym/heads/*:refs/remotes/origin/*'",
++			},
++			{
++				name: "CodeFetchRefspec",
++				spoil: func(t *testing.T, dir string) {
++					gitkit.Git(t, dir, "config", "--replace-all", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*")
++				},
++				wantErrorHas: "config --replace-all remote.origin.fetch '+refs/lym/heads/*:refs/remotes/origin/*'",
++			},
++			{
++				name:         "OriginRemoved",
++				spoil:        func(t *testing.T, dir string) { gitkit.Git(t, dir, "remote", "remove", "origin") },
++				wantErrorHas: "remote add --no-tags origin <code-url>",
++			},
++			{
++				name: "OnlyABranchMergeSettingLeft",
++				spoil: func(t *testing.T, dir string) {
++					gitkit.Git(t, dir, "config", "--replace-all", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*")
++					gitkit.Git(t, dir, "config", "--unset", PrimeRecordsBranchKey)
++					gitkit.Git(t, dir, "config", "branch.main.merge", "refs/lym/heads/main")
++				},
++				wantErrorHas: "holds the upstream setting branch.main.merge refs/lym/heads/main, so it is a one-repository records store, " +
++					"but no origin fetch refspec maps refs/lym/heads/; way forward: restore its fetch refspecs with ",
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				dir := filepath.Join(t.TempDir(), "records")
++				newLayoutStore(t, dir, bare, true)
++				gitkit.Git(t, dir, "config", PrimeRecordsBranchKey, "main-weft")
++				tt.spoil(t, dir)
++
++				got, err := originNamespaceAt(dir)
++				if err == nil || !strings.Contains(err.Error(), tt.wantErrorHas) {
++					t.Errorf("originNamespaceAt(%s) = (%+v, %v); want an error naming %q", dir, got, err, tt.wantErrorHas)
++				}
++			})
++		}
++	})
++
+ 	t.Run("a failed read is an error and is not cached", func(t *testing.T) {
+ 		dir := filepath.Join(t.TempDir(), "broken")
+ 		if err := os.MkdirAll(dir, 0o755); err != nil {
+diff --git a/tools/sandbox/SANDBOX-FABRIC-SUITE.md b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+index c400a51ba..8156c9619 100644
+--- a/tools/sandbox/SANDBOX-FABRIC-SUITE.md
++++ b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+@@ -914,6 +914,42 @@ The real-provider drive between them stays a manual exercise by design.
+ 
+ ---
+ 
++### F23 -- One-repository seed and records-store faults (`clone --single-repo`, `cleanup`, `board upsert`)
++
++**Covers:** fabric
++
++**Goal:** "Confirm a `--single-repo` seed leaves origin either whole or empty,
++and that a faulted records store fails closed instead of being read as a two-repository hub."
++
++**Watch:** Seed a fresh one-repository hub from a local bare with `lym fabric clone --single-repo <bare>`.
++On the records store's prime records branch, `git rev-parse --symbolic-full-name <branch>@{u}` must answer `refs/remotes/origin/<branch>`,
++and `git status -sb` must show its ahead count against origin.
++
++Seed a second bare whose `pre-receive` declines `refs/lym/heads/main` only.
++The clone must fail naming origin's hooks or rules declining `refs/lym/heads/main`, never a host that refuses refs outside `refs/heads/`,
++and `git ls-remote <bare>` must list nothing under `refs/lym/`.
++Seed a third bare whose `post-receive` SIGKILLs the client `git push` once `refs/lym/heads/main` is updated.
++The clone must fail with the rerun way forward, leave no hub, and leave nothing under `refs/lym/` on origin.
++Seed a fourth bare whose `post-receive` kills the client the same way once the prime's records ref `refs/lym/heads/<branch>` is updated.
++The outcome must be the same: the rerun way forward, no hub, and nothing under `refs/lym/`.
++Seed a fifth bare whose `pre-receive` SIGKILLs the client `git push` on `refs/lym/heads/main` and then exits non-zero, so origin never takes the board.
++The clone must fail naming `refs/lym/heads/main` and the prime's records ref, keep the hub, and leave the records ref on origin.
++The `git ls-remote` and `git push origin --delete` commands its way forward names must then leave nothing under `refs/lym/`.
++
++On the first hub, run each fault below in the records store, restoring its config between rows, then run `lym fabric cleanup --remote`:
++`remote.origin.fetch` unset; `remote.origin.fetch` set to `+refs/heads/*:refs/remotes/origin/*`; the `origin` remote removed;
++`remote.origin.fetch` set to that code refspec with both `remote.origin.push` values and `lym.primeRecordsBranch` removed,
++so that `branch.main.merge refs/lym/heads/main` is the one setting left that names `refs/lym/`;
++`lym.primeRecordsBranch` naming a branch that does not exist, with the prime pair checked out on another branch;
++`lym.primeRecordsBranch` set to `main`, the board's branch, with the prime pair checked out on another branch.
++Each must refuse with `ok: false`, name the setting at fault and give the `git -C <store> config` or `git remote add` way forward.
++With `remote.origin.fetch` unset, run `lym board upsert` on a new slug: origin's `refs/heads/main` must not move,
++and the board's push must not reach any ref under plain `refs/heads/`.
++
++**Verdict:** `OK` / `WARN` / `FAIL`
++
++---
++
+ ## Session log format
+ 
+ After running all scenarios, record a short session summary:
+@@ -944,6 +980,7 @@ F19: <OK|WARN|FAIL> -- <one-line note if not OK>
+ F20: <OK|WARN|FAIL> -- <one-line note if not OK>
+ F21: <OK|WARN|FAIL> -- <one-line note if not OK>
+ F22: <OK|WARN|FAIL> -- <one-line note if not OK>
++F23: <OK|WARN|FAIL> -- <one-line note if not OK>
+ 
+ sandbox-report.json written: <count of WARN/FAIL items>
+ ```
