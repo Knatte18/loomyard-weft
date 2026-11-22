@@ -100,7 +100,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | starting · Seed-IDE | neve | 1h<br>0m | orch, drift, landing, dobby, batten, pawl, config |
+| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | starting · Open-IDE | neve | 1h<br>0m | orch, drift, landing, dobby, batten, pawl, config |
 
 #### Ready (0)
 
@@ -124,7 +124,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | 8m<br>8m | claude, gate, config, orch |
-| B2 |  | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | 3m<br>3m | fabric, batten, dobby |
+| B2 |  | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | 4m<br>4m | fabric, batten, dobby |
 
 #### Features (2)
 
