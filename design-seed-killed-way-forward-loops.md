@@ -1,6 +1,6 @@
 # A killed seed leaves board sync naming a false, looping way forward
 
-`seed-killed-way-forward-loops` · Task · bug, fabric · running · Preflight
+`seed-killed-way-forward-loops` · Task · bug, fabric · running · Record-Write
 
 Depends on: [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
 
