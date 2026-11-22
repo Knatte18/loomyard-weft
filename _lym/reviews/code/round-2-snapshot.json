@@ -15,5 +15,6 @@
       "title": "The operator can name the campaign's focus",
       "digest": "c74e0ef55ad29dd3c7cca51af39d8d9564f32764b3dbf95a9a50565f0a2fff6d"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
