@@ -2,6 +2,12 @@ round: 2
 fan: ""
 fix_fan: fix-code
 fans_recorded: true
+fix_lenses:
+    - fix-code-correctness
+    - fix-consistency
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
 review:
     engine: claude
     model: opus
@@ -16,6 +22,16 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-11-22T17:24:25Z
+    end: 2026-11-22T18:42:39.021945224+01:00
+    wall_seconds: 1094.021945224
+    tokens_known: true
+    fresh_tokens: 319488
+    cache_read_tokens: 8674094
 attempt: "2"
 assist:
     engine: codex
