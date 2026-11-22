@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "963dbc3d74532db236e5278abcb9c6ec52299727",
+  "added_decisions": [
+    {
+      "title": "No test seam: the change deletes and rewrites layout tests only, with no production defect for a test to reach",
+      "digest": "1760900fa562467fd0c56c4d816b7d307137beeae6ec28955308d1dd1e12ecb0"
+    }
+  ]
+}
