@@ -13,4 +13,8 @@ Measured from the `batten: <row> -> running` commits on the records branches (`g
 ## Decision (operator, 2026-11-22)
 
 A run pushes nothing to origin before it starts: the start rows from Seed-Child to Run-Shed act without a records push.
-The design settles which later transitions a takeover needs pushed before the act.
+
+## Scope
+
+Only the start rows from Seed-Child to Run-Shed stop pushing; every later transition keeps its push.
+Discussion checks that a takeover of a run whose start rows were not pushed redoes those rows and does not break.
