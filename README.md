@@ -34,7 +34,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs | Describe | neve | 7m<br>7m | darn, gate |
+| T6 | **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs | PR-Review | neve | 7m<br>7m | darn, gate |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Plan-Burler-Fix | neve | 7h<br>6h | orch, landing, loom, pawl, drift |
 
 ### Layer A (3)
@@ -55,7 +55,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 42m<br>42m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 43m<br>42m | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
