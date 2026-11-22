@@ -1,6 +1,6 @@
 # A stale gate key refuses the orch launch
 
-`orch-launch-refused-by-gate-key` · Task · bug, claude, gate, config, orch · running · Code-Bouncer
+`orch-launch-refused-by-gate-key` · Task · bug, claude, gate, config, orch · running · Code-Burler-Review
 
 ## What was seen (2026-11-22)
 
