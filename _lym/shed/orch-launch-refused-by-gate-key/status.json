@@ -1,13 +1,13 @@
 {
   "current_producer": "Code-Burler-Fix",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Code-Burler-Fix interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step orch-launch-refused-by-gate-key --until-stop",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Fix",
     "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
-    "wait": ""
+    "wait": "shedverbs: step Code-Burler-Fix interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step orch-launch-refused-by-gate-key --until-stop"
   },
   "history": [
     {
