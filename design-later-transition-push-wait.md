@@ -1,8 +1,10 @@
 # Later run transitions still wait for a records push to origin
 
-`later-transition-push-wait` · Note · sketch, batten, fabric
+`later-transition-push-wait` · Task · sketch, batten, fabric
 
 Decision record: [Sketch](decision-later-transition-push-wait.md)
+
+Depends on: [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md), [`orch-autonomy-mode`](design-orch-autonomy-mode.md)
 
 ## What was seen
 
