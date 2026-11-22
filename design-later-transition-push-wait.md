@@ -1,6 +1,6 @@
 # Later run transitions still wait for a records push to origin
 
-`later-transition-push-wait` · Task · enhancement, batten, fabric · running · Discussion-Burler-Review
+`later-transition-push-wait` · Task · enhancement, batten, fabric · running · Discussion-Burler-Fix
 
 ## What was seen
 
