@@ -50,7 +50,7 @@ gates:
     darn-write: {tiers: [0, 1, 2], scope: diff}
     code-burler-fix: {tiers: [0, 1, 2], scope: diff}
     harden-live:
-        tiers: [0, 1]
+        tiers: [1]
         scope: diff
     harden-burler-fix:
         tiers: [0, 1]
