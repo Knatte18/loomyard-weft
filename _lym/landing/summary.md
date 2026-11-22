@@ -1,40 +1,42 @@
-# A board with no upstream reads origin before naming its way forward
+# fabricengine: name a true way forward after a killed one-repository seed
 
-A `--single-repo` clone sets the board's and the records branch's upstreams only after both seed pushes land.
-A clone killed between the last push and those settings leaves origin holding the whole seed and a local board with no upstream.
-`refuseUnseededBoard` (`internal/fabricengine/pushclassified.go`) inferred "never seeded onto origin" from the missing upstream alone and named a `--reset` clone.
-A `--single-repo` clone onto an origin that already holds a board is refused, so that way forward looped.
+A `--single-repo` clone killed with `kill -9` after its seed push leaves origin holding the whole seed.
+`lym board sync` then refused with "it was never seeded onto origin" and named `lym fabric clone --single-repo ... --reset`.
+The sentence is false there, and a one-URL clone onto an origin that already holds a namespaced board is refused, so the advice could loop.
 
 ## What changes
 
-`refuseUnseededBoard` now reads origin's board ref with one `ls-remote` before it refuses, and names the way forward origin's state calls for:
+`refuseUnseededBoard` in `internal/fabricengine/pushclassified.go` now fetches and reads origin's board before it words the refusal.
+The refusal is still returned with no failed-push record, so nothing retries it.
 
-- **Origin holds no board:** the board was never seeded; the way forward stays the `--reset` clone.
-- **Origin holds this board's tip or an ancestor of it:** the seed landed; the way forward names the four `git config` commands that set the board's and the prime records branch's `branch.<b>.remote` and `branch.<b>.merge`, then a rerun.
-- **Origin holds another board:** another clone seeded origin; the way forward is to remove this hub and join with `lym fabric clone <url>` without `--single-repo`.
-- **Origin cannot be read:** the refusal says so and asks for a rerun once origin answers.
+- Origin holds no board under the records namespace: the board was never seeded, and the way forward stays the `--reset` clone.
+- Origin holds a board that shares history with this one: the seed landed and its clone stopped before setting the upstreams.
+  The refusal prints the `git config branch.<name>.remote` and `.merge` commands for the board and the prime's records branch.
+- Origin holds a board with no common history, or this board holds no commits: another clone seeded origin.
+  The way forward is removing the hub and joining with `lym fabric clone <url>` without `--single-repo`.
+- Origin or the local records store cannot be read, or origin's fetch fails: the refusal says so and names a rerun once it answers.
 
-The refusal still writes no failed-push record and pushes nothing.
-
-A seed push whose client died before origin answered, and which origin had applied, is withdrawn as before.
-Its error now says so: for the records branch, that origin took it and the seed withdrew it;
-for the board, that origin took the records branch and the board, the seed deleted the board and returns the records branch.
-`withdrawUnansweredSeedPush` returns whether it withdrew a ref so `pushCloneSeed` can word the cause.
+`pushCloneSeed` and `withdrawUnansweredSeedPush` in `internal/fabricengine/destroy.go` now say what origin took and what the seed withdrew.
+The records-branch withdrawal after an unanswered push, a deleted board, and a restored records branch each appear in the failure, matching the declined-board message.
+`withdrawUnansweredSeedPush` returns a `withdrawn` flag for this.
+An unanswered board push that left no pushed tip means another clone's board stands, and the failure names a join and leaves that board alone.
+`doc.go` documents both behaviours.
 
 ## Design decisions
 
-- The seed-landed case accepts origin's tip as an ancestor of the local board, not only equal to it, since board commits made locally after the killed seed leave origin behind without making it another hub's board.
-- The way forward is a set of `git config` commands rather than fabric setting the upstreams itself: the board entry asks for a truthful message, and adopting origin's refs silently would be a new behavior.
-- The `--reset` path was not driven by hand; the second hardener campaign (`harden-fabric-single-repo-verbs`) drives these verbs.
+- The comparison uses a fresh fetch and `git merge-base`, so a commit another clone pushed after the seed still counts as shared history.
+- A board that shares no history is treated as another hub's and never as a candidate for `--reset`, which would replace it.
+- The upstream-settings way forward is printed as commands rather than applied, since the refusal path writes nothing.
 
-## Tests
+## To check by hand
 
-- `TestCloneSingleRepo_FailedSeedPushLeavesNothing/BoardWithNoUpstreamIsNeverPushed` replaces the single never-seeded subtest with a table over the origin states no board, this hub's seed and another board.
-  Each row asserts the message, that origin's records namespace is unchanged and that no failed-push record is written.
-  The seed row then sets the named upstreams and asserts the push succeeds, which reaches the way forward.
-- `TestCloneSingleRepo_SeedPushKilledBeforeOriginsAnswer`'s two landed rows assert the withdrawal wording.
+- `lym fabric clone --single-repo ... --reset` and the printed `git config` commands were not driven against a killed seed.
+- A board origin holds that descends from this one is worded as this hub's own board, though a clone that pushed after the seed could have made it (`descendant-origin-board-called-another-clones`).
+- The test expectations spell owned branch names as literals instead of deriving them (`owned-branch-literals-in-test-expectations`).
+- Some refusal branches may lack a test row (`refusal-branches-without-test-rows`).
+- A failed unwithdrawn board push may still name a rerun that loops (`unwithdrawn-board-failure-names-looping-rerun`).
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** fabric
+**Blast radius:** fabricengine
