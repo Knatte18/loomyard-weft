@@ -1,6 +1,6 @@
 # A stale records tracking ref blocks a cancelled slug from running again
 
-`stale-records-ref-blocks-rerun` · Task · bug, fabric, batten, dobby · running · PR-Review
+`stale-records-ref-blocks-rerun` · Task · bug, fabric, batten, dobby · landing · Finalize
 
 ## What was seen (2026-11-22)
 
