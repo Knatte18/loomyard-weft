@@ -299,7 +299,7 @@
       "isolated": false,
       "brief": "The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs",
       "body": "## What was seen (2026-11-22)\n\nRound 1 of `harden-fabricengine` built a one-repository sandbox hub with `lym harden sandbox new --single-repo` and drove it live.\nEvery mutating `lym fabric` verb was refused from its round agent: add, push, pull, sync, reconcile, checkout, remove, clone and cleanup --apply.\nThe refusal is `sandboxedRoleRefusal` in `internal/fabriccli/roleguard.go`, which reads only the strand name, so it also refuses verbs run inside the round's own sandbox hub.\nSeven of twelve charter items ended as could not verify: the join, the refusals, two clones, the remote delete, pair crash and rebirth, URL variations and every pair verb.\n\n## Idea\n\nLet a hardener round's agent run the mutating fabric verbs in a hub under its own sandbox root, `\u003cworktree\u003e/.lym/harden-sandbox`, and keep the refusal everywhere else.\nThe guard then checks the hub the verb resolves, not only the strand name, so a verb aimed at the real hub stays refused.\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-22T10:03:27Z",
       "revised": "2026-11-22T11:28:18Z",
       "run_settings": {
@@ -361,7 +361,7 @@
       "isolated": false,
       "brief": "hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round.",
       "body": "## What was seen (harden-fabricengine, 2026-11-22)\n\nThe seed pass wrote `hardener.packages` as worktree-relative directories without `./`, such as `internal/fabricengine`.\n`hardenLiveArgs` (`internal/loomcli/hardenwiring.go`) appends them verbatim to `lym gate test`, so go reads them as standard-library import paths:\n`package internal/fabricengine is not in std`, then `[setup failed]` for each package.\nThe `harden-live` check after every fix round was red before any test ran, and the fixer looped on a gate no fix could clear.\nThe orch unblocked the run by rewriting the local layer with `./` prefixes.\n\n## Fix\n\n`hardenLiveArgs` passes each package as a directory path go reads as one: prefix `./` to a relative path that lacks it.\n`CheckCampaign` already reads the packages as directories under the worktree root, so both forms stay valid in config.\nA test pins that a bare `internal/x` reaches `gate test` as `./internal/x`.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Await",
       "created": "2026-11-22T10:25:21Z",
       "revised": "2026-11-22T11:28:20Z",
       "run_settings": {
