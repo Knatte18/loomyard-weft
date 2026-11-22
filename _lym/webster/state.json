@@ -529,6 +529,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a8b2865944dd6caea.jsonl"
       ]
     },
+    "13": {
+      "slug": "pr-continue-autonomy",
+      "cards": [
+        "13-pr-continue-autonomy",
+        "14-goto-clears-pr-review",
+        "15-beam-await-drained"
+      ],
+      "cardHashes": {
+        "13-pr-continue-autonomy": "248ffbc2f64d6944e3c9efe4b1daa7b8864f15306db7f7b3cc3be0413434bbc2",
+        "14-goto-clears-pr-review": "dc843ccd8486ec6ab57da1502648471dd609a0263cfd8203d60aadc3fc6307eb",
+        "15-beam-await-drained": "dcde92a84e2e19b6a263320a49463df4cb7e2716bc0cd50d45c2ac24e76e6f72"
+      },
+      "startSha": "289a5e0fea5b043ac709748f43a0003119ac41b5",
+      "kind": "fork",
+      "spawnedAt": "2026-11-22T19:46:08Z",
+      "sessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "6": {
       "slug": "drift-autonomy",
       "cards": [
@@ -579,7 +599,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "8bef3fde2058a415283720270d09e363",
   "masterSessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
   "masterEngine": "claude",
