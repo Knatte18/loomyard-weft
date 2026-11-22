@@ -1,12 +1,11 @@
 {
-  "current_producer": "Harden-Burler-Review",
+  "current_producer": "Harden-Burler-Fix",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Burler-Review",
-    "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
+    "now": "Harden-Burler-Fix",
+    "last": "Harden-Burler-Review → bounced to Harden-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -195,6 +194,31 @@
       "at": "2026-11-22T10:26:28Z",
       "started_at": "2026-11-22T10:25:20Z",
       "routed_to": "Harden-Burler-Review"
+    },
+    {
+      "producer": "Harden-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabricengine/_lym/reviews/harden/round-2-review.md",
+      "at": "2026-11-22T11:32:58Z",
+      "started_at": "2026-11-22T10:51:24Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-22T11:32:56.891044746Z",
+          "end": "2026-11-22T11:32:56.892561812Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-22T11:32:57.07079182Z",
+          "end": "2026-11-22T11:32:57.0714288Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Harden-Burler-Fix",
+      "by": "shed"
     }
   ],
   "product": {
