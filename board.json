@@ -359,7 +359,7 @@
       "isolated": false,
       "brief": "The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate",
       "body": "## Seen\n\n`darn-slowdown-measure` (`docs/research/darn-slowdown-measure.md`) found that each verify gate spends about 75 to 105 s after its tests:\nthe reach, redundancy and mutation reports and the red-first step run one after another once the tiers finish.\nOver a darn's verify gates that is 4 to 7 % of a 45 min run.\n\n## Goal\n\nRun the three reports concurrently with the tier 2 tests, or only on the last verify gate before a handoff, whichever the code supports cleanly; keep red-first where it is.\n\n## Bounds\n\nTime one verify gate of the same diff before and after the change, once each, and state both wall times in the change description.\n",
-      "status": "starting · Open-IDE",
+      "status": "running · Preflight",
       "created": "2026-11-22T19:04:24Z",
       "revised": "2026-11-22T19:16:09Z",
       "run_settings": {
