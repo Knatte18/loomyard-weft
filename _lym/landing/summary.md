@@ -1,32 +1,37 @@
 # Let hardener rounds run fabric verbs in their own sandbox hubs
 
-The fabric command's sandboxed-role guard refused every mutating `lym fabric` verb to a task session's strand, judged on the strand name alone.
-A hardener round drives its throwaway hubs from such a strand, so the guard also refused add, push, pull, sync, reconcile, checkout, remove, clone and cleanup `--apply` inside the round's own sandbox hub.
-Round 1 of `harden-fabricengine` left seven of its twelve charter items unverified for that reason.
+The task-session guard in `internal/fabriccli/roleguard.go` refused every mutating `lym fabric` verb by strand name alone.
+A hardener round that built a sandbox hub with `lym harden sandbox new` was refused add, push, pull, sync, reconcile, checkout, remove, clone and `cleanup --apply` inside that hub.
+Seven of twelve charter items in `harden-fabricengine` round 1 ended as could not verify.
 
-## What changes
-
-- `sandboxedRoleRefusal` (`internal/fabriccli/roleguard.go`) now also passes a verb whose directory lies at or under the sandbox root of the strand's own worktree, `<worktree>/.lym/harden-sandbox`.
-  The directory is the cwd the invocation carries, and for `clone` the destination its `--into` names.
-- `inOwnSandboxRoot` resolves symlinks in that directory, takes the nearest enclosing `.lym/harden-sandbox`, and requires the directory holding that `.lym` to resolve through `lymcwd.ResolveWorktree` as a worktree root named the strand's slug.
-  A verb aimed at the real hub, at another worktree's sandbox root, or at a lookalike directory that is no worktree stays refused.
-- The refusal text now names the sandbox root as the place a task session may run the verb.
-- `clone`'s `--into` resolution moves into `cloneDestination`, which both the clone verb and the guard call, so the guard judges the directory the clone writes to.
-- The package doc of `internal/fabriccli` gains a section on the guard, and the hardener review stencil tells the round agent where the verbs run.
+The guard now also judges the directory the verb acts in.
+A sandboxed role passes every verb when that directory lies at or under `.lym/harden-sandbox` of the role's own worktree.
+The same verb aimed at the real hub, or at another worktree's sandbox root, stays refused.
+The refusal text now names the sandbox root.
 
 ## Design decisions
 
-- The pass is open to every task role, not only the hardener round roles: a sandbox root exists only in a hardener run's worktree, and the guard stops mistaken calls, not a session that builds a sandbox root of its own to slip past it.
-- The sandbox root is joined from the `lymdirs` constants inside `fabriccli` rather than imported from `hardenshed.SandboxRoot`, which would pull the campaign engine's dependencies into the fabric command; `pairteardown` already joins the same constants.
+- **Target directory.**
+  It is the cwd carried on the command context, and for `clone` the destination `--into` names.
+  `clone.go` now computes that destination in `cloneDestination`, so the guard and the verb read one definition.
+- **Own worktree.**
+  The strand name's slug and shortname must match the worktree that holds the sandbox root and the hub whose recorded shortname it is.
+- **Links resolve first.**
+  The target is resolved through the symlinks of its deepest existing ancestor, so a link counts where it points and a clone destination not yet made counts where it would be made.
+  A dangling link on the way is refused.
+- **Records sibling.**
+  A worktree's `.lym` links into its records sibling, so a resolved path is mapped back to the worktree that owns that sibling before the checks above.
+- **Limit.**
+  The guard still stops a mistaken call and not a session that rewrites the strand variable or builds a sandbox root of its own; the comment on `sandboxedRoleRefusal` says so.
+- `doc.go`, `fabric.go` and the harden review stencil `harden-rubric-review.md` state the exception.
 
-## Tests
+## Check by hand
 
-`TestSandboxedRoleGuard` gains a tier-0 subtest that runs each mutating form from four directories: the strand's own sandbox hub, passing; and another worktree's sandbox hub, a non-worktree directory's sandbox root, and the strand's own worktree outside its sandbox root, each refused.
-Two rows pin `clone --into`: into the own sandbox root from the worktree passes, and out of the sandbox into another directory is refused.
-The worktrees are fake `.git` directories written without git, and every passing verb stops at its own worktree resolution, so the subtest spawns nothing.
-On the merge base every passing row fails, since the old guard refused them all.
+- The sandbox-root judgment through the records-sibling link (`inOwnSandboxRoot` and `worktreeOwningRecordsDir` in `roleguard.go`) was flagged as a blocking design finding and fixed in follow-up commits.
+  Review that path mapping, and that a verb under another worktree's sandbox root is refused.
+- A live run of a hardener round that drives the mutating verbs in a `lym harden sandbox new` hub was not done.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** fabric
+**Blast radius:** fabriccli
