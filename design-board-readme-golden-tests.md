@@ -1,16 +1,19 @@
 # The board README renderer carries tests for pure cosmetics
 
-`board-readme-golden-tests` · Note · bug
+`board-readme-golden-tests` · Note · bug, board
 
-The operator's call: a file that only renders the board's cosmetic markdown needs no tests.
-Tests there are clutter.
+## Decision (operator, 2026-11-22)
 
-Seen in `readme-declutter`: the format change touched about 200 lines of `internal/boardengine/render.go`,
-and about 480 lines of `internal/boardengine/render_test.go`.
-The goldens in `TestRenderReadmeGolden` spell out every rendered README byte by byte as Go strings,
-so every format change is a hand rewrite of the tests.
+A function that only renders the board's markdown for reading carries no tests: a wrong rendering breaks no production code, and a test that pins its layout only makes every format change a rewrite.
+Delete the README layout goldens; do not move them to testdata files.
+
+## What was seen
+
+In `readme-declutter` the format change touched about 200 lines of `internal/boardengine/render.go` and about 480 lines of `internal/boardengine/render_test.go`.
+The goldens in `TestRenderReadmeGolden` spell out every rendered README byte as Go strings.
 `view_test.go` also parses the README's headings, so it breaks on a format change too.
 
-Left for whoever takes this: some tests in the same files pin behaviour that is not cosmetic,
-such as `RenderToDisk` rewriting a file in place and its manifest cleanup,
-and `board-data.js` placing each entry where the README shows it.
+## What stays
+
+Tests of behaviour other code relies on stay, without pinning the layout:
+`RenderToDisk` rewriting a file in place and its manifest cleanup, and `board-data.js` holding each entry, which `board.html` reads.

@@ -386,15 +386,16 @@
       "title": "The board README renderer carries tests for pure cosmetics",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "board"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Golden tests pin every byte of the rendered README, so a format change rewrites the tests; a cosmetic renderer needs none",
-      "body": "The operator's call: a file that only renders the board's cosmetic markdown needs no tests.\nTests there are clutter.\n\nSeen in `readme-declutter`: the format change touched about 200 lines of `internal/boardengine/render.go`,\nand about 480 lines of `internal/boardengine/render_test.go`.\nThe goldens in `TestRenderReadmeGolden` spell out every rendered README byte by byte as Go strings,\nso every format change is a hand rewrite of the tests.\n`view_test.go` also parses the README's headings, so it breaks on a format change too.\n\nLeft for whoever takes this: some tests in the same files pin behaviour that is not cosmetic,\nsuch as `RenderToDisk` rewriting a file in place and its manifest cleanup,\nand `board-data.js` placing each entry where the README shows it.\n",
+      "brief": "A renderer of board markdown carries no layout tests; delete the README goldens and keep only tests of behaviour other code relies on.",
+      "body": "## Decision (operator, 2026-11-22)\n\nA function that only renders the board's markdown for reading carries no tests: a wrong rendering breaks no production code, and a test that pins its layout only makes every format change a rewrite.\nDelete the README layout goldens; do not move them to testdata files.\n\n## What was seen\n\nIn `readme-declutter` the format change touched about 200 lines of `internal/boardengine/render.go` and about 480 lines of `internal/boardengine/render_test.go`.\nThe goldens in `TestRenderReadmeGolden` spell out every rendered README byte as Go strings.\n`view_test.go` also parses the README's headings, so it breaks on a format change too.\n\n## What stays\n\nTests of behaviour other code relies on stay, without pinning the layout:\n`RenderToDisk` rewriting a file in place and its manifest cleanup, and `board-data.js` holding each entry, which `board.html` reads.\n",
       "created": "2026-11-22T11:14:43Z",
-      "revised": "2026-11-22T11:14:43Z"
+      "revised": "2026-11-22T11:15:52Z"
     }
   ],
   "prime_owner": "neve",
