@@ -1,6 +1,6 @@
 # Find what costs Code-Burler-Review its extra minutes
 
-`code-review-cost-per-input` · Task · research, burler, lenses · landing · Finalize
+`code-review-cost-per-input` · Task · research, burler, lenses · done
 
 ## Seen
 
