@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-22 10:26 UTC; every age below is as of then.
+Rendered 2026-11-22 10:50 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -9,7 +9,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 <details open>
 <summary><strong><a href="project-borrowed-orchestrator-ideas.md">P2 Ideas borrowed from comparable agent orchestrators</a> (1)</strong></summary>
 
-[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 4d · Owner `neve`
+[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 5d · Owner `neve`
 
 ### Tasks (0)
 
@@ -29,7 +29,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>18h | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>19h | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -48,7 +48,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli","internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Harden-Burler-Review | neve | 15h<br>40m | fabric |
+| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli","internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | Harden-Burler-Review | neve | 15h<br>1h | fabric |
 
 #### Ready (0)
 
@@ -63,11 +63,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 </details>
 
 <details open>
-<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (11)</strong></summary>
+<summary><strong><a href="project-root.md">P0 Root: entries under no project</a> (12)</strong></summary>
 
 Owner `neve`
 
-### Tasks (4)
+### Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -77,15 +77,17 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | Discussion-Burler-Review | neve | 1h<br>36m | orch, drift, landing, dobby, batten, pawl, config |
-| T3 | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | darn · light | Code-Burler-Fix | neve | 43m<br>34m | claude, gate, config, orch |
-| T5 | **Board README: beam marker, no empty sections, no Notes level**<br>• Declutter the rendered board README in a sampler session | [`readme-declutter`](design-readme-declutter.md) | sampler | Sampler-Session | neve | 30m<br>29m | board |
+| T1 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge**<br>• Parent orch settles all halts of a project or beam; operator reached only for a severe halt or a merge-ready beam PR | [`orch-full-autonomy-mode`](design-orch-full-autonomy-mode.md) | motif | Discussion-Burler-Review | neve | 2h<br>1h | orch, drift, landing, dobby, batten, pawl, config |
+| T3 | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | darn · light | Code-Burler-Fix | neve | 1h<br>58m | claude, gate, config, orch |
+| T5 | **Board README: beam marker, no empty sections, no Notes level**<br>• Declutter the rendered board README in a sampler session | [`readme-declutter`](design-readme-declutter.md) | sampler | Sampler-Session | neve | 54m<br>53m | board |
 
-#### Ready (0)
+#### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | **lym report convergence stays within bounded memory**<br>• convergence grew to 9.5 GB in two minutes over a four-week window and froze the machine.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`convergence-report-memory`](design-convergence-report-memory.md) | darn · light |  | 2m<br>0m | report |
 
 #### Layer A (1)
 
@@ -93,7 +95,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 39m<br>34m | fabric, batten, dobby |
+| T4 | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | darn · light | T2 | 1h<br>58m | fabric, batten, dobby |
 
 ### Notes (7)
 
@@ -110,9 +112,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Hardener rounds may run fabric verbs in their own sandbox hubs**<br>• The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs | [`harden-sandbox-fabric-verbs`](design-harden-sandbox-fabric-verbs.md) | 23m<br>23m | fabric, shed |
-| B2 |  | **Sampler session loads the language skills before it edits code**<br>• The sampler spec carries no language skills, so the sampler edits Go without scribe:golang-* and code-quality. | [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md) | 9m<br>9m | loom, shuttle |
-| B3 |  | **Hardener live check passes packages go can resolve**<br>• hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round. | [`harden-live-bare-package-paths`](design-harden-live-bare-package-paths.md) | 1m<br>1m | gate, loom |
+| B1 |  | **Hardener rounds may run fabric verbs in their own sandbox hubs**<br>• The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs | [`harden-sandbox-fabric-verbs`](design-harden-sandbox-fabric-verbs.md) | 47m<br>47m | fabric, shed |
+| B2 |  | **Sampler session loads the language skills before it edits code**<br>• The sampler spec carries no language skills, so the sampler edits Go without scribe:golang-* and code-quality. | [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md) | 33m<br>33m | loom, shuttle |
+| B3 |  | **Hardener live check passes packages go can resolve**<br>• hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round. | [`harden-live-bare-package-paths`](design-harden-live-bare-package-paths.md) | 25m<br>25m | gate, loom |
 
 #### Features (2)
 
