@@ -1,8 +1,8 @@
 # Card 16 — slack-hook-operator-filter
 
 **Create:**
-- `plan:internal/slackcli#hookActionUnmarked` -> `const hookActionUnmarked = "unmarked"`
-- `plan:internal/slackcli#operatorMarker` -> `const operatorMarker = "[operator]"`
+- `internal/slackcli#hookActionUnmarked`
+- `internal/slackcli#operatorMarker`
 
 **Edit:**
 - `internal/slackcli#slackCLI`

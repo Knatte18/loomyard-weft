@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/orchrole/role-autonomy.md`
-- `plan:contracts/orchrole#autonomy` -> `var autonomy []byte`
+- `contracts/orchrole#autonomy`
 
 **Edit:**
 - `contracts/orchrole#OnDemand`

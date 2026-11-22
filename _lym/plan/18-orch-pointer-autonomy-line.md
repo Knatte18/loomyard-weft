@@ -1,10 +1,10 @@
 # Card 18 — orch-pointer-autonomy-line
 
 **Create:**
-- `plan:internal/orchengine#WithLaunchFacts` -> `func WithLaunchFacts(p Paths, pointer string) string`
-- `plan:internal/orchengine#autonomyOnLine` -> `const autonomyOnLine = " Autonomy is on: settle every halt yourself and reach the operator only for a severe halt or a merge-ready beam, as role-autonomy.md beside your role says."`
-- `plan:internal/orchengine#autonomyOffLine` -> `const autonomyOffLine = " Autonomy is off."`
-- `plan:internal/orchengine#TestWithLaunchFacts` -> `func TestWithLaunchFacts(t *testing.T)`
+- `internal/orchengine#WithLaunchFacts`
+- `internal/orchengine#autonomyOnLine`
+- `internal/orchengine#autonomyOffLine`
+- `internal/orchengine#TestWithLaunchFacts`
 
 **Edit:**
 - `internal/orchengine#Paths`
