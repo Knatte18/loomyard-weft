@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-22 11:56 UTC; every age below is as of then.
+Rendered 2026-11-22 11:57 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -77,7 +77,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Orch remote control is off by default**<br>• lym turns on remote control for every orch it launches; it must stay off until the operator turns it on.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md) | darn · light | Code-Burler-Fix | neve | 34m<br>34m | orch, config |
+| T1 | **Orch remote control is off by default**<br>• lym turns on remote control for every orch it launches; it must stay off until the operator turns it on.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md) | darn · light | Code-Burler-Fix | neve | 35m<br>35m | orch, config |
 | T3 | **Per-task beam settings use one lookup from the worktree up**<br>• One lookup for per-task beam settings: the task worktree's own value, else its parent's up to the hub; pull_request and land_notice move onto it.<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md) | darn · solid | starting · Worktree-Create | neve | 1m<br>0m | dobby, config, board, landing |
 | T5 | **Board README: beam marker, no empty sections, no Notes level**<br>• Declutter the rendered board README in a sampler session | [`readme-declutter`](design-readme-declutter.md) | sampler | Sampler-Session | neve | 2h<br>2h | board |
 | T8 | **Hardener rounds may run fabric verbs in their own sandbox hubs**<br>• The task-session fabric guard refuses hardener rounds the verbs they must drive on sandbox hubs<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-sandbox-fabric-verbs`](design-harden-sandbox-fabric-verbs.md) | darn · light | Code-Burler-Review | neve | 1h<br>28m | fabric, shed |

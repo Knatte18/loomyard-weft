@@ -329,7 +329,8 @@ a `--set` write, an editor save, a reconcile, a hand-edited committed file or a 
 
 **Decision:** a task's value is set in its `run_settings` as `{"beam":{"autonomy":true}}` or `{"beam":{"autonomy":false}}`,
 and batten copies it into the task's worktree like every other setting, with no exception.
-The value that applies is found by this lookup, at call time:
+The value that applies is found at call time by the one lookup for per-task beam settings that task `per-task-settings-one-lookup` builds in `dobbyengine`, which lands first;
+this task adds `autonomy` to it and builds no lookup of its own. The lookup answers:
 
 1. When the worktree's own `beam.yaml` layers, local or worktree, set `autonomy`, that value applies.
 2. Otherwise the parent worktree's own layers are asked the same way, and so on up the worktree chain to the prime.
@@ -340,7 +341,7 @@ A set value wins in both directions:
 `true` makes one task autonomous under a worktree that is not, and `false` keeps one task under the operator in an autonomous worktree.
 
 **Rationale:** the operator wants single tasks autonomous, or held back, whatever their beam says,
-set where every other per-task setting is set, and found by one rule: the nearest worktree that sets it, else the hub.
+set where every other per-task setting is set, and found by the same rule as `pull_request` and `land_notice`: the nearest worktree that sets it, else the hub.
 
 ## Constraints
 
