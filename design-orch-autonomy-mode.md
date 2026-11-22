@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-orch-autonomy-mode.md)
 
-Depends on: [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md), [`sampler-loads-language-skills`](design-sampler-loads-language-skills.md)
+Depends on: [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md)
 
 Filed from the Sketch `orch-full-autonomy-mode`.
 
