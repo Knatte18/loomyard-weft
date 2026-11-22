@@ -359,6 +359,26 @@
       "body": "## Seen\n\n`harden-fabric-single-repo-verbs` approved in round 3 with part of its focus undriven (`round-3-focus.md` and `round-3-review.md` in its archived records, Coverage section):\n\n- The discard half of a killed teardown, re-run through the command its pending record prints; only a hubforge test with a Topology seam covers it.\n- Whether a teardown now pushes to origin a local `archive/\u003cslug\u003e/*` tag the operator kept local on purpose, and whether any verb output or help text names it.\n- A failed remote step without a kill keeping its pending record (O3's fix).\n- `lym adopt --archives` over owner-archive tags pushed by the real `ArchiveOwnerTips` path, with the code side's new `refs/lym/code-tags/` prefix.\n\nAlso left: code-side archive tags in plain `refs/tags/archive/` that an earlier binary pushed are named by no reader verb.\n\n## Idea\n\nA short live drive of these cases in a one-repository sandbox hub, fixing what fails with a test.\n",
       "created": "2026-11-22T20:36:41Z",
       "revised": "2026-11-22T20:36:41Z"
+    },
+    {
+      "id": 1577,
+      "handle": "B2",
+      "slug": "harden-approve-needs-focus",
+      "title": "A hardener round never approves with its focus undriven; the arbiter or the parent rules",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "burler",
+        "arbiter",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked",
+      "body": "## Seen\n\n`harden-fabric-single-repo-verbs` round 3 (sonnet, medium, 4 min) returned APPROVED with these focus entries undriven, by its own Coverage section:\nthe discard half of a killed teardown, the keep-local tag push, a failed step with no kill, and `lym adopt --archives` over real owner tags.\nThe approval settled the harden segment at once: Harden-Burler-Fix only ran its gates and the run went on to landing.\nNothing asked the arbiter or the parent, and once settled the segment cannot be reopened (`lym loom goto` refuses a review or fix row of a settled segment).\nThe untested cases became note `harden-fabric-undriven-cases`.\n\n## Wanted\n\nOperator, 2026-11-22: a hardener round never approves unless everything is in place.\n\n- A round whose review leaves a focus entry undriven, or marks one WARN or not driven, does not settle as approved.\n- The arbiter rules first: order another round over the undriven entries, or accept with a stated reason per entry.\n- When the arbiter cannot rule, the run stops and asks the parent, which orders another round or accepts.\n\n## Where\n\n- The hardener recipe `contracts/recipes/hardener-recipe.yaml` and its Bouncer row (`harden_round`).\n- The settle rule of a review segment for a reviewer verdict of APPROVED (`internal/burlerengine`, `internal/shedadapters/bouncer.go`).\n- The arbiter's scope of halts it may settle (`internal/shedarbiter`, `arbiterstop`).\n\nRelated: task `code-bouncer-asks-parent`, which makes a code review ask the parent instead of settling past an open question, in the same packages.\n",
+      "created": "2026-11-22T20:42:09Z",
+      "revised": "2026-11-22T20:42:09Z"
     }
   ],
   "prime_owner": "neve",
