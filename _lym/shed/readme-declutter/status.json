@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Verify",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Verify",
-    "last": "Sampler-Session → done",
+    "now": "Code-Bouncer",
+    "last": "Drift-Verify → skipped",
     "wait": ""
   },
   "history": [
@@ -51,6 +51,13 @@
       "at": "2026-11-22T15:30:20Z",
       "started_at": "2026-11-22T10:51:21Z",
       "by": "shed"
+    },
+    {
+      "producer": "Drift-Verify",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-22T15:30:25Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
