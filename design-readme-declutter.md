@@ -1,6 +1,6 @@
 # Board README: beam marker, no empty sections, no Notes level
 
-`readme-declutter` · Task · enhancement, board · running · Record-Write
+`readme-declutter` · Task · enhancement, board · running · Drift-Baseline
 
 ## Goal (operator, 2026-11-22)
 
