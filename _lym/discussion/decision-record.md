@@ -28,6 +28,24 @@ Decision: The board files render no Tasks heading: Running, Ready, each dependen
 
 Rationale: The operator judged the Tasks heading clutter, as the Notes heading was.
 
+### Added after Discussion (operator, 2026-11-22): No Tasks level
+
+Decision: The board files render no Tasks heading: Running, Ready, each dependency layer, Independent and Draft are sections of their own, at the level of the note type sections and Done.
+
+Rationale: The operator judged the Tasks heading clutter, as the Notes heading was.
+
+### Added after Discussion (operator, 2026-11-22): No collapsible project sections
+
+Decision: README.md renders each project as a plain level-two heading linking its file, not a details block.
+
+Rationale: The operator found the collapse useless: a re-render forgets it.
+
+### Added after Discussion (operator, 2026-11-22): Beam marker reads BEAM after the title
+
+Decision: A beam project's heading, in README.md and in every project file, and its Done row end in ' · BEAM', after the title and the member count, with no emoji.
+
+Rationale: The operator found a marker before the title unreadable and an emoji meaningless.
+
 ## Constraints
 
 ## Auto-mode assumptions
