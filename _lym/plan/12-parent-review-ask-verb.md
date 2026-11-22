@@ -59,6 +59,7 @@ Tests, tier0. `parentReviewFixture` gains a temp pull request record, a fixed he
 - `TestParentReviewAnswerVerb` gains rows: with an earlier Code-Review ask and judge ask in the record, `--satisfied` for the newest PR-Review ask is recorded done;
   the same answer from the unnamed shell (`strandName` empty) is recorded;
   an answer to a PR-Review ask past its deadline is refused naming the next `[pr-review request]` line and not `lym loom decision add`;
-  an answer to an earlier PR-Review ask that a newer one replaced is refused the same way.
+  an answer to an earlier PR-Review ask that a newer one replaced, the newer ask ended timeout, is refused the same way;
+  the same answer with the newer PR-Review ask still open is refused with the existing "a newer ask, ask N, awaits an answer" text.
 
 **ImpactSummary:** One new verb in the parent-review group and one new branch in the answer refusal's wording; the group's other verbs and their callers are unchanged.

@@ -48,6 +48,12 @@ Forcing:
   so a raddle run already past that call keeps its recorded mode; `TestRaddleWrite` already pins the single read.
 - `pullRequestDepsGuardedBy`'s `ParentReviewWanted` returns `loomengine.ApplyAutonomy(cfg, runAutonomy(l)).PRReviewAskParent`.
 
+Bound: under the run's autonomy, read at each call through `hubgeom.Autonomy`, a raddle proposal files draft tasks with no operator approval,
+and the Discussion lead runs with no operator in its pane.
+This holds only while the run's worktree chain resolves `autonomy: true`;
+releasing the filed drafts stays the operator's; no layer file is written;
+and a raddle run past its first Raddle-Write call keeps its recorded mode.
+
 The new key:
 
 - `Config` gains `PRReviewParentTimeoutMin int` (`yaml:"pr_review_parent_timeout_min"`), the minutes from a PR-Review ask to the parent to its deadline.
@@ -55,7 +61,9 @@ The new key:
   a positive integer, 60 by default, settable per run through run_settings.
 - `ConfigSpec` classifies it `none`, as its sibling parent timeouts are.
 - `LoadConfig` refuses a value below 1 with the sibling keys' message and way forward.
-- `docs/overview.md`'s sentence that `discussion_review_parent_timeout_min` sets the PR-Review ask's deadline names `pr_review_parent_timeout_min` instead.
+- `docs/overview.md`'s sentence on `discussion_review_parent_timeout_min`, which sets the Discussion-Review round's ask's deadline, stays as it is.
+  After the `pr_review_ask_parent` line the overview gains one sentence:
+  `pr_review_parent_timeout_min` sets the minutes from a PR-Review ask to its deadline, 60 by default, and is open to `run_settings`.
 
 Tests:
 

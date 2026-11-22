@@ -6,6 +6,7 @@
 - `plan:internal/dobbyengine#LookupAutonomy` -> `func LookupAutonomy(chain TaskSettingChain) (bool, error)`
 
 **Edit:**
+- `internal/beamsetting/beamsetting.go`
 - `internal/dobbyengine#Config`
 - `internal/dobbyengine#ConfigSpec`
 - `internal/dobbyengine#LoadConfig`
@@ -28,6 +29,7 @@
 **Intent:** D1 and D11: `autonomy` becomes beam.yaml's third per-task setting, read only through dobbyengine's one lookup.
 
 - `internal/beamsetting` declares `AutonomyKey`, and dobbyengine re-exports it beside `PullRequestKey` and `LandNoticeKey`.
+  `beamsetting.go`'s package doc, which names the per-task settings as pull_request and land_notice, names `autonomy` too.
 - `template.yaml` gains `autonomy: false` with a comment in the style of its siblings:
   per task, whether the orch settles every halt of the task's runs and reaches the operator only for a severe halt or a merge-ready beam;
   decided like `pull_request`.
@@ -40,7 +42,7 @@
 - `LookupAutonomy` returns `lookupTaskSetting(chain, AutonomyKey) == "true"`.
   An envsource marker in a winning value expands as for the other keys.
 - `Config`'s comment and `doc.go`'s per-task bullet name `autonomy` beside `pull_request` and `land_notice` and `LookupAutonomy` beside the other lookups.
-  The file comments atop `tasksetting.go` and `tasksetting_test.go`, which name the two old keys as the per-task settings, name `autonomy` too.
+  The file comment atop `tasksetting.go`, which names the two old keys as the per-task settings, names `autonomy` too.
 - `storeVerbs`'s `run_settings` help line names `beam.autonomy` beside `beam.pull_request` and `beam.land_notice`.
 - `pattern/PATTERN-config-layers.md`'s "Per-task beam settings" rule line names `beam.autonomy` beside the two keys it lists.
 

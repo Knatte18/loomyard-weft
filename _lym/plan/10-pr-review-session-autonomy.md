@@ -101,8 +101,8 @@ Tests, tier0. `prReviewTestDeps` returns a bare `Deps`, so it fills the three se
 Each new row sets `deps.Landing.PullRequest.Autonomy`, `AskPRReview` and `PRReviewStanding` itself, the ask stub appending to a slice the row reads.
 `TestPRReview_Session` gains rows:
 
-- autonomy true on a record holding none: the started spec has `Interactive` false, its prompt holds `lym loom parent-review ask`, the record holds autonomy true, and one PR-Review ask went out;
-- autonomy false: `Interactive` true, the operator block's text, record false, no ask unless `ParentReviewWanted`;
+- autonomy true on a record holding none: the started spec has `Interactive` false, the record holds autonomy true, and one PR-Review ask went out;
+- autonomy false: `Interactive` true, record false, no ask unless `ParentReviewWanted`;
 - a record already holding autonomy true with `Autonomy` now reading false, after a pause stopped the session, and again after a judging stop:
   each restarted spec is still non-interactive (the toggle criterion);
 - a record holding autonomy true with `ParentReviewAsked` asks none;

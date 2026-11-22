@@ -4,8 +4,7 @@
 - `plan:internal/loomcli#prContinueReview` -> `type prContinueReview struct`
 
 **Edit:**
-- `internal/loomcli#prContinueVerb` -> `func prContinueVerb(out io.Writer, recordPath, lockPath string, review prContinueReview) int`
-- `internal/loomcli#loomCLI.prContinueCmd`
+- `internal/loomcli/prcontinue.go`
 - `internal/loomcli#TestPRContinueVerb`
 - `internal/loomcli/doc.go`
 
@@ -17,6 +16,11 @@
 - `internal/pullrequest#Record`
 
 **Intent:** D4: under a review's recorded autonomy, `pr-continue` sets the continue flag only on the parent's satisfied answer at the current head.
+
+The card changes three parts of `prcontinue.go`: its file header, `prContinueVerb` and `loomCLI.prContinueCmd`.
+`prContinueVerb` takes the review as a fourth parameter: `func prContinueVerb(out io.Writer, recordPath, lockPath string, review prContinueReview) int`.
+The file header, which says the agent runs the verb to tell the run the operator is satisfied,
+says that under a review's recorded autonomy the verb ends the review only on the parent's recorded satisfied answer at the current head.
 
 `prContinueReview` carries `head func() (string, error)`, `standing func(head string) (landingshed.PRReviewStanding, error)`
 and `closed func(rec pullrequest.Record) (bool, error)`, which reads the pull request's state on GitHub.

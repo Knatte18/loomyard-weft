@@ -13,6 +13,8 @@
 - `internal/hubgeom#PawlPaths`
 - `internal/shedrecipe#requirePawl`
 - `internal/shedrecipe#beamAwaitEntry`
+- `internal/shedrecipe#validPawlDeps`
+- `internal/shedrecipe#simpleEntryCases`
 - `internal/loomcli#pawlDeps`
 - `internal/testkit/envkit#FullEnv`
 - `internal/battencli#intentionallyNil`
@@ -49,6 +51,8 @@ Seams and paths:
 - `Paths` gains `DrainMarker`, a file of its own beside the pawl markers; `DrainMarkerName` joins the names in `landrequest.go`, and `hubgeom.PawlPaths` fills it under the beam's `.lym/beam/` directory.
 - `NewBeamAwait` requires the three seams and `Paths.DrainMarker` itself; the field stays out of `Deps.pathsSeams`, so no other pawl producer requires it.
   `beamAwaitEntry` lists the seams, and `requirePawl`'s field map knows them.
+- shedrecipe's test fixture `validPawlDeps` stubs the three seams and sets `Paths.DrainMarker`,
+  and the BeamAwait row of `simpleEntryCases` names the four new fields in its `validatedFields`.
 - `pawlDeps` wires `Autonomous` as `hubgeom.Autonomy(location, slug)` (the beam's own worktree is its orch's),
   `HoldsCommits` as the beam pair's `HeadHoldsCommitsNotIn("refs/heads/" + origin.ParentBranch)` with the origin `fabricengine.ReadOriginFor(prime, slug)` reads,
   and `WorkRemains` as `ReadBeamLandBlockers(prime, slug)` not `Empty()`, returning its error;
