@@ -290,7 +290,7 @@
       "isolated": false,
       "brief": "Since 71d6ee1a0 every batten row pushes its records before acting; a run start went from ~7 s to ~60 s.",
       "body": "## What was seen\n\nThe batten start rows, from Seed-Child to Run-Shed, took 1 to 13 seconds per run up to 2026-11-18 08:23, and 40 to 70 seconds per run from then on (per-day mean: 7 to 12 s on 11-15 and 11-17, 56 to 69 s on 11-18 to 11-22).\nThe jump sits exactly at `71d6ee1a0` (Adopt in the foreground over pushed state), whose member `595349b9f` pushes a transition's records to origin before the run acts.\nEach row now waits for a push to origin of about 10 to 20 seconds; the start rows Seed-Child, Open-Window, Seed-IDE, Open-IDE and Run-Shed each pay it, and so does every other transition of a run, Land and Worktree-Teardown included.\n\nMeasured from the `batten: \u003crow\u003e -\u003e running` commits on the records branches (`git log --all --grep`).\n\n## Decision (operator, 2026-11-22)\n\nA run pushes nothing to origin before it starts: the start rows from Seed-Child to Run-Shed act without a records push.\n\n## Scope\n\nOnly the start rows from Seed-Child to Run-Shed stop pushing; every later transition keeps its push.\nDiscussion checks that a takeover of a run whose start rows were not pushed redoes those rows and does not break.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-22T16:46:43Z",
       "revised": "2026-11-22T16:56:59Z",
       "run_settings": {
