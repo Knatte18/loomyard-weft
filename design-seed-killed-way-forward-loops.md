@@ -1,6 +1,6 @@
 # A killed seed leaves board sync naming a false, looping way forward
 
-`seed-killed-way-forward-loops` · Task · bug, fabric · running · Code-Burler-Review
+`seed-killed-way-forward-loops` · Task · bug, fabric · running · Code-Burler-Fix
 
 ## What was seen
 
