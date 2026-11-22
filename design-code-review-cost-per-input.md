@@ -1,6 +1,6 @@
 # Find what costs Code-Burler-Review its extra minutes
 
-`code-review-cost-per-input` · Task · research, burler, lenses · starting · Seed-Child
+`code-review-cost-per-input` · Task · research, burler, lenses · running · Preflight
 
 ## Seen
 
