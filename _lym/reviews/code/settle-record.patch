@@ -1,0 +1,1494 @@
+diff --git a/internal/reportengine/batten.go b/internal/reportengine/batten.go
+index 352c70d38..3b1d49590 100644
+--- a/internal/reportengine/batten.go
++++ b/internal/reportengine/batten.go
+@@ -11,58 +11,111 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+-	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ )
+ 
+-// battenCommit is a records commit that touched a slug's status file and carries the file read at it.
+-// holds is false for a commit that deleted the file or whose file does not decode.
+-// A commit whose file does not decode also carries decodeErr.
+-type battenCommit struct {
+-	sha       string
+-	committed time.Time
++const (
++	// firstBattenLookback is how far before the report's window the first walk of the records branch reaches;
++	// each widening of the walk doubles it.
++	firstBattenLookback = 7 * 24 * time.Hour
++
++	// battenSeedMargin is how long before a run's loom seed stamp its batten seed may lie.
++	battenSeedMargin = 7 * 24 * time.Hour
++)
++
++// battenStatusRead is a slug's status file as read at one records commit.
++// holds is false for a commit that holds no such file or whose file does not decode;
++// a file that does not decode also carries decodeErr.
++type battenStatusRead struct {
+ 	holds     bool
+ 	status    shedengine.Status
+ 	decodeErr error
++}
+ 
+-	// fresh marks a run's first commit: history opens with worktree-create; predecessor has no file or longer history.
+-	fresh bool
++// opensRun reports whether the status read opens with the worktree-create row, as a run's first status does.
++func (r battenStatusRead) opensRun() bool {
++	history := r.status.History
++	return r.holds && len(history) > 0 && history[0].Producer == battenrecipe.NameWorktreeCreate
+ }
+ 
+-// battenIndex lists the records commits that touched each slug's status file, read lazily per slug.
++// battenIndex lists the records commits that touched each slug's status file, oldest first.
++// They come from one walk of the records branch's first-parent line, from floor to the tip.
++// A zero floor walks the whole history.
++// The walk opens firstBattenLookback before windowStart and widens only when a run's fresh seed lies before it.
+ type battenIndex struct {
+-	records  Reader
++	records     Reader
++	tip         string
++	windowStart time.Time
++	lookback    time.Duration
++	floor       time.Time
++
++	// walked is the number of commits the last walk returned.
++	walked   int
+ 	touching map[string][]gitrepo.LogCommit
+-	read     map[string][]battenCommit
++}
+ 
+-	// checkpoints are the committer times of the landing checkpoint commits per slug, oldest first.
+-	checkpoints map[string][]time.Time
++// newBattenIndex walks the records branch for the commits touching a run's directory.
++// The walk starts firstBattenLookback before windowStart.
++// A zero windowStart walks the whole history.
++func newBattenIndex(src Sources, windowStart time.Time) (*battenIndex, error) {
++	index := &battenIndex{records: src.Records, tip: src.RecordsTip, windowStart: windowStart, lookback: firstBattenLookback}
++	if !windowStart.IsZero() {
++		index.floor = windowStart.Add(-firstBattenLookback)
++	}
++	if err := index.walk(); err != nil {
++		return nil, err
++	}
++	return index, nil
+ }
+ 
+-// newBattenIndex walks the records branch once for the commits touching a run's directory.
+-// It groups them by slug, oldest first.
+-// The same walk collects the landing checkpoint commits, named by their subject.
+-func newBattenIndex(src Sources) (*battenIndex, error) {
++// walk reads the commits touching the run-records root from floor to the tip.
++// It follows the first-parent line, which stops at the first commit older than floor.
++// It groups the commits by slug, oldest first.
++func (b *battenIndex) walk() error {
+ 	root := filepath.ToSlash(shedrun.RunsRootRel())
+-	commits, err := src.Records.Log(src.RecordsTip, gitrepo.LogQuery{PathPrefix: root})
++	commits, err := b.records.Log(b.tip, gitrepo.LogQuery{FirstParent: true, PathPrefix: root, Since: b.floor})
+ 	if err != nil {
+-		return nil, fmt.Errorf("reportengine: walk the records branch: %w", err)
++		return fmt.Errorf("reportengine: walk the records branch: %w", err)
+ 	}
+ 
+-	index := &battenIndex{records: src.Records, touching: map[string][]gitrepo.LogCommit{}, read: map[string][]battenCommit{}, checkpoints: map[string][]time.Time{}}
++	b.walked = len(commits)
++	b.touching = map[string][]gitrepo.LogCommit{}
+ 	for i := len(commits) - 1; i >= 0; i-- {
+-		subject, _, _ := strings.Cut(commits[i].Message, "\n")
+-		if slug, ok := loomengine.LandingCheckpointSlug(subject); ok {
+-			index.checkpoints[slug] = append(index.checkpoints[slug], commits[i].Committed)
+-		}
+ 		for _, path := range commits[i].Paths {
+ 			if slug, ok := statusPathSlug(root, path); ok {
+-				index.touching[slug] = append(index.touching[slug], commits[i])
++				b.touching[slug] = append(b.touching[slug], commits[i])
+ 			}
+ 		}
+ 	}
+-	return index, nil
++	return nil
++}
++
++// widen doubles the lookback and walks again, and reports false when the walk cannot reach further back:
++// it already covers the whole history, or its floor is at or before bound.
++// A non-zero bound caps the doubled floor, so the widening ends there.
++// With a zero bound, a doubled walk that finds no commit the last one lacked gives way to a walk of the whole history,
++// so a run with no fresh seed at all ends the widening in one more walk.
++func (b *battenIndex) widen(bound time.Time) (bool, error) {
++	if b.floor.IsZero() || (!bound.IsZero() && !b.floor.After(bound)) {
++		return false, nil
++	}
++	previous := b.walked
++	b.lookback *= 2
++	b.floor = b.windowStart.Add(-b.lookback)
++	if !bound.IsZero() && b.floor.Before(bound) {
++		b.floor = bound
++	}
++	if err := b.walk(); err != nil {
++		return false, err
++	}
++	if bound.IsZero() && b.walked == previous {
++		b.floor = time.Time{}
++		if err := b.walk(); err != nil {
++			return false, err
++		}
++	}
++	return true, nil
+ }
+ 
+ // statusPathSlug returns the slug whose status file is path, and false when path is not such a file under root.
+@@ -82,36 +135,76 @@ func statusPathSlug(root, path string) (string, bool) {
+ 	return slug, true
+ }
+ 
+-// commitsOf reads slug's status file at every commit that touched it, oldest first.
+-// It caches the result per slug.
+-func (b *battenIndex) commitsOf(slug, statusRel string) ([]battenCommit, error) {
+-	if read, ok := b.read[slug]; ok {
++// battenStatusReader reads one slug's status file at records commits, each commit at most once.
++// It lives for one run's span read, so no parsed status outlives that read but the run's own snapshots.
++type battenStatusReader struct {
++	records   Reader
++	statusRel string
++	read      map[string]battenStatusRead
++}
++
++// at returns the status file read at the commit sha.
++func (r *battenStatusReader) at(sha string) (battenStatusRead, error) {
++	if read, ok := r.read[sha]; ok {
+ 		return read, nil
+ 	}
+-	var read []battenCommit
+-	for _, commit := range b.touching[slug] {
+-		entry := battenCommit{sha: commit.SHA, committed: commit.Committed}
+-		data, err := b.records.FileAtRevision(commit.SHA, statusRel)
+-		switch {
+-		case errors.Is(err, gitrepo.ErrPathNotAtRevision):
+-		case err != nil:
+-			return nil, fmt.Errorf("reportengine: read %s at %s: %w", statusRel, commit.SHA, err)
+-		default:
+-			if entry.status, entry.decodeErr = shedengine.ParseStatusTolerant(data); entry.decodeErr == nil {
+-				entry.holds = true
+-			}
++	var read battenStatusRead
++	data, err := r.records.FileAtRevision(sha, r.statusRel)
++	switch {
++	case errors.Is(err, gitrepo.ErrPathNotAtRevision):
++	case err != nil:
++		return battenStatusRead{}, fmt.Errorf("reportengine: read %s at %s: %w", r.statusRel, sha, err)
++	default:
++		if read.status, read.decodeErr = shedengine.ParseStatusTolerant(data); read.decodeErr == nil {
++			read.holds = true
+ 		}
+-		read = append(read, entry)
+ 	}
+-	for i := range read {
+-		history := read[i].status.History
+-		if !read[i].holds || len(history) == 0 || history[0].Producer != battenrecipe.NameWorktreeCreate {
++	r.read[sha] = read
++	return read, nil
++}
++
++// isFreshSeed reports whether commits[k] opens a run:
++// its status opens with worktree-create, and the status before it is absent, does not decode or holds a longer history.
++// The status before the walk's oldest commit is read at that commit's first parent,
++// and a commit with nothing before it in a whole-history walk is a seed.
++func (b *battenIndex) isFreshSeed(commits []gitrepo.LogCommit, k int, reader *battenStatusReader) (bool, error) {
++	read, err := reader.at(commits[k].SHA)
++	if err != nil || !read.opensRun() {
++		return false, err
++	}
++	var prior battenStatusRead
++	switch {
++	case k > 0:
++		prior, err = reader.at(commits[k-1].SHA)
++	case b.floor.IsZero() || len(commits[k].Parents) == 0:
++		return true, nil
++	default:
++		prior, err = reader.at(commits[k].Parents[0])
++	}
++	if err != nil {
++		return false, err
++	}
++	return !prior.holds || len(prior.status.History) > len(read.status.History), nil
++}
++
++// newestSeed returns the index in commits of the newest fresh seed.
++// The seed is committed after earlier, when there is one, and at or before until.
++// It returns -1 when the walked commits hold none.
++func (b *battenIndex) newestSeed(commits []gitrepo.LogCommit, reader *battenStatusReader, earlier *time.Time, until time.Time) (int, error) {
++	for k := len(commits) - 1; k >= 0; k-- {
++		committed := commits[k].Committed
++		if committed.After(until) || (earlier != nil && !committed.After(*earlier)) {
+ 			continue
+ 		}
+-		read[i].fresh = i == 0 || !read[i-1].holds || len(read[i-1].status.History) > len(history)
++		fresh, err := b.isFreshSeed(commits, k, reader)
++		if err != nil {
++			return -1, err
++		}
++		if fresh {
++			return k, nil
++		}
+ 	}
+-	b.read[slug] = read
+-	return read, nil
++	return -1, nil
+ }
+ 
+ // snapshotsOfRun returns the batten status snapshots of the run archived under tag, oldest first.
+@@ -119,30 +212,53 @@ func (b *battenIndex) commitsOf(slug, statusRel string) ([]battenCommit, error)
+ // The run's own fresh seed is the newest fresh seed committed after earlier, when there is one, and at or before until.
+ // Its span runs up to the slug's next fresh seed, or to the records tip.
+ // With no fresh seed in that interval, it returns no snapshots and an empty commit.
+-func (b *battenIndex) snapshotsOfRun(slug, tag string, earlier *time.Time, until time.Time) ([]shedengine.Status, string, []Finding, error) {
++// It widens the walk while the seed may lie before the walk's floor.
++// It stops at earlier or, when there is none, at battenSeedMargin before startedAt, the run's loom seed stamp.
++// An empty or unparseable stamp sets no stop.
++// It reads the status file only at the span's commits and the one before its seed.
++func (b *battenIndex) snapshotsOfRun(slug, tag string, earlier *time.Time, startedAt string, until time.Time) ([]shedengine.Status, string, []Finding, error) {
+ 	rels, err := shedrun.TreeRunRels(slug)
+ 	if err != nil {
+ 		return nil, "", nil, err
+ 	}
+-	commits, err := b.commitsOf(slug, rels.Status)
+-	if err != nil {
+-		return nil, "", nil, err
++	var reach time.Time
++	if started, parseErr := time.Parse(time.RFC3339, startedAt); parseErr == nil {
++		reach = started.Add(-battenSeedMargin)
++	}
++	if earlier != nil {
++		reach = *earlier
+ 	}
++	reader := &battenStatusReader{records: b.records, statusRel: rels.Status, read: map[string]battenStatusRead{}}
+ 
++	var commits []gitrepo.LogCommit
+ 	start := -1
+-	for i := len(commits) - 1; i >= 0; i-- {
+-		commit := commits[i]
+-		if commit.fresh && (earlier == nil || commit.committed.After(*earlier)) && !commit.committed.After(until) {
+-			start = i
++	for {
++		commits = b.touching[slug]
++		if start, err = b.newestSeed(commits, reader, earlier, until); err != nil {
++			return nil, "", nil, err
++		}
++		if start >= 0 {
++			break
++		}
++		widened, err := b.widen(reach)
++		if err != nil {
++			return nil, "", nil, err
++		}
++		if !widened {
+ 			break
+ 		}
+ 	}
+ 	if start < 0 {
+ 		return nil, "", nil, nil
+ 	}
++
+ 	end := len(commits)
+ 	for i := start + 1; i < len(commits); i++ {
+-		if commits[i].fresh {
++		fresh, err := b.isFreshSeed(commits, i, reader)
++		if err != nil {
++			return nil, "", nil, err
++		}
++		if fresh {
+ 			end = i
+ 			break
+ 		}
+@@ -152,12 +268,16 @@ func (b *battenIndex) snapshotsOfRun(slug, tag string, earlier *time.Time, until
+ 	var findings []Finding
+ 	recordCommit := ""
+ 	for _, commit := range commits[start:end] {
++		read, err := reader.at(commit.SHA)
++		if err != nil {
++			return nil, "", nil, err
++		}
+ 		switch {
+-		case commit.decodeErr != nil:
+-			findings = append(findings, Finding{Tag: tag, File: rels.Status, Error: commit.decodeErr.Error()})
+-		case commit.holds:
+-			snapshots = append(snapshots, commit.status)
+-			recordCommit = commit.sha
++		case read.decodeErr != nil:
++			findings = append(findings, Finding{Tag: tag, File: rels.Status, Error: read.decodeErr.Error()})
++		case read.holds:
++			snapshots = append(snapshots, read.status)
++			recordCommit = commit.SHA
+ 		}
+ 	}
+ 	return snapshots, recordCommit, findings, nil
+diff --git a/internal/reportengine/boardhistory.go b/internal/reportengine/boardhistory.go
+new file mode 100644
+index 000000000..1c80a6c31
+--- /dev/null
++++ b/internal/reportengine/boardhistory.go
+@@ -0,0 +1,204 @@
++// boardhistory.go reads the board branch's history for the landing joins:
++// per slug, the board commits at which its entry reads done and the labels it carries.
++
++package reportengine
++
++import (
++	"errors"
++	"fmt"
++	"slices"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++)
++
++// olderBoardPage is the number of board commits older than the window that are listed at a time while looking for labels.
++const olderBoardPage = 64
++
++// commitSpan is a run of consecutive board commits, by index into boardHistory.times, first and last included.
++type commitSpan struct {
++	first, last int
++}
++
++// labelSpan is a run of consecutive board commits at which an entry carries one set of labels.
++type labelSpan struct {
++	commitSpan
++	labels []string
++}
++
++// boardHistory is what the landing joins read from the board's history:
++// the committer time of each board commit read, oldest first.
++// Per slug it holds the spans of those commits at which its entry reads done,
++// and the spans at which it carries one set of labels.
++// It holds no parsed board, so it grows with the entries' changes and not with the board's size.
++//
++// Commits older than the oldest one read stay reachable through before.
++// It is the first parent of that commit, empty when it has none.
++// readOlderLabels reads them, and olderLabels holds the labels it found per slug.
++type boardHistory struct {
++	times  []time.Time
++	done   map[string][]commitSpan
++	labels map[string][]labelSpan
++
++	board       Reader
++	before      string
++	olderLabels map[string][]string
++}
++
++// readBoardHistory reads the board once at each commit of its first-parent line committed at or after floor.
++// The commits come oldest first.
++// It also reads the board in effect at floor, the first commit of that line older than it.
++// A zero floor reads the whole history.
++// A commit holding no board, or one that does not parse, holds no entry.
++func readBoardHistory(board Reader, tip string, floor time.Time) (*boardHistory, error) {
++	newestFirst, err := board.Log(tip, gitrepo.LogQuery{FirstParent: true, Since: floor})
++	if err != nil {
++		return nil, fmt.Errorf("reportengine: walk the board branch: %w", err)
++	}
++	if !floor.IsZero() {
++		before := tip
++		if n := len(newestFirst); n > 0 {
++			before = ""
++			if parents := newestFirst[n-1].Parents; len(parents) > 0 {
++				before = parents[0]
++			}
++		}
++		if before != "" {
++			prior, err := board.Log(before, gitrepo.LogQuery{Limit: 1})
++			if err != nil {
++				return nil, fmt.Errorf("reportengine: read the board commit before %s: %w", floor.Format(time.RFC3339), err)
++			}
++			newestFirst = append(newestFirst, prior...)
++		}
++	}
++
++	history := &boardHistory{board: board, done: map[string][]commitSpan{}, labels: map[string][]labelSpan{}, olderLabels: map[string][]string{}}
++	for k := len(newestFirst) - 1; k >= 0; k-- {
++		tasks, err := boardTasksAt(board, newestFirst[k].SHA)
++		if err != nil {
++			return nil, err
++		}
++		history.add(newestFirst[k].Committed, tasks)
++	}
++	if n := len(newestFirst); n > 0 && len(newestFirst[n-1].Parents) > 0 {
++		history.before = newestFirst[n-1].Parents[0]
++	}
++	return history, nil
++}
++
++// readOlderLabels finds the labels of each of slugs in the newest older board commit that holds it.
++// Older means older than every commit read.
++// It reads those commits newest first, once each, and stops when every slug has its labels or the history ends.
++// A slug whose entry no older commit holds gets no labels.
++// Only the labels are kept.
++func (h *boardHistory) readOlderLabels(slugs []string) error {
++	pending := map[string]bool{}
++	for _, slug := range slugs {
++		pending[slug] = true
++	}
++	for h.before != "" && len(pending) > 0 {
++		page, err := h.board.Log(h.before, gitrepo.LogQuery{FirstParent: true, Limit: olderBoardPage})
++		if err != nil {
++			return fmt.Errorf("reportengine: walk the board branch before its window: %w", err)
++		}
++		for _, commit := range page {
++			tasks, err := boardTasksAt(h.board, commit.SHA)
++			if err != nil {
++				return err
++			}
++			for _, task := range tasks {
++				if pending[task.Slug] {
++					h.olderLabels[task.Slug] = slices.Clone(task.Labels)
++					delete(pending, task.Slug)
++				}
++			}
++			if len(pending) == 0 {
++				return nil
++			}
++		}
++		h.before = ""
++		if parents := page[len(page)-1].Parents; len(parents) > 0 {
++			h.before = parents[0]
++		}
++	}
++	return nil
++}
++
++// boardTasksAt returns the board entries at a board commit.
++// A commit holding no board, or one that does not parse, holds none.
++func boardTasksAt(board Reader, sha string) ([]boardengine.Task, error) {
++	data, err := board.FileAtRevision(sha, boardengine.BoardFileRel())
++	switch {
++	case errors.Is(err, gitrepo.ErrPathNotAtRevision):
++		return nil, nil
++	case err != nil:
++		return nil, fmt.Errorf("reportengine: read the board at %s: %w", sha, err)
++	}
++	tasks, err := boardengine.ParseBoardTasks(data)
++	if err != nil {
++		return nil, nil
++	}
++	return tasks, nil
++}
++
++// add appends the board commit committed at committed, holding tasks, as the newest commit read.
++// A slug's first entry on the board gives its labels, and any of its entries reading done marks it done.
++func (h *boardHistory) add(committed time.Time, tasks []boardengine.Task) {
++	index := len(h.times)
++	h.times = append(h.times, committed)
++	labelled := map[string]bool{}
++	done := map[string]bool{}
++	for _, task := range tasks {
++		if task.Status != nil && *task.Status == boardStatusDone && !done[task.Slug] {
++			done[task.Slug] = true
++			h.done[task.Slug] = extendSpans(h.done[task.Slug], index)
++		}
++		if labelled[task.Slug] {
++			continue
++		}
++		labelled[task.Slug] = true
++		spans := h.labels[task.Slug]
++		if n := len(spans); n > 0 && spans[n-1].last == index-1 && slices.Equal(spans[n-1].labels, task.Labels) {
++			spans[n-1].last = index
++			continue
++		}
++		h.labels[task.Slug] = append(spans, labelSpan{commitSpan: commitSpan{first: index, last: index}, labels: slices.Clone(task.Labels)})
++	}
++}
++
++// extendSpans adds the commit index to spans, extending the newest span when index follows it.
++func extendSpans(spans []commitSpan, index int) []commitSpan {
++	if n := len(spans); n > 0 && spans[n-1].last == index-1 {
++		spans[n-1].last = index
++		return spans
++	}
++	return append(spans, commitSpan{first: index, last: index})
++}
++
++// doneAfter returns the time of the first board commit after open at which slug's entry reads done.
++func (h *boardHistory) doneAfter(slug string, open time.Time) (time.Time, bool) {
++	for _, span := range h.done[slug] {
++		for k := span.first; k <= span.last; k++ {
++			if h.times[k].After(open) {
++				return h.times[k], true
++			}
++		}
++	}
++	return time.Time{}, false
++}
++
++// labelsAt returns the labels of slug's entry in the newest board commit at or before at that holds it.
++// A slug no commit read holds at that time takes the labels readOlderLabels found, when it found any.
++func (h *boardHistory) labelsAt(slug string, at time.Time) ([]string, bool) {
++	spans := h.labels[slug]
++	for s := len(spans) - 1; s >= 0; s-- {
++		for k := spans[s].last; k >= spans[s].first; k-- {
++			if !h.times[k].After(at) {
++				return spans[s].labels, true
++			}
++		}
++	}
++	labels, found := h.olderLabels[slug]
++	return labels, found
++}
+diff --git a/internal/reportengine/doc.go b/internal/reportengine/doc.go
+index ae7b463e6..0377f9e0e 100644
+--- a/internal/reportengine/doc.go
++++ b/internal/reportengine/doc.go
+@@ -43,6 +43,17 @@
+ // The run keeps every snapshot of that span, the last being its batten record.
+ // No fresh seed in that interval leaves the batten source absent.
+ //
++// A report walks the records branch's first-parent line for the commits touching a run's directory.
++// The walk opens a week before the start of the parent-branch walk.
++// That start lies FreshDays before the window for the convergence report and at the window for the timing report.
++// The walk widens, doubling its lookback, only while a run's fresh seed may lie before it.
++// It never widens past the slug's previous tag, or a week before the run's seed stamp when there is no previous tag.
++// The landing checkpoints come from a walk of their own that no run's seed changes.
++// It opens at the parent walk's start.
++// It opens at the opening of the oldest pair a tag found no task commit for when that is older.
++// A run's status file is read once at each commit of its span and at the commit before its seed,
++// and no parsed status is kept beyond the run's own snapshots.
++//
+ // # Wakes, stops and repairs
+ //
+ // RunRow.Wakes counts a run's wakes per source and kind; a source the run lacks is nil under its name.
+@@ -75,11 +86,20 @@
+ // The landing is the first-parent commit that is the task commit, has it as a parent or holds its tree.
+ // The time join serves a tag the exact join found no task commit for,
+ // and a slug whose pair has checkpoints after its newest tag.
++// A pair's checkpoints are read back to the checkpoint walk's start,
++// so a pair with no archive tag whose checkpoints all lie before it opens no window.
+ // Two runs claiming one commit within a join are both left unmapped, and the clash is a finding.
+ // A landing no join maps is of kind unmapped.
+ // Any other takes its kind from the slug's labels on the board: bug is fix, feature and enhancement are feature.
+ // A full run landed by hand counts one landing LLM step.
+ //
++// The board's history is read once, together with the board in effect at its start.
++// It starts at the parent walk's start or the oldest time-join window's opening, whichever is older.
++// Each board commit is read at most once.
++// A landing's slug that the board in effect at the start lacks takes its labels from older commits.
++// Those are read newest first until its entry is found.
++// Only each slug's done spans and labels are kept from it, never a parsed board.
++//
+ // # Fresh-code fixes
+ //
+ // For each fix and unmapped landing, the lines its commit modifies or deletes are blamed in its first parent.
+diff --git a/internal/reportengine/fake_test.go b/internal/reportengine/fake_test.go
+index f123706e9..6311a437f 100644
+--- a/internal/reportengine/fake_test.go
++++ b/internal/reportengine/fake_test.go
+@@ -54,10 +54,13 @@ type fakeRepo struct {
+ 	blames    map[string]map[int]string
+ 	// blameCalls logs every BlameLines call in order.
+ 	blameCalls []blameCall
++	// fileReads counts the FileAtRevision calls per known commit, and logQueries logs every Log query in order.
++	fileReads  map[string]int
++	logQueries []gitrepo.LogQuery
+ }
+ 
+ func newFakeRepo() *fakeRepo {
+-	return &fakeRepo{commits: map[string]fakeCommit{}, preImages: map[string]map[string][]int{}, blames: map[string]map[int]string{}}
++	return &fakeRepo{commits: map[string]fakeCommit{}, preImages: map[string]map[string][]int{}, blames: map[string]map[int]string{}, fileReads: map[string]int{}}
+ }
+ 
+ // commitOnChain appends a commit to the main line whose tree is the previous commit's with set written and remove deleted.
+@@ -118,6 +121,7 @@ func (f *fakeRepo) FileAtRevision(rev, relPath string) ([]byte, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	f.fileReads[rev]++
+ 	content, ok := commit.files[relPath]
+ 	if !ok {
+ 		return nil, gitrepo.ErrPathNotAtRevision
+@@ -191,6 +195,7 @@ func (f *fakeRepo) Log(tip string, q gitrepo.LogQuery) ([]gitrepo.LogCommit, err
+ 	if _, known := f.commits[tip]; !known {
+ 		return nil, fmt.Errorf("fakeRepo: unknown commit %q", tip)
+ 	}
++	f.logQueries = append(f.logQueries, q)
+ 	var commits []gitrepo.LogCommit
+ 	for sha := tip; sha != ""; {
+ 		commit := f.commits[sha]
+diff --git a/internal/reportengine/landings.go b/internal/reportengine/landings.go
+index 3eacf58a3..ddebc7ba8 100644
+--- a/internal/reportengine/landings.go
++++ b/internal/reportengine/landings.go
+@@ -4,7 +4,6 @@
+ package reportengine
+ 
+ import (
+-	"errors"
+ 	"fmt"
+ 	"path"
+ 	"slices"
+@@ -13,9 +12,9 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+-	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+@@ -102,11 +101,31 @@ type landingJoiner struct {
+ 	// claimed maps a chain index to the claims on it.
+ 	claimed map[int][]landingClaim
+ 
+-	board      []gitrepo.LogCommit
+-	boardTasks map[string][]boardengine.Task
++	// pairOpened maps the index in `landingInputs.selected` of a tag the exact join found no task commit for.
++	// The value is the committer time of the commit that opened its pair, zero when the history ended before one.
++	pairOpened map[int]time.Time
++
++	// checkpoints are the committer times of the landing checkpoint commits per slug, oldest first.
++	checkpoints map[string][]time.Time
++
++	// board is the board history the time join and the landing kinds read.
++	board *boardHistory
++}
++
++// landingWalkStart returns the time the walk of the parent branch opens at:
++// Options.FreshDays before Options.Since, so a fix's blamed lines can reach landings just before the window.
++// It is zero, the whole history, for a zero Since.
++func landingWalkStart(opts Options) time.Time {
++	if opts.Since.IsZero() {
++		return time.Time{}
++	}
++	return opts.Since.AddDate(0, 0, -opts.FreshDays)
+ }
+ 
+ // readLandings fills Report.Landings and each run's Landing and landing LLM step.
++// It reads the board's history once.
++// The read starts at the parent walk's start or the oldest time-join window's opening, whichever is older.
++// A landing's slug that the board in effect at that start lacks takes its labels from older board commits.
+ func readLandings(src Sources, opts Options, report *Report) error {
+ 	j := &landingJoiner{
+ 		src:        src,
+@@ -116,16 +135,13 @@ func readLandings(src Sources, opts Options, report *Report) error {
+ 		absorbed:   map[int]bool{},
+ 		owner:      map[string]string{},
+ 		claimed:    map[int][]landingClaim{},
+-		boardTasks: map[string][]boardengine.Task{},
++		pairOpened: map[int]time.Time{},
+ 	}
+ 	for i := range report.Runs {
+ 		report.Runs[i].LLMSteps[LLMStepsLanding] = 0
+ 	}
+ 
+-	since := opts.Since
+-	if !since.IsZero() {
+-		since = since.AddDate(0, 0, -opts.FreshDays)
+-	}
++	since := landingWalkStart(opts)
+ 	newestFirst, err := src.Code.Log(src.ParentTip, gitrepo.LogQuery{FirstParent: true, Since: since})
+ 	if err != nil {
+ 		return fmt.Errorf("reportengine: walk the parent branch: %w", err)
+@@ -135,47 +151,118 @@ func readLandings(src Sources, opts Options, report *Report) error {
+ 		j.chain = append(j.chain, newestFirst[i])
+ 	}
+ 
+-	board, err := src.Board.Log(src.BoardTip, gitrepo.LogQuery{})
+-	if err != nil {
+-		return fmt.Errorf("reportengine: walk the board branch: %w", err)
+-	}
+-	j.board = board
+-
+ 	attempted, err := j.joinExact()
+ 	if err != nil {
+ 		return err
+ 	}
+-	if err := j.joinTime(attempted); err != nil {
++	if j.checkpoints, err = readCheckpoints(src.Records, src.RecordsTip, j.checkpointFloor(since)); err != nil {
+ 		return err
+ 	}
+-	if err := j.assemble(); err != nil {
++	owners := j.timeJoinOwners(attempted)
++	floor := since
++	for _, owner := range owners {
++		if !floor.IsZero() && owner.open.Before(floor) {
++			floor = owner.open
++		}
++	}
++	if j.board, err = readBoardHistory(src.Board, src.BoardTip, floor); err != nil {
+ 		return err
+ 	}
++	j.joinTime(owners)
++	if err := j.board.readOlderLabels(j.slugsLackingLabels()); err != nil {
++		return err
++	}
++	j.assemble()
+ 	return j.judgeFreshness()
+ }
+ 
++// readCheckpoints returns the committer times of the landing checkpoint commits per slug, oldest first.
++// It reads the records branch's first-parent line from floor to the tip.
++// A zero floor reads the whole history.
++func readCheckpoints(records Reader, tip string, floor time.Time) (map[string][]time.Time, error) {
++	commits, err := records.Log(tip, gitrepo.LogQuery{FirstParent: true, Since: floor})
++	if err != nil {
++		return nil, fmt.Errorf("reportengine: walk the records branch for landing checkpoints: %w", err)
++	}
++	checkpoints := map[string][]time.Time{}
++	for i := len(commits) - 1; i >= 0; i-- {
++		subject, _, _ := strings.Cut(commits[i].Message, "\n")
++		if slug, ok := loomengine.LandingCheckpointSlug(subject); ok {
++			checkpoints[slug] = append(checkpoints[slug], commits[i].Committed)
++		}
++	}
++	return checkpoints, nil
++}
++
++// checkpointFloor returns the time the walk for landing checkpoints opens at.
++// That is since, the start of the parent walk.
++// An older opening of a pair a tag found no task commit for moves it back.
++// It is zero, the whole history, when since is zero or such a pair's opening was not reached.
++func (j *landingJoiner) checkpointFloor(since time.Time) time.Time {
++	floor := since
++	for _, opened := range j.pairOpened {
++		if opened.IsZero() {
++			return time.Time{}
++		}
++		if !floor.IsZero() && opened.Before(floor) {
++			floor = opened
++		}
++	}
++	return floor
++}
++
++// slugsLackingLabels returns the slugs, sorted, that claim a landing kept in the report.
++// Each has no entry in the board commits read at the landing's time.
++func (j *landingJoiner) slugsLackingLabels() []string {
++	lacking := map[string]bool{}
++	for index, commit := range j.chain {
++		held := j.claimed[index]
++		if j.absorbed[index] || commit.Committed.Before(j.opts.Since) || len(held) != 1 {
++			continue
++		}
++		if _, found := j.board.labelsAt(held[0].slug, commit.Committed); !found {
++			lacking[held[0].slug] = true
++		}
++	}
++	slugs := make([]string, 0, len(lacking))
++	for slug := range lacking {
++		slugs = append(slugs, slug)
++	}
++	sort.Strings(slugs)
++	return slugs
++}
++
++// taskCommitSearch is the outcome of a walk down a tag's history for a task-commit trailer.
++// It holds the task commit when found.
++// Otherwise openedAt is the committer time of the commit that opened the slug's pair, zero when the history ended first.
++type taskCommitSearch struct {
++	task     string
++	found    bool
++	openedAt time.Time
++}
++
+ // taskCommitBelow returns the task commit named by the newest trailer in the first-parent history of tagCommit.
+ // The walk stops at the commit that opened slug's pair.
+ // A trailer below that commit is the parent's and names one of the parent's landings, so the walk never reads it.
+ // It walks in growing pages, re-reading from the tag.
+ // It stops at a trailer, at the pair's opening commit, or when a page comes back short.
+-func (j *landingJoiner) taskCommitBelow(tagCommit, slug string) (string, bool, error) {
++func (j *landingJoiner) taskCommitBelow(tagCommit, slug string) (taskCommitSearch, error) {
+ 	for limit := firstTrailerPage; ; limit *= 2 {
+ 		commits, err := j.src.Records.Log(tagCommit, gitrepo.LogQuery{FirstParent: true, Limit: limit})
+ 		if err != nil {
+-			return "", false, fmt.Errorf("reportengine: walk the history of %s: %w", tagCommit, err)
++			return taskCommitSearch{}, fmt.Errorf("reportengine: walk the history of %s: %w", tagCommit, err)
+ 		}
+ 		for _, commit := range commits {
+ 			subject, _, _ := strings.Cut(commit.Message, "\n")
+ 			if opened, ok := fabricengine.OriginRecordSlug(subject); ok && opened == slug {
+-				return "", false, nil
++				return taskCommitSearch{openedAt: commit.Committed}, nil
+ 			}
+ 			if sha, ok := fabricengine.TaskCommitOf(commit.Message); ok {
+-				return sha, true, nil
++				return taskCommitSearch{task: sha, found: true}, nil
+ 			}
+ 		}
+ 		if len(commits) < limit {
+-			return "", false, nil
++			return taskCommitSearch{}, nil
+ 		}
+ 	}
+ }
+@@ -212,16 +299,17 @@ func (j *landingJoiner) joinExact() (map[int]bool, error) {
+ 	claims := map[int][]int{}
+ 	var order []int
+ 	for i, selected := range j.report.inputs.selected {
+-		task, found, err := j.taskCommitBelow(selected.tag.Commit, selected.slug)
++		search, err := j.taskCommitBelow(selected.tag.Commit, selected.slug)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		if !found {
++		if !search.found {
++			j.pairOpened[i] = search.openedAt
+ 			continue
+ 		}
+ 		attempted[i] = true
+-		taskOf[i] = task
+-		index := j.landingOfTask(task)
++		taskOf[i] = search.task
++		index := j.landingOfTask(search.task)
+ 		if index < 0 {
+ 			continue
+ 		}
+@@ -266,47 +354,6 @@ func (j *landingJoiner) absorbBranches(order []int, claims map[int][]int, taskOf
+ 	}
+ }
+ 
+-// boardDoneAfter returns the time of the first board commit after open whose board shows slug's entry done.
+-func (j *landingJoiner) boardDoneAfter(slug string, open time.Time) (time.Time, bool, error) {
+-	for k := len(j.board) - 1; k >= 0; k-- {
+-		commit := j.board[k]
+-		if !commit.Committed.After(open) {
+-			continue
+-		}
+-		tasks, err := j.tasksAt(commit.SHA)
+-		if err != nil {
+-			return time.Time{}, false, err
+-		}
+-		for _, task := range tasks {
+-			if task.Slug == slug && task.Status != nil && *task.Status == boardStatusDone {
+-				return commit.Committed, true, nil
+-			}
+-		}
+-	}
+-	return time.Time{}, false, nil
+-}
+-
+-// tasksAt returns the board entries at a board commit.
+-// A commit holding no board, or one that does not parse, holds none.
+-func (j *landingJoiner) tasksAt(sha string) ([]boardengine.Task, error) {
+-	if tasks, ok := j.boardTasks[sha]; ok {
+-		return tasks, nil
+-	}
+-	data, err := j.src.Board.FileAtRevision(sha, boardengine.BoardFileRel())
+-	var tasks []boardengine.Task
+-	switch {
+-	case errors.Is(err, gitrepo.ErrPathNotAtRevision):
+-	case err != nil:
+-		return nil, fmt.Errorf("reportengine: read the board at %s: %w", sha, err)
+-	default:
+-		if parsed, parseErr := boardengine.ParseBoardTasks(data); parseErr == nil {
+-			tasks = parsed
+-		}
+-	}
+-	j.boardTasks[sha] = tasks
+-	return tasks, nil
+-}
+-
+ // newestCheckpoint returns the newest of the times that lie after floor and at or before ceiling.
+ // A nil floor or ceiling leaves that bound open.
+ func newestCheckpoint(times []time.Time, floor, ceiling *time.Time) (time.Time, bool) {
+@@ -318,17 +365,19 @@ func newestCheckpoint(times []time.Time, floor, ceiling *time.Time) (time.Time,
+ 	return time.Time{}, false
+ }
+ 
+-// joinTime maps two groups through their landing checkpoint and the board's done mark:
++// windowOwner is a run the time join maps: its slug, its tag and index in `landingInputs.selected` when it has one,
++// and the landing checkpoint that opens its window.
++type windowOwner struct {
++	slug     string
++	tag      string
++	selected int
++	open     time.Time
++}
++
++// timeJoinOwners returns the runs the time join maps, each with the checkpoint that opens its window:
+ // the tags the exact join left unmapped, and the slugs whose pair has checkpoints after their newest tag.
+-// A tag whose exact join was attempted is not retried;
+-// two runs claiming one commit are both left unmapped, and the clash is a finding.
+-func (j *landingJoiner) joinTime(attempted map[int]bool) error {
+-	type windowOwner struct {
+-		slug     string
+-		tag      string
+-		selected int
+-		open     time.Time
+-	}
++// A tag whose exact join was attempted is not retried.
++func (j *landingJoiner) timeJoinOwners(attempted map[int]bool) []windowOwner {
+ 	var owners []windowOwner
+ 	taggedSlugs := map[string]bool{}
+ 	for i, selected := range j.report.inputs.selected {
+@@ -337,12 +386,12 @@ func (j *landingJoiner) joinTime(attempted map[int]bool) error {
+ 			continue
+ 		}
+ 		ceiling := selected.tag.Committed
+-		if open, ok := newestCheckpoint(j.report.inputs.checkpoints[selected.slug], selected.previous, &ceiling); ok {
++		if open, ok := newestCheckpoint(j.checkpoints[selected.slug], selected.previous, &ceiling); ok {
+ 			owners = append(owners, windowOwner{slug: selected.slug, tag: selected.tag.Name, selected: i, open: open})
+ 		}
+ 	}
+ 	var untagged []string
+-	for slug := range j.report.inputs.checkpoints {
++	for slug := range j.checkpoints {
+ 		untagged = append(untagged, slug)
+ 	}
+ 	sort.Strings(untagged)
+@@ -351,18 +400,22 @@ func (j *landingJoiner) joinTime(attempted map[int]bool) error {
+ 		if newest, ok := j.report.inputs.newestTag[slug]; ok {
+ 			floor = &newest
+ 		}
+-		if open, ok := newestCheckpoint(j.report.inputs.checkpoints[slug], floor, nil); ok {
++		if open, ok := newestCheckpoint(j.checkpoints[slug], floor, nil); ok {
+ 			owners = append(owners, windowOwner{slug: slug, selected: -1, open: open})
+ 		}
+ 	}
++	return owners
++}
+ 
++// joinTime maps each owner to the first unclaimed parent-branch commit in its window.
++// The window opens at the owner's opening.
++// It closes at the first board commit after it that shows the slug's entry done.
++// Two runs claiming one commit are both left unmapped, and the clash is a finding.
++func (j *landingJoiner) joinTime(owners []windowOwner) {
+ 	claims := map[int][]windowOwner{}
+ 	var order []int
+ 	for _, owner := range owners {
+-		closed, found, err := j.boardDoneAfter(owner.slug, owner.open)
+-		if err != nil {
+-			return err
+-		}
++		closed, found := j.board.doneAfter(owner.slug, owner.open)
+ 		if !found {
+ 			continue
+ 		}
+@@ -391,26 +444,6 @@ func (j *landingJoiner) joinTime(attempted map[int]bool) error {
+ 		holder := holders[0]
+ 		j.claimed[index] = append(j.claimed[index], landingClaim{slug: holder.slug, tag: holder.tag, selected: holder.selected, join: JoinTime})
+ 	}
+-	return nil
+-}
+-
+-// labelsOf returns the labels of slug's entry in the newest board commit at or before at that holds it.
+-func (j *landingJoiner) labelsOf(slug string, at time.Time) ([]string, bool, error) {
+-	for _, commit := range j.board {
+-		if commit.Committed.After(at) {
+-			continue
+-		}
+-		tasks, err := j.tasksAt(commit.SHA)
+-		if err != nil {
+-			return nil, false, err
+-		}
+-		for _, task := range tasks {
+-			if task.Slug == slug {
+-				return task.Labels, true, nil
+-			}
+-		}
+-	}
+-	return nil, false, nil
+ }
+ 
+ // kindOfLabels maps board labels to a landing kind.
+@@ -425,7 +458,7 @@ func kindOfLabels(labels []string) string {
+ }
+ 
+ // assemble builds Report.Landings from the walk and the claims, and points each mapped full run at its landing.
+-func (j *landingJoiner) assemble() error {
++func (j *landingJoiner) assemble() {
+ 	for index, commit := range j.chain {
+ 		if j.absorbed[index] || commit.Committed.Before(j.opts.Since) {
+ 			continue
+@@ -436,10 +469,7 @@ func (j *landingJoiner) assemble() error {
+ 		if len(held) == 1 {
+ 			claim := held[0]
+ 			landing.Slug, landing.Tag, landing.Join = claim.slug, claim.tag, claim.join
+-			labels, found, err := j.labelsOf(claim.slug, commit.Committed)
+-			if err != nil {
+-				return err
+-			}
++			labels, found := j.board.labelsAt(claim.slug, commit.Committed)
+ 			landing.Kind = kindOfLabels(labels)
+ 			if !found {
+ 				j.report.Findings = append(j.report.Findings, Finding{Tag: claim.tag, Error: fmt.Sprintf("no board commit holds an entry for the slug %q", claim.slug)})
+@@ -448,7 +478,6 @@ func (j *landingJoiner) assemble() error {
+ 		}
+ 		j.report.Landings = append(j.report.Landings, landing)
+ 	}
+-	return nil
+ }
+ 
+ // applyRun sets what the claiming tag says about its landing:
+diff --git a/internal/reportengine/landings_test.go b/internal/reportengine/landings_test.go
+index b22229e1e..639f30978 100644
+--- a/internal/reportengine/landings_test.go
++++ b/internal/reportengine/landings_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -460,3 +461,162 @@ func TestCompute_Landings(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestCompute_ReadsEachBoardCommitOnceFromTheWindowOn pins the bound of the landing joins' board read:
++// each board commit from the window's floor on is read once, with the board in effect at the floor,
++// and a commit older than that is read only to find the labels of a slug the board in effect lacks.
++// The floor moves back to the opening of a time-join window that lies before it.
++func TestCompute_ReadsEachBoardCommitOnceFromTheWindowOn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		opts Options
++		// setup returns the landings the row expects and the board reads expected per commit.
++		setup func(w *world) ([]wantLanding, map[string]int)
++	}{
++		{
++			name: "an untagged pair's checkpoint inside the window maps its landing from the board commits at the floor on",
++			opts: Options{Since: at(80), FreshDays: 1},
++			setup: func(w *world) ([]wantLanding, map[string]int) {
++				w.boardCommit("old1", 0, boardTask("s", "", "bug"))
++				w.boardCommit("old2", 10, boardTask("s", "", "bug"))
++				w.boardCommit("edge", 50, boardTask("s", "", "feature"))
++				w.checkpoint("cp", 85, "s")
++				w.parentCommit("L", 90, "landed")
++				w.boardCommit("bd1", 95, boardTask("s", "done", "feature"))
++				w.boardCommit("bd2", 120, boardTask("s", "done", "feature"))
++				return []wantLanding{{commit: "L", kind: "feature", slug: "s", join: "time"}}, map[string]int{"edge": 1, "bd1": 1, "bd2": 1}
++			},
++		},
++		{
++			name: "a checkpoint before the parent walk still opens its window, and a done mark after it closes the window before the landing",
++			opts: Options{Since: at(200), FreshDays: 1},
++			setup: func(w *world) ([]wantLanding, map[string]int) {
++				w.boardCommit("b0", 50, boardTask("s", "", "feature"))
++				w.pairOpening("open-s", 100, "s")
++				w.checkpoint("cp", 160, "s")
++				w.boardCommit("b1", 170, boardTask("s", "done", "feature"))
++				w.boardCommit("b2", 175, boardTask("s", "", "feature"))
++				w.parentCommit("L", 210, "landed")
++				w.boardCommit("b3", 215, boardTask("s", "done", "feature"))
++				w.tagOver("s", "ts", "cp", at(300), seedText("tapestry"), statusJSON(w.t, shedengine.Status{State: shedengine.StateDone, History: finalizeDone}), nil)
++				return []wantLanding{{commit: "L", kind: "unmapped", fresh: "no-pre-image"}}, map[string]int{"b0": 1, "b1": 1, "b2": 1, "b3": 1}
++			},
++		},
++		{
++			name: "a checkpoint before the parent walk maps the landing inside the window its done mark closes",
++			opts: Options{Since: at(200), FreshDays: 1},
++			setup: func(w *world) ([]wantLanding, map[string]int) {
++				w.boardCommit("b0", 50, boardTask("s", "", "feature"))
++				w.pairOpening("open-s", 100, "s")
++				w.checkpoint("cp", 160, "s")
++				w.parentCommit("L", 210, "landed")
++				w.boardCommit("b1", 215, boardTask("s", "done", "feature"))
++				w.tagOver("s", "ts", "cp", at(300), seedText("tapestry"), statusJSON(w.t, shedengine.Status{State: shedengine.StateDone, History: finalizeDone}), nil)
++				return []wantLanding{{commit: "L", kind: "feature", slug: "s", tag: tagName("s", "ts"), join: "time"}}, map[string]int{"b0": 1, "b1": 1}
++			},
++		},
++		{
++			name: "a quiet board, whose newest commit lies before the floor, is read at its tip alone",
++			opts: Options{Since: at(200), FreshDays: 1},
++			setup: func(w *world) ([]wantLanding, map[string]int) {
++				w.boardCommit("b0", 10, boardTask("s", "", "feature"))
++				w.parentCommit("T1", 210, "landed")
++				w.exactRun("s", "ts", 300, "T1", finalizeDone)
++				return []wantLanding{{commit: "T1", kind: "feature", slug: "s", tag: tagName("s", "ts"), join: "exact"}}, map[string]int{"b0": 1}
++			},
++		},
++		{
++			name: "a slug the board in effect at the floor lacks takes its labels from the older board commit that held it",
++			opts: Options{Since: at(200), FreshDays: 1},
++			setup: func(w *world) ([]wantLanding, map[string]int) {
++				w.boardCommit("b0", 10, boardTask("s", "", "feature"))
++				w.boardCommit("b1", 100)
++				w.parentCommit("T1", 210, "landed")
++				w.exactRun("s", "ts", 300, "T1", finalizeDone)
++				return []wantLanding{{commit: "T1", kind: "feature", slug: "s", tag: tagName("s", "ts"), join: "exact"}}, map[string]int{"b0": 1, "b1": 1}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newWorld(t)
++			wantLandings, wantReads := tt.setup(w)
++
++			report, err := Compute(w.sources(), tt.opts)
++			if err != nil {
++				t.Fatalf("Compute error = %v", err)
++			}
++
++			var got []wantLanding
++			for _, landing := range report.Landings {
++				got = append(got, wantLanding{commit: landing.Commit, kind: landing.Kind, slug: landing.Slug, tag: landing.Tag, join: landing.Join, fresh: landing.Fresh})
++			}
++			if !reflect.DeepEqual(got, wantLandings) {
++				t.Errorf("landings = %+v\nwant %+v", got, wantLandings)
++			}
++			if !reflect.DeepEqual(w.board.fileReads, wantReads) {
++				t.Errorf("board reads per commit = %v; want %v", w.board.fileReads, wantReads)
++			}
++			for _, query := range w.board.logQueries {
++				if !query.Since.IsZero() && !query.FirstParent {
++					t.Errorf("board walk %+v; want a first-parent walk, which stops at the first commit before the floor", query)
++				}
++			}
++		})
++	}
++}
++
++// TestLandingJoiner_HoldsNoParsedBoard pins that the landing joins keep no board past its commit's read:
++// no type the joiner holds, apart from the sources, options and report it reads, holds a board entry.
++//
++//testtiming:keep pins that no type the landing joiner reaches holds a parsed board entry, which TestComputeTiming_WalksTheRecordsBranchOnce never asserts
++//lym:seam internal/reportengine#landingJoiner
++//lym:seam internal/reportengine#landingClaim
++//lym:seam internal/reportengine#boardHistory
++//lym:seam internal/reportengine#commitSpan
++//lym:seam internal/reportengine#labelSpan
++//lym:seam internal/gitrepo#LogCommit
++//lym:seam internal/boardengine#Task
++func TestLandingJoiner_HoldsNoParsedBoard(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	entry := reflect.TypeFor[boardengine.Task]()
++	read := map[reflect.Type]bool{reflect.TypeFor[Sources](): true, reflect.TypeFor[Options](): true, reflect.TypeFor[Report](): true}
++	if path, held := typePathTo(reflect.TypeFor[landingJoiner](), entry, read); held {
++		t.Errorf("landingJoiner holds %v through %s; want no board entry held", entry, path)
++	}
++}
++
++// typePathTo returns the field path by which a value of type from holds a value of type target.
++// It returns false when from holds none.
++// It follows pointers, slices, arrays, maps and struct fields, and stops at interfaces.
++func typePathTo(from, target reflect.Type, seen map[reflect.Type]bool) (string, bool) {
++	if from == target {
++		return from.String(), true
++	}
++	if seen[from] {
++		return "", false
++	}
++	seen[from] = true
++	switch from.Kind() {
++	case reflect.Pointer, reflect.Slice, reflect.Array:
++		return typePathTo(from.Elem(), target, seen)
++	case reflect.Map:
++		if path, held := typePathTo(from.Key(), target, seen); held {
++			return path, true
++		}
++		return typePathTo(from.Elem(), target, seen)
++	case reflect.Struct:
++		for i := range from.NumField() {
++			field := from.Field(i)
++			if path, held := typePathTo(field.Type, target, seen); held {
++				return from.Name() + "." + field.Name + " → " + path, true
++			}
++		}
++	}
++	return "", false
++}
+diff --git a/internal/reportengine/report.go b/internal/reportengine/report.go
+index f3d11b105..f96469e02 100644
+--- a/internal/reportengine/report.go
++++ b/internal/reportengine/report.go
+@@ -69,7 +69,11 @@ func Compute(src Sources, opts Options) (Report, error) {
+ 		Landings: []Landing{},
+ 		Findings: []Finding{},
+ 	}
+-	if err := selectRuns(src, opts, &report); err != nil {
++	batten, err := newBattenIndex(src, landingWalkStart(opts))
++	if err != nil {
++		return Report{}, err
++	}
++	if err := selectRuns(src, opts, &report, batten); err != nil {
+ 		return Report{}, err
+ 	}
+ 	markAbsentSegments(report.Runs)
+diff --git a/internal/reportengine/runs.go b/internal/reportengine/runs.go
+index 41d76371b..895804d06 100644
+--- a/internal/reportengine/runs.go
++++ b/internal/reportengine/runs.go
+@@ -128,12 +128,8 @@ func isoWeekLabel(at time.Time) string {
+ 
+ // selectRuns adds a run, a partial run or a finding to report for each archive tag of src.
+ // A tag committed before opts.Since is skipped.
+-func selectRuns(src Sources, opts Options, report *Report) error {
+-	batten, err := newBattenIndex(src)
+-	if err != nil {
+-		return err
+-	}
+-
++// Each run's batten source comes from batten.
++func selectRuns(src Sources, opts Options, report *Report, batten *battenIndex) error {
+ 	previousTag := map[string]gitrepo.TagRef{}
+ 	for _, tag := range src.Tags {
+ 		slug, named := fabricengine.ArchiveTagSlug(tag.Name)
+@@ -181,7 +177,7 @@ func selectRuns(src Sources, opts Options, report *Report) error {
+ 			childHistory: status.History,
+ 			startedAt:    seed.StartedAt,
+ 		}
+-		snapshots, recordCommit, battenFindings, err := batten.snapshotsOfRun(slug, tag.Name, earlierCommitted, tag.Committed)
++		snapshots, recordCommit, battenFindings, err := batten.snapshotsOfRun(slug, tag.Name, earlierCommitted, seed.StartedAt, tag.Committed)
+ 		if err != nil {
+ 			return err
+ 		}
+@@ -211,7 +207,6 @@ func selectRuns(src Sources, opts Options, report *Report) error {
+ 		report.Runs = append(report.Runs, row)
+ 	}
+ 
+-	report.inputs.checkpoints = batten.checkpoints
+ 	report.inputs.newestTag = map[string]time.Time{}
+ 	for slug, tag := range previousTag {
+ 		report.inputs.newestTag[slug] = tag.Committed
+@@ -237,11 +232,10 @@ type selectedTag struct {
+ }
+ 
+ // landingInputs are what run selection hands the landing join:
+-// the tags it read, each slug's landing checkpoints oldest first, and each slug's newest archive tag time.
++// the tags it read and each slug's newest archive tag time.
+ type landingInputs struct {
+-	selected    []selectedTag
+-	checkpoints map[string][]time.Time
+-	newestTag   map[string]time.Time
++	selected  []selectedTag
++	newestTag map[string]time.Time
+ }
+ 
+ // readLoomRecords reads the seed and status of the tapestry run directory at the tag's commit;
+diff --git a/internal/reportengine/runs_test.go b/internal/reportengine/runs_test.go
+index 1dcbbd114..be1bfc86a 100644
+--- a/internal/reportengine/runs_test.go
++++ b/internal/reportengine/runs_test.go
+@@ -222,3 +222,120 @@ func TestCompute_SelectsRuns(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// battenReadExpectation is what a row expects of the one run in the window.
++// snapshots holds the history length of each batten snapshot, and reads the status reads per commit.
++// walks holds the Since of each walk of the records branch for status files, in order.
++// A zero time is a walk of the whole history.
++type battenReadExpectation struct {
++	snapshots []int
++	reads     map[string]int
++	walks     []time.Time
++}
++
++// TestCompute_ReadsBattenStatusesOnlyOverEachRunsSpan pins the bound of the batten source's read:
++// a run's status file is read once at each commit of its span and at the commit before its seed.
++// It is read nowhere else, however far back the walk of the records branch has to reach for the seed.
++// The walks double their lookback and stop at the run's earlier tag or seed stamp.
++// None walks the whole history unless the run offers no stop.
++func TestCompute_ReadsBattenStatusesOnlyOverEachRunsSpan(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	create, runShed, land := battenrecipe.NameWorktreeCreate, battenrecipe.NameRunShed, battenrecipe.NameLand
++
++	tests := []struct {
++		name  string
++		setup func(w *world) battenReadExpectation
++	}{
++		{
++			name: "a reused slug's run in the window reads its span and the status before its seed, and none of the earlier run's",
++			setup: func(w *world) battenReadExpectation {
++				w.battenStatus("b0", 0, "reused", create)
++				w.battenStatus("b1", 1, "reused", create, runShed)
++				w.battenStatus("b2", 2, "reused", create, runShed, land)
++				w.finishedRun("reused", "t1", 3)
++				w.recordsCommit("gap", 200, "")
++				w.battenStatus("b300", 300, "reused", create)
++				w.battenStatus("b301", 301, "reused", create, runShed)
++				w.battenStatus("b302", 302, "reused", create, runShed, land)
++				w.finishedRun("reused", "t2", 303)
++				return battenReadExpectation{
++					snapshots: []int{1, 2, 3},
++					reads:     map[string]int{"b0": 0, "b1": 0, "b2": 0, "gap": 1, "b300": 1, "b301": 1, "b302": 1},
++					walks:     []time.Time{at(82)},
++				}
++			},
++		},
++		{
++			name: "a run whose seed lies before the walk's first lookback widens the walk by doubling it and reads its span once",
++			setup: func(w *world) battenReadExpectation {
++				w.battenStatus("l0", 0, "long", create)
++				w.battenStatus("l270", 270, "long", create, runShed)
++				w.finishedRun("long", "t1", 300)
++				return battenReadExpectation{
++					snapshots: []int{1, 2},
++					reads:     map[string]int{"l0": 1, "l270": 1},
++					walks:     []time.Time{at(82), at(-86)},
++				}
++			},
++		},
++		{
++			name: "a run with no earlier tag and no batten status stops widening a week before its seed stamp",
++			setup: func(w *world) battenReadExpectation {
++				w.tag("bare", "t1", at(300), seedStartedAt(at(240)), statusText(w.t, "Plan-Write", "Finalize"))
++				return battenReadExpectation{reads: map[string]int{}, walks: []time.Time{at(82), at(72)}}
++			},
++		},
++		{
++			name: "a reused slug's run with no status after its earlier tag widens the walk only back to that tag",
++			setup: func(w *world) battenReadExpectation {
++				w.battenStatus("b0", 0, "reused", create)
++				w.finishedRun("reused", "t1", 3)
++				w.finishedRun("reused", "t2", 300)
++				return battenReadExpectation{reads: map[string]int{"b0": 0}, walks: []time.Time{at(82), at(3)}}
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newWorld(t)
++			want := tt.setup(w)
++
++			report, err := Compute(w.sources(), Options{Since: at(250)})
++			if err != nil {
++				t.Fatalf("Compute error = %v", err)
++			}
++
++			if len(report.Runs) != 1 {
++				t.Fatalf("runs = %+v; want the one run in the window", report.Runs)
++			}
++			var snapshots []int
++			for _, snapshot := range report.Runs[0].battenSnapshots {
++				snapshots = append(snapshots, len(snapshot.History))
++			}
++			if !slices.Equal(snapshots, want.snapshots) {
++				t.Errorf("snapshots = %v; want %v", snapshots, want.snapshots)
++			}
++			for sha, wantReads := range want.reads {
++				if got := w.repo.fileReads[sha]; got != wantReads {
++					t.Errorf("reads at %s = %d; want %d", sha, got, wantReads)
++				}
++			}
++
++			var walks []time.Time
++			for _, query := range w.repo.logQueries {
++				if query.PathPrefix == "" {
++					continue
++				}
++				if !query.FirstParent {
++					t.Errorf("records walk %+v; want a first-parent walk, which stops at the first commit before its floor", query)
++				}
++				walks = append(walks, query.Since)
++			}
++			if !slices.EqualFunc(walks, want.walks, time.Time.Equal) {
++				t.Errorf("records walks from %v; want from %v", walks, want.walks)
++			}
++		})
++	}
++}
+diff --git a/internal/reportengine/timing.go b/internal/reportengine/timing.go
+index 7aa1c66f2..7bc93d532 100644
+--- a/internal/reportengine/timing.go
++++ b/internal/reportengine/timing.go
+@@ -178,12 +178,16 @@ func ComputeTiming(src Sources, opts TimingOptions) (TimingReport, error) {
+ 		return report, nil
+ 	}
+ 
++	batten, err := newBattenIndex(src, since)
++	if err != nil {
++		return TimingReport{}, err
++	}
+ 	var scratch Report
+-	if err := selectRuns(src, Options{Since: since}, &scratch); err != nil {
++	if err := selectRuns(src, Options{Since: since}, &scratch, batten); err != nil {
+ 		return TimingReport{}, err
+ 	}
+ 	report.Findings = append(report.Findings, scratch.Findings...)
+-	inFlight, err := selectInFlight(src, opts, &report.Findings)
++	inFlight, err := selectInFlight(src, opts, batten, &report.Findings)
+ 	if err != nil {
+ 		return TimingReport{}, err
+ 	}
+@@ -231,7 +235,8 @@ func ComputeTiming(src Sources, opts TimingOptions) (TimingReport, error) {
+ // any other is abandoned, left out with a finding.
+ // A pair not seeded yet, or seeded to a recipe a report does not select, is left out silently,
+ // and a record that does not decode is a finding.
+-func selectInFlight(src Sources, opts TimingOptions, findings *[]Finding) ([]RunRow, error) {
++// Each run's batten source comes from batten.
++func selectInFlight(src Sources, opts TimingOptions, batten *battenIndex, findings *[]Finding) ([]RunRow, error) {
+ 	live := map[string]bool{}
+ 	for _, slug := range opts.Live {
+ 		live[slug] = true
+@@ -252,7 +257,6 @@ func selectInFlight(src Sources, opts TimingOptions, findings *[]Finding) ([]Run
+ 		}
+ 	}
+ 
+-	var batten *battenIndex
+ 	var rows []RunRow
+ 	for _, branch := range src.Branches {
+ 		if branch.Name == src.RecordsBranch {
+@@ -300,11 +304,6 @@ func selectInFlight(src Sources, opts TimingOptions, findings *[]Finding) ([]Run
+ 			continue
+ 		}
+ 
+-		if batten == nil {
+-			if batten, err = newBattenIndex(src); err != nil {
+-				return nil, err
+-			}
+-		}
+ 		row := RunRow{
+ 			Tag:             branch.Name,
+ 			Slug:            slug,
+@@ -322,7 +321,7 @@ func selectInFlight(src Sources, opts TimingOptions, findings *[]Finding) ([]Run
+ 		if newest, tagged := newestTag[slug]; tagged {
+ 			earlier = &newest
+ 		}
+-		snapshots, recordCommit, battenFindings, err := batten.snapshotsOfRun(slug, branch.Name, earlier, src.SnapshotAt)
++		snapshots, recordCommit, battenFindings, err := batten.snapshotsOfRun(slug, branch.Name, earlier, seed.StartedAt, src.SnapshotAt)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/reportengine/timing_test.go b/internal/reportengine/timing_test.go
+index ce206bb6d..84c360a13 100644
+--- a/internal/reportengine/timing_test.go
++++ b/internal/reportengine/timing_test.go
+@@ -1593,6 +1593,36 @@ func TestComputeTiming(t *testing.T) {
+ 	}
+ }
+ 
++// TestComputeTiming_WalksTheRecordsBranchOnce pins that landed and in-flight runs share one records walk.
++func TestComputeTiming_WalksTheRecordsBranchOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	w := newWorld(t)
++	w.battenStatus("bl", 1, "landed", battenrecipe.NameWorktreeCreate)
++	w.finishedRun("landed", "t1", 2)
++	w.battenStatus("bf", 190, "flight", battenrecipe.NameWorktreeCreate)
++	status := statusJSON(t, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: loomshed.NamePreflight})
++	w.pairBranch("flight", "pf1", at(199), seedStartedAt(at(190)), status, nil)
++
++	got, err := ComputeTiming(w.sources(), TimingOptions{Since: at(0), By: BucketDay, Live: []string{"flight"}})
++	if err != nil {
++		t.Fatalf("ComputeTiming error = %v", err)
++	}
++
++	if len(got.Runs) != 2 {
++		t.Fatalf("runs = %+v; want the landed and the in-flight run", got.Runs)
++	}
++	walks := 0
++	for _, query := range w.repo.logQueries {
++		if query.PathPrefix != "" {
++			walks++
++		}
++	}
++	if walks != 1 {
++		t.Errorf("walks of the records branch = %d; want 1", walks)
++	}
++}
++
+ // markdownSection returns the text of the section under heading, up to the next section heading or the end.
+ func markdownSection(t *testing.T, document, heading string) string {
+ 	t.Helper()
