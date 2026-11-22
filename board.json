@@ -282,25 +282,6 @@
       "revised": "2026-11-22T17:52:18Z"
     },
     {
-      "id": 1570,
-      "handle": "B1",
-      "slug": "held-decision-lands-unruled",
-      "title": "A decision finding held for the parent lets the run land unruled",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A Burler decision-class finding routed to the parent does not gate, so budget acceptance lands the run before the parent or operator rules",
-      "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` with its Code-Burler finding F12, `member-line-overrides-explicit-off`, never ruled on.\nF12 was a `decision`-class finding, routed to the run's parent and marked held: the fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\n\nRound 2's Bouncer verdict states it: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round's circling decision then accepted on budget (`decision: accept`, `cause: budget`, `automatic: true`), and the run went on to land.\nThe held finding ended in the change description's \"Check by hand\" list and in the decision record's open risks, with the exception it questioned still in the code.\n\n## Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, then the next round carries the ruling out.\n\n## Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- The circling decision in `internal/loomcli/circling.go` that accepts on budget.\n",
-      "created": "2026-11-22T18:02:16Z",
-      "revised": "2026-11-22T18:02:16Z"
-    },
-    {
       "id": 1571,
       "handle": "B2",
       "slug": "member-line-honours-land-notice",
@@ -360,23 +341,34 @@
     },
     {
       "id": 1574,
-      "handle": "B4",
-      "slug": "spent-budget-blocking-asks",
-      "title": "A spent code review budget with BLOCKING findings open asks the parent",
-      "kind": "note",
+      "handle": "T1",
+      "slug": "code-bouncer-asks-parent",
+      "title": "Code review asks the parent for held decisions and BLOCKING findings at a spent budget",
+      "kind": "task",
       "labels": [
         "bug",
+        "burler",
         "loom",
-        "darn",
-        "burler"
+        "darn"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "orch-autonomy-mode"
+      ],
       "isolated": false,
-      "brief": "Code-Bouncer auto-accepts a round at a spent budget with BLOCKING findings open; it should halt and ask the run parent instead",
-      "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` with four BLOCKING Code-Burler findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`), and it accepts open findings, BLOCKING ones included.\n\n## Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n## Pointers\n\n- The Bouncer already has `blocking_escalates` (`internal/shedadapters/bouncer.go`, `BlockingEscalates`): it sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it; the Code-Bouncer rows of `darn-recipe.yaml` and `tapestry-recipe.yaml` are the places to check, along with whether the soft-cap rule then escalates to the parent with cause budget.\n- `escalate_decisions`, set today only in the motif and arras recipes, is the near relative for decision findings (`held-decision-lands-unruled`).\n",
-      "created": "2026-11-22T18:04:44Z",
-      "revised": "2026-11-22T18:04:44Z"
+      "brief": "A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting",
+      "body": "## Goal\n\nA code review round never settles past what its parent has to rule on.\nTwo faults let `per-task-settings-one-lookup` land as `118bee8ad` with its review unsettled; this task fixes both.\n\n## 1. A held decision finding gates until the parent rules\n\n### Seen\n\nIts Code-Burler finding F12, `member-line-overrides-explicit-off`, was a `decision`-class finding, routed to the run's parent and marked held:\nthe fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\nRound 2's Bouncer verdict says: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round then settled on budget, and the run landed with the held finding in the \"Check by hand\" list and the questioned exception in the code.\n\n### Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, and the next round carries the ruling out.\n\n### Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- `escalate_decisions` (`EscalateDecisions` in `internal/shedadapters/bouncer.go`), set today only in the motif and arras recipes, escalates a round holding a decision finding to the parent.\n\n## 2. A spent budget with BLOCKING findings open asks the parent\n\n### Seen\n\nThe same run landed with four BLOCKING findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`) and accepts open findings, BLOCKING ones included.\n\n### Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n### Where\n\n- `blocking_escalates` (`BlockingEscalates` in `internal/shedadapters/bouncer.go`) sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it.\n- The Code-Bouncer rows of `contracts/recipes/darn-recipe.yaml` and `tapestry-recipe.yaml`, and whether the soft-cap rule then escalates to the parent with cause budget.\n- The `code_auto_accept` comment in `internal/loomengine/template.yaml`.\n",
+      "status": "draft",
+      "created": "2026-11-22T18:02:16Z",
+      "revised": "2026-11-22T18:05:42Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
