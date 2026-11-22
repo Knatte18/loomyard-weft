@@ -1,6 +1,6 @@
 # Sampler session loads the language skills before it edits code
 
-`sampler-loads-language-skills` · Task · bug, loom, shuttle · running · PR-Review
+`sampler-loads-language-skills` · Task · bug, loom, shuttle · landing · Finalize
 
 ## What was seen (operator, 2026-11-22)
 
