@@ -1,18 +1,33 @@
-# Fix the review findings per-task-settings-one-lookup landed open
+# Per-task beam settings: drop the member-line exception and fix the open findings
 
-`per-task-settings-open-findings` · Note · bug, dobby, config, reconcile, board
+`per-task-settings-fixups` · Task · bug, dobby, config, reconcile, board · draft
 
-## Seen
+Depends on: [`orch-autonomy-mode`](design-orch-autonomy-mode.md)
 
-`per-task-settings-one-lookup` landed as `118bee8ad` after round 2 of its Code-Burler accepted on budget, with these findings open.
+## Goal
+
+Finish what `per-task-settings-one-lookup` (`118bee8ad`) left: remove the beam-member exception from the landing notice, and fix the review findings it landed open.
 The full findings, with locations and proposed fixes, are in round 2's review in the run's archived records:
 `git -C loomyard-weft show archive/per-task-settings-one-lookup/d3f72e425e2a:_lym/reviews/code/round-2-review.md`.
 
-## Findings
+## 1. A beam member gets its landed line only when its land_notice is on
+
+`rememberRuns` in `internal/dobbyengine/landnotice.go` sends a member its landed line while the beam's pull request is recorded, whatever its `land_notice` reads.
+This was Code-Burler finding F12, `member-line-overrides-explicit-off`.
+
+Decision, operator, 2026-11-22: no exception.
+Per-task beam settings follow one rule, and `land_notice` off means no line.
+
+- `rememberRuns` sends a member's line only when its reading is on; the follow-up stays on that line.
+- The package doc of `landnotice.go`, the doc comments of `landNotices` and `rememberRuns`, and `LandNoticeState.Member` drop the exception; `Member` goes if nothing else reads it.
+- `pattern/PATTERN-landing.md` and `pattern/PATTERN-config-layers.md` lose any mention of it.
+- Keeping the pull request's description current without the orch is out of scope: note `beam-pr-describes-itself`.
+
+## 2. The findings landed open
 
 - **F26 `reinterpret-discovers-worktrees-and-anchors`** (BLOCKING): `settingPlaces` in `internal/dobbyengine/reinterpret.go` lists the hub dir for `.git` entries and derives each anchor from the prime's.
   The weft siblings count as worktrees, and a pair with its own anchor is read and written at the wrong dir, against PATTERN-cwd-resolution.
-  The reinterpretation should get the code worktrees as told geometry from `hubreconcile`.
+  The reinterpretation gets the code worktrees as told geometry from `hubreconcile`.
 - **F2 `per-task-keys-declared-at-several-sites`** (BLOCKING): the literal `"beam"` remains in `dobbyengine.ConfigSpec`, the configreg registration and `beamcli` `mergeParent`, beside `beamsetting.Module`.
 - **F27 `registration-test-lacks-keep-marker`** (BLOCKING): `TestLookup_BeamCarriesThePerTaskSettingsReinterpretation` needs `//testtiming:keep` with its reason.
 - **F28 `duplicate-row-in-prepare-run-settings`** (BLOCKING): a duplicate row in `TestPrepareRunSettings` in `internal/configreg/runsettings_test.go`.
