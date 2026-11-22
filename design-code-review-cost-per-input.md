@@ -1,6 +1,6 @@
 # Find what costs Code-Burler-Review its extra minutes
 
-`code-review-cost-per-input` · Note · enhancement, burler, lenses
+`code-review-cost-per-input` · Task · enhancement, burler, lenses · draft
 
 ## Seen
 

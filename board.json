@@ -364,10 +364,10 @@
     },
     {
       "id": 1577,
-      "handle": "E2",
+      "handle": "T7",
       "slug": "code-review-cost-per-input",
       "title": "Find what costs Code-Burler-Review its extra minutes",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "burler",
@@ -378,6 +378,7 @@
       "isolated": false,
       "brief": "Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run",
       "body": "## Seen\n\n`darn-slowdown-measure` (`docs/research/darn-slowdown-measure.md`) found Code-Burler-Review's median up 2.8 min per darn between 2026-11-16/17 and 2026-11-21/22, about 6 % of a 45 min run,\nwith 0.5 more lens reviews per run.\n\n## Idea\n\nMeasure which input of the reviewer costs the minutes, mutation survivors or the tautological-test lens among them.\nCap or skip that input on a diff with no surviving mutant.\n",
+      "status": "draft",
       "created": "2026-11-22T19:04:24Z",
       "revised": "2026-11-22T19:04:24Z"
     }
