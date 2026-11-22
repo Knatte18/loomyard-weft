@@ -24,6 +24,8 @@ Their layout and wording now carry no test, so a format change no longer drags a
 
 - `TestFormatAge` is kept: it pins the unit boundaries of a shared formatter rather than a document's layout.
 - No renderer code changes; only tests are deleted or rewritten.
+- The entry is labelled `bug`, but no test can fail on the merge base, since the change fixes no production defect.
+  The decision record's "No test seam" entry records this.
 
 ## Merge danger
 
