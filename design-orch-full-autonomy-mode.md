@@ -4,7 +4,8 @@
 
 ## Goal (operator, 2026-11-22)
 
-An autonomy mode, set per hub and per project or beam, under which the run's parent orch receives every halt of every member run and settles it itself.
+An autonomy mode under which the run's parent orch receives every halt of every member run and settles it itself.
+Whether a beam is autonomous is decided per beam: one beam may run autonomous while another beside it does not.
 The operator is reached only in two cases:
 
 1. A severe halt the orch cannot settle.
@@ -20,11 +21,11 @@ Drift blocks are the largest share in recent runs.
 ## What exists
 
 - Run agents put their questions to the parent orch (e55618bb).
-- code_review_ask_parent and judge_ask_parent let the parent see and veto code review rounds and drift judge rulings (8998a865); a drift does-not-match ruling still stops the run.
-- Halts reach the parent as batten and dobby notices, but the run then waits for a resume, a decision or pr-continue that the operator often gives.
+- `code_review_ask_parent` and `judge_ask_parent` let the parent see and veto code review rounds and drift judge rulings (8998a865); a drift does-not-match ruling still stops the run.
+- Halts reach the parent as batten and dobby notices, but the run then waits for a resume, a decision or `pr-continue` that the operator often gives.
 
 ## Open for the design
 
 - Which halts the orch may settle, and how a halt is marked severe enough for the operator.
 - How member PR review is handled under the mode: off, or reviewed by the parent.
-- The settings: one switch that sets the existing ask keys and the new halt routing, open to a project or beam.
+- The setting: a per-beam switch, and whether a hub or the prime's root tasks can take it too; it sets the existing ask keys and the new halt routing.
