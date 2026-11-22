@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | T1 | 50m<br>50m | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (8)
+## [P0 Root: entries under no project](project-root.md) (9)
 
 Owner `neve`
 
@@ -56,11 +56,12 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
-### Enhancements (1)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Each run transition waits for a push to origin, so a run starts about a minute slower**<br>• Since 71d6ee1a0 every batten row pushes its records before acting; a run start went from ~7 s to ~60 s. | [`transition-push-slows-rows`](design-transition-push-slows-rows.md) | 10m<br>0m | batten, fabric |
+| E2 |  | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md) | 0m<br>0m | batten, fabric |
 
 ### Features (1)
 

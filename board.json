@@ -317,6 +317,25 @@
       "profile": "light",
       "discussed": true,
       "record_body_sha256": "c3d94bd83987d8c5f08c3bee07c0fa5de89258ea9112d75b18326b63e6ce77b4"
+    },
+    {
+      "id": 1568,
+      "handle": "E2",
+      "slug": "later-transition-push-wait",
+      "title": "Later run transitions still wait for a records push to origin",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it.",
+      "body": "## What was seen\n\nSince `71d6ee1a0` every batten transition pushes its records to origin before the run acts, at about 10 to 20 seconds each.\n`transition-push-slows-rows` removes the push from the start rows only; Land, Worktree-Teardown and every other later transition still wait for it.\n\n## Idea\n\nPush only at the transitions a takeover reads from, batch several transitions into one push, or push in the background and wait only before a row whose effect a second machine could repeat.\nThe design must show which transitions adopt needs pushed before the act.\n",
+      "created": "2026-11-22T16:56:55Z",
+      "revised": "2026-11-22T16:56:55Z"
     }
   ],
   "prime_owner": "neve",
