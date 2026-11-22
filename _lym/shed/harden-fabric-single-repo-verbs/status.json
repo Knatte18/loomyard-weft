@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Harden-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Harden-Bouncer",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -24,6 +24,13 @@
       "at": "2026-11-22T17:19:18Z",
       "started_at": "2026-11-22T17:19:18Z",
       "by": "shed"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/discussion/decision-record.md",
+      "at": "2026-11-22T17:19:23Z",
+      "started_at": "2026-11-22T17:19:23Z"
     }
   ],
   "product": {
