@@ -1,0 +1,8 @@
+{
+  "round": 3,
+  "head": "3366b8b511b480787f982975bb100fe5dc87ee5c",
+  "commits": [
+    "7e498df gatecli: fix gate findings — split the two --no-carry comment lines that reached 120 characters",
+    "592c88c gatecli: fix GATE-LIVE — add --no-carry so the hardener's live call runs its tests over an unchanged tree"
+  ]
+}

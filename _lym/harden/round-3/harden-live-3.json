@@ -1,0 +1,15 @@
+{
+  "round": 3,
+  "mark": "red",
+  "live": {
+    "passed": true,
+    "started": 0
+  },
+  "copies": {
+    "passed": true,
+    "started": 9
+  },
+  "deferred": [
+    "the `harden-live` run failed or started no test binary and its output names no failing test; read /home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/reviews/harden/harden-live-3.json"
+  ]
+}
