@@ -1,6 +1,6 @@
 # Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge
 
-`orch-autonomy-mode` · Task · feature, orch, landing, loom, pawl, drift · running · Parent-Align
+`orch-autonomy-mode` · Task · feature, orch, landing, loom, pawl, drift · running · Drift-Verify
 
 Decision record: [Sketch](decision-orch-autonomy-mode.md)
 
