@@ -1,0 +1,39 @@
+round: 1
+fan: ""
+fix_fan: ""
+fans_recorded: true
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-22T17:20:54Z
+    end: 2026-11-22T18:32:19.642909579+01:00
+    wall_seconds: 685.642909579
+    tokens_known: true
+    fresh_tokens: 250481
+    cache_read_tokens: 12097722
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-22T17:32:25Z
+    end: 2026-11-22T19:05:56.515750875+01:00
+    wall_seconds: 2011.515750875
+    tokens_known: true
+    fresh_tokens: 530387
+    cache_read_tokens: 29616282
+seed:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-11-22T17:19:30Z
+      end: 2026-11-22T18:20:47.620977084+01:00
+      wall_seconds: 77.620977084
+      tokens_known: true
+      fresh_tokens: 62173
+      cache_read_tokens: 348845
+attempt: "1"

@@ -1,0 +1,12 @@
+{
+  "round": 1,
+  "head": "0e4782373055520f1948b4026c98d93b46507425",
+  "commits": [
+    "8a8b8de fabricengine: fix gate findings — move the pending-teardown record to its own audited file and split its tests by tier",
+    "da08acc fabricengine: fix gate findings — break this round's over-long and wrapped comment lines at sentence boundaries",
+    "94bf4a6 tools/sandbox: fix F2, F4, F5, F6 — extend the fabric suite's one-repository scenario with this round's behaviours",
+    "e20e711 fabricengine: fix F2, F6 — keep a one-repository hub's archive tags in the records namespace, and name a killed teardown child's leftovers",
+    "5c76ebb fabricengine: fix F3, F4, F5 — name a branch's unpushed commits with no upstream, and stop a push or pull on an unreadable records layout",
+    "f1ee38d fabriccli: fix F1, F7 — judge a push's path flags by the own-pair and own-sandbox rule, and name the sandbox hub in the refusal"
+  ]
+}
