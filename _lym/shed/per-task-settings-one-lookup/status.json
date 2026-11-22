@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -140,6 +140,72 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/per-task-settings-one-lookup/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-22T17:14:53Z",
+      "started_at": "2026-11-22T16:47:41Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:06:09.138813988Z",
+          "end": "2026-11-22T17:06:09.170533985Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:07:24.259107507Z",
+          "end": "2026-11-22T17:07:24.273306977Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T17:07:41.304764954Z",
+          "end": "2026-11-22T17:07:41.32760319Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:06:09.237912732Z",
+          "end": "2026-11-22T17:06:10.092666262Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T17:06:10.666105431Z",
+          "end": "2026-11-22T17:07:24.227348837Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:07:24.338148762Z",
+          "end": "2026-11-22T17:07:24.760419123Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T17:07:25.161285968Z",
+          "end": "2026-11-22T17:07:41.24882116Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T17:07:41.44437099Z",
+          "end": "2026-11-22T17:14:51.75061379Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-22T17:14:51.826116962Z",
+          "end": "2026-11-22T17:14:51.829187231Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
