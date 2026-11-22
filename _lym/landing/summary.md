@@ -1,46 +1,50 @@
-# A stale gate key no longer refuses a session launch
+# Launch ignores unused gate keys; add `lym config --unset`
 
-A hub `gate.yaml` that still held the retired `gates.harden-live-copies: {tiers: [1]}`, with no scope, made every gate config load fail.
-Both engines' `Prepare` loaded the whole gate config only to install the `refuse_raw` shell guard, so `lym s` could not resume the orch.
-The reinterpretation that retires the key left that entry in place, and only the interactive editor could remove it.
-This change fixes all three.
+A hub `gate.yaml` that held the retired `gates.harden-live-copies` entry with no `scope` stopped `lym s` from resuming the orch session.
+`claudeengine` loaded the whole gate config only to read its `refuse_raw` list, so one bad gate key refused the launch.
+`lym config` had no verb to remove a key, so only the interactive editor could clear it.
 
 ## What changes
 
-- **A launch reads only what it uses.**
-  `gateslot.LoadRefuseRaw` returns `refuse_raw` for a session launch.
-  When the full `LoadConfig` fails past the layer merge, it reads `refuse_raw` from the merged stack alone and logs the failure as a warning.
-  `claudeengine` and `codexengine` `Prepare` both call it, so each engine launches over a bad gate key and installs the same guard.
-  A file that does not parse or merge, or an invalid `refuse_raw` list, still refuses the launch with the loader's way forward.
-- **The reinterpretation removes a scope-less entry.**
-  `RetireHardenLiveCopies` removes a `harden-live-copies` entry with no scope, whatever its tiers, since such an entry stops every gate config load.
-  When its tiers differ from `harden-live`'s one tier, the removal is flagged with the way forward for `gates.harden-live`.
-  A scoped entry that differs is still left and flagged, and the flagged way forward now names the new verb.
-- **`lym config <module> --unset key`** (repeatable) removes a key, or one entry of a map, from the selected layer's file with no editor.
-  The key's value then resolves from the layers below and the template.
-  It takes the same hub write guard, commit or fabric sync and module load check as `--set`.
-  A write that newly fails the load is rolled back.
-  It is refused beside `--set`, `--print` or `--resolved`, and a key the file does not hold is refused with the file left as it was.
-  `configengine.Unset` and `yamlengine.RemoveKeys` carry the write; a mapping the removal empties is dropped with its key.
+- A session launch reads only the gate config's `refuse_raw` list, through the new `gateslot.LoadRefuseRaw`.
+  When the full load fails past the layer merge, the launch logs a warning that names the way forward and installs the list read from the merged stack.
+  Gate calls still refuse until the config is fixed.
+  `claudeengine` and `codexengine` both use it.
+- A stack that does not merge, or an invalid `refuse_raw` list, still refuses the launch.
+- `lym config <module> --unset <key>` removes a key or a map entry with no editor, on any layer.
+  It is repeatable and is mutually exclusive with `--set`, `--print` and `--resolved`.
+  A mapping the removal empties is removed with its key.
+  An absent file, or a key the file does not hold, is an error and writes nothing.
+  A result the module's loader newly refuses leaves the file as it was.
+  The implementation is `yamlengine.RemoveKeys` and `configengine.Unset`, and `configcli` routes both `--set` and `--unset` through one `layerWrite` path.
+- `gateslot.RetireHardenLiveCopies` now also removes a `harden-live-copies` entry the gate config's own entry check refuses, a scope-less one included.
+  When its tiers differ from `harden-live`'s single tier, the removal is flagged with the way forward for `harden-live`.
+  An entry that loads and differs is still left in place and flagged, now naming `--unset` as the removal.
+- Docs follow: `docs/overview.md`, `docs/shared-libs/configengine.md`, `PATTERN-config-layers.md` and the package docs.
 
 ## Design decisions
 
-- The launch tolerates a failure in any gate key but `refuse_raw`, not only in `gates`: the launch reads no other key.
-  A session that runs a gate still hits the full load's refusal at its gate call, so the warning hides nothing from the gate itself.
-- The shell guard is never dropped: a launch whose `refuse_raw` cannot be read still refuses, so a broken file never launches a session without the guard.
-- The reinterpretation keeps its ID `gate-harden-live-copies-retired`.
-  A hub whose marker is already written does not re-run it.
-  On such a hub, `lym config gate --unset gates.harden-live-copies` from the prime removes an entry left behind.
-- `--unset` removes a key whatever the template holds, so it also clears a retired or unknown key without the whole-board `lym config reconcile --apply`.
+- `--unset` removes a key the template lacks.
+  This makes it a second operator route for removing such keys beside `lym config reconcile --apply`;
+  the hubreconcile walk still removes none on its own.
+- The launch fallback reads `refuse_raw` from the merged stack rather than skipping the gate config.
+  The shell guard therefore stays installed whatever else is wrong in the file.
 
-## To check by hand
+## Check by hand
 
-- On a scratch hub, write `gates: {harden-live-copies: {tiers: [1]}}` into the hub `gate.yaml`.
-  Then confirm that `lym s` starts the orch and that the lym log holds the gate config warning.
-- From the prime, run `lym config gate --unset gates.harden-live-copies`.
-  Confirm the entry is gone from the hub file, the Bolt checkout holds a `config: edit gate` commit, and `lym config gate --resolved` loads.
+- `lym s` resumes an orch on a hub whose `gate.yaml` holds a scope-less `gates.harden-live-copies`, and logs the warning.
+  This was not run against a real hub.
+- `lym config gate --unset gates.harden-live-copies` from the prime on such a hub, then a clean `lym config gate --resolved`.
+- `RetireHardenLiveCopies` still runs under the existing `RetiredCopiesReinterpretationID` (`gate-harden-live-copies-retired`).
+  The decision record chose a new ID so hubs past the first marker run the widened rewrite once more,
+  but the diff registers none: check whether a hub already marked keeps a scope-less entry until `--unset` is run by hand.
+- Open review findings:
+  - `internal/hubreconcile/doc.go` names reconcile as the one removal, and now also names `--unset`; check the wording against the other docs that describe key removal.
+  - A hub already marked by the first reinterpretation never gets the scope-less removal (the ID point above).
+  - The `refuse_raw` fallback in `gateslot.LoadRefuseRaw` has no test of its own.
+  - `--unset` removes a key by hand, which sits against the rule that only reconcile removes a key the template lacks; check that the `configcli` and `hubreconcile` docs state the exception consistently.
 
 ## Merge danger
 
 **Door:** one-way
-**Blast radius:** shuttle
+**Blast radius:** gateslot
