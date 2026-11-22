@@ -2,6 +2,8 @@
 
 `move-task-by-handback` · Task · feature, batten, loom, board · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-move-task-by-handback.md)
+
 ## Seen
 
 The study `docs/research/loom/reparent-running-task-2026-11-12.md` (commit `5e41ee2b`) finds that a verb moving a running task to another parent is feasible but wide:
