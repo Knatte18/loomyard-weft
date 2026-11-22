@@ -1,0 +1,6 @@
+verdict: hand-back
+reason: |-
+  The Preflight producer halted at the hardener campaign check. Its cause, named in the stop envelope (drive-envelope-20261122-181843-43f7.json, "reason") and the preflightshed WARN at .lym/loom/driver.log line 8 and trace a08d239101d9ece1 line 8: gates.harden-live names the tiers [0 1], and --copies runs one tier. The stop's own way forward is to set gates.harden-live to a single live tier with scope diff, from the prime, then run lym loom resume.
+  That is a config choice (which tier is the live tier for harden-live), not a cause a plain re-launch clears: re-running Preflight with the config unchanged hits the same check. A goto to Preflight does not help either, since Preflight is the producer that fails. Applying the config change is a lym verb that changes the run, which this tackler may not run, so the run's parent has to make it.
+question: |-
+  Which single tier should gates.harden-live name as the live tier (scope diff), given that the campaign check rejects a tier list of [0 1] while --copies runs one tier? Once the parent has set it from the prime, the run can be resumed with lym loom resume.

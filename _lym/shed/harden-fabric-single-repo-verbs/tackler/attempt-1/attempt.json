@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Preflight",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "0e4782373055520f1948b4026c98d93b46507425",
+    "branch": "harden-fabric-single-repo-verbs",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-22T18:18:43.932624512+01:00",
+  "deadline": "2026-11-22T18:28:43.932624512+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/shed/harden-fabric-single-repo-verbs/drive-reports/drive-envelope-20261122-181843-43f7.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/shed/harden-fabric-single-repo-verbs/drive-reports/drive-report-20261122-181843-4332.md",
+  "strand_guid": "f69c028bd9e2b738ee2d4786a246a9d3"
+}
