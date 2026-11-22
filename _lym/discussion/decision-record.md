@@ -63,4 +63,11 @@ Rationale: Operator, 2026-11-21: I must be able to say what to focus on, which m
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - copies-key-retirement-no-reinterpretation (class design, severity BLOCKING, open in rounds 2)
+  - focus-filename-redeclared (class consistency, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
