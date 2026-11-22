@@ -302,7 +302,7 @@
       "isolated": false,
       "brief": "hardenLiveArgs passes bare internal/x paths, which go reads as std packages, so harden-live fails at setup every round.",
       "body": "## What was seen (harden-fabricengine, 2026-11-22)\n\nThe seed pass wrote `hardener.packages` as worktree-relative directories without `./`, such as `internal/fabricengine`.\n`hardenLiveArgs` (`internal/loomcli/hardenwiring.go`) appends them verbatim to `lym gate test`, so go reads them as standard-library import paths:\n`package internal/fabricengine is not in std`, then `[setup failed]` for each package.\nThe `harden-live` check after every fix round was red before any test ran, and the fixer looped on a gate no fix could clear.\nThe orch unblocked the run by rewriting the local layer with `./` prefixes.\n\n## Fix\n\n`hardenLiveArgs` passes each package as a directory path go reads as one: prefix `./` to a relative path that lacks it.\n`CheckCampaign` already reads the packages as directories under the worktree root, so both forms stay valid in config.\nA test pins that a bare `internal/x` reaches `gate test` as `./internal/x`.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-22T10:25:21Z",
       "revised": "2026-11-22T11:28:20Z",
       "run_settings": {
