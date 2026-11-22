@@ -1,6 +1,6 @@
 # Second hardener campaign on fabric, one-repository layout, with the fabric verbs
 
-`harden-fabric-single-repo-verbs` · Task · bug, fabric
+`harden-fabric-single-repo-verbs` · Task · bug, fabric · starting · Worktree-Create
 
 Depends on: [`seed-killed-way-forward-loops`](design-seed-killed-way-forward-loops.md)
 
