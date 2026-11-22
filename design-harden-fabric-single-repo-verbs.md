@@ -1,6 +1,6 @@
 # Second hardener campaign on fabric, one-repository layout, with the fabric verbs
 
-`harden-fabric-single-repo-verbs` · Task · bug, fabric · halted · Preflight
+`harden-fabric-single-repo-verbs` · Task · bug, fabric · running · Preflight
 
 ## Focus
 
