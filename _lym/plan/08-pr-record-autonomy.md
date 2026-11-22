@@ -1,8 +1,8 @@
 # Card 8 — pr-record-autonomy
 
 **Create:**
-- `plan:internal/pullrequest#ClearReviewSession` -> `func ClearReviewSession(recordPath, lockPath string) error`
-- `plan:internal/pullrequest#TestClearReviewSession` -> `func TestClearReviewSession(t *testing.T)`
+- `internal/pullrequest#ClearReviewSession`
+- `internal/pullrequest#TestClearReviewSession`
 
 **Edit:**
 - `internal/pullrequest#Record`

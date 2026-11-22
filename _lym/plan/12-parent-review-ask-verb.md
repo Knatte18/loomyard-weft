@@ -21,8 +21,8 @@
 - `internal/loomcli#parentReviewWayDecision`
 - `internal/loomcli#parentReviewAnswerVerb`
 - `internal/loomcli#openParentAsk`
-- `plan:internal/landingshed#ReadPRReviewStanding`
-- `plan:internal/landingshed#PRReviewAskLineTag`
+- `internal/landingshed#ReadPRReviewStanding`
+- `internal/landingshed#PRReviewAskLineTag`
 - `internal/pullrequest#Record`
 
 **Intent:** D4: the PR-Review session's agent sends each re-ask with `lym loom parent-review ask <slug>` (new), and the answer verb names the PR-Review ask's own way forward.

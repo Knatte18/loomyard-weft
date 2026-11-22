@@ -1,6 +1,6 @@
 {
   "runGuid": "f8f0a338638e32b910aeff0b25f7b6f5",
-  "planFingerprint": "c3e9c00cd62cb470ba3931480053c2a100df413b64038015264887633c1a356d",
+  "planFingerprint": "fb90e6e32c9fe21a6aba8e9845c0cc2b6c4a71082358cff0c03c22396a69bb1a",
   "planFileHashes": {
     "00-overview.md": "a757238b43385608f47e340cc0f43a9f198325519762385e8593d0ed40d8708f",
     "01-beam-autonomy-key.md": "7cec0a2313bd1289f706234e8d9bc01cf77b56f14ec396a3d73075730ea70e1c",
@@ -8,15 +8,15 @@
     "03-hubgeom-autonomy-reader.md": "fbe4f58bb95f65baed2a848bdbee14ea2180f607642a83b723a32d9e4e54c761",
     "04-halt-notices-carry-autonomy.md": "e48a96d216f4ed2ef8afdf31e885b93dedfc92dae49723e7b3c6b8d2be12c62d",
     "05-parent-ask-clear.md": "e5652247b39876fab6cd26e12cf7600e646100697f542762441b42eb033fff26",
-    "06-drift-autonomy.md": "f57ba66b93aa46af19fb86578001be51c0ed2c75e49992935b301699c472ae36",
-    "07-loom-autonomy-forcing.md": "4cbac578f3a8b44290325562040f45acb956c5f8f2d1d0a60732505c7434cecc",
-    "08-pr-record-autonomy.md": "9ce837c6f25417f52a2aa3b02b1a827c959ef1498c1262143170500a240d81e2",
-    "09-pr-review-ask-helpers.md": "9635c6a5ef0d50a209f877bdbd10d2573b9a5a2350aacdc25dcb83fecd8c2d86",
-    "10-pr-review-session-autonomy.md": "94851b064280845f896712f07088f87543bc4a7a7d3af58a9bae3813a2e1c18d",
-    "11-pr-review-ending-autonomy.md": "8dc4b01760b2712e40d42470c6ce784b4055f7b6847d9974f8c10f84ad4e0a60",
-    "12-parent-review-ask-verb.md": "f416632955104e85e5dbeb146d5b85254529a4da67226ef7a53c47a350cfa80f",
-    "13-pr-continue-autonomy.md": "9351c4d039cce0bc51ce994e55e93987827afc25f638c9caf6e606aa07a8eda2",
-    "14-goto-clears-pr-review.md": "e20fc14cbf5dd9a4fb821edb09c78504a916ac72b0292d6fc50b450b7a899d1d",
+    "06-drift-autonomy.md": "720f33210a3088c5fc8ec94e8fa47440120700919305e5f44cc2685d0c90ef89",
+    "07-loom-autonomy-forcing.md": "e277b3674e6aefa150b1126f10c75df0e62c24ee9c62023fcda7bb326b0437ad",
+    "08-pr-record-autonomy.md": "cdd3ab0c4ba9f6c31fafc8d617973dac9310a1a70bb2691e2f9984b2f852c2db",
+    "09-pr-review-ask-helpers.md": "fb447501e3f4194f07b61a16b9216869ad0e0c5cb83b2b16f999f2c57e92f8d5",
+    "10-pr-review-session-autonomy.md": "ea58b88478ac9b64e4ee97feafefd314494ab3e38fcd1eaaa12872e4978099a2",
+    "11-pr-review-ending-autonomy.md": "a260453b81b67b5102322e0508dcbc69685b732b7efc225e3d884680e455fa03",
+    "12-parent-review-ask-verb.md": "27f96085e0215b04cb0eb724321b43b1a6bccd5ff8a572926ed97d10b4bbd922",
+    "13-pr-continue-autonomy.md": "248ffbc2f64d6944e3c9efe4b1daa7b8864f15306db7f7b3cc3be0413434bbc2",
+    "14-goto-clears-pr-review.md": "dc843ccd8486ec6ab57da1502648471dd609a0263cfd8203d60aadc3fc6307eb",
     "15-beam-await-drained.md": "dcde92a84e2e19b6a263320a49463df4cb7e2716bc0cd50d45c2ac24e76e6f72",
     "16-slack-hook-operator-filter.md": "f7ebbd1c18156e6e2dc38d5a18c800aacef85e2a33255308b7ee34e77052407d",
     "17-orch-role-autonomy-texts.md": "a39bc809d8ff51df3570808c006b54c2623d2402a951d1a68bc9e332913e4c68",
@@ -495,25 +495,53 @@
         "09-pr-review-ask-helpers"
       ],
       "cardHashes": {
-        "06-drift-autonomy": "f57ba66b93aa46af19fb86578001be51c0ed2c75e49992935b301699c472ae36",
-        "07-loom-autonomy-forcing": "4cbac578f3a8b44290325562040f45acb956c5f8f2d1d0a60732505c7434cecc",
-        "08-pr-record-autonomy": "9ce837c6f25417f52a2aa3b02b1a827c959ef1498c1262143170500a240d81e2",
-        "09-pr-review-ask-helpers": "9635c6a5ef0d50a209f877bdbd10d2573b9a5a2350aacdc25dcb83fecd8c2d86"
+        "06-drift-autonomy": "720f33210a3088c5fc8ec94e8fa47440120700919305e5f44cc2685d0c90ef89",
+        "07-loom-autonomy-forcing": "e277b3674e6aefa150b1126f10c75df0e62c24ee9c62023fcda7bb326b0437ad",
+        "08-pr-record-autonomy": "cdd3ab0c4ba9f6c31fafc8d617973dac9310a1a70bb2691e2f9984b2f852c2db",
+        "09-pr-review-ask-helpers": "fb447501e3f4194f07b61a16b9216869ad0e0c5cb83b2b16f999f2c57e92f8d5"
       },
       "startSha": "ee2181d69e32ea4c2c9ea28924ac63d62ccf330b",
       "kind": "fork",
       "spawnedAt": "2026-11-22T19:02:10Z",
       "sessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-drift-autonomy",
+        "status": "done",
+        "head_sha": "eb09cc98a9f15ae57a9288b2b6c5f2d3ed4463af",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/driftengine/config.go",
+          "internal/driftengine/judgeparent.go",
+          "internal/driftengine/verify.go",
+          "internal/driftengine/verify_test.go",
+          "internal/landingshed/prreviewask.go",
+          "internal/landingshed/prreviewask_test.go",
+          "internal/landingshed/seam_enforcement_test.go",
+          "internal/loomcli/autonomy_integration_test.go",
+          "internal/loomengine/config.go",
+          "internal/loomengine/config_test.go"
+        ]
+      },
+      "cardShas": [
+        "eb09cc98a9f15ae57a9288b2b6c5f2d3ed4463af"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-ad7486d0e12c7878a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-ad7486d0e12c7878a.jsonl"
+      ]
     }
   },
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "8bef3fde2058a415283720270d09e363",
   "masterSessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a0666e58a13caac9e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-a0666e58a13caac9e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-orch-autonomy-mode/44bf3974-85b1-4cf3-ba86-f6d7a7031dac/subagents/agent-ad7486d0e12c7878a.jsonl"
   ]
 }

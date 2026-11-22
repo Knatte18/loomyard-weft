@@ -27,11 +27,11 @@
 - `internal/landingshed#prReviewTestDeps`
 
 **Uses:**
-- `plan:internal/landingshed#PRReviewAsker`
-- `plan:internal/landingshed#PRReviewAsker.Ask`
-- `plan:internal/landingshed#ReadPRReviewStanding`
-- `plan:internal/landingshed#PRReviewStanding`
-- `plan:internal/loomcli#runAutonomy`
+- `internal/landingshed#PRReviewAsker`
+- `internal/landingshed#PRReviewAsker.Ask`
+- `internal/landingshed#ReadPRReviewStanding`
+- `internal/landingshed#PRReviewStanding`
+- `internal/loomcli#runAutonomy`
 - `internal/loomengine#Config`
 - `internal/pullrequest#Record`
 - `internal/landingshed#fakePRSessions`

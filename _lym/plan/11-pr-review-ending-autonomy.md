@@ -10,8 +10,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/landingshed#PRReviewStanding`
-- `plan:internal/landingshed#PRReviewSatisfied`
+- `internal/landingshed#PRReviewStanding`
+- `internal/landingshed#PRReviewSatisfied`
 - `internal/landingshed#PRReview.endReview`
 - `internal/landingshed#waitWorld`
 - `internal/landingshed#newWaitWorld`

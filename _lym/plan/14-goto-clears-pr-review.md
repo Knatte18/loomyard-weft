@@ -24,7 +24,7 @@
 - `internal/loomcli#loomCLI.gotoGuardEndingFixers`
 - `internal/loomcli#loomCLI.stepStopRunner`
 - `internal/loomcli#TestFixerEndingGuard`
-- `plan:internal/pullrequest#ClearReviewSession`
+- `internal/pullrequest#ClearReviewSession`
 - `internal/sheddriver#ConsumeTacklerAttempt`
 - `internal/shedarbiter#ConsumeAttempt`
 - `internal/loomcli/doc.go`

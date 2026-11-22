@@ -1,12 +1,12 @@
 # Card 7 — loom-autonomy-forcing
 
 **Create:**
-- `plan:internal/loomengine#ApplyAutonomy` -> `func ApplyAutonomy(cfg Config, autonomous bool) Config`
-- `plan:internal/loomengine#AutonomyForcedSetting` -> `func AutonomyForcedSetting(key string) (value bool, forced bool)`
-- `plan:internal/loomcli#autonomySettingLookup` -> `func autonomySettingLookup(lookup func(module, key string) (any, error), autonomous func() bool) func(module, key string) (any, error)`
-- `plan:internal/loomengine#TestApplyAutonomy` -> `func TestApplyAutonomy(t *testing.T)`
-- `plan:internal/loomcli#TestAutonomySettingLookup` -> `func TestAutonomySettingLookup(t *testing.T)`
-- `plan:internal/loomcli#TestRunAutonomy_ForcesTheRunsKeysOverARealHub` -> `func TestRunAutonomy_ForcesTheRunsKeysOverARealHub(t *testing.T)`
+- `internal/loomengine#ApplyAutonomy`
+- `internal/loomengine#AutonomyForcedSetting`
+- `internal/loomcli#autonomySettingLookup`
+- `internal/loomengine#TestApplyAutonomy`
+- `internal/loomcli#TestAutonomySettingLookup`
+- `internal/loomcli#TestRunAutonomy_ForcesTheRunsKeysOverARealHub`
 
 **Edit:**
 - `internal/loomengine#Config`
@@ -20,9 +20,9 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomcli#runAutonomy`
+- `internal/loomcli#runAutonomy`
 - `internal/loomcli#driftDeps`
-- `plan:internal/driftengine#AutonomyForcedSetting`
+- `internal/driftengine#AutonomyForcedSetting`
 - `internal/loomengine#TestConfigTemplate_ContainsEveryConfigYAMLTag`
 - `internal/loomengine#DiscussionTable`
 - `internal/loomengine#TestDiscussionTable`

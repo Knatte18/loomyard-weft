@@ -1,13 +1,13 @@
 # Card 6 — drift-autonomy
 
 **Create:**
-- `plan:internal/driftengine#ApplyAutonomy` -> `func ApplyAutonomy(cfg Config, autonomous bool) Config`
-- `plan:internal/driftengine#AutonomyForcedSetting` -> `func AutonomyForcedSetting(key string) (value bool, forced bool)`
-- `plan:internal/driftengine#DriftVerify.endedUnanswered` -> `func (p *DriftVerify) endedUnanswered(spawnID string) (burlerengine.ParentAsk, bool, error)`
-- `plan:internal/driftengine#DriftVerify.reaskWaiting` -> `func (p *DriftVerify) reaskWaiting(spawnID string) (burlerengine.ParentAsk, bool, error)`
-- `plan:internal/driftengine#DriftVerify.reaskParent` -> `func (p *DriftVerify) reaskParent(ctx context.Context, request JudgeRequest, held burlerengine.ParentAsk) (shedengine.Outcome, shedengine.OutputPointer, *judgeSession, error)`
-- `plan:internal/loomcli#runAutonomy` -> `func runAutonomy(l *lymcwd.Location) bool`
-- `plan:internal/driftengine#TestApplyAutonomy` -> `func TestApplyAutonomy(t *testing.T)`
+- `internal/driftengine#ApplyAutonomy`
+- `internal/driftengine#AutonomyForcedSetting`
+- `internal/driftengine#DriftVerify.endedUnanswered`
+- `internal/driftengine#DriftVerify.reaskWaiting`
+- `internal/driftengine#DriftVerify.reaskParent`
+- `internal/loomcli#runAutonomy`
+- `internal/driftengine#TestApplyAutonomy`
 
 **Edit:**
 - `internal/driftengine#Config`

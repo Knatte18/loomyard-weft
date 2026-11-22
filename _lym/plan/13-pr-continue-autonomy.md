@@ -9,9 +9,9 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/landingshed#ReadPRReviewStanding`
-- `plan:internal/landingshed#PRReviewSatisfied`
-- `plan:internal/landingshed#PRReviewAwaiting`
+- `internal/landingshed#ReadPRReviewStanding`
+- `internal/landingshed#PRReviewSatisfied`
+- `internal/landingshed#PRReviewAwaiting`
 - `internal/loomcli#pullRequestDeps`
 - `internal/pullrequest#Record`
 

@@ -1,18 +1,18 @@
 # Card 9 — pr-review-ask-helpers
 
 **Create:**
-- `plan:internal/landingshed#PRReviewAskLineTag` -> `const PRReviewAskLineTag = "[pr-review request]"`
-- `plan:internal/landingshed#PRReviewAskSeed` -> `const PRReviewAskSeed = "pr-review"`
-- `plan:internal/landingshed#PRReviewAsker` -> `type PRReviewAsker struct`
-- `plan:internal/landingshed#PRReviewAsker.Ask` -> `func (a PRReviewAsker) Ask(head string, now time.Time) (burlerengine.ParentAsk, error)`
-- `plan:internal/landingshed#PRReviewAskLine` -> `func PRReviewAskLine(slug, prURL, taskBranch, parentBranch string, ask burlerengine.ParentAsk) string`
-- `plan:internal/landingshed#PRReviewStanding` -> `type PRReviewStanding string`
-- `plan:internal/landingshed#PRReviewSatisfied` -> `const PRReviewSatisfied PRReviewStanding = "satisfied"`
-- `plan:internal/landingshed#PRReviewAwaiting` -> `const PRReviewAwaiting PRReviewStanding = "awaiting"`
-- `plan:internal/landingshed#PRReviewAskAgain` -> `const PRReviewAskAgain PRReviewStanding = "ask-again"`
-- `plan:internal/landingshed#ReadPRReviewStanding` -> `func ReadPRReviewStanding(files burlerengine.ParentReviewFiles, head string, now time.Time) (PRReviewStanding, error)`
-- `plan:internal/landingshed#TestPRReviewAsker_Ask` -> `func TestPRReviewAsker_Ask(t *testing.T)`
-- `plan:internal/landingshed#TestReadPRReviewStanding` -> `func TestReadPRReviewStanding(t *testing.T)`
+- `internal/landingshed#PRReviewAskLineTag`
+- `internal/landingshed#PRReviewAskSeed`
+- `internal/landingshed#PRReviewAsker`
+- `internal/landingshed#PRReviewAsker.Ask`
+- `internal/landingshed#PRReviewAskLine`
+- `internal/landingshed#PRReviewStanding`
+- `internal/landingshed#PRReviewSatisfied`
+- `internal/landingshed#PRReviewAwaiting`
+- `internal/landingshed#PRReviewAskAgain`
+- `internal/landingshed#ReadPRReviewStanding`
+- `internal/landingshed_test#TestPRReviewAsker_Ask`
+- `internal/landingshed_test#TestReadPRReviewStanding`
 
 **Delete:**
 - `internal/landingshed#parentReviewRequestPrefix`
