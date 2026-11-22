@@ -1,42 +1,37 @@
-# Orch remote control is off unless the operator turns it on
+# Orch remote control is off by default
 
-`internal/orchengine/template.yaml` shipped `remote_control: true`,
-so every hub whose orch.yaml set no value brought its orch up with Claude Code's remote control on,
-on `lym beam start` and on every resume.
-The operator decides when a session gets remote control, so the template now ships `remote_control: false`.
+lym turned on Claude Code's remote control for every orch it launched, because `internal/orchengine/template.yaml` shipped `remote_control: true`.
+The operator decides when a session gets remote control, so lym must never turn it on by itself.
 
 ## What changes
 
-- **Template default.** `remote_control` defaults to `false`.
-  A hub file that sets `remote_control: true` keeps remote control on;
-  every hub with no explicit value takes the new default.
-- **Reinterpretation.** The orch module registers `orch-remote-control-off-by-default`,
-  whose rewrite `orchengine.FlagRemoteControlDefault` reads the hub's base orch.yaml.
-  A file that sets no `remote_control` is left unchanged and flagged:
-  `hubreconcile`'s walk mails the hub's orch one `[reconcile notice]` line saying remote control is now off,
-  naming `lym config orch --set remote_control=true` from the prime to keep it on, or the RC button for one agent.
-  A file that sets the key, either way, is neither changed nor flagged.
-  A hub with no orch.yaml gets only the marker, as the walk does for every absent base file.
-- **RC button.** Unchanged: `lym orch rc-on` forms the name from `remote_control_name` whatever the switch says.
-
-## Other launch paths
-
-`orchcli`'s launch of the orch strand, both fresh and resumed, is the one site that sets a spec's `RemoteControlName`.
-It goes through `launchRemoteControlName`, which returns an empty name while `remote_control` is off.
-No other role, beam orch included, sets it, and the watcher's cycles relaunch through the same path or keep the session.
-A pane that reed revives replays the resume line recorded at that strand's launch,
-so an orch launched before this change with remote control on keeps it until its next launch.
+- `remote_control` in the orch template is now `false`.
+  A hub whose `orch.yaml` sets no value takes the new default on every launch and resume.
+  The RC button of a pane still turns remote control on for one agent.
+- `orchengine` gains `FlagRemoteControlDefault`, registered on the `orch` row of `configreg` as the reinterpretation `orch-remote-control-off-by-default`.
+  A hub `orch.yaml` that sets no `remote_control` is flagged once, with `lym config orch --set remote_control=true` as the way to keep it on.
+  The file is left unchanged, since lym does not choose the operator's value for them.
+  A file that sets the key, on or off, is neither changed nor flagged.
+- A reed resume or absent-pane relaunch replays the strand's stored command line, which still carried `--remote-control` from before the default changed.
+  `reedengine.Engine` gains `SetRevivalFilter`, and `revivalCmd` applies it in `Resume` and in the relaunch of `AddStrandUnless`.
+  `orchengine.RevivalFilter` strips the `--remote-control <name>` pair from the stored line while `orch.yaml` has `remote_control` off.
+  It reads `orch.yaml` on each call, and drops the argument when the file does not load.
+  `reedcli` and `battencli` install it when they build the reed engine.
+- Other launch paths: the diff changes none; the revival paths above were the only ones replaying a stored line.
 
 ## Design decisions
 
-- The reinterpretation flags instead of rewriting the old meaning into the file:
-  the board entry asks that every hub without an explicit value take the new default,
-  and a rewrite to `remote_control: true` would keep lym turning remote control on by itself.
+- No transition window: a revived orch strand loses remote control at once when the hub's config has it off, rather than keeping it until the strand is next created fresh.
+- The stripping is a regex over the stored line, which handles the POSIX-quoted, PowerShell doubled-quote and bare-name forms of the name.
+  A name quoted in a shape those do not cover would survive the strip.
+- A config reinterpretation is flag-only: it reports and does not rewrite, so a hub's file is never changed by the update.
 
-## Tests
+## To check by hand
 
-- `TestLoadConfig_RemoteControl` pins the template off, an explicit `true` on, and the empty-name refusal under an explicit `true`.
-- `TestFlagRemoteControlDefault` pins the flag for a file with no key or a header only, no flag for a set key, and a parse error for a non-mapping file.
+- The stored resume line keeps `--remote-control` in `internal/reedengine/lifecycle.go` (`Resume`) and `strand.go` (relaunch).
+  The revival filter drops it while `orch.yaml` has remote control off.
+  Bring up an orch with `lym beam start` on a hub with no `remote_control` set, then resume a strand stored before the change, and confirm the pane's command line has no `--remote-control`.
+- On a hub whose `orch.yaml` sets no `remote_control`, confirm the reinterpretation notice appears once and names the `--set` command.
 
 ## Merge danger
 
