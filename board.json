@@ -250,7 +250,7 @@
       "isolated": false,
       "brief": "Declutter the rendered board README in a sampler session",
       "body": "## Goal (operator, 2026-11-22)\n\nMake the rendered board README less cluttered, tried out with the operator in a sampler session:\n\n- **Beam marker**: mark each project that has a beam, in its heading and in any project list.\n- **No empty sections**: render no section, heading or table that holds no entry, such as a project's empty Tasks and Ready.\n- **No Notes level**: drop the Notes heading above the type groups; Features, Bugs, Enhancements and the other type groups become sections of their own.\n\nThe session shows the operator renderings of the current board and keeps what the operator picks.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-22T09:55:43Z",
       "revised": "2026-11-22T09:56:33Z"
     },
