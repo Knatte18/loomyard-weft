@@ -198,6 +198,7 @@
       "isolated": false,
       "brief": "Hardener run on the one-repository part of fabric only",
       "body": "Harden only the one-repository hub layout of fabric: records and board under origin's `refs/lym/` (from 57015a52), the clone that seeds or joins that layout, its refspecs, push and pull, teardown and archive tags in that layout. The rest of fabric, the two-repository layout included, is out of scope.\n",
+      "status": "draft",
       "created": "2026-11-21T19:15:58Z",
       "revised": "2026-11-21T19:28:31Z",
       "run_settings": {
