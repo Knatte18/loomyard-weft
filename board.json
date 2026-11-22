@@ -317,6 +317,46 @@
       "body": "## Seen\n\n`per-task-settings-one-lookup` (`118bee8ad`) landed with an exception in `rememberRuns` at `internal/dobbyengine/landnotice.go`:\nwhile a beam's pull request is recorded, a member gets its landed line whatever its `land_notice` reads.\nThe line carries the follow-up asking the orch to update the change description and run `lym beam describe`.\nIts Code-Burler raised this as F12, `member-line-overrides-explicit-off`; the run landed before anyone ruled on it (see `held-decision-lands-unruled`).\n\n## Decision\n\nOperator, 2026-11-22: no exception.\nPer-task beam settings follow one rule, and `land_notice` off means no line.\n\n## Change\n\n- `rememberRuns` sends a member's line only when its reading is on; the follow-up stays on that line.\n- The package doc at the top of `landnotice.go`, the doc comments of `landNotices` and `rememberRuns`, and `LandNoticeState.Member` drop the exception; `Member` goes if nothing else reads it.\n- `PATTERN-landing.md` and `pattern/PATTERN-config-layers.md` lose any mention of it.\n- Keeping the pull request's description current after each member landing without the orch is its own note, `beam-pr-describes-itself`.\n",
       "created": "2026-11-22T18:03:09Z",
       "revised": "2026-11-22T18:03:09Z"
+    },
+    {
+      "id": 1572,
+      "handle": "E1",
+      "slug": "beam-pr-describes-itself",
+      "title": "A beam pull request updates its description after each member landing",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "dobby",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Dobby runs the beam describe step itself when a member lands under a recorded pull request, instead of asking the orch through the landed line",
+      "body": "## Seen\n\nWhile a beam's pull request is recorded, each member landing asks the orch, through its landed line, to add the landing to the change description and run `lym beam describe \u003cslug\u003e`.\nThe orch gets that line only when the member's `land_notice` is on (`member-line-honours-land-notice`), so with notices off the pull request's description falls behind.\n\n## Idea\n\nDobby, or the landing itself, updates the beam's change description and runs the `lym beam describe` step when a member lands under a recorded pull request.\nNo orch is asked, and the landed line drops its follow-up.\n",
+      "created": "2026-11-22T18:03:09Z",
+      "revised": "2026-11-22T18:03:09Z"
+    },
+    {
+      "id": 1573,
+      "handle": "B3",
+      "slug": "per-task-settings-open-findings",
+      "title": "Fix the review findings per-task-settings-one-lookup landed open",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby",
+        "config",
+        "reconcile",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Six Code-Burler findings left open when the per-task beam settings run accepted on budget: worktree discovery, beam module literal, carry gaps, two test faults",
+      "body": "## Seen\n\n`per-task-settings-one-lookup` landed as `118bee8ad` after round 2 of its Code-Burler accepted on budget, with these findings open.\nThe full findings, with locations and proposed fixes, are in round 2's review in the run's archived records:\n`git -C loomyard-weft show archive/per-task-settings-one-lookup/d3f72e425e2a:_lym/reviews/code/round-2-review.md`.\n\n## Findings\n\n- **F26 `reinterpret-discovers-worktrees-and-anchors`** (BLOCKING): `settingPlaces` in `internal/dobbyengine/reinterpret.go` lists the hub dir for `.git` entries and derives each anchor from the prime's.\n  The weft siblings count as worktrees, and a pair with its own anchor is read and written at the wrong dir, against PATTERN-cwd-resolution.\n  The reinterpretation should get the code worktrees as told geometry from `hubreconcile`.\n- **F2 `per-task-keys-declared-at-several-sites`** (BLOCKING): the literal `\"beam\"` remains in `dobbyengine.ConfigSpec`, the configreg registration and `beamcli` `mergeParent`, beside `beamsetting.Module`.\n- **F27 `registration-test-lacks-keep-marker`** (BLOCKING): `TestLookup_BeamCarriesThePerTaskSettingsReinterpretation` needs `//testtiming:keep` with its reason.\n- **F28 `duplicate-row-in-prepare-run-settings`** (BLOCKING): a duplicate row in `TestPrepareRunSettings` in `internal/configreg/runsettings_test.go`.\n- **F5 `carry-misses-runs-in-flight`** (MEDIUM): the one-time carry of the retired board fields into seeded runs misses a run on another machine and one behind an early board save, since board verbs run no reconcile and the marker is hub-wide.\n- **F13 `beam-project-notify-on-land-dropped`** (MEDIUM): a beam project's `notify_on_land` is folded away on load, so a board save before the carry loses it.\n\nF5 and F13 only matter while a hub still holds the retired board fields; check first whether any hub does.\n",
+      "created": "2026-11-22T18:03:09Z",
+      "revised": "2026-11-22T18:03:09Z"
     }
   ],
   "prime_owner": "neve",

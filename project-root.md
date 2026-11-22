@@ -24,12 +24,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 4d<br>4d | shuttle |
 
-## Bugs (2)
+## Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **A decision finding held for the parent lets the run land unruled**<br>• A Burler decision-class finding routed to the parent does not gate, so budget acceptance lands the run before the parent or operator rules | [`held-decision-lands-unruled`](design-held-decision-lands-unruled.md) | 0m<br>0m | burler, loom |
 | B2 |  | **A beam member gets its landed line only when its land_notice is on**<br>• Remove the exception that sends a beam member its landed line under a recorded pull request whatever land_notice says | [`member-line-honours-land-notice`](design-member-line-honours-land-notice.md) | 0m<br>0m | dobby |
+| B3 |  | **Fix the review findings per-task-settings-one-lookup landed open**<br>• Six Code-Burler findings left open when the per-task beam settings run accepted on budget: worktree discovery, beam module literal, carry gaps, two test faults | [`per-task-settings-open-findings`](design-per-task-settings-open-findings.md) | 0m<br>0m | dobby, config, reconcile, board |
+
+## Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **A beam pull request updates its description after each member landing**<br>• Dobby runs the beam describe step itself when a member lands under a recorded pull request, instead of asking the orch through the landed line | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | 0m<br>0m | dobby, landing |
 
 ## Features (1)
 
