@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Discussion-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step orch-full-autonomy-mode --until-stop",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Burler-Review",
     "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
-    "wait": ""
+    "wait": "shedverbs: step Discussion-Burler-Review interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lym shed step orch-full-autonomy-mode --until-stop"
   },
   "history": [
     {
