@@ -1,6 +1,6 @@
 # Hardener campaign on fabric, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · running · Preflight
+`harden-fabricengine` · Task · bug, fabric · running · Record-Write
 
 ## Focus
 
