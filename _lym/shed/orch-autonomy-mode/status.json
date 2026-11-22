@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -91,6 +91,30 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/orch-autonomy-mode/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-22T18:40:32Z",
+      "started_at": "2026-11-22T18:34:44Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-22T18:40:23.188318243Z",
+          "end": "2026-11-22T18:40:31.683080922Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-22T18:40:31.726672635Z",
+          "end": "2026-11-22T18:40:31.727680391Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {

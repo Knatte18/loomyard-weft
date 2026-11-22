@@ -3,5 +3,6 @@
   "target_paths": [
     "_lym/plan"
   ],
-  "target_id": "6f58ea3273a011c67899c61bdb2e9a5b4b29ccdc12ca1e13bc25d5cddf01cb74"
+  "target_id": "6f58ea3273a011c67899c61bdb2e9a5b4b29ccdc12ca1e13bc25d5cddf01cb74",
+  "decisions_routed": true
 }
