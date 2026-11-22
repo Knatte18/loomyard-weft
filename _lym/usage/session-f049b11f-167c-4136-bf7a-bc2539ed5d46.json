@@ -1,0 +1,14 @@
+{
+  "session_id": "f049b11f-167c-4136-bf7a-bc2539ed5d46",
+  "row": "Harden-Bouncer",
+  "role": "harden-bouncer-seed",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 26,
+  "cache_write_tokens": 94703,
+  "cache_read_tokens": 567575,
+  "output_tokens": 11486,
+  "cost_usd": 0.4651845,
+  "started": "2026-11-22T09:49:02Z",
+  "ended": "2026-11-22T09:50:34Z"
+}

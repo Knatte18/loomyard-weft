@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Bouncer",
+  "current_producer": "Harden-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Bouncer",
-    "last": "Record-Write → done",
+    "now": "Harden-Burler-Review",
+    "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -22,6 +22,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabricengine/_lym/discussion/decision-record.md",
       "at": "2026-11-22T09:48:55Z",
       "started_at": "2026-11-22T09:48:55Z"
+    },
+    {
+      "producer": "Harden-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-22T09:50:34Z",
+      "started_at": "2026-11-22T09:49:01Z",
+      "routed_to": "Harden-Burler-Review"
     }
   ],
   "product": {
