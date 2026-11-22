@@ -1,0 +1,20 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3 with one open design-wrong finding, F12 (key no-check-new-parent-takes-member): D4 step 2 read the beam ready record on the code beam branch.
+  The round-3 fixer already made the fix, and it holds against the code.
+  `MarkReady` in `internal/beamcli/deps.go:236-252` writes `BeamReadyPath` and commits it through `fabricengine.CommitAnchoredPaths`.
+  That function commits in `RecordsWorktree(l)` under `AnchorRel` with no push (`internal/fabricengine/commitweftpaths.go`).
+  `ReadyFor` in `internal/pawlengine/ready.go:37-49` counts the record only when its slug matches.
+  D4 step 2 now says all of this.
+  It reads the beam's own worktree when the beam is on this machine.
+  Otherwise it reads `origin/<beam branch>-weft:<anchor>_lym/landing/beam-ready.json` after a fetch, and it treats an absent file or a missing branch as proof of nothing.
+  In that case the orch asks the beam's orch, or the operator after ten minutes, and the beam qualifies only on a no.
+  The D4 acceptance bullet says "on the beam's records branch".
+  The support log's Round 3 entry replaces Round 2's read on the beam branch.
+  So the fix in place answers F12 and no fix is left to make.
+  The round-3 review's verdict is APPROVED, and its two Rejected items were not raised as findings.
+  The round is at the hard cap, so the segment is accepted.
+  No decision was recorded, because the ruling needs no change to the record.
+verbs:
+  - |-
+    lym loom circling accept move-task-by-handback
