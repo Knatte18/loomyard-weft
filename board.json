@@ -246,7 +246,7 @@
       "isolated": false,
       "brief": "claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit",
       "body": "## What was seen (2026-11-22)\n\nThe hub gate.yaml held a key the hardener rebuild (2dbfdc31) retired, `gates.harden-live-copies`, with no `scope`.\n`lym s` then failed to resume the orch session: claudeengine refused to prepare the orch launch over that one gate key, so the hub had no orch until the key was removed by hand.\n`lym config` has no verb to remove a key, so only the interactive editor could fix it.\n\n## Idea\n\n- An orch or other session that runs no gate should not refuse its launch over a gate key it never uses; warn and launch.\n- The gate reinterpretation that retires `harden-live-copies` should also cover an entry with no scope.\n- Give `lym config` a non-interactive way to remove a key.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-22T09:42:36Z",
       "revised": "2026-11-22T09:51:57Z",
       "run_settings": {
