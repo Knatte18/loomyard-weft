@@ -1,6 +1,6 @@
 # Per-task beam settings use one lookup from the worktree up
 
-`per-task-settings-one-lookup` · Task · enhancement, dobby, config, board, landing · starting · Seed-IDE
+`per-task-settings-one-lookup` · Task · enhancement, dobby, config, board, landing · starting · Open-IDE
 
 ## Rule (operator, 2026-11-22)
 
