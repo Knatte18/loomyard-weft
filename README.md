@@ -38,17 +38,12 @@ Owner `neve`
 | T6 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md) | motif | Discussion-Burler-Review | neve | 1h<br>37m | batten, fabric |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Plan-Write | neve | 6h<br>6h | orch, landing, loom, pawl, drift |
 
-### Layer A (1)
+### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Code review asks the parent for held decisions and BLOCKING findings at a spent budget**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · light | T11 | 3m<br>0m | burler, loom, darn |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | `draft` **Per-task beam settings: drop the member-line exception and fix the open findings**<br>• land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-fixups`](design-per-task-settings-fixups.md) | darn · light | T11 | 2m<br>0m | dobby, config, reconcile, board |
+| T2 | **Per-task beam settings: drop the member-line exception and fix the open findings**<br>• land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-fixups`](design-per-task-settings-fixups.md) | darn · light | T11 | 2m<br>0m | dobby, config, reconcile, board |
 
 ### Research (3)
 
@@ -62,7 +57,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A beam pull request updates its description after each member landing**<br>• Dobby runs the beam describe step itself when a member lands under a recorded pull request, instead of asking the orch through the landed line | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | 2m<br>2m | dobby, landing |
+| E1 |  | **A beam pull request updates its description after each member landing**<br>• Dobby runs the beam describe step itself when a member lands under a recorded pull request, instead of asking the orch through the landed line | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | 2m<br>0m | dobby, landing |
 
 ### Features (1)
 

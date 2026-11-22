@@ -1,6 +1,6 @@
 # Per-task beam settings: drop the member-line exception and fix the open findings
 
-`per-task-settings-fixups` · Task · bug, dobby, config, reconcile, board · draft
+`per-task-settings-fixups` · Task · bug, dobby, config, reconcile, board
 
 Depends on: [`orch-autonomy-mode`](design-orch-autonomy-mode.md)
 
