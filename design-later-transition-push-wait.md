@@ -1,6 +1,6 @@
 # Later run transitions still wait for a records push to origin
 
-`later-transition-push-wait` · Task · enhancement, batten, fabric · starting · Open-Window
+`later-transition-push-wait` · Task · enhancement, batten, fabric · starting · Seed-IDE
 
 Depends on: [`transition-push-slows-rows`](design-transition-push-slows-rows.md)
 
