@@ -1,0 +1,62 @@
+{
+  "sketch": "move-task-by-handback",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "per-task-settings-one-lookup", "revised": "2026-11-22T11:56:43Z"},
+    {"slug": "orch-autonomy-mode", "revised": "2026-11-22T11:56:46Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-05T17:03:32Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"}
+  ],
+  "parts": [
+    {
+      "slug": "orch-move-running-task",
+      "title": "Orch procedure to move a running task by a move note and a fresh run",
+      "type": "feature",
+      "labels": ["orch", "heddle"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+      "packages": [
+        {"path": "contracts/orchrole", "size": 90},
+        {"path": "internal/heddleengine", "size": 1}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; the existing verbs lym creel post, lym tender pause and resume, lym batten cancel --remove, lym board get, upsert and set-status; role-beams.md and orch-role.md as per-task-settings-one-lookup leaves them",
+        "delivers": "a section of contracts/orchrole/role-beams.md holding the move procedure of D1 to D7; a pointer to it beside the cancel lines of orch-role.md's run loop and in its line naming what role-beams.md covers; the move note line in internal/heddleengine/glossary.md (D8)",
+        "exports": "the term move note and the role-beams.md section on moving a running task to another parent"
+      },
+      "depends_on": ["per-task-settings-one-lookup"],
+      "open_risks": [
+        "The re-run of D5 depends on D4 step 5's pruning fetch until `stale-records-ref-blocks-rerun` lands."
+      ],
+      "criteria": [
+        "Review: `contracts/orchrole/role-beams.md` holds a section on moving a running task to another parent that states guidance alone with existing verbs and no recipe step (D1).",
+        "Review: that section has the orch ask the live writer by creel, while no pause covers the slug, for the first three parts in its reply;\nwrite the note in the orch's `.scratch/`; hold with `lym tender pause <slug>`; and add the tip SHA and merge base read after the hold (D2).",
+        "Review: that section has the orch hold the run and write the move note itself when none of the writers is live,\nor when a live writer refuses the ask or replies without the three parts (D3).",
+        "Review: that section gives the order note and hold;\nthe new-parent check, with `lym board get` and, for a beam, the read of `_lym/landing/beam-ready.json` on the beam's records branch,\nand for a beam on another machine whose record origin does not show, the ask to that beam's orch or the operator, the beam qualifying only on a no,\nthat stops the move before the cancel;\n`lym batten cancel <slug> --remove` from the prime, with a partial finish and a refusal told apart by the way forward each names,\nand no `lym tender resume` without a slug, the hub-pause refusal stopping with the slug pause in place until the operator lifts the hub pause;\nthe code archive tag named from the recorded tip, and before the board write both the tag confirmed on origin by `ls-remote` and no `<task branch>-weft` records branch listed on origin,\nwith the ten-minute bound, the manual tag push from the prime and the stop that names the note's scratch path;\nthe move note section in the body or, for an entry with a stored record, as an H3 under `## Notes for the plan writer` through `--record-file`,\nnaming the tag fetch the fresh run makes;\nthe `project` change, and the upsert without it that keeps the note when the board refuses the `project` value;\nthe pruning fetch of the records repository while `stale-records-ref-blocks-rerun` has not landed; and release by the new parent's orch (D4).",
+        "Review: that section keeps the same entry and files no new task (D5).",
+        "Review: that section forbids cherry-picking, merging or checking out the archive tag,\nand has the fresh run fetch the tag with `git fetch origin refs/tags/archive/<slug>/<12 hex>:refs/tags/archive/<slug>/<12 hex>` and read the diff from the merge base (D6).",
+        "Review: that section stops the move when cancel refuses, lifting the pause with `lym tender resume <slug>` except on the hub-pause and owned-elsewhere refusals,\nand excludes beam projects, grouping projects and front tasks (D7).",
+        "Review: `internal/heddleengine/glossary.md` holds the `move note` line of D8.",
+        "Review: `contracts/orchrole/orch-role.md`'s run loop points to the new section beside the cancel lines, and its line on `role-beams.md` names moving a running task (D1)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "the darn light cell with a stored record reads too few runs (1 run), so no figure is given"
+    }
+  ],
+  "cost": {
+    "expected_usd": null,
+    "line": "one darn part at profile light; the darn light cell with a stored record reads too few runs",
+    "next_best": {
+      "split": "the same single darn part at profile solid, for a second review bounce on the intricate D4 procedure",
+      "expected_usd": 16.57,
+      "line": "the darn solid cell with a stored record: mean of 9 runs"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
