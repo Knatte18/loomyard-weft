@@ -370,6 +370,15 @@ None.
   - goto-stop-reads-unwired-reed-runner (class scope, severity BLOCKING, open in rounds 2)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - clear-review-session-keeps-parent-review-asked (class design, severity MEDIUM, open in rounds 1)
+  - dobby-run-notices-unstamped-autonomy (class scope, severity MEDIUM, open in rounds 1)
+  - goto-hook-wiring-untested (class scope, severity MEDIUM, open in rounds 1)
+  - halt-notice-call-sites-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: `beam.yaml`'s template carries `autonomy: false`; the key is classified `CategoryNone`; a task's `run_settings` of `{"beam":{"autonomy":true}}` is copied into its worktree's local layer and accepted.
