@@ -1,0 +1,14 @@
+{
+  "session_id": "7effd394-b99d-4cf6-9f30-3e13f1f7e07f",
+  "row": "Raddle-Write",
+  "role": "raddle",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 36,
+  "cache_write_tokens": 59229,
+  "cache_read_tokens": 674039,
+  "output_tokens": 9880,
+  "cost_usd": 0.6286968,
+  "started": "2026-11-22T16:46:00Z",
+  "ended": "2026-11-22T16:51:52Z"
+}
