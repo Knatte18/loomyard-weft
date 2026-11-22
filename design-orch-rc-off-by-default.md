@@ -1,6 +1,6 @@
 # Orch remote control is off by default
 
-`orch-rc-off-by-default` · Task · bug, orch, config · starting · Open-IDE
+`orch-rc-off-by-default` · Task · bug, orch, config · running · Preflight
 
 ## What was seen (operator, 2026-11-22)
 
