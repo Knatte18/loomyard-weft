@@ -1,0 +1,1376 @@
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 419e0c422..cc894c82e 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -221,10 +221,13 @@ type testRequest struct {
+ 	phase func(runPhase)
+ 	// processCapFor builds the process cap over a tier run's marker; nil means newProcessCap.
+ 	// A test replaces it so the cap trips without a runaway.
+-	processCapFor func(marker string, period time.Duration) processCap
++	processCapFor func(marker string, period time.Duration, commands *runningCommands) processCap
+ 	// memoryGuardFor builds the memory guard over a tier run's command; nil means newMemoryGuard.
+ 	// A test replaces it so the guard kills without a runaway.
+ 	memoryGuardFor func(limit int64, out io.Writer) memoryGuard
++	// commands are the tier commands the call is running, which the report steps' memory guard leaves alone;
++	// nil records none.
++	commands *runningCommands
+ }
+ 
+ // absoluteDir returns the directory a request runs in: dir made absolute against cwd, or cwd when dir is empty.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index f216df112..ffcfbb5bf 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -357,8 +357,14 @@
+ // # Report steps
+ //
+ // A `--gate` key's `reports` may list `gateslot.ReportRedundancy`, `gateslot.ReportReach` or `gateslot.ReportMutation`.
+-// The key runs each listed step after its lints in an uncancelled call, whatever the key's scope.
++// The key runs each listed step in an uncancelled call, whatever the key's scope.
+ // The reach step runs before the redundancy step.
++// The steps start beside the first run of the plan's highest tier when no earlier run failed.
++// They judge in the background while the rest of the plan and the lints run.
++// A run that fails after they started cancels them, and the call judges red-gate reports instead.
++// A halted call cancels them and writes no report.
++// The call writes the reports after its lints.
++// The steps' lines, and those of their memory guard, are held until then, and print in step order before each report's.
+ // Each step is advisory: every failure it meets is a line of its report, and it never changes the exit code.
+ // It writes its report through `internal/state` into the worktree's gate directory.
+ // The file is `redundancy.json`, `reach.json` or `mutation.json`, and a report it cannot write is logged at Warn.
+@@ -367,7 +373,8 @@
+ // Each such report carries a note.
+ // A report never matches a later commit when it judged nothing, is a red-gate report or a prime report,
+ // so a later call on a matching tree reruns nothing and keeps it.
+-// Each step takes one gate slot where it builds, after the call's tiers released theirs.
++// Each step takes one gate slot where it builds, beside the slots the last tier holds,
++// so a pool too small for both makes the step wait for the tier's release.
+ // It takes none inside an enclosing gate run's slot.
+ // The memory guard and the build and test bounds bound the steps.
+ // So do the `redundancy_*`, `reach_budget_min` and `mutation_*` budgets in `gate.yaml`.
+@@ -554,6 +561,7 @@
+ // Each kill prints a line naming the binary, its package directory and the reason;
+ // the tier's log and failure report carry it, and the tier is never rerun.
+ // `lym gate redundant`, `lym gate mutate`, `lym gate test --map` and the report steps run the same guard.
++// The report steps' guard leaves alone a test binary below a running tier command, which the tier's own guard watches.
+ // A test run the guard kills there is not judged, a mutant run it kills counts as no kill,
+ // and `--map` records the entry as failed.
+ // The guard is off when `memory_quit_mb` is 0 or when `LYM_GATE_TEST_PID` names a live ancestor.
+@@ -576,6 +584,9 @@
+ // The tier then fails with a line naming the cap and the way forward, and is never rerun as a resource shortage.
+ // The cap guards against a test binary that a pinned tmux job or child runs again, re-running its own suite.
+ // A nested `lym gate test` sets its own entry and counts once toward the outer cap.
++// A marked process below the verb but below no running tier command is not counted.
++// A report step beside the last tier is one, so an advisory step never fails a tier.
++// A marked process whose parentage the process sample lost still counts.
+ // It is unsupported where `proc.PIDsWithEnv` is, and the cap then ends.
+ //
+ // # Detached run
+diff --git a/internal/gatecli/memoryguard.go b/internal/gatecli/memoryguard.go
+index 4db3e46a2..f354ca429 100644
+--- a/internal/gatecli/memoryguard.go
++++ b/internal/gatecli/memoryguard.go
+@@ -54,7 +54,9 @@ type memoryGuard struct {
+ 	// onKill, when set, is called with the pid of each test binary the guard is about to kill.
+ 	// It is also called with the pid of each test binary that holds a killed one, before any SIGKILL goes out.
+ 	onKill func(pid int)
+-	after  func(time.Duration) <-chan time.Time
++	// foreign, when set, names the processes another guard watches; a test binary below one is left to that guard.
++	foreign func(pid int) bool
++	after   func(time.Duration) <-chan time.Time
+ 	// out receives the line of each kill as it happens; nil prints none.
+ 	out io.Writer
+ }
+@@ -97,7 +99,7 @@ type memoryKill struct {
+ // A test binary whose tree, itself and every process it started, holds more than limit is killed whole.
+ // When none does, the memory limit the calling process sits under is checked.
+ // With less than a tenth of its Max left, the largest tree holding at least floor is killed whole.
+-// Each binary is killed once.
++// Each binary is killed once, and a binary below a process foreign names is never killed.
+ // A platform that cannot sample ends run after one log line.
+ func (g memoryGuard) run(ctx context.Context, root int) []string {
+ 	logger.Info("gate: memory guard started", "limit_mb", g.limit>>20, "period", g.period)
+@@ -118,7 +120,11 @@ func (g memoryGuard) run(ctx context.Context, root int) []string {
+ 			logger.Warn("gate: the memory guard could not sample the process tree", "cause", err)
+ 			continue
+ 		}
+-		for _, kill := range g.kills(testTrees(tree), killed) {
++		trees := testTrees(tree)
++		if g.foreign != nil {
++			trees = withoutForeign(trees, tree, g.foreign)
++		}
++		for _, kill := range g.kills(trees, killed) {
+ 			killed[kill.tree.binary.PID] = true
+ 			kill.enclosing = enclosingTestBinaries(tree, kill.tree.binary)
+ 			lines = append(lines, g.killTree(kill))
+@@ -127,6 +133,29 @@ func (g memoryGuard) run(ctx context.Context, root int) []string {
+ 	return lines
+ }
+ 
++// withoutForeign returns trees without each tree whose binary has an ancestor in sample that foreign names.
++func withoutForeign(trees []testTree, sample []proc.ProcessSample, foreign func(pid int) bool) []testTree {
++	parents := make(map[int]int, len(sample))
++	for _, process := range sample {
++		parents[process.PID] = process.Parent
++	}
++	return slices.DeleteFunc(trees, func(tree testTree) bool {
++		seen := map[int]bool{tree.binary.PID: true}
++		for pid := tree.binary.Parent; !seen[pid]; {
++			if foreign(pid) {
++				return true
++			}
++			seen[pid] = true
++			parent, sampled := parents[pid]
++			if !sampled {
++				return false
++			}
++			pid = parent
++		}
++		return false
++	})
++}
++
+ // enclosingTestBinaries returns the pids of the Go test binaries of tree that are ancestors of binary.
+ func enclosingTestBinaries(tree []proc.ProcessSample, binary proc.ProcessSample) []int {
+ 	byPID := make(map[int]proc.ProcessSample, len(tree))
+diff --git a/internal/gatecli/memoryguard_test.go b/internal/gatecli/memoryguard_test.go
+index 3fa20f44c..1c0c08dd3 100644
+--- a/internal/gatecli/memoryguard_test.go
++++ b/internal/gatecli/memoryguard_test.go
+@@ -48,8 +48,9 @@ type guardRun struct {
+ 
+ // runGuardScripted runs a memory guard over script and returns once the script's last sample has been handled.
+ // limit is the memory limit the guard reads, and limited whether it finds one.
++// foreign names the processes another guard watches.
+ // Only the test binary at testBinaryPID can be described.
+-func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLimit, limited bool) guardRun {
++func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLimit, limited bool, foreign func(pid int) bool) guardRun {
+ 	t.Helper()
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	defer cancel()
+@@ -77,6 +78,7 @@ func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLi
+ 			result.killed = append(result.killed, pid)
+ 			return nil
+ 		},
++		foreign: foreign,
+ 		after: func(time.Duration) <-chan time.Time {
+ 			elapsed := make(chan time.Time, 1)
+ 			elapsed <- time.Time{}
+@@ -98,10 +100,12 @@ func TestMemoryGuard(t *testing.T) {
+ 	short := proc.MemoryLimit{Used: 16384<<20 - 512<<20, Max: 16384 << 20, Cgroup: "/user.slice"}
+ 	ample := proc.MemoryLimit{Used: 8192 << 20, Max: 16384 << 20, Cgroup: "/user.slice"}
+ 	tests := []struct {
+-		name        string
+-		script      []scriptedSample
+-		limit       proc.MemoryLimit
+-		limited     bool
++		name    string
++		script  []scriptedSample
++		limit   proc.MemoryLimit
++		limited bool
++		// foreign are the running tier commands, whose test binaries the tier's own guard watches.
++		foreign     []int
+ 		wantKilled  []int
+ 		wantLines   []string
+ 		wantSamples int
+@@ -129,6 +133,17 @@ func TestMemoryGuard(t *testing.T) {
+ 			wantKilled: []int{innerPID},
+ 			wantLines:  []string{memoryGuardLine("averylongpackagenamethatpassesfifteen.test", innerPID, "", "", "it held 5000 MB, over memory_quit_mb's 4096 MB")},
+ 		},
++		{
++			name: "a test binary below a running tier command is left to the tier's own guard",
++			script: []scriptedSample{{tree: []proc.ProcessSample{
++				{PID: 2, Parent: 1, Path: "/bin/sh", RSS: 1 << 20},
++				{PID: otherPID, Parent: 2, Path: longBinaryPath, RSS: 5000 << 20},
++				{PID: testBinaryPID, Parent: 1, Path: testBinaryPath, RSS: 5000 << 20},
++			}}},
++			foreign:    []int{2},
++			wantKilled: []int{testBinaryPID},
++			wantLines:  []string{overLine},
++		},
+ 		{
+ 			name: "a short memory limit kills the largest tree at or above the floor",
+ 			script: []scriptedSample{{tree: []proc.ProcessSample{
+@@ -167,7 +182,11 @@ func TestMemoryGuard(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := runGuardScripted(t, tt.script, tt.limit, tt.limited)
++			commands := &runningCommands{}
++			for _, pid := range tt.foreign {
++				commands.add(pid)
++			}
++			got := runGuardScripted(t, tt.script, tt.limit, tt.limited, commands.holds)
+ 			if !slices.Equal(got.killed, tt.wantKilled) {
+ 				t.Errorf("killed pids = %v; want %v", got.killed, tt.wantKilled)
+ 			}
+diff --git a/internal/gatecli/mutate_integration_test.go b/internal/gatecli/mutate_integration_test.go
+index 2767a7301..a6ee808a6 100644
+--- a/internal/gatecli/mutate_integration_test.go
++++ b/internal/gatecli/mutate_integration_test.go
+@@ -595,7 +595,7 @@ func TestGateMutate(t *testing.T) {
+ 			if tt.scoper != "" {
+ 				step.reach.cfg.Scoper = tt.scoper
+ 			}
+-			step.run(tt.red, tt.inHub)
++			step.writeReport(step.judgeReport(tt.red, tt.inHub))
+ 			report, found, err := ReadMutationReport(location)
+ 			if err != nil || !found {
+ 				t.Fatalf("ReadMutationReport = found %v, error %v; want a report", found, err)
+@@ -662,7 +662,7 @@ func TestGateMutate(t *testing.T) {
+ 		if err := os.Remove(fabricengine.OriginRecordPath(location)); err != nil {
+ 			t.Fatal(err)
+ 		}
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report, found, err := ReadMutationReport(location)
+ 		if err != nil || !found {
+ 			t.Fatalf("ReadMutationReport = found %v, error %v; want a report", found, err)
+diff --git a/internal/gatecli/mutation.go b/internal/gatecli/mutation.go
+index 7a6b79fad..d7a8b6f41 100644
+--- a/internal/gatecli/mutation.go
++++ b/internal/gatecli/mutation.go
+@@ -33,22 +33,24 @@ func (e *execution) mutationStep() mutationStep {
+ 	return mutationStep{reach: e.reachStep(), hubEnv: e.request.hubEnv}
+ }
+ 
+-// run writes the step's report into the worktree's gate directory and prints its summary line to stderr.
++// judgeReport returns the step's report.
+ // red tells a call one of whose runs failed, and inHub a call inside a hub; either way the report then judges nothing.
+-// A report the step cannot write is logged at Warn, and the call's result stands.
+-func (s mutationStep) run(red, inHub bool) {
+-	path := mutationReportPath(s.reach.location)
+-	var report MutationReport
++func (s mutationStep) judgeReport(red, inHub bool) MutationReport {
+ 	switch {
+ 	case red:
+-		report = MutationReport{RedGate: true, Note: noteRedGate}
++		return MutationReport{RedGate: true, Note: noteRedGate}
+ 	case !inHub:
+-		report = MutationReport{Note: noteNoHub}
++		return MutationReport{Note: noteNoHub}
+ 	case !s.reach.cfg.HasGoCoverageMaps():
+-		report = MutationReport{Note: fmt.Sprintf(noteScoper, s.reach.cfg.Scoper)}
+-	default:
+-		report = s.answer()
++		return MutationReport{Note: fmt.Sprintf(noteScoper, s.reach.cfg.Scoper)}
+ 	}
++	return s.answer()
++}
++
++// writeReport writes report into the worktree's gate directory and prints its summary line to stderr.
++// A report the step cannot write is logged at Warn, and the call's result stands.
++func (s mutationStep) writeReport(report MutationReport) {
++	path := mutationReportPath(s.reach.location)
+ 	report.GateKey = s.reach.gateKey
+ 	report.Written = time.Now()
+ 	if err := state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), report); err != nil {
+diff --git a/internal/gatecli/processcap.go b/internal/gatecli/processcap.go
+index 6284470d9..fda005c36 100644
+--- a/internal/gatecli/processcap.go
++++ b/internal/gatecli/processcap.go
+@@ -7,6 +7,8 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"os"
++	"slices"
+ 	"strings"
+ 	"time"
+ 
+@@ -30,21 +32,67 @@ type processCap struct {
+ 	// kill sends SIGKILL to pid.
+ 	kill  func(pid int) error
+ 	after func(time.Duration) <-chan time.Time
++	// commands, when set, are the tier commands the call is running.
++	// The cap then leaves out a marked process that sits below root but below none of them.
++	// A report step judging beside the tier is one.
++	commands *runningCommands
++	// root is the pid of the process that starts the tier commands.
++	root int
++	// sample returns the process tree under root.
++	sample func(root int) ([]proc.ProcessSample, error)
+ }
+ 
+ // newProcessCap returns the production cap over the processes carrying marker.
++// A marked process below this process but below none of commands is not counted.
+ // It scans /proc, kills with SIGKILL and waits on the real clock.
+-func newProcessCap(marker string, period time.Duration) processCap {
++func newProcessCap(marker string, period time.Duration, commands *runningCommands) processCap {
+ 	return processCap{
+-		limit:  runProcessCap,
+-		period: period,
+-		marker: marker,
+-		list:   proc.PIDsWithEnv,
+-		kill:   func(pid int) error { return proc.SignalProcess(pid, true) },
+-		after:  time.After,
++		limit:    runProcessCap,
++		period:   period,
++		marker:   marker,
++		list:     proc.PIDsWithEnv,
++		kill:     func(pid int) error { return proc.SignalProcess(pid, true) },
++		after:    time.After,
++		commands: commands,
++		root:     os.Getpid(),
++		sample:   proc.TreeSample,
+ 	}
+ }
+ 
++// countable returns pids without each one whose sampled ancestry reaches root without passing a running tier command.
++// A pid whose ancestry the sample lost, such as a tmux server that left the tree, stays counted.
++// It returns pids whole when no commands are set or the sample fails.
++func (c processCap) countable(pids []int) []int {
++	if c.commands == nil {
++		return pids
++	}
++	tree, err := c.sample(c.root)
++	if err != nil {
++		return pids
++	}
++	parents := make(map[int]int, len(tree))
++	for _, process := range tree {
++		parents[process.PID] = process.Parent
++	}
++	return slices.DeleteFunc(slices.Clone(pids), func(pid int) bool {
++		for seen := map[int]bool{}; !seen[pid]; {
++			if c.commands.holds(pid) {
++				return false
++			}
++			if pid == c.root {
++				return true
++			}
++			seen[pid] = true
++			parent, sampled := parents[pid]
++			if !sampled {
++				return false
++			}
++			pid = parent
++		}
++		return false
++	})
++}
++
+ // run lists the run's processes once per period until ctx ends, and returns processCapLine once the cap tripped.
+ // It returns "" when the cap never tripped.
+ // The first list longer than limit trips the cap and kills every listed process.
+@@ -67,6 +115,7 @@ func (c processCap) run(ctx context.Context) string {
+ 			logger.Debug("gate test: the process cap could not list the run's processes", "cause", err)
+ 			continue
+ 		}
++		pids = c.countable(pids)
+ 		if line == "" && len(pids) <= c.limit {
+ 			continue
+ 		}
+diff --git a/internal/gatecli/processcap_test.go b/internal/gatecli/processcap_test.go
+index 65c226185..7a98a5f4a 100644
+--- a/internal/gatecli/processcap_test.go
++++ b/internal/gatecli/processcap_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -19,17 +20,31 @@ type capSample struct {
+ 	err  error
+ }
+ 
++// capRoot is the pid of the process that starts the tier commands in a scripted cap.
++const capRoot = 100
++
+ // runScriptedCap runs a cap of limit over script and returns its line and the pids it killed, in order.
+ // It returns once the script's last list has been taken.
+-func runScriptedCap(limit int, script []capSample) (string, []int) {
++// A non-nil running makes the cap count only processes below one of those tier command pids, over tree as the sample.
++func runScriptedCap(limit int, script []capSample, tree []proc.ProcessSample, running []int) (string, []int) {
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	defer cancel()
+ 	var killed []int
+ 	taken := 0
++	var commands *runningCommands
++	if running != nil {
++		commands = &runningCommands{}
++		for _, pid := range running {
++			commands.add(pid)
++		}
++	}
+ 	c := processCap{
+-		limit:  limit,
+-		period: time.Second,
+-		marker: "LYM_GATE_TEST_PID=7",
++		commands: commands,
++		root:     capRoot,
++		sample:   func(int) ([]proc.ProcessSample, error) { return tree, nil },
++		limit:    limit,
++		period:   time.Second,
++		marker:   "LYM_GATE_TEST_PID=7",
+ 		list: func(string) ([]int, error) {
+ 			next := script[taken]
+ 			taken++
+@@ -56,8 +71,11 @@ func TestProcessCap(t *testing.T) {
+ 	t.Parallel()
+ 	const limit = 3
+ 	tests := []struct {
+-		name       string
+-		script     []capSample
++		name   string
++		script []capSample
++		// tree and running are the process sample and the running tier command pids; nil running counts every listed pid.
++		tree       []proc.ProcessSample
++		running    []int
+ 		wantLine   string
+ 		wantKilled []int
+ 	}{
+@@ -81,12 +99,31 @@ func TestProcessCap(t *testing.T) {
+ 			name:   "AnUnsupportedPlatformEndsTheCap",
+ 			script: []capSample{{err: errors.ErrUnsupported}, {pids: []int{1, 2, 3, 4}}},
+ 		},
++		{
++			name:   "MarkedProcessesOutsideEveryTierCommandAreNotCounted",
++			script: []capSample{{pids: []int{1, 2, 3, 4}}},
++			tree: []proc.ProcessSample{
++				{PID: 10, Parent: capRoot}, {PID: 1, Parent: 10}, {PID: 2, Parent: 10},
++				{PID: 3, Parent: capRoot}, {PID: 4, Parent: capRoot},
++			},
++			running: []int{10},
++		},
++		{
++			name:   "MarkedProcessesBelowATierCommandAndOnesTheSampleLostAreCounted",
++			script: []capSample{{pids: []int{1, 2, 3, 5}}},
++			tree: []proc.ProcessSample{
++				{PID: 10, Parent: capRoot}, {PID: 1, Parent: 10}, {PID: 2, Parent: 10}, {PID: 3, Parent: 2},
++			},
++			running:    []int{10},
++			wantLine:   processCapLine(4, limit),
++			wantKilled: []int{1, 2, 3, 5},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			line, killed := runScriptedCap(limit, tt.script)
++			line, killed := runScriptedCap(limit, tt.script, tt.tree, tt.running)
+ 
+ 			if line != tt.wantLine {
+ 				t.Errorf("processCap.run() = %q; want %q", line, tt.wantLine)
+diff --git a/internal/gatecli/reach.go b/internal/gatecli/reach.go
+index e33f65ed9..2fee9773c 100644
+--- a/internal/gatecli/reach.go
++++ b/internal/gatecli/reach.go
+@@ -1,4 +1,4 @@
+-// reach.go runs the reach report step a `--gate` key's reports list names, after the call's lints.
++// reach.go runs the reach report step a `--gate` key's reports list names.
+ // It finds the functions the worktree's diff changes and refreshes the worktree's own coverage maps of their packages.
+ // It records the tests that reach each function, or the caveats of a function none reaches.
+ // It writes its report and prints its note; nothing it meets changes the call's result.
+@@ -70,22 +70,24 @@ func (e *execution) reachStep() reachStep {
+ 	}
+ }
+ 
+-// run writes the step's report into the worktree's gate directory and prints its note to stderr.
++// judgeReport returns the step's report.
+ // red tells a call one of whose runs failed, and inHub a call inside a hub; either way the report then judges nothing.
+-// A report the step cannot write is logged at Warn, and the call's result stands.
+-func (s reachStep) run(red, inHub bool) {
+-	path := reachReportPath(s.location)
+-	var report ReachReport
++func (s reachStep) judgeReport(red, inHub bool) ReachReport {
+ 	switch {
+ 	case red:
+-		report = ReachReport{RedGate: true, Note: noteRedGate}
++		return ReachReport{RedGate: true, Note: noteRedGate}
+ 	case !inHub:
+-		report = ReachReport{Note: noteNoHub}
++		return ReachReport{Note: noteNoHub}
+ 	case !s.cfg.HasGoCoverageMaps():
+-		report = ReachReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
+-	default:
+-		report = s.answer()
++		return ReachReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
+ 	}
++	return s.answer()
++}
++
++// writeReport writes report into the worktree's gate directory and prints its note to stderr.
++// A report the step cannot write is logged at Warn, and the call's result stands.
++func (s reachStep) writeReport(report ReachReport) {
++	path := reachReportPath(s.location)
+ 	report.GateKey = s.gateKey
+ 	report.Written = time.Now()
+ 	if err := state.WriteJSON(path, lock.TrackedFileLockPath(path, ".lock"), report); err != nil {
+diff --git a/internal/gatecli/reach_integration_test.go b/internal/gatecli/reach_integration_test.go
+index bf0956c69..b38d27b03 100644
+--- a/internal/gatecli/reach_integration_test.go
++++ b/internal/gatecli/reach_integration_test.go
+@@ -225,7 +225,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 
+ 	t.Run("APrimeCallInAHubWithNoSharedMapsJudgesNothingAndNamesTheMapRun", func(t *testing.T) {
+ 		step, _ := stepAt(t, primeLocation, environ, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, primeLocation)
+ 		if !report.Prime || report.Base != primeHead || !strings.Contains(report.Note, "lym gate test --map") || len(report.Functions) != 0 {
+ 			t.Errorf("report = prime %v, base %q, note %q, functions %+v; want a prime report on %s judging nothing and naming lym gate test --map",
+@@ -250,7 +250,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 	t.Run("RefreshesTheStaleAndMissingMapsOfTheChangedPackagesAndAnswersFromThem", func(t *testing.T) {
+ 		builtFile, env := buildsEnv(t)
+ 		step, stderr := stepAt(t, pairLocation, env, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 
+ 		// nomap and tiered have no map and stale's is stale, so each is built.
+@@ -349,7 +349,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 				if tt.scoper != "" {
+ 					step.cfg.Scoper = tt.scoper
+ 				}
+-				step.run(tt.red, tt.inHub)
++				step.writeReport(step.judgeReport(tt.red, tt.inHub))
+ 				report := readReport(t, pairLocation)
+ 				if report.Note != tt.want || report.RedGate != tt.red || len(report.Functions) != 0 || len(report.Maps) != 0 || len(builds(t, builtFile)) != 0 {
+ 					t.Errorf("report = note %q, red gate %v, %d functions, %d maps; want note %q, red gate %v and no lookup",
+@@ -362,7 +362,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 	t.Run("APrimeCallRefreshesNothingAndAnswersFromTheSharedMaps", func(t *testing.T) {
+ 		builtFile, env := buildsEnv(t)
+ 		step, _ := stepAt(t, primeLocation, env, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, primeLocation)
+ 		wantUnrefreshed := []string{"alpha: not refreshed, " + reasonPrimeKeepsNoMaps}
+ 		if diff := cmp.Diff(wantUnrefreshed, report.Unrefreshed); diff != "" {
+@@ -384,7 +384,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 		writeMap(t, anchorDir, "stale", staleMapOf(t))
+ 		builtFile, env := buildsEnv(t)
+ 		step, _ := stepAt(t, pairLocation, env, time.Nanosecond)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		want := "stale: not refreshed, " + mapBudgetReason
+ 		if !slices.Contains(report.Unrefreshed, want) || len(builds(t, builtFile)) != 0 {
+@@ -410,7 +410,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 	t.Run("AReportHoldsForHeadUntilACommitChangesWhatItNamed", func(t *testing.T) {
+ 		_, env := buildsEnv(t)
+ 		step, _ := stepAt(t, pairLocation, env, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		head := gitkit.RevParse(t, pair, "HEAD")
+ 		appendTo := func(t *testing.T, rel, text string) {
+@@ -458,7 +458,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 	t.Run("ReachPendingOfAnswersTheUnreachedFunctionsOfAReportThatHoldsForHead", func(t *testing.T) {
+ 		_, env := buildsEnv(t)
+ 		step, _ := stepAt(t, pairLocation, env, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		reportFile := reachReportPath(pairLocation)
+ 		original, err := os.ReadFile(reportFile)
+@@ -538,7 +538,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 		}
+ 		builtFile, env := buildsEnv(t)
+ 		step, _ := stepAt(t, pairLocation, env, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		if report.Note != noteNoParent || report.Prime || len(report.Functions) != 0 || len(builds(t, builtFile)) != 0 {
+ 			t.Errorf("report = note %q, prime %v, %d functions; want note %q and no lookup", report.Note, report.Prime, len(report.Functions), noteNoParent)
+diff --git a/internal/gatecli/redundancy.go b/internal/gatecli/redundancy.go
+index a6bec6379..a374e17f8 100644
+--- a/internal/gatecli/redundancy.go
++++ b/internal/gatecli/redundancy.go
+@@ -1,4 +1,4 @@
+-// redundancy.go runs the redundancy report step a `--gate` key's reports list names, after the call's lints.
++// redundancy.go runs the redundancy report step a `--gate` key's reports list names.
+ // It judges the diff's new and changed tests against the coverage maps inside one gate slot and a time budget.
+ // It writes its report; nothing it meets changes the call's result.
+ 
+@@ -95,26 +95,28 @@ func (e *execution) redundancyStep() redundancyStep {
+ 	}
+ }
+ 
+-// run writes the step's report into the worktree's gate directory and prints its summary line.
++// judgeReport returns the step's report, and true when it is the report the gate directory already holds.
+ // red tells a call one of whose runs failed, and inHub a call inside a hub; either way the report then judges nothing.
+-// A report the step cannot write is logged at Warn, and the call's result stands.
+-func (s redundancyStep) run(red, inHub bool) {
+-	path := redundancyReportPath(s.location)
+-	var report RedundancyReport
++func (s redundancyStep) judgeReport(red, inHub bool) (RedundancyReport, bool) {
+ 	switch {
+ 	case red:
+-		report = RedundancyReport{RedGate: true, Note: noteRedGate}
++		return RedundancyReport{RedGate: true, Note: noteRedGate}, false
+ 	case !inHub:
+-		report = RedundancyReport{Note: noteNoHub}
++		return RedundancyReport{Note: noteNoHub}, false
+ 	case !s.cfg.HasGoCoverageMaps():
+-		report = RedundancyReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}
+-	default:
+-		judged, kept := s.judge(path)
+-		if kept {
+-			printLine(s.stderr, "gate test: redundancy report: the tree matches the report already written, so the step ran no build and no test; "+path)
+-			return
+-		}
+-		report = judged
++		return RedundancyReport{Note: fmt.Sprintf(noteScoper, s.cfg.Scoper)}, false
++	}
++	return s.judge(redundancyReportPath(s.location))
++}
++
++// writeReport writes report into the worktree's gate directory and prints its summary line.
++// A kept report is the one the directory already holds, so it is not written again and its own line prints.
++// A report the step cannot write is logged at Warn, and the call's result stands.
++func (s redundancyStep) writeReport(report RedundancyReport, kept bool) {
++	path := redundancyReportPath(s.location)
++	if kept {
++		printLine(s.stderr, "gate test: redundancy report: the tree matches the report already written, so the step ran no build and no test; "+path)
++		return
+ 	}
+ 	report.GateKey = s.gateKey
+ 	report.Written = time.Now()
+diff --git a/internal/gatecli/redundancy_integration_test.go b/internal/gatecli/redundancy_integration_test.go
+index 5ca847ad7..b170d95c2 100644
+--- a/internal/gatecli/redundancy_integration_test.go
++++ b/internal/gatecli/redundancy_integration_test.go
+@@ -258,7 +258,7 @@ func TestRedundancyStep(t *testing.T) {
+ 	runStep := func(t *testing.T) RedundancyReport {
+ 		t.Helper()
+ 		step, _ := stepAt(t, pairLocation, environ, time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		return readReport(t, pairLocation)
+ 	}
+ 	notJudged := func(pkg, name, reason string) RedundancyTest {
+@@ -340,7 +340,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		}
+ 		builds := filepath.Join(t.TempDir(), "builds")
+ 		step, stderr := stepAt(t, pairLocation, append(slices.Clone(environ), testMapCoverBuildsEnv+"="+builds), time.Minute)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		if again := readReport(t, pairLocation); !again.Written.Equal(kept.Written) {
+ 			t.Errorf("report written %v; want the report of %v kept", again.Written, kept.Written)
+ 		}
+@@ -385,7 +385,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		writeGate(t, 1, "")
+ 		builds := filepath.Join(t.TempDir(), "builds")
+ 		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapCoverBuildsEnv+"="+builds), time.Nanosecond)
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		for _, test := range report.Tests {
+ 			if test.Package == "alpha" || test.Package == "beta" || test.Package == "broken" {
+@@ -407,7 +407,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		writeGate(t, 1, "")
+ 		step, _ := stepAt(t, pairLocation, environ, 3*time.Second)
+ 		step.secondUnit = 250 * time.Millisecond
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		i := slices.IndexFunc(report.Tests, func(test RedundancyTest) bool { return test.Name == "TestDropsLate" })
+ 		if i < 0 {
+@@ -430,7 +430,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		done := make(chan struct{})
+ 		go func() {
+ 			defer close(done)
+-			step.run(false, true)
++			step.writeReport(step.judgeReport(false, true))
+ 		}()
+ 		waitDone := func() {
+ 			t.Helper()
+@@ -507,7 +507,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		step, _ := stepAt(t, pairLocation, append(slices.Clone(environ), testMapLymBuildsEnv+"="+builds, testMapFailLymBuildEnv+"=1"), time.Minute)
+ 		// A test past 20 seconds times out, so no load on the machine times out TestBetaNewOne.
+ 		step.secondUnit = time.Second
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 
+ 		var lymErrors, mapErrors int
+@@ -554,7 +554,7 @@ func TestRedundancyStep(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 		t.Cleanup(func() { _ = lease.Release() })
+-		step.run(false, true)
++		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 		i := slices.IndexFunc(report.Tests, func(test RedundancyTest) bool { return test.Name == "TestAlphaNewOne" })
+ 		if len(report.Errors) != 0 || i < 0 || report.Tests[i].Verdict != RedundancyContained {
+@@ -580,7 +580,7 @@ func TestRedundancyStep(t *testing.T) {
+ 				if tt.scoper != "" {
+ 					step.cfg.Scoper = tt.scoper
+ 				}
+-				step.run(tt.red, true)
++				step.writeReport(step.judgeReport(tt.red, true))
+ 				report := readReport(t, tt.location)
+ 				if report.Note != tt.want || report.RedGate != tt.red || len(report.Tests) != 0 || len(report.Packages) != 0 {
+ 					t.Errorf("report = note %q, red gate %v, %d tests, %d packages; want note %q, red gate %v, nothing judged",
+@@ -601,7 +601,7 @@ func TestRedundancyStep(t *testing.T) {
+ 		}
+ 		t.Cleanup(func() { _ = os.Remove(path) })
+ 		step, stderr := stepAt(t, pairLocation, environ, time.Minute)
+-		step.run(true, true)
++		step.writeReport(step.judgeReport(true, true))
+ 		if info, err := os.Stat(path); err != nil || !info.IsDir() {
+ 			t.Errorf("report path = %v, %v; want the directory the test made, since the write failed", info, err)
+ 		}
+diff --git a/internal/gatecli/reports.go b/internal/gatecli/reports.go
+new file mode 100644
+index 000000000..3fdb3dd5a
+--- /dev/null
++++ b/internal/gatecli/reports.go
+@@ -0,0 +1,216 @@
++// reports.go judges the report steps a `--gate` key's reports list and writes their reports.
++// The steps may judge in the background beside the call's last tier; the call writes their reports after its lints.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"io"
++	"os"
++	"slices"
++	"sync"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// reportSteps names the report steps a gate key's reports list.
++type reportSteps struct {
++	reach, redundancy, mutation bool
++}
++
++// reportStepsOf returns the report steps reports lists.
++func reportStepsOf(reports []string) reportSteps {
++	return reportSteps{
++		reach:      slices.Contains(reports, gateslot.ReportReach),
++		redundancy: slices.Contains(reports, gateslot.ReportRedundancy),
++		mutation:   slices.Contains(reports, gateslot.ReportMutation),
++	}
++}
++
++// any reports whether the key lists a report step.
++func (r reportSteps) any() bool {
++	return r.reach || r.redundancy || r.mutation
++}
++
++// lastTierStart returns the index of the first run of plan's highest tier, the run the report steps start beside.
++// It returns -1 for an empty plan.
++func lastTierStart(plan []tierRun) int {
++	start := -1
++	for i, run := range plan {
++		if start < 0 || run.number > plan[start].number {
++			start = i
++		}
++	}
++	return start
++}
++
++// judgedReports are one call's report steps with their reports, judged and not yet written.
++// Each step prints into a buffer of its own while it judges, and the memory guard over the steps into another,
++// so the lines reach the call's stderr in step order once the reports are written.
++type judgedReports struct {
++	steps reportSteps
++
++	reach       reachStep
++	reachReport ReachReport
++	reachLines  bytes.Buffer
++
++	redundancy       redundancyStep
++	redundancyReport RedundancyReport
++	redundancyKept   bool
++	redundancyLines  bytes.Buffer
++
++	mutation       mutationStep
++	mutationReport MutationReport
++	mutationLines  bytes.Buffer
++
++	// memoryQuit and guarding are the call's memory guard limit and whether the guard applies.
++	memoryQuit int64
++	guarding   bool
++	// tierCommands are the call's running tier commands, whose test binaries the steps' guard leaves to the tier's own.
++	tierCommands *runningCommands
++	guardLines   bytes.Buffer
++}
++
++// newJudgedReports returns the report steps of the call e runs, unjudged.
++// It reads e on the calling goroutine, so the steps may then judge on another while e's tiers run.
++func (e *execution) newJudgedReports(steps reportSteps) *judgedReports {
++	j := &judgedReports{
++		steps: steps, reach: e.reachStep(), redundancy: e.redundancyStep(), mutation: e.mutationStep(),
++		memoryQuit: e.request.memoryQuit, guarding: e.request.memoryGuarding, tierCommands: e.request.commands,
++	}
++	j.reach.stderr, j.redundancy.stderr, j.mutation.reach.stderr = &j.reachLines, &j.redundancyLines, &j.mutationLines
++	return j
++}
++
++// guard returns the memory guard over the steps, printing its kills to the guard lines.
++// It leaves a test binary below a running tier command to the tier's own guard.
++func (j *judgedReports) guard() memoryGuard {
++	guard := newMemoryGuard(j.memoryQuit, &j.guardLines)
++	guard.foreign = j.tierCommands.holds
++	return guard
++}
++
++// judge judges each listed step under ctx, reach first and mutation last, under one memory guard.
++// The guard leaves alone a test binary below a running tier command, which the tier's own guard watches.
++// red tells a call one of whose runs failed, and inHub a call inside a hub; either way the reports then judge nothing.
++func (j *judgedReports) judge(ctx context.Context, red, inHub bool) {
++	stopGuard, guardKilled := startMemoryGuard(ctx, j.guard(), os.Getpid(), j.guarding)
++	defer stopGuard()
++	if j.steps.reach {
++		j.reach.ctx, j.reach.guardKilled = ctx, guardKilled
++		j.reachReport = j.reach.judgeReport(red, inHub)
++	}
++	if j.steps.redundancy {
++		j.redundancy.ctx, j.redundancy.guardKilled = ctx, guardKilled
++		j.redundancyReport, j.redundancyKept = j.redundancy.judgeReport(red, inHub)
++	}
++	if j.steps.mutation {
++		j.mutation.reach.ctx, j.mutation.reach.guardKilled = ctx, guardKilled
++		j.mutationReport = j.mutation.judgeReport(red, inHub)
++	}
++}
++
++// write writes each judged report in step order and prints to stderr the step's lines followed by its report's.
++// The memory guard's lines print first.
++func (j *judgedReports) write(stderr io.Writer) {
++	flushLines(stderr, &j.guardLines)
++	if j.steps.reach {
++		flushLines(stderr, &j.reachLines)
++		j.reach.stderr = stderr
++		j.reach.writeReport(j.reachReport)
++	}
++	if j.steps.redundancy {
++		flushLines(stderr, &j.redundancyLines)
++		j.redundancy.stderr = stderr
++		j.redundancy.writeReport(j.redundancyReport, j.redundancyKept)
++	}
++	if j.steps.mutation {
++		flushLines(stderr, &j.mutationLines)
++		j.mutation.reach.stderr = stderr
++		j.mutation.writeReport(j.mutationReport)
++	}
++}
++
++// flushLines writes the lines held in lines to w, and nothing when w is nil.
++func flushLines(w io.Writer, lines *bytes.Buffer) {
++	if w == nil {
++		return
++	}
++	if _, err := lines.WriteTo(w); err != nil {
++		logger.Warn("gate test: could not write the report steps' lines to stderr", "cause", err)
++	}
++}
++
++// reportChain is one call's report steps judging in the background, as a green call's, beside the call's last tier.
++type reportChain struct {
++	cancel context.CancelFunc
++	done   chan struct{}
++	judged *judgedReports
++}
++
++// startReports starts judging the report steps of the call e runs in the background, under a context ctx parents.
++func (e *execution) startReports(ctx context.Context, steps reportSteps, inHub bool) *reportChain {
++	chainCtx, cancel := context.WithCancel(ctx)
++	chain := &reportChain{cancel: cancel, done: make(chan struct{}), judged: e.newJudgedReports(steps)}
++	go func() {
++		defer close(chain.done)
++		chain.judged.judge(chainCtx, false, inHub)
++	}()
++	return chain
++}
++
++// wait returns the judged reports once the steps end.
++func (c *reportChain) wait() *judgedReports {
++	<-c.done
++	c.cancel()
++	return c.judged
++}
++
++// stop cancels the steps and returns once they end; their reports are dropped.
++// It may be called again, and after wait.
++func (c *reportChain) stop() {
++	c.cancel()
++	<-c.done
++}
++
++// runningCommands is the set of tier command processes a call is running, safe for concurrent use.
++// A nil set records nothing and holds no pid.
++type runningCommands struct {
++	mu   sync.Mutex
++	pids map[int]bool
++}
++
++// add records the tier command with pid as running.
++func (c *runningCommands) add(pid int) {
++	if c == nil {
++		return
++	}
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	if c.pids == nil {
++		c.pids = map[int]bool{}
++	}
++	c.pids[pid] = true
++}
++
++// remove records the tier command with pid as ended.
++func (c *runningCommands) remove(pid int) {
++	if c == nil {
++		return
++	}
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	delete(c.pids, pid)
++}
++
++// holds reports whether the tier command with pid is running.
++func (c *runningCommands) holds(pid int) bool {
++	if c == nil {
++		return false
++	}
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	return c.pids[pid]
++}
+diff --git a/internal/gatecli/reports_test.go b/internal/gatecli/reports_test.go
+new file mode 100644
+index 000000000..3965a04a6
+--- /dev/null
++++ b/internal/gatecli/reports_test.go
+@@ -0,0 +1,121 @@
++// reports_test.go covers the report chain: steps judged in the background write nothing until the call writes them.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestReportChain pins that a chain's judged reports reach the gate directory only when the call writes them.
++// The written reports carry the gate key, and the steps' lines print in step order.
++func TestReportChain(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	location := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "work"}
++	var stderr bytes.Buffer
++	exe := &execution{ctx: context.Background(), location: location, request: testRequest{gate: "reported", stderr: &stderr}}
++	chain := exe.startReports(exe.ctx, reportSteps{reach: true, redundancy: true, mutation: true}, false)
++	judged := chain.wait()
++	paths := []string{reachReportPath(location), redundancyReportPath(location), mutationReportPath(location)}
++	for _, path := range paths {
++		if _, err := os.Stat(path); !os.IsNotExist(err) {
++			t.Errorf("os.Stat(%s) error = %v before the write; want not exist", path, err)
++		}
++	}
++	judged.write(&stderr)
++
++	want := "gate test: reach report: " + noteNoHub + "; written to " + paths[0] + "\n" +
++		"gate test: redundancy report: " + noteNoHub + "; written to " + paths[1] + "\n" +
++		"gate test: mutation report: " + noteNoHub + "; written to " + paths[2] + "\n"
++	if stderr.String() != want {
++		t.Errorf("stderr = %q; want %q", stderr.String(), want)
++	}
++	reach, found, err := ReadReachReport(location)
++	if err != nil || !found || reach.GateKey != "reported" {
++		t.Errorf("ReadReachReport() = gate key %q, found %v, err %v; want gate key reported", reach.GateKey, found, err)
++	}
++	redundancy, found, err := readRedundancyReport(paths[1])
++	if err != nil || !found || redundancy.GateKey != "reported" {
++		t.Errorf("readRedundancyReport() = gate key %q, found %v, err %v; want gate key reported", redundancy.GateKey, found, err)
++	}
++	mutation, found, err := ReadMutationReport(location)
++	if err != nil || !found || mutation.GateKey != "reported" {
++		t.Errorf("ReadMutationReport() = gate key %q, found %v, err %v; want gate key reported", mutation.GateKey, found, err)
++	}
++}
++
++// TestJudgedReportsGuard pins that the report steps' memory guard leaves a running tier command to the tier's own guard.
++func TestJudgedReportsGuard(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	commands := &runningCommands{}
++	commands.add(10)
++	guard := (&judgedReports{tierCommands: commands}).guard()
++
++	if guard.foreign == nil || !guard.foreign(10) || guard.foreign(11) {
++		t.Errorf("guard.foreign(10), guard.foreign(11) = want true for the running tier command and false for another pid")
++	}
++}
++
++// TestReportStepsOf pins which steps a gate key's reports list names, and that any is set only when one is named.
++func TestReportStepsOf(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		reports []string
++		want    reportSteps
++		wantAny bool
++	}{
++		{"NoReportsNameNoStep", nil, reportSteps{}, false},
++		{"EachListedStepIsSet", []string{"reach", "mutation"}, reportSteps{reach: true, mutation: true}, true},
++		{"AnUnknownNameIsNoStep", []string{"other"}, reportSteps{}, false},
++		{"AllThreeStepsAreSet", []string{"reach", "redundancy", "mutation"}, reportSteps{reach: true, redundancy: true, mutation: true}, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := reportStepsOf(tt.reports)
++			if got != tt.want {
++				t.Errorf("reportStepsOf(%q) = %+v; want %+v", tt.reports, got, tt.want)
++			}
++			if got.any() != tt.wantAny {
++				t.Errorf("reportStepsOf(%q).any() = %v; want %v", tt.reports, got.any(), tt.wantAny)
++			}
++		})
++	}
++}
++
++// TestLastTierStart pins that the report steps start beside the first run of the plan's highest tier.
++func TestLastTierStart(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name  string
++		tiers []int
++		want  int
++	}{
++		{"AnEmptyPlanHasNoStart", nil, -1},
++		{"OneRunStartsAtZero", []int{3}, 0},
++		{"TheFirstRunOfTheHighestTierStarts", []int{0, 1, 2, 2}, 2},
++		{"TheHighestTierMayLeadThePlan", []int{2, 0}, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var plan []tierRun
++			for _, number := range tt.tiers {
++				plan = append(plan, tierRun{number: number})
++			}
++			if got := lastTierStart(plan); got != tt.want {
++				t.Errorf("lastTierStart(tiers %v) = %d; want %d", tt.tiers, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index f669a5660..432f2f25f 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -102,6 +102,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	request.memoryQuit = cfg.MemoryQuit()
+ 	request.hubEnv = hubEnv
+ 	request.sessionEnv = os.Environ()
++	request.commands = &runningCommands{}
+ 
+ 	green := openGreen(gateslot.WaitDir(location.AnchorPath()), request.root, request.goBinary, cfg)
+ 	sc, err := computeScope(preCtx, cfg, location, request.root, request, green)
+@@ -177,7 +178,23 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	// The call closes with the runner crash line only when no failure judged the code.
+ 	var crashed []string
+ 	judged := false
++	// The report steps judge in the background beside the plan's last tier, once every earlier run passed.
++	// A failed run cancels them, and every return waits for their end.
++	var reports reportSteps
++	if request.gate != "" {
++		reports = reportStepsOf(cfg.Gates[request.gate].Reports)
++	}
++	reportsStart := lastTierStart(plan)
++	var chain *reportChain
++	defer func() {
++		if chain != nil {
++			chain.stop()
++		}
++	}()
+ 	for i, run := range plan {
++		if i == reportsStart && reports.any() && code == 0 && runCtx.Err() == nil {
++			chain = exe.startReports(runCtx, reports, inHub)
++		}
+ 		var end runEnd
+ 		if run.guardStep {
+ 			end = exe.runGuard(run)
+@@ -206,6 +223,9 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 				code, firstFailed = end.code, runLabel(run)
+ 			}
+ 		}
++		if chain != nil && code != 0 {
++			chain.cancel()
++		}
+ 		if end.halt {
+ 			if end.ran && code == 0 {
+ 				printLine(request.stderr, "gate test: the call was cancelled while its last run ended without a failure, so it exits 1; way forward: re-run the same command")
+@@ -234,29 +254,21 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 				code, firstFailed = 1, lint.label
+ 			}
+ 		}
+-		// The report steps run last and never change the code.
+-		// The reach step runs first, and the mutation step after the redundancy step.
+-		reports := cfg.Gates[request.gate].Reports
+-		runsReach, runsRedundancy := slices.Contains(reports, gateslot.ReportReach), slices.Contains(reports, gateslot.ReportRedundancy)
+-		runsMutation := slices.Contains(reports, gateslot.ReportMutation)
+-		if runsReach || runsRedundancy || runsMutation {
+-			stopGuard, guardKilled := startMemoryGuard(runCtx, newMemoryGuard(request.memoryQuit, request.stderr), os.Getpid(), exe.request.memoryGuarding)
+-			if runsReach {
+-				reach := exe.reachStep()
+-				reach.guardKilled = guardKilled
+-				reach.run(red, inHub)
+-			}
+-			if runsRedundancy {
+-				step := exe.redundancyStep()
+-				step.guardKilled = guardKilled
+-				step.run(red, inHub)
+-			}
+-			if runsMutation {
+-				step := exe.mutationStep()
+-				step.reach.guardKilled = guardKilled
+-				step.run(red, inHub)
++		// The reports are written last and never change the code.
++		// Steps that judged beside the last tier hand over their reports when no run failed;
++		// otherwise the steps judge now, as red-gate reports when a run failed.
++		if reports.any() {
++			var judged *judgedReports
++			if chain != nil && !red {
++				judged = chain.wait()
++			} else {
++				if chain != nil {
++					chain.stop()
++				}
++				judged = exe.newJudgedReports(reports)
++				judged.judge(runCtx, red, inHub)
+ 			}
+-			stopGuard()
++			judged.write(request.stderr)
+ 		}
+ 	}
+ 	exe.printReport(inHub)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index d69cd3db9..8ff6f4caf 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -1534,7 +1534,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		requireFree(t)
+ 	})
+ 
+-	t.Run("a gate key's redundancy report step runs after its tiers and leaves the call's exit code to them", func(t *testing.T) {
++	t.Run("a gate key's redundancy report step judges beside its last tier and leaves the call's exit code to it", func(t *testing.T) {
+ 		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
+ 			cfg["gates"] = map[string]any{"reported": map[string]any{"tiers": []int{6}, "scope": "all", "reports": []string{gateslot.ReportRedundancy}}}
+ 		}))
+@@ -1571,6 +1571,31 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a halted call whose key lists reports writes no report", func(t *testing.T) {
++		if err := os.MkdirAll(filepath.Join(prime, "cmd", "lym"), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(prime, "cmd")) })
++		writeConfig(t, scenarioConfig(t, func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"halting": map[string]any{"tiers": []int{0, 3}, "scope": "all", "reports": []string{gateslot.ReportRedundancy}}}
++		}))
++		defer writeConfig(t, gateConfig)
++		reportPath := filepath.Join(waitDir, redundancyReportFileName)
++		if err := os.Remove(reportPath); err != nil && !os.IsNotExist(err) {
++			t.Fatal(err)
++		}
++
++		// Tier0 passes, so the report steps start beside tier3, whose failed prebuild then halts the call.
++		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--gate", "halting"}, env: []string{helperBuildExitEnv + "=1"}})
++		if code := g.wait(t); code != 1 {
++			t.Errorf("exit code = %d, stdout %q; want the refusal's 1", code, g.stdout.String())
++		}
++		if report, found, err := readRedundancyReport(reportPath); err != nil || found {
++			t.Errorf("readRedundancyReport() = %+v, found %v, err %v; want no report from a halted call", report, found, err)
++		}
++		requireFree(t)
++	})
++
+ 	// A stand-in exiting 134 with no test event is a tier whose test runner crashed on SIGABRT, as a shell reports one.
+ 	crashEnv := []string{helperExitEnv + "=134"}
+ 	// closingOf returns the last closing line of failed runs in output.
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 5d580b8c8..4ade7adb0 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -528,12 +528,15 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 		logger.Info("gate test: spawning tier command", "tier", tierName(run.number), "dir", dir, "command", command)
+ 		watchCtx, stopWatching := context.WithCancel(ctx)
+ 		var watchdogDone sync.WaitGroup
++		commandPID := 0
+ 		capKilled, runErr := runTiedChild(cmd, request.pipeWaitDelay, run.tier.MemoryLimit(), func(pid int) {
++			commandPID = pid
++			request.commands.add(pid)
+ 			if marker != "" && request.samplePeriod > 0 {
+ 				watchdogDone.Add(1)
+ 				go func() {
+ 					defer watchdogDone.Done()
+-					stops.processCap = capFor(marker, request.samplePeriod).run(watchCtx)
++					stops.processCap = capFor(marker, request.samplePeriod, request.commands).run(watchCtx)
+ 				}()
+ 			}
+ 			if request.memoryGuarding {
+@@ -552,6 +555,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 				newWatchdog(request.busyQuit, request.samplePeriod, request.stderr).run(watchCtx, pid)
+ 			}()
+ 		})
++		request.commands.remove(commandPID)
+ 		stopWatching()
+ 		watchdogDone.Wait()
+ 		if capKilled {
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 486e44eae..45f434c96 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -172,7 +172,7 @@ func TestRunTierProcessCap(t *testing.T) {
+ 			var stderr bytes.Buffer
+ 			request := testRequest{
+ 				root: dir, stderr: &stderr, samplePeriod: time.Millisecond, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay,
+-				processCapFor: func(marker string, period time.Duration) processCap {
++				processCapFor: func(marker string, period time.Duration, _ *runningCommands) processCap {
+ 					starts.Add(1)
+ 					return processCap{
+ 						limit:  1,
+@@ -232,6 +232,7 @@ func TestRunTierProcessCap(t *testing.T) {
+ // It puts the kill's line and the tests it left running in the log and the causes.
+ // It also marks the result so no rerun follows.
+ // A request that turns the guard off builds none.
++// The tier command is recorded in the request's running commands while it runs and removed once it ends.
+ func TestRunTierMemoryGuard(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -263,15 +264,27 @@ func TestRunTierMemoryGuard(t *testing.T) {
+ 			}
+ 			var starts atomic.Int32
+ 			var stderr bytes.Buffer
++			commands := &runningCommands{}
++			// commandPID is the tier command's pid, which the guard receives as its root.
++			// registered is whether the command was in commands when the guard sampled it.
++			var commandPID atomic.Int64
++			var registered atomic.Bool
+ 			request := testRequest{
+ 				root: dir, stderr: &stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay, memoryGuarding: tt.guarding,
++				commands: commands,
+ 				memoryGuardFor: func(limit int64, out io.Writer) memoryGuard {
+ 					starts.Add(1)
+ 					return memoryGuard{
+ 						limit:  guardLimit,
+ 						floor:  guardFloor,
+ 						period: time.Millisecond,
+-						sample: func(int) ([]proc.ProcessSample, error) { return guardTree(3000<<20, 2000<<20), nil },
++						sample: func(root int) ([]proc.ProcessSample, error) {
++							commandPID.Store(int64(root))
++							if commands.holds(root) {
++								registered.Store(true)
++							}
++							return guardTree(3000<<20, 2000<<20), nil
++						},
+ 						pressure: func() (proc.MemoryLimit, bool) {
+ 							return proc.MemoryLimit{}, false
+ 						},
+@@ -296,6 +309,14 @@ func TestRunTierMemoryGuard(t *testing.T) {
+ 			if got := starts.Load(); got != tt.wantStarts {
+ 				t.Errorf("runTier() built the memory guard %d times; want %d", got, tt.wantStarts)
+ 			}
++			if tt.guarding {
++				if !registered.Load() {
++					t.Errorf("runTier() ran the tier command %d with commands not holding it; want it held while it runs", commandPID.Load())
++				}
++				if commands.holds(int(commandPID.Load())) {
++					t.Errorf("commands.holds(%d) = true after runTier() returned; want the ended command removed", commandPID.Load())
++				}
++			}
+ 			if result.memoryStopped != tt.wantKilled {
+ 				t.Errorf("runTier() memoryStopped = %v; want %v", result.memoryStopped, tt.wantKilled)
+ 			}
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 9cda09936..351c6aea5 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -42,7 +42,7 @@
+ // The non-tier holders hold one slot and set their own Go flags through HolderEnv.
+ // Each passes the `-p` value it reads from the pool's Limits.Tier0Parallel at its acquire,
+ // so a hub that declares `tier0` bounds them by its parallel and a hub that declares none adds no `-p`.
+-// The redundancy report step of `lym gate test` is one: it takes one slot after the call's tiers released theirs.
++// The redundancy report step of `lym gate test` is one: it takes one slot beside the slots the call's last tier holds.
+ // The reach report step holds a slot only for its refresh of a task worktree's own maps.
+ // `lym gate redundant` is another.
+ // It waits for its slot once it has a candidate to check by mutation, and holds it to its end.
+@@ -76,7 +76,8 @@
+ // `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier.
+ // `gates` is a per-name map from a gate key to a GateKey,
+ // so a hub file that sets one key keeps the template's value for every other.
+-// A GateKey may hold `lints` and `reports`, the steps its call runs after its tiers.
++// A GateKey may hold `lints` and `reports`: its lints run after its tiers,
++// and its reports judge beside its last tier and are written after its lints.
+ // It may also hold a `fixer` on the `card` key only.
+ // Config load fills a template key a tuned `gates` entry lacks into that entry, and `reports: []` turns the reports off.
+ // A Tier's `manual: true` keeps it out of a `lym gate test --upto` range.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 72c813e55..a3e057287 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -27,7 +27,7 @@ tiers: {}
+ # The scope card is only for the card and batch keys.
+ # The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+ # A key may also hold lints, the lint steps its call runs after the tiers against HEAD: comments (fixed-column-wrapped breaks and over-long lines in // comments) and pattern (PATTERN.md grown past its headroom line).
+-# A key may also hold reports, the advisory steps its call runs after the lints, which never change its result; reach runs before every other report step and mutation after them: reach (refreshes the worktree's coverage maps of the packages the diff changes and writes the changed functions no test reaches into the worktree's gate directory), redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory), mutation (mutates the lines the diff changes in blocks a test covers, runs the tests covering each mutant, writes every survivor, unjudged mutant, uncovered changed block and package not judged into the worktree's gate directory and prints one summary line); reports: [] turns them off.
++# A key may also hold reports, the advisory steps its call judges beside its last tier and writes after the lints, which never change its result; reach runs before every other report step and mutation after them: reach (refreshes the worktree's coverage maps of the packages the diff changes and writes the changed functions no test reaches into the worktree's gate directory), redundancy (judges the diff's new and changed Go tests against the coverage maps and writes the verdicts into the worktree's gate directory), mutation (mutates the lines the diff changes in blocks a test covers, runs the tests covering each mutant, writes every survivor, unjudged mutant, uncovered changed block and package not judged into the worktree's gate directory and prints one summary line); reports: [] turns them off.
+ # The card key alone may also hold fixer, a model-spec such as sonnet[medium]: the cold fixer an agent's red lym gate test --gate card call hands its failures to; "" turns it off.
+ # No tier list may be empty.
+ # While tiers is empty, every key runs with nothing to run; once any tier is declared, each tier a key names must be declared too.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index b86511f75..caa242cf8 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -115,7 +115,7 @@ type GateKey struct {
+ 	Scope string `yaml:"scope"`
+ 	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
+ 	Lints []string `yaml:"lints"`
+-	// Reports are the advisory report steps the key's call runs after its lints.
++	// Reports are the advisory report steps the key's call judges beside its last tier and writes after its lints.
+ 	// Each is ReportReach, ReportRedundancy or ReportMutation; empty runs none.
+ 	// A report step never changes the call's result.
+ 	Reports []string `yaml:"reports"`
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 4b660cddb..7b193330a 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -222,7 +222,8 @@ so every run takes its slots, its timeout and its log.
+ - The redundancy runs take a tier's `env` and a gate slot as a tier run does.
+   `lym gate test --map` rebuilds the per-package coverage maps over its scope at the HEAD of the worktree it runs in,
+   into the hub's shared maps from the prime and into the worktree's anchor `.lym` elsewhere.
+-  The `redundancy` report step a gate key's `reports` lists runs after the key's tiers released their slots.
++  The `redundancy` report step a gate key's `reports` lists judges beside the first run of the key's highest tier,
++  takes its own gate slot beside the slots that tier holds, and writes its report after the lints.
+   The `reach` report step refreshes a task worktree's own anchor maps by the same measurement, in the map run's slot ask.
+   The map run, the refresh and the `redundancy` step run every test alone under a coverage binary, since coverage counters are process-wide.
+   `lym gate redundant` runs each test alone under a binary holding the mutants of its package, one mutant on per run.
+@@ -326,7 +327,7 @@ this section keeps only what is project-specific or stricter here.
+   It lists the candidates with their seconds, covering tests and kills, and the refuted, unconfirmed, keep-marked and unjudged tests.
+   Bound: a mutant changes the package's own code only,
+   so a candidate whose check differs from its covers only in another package's result is confirmed falsely.
+-- A gate key whose `reports` lists `reach` runs the report step after its lints and before the redundancy step.
++- A gate key whose `reports` lists `reach` judges the report step beside its last tier and before the redundancy step, and writes its report after the lints.
+   It finds the functions the diff changes against the merge base with the parent branch, or against HEAD in the prime,
+   and writes `reach.json` in the worktree's gate directory with the tests of the maps that reach each one.
+   It prints a note of the report.
+@@ -341,7 +342,7 @@ this section keeps only what is project-specific or stricter here.
+   The report lists every survivor, unjudged mutant, uncovered changed block and package not judged.
+   The step prints one summary line of their counts, and it never changes the gate's result.
+   Bound: a survivor is a check the diff's tests lack or a line no test can reasonably check, and review tells them apart.
+-- A gate key whose `reports` lists `redundancy` runs the report step after its tiers and lints.
++- A gate key whose `reports` lists `redundancy` judges the report step beside its last tier, and writes its report after the lints.
+   It takes the diff's new and changed top-level tests against the merge base with the parent branch,
+   leaving out tier2 and tier3 tests, tests marked `//testtiming:keep` and tests that may run module code in another process.
+   It judges each against its package's map, package-scoped like `cmd/testtiming`'s verdict,
