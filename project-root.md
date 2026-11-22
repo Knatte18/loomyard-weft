@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 20:50 UTC; every age below is as of then.
+Rendered 2026-11-22 20:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -41,7 +41,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 14m<br>14m | fabric |
-| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 8m<br>0m | burler, arbiter, shed |
+| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 9m<br>0m | burler, arbiter, shed |
 
 ## Enhancements (1)
 
