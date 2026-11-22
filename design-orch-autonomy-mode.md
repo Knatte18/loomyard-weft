@@ -9,7 +9,7 @@ Depends on: [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md), [`samp
 Filed from the Sketch `orch-full-autonomy-mode`.
 
 Takes: the Sketch's decision record; beam.yaml's ConfigSpec in dobbyengine, the halt-notice posters behind orchcli, loom's and drift's LoadConfig and configreg.SettingLookup, the PR-Review row and its pull request record, burlerengine's run-wide ask record, Beam-Await's Notify seam, the Slack reply hook, the orch pointers and the orchrole embeds
-Delivers: a Guard `autonomy` key in beam.yaml with a run reader and an orch reader; halt notices carrying `autonomy:`; the five forced keys and the Drift-Verify halt on an ended judge ask; PR-Review ended only by a recorded satisfied PR-Review ask under recorded autonomy; the `[beam drained]` line; the Slack hook's `[operator]` filter; the autonomy line on every orch pointer; role-autonomy.md with the severe-halt list and the merge-ready steps; two glossary lines
+Delivers: a Guard `autonomy` key in beam.yaml with a run reader and an orch reader; halt notices carrying `autonomy:`; the five forced keys and the Drift-Verify halt on an ended judge ask; PR-Review ended only by a recorded satisfied PR-Review ask under recorded autonomy; the `[beam drained]` line; the Slack hook's `[operator]` filter; the autonomy line on every orch pointer; role-autonomy.md with the severe-halt list and the merge-ready steps; two glossary lines; a board task field `autonomy` that overrides the parent worktree's value both ways (D11)
 Exports: the run and orch autonomy readers, `lym loom parent-review ask`, the loom key `pr_review_parent_timeout_min`, the pawlengine drain marker name, contracts/orchrole/role-autonomy.md
 
 The part changes these packages:
@@ -35,3 +35,5 @@ The part changes these packages:
 - contracts/orchrole (about 250 changed lines)
 - contracts/stencils (about 60 changed lines)
 - internal/heddleengine (about 2 changed lines)
+- internal/boardengine and internal/boardcli (about 100 changed lines, D11)
+
