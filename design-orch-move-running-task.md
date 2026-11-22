@@ -1,6 +1,6 @@
 # Orch procedure to move a running task by a move note and a fresh run
 
-`orch-move-running-task` · Task · feature, orch, heddle · running · Describe
+`orch-move-running-task` · Task · feature, orch, heddle · running · PR-Review
 
 Decision record: [Sketch](decision-orch-move-running-task.md)
 
