@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-21 19:58 UTC; every age below is as of then.
+Rendered 2026-11-22 08:32 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>4h | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>17h | burler, shed, orch, quarry, report |
 
 </details>
 
@@ -71,7 +71,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Hardener writes its own charter, drives either hub layout**<br>• Hardener derives its campaign from the module, builds one-repo sandbox hubs, needs no hub gate writes<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-self-charter`](design-hardener-self-charter.md) | darn · solid | Code-Bouncer | neve | 42m<br>36m | shed, burler, gate, stencil, fabric |
+| T3 | **Hardener writes its own charter, drives either hub layout**<br>• Hardener derives its campaign from the module, builds one-repo sandbox hubs, needs no hub gate writes<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-self-charter`](design-hardener-self-charter.md) | darn · solid | Code-Burler-Review | neve | 13h<br>13h | shed, burler, gate, stencil, fabric |
 
 #### Ready (0)
 
@@ -85,7 +85,7 @@ Waits only on Running, Ready or Draft entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 42m<br>30m | fabric |
+| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | hardener | T3 | 13h<br>13h | fabric |
 
 ### Notes (0)
 
@@ -108,7 +108,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | Code-Burler-Review | neve | 2h<br>2h | burler, shuttle |
+| T6 | **Burler fix round: rerun reason and fork git in its own scratch repo**<br>• `darn: writer opus[medium]`<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`burler-fix-round-defects`](design-burler-fix-round-defects.md) | darn · light | Code-Burler-Review | neve | 15h<br>14h | burler, shuttle |
 
 #### Ready (0)
 
@@ -131,7 +131,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 6d<br>3d | batten, loom, board |
+| F3 |  | **Move a running task by hand-back and a fresh run, not a re-parent verb**<br>• The writer hands back what it knows, the run is cancelled, a new task under the new parent starts from that | [`move-task-by-handback`](design-move-task-by-handback.md) | 6d<br>4d | batten, loom, board |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2w | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 </details>
