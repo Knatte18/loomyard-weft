@@ -35,4 +35,16 @@ A value set lower down always overrides the one above, in both directions; absen
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - beam-project-notify-on-land-dropped (class design, severity MEDIUM, open in rounds 1, 2)
+  - carry-misses-runs-in-flight (class design, severity MEDIUM, open in rounds 1, 2)
+  - duplicate-row-in-prepare-run-settings (class design, severity BLOCKING, open in rounds 2)
+  - member-line-overrides-explicit-off (class decision, severity MEDIUM, open in rounds 1, 2)
+  - per-task-keys-declared-at-several-sites (class design, severity BLOCKING, open in rounds 1, 2)
+  - registration-test-lacks-keep-marker (class design, severity BLOCKING, open in rounds 2)
+  - reinterpret-discovers-worktrees-and-anchors (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
