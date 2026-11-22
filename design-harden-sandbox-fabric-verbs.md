@@ -1,6 +1,6 @@
 # Hardener rounds may run fabric verbs in their own sandbox hubs
 
-`harden-sandbox-fabric-verbs` · Task · bug, fabric, shed · starting · Seed-IDE
+`harden-sandbox-fabric-verbs` · Task · bug, fabric, shed · starting · Open-IDE
 
 ## What was seen (2026-11-22)
 
