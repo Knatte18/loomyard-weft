@@ -5,6 +5,7 @@
 ## Seen (operator, 2026-10-30)
 
 Every agent lym starts runs with `--dangerously-skip-permissions`, which many people do not accept, and a repository that states it supports safe sandboxing is worth more than one that does not.
+The area matters most on the work machine OSL-1046 (operator, 2026-11-22).
 The operator uses lym alone, on Linux (OSL-1046: Ubuntu 24.04; Neve: Kubuntu on Ubuntu 26.04, Plasma 6), and has no interest in other users or in Windows.
 The research is `docs/research/platform/sandboxing-options-2026-10-30.md`: it weighs `bwrap`, Landlock, a dedicated Linux user, systemd sandboxing, podman and Claude Code's own `/sandbox`, and the packages and cards each would change.
 
