@@ -22,6 +22,12 @@ Decision: The board files render no one-line meaning under a section heading: Ta
 
 Rationale: The operator judged the explanations clutter.
 
+### Added after Discussion (operator, 2026-11-22): No Tasks level
+
+Decision: The board files render no Tasks heading: Running, Ready, each dependency layer, Independent and Draft become sections of their own, at the level Tasks held, beside the note type sections and Done.
+
+Rationale: The operator judged the Tasks heading clutter, as the Notes heading was.
+
 ## Constraints
 
 ## Auto-mode assumptions
