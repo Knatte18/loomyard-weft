@@ -285,13 +285,15 @@
       "id": 1574,
       "handle": "T1",
       "slug": "code-bouncer-asks-parent",
-      "title": "Code review asks the parent for held decisions and BLOCKING findings at a spent budget",
+      "title": "Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus",
       "kind": "task",
       "labels": [
         "bug",
         "burler",
         "loom",
-        "darn"
+        "darn",
+        "arbiter",
+        "shed"
       ],
       "issues": [],
       "recipe": "darn",
@@ -300,16 +302,16 @@
       ],
       "isolated": false,
       "brief": "A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting",
-      "body": "## Goal\n\nA code review round never settles past what its parent has to rule on.\nTwo faults let `per-task-settings-one-lookup` land as `118bee8ad` with its review unsettled; this task fixes both.\n\n## 1. A held decision finding gates until the parent rules\n\n### Seen\n\nIts Code-Burler finding F12, `member-line-overrides-explicit-off`, was a `decision`-class finding, routed to the run's parent and marked held:\nthe fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\nRound 2's Bouncer verdict says: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round then settled on budget, and the run landed with the held finding in the \"Check by hand\" list and the questioned exception in the code.\n\n### Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, and the next round carries the ruling out.\n\n### Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- `escalate_decisions` (`EscalateDecisions` in `internal/shedadapters/bouncer.go`), set today only in the motif and arras recipes, escalates a round holding a decision finding to the parent.\n\n## 2. A spent budget with BLOCKING findings open asks the parent\n\n### Seen\n\nThe same run landed with four BLOCKING findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`) and accepts open findings, BLOCKING ones included.\n\n### Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n### Where\n\n- `blocking_escalates` (`BlockingEscalates` in `internal/shedadapters/bouncer.go`) sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it.\n- The Code-Bouncer rows of `contracts/recipes/darn-recipe.yaml` and `tapestry-recipe.yaml`, and whether the soft-cap rule then escalates to the parent with cause budget.\n- The `code_auto_accept` comment in `internal/loomengine/template.yaml`.\n",
+      "body": "## Goal\n\nA code review round never settles past what its parent has to rule on.\nTwo faults let `per-task-settings-one-lookup` land as `118bee8ad` with its review unsettled, and a third let a hardener round approve with its focus undriven; this task fixes all three.\n\n## 1. A held decision finding gates until the parent rules\n\n### Seen\n\nIts Code-Burler finding F12, `member-line-overrides-explicit-off`, was a `decision`-class finding, routed to the run's parent and marked held:\nthe fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\nRound 2's Bouncer verdict says: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round then settled on budget, and the run landed with the held finding in the \"Check by hand\" list and the questioned exception in the code.\n\n### Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, and the next round carries the ruling out.\n\n### Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- `escalate_decisions` (`EscalateDecisions` in `internal/shedadapters/bouncer.go`), set today only in the motif and arras recipes, escalates a round holding a decision finding to the parent.\n\n## 2. A spent budget with BLOCKING findings open asks the parent\n\n### Seen\n\nThe same run landed with four BLOCKING findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`) and accepts open findings, BLOCKING ones included.\n\n### Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n### Where\n\n- `blocking_escalates` (`BlockingEscalates` in `internal/shedadapters/bouncer.go`) sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it.\n- The Code-Bouncer rows of `contracts/recipes/darn-recipe.yaml` and `tapestry-recipe.yaml`, and whether the soft-cap rule then escalates to the parent with cause budget.\n- The `code_auto_accept` comment in `internal/loomengine/template.yaml`.\n\n## 3. A hardener round never approves with its focus undriven\n\n### Seen\n\n`harden-fabric-single-repo-verbs` round 3 (sonnet, medium, 4 min) returned APPROVED with these focus entries undriven, by its own Coverage section:\nthe discard half of a killed teardown, the keep-local tag push, a failed step with no kill, and `lym adopt --archives` over real owner tags.\nThe approval settled the harden segment at once: Harden-Burler-Fix only ran its gates and the run went on to landing.\nNothing asked the arbiter or the parent, and once settled the segment cannot be reopened (`lym loom goto` refuses a review or fix row of a settled segment).\nThe untested cases became note `harden-fabric-undriven-cases`.\n\n### Wanted\n\nOperator, 2026-11-22: a hardener round never approves unless everything is in place.\n\n- A round whose review leaves a focus entry undriven, or marks one WARN or not driven, does not settle as approved.\n- The arbiter rules first: order another round over the undriven entries, or accept with a stated reason per entry.\n- When the arbiter cannot rule, the run stops and asks the parent, which orders another round or accepts.\n\n### Cause\n\nThe hardener rubric (`contracts/stencils/harden/harden-rubric-review.md`) says to walk every focus entry and record OK, WARN or FAIL,\nbut the shared review format (`contracts/stencils/burler/burler-review-format.md`) lets an incremental round raise only BLOCKING findings on changed hunks,\nand the verdict is APPROVED whenever no finding is BLOCKING.\nAn undriven or WARN focus entry has no way to block, so round 3 recorded its gaps under Rejected and Coverage and could only answer APPROVED.\n\n### Where\n\n- The hardener recipe `contracts/recipes/hardener-recipe.yaml` and its Bouncer row (`harden_round`).\n- The settle rule of a review segment for a reviewer verdict of APPROVED (`internal/burlerengine`, `internal/shedadapters/bouncer.go`).\n- The arbiter's scope of halts it may settle (`internal/shedarbiter`, `arbiterstop`).\n\n",
       "created": "2026-11-22T18:02:16Z",
-      "revised": "2026-11-22T18:05:42Z",
+      "revised": "2026-11-22T20:51:15Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
           "code_assist_reviewer_model": "astra[medium]"
         }
       },
-      "profile": "light"
+      "profile": "solid"
     },
     {
       "id": 1575,
@@ -359,26 +361,6 @@
       "body": "## Seen\n\n`harden-fabric-single-repo-verbs` approved in round 3 with part of its focus undriven (`round-3-focus.md` and `round-3-review.md` in its archived records, Coverage section):\n\n- The discard half of a killed teardown, re-run through the command its pending record prints; only a hubforge test with a Topology seam covers it.\n- Whether a teardown now pushes to origin a local `archive/\u003cslug\u003e/*` tag the operator kept local on purpose, and whether any verb output or help text names it.\n- A failed remote step without a kill keeping its pending record (O3's fix).\n- `lym adopt --archives` over owner-archive tags pushed by the real `ArchiveOwnerTips` path, with the code side's new `refs/lym/code-tags/` prefix.\n\nAlso left: code-side archive tags in plain `refs/tags/archive/` that an earlier binary pushed are named by no reader verb.\n\n## Idea\n\nA short live drive of these cases in a one-repository sandbox hub, fixing what fails with a test.\n",
       "created": "2026-11-22T20:36:41Z",
       "revised": "2026-11-22T20:36:41Z"
-    },
-    {
-      "id": 1577,
-      "handle": "B2",
-      "slug": "harden-approve-needs-focus",
-      "title": "A hardener round never approves with its focus undriven; the arbiter or the parent rules",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "arbiter",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked",
-      "body": "## Seen\n\n`harden-fabric-single-repo-verbs` round 3 (sonnet, medium, 4 min) returned APPROVED with these focus entries undriven, by its own Coverage section:\nthe discard half of a killed teardown, the keep-local tag push, a failed step with no kill, and `lym adopt --archives` over real owner tags.\nThe approval settled the harden segment at once: Harden-Burler-Fix only ran its gates and the run went on to landing.\nNothing asked the arbiter or the parent, and once settled the segment cannot be reopened (`lym loom goto` refuses a review or fix row of a settled segment).\nThe untested cases became note `harden-fabric-undriven-cases`.\n\n## Wanted\n\nOperator, 2026-11-22: a hardener round never approves unless everything is in place.\n\n- A round whose review leaves a focus entry undriven, or marks one WARN or not driven, does not settle as approved.\n- The arbiter rules first: order another round over the undriven entries, or accept with a stated reason per entry.\n- When the arbiter cannot rule, the run stops and asks the parent, which orders another round or accepts.\n\n## Cause\n\nNot the model. The hardener rubric (`contracts/stencils/harden/harden-rubric-review.md`) says to walk every focus entry and record OK, WARN or FAIL,\nbut the shared review format (`contracts/stencils/burler/burler-review-format.md`) lets an incremental round raise only BLOCKING findings on changed hunks,\nand the verdict is APPROVED whenever no finding is BLOCKING.\nAn undriven or WARN focus entry has no way to block, so round 3 recorded its gaps under Rejected and Coverage and could only answer APPROVED.\n\n## Where\n\n- The hardener recipe `contracts/recipes/hardener-recipe.yaml` and its Bouncer row (`harden_round`).\n- The settle rule of a review segment for a reviewer verdict of APPROVED (`internal/burlerengine`, `internal/shedadapters/bouncer.go`).\n- The arbiter's scope of halts it may settle (`internal/shedarbiter`, `arbiterstop`).\n\nRelated: task `code-bouncer-asks-parent`, which makes a code review ask the parent instead of settling past an open question, in the same packages.\n",
-      "created": "2026-11-22T20:42:09Z",
-      "revised": "2026-11-22T20:50:53Z"
     },
     {
       "id": 1578,
