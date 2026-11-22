@@ -1,6 +1,6 @@
 # Second hardener campaign on fabric, one-repository layout, with the fabric verbs
 
-`harden-fabric-single-repo-verbs` · Task · bug, fabric · running · Harden-Bouncer
+`harden-fabric-single-repo-verbs` · Task · bug, fabric · running · Harden-Burler-Review
 
 ## Focus
 
