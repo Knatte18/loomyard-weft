@@ -1,49 +1,44 @@
-# Commit a batten run's start rows without a records push
+# battencli: commit the start rows without a push to origin
 
-A batten run pushed its records to origin before every transition, so each start row from Seed-Child to Run-Shed waited 10 to 20 s on a push.
-A run start took 40 to 70 s since `71d6ee1a0`, against 1 to 13 s before it, measured from the `batten: <row> -> running` commits on the records branches.
+Since `71d6ee1a0`, every batten transition pushes its records to origin before the run acts.
+The start rows from Seed-Child to Run-Shed each waited for that push, about 10 to 20 seconds apiece.
+Measured from the `batten: <row> -> running` commits on the records branches, a run's start went from 1 to 13 seconds before 2026-11-18 08:23 to 40 to 70 seconds after.
 
 ## What changes
 
-Batten's status-commit seam (`internal/battencli/commitstatus.go`) now commits a start transition without pushing it.
-A start transition enters a row from Seed-Child to Run-Shed in state `running`,
-and the seam's last-commit marker holds a `running` transition at a row before Run-Shed.
-So the uninterrupted chain Worktree-Create → Seed-Child → Open-Window → Seed-IDE → Open-IDE → Run-Shed pushes once, at Worktree-Create.
-The first transition after it, such as Land, or a halt or pause at Run-Shed, pushes and carries the start's commits.
+A batten run's uninterrupted start commits each row from Seed-Child to Run-Shed and pushes none of them.
+The first later transition's push carries those commits.
+Every later transition keeps its push.
 
-Every other transition pushes as before:
+A start row still pushes as any transition does in these cases:
 
-- Worktree-Create, which has no marker yet;
-- a start row resumed from a pause or a halt, whose marker holds that halt state;
-- a start row that halts or pauses;
-- every row after Run-Shed, and Run-Shed itself once the run has left its start;
-- any transition whose marker is missing or unreadable.
+- it resumes after a pause or halt, since another machine may take the run over there and its pushed state should be current;
+- the status-commit marker is missing or unreadable;
+- the previous push failed or was cut off.
 
-The pushless commits go through a second `statuscommit` core whose push does nothing and which takes no gate admission, since it makes no network call.
-The no-op-transition skip, the mid-merge skip and the commit's hard-error disposition are unchanged.
+A fresh run's seeding of the absent status now commits the Worktree-Create running row through the status-commit seam.
+That commit is not a start-row skip, so it pushes, and it is the one push the start makes.
+A failed commit there surfaces as a bootstrap failure; the seeded status is durable and the next run resumes it.
 
-## Takeover
-
-A machine that adopts the run before its first later push reads the run at its last pushed transition, Worktree-Create running.
-It runs the start rows again from there.
-The starting machine's next push is then rejected, reads the takeover entry and hands the run over through the existing `pairteardown.HandOver` path.
-A catch-up after an absence still pushes the unpushed start commits, since it reads any local commit origin lacks.
+A machine that adopts the run before the first later push reads it at its last pushed row and runs the start rows again.
+The starting machine's next push meets that takeover and hands the run over, as it does for any takeover.
 
 ## Design decisions
 
-- Only a start row reached straight from a running pre-Run-Shed row skips the push.
-  Run-Shed's resume after a pause therefore pushes:
-  the inner run is already going then, and a takeover must be seen before Run-Shed watches it again.
-- The rule lives in the batten seam alone; `internal/statuscommit` and the loom seam are untouched.
+- `commitStatusMarker` gains `push_pending`, true from a commit until its push has landed or been left owed.
+  A marker left pending, by a failed push or a crash between commit and push, makes the next start row push, so a skipped push is retried on resume.
+  A marker written by an older binary has no such key and reads as not pending.
+- The start core takes no network-gate admission, since it makes no network call.
+- `statuscommit` itself is unchanged in behaviour: a caller that defers publication passes a `Push` that does nothing.
+- `PATTERN-run-fsm`, `PATTERN-pair-remote` and `PATTERN.md` state the exception to "a transition commits and pushes before the run acts".
 
-## Docs
+## To check by hand
 
-`PATTERN.md`'s `PATTERN-run-fsm` entry and `pattern/PATTERN-run-fsm.md` state the exception and gain a "The start rows commit only" section;
-`pattern/PATTERN-pair-remote.md` points at it.
-
-## Tests
-
-`TestNewCommitStatusSeam` in `internal/battencli` gains a pushes count per row and rows for the full start chain, a start with gated rows skipped, a resumed start row and a halted start row.
+- The start was not timed after the change; compare a fresh run's `batten: <row> -> running` commit times against the figures above.
+- `fresh-run-seed-child-still-pushes`, in `internal/battencli/arm.go`: a fresh run still pushes once, at the seeded Worktree-Create commit, before Seed-Child.
+  Check that this single push is the intended reading of "the start rows act without a records push".
+- `failed-start-push-not-retried-on-resume`, in `internal/battencli/commitstatus.go`: check that a start row resumed after a failed or cut-off push pushes again, through `push_pending`.
+- `start-branch-uncovered-behaviours`, in `internal/battencli/commitstatus_test.go` and `predrive_test.go`: check that the start branch's cases are all covered, including a missing marker and a marker from an older binary.
 
 ## Merge danger
 
