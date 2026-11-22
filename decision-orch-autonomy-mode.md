@@ -16,7 +16,7 @@ The operator is reached only in two cases:
 In:
 
 - A `beam.yaml` key `autonomy`, its layers, and the readers that answer it.
-- A board task field `autonomy` that overrides the parent worktree's value for that task's run (D11).
+- A task's `run_settings` key `beam.autonomy` that overrides the parent worktree's value for that task's run (D11).
 - What autonomy forces on a run's existing ask, approval and interactivity keys.
 - PR-Review of a member task under autonomy: reviewed by the parent orch, ended only by its recorded satisfied answer.
 - The orch's handling of halts under autonomy, the closed list of severe halts and the marker on a relay to the operator.
@@ -53,8 +53,8 @@ so a landing never asks an orch to re-apply a child's autonomy on its parent.
 **Rationale:** `beam.yaml` is the existing per-worktree module whose `pull_request` a member's landing already reads from its parent worktree;
 projects carry no `run_settings`.
 Autonomy lets the parent's answer end PR-Review in the operator's place, which hollows an approval gate, so PATTERN-config-layers makes it a Guard key.
-As a Guard key the local layer refuses it, so a task's `run_settings` can never make a run autonomous:
-only a tracked worktree or default file can, or the task's own board field (D11), which only the operator's side writes.
+As a Guard key the local layer refuses it, so the worktree's local file can never make a run autonomous:
+only a tracked worktree or default file can, or the task's `run_settings` read from its board entry (D11), which only the operator's side writes.
 A worktree's autonomy is its own, so it never travels upward on a landing.
 
 ### D2 — Whose value applies: a halt carries its run's value, an orch's own steps read its worktree's
@@ -62,7 +62,7 @@ A worktree's autonomy is its own, so it never travels upward on a landing.
 **Decision:** two readers answer autonomy, both through `dobbyengine.LoadConfig`, both at call time, never from a value captured at wiring;
 the one exception is PR-Review, which records the run's value once per review (D4):
 
-- A run's autonomy is its task's own `autonomy` field when the field is set (D11), else its parent worktree's resolved value.
+- A run's autonomy is its task's `run_settings` value `beam.autonomy` when that is set (D11), else its parent worktree's resolved value.
   A root task's parent worktree is the prime; a beam's own pawl run's parent worktree is the worktree the beam was made from.
 - An orch's autonomy, for the steps it takes for its own worktree (D6, D7, D8), is its own worktree's resolved value.
 
@@ -324,21 +324,21 @@ a `--set` write, an editor save, a reconcile, a hand-edited committed file or a 
 
 **Rationale:** the design adds both terms, and records and notices use them.
 
-### D11 — A task's own `autonomy` field overrides its parent's value, both ways (operator, 2026-11-22)
+### D11 — A task's `run_settings` `beam.autonomy` overrides its parent's value, both ways (operator, 2026-11-22)
 
-**Decision:** a board task gains an optional field `autonomy`: `true`, `false` or absent.
-It is set with `lym board upsert '{"slug":"<slug>","autonomy":true}'`, `false` to turn it off for that task, and `null` to clear it.
-Absent, the task's run takes its parent worktree's value (D2); set, the field wins in both directions:
+**Decision:** a task's `run_settings` may hold `{"beam":{"autonomy":true}}` or `{"beam":{"autonomy":false}}`, like every other per-task setting.
+Absent, the task's run takes its parent worktree's value (D2); set, it wins in both directions:
 `true` makes one task autonomous under a worktree that is not, and `false` keeps one task under the operator in an autonomous worktree.
-The field is a task's only: a note or project refuses it, and a project's members do not inherit it.
-The run reader (D2) reads the field from the board at call time, so a change reaches the run at its next read, PR-Review's recorded value excepted (D4).
-A claimed entry takes a write of `autonomy` as it takes a status write, so the operator can turn it on or off while the task runs.
+A project's members do not inherit it.
+The run reader (D2) reads the value from the task's board entry at call time, never from the worktree's local layer,
+so a change reaches the run at its next read, PR-Review's recorded value excepted (D4).
+Batten's copy of `run_settings` into the worktree's local layer leaves `beam.autonomy` out, since the local layer refuses the Guard key (D1), and the copy does not fail on it.
+A claimed entry takes a write of its `run_settings` `beam.autonomy` as it takes a status write, so the operator can turn it on or off while the task runs.
 A run session never writes it on its own run's entry, as the board already refuses any write of a run's own entry from its session.
-`lym board get` and `lym board list` show the field; `list --text` marks a task whose field is set.
 
-**Rationale:** the operator wants single tasks autonomous, or held back, whatever their beam says.
-A board field, not `run_settings`, carries it: `run_settings` feeds the local layer, which the Guard key refuses (D1),
-and a field the board shows keeps the choice visible and changeable while the task runs.
+**Rationale:** the operator wants single tasks autonomous, or held back, whatever their beam says,
+set where every other per-task setting is set.
+Reading it from the board entry, not the worktree's copy, keeps a run's agents from making their own run autonomous, which D1's Guard rules out.
 
 ## Constraints
 
@@ -363,13 +363,14 @@ None.
 
 ## Acceptance criteria
 
-- D1: `beam.yaml`'s template carries `autonomy: false`; the key is classified `CategoryGuard`; a task's `run_settings` of `{"beam":{"autonomy":true}}` is refused by the local-layer check.
+- D1: `beam.yaml`'s template carries `autonomy: false`; the key is classified `CategoryGuard`; a worktree local file holding `autonomy: true` is refused by the local-layer check.
 - D1: a worktree layer of `false` over a default layer of `true` resolves `false` for that worktree.
 - D1: Finalize's config-change notice for a landing whose worktree file changed `autonomy` does not name `autonomy`.
 - D2: a run's reader answers `true` when its parent worktree's `beam.yaml` resolves `autonomy: true`, `false` when it resolves `false`, and `false` with a warning when the stack fails to load.
-- D11: a task whose `autonomy` field is `true` reads `true` under a parent worktree resolving `false`; one whose field is `false` reads `false` under a parent resolving `true`; a task with no field reads its parent's value.
-- D11: an `autonomy` write on a claimed task lands and the run's next read takes it; a write of `autonomy` on a note or project is refused; a run session's write of its own entry's `autonomy` is refused.
-- D11: a halt notice of a task whose field overrides its parent carries the field's value.
+- D11: a task whose `run_settings` hold `beam.autonomy: true` reads `true` under a parent worktree resolving `false`; one holding `false` reads `false` under a parent resolving `true`; a task without it reads its parent's value.
+- D11: batten's copy of `run_settings` holding `beam.autonomy` starts the run, and the worktree's local layer does not hold the key; editing the local file changes nothing the run reader answers.
+- D11: a write of `run_settings` `beam.autonomy` on a claimed task lands and the run's next read takes it; a run session's write of its own entry is refused.
+- D11: a halt notice of a task whose `run_settings` override its parent carries that value.
 - D2: an orch's reader answers from its own worktree's stack, not its parent's.
 - D2: a halt notice of a run carries the run's autonomy read when the notice is built.
 - Review: D2 — `role-autonomy.md` has the orch handle a halt under the value its notice carries:
