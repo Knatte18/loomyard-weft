@@ -69,5 +69,9 @@
       "routed_to": "Run-Shed",
       "machine": "neve"
     }
-  ]
+  ],
+  "pause_intent": {
+    "by": "ly:orch",
+    "at": "2026-11-22T20:35:00+01:00"
+  }
 }
