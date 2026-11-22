@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Burler-Fix",
+  "current_producer": "Harden-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Burler-Fix",
-    "last": "Harden-Burler-Review → bounced to Harden-Burler-Fix",
+    "now": "Harden-Bouncer",
+    "last": "Harden-Burler-Fix → bounced to Harden-Bouncer",
     "wait": ""
   },
   "history": [
@@ -219,6 +219,60 @@
       "budget_exempt": true,
       "routed_to": "Harden-Burler-Fix",
       "by": "shed"
+    },
+    {
+      "producer": "Harden-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabricengine/_lym/reviews/harden/round-2-review.md",
+      "at": "2026-11-22T11:58:20Z",
+      "started_at": "2026-11-22T11:33:05Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:52:22.236793229Z",
+          "end": "2026-11-22T11:52:22.250975468Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-22T11:52:55.383903091Z",
+          "end": "2026-11-22T11:52:55.393147257Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:52:22.32803414Z",
+          "end": "2026-11-22T11:52:22.582135804Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-22T11:52:25.075436241Z",
+          "end": "2026-11-22T11:52:55.352959229Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-22T11:52:55.43519922Z",
+          "end": "2026-11-22T11:57:48.549447952Z"
+        },
+        {
+          "gate": "live",
+          "kind": "gate",
+          "start": "2026-11-22T11:57:48.632684124Z",
+          "end": "2026-11-22T11:58:20.059687812Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-22T11:58:20.124735764Z",
+          "end": "2026-11-22T11:58:20.127368937Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Harden-Bouncer"
     }
   ],
   "product": {
