@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-orch-move-running-task.md)
 
-Depends on: [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md)
-
 Filed from the Sketch `move-task-by-handback`.
 
 Takes: the Sketch's decision record; the existing verbs lym creel post, lym tender pause and resume, lym batten cancel --remove, lym board get, upsert and set-status; role-beams.md and orch-role.md as per-task-settings-one-lookup leaves them

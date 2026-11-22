@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-orch-autonomy-mode.md)
 
-Depends on: [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md)
-
 Filed from the Sketch `orch-full-autonomy-mode`.
 
 Takes: the Sketch's decision record; beam.yaml's ConfigSpec in dobbyengine, the halt-notice posters behind orchcli, loom's and drift's LoadConfig and configreg.SettingLookup, the PR-Review row and its pull request record, burlerengine's run-wide ask record, Beam-Await's Notify seam, the Slack reply hook, the orch pointers and the orchrole embeds
