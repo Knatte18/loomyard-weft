@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -202,6 +202,22 @@
       "output": "",
       "at": "2026-11-22T11:37:16Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/convergence-report-memory/_lym/landing/summary.md",
+      "at": "2026-11-22T11:38:03Z",
+      "started_at": "2026-11-22T11:37:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-22T11:38:02.240339111Z",
+          "end": "2026-11-22T11:38:02.240405095Z"
+        }
+      ]
     }
   ],
   "product": {
