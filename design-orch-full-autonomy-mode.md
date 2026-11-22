@@ -2,6 +2,8 @@
 
 `orch-full-autonomy-mode` · Task · feature, orch, drift, landing, dobby, batten, pawl, config · running · Discussion-Bouncer
 
+Decision record: [Sketch](decision-orch-full-autonomy-mode.md)
+
 ## Goal (operator, 2026-11-22)
 
 An autonomy mode under which the run's parent orch receives every halt of every member run and settles it itself.
