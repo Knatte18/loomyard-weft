@@ -36,6 +36,12 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Plan-Burler-Review | neve | 6h<br>6h | orch, landing, loom, pawl, drift |
 
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs |  | 0m<br>0m | darn, gate |
+
 ### Layer A (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -49,12 +55,6 @@ Owner `neve`
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | T2 | 24m<br>10m | dobby, landing |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Measure where darn runs lost time since 2026-11-18**<br>• Median darn rose from about 24 to about 47 minutes; break the time down per row and per gate from archived run records and find the causes | [`darn-slowdown-measure`](design-darn-slowdown-measure.md) | darn · docs |  | 0m<br>0m | darn, gate |
 
 ### Research (3)
 
