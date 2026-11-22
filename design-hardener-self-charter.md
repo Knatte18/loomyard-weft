@@ -1,6 +1,6 @@
 # Hardener writes its own charter, drives either hub layout
 
-`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · landing · Finalize
+`hardener-self-charter` · Task · enhancement, shed, burler, gate, stencil, fabric · done
 
 ## Seen
 
