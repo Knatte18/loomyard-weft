@@ -20,6 +20,12 @@ Time one verify gate of the same diff before and after the change, once each, an
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-22): No before-and-after verify timing
+
+Decision: The entry's bound to time one verify gate before and after the change is dropped; no timing is made in this run.
+
+Rationale: An after-timing needs a lym built from this branch, which neither the run nor the orch runs; the gain is measured from archived run records after landing.
+
 ## Constraints
 
 ## Auto-mode assumptions
