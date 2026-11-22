@@ -46,7 +46,7 @@ Not released; nothing starts it until its status is cleared.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | `draft` **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | T1<br>T3 | 0m<br>0m | dobby, config, orch, loom, landing, burler, drift, shed, batten, webster, pawl, workspaces, slack, stencil, heddle |
+| T11 | `draft` **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | T1<br>T3 | 0m<br>0m | orch, landing, loom, pawl, drift |
 
 ## Notes (4)
 
