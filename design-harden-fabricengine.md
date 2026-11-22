@@ -1,6 +1,6 @@
 # Hardener campaign on fabric, one-repository layout
 
-`harden-fabricengine` · Task · bug, fabric · starting · Worktree-Create
+`harden-fabricengine` · Task · bug, fabric · starting · Seed-Child
 
 ## Focus
 
