@@ -225,7 +225,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `move-task-by-handback`.\n\nTakes: the Sketch's decision record; the existing verbs lym creel post, lym tender pause and resume, lym batten cancel --remove, lym board get, upsert and set-status; role-beams.md and orch-role.md as per-task-settings-one-lookup leaves them\nDelivers: a section of contracts/orchrole/role-beams.md holding the move procedure of D1 to D7; a pointer to it beside the cancel lines of orch-role.md's run loop and in its line naming what role-beams.md covers; the move note line in internal/heddleengine/glossary.md (D8)\nExports: the term move note and the role-beams.md section on moving a running task to another parent\n\nThe part changes these packages:\n\n- contracts/orchrole (about 90 changed lines)\n- internal/heddleengine (about 1 changed lines)\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-22T16:51:58Z",
       "revised": "2026-11-22T16:51:58Z",
       "run_settings": {
