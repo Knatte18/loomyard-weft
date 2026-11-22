@@ -1,6 +1,6 @@
 # Measure where darn runs lost time since 2026-11-18
 
-`darn-slowdown-measure` · Task · research, darn, gate · starting · Seed-Child
+`darn-slowdown-measure` · Task · research, darn, gate · running · Preflight
 
 ## Goal
 
