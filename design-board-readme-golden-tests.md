@@ -1,6 +1,6 @@
 # The board README renderer carries tests for pure cosmetics
 
-`board-readme-golden-tests` · Task · bug, board · halted · Darn-Write
+`board-readme-golden-tests` · Task · bug, board · running · Darn-Write
 
 ## Decision (operator, 2026-11-22)
 
