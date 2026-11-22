@@ -25,7 +25,7 @@
 - `internal/hubgeom#TestDobbyGeometry`
 
 **Uses:**
-- `plan:internal/hubgeom#Autonomy`
+- `internal/hubgeom#Autonomy`
 - `internal/battencli#ReadBeamLandBlockers`
 - `internal/battencli#BeamLandBlockers.Empty`
 - `internal/pawlengine#awaitRun.notify`

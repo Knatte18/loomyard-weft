@@ -1,9 +1,9 @@
 # Card 1 — beam-autonomy-key
 
 **Create:**
-- `plan:internal/beamsetting#AutonomyKey` -> `const AutonomyKey = "autonomy"`
-- `plan:internal/dobbyengine#AutonomyKey` -> `const AutonomyKey = beamsetting.AutonomyKey`
-- `plan:internal/dobbyengine#LookupAutonomy` -> `func LookupAutonomy(chain TaskSettingChain) (bool, error)`
+- `internal/beamsetting#AutonomyKey`
+- `internal/dobbyengine#AutonomyKey`
+- `internal/dobbyengine#LookupAutonomy`
 
 **Edit:**
 - `internal/beamsetting/beamsetting.go`

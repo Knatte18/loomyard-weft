@@ -23,8 +23,8 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Uses:**
-- `plan:internal/hubgeom#Autonomy`
-- `plan:internal/burlerengine#ClearParentAsk`
+- `internal/hubgeom#Autonomy`
+- `internal/burlerengine#ClearParentAsk`
 - `internal/driftengine#haltForParent`
 - `internal/driftengine#DriftVerify.runAgent`
 - `internal/driftengine#DriftVerify.storeRulings`

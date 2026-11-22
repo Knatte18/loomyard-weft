@@ -1,15 +1,15 @@
 # Card 3 — hubgeom-autonomy-reader
 
 **Create:**
-- `plan:internal/hubgeom#Autonomy` -> `func Autonomy(location *lymcwd.Location, slug string) bool`
-- `plan:internal/hubgeom_test#TestAutonomy` -> `func TestAutonomy(t *testing.T)`
+- `internal/hubgeom#Autonomy`
+- `internal/hubgeom_test#TestAutonomy`
 
 **Extends:**
 - `internal/hubgeom/doc.go`
 
 **Uses:**
 - `internal/hubgeom#TaskSettingChain`
-- `plan:internal/dobbyengine#LookupAutonomy`
+- `internal/dobbyengine#LookupAutonomy`
 - `internal/hubgeom_test#TestTaskSettingChain`
 
 **Intent:** D2 and D11: the one reader every autonomy consumer calls, at call time, for a run or for an orch.

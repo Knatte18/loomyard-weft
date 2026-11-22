@@ -1,8 +1,8 @@
 # Card 5 — parent-ask-clear
 
 **Create:**
-- `plan:internal/burlerengine#ClearParentAsk` -> `func ClearParentAsk(files ParentReviewFiles, number int) error`
-- `plan:internal/burlerengine_test#TestClearParentAsk` -> `func TestClearParentAsk(t *testing.T)`
+- `internal/burlerengine#ClearParentAsk`
+- `internal/burlerengine_test#TestClearParentAsk`
 
 **Edit:**
 - `internal/burlerengine#ParentAsk`

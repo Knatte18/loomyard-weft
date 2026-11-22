@@ -1,10 +1,10 @@
 # Card 4 — halt-notices-carry-autonomy
 
 **Create:**
-- `plan:internal/orchcli#NotifyParentHalt` -> `func NotifyParentHalt(pair *lymcwd.Location, program, line string) (posted bool, err error)`
-- `plan:internal/orchcli#NotifyRunFromHalt` -> `func NotifyRunFromHalt(from *lymcwd.Location, slug, program string, tags creelengine.PostTags, line string) (posted bool, err error)`
-- `plan:internal/orchcli#withRunAutonomy` -> `func withRunAutonomy(location *lymcwd.Location, slug, line string) string`
-- `plan:internal/orchcli#TestNotifyHalt_CarriesTheRunsAutonomy` -> `func TestNotifyHalt_CarriesTheRunsAutonomy(t *testing.T)`
+- `internal/orchcli#NotifyParentHalt`
+- `internal/orchcli#NotifyRunFromHalt`
+- `internal/orchcli#withRunAutonomy`
+- `internal/orchcli#TestNotifyHalt_CarriesTheRunsAutonomy`
 
 **Edit:**
 - `internal/loomcli#loomCLI.goDriverDepsFor`
@@ -12,7 +12,7 @@
 - `internal/battencli#notifyRunParent`
 
 **Uses:**
-- `plan:internal/hubgeom#Autonomy`
+- `internal/hubgeom#Autonomy`
 - `internal/orchcli#NotifyParent`
 - `internal/orchcli#NotifyRunFrom`
 - `internal/orchcli#TestNotifyPrime_QueuesInThePrimeOnly`

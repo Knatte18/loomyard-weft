@@ -14,7 +14,7 @@
 - `internal/slackcli#newHarness`
 
 **Uses:**
-- `plan:internal/hubgeom#Autonomy`
+- `internal/hubgeom#Autonomy`
 - `internal/slackcli#hookActionForward`
 
 **Intent:** D8: while the orch's autonomy, read at call time, is true, the Slack reply hook forwards a turn's reply only when it opens with `[operator]`.

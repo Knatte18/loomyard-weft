@@ -6,7 +6,7 @@
 
 **Uses:**
 - `internal/beamsetting#Module`
-- `plan:internal/beamsetting#AutonomyKey`
+- `internal/beamsetting#AutonomyKey`
 
 **Intent:** D1: a worktree's autonomy is its own, so Finalize's config-change notice never asks an orch to re-apply a child's `autonomy` on its parent.
 

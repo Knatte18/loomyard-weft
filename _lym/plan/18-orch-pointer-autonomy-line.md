@@ -23,7 +23,7 @@
 
 **Uses:**
 - `internal/orchengine#WithPresence`
-- `plan:internal/hubgeom#Autonomy`
+- `internal/hubgeom#Autonomy`
 - `internal/orchengine#TestRenderPointers_OneLineNamingTheirPaths`
 - `internal/orchengine/doc.go`
 - `internal/orchcli/doc.go`
