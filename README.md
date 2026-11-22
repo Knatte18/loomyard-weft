@@ -20,12 +20,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 3d · Owner `neve`
 
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Hardener campaign on fabric, one-repository layout**<br>• Hardener run on the one-repository part of fabric only<br>• `hardener: packages ["internal/fabricengine","internal/fabriccli","internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabricengine`](design-harden-fabricengine.md) | 20h<br>5h | fabric |
-
 ## [P0 Root: entries under no project](project-root.md) (9)
 
 Owner `neve`

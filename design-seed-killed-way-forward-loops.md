@@ -2,7 +2,7 @@
 
 `seed-killed-way-forward-loops` · Task · bug, fabric
 
-Depends on: [`harden-fabricengine`](design-harden-fabricengine.md), [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
+Depends on: [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
 
 ## What was seen
 

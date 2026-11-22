@@ -2,8 +2,6 @@
 
 `stale-records-ref-blocks-rerun` · Task · bug, fabric, batten, dobby · running · Drift-Baseline
 
-Depends on: [`harden-fabricengine`](design-harden-fabricengine.md)
-
 ## What was seen (2026-11-22)
 
 `harden-fabricengine` was cancelled with `lym batten cancel --remove` on 2026-11-21 and released again after the hardener rebuild landed.

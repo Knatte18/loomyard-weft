@@ -166,42 +166,6 @@
       "record_body_sha256": "575a6011931eb007845f91a517612780d622cf8ff511f6d8a1088a6bb7f946e8"
     },
     {
-      "id": 1550,
-      "handle": "T2",
-      "slug": "harden-fabricengine",
-      "title": "Hardener campaign on fabric, one-repository layout",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [],
-      "recipe": "hardener",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Hardener run on the one-repository part of fabric only",
-      "body": "## Focus\n\nHarden only the one-repository hub layout that 57015a52 added: one origin holds the code under `refs/heads/` and `refs/tags/`, and the records and board under `refs/lym/heads/` and `refs/lym/tags/`.\nEverything else in fabric, the two-repository layout included, is out of scope, and no round is steered outside this focus.\n\nDrive each of these live on a one-repository sandbox hub (`lym harden sandbox new --single-repo`), with real git and real `lym` verbs, and improvise scenarios beyond them:\n\n- **Seeding**: `lym fabric clone --single-repo \u003curl\u003e` on an empty origin and on one with code only.\n  The board ref is pushed last; kill or fail the push at each step and check that nothing on origin reads as a hub, the hub directory is gone and the records branch is restored.\n- **Joining**: a second `lym fabric clone \u003curl\u003e` of a seeded origin takes the one-repository layout, gets the refspecs and `branch.main.merge refs/lym/heads/main`, and sees the board.\n- **Refusals**: `--single-repo` on an origin that already holds a namespaced board, a records repository on the default branch, a second URL, or the old layout's `lym-bolt` branch or root `.lym-anchor`/`_lym`.\n  Each refuses before creating anything and names its way forward.\n- **Namespace leaks**: no records ref ever lands under plain `refs/heads/` or `refs/tags/` on origin, and the code store never fetches or pushes a records ref.\n  Check every path: add, push, pull, replay, hand-over, teardown, archive, remote cleanup.\n  The archive tag of a discarded task branch was seen in plain `refs/tags/` in a sandbox trial; confirm or refute it.\n- **Two clones at once**: pushes and pulls from two clones of the same hub, a board write from each, a lease that loses.\n- **Remote delete**: deleting a missing namespaced branch records no deletion; deleting a present one removes it under `refs/lym/heads/`.\n- **Prime records branch**: `lym.primeRecordsBranch` is written once by the clone; a store without it fails closed with a way forward, and the orphan sweep keeps the branch.\n- **Layout detection**: the records store's fetch refspec decides the layout; an unreadable remote config is an error, never read as two repositories.\n- **Config read**: git's `@{u}` works on a namespaced branch, and `gitrepo`'s tolerant config read accepts `refs/lym/heads/\u003cb\u003e`.\n\nEvery finding states the repro steps that showed it.\n",
-      "status": "done",
-      "created": "2026-11-21T19:15:58Z",
-      "revised": "2026-11-22T09:45:45Z",
-      "run_settings": {
-        "hardener": {
-          "packages": [
-            "internal/fabricengine",
-            "internal/fabriccli",
-            "internal/gitrepo"
-          ]
-        },
-        "loom": {
-          "notify_parent_on": [
-            "Harden-Bouncer",
-            "Harden-Burler-Fix"
-          ]
-        }
-      },
-      "project": "single-repo-hub"
-    },
-    {
       "id": 1554,
       "handle": "T4",
       "slug": "stale-records-ref-blocks-rerun",
@@ -215,9 +179,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "harden-fabricengine"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start",
       "body": "## What was seen (2026-11-22)\n\n`harden-fabricengine` was cancelled with `lym batten cancel --remove` on 2026-11-21 and released again after the hardener rebuild landed.\nDobby refused to start it three times: `the code tip 3a9f8d84 the run's last transition names is not on origin yet`, though 3a9f8d84 is on origin/main.\n\nCause: the records repository still held the remote-tracking ref `origin/harden-fabricengine-weft` of the cancelled run, while origin had deleted the branch.\n`fabricengine.OriginCodeTip` reads that ref, finds the old run's last transition and judges its code tip missing.\n\nWorkaround: `git -C \u003chub\u003e/loomyard-weft fetch --prune origin`, which also dropped two other stale refs.\n\n## Expected\n\n- `lym batten cancel --remove` and the remote cleanup drop the local remote-tracking ref of a deleted records branch, or the records fetch prunes.\n- `OriginCodeTip` reads no records branch origin no longer holds, so a cancelled slug can run again.\n- The refusal's way forward names the real cause, not a code push that will never land.\n",
@@ -339,7 +301,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "harden-fabricengine",
         "stale-records-ref-blocks-rerun"
       ],
       "isolated": false,
