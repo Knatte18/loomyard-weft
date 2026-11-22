@@ -396,6 +396,37 @@
       "body": "## Decision (operator, 2026-11-22)\n\nOutput only a human reads, such as the rendered README, gets no test of its layout or wording.\nThe general rule goes into `scribe:testing` through the scribe hub; this entry runs as darn light once that rule has landed.\n\n## What to do\n\n- Delete the README layout goldens in `internal/boardengine/render_test.go` and the heading parsing in `view_test.go`; do not move them to testdata files.\n- Keep the tests of behaviour other code relies on, without pinning the layout: `RenderToDisk` rewriting a file in place and its manifest cleanup, and `board-data.js` holding each entry, which `board.html` reads.\n- Sweep the repository for other renderers of human-read output carrying layout goldens, and delete those too.\n\n## What was seen\n\nIn `readme-declutter` the format change touched about 200 lines of `render.go` and about 480 lines of `render_test.go`.\nOn main, `render_test.go` is longer than `render.go`: each run covered its format change with a new golden, and reviewers flag a change without a test.\n",
       "created": "2026-11-22T11:14:43Z",
       "revised": "2026-11-22T11:19:19Z"
+    },
+    {
+      "id": 1561,
+      "handle": "T1",
+      "slug": "orch-rc-off-by-default",
+      "title": "Orch remote control is off by default",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "orch",
+        "config"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lym turns on remote control for every orch it launches; it must stay off until the operator turns it on.",
+      "body": "## What was seen (operator, 2026-11-22)\n\nBringing up the scribe hub's orch with `lym beam start` turned on Claude Code's remote control for it, because `internal/orchengine/template.yaml` ships `remote_control: true`.\nThe operator decides when a session gets remote control; lym must never turn it on by itself.\n\n## Fix\n\n- `remote_control` defaults to `false` in the orch template, so no hub gets remote control on any launch or resume unless its config turns it on.\n- Every hub that has no explicit value takes the new default; ship the reinterpretation `PATTERN-config-layers` asks for a meaning change.\n- The RC button of a pane stays the operator's way to turn it on for one agent.\n- Check that no other launch path, such as a beam orch or a respawn, turns remote control on by its own default.\n",
+      "status": "draft",
+      "created": "2026-11-22T11:21:57Z",
+      "revised": "2026-11-22T11:21:57Z",
+      "run_settings": {
+        "darn": {
+          "writer": "opus[medium]"
+        },
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
