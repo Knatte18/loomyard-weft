@@ -387,7 +387,7 @@
       "isolated": false,
       "brief": "Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run",
       "body": "## Seen\n\n`darn-slowdown-measure` (`docs/research/darn-slowdown-measure.md`) found Code-Burler-Review's median up 2.8 min per darn between 2026-11-16/17 and 2026-11-21/22, about 6 % of a 45 min run,\nwith 0.5 more lens reviews per run.\n\n## Goal\n\nFind which input or step of Code-Burler-Review costs the extra minutes, mutation survivors and the tautological-test lens among the suspects.\n\n## Bounds\n\n- Read archived run records (`refs/tags/archive/\u003cslug\u003e/\u003csha\u003e` in `loomyard-weft`) and git history only: about 15 darn runs from each period, the same periods as the earlier report.\n- No timed runs and no agent runs.\n- The report ends with each cost, its share, and a concrete fix for each as a candidate note, such as capping or skipping an input on a diff with no surviving mutant.\n",
-      "status": "running · Drift-Baseline",
+      "status": "running · Drift-Await",
       "created": "2026-11-22T19:04:24Z",
       "revised": "2026-11-22T19:16:09Z",
       "run_settings": {
