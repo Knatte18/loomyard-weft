@@ -1,0 +1,13 @@
+---
+round: 3
+focus:
+  - "D4 answer path: under autonomy, `lym loom parent-review answer <slug> --ask <n>` must record a satisfied answer where `pr-continue` reads it. Check which store the record names for PR-Review asks (burlerengine's run-wide ask record via `AnswerParentAsk`, answered only for the latest ask before its deadline, versus the pull request record), how the verb tells a PR-Review ask from a Code-Review, Discussion-Review or judge ask of the same run, and what a PR-Review ask's deadline does on expiry."
+  - "D4 ending bound: the PR-Review row's `judge` in `internal/landingshed/prreview.go` ends the review on a standing Continue flag, a clean tree and a gated head. Check whether the record states that under autonomy it ends only when the newest ask was answered satisfied at the head being judged, so a commit made after `pr-continue` cannot be ended on at a head no ask covered."
+  - "D4 closed pull request: Finalize (`internal/landingshed/finalize_pr.go`) reopens and merges a closed pull request whose review ended. Check whether the record stops `pr-continue` on a closed pull request from setting ReviewEnded under autonomy, so the row reaches its closed-without-merge halt as the record's class 4 severe halt."
+  - "D4 autonomy recording: `ensureSession` and `resumeSession` in `internal/landingshed/prsession.go` rebuild the session spec after every pause and judging stop, and a goto onto PR-Review resumes the recorded SessionID and is admitted only on a paused, blocked or failed run (`gotoAdmitted` in `internal/shedengine/goto.go`). Check that the record says when autonomy is recorded, that later session builds read the recorded value, and what a goto does to it."
+  - "D5 class 5 count: `appendOrFold` in `internal/shedengine/run.go` folds identical consecutive budget-exempt halts into one status-history entry and bumps `Repeats`, and `lym loom resume` writes no entry. Check that the count and its Bound use an entry's repeats, and that the acceptance bullet matches."
+  - "D3 judge Bound: `internal/driftengine/judgeparent.go` lets rulings stand when a judge ask ends not-sent or no-parent. Check that the Bound and its acceptance bullet either stop the run for those two end states under autonomy or state why standing rulings are accepted."
+  - "D9 autonomy line: `orchengine.WithPresence` in `internal/orchengine/prompt.go` returns the pointer unchanged unless the presence is slack. Check that the record appends the autonomy line to the start, resume and reload pointers and the watcher's pending resume whatever the presence, and that the acceptance bullet covers a terminal presence."
+---
+
+Round 3 re-reviews the fixes to the seven round 2 findings; the settled remainder of the record needs no new look.
