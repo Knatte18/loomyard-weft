@@ -1,6 +1,6 @@
 # A killed seed leaves board sync naming a false, looping way forward
 
-`seed-killed-way-forward-loops` · Task · bug, fabric · starting · Seed-Child
+`seed-killed-way-forward-loops` · Task · bug, fabric · starting · Open-Window
 
 Depends on: [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
 
