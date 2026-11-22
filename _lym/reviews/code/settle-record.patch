@@ -1,0 +1,425 @@
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index d7eab7e26..3a754a964 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -43,6 +43,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+@@ -1418,6 +1419,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 					return err
+ 				}
+ 				reedEngine := reedengine.New(reedCfg, reedGeom, shuttleengines.EnvScrub())
++				reedEngine.SetRevivalFilter(orchengine.RevivalFilter(fabricengine.ConfigDirs(taskLocation)))
+ 				rows, err := reedEngine.Directory()
+ 				if err != nil {
+ 					return err
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index b2b99e0db..c988a174a 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -158,7 +158,7 @@ func Modules() []Module {
+ 		{Name: "logger", Template: loggerconfig.ConfigTemplate, CheckLoad: checkLoad(loggerconfig.Load), Spec: loggerconfig.ConfigSpec},
+ 		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Spec: loomengine.ConfigSpec},
+ 		{Name: "models", Template: modelspec.ConfigTemplate, SeedOnly: true, CheckLoad: checkLoad(modelspec.LoadRegistry), Spec: modelspec.ConfigSpec},
+-		{Name: "orch", Template: orchengine.ConfigTemplate, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Spec: orchengine.ConfigSpec},
++		{Name: "orch", Template: orchengine.ConfigTemplate, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Reinterpretations: []Reinterpretation{{ID: orchengine.RemoteControlOffReinterpretationID, Rewrite: orchengine.FlagRemoteControlDefault}}, Spec: orchengine.ConfigSpec},
+ 		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, CheckLoad: checkProfiles, Spec: runprofile.ConfigSpec},
+ 		{Name: "reed", Template: reedengine.ConfigTemplate, OpenMaps: reedengine.ConfigOpenMaps(), CheckLoad: checkLoadNamed(reedengine.LoadConfig, "reed"), Spec: reedengine.ConfigSpec},
+ 		{Name: "report", Template: reportconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(reportconfig.LoadConfig), Spec: reportconfig.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index b8b5f3484..b4b52e08a 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -80,6 +80,28 @@ func TestModules_SeedOnlyAndHubWideFlags(t *testing.T) {
+ 	}
+ }
+ 
++// TestModules_OrchRegistersRemoteControlReinterpretation pins the orch module's remote-control reinterpretation.
++// Every hub gets the notice that its orch's remote control is now off only while the orch row declares it.
++//
++//testtiming:keep pins the orch row's Reinterpretations entry, which no walk test reads
++func TestModules_OrchRegistersRemoteControlReinterpretation(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	orch, found := Lookup("orch")
++	if !found {
++		t.Fatal("Lookup(\"orch\") found no module; want the orch module registered")
++	}
++	if len(orch.Reinterpretations) != 1 {
++		t.Fatalf("orch Reinterpretations = %d entries; want 1", len(orch.Reinterpretations))
++	}
++	if got := orch.Reinterpretations[0].ID; got != "orch-remote-control-off-by-default" {
++		t.Errorf("orch Reinterpretations[0].ID = %q; want %q", got, "orch-remote-control-off-by-default")
++	}
++	if orch.Reinterpretations[0].Rewrite == nil {
++		t.Error("orch Reinterpretations[0].Rewrite is nil; want the rewrite function")
++	}
++}
++
+ // TestModules_EveryTemplateKeyClassified pins that each module's Categories classify every template unit.
+ // It also pins that Categories name only paths the template holds.
+ // The derived LocalKeys, LocalDenied and MachineKeys must match the record.
+diff --git a/internal/orchengine/config_test.go b/internal/orchengine/config_test.go
+index c7fc2d2b6..343a0cf7f 100644
+--- a/internal/orchengine/config_test.go
++++ b/internal/orchengine/config_test.go
+@@ -220,9 +220,10 @@ func TestLoadConfig_RemoteControl(t *testing.T) {
+ 		wantName  string
+ 		wantError string
+ 	}{
+-		{"the template is on with the cross-machine address", "model: opus\n", true, "{machine}::{name}", ""},
+-		{"switched off with an empty name loads", "remote_control: false\nremote_control_name: \"\"\n", false, "", ""},
+-		{"on with an empty name is refused", "remote_control_name: \" \"\n", false, "", "remote_control_name is empty"},
++		{"the template is off with the cross-machine address", "model: opus\n", false, "{machine}::{name}", ""},
++		{"switched on keeps the template's name", "remote_control: true\n", true, "{machine}::{name}", ""},
++		{"off with an empty name loads", "remote_control_name: \"\"\n", false, "", ""},
++		{"on with an empty name is refused", "remote_control: true\nremote_control_name: \" \"\n", false, "", "remote_control_name is empty"},
+ 		{"a control character is refused", "remote_control_name: \"a\\tb\"\n", false, "", "control character"},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index 8a604fdf7..d903cd8df 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -66,6 +66,10 @@
+ //
+ // While `remote_control` in orch.yaml is on, every orch session starts with the provider's remote control on.
+ // This covers every launch and resume lym makes.
++// It is off unless the operator sets it, so lym never turns remote control on by itself;
++// the RC button of a pane turns it on for one agent.
++// The reinterpretation FlagRemoteControlDefault flags a hub file that set no value before the default turned off.
++// The hub's orch hears of it once.
+ // Config.RemoteControlSessionName fills the `remote_control_name` template;
+ // `{machine}::{name}` is the cross-machine address creel uses.
+ // orchengine records no remote-control state.
+diff --git a/internal/orchengine/reinterpret.go b/internal/orchengine/reinterpret.go
+new file mode 100644
+index 000000000..080e32d1d
+--- /dev/null
++++ b/internal/orchengine/reinterpret.go
+@@ -0,0 +1,36 @@
++// reinterpret.go carries a hub's orch.yaml across the change of remote_control's default from on to off.
++
++package orchengine
++
++import (
++	"fmt"
++
++	"gopkg.in/yaml.v3"
++)
++
++// RemoteControlOffReinterpretationID names the change that turned remote_control's default from on to off.
++const RemoteControlOffReinterpretationID = "orch-remote-control-off-by-default"
++
++// remoteControlKey is the orch.yaml key whose default the change turned off.
++const remoteControlKey = "remote_control"
++
++// FlagRemoteControlDefault carries a hub orch.yaml across the change of remote_control's default from on to off.
++// A file that sets no remote_control took remote control on before the change and takes it off now.
++// The operator decides when an orch session gets remote control.
++// Such a file is flagged with the way forward that turns it back on, and left unchanged.
++// A file that sets remote_control keeps its value and is neither changed nor flagged.
++// The worktree root and anchored directory arguments are unused, as the check judges the file alone.
++func FlagRemoteControlDefault(existing []byte, _, _ string) (rewritten []byte, rewrote, flagged []string, err error) {
++	var keys map[string]yaml.Node
++	if err := yaml.Unmarshal(existing, &keys); err != nil {
++		return nil, nil, nil, fmt.Errorf("parse the orch config: %w", err)
++	}
++	if _, set := keys[remoteControlKey]; set {
++		return existing, nil, nil, nil
++	}
++	return existing, nil, []string{fmt.Sprintf(
++		"sets no %s, whose default is now off, so the orch starts without remote control; "+
++			"to keep it on for every orch session, run `lym config orch --set %s=true` from the prime, "+
++			"or click the RC button of a pane to turn it on for that agent",
++		remoteControlKey, remoteControlKey)}, nil
++}
+diff --git a/internal/orchengine/reinterpret_test.go b/internal/orchengine/reinterpret_test.go
+new file mode 100644
+index 000000000..28c4d7af9
+--- /dev/null
++++ b/internal/orchengine/reinterpret_test.go
+@@ -0,0 +1,60 @@
++// reinterpret_test.go covers FlagRemoteControlDefault over hub orch.yaml bytes.
++
++package orchengine_test
++
++import (
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestFlagRemoteControlDefault pins the outcomes of the check.
++// A file that sets no remote_control is flagged with the step that turns it on and left unchanged.
++// A file that sets it, on or off, is neither changed nor flagged.
++// A file that is no mapping fails to parse.
++func TestFlagRemoteControlDefault(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const wayForward = "`lym config orch --set remote_control=true`"
++	tests := []struct {
++		name        string
++		input       string
++		wantFlagged bool
++		wantError   bool
++	}{
++		{name: "OtherKeysOnly", input: "model: sonnet\n", wantFlagged: true},
++		{name: "HeaderOnly", input: "# tuned for this hub\n", wantFlagged: true},
++		{name: "SetOn", input: "remote_control: true\n"},
++		{name: "SetOff", input: "model: sonnet\nremote_control: false\n"},
++		{name: "NotAMapping", input: "- a\n- b\n", wantError: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			rewritten, rewrote, flagged, err := orchengine.FlagRemoteControlDefault([]byte(tt.input), "", "")
++			if tt.wantError {
++				if err == nil {
++					t.Errorf("FlagRemoteControlDefault(%q) = nil error; want a parse error", tt.input)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("FlagRemoteControlDefault(%q): %v", tt.input, err)
++			}
++			if string(rewritten) != tt.input {
++				t.Errorf("FlagRemoteControlDefault(%q) rewritten = %q; want the input unchanged", tt.input, rewritten)
++			}
++			if len(rewrote) != 0 {
++				t.Errorf("FlagRemoteControlDefault(%q) rewrote = %v; want none", tt.input, rewrote)
++			}
++			switch {
++			case tt.wantFlagged && (len(flagged) != 1 || !strings.Contains(flagged[0], wayForward)):
++				t.Errorf("FlagRemoteControlDefault(%q) flagged = %v; want one line naming %s", tt.input, flagged, wayForward)
++			case !tt.wantFlagged && len(flagged) != 0:
++				t.Errorf("FlagRemoteControlDefault(%q) flagged = %v; want none", tt.input, flagged)
++			}
++		})
++	}
++}
+diff --git a/internal/orchengine/revival.go b/internal/orchengine/revival.go
+new file mode 100644
+index 000000000..f07634884
+--- /dev/null
++++ b/internal/orchengine/revival.go
+@@ -0,0 +1,38 @@
++// revival.go drops remote control from an orch strand's stored command line when orch.yaml has it off.
++
++package orchengine
++
++import (
++	"regexp"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// remoteControlArgument matches a ` --remote-control <name>` pair in a stored launch line.
++// The name may be quoted for either pane shell.
++var remoteControlArgument = regexp.MustCompile(`\s--remote-control\s+(?:'(?:[^']|'\\''|'')*'|\S+)`)
++
++// StripRemoteControlArgument returns line without its --remote-control argument and the session name that follows it.
++// A line with no such argument is returned unchanged.
++func StripRemoteControlArgument(line string) string {
++	return remoteControlArgument.ReplaceAllString(line, "")
++}
++
++// RevivalFilter returns the rewrite a reed resume or relaunch applies to a stored command line.
++// The line keeps its --remote-control argument only while the orch.yaml under dirs sets remote_control on.
++// The file is read at each call, so a change to it applies to the next revival.
++// A file that cannot be loaded cannot ask for remote control, so the argument is dropped then.
++func RevivalFilter(dirs configengine.Dirs) func(line string) string {
++	return func(line string) string {
++		cfg, err := LoadConfig(dirs, "orch")
++		if err != nil {
++			logger.Warn("orch: dropping remote control from a revived session, since orch.yaml does not load", "err", err)
++			return StripRemoteControlArgument(line)
++		}
++		if cfg.RemoteControl {
++			return line
++		}
++		return StripRemoteControlArgument(line)
++	}
++}
+diff --git a/internal/orchengine/revival_test.go b/internal/orchengine/revival_test.go
+new file mode 100644
+index 000000000..a520e066f
+--- /dev/null
++++ b/internal/orchengine/revival_test.go
+@@ -0,0 +1,68 @@
++// revival_test.go covers the revival filter that drops remote control from a stored orch command line.
++
++package orchengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestStripRemoteControlArgument pins which text of a stored launch line the strip removes.
++func TestStripRemoteControlArgument(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name  string
++		input string
++		want  string
++	}{
++		{"PosixQuotedMiddle", `'claude' --resume 's' --remote-control 'neve::hub:orch' --model 'opus'`, `'claude' --resume 's' --model 'opus'`},
++		{"PosixQuotedLast", `'claude' --resume 's' --remote-control 'neve::hub:orch'`, `'claude' --resume 's'`},
++		{"NameWithEscapedQuote", `'claude' --remote-control 'a'\''b' --model 'opus'`, `'claude' --model 'opus'`},
++		{"PwshDoubledQuote", `& 'claude' --remote-control 'a''b' --model 'opus'`, `& 'claude' --model 'opus'`},
++		{"BareName", `claude --remote-control name --model opus`, `claude --model opus`},
++		{"NoArgument", `'claude' --resume 's' --model 'opus'`, `'claude' --resume 's' --model 'opus'`},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := orchengine.StripRemoteControlArgument(tt.input); got != tt.want {
++				t.Errorf("StripRemoteControlArgument(%q) = %q; want %q", tt.input, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestRevivalFilter pins that a revived line keeps remote control only while orch.yaml sets remote_control on.
++// An orch.yaml that does not load cannot ask for it, so the argument is dropped.
++func TestRevivalFilter(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const line = `'claude' --resume 's' --remote-control 'neve::hub:orch' --model 'opus'`
++	const stripped = `'claude' --resume 's' --model 'opus'`
++	tests := []struct {
++		name string
++		yaml string
++		want string
++	}{
++		{"NoFileTakesTemplateOff", "", stripped},
++		{"ExplicitOff", "remote_control: false\n", stripped},
++		{"ExplicitOn", "remote_control: true\nremote_control_name: \"{machine}::{hub}:{role}\"\n", line},
++		{"OnWithoutNameDoesNotLoad", "remote_control: true\nremote_control_name: \"\"\n", stripped},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			if tt.yaml != "" {
++				seedLymConfig(t, dir, "orch", tt.yaml)
++			}
++			if got := orchengine.RevivalFilter(configengine.Dirs{Anchor: dir})(line); got != tt.want {
++				t.Errorf("RevivalFilter(%q) = %q; want %q", tt.yaml, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/orchengine/template.yaml b/internal/orchengine/template.yaml
+index e43eefe3c..fed41e262 100644
+--- a/internal/orchengine/template.yaml
++++ b/internal/orchengine/template.yaml
+@@ -8,5 +8,5 @@ threshold_tokens: 200000  # hard cap: context-token count at which the watcher c
+ idle_grace_s: 30  # seconds the session must stay idle after its newest event before the watcher acts; non-positive is floored back to 30
+ handoff_timeout_s: 600  # seconds the session gets to write its handoff before the cycle aborts; non-positive is floored back to 600
+ poll_interval_ms: 2000  # milliseconds between watcher polls; a value below 1000 is floored to 1000 with one warning (an unfloored 0 would busy-spin the watcher)
+-remote_control: true  # whether every orch session lym launches or resumes starts with Claude Code's remote control on; a Codex orch never does; the RC button of an agent's pane turns remote control on for that agent
++remote_control: false  # whether every orch session lym launches or resumes starts with Claude Code's remote control on; off unless the operator sets it; a Codex orch never does; the RC button of an agent's pane turns remote control on for that agent
+ remote_control_name: "{machine}::{name}"  # the remote session's name as the phone shows it, also used by the RC button; {machine} is this machine's name, {hub} the hub's shortname, {role} and {name} the role and full name of the strand the name is formed for, the orch's at launch and the clicked agent's for the RC button, so the default is the cross-machine address creel uses, such as neve::ly:orch
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index d75629217..8e012cc13 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+@@ -112,6 +113,7 @@ func (c *reedCLI) wireLocation(location *lymcwd.Location) error {
+ 		return err
+ 	}
+ 	c.eng = reedengine.New(cfg, reedGeom, shuttleengines.EnvScrub())
++	c.eng.SetRevivalFilter(orchengine.RevivalFilter(fabricengine.ConfigDirs(location)))
+ 	c.hubPath = location.HubPath
+ 	c.anchorPath = location.AnchorPath()
+ 	return nil
+diff --git a/internal/reedengine/lifecycle.go b/internal/reedengine/lifecycle.go
+index ec233ca42..5566388a6 100644
+--- a/internal/reedengine/lifecycle.go
++++ b/internal/reedengine/lifecycle.go
+@@ -879,11 +879,7 @@ func (e *Engine) Resume() (ResumeResult, error) {
+ 			if !launch[st.Strands[i].GUID] {
+ 				continue
+ 			}
+-			resumeCmd := st.Strands[i].ResumeCmd
+-			if resumeCmd == "" {
+-				resumeCmd = st.Strands[i].Cmd
+-			}
+-			if err := e.launchStrandLocked(st, &st.Strands[i], resumeCmd); err != nil {
++			if err := e.launchStrandLocked(st, &st.Strands[i], e.revivalCmd(st.Strands[i])); err != nil {
+ 				return fmt.Errorf("resume strand %s: %w", st.Strands[i].GUID, err)
+ 			}
+ 			// Persist after each launch, before the apply below, so the pane is tracked at once.
+diff --git a/internal/reedengine/lock.go b/internal/reedengine/lock.go
+index af0f96351..24fabd8f8 100644
+--- a/internal/reedengine/lock.go
++++ b/internal/reedengine/lock.go
+@@ -55,6 +55,27 @@ type Engine struct {
+ 	// executablePath resolves the running lym binary's path.
+ 	// Under go test it refuses the test binary, so a test that wants a pinned line stubs it.
+ 	executablePath func() (string, error)
++	// reviveFilter rewrites a stored command line before a resume or a relaunch replays it; nil replays it as stored.
++	reviveFilter func(line string) string
++}
++
++// SetRevivalFilter installs filter, which rewrites each stored command line a resume or an absent-pane relaunch replays.
++// A caller uses it to drop from a stored line what its current configuration no longer allows.
++// The filter runs on the line chosen for replay, the resume command or its fallback command, and never on a fresh launch.
++func (e *Engine) SetRevivalFilter(filter func(line string) string) {
++	e.reviveFilter = filter
++}
++
++// revivalCmd returns the line a resume or relaunch of strand replays: its resume command, else its command, filtered.
++func (e *Engine) revivalCmd(strand Strand) string {
++	line := strand.ResumeCmd
++	if line == "" {
++		line = strand.Cmd
++	}
++	if e.reviveFilter != nil {
++		line = e.reviveFilter(line)
++	}
++	return line
+ }
+ 
+ // New builds an Engine for the given Config, Geometry and EnvScrub.
+diff --git a/internal/reedengine/strand.go b/internal/reedengine/strand.go
+index 7cee61794..db66f64cd 100644
+--- a/internal/reedengine/strand.go
++++ b/internal/reedengine/strand.go
+@@ -612,13 +612,9 @@ func (e *Engine) AddStrandUnless(spec AddSpec, unlessName string) (Strand, bool,
+ 				return nil
+ 			case ifAbsentRelaunch:
+ 				strand := &st.Strands[idx]
+-				// Launch with the stored ResumeCmd, falling back to Cmd: the same fallback a resume applies.
++				// Launch with the stored ResumeCmd, falling back to Cmd: the same line a resume replays.
+ 				// A relaunch matched by name therefore does what resuming that strand does.
+-				launchCmd := strand.ResumeCmd
+-				if launchCmd == "" {
+-					launchCmd = strand.Cmd
+-				}
+-				if err := e.launchStrandLocked(st, strand, launchCmd); err != nil {
++				if err := e.launchStrandLocked(st, strand, e.revivalCmd(*strand)); err != nil {
+ 					return fmt.Errorf("launch strand: %w", err)
+ 				}
+ 				// Persist after the launch succeeds and before the layout apply.
