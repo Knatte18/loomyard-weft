@@ -1,0 +1,13 @@
+{
+  "round": 3,
+  "mark": "green",
+  "live": {
+    "passed": true,
+    "started": 2
+  },
+  "copies": {
+    "passed": false,
+    "started": 0,
+    "refused": "gate test: --copies runs one tier below tier3, and --gate \"harden-live\" names tiers [0 1]; way forward: set the key to one tier below tier3 with lym config gate --set from the prime; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them"
+  }
+}
