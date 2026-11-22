@@ -1,50 +1,50 @@
-# A stale records tracking ref no longer blocks a cancelled slug's rerun
+# Prune deleted remote branches on fetch so a cancelled slug can run again
 
-A slug cancelled with `lym batten cancel --remove` and released again could not start:
-`lym batten run` refused it with `the code tip <sha> the run's last transition names is not on origin yet`,
-though origin held the tip.
-The records repository still held `origin/<slug>-weft` from the cancelled run after origin had deleted that branch.
-`fabricengine.OriginCodeTip` reads the fetched records ref with no network call,
-so it found the old run's last transition there and judged its code tip missing.
-Nothing on the start path refreshed the ref, and no fetch dropped it, since `gitrepo.Fetch` did not prune.
+A cancelled run's slug could not start again.
+`lym batten cancel --remove` deletes the records branch on origin, but the records repository kept the remote-tracking ref of that branch.
+`fabricengine.OriginCodeTip` read the stale ref, found the old run's last transition and judged its code tip missing.
+Dobby then refused the start with "the code tip … is not on origin yet", though the tip was on origin.
+The refusal also pointed at a code push that would never land.
 
 ## What changes
 
-- **`gitrepo.Fetch` prunes.**
-  It runs `git fetch --prune`, so every plain fetch drops the tracking ref of a branch origin deleted.
-  That covers the records fetches of the pass catch-up, `FetchPairTips` and `lym fabric pull`,
-  and the code-side fetches the same way.
-- **batten's act check fetches before a code-tip wait stands.**
-  `hubRunVerdict` in `internal/battencli/arm.go` now goes through `judgeAfterCodeTipFetch`:
-  a verdict whose reason is `code_tip` fetches the run's branches, the pair's when it stands here and the prime's records otherwise,
-  and judges a fresh read.
-  A stale records ref is pruned by that fetch, so the second judgement acts.
-  A tip still missing waits as before, and a failed fetch keeps the first verdict.
-- **The code-tip refusal names the real cause when no pair stands here.**
-  `runfsm.Inputs` and `runfsm.Verdict` carry `CodeTipPairAbsent`, which `pairteardown`'s run reader sets for a run with no pair on this machine.
-  The refusal then says the transition may come from a records branch origin deleted, as `lym batten cancel <slug> --remove` does,
-  and names `lym fabric pull` in the prime first, with the push on the owing machine only if the refusal stays.
-  A run whose pair stands here keeps the old wording.
-
-## Design decisions
-
-- The board entry offers two fixes for the stale ref: drop it in the cancel and remote cleanup, or make the records fetch prune.
-  This change takes the prune.
-  A branch can vanish from origin by routes no local teardown sees, such as another machine's cleanup, and a prune covers them all;
-  the teardown paths already drop the ref when their own delete succeeds.
-- `OriginCodeTip` keeps reading only fetched refs.
-  Deciding whether origin still holds the records branch needs a network call, which belongs to the caller about to act,
-  so the fetch sits in batten's act check, not in the reader.
-- The dobby's own code-tip settling is unchanged: it covers runs with a batten record and a pair here,
-  and a removed slug's fresh start goes through `lym batten run`, which this change makes fetch.
+- `gitrepo.Repo.Fetch` now prunes the remote-tracking ref of every branch origin deleted, so every reader of the fetched refs stops seeing a deleted branch as present.
+  After the plain fetch it runs `git fetch --prune --no-tags origin <refspecs>` under the same remote-refs hold.
+  The refspecs are origin's configured ones whose destination is under `refs/remotes/`.
+  The prune is limited to them so it never deletes a local tag, which a bare `--prune` would do when a configured refspec fetches into `refs/tags/`.
+  A checkout with no `origin` is fetched and not pruned.
+  A failed fetch error names the command that failed, with each refspec single-quoted.
+- `battencli` judges a code-tip wait again after a fetch.
+  When the act rule's verdict is the code-tip wait, `hubRunVerdict` fetches the run's records and code refs from origin, including the prime's code store, and judges a fresh read.
+  A failed fetch keeps the first verdict and its refusal.
+  A cancelled slug is therefore released by the next verb that asks, with no manual `git fetch --prune`.
+- The code-tip refusal names the real cause when no pair of the run stands on this machine.
+  `runfsm.Inputs` and `runfsm.Verdict` gain `CodeTipPairAbsent`, which `pairteardown` sets from whether a pair stands here.
+  In that case the refusal says the transition may be read from a records branch origin has deleted, and the way forward is `lym fabric pull` in the prime before the code-push advice.
+  A refusal with a pair present reads as before.
+- `cmd/lym/checkedcall_test.go` pins the two marked raw git calls `Fetch` now has.
 
 ## Tests
 
-- `TestFetch_BranchDeletedOnRemote_DropsItsTrackingRef` (gitrepo, tier 1): a clone that fetched a branch loses its tracking ref once another clone deletes the branch on the remote, and keeps the live branch's ref.
-- `TestJudgeAfterCodeTipFetch` (battencli, tier 0): a code-tip wait fetches and acts once the fresh read is clean, waits when the tip stays missing, keeps the wait when the fetch fails, and any other verdict fetches nothing.
-- `TestAct` (runfsm) gains a row pinning the refusal text for a missing code tip with no pair here.
+- `internal/gitrepo/fetch_integration_test.go`: a records-store fetch prunes the tracking refs of deleted branches and keeps local tags.
+- `internal/battencli/arm_runverdict_test.go`: rows for the fetch before the second judgement, a failed fetch, and a read that fails after the fetch.
+- `internal/runfsm/act_test.go`: rows for the pair-absent refusal, with and without a tip and machine.
+- `internal/pairteardown/runread_test.go`: `CodeTipPairAbsent` is set from the pair's presence.
+
+## Design decisions
+
+- Pruning in `Fetch` rather than only in `lym batten cancel --remove` covers every path that leaves a stale ref, including a branch deleted from another machine.
+- The prune names refspecs instead of passing a bare `--prune`: a bare prune also removes local tags that no configured refspec fetches into `refs/remotes/`.
+- Only `origin` is read for the prune; every store in the repository uses it.
+- The fetch in `hubRunVerdict` also fetches the code store when a pair stands, which repeats the code-side fetch on that rare path; a guard would move pair knowledge into the closure.
+
+## To check by hand
+
+- The prune of `Fetch` must never delete a local tag: confirm on a checkout whose remote has a refspec fetching into `refs/tags/` (`internal/gitrepo/pull.go`).
+- The merge-danger call below is wider than a battencli-only change because `Fetch` is shared by every caller of `gitrepo`: confirm no caller relies on a tracking ref of a branch origin deleted.
+- Not run: the reproduction from the report, a cancelled `harden-fabricengine`-style slug released again against a real origin.
 
 ## Merge danger
 
-**Door:** two-way
+**Door:** one-way
 **Blast radius:** gitrepo
