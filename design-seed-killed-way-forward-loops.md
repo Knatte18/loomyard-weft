@@ -2,8 +2,6 @@
 
 `seed-killed-way-forward-loops` · Task · bug, fabric · running · Record-Write
 
-Depends on: [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md)
-
 ## What was seen
 
 Round 3 of `harden-fabricengine` killed the seeding `lym` with `kill -9` while a `pre-receive` hook slept on one ref.

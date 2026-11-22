@@ -168,38 +168,6 @@
       "record_body_sha256": "575a6011931eb007845f91a517612780d622cf8ff511f6d8a1088a6bb7f946e8"
     },
     {
-      "id": 1554,
-      "handle": "T4",
-      "slug": "stale-records-ref-blocks-rerun",
-      "title": "A stale records tracking ref blocks a cancelled slug from running again",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric",
-        "batten",
-        "dobby"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start",
-      "body": "## What was seen (2026-11-22)\n\n`harden-fabricengine` was cancelled with `lym batten cancel --remove` on 2026-11-21 and released again after the hardener rebuild landed.\nDobby refused to start it three times: `the code tip 3a9f8d84 the run's last transition names is not on origin yet`, though 3a9f8d84 is on origin/main.\n\nCause: the records repository still held the remote-tracking ref `origin/harden-fabricengine-weft` of the cancelled run, while origin had deleted the branch.\n`fabricengine.OriginCodeTip` reads that ref, finds the old run's last transition and judges its code tip missing.\n\nWorkaround: `git -C \u003chub\u003e/loomyard-weft fetch --prune origin`, which also dropped two other stale refs.\n\n## Expected\n\n- `lym batten cancel --remove` and the remote cleanup drop the local remote-tracking ref of a deleted records branch, or the records fetch prunes.\n- `OriginCodeTip` reads no records branch origin no longer holds, so a cancelled slug can run again.\n- The refusal's way forward names the real cause, not a code push that will never land.\n",
-      "status": "done",
-      "created": "2026-11-22T09:47:11Z",
-      "revised": "2026-11-22T09:51:58Z",
-      "run_settings": {
-        "darn": {
-          "writer": "opus[medium]"
-        },
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1562,
       "handle": "T11",
       "slug": "orch-autonomy-mode",
@@ -272,9 +240,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "stale-records-ref-blocks-rerun"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "After a killed seeding lym, board sync says the board was never seeded and names a --reset clone that may be refused.",
       "body": "## What was seen\n\nRound 3 of `harden-fabricengine` killed the seeding `lym` with `kill -9` while a `pre-receive` hook slept on one ref.\nOrigin then held the whole seed, yet `lym board sync` refused with \"has no upstream in a one-repository hub, so it was never seeded onto origin\" and named `lym fabric clone --single-repo ... --reset` (`internal/fabricengine/pushclassified.go`).\nThe sentence is false, and a one-URL clone onto an origin that already holds a namespaced board is refused, so the way forward may loop.\nThe `--reset` path was not driven, since a task session may not run `lym fabric clone`.\n\nA related wording gap: a killed seed push that took the records branch and withdrew it says nothing of the withdrawal, where the declined-board message does.\n\n## Idea\n\nMake the message read origin before it claims the board was never seeded, and name a way forward that works when origin holds the seed.\nDrive it in the second hardener campaign, after `harden-sandbox-fabric-verbs` lands.\n",
