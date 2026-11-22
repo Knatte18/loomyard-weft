@@ -20,7 +20,7 @@ Facts settled:
 ### Turn 2 — design picks
 
 - Verb or guidance: guidance alone (D1).
-- Note name and place: `_lym/move-note.md`, term `move note` (D2, D8).
+- Note name and place: `_lym/move-note.md`, term `move note` (D2, D8); review round 2 moved the note to the orch's `.scratch/`.
 - No live writer: the orch writes the note (D3).
 - Same entry or new task: the same entry (D5).
 - Commits: read only (D6).
@@ -57,13 +57,41 @@ Lens review, one line per finding, duplicates merged:
 - Committing the move note to the records branch: needs a new committing writer under `PATTERN-run-records`; the board body is already a durable copy.
 - Calling the file a hand-back: collides with the driver's hand-back.
 - Cancel without `--remove`: makes no archive tags and blocks the re-run.
-- Asking the writer without holding the run: the tip SHA and merge base can drift before the cancel.
+- Reading the note's tip SHA and merge base without holding the run: they can drift before the cancel.
+- Holding the run with `lym batten pause`: the inner loom or Webster run reads only the `lym tender pause` record, so it keeps committing.
+- Holding the run with `lym tender pause` before the ask: the pause holds every delivery into the writer's pane, so the ask never arrives.
+- Taking the code archive tag from `archive_tags`: it names at most the local tip's tag, created before the teardown child pushes it.
 - Refusing a move across owner machines: the owner follows the parent, and the fresh run needs nothing local to the old machine.
 - Clearing a discussed entry's stored record instead of adding to it: throws away decisions the fresh run still needs.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1 (batten pause does not hold the inner run; tender pause holds the ask): fixed, D2 asks first, then holds with `lym tender pause`, and the orch reads the tip after the hold; D7 lifts with `lym tender resume`.
+- F2 (cancel returns before its tags reach origin): fixed, Constraints rewritten, the code tag is named from the recorded tip and confirmed by `ls-remote`.
+  This corrects Turn 1's fact that `archive_tags` lists the archive tags and drops Turn 2's empty-`archive_tags` rule.
+- F3 (no check that the new parent takes a member): fixed, D4 step 2 checks before the cancel.
+- F4 (stale-ref workaround only in Open risks): fixed, D4 step 5 runs the pruning fetch.
+- F5 (partial finish and refusal not told apart): fixed, D4 step 3 defines both by cancel's output.
+- F6 (H2 move note in a stored record): fixed, an H3 under `## Notes for the plan writer`.
+- F7 (glossary names the writer): fixed, as proposed.
+
+### Round 2
+
+- F8 (the writer cannot write `_lym/move-note.md`): fixed, D2 asks for the first three parts in the reply and the orch writes the note in its `.scratch/`; D3 takes a refusing writer as no live writer.
+  This replaces Turn 2's note place.
+- F9 (refusals filed as partial finishes): fixed, the two cases are told apart by the way forward each names, since the output does not show whether the cancel ended anything; no slugless `lym tender resume`.
+- Fixer self-check: the ready record is read on the beam branch, the records branch is named `<task branch>-weft`, the manual tag push runs from the prime, the records-branch stop names the note's scratch path and where the move goes on, and D7 covers the owned-elsewhere refusal.
+- F10 (teardown wait covers the code tag alone): fixed, D4 step 3 confirms the tag and the records branch's absence, bounded at ten minutes with a manual tag push; D6 fetches the tag.
+- F11 (ready flag is no board field): fixed, D4 step 2 reads `beam-ready.json`; a refused `project` write keeps the note under the old parent.
+
+### Round 3
+
+- F12 (ready record read on the code branch): fixed, D4 step 2 reads `beam-ready.json` on the beam's records branch `<beam branch>-weft`,
+  since `lym beam ready` commits it in the run-records worktree with no push;
+  for a beam on another machine an absent file on origin proves nothing, so the orch asks that beam's orch or the operator whether `lym beam ready` ran.
+  This replaces Round 2's read on the beam branch.
 
 ## Question ledger
 
@@ -73,5 +101,5 @@ _No rounds yet._
 - Q4 What to call the file? Resolved, auto-pick: move note (D8), since hand-back is taken.
 - Q5 A run with no live session? Resolved, auto-pick: the orch writes the note (D3).
 - Q7 Where does the note go for a discussed entry? Resolved, auto-pick: the stored record's `## Notes for the plan writer` through `--record-file` (D4), from the lens review.
-- Q8 Hold the run before the ask? Resolved, auto-pick: `lym batten pause` first (D2), from the lens review.
-- Q6 The re-run block of `stale-records-ref-blocks-rerun`? Open, recorded under Open risks.
+- Q8 Hold the run before the ask? Resolved in review round 1: ask first, then hold with `lym tender pause` (D2), since that pause holds the ask's delivery and `lym batten pause` holds no inner run.
+- Q6 The re-run block of `stale-records-ref-blocks-rerun`? Resolved in review round 1: D4 step 5 runs the pruning fetch until that entry lands.
