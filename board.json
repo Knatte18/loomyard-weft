@@ -296,6 +296,25 @@
         }
       },
       "project": "single-repo-hub"
+    },
+    {
+      "id": 1566,
+      "handle": "E1",
+      "slug": "transition-push-slows-rows",
+      "title": "Each run transition waits for a push to origin, so a run starts about a minute slower",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Since 71d6ee1a0 every batten row pushes its records before acting; a run start went from ~7 s to ~60 s.",
+      "body": "## What was seen\n\nThe batten start rows, from Seed-Child to Run-Shed, took 1 to 13 seconds per run up to 2026-11-18 08:23, and 40 to 70 seconds per run from then on (per-day mean: 7 to 12 s on 11-15 and 11-17, 56 to 69 s on 11-18 to 11-22).\nThe jump sits exactly at `71d6ee1a0` (Adopt in the foreground over pushed state), whose member `595349b9f` pushes a transition's records to origin before the run acts.\nEach row now waits for a push to origin of about 10 to 20 seconds; the start rows Seed-Child, Open-Window, Seed-IDE, Open-IDE and Run-Shed each pay it, and so does every other transition of a run, Land and Worktree-Teardown included.\n\nMeasured from the `batten: \u003crow\u003e -\u003e running` commits on the records branches (`git log --all --grep`).\n\n## Idea\n\nKeep the pushed state that a takeover needs while cutting the wait per row:\npush only at the transitions a takeover reads from, batch several transitions into one push, or push in the background and wait only before a row whose effect a second machine could repeat.\nThe design must show which transitions adopt needs pushed before the act.\n",
+      "created": "2026-11-22T16:46:43Z",
+      "revised": "2026-11-22T16:46:43Z"
     }
   ],
   "prime_owner": "neve",
