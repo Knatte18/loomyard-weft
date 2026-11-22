@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Fix | neve | 2h<br>2h | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (10)
+## [P0 Root: entries under no project](project-root.md) (11)
 
 Owner `neve`
 
@@ -58,11 +58,12 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Enhancements (1)
+### Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Run a verify gate's reports alongside its tests**<br>• The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate | [`verify-tail-alongside-tests`](design-verify-tail-alongside-tests.md) | 0m<br>0m | gate, darn |
+| E2 |  | **Find what costs Code-Burler-Review its extra minutes**<br>• Code-Burler-Review takes 2.8 min more per darn since 2026-11-18, with 0.5 more lens reviews per run | [`code-review-cost-per-input`](design-code-review-cost-per-input.md) | 0m<br>0m | burler, lenses |
 
 ### Features (1)
 
