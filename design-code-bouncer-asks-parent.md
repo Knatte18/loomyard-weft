@@ -1,6 +1,6 @@
 # Code review asks the parent for held decisions and BLOCKING findings at a spent budget
 
-`code-bouncer-asks-parent` · Task · bug, burler, loom, darn · draft
+`code-bouncer-asks-parent` · Task · bug, burler, loom, darn
 
 Depends on: [`orch-autonomy-mode`](design-orch-autonomy-mode.md)
 
