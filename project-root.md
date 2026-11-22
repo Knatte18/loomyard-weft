@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 09:47 UTC; every age below is as of then.
+Rendered 2026-11-22 09:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -33,7 +33,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | 4m<br>4m | claude, gate, config, orch |
+| B1 |  | **A stale gate key refuses the orch launch**<br>• claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit | [`orch-launch-refused-by-gate-key`](design-orch-launch-refused-by-gate-key.md) | 5m<br>5m | claude, gate, config, orch |
 | B2 |  | **A stale records tracking ref blocks a cancelled slug from running again**<br>• OriginCodeTip reads a deleted records branch through an unpruned tracking ref; dobby refuses the start | [`stale-records-ref-blocks-rerun`](design-stale-records-ref-blocks-rerun.md) | 0m<br>0m | fabric, batten, dobby |
 
 ### Features (3)
