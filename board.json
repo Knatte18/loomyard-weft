@@ -344,10 +344,10 @@
     },
     {
       "id": 1576,
-      "handle": "E1",
+      "handle": "T6",
       "slug": "verify-tail-alongside-tests",
       "title": "Run a verify gate's reports alongside its tests",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "gate",
@@ -358,6 +358,7 @@
       "isolated": false,
       "brief": "The reach, redundancy and mutation reports and red-first run after the tests, 1 to 2 minutes per verify gate",
       "body": "## Seen\n\n`darn-slowdown-measure` (`docs/research/darn-slowdown-measure.md`) found that each verify gate spends about 75 to 105 s after its tests:\nthe reach, redundancy and mutation reports and the red-first step run one after another once the tiers finish.\nOver a darn's verify gates that is 4 to 7 % of a 45 min run.\n\n## Idea\n\nRun the three reports concurrently with the tier 2 tests, or only on the last verify gate before a handoff, and keep red-first where it is.\nMeasure the gain on a few darns before and after.\n",
+      "status": "draft",
       "created": "2026-11-22T19:04:24Z",
       "revised": "2026-11-22T19:04:24Z"
     },
