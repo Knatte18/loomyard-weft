@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-22 20:45 UTC; every age below is as of then.
+Rendered 2026-11-22 20:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | Describe | neve | 9h<br>8h | orch, landing, loom, pawl, drift |
+| T11 | **Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge** | [`orch-autonomy-mode`](design-orch-autonomy-mode.md)<br>[Sketch](decision-orch-autonomy-mode.md) | tapestry · solid | PR-Review | neve | 9h<br>8h | orch, landing, loom, pawl, drift |
 
 ## Layer A (3)
 
@@ -32,7 +32,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 2h<br>9m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 2h<br>10m | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
@@ -41,7 +41,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 9m<br>9m | fabric |
-| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 3m<br>3m | burler, arbiter, shed |
+| B2 |  | **A hardener round never approves with its focus undriven; the arbiter or the parent rules**<br>• Round 3 of the one-repository fabric hardener approved with half its focus undriven and nobody was asked | [`harden-approve-needs-focus`](design-harden-approve-needs-focus.md) | 4m<br>4m | burler, arbiter, shed |
 
 ## Features (1)
 
