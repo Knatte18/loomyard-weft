@@ -1,6 +1,6 @@
 # Orch remote control is off by default
 
-`orch-rc-off-by-default` · Task · bug, orch, config · landing · Finalize
+`orch-rc-off-by-default` · Task · bug, orch, config · done
 
 ## What was seen (operator, 2026-11-22)
 
