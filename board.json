@@ -234,6 +234,27 @@
       "body": "## Goal (operator, 2026-11-22)\n\nAn autonomy mode, set per hub and per project or beam, under which the run's parent orch receives every halt of every member run and settles it itself.\nThe operator is reached only in two cases:\n\n1. A severe halt the orch cannot settle.\n2. The beam is ready to merge: lym opens the beam's pull request ready for merge, then notifies the operator.\n\nWanted first in the Models hub on OSL-1046 and in loomyard.\n\n## What was seen\n\nRuns halt often for the operator: one halt per drift evaluation, one per pull request of a member task, and other parent-only stops.\nDrift blocks are the largest share in recent runs.\n\n## What exists\n\n- Run agents put their questions to the parent orch (e55618bb).\n- code_review_ask_parent and judge_ask_parent let the parent see and veto code review rounds and drift judge rulings (8998a865); a drift does-not-match ruling still stops the run.\n- Halts reach the parent as batten and dobby notices, but the run then waits for a resume, a decision or pr-continue that the operator often gives.\n\n## Open for the design\n\n- Which halts the orch may settle, and how a halt is marked severe enough for the operator.\n- How member PR review is handled under the mode: off, or reviewed by the parent.\n- The settings: one switch that sets the existing ask keys and the new halt routing, open to a project or beam.\n",
       "created": "2026-11-22T08:47:15Z",
       "revised": "2026-11-22T08:47:15Z"
+    },
+    {
+      "id": 1553,
+      "handle": "B1",
+      "slug": "orch-launch-refused-by-gate-key",
+      "title": "A stale gate key refuses the orch launch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "claude",
+        "gate",
+        "config",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "claudeengine refused to resume the orch over a retired gate key; no orch until a hand edit",
+      "body": "## What was seen (2026-11-22)\n\nThe hub gate.yaml held a key the hardener rebuild (2dbfdc31) retired, `gates.harden-live-copies`, with no `scope`.\n`lym s` then failed to resume the orch session: claudeengine refused to prepare the orch launch over that one gate key, so the hub had no orch until the key was removed by hand.\n`lym config` has no verb to remove a key, so only the interactive editor could fix it.\n\n## Idea\n\n- An orch or other session that runs no gate should not refuse its launch over a gate key it never uses; warn and launch.\n- The gate reinterpretation that retires `harden-live-copies` should also cover an entry with no scope.\n- Give `lym config` a non-interactive way to remove a key.\n",
+      "created": "2026-11-22T09:42:36Z",
+      "revised": "2026-11-22T09:42:36Z"
     }
   ],
   "prime_owner": "neve",
