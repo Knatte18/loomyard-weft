@@ -1,6 +1,6 @@
 # Sampler session loads the language skills before it edits code
 
-`sampler-loads-language-skills` · Task · bug, loom, shuttle · running · Drift-Baseline
+`sampler-loads-language-skills` · Task · bug, loom, shuttle · running · Drift-Await
 
 ## What was seen (operator, 2026-11-22)
 
