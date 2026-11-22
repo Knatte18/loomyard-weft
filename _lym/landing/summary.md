@@ -1,22 +1,24 @@
-# Hardener live check passes packages go can resolve
+# Hardener live check prefixes bare package paths with ./
 
-`hardenLiveArgs` in `internal/loomcli/hardenwiring.go` builds the `lym gate test --gate harden-live` call a hardener run makes after each fix round.
-It appended `hardener.packages` entries verbatim.
-An entry written as a bare worktree-relative directory, such as `internal/fabricengine`, reached go as an import path:
-go looked it up in the standard library, failed with `package internal/fabricengine is not in std`, and every tier reported `[setup failed]` before any test ran.
-The live check was red every round, and the fixer looped on a failure no fix could clear.
+The hardener's `harden-live` check failed at setup after every fix round.
+The seed pass writes `hardener.packages` as worktree-relative directories without `./`, such as `internal/fabricengine`.
+`hardenLiveArgs` in `internal/loomcli/hardenwiring.go` appended them verbatim to `lym gate test`, so go read them as standard-library import paths:
+`package internal/fabricengine is not in std`, then `[setup failed]` for each package.
+No test ran, and the fixer looped on a gate no fix could clear.
 
-## Change
+`hardenLiveArgs` now prefixes `./` to each package that `go/build.IsLocalImport` does not recognise as a local path.
+A package already written `./internal/x` passes through unchanged.
+`CheckCampaign` reads the packages as directories under the worktree root, so both forms stay valid in config and nothing needs migrating.
 
-`hardenLiveArgs` now passes each package as a path go reads as a directory.
-An entry `go/build.IsLocalImport` rejects gets a `./` prefix;
-an entry already starting with `./` or `../`, or equal to `.` or `..`, passes unchanged.
-`hardenshed.CheckCampaign` already reads the entries as directories under the worktree root, so both forms stay valid in `hardener.yaml`.
+## Design decisions
 
-## Tests
+- The prefix is applied where the live call is built, not in config, so the seed pass and existing local layers keep working as written.
+- `go/build.IsLocalImport` decides what counts as already local, so `.`, `..` and `./x` are left alone.
 
-`TestHardenLiveArgs` now feeds one bare entry (`internal/a`) and one prefixed entry (`./internal/b`) and expects `./internal/a` and `./internal/b` in both the plain and the `--copies` call.
-On the merge base the bare entry comes back unprefixed, so the test fails there.
+## To check
+
+- `TestHardenLiveArgs` now expects `./internal/a` for a bare `internal/a` and `./internal/b` for an already-prefixed input.
+  The tests were not run in this description step.
 
 ## Merge danger
 
