@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "dab88e82ca8bafe4dcb3189d61602cf01a162673",
+  "added_decisions": [
+    {
+      "title": "No before-and-after verify timing",
+      "digest": "f669a103c3a275806848405c590f3ec7db82549cf73d8f4b3fc2044278a0de2c"
+    }
+  ]
+}
