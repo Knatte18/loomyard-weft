@@ -9,7 +9,7 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 ## Evidence
 
 - The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.
-- The second, `harden-fabricengine-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.
+- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.
 - Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-<n>-focus.md`, `round-<n>-review.md`, `round-<n>-acceptance.md`, `round-<n>-usage.yaml` and the snapshots, beside its decision record and the landed commits.
 
 ## Questions
