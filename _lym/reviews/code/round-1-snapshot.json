@@ -1,0 +1,19 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "e21cf84218e23338350c369ca6dfc3d692bc271e",
+  "added_decisions": [
+    {
+      "title": "The charter step is Crucible's orchestrator fill",
+      "digest": "5e16cc4ce5d0a5692aeea4882f60a80e73c8de58cb340f5058f383e93799a508"
+    },
+    {
+      "title": "The charter is the Harden-Bouncer seed pass, not a new step",
+      "digest": "7e67c9f20a47d24be1daf09d59d075d07a046ac8ea78051f77dad038c839bca8"
+    },
+    {
+      "title": "The operator can name the campaign's focus",
+      "digest": "c74e0ef55ad29dd3c7cca51af39d8d9564f32764b3dbf95a9a50565f0a2fff6d"
+    }
+  ]
+}
