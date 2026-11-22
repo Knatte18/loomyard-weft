@@ -1,0 +1,32 @@
+{
+  "session_id": "b635dc8d-b877-4f1b-9610-3e339762fc65",
+  "row": "Raddle-Write",
+  "role": "raddle",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 96,
+  "cache_write_tokens": 203716,
+  "cache_read_tokens": 1793845,
+  "output_tokens": 32460,
+  "cost_usd": 1.5976664999999999,
+  "started": "2026-11-22T11:27:02Z",
+  "ended": "2026-11-22T11:34:17Z",
+  "models": [
+    {
+      "model": "claude-opus-5-5",
+      "input_tokens": 54,
+      "cache_write_tokens": 85891,
+      "cache_read_tokens": 1348162,
+      "output_tokens": 18998,
+      "cost_usd": 1.0792633999999999
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 42,
+      "cache_write_tokens": 117825,
+      "cache_read_tokens": 445683,
+      "output_tokens": 13462,
+      "cost_usd": 0.5184031
+    }
+  ]
+}
