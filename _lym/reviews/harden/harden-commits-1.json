@@ -1,0 +1,13 @@
+{
+  "round": 1,
+  "head": "2dbfdc314b13ae35f459c80406748bc8e6bbfdce",
+  "commits": [
+    "c25e17a fabricengine: fix gate finding — shorten the killed-push test file's header under 120 characters",
+    "f7af2cb fabricengine: fix gate finding — move the tier2 killed-board-push test to a file of its own",
+    "3d24c44 fabricengine: fix gate findings — break the round's new comments at sentences and under 120 characters",
+    "5a1bf5a fabric sandbox suite: cover the one-repository seed and records-store faults",
+    "8bd71e3 fabricengine: fix F3 — refuse the orphan sweep when the prime key names no branch",
+    "a628d0f fabricengine: fix F2 — a records store that lost its namespaced fetch refspec is an error, not two repositories",
+    "5a5f952 fabricengine: fix F1, F4, F5 — withdraw a board push that landed unanswered, name a declined board, give the seeded records branch its upstream"
+  ]
+}
