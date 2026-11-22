@@ -316,7 +316,7 @@
       "isolated": false,
       "brief": "The sampler spec carries no language skills, so the sampler edits code without the skills of the repository's languages.",
       "body": "## What was seen (operator, 2026-11-22)\n\nThe sampler session of `readme-declutter` edited code without loading the language skills first, and the code it wrote was poor for it.\n\n## Cause\n\n`samplerengine.SessionSpec` (`internal/samplerengine/spec.go`) builds the sampler spec with no `Skills`, while darn, webster, weaver and the fixers pass the hub's `LanguageSkills`.\n`spec_test.go` pins that the sampler spec carries no skills.\n\n## Fix\n\nThe sampler session loads the language skills of the repository it works in before it edits code, the same way the darn writer gets them.\nWhich skills follow from the hub's languages, never a fixed language: a Go hub gets the Go skills, a C# hub the C# skills (operator, 2026-11-22).\nWire `LanguageSkills` from `loomcli/samplerwiring.go` into `SessionInputs` and onto the spec, and change the test to pin that the skills are carried.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-22T10:17:02Z",
       "revised": "2026-11-22T11:08:42Z",
       "run_settings": {
