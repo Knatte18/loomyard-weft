@@ -1,0 +1,473 @@
+{
+  "runGuid": "f8f0a338638e32b910aeff0b25f7b6f5",
+  "planFingerprint": "9425f34d19af987e28e70ad1e625912282cd16826c40a7a6bb6022566571c2df",
+  "planFileHashes": {
+    "00-overview.md": "a757238b43385608f47e340cc0f43a9f198325519762385e8593d0ed40d8708f",
+    "01-beam-autonomy-key.md": "024c8cf85ef4c599ed98c3532e00ea0ec3c5da311af2c6523f58d4a5c54fb8d7",
+    "02-finalize-notice-skips-autonomy.md": "1c2566c47d73b471161427b5182a4116cd6f3e50f2a794e8fc5672bd6c29179e",
+    "03-hubgeom-autonomy-reader.md": "74049a6156274a6ec3912db7efce32e86de3fb91305e096f0d835b68fff1b99a",
+    "04-halt-notices-carry-autonomy.md": "cebc5a6e15fc1b0a625890e1dfe1c66f467c91737823c32b5858a0f673494476",
+    "05-parent-ask-clear.md": "d0ed35fb51374c1efcc49fddf3f64d1e773e1aed76d74c8f66558d211dc03471",
+    "06-drift-autonomy.md": "6ef58cfd6bfcd4dbf0eb372db69f4352e3e8b3f83fa0a0f69e34960e95550abb",
+    "07-loom-autonomy-forcing.md": "4cbac578f3a8b44290325562040f45acb956c5f8f2d1d0a60732505c7434cecc",
+    "08-pr-record-autonomy.md": "9ce837c6f25417f52a2aa3b02b1a827c959ef1498c1262143170500a240d81e2",
+    "09-pr-review-ask-helpers.md": "9635c6a5ef0d50a209f877bdbd10d2573b9a5a2350aacdc25dcb83fecd8c2d86",
+    "10-pr-review-session-autonomy.md": "94851b064280845f896712f07088f87543bc4a7a7d3af58a9bae3813a2e1c18d",
+    "11-pr-review-ending-autonomy.md": "8dc4b01760b2712e40d42470c6ce784b4055f7b6847d9974f8c10f84ad4e0a60",
+    "12-parent-review-ask-verb.md": "f416632955104e85e5dbeb146d5b85254529a4da67226ef7a53c47a350cfa80f",
+    "13-pr-continue-autonomy.md": "9351c4d039cce0bc51ce994e55e93987827afc25f638c9caf6e606aa07a8eda2",
+    "14-goto-clears-pr-review.md": "e20fc14cbf5dd9a4fb821edb09c78504a916ac72b0292d6fc50b450b7a899d1d",
+    "15-beam-await-drained.md": "b54eee5ad076f3eab071b710abcb617e10fddd0d3320cbfcfea7f3c7325619e0",
+    "16-slack-hook-operator-filter.md": "662f2377a51af95509451a6c70981c39e2310281192fe573fa5dbd78c1f9e685",
+    "17-orch-role-autonomy-texts.md": "a39bc809d8ff51df3570808c006b54c2623d2402a951d1a68bc9e332913e4c68",
+    "18-orch-pointer-autonomy-line.md": "96fd6b8b7053bf5f1926065f9490619cee6d83b6b42726ec6e269b891713aa64"
+  },
+  "planOverviewFrameHash": "0ea75617aa9886b8919c010baca7088c1fec41ba52f7c42d7496a7c080eaa78f",
+  "partition": [
+    {
+      "cards": [
+        "01-beam-autonomy-key",
+        "02-finalize-notice-skips-autonomy",
+        "03-hubgeom-autonomy-reader",
+        "04-halt-notices-carry-autonomy",
+        "05-parent-ask-clear"
+      ],
+      "profile": "wide",
+      "estimate": 234498,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54712,
+        "read_union": 59180,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 756,
+            "reads": {
+              "file:internal/beamsetting/beamsetting.go": 552,
+              "file:internal/boardcli/doc.go": 732,
+              "file:internal/dobbyengine/doc.go": 2436,
+              "file:internal/dobbyengine/tasksetting.go": 1380,
+              "file:internal/dobbyengine/template.yaml": 84,
+              "file:pattern/PATTERN-config-layers.md": 1632,
+              "package:internal/beamsetting": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/beamsetting": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 131,
+            "written": 40056
+          },
+          {
+            "card": 2,
+            "card_text": 252,
+            "reads": {
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 35.5,
+            "written": 10902
+          },
+          {
+            "card": 3,
+            "card_text": 576,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 732,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 30,
+            "written": 9576
+          },
+          {
+            "card": 4,
+            "card_text": 576,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1392,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 159,
+            "written": 48276
+          },
+          {
+            "card": 5,
+            "card_text": 396,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 3684,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 38,
+            "written": 11796
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-drift-autonomy",
+        "07-loom-autonomy-forcing",
+        "08-pr-record-autonomy",
+        "09-pr-review-ask-helpers"
+      ],
+      "profile": "wide",
+      "estimate": 282798,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61712,
+        "read_union": 62920,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1428,
+            "reads": {
+              "file:internal/driftengine/doc.go": 3180,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1716,
+              "package:internal/driftengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:internal/driftengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 190.5,
+            "written": 58578
+          },
+          {
+            "card": 7,
+            "card_text": 1044,
+            "reads": {
+              "file:docs/overview.md": 25404,
+              "file:internal/loomengine/template.yaml": 732,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 179.5,
+            "written": 54894
+          },
+          {
+            "card": 8,
+            "card_text": 336,
+            "reads": {
+              "file:internal/pullrequest/doc.go": 372,
+              "package:internal/pullrequest": 2000,
+              "tests:internal/pullrequest": 2000
+            },
+            "messages": 28,
+            "written": 8736
+          },
+          {
+            "card": 9,
+            "card_text": 708,
+            "reads": {
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 117.5,
+            "written": 35958
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-pr-review-session-autonomy",
+        "11-pr-review-ending-autonomy",
+        "12-parent-review-ask-verb"
+      ],
+      "profile": "wide",
+      "estimate": 287756,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68712,
+        "read_union": 65828,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1356,
+            "reads": {
+              "file:contracts/stencils/landing/landing-template-pr-review.md": 924,
+              "file:internal/landingshed/doc.go": 948,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/landing": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shuttleparity": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shuttleparity": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 289.5,
+            "written": 88206
+          },
+          {
+            "card": 11,
+            "card_text": 780,
+            "reads": {
+              "file:docs/overview.md": 25404,
+              "file:internal/landingshed/doc.go": 948,
+              "package:docs": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 75.5,
+            "written": 23430
+          },
+          {
+            "card": 12,
+            "card_text": 780,
+            "reads": {
+              "file:docs/overview.md": 25404,
+              "file:internal/loomcli/doc.go": 3636,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 136,
+            "written": 41580
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-pr-continue-autonomy",
+        "14-goto-clears-pr-review",
+        "15-beam-await-drained"
+      ],
+      "profile": "wide",
+      "estimate": 293070,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75712,
+        "read_union": 44828,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 732,
+            "reads": {
+              "file:internal/loomcli/doc.go": 3636,
+              "file:internal/loomcli/prcontinue.go": 1152,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 96,
+            "written": 29532
+          },
+          {
+            "card": 14,
+            "card_text": 1104,
+            "reads": {
+              "file:internal/loomcli/doc.go": 3636,
+              "file:internal/shedengine/doc.go": 1452,
+              "file:internal/shedverbs/doc.go": 1488,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 198,
+            "written": 60504
+          },
+          {
+            "card": 15,
+            "card_text": 1044,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 732,
+              "file:internal/loomcli/doc.go": 3636,
+              "file:internal/pawlengine/doc.go": 576,
+              "file:internal/shedrecipe/doc.go": 912,
+              "package:internal/battencli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pawlengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pawlengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 271.5,
+            "written": 82494
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-slack-hook-operator-filter",
+        "17-orch-role-autonomy-texts",
+        "18-orch-pointer-autonomy-line"
+      ],
+      "profile": "wide",
+      "estimate": 204494,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82712,
+        "read_union": 40428,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 456,
+            "reads": {
+              "file:internal/slackcli/doc.go": 516,
+              "package:internal/slackcli": 2000,
+              "tests:internal/slackcli": 2000
+            },
+            "messages": 61.5,
+            "written": 18906
+          },
+          {
+            "card": 17,
+            "card_text": 612,
+            "reads": {
+              "file:contracts/orchrole/orch-role.md": 6216,
+              "file:contracts/orchrole/role-slack.md": 264,
+              "file:internal/beamcli/doc.go": 2784,
+              "file:internal/heddleengine/glossary.md": 348,
+              "package:contracts/orchrole": 2000,
+              "package:internal/beamcli": 2000,
+              "package:internal/heddleengine": 2000,
+              "tests:contracts/orchrole": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:internal/heddleengine": 2000
+            },
+            "messages": 70,
+            "written": 21612
+          },
+          {
+            "card": 18,
+            "card_text": 636,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1392,
+              "file:internal/orchengine/doc.go": 3204,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 134,
+            "written": 40836
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "beam-autonomy-key",
+      "cards": [
+        "01-beam-autonomy-key",
+        "02-finalize-notice-skips-autonomy",
+        "03-hubgeom-autonomy-reader",
+        "04-halt-notices-carry-autonomy",
+        "05-parent-ask-clear"
+      ],
+      "cardHashes": {
+        "01-beam-autonomy-key": "024c8cf85ef4c599ed98c3532e00ea0ec3c5da311af2c6523f58d4a5c54fb8d7",
+        "02-finalize-notice-skips-autonomy": "1c2566c47d73b471161427b5182a4116cd6f3e50f2a794e8fc5672bd6c29179e",
+        "03-hubgeom-autonomy-reader": "74049a6156274a6ec3912db7efce32e86de3fb91305e096f0d835b68fff1b99a",
+        "04-halt-notices-carry-autonomy": "cebc5a6e15fc1b0a625890e1dfe1c66f467c91737823c32b5858a0f673494476",
+        "05-parent-ask-clear": "d0ed35fb51374c1efcc49fddf3f64d1e773e1aed76d74c8f66558d211dc03471"
+      },
+      "startSha": "118bee8ad7daf793c6d1c9cc4a8f724c3a443d54",
+      "kind": "fork",
+      "spawnedAt": "2026-11-22T18:48:14Z",
+      "sessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "8bef3fde2058a415283720270d09e363",
+  "masterSessionId": "44bf3974-85b1-4cf3-ba86-f6d7a7031dac",
+  "masterEngine": "claude"
+}
