@@ -2,6 +2,7 @@
   "current_producer": "Preflight",
   "state": "blocked",
   "error": "hardener campaign check failed: hardener campaign: gates.harden-live names the tiers [0 1], and --copies runs one tier; way forward: run `lym config gate --set 'gates.harden-live={tiers: [\u003clive tier\u003e], scope: diff}'` from the prime, then run \"lym loom resume\"",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Preflight",
