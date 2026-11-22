@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-orch-autonomy-mode.md)
 
-Depends on: [`orch-rc-off-by-default`](design-orch-rc-off-by-default.md), [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md)
+Depends on: [`per-task-settings-one-lookup`](design-per-task-settings-one-lookup.md)
 
 Filed from the Sketch `orch-full-autonomy-mode`.
 
