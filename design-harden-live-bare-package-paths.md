@@ -1,6 +1,6 @@
 # Hardener live check passes packages go can resolve
 
-`harden-live-bare-package-paths` · Task · bug, gate, loom · running · Drift-Expect
+`harden-live-bare-package-paths` · Task · bug, gate, loom · running · Darn-Write
 
 ## What was seen (harden-fabricengine, 2026-11-22)
 
