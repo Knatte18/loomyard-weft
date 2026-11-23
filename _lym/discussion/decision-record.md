@@ -30,6 +30,12 @@ Decision: The report proposes where the area's allow list is kept: one file the 
 
 Rationale: The operator wants the list of what agents may touch written down in one place, not spread through code.
 
+### Added after Discussion (operator, 2026-11-23): Agents cannot change the allow list
+
+Decision: The allow list file lies outside every path the area may write (not in the hub or its worktrees), so inside the area it is read-only; a changed list takes effect only when the operator starts the area again from outside. The report shows the probe failing to write it.
+
+Rationale: An agent must not widen its own sandbox.
+
 ## Constraints
 
 ## Auto-mode assumptions
