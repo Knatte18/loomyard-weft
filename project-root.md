@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 20:46 UTC; every age below is as of then.
+Rendered 2026-11-23 20:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 1h<br>1h | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 1h<br>1h | shuttle, reed, claude |
-| T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light | Code-Bouncer | neve | 58m<br>48m | shuttle, shed |
+| T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light | halted · Code-Bouncer | neve | 58m<br>49m | shuttle, shed |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Code-Burler-Fix | neve | 11h<br>11h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ## Layer A (1)
@@ -27,7 +27,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T10<br>T8<br>T6 | 7h<br>48m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
+| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T10<br>T8<br>T6 | 7h<br>49m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
 ## Research (2)
 
