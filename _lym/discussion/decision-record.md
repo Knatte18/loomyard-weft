@@ -40,6 +40,12 @@ Related: #200, #206, #211.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Item 3 leaves this run
+
+Decision: Drop item 3, the tmux-tier test of parent-review ask from a live non-orch pane, from this run; it is filed as its own board note. Items 1 and 2 stand as committed and delivered; no --head flag.
+
+Rationale: A tmux-tier test this run cannot run locally would be written blind and iterated through the verify gate.
+
 ## Constraints
 
 ## Auto-mode assumptions
