@@ -1,6 +1,6 @@
 # Webster stops after an amended plan send the parent no notice, and webster reset leaves the run tied to the dropped code tip
 
-`webster-amend-stop-no-notice` · Task · bug, webster, loom · starting · Seed-Child
+`webster-amend-stop-no-notice` · Task · bug, webster, loom · starting · Seed-IDE
 
 Imported from [issue #207](https://github.com/Knatte18/loomyard/issues/207).
 
