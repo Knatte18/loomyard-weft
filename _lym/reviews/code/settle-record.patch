@@ -1,0 +1,129 @@
+diff --git a/contracts/stencils/harden/harden-rubric-review.md b/contracts/stencils/harden/harden-rubric-review.md
+index d254a0f94..f8af4dc05 100644
+--- a/contracts/stencils/harden/harden-rubric-review.md
++++ b/contracts/stencils/harden/harden-rubric-review.md
+@@ -95,8 +95,8 @@ and the paths of the round's focus file, the charter, and of the decision record
+ ## The judge
+ 
+ - **Converged.**
+-  The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding, whose live gate is green, and whose reviewer model differs from the previous round's.
+-  It reads all three from the round's facts.
++  The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding and whose live gate is green.
++  It reads both from the round's facts.
+ - **Re-seed from the residue.**
+   The focus file derives the next round's assignment from what this round left standing, never "review it again":
+   - the residual to close: each open finding with its site and scenario, fixed at the right layer with a regression test;
+diff --git a/internal/configreg/runsettings_test.go b/internal/configreg/runsettings_test.go
+index 6e9e6211a..0c0266a0a 100644
+--- a/internal/configreg/runsettings_test.go
++++ b/internal/configreg/runsettings_test.go
+@@ -90,6 +90,14 @@ func TestPrepareRunSettings(t *testing.T) {
+ 			settings: map[string]any{"hardener": map[string]any{"packages": []any{"internal/foo"}, "llm_driving": true}},
+ 			wantDocs: map[string]string{"hardener": "llm_driving: true\npackages:\n    - internal/foo\n"},
+ 		},
++		{
++			name: "hardener reviewer and fixer lists set a per-run model rotation",
++			settings: map[string]any{"hardener": map[string]any{
++				"reviewer": []any{"opus[high]", "sonnet[high]"},
++				"fixer":    []any{"sonnet[high]", "opus"},
++			}},
++			wantDocs: map[string]string{"hardener": "fixer:\n    - sonnet[high]\n    - opus\nreviewer:\n    - opus[high]\n    - sonnet[high]\n"},
++		},
+ 		{
+ 			name:        "hardener auto_accept is refused naming the hub file write",
+ 			settings:    map[string]any{"hardener": map[string]any{"auto_accept": true}},
+diff --git a/internal/hardenshed/campaign.go b/internal/hardenshed/campaign.go
+index ed7956846..31b7c6a35 100644
+--- a/internal/hardenshed/campaign.go
++++ b/internal/hardenshed/campaign.go
+@@ -45,7 +45,7 @@ type CampaignCheck struct {
+ // the live key naming the billed tier, or naming more than one tier when copies run;
+ // a package holding no test of a tier the live key runs;
+ // an empty reviewer or fixer list;
+-// a reviewer list of one entry, or one whose cyclic expansion repeats a model in neighbouring rounds;
++// a reviewer list of two or more entries whose cyclic expansion repeats a model in neighbouring rounds;
+ // and a soft cap of review rounds above the hard cap.
+ // A config naming no package passes, since the seed pass then finds the module from the task's title and labels.
+ // The template's live key passes, so a campaign needs no gate write of the hub's.
+@@ -118,10 +118,11 @@ func gateWrite() string {
+ }
+ 
+ // reviewerRepeat returns what is wrong with a reviewer list, or "" when no round repeats the model of its neighbour.
+-// A list of one entry repeats it every round, and the cyclic expansion's last entry meets its first.
++// A list of one entry is a single-model campaign and passes.
++// In a longer list the cyclic expansion's last entry meets its first.
+ func reviewerRepeat(reviewer []string) string {
+-	if len(reviewer) == 1 {
+-		return "the reviewer list holds one entry, so every round reviews with the same model; list at least two models, none twice in a row"
++	if len(reviewer) <= 1 {
++		return ""
+ 	}
+ 	for i, entry := range reviewer {
+ 		next := reviewer[(i+1)%len(reviewer)]
+diff --git a/internal/hardenshed/campaign_test.go b/internal/hardenshed/campaign_test.go
+index 6f9be0433..ae679224d 100644
+--- a/internal/hardenshed/campaign_test.go
++++ b/internal/hardenshed/campaign_test.go
+@@ -103,9 +103,8 @@ func TestCheckCampaign(t *testing.T) {
+ 			wantSubs: []string{"fixer list is empty", "ROUTE(fixer)"},
+ 		},
+ 		{
+-			name:     "ReviewerListOfOneEntry",
+-			mutate:   func(in *CampaignCheck) { in.Config.Reviewer = []string{"opus"} },
+-			wantSubs: []string{"holds one entry", "ROUTE(reviewer)"},
++			name:   "ReviewerListOfOneEntryPasses",
++			mutate: func(in *CampaignCheck) { in.Config.Reviewer = []string{"opus"} },
+ 		},
+ 		{
+ 			name:     "ReviewerNeighboursAreOneModel",
+diff --git a/internal/hardenshed/config_test.go b/internal/hardenshed/config_test.go
+index ea12b28fb..4efa44ddd 100644
+--- a/internal/hardenshed/config_test.go
++++ b/internal/hardenshed/config_test.go
+@@ -36,7 +36,7 @@ func TestLoadConfig(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	defaults := Config{
+-		MaxBounces: 7, HardMaxBounces: 10, Reviewer: []string{"opus", "fable", "sonnet"}, Fixer: []string{"opus", "fable", "sonnet"},
++		MaxBounces: 7, HardMaxBounces: 10, Reviewer: []string{"sonnet[high]"}, Fixer: []string{"sonnet[high]"},
+ 		Concurrency: 3, LiveAttempts: 2, VerifyAttempts: 3,
+ 	}
+ 	tests := []struct {
+diff --git a/internal/hardenshed/doc.go b/internal/hardenshed/doc.go
+index 7908c0295..41c38bc78 100644
+--- a/internal/hardenshed/doc.go
++++ b/internal/hardenshed/doc.go
+@@ -10,6 +10,8 @@
+ // ConfigSpec classifies `auto_accept`, `reviewer_fan`, `fixer_fan` and `tree_scope` as guard keys.
+ // Only the hub file sets a guard key, and a task's `run_settings` setting one is refused at seed with that way forward.
+ // Every other key is open to a task's `run_settings`.
++// The template runs every review and fix round on `sonnet[high]`, with no rotation;
++// a rotation over several models is the operator's choice per run, set as lists in `run_settings` under `hardener`.
+ // `tree_scope` is an open map, which ConfigOpenMaps names.
+ // LoadConfig loads the unit strictly through `configengine`, then runs CheckValues over the resolved document.
+ // It normalizes `tree_scope` through the one tree-key rule darn's `tree_scope` takes.
+@@ -91,7 +93,8 @@
+ // A fixer that has just fixed something is motivated to declare it fixed.
+ // So a round's own "merge-ready" verdict never gates the campaign.
+ // Go gates each round instead, by re-running the live gate on the committed tree and believing only what it observes.
+-// Rounds rotate models, since different models miss different things.
++// What a round finds rests on its seeded focus more than on its model, so a campaign runs one model by default.
++// The operator may set a rotation of models per round for a run.
+ // Agreement across models is stronger evidence than repeated passes by one.
+ // A round's assignment follows from the previous round's residue, never from "review it again".
+ // When findings repeat a shape, the round enumerates that shape.
+diff --git a/internal/hardenshed/template.yaml b/internal/hardenshed/template.yaml
+index 8ba3599f3..188bf165c 100644
+--- a/internal/hardenshed/template.yaml
++++ b/internal/hardenshed/template.yaml
+@@ -2,8 +2,8 @@ packages: []  # worktree-relative directories of the modules the campaign harden
+ llm_driving: false  # whether the live tests drive a billed LLM session, which turns the concurrent copies of the live gate off
+ max_bounces: 7  # the soft cap of review rounds of the campaign; 0 means no review round
+ hard_max_bounces: 10  # the hard cap of review rounds, which the soft cap may not pass
+-reviewer: [opus, fable, sonnet]  # model-specs of the review rounds, taken in turn and cycled when the rounds outnumber them
+-fixer: [opus, fable, sonnet]  # model-specs of the fix rounds, taken in turn and cycled when the rounds outnumber them
++reviewer: ["sonnet[high]"]  # model-specs of the review rounds, taken in turn and cycled when the rounds outnumber them; the default is one model with no rotation, and a rotation over several models is the operator's choice per run, set in the task's run_settings as hardener.reviewer
++fixer: ["sonnet[high]"]  # model-specs of the fix rounds, taken in turn and cycled when the rounds outnumber them; the default is one model with no rotation, and a rotation over several models is the operator's choice per run, set in the task's run_settings as hardener.fixer
+ judge: ""  # model-spec of the Bouncer's judge; empty takes loom.yaml's judge
+ seed: ""  # model-spec of the campaign's seed round; empty takes loom.yaml's seed
+ reviewer_fan: ""  # name of the reviewer fan the review rounds run, a fan lenses.yaml defines; empty runs a solo round
