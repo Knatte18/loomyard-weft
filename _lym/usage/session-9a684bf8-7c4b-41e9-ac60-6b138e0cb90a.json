@@ -1,0 +1,32 @@
+{
+  "session_id": "9a684bf8-7c4b-41e9-ac60-6b138e0cb90a",
+  "row": "Code-Burler-Fix",
+  "role": "code-burler-fix",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 192,
+  "cache_write_tokens": 789417,
+  "cache_read_tokens": 14475498,
+  "output_tokens": 104911,
+  "cost_usd": 5.9181361,
+  "started": "2026-11-23T09:16:52Z",
+  "ended": "2026-11-23T10:31:55Z",
+  "models": [
+    {
+      "model": "\u003csynthetic\u003e",
+      "input_tokens": 0,
+      "cache_write_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 192,
+      "cache_write_tokens": 789417,
+      "cache_read_tokens": 14475498,
+      "output_tokens": 104911,
+      "cost_usd": 5.9181361
+    }
+  ]
+}
