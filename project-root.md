@@ -49,6 +49,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B6 |  | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | 0m<br>0m | landing, shuttle |
 | B7 |  | **Every darn escalates to the parent when round 1 fixed a BLOCKING finding** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | 3h<br>3h | loom |
 
+## Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | 0m<br>0m | gate, loom, dotnet |
+
 ## Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |

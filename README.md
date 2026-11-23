@@ -32,7 +32,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 3h<br>3h | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (17)
+## [P0 Root: entries under no project](project-root.md) (18)
 
 Owner `neve`
 
@@ -76,6 +76,12 @@ Owner `neve`
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 4h<br>4h | loom |
 | B6 |  | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | 0m<br>0m | landing, shuttle |
 | B7 |  | **Every darn escalates to the parent when round 1 fixed a BLOCKING finding** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | 3h<br>3h | loom |
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | 0m<br>0m | gate, loom, dotnet |
 
 ### Features (1)
 

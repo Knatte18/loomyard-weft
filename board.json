@@ -526,6 +526,28 @@
       "body": "Imported from [issue #210](https://github.com/Knatte18/loomyard/issues/210).\n\nSeen in hub mo, run hydraulics-gaps, PR-Review row. The PR-Review session's strand was removed (lym reed remove) at 13:44, and the session logged SessionEnd. The row's lym loom step process went on running with status running at PR-Review, and spawned no new session, until the process was killed by hand at 13:50. Only then did the run mark the row interrupted, and a resume start a fresh session. Expected: the row detects a dead PR-Review session and re-spawns it under the interrupt policy, or halts with a stop the parent can act on.",
       "created": "2026-11-23T13:30:02Z",
       "revised": "2026-11-23T13:30:02Z"
+    },
+    {
+      "id": 1615,
+      "handle": "E1",
+      "slug": "red-first-csharp",
+      "title": "Red-first gate must support C# repositories",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate",
+        "loom",
+        "dotnet"
+      ],
+      "issues": [
+        208
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #208](https://github.com/Knatte18/loomyard/issues/208).\n\nThe red-first gate runs the diff's new tests on the merge base only through the Go scoper. In a C# repository (NORCE Models, a .NET solution tested with NUnit) it cannot select or run those tests, and it halts every writer's handoff until the parent records a 'No test seam' waiver by hand. The gate never runs there, so a C# run gets no red-first protection at all.\n\nExpected: the gate supports C# as a first-class language.\n- Select the tests the diff adds or changes, by test project and fully qualified name (dotnet test --filter FullyQualifiedName~...), from the changed *.cs files under test projects.\n- Build and run them on the merge base in a scratch checkout, through the hub's own C# test command or tier configuration, and judge red on the merge base and green at the head as for Go.\n- Treat a test that does not compile on the merge base, because it reads a member the change adds, as red with that reason, not as a missing seam.\n- Halt only when the selection or build fails for a reason the writer can act on.\n\nRelated: #192, which reports the halt itself.",
+      "created": "2026-11-23T13:30:05Z",
+      "revised": "2026-11-23T13:30:05Z"
     }
   ],
   "prime_owner": "neve",
