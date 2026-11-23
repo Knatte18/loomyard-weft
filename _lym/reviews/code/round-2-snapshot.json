@@ -7,5 +7,6 @@
       "title": "The task fixes the board viewer; the list --text listing stays as it is",
       "digest": "ca970e8c5e267bffdb5de26badfa5682a50b25cd75a280f09f64132fc624c2c6"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
