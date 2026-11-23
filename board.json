@@ -510,6 +510,27 @@
       "body": "Imported from [issue #185](https://github.com/Knatte18/loomyard/issues/185).\n\nSeen: on a loom run in Webster, lym loom decision add --amends-plan sent the run back to Plan-Burler-Review. Webster's state.json, which recorded four committed batches, was lost. Plan-Burler-Fix then failed with create-already-exists on cards 1-4, because their Create entries had already landed on the task branch.\n\nWorkaround: the parent ruled by decision that the landed Creates become Edit entries, and validate-plan then passed.\n\nExpected: an amendment during Webster keeps the record of committed batches, and the plan rework sees which cards already landed, so it neither re-creates their files nor needs a hand ruling.",
       "created": "2026-11-23T08:19:03Z",
       "revised": "2026-11-23T08:19:03Z"
+    },
+    {
+      "id": 1587,
+      "handle": "B10",
+      "slug": "red-first-tests-only-task",
+      "title": "Verify gate requires a fail-on-base test for a tests-only task",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "darn"
+      ],
+      "issues": [
+        184
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #184](https://github.com/Knatte18/loomyard/issues/184).\n\nThe loom run for a tests-only task halted `blocked` at `Darn-Write` (anomaly `escalation-to-human`) after the gate failed three times.\nThe gate finding was the same each time:\n\n```\nEvery test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.\n\nWay forward: make a test fail on the merge base and pass with the fix, reaching the bug through code the base already has, and commit it.\n```\n\nThe task adds golden tests that pin existing behaviour; it fixes no bug.\nIts new tests pass on the merge base by design, so the \"fails on base, passes with fix\" check can never be satisfied.\nThe agent had no valid way forward, and the run burned its verify budget and escalated.\n\nWhat to do:\n- Have the verify gate skip the fail-on-base check for a task that is not a bug fix (a tests-only or golden-test task), or let the Sketch or plan declare that kind.\n- Reword the finding so it does not tell the agent to invent a bug when the task has none.\n\nProvenance: task `board-readme-golden-tests`, note `loom-halt.md`.\n",
+      "created": "2026-11-23T08:19:06Z",
+      "revised": "2026-11-23T08:19:06Z"
     }
   ],
   "prime_owner": "neve",
