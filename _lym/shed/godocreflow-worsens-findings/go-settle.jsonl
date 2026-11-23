@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Code-Burler-Review","history_length":8,"state":"failed"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-11-23T10:09:01.009222629+01:00","build":"8cf7f477563f"}
+{"stop_key":{"current_producer":"Code-Bouncer","history_length":11,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"an awaiting stop with a parent notice: relay it and hand back","at":"2026-11-23T11:26:15.302752869+01:00"}
