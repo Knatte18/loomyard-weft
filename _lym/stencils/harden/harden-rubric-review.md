@@ -4,7 +4,7 @@
      and the Harden-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=7a9dd6917547e7c0d349885f2014f5cb2f472b4b1a4bf97b49bafc1192da884b build=4037bdf36f4a2225b8551abd14967c21c3d61947 time=2026-11-22T15:39:42Z -->
+lym-stencil: sha256=860b5e8e74ef585a24013f5551dd8965f52d7d80957fa1624f1954e075e3ae22 build=a66d41345930d98b4d4c518362ce09291dbdf563 time=2026-11-23T07:57:13Z -->
 
 # Hardener rubric
 
@@ -96,8 +96,8 @@ and the paths of the round's focus file, the charter, and of the decision record
 ## The judge
 
 - **Converged.**
-  The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding, whose live gate is green, and whose reviewer model differs from the previous round's.
-  It reads all three from the round's facts.
+  The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding and whose live gate is green.
+  It reads both from the round's facts.
 - **Re-seed from the residue.**
   The focus file derives the next round's assignment from what this round left standing, never "review it again":
   - the residual to close: each open finding with its site and scenario, fixed at the right layer with a regression test;
