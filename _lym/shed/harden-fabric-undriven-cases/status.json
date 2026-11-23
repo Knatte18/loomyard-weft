@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -233,6 +232,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-23T13:34:22Z",
       "started_at": "2026-11-23T13:33:43Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T13:35:10Z",
+      "started_at": "2026-11-23T13:35:10Z",
+      "by": "shed"
     }
   ],
   "product": {
