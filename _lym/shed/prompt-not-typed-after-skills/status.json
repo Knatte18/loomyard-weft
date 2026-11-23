@@ -78,6 +78,16 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Code-Burler-Fix",
+      "at": "2026-11-23T12:01:00Z",
+      "started_at": "2026-11-23T12:01:00Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }

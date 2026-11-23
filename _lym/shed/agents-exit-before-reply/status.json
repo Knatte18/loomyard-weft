@@ -58,6 +58,16 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Code-Bouncer",
+      "at": "2026-11-23T12:08:15Z",
+      "started_at": "2026-11-23T12:08:15Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }
