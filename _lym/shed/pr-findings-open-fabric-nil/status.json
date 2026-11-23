@@ -89,6 +89,16 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → done at Friction-Reflect",
+      "at": "2026-11-23T09:46:32Z",
+      "started_at": "2026-11-23T09:46:32Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }
