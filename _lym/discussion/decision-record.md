@@ -48,4 +48,17 @@ Rationale: goto writes only the status file and never moves the code tip, so it 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - goto-transition-narrowing-unrecorded (class scope, severity MEDIUM, open in rounds 1)
+  - judged-flag-outlives-its-stop (class design, severity MEDIUM, open in rounds 1)
+  - no-card-index-only-edit-passing-row (class design, severity MEDIUM, open in rounds 1)
+  - pattern-run-fsm-misses-reset-transition (class consistency, severity MEDIUM, open in rounds 1)
+  - plan-checks-spec-lacks-overview-frame-edited (class consistency, severity MEDIUM, open in rounds 1)
+  - reset-unchanged-state-lands-no-transition (class design, severity BLOCKING, open in rounds 1)
+  - watched-notice-premise-contradicts-batten-hold (class design, severity MEDIUM, open in rounds 1)
+  - wirehub-runid-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
