@@ -40,6 +40,12 @@ Owner `neve`
 | T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | Darn-Write | neve | 22m<br>22m | reed, shuttle, process |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 10h<br>10h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light |  | 9m<br>0m | shuttle, shed |
+
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -50,13 +56,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T4<br>T10<br>T8<br>T5 | 6h<br>22m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **A run agent killed by a crash or reboot resumes its own session instead of starting fresh** | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn |  | 9m<br>9m | shuttle, shed |
+| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T4<br>T5<br>T10<br>T8<br>T6 | 6h<br>0m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
 ### Research (2)
 
