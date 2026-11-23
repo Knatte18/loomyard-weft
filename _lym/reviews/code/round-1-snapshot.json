@@ -1,5 +1,11 @@
 {
   "fix_scope": "source",
   "target_paths": null,
-  "target_id": "05492a751e9e4328201e75f1e5b2961b6e29ecfd"
+  "target_id": "05492a751e9e4328201e75f1e5b2961b6e29ecfd",
+  "decisions_routed": true,
+  "fixer_rerun": {
+    "review_digest": "9f15c686be64cb14b98e7316fc274e428f5f9094daadc0f13bc093c1a8bc5a73",
+    "reason": "the round halted: shedadapters: Code-Burler-Fix (burler-fix): round 1: two consecutive died/timeout outcomes (attempt 1 outcome died fix never started (seatengine: seat \"code-burler-fix\": start: shuttle: start: shuttle: the provider never became ready — run dir /home/knatte/Code/loomyard-LYMHUB/prompt-not-typed-after-skills/.lym/shuttle/7d150198f50e19bc3f07ef00f0cd750b, strand \"21060b64557675e00578910898839194\", outcome \"died\"; the last pane capture was saved to startup-capture.txt; the strand was removed: shuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"21060b64557675e00578910898839194\": no input box is on screen; a menu or picker may be open; retry once the session is idle. The pane's last lines:\n  ⎿  Loaded skill\n● Skill(scribe:golang-testing)\n  ⎿  Loaded skill\n● ok scribe:prose, scribe:code-quality,\n  scribe:testing, scribe:golang-comments,\n  scribe:golang-testing\n✻ Brewed for 2s · done 12:30\n── ly:prompt-not-typed-after-skills:code-burler-fix ─\n❯ \n─────────────────────────────────────────────────────\n  ⏵⏵ bypass permissions on (shift+tab to cycle) · …); attempt 1b outcome died fix never started (seatengine: seat \"code-burler-fix\": start: shuttle: start: shuttle: the provider never became ready — run dir /home/knatte/Code/loomyard-LYMHUB/prompt-not-typed-after-skills/.lym/shuttle/1ecee2d5d96293a89bd4e4abcbb05151, strand \"7f11fd11ed51242c198704d6f643ce54\", outcome \"died\"; the last pane capture was saved to startup-capture.txt; the strand was removed: shuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"7f11fd11ed51242c198704d6f643ce54\": no input box is on screen; a menu or picker may be open; retry once the session is idle. The pane's last lines:\n  ⎿  Loaded skill\n● Skill(scribe:golang-testing)\n  ⎿  Loaded skill\n● ok scribe:prose, scribe:code-quality,\n  scribe:testing, scribe:golang-comments,\n  scribe:golang-testing\n✻ Brewed for 2s · done 12:39\n── ly:prompt-not-typed-after-skills:code-burler-fix ─\n❯ \n─────────────────────────────────────────────────────\n  ⏵⏵ bypass permissions on (shift+tab to cycle) · …)): shuttle: the provider never became ready",
+    "report": ""
+  }
 }
