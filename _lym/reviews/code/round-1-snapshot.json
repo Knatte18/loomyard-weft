@@ -11,5 +11,6 @@
       "title": "No test seam: the reported path loses no run record",
       "digest": "b83e9c4ee5004cba4ce5448b705614e7b121f280be150af982e646b908151f0f"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
