@@ -1,6 +1,6 @@
 # Verify-budget notice names no run
 
-`verify-budget-notice-no-slug` · Task · bug, loom · running · Preflight
+`verify-budget-notice-no-slug` · Task · bug, loom · running · Record-Write
 
 ## Seen
 
