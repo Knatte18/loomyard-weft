@@ -1,6 +1,6 @@
 # Preflight worktree-clean blocks on lym's own _lym/usage session record
 
-`usage-record-blocks-preflight` · Task · bug, preflight, fabric · starting · Worktree-Create
+`usage-record-blocks-preflight` · Task · bug, preflight, fabric · starting · Seed-Child
 
 Imported from [issue #190](https://github.com/Knatte18/loomyard/issues/190).
 
