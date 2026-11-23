@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 14:35 UTC; every age below is as of then.
+Rendered 2026-11-23 14:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -24,7 +24,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 20h<br>45m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 20h<br>46m | burler, fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (12)
 
@@ -34,10 +34,10 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Darn-Write | neve | 9m<br>9m | reed, slack |
-| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | landing · Finalize | neve | 5h<br>56m | loom, config |
-| T6 | **Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end** | [`parent-review-stale-window`](design-parent-review-stale-window.md) | darn · light | Describe | neve | 1h<br>1h | landing, shuttle |
-| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Burler-Review | neve | 1h<br>56m | gate, loom, dotnet |
+| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Darn-Write | neve | 10m<br>10m | reed, slack |
+| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | landing · Finalize | neve | 5h<br>57m | loom, config |
+| T6 | **Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end** | [`parent-review-stale-window`](design-parent-review-stale-window.md) | darn · light | PR-Review | neve | 1h<br>1h | landing, shuttle |
+| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Burler-Review | neve | 1h<br>57m | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Fix | neve | 5h<br>5h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (2)
@@ -51,7 +51,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | T4 | 9m<br>9m | landing, loom |
+| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | T4 | 10m<br>10m | landing, loom |
 
 ### Layer C (1)
 

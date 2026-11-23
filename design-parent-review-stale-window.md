@@ -1,6 +1,6 @@
 # Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end
 
-`parent-review-stale-window` · Task · bug, landing, shuttle · running · Describe
+`parent-review-stale-window` · Task · bug, landing, shuttle · running · PR-Review
 
 Imported from [issue #206](https://github.com/Knatte18/loomyard/issues/206).
 
