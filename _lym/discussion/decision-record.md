@@ -32,4 +32,10 @@ Every finding states the repro steps that showed it.
 
 ## Open risks
 
+<!-- lym:carry-over Harden-Review -->
+- Harden-Review, round 4: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/harden/round-4-review.md; fixer report: _lym/reviews/harden/round-4-fixer-report.md.
+  - killed-clone-leaves-hub-without-way-forward (class design, severity MEDIUM, open in rounds 4)
+<!-- /lym:carry-over Harden-Review -->
+
 ## Acceptance criteria
