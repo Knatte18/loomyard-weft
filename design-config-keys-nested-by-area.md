@@ -1,6 +1,6 @@
 # Config keys nest under the area they govern, named with dots
 
-`config-keys-nested-by-area` · Task · sketch, config, loom, drift, docs · starting · Open-Window
+`config-keys-nested-by-area` · Task · sketch, config, loom, drift, docs · starting · Seed-IDE
 
 Decision record: [Sketch](decision-config-keys-nested-by-area.md)
 
