@@ -1,10 +1,8 @@
 # Run transitions commit locally; a per-worktree pusher brings them to origin
 
-`async-run-pusher` · Task · enhancement, batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle · starting · Seed-Child
+`async-run-pusher` · Task · enhancement, batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle · starting · Open-Window
 
 Decision record: [Sketch](decision-async-run-pusher.md)
-
-Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md)
 
 Filed from the Sketch `later-transition-push-wait`.
 

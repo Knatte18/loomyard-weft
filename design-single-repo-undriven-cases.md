@@ -2,8 +2,6 @@
 
 `single-repo-undriven-cases` · Task · bug, fabric · starting · Open-IDE
 
-Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md)
-
 ## Seen
 
 The second fabric hardener campaign (`harden-fabric-single-repo-verbs`, landed `2722a66ef`) approved round 3 with part of its focus never driven live.
