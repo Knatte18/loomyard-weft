@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 09:39 UTC; every age below is as of then.
+Rendered 2026-11-23 09:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,7 +28,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Config keys nest under the area they govern, named with dots**<br>• loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent | [`config-keys-nested-by-area`](design-config-keys-nested-by-area.md) | motif | Discussion-Burler-Review | neve | 1h<br>31m | config, loom, drift, docs |
+| T1 | **Config keys nest under the area they govern, named with dots**<br>• loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent | [`config-keys-nested-by-area`](design-config-keys-nested-by-area.md) | motif | Discussion-Burler-Fix | neve | 1h<br>32m | config, loom, drift, docs |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | Darn-Write | neve | 1h<br>1h | board |
 | T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | Code-Burler-Fix | neve | 15h<br>15h | dobby, landing |
 | T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light | landing · Finalize | neve | 1h<br>1h | loom, landing |
@@ -41,12 +41,12 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 50m<br>49m | reed, claude |
-| T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light |  | 49m<br>40m | loom |
+| T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 51m<br>50m | reed, claude |
+| T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light |  | 50m<br>41m | loom |
 | T13 | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 1h<br>1h | loom, darn |
 | T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403** | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 1h<br>1h | landing, git |
 | T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 1h<br>1h | fabric, board, batten |
-| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 22m<br>22m | preflight, fabric |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 23m<br>23m | preflight, fabric |
 
 ### Layer A (3)
 
@@ -54,7 +54,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree** | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 1h<br>1h | lint, loom |
 | T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light | T7 | 1h<br>1h | loom, landing, dobby, orch, reed, testkit |
-| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T6 | 22m<br>22m | gate, loom, dotnet |
+| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T6 | 23m<br>23m | gate, loom, dotnet |
 
 ### Draft (1)
 
@@ -66,7 +66,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 15h<br>39m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 15h<br>40m | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
@@ -74,10 +74,10 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Narrowed code_auto_accept reaches hubs only as a flag** | [`code-auto-accept-flag-only`](design-code-auto-accept-flag-only.md) | 29m<br>29m | loom, config |
-| B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 29m<br>29m | loom |
-| B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 29m<br>29m | loom |
-| B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 29m<br>29m | loom |
+| B1 |  | **Narrowed code_auto_accept reaches hubs only as a flag** | [`code-auto-accept-flag-only`](design-code-auto-accept-flag-only.md) | 30m<br>30m | loom, config |
+| B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 30m<br>30m | loom |
+| B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 30m<br>30m | loom |
+| B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 30m<br>30m | loom |
 
 ### Features (1)
 
