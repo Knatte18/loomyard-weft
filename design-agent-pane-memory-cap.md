@@ -1,6 +1,6 @@
 # Every agent pane runs in a memory-capped scope, so a runaway child is killed there
 
-`agent-pane-memory-cap` · Task · bug, reed, shuttle, process · running · Drift-Recheck
+`agent-pane-memory-cap` · Task · bug, reed, shuttle, process · running · Describe
 
 ## Seen
 
