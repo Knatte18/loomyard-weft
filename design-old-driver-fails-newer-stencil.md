@@ -1,6 +1,6 @@
 # Driver on older lym build hard-fails a run when the board's stencil is newer
 
-`old-driver-fails-newer-stencil` · Note · bug, stencil, loom
+`old-driver-fails-newer-stencil` · Task · bug, stencil, loom
 
 Imported from [issue #198](https://github.com/Knatte18/loomyard/issues/198).
 
