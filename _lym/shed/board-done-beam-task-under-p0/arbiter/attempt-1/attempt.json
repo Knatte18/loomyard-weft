@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-23T11:28:32.39720418+01:00",
+  "deadline": "2026-11-23T11:58:32.39720418+01:00",
+  "strand_guid": "2b39747f8375df57388c9a02c1d3fc93",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/shed/board-done-beam-task-under-p0/drive-reports/drive-envelope-20261123-112831-dc71.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/shed/board-done-beam-task-under-p0/drive-reports/drive-report-20261123-112831-77cb.md",
+  "snapshot": {
+    "head": "5df1cca42aae8d0261ea676972c1e7744b546e03",
+    "branch": "board-done-beam-task-under-p0",
+    "dirty": {}
+  }
+}

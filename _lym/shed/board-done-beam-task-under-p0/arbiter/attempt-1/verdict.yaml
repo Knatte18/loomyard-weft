@@ -1,0 +1,8 @@
+verdict: resume
+reason: |-
+  Round 1 escalated with cause decision on one finding, F3: the Goal names `lym board list --text`, but the diff changes only the viewer. The board entry settles this. Its title names the board view. The --text listing is flat: it shows no project for any row, and RenderOrder puts every done entry after the P0 row whatever its project. So only the viewer places an entry under its project, and only there did a done beam project's member fall back to P0. Requiring a grouped --text listing would be a new design the entry does not specify, which would widen the task. I recorded that ruling as an arbiter decision. The refusal is none and nothing is BLOCKING. The judge's verdict was CONTINUE on the design-class findings F1 and F2. Commit 5df1cca42 fixes both, but no review has checked that fix yet, and round 1 is below the hard cap. So I chose continue, which runs round 2 over the fixes (round-2-focus.md already covers F1 and F2), rather than accept.
+verbs:
+  - |-
+    lym loom decision add board-done-beam-task-under-p0 --by arbiter --title "The task fixes the board viewer; the list --text listing stays as it is" --decision "..." --rationale "..."
+  - |-
+    lym loom circling continue board-done-beam-task-under-p0

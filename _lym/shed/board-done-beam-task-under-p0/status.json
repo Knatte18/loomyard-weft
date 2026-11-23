@@ -1,14 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/reviews/code/round-1-escalation.md; record the answer with `lym loom decision add board-done-beam-task-under-p0`, then decide with `lym loom circling accept board-done-beam-task-under-p0` or `lym loom circling continue board-done-beam-task-under-p0`, then run `lym loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `board-done-beam-task-under-p0` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add board-done-beam-task-under-p0 --by parent\", one entry per answered finding, then decide with \"lym loom circling accept board-done-beam-task-under-p0\" or \"lym loom circling continue board-done-beam-task-under-p0\".",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
     "last": "Code-Bouncer → awaiting",
-    "wait": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/reviews/code/round-1-escalation.md; record the answer with `lym loom decision add board-done-beam-task-under-p0`, then decide with `lym loom circling accept board-done-beam-task-under-p0` or `lym loom circling continue board-done-beam-task-under-p0`, then run `lym loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
