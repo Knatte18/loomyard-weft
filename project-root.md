@@ -21,11 +21,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T10 | **Verify gate requires a fail-on-base test for a tests-only task**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | darn · light | Code-Burler-Review | neve | 31m<br>30m | gate, darn |
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Darn-Write | neve | 30m<br>29m | tools, lint |
 
-## Ready (5)
+## Ready (6)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle |  | 15h<br>14h | batten, fabric |
+| T5 | **RC button shows green while Remote Control is disabled by organization policy**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 0m<br>0m | reed, claude |
 | T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 30m<br>29m | loom, darn |
 | T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 30m<br>29m | landing, git |
 | T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 24m<br>24m | fabric, board, batten |
@@ -46,12 +47,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 14h<br>12h | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
-
-## Bugs (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | 0m<br>0m | reed, claude |
 
 ## Enhancements (1)
 
