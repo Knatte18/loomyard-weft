@@ -1,6 +1,6 @@
 # Verify gate requires a fail-on-base test for a tests-only task
 
-`red-first-tests-only-task` · Task · bug, gate, darn · running · Drift-Baseline
+`red-first-tests-only-task` · Task · bug, gate, darn · running · Drift-Await
 
 Imported from [issue #184](https://github.com/Knatte18/loomyard/issues/184).
 
