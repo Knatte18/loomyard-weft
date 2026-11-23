@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-Write",
+  "current_producer": "Raddle-File",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Write",
-    "last": "Record-Write → done",
+    "now": "Raddle-File",
+    "last": "Raddle-Write → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,22 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested-by-area/_lym/discussion/decision-record.md",
       "at": "2026-11-23T12:55:10Z",
       "started_at": "2026-11-23T12:55:10Z"
+    },
+    {
+      "producer": "Raddle-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested-by-area/_lym/raddle/approval.json",
+      "at": "2026-11-23T13:25:04Z",
+      "started_at": "2026-11-23T12:55:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "raddle",
+          "kind": "gate",
+          "start": "2026-11-23T13:25:03.079069934Z",
+          "end": "2026-11-23T13:25:03.099614328Z"
+        }
+      ]
     }
   ],
   "product": {
