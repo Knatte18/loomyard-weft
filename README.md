@@ -30,21 +30,22 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Owner `neve`
 
-### Running (4)
+### Running (5)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · solid | Code-Burler-Review | neve | 14h<br>11h | burler, loom, darn, arbiter, shed |
 | T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | Darn-Write | neve | 14h<br>14h | dobby, landing |
 | T6 | **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`note-depends-on`](design-note-depends-on.md) | darn · light | Code-Burler-Review | neve | 19m<br>19m | board |
+| T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light | starting · Worktree-Create | neve | 1m<br>0m | loom, landing |
 | T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | starting · Worktree-Create | neve | 1m<br>0m | shuttle, creel, drift, stencil |
 
 ### Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light |  | 1m<br>0m | loom, landing |
 | T9 | **Plan amendment during Webster loses the record of committed batches**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | darn · light |  | 1m<br>0m | webster, loom |
+| T10 | **Verify gate requires a fail-on-base test for a tests-only task**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | darn · light |  | 1m<br>0m | gate, darn |
 
 ### Layer A (2)
 
@@ -52,12 +53,6 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | T6 | 1m<br>0m | board |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle | T5 | 15h<br>13h | batten, fabric |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T10 | `draft` **Verify gate requires a fail-on-base test for a tests-only task** | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | darn |  | 0m<br>0m | gate, darn |
 
 ### Research (3)
 
