@@ -1,0 +1,1 @@
+Review segment of task `harden-fabric-undriven-cases` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept harden-fabric-undriven-cases" or "lym loom circling continue harden-fabric-undriven-cases".

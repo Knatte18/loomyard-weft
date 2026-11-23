@@ -1,12 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept harden-fabric-undriven-cases` or `lym loom circling continue harden-fabric-undriven-cases`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `harden-fabric-undriven-cases` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept harden-fabric-undriven-cases\" or \"lym loom circling continue harden-fabric-undriven-cases\".",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
-    "wait": ""
+    "last": "Code-Bouncer → awaiting",
+    "wait": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept harden-fabric-undriven-cases` or `lym loom circling continue harden-fabric-undriven-cases`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -225,6 +226,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-undriven-cases/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T13:34:22Z",
+      "started_at": "2026-11-23T13:33:43Z"
     }
   ],
   "product": {
