@@ -1,49 +1,36 @@
 # Let the parent answer a PR-Review ask that never reached it
 
+A PR-Review session's `lym loom parent-review ask` can end `no-parent` or `undelivered` while the parent orch is live.
+`parent-review answer` then refused that ask ("already no-parent"), and `pr-continue` refused with "no satisfied answer from your parent stands".
+A review whose parent was satisfied at an unchanged head could not end.
+
+`parent-review answer` now answers a latest PR-Review ask that ended `no-parent` or `undelivered`.
+The ask becomes `done`, and the answer stands at the head the ask named, so `pr-continue` accepts it.
+This change does not alter how the ask finds the orch's pane; it removes the dead end the failed lookup left.
+
 Closes #206
-
-Under `pr_review_ask_parent` with autonomy on, a PR-Review session's ask that ended `no-parent` or `undelivered` left the review stuck.
-`lym loom parent-review answer` refused the ended ask ("ask 9 is already no-parent; ... wait for the next [pr-review request]"),
-and `lym loom pr-continue` refused because no satisfied answer stood at the head.
-So a parent satisfied with an unchanged head had no way to say so, and the review could not end.
-
-## What changes
-
-- `burlerengine.AnswerParentAskOrUnreached` answers the run's latest ask as `AnswerParentAsk` does.
-  It also answers a latest ask made under a tag the caller names when that ask ended `no-parent` or `undelivered` and is not cleared.
-  The ask becomes `done` with the parent's report; no deadline applies, since the ask's request never reached the parent through lym.
-  `AnswerParentAsk` keeps its behavior and delegates with no tag, so review rounds and the drift judge are unchanged.
-- `parent-review answer` passes the PR-Review line tag.
-  A satisfied answer to such an ask then makes `ReadPRReviewStanding` report satisfied at the head the ask named, and `pr-continue` proceeds.
-  The verb's help and the loomcli package doc say so.
-- The autonomous PR-Review landing block has the session run `parent-review await` on the next mail after a `no-parent` or `undelivered` end,
-  and ask again only when the ask still stands ended.
-  The orch's autonomy contract says to answer such an ask the same way.
 
 ## Design decisions
 
-- The issue's other expectation, that the ask resolve the orch's current pane, needs no change to the orch lookup.
-  The orch strand is spawned with the own-window anchor.
-  For an own-window strand, reed's liveness check reads the strand's pane from every window of the session, not only the strands' window.
-  The `no-parent` asks the issue reports came from the PR-Review session's own asks, the pattern of #200.
-  Creel refused that post because the session signed as the loom program, and the record then called it `no-parent`.
-  The fix that already landed for #200 signs the post as the session's strand and records a refused post as `undelivered`.
-- The extra admission lives in one locked step in burlerengine, keyed on a tag the caller names.
-  So a racing re-ask cannot slip between the check and the write, and burlerengine stays free of landingshed's tag.
-- Only the latest ask is answerable, as before: once the session has asked again, the answer goes to the newer ask.
-  A cleared or timed-out ask stays refused.
+- `burlerengine.AnswerParentAsk` is renamed `AnswerParentAskOrUnreached` and takes an `unreachedTag`.
+  A latest ask made under that tag, in state `no-parent` or `undelivered` and not cleared, is answered instead of refused.
+  The deadline check is skipped for such an ask, since its request never reached the parent.
+- An empty tag, another tag, a cleared ask, a `timeout` ask and a non-latest ask are all still refused.
+  Every caller other than `parent-review answer` passes `""`, so their behaviour is unchanged.
+- `parent-review answer` passes `landingshed.PRReviewAskLineTag`, so the exception covers PR-Review asks only.
+  Code-review and other parent asks keep refusing an ended ask.
+- The orch role contract (`role-autonomy.md`) and the autonomous PR-Review landing block now say so.
+  After a `no-parent` or `undelivered` end, the PR-Review session runs `await` on its next mail before asking again, since an answer may already stand.
+- Help text and package docs for `loomcli` and `burlerengine` describe the new move out of an end state.
 
-## Tests
+## To check by hand
 
-- `TestAnswerParentAsk` (burlerengine) gains rows covering:
-  - a `no-parent` and an `undelivered` ask under the tag are answered, the latter past its deadline;
-  - the same ask is refused under another tag or with no tag named;
-  - a cleared, a timed-out and a superseded ask stay refused.
-- `TestParentReviewAnswerVerb` (loomcli) gains rows in which the parent answers a `no-parent` PR-Review ask satisfied
-  and an `undelivered` one with findings, and in which a cleared one is refused.
-  The answering rows fail on the merge base, which refused both.
+- The orch contract line in `contracts/orchrole/role-autonomy.md` says an ask ended `no-parent` or `undelivered` is one "its PR-Review session mails you".
+  Check that the PR-Review session does mail the parent about an unsent `no-parent` ask, as the landing block tells it to for an undelivered one;
+  the contract may name mail the session never sends.
+- Not run: the live case from #206, a PR-Review ask recorded `no-parent` while the orch is live in another tmux window, answered with `parent-review answer` and then `pr-continue`.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** loom
+**Blast radius:** burlerengine
