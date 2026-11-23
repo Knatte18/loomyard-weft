@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
-Depends on: [`async-run-pusher`](design-async-run-pusher.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md), [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md)
+Depends on: [`async-run-pusher`](design-async-run-pusher.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md)
 
 Filed from the Sketch `config-keys-nested-by-area`.
 
