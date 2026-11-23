@@ -39,7 +39,7 @@ Owner `neve`
 | T6 | **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`note-depends-on`](design-note-depends-on.md) | darn · light | Code-Burler-Review | neve | 25m<br>24m | board |
 | T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light | Darn-Write | neve | 6m<br>5m | loom, landing |
 | T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | Darn-Write | neve | 6m<br>5m | shuttle, creel, drift, stencil |
-| T9 | **Plan amendment during Webster loses the record of committed batches**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | darn · light | Drift-Await | neve | 6m<br>5m | webster, loom |
+| T9 | **Plan amendment during Webster loses the record of committed batches**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | darn · light | Drift-Expect | neve | 6m<br>5m | webster, loom |
 | T10 | **Verify gate requires a fail-on-base test for a tests-only task**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | darn · light | Darn-Write | neve | 6m<br>5m | gate, darn |
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Preflight | neve | 6m<br>5m | tools, lint |
 
@@ -47,8 +47,8 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 6m<br>4m | loom, darn |
-| T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 6m<br>4m | landing, git |
+| T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 6m<br>5m | loom, darn |
+| T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 6m<br>5m | landing, git |
 
 ### Layer A (3)
 
@@ -56,7 +56,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | T6 | 6m<br>5m | board |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle | T5 | 15h<br>14h | batten, fabric |
-| T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 6m<br>4m | lint, loom |
+| T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 6m<br>5m | lint, loom |
 
 ### Research (3)
 
