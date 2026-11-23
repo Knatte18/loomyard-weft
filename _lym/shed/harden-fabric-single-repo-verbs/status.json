@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Bouncer",
-    "last": "Harden-Burler-Fix → bounced to Harden-Bouncer",
+    "now": "Describe",
+    "last": "Harden-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -414,6 +414,13 @@
       "started_at": "2026-11-23T08:17:41Z",
       "budget_exempt": true,
       "routed_to": "Harden-Bouncer"
+    },
+    {
+      "producer": "Harden-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/reviews/harden/round-4-bouncer-ledger.md",
+      "at": "2026-11-23T08:21:05Z",
+      "started_at": "2026-11-23T08:20:27Z"
     }
   ],
   "product": {

@@ -1,0 +1,2082 @@
+diff --git a/cmd/lym/destructiveguard_test.go b/cmd/lym/destructiveguard_test.go
+index 0c0c82d9a..971c9d500 100644
+--- a/cmd/lym/destructiveguard_test.go
++++ b/cmd/lym/destructiveguard_test.go
+@@ -108,6 +108,8 @@ var destructiveGuardAllowlist = []scankit.Entry{
+ 		"source subdirectory the recursive merge has just drained — whole-file allowlist for exactly these two, not a blanket exemption"},
+ 	{Key: "internal/fabricengine/failedpush.go", Why: "ClearPushFailure's os.Remove(path) deletes fabric's own failed-push record under the hub's machine-local " +
+ 		"scratch directory, a fabric-internal marker of a push origin refused, never operator content"},
++	{Key: "internal/fabricengine/pendingteardown.go", Why: "clearPendingTeardown's os.Remove deletes fabric's own pending-teardown record beside the teardown lock " +
++		"under the hub's machine-local scratch directory, fabric-internal metadata, never operator content"},
+ 	{Key: "internal/fabricengine/moverecord.go", Why: "RemoveMoveRecord's os.Remove deletes fabric's own move record in the records worktree's lock directory, " +
+ 		"fabric-internal metadata, never operator content"},
+ 	{Key: "internal/fabricengine/hook.go", Why: "chainUserHook's os.Remove(userHookPath) removes the user-hook backup that same function wrote " +
+diff --git a/docs/getting-started.md b/docs/getting-started.md
+index 3c7fb0502..5ddc5872c 100644
+--- a/docs/getting-started.md
++++ b/docs/getting-started.md
+@@ -28,6 +28,7 @@ lym fabric clone --single-repo --shortname <short> <project-url>
+ ```
+ 
+ The records and the board then live in the project's repository under `refs/lym/heads/` and `refs/lym/tags/`, and the board is the branch `main` there.
++The archive tags of removed code branches live beside them, under `refs/lym/code-tags/`.
+ On another machine, a plain `lym fabric clone <project-url>` joins such a hub.
+ 
+ `update-plugins.sh` refuses a dirty tree and is the route to production.
+diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
+index 43dea81b7..b28bad2f0 100644
+--- a/internal/fabriccli/fabric.go
++++ b/internal/fabriccli/fabric.go
+@@ -322,6 +322,12 @@ A dry run computes the same protected and unowned verdicts the matching --apply
+ run would act on, so "protected": false with no "unowned" in a dry run means
+ "--apply would remove this".
+ 
++prune also reports pending_teardowns: every remote teardown whose detached
++child ended before its job did, such as one killed outright, or whose remote
++step failed. Either can leave the pair's branches on origin. Each names what
++finishes it: the push of an archive tag this machine alone holds, where one is
++owed, and then the re-run. prune itself never runs it.
++
+ Example:
+   lym fabric prune
+   lym fabric prune --apply
+@@ -830,8 +836,13 @@ func runPruneWithFlags(ctx context.Context, out io.Writer, apply, force bool) in
+ 	if err != nil {
+ 		return errWithRecord(out, r.Mutated(), err)
+ 	}
++	pendingTeardowns, err := fabricengine.PendingTeardowns(l.HubPath)
++	if err != nil {
++		return errWithRecord(out, r.Mutated(), err)
++	}
+ 	return okWithRecord(out, r.Mutated(), map[string]any{
+-		"entries": r.Entries,
++		"entries":           r.Entries,
++		"pending_teardowns": pendingTeardowns,
+ 	})
+ }
+ 
+diff --git a/internal/fabriccli/roleguard.go b/internal/fabriccli/roleguard.go
+index 1518d316b..b4b3dcc26 100644
+--- a/internal/fabriccli/roleguard.go
++++ b/internal/fabriccli/roleguard.go
+@@ -2,6 +2,7 @@
+ // It classifies each subcommand as a reader that a sandboxed role may run, or as a verb it may not.
+ // A merge task's writer may also run the merge verbs,
+ // and any sandboxed role may run every verb in a hub under its own worktree's sandbox root.
++// A detached push passes only for the role's own pair or a pair under that root.
+ // The refusal text is built here as well.
+ 
+ package fabriccli
+@@ -95,12 +96,7 @@ func inOwnSandboxRoot(dir string, name agentname.Name) bool {
+ 		container := filepath.Dir(filepath.Dir(current))
+ 		if filepath.Join(container, sandboxRootRel) == current {
+ 			worktree := worktreeOwningRecordsDir(container)
+-			location, err := lymcwd.ResolveWorktree(worktree)
+-			if err != nil || location.WorktreeName != name.Slug || location.WorktreePath() != worktree {
+-				return false
+-			}
+-			shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(location.HubPath))
+-			if !found || shortname != name.Shortname {
++			if !isOwnWorktree(worktree, name) {
+ 				return false
+ 			}
+ 			root, ok := resolveThroughExistingAncestor(filepath.Join(worktree, sandboxRootRel))
+@@ -114,6 +110,57 @@ func inOwnSandboxRoot(dir string, name agentname.Name) bool {
+ 	}
+ }
+ 
++// isOwnWorktree reports whether worktree is the root of the worktree the strand name identifies.
++// That worktree is named by the name's slug and sits in the hub whose recorded shortname is the name's shortname.
++func isOwnWorktree(worktree string, name agentname.Name) bool {
++	location, err := lymcwd.ResolveWorktree(worktree)
++	if err != nil || location.WorktreeName != name.Slug || location.WorktreePath() != worktree {
++		return false
++	}
++	shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(location.HubPath))
++	return found && shortname == name.Shortname
++}
++
++// isOwnPairPath reports whether dir is the worktree the strand name identifies, or that worktree's records sibling.
++// dir is judged where it lands, with the symlinks of its deepest existing ancestor resolved.
++func isOwnPairPath(dir string, name agentname.Name) bool {
++	current, ok := resolveThroughExistingAncestor(dir)
++	if !ok {
++		return false
++	}
++	return isOwnWorktree(worktreeOwningRecordsDir(current), name)
++}
++
++// injectedPathsAreOwn reports whether every non-empty path a detached push of cmd names is one the strand may push:
++// the strand's own worktree, its records sibling, or a path under its own worktree's sandbox root.
++// A relative path is read against the directory the invocation acts in.
++func injectedPathsAreOwn(cmd *cobra.Command, name agentname.Name, paths ...string) bool {
++	cwd, err := lymcwd.CwdFrom(cmd.Context())
++	if err != nil {
++		return false
++	}
++	for _, path := range paths {
++		if path == "" {
++			continue
++		}
++		if !filepath.IsAbs(path) {
++			path = filepath.Join(cwd, path)
++		}
++		if !isOwnPairPath(path, name) && !inOwnSandboxRoot(path, name) {
++			return false
++		}
++	}
++	return true
++}
++
++// taskSessionRefusal is the refusal of `lym fabric <verb>` from the task session strandName, naming its ways forward.
++func taskSessionRefusal(verb, strandName string) string {
++	return fmt.Sprintf("lym fabric %s is refused from the task session %s outside a hub under its worktree's %s; "+
++		"build a scratch hub as a hubforge test fixture instead, or run it in a hub made with `lym harden sandbox new` under <worktree>/%s, "+
++		"and when the work itself needs this verb, stop and report status: FAILED so the run ends stuck and the orch runs it",
++		verb, strandName, sandboxRootRel, sandboxRootRel)
++}
++
+ // mergeTaskVerb reports whether this invocation of cmd is one a merge task's writer needs in its own worktree:
+ // merge-in, merge-stage, and merge in its --continue and --abort forms.
+ // The merge form that takes a branch is not one of them: a run's Finalize performs it.
+@@ -151,8 +198,9 @@ func readerVerb(cmd *cobra.Command) bool {
+ // It returns "" when the invocation may go on.
+ // A sandboxed role is a name that parses with a slug and a role other than the driver and the orch.
+ // An unset, empty, unparseable or slug-free name passes.
+-// The detached push child every commit spawns inherits the strand name and carries a hidden bypass flag,
+-// so a push with a bypass flag passes; a bypass flag on any other subcommand is refused.
++// The detached push child every commit spawns inherits the strand name and carries the hidden path flags.
++// So a push passes when every path it names is the role's own worktree, that worktree's records sibling,
++// or a path under the role's own sandbox root; a path flag on any other subcommand is refused.
+ // The hidden teardown child a removal spawns inherits the strand name the same way, so it passes too.
+ // A merge task's writer passes on the verbs its work is, since the merge of the parent branch is that task.
+ // Any verb passes when the directory it acts in lies under the sandbox root of the role's own worktree,
+@@ -173,10 +221,13 @@ func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string {
+ 	injectedWeft, _ := cmd.Flags().GetString("weft-path")
+ 	injectedWarp, _ := cmd.Flags().GetString("warp-path")
+ 	if injectedWeft != "" || injectedWarp != "" {
+-		if cmd.Name() == "push" {
++		if cmd.Name() != "push" {
++			return fmt.Sprintf("lym fabric %s refuses the path flags that only a detached push passes, from the task session %s", cmd.Name(), strandName)
++		}
++		if injectedPathsAreOwn(cmd, name, injectedWeft, injectedWarp) {
+ 			return ""
+ 		}
+-		return fmt.Sprintf("lym fabric %s refuses the path flags that only a detached push passes, from the task session %s", cmd.Name(), strandName)
++		return taskSessionRefusal(cmd.Name(), strandName)
+ 	}
+ 	if readerVerb(cmd) || (darnengine.IsMergeTaskWriter(name) && mergeTaskVerb(cmd)) {
+ 		return ""
+@@ -184,5 +235,5 @@ func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string {
+ 	if target, err := verbTargetDir(cmd); err == nil && inOwnSandboxRoot(target, name) {
+ 		return ""
+ 	}
+-	return fmt.Sprintf("lym fabric %s is refused from the task session %s outside a hub under its worktree's %s; build a scratch hub as a hubforge test fixture instead, and when the work itself needs this verb, stop and report status: FAILED so the run ends stuck and the orch runs it", cmd.Name(), strandName, sandboxRootRel)
++	return taskSessionRefusal(cmd.Name(), strandName)
+ }
+diff --git a/internal/fabriccli/roleguard_test.go b/internal/fabriccli/roleguard_test.go
+index e5e4ac705..bcce7f96d 100644
+--- a/internal/fabriccli/roleguard_test.go
++++ b/internal/fabriccli/roleguard_test.go
+@@ -192,7 +192,7 @@ func TestSandboxedRoleGuard(t *testing.T) {
+ 					t.Errorf("%s under %s = %d, output %s; want a guard refusal", verb, strand, code, out)
+ 				}
+ 				if verb == "add" && strand == webster {
+-					for _, want := range []string{"hubforge", "status: FAILED"} {
++					for _, want := range []string{"hubforge", "status: FAILED", "`lym harden sandbox new` under "} {
+ 						if !strings.Contains(out, want) {
+ 							t.Errorf("add refusal under %s lacks %q: %s", strand, want, out)
+ 						}
+@@ -255,11 +255,48 @@ func TestSandboxedRoleGuard(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a bypass flag passes only on push", func(t *testing.T) {
++	t.Run("a push's path flags pass only for the role's own pair or a pair under its own sandbox root", func(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, webster)
+-		if _, out := runUnderParent(t, "push", "--weft-path", t.TempDir()); strings.Contains(out, refusalMarker) {
+-			t.Errorf("push with --weft-path was refused: %s", out)
++		hubs := t.TempDir()
++		recordShortname(t, hubs, "ly")
++		own := fakeWorktree(t, hubs, "slug")
++		ownSandboxHub := sandboxHubDir(t, own)
++		other := fakeWorktree(t, hubs, "other")
++		otherHubs := t.TempDir()
++		recordShortname(t, otherHubs, "zz")
++		sameSlugInOtherHub := fakeWorktree(t, otherHubs, "slug")
++
++		tests := []struct {
++			name     string
++			weftPath string
++			warpPath string
++			refused  bool
++		}{
++			{"OwnPair", own + weftname.Suffix, own, false},
++			{"OwnRecordsSiblingAlone", own + weftname.Suffix, "", false},
++			{"PairUnderOwnSandboxRoot", filepath.Join(ownSandboxHub, "t1"+weftname.Suffix), filepath.Join(ownSandboxHub, "t1"), false},
++			{"AnotherWorktreesPair", other + weftname.Suffix, other, true},
++			{"OwnRecordsSiblingWithAnotherWorktree", own + weftname.Suffix, other, true},
++			{"SameSlugPairInAnotherHub", sameSlugInOtherHub + weftname.Suffix, sameSlugInOtherHub, true},
++			{"PathsOutsideAnyHub", t.TempDir(), t.TempDir(), true},
+ 		}
++		for _, tt := range tests {
++			args := []string{"push"}
++			if tt.weftPath != "" {
++				args = append(args, "--weft-path", tt.weftPath)
++			}
++			if tt.warpPath != "" {
++				args = append(args, "--warp-path", tt.warpPath)
++			}
++			code, out := runUnderParent(t, args...)
++			if refused := strings.Contains(out, refusalMarker); refused != tt.refused {
++				t.Errorf("%s: %v under %s refused = %v; want %v; output: %s", tt.name, args, webster, refused, tt.refused, out)
++			}
++			if tt.refused && code != 1 {
++				t.Errorf("%s: %v under %s = %d; want exit 1", tt.name, args, webster, code)
++			}
++		}
++
+ 		for _, args := range [][]string{{"add", "slug", "--warp-path", "x"}, {"clone", "u", "--warp-path", "x"}, {"status", "--weft-path", "x"}} {
+ 			if code, out := runUnderParent(t, args...); code != 1 || !strings.Contains(out, refusalMarker) {
+ 				t.Errorf("%v under %s = %d, output %s; want a guard refusal", args, webster, code, out)
+diff --git a/internal/fabriccli/weft_verbs.go b/internal/fabriccli/weft_verbs.go
+index 8ea67cc5b..a1fdfe3cd 100644
+--- a/internal/fabriccli/weft_verbs.go
++++ b/internal/fabriccli/weft_verbs.go
+@@ -139,7 +139,13 @@ coexist with merge_in_progress being false here.
+ status also reports failed_pushes: every push origin refused that this machine
+ still holds a record of, hub-wide, each with its repository side, branch, class,
+ last error, first and last seen, count and the way forward for its class.
+-An empty list means no push is outstanding.`,
++An empty list means no push is outstanding.
++
++status also reports pending_teardowns: every remote teardown, hub-wide, whose
++detached child ended before its job did, such as one killed outright, or whose
++remote step failed. Either can leave the pair's branches on origin. Each names
++what finishes it: the push of an archive tag this machine alone holds, where
++one is owed, and then the re-run.`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+@@ -160,10 +166,16 @@ An empty list means no push is outstanding.`,
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
++			pendingTeardowns, err := fabricengine.PendingTeardowns(l.HubPath)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
+ 			clihelp.SetExit(cmd.Context(), output.Ok(out, map[string]any{
+ 				"changes":           changeEntriesMap(entries),
+ 				"merge_in_progress": inProgress,
+ 				"failed_pushes":     failedPushes,
++				"pending_teardowns": pendingTeardowns,
+ 			}))
+ 			return nil
+ 		},
+diff --git a/internal/fabricengine/archive.go b/internal/fabricengine/archive.go
+index 3aa4215c7..4b3de0d42 100644
+--- a/internal/fabricengine/archive.go
++++ b/internal/fabricengine/archive.go
+@@ -8,6 +8,8 @@ package fabricengine
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
++	"path/filepath"
+ 	"strings"
+ 	"time"
+ 
+@@ -15,6 +17,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
+ // ArchiveTagSHALen is how many leading hex digits of the tip SHA the archive tag name carries.
+@@ -217,13 +220,50 @@ func tagAndPushArchiveTip(rec *Mutations, repoDir, slug, tip, side string, sleep
+ 	return tag, nil
+ }
+ 
++// archiveTagNamespaceAt returns the origin namespace the archive tags of the repository at dir live under.
++// A store that reads the one-repository namespace keeps its tags there.
++// A code store whose hub's records store reads that namespace has a prefix of its own below the namespace root.
++// So no archive tag of a one-repository hub lands under origin's plain refs/tags/.
++// Neither store lists or fetches the other's tags and commits.
++// The hub's records store is the records sibling of the code store's prime worktree.
++// How either store spells origin's URL plays no part.
++// Any other repository, and a dir that holds no repository, keeps its tags under refs/tags/.
++// A records store whose layout cannot be read is an error, so no tag is pushed to a namespace guessed past it.
++func archiveTagNamespaceAt(dir string) (gitrepo.RefNamespace, error) {
++	identity := gitrepo.RefNamespace{}
++	ns, err := originNamespaceAt(dir)
++	if err != nil || ns != identity {
++		return ns, err
++	}
++	if _, err := os.Lstat(filepath.Join(dir, ".git")); err != nil {
++		return identity, nil
++	}
++	commonDir, err := gitrepo.New(dir).CommonDir()
++	if err != nil {
++		return identity, fmt.Errorf("fabricengine: find the hub of the repository at %s: %w", dir, err)
++	}
++	if filepath.Base(commonDir) != ".git" {
++		return identity, nil
++	}
++	prime := filepath.Dir(commonDir)
++	recordsRoot := weftname.SiblingPath(filepath.Dir(prime), filepath.Base(prime))
++	recordsNamespace, err := originNamespaceAt(recordsRoot)
++	if err != nil || recordsNamespace == identity {
++		return identity, err
++	}
++	return gitrepo.RefNamespace{Tags: RecordsNamespaceRoot + RecordsNamespaceCodeTags}, nil
++}
++
+ // pushArchiveTag pushes the tag named tag in the repo at repoDir to origin.
++// The tag lands under the store's own archive prefix on origin:
++// a one-repository hub gives each of its stores one below the records namespace root;
++// any other repository pushes to refs/tags/.
+ // A push refused with a bare "(failed)", "cannot lock ref" or "missing necessary objects" is retried.
+ // The retries follow the archive push's delay schedule and sleep through sleep; a nil sleep sleeps for real.
+ // KindTagPushed is recorded on rec only after the push observably succeeded.
+ func pushArchiveTag(rec *Mutations, repoDir, tag string, sleep func(time.Duration)) error {
+ 	tagRef := "refs/tags/" + tag
+-	ns, err := originNamespaceAt(repoDir)
++	ns, err := archiveTagNamespaceAt(repoDir)
+ 	if err != nil {
+ 		return fmt.Errorf("push archive tag %q to %q: %w", tag, originRemoteName, err)
+ 	}
+@@ -244,6 +284,54 @@ func pushArchiveTag(rec *Mutations, repoDir, tag string, sleep func(time.Duratio
+ 	return nil
+ }
+ 
++// pushLocalArchiveTags pushes each archive/<slug>/* tag of the repository at dir that origin lacks.
++// A teardown that ended before its tag push leaves such a tag on this machine alone,
++// and its re-run finds no local branch to archive that tip from.
++// The tag of ownTip is left out, since the caller's own archive step settles that tip; an empty ownTip leaves none out.
++// A repository with no origin remote, and one holding no such tag, is left alone with no read of origin.
++// A push refused retryably is retried on the archive push's delay schedule, sleeping through sleep.
++// Every returned error wraps ErrArchiveFailed.
++func pushLocalArchiveTags(rec *Mutations, dir, slug, ownTip string, sleep func(time.Duration)) error {
++	if _, urlErr := gitrepo.New(dir).RemoteURL(originRemoteName); urlErr != nil {
++		return nil
++	}
++	fail := func(err error) error {
++		return fmt.Errorf("%w: push the archive tags of %q that only %s holds: %w", ErrArchiveFailed, slug, dir, err)
++	}
++
++	listed, err := gitexec.Run([]string{"for-each-ref", "--format=%(refname)", "refs/tags/" + ArchiveTagPrefix + slug}, dir)
++	if err != nil {
++		return fail(fmt.Errorf("list the local archive tags: %w", err))
++	}
++	ownTag := ""
++	if ownTip != "" {
++		ownTag = ArchiveTagName(slug, ownTip)
++	}
++	var local []string
++	for _, ref := range strings.Fields(listed) {
++		if tag := strings.TrimPrefix(ref, "refs/tags/"); tag != ownTag {
++			local = append(local, tag)
++		}
++	}
++	if len(local) == 0 {
++		return nil
++	}
++
++	onOrigin, err := remoteTagsUnder(dir, ArchiveTagPrefix+slug+"/")
++	if err != nil {
++		return fail(fmt.Errorf("list the archive tags on %q: %w", originRemoteName, err))
++	}
++	for _, tag := range local {
++		if _, held := onOrigin[tag]; held {
++			continue
++		}
++		if err := pushArchiveTag(rec, dir, tag, sleep); err != nil {
++			return fail(err)
++		}
++	}
++	return nil
++}
++
+ // tagWeftTipForArchive tags the local tip of weftBranch before a teardown deletes the branch.
+ // The tag is archive/<slug>/<first 12 hex of the tip>, and the function returns the tip and the tag.
+ // A weft repo with no origin remote tags nothing and returns the reason no archive tag is pushed,
+diff --git a/internal/fabricengine/bolt.go b/internal/fabricengine/bolt.go
+index ac62d2cc4..029cbb0c6 100644
+--- a/internal/fabricengine/bolt.go
++++ b/internal/fabricengine/bolt.go
+@@ -298,7 +298,13 @@ func (b *Bolt) Pull(opts SyncOptions, rec *Mutations) (BoltSkip, string, error)
+ // a Bolt only behind is fast-forwarded.
+ // A replay that stops on a conflict skips as diverged, and one an uncommitted change blocks skips as dirty.
+ // Each skip is logged at Warn here, once, so no caller repeats the text.
++// A records store whose origin layout cannot be read is an error naming the refspecs to restore, with nothing fetched.
+ func (b *Bolt) pullFirst(rec *Mutations) (BoltSkip, string, error) {
++	// A one-repository store that lost its fetch refspecs fetches nothing and still exits clean,
++	// and its upstream then fails to resolve with no way forward; the layout read names one.
++	if _, err := originNamespaceAt(b.path); err != nil {
++		return "", "", err
++	}
+ 	repo := gitrepo.New(b.path)
+ 	pushLockPath, err := repo.PushLockPath()
+ 	if err != nil {
+diff --git a/internal/fabricengine/boltpullfirst_integration_test.go b/internal/fabricengine/boltpullfirst_integration_test.go
+index 11e77a793..7b95e0499 100644
+--- a/internal/fabricengine/boltpullfirst_integration_test.go
++++ b/internal/fabricengine/boltpullfirst_integration_test.go
+@@ -645,6 +645,37 @@ func TestBolt_PullThenCommitWritten(t *testing.T) {
+ 	})
+ }
+ 
++// TestBolt_PullThenCommitWritten_RefusesARecordsStoreWithNoNamespacedFetchRefspec covers a one-repository hub's board.
++// Its records store has lost its fetch refspecs.
++// The pull fails with the command that restores them, in place of an upstream that does not resolve, and no write runs.
++func TestBolt_PullThenCommitWritten_RefusesARecordsStoreWithNoNamespacedFetchRefspec(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	board := h.BoardDir()
++	gitkit.Git(t, board, "config", "--unset-all", "remote.origin.fetch")
++	fabricengine.ForgetOriginNamespaceForTest(board)
++	runs := 0
++	write := fabricengine.BoltWrite{Message: "write a", Write: func() ([]string, error) {
++		runs++
++		return nil, nil
++	}}
++
++	_, err := fabricengine.NewBolt(board).PullThenCommitWritten([]fabricengine.BoltWrite{write}, fabricengine.NewMutations(h.Path))
++
++	want := "`git -C " + board + " config --replace-all remote.origin.fetch"
++	if err == nil || !strings.Contains(err.Error(), want) {
++		t.Fatalf("PullThenCommitWritten() error = %v; want one naming %q", err, want)
++	}
++	if strings.Contains(err.Error(), "resolve upstream") {
++		t.Errorf("PullThenCommitWritten() error = %q; want no unresolved-upstream text", err)
++	}
++	if runs != 0 {
++		t.Errorf("write runs = %d; want none on a store whose layout cannot be read", runs)
++	}
++}
++
+ func TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/clone.go b/internal/fabricengine/clone.go
+index 3214c9d15..35aa301c7 100644
+--- a/internal/fabricengine/clone.go
++++ b/internal/fabricengine/clone.go
+@@ -144,6 +144,7 @@ type cloneSeed struct {
+ // A one-URL clone first reads origin's layout with one ls-remote.
+ // That read comes before the hub-exists check, --reset and anything created.
+ // An origin left by the earlier one-repository layout is refused.
++// Without opts.SingleRepo, so is an origin holding records branches and no board, which a seed that stopped leaves.
+ // With opts.SingleRepo, an origin that already holds a board is refused too.
+ // So is one whose default branch is a records repository.
+ // So is one whose default branch tracks the earlier layout's directories.
+@@ -154,11 +155,19 @@ type cloneSeed struct {
+ //
+ // Any clone or worktree-add failure triggers teardownHub, which removes the entire hub directory.
+ // If removal also fails, the error names both the original failure and the residual hub path.
++//
++// A cwd that is not an existing directory is refused by name before any git runs.
+ func CloneHub(cwd string, opts CloneOptions) (res CloneResult, err error) {
+ 	var rec *Mutations
+ 	defer func() { res.Mutations = rec.Snapshot() }()
+ 
+ 	cwd = filepath.Clean(cwd)
++	// git started in a directory that is not there fails as if git itself were missing, so the directory is named here.
++	if info, statErr := os.Stat(cwd); statErr != nil {
++		return CloneResult{}, fmt.Errorf("the directory the hub is created in cannot be read: %w; way forward: create it, or pass --into an existing directory", statErr)
++	} else if !info.IsDir() {
++		return CloneResult{}, fmt.Errorf("%s, where the hub is created, is not a directory; way forward: pass --into an existing directory", cwd)
++	}
+ 
+ 	if opts.WeftURL == "" {
+ 		return CloneResult{}, fmt.Errorf("weft URL is required")
+diff --git a/internal/fabricengine/clone_onerepository_test.go b/internal/fabricengine/clone_onerepository_test.go
+index faeb4d785..15694b495 100644
+--- a/internal/fabricengine/clone_onerepository_test.go
++++ b/internal/fabricengine/clone_onerepository_test.go
+@@ -1,5 +1,6 @@
+ // clone_onerepository_test.go proves CloneHub's refusals of a one-URL clone, before it creates anything.
+ // Each row aims the clone at a bare repository built here and asserts the way forward the refusal names.
++// It also proves the refusal of a clone into a directory that is not there.
+ // It shares the fixture helpers of clone_adopt_test.go and the TestMain in testmain_test.go.
+ 
+ package fabricengine_test
+@@ -40,6 +41,11 @@ func TestCloneHub_OneURLRefusals(t *testing.T) {
+ 			[]string{"delete lym-bolt on origin", "then clone again"}},
+ 		{"EarlierLayoutWithFlag", withEarlierLayoutBranch, true, "tst", false,
+ 			[]string{"delete lym-bolt on origin", "then clone again"}},
++		{"SeedThatStoppedBeforeItsBoard", func(t *testing.T, fixtures string) string {
++			bare := makeBareRemote(t, fixtures, "stopped-seed")
++			gitkit.Git(t, bare, "update-ref", "refs/lym/heads/main-weft", "main")
++			return bare
++		}, false, "", false, []string{"a one-repository seed stopped before its board landed", "lym fabric clone --single-repo --shortname <shortname>"}},
+ 		{"BoardAlreadyOnOrigin", func(t *testing.T, fixtures string) string {
+ 			bare := makeBareRemote(t, fixtures, "board-present")
+ 			gitkit.Git(t, bare, "update-ref", "refs/lym/heads/main", "main")
+@@ -104,6 +110,32 @@ func TestCloneHub_OneURLRefusals(t *testing.T) {
+ 	}
+ }
+ 
++// TestCloneHub_RefusesAParentDirectoryThatIsNotThere asserts that a clone into a missing directory names that directory.
++// It creates nothing, and its error is not the failed start of a git that was never at fault.
++func TestCloneHub_RefusesAParentDirectoryThatIsNotThere(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	cloneParent := filepath.Join(t.TempDir(), "missing")
++
++	_, err := fabricengine.CloneHub(cloneParent, fabricengine.CloneOptions{WeftURL: "https://example.com/code"})
++
++	if err == nil {
++		t.Fatalf("CloneHub(%s) = nil error; want a refusal", cloneParent)
++	}
++	for _, want := range []string{cloneParent, "pass --into an existing directory"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("CloneHub(%s) error = %q; want it to contain %q", cloneParent, err.Error(), want)
++		}
++	}
++	if strings.Contains(err.Error(), "fork/exec") {
++		t.Errorf("CloneHub(%s) error = %q; want no failed start of git", cloneParent, err.Error())
++	}
++	if _, statErr := os.Stat(cloneParent); !os.IsNotExist(statErr) {
++		t.Errorf("stat %s after the refusal = %v; want it still missing", cloneParent, statErr)
++	}
++}
++
+ // withEarlierLayoutBranch builds a bare repository whose branches include the board branch of the earlier layout.
+ func withEarlierLayoutBranch(t *testing.T, fixtures string) string {
+ 	t.Helper()
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 728f023df..ad8c57bc6 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -216,6 +216,12 @@
+ // `Remove` tags the local weft tip `archive/<slug>/<tip>` before its first mutation, after its refusals,
+ // so the run records stay reachable once the branch is deleted; a failed tag leaves everything in place.
+ // Remote steps go to a detached teardown child, and a failure is logged and mailed to the hub's orch.
++// The child first pushes each `archive/<slug>/*` tag an earlier teardown made locally and origin lacks,
++// so a re-run deletes no branch on origin while this machine's tag alone holds a tip of it.
++// A child that ends before its job does, killed outright included, leaves a pending-teardown record.
++// So does a child whose remote step failed, and its record holds that step's way forward.
++// `PendingTeardowns` lists each with what finishes it, for `lym fabric status` and `lym fabric prune` to print:
++// the hand push of the archive tag of a tip the record carries, then the re-run.
+ // A remote branch delete is leased and a branch origin moved since is kept, never a failure.
+ // A pair already half removed is finished rather than refused, and `ErrPairNotFound` means nothing is left.
+ // `RemoveLocal` is the same removal with no origin step and no waiting.
+@@ -514,12 +520,19 @@
+ // # The one-repository layout
+ //
+ // A one-repository hub keeps its records store's branches and tags on the code store's origin, under `refs/lym/`.
+-// Its only spelling is the constants `RecordsNamespaceRoot`, `RecordsNamespaceHeads` and `RecordsNamespaceTags`.
++// Its only spelling is the constants whose names open with `RecordsNamespace`.
+ // The layout is the records store's origin fetch refspec, read per repository by `originNamespaceAt(dir)`.
+ // A store whose prime key, push refspecs or a branch's merge setting names the namespace is a records store.
+ // Its layout read fails when no fetch refspec maps the namespace or when it has no origin.
+ // The error names the refspecs to restore; read as the identity layout, its board would push to the code branches.
++// Each call that fetches or pushes the records side or the board reads the layout first, so such a store moves nothing.
+ // Every push, listing and fetch of the records side names origin refs through that namespace.
++// Every archive tag the hub pushes lives under that root too, so none lands under origin's plain `refs/tags/`.
++// The records store's tags are under `RecordsNamespaceTags`, which its fetch refspec maps.
++// The code store's are under `RecordsNamespaceCodeTags`, which no refspec maps.
++// Neither store therefore lists or fetches the other's tags and commits.
++// A code store takes that prefix when its prime's records sibling reads the namespace;
++// how either store spells origin's URL plays no part.
+ // A board push whose board branch has no upstream is refused with no failed-push record.
+ // Pushing it unleased could replace another hub's board.
+ // A clone killed after its seed push leaves origin holding the seed.
+@@ -530,6 +543,8 @@
+ //
+ // A one-URL `CloneHub` first runs one `ls-remote`, before anything is created.
+ // It refuses an origin left by the earlier layout.
++// Without `--single-repo` it refuses an origin holding records branches and no board, which a seed that stopped leaves;
++// the way forward is the seed.
+ // With `--single-repo` it also refuses one that already holds a board, the warp binding or the anchor marker.
+ // The one URL is the code repository, cloned as the prime, and the records store is a `git init` of its own.
+ // An origin holding the board is joined; one holding none is seeded, with no commit written to any code branch.
+diff --git a/internal/fabricengine/export_test.go b/internal/fabricengine/export_test.go
+index 707784970..8cd669ceb 100644
+--- a/internal/fabricengine/export_test.go
++++ b/internal/fabricengine/export_test.go
+@@ -635,6 +635,12 @@ func ResetMergeSidesForTest(f *Fabric, rec *Mutations, warpSHA string) error {
+ 	return f.resetMergeSides(rec, warpSHA)
+ }
+ 
++// ForgetOriginNamespaceForTest drops the cached origin layout of the store at dir, as a new process starts without it.
++// A test that rewrites a store's origin config after a verb read it calls it, so the next verb reads the config again.
++func ForgetOriginNamespaceForTest(dir string) {
++	namespaceAnswers.Delete(filepath.Clean(dir))
++}
++
+ // ArchiveWeftTipForTest runs `archiveWeftTip` without a branch push or a sleep seam.
+ // It returns the local tip's tag, the skipped reason and the error.
+ // Tests in the external test package use it, since they cannot read the unexported fields of `weftArchive`.
+@@ -739,6 +745,14 @@ func SetTeardownWaitForTest(t *Topology, wait time.Duration) {
+ 	t.teardownWait = wait
+ }
+ 
++// SetTeardownChildEndsForTest makes t's teardowns leave their remote half as a detached child that ended early does.
++// The job is recorded as a pending teardown and none of its remote steps runs.
++// Passing false restores the in-process run.
++// It sets the seam on the one Topology, so parallel tests inject per instance.
++func SetTeardownChildEndsForTest(t *Topology, ends bool) {
++	t.teardownChildEnds = ends
++}
++
+ // SetCleanupAfterEnumerateForTest makes t's Cleanup call hook once per orphan.
+ // It calls hook right before the orphan's slug's teardown lock is taken.
+ // It sets the hook on the one Topology, so parallel tests inject per instance.
+diff --git a/internal/fabricengine/onerepository_lifecycle_integration_test.go b/internal/fabricengine/onerepository_lifecycle_integration_test.go
+index 7800a800a..0e5357406 100644
+--- a/internal/fabricengine/onerepository_lifecycle_integration_test.go
++++ b/internal/fabricengine/onerepository_lifecycle_integration_test.go
+@@ -26,8 +26,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// namespaceTagsPrefix is the origin ref prefix of the records namespace's tags.
+-const namespaceTagsPrefix = fabricengine.RecordsNamespaceRoot + fabricengine.RecordsNamespaceTags
++// The origin ref prefixes of a one-repository hub's tags, below the records namespace root.
++const (
++	// namespaceTagsPrefix holds the records store's tags.
++	namespaceTagsPrefix = fabricengine.RecordsNamespaceRoot + fabricengine.RecordsNamespaceTags
++	// namespaceCodeTagsPrefix holds the code store's archive tags.
++	namespaceCodeTagsPrefix = fabricengine.RecordsNamespaceRoot + fabricengine.RecordsNamespaceCodeTags
++)
+ 
+ // oneRepoPairFabric opens the fabric handle on the pair slug of h.
+ func oneRepoPairFabric(t *testing.T, h *hubforge.Hub, slug string) *fabricengine.Fabric {
+diff --git a/internal/fabricengine/ownerarchive.go b/internal/fabricengine/ownerarchive.go
+index aeed34a15..4314f5267 100644
+--- a/internal/fabricengine/ownerarchive.go
++++ b/internal/fabricengine/ownerarchive.go
+@@ -314,7 +314,7 @@ func readSideOwnerArchives(side, dir string, keep func(slug string) bool, branch
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		ns, err := originNamespaceAt(dir)
++		ns, err := archiveTagNamespaceAt(dir)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/fabricengine/ownerarchive_integration_test.go b/internal/fabricengine/ownerarchive_integration_test.go
+index 96a6e9f13..71a1d80f1 100644
+--- a/internal/fabricengine/ownerarchive_integration_test.go
++++ b/internal/fabricengine/ownerarchive_integration_test.go
+@@ -14,6 +14,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -250,6 +251,58 @@ func TestReadOwnerArchives(t *testing.T) {
+ 	}
+ }
+ 
++// TestReadOwnerArchives_OneRepositoryHubKeepsEachStoresTagsApart covers a hub whose two stores share one origin.
++// Each side's owner archive tag is listed once, under its own side.
++// Neither store is handed the other's tag or commit, by the read or by a fetch of the records store's own refspecs.
++func TestReadOwnerArchives_OneRepositoryHubKeepsEachStoresTagsApart(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	l := h.Location
++	codeDir, recordsDir := l.WorktreePath(), fabricengine.RecordsWorktree(l)
++	// Push the prime's records tip first, so the archive tags only the commits made here.
++	if _, err := hubforge.OpenFabric(t, h).PushWeft(fabricengine.SyncOptions{}); err != nil {
++		t.Fatalf("push the prime's records: %v", err)
++	}
++	codeTip := gitkit.CommitFile(t, codeDir, "owner-archive.txt", "local", "local code commit")
++	recordsTip := gitkit.CommitFile(t, recordsDir, "owner-archive.txt", "local", "local records commit")
++	pairs := []fabricengine.OwnerArchivePair{{Slug: "root", Pair: l}}
++	if tags, err := fabricengine.ArchiveOwnerTips(l.HubPath, pairs); err != nil || len(tags) != 2 {
++		t.Fatalf("ArchiveOwnerTips() = %v, %v; want two tags", tags, err)
++	}
++	codeTag := fabricengine.OwnerArchiveTagName("root", codeTip)
++	recordsTag := fabricengine.OwnerArchiveTagName("root", recordsTip)
++	// The new owner holds no local tag, so the read must fetch each.
++	gitkit.Git(t, codeDir, "tag", "-d", codeTag)
++	gitkit.Git(t, recordsDir, "tag", "-d", recordsTag)
++
++	got, err := h.Topology.ReadOwnerArchives(l, "root", func(string) bool { return true })
++
++	if err != nil {
++		t.Fatalf("ReadOwnerArchives() error = %v", err)
++	}
++	want := []fabricengine.OwnerArchive{
++		{Slug: "root", Side: fabricengine.OwnerArchiveSideCode, Tag: codeTag, Commit: codeTip, Branch: gitkit.CurrentBranch(t, codeDir), Dir: codeDir},
++		{Slug: "root", Side: fabricengine.OwnerArchiveSideRecords, Tag: recordsTag, Commit: recordsTip, Branch: gitkit.CurrentBranch(t, recordsDir), Dir: recordsDir},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("ReadOwnerArchives() = %+v; want %+v", got, want)
++	}
++	gitkit.Git(t, recordsDir, "fetch", "origin")
++	for _, store := range []struct{ name, dir, ownTag, otherCommit string }{
++		{"code", codeDir, codeTag, recordsTip},
++		{"records", recordsDir, recordsTag, codeTip},
++	} {
++		if local := gitkit.Git(t, store.dir, "tag", "--list", fabricengine.OwnerArchiveTagPrefix+"*"); local != store.ownTag {
++			t.Errorf("owner archive tags of the %s store = %q; want its own %s alone", store.name, local, store.ownTag)
++		}
++		if gitrepo.New(store.dir).SHAExists(store.otherCommit) {
++			t.Errorf("the %s store holds the other store's commit %s; want it never fetched", store.name, store.otherCommit)
++		}
++	}
++}
++
+ func TestReadOwnerArchives_ListsEveryPairSortedBySlugSideAndTag(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/pendingteardown.go b/internal/fabricengine/pendingteardown.go
+new file mode 100644
+index 000000000..35f495cf8
+--- /dev/null
++++ b/internal/fabricengine/pendingteardown.go
+@@ -0,0 +1,171 @@
++// pendingteardown.go holds the pending-teardown record, which names a remote teardown that did not finish.
++// The command writes the record before it hands a remote teardown job to its detached child.
++// The child removes it once the job has run with no failed step, and keeps it with the way forward of a step that failed.
++// PendingTeardowns lists the records no running teardown holds, for `lym fabric status` and `lym fabric prune`.
++
++package fabricengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/state"
++)
++
++// pendingTeardownSuffix ends the file name of a pending-teardown record, which sits beside the slug's teardown lock.
++const pendingTeardownSuffix = ".pending.json"
++
++// PendingTeardown is the record of a remote teardown handed to a detached child.
++// The command writes it before the handover, and the child removes it once the job has run with no failed step.
++// A record whose slug's teardown lock no process holds therefore names a teardown that did not finish:
++// its child ended before the job did, killed outright for instance, or a remote step of the job failed.
++// Either leaves the pair's branches on origin.
++type PendingTeardown struct {
++	Slug     string    `json:"slug"`
++	Kind     string    `json:"kind"`
++	HandedAt time.Time `json:"handed_at"`
++	// Worktree is the code worktree the teardown ran from.
++	Worktree string `json:"worktree,omitempty"`
++	// WeftTip is the local records tip the teardown tagged before it deleted the branch, empty when it found none.
++	WeftTip string `json:"weft_tip,omitempty"`
++	// TaskTip is the local task tip a discard tagged before it deleted the branch, empty when it found none.
++	TaskTip string `json:"task_tip,omitempty"`
++	// WayForward is what finishes the teardown.
++	// A record on disk holds one only once a remote step failed; a listed record always holds one.
++	WayForward string `json:"way_forward,omitempty"`
++}
++
++// pendingTeardownPath returns the pending-teardown record of slug in the hub at hubPath.
++func pendingTeardownPath(hubPath, slug string) string {
++	return filepath.Join(filepath.Dir(TeardownLockPath(hubPath, slug)), slug+pendingTeardownSuffix)
++}
++
++// pendingTeardownOf returns the record of job, handed over at handedAt, with the tips job tagged locally.
++func pendingTeardownOf(job remoteTeardownJob, handedAt time.Time) PendingTeardown {
++	return PendingTeardown{Slug: job.Slug, Kind: job.Kind, HandedAt: handedAt.UTC(), Worktree: job.Worktree, WeftTip: job.WeftTip, TaskTip: job.TaskTip}
++}
++
++// writePendingTeardown records job, handed to a detached child at handedAt, as pending.
++func writePendingTeardown(hubPath string, job remoteTeardownJob, handedAt time.Time) error {
++	path := pendingTeardownPath(hubPath, job.Slug)
++	return state.WriteJSON(path, path+".lock", pendingTeardownOf(job, handedAt))
++}
++
++// keepFailedTeardown keeps the pending-teardown record of job and writes the ways forward of its failed steps into it.
++// The listing then names what each failed step needs, in step order and each way forward once.
++// A job with no record gets one.
++// A failed write is logged; a record left on disk then names the way forward its own fields give.
++func keepFailedTeardown(hubPath string, job remoteTeardownJob, failures []remoteStepFailure) {
++	var steps []string
++	for _, failure := range failures {
++		if !slices.Contains(steps, failure.wayForward) {
++			steps = append(steps, failure.wayForward)
++		}
++	}
++	path := pendingTeardownPath(hubPath, job.Slug)
++	err := state.UpdateJSON(path, path+".lock", func(record PendingTeardown, found bool) (PendingTeardown, error) {
++		if !found {
++			record = pendingTeardownOf(job, time.Now())
++		}
++		record.WayForward = strings.Join(steps, "; and ")
++		return record, nil
++	})
++	if err != nil {
++		logger.Warn("fabricengine: a failed remote step was not written to the pending teardown record", "slug", job.Slug, "error", err)
++	}
++}
++
++// clearPendingTeardown removes the pending-teardown record of slug, and does nothing when none exists.
++// A failed removal is logged: the record then names a re-run that finds nothing left to do.
++func clearPendingTeardown(hubPath, slug string) {
++	if err := os.Remove(pendingTeardownPath(hubPath, slug)); err != nil && !errors.Is(err, os.ErrNotExist) {
++		logger.Warn("fabricengine: pending teardown record not removed", "slug", slug, "error", err)
++	}
++}
++
++// PendingTeardowns lists the hub's remote teardowns that did not finish, in slug order:
++// those whose detached child ended before its job did, and those whose remote step failed.
++// A record whose slug's teardown lock a process holds exclusive is a teardown still running and is not listed.
++// The lock is probed shared, so the probe holds back no push of the pair.
++// Each listed record carries what finishes its teardown:
++// the way forward of its failed step, or else the re-run, behind the hand push of the archive tag of a tip it carries.
++// A hub with no record lists none, as an empty slice.
++func PendingTeardowns(hubPath string) ([]PendingTeardown, error) {
++	dir := filepath.Join(HubScratchDir(hubPath), teardownLockDirName)
++	entries, err := os.ReadDir(dir)
++	if errors.Is(err, os.ErrNotExist) {
++		return []PendingTeardown{}, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("list the pending teardowns: %w", err)
++	}
++	pending := []PendingTeardown{}
++	for _, entry := range entries {
++		if entry.IsDir() || !strings.HasSuffix(entry.Name(), pendingTeardownSuffix) {
++			continue
++		}
++		path := filepath.Join(dir, entry.Name())
++		record, found, err := state.ReadJSON[PendingTeardown](path, path+".lock")
++		if err != nil {
++			return nil, fmt.Errorf("read the pending teardown %s: %w", entry.Name(), err)
++		}
++		if !found {
++			continue
++		}
++		held, acquired, err := lock.TryAcquireReadLock(TeardownLockPath(hubPath, record.Slug))
++		if err != nil {
++			return nil, fmt.Errorf("probe the teardown lock of %q: %w", record.Slug, err)
++		}
++		if !acquired {
++			continue
++		}
++		_ = held.Release()
++		if record.WayForward == "" {
++			record.WayForward = pendingTeardownWayForward(record)
++		}
++		pending = append(pending, record)
++	}
++	return pending, nil
++}
++
++// pendingTeardownWayForward returns what finishes the remote teardown record names.
++// It serves a record that holds no way forward of a failed step.
++// A tip the record carries may be tagged on this machine alone,
++// so the hand push of its archive tag comes before the re-run.
++// A records tip whose records repository cannot be found from the record's worktree names the re-run alone.
++func pendingTeardownWayForward(record PendingTeardown) string {
++	job := remoteTeardownJob{Kind: record.Kind, Slug: record.Slug, Worktree: record.Worktree, WeftTip: record.WeftTip, TaskTip: record.TaskTip}
++	switch record.Kind {
++	case remoteTeardownRemove, remoteTeardownCleanup:
++		weftRoot := ""
++		if record.WeftTip != "" {
++			weftRoot = recordsRootOf(record.Worktree)
++		}
++		return recordsArchiveWayForward(job, weftRoot)
++	case remoteTeardownDiscard:
++		return discardWayForward(job)
++	default:
++		return unknownKindWayForward(record.Slug)
++	}
++}
++
++// recordsRootOf returns the root of the records repository paired with the code worktree, empty when it cannot be found.
++func recordsRootOf(worktree string) string {
++	l, err := lymcwd.ResolveWorktree(worktree)
++	if err != nil {
++		return ""
++	}
++	root, err := RecordsRepoRoot(l)
++	if err != nil {
++		return ""
++	}
++	return root
++}
+diff --git a/internal/fabricengine/pendingteardown_integration_test.go b/internal/fabricengine/pendingteardown_integration_test.go
+new file mode 100644
+index 000000000..61dda4ccf
+--- /dev/null
++++ b/internal/fabricengine/pendingteardown_integration_test.go
+@@ -0,0 +1,97 @@
++// pendingteardown_integration_test.go covers what the teardown child leaves of its pending-teardown record.
++// It runs the child's body against a real git worktree.
++
++package fabricengine
++
++import (
++	"encoding/json"
++	"errors"
++	"io"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRunTeardownChild_SettlesThePendingRecordOnceItEnds covers what the child does with the record its parent wrote.
++// A child that ends with no remote steps, or whose job ran, removes it, so status and prune name nothing.
++// A child whose remote step failed keeps it and writes the failed step's way forward into it.
++func TestRunTeardownChild_SettlesThePendingRecordOnceItEnds(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	const slug = "pair"
++	taskTip := strings.Repeat("b", 40)
++	taskTag := ArchiveTagName(slug, taskTip)
++	encode := func(t *testing.T, job remoteTeardownJob) string {
++		t.Helper()
++		raw, err := json.Marshal(job)
++		if err != nil {
++			t.Fatalf("encode the job: %v", err)
++		}
++		return string(raw)
++	}
++	tests := []struct {
++		name string
++		// unreachableOrigin gives the worktree an origin that does not answer, so the job's first read of it fails.
++		unreachableOrigin bool
++		// input returns the job the parent hands the child, given the worktree.
++		input func(t *testing.T, worktree string) string
++		// wantWayForward returns the way forward of the record the child keeps; nil means the child removes the record.
++		wantWayForward func(worktree string) string
++	}{
++		{name: "NoRemoteSteps", input: func(t *testing.T, worktree string) string { return "" }},
++		{name: "AJobThatRan", input: func(t *testing.T, worktree string) string {
++			return encode(t, remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug, Worktree: worktree, WarpBranch: slug})
++		}},
++		{
++			name:              "AJobWhoseRemoteStepFailedKeepsTheRecordWithItsWayForward",
++			unreachableOrigin: true,
++			input: func(t *testing.T, worktree string) string {
++				return encode(t, remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug, Worktree: worktree, WarpBranch: slug, TaskTip: taskTip})
++			},
++			wantWayForward: func(worktree string) string {
++				return "push the archive tag with `git -C " + worktree + " push origin refs/tags/" + taskTag + ":refs/tags/" + taskTag +
++					"`, then run the command that discarded the task branch again"
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			worktree := filepath.Join(hub, "code")
++			if err := os.MkdirAll(worktree, 0o755); err != nil {
++				t.Fatalf("mkdir %s: %v", worktree, err)
++			}
++			gitkit.Git(t, worktree, "init", "-b", "main")
++			if tt.unreachableOrigin {
++				gitkit.Git(t, worktree, "remote", "add", "origin", filepath.Join(hub, "no-such-origin"))
++			}
++			if err := writePendingTeardown(hub, remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug}, time.Now()); err != nil {
++				t.Fatalf("writePendingTeardown() error = %v; want nil", err)
++			}
++
++			if err := RunTeardownChild(hub, slug, false, time.Second, strings.NewReader(tt.input(t, worktree)), io.Discard); err != nil {
++				t.Fatalf("RunTeardownChild() error = %v; want nil", err)
++			}
++
++			if tt.wantWayForward == nil {
++				if _, err := os.Stat(pendingTeardownPath(hub, slug)); !errors.Is(err, os.ErrNotExist) {
++					t.Errorf("pending teardown record stat error = %v; want the record removed", err)
++				}
++				return
++			}
++			pending, err := PendingTeardowns(hub)
++			if err != nil {
++				t.Fatalf("PendingTeardowns() error = %v; want nil", err)
++			}
++			if want := tt.wantWayForward(worktree); len(pending) != 1 || pending[0].Slug != slug || pending[0].WayForward != want {
++				t.Errorf("PendingTeardowns() = %+v; want one record of %s with the way forward %q", pending, slug, want)
++			}
++		})
++	}
++}
+diff --git a/internal/fabricengine/pendingteardown_test.go b/internal/fabricengine/pendingteardown_test.go
+new file mode 100644
+index 000000000..9bd3a785a
+--- /dev/null
++++ b/internal/fabricengine/pendingteardown_test.go
+@@ -0,0 +1,71 @@
++// pendingteardown_test.go covers the list of pending-teardown records against a hub directory with no git.
++
++package fabricengine
++
++import (
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestPendingTeardowns covers the list of remote teardowns whose child ended before its job did.
++// A record whose teardown lock no process holds is listed with the re-run that finishes it.
++// A record that carries the task tip a discard tagged names the hand push of that tip's archive tag first.
++// A record whose lock a process holds exclusive is a teardown still running and is not listed.
++func TestPendingTeardowns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("AHubWithNoRecordListsNone", func(t *testing.T) {
++		t.Parallel()
++		got, err := PendingTeardowns(t.TempDir())
++		if err != nil || got == nil || len(got) != 0 {
++			t.Errorf("PendingTeardowns() = (%v, %v); want an empty, non-nil list", got, err)
++		}
++	})
++
++	t.Run("ARecordWithNoLockHolderIsListedWithItsRerun", func(t *testing.T) {
++		t.Parallel()
++		hub := t.TempDir()
++		handedAt := time.Date(2026, 11, 22, 10, 0, 0, 0, time.UTC)
++		taskTip := strings.Repeat("b", 40)
++		taskTag := ArchiveTagName("tipped", taskTip)
++		for _, job := range []remoteTeardownJob{
++			{Kind: remoteTeardownRemove, Slug: "ended"},
++			{Kind: remoteTeardownDiscard, Slug: "discarded"},
++			{Kind: remoteTeardownDiscard, Slug: "tipped", Worktree: "/code", TaskTip: taskTip},
++			{Kind: remoteTeardownRemove, Slug: "running"},
++		} {
++			if err := writePendingTeardown(hub, job, handedAt); err != nil {
++				t.Fatalf("writePendingTeardown(%s) error = %v; want nil", job.Slug, err)
++			}
++		}
++		held, acquired, err := lock.TryAcquireWriteLock(TeardownLockPath(hub, "running"))
++		if err != nil || !acquired {
++			t.Fatalf("TryAcquireWriteLock() = (%v, %v); want (true, nil)", acquired, err)
++		}
++		t.Cleanup(func() { _ = held.Release() })
++
++		got, err := PendingTeardowns(hub)
++
++		if err != nil {
++			t.Fatalf("PendingTeardowns() error = %v; want nil", err)
++		}
++		want := []PendingTeardown{
++			{Slug: "discarded", Kind: remoteTeardownDiscard, HandedAt: handedAt, WayForward: "run the command that discarded the task branch again"},
++			{Slug: "ended", Kind: remoteTeardownRemove, HandedAt: handedAt, WayForward: "run `lym fabric remove ended --remote` again"},
++			{Slug: "tipped", Kind: remoteTeardownDiscard, HandedAt: handedAt, WayForward: "push the archive tag with `git -C /code push origin refs/tags/" + taskTag + ":refs/tags/" + taskTag +
++				"`, then run the command that discarded the task branch again"},
++		}
++		same := func(a, b PendingTeardown) bool {
++			return a.Slug == b.Slug && a.Kind == b.Kind && a.HandedAt.Equal(b.HandedAt) && a.WayForward == b.WayForward
++		}
++		if !slices.EqualFunc(got, want, same) {
++			t.Errorf("PendingTeardowns() = %+v; want %+v", got, want)
++		}
++	})
++}
+diff --git a/internal/fabricengine/pull.go b/internal/fabricengine/pull.go
+index 2dd9dbd1d..dad91eac0 100644
+--- a/internal/fabricengine/pull.go
++++ b/internal/fabricengine/pull.go
+@@ -267,6 +267,7 @@ func (f *Fabric) warpUpstreamSHA() (string, error) {
+ // A weft infrastructure failure, neither a stop nor an unreachable origin, returns at once.
+ // It does so before the warp arm runs.
+ // Such a failure covers an unreadable hub location, a failed weft write lock, or a replay that failed otherwise.
++// It also covers a records store whose origin layout cannot be read, whose error names the config that restores it.
+ // Warp is not reset against the weft's correspondence, which such a failure leaves unknown.
+ // A warp-side failure reports the accumulated result rather than unwinding the weft pull.
+ // It is joined with a weft stop when both happened.
+@@ -322,7 +323,12 @@ func (f *Fabric) Pull(opts SyncOptions) (res PullResult, err error) {
+ // With an upstream, a standing move record and an empty own anchor marker are weft stops.
+ // So is an upstream carrying another anchor marker.
+ // They are raised before the pull moves anything.
++// A records store whose origin layout cannot be read is a failure, read first:
++// with no fetch refspec mapping origin's namespace, its upstream reads as missing and nothing would be pulled.
+ func (f *Fabric) pullWeftArm(rec *Mutations, result *PullResult, opts SyncOptions) (*WeftStopError, error) {
++	if _, err := originNamespaceAt(f.weftPath); err != nil {
++		return nil, err
++	}
+ 	weftHasUpstream, err := f.weftHasUpstream()
+ 	if err != nil {
+ 		logger.Warn("fabricengine: weft pull: resolve upstream failed, continuing to warp", "weft", f.weftPath, "err", err)
+diff --git a/internal/fabricengine/pull_integration_test.go b/internal/fabricengine/pull_integration_test.go
+index 1fa55f61b..e3a991df9 100644
+--- a/internal/fabricengine/pull_integration_test.go
++++ b/internal/fabricengine/pull_integration_test.go
+@@ -685,6 +685,39 @@ func TestPull_WeftUpstreamUnreadableIsAnError(t *testing.T) {
+ 	}
+ }
+ 
++// TestPull_RecordsStoreWithNoNamespacedFetchRefspecFails covers a one-repository pair.
++// Its records store lost its fetch refspecs.
++// Origin's records branch is ahead, yet the store maps nothing from origin's namespace.
++// The pull fails naming the commands that restore the refspecs.
++// It reports no weft pull and leaves the records branch where it was.
++func TestPull_RecordsStoreWithNoNamespacedFetchRefspecFails(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	const slug = "ns-pull-norefspec"
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	recordsBranch := fabricengine.RecordsBranchName(hubforge.AddPair(t, h, slug).Branch)
++	sibling := h.PairRecordsSibling(slug)
++	before := gitkit.RevParse(t, sibling, "HEAD")
++	gitkit.CommitFile(t, sibling, "ahead.txt", "ahead\n", "origin's next records commit")
++	oneRepoPushNamespaced(t, sibling, recordsBranch)
++	gitkit.Git(t, sibling, "reset", "--hard", before)
++	gitkit.Git(t, sibling, "config", "--unset-all", "remote.origin.fetch")
++	fabricengine.ForgetOriginNamespaceForTest(sibling)
++
++	result, err := oneRepoPairFabric(t, h, slug).Pull(fabricengine.SyncOptions{})
++
++	want := "`git -C " + sibling + " config --replace-all remote.origin.fetch"
++	if err == nil || !strings.Contains(err.Error(), want) {
++		t.Fatalf("Pull() = %+v, %v; want an error naming %q", result, err, want)
++	}
++	if result.WeftPulled {
++		t.Errorf("Pull() WeftPulled = true; want false beside the error")
++	}
++	if got := gitkit.RevParse(t, sibling, "HEAD"); got != before {
++		t.Errorf("records branch = %s after the pull; want it left at %s", got, before)
++	}
++}
++
+ // TestPull_ReflogJudgesUnpushedAndRewinds covers the pull decisions that rest on the reflog.
+ // A branch fetched but never pushed from this clone is not unpushed and takes the anchor walk.
+ // A task branch origin rewound is refused with ErrWarpRewound before and after its tracking ref was fetched.
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 98320e47f..676eb329d 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -366,13 +366,49 @@ func TestPushFailureClasses(t *testing.T) {
+ 		gitkit.Git(t, other, "checkout", "-B", branch)
+ 		gitkit.CommitFile(t, other, "other.txt", "other\n", "other machine")
+ 		gitkit.Git(t, other, "push", "origin", branch)
+-		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
++		local := gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 
+ 		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(countingBackoff(new(int), nil)), fabricengine.MachineNames{}); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 		}
+ 
+-		requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabricengine.PushFailureNotFastForward)
++		record := requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabricengine.PushFailureNotFastForward)
++		if !slices.Contains(record.Commits, local) {
++			t.Errorf("record commits = %v; want the local commit %s the reset in its way forward would drop", record.Commits, local)
++		}
++		if len(fake.lines) != 1 {
++			t.Errorf("mails = %q; want one", fake.lines)
++		}
++	})
++
++	t.Run("APairPushFromARecordsStoreWithNoNamespacedFetchRefspecRecordsTheRestoreCommands", func(t *testing.T) {
++		const slug = "ns-norefspec"
++		h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++		fake := &fakePushNotifier{hub: h.Location.HubPath, posted: true}
++		hubforge.AddPair(t, h, slug)
++		sibling := h.PairRecordsSibling(slug)
++		gitkit.CommitFile(t, sibling, "local.txt", "local\n", "local")
++		gitkit.Git(t, sibling, "config", "--unset-all", "remote.origin.fetch")
++		fabricengine.ForgetOriginNamespaceForTest(sibling)
++		location, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++		if err != nil {
++			t.Fatalf("ResolveWorktree: %v", err)
++		}
++
++		_, err = fabricengine.PushPairAnchored(location, fake.options(nil), fabricengine.PairPush{LockWait: fabricengine.LockWaitUnbounded})
++
++		var failed *fabricengine.PushFailedError
++		if !errors.As(err, &failed) || failed.Record.Class != fabricengine.PushFailureOther {
++			t.Fatalf("PushPairAnchored() error = %v; want an other-class *PushFailedError", err)
++		}
++		want := "`git -C " + sibling + " config --replace-all remote.origin.fetch"
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("PushPairAnchored() error = %q; want it to name %q", err, want)
++		}
++		record := requireOneFailedPush(t, h.Location.HubPath, "records", fabricengine.PushFailureOther)
++		if !strings.Contains(record.Error, want) {
++			t.Errorf("record error = %q; want it to name %q", record.Error, want)
++		}
+ 		if len(fake.lines) != 1 {
+ 			t.Errorf("mails = %q; want one", fake.lines)
+ 		}
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index 12c738ba5..30e8356f9 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -117,6 +117,8 @@ type pushJob struct {
+ // otherwise it records as other.
+ // Every other failure is recorded and returned as a *PushFailedError holding the push's own error;
+ // under the "other" class when it matches none.
++// A code or records side whose origin layout cannot be read is recorded under the other class before origin is read.
++// The layout's error names the config that restores it.
+ // A push that lands removes the record of its side and branch.
+ func pushClassified(rec *Mutations, hubPath, side, path string, opts SyncOptions, retryRecords func() (deferred bool, err error)) error {
+ 	job := &pushJob{rec: rec, hubPath: hubPath, side: side, path: path, opts: opts, repo: gitrepo.New(path)}
+@@ -135,6 +137,9 @@ func pushClassified(rec *Mutations, hubPath, side, path string, opts SyncOptions
+ 	}
+ 
+ 	if side != failedPushSideBolt {
++		if _, err := originNamespaceAt(path); err != nil {
++			return job.fail(PushFailureOther, err, nil, nil, "")
++		}
+ 		proceed, err := job.checkOrigin()
+ 		if !proceed {
+ 			return err
+@@ -569,9 +574,13 @@ func (j *pushJob) failRejection(rejected error) error {
+ 	}
+ }
+ 
+-// unpushedCommits returns the local commits the upstream, as last fetched, lacks, newest first.
++// unpushedCommits returns the local commits origin's tip, as last fetched, lacks, newest first.
++// Origin's tip is the branch's upstream, or origin's branch of the same name for a branch never given one.
+ func (j *pushJob) unpushedCommits() []string {
+ 	upstream, err := j.repo.UpstreamSHA()
++	if errors.Is(err, gitrepo.ErrNoUpstream) {
++		upstream, err = j.repo.ResolveSHA("refs/remotes/" + originRemoteName + "/" + j.branch)
++	}
+ 	if err != nil {
+ 		return nil
+ 	}
+diff --git a/internal/fabricengine/recordslayout.go b/internal/fabricengine/recordslayout.go
+index b1ee46cb9..b869156b6 100644
+--- a/internal/fabricengine/recordslayout.go
++++ b/internal/fabricengine/recordslayout.go
+@@ -26,6 +26,9 @@ const (
+ 	RecordsNamespaceHeads = "heads/"
+ 	// RecordsNamespaceTags is the part of the namespace under RecordsNamespaceRoot that holds tags.
+ 	RecordsNamespaceTags = "tags/"
++	// RecordsNamespaceCodeTags is the part under RecordsNamespaceRoot that holds the code store's archive tags.
++	// No fetch refspec of either store maps it, so the records store never lists or fetches a code commit through it.
++	RecordsNamespaceCodeTags = "code-tags/"
+ 	// OneRepositoryBoardBranch is the fixed branch of the board in a one-repository hub.
+ 	// It is a branch lym owns inside its records namespace, never read from git.
+ 	OneRepositoryBoardBranch = "main"
+@@ -203,6 +206,8 @@ func readOriginLayout(cwd, url string) (originLayout, error) {
+ 
+ // refuseOneURLClone refuses a one-URL clone that origin's layout rules out, each refusal naming its way forward.
+ // A board branch of the earlier one-repository layout is refused with or without opts.SingleRepo.
++// Without opts.SingleRepo it refuses an origin that holds records branches and no board:
++// a seed that stopped before its board landed leaves that, and the way forward is the seed.
+ // With opts.SingleRepo it also refuses an origin that already holds a board.
+ // It refuses one whose default branch is a records repository.
+ // It refuses one whose default branch tracks the earlier layout's directories.
+@@ -215,6 +220,11 @@ func refuseOneURLClone(cwd string, layout originLayout, opts CloneOptions) error
+ 		return legacyRefusal
+ 	}
+ 	if !opts.SingleRepo {
++		if len(layout.heads) > 0 && layout.boardTip == "" {
++			return fmt.Errorf("%s holds records under %s and no board, so a one-repository seed stopped before its board landed; "+
++				"way forward: run `lym fabric clone --single-repo --shortname <shortname> %s` to seed it",
++				opts.WeftURL, RecordsNamespaceRoot, opts.WeftURL)
++		}
+ 		return nil
+ 	}
+ 	if layout.boardTip != "" {
+diff --git a/internal/fabricengine/remoteleftover.go b/internal/fabricengine/remoteleftover.go
+index ffb30c5ff..83e1ce000 100644
+--- a/internal/fabricengine/remoteleftover.go
++++ b/internal/fabricengine/remoteleftover.go
+@@ -271,10 +271,13 @@ func remoteArchiveTags(weftRoot, slug string) (map[string]string, error) {
+ 	return tags, nil
+ }
+ 
+-// remoteTagsUnder maps each tag on dir's origin whose name starts with namePrefix to its commit.
++// remoteTagsUnder maps each archive tag on dir's origin whose name starts with namePrefix to its commit.
++// It reads the store's own archive prefix on origin:
++// a one-repository hub gives each of its stores one below the records namespace root;
++// any other repository reads refs/tags/.
+ // It prefers a peeled ^{} line, so an annotated tag maps to the commit it names.
+ func remoteTagsUnder(dir, namePrefix string) (map[string]string, error) {
+-	ns, err := originNamespaceAt(dir)
++	ns, err := archiveTagNamespaceAt(dir)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/fabricengine/remoteteardown.go b/internal/fabricengine/remoteteardown.go
+index fc41c2267..d2a0857b3 100644
+--- a/internal/fabricengine/remoteteardown.go
++++ b/internal/fabricengine/remoteteardown.go
+@@ -114,11 +114,16 @@ type remoteOutcome struct {
+ 
+ // runRemoteTeardown runs job's remote steps from the location l of job.Worktree, recording on rec.
+ // The sleep function is called between archive-tag push attempts.
++// Every job first pushes the slug's archive tags that an earlier teardown made locally and origin lacks.
++// A failed push there stops the job before any delete on origin.
+ // A removal and a cleanup archive the weft tips and then delete the weft branch on origin when asked.
+ // A removal pushes the weft tip first and then deletes the landed task branch on origin when asked.
+ // A discard archives the task branch's tips and deletes it on origin.
+ func runRemoteTeardown(rec *Mutations, l *lymcwd.Location, job remoteTeardownJob, sleep func(time.Duration)) remoteOutcome {
+ 	out := remoteOutcome{ran: true, weft: CleanupBranchEntry{Branch: job.WeftBranch}}
++	if out.err = pushOwedArchiveTags(rec, l, job, sleep); out.err != nil {
++		return out
++	}
+ 	if job.Kind == remoteTeardownDiscard {
+ 		out.discard, out.err = discardTaskBranchOnOrigin(rec, l, job, sleep)
+ 		return out
+@@ -147,6 +152,30 @@ func runRemoteTeardown(rec *Mutations, l *lymcwd.Location, job remoteTeardownJob
+ 	return out
+ }
+ 
++// pushOwedArchiveTags pushes the archive tags of job's slug that an earlier teardown made locally and origin lacks.
++// A teardown child that ended before its tag push leaves such a tag,
++// and the re-run would otherwise delete a branch on origin whose tip this machine's tag alone holds.
++// A discard reads the code store.
++// A removal and a cleanup read the records store, and a removal that deletes the task branch on origin reads both.
++// The tag of the tip job itself carries is left to the job's own archive step.
++// Every returned error wraps ErrArchiveFailed.
++func pushOwedArchiveTags(rec *Mutations, l *lymcwd.Location, job remoteTeardownJob, sleep func(time.Duration)) error {
++	if job.Kind == remoteTeardownDiscard {
++		return pushLocalArchiveTags(rec, l.WorktreePath(), job.Slug, job.TaskTip, sleep)
++	}
++	weftRoot, err := RecordsRepoRoot(l)
++	if err != nil {
++		return fmt.Errorf("%w: resolve weft repo: %w", ErrArchiveFailed, err)
++	}
++	if err := pushLocalArchiveTags(rec, weftRoot, job.Slug, job.WeftTip, sleep); err != nil {
++		return err
++	}
++	if !job.DeleteTaskOnOrigin {
++		return nil
++	}
++	return pushLocalArchiveTags(rec, l.WorktreePath(), job.Slug, "", sleep)
++}
++
+ // remoteStepFailure is one failed remote step of a teardown job and the way forward that settles it.
+ type remoteStepFailure struct {
+ 	operation  string
+@@ -173,6 +202,46 @@ func rerunWayForward(job remoteTeardownJob) string {
+ 	return fmt.Sprintf("run `lym fabric remove %s --remote` again", job.Slug)
+ }
+ 
++// withArchiveTagPush returns wayForward preceded by the hand push of slug's archive tag at tip from the store at dir.
++// The push spells its destination out: a push with no destination bypasses a records store's push refspec,
++// and a one-repository hub keeps the code store's archive tags under their own prefix.
++// A store whose archive prefix cannot be read gets wayForward alone.
++func withArchiveTagPush(dir, slug, tip, wayForward string) string {
++	ns, err := archiveTagNamespaceAt(dir)
++	if err != nil {
++		return wayForward
++	}
++	tag := ArchiveTagName(slug, tip)
++	return fmt.Sprintf("push the archive tag with `git -C %s push %s refs/tags/%s:%s`, then %s", dir, originRemoteName, tag, ns.Tag(tag), wayForward)
++}
++
++// discardWayForward returns the way forward of a discard whose remote half did not finish.
++// When job carries the local task tip, the hand push of that tip's archive tag comes first, then the discard's re-run.
++func discardWayForward(job remoteTeardownJob) string {
++	if job.TaskTip == "" {
++		return discardRerunWayForward
++	}
++	return withArchiveTagPush(job.Worktree, job.Slug, job.TaskTip, discardRerunWayForward)
++}
++
++// recordsArchiveWayForward returns the way forward of a removal or cleanup whose records archive did not finish.
++// When job carries the local records tip, the hand push of that tip's archive tag comes first, then the re-run.
++// weftRoot is the records repository's root; when it is empty, no hand push is named.
++func recordsArchiveWayForward(job remoteTeardownJob, weftRoot string) string {
++	wayForward := rerunWayForward(job)
++	if job.WeftTip == "" {
++		return wayForward
++	}
++	if job.Kind == remoteTeardownRemove {
++		// A removal whose branches never reached origin leaves its re-run nothing to find.
++		wayForward = "when origin still holds a branch of the pair, " + wayForward
++	}
++	if weftRoot == "" {
++		return wayForward
++	}
++	return withArchiveTagPush(weftRoot, job.Slug, job.WeftTip, wayForward)
++}
++
+ // failedRemoteSteps returns every failed remote step of job's outcome, in the order the steps ran.
+ // A step that stopped the job leaves the later steps unrun, so their outcome fields are empty.
+ // weftRoot is the records repository's root, empty when it could not be found.
+@@ -182,29 +251,11 @@ func failedRemoteSteps(job remoteTeardownJob, out remoteOutcome, weftRoot string
+ 	var failures []remoteStepFailure
+ 	switch {
+ 	case out.err != nil && job.Kind == remoteTeardownDiscard:
+-		wayForward := discardRerunWayForward
+-		if job.TaskTip != "" {
+-			wayForward = fmt.Sprintf("push the archive tag with `git -C %s push %s refs/tags/%s`, then %s", job.Worktree, originRemoteName, ArchiveTagName(job.Slug, job.TaskTip), wayForward)
+-		}
+-		failures = append(failures, remoteStepFailure{"the archive and origin delete of its task branch", out.err.Error(), wayForward})
++		failures = append(failures, remoteStepFailure{"the archive and origin delete of its task branch", out.err.Error(), discardWayForward(job)})
+ 	case out.weftRootErr != nil:
+ 		failures = append(failures, remoteStepFailure{"the lookup of its records repository", out.weftRootErr.Error(), rerunWayForward(job)})
+ 	case out.err != nil:
+-		wayForward := rerunWayForward(job)
+-		if job.WeftTip != "" {
+-			if job.Kind == remoteTeardownRemove {
+-				// A removal whose branches never reached origin leaves its re-run nothing to find.
+-				wayForward = "when origin still holds a branch of the pair, " + wayForward
+-			}
+-			if weftRoot != "" {
+-				// The destination is spelled out: a push with no destination bypasses the store's push refspec.
+-				if ns, nsErr := originNamespaceAt(weftRoot); nsErr == nil {
+-					tag := ArchiveTagName(job.Slug, job.WeftTip)
+-					wayForward = fmt.Sprintf("push the archive tag with `git -C %s push %s refs/tags/%s:%s`, then %s", weftRoot, originRemoteName, tag, ns.Tag(tag), wayForward)
+-				}
+-			}
+-		}
+-		failures = append(failures, remoteStepFailure{"the archive of its records", out.err.Error(), wayForward})
++		failures = append(failures, remoteStepFailure{"the archive of its records", out.err.Error(), recordsArchiveWayForward(job, weftRoot)})
+ 	}
+ 	if out.weft.RemoteError != "" {
+ 		failures = append(failures, remoteStepFailure{"the delete of its records branch on origin", out.weft.RemoteError, rerunWayForward(job)})
+@@ -219,17 +270,19 @@ func failedRemoteSteps(job remoteTeardownJob, out remoteOutcome, weftRoot string
+ // The line names the slug and, for each failed step, the operation and the way forward.
+ // A kept branch is no failure and mails nothing.
+ // The weftRoot argument is the records repository's root, empty when it could not be found.
+-func noticeRemoteTeardown(hubPath string, job remoteTeardownJob, out remoteOutcome, weftRoot string) {
++// It returns the failed steps it named, none for a job whose every step succeeded.
++func noticeRemoteTeardown(hubPath string, job remoteTeardownJob, out remoteOutcome, weftRoot string) []remoteStepFailure {
+ 	failures := failedRemoteSteps(job, out, weftRoot)
+ 	if len(failures) == 0 {
+ 		logger.Info("fabricengine: remote teardown done", "slug", job.Slug, "kind", job.Kind, "weft_kept", out.weft.RemoteKeptReason, "task_kept", out.taskKept)
+-		return
++		return nil
+ 	}
+ 	clauses := make([]string, len(failures))
+ 	for i, failure := range failures {
+ 		clauses[i] = fmt.Sprintf("at %s: %s; way forward: %s", failure.operation, failure.reason, failure.wayForward)
+ 	}
+ 	postRemoteTeardownNotice(hubPath, job.Slug, fmt.Sprintf("the remote teardown of %s failed %s", job.Slug, strings.Join(clauses, "; and ")))
++	return failures
+ }
+ 
+ // noticeUnreadRemoteTeardown logs and mails that the remote steps of slug's teardown never ran, because their job could not be read.
+@@ -277,7 +330,7 @@ func (t *Topology) holdTeardown(lockRec, rec *Mutations, l *lymcwd.Location, slu
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		return &inProcessHold{rec: rec, location: l, release: release, sleep: t.archiveSleep}, nil
++		return &inProcessHold{rec: rec, location: l, release: release, sleep: t.archiveSleep, childEnds: t.teardownChildEnds}, nil
+ 	}
+ 	exe, err := selfexec.LymBinary()
+ 	if err != nil {
+@@ -292,14 +345,23 @@ type inProcessHold struct {
+ 	location *lymcwd.Location
+ 	release  func()
+ 	sleep    func(time.Duration)
++	// childEnds makes finish leave a job as a detached child that ended before its first remote step leaves it.
++	childEnds bool
+ }
+ 
+ // finish runs job in process, then releases the lock.
++// With childEnds set, it records job as a pending teardown and drops it unrun.
+ func (h *inProcessHold) finish(job *remoteTeardownJob) remoteOutcome {
+ 	defer h.release()
+ 	if job == nil {
+ 		return remoteOutcome{}
+ 	}
++	if h.childEnds {
++		if err := writePendingTeardown(h.location.HubPath, *job, time.Now()); err != nil {
++			logger.Warn("fabricengine: pending teardown record not written", "slug", job.Slug, "error", err)
++		}
++		return remoteOutcome{handedOff: true}
++	}
+ 	return runRemoteTeardown(h.rec, h.location, *job, h.sleep)
+ }
+ 
+@@ -313,6 +375,7 @@ type childHold struct {
+ 
+ // finish writes job to the child and returns at once, leaving the child to run it.
+ // The job is marked with whether this process runs exempt from every pause.
++// It records the teardown as pending first, so a child that ends before the job does leaves a record that names it.
+ // A nil job closes the child's input and waits for it to release the lock.
+ // A job that cannot be written is logged and mailed with its way forward.
+ // The child then reads no job and releases the lock.
+@@ -324,6 +387,9 @@ func (h *childHold) finish(job *remoteTeardownJob) remoteOutcome {
+ 	}
+ 	handed := *job
+ 	handed.ExemptPause = pauserecord.GateExemptsAll()
++	if err := writePendingTeardown(h.hubPath, handed, time.Now()); err != nil {
++		logger.Warn("fabricengine: pending teardown record not written", "slug", h.slug, "error", err)
++	}
+ 	if err := json.NewEncoder(h.stdin).Encode(handed); err != nil {
+ 		NoticeRemoteTeardownEnded(h.hubPath, h.slug, fmt.Sprintf("its job could not be handed to the child: %v", err))
+ 	}
+@@ -399,6 +465,8 @@ func spawnTeardownHold(rec *Mutations, l *lymcwd.Location, slug string, try bool
+ // An empty input means the parent ended its teardown without remote steps; the child then releases the lock at once.
+ // A failed remote step, or a job it cannot read, is logged and mailed to the hub's orch as one line.
+ // The line names the slug, the operation and the way forward.
++// Once the job has run with no failed step, or on an empty input, it removes the slug's pending-teardown record.
++// A failed step keeps the record and writes that step's way forward into it.
+ func RunTeardownChild(hubPath, slug string, try bool, wait time.Duration, jobIn io.Reader, signal io.Writer) error {
+ 	lockPath := TeardownLockPath(hubPath, slug)
+ 	held, acquired, err := takeTeardownChildLock(hubPath, slug, lockPath, try, wait)
+@@ -425,6 +493,7 @@ func RunTeardownChild(hubPath, slug string, try bool, wait time.Duration, jobIn
+ 	}
+ 	if len(bytes.TrimSpace(raw)) == 0 {
+ 		logger.Info("fabricengine: the teardown ended with no remote steps", "slug", slug)
++		clearPendingTeardown(hubPath, slug)
+ 		return nil
+ 	}
+ 	var job remoteTeardownJob
+@@ -439,7 +508,7 @@ func RunTeardownChild(hubPath, slug string, try bool, wait time.Duration, jobIn
+ 	l, err := lymcwd.ResolveWorktree(job.Worktree)
+ 	if err != nil {
+ 		out := remoteOutcome{err: fmt.Errorf("resolve the worktree %s: %w", job.Worktree, err)}
+-		noticeRemoteTeardown(hubPath, job, out, "")
++		keepFailedTeardown(hubPath, job, noticeRemoteTeardown(hubPath, job, out, ""))
+ 		return out.err
+ 	}
+ 	out := runRemoteTeardown(NewMutations(hubPath), l, job, nil)
+@@ -449,7 +518,12 @@ func RunTeardownChild(hubPath, slug string, try bool, wait time.Duration, jobIn
+ 			weftRoot = root
+ 		}
+ 	}
+-	noticeRemoteTeardown(hubPath, job, out, weftRoot)
++	failures := noticeRemoteTeardown(hubPath, job, out, weftRoot)
++	if len(failures) == 0 {
++		clearPendingTeardown(hubPath, slug)
++		return nil
++	}
++	keepFailedTeardown(hubPath, job, failures)
+ 	return nil
+ }
+ 
+diff --git a/internal/fabricengine/remoteteardown_childhold_integration_test.go b/internal/fabricengine/remoteteardown_childhold_integration_test.go
+index 787418b64..92fe3facf 100644
+--- a/internal/fabricengine/remoteteardown_childhold_integration_test.go
++++ b/internal/fabricengine/remoteteardown_childhold_integration_test.go
+@@ -154,9 +154,9 @@ func (s *recordingStdin) Close() error {
+ }
+ 
+ // TestChildHold_Finish covers the parent's side of the handover:
+-// a job is written to the child and handed over at once;
+-// a job that cannot be written still closes the input;
+-// no job closes the input and waits for the child to exit.
++// a job is recorded as a pending teardown, written to the child and handed over at once;
++// a job that cannot be written still closes the input and stays recorded;
++// no job records nothing, closes the input and waits for the child to exit.
+ func TestChildHold_Finish(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -167,22 +167,27 @@ func TestChildHold_Finish(t *testing.T) {
+ 		writeErr      error
+ 		wantHandedOff bool
+ 		wantWritten   bool
++		wantPending   bool
+ 	}{
+-		{"NilJobWaitsForTheChild", nil, nil, false, false},
+-		{"JobIsWrittenAndHandedOff", &job, nil, true, true},
+-		{"UnwritableJobStillHandsOff", &job, errors.New("broken pipe"), true, false},
++		{"NilJobWaitsForTheChild", nil, nil, false, false, false},
++		{"JobIsWrittenAndHandedOff", &job, nil, true, true, true},
++		{"UnwritableJobStillHandsOff", &job, errors.New("broken pipe"), true, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
++			hub := t.TempDir()
+ 			cmd := exec.Command("git", "--version")
+ 			if err := cmd.Start(); err != nil {
+ 				t.Fatalf("start the stand-in child: %v", err)
+ 			}
+ 			stdin := &recordingStdin{writeErr: tt.writeErr}
+ 
+-			out := (&childHold{slug: "pair", cmd: cmd, stdin: stdin}).finish(tt.job)
++			out := (&childHold{hubPath: hub, slug: "pair", cmd: cmd, stdin: stdin}).finish(tt.job)
+ 
++			if _, err := os.Stat(pendingTeardownPath(hub, "pair")); (err == nil) != tt.wantPending {
++				t.Errorf("pending teardown record stat error = %v; want a record %v", err, tt.wantPending)
++			}
+ 			if !stdin.closed {
+ 				t.Errorf("finish() left the child's input open; want it closed")
+ 			}
+diff --git a/internal/fabricengine/remoteteardown_namespace_integration_test.go b/internal/fabricengine/remoteteardown_namespace_integration_test.go
+index 8b4def539..7e3a1d958 100644
+--- a/internal/fabricengine/remoteteardown_namespace_integration_test.go
++++ b/internal/fabricengine/remoteteardown_namespace_integration_test.go
+@@ -1,5 +1,5 @@
+-// remoteteardown_namespace_integration_test.go covers the manual archive-tag push a failed records archive names.
+-// It runs against a records store whose origin layout is read from real git config.
++// remoteteardown_namespace_integration_test.go covers the manual archive-tag push a failed archive names.
++// It runs against stores whose origin layout is read from real git config.
+ 
+ package fabricengine
+ 
+@@ -11,8 +11,51 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/weftname"
+ )
+ 
++func TestFailedRemoteSteps_DiscardTagPushNamesTheHubsArchiveNamespace(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "pair"
++	taskTip := strings.Repeat("b", 40)
++	tag := ArchiveTagName(slug, taskTip)
++	out := remoteOutcome{err: errors.New("tag push refused")}
++
++	for _, tt := range []struct {
++		name string
++		// namespaced gives the code store's records sibling the one-repository fetch refspec on the same origin.
++		namespaced bool
++		wantPush   string
++	}{
++		{"OneRepositoryHubSendsTheCodeStoresTagToItsOwnPrefix", true, "refs/tags/" + tag + ":refs/lym/code-tags/" + tag},
++		{"TwoRepositoryHubSendsTheTagToItsOwnName", false, "refs/tags/" + tag + ":refs/tags/" + tag},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			bare := t.TempDir()
++			gitkit.Git(t, bare, "init", "--bare", "-b", "main")
++			hub := t.TempDir()
++			code := filepath.Join(hub, "code")
++			newLayoutStore(t, code, bare, false)
++			newLayoutStore(t, weftname.SiblingPath(hub, "code"), bare, tt.namespaced)
++			job := remoteTeardownJob{Kind: remoteTeardownDiscard, Slug: slug, Worktree: code, TaskTip: taskTip}
++
++			failures := failedRemoteSteps(job, out, "")
++
++			if len(failures) != 1 {
++				t.Fatalf("failedRemoteSteps() = %d failures; want 1", len(failures))
++			}
++			want := "`git -C " + code + " push " + originRemoteName + " " + tt.wantPush + "`"
++			if !strings.Contains(failures[0].wayForward, want) {
++				t.Errorf("way forward = %q; want it to hold %q", failures[0].wayForward, want)
++			}
++		})
++	}
++}
++
+ func TestFailedRemoteSteps_RecordsTagPushNamesTheStoresDestination(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/fabricengine/remoteteardown_rerun_integration_test.go b/internal/fabricengine/remoteteardown_rerun_integration_test.go
+new file mode 100644
+index 000000000..dfd4c47f1
+--- /dev/null
++++ b/internal/fabricengine/remoteteardown_rerun_integration_test.go
+@@ -0,0 +1,119 @@
++// remoteteardown_rerun_integration_test.go covers the re-run of a teardown whose detached child ended before its job did.
++// Each test builds a one-repository hub with hubforge.NewOneRepoHub.
++// It drops a first run's remote half through the Topology seam.
++// It then reads origin with git for-each-ref for the archive tag of a tip that only the first run's local tag held.
++// It shares the fixture helpers of the one-repository lifecycle tests and the TestMain in testmain_test.go.
++
++package fabricengine_test
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// requireOnePendingTeardown fails t unless the hub lists one pending teardown, of slug, with the way forward given.
++func requireOnePendingTeardown(t *testing.T, h *hubforge.Hub, slug, wantWayForward string) {
++	t.Helper()
++
++	pending, err := fabricengine.PendingTeardowns(h.Path)
++	if err != nil {
++		t.Fatalf("PendingTeardowns() error = %v", err)
++	}
++	if len(pending) != 1 || pending[0].Slug != slug || pending[0].WayForward != wantWayForward {
++		t.Errorf("PendingTeardowns() = %+v; want one record of %s with the way forward %q", pending, slug, wantWayForward)
++	}
++}
++
++// TestRemove_RerunAfterItsTeardownChildEndedArchivesTheLocalRecordsTip covers a removal's re-run.
++// The first run's child ended before its first push.
++// The pair held a records commit origin lacks, which the removal tagged locally before it deleted the branch.
++// The pending record names the hand push of that tag before the re-run.
++// The re-run pushes the tag before it deletes the records branch on origin.
++func TestRemove_RerunAfterItsTeardownChildEndedArchivesTheLocalRecordsTip(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "ended-remove"
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	bare := h.CodeBare
++	recordsBranch := fabricengine.RecordsBranchName(hubforge.AddPair(t, h, slug).Branch)
++	gitkit.CommitFile(t, h.PairRecordsSibling(slug), "unpushed.txt", "unpushed\n", "unpushed records")
++
++	fabricengine.SetTeardownChildEndsForTest(h.Topology, true)
++	ended, err := h.Topology.Remove(h.Location, slug, false, true)
++	if err != nil {
++		t.Fatalf("Remove(%s) with its teardown child ended: %v", slug, err)
++	}
++	localTag := ended.ArchiveTag
++	localTip := gitkit.RevParse(t, h.PrimeRecords(), "refs/tags/"+localTag)
++	if got := oneRepoRecordsTip(t, bare, recordsBranch); got == localTip {
++		t.Fatalf("origin's %s is at the local records tip %s; the fixture needs a tip origin lacks", recordsBranch, localTip)
++	}
++	requireOnePendingTeardown(t, h, slug, "push the archive tag with `git -C "+h.PrimeRecords()+" push origin refs/tags/"+localTag+":"+namespaceTagsPrefix+localTag+
++		"`, then when origin still holds a branch of the pair, run `lym fabric remove "+slug+" --remote` again")
++
++	fabricengine.SetTeardownChildEndsForTest(h.Topology, false)
++	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		t.Fatalf("re-run Remove(%s): %v", slug, err)
++	}
++
++	if got := refLines(t, bare, "%(objectname)", namespaceTagsPrefix+localTag); !slices.Equal(got, []string{localTip}) {
++		t.Errorf("origin's archive tag of the local records tip = %v; want one at %s", got, localTip)
++	}
++	if got := refLines(t, bare, "%(refname)", namespaceHeadsPrefix+recordsBranch); len(got) != 0 {
++		t.Errorf("origin still holds %v after the re-run; want the records branch deleted", got)
++	}
++}
++
++// TestDiscardTaskBranch_RerunAfterItsTeardownChildEndedArchivesTheTaskTip covers a discard's re-run.
++// The first run's child ended before its first push.
++// The task branch held a commit origin lacks, which the discard tagged locally before it deleted the branch.
++// The pending record names the hand push of that tag before the re-run.
++// The re-run is the removal and then the discard, as the command that discards a task branch makes them.
++// It deletes the task branch on origin only with the tag of the local tip on origin.
++func TestDiscardTaskBranch_RerunAfterItsTeardownChildEndedArchivesTheTaskTip(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "ended-discard"
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	bare := h.CodeBare
++	branch := hubforge.AddPair(t, h, slug).Branch
++	gitkit.CommitFile(t, h.PairCodeWorktree(slug), "pushed.txt", "pushed\n", "unlanded work origin holds")
++	if _, err := oneRepoPairFabric(t, h, slug).PushBranch(fabricengine.SyncOptions{}); err != nil {
++		t.Fatalf("PushBranch: %v", err)
++	}
++	localTip := gitkit.CommitFile(t, h.PairCodeWorktree(slug), "unpushed.txt", "unpushed\n", "unlanded work origin lacks")
++	localTag := fabricengine.ArchiveTagName(slug, localTip)
++	// The removal keeps the unlanded task branch, locally and on origin, for the discard that follows it.
++	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		t.Fatalf("Remove(%s): %v", slug, err)
++	}
++
++	fabricengine.SetTeardownChildEndsForTest(h.Topology, true)
++	if _, err := h.Topology.DiscardTaskBranch(h.Location, slug); err != nil {
++		t.Fatalf("DiscardTaskBranch(%s) with its teardown child ended: %v", slug, err)
++	}
++	requireOnePendingTeardown(t, h, slug, "push the archive tag with `git -C "+h.PrimeWorktree()+" push origin refs/tags/"+localTag+":"+namespaceCodeTagsPrefix+localTag+
++		"`, then run the command that discarded the task branch again")
++
++	fabricengine.SetTeardownChildEndsForTest(h.Topology, false)
++	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		t.Fatalf("re-run Remove(%s): %v", slug, err)
++	}
++	if _, err := h.Topology.DiscardTaskBranch(h.Location, slug); err != nil {
++		t.Fatalf("re-run DiscardTaskBranch(%s): %v", slug, err)
++	}
++
++	if got := refLines(t, bare, "%(objectname)", namespaceCodeTagsPrefix+localTag); !slices.Equal(got, []string{localTip}) {
++		t.Errorf("origin's archive tag of the local task tip = %v; want one at %s", got, localTip)
++	}
++	if gitkit.BranchExists(t, bare, branch) {
++		t.Errorf("task branch %q still on origin after the re-run; want it deleted under its archive tag", branch)
++	}
++}
+diff --git a/internal/fabricengine/taskbranchdiscard_integration_test.go b/internal/fabricengine/taskbranchdiscard_integration_test.go
+index fc6ece830..db010a2f3 100644
+--- a/internal/fabricengine/taskbranchdiscard_integration_test.go
++++ b/internal/fabricengine/taskbranchdiscard_integration_test.go
+@@ -155,6 +155,56 @@ func TestDiscardTaskBranch(t *testing.T) {
+ 	})
+ }
+ 
++// TestDiscardTaskBranch_OneRepositoryHubArchivesUnderTheCodeStoresPrefix pins where a discard archives.
++// The hub is a one-repository hub.
++// The task branch's archive tag lands under the code store's own prefix below origin's records namespace root.
++// Nothing lands under origin's plain refs/tags/ or among the records store's tags.
++// That holds however the code store spells origin's URL.
++func TestDiscardTaskBranch_OneRepositoryHubArchivesUnderTheCodeStoresPrefix(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// originURL returns the URL the code store names origin by, given the path of origin's bare repository.
++		originURL func(bare string) string
++	}{
++		{"TheCodeStoreSpellsOriginAsTheRecordsStoreDoes", func(bare string) string { return bare }},
++		{"TheCodeStoreSpellsOriginAsAFileURL", func(bare string) string { return "file://" + filepath.ToSlash(bare) }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			const slug = "ns-discard"
++			h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++			branch := hubforge.AddPair(t, h, slug).Branch
++			warpBranchCommit(t, h.Location, slug, "local-work.txt")
++			removePairWorktreesByHand(t, h, slug)
++			tip := gitkit.RevParse(t, h.PrimeWorktree(), branch)
++			gitkit.Git(t, h.PrimeWorktree(), "remote", "set-url", "origin", tt.originURL(h.CodeBare))
++
++			res, err := h.Topology.DiscardTaskBranch(h.Location, slug)
++
++			if err != nil {
++				t.Fatalf("DiscardTaskBranch: %v", err)
++			}
++			tag := fabricengine.ArchiveTagName(slug, tip)
++			if !slices.Equal(res.ArchiveTags, []string{tag}) {
++				t.Errorf("ArchiveTags = %v; want [%s]", res.ArchiveTags, tag)
++			}
++			if got := refLines(t, h.CodeBare, "%(objectname)", namespaceCodeTagsPrefix+tag); !slices.Equal(got, []string{tip}) {
++				t.Errorf("origin's archive tag under %s = %v; want one at %s", namespaceCodeTagsPrefix, got, tip)
++			}
++			if got := refLines(t, h.CodeBare, "%(refname)", "refs/tags/", namespaceTagsPrefix); len(got) != 0 {
++				t.Errorf("origin holds tags %v under refs/tags/ or %s; want none", got, namespaceTagsPrefix)
++			}
++			if gitkit.BranchExists(t, h.CodeBare, branch) {
++				t.Errorf("task branch %q still on origin", branch)
++			}
++		})
++	}
++}
++
+ // TestDeleteArchivedTaskBranch pins the gates of the deletion half.
+ // A local tag that does not hold the tip refuses the local delete.
+ // The remote gate refuses the local-only archived-tip kind.
+diff --git a/internal/fabricengine/topology.go b/internal/fabricengine/topology.go
+index 2e1fd83f4..a5f87e4d9 100644
+--- a/internal/fabricengine/topology.go
++++ b/internal/fabricengine/topology.go
+@@ -25,6 +25,9 @@ type Topology struct {
+ 	beforeWire func()
+ 	// cleanupAfterEnumerate runs in Cleanup once per orphan right before the slug's teardown lock is taken; nil in production.
+ 	cleanupAfterEnumerate func()
++	// teardownChildEnds makes an in-process teardown record its remote job as pending and drop it unrun.
++	// That is what a detached child that ended before its first remote step leaves; false in production.
++	teardownChildEnds bool
+ }
+ 
+ // SetInFlightProbe sets the probe that a removal's store housekeeping consults before it runs gc.
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 419e0c422..177447595 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -63,7 +63,7 @@ func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, reru
+ 	var tiers []int
+ 	var upto, copies int
+ 	var cards []string
+-	var all, guards, wait, mainPackages, stopOnFail, mapMode bool
++	var all, guards, wait, mainPackages, stopOnFail, mapMode, noCarry bool
+ 	testCmd := &cobra.Command{
+ 		Use:         "test [<targets>...]",
+ 		Short:       "run the hub's test tiers once their gate slots are free",
+@@ -101,7 +101,7 @@ Examples:
+ 			request := testRequest{
+ 				goBinary: goBinary, samplePeriod: samplePeriod, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit, secondUnit: time.Second, rerunDelay: rerunDelay, pipeWaitDelay: pipeWaitDelay,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, gate: gate, tiers: tiers, cards: cards, mainPackages: mainPackages, base: base, all: all, guards: guards, targets: args,
+-				upto: upto, uptoGiven: cmd.Flags().Changed("upto"), stopOnFail: stopOnFail, mapMode: mapMode, copies: copies,
++				upto: upto, uptoGiven: cmd.Flags().Changed("upto"), stopOnFail: stopOnFail, mapMode: mapMode, copies: copies, noCarry: noCarry,
+ 				phase: phaseFrom(cmd.Context()),
+ 			}
+ 			if dash := cmd.ArgsLenAtDash(); dash >= 0 {
+@@ -126,6 +126,7 @@ Examples:
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+ 	testCmd.Flags().BoolVar(&guards, "guards", false, "after the listed tiers, run every //lym:guard test of the module under the tier its file belongs to")
+ 	testCmd.Flags().BoolVar(&stopOnFail, gateslot.StopOnFailFlag, false, "end the call at its first failed run, so no later tier, vet or guard run starts")
++	testCmd.Flags().BoolVar(&noCarry, gateslot.NoCarryFlag, false, "run every tier of the call even where its last green run covers the unchanged tree")
+ 	testCmd.Flags().BoolVar(&mapMode, mapFlag, false, "build the per-package coverage maps of tier0 and tier1 over the scope's packages instead of running the tiers")
+ 	testCmd.Flags().IntVar(&copies, "copies", 0, "with --gate and explicit targets, run this many copies of the key's one tier side by side inside one slot lease; 0 is off")
+ 	testCmd.Flags().BoolVar(&wait, "wait", false, "run the tiers in this process and block until they end, instead of in the detached runner an agent call starts or joins")
+@@ -185,6 +186,8 @@ type testRequest struct {
+ 	guards bool
+ 	// stopOnFail is the --stop-on-fail flag: the call ends at its first failed run, bar a crashed test runner.
+ 	stopOnFail bool
++	// noCarry is the --no-carry flag: every tier of the call runs as a carry: false tier does, so no green record is carried.
++	noCarry bool
+ 	// mapMode is the --map flag: the call builds the coverage maps over its scope instead of running the tiers.
+ 	mapMode bool
+ 	// copies is the --copies value: how many copies of the gate key's one tier run side by side; 0 is off.
+diff --git a/internal/gatecli/detachfront.go b/internal/gatecli/detachfront.go
+index 697af6a43..4885afceb 100644
+--- a/internal/gatecli/detachfront.go
++++ b/internal/gatecli/detachfront.go
+@@ -370,6 +370,9 @@ func (r testRequest) words() []string {
+ 	if r.guards {
+ 		words = append(words, "--guards")
+ 	}
++	if r.noCarry {
++		words = append(words, "--"+gateslot.NoCarryFlag)
++	}
+ 	if r.mapMode {
+ 		words = append(words, "--"+mapFlag)
+ 	}
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index f216df112..968e3b608 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -14,13 +14,15 @@
+ //
+ // # Verb
+ //
+-// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--main-packages] [--base <rev>] [--all] [--guards] [--stop-on-fail] [--copies N] [--map] [--wait] [<targets>...] [-- <args>]`.
++// The form is `lym gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--main-packages] [--base <rev>] [--all] [--guards] [--stop-on-fail] [--no-carry] [--copies N] [--map] [--wait] [<targets>...] [-- <args>]`.
+ // It runs the tiers the hub declares in gate.yaml in ascending tier number.
+ // It then runs the vet step and the guard step below when they are planned.
+ // A run that fails does not stop the call: every later tier, vet and guard run still runs,
+ // so a failure the change under test did not cause hides no later check.
+ // `--stop-on-fail` ends the call at its first failed run instead, naming the failed run and every run it skipped.
+ // A run that crashed its test runner in its run and its rerun judged no code, so it stops nothing.
++// `--no-carry` treats every tier of the call as a `carry: false` tier.
++// A call over an unchanged tree then still runs its tests.
+ // When a run failed, the call prints the failure report, then closes with one stderr line naming each failed run.
+ // The line names a vet run as `vet tierN`, a guard run as `guard tierN` and a lint step as `lint <name>`.
+ //
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 021a56414..9a72efac9 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -98,6 +98,7 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		if err != nil {
+ 			return nil, fmt.Errorf("gate test: %w", err)
+ 		}
++		tier.NoCarry = tier.NoCarry || request.noCarry
+ 		tiers[number] = tier
+ 		for _, covered := range tier.Covers {
+ 			if _, err := cfg.Tier(covered); err != nil {
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index 70bad9025..01d56617a 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -362,6 +362,12 @@ func TestPlanTierRuns(t *testing.T) {
+ 			scope:   scope{form: scopeComputed, tiers: map[int]tierScope{0: {noTests: true}, 1: {noTests: true}}},
+ 			want:    []string{"tier0 computed none buildonly", "tier1 computed dir=sub ./... ./x/..."},
+ 		},
++		{
++			name:    "a --no-carry call runs a carrying tier whole under a narrowed computed scope",
++			request: testRequest{noCarry: true},
++			scope:   narrower,
++			want:    []string{"tier0 computed dir=. ./...", "tier1 guard dir=. guard"},
++		},
+ 		{
+ 			name:   "a carry: false tier runs whole under a narrowed computed scope",
+ 			mutate: noCarry,
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index b86511f75..438beb75a 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -509,6 +509,10 @@ func (c Config) AgentGateCallWithMainPackages(key string, cards ...string) (stri
+ 	return call + " --" + MainPackagesFlag, nil
+ }
+ 
++// NoCarryFlag is the `lym gate test` flag, without its dashes, that keeps a green run from being carried for one call.
++// A call with it runs its tests even over an unchanged tree.
++const NoCarryFlag = "no-carry"
++
+ // StopOnFailFlag is the `lym gate test` flag, without its dashes, that ends a call at its first failed run.
+ const StopOnFailFlag = "stop-on-fail"
+ 
+diff --git a/internal/loomcli/hardenwiring.go b/internal/loomcli/hardenwiring.go
+index 6ca1b8563..8dd79455d 100644
+--- a/internal/loomcli/hardenwiring.go
++++ b/internal/loomcli/hardenwiring.go
+@@ -238,12 +238,13 @@ func HardenReapDeps(location *lymcwd.Location, row string, point hardenshed.Reap
+ }
+ 
+ // hardenLiveArgs returns the arguments of a live gate call.
+-// They are `gate test --wait --gate <key>`, then `--copies <n>` when copies is above 0, then the packages.
++// They are `gate test --wait --no-carry --gate <key>`, then `--copies <n>` when copies is above 0, then the packages.
+ // A package path go would read as an import path, such as `internal/x`, gets a `./` prefix.
+ // Go resolves a bare path in the standard library, and the call fails before any test runs.
+ // It names no tier, so the hub's gate key alone says what the call runs.
++// It carries `--no-carry`: a live run that a carried green record replaced would start no test binary and prove nothing.
+ func hardenLiveArgs(key string, copies int, packages []string) []string {
+-	args := []string{"gate", "test", "--wait", "--gate", key}
++	args := []string{"gate", "test", "--wait", "--" + gateslot.NoCarryFlag, "--gate", key}
+ 	if copies > 0 {
+ 		args = append(args, "--copies", fmt.Sprint(copies))
+ 	}
+diff --git a/internal/loomcli/hardenwiring_test.go b/internal/loomcli/hardenwiring_test.go
+index bb918cb44..0bc560135 100644
+--- a/internal/loomcli/hardenwiring_test.go
++++ b/internal/loomcli/hardenwiring_test.go
+@@ -45,7 +45,7 @@ func TestHardenLiveArgs(t *testing.T) {
+ 	t.Run("the live call names its key and the packages as directories go resolves, and no copies and no tier", func(t *testing.T) {
+ 		t.Parallel()
+ 		got := hardenLiveArgs(hardenshed.LiveGateKey, 0, packages)
+-		want := []string{"gate", "test", "--wait", "--gate", "harden-live", "./internal/a", "./internal/b"}
++		want := []string{"gate", "test", "--wait", "--no-carry", "--gate", "harden-live", "./internal/a", "./internal/b"}
+ 		if !slices.Equal(got, want) {
+ 			t.Errorf("hardenLiveArgs(%q, 0, packages) = %v; want %v", hardenshed.LiveGateKey, got, want)
+ 		}
+@@ -53,7 +53,7 @@ func TestHardenLiveArgs(t *testing.T) {
+ 	t.Run("the copies call carries --copies before the packages", func(t *testing.T) {
+ 		t.Parallel()
+ 		got := hardenLiveArgs(hardenshed.LiveGateKey, 3, packages)
+-		want := []string{"gate", "test", "--wait", "--gate", "harden-live", "--copies", "3", "./internal/a", "./internal/b"}
++		want := []string{"gate", "test", "--wait", "--no-carry", "--gate", "harden-live", "--copies", "3", "./internal/a", "./internal/b"}
+ 		if !slices.Equal(got, want) {
+ 			t.Errorf("hardenLiveArgs(%q, 3, packages) = %v; want %v", hardenshed.LiveGateKey, got, want)
+ 		}
+diff --git a/pattern/PATTERN-fabric-boundary.md b/pattern/PATTERN-fabric-boundary.md
+index 73d78cf2b..5255847a4 100644
+--- a/pattern/PATTERN-fabric-boundary.md
++++ b/pattern/PATTERN-fabric-boundary.md
+@@ -82,6 +82,8 @@ The entry binds lym's own code only.
+   The child pushes the weft branch first when origin lacks the local tip, then the tag,
+   and a diverged or ahead origin tip gets a tag of its own;
+   only then does it delete on origin.
++  Before those steps it pushes every `archive/<slug>/*` tag an earlier teardown left on this machine alone,
++  so the re-run after a child that died deletes no branch on origin whose tip only a local tag holds.
+   A rolled-back `Add` also deletes the warp branch it created, locally only:
+   `Add` pushes nothing, so no origin branch is its to delete.
+ - `Add` leaves the new pair's branches committed locally;
+diff --git a/tools/sandbox/SANDBOX-FABRIC-SUITE.md b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+index 8156c9619..c2616dc53 100644
+--- a/tools/sandbox/SANDBOX-FABRIC-SUITE.md
++++ b/tools/sandbox/SANDBOX-FABRIC-SUITE.md
+@@ -935,6 +935,9 @@ The outcome must be the same: the rerun way forward, no hub, and nothing under `
+ Seed a fifth bare whose `pre-receive` SIGKILLs the client `git push` on `refs/lym/heads/main` and then exits non-zero, so origin never takes the board.
+ The clone must fail naming `refs/lym/heads/main` and the prime's records ref, keep the hub, and leave the records ref on origin.
+ The `git ls-remote` and `git push origin --delete` commands its way forward names must then leave nothing under `refs/lym/`.
++Before those commands are run, a plain `lym fabric clone <bare>` of that fifth bare into another directory must refuse,
++naming a seed that stopped before its board landed and `lym fabric clone --single-repo` as the way forward.
++`lym fabric clone --into <a directory that does not exist> <bare>` must refuse naming that directory, never a failed start of git.
+ 
+ On the first hub, run each fault below in the records store, restoring its config between rows, then run `lym fabric cleanup --remote`:
+ `remote.origin.fetch` unset; `remote.origin.fetch` set to `+refs/heads/*:refs/remotes/origin/*`; the `origin` remote removed;
+@@ -945,6 +948,26 @@ so that `branch.main.merge refs/lym/heads/main` is the one setting left that nam
+ Each must refuse with `ok: false`, name the setting at fault and give the `git -C <store> config` or `git remote add` way forward.
+ With `remote.origin.fetch` unset, run `lym board upsert` on a new slug: origin's `refs/heads/main` must not move,
+ and the board's push must not reach any ref under plain `refs/heads/`.
++With it still unset, `lym fabric push` in a pair must fail naming that `git -C <store> config --replace-all remote.origin.fetch` command,
++and `lym fabric status` must list the push under `failed_pushes`.
++`lym fabric pull` there must fail the same way, with no `weft_pulled: true`, while origin's records branch is ahead.
++`lym fabric reconcile` must fail naming the same command, and its error must hold no `resolve upstream` text.
++
++On a fresh one-repository hub, add a pair, commit and push a code change on it, then run `lym batten cancel <slug> --remove` from the prime.
++Origin must hold the pair's records archive tag under `refs/lym/tags/archive/<slug>/`,
++its code archive tag under `refs/lym/code-tags/archive/<slug>/`, and no ref under plain `refs/tags/`.
++Run `git remote set-url origin file://<bare>` in the code store and repeat with a second pair:
++its code archive tag must land under `refs/lym/code-tags/` again.
++A second clone of that origin must hold none of those code commits in its records store.
++Then add a pair and push it, commit one more records file in its records worktree without pushing it,
++and install a `pre-receive` hook on origin that sleeps on that pair's `refs/lym/heads/<slug>-weft` and then declines it.
++Run `lym fabric remove <slug> --remote`, and `kill -9` its `lym fabric remote-teardown` child once the hook runs.
++`lym fabric status` and `lym fabric prune` must list the slug under `pending_teardowns`;
++its way forward must name the `git push` of the pair's archive tag and then `lym fabric remove <slug> --remote`.
++With the hook removed, that re-run must leave the archive tag of the unpushed records commit on origin,
++delete both of the pair's branches there and leave `pending_teardowns` empty.
++Then make the hook decline `refs/lym/tags/archive/*` and remove one more pushed pair with `--remote`:
++`pending_teardowns` must keep that slug, with the archive tag push in its way forward, until a re-run succeeds with the hook removed.
+ 
+ **Verdict:** `OK` / `WARN` / `FAIL`
+ 
