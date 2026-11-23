@@ -18,6 +18,12 @@ A fresh agent stays for a deliberate restart: a goto, a new review round, a re-c
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): F2: Codex sessions keep starting fresh
+
+Decision: The crash resume covers engines with a SessionResumer; Codex runs keep starting fresh, and no Codex resume path is built.
+
+Rationale: Codex is disabled in this hub (operator, 2026-11-23) and its subscription ends, so a Codex resume path would be dead code.
+
 ## Constraints
 
 ## Auto-mode assumptions
