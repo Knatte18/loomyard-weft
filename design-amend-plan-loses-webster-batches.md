@@ -1,6 +1,6 @@
 # Plan amendment during Webster loses the record of committed batches
 
-`amend-plan-loses-webster-batches` · Task · bug, webster, loom · starting · Worktree-Create
+`amend-plan-loses-webster-batches` · Task · bug, webster, loom · starting · Seed-Child
 
 Imported from [issue #185](https://github.com/Knatte18/loomyard/issues/185).
 
