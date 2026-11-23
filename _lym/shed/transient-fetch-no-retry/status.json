@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/transient-fetch-no-retry/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept transient-fetch-no-retry` or `lym loom circling continue transient-fetch-no-retry`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `transient-fetch-no-retry` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/transient-fetch-no-retry/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept transient-fetch-no-retry\" or \"lym loom circling continue transient-fetch-no-retry\".",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
