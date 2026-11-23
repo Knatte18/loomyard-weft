@@ -1,6 +1,6 @@
 # Config keys nest under the area they govern, named with dots
 
-`config-keys-nested-by-area` · Task · sketch, config, loom, drift, docs · running · Raddle-File
+`config-keys-nested-by-area` · Task · sketch, config, loom, drift, docs · done
 
 Decision record: [Sketch](decision-config-keys-nested-by-area.md)
 
