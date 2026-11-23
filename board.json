@@ -668,6 +668,24 @@
       "created": "2026-11-23T10:12:24Z",
       "revised": "2026-11-23T10:25:38Z",
       "profile": "light"
+    },
+    {
+      "id": 1607,
+      "handle": "B7",
+      "slug": "fixed-blocking-escalates-parent",
+      "title": "Every darn escalates to the parent when round 1 fixed a BLOCKING finding",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nSince `code-bouncer-asks-parent` landed (8cf7f4775), four darn runs on 2026-11-23 stopped at Code-Bouncer with cause `budget` after round 1:\n`amend-plan-loses-webster-batches`, `pr-findings-open-fabric-nil`, `beam-pr-describes-itself` and `godocreflow-worsens-findings`.\nIn each, the fixer had fixed every finding, BLOCKING included, committed it and passed its gates;\nthe ledger still held the BLOCKING entry `open`, because no later round re-reviewed the fix, and a darn's budget is spent after one round.\nThe orch then read the fixer report and the commit and accepted each time, which cost each run a parent turn and a wait.\n\n## Idea\n\nA BLOCKING finding the fixer reports `fixed`, with a commit and a green gate, is verified without a full review round before the Bouncer judges the budget:\nfor example, a short verification of only those findings against the fix commit, which closes the entry or keeps it open.\nThe parent is asked only when a BLOCKING finding stays open after that check, or the fixer did not fix it.\n",
+      "created": "2026-11-23T10:27:45Z",
+      "revised": "2026-11-23T10:27:45Z"
     }
   ],
   "prime_owner": "neve",
