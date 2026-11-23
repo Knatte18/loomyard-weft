@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 33m<br>33m | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 51m<br>51m | shuttle, reed, claude |
-| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Drift-Verify | neve | 27m<br>23m | process, shuttle |
+| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Code-Bouncer | neve | 27m<br>23m | process, shuttle |
 | T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | Darn-Write | neve | 15m<br>15m | reed, shuttle, process |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 10h<br>10h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
