@@ -1,6 +1,6 @@
 # PR-Review row does not notice its session ended
 
-`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · running · Code-Burler-Review
+`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · running · Code-Burler-Fix
 
 Imported from [issue #210](https://github.com/Knatte18/loomyard/issues/210).
 
