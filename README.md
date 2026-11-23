@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 1d<br>3m | burler, fabric |
 
-## [P0 Root: entries under no project](project-root.md) (10)
+## [P0 Root: entries under no project](project-root.md) (11)
 
 Owner `neve`
 
@@ -38,6 +38,12 @@ Owner `neve`
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | Darn-Write | neve | 4h<br>4h | landing, shuttle |
 | T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Burler-Fix | neve | 4h<br>4h | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Fix | neve | 8h<br>8h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | darn · speed |  | 0m<br>0m | shuttle, reed, claude |
 
 ### Layer A (2)
 
