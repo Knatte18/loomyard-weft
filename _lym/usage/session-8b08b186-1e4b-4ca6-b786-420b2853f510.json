@@ -1,0 +1,32 @@
+{
+  "session_id": "8b08b186-1e4b-4ca6-b786-420b2853f510",
+  "row": "Friction-Reflect",
+  "role": "friction",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 16,
+  "cache_write_tokens": 14713,
+  "cache_read_tokens": 97730,
+  "output_tokens": 760,
+  "cost_usd": 0.0639605,
+  "started": "2026-11-23T09:41:25Z",
+  "ended": "2026-11-23T09:46:29Z",
+  "models": [
+    {
+      "model": "\u003csynthetic\u003e",
+      "input_tokens": 0,
+      "cache_write_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 16,
+      "cache_write_tokens": 14713,
+      "cache_read_tokens": 97730,
+      "output_tokens": 760,
+      "cost_usd": 0.0639605
+    }
+  ]
+}
