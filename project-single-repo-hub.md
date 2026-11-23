@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
-Rendered 2026-11-23 13:45 UTC; every age below is as of then.
+Rendered 2026-11-23 13:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 4d · Owner `neve`
@@ -10,11 +10,11 @@ Groups the entries filed from the Sketch `fabric-single-repo-mode`: single-repo-
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (1)
+## Running (1)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | darn · docs |  | 4h<br>6m | fabric |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T8 | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | darn · docs | starting · Worktree-Create | neve | 4h<br>7m | fabric |
 
 ## Research (1)
 
