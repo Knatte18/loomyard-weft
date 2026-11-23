@@ -727,10 +727,10 @@
     },
     {
       "id": 1600,
-      "handle": "B5",
+      "handle": "T18",
       "slug": "usage-record-blocks-preflight",
       "title": "Preflight worktree-clean blocks on lym's own _lym/usage session record",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "preflight",
@@ -743,6 +743,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #190](https://github.com/Knatte18/loomyard/issues/190).\n\n## Seen\n\nA darn run blocked at Preflight on its first step.\nThe worktree-clean precondition reported `?? _lym/usage/session-\u003cid\u003e.json`, the usage record of one of lym's own sessions, as an uncommitted state change.\nThe driver's tackler handed the stop back to the parent orch, asking whether to commit the record or to ignore `_lym/usage`.\n\nBy the time the orch looked, loom's own `loom: commit run records` commit had committed that record, so `_lym` was clean.\nThe usage record had been written between loom's records commit and the worktree-clean check.\n\nStop reason, verbatim:\n\n```\npreconditions not met: worktree-clean: uncommitted state changes under `_lym`: ?? _lym/usage/session-db065ed3-54e1-4008-bacd-df683191b516.json; way forward: commit or stash the code changes with git, and commit the _lym changes with `lym fabric commit`, then re-step\n```\n\n## Workaround\n\nThe orch checked that the record was tracked and `_lym` was clean, then ran `lym loom resume` in the task worktree.\nThe run's tackler could neither commit nor decide, so the run waited for a parent turn.\n\n## Expected\n\nlym's own usage records never block worktree-clean.\nEither worktree-clean leaves out `_lym/usage`, or lym commits the usage records before it runs the check.\n",
+      "status": "draft",
       "created": "2026-11-23T09:16:57Z",
       "revised": "2026-11-23T09:16:57Z"
     },
