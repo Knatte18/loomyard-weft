@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/godocreflow-worsens-findings/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept godocreflow-worsens-findings` or `lym loom circling continue godocreflow-worsens-findings`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `godocreflow-worsens-findings` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/godocreflow-worsens-findings/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept godocreflow-worsens-findings\" or \"lym loom circling continue godocreflow-worsens-findings\".",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
