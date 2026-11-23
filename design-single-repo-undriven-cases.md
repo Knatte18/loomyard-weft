@@ -1,6 +1,6 @@
 # One-repository fabric cases no hardener round drove
 
-`single-repo-undriven-cases` · Task · bug, fabric · landing · Finalize
+`single-repo-undriven-cases` · Task · bug, fabric · done
 
 ## Seen
 
