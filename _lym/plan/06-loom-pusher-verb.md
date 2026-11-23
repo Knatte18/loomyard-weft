@@ -1,9 +1,9 @@
 # Card 6 — loom-pusher-verb
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.pusherCmd` -> `func (c *loomCLI) pusherCmd() *cobra.Command`
-- `plan:internal/loomcli#pusherDeps` -> `func pusherDeps(prime *lymcwd.Location, t runpusher.Target, check prePushCheck, pushRun func(prime, l *lymcwd.Location, slug string, push pairteardown.RunPush) error) runpusher.Deps`
-- `plan:internal/loomcli#TestPusherDeps` -> `func TestPusherDeps(t *testing.T)`
+- `internal/loomcli#loomCLI.pusherCmd`
+- `internal/loomcli#pusherDeps`
+- `internal/loomcli#TestPusherDeps`
 
 **Edit:**
 - `internal/loomcli#Command`
@@ -12,11 +12,11 @@
 - `internal/loomcli#TestResolvePersistentPreRun_SkipsSlugGroups`
 
 **Uses:**
-- `plan:internal/runpusher#Run`
-- `plan:internal/runpusher#NewDeps`
-- `plan:internal/runpusher#TargetOf`
-- `plan:internal/runpusher#WorktreeFlag`
-- `plan:internal/runpusher#SlugFlag`
+- `internal/runpusher#Run`
+- `internal/runpusher#NewDeps`
+- `internal/runpusher#TargetOf`
+- `internal/runpusher#WorktreeFlag`
+- `internal/runpusher#SlugFlag`
 - `internal/loomcli#newPrePushCheck`
 - `internal/loomcli#prePushCheck.guard`
 - `internal/loomcli#primeOfHub`

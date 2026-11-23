@@ -3,24 +3,24 @@
 **Create:**
 - `internal/runpusher/doc.go`
 - `internal/runpusher/testmain_test.go`
-- `plan:internal/runpusher#Target` -> `type Target struct`
-- `plan:internal/runpusher#TargetOf` -> `func TargetOf(l *lymcwd.Location, slug string) (Target, error)`
-- `plan:internal/runpusher#LockPath` -> `func LockPath(t Target) string`
-- `plan:internal/runpusher#WorktreeFlag` -> `const WorktreeFlag = "worktree"`
-- `plan:internal/runpusher#SlugFlag` -> `const SlugFlag = "slug"`
-- `plan:internal/runpusher#Start` -> `func Start(t Target) (bool, error)`
-- `plan:internal/runpusher#StartIfAhead` -> `func StartIfAhead(t Target) (bool, error)`
-- `plan:internal/runpusher#starter` -> `type starter struct`
-- `plan:internal/runpusher#starter.start` -> `func (s starter) start(t Target, ifAhead bool) (bool, error)`
-- `plan:internal/runpusher#spawnRequest` -> `type spawnRequest struct`
-- `plan:internal/runpusher#Deps` -> `type Deps struct`
-- `plan:internal/runpusher#NewDeps` -> `func NewDeps(t Target) Deps`
-- `plan:internal/runpusher#Run` -> `func Run(ctx context.Context, t Target, deps Deps) error`
-- `plan:internal/runpusher#PushUntilLanded` -> `func PushUntilLanded(ctx context.Context, push func() error, owed func(error) bool, sleep func(time.Duration), atCeiling func(error)) error`
-- `plan:internal/runpusher#RestartPusher` -> `func RestartPusher(start func() (bool, error), key string)`
-- `plan:internal/runpusher#TestStart` -> `func TestStart(t *testing.T)`
-- `plan:internal/runpusher#TestRun` -> `func TestRun(t *testing.T)`
-- `plan:internal/lymdirs#PusherDirName` -> `const PusherDirName = "pusher"`
+- `internal/runpusher#Target`
+- `internal/runpusher#TargetOf`
+- `internal/runpusher#LockPath`
+- `internal/runpusher#WorktreeFlag`
+- `internal/runpusher#SlugFlag`
+- `internal/runpusher#Start`
+- `internal/runpusher#StartIfAhead`
+- `internal/runpusher#starter`
+- `internal/runpusher#starter.start`
+- `internal/runpusher#spawnRequest`
+- `internal/runpusher#Deps`
+- `internal/runpusher#NewDeps`
+- `internal/runpusher#Run`
+- `internal/runpusher#PushUntilLanded`
+- `internal/runpusher#RestartPusher`
+- `internal/runpusher#TestStart`
+- `internal/runpusher_test#TestRun`
+- `internal/lymdirs#PusherDirName`
 
 **Edit:**
 - `cmd/lym#unboundedWaitFiles`

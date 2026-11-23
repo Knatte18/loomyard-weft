@@ -17,10 +17,10 @@
 - `plan:internal/battencli#TestBattenPreRun_ResumeStartsThePusher` -> `func TestBattenPreRun_ResumeStartsThePusher(t *testing.T)`
 
 **Uses:**
-- `plan:internal/runpusher#Start`
-- `plan:internal/runpusher#StartIfAhead`
-- `plan:internal/runpusher#TargetOf`
-- `plan:internal/runpusher#RestartPusher`
+- `internal/runpusher#Start`
+- `internal/runpusher#StartIfAhead`
+- `internal/runpusher#TargetOf`
+- `internal/runpusher#RestartPusher`
 - `internal/battencli#newFakeReceiver`
 - `internal/loomcli/doc.go`
 

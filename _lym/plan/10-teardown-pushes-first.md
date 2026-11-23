@@ -18,7 +18,7 @@
 - `plan:internal/battenshed#recordingPrimeLock` -> `func recordingPrimeLock(rec *teardownCallRecorder) PrimeLock`
 
 **Uses:**
-- `plan:internal/runpusher#PushUntilLanded`
+- `internal/runpusher#PushUntilLanded`
 - `internal/fabricengine#TipsOnOrigin`
 - `internal/fabricengine#ErrEntryEnded`
 - `internal/pairteardown#PushRun`

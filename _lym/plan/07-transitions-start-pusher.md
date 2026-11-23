@@ -58,8 +58,8 @@
 - `internal/loomcli#TestNewCommitStatusSeam_StoppedCommitStartsNoPush`
 
 **Uses:**
-- `plan:internal/runpusher#Start`
-- `plan:internal/runpusher#TargetOf`
+- `internal/runpusher#Start`
+- `internal/runpusher#TargetOf`
 - `internal/battencli#battenCommitStatusSeam`
 - `internal/battencli#commitCancelRecord`
 - `internal/battencli#pushRecordsOrOwe`
