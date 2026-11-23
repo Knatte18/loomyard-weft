@@ -1,0 +1,23 @@
+round: 4
+fan: ""
+fix_fan: ""
+fans_recorded: true
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-23T07:29:29Z
+    end: 2026-11-23T09:17:29.646405127+01:00
+    wall_seconds: 2880.646405127
+    tokens_known: true
+    fresh_tokens: 607572
+    cache_read_tokens: 24118727
+    forks: 1
+    fork_fresh_tokens: 135871
+    fork_cache_read_tokens: 4202923
+    fork_fresh_share: 0.22362946284555577
+fix:
+    model: sonnet
+    effort: high
+    tokens_known: false
+attempt: "4"
