@@ -198,28 +198,6 @@
       "record_body_sha256": "9b8e506f02370aacfa13cbb6892ce04a2a860b707a4d811857ee4687e2355dbe"
     },
     {
-      "id": 1603,
-      "handle": "T8",
-      "slug": "single-repo-undriven-cases",
-      "title": "One-repository fabric cases no hardener round drove",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nThe second fabric hardener campaign (`harden-fabric-single-repo-verbs`, landed `2722a66ef`) approved round 3 with part of its focus never driven live.\n`harden-fabric-undriven-cases` fixes the faults the campaign found but could not raise (O1 to O5); these cases were never tried at all:\n\n- A discard killed mid-operation.\n- A fabric step that fails with no kill.\n- `lym adopt --archives` over real owner archive tags.\n\nNo regression check ran for that landing.\n\n## Idea\n\nDrive each case on a sandbox one-repository hub, live, after `harden-fabric-undriven-cases` lands, and file each fault found.\n",
-      "status": "done",
-      "created": "2026-11-23T09:43:50Z",
-      "revised": "2026-11-23T13:38:59Z",
-      "profile": "docs",
-      "project": "single-repo-hub"
-    },
-    {
       "id": 1607,
       "handle": "T5",
       "slug": "fixed-blocking-escalates-parent",
@@ -324,8 +302,7 @@
         "async-run-pusher",
         "pr-review-dead-session-unseen",
         "fixed-blocking-escalates-parent",
-        "red-first-csharp",
-        "single-repo-undriven-cases"
+        "red-first-csharp"
       ],
       "isolated": false,
       "brief": "",

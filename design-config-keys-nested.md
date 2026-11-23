@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
-Depends on: [`parent-review-stale-window`](design-parent-review-stale-window.md), [`webster-amend-stop-no-notice`](design-webster-amend-stop-no-notice.md), [`async-run-pusher`](design-async-run-pusher.md), [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md), [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md), [`red-first-csharp`](design-red-first-csharp.md), [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md)
+Depends on: [`parent-review-stale-window`](design-parent-review-stale-window.md), [`webster-amend-stop-no-notice`](design-webster-amend-stop-no-notice.md), [`async-run-pusher`](design-async-run-pusher.md), [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md), [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md), [`red-first-csharp`](design-red-first-csharp.md)
 
 Filed from the Sketch `config-keys-nested-by-area`.
 
