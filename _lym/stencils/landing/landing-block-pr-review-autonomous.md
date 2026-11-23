@@ -1,7 +1,7 @@
 <!-- This is the PR-Review session's review-mode block for a run whose autonomy is on: the parent orch reviews, no operator is in the pane.
      The PR-Review stencil takes it through its review_mode marker, and landingshed fills this block with the slug first.
      Its one top-level marker is slug.
-lym-stencil: sha256=659d9a9b33ebc453155337608b385e8456dacc8726defc894e29815c6d7ee6e1 build=3e8a5eebf956726a1c385cb68c54c837e90b4a3a time=2026-11-23T18:21:18Z -->
+lym-stencil: sha256=74c4eb58f0cb69e44f6c5710794422f9e28db3e59affdfbbdcd4de66adfb4b6e build=16490acdd4a3ba0163e32323a012a0bf7be086a0 time=2026-11-23T19:15:28Z -->
 
 ## Your parent reviews
 
@@ -19,7 +19,10 @@ Your parent answers that it is satisfied, or with findings.
 On findings, run `lym loom pr-findings <file>` first, as the section above says, then fix them, commit, and ask again as above.
 Run `lym loom pr-continue` only once your parent's answer is satisfied at your current head.
 It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
+A satisfied answer at your head stands even when a later ask at that head failed or still awaits an answer.
 
+When a satisfied answer from your parent already stands at your head,
+run `lym loom pr-continue` instead of asking again, whatever `await` reports of a later ask.
 When `await` reports an ask ended timeout, no-parent or not-sent, or reports that no ask stands at your head,
 ask again with `lym loom parent-review ask {{.slug}}`.
 After a no-parent end, end your turn first and ask again only on the next mail you receive,
