@@ -1,6 +1,6 @@
 # Board view lists a done beam-project task under P0
 
-`board-done-beam-task-under-p0` · Task · bug, board · starting · Seed-Child
+`board-done-beam-task-under-p0` · Task · bug, board · starting · Seed-IDE
 
 Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).
 
