@@ -2,7 +2,7 @@
 
 `autonomy-mode-followups` · Task · bug, loom, landing, dobby, orch, reed, testkit
 
-Depends on: [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md), [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md)
+Depends on: [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md)
 
 ## Goal
 
