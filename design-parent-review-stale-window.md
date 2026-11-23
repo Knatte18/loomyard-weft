@@ -1,6 +1,6 @@
 # Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end
 
-`parent-review-stale-window` · Task · bug, landing, shuttle · running · Drift-Baseline
+`parent-review-stale-window` · Task · bug, landing, shuttle · running · Drift-Await
 
 Depends on: [`pr-review-reask-not-delivered`](design-pr-review-reask-not-delivered.md)
 
