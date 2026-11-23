@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-later-transition-push-wait.md)
 
-Depends on: [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md), [`orch-autonomy-mode`](design-orch-autonomy-mode.md)
+Depends on: [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md)
 
 ## What was seen
 

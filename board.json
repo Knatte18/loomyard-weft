@@ -146,33 +146,6 @@
       "record_body_sha256": "575a6011931eb007845f91a517612780d622cf8ff511f6d8a1088a6bb7f946e8"
     },
     {
-      "id": 1562,
-      "handle": "T11",
-      "slug": "orch-autonomy-mode",
-      "title": "Autonomy mode: the parent orch settles every halt, operator only for severe halts and the beam merge",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "orch",
-        "landing",
-        "loom",
-        "pawl",
-        "drift"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `orch-full-autonomy-mode`.\n\nTakes: the Sketch's decision record; beam.yaml's ConfigSpec in dobbyengine, the halt-notice posters behind orchcli, loom's and drift's LoadConfig and configreg.SettingLookup, the PR-Review row and its pull request record, burlerengine's run-wide ask record, Beam-Await's Notify seam, the Slack reply hook, the orch pointers and the orchrole embeds\nDelivers: an `autonomy` key in beam.yaml with a run reader and an orch reader that look it up from the worktree upward to the hub; halt notices carrying `autonomy:`; the five forced keys and the Drift-Verify halt on an ended judge ask; PR-Review ended only by a recorded satisfied PR-Review ask under recorded autonomy; the `[beam drained]` line; the Slack hook's `[operator]` filter; the autonomy line on every orch pointer; role-autonomy.md with the severe-halt list and the merge-ready steps; two glossary lines; a task's own value through run_settings, overriding its parent both ways (D11)\nExports: the run and orch autonomy readers, `lym loom parent-review ask`, the loom key `pr_review_parent_timeout_min`, the pawlengine drain marker name, contracts/orchrole/role-autonomy.md\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 80 changed lines)\n- internal/orchcli (about 120 changed lines)\n- internal/loomcli (about 450 changed lines)\n- internal/landingshed (about 500 changed lines)\n- internal/pullrequest (about 60 changed lines)\n- internal/burlerengine (about 80 changed lines)\n- internal/loomengine (about 120 changed lines)\n- internal/driftengine (about 200 changed lines)\n- internal/configreg (about 60 changed lines)\n- internal/sheddriver (about 40 changed lines)\n- internal/battencli (about 40 changed lines)\n- internal/webstercli (about 20 changed lines)\n- internal/burlercli (about 20 changed lines)\n- internal/adoptcli (about 30 changed lines)\n- internal/beamcli (about 120 changed lines)\n- internal/pawlengine (about 250 changed lines)\n- internal/slackcli (about 100 changed lines)\n- internal/orchengine (about 150 changed lines)\n- contracts/orchrole (about 250 changed lines)\n- contracts/stencils (about 60 changed lines)\n- internal/heddleengine (about 2 changed lines)\n\n\n\n",
-      "status": "done",
-      "created": "2026-11-22T11:34:26Z",
-      "revised": "2026-11-22T11:56:46Z",
-      "profile": "solid",
-      "discussed": true,
-      "record_body_sha256": "b70cc95e33a32a91dfa2ed72096e461c622fdf6db7fb6078a07213440429a220"
-    },
-    {
       "id": 1565,
       "handle": "T5",
       "slug": "harden-fabric-single-repo-verbs",
@@ -222,8 +195,7 @@
       "issues": [],
       "recipe": "raddle",
       "depends_on": [
-        "harden-fabric-single-repo-verbs",
-        "orch-autonomy-mode"
+        "harden-fabric-single-repo-verbs"
       ],
       "isolated": false,
       "brief": "After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it.",
@@ -297,12 +269,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "orch-autonomy-mode"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting",
       "body": "## Goal\n\nA code review round never settles past what its parent has to rule on.\nTwo faults let `per-task-settings-one-lookup` land as `118bee8ad` with its review unsettled, and a third let a hardener round approve with its focus undriven; this task fixes all three.\n\n## 1. A held decision finding gates until the parent rules\n\n### Seen\n\nIts Code-Burler finding F12, `member-line-overrides-explicit-off`, was a `decision`-class finding, routed to the run's parent and marked held:\nthe fixer leaves it alone, and only a decision record entry settles it.\nThe orch had put it to the operator, whose answer was still pending.\nRound 2's Bouncer verdict says: \"F12 is a `decision` finding deferred to the parent and does not gate.\"\nThe round then settled on budget, and the run landed with the held finding in the \"Check by hand\" list and the questioned exception in the code.\n\n### Wanted\n\nA held decision finding gates until the parent rules on it.\nNo acceptance, budget or otherwise, lets a run past its review round while a held finding is unruled.\nThe run waits for the parent's decision record entry, and the next round carries the ruling out.\n\n### Where\n\n- `internal/burlerengine`: the held mark (`roundcheck.go`, `prompt.go`, `fixerreport.go`).\n- The Bouncer's gating rule that leaves decision findings out.\n- `escalate_decisions` (`EscalateDecisions` in `internal/shedadapters/bouncer.go`), set today only in the motif and arras recipes, escalates a round holding a decision finding to the parent.\n\n## 2. A spent budget with BLOCKING findings open asks the parent\n\n### Seen\n\nThe same run landed with four BLOCKING findings open (F26, F2, F27, F28).\nRound 2's Bouncer ruled CONTINUE on them, the budget was spent, and the round settled as an automatic accept (`cause: budget`, `automatic: true`).\n`loom.code_auto_accept` is `true` in the template (`internal/loomengine/template.yaml`) and accepts open findings, BLOCKING ones included.\n\n### Decision\n\nOperator, 2026-11-22: a run whose code review budget is spent with a BLOCKING finding open stops and asks its parent.\nThe parent accepts, or orders another round.\n\n### Where\n\n- `blocking_escalates` (`BlockingEscalates` in `internal/shedadapters/bouncer.go`) sends a spent budget with an open BLOCKING ledger entry to the soft-cap rule instead of the auto-accept.\n  No shipped code row sets it.\n- The Code-Bouncer rows of `contracts/recipes/darn-recipe.yaml` and `tapestry-recipe.yaml`, and whether the soft-cap rule then escalates to the parent with cause budget.\n- The `code_auto_accept` comment in `internal/loomengine/template.yaml`.\n\n## 3. A hardener round never approves with its focus undriven\n\n### Seen\n\n`harden-fabric-single-repo-verbs` round 3 (sonnet, medium, 4 min) returned APPROVED with these focus entries undriven, by its own Coverage section:\nthe discard half of a killed teardown, the keep-local tag push, a failed step with no kill, and `lym adopt --archives` over real owner tags.\nThe approval settled the harden segment at once: Harden-Burler-Fix only ran its gates and the run went on to landing.\nNothing asked the arbiter or the parent, and once settled the segment cannot be reopened (`lym loom goto` refuses a review or fix row of a settled segment).\nThe untested cases became note `harden-fabric-undriven-cases`.\n\n### Wanted\n\nOperator, 2026-11-22: a hardener round never approves unless everything is in place.\n\n- A round whose review leaves a focus entry undriven, or marks one WARN or not driven, does not settle as approved.\n- The arbiter rules first: order another round over the undriven entries, or accept with a stated reason per entry.\n- When the arbiter cannot rule, the run stops and asks the parent, which orders another round or accepts.\n\n### Cause\n\nThe hardener rubric (`contracts/stencils/harden/harden-rubric-review.md`) says to walk every focus entry and record OK, WARN or FAIL,\nbut the shared review format (`contracts/stencils/burler/burler-review-format.md`) lets an incremental round raise only BLOCKING findings on changed hunks,\nand the verdict is APPROVED whenever no finding is BLOCKING.\nAn undriven or WARN focus entry has no way to block, so round 3 recorded its gaps under Rejected and Coverage and could only answer APPROVED.\n\n### Where\n\n- The hardener recipe `contracts/recipes/hardener-recipe.yaml` and its Bouncer row (`harden_round`).\n- The settle rule of a review segment for a reviewer verdict of APPROVED (`internal/burlerengine`, `internal/shedadapters/bouncer.go`).\n- The arbiter's scope of halts it may settle (`internal/shedarbiter`, `arbiterstop`).\n\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-22T18:02:16Z",
       "revised": "2026-11-22T20:51:15Z",
       "run_settings": {
@@ -328,12 +299,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "orch-autonomy-mode"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed",
       "body": "## Goal\n\nFinish what `per-task-settings-one-lookup` (`118bee8ad`) left: remove the beam-member exception from the landing notice, and fix the review findings it landed open.\nThe full findings, with locations and proposed fixes, are in round 2's review in the run's archived records:\n`git -C loomyard-weft show archive/per-task-settings-one-lookup/d3f72e425e2a:_lym/reviews/code/round-2-review.md`.\n\n## 1. A beam member gets its landed line only when its land_notice is on\n\n`rememberRuns` in `internal/dobbyengine/landnotice.go` sends a member its landed line while the beam's pull request is recorded, whatever its `land_notice` reads.\nThis was Code-Burler finding F12, `member-line-overrides-explicit-off`.\n\nDecision, operator, 2026-11-22: no exception.\nPer-task beam settings follow one rule, and `land_notice` off means no line.\n\n- `rememberRuns` sends a member's line only when its reading is on; the follow-up stays on that line.\n- The package doc of `landnotice.go`, the doc comments of `landNotices` and `rememberRuns`, and `LandNoticeState.Member` drop the exception; `Member` goes if nothing else reads it.\n- `pattern/PATTERN-landing.md` and `pattern/PATTERN-config-layers.md` lose any mention of it.\n- Keeping the pull request's description current without the orch is out of scope: note `beam-pr-describes-itself`.\n\n## 2. The findings landed open\n\n- **F26 `reinterpret-discovers-worktrees-and-anchors`** (BLOCKING): `settingPlaces` in `internal/dobbyengine/reinterpret.go` lists the hub dir for `.git` entries and derives each anchor from the prime's.\n  The weft siblings count as worktrees, and a pair with its own anchor is read and written at the wrong dir, against PATTERN-cwd-resolution.\n  The reinterpretation gets the code worktrees as told geometry from `hubreconcile`.\n- **F2 `per-task-keys-declared-at-several-sites`** (BLOCKING): the literal `\"beam\"` remains in `dobbyengine.ConfigSpec`, the configreg registration and `beamcli` `mergeParent`, beside `beamsetting.Module`.\n- **F27 `registration-test-lacks-keep-marker`** (BLOCKING): `TestLookup_BeamCarriesThePerTaskSettingsReinterpretation` needs `//testtiming:keep` with its reason.\n- **F28 `duplicate-row-in-prepare-run-settings`** (BLOCKING): a duplicate row in `TestPrepareRunSettings` in `internal/configreg/runsettings_test.go`.\n- **F5 `carry-misses-runs-in-flight`** (MEDIUM): the one-time carry of the retired board fields into seeded runs misses a run on another machine and one behind an early board save, since board verbs run no reconcile and the marker is hub-wide.\n- **F13 `beam-project-notify-on-land-dropped`** (MEDIUM): a beam project's `notify_on_land` is folded away on load, so a board save before the carry loses it.\n\nF5 and F13 only matter while a hub still holds the retired board fields; check first whether any hub does.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-22T18:03:09Z",
       "revised": "2026-11-22T18:05:43Z",
       "run_settings": {
