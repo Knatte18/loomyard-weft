@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 14:19 UTC; every age below is as of then.
+Rendered 2026-11-23 14:20 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -34,17 +34,17 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | Code-Burler-Fix | neve | 5h<br>40m | loom, config |
-| T6 | **Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end** | [`parent-review-stale-window`](design-parent-review-stale-window.md) | darn · light | Darn-Write | neve | 1h<br>1h | landing, shuttle |
+| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | Code-Burler-Fix | neve | 5h<br>41m | loom, config |
+| T6 | **Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end** | [`parent-review-stale-window`](design-parent-review-stale-window.md) | darn · light | Drift-Verify | neve | 1h<br>1h | landing, shuttle |
 | T7 | **Webster stops after an amended plan send the parent no notice, and webster reset leaves the run tied to the dropped code tip** | [`webster-amend-stop-no-notice`](design-webster-amend-stop-no-notice.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | webster, loom |
-| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Darn-Write | neve | 49m<br>40m | gate, loom, dotnet |
+| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Darn-Write | neve | 49m<br>41m | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Review | neve | 4h<br>4h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 49m<br>49m | landing, shuttle |
+| T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 50m<br>49m | landing, shuttle |
 
 ### Layer B (1)
 
