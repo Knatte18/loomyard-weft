@@ -2,8 +2,6 @@
 
 `verify-budget-notice-no-slug` · Task · bug, loom
 
-Depends on: [`red-first-tests-only-task`](design-red-first-tests-only-task.md)
-
 ## Seen
 
 The orch got creel mail #2450 from `ly:LOOM` (2026-11-23):
