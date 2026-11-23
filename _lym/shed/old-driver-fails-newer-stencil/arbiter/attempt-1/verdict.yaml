@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  Round 1 escalated with cause decision on one finding, F2 (LOW): failedHalt classifies every failed halt with a
+  NewerBoardCopyError in its chain as build-skew, wider than the parent's added entry, which names the stop the
+  driver hands over. The board entry and the decision record settle it. The board entry calls the stencil guard
+  correct, and the added entry "Narrow to the false hard-failure report" names the false producer-hard-failure
+  note as the harm. A skew halt that is not handed over has the same cause: a binary to update, not a lym defect.
+  The note is also written before the driver decides, so narrowing to the hand-over case cannot be done at note
+  time. This does not widen the task's scope. I recorded the ruling as an arbiter decision: keep the code as it
+  is. The refusal is none and no BLOCKING finding is open. The fixer fixed F1 and F4 in commits
+  2afa0db1e, ffa172d62 and 2a416f460, and fixed F3 in the landing summary. F2 needs no further fix, so I
+  recorded the segment as accept.
+verbs:
+  - |-
+    lym loom decision add old-driver-fails-newer-stencil --by arbiter --title "Every failed halt on a newer board stencil is build-skew" --decision "Keep failedHalt in internal/loomcli/halt.go as written: a failed halt whose error chain holds a stencilstore.NewerBoardCopyError is classified build-skew whether or not the driver later hands the run over to a fresh build. Do not narrow the kind to the hand-over case." --rationale "The board entry calls the stencil guard correct; the harm in issue 198 was reporting the skew halt as producer-hard-failure. A skew halt the driver does not hand over (no newer build on disk, or its one hand-over spent) has the same cause, a lym binary to update, not a lym defect, and its tackler settles the stop. The halt note is written before the driver decides, so narrowing would need knowledge the note writer lacks. This applies the Narrow-to-the-false-hard-failure-report entry to the same error without widening the task's scope."
+  - |-
+    lym loom circling accept old-driver-fails-newer-stencil
