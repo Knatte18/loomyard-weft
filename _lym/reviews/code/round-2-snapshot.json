@@ -11,5 +11,6 @@
       "title": "F5: lym gate test refuses a run agent's whole tmux tier",
       "digest": "e4ece3e8fb32737538c11a0cf26ca483a1dbc229d54a5c3d67266d8d9b42eba1"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
