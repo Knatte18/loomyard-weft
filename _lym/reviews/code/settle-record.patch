@@ -1,0 +1,313 @@
+diff --git a/contracts/orchrole/role-beams.md b/contracts/orchrole/role-beams.md
+index 0aec9082c..d5d0f3703 100644
+--- a/contracts/orchrole/role-beams.md
++++ b/contracts/orchrole/role-beams.md
+@@ -52,7 +52,8 @@ Write the description for a reader of the pull request:
+ 
+ Change any part of it whenever you or the operator want, then run `lym beam describe <slug>` again.
+ 
+-While the pull request is recorded, the dobby sends every member of the beam a landing notice, whatever its `beam.land_notice` reads, and that notice asks you to add the landing to the description and run `lym beam describe <slug>`; do so.
++While the pull request is recorded, a member's landing notice asks you to add the landing to the description and run `lym beam describe <slug>`; do so.
++A member gets that notice only when its `beam.land_notice` reads on.
+ 
+ Never merge a pull request, and never close one to add work.
+ Work lands into the beam while the pull request stays open.
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 8ecc1ecf2..26a58f9d3 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -145,9 +145,8 @@
+ //     through Deps.Notice to the nearest live orch.
+ //     A run whose `land_notice` read off owes none.
+ //   - While Deps.PullRequestRecorded reads a pull request recorded for the beam,
+-//     each member of the beam gets its landed line whatever `land_notice` says,
+-//     and the line ends with the beam's follow-up `lym beam describe <slug>`.
+-//     A nil PullRequestRecorded and the prime's dobby have no such line.
++//     a landed line ends with the beam's follow-up `lym beam describe <slug>`.
++//     A nil PullRequestRecorded and the prime's dobby add no follow-up.
+ //   - An owed line stays in the state record and is posted every tick until a post succeeds.
+ //   - A run first seen past its Land row gets no line, and a done board entry owes none by itself.
+ //
+diff --git a/internal/dobbyengine/landnotice.go b/internal/dobbyengine/landnotice.go
+index 93ca8aab9..f3b3cb074 100644
+--- a/internal/dobbyengine/landnotice.go
++++ b/internal/dobbyengine/landnotice.go
+@@ -1,8 +1,7 @@
+ // landnotice.go implements the landing notice: one creel line to the nearest live orch.
+ // It goes out once a run seen ahead of its Land row lands or ends without landing.
+ // It goes only when the run's land_notice setting read on, as read ahead of Land or, when that never read, after it.
+-// While a beam's pull request is recorded, the beam's members get the line whatever land_notice says.
+-// Their landed line then carries the beam's follow-up.
++// While a beam's pull request is recorded, a landed line carries the beam's follow-up.
+ 
+ package dobbyengine
+ 
+@@ -13,7 +12,6 @@ import (
+ 	"slices"
+ 	"time"
+ 
+-	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+@@ -28,9 +26,6 @@ type LandNoticeState struct {
+ 	// Read reports whether land_notice was read for the run at least once.
+ 	// A run past Land that was never read is read again at each tick, and its notice stays undecided until a read succeeds.
+ 	Read bool `json:"read,omitempty"`
+-	// Member reports whether the run's entry was a member of the beam at the last tick that saw it ahead of Land.
+-	// A member's landed line goes out once the beam's pull request is recorded, whatever Requested reads.
+-	Member bool `json:"member,omitempty"`
+ 	// Line is the notice decided and not yet posted, posted again at each tick until a post succeeds.
+ 	Line string `json:"line,omitempty"`
+ 	// ClearOwed is set only by a state record an older binary wrote, once it had posted the run's line.
+@@ -49,30 +44,22 @@ func (s LandNoticeState) read() bool {
+ 	return s.Read || s.Requested
+ }
+ 
+-// landNotices remembers each listed run ahead of its Land row.
+-// It remembers whether land_notice reads on for the run and whether its board entry is a member of this dobby's beam.
++// landNotices remembers each listed run ahead of its Land row with whether land_notice reads on for it.
+ // It decides the notice of each remembered run now past its Land row, then posts every owed line.
+ // What fails to post is kept for the next tick.
+ // The reading of land_notice comes from Deps.LandNotice.
+ // A failed read keeps the run's last reading and is logged once per episode.
+ // A run past Land that was never read is read again at each tick, and its notice waits for a read to succeed.
+-// A landed line it decides carries the beam's follow-up while the beam's pull request is recorded,
+-// and a member remembered ahead of Land gets that line whatever land_notice read.
+-// A failed read of the board keeps each remembered membership as it was.
++// A landed line it decides carries the beam's follow-up while the beam's pull request is recorded.
+ // A failed read of the landing record decides nothing this tick and is logged once per episode.
+ func (d *daemon) landNotices(ctx context.Context, now time.Time, runs []RunView) {
+-	tasks, _ := d.landNoticeTasks()
+ 	followUp, followUpRead := d.pullRequestFollowUp()
+ 	requests := d.readLandNoticeRequests(runs, d.unreadLandNoticeRuns(runs))
+-	members := make(map[string]bool, len(tasks))
+-	for _, task := range tasks {
+-		members[task.Slug] = isBeamMember(task, d.geom.Slug)
+-	}
+ 	err := UpdateState(d.geom.StatePath, func(s *State) error {
+ 		if s.LandNotices == nil {
+ 			s.LandNotices = map[string]LandNoticeState{}
+ 		}
+-		rememberRuns(s.LandNotices, runs, requests, members, followUpRead, followUp)
++		rememberRuns(s.LandNotices, runs, requests, followUpRead, followUp)
+ 		return nil
+ 	})
+ 	if err != nil {
+@@ -127,27 +114,22 @@ func (d *daemon) unreadLandNoticeRuns(runs []RunView) map[string]bool {
+ 
+ // rememberRuns refreshes memory from the runs listed this tick.
+ // A run is remembered with the land_notice reading in requests, when it has one.
+-// Ahead of its Land row it is also remembered with its entry's membership in members, when the entry is on the board.
+-// While decides is set, a remembered run past its Land row that was read at least once gets its notice decided.
+-// It gets a line when its remembered reading is on, or when followUp is set and it is a member of the beam.
++// While decides is set, a remembered run past its Land row that was read at least once gets its notice decided:
++// a line when its remembered reading is on, and none when it is off.
+ // A remembered run past Land that was never read stays undecided until a read succeeds.
+ // A landed line ends with followUp, empty for none.
+ // A run that owes nothing after this is forgotten, and so is one whose line an older binary had already posted.
+ // A run first seen past its Land row is never remembered.
+ // The memory of a run not listed this tick is dropped unless it owes something.
+-func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests, members map[string]bool, decides bool, followUp string) {
++func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests map[string]bool, decides bool, followUp string) {
+ 	listed := make(map[string]bool, len(runs))
+ 	for _, run := range runs {
+ 		listed[run.Slug] = true
+ 		note, remembered := memory[run.Slug]
+-		member, onBoard := members[run.Slug]
+ 		if requested, read := requests[run.Slug]; read {
+ 			note.Requested, note.Read = requested, true
+ 		}
+ 		if !run.PastLand {
+-			if onBoard {
+-				note.Member = member
+-			}
+ 			memory[run.Slug] = note
+ 			continue
+ 		}
+@@ -162,7 +144,7 @@ func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests, m
+ 		if !note.read() || !decides {
+ 			continue
+ 		}
+-		if note.Requested || (followUp != "" && (note.Member || (onBoard && member))) {
++		if note.Requested {
+ 			note.Line = landNoticeLine(run, followUp)
+ 		}
+ 		if !note.owed() {
+@@ -178,7 +160,7 @@ func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests, m
+ 	}
+ }
+ 
+-// pullRequestFollowUp returns the follow-up a member's landed line carries.
++// pullRequestFollowUp returns the follow-up a landed line carries.
+ // It is set while the beam's landing record holds a pull request.
+ // The follow-up asks the orch to add the landing to the change description and to run `lym beam describe <slug>`.
+ // It is empty while no pull request is recorded, for the prime's dobby, and for a dobby with no PullRequestRecorded seam.
+@@ -199,23 +181,6 @@ func (d *daemon) pullRequestFollowUp() (string, bool) {
+ 	return fmt.Sprintf("; add it to the change description, then run `lym beam describe %s`, which updates the pull request", d.geom.Slug), true
+ }
+ 
+-// isBeamMember reports whether task is a task or project entry whose project is the beam slug.
+-// The prime's dobby has no beam slug, so it has no members.
+-func isBeamMember(task TaskView, slug string) bool {
+-	return slug != "" && task.Project == slug && (task.Kind == boardengine.KindTask || task.Kind == boardengine.KindProject)
+-}
+-
+-// landNoticeTasks reads the board for the landing notices, and reports whether the read succeeded.
+-func (d *daemon) landNoticeTasks() ([]TaskView, bool) {
+-	tasks, err := d.deps.Tasks()
+-	if err != nil {
+-		d.landNoticeBoard.Fail("dobbyengine: the board is unreadable; the landing-notice memberships keep their last reading", "worktree", d.geom.WorktreeName, "error", err)
+-		return nil, false
+-	}
+-	d.landNoticeBoard.Recover("dobbyengine: the board reads again for the landing-notice memberships", "worktree", d.geom.WorktreeName)
+-	return tasks, true
+-}
+-
+ // settleLandNotices posts each owed line through Deps.Notice and drops a memory once it owes nothing.
+ // A failed post keeps the line for the next tick, with no cap on the tries, and is logged once per episode.
+ func (d *daemon) settleLandNotices(ctx context.Context, now time.Time) {
+diff --git a/internal/dobbyengine/landnotice_test.go b/internal/dobbyengine/landnotice_test.go
+index 78f4770a5..6ce3665ce 100644
+--- a/internal/dobbyengine/landnotice_test.go
++++ b/internal/dobbyengine/landnotice_test.go
+@@ -1,6 +1,6 @@
+ // landnotice_test.go pins the landing notice over a pass harness.
+ // It covers which runs get a line under each reading of land_notice and the line's text.
+-// It covers a beam with a recorded pull request adding its follow-up to its members' landed line.
++// It covers a beam with a recorded pull request adding its follow-up to a landed line.
+ // It covers the owed line's posts until one succeeds, and the memory's upkeep.
+ 
+ package dobbyengine
+@@ -44,21 +44,15 @@ func TestLandNotices(t *testing.T) {
+ 		failLookupThroughTick int
+ 		// seed is the memory the state record holds for the run before the first tick, nil leaving none.
+ 		seed *LandNoticeState
+-		// failBoardOnTick is the one-based tick whose board read fails; zero fails none.
+-		failBoardOnTick int
+ 		// rebuildBeforeTick is the one-based tick that a new daemon over the same state record runs; zero rebuilds none.
+ 		rebuildBeforeTick int
+-		// beam makes the dobby the one of beam b, with the run's entry a member of b.
++		// beam makes the dobby the one of beam b, with the run's board entry a member of b while the run is ahead of Land.
+ 		beam bool
+ 		// pullRequest is what b's landing record reads as holding, and failPullRequestOnTick the one-based tick whose read fails.
+ 		pullRequest           bool
+ 		failPullRequestOnTick int
+ 		// pullRequestFromTick, when set, makes b's landing record hold a pull request from that one-based tick on.
+ 		pullRequestFromTick int
+-		// entryProject, when set, replaces b as the project of the run's entry.
+-		entryProject string
+-		// entryDone makes the run's entry read done while the run is ahead of Land.
+-		entryDone bool
+ 		// ticks are the run listings of successive ticks.
+ 		ticks [][]RunView
+ 		// failPosts is how many posts fail before the Notice seam succeeds.
+@@ -81,18 +75,14 @@ func TestLandNotices(t *testing.T) {
+ 		{name: "TheLookupFollowsARequestWithdrawnBetweenTicks", requestedByTick: []bool{true, false}, ticks: [][]RunView{{running}, {running}, {landed}}},
+ 		{name: "TheLookupFollowsARequestRaisedBetweenTicks", requestedByTick: []bool{false, true}, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}},
+ 		{name: "AFailedLookupKeepsTheLastReading", requestedByTick: []bool{true, false}, failLookupOnTick: 2, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}},
+-		{name: "AFailedBoardReadKeepsTheMembership", beam: true, pullRequest: true, failBoardOnTick: 2, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberUnderAPullRequestGetsItsLineWhateverTheLookupReads", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberWhoseLookupReadsOnGetsTheSameOneLine", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "ABeamWithNoPullRequestSendsNothingForAnUnrequestedMember", beam: true, ticks: [][]RunView{{running}, {landed}}},
++		{name: "AMemberWhoseLookupReadsOffGetsNoLineUnderAPullRequest", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landed}}},
++		{name: "AMemberWhoseLookupReadsOnGetsTheFollowUpUnderAPullRequest", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+ 		{name: "ABeamWithNoPullRequestSendsARequestedMemberNoFollowUp", beam: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}},
+-		{name: "AnUnlandedMemberLineCarriesNoFollowUp", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {unlanded}}, want: []string{unlandedLine}},
++		{name: "AnUnlandedMemberLineCarriesNoFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {unlanded}}, want: []string{unlandedLine}},
+ 		{name: "AFailedLandingRecordReadDecidesNothingUntilItReads", beam: true, pullRequest: true, requested: true, failPullRequestOnTick: 2, ticks: [][]RunView{{running}, {landed}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberLandingInTheTickThePullRequestIsRecordedGetsTheLine", beam: true, pullRequestFromTick: 2, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "ANonMemberEntryGetsNoLineUnderAPullRequest", beam: true, pullRequest: true, entryProject: "other", ticks: [][]RunView{{running}, {landed}}},
+-		{name: "ADoneMemberEntryStillGetsTheLine", beam: true, pullRequest: true, entryDone: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberLandedWithNoCommitCarriesTheFollowUp", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{unknownCommitLine + memberFollowUp}},
+-		{name: "AMemberLandedWithAnEmptyDiffCarriesTheFollowUp", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landedEmpty}}, want: []string{emptyLandingLine + memberFollowUp}},
++		{name: "AMemberLandingInTheTickThePullRequestIsRecordedGetsTheFollowUp", beam: true, requested: true, pullRequestFromTick: 2, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
++		{name: "AMemberLandedWithNoCommitCarriesTheFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{unknownCommitLine + memberFollowUp}},
++		{name: "AMemberLandedWithAnEmptyDiffCarriesTheFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landedEmpty}}, want: []string{emptyLandingLine + memberFollowUp}},
+ 		{name: "ARunNeverReadAheadOfLandWaitsPastLandForARead", requested: true, failLookupThroughTick: 3, ticks: [][]RunView{{running}, {running}, {landed}, {landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AnOlderMemoryHoldingARequestIsNotReadAgainPastLand", seed: &LandNoticeState{Requested: true}, ticks: [][]RunView{{landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AClearOnlyMemoryOfAnOlderBinaryGetsNoSecondNotice", requested: true, seed: &LandNoticeState{Requested: true, ClearOwed: true}, ticks: [][]RunView{{landed}, {landed}}},
+@@ -119,10 +109,8 @@ func TestLandNotices(t *testing.T) {
+ 				sent = append(sent, line)
+ 				return nil
+ 			}
+-			project := ""
+ 			if tt.beam {
+-				project = "b"
+-				h.d.geom.Slug = project
++				h.d.geom.Slug = "b"
+ 				h.d.deps.PullRequestRecorded = func() (bool, error) {
+ 					if tickNumber == tt.failPullRequestOnTick {
+ 						return false, errors.New("the landing record is unreadable")
+@@ -130,13 +118,6 @@ func TestLandNotices(t *testing.T) {
+ 					return tt.pullRequest || (tt.pullRequestFromTick != 0 && tickNumber >= tt.pullRequestFromTick), nil
+ 				}
+ 			}
+-			status, done := "running · Run-Shed", "done"
+-			h.d.deps.Tasks = func() ([]TaskView, error) {
+-				if tickNumber == tt.failBoardOnTick {
+-					return nil, errors.New("the board is unreadable")
+-				}
+-				return append([]TaskView(nil), h.fake.tasks...), nil
+-			}
+ 			if tt.seed != nil {
+ 				err := UpdateState(h.d.geom.StatePath, func(s *State) error {
+ 					s.LandNotices = map[string]LandNoticeState{"task": *tt.seed}
+@@ -156,29 +137,14 @@ func TestLandNotices(t *testing.T) {
+ 				}
+ 				h.fake.runs = runs
+ 				h.fake.tasks = nil
++				if tt.beam && slices.ContainsFunc(runs, func(run RunView) bool { return !run.PastLand }) {
++					status := "running · Run-Shed"
++					h.fake.tasks = []TaskView{{Slug: "task", Kind: "task", Status: &status, Project: "b"}}
++				}
+ 				requested = tt.requested
+ 				if i < len(tt.requestedByTick) {
+ 					requested = tt.requestedByTick[i]
+ 				}
+-				if slices.ContainsFunc(runs, func(run RunView) bool { return !run.PastLand }) {
+-					entryStatus, entryProject := &status, project
+-					if tt.entryDone {
+-						entryStatus = &done
+-					}
+-					if tt.entryProject != "" {
+-						entryProject = tt.entryProject
+-					}
+-					h.fake.tasks = []TaskView{{Slug: "task", Kind: "task", Status: entryStatus, Project: entryProject}}
+-				}
+-				if tickNumber == tt.failBoardOnTick {
+-					// The tick's own start step reads the board after the notice step, so a failed read fails the tick;
+-					// the notice step has run by then.
+-					h.clock.sleep(context.Background(), 10*time.Second)
+-					if err := h.d.tick(context.Background(), h.clock.now()); err == nil {
+-						t.Fatalf("tick() = nil on a failed board read; want the start step's error")
+-					}
+-					continue
+-				}
+ 				h.tick(false)
+ 			}
+ 
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 2ae067926..451251cb1 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -163,7 +163,7 @@ type Deps struct {
+ 	// A nil BeamReady, as on the prime, holds nothing.
+ 	BeamReady func() (bool, error)
+ 	// PullRequestRecorded reads whether the beam's landing record holds a pull request.
+-	// While it does, the landed line of each member of the beam goes out and carries the beam's follow-up.
++	// While it does, a landed line carries the beam's follow-up.
+ 	// A nil PullRequestRecorded, as on the prime, reads none.
+ 	PullRequestRecorded func() (bool, error)
+ 	// LandNotice reports whether land_notice is on for the run slug.
+@@ -369,9 +369,7 @@ type daemon struct {
+ 	// readyRead and readyPost are the failure episodes of the ready record's read and of the member notices a beam owes.
+ 	readyRead logger.Episode
+ 	readyPost logger.Episode
+-	// landNoticeBoard and landNoticePullRequest are the failure episodes of the landing notices' reads:
+-	// the board and the beam's landing record.
+-	landNoticeBoard       logger.Episode
++	// landNoticePullRequest is the failure episode of the landing notices' read of the beam's landing record.
+ 	landNoticePullRequest logger.Episode
+ 	// landNoticeLookup guards each run's land_notice lookup by its slug.
+ 	landNoticeLookup logger.EpisodeSet
