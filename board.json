@@ -351,7 +351,7 @@
       "isolated": false,
       "brief": "Only a task carries depends_on, so a note that must wait for a running task looks ready to start",
       "body": "## Seen\n\nOnly a task carries `depends_on` (`lym board set-deps` and `upsert` refuse it on a note; `promote` takes it at the promotion).\nA note that must wait for a running task, such as `harden-fabric-undriven-cases` waiting for `harden-fabric-single-repo-verbs`, shows nothing of that on the board,\nso the operator keeps asking whether it can start.\n\n## Wanted\n\nOperator, 2026-11-23:\n\n- `upsert` and `set-deps` accept `depends_on` on a note.\n- `lym board list --text` and the README show a note's dependencies as they show a task's.\n- `promote` keeps a note's `depends_on`; one given in the promote payload replaces it.\n- `prune` strips a done entry from a note's `depends_on` as from a task's.\n- The `ly:board` and `ly:board-policy` skills say a note may carry `depends_on`.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-23T08:00:11Z",
       "revised": "2026-11-23T08:00:27Z",
       "run_settings": {
