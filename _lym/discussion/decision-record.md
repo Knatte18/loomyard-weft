@@ -27,6 +27,12 @@ Decision: Drive the three cases on a one-repository hub cloned from a local bare
 
 Rationale: A local origin keeps the trial off GitHub; a task session may not run fabric clone.
 
+### Added after Discussion (parent, 2026-11-23): No bug fixed: report-only live drive
+
+Decision: This task fixes no code. Its only commit is the report docs/research/single-repo-undriven-cases.md; the fault it found is filed as a board note.
+
+Rationale: A live trial with a report has no test to add.
+
 ## Constraints
 
 ## Auto-mode assumptions
