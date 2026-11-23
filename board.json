@@ -266,31 +266,6 @@
       "revised": "2026-11-23T09:10:19Z"
     },
     {
-      "id": 1601,
-      "handle": "T19",
-      "slug": "red-first-non-go-scoper",
-      "title": "Red-first gate holds every run in a hub whose test scoper is not go",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "loom",
-        "dotnet"
-      ],
-      "issues": [
-        192
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #192](https://github.com/Knatte18/loomyard/issues/192).\n\nSeen in a C# hub (NORCE Models), darn run hydraulics-gaps: the red-first gate held the writer's handoff because it cannot run the diff's tests on the merge base when the hub's scoper is not go. The run went on only after the parent orch recorded a decision titled 'No test seam ...' by lym loom decision add, waiving the check. Workaround: the parent records a 'No test seam' decision naming why the check cannot run. Expected: in a hub whose scoper cannot run tests on the merge base, the gate skips red-first or runs it through the hub's own test command, instead of halting every run for a manual waiver.",
-      "status": "done",
-      "created": "2026-11-23T09:17:00Z",
-      "revised": "2026-11-23T09:17:18Z",
-      "profile": "light"
-    },
-    {
       "id": 1602,
       "handle": "T10",
       "slug": "async-run-pusher",
@@ -493,7 +468,6 @@
         "pr-review-reask-not-delivered",
         "parent-review-stale-window",
         "webster-amend-stop-no-notice",
-        "red-first-non-go-scoper",
         "async-run-pusher",
         "harden-fabric-undriven-cases",
         "pr-review-dead-session-unseen"
