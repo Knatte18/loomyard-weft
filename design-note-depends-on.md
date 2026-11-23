@@ -1,6 +1,6 @@
 # A note carries depends_on, shown on the board and kept when promoted
 
-`note-depends-on` · Task · enhancement, board · running · Drift-Await
+`note-depends-on` · Task · enhancement, board · running · Drift-Expect
 
 Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
 
