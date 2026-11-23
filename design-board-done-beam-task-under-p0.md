@@ -1,6 +1,6 @@
 # Board view lists a done beam-project task under P0
 
-`board-done-beam-task-under-p0` · Task · bug, board · draft
+`board-done-beam-task-under-p0` · Task · bug, board
 
 Depends on: [`note-depends-on`](design-note-depends-on.md)
 
