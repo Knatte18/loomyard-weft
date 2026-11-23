@@ -8,19 +8,14 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (3)
+## Running (4)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 9m<br>9m | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 27m<br>27m | shuttle, reed, claude |
+| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | starting · Worktree-Create | neve | 3m<br>0m | process, shuttle |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
-
-## Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light |  | 3m<br>0m | process, shuttle |
 
 ## Layer A (1)
 
