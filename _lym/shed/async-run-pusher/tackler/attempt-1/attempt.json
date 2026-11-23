@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Seed-IDE",
+    "history_length": 3,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-23T14:47:56.601420419+01:00",
+  "deadline": "2026-11-23T14:57:56.601420419+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/async-run-pusher/drive-reports/drive-envelope-20261123-144756-d607.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/async-run-pusher/drive-reports/drive-report-20261123-144756-0710.md",
+  "strand_guid": "2e39a2df2a264d547c71384ed71fdbc2"
+}
