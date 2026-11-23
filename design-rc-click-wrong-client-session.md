@@ -1,6 +1,6 @@
 # Reed's RC click reads the most recent client's session, not the clicker's
 
-`rc-click-wrong-client-session` · Note · bug, reed
+`rc-click-wrong-client-session` · Task · bug, reed
 
 Imported from [issue #214](https://github.com/Knatte18/loomyard/issues/214).
 

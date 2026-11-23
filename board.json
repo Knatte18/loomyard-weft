@@ -227,14 +227,16 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
+        "sandbox-without-new-kernel",
         "async-run-pusher",
-        "remove-record-rerun-pair-gone"
+        "remove-record-rerun-pair-gone",
+        "rc-click-wrong-client-session"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `config-keys-nested-by-area`.\n\nTakes: the Sketch's decision record; the flat loom and tapestry templates and their readers; configengine's dotted-path layering, configsync's reconcile, hubreconcile's walk and EnsureOrWarn, configreg.PrepareRunSettings and boardengine's upsert path\nDelivers: loom.yaml and tapestry.yaml nested one map per area with every reader on the nested paths, pr_review_parent_timeout_min (read by autonomy mode) included as pr.review_parent_timeout_min; a move table that every reconcile, the profiles follow and each hub-wide walk apply to file layers, profiles.yaml blocks and board run_settings; refusal of an old name at every site with that site's way forward; EnsureOrWarn before every non-config verb that loads loom or tapestry config; every key named in full in Go messages, template comments, contracts, pattern and docs outside docs/research; PATTERN-config-layers changed and PATTERN-config-key-names added\nExports: configengine.KeyName, configengine.Spec.MovedKeys, the configreg helper that moves a module-keyed settings object, the helper that nests a dotted path into a run_settings or profile object\n\nThe part changes these packages:\n\n- internal/loomengine (about 450 changed lines)\n- internal/reviewbudget (about 120 changed lines)\n- internal/configengine (about 300 changed lines)\n- internal/configsync (about 350 changed lines)\n- internal/hubreconcile (about 300 changed lines)\n- internal/configreg (about 250 changed lines)\n- internal/configcli (about 40 changed lines)\n- internal/runprofile (about 120 changed lines)\n- internal/beamcli (about 50 changed lines)\n- internal/shedrecipe (about 100 changed lines)\n- internal/loomrecipe (about 80 changed lines)\n- internal/loomcli (about 300 changed lines)\n- internal/loomshed (about 20 changed lines)\n- internal/shedadapters (about 60 changed lines)\n- internal/battencli (about 80 changed lines)\n- internal/hardenshed (about 20 changed lines)\n- internal/fabricengine (about 40 changed lines)\n- internal/fabriccli (about 40 changed lines)\n- internal/driftengine (about 40 changed lines)\n- internal/landingshed (about 30 changed lines)\n- internal/gateslot (about 30 changed lines)\n- internal/webstercli (about 20 changed lines)\n- internal/shuttleparity (about 20 changed lines)\n- internal/preflightshed (about 10 changed lines)\n- internal/dobbyengine (about 20 changed lines)\n- internal/claudeengine (about 10 changed lines)\n- internal/codexengine (about 10 changed lines)\n- contracts (about 200 changed lines)\n- docs (about 80 changed lines)\n- pattern (about 60 changed lines)\n",
       "created": "2026-11-23T13:25:15Z",
-      "revised": "2026-11-23T14:27:28Z",
+      "revised": "2026-11-23T19:17:42Z",
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "c76b8326a8e42a0d9442f9dba3780bcf6ee40224bf1d886699a23df2ca3412eb"
@@ -304,10 +306,10 @@
     },
     {
       "id": 1620,
-      "handle": "B2",
+      "handle": "T1",
       "slug": "rc-click-wrong-client-session",
       "title": "Reed's RC click reads the most recent client's session, not the clicker's",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
@@ -315,12 +317,14 @@
       "issues": [
         214
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #214](https://github.com/Knatte18/loomyard/issues/214).\n\n`ClientAgentPane` (`internal/reedengine/remotecontrol.go:40`) runs `tmux display-message -p -c \u003cclient\u003e` without `-t`. tmux then resolves the format against the most recently active client's session, not the clicking client's. On a reed server with four clients in different sessions (one in the prime's orch session, the others in task sessions), it returned the orch session and `mo:orch` for all four. So an RC click in a task session can target the orch's pane instead of the task's agent, and is refused as already on when the orch is marked. Found while diagnosing #212. Fix: pass `-t \u003cclient\u003e` (or resolve the client's session first) in `clientAgentPaneVia`.",
       "created": "2026-11-23T19:17:39Z",
-      "revised": "2026-11-23T19:17:39Z"
+      "revised": "2026-11-23T19:17:42Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
