@@ -1,6 +1,26 @@
 round: 1
-fan: ""
-fix_fan: ""
+fan: review-code
+fix_fan: fix-code
+fans_recorded: true
+lenses:
+    - code-correctness
+    - code-affected-set
+    - code-tests
+    - code-scope
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-11-23T08:46:37Z
+    end: 2026-11-23T10:01:36.717018832+01:00
+    wall_seconds: 899.717018832
+    tokens_known: true
+    fresh_tokens: 159794
+    cache_read_tokens: 1730897
+    forks: 4
+    fork_fresh_tokens: 36411
+    fork_cache_read_tokens: 670335
+    fork_fresh_share: 0.22786212248269647
 seed:
     - engine: claude
       model: sonnet
@@ -11,3 +31,25 @@ seed:
       tokens_known: true
       fresh_tokens: 29398
       cache_read_tokens: 145864
+attempt: "1"
+assist:
+    engine: codex
+    model: gpt-6-astra
+    effort: medium
+assist_fan: review-code
+assist_ending: |-
+    not started: seatengine: seat "code-burler-review-assist": start: shuttle: start: shuttle: the provider never became ready — run dir /home/knatte/Code/loomyard-LYMHUB/red-first-tests-only-task/.lym/shuttle/23ee86b098535968dd0395a9c601ada6, strand "2dd1fdeb3cd685ee71fdfa5078ac581b", outcome "died"; the last pane capture was saved to startup-capture.txt; the strand was removed: shuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand "2dd1fdeb3cd685ee71fdfa5078ac581b": the input box holds a draft: "Ask Codex to do anythin"; retry once the session is idle. The pane's last lines:
+      │ knatte/.claude/
+      │ plugins/cache/
+      │ … +30 lines
+      └ ---
+        name: prose
+        description: Precision
+        +646 lines (^t to vie…
+    • ok prose, code-quality,
+      testing, golang-
+      comments, golang-testing
+      Worked for 13s • 9:57 AM
+    › Ask Codex to do anythin
+      GPT-6-Astra medium · ~/…
+      ← for agents   ⚠ 3 · f2
