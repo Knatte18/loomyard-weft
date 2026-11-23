@@ -7,5 +7,6 @@
       "title": "Narrow to the false hard-failure report",
       "digest": "6eed86b9d711b22d43d0b3440bc06f7623878ec280bbc9de856e965fc3839a05"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
