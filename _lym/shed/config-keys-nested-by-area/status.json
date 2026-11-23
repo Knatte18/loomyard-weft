@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -153,6 +153,30 @@
       "started_at": "2026-11-23T10:14:16Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested-by-area/_lym/reviews/discussion/round-3-review.md",
+      "at": "2026-11-23T10:16:34Z",
+      "started_at": "2026-11-23T10:15:17Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-23T10:16:33.481592911Z",
+          "end": "2026-11-23T10:16:33.481861634Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-23T10:16:33.641561615Z",
+          "end": "2026-11-23T10:16:33.64174611Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
