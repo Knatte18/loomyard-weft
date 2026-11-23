@@ -1,12 +1,12 @@
 {
   "current_producer": "Code-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1b: review: stencilstore: stencil \"burler-assist-consolidation\" was written by lym build 8cf7f477563f044e178a070cfd7dd27cb9f03c78, which is newer than the running build 52d132a2c8e4e3b68e3e797e30d3e9ceb200ec50, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Review",
     "last": "Code-Bouncer → bounced to Code-Burler-Review",
-    "wait": ""
+    "wait": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1b: review: stencilstore: stencil \"burler-assist-consolidation\" was written by lym build 8cf7f477563f044e178a070cfd7dd27cb9f03c78, which is newer than the running build 52d132a2c8e4e3b68e3e797e30d3e9ceb200ec50, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board"
   },
   "history": [
     {
