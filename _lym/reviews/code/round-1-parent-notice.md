@@ -1,0 +1,1 @@
+Review segment of task `agents-exit-before-reply` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/agents-exit-before-reply/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept agents-exit-before-reply" or "lym loom circling continue agents-exit-before-reply".
