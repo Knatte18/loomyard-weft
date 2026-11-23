@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The bootstrap stop said code tip cce04199925a2dc6eee25716d8112c0649d98d40 was not on origin yet. Read-only check now: `git ls-remote origin refs/heads/main` returns cce04199925a2dc6eee25716d8112c0649d98d40, and `git merge-base --is-ancestor` on that commit against origin/main exits 0. The commit is on origin; the push has since landed. The cause was the code push not yet landed at 09:21:27 (trace 8b1fb4368530c4b3 shows an earlier fabric push-lock busy on loomyard-weft/.weft/fabric.push.lock, which the step's refusal names). The stop is bootstrap, the environment condition has cleared, so a plain re-launch settles it: the stop's own way forward is `lym batten run pr-findings-open-fabric-nil` again once the code push lands. No goto needed; bootstrap is not a blocked stop.\n",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/pr-findings-open-fabric-nil/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/pr-findings-open-fabric-nil/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
