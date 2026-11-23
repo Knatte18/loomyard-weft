@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Recheck",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Recheck",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Recheck → skipped",
     "wait": ""
   },
   "history": [
@@ -222,6 +222,13 @@
       "at": "2026-11-23T12:30:23Z",
       "started_at": "2026-11-23T12:30:23Z",
       "by": "shed"
+    },
+    {
+      "producer": "Drift-Recheck",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-23T12:30:34Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
