@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -160,6 +159,16 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-23T10:27:55Z",
       "started_at": "2026-11-23T10:27:32Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/board-done-beam-task-under-p0/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T10:31:40Z",
+      "started_at": "2026-11-23T10:31:40Z",
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
