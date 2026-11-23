@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 11:28 UTC; every age below is as of then.
+Rendered 2026-11-23 11:31 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | board |
+| T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | darn · light | halted · Code-Burler-Review | neve | 1h<br>1h | board |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | Code-Burler-Review | neve | 3h<br>3h | board |
 | T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | shuttle |
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Code-Burler-Review | neve | 2h<br>2h | reed, claude |
