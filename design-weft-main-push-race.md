@@ -1,6 +1,6 @@
 # Find who pushes weft main outside the board push lock
 
-`weft-main-push-race` · Task · research, fabric, board, batten · running · PR-Review
+`weft-main-push-race` · Task · research, fabric, board, batten · landing · Finalize
 
 ## Goal
 
