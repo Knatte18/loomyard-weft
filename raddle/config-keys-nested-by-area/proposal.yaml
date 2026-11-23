@@ -1,0 +1,113 @@
+{
+  "sketch": "config-keys-nested-by-area",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "pr-review-reask-not-delivered", "revised": "2026-11-23T12:20:07Z"},
+    {"slug": "pr-regression-block-wording", "revised": "2026-11-23T12:46:27Z"},
+    {"slug": "old-driver-fails-newer-stencil", "revised": "2026-11-23T12:20:09Z"},
+    {"slug": "webster-amend-stop-no-notice", "revised": "2026-11-23T12:46:29Z"},
+    {"slug": "red-first-non-go-scoper", "revised": "2026-11-23T09:17:18Z"},
+    {"slug": "async-run-pusher", "revised": "2026-11-23T09:31:43Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "code-auto-accept-flag-only", "revised": "2026-11-23T09:10:09Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-22T17:14:20Z"},
+    {"slug": "transient-fetch-no-retry", "revised": "2026-11-23T12:39:56Z"},
+    {"slug": "parent-review-stale-window", "revised": "2026-11-23T12:46:29Z"},
+    {"slug": "harden-fabric-undriven-cases", "revised": "2026-11-23T08:31:55Z"}
+  ],
+  "parts": [
+    {
+      "slug": "config-keys-nested",
+      "title": "Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full",
+      "type": "enhancement",
+      "labels": ["config", "loom", "reconcile", "profiles", "shed", "batten", "fabric", "drift", "landing", "gate", "webster", "shuttle", "dobby", "claude", "codex", "stencil", "pattern", "docs"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
+      "packages": [
+        {"path": "internal/loomengine", "size": 450},
+        {"path": "internal/reviewbudget", "size": 120},
+        {"path": "internal/configengine", "size": 300},
+        {"path": "internal/configsync", "size": 350},
+        {"path": "internal/hubreconcile", "size": 300},
+        {"path": "internal/configreg", "size": 250},
+        {"path": "internal/configcli", "size": 40},
+        {"path": "internal/runprofile", "size": 120},
+        {"path": "internal/beamcli", "size": 50},
+        {"path": "internal/shedrecipe", "size": 100},
+        {"path": "internal/loomrecipe", "size": 80},
+        {"path": "internal/loomcli", "size": 300},
+        {"path": "internal/loomshed", "size": 20},
+        {"path": "internal/shedadapters", "size": 60},
+        {"path": "internal/battencli", "size": 80},
+        {"path": "internal/hardenshed", "size": 20},
+        {"path": "internal/fabricengine", "size": 40},
+        {"path": "internal/fabriccli", "size": 40},
+        {"path": "internal/driftengine", "size": 40},
+        {"path": "internal/landingshed", "size": 30},
+        {"path": "internal/gateslot", "size": 30},
+        {"path": "internal/webstercli", "size": 20},
+        {"path": "internal/shuttleparity", "size": 20},
+        {"path": "internal/preflightshed", "size": 10},
+        {"path": "internal/dobbyengine", "size": 20},
+        {"path": "internal/claudeengine", "size": 10},
+        {"path": "internal/codexengine", "size": 10},
+        {"path": "contracts", "size": 200},
+        {"path": "docs", "size": 80},
+        {"path": "pattern", "size": 60}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; the flat loom and tapestry templates and their readers; configengine's dotted-path layering, configsync's reconcile, hubreconcile's walk and EnsureOrWarn, configreg.PrepareRunSettings and boardengine's upsert path",
+        "delivers": "loom.yaml and tapestry.yaml nested one map per area with every reader on the nested paths, pr_review_parent_timeout_min (read by autonomy mode) included as pr.review_parent_timeout_min; a move table that every reconcile, the profiles follow and each hub-wide walk apply to file layers, profiles.yaml blocks and board run_settings; refusal of an old name at every site with that site's way forward; EnsureOrWarn before every non-config verb that loads loom or tapestry config; every key named in full in Go messages, template comments, contracts, pattern and docs outside docs/research; PATTERN-config-layers changed and PATTERN-config-key-names added",
+        "exports": "configengine.KeyName, configengine.Spec.MovedKeys, the configreg helper that moves a module-keyed settings object, the helper that nests a dotted path into a run_settings or profile object"
+      },
+      "depends_on": ["transient-fetch-no-retry", "pr-review-reask-not-delivered", "parent-review-stale-window", "pr-regression-block-wording", "webster-amend-stop-no-notice", "red-first-non-go-scoper", "async-run-pusher", "harden-fabric-undriven-cases"],
+      "open_risks": [
+        "The entry says `run_settings` and `lym config --set` \"use the dotted full name, file included\"; this record keeps `run_settings` as a nested module object and `lym config loom --set discussion.review_ask_parent=…`, with no form that takes `loom.discussion.review_ask_parent` as one token. The parent decides whether a one-token form is wanted.",
+        "A hub whose machines run different builds: an older build loads a moved hub base file against its flat template.\nIt refuses one holding a map where its old key was a scalar, `discussion`, `raddle` or `friction` in `loom.yaml` and `plan` or `parts` in `tapestry.yaml`,\nand otherwise warns of the moved maps and runs on template defaults for every moved key.\nIt also prunes the new nested keys from its own machine's local files and still accepts old names in `run_settings` and profiles, until it upgrades.",
+        "Any run that lands a new loom or tapestry key before this run merges lands it flat; the D1 template criterion fails at this run's merge until the key is nested."
+      ],
+      "criteria": [
+        "D1: the loom and tapestry templates hold every key of D1's table at its new path, with no top-level key starting with an area prefix the table moves, and the loaded config holds the template's defaults at those paths.",
+        "D1, D9: a hub base `loom.yaml` setting `discussion.review_ask_parent: true` loads that value; a local file setting `discussion.advisors` is refused as before, by its new path.",
+        "Review: D2 — no other module's template changes its keys.",
+        "D3: a run-settings refusal, a local-layer refusal and a budget refusal name the key as `loom.<area>.<key>`, rendered through `configengine.KeyName` (new).",
+        "Review: D3 — every template comment, stencil, spec, recipe, pattern and doc outside `docs/research/` names a config key by its full dotted name.",
+        "D4: an old key in a local file, a worktree file, a hub base file, a task's `run_settings` at Seed-Child, a profile block, `lym config loom --set` and a recipe setting reference is each refused, naming the old and new full names and that site's way forward of D4, and Seed-Child's refusal prints one way forward.",
+        "D4: a local file setting `discussion: {reviewer_fan: \"\"}` is refused as a Guard key by its new path, and one setting `discussion: {timeout_min: 60}` is admitted.",
+        "D4: `lym config loom --unset code_max_bounces` removes the old key from a file that still holds it.",
+        "D4: the loom spec still refuses `plan_max_bounces` and names `tapestry.plan.max_bounces`.",
+        "D5: reconciling a hub base, a worktree and a local `loom.yaml` that set `code_max_bounces: 2` and `discussion: sonnet[medium]` leaves `code.max_bounces: 2` and `discussion.model: sonnet[medium]`, keeps the other keys' comments, reports the moves, and a second reconcile changes nothing.",
+        "D5: a local file holding only old keys keeps their values through a reconcile that prunes unknown keys.",
+        "D5: an absent hub base `loom.yaml` seeded from a prime copy holding `code_max_bounces: 2` holds `code.max_bounces: 2`.",
+        "D5: a file setting both `code_max_bounces` and `code.max_bounces` keeps the new path's value and reports the dropped old key.",
+        "D5: the walk mails the orch one line naming each moved key's old and new full names, and a walk that moved nothing mails none.",
+        "D5: after a rebuild that leaves the build stamp stale, a non-start loom verb of an in-flight run whose hub base and local `loom.yaml` hold `code_max_bounces: 2` resolves `loom.code.max_bounces` to 2 and does not halt.",
+        "D6: after the walk, an untouched seeded `profiles.yaml` parses to the same YAML value as the new template, and a profile the operator added with `loom: {code_max_bounces: 3}` holds `loom: {code: {max_bounces: 3}}`.",
+        "D6: a seeded `profiles.yaml` whose shipped `solid.tapestry` block the operator changed to `loom` `code_max_bounces: 3` holds `loom` `code.max_bounces: 3` after the walk.",
+        "D7: after the walk, a board entry with `run_settings` `{\"loom\": {\"code_max_bounces\": 2}, \"drift\": {\"scope\": \"full\"}}` holds `{\"loom\": {\"code\": {\"max_bounces\": 2}}, \"drift\": {\"scope\": \"full\"}}`, and a second walk writes no board commit.",
+        "D7: a walk whose board write fails leaves the entry as it was and the build stamp stale, and the next walk carries it.",
+        "D8: each perch's budget resolves from `<perch>.max_bounces`, falling back to `review.max_bounces`, for the discussion, code, split and plan perches.",
+        "D8: the task `lym beam merge-parent` files carries `{\"loom\": {\"code\": {\"max_bounces\": N, \"hard_max_bounces\": M}}}` and its Seed-Child applies those budgets.",
+        "D8: a segment with an empty `code.reviewer_model` takes `review.reviewer_model`, and a recipe reference `loom.split.reviewer_fan` passes recipe build and resolves the nested value.",
+        "D8: `loomengine.FlagCodeAutoAccept` leaves a hub whose moved file sets `code.auto_accept: false` unflagged."
+      ],
+      "pattern_changes": ["PATTERN-config-layers", "PATTERN-config-key-names"],
+      "expected_cost_usd": 42.4,
+      "cost_line": "tapestry/solid stored-record fit (17 runs, correlation 0.70): 30.87 fixed + 0.33 per 100 lines at about 3,500 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 42.4,
+    "line": "one tapestry/solid part of about 3,500 changed lines on the tapestry/solid stored-record fit (17 runs)",
+    "next_best": {
+      "split": "two parts chained: a tapestry/solid part for D1, D4 to D9 and the KeyName helper, then a darn/solid part for D3's sweep of other modules' Go messages, template comments, contracts and docs",
+      "expected_usd": 56.4,
+      "line": "tapestry/solid fit at about 2,600 lines (39.5) plus the darn/solid stored-record mean (16.9, 8 runs, fit correlation -0.14 so the mean is used)"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
