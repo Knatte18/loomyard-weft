@@ -1,6 +1,6 @@
 # Find who pushes weft main outside the board push lock
 
-`weft-main-push-race` · Task · research, fabric, board, batten · running · Drift-Baseline
+`weft-main-push-race` · Task · research, fabric, board, batten · running · Drift-Await
 
 ## Goal
 
