@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → stuck",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -226,6 +225,15 @@
       "at": "2026-11-23T11:11:34Z",
       "started_at": "2026-11-23T11:11:34Z",
       "budget_capped": true
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-23T11:45:40Z",
+      "started_at": "2026-11-23T11:45:40Z",
+      "routed_to": "Code-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
