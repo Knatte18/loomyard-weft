@@ -240,27 +240,6 @@
       "profile": "light"
     },
     {
-      "id": 1595,
-      "handle": "T6",
-      "slug": "verify-budget-notice-no-slug",
-      "title": "Verify-budget notice names no run",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nThe orch got creel mail #2450 from `ly:LOOM` (2026-11-23):\n\"Darn-Write gate: the verify gate has run past its 30m0s budget and is at attempt 3; it goes on until its attempts are spent; no verify run has failed yet\".\nNeither the sender nor the text names the run, and three darn runs were in Darn-Write at the time,\nso the orch could only guess which run it meant.\nThe line is built by `verifyBudgetNotice` in `internal/loomshed/verifybudget.go`, which takes the gate site but no slug.\n\n## Idea\n\nPut the run's slug in the line, as other parent notices do, so the parent knows which run it is about without a status read.\n",
-      "status": "done",
-      "created": "2026-11-23T08:50:21Z",
-      "revised": "2026-11-23T08:59:08Z",
-      "profile": "light"
-    },
-    {
       "id": 1596,
       "handle": "B1",
       "slug": "code-auto-accept-flag-only",
@@ -349,9 +328,7 @@
         192
       ],
       "recipe": "darn",
-      "depends_on": [
-        "verify-budget-notice-no-slug"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #192](https://github.com/Knatte18/loomyard/issues/192).\n\nSeen in a C# hub (NORCE Models), darn run hydraulics-gaps: the red-first gate held the writer's handoff because it cannot run the diff's tests on the merge base when the hub's scoper is not go. The run went on only after the parent orch recorded a decision titled 'No test seam ...' by lym loom decision add, waiving the check. Workaround: the parent records a 'No test seam' decision naming why the check cannot run. Expected: in a hub whose scoper cannot run tests on the merge base, the gate skips red-first or runs it through the hub's own test command, instead of halting every run for a manual waiver.",
