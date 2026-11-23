@@ -14,6 +14,12 @@ Expected: an amendment during Webster keeps the record of committed batches, and
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Untraceable incident driven in a test
+
+Decision: The incident in issue #185 cannot be traced to a run. The reported path is driven in a test, and the test lands when it shows no loss of the Webster run record.
+
+Rationale: No run in this hub matches the report; a test of the path is the only evidence available.
+
 ## Constraints
 
 ## Auto-mode assumptions
