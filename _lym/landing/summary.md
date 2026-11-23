@@ -1,32 +1,42 @@
-# Keep the parent's satisfied PR-Review answer through later failed asks
+# landingshed: a failed later ask no longer hides a satisfied answer
 
-Under autonomy, `lym loom pr-continue` and the PR-Review row end a review only on the parent's satisfied answer at the current head.
-`landingshed.ReadPRReviewStanding` judged that answer from the run's latest PR-Review ask alone.
-A later ask at the same head that ended `undelivered`, `no-parent` or `timeout`, or that still awaited an answer, hid a satisfied answer the parent had already given there.
-`pr-continue` then refused with "no satisfied answer from your parent stands", and the review could not end.
+Under autonomy, `lym loom pr-continue` judged a review by the latest PR-Review ask at the head.
+A later ask that never reached the parent, ended `undelivered`, `no-parent` or `timeout`, or still awaited an answer,
+hid a satisfied answer the parent had already given at that head.
+`pr-continue` then refused with "no satisfied answer from your parent stands", and the review deadlocked.
 
 Closes #213
 
 ## What changes
 
-- `ReadPRReviewStanding` first looks for the latest answered, uncleared PR-Review ask at the head.
-  When its report holds no findings, the standing is satisfied, whatever later asks at that head did.
-  When it holds findings, a later answer has replaced the satisfied one, and the standing falls back to the latest ask as before: awaiting or ask-again.
-- `TestReadPRReviewStanding` gains rows for a satisfied answer followed by failed asks, by an open ask, and by an answer with findings.
-  It also gains rows for an open ask after findings and for a cleared satisfied answer.
-- The autonomous PR-Review landing block tells the session that a satisfied answer at its head stands through a later failed or pending ask.
-  The `landingshed` package doc states the same rule.
+- `ReadPRReviewStanding` in `internal/landingshed/prreviewask.go` now looks for the latest answered, uncleared PR-Review ask at the head.
+  When its report holds no findings, the standing is satisfied, whatever asks came after it at that head.
+  A later answer with findings replaces it, and a cleared answer does not stand.
+  With no answer standing, the latest ask decides as before: awaiting before its deadline, ask-again otherwise.
+- `lym loom parent-review ask` refuses an ask at a head where a satisfied answer stands,
+  and its refusal names `lym loom pr-continue` as the way forward.
+  This stops the agent from posting more asks that cannot change the outcome.
+- The `landing-block-pr-review-autonomous` stencil tells the PR-Review agent that a standing satisfied answer outlasts later failed or unanswered asks,
+  and to run `pr-continue` instead of asking again.
+- The `landingshed` and `loomcli` package docs state the new rule.
 
 ## Design decisions
 
-- The fix lives in the one standing read, so `pr-continue`, the PR-Review row's judgement and `parent-review ask`'s awaiting check all follow it.
-- Item 2 of the issue, a parent verb to settle an ask it never received, is already covered by 3e8a5eebf:
-  `parent-review answer` answers a latest PR-Review ask that ended `no-parent` or `undelivered`.
-  With this change a latest `timeout` ask needs no verb either, so no `--head` flag is added.
-- Item 3, a tmux-tier test of `parent-review ask` from a live non-orch pane, leaves this run by the parent's recorded decision.
-  It is filed as the board note `pr-ask-live-pane-test`.
+- The parent's answer at a head holds until the parent answers again at that head.
+  This is the one rule behind both the standing read and the ask refusal.
+- The change adds no verb for the parent to record a satisfied answer without a delivered ask, and no `--head` flag.
+  With the standing fixed, a satisfied answer the parent already gave is enough for `pr-continue`.
+- The tmux-tier test that runs `parent-review ask` from a live non-orch pane is out of scope here and filed as its own board note.
+  The strand claim creel accepts from a live PR-Review pane therefore stays unproven.
+
+## To check by hand
+
+- `parent-review ask` posts a second ask past a satisfied answer in a case the new refusal does not cover (`ask-verb-posts-second-ask-past-satisfied`).
+  Check `parentReviewAskVerb` in `internal/loomcli/parentreview.go` for a path that reaches the post without the standing check.
+- The stencil's await rule can still send the agent to ask again past a satisfied answer (`stencil-await-rule-asks-again-past-satisfied`).
+  Read the `await` paragraph of `contracts/stencils/landing/landing-block-pr-review-autonomous.md` against the new `pr-continue` instruction.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** landing
+**Blast radius:** landingshed
