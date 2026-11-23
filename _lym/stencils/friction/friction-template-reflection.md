@@ -6,7 +6,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=ce87ccb85be851c4034dbf629a9b19b3efdf032c3f291b46e12474abb16e34ca build=64e587958feacd8940304401801c039f015c63af time=2026-11-18T19:38:37Z -->
+lym-stencil: sha256=ac5329fadbdb22521d21de0ef33dbd1e8895b9c0c59a5314d02ad0763034d0c3 build=02da2c1360fcc63609c8e8c0c5b759af40fad0c5 time=2026-11-23T13:11:38Z -->
 
 # Reflection — read the friction notes, file every distinct lym problem
 
@@ -46,6 +46,9 @@ intake filters later.
 
 For a `loom-halt` or `loom-crash-resume` note, file an issue only when the notes, the reason or the trace show a lym problem behind the event.
 A halt caused by the task's own code, or a review segment that did not converge, is dropped; a process signal such as a spent budget or an escalation is not a defect.
+A `build-skew` halt is dropped too: the run's lym was older than a board stencil it read,
+which is a binary to update and not a lym defect;
+the driver hands such a run to a fresh driver when a newer build is on disk.
 A dropped event stays recoverable: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lym selfreport create`.
 
 ## Step 3 — File each issue
