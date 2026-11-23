@@ -1,6 +1,6 @@
 # tools/godocreflow worsens wrapped-break findings instead of clearing them
 
-`godocreflow-worsens-findings` · Task · bug, tools, lint · running · Darn-Write
+`godocreflow-worsens-findings` · Task · bug, tools, lint · running · Drift-Verify
 
 Imported from [issue #183](https://github.com/Knatte18/loomyard/issues/183).
 
