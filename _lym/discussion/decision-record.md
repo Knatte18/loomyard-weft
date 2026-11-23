@@ -19,6 +19,12 @@ Provenance: task doc-go-trim-pass; note Darn-Write.md.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: all findings fixed
+
+Decision: Accept the code review at round 1. The BLOCKING finding layout-leaves-changed-lines-over-limit is fixed in 509a3cd74: a paragraph whose layout adds a long line is kept as written. F2 to F5 are fixed with tests in the same commits.
+
+Rationale: Every finding has a committed fix and its gates passed; another round would only confirm them.
+
 ## Constraints
 
 ## Auto-mode assumptions
