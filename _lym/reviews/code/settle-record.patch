@@ -1,0 +1,1272 @@
+diff --git a/internal/commentlint/doc.go b/internal/commentlint/doc.go
+index 9158446e2..e15aed96b 100644
+--- a/internal/commentlint/doc.go
++++ b/internal/commentlint/doc.go
+@@ -30,8 +30,8 @@
+ // A paragraph is the lines of a block between blank comment lines.
+ // It is skipped whole when any of its lines is indented code, a doc-comment list item or a heading.
+ // A generated file is skipped whole.
+-// The kinds of line skipped follow `tools/godocreflow`.
+-// This package re-implements them, since `tools/` is not importable.
++// The line classifiers, the break rule and the length rule are exported,
++// so a tool that rewrites comments lays its lines out by the rules this package checks.
+ //
+ // Bound: the clause check is a word-list heuristic, not a parser.
+ // A plural noun read as a verb (`, and the gate tests`) passes.
+diff --git a/internal/commentlint/linelength.go b/internal/commentlint/linelength.go
+index b5fdb8ed5..d9cd75aea 100644
+--- a/internal/commentlint/linelength.go
++++ b/internal/commentlint/linelength.go
+@@ -19,32 +19,41 @@ var (
+ 	anyLevelHeadingPattern = regexp.MustCompile(`^#{1,6}(\s|$)`)
+ )
+ 
+-// countedText returns the text of a comment line that its length is measured on:
+-// the text after `//`, without its indentation or a list item's marker.
+-func countedText(line commentLine) string {
+-	return listItemPattern.ReplaceAllString(strings.TrimLeft(line.raw(), " \t"), "")
++// countedText returns the text a comment line's length is measured on, given the line's text after `//`:
++// that text without its indentation or a list item's marker.
++func countedText(raw string) string {
++	return listItemPattern.ReplaceAllString(strings.TrimLeft(raw, " \t"), "")
+ }
+ 
+-// isExemptFromLength reports whether a line's counted text may run past the limit:
++// isExemptFromLength reports whether a line's counted text may run past limit:
+ // it is a heading, a blockquote or a table row,
+-// or it holds a URL, code span or other unbroken word that alone reaches the limit.
+-func isExemptFromLength(text string) bool {
++// or it holds a URL, code span or other unbroken word that alone reaches limit.
++func isExemptFromLength(text string, limit int) bool {
+ 	if anyLevelHeadingPattern.MatchString(text) || strings.HasPrefix(text, ">") || strings.HasPrefix(text, "|") {
+ 		return true
+ 	}
+ 	for _, span := range codeSpanPattern.FindAllString(text, -1) {
+-		if utf8.RuneCountInString(span) >= LineLengthLimit {
++		if utf8.RuneCountInString(span) >= limit {
+ 			return true
+ 		}
+ 	}
+ 	for _, word := range strings.Fields(text) {
+-		if utf8.RuneCountInString(word) >= LineLengthLimit {
++		if utf8.RuneCountInString(word) >= limit {
+ 			return true
+ 		}
+ 	}
+ 	return false
+ }
+ 
++// TextReachesLimit reports whether a `//` comment line, given as its text after `//`, breaks a line-length limit:
++// its text without indentation or a list item's marker counts limit characters or more,
++// and the line is no heading, blockquote or table row,
++// and it holds no URL, code span or unbroken word that alone reaches limit.
++func TextReachesLimit(raw string, limit int) bool {
++	text := countedText(raw)
++	return utf8.RuneCountInString(text) >= limit && !isExemptFromLength(text, limit)
++}
++
+ // findNewLongLines returns the comment lines of path's new text whose counted text reaches LineLengthLimit.
+ // A line that stands unchanged in a comment block of baseText is not new and is skipped.
+ // Each occurrence of a line in the base excuses one occurrence in the new text.
+@@ -58,13 +67,12 @@ func findNewLongLines(path, baseText, newText string) []Finding {
+ 	var findings []Finding
+ 	for _, block := range commentBlocks(newText) {
+ 		for _, line := range block {
+-			text := countedText(line)
+ 			literal := strings.TrimSpace(line.literal)
+ 			if known[literal] > 0 {
+ 				known[literal]--
+ 				continue
+ 			}
+-			if utf8.RuneCountInString(text) < LineLengthLimit || isExemptFromLength(text) {
++			if !TextReachesLimit(line.raw(), LineLengthLimit) {
+ 				continue
+ 			}
+ 			findings = append(findings, Finding{File: path, Line: line.number, Rule: RuleLineLength, Text: literal})
+diff --git a/internal/commentlint/lint.go b/internal/commentlint/lint.go
+index dab5bf36f..979ba7ef4 100644
+--- a/internal/commentlint/lint.go
++++ b/internal/commentlint/lint.go
+@@ -81,10 +81,20 @@ func Lint(worktree, base string) ([]Finding, error) {
+ 	return findings, nil
+ }
+ 
++// IsGenerated reports whether src holds a `// Code generated ... DO NOT EDIT.` line, the mark of a generated Go file.
++func IsGenerated(src string) bool {
++	return generatedPattern.MatchString(src)
++}
++
++// IsDirective reports whether a `//` comment line, given as its text after `//`, is a directive such as `//go:generate`.
++func IsDirective(raw string) bool {
++	return directivePattern.MatchString(strings.TrimSpace(raw))
++}
++
+ // findFileFindings returns the findings of every rule in path's new text against its base text, ordered by line.
+ // It returns nil for a generated file.
+ func findFileFindings(path, baseText, newText string) []Finding {
+-	if generatedPattern.MatchString(newText) {
++	if IsGenerated(newText) {
+ 		return nil
+ 	}
+ 	findings := append(findNewWrappedBreaks(path, baseText, newText), findNewLongLines(path, baseText, newText)...)
+@@ -131,7 +141,7 @@ func commentBlocks(src string) [][]commentLine {
+ 		}
+ 		literal = strings.TrimRight(literal, "\r\n")
+ 		line := file.Position(pos).Line
+-		if !startsLine(src, file.Offset(pos)) || directivePattern.MatchString(strings.TrimSpace(strings.TrimPrefix(literal, "//"))) {
++		if !startsLine(src, file.Offset(pos)) || IsDirective(strings.TrimPrefix(literal, "//")) {
+ 			flush()
+ 			continue
+ 		}
+@@ -173,17 +183,23 @@ func paragraphs(block []commentLine) [][]commentLine {
+ // isProseParagraph reports whether the paragraph holds only prose lines: no indented code, list item or heading.
+ func isProseParagraph(paragraph []commentLine) bool {
+ 	for _, line := range paragraph {
+-		raw := line.raw()
+-		if strings.HasPrefix(raw, "\t") || strings.HasPrefix(line.content, " ") || strings.HasPrefix(line.content, "\t") {
+-			return false
+-		}
+-		if headingPattern.MatchString(line.content) || listItemPattern.MatchString(line.content) {
++		if !IsProseLine(line.raw()) {
+ 			return false
+ 		}
+ 	}
+ 	return true
+ }
+ 
++// IsProseLine reports whether a `//` comment line, given as its text after `//`, is prose:
++// not indented code, a doc-comment list item or a heading.
++func IsProseLine(raw string) bool {
++	content := strings.TrimPrefix(raw, " ")
++	if strings.HasPrefix(raw, "\t") || strings.HasPrefix(content, " ") || strings.HasPrefix(content, "\t") {
++		return false
++	}
++	return !headingPattern.MatchString(content) && !listItemPattern.MatchString(content)
++}
++
+ // lineEndPair names the two words either side of the break between two prose lines.
+ func lineEndPair(before, after commentLine) string {
+ 	beforeWords := strings.Fields(before.content)
+@@ -250,15 +266,17 @@ func countEqualPositions(first, second []string) int {
+ 	return count
+ }
+ 
+-// endsSemanticBreak reports whether a line may end where it does:
++// IsSemanticBreak reports whether a prose comment line may end where it does:
+ // at a sentence end, a semicolon, or a comma before a coordinating conjunction that opens a clause.
+-func endsSemanticBreak(before, after commentLine) bool {
+-	trimmed := strings.TrimRight(before.content, " \t")
++// before and after are the texts of the line and of the next line, without `//` and its one space;
++// after holds at least one word.
++func IsSemanticBreak(before, after string) bool {
++	trimmed := strings.TrimRight(before, " \t")
+ 	if sentenceEndPattern.MatchString(trimmed) || strings.HasSuffix(trimmed, ";") {
+ 		return true
+ 	}
+ 	if strings.HasSuffix(trimmed, ",") {
+-		words := strings.Fields(after.content)
++		words := strings.Fields(after)
+ 		return conjunctions[strings.ToLower(words[0])] && opensClause(clauseWords(words[1:]))
+ 	}
+ 	return false
+@@ -328,7 +346,7 @@ func findNewWrappedBreaks(path, baseText, newText string) []Finding {
+ 			}
+ 			for i := 0; i+1 < len(paragraph); i++ {
+ 				before, after := paragraph[i], paragraph[i+1]
+-				if endsSemanticBreak(before, after) || known.carriesOver(before, after) {
++				if IsSemanticBreak(before.content, after.content) || known.carriesOver(before, after) {
+ 					continue
+ 				}
+ 				findings = append(findings, Finding{File: path, Line: before.number, Rule: RuleWrappedBreak, Text: strings.TrimSpace(before.literal)})
+diff --git a/tools/godocreflow/main.go b/tools/godocreflow/main.go
+index c5ea2f3bf..542c92329 100644
+--- a/tools/godocreflow/main.go
++++ b/tools/godocreflow/main.go
+@@ -7,19 +7,20 @@
+ // It finds comments with go/parser and go/ast, not with a regex over raw text;
+ // so a "//" inside a string literal is never taken for a comment.
+ //
+-// A semantic line still wider than -max-width after splitting gets one last-resort greedy word wrap.
+-// The wrap is a narrow exception for the rare over-wide outlier, which reads badly in a side-by-side diff;
+-// it does not return to fixed-column wrapping.
+-// -max-width is a flag rather than a constant so the column budget can be tuned per run without a rebuild.
++// It lays lines out by the rules `lym loom lint-comments` checks, so it adds no wrapped-break finding there.
++// Each break it makes is one those rules accept, or one the comment already had between the same two words.
++// A line whose text reaches the rules' length limit is split at such a break.
++// A paragraph that no such break brings under the limit stays as written.
++// The run names every prose line that still reaches the limit for a hand rewrite.
+ //
+-// Single-line comments that already fit, end-of-line comments, and directive comments stay unchanged.
+-// Comment blocks with indented example code or a Go 1.19 heading or list stay unchanged too.
+-// So do struct-field and interface-method doc comments, and generated files.
++// Single-line comments under the limit, end-of-line comments, and generated files stay unchanged.
++// So do comment groups holding a directive, and struct-field and interface-method doc comments.
++// Paragraphs of indented example code, headings or lists stay as written;
++// the prose paragraphs around them are reflowed.
+ //
+-//	go run ./tools/godocreflow [-check] [-max-width N] <file_or_dir> ...
++//	go run ./tools/godocreflow [-check] <file_or_dir> ...
+ //
+-//	-check		print before/after blocks instead of writing files (dry run)
+-//	-max-width	last-resort word-wrap column budget, 0 disables it (default 100)
++//	-check	print before/after blocks instead of writing files (dry run)
+ package main
+ 
+ import (
+@@ -29,15 +30,16 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"sort"
++
++	"github.com/Knatte18/loomyard/internal/commentlint"
+ )
+ 
+ func main() {
+ 	check := flag.Bool("check", false, "print before/after blocks instead of writing files (dry run)")
+-	maxWidth := flag.Int("max-width", 100, "last-resort word-wrap column budget (indent + \"// \" + content); 0 disables it")
+ 	flag.Parse()
+ 	args := flag.Args()
+ 	if len(args) == 0 {
+-		fmt.Fprintln(os.Stderr, "usage: godocreflow [-check] [-max-width N] <file_or_dir> ...")
++		fmt.Fprintln(os.Stderr, "usage: godocreflow [-check] <file_or_dir> ...")
+ 		os.Exit(2)
+ 	}
+ 
+@@ -48,7 +50,7 @@ func main() {
+ 	}
+ 
+ 	changed := 0
+-	wrapped := 0
++	longLines := 0
+ 	for _, path := range files {
+ 		srcBytes, err := os.ReadFile(path)
+ 		if err != nil {
+@@ -58,18 +60,17 @@ func main() {
+ 		src := string(srcBytes)
+ 
+ 		fset := token.NewFileSet()
+-		edits, err := collectEdits(fset, path, src, *maxWidth)
++		edits, longLineNumbers, err := collectEdits(fset, path, src, commentlint.LineLengthLimit)
+ 		if err != nil {
+ 			fmt.Fprintf(os.Stderr, "SKIP (parse error) %s: %v\n", path, err)
+ 			continue
+ 		}
++		reportLongLines(path, longLineNumbers)
++		longLines += len(longLineNumbers)
+ 		if len(edits) == 0 {
+ 			continue
+ 		}
+ 		changed++
+-		for _, e := range edits {
+-			wrapped += e.wrapped
+-		}
+ 		if *check {
+ 			printEdits(path, edits)
+ 			continue
+@@ -86,8 +87,8 @@ func main() {
+ 		verb = "would change"
+ 	}
+ 	fmt.Fprintf(os.Stderr, "%d file(s) %s\n", changed, verb)
+-	if wrapped > 0 {
+-		fmt.Fprintf(os.Stderr, "%d line(s) needed the %d-char last-resort width fallback\n", wrapped, *maxWidth)
++	if longLines > 0 {
++		fmt.Fprintf(os.Stderr, "%d prose line(s) reach %d characters; rewrite them by hand\n", longLines, commentlint.LineLengthLimit)
+ 	}
+ }
+ 
+@@ -125,6 +126,13 @@ func collectGoFiles(args []string) ([]string, error) {
+ 	return files, nil
+ }
+ 
++// reportLongLines prints each given line number of path as a prose line that reaches the length limit.
++func reportLongLines(path string, lineNumbers []int) {
++	for _, lineNumber := range lineNumbers {
++		fmt.Fprintf(os.Stderr, "%s:%d: line reaches %d characters\n", path, lineNumber, commentlint.LineLengthLimit)
++	}
++}
++
+ // printEdits prints each edit as a labeled before/after block, in source order, for hand-checking.
+ func printEdits(path string, edits []edit) {
+ 	sorted := make([]edit, len(edits))
+diff --git a/tools/godocreflow/reflow.go b/tools/godocreflow/reflow.go
+index d22a6b8ff..3be018f73 100644
+--- a/tools/godocreflow/reflow.go
++++ b/tools/godocreflow/reflow.go
+@@ -7,59 +7,76 @@ import (
+ 	"go/ast"
+ 	"go/parser"
+ 	"go/token"
+-	"regexp"
++	"slices"
+ 	"sort"
+ 	"strings"
+-	"unicode/utf8"
+-)
+ 
+-var (
+-	generatedRE = regexp.MustCompile(`^// Code generated .* DO NOT EDIT\.?\s*$`)
+-	directiveRE = regexp.MustCompile(`^(go:|nolint\b)`)
+-	headingRE   = regexp.MustCompile(`^#(\s|$)`)
+-	listItemRE  = regexp.MustCompile(`^([-*]\s|[0-9]{1,3}[.)]\s)`)
++	"github.com/Knatte18/loomyard/internal/commentlint"
+ )
+ 
+-// isGenerated reports whether src carries a "Code generated ... DO NOT EDIT" marker anywhere in the file.
+-// The marker is the convention documented at https://go.dev/s/generatedcode.
+-// Such files are left alone entirely.
+-func isGenerated(src string) bool {
+-	for _, line := range strings.Split(src, "\n") {
+-		if generatedRE.MatchString(strings.TrimRight(line, "\r")) {
+-			return true
+-		}
+-	}
+-	return false
+-}
+-
+ // edit is a byte-offset replacement span into the original source.
+ type edit struct {
+ 	start, end int
+-	line       int    // 1-based source line of the comment group, for -check display
+-	old        string // the text being replaced, for -check display
+-	text       string
+-	wrapped    int // number of semantic lines that needed the last-resort width fallback
++	// line is the 1-based source line of the comment group.
++	line int
++	// old is the text being replaced, for -check display.
++	old  string
++	text string
+ }
+ 
+-// collectEdits parses src and returns every reflow edit it qualifies for.
+-// maxWidth is the last-resort word-wrap column budget, counting indentation, "// ", and content; 0 disables it.
++// lineShift returns how many lines the edit adds to the file.
++func (e edit) lineShift() int {
++	return strings.Count(e.text, "\n") - strings.Count(e.old, "\n")
++}
++
++// groupLongLines holds the prose lines of one comment group that reach the length limit.
++type groupLongLines struct {
++	// line is the 1-based source line of the comment group.
++	line int
++	// indexes are the 0-based indexes, within the group's final text, of those lines.
++	indexes []int
++}
++
++// collectEdits parses src and returns every reflow edit it qualifies for,
++// and the line numbers, in the reflowed file, of the prose lines that still reach the length limit.
++// Those lines are in comment groups the tool may reflow, whether or not the group needs an edit.
++// limit is the comment line-length limit, in characters of the text after "//".
+ // err is non-nil only on a parse failure; a generated file yields no edits and no error.
+-func collectEdits(fset *token.FileSet, filename, src string, maxWidth int) ([]edit, error) {
+-	if isGenerated(src) {
+-		return nil, nil
++func collectEdits(fset *token.FileSet, filename, src string, limit int) ([]edit, []int, error) {
++	if commentlint.IsGenerated(src) {
++		return nil, nil, nil
+ 	}
+ 	file, err := parser.ParseFile(fset, filename, src, parser.ParseComments)
+ 	if err != nil {
+-		return nil, err
++		return nil, nil, err
+ 	}
+ 
+ 	var edits []edit
++	var longGroups []groupLongLines
+ 	for _, cg := range collectGroups(file) {
+-		if e := planEdit(fset, src, cg, maxWidth); e != nil {
++		e, long := planEdit(fset, src, cg, limit)
++		if e != nil {
+ 			edits = append(edits, *e)
+ 		}
++		if len(long.indexes) > 0 {
++			longGroups = append(longGroups, long)
++		}
+ 	}
+-	return edits, nil
++
++	var longLines []int
++	for _, group := range longGroups {
++		lineShift := 0
++		for _, e := range edits {
++			if e.line < group.line {
++				lineShift += e.lineShift()
++			}
++		}
++		for _, index := range group.indexes {
++			longLines = append(longLines, group.line+lineShift+index)
++		}
++	}
++	slices.Sort(longLines)
++	return edits, longLines, nil
+ }
+ 
+ // collectGroups returns every comment group eligible for reflow consideration.
+@@ -137,137 +154,109 @@ func specExported(spec ast.Spec) bool {
+ 	return false
+ }
+ 
+-// planEdit builds the replacement edit for one comment group, or returns nil when the group stays as written.
+-// A group stays as written when it is a directive, an indented code example, a heading or list, or already reflowed.
+-// A one-line comment is reflowed only when it is wider than maxWidth.
+-// maxWidth (0 disables it) is the last-resort word-wrap fallback.
+-// It applies to a semantic line still too wide after sentence and clause splitting.
+-func planEdit(fset *token.FileSet, src string, cg *ast.CommentGroup, maxWidth int) *edit {
++// planEdit builds the replacement edit for one comment group, or returns a nil edit when the group stays as written.
++// A group holding a /* */ comment or a directive stays as written.
++// So does a one-line group whose text is under limit.
++// Every other group has its prose paragraphs laid out anew.
++// The second result names the prose lines of the group's final text that reach limit;
++// it is empty for a group the tool does not consider.
++func planEdit(fset *token.FileSet, src string, cg *ast.CommentGroup, limit int) (*edit, groupLongLines) {
+ 	// Reuse the indentation bytes that precede the comment, which may be tabs.
+ 	// Spaces rebuilt from the column number would misindent every continuation line of a tab-indented block.
+ 	firstPos := fset.Position(cg.List[0].Pos())
+ 	lineStartOffset := fset.Position(fset.File(cg.List[0].Pos()).LineStart(firstPos.Line)).Offset
+ 	indent := src[lineStartOffset:firstPos.Offset]
+-	prefixLen := utf8.RuneCountInString(indent) + len("// ")
+ 
+-	type line struct {
+-		raw     string // comment text with the leading "//" stripped
+-		content string // raw with the mandatory single gofmt space stripped too
+-	}
+-	lines := make([]line, len(cg.List))
++	raws := make([]string, len(cg.List))
+ 	for i, c := range cg.List {
+-		if !strings.HasPrefix(c.Text, "//") {
+-			return nil // /* */ block comment -- leave alone, not the doc-comment convention here
+-		}
+-		raw := strings.TrimPrefix(c.Text, "//")
+-		if directiveRE.MatchString(strings.TrimSpace(raw)) {
+-			return nil // build/tool directive comment mixed into the group -- leave the whole block alone
+-		}
+-		content := raw
+-		indented := strings.HasPrefix(content, "\t")
+-		if strings.HasPrefix(content, " ") {
+-			content = content[1:]
+-			if strings.HasPrefix(content, " ") || strings.HasPrefix(content, "\t") {
+-				indented = true
+-			}
+-		}
+-		if indented {
+-			return nil // indented example code inside the doc comment -- must stay verbatim
++		raw, isLineComment := strings.CutPrefix(c.Text, "//")
++		if !isLineComment || commentlint.IsDirective(raw) {
++			return nil, groupLongLines{}
+ 		}
+-		if headingRE.MatchString(content) || listItemRE.MatchString(content) {
+-			return nil // Go doc comment heading/list structure -- not flat prose, leave alone
+-		}
+-		lines[i] = line{raw: raw, content: content}
++		raws[i] = raw
+ 	}
+-
+-	if len(cg.List) < 2 {
+-		// A one-line comment has no hard wrap to reflow.
+-		// It goes through the multi-line pipeline only when it is wider than maxWidth:
+-		// sentence and clause splitting may bring it under, and the word wrap below catches what remains.
+-		if maxWidth <= 0 || prefixLen+utf8.RuneCountInString(lines[0].content) <= maxWidth {
+-			return nil
+-		}
++	if len(raws) == 1 && !commentlint.TextReachesLimit(raws[0], limit) {
++		// A one-line comment has no hard wrap to reflow, so it is reflowed only to bring it under the limit.
++		return nil, groupLongLines{}
+ 	}
+ 
+-	// Split into blank-line-delimited paragraphs and reflow each one on its own.
+-	// The bare "//" lines between them stay, since godoc treats them as paragraph separators.
+-	var paragraphs [][]string
+-	var current []string
+-	for _, l := range lines {
+-		if l.content == "" {
+-			if current != nil {
+-				paragraphs = append(paragraphs, current)
+-				current = nil
+-			}
+-			paragraphs = append(paragraphs, nil) // nil marks a blank separator line
+-			continue
++	line := fset.Position(cg.Pos()).Line
++	newRaws := reflowGroupLines(raws, limit)
++	var longIndexes []int
++	for i, raw := range newRaws {
++		if commentlint.IsProseLine(raw) && commentlint.TextReachesLimit(raw, limit) {
++			longIndexes = append(longIndexes, i)
+ 		}
+-		current = append(current, l.content)
+ 	}
+-	if current != nil {
+-		paragraphs = append(paragraphs, current)
++	long := groupLongLines{line: line, indexes: longIndexes}
++	if slices.Equal(raws, newRaws) {
++		return nil, long
+ 	}
++	return &edit{
++		start: fset.Position(cg.Pos()).Offset,
++		end:   fset.Position(cg.End()).Offset,
++		line:  line,
++		old:   joinCommentLines(raws, indent),
++		text:  joinCommentLines(newRaws, indent),
++	}, long
++}
+ 
+-	var newContentLines []string
+-	wrapped := 0
+-	for _, p := range paragraphs {
+-		if p == nil {
+-			newContentLines = append(newContentLines, "")
+-			continue
+-		}
+-		for _, semantic := range reflowText(strings.Join(p, " ")) {
+-			pieces := wrapLongLine(semantic, prefixLen, maxWidth)
+-			if len(pieces) > 1 {
+-				wrapped++
+-			}
+-			newContentLines = append(newContentLines, pieces...)
++// reflowGroupLines reflows the lines of one comment group, each given as its text after "//".
++// Blank lines split the group into paragraphs and stay as written.
++// A paragraph holding indented code, a heading or a list item stays as written too;
++// every other paragraph is laid out anew.
++func reflowGroupLines(raws []string, limit int) []string {
++	var result, paragraph []string
++	flushParagraph := func() {
++		if len(paragraph) == 0 {
++			return
+ 		}
++		result = append(result, reflowParagraph(paragraph, limit)...)
++		paragraph = nil
+ 	}
+-
+-	origContentLines := make([]string, len(lines))
+-	for i, l := range lines {
+-		origContentLines[i] = l.content
+-	}
+-	if equalLines(origContentLines, newContentLines) {
+-		return nil // already correctly reflowed
++	for _, raw := range raws {
++		if strings.TrimSpace(raw) == "" {
++			flushParagraph()
++			result = append(result, raw)
++			continue
++		}
++		paragraph = append(paragraph, raw)
+ 	}
++	flushParagraph()
++	return result
++}
+ 
+-	build := func(contentLines []string) string {
+-		var b strings.Builder
+-		for i, c := range contentLines {
+-			if i > 0 {
+-				b.WriteString("\n")
+-				b.WriteString(indent)
+-			}
+-			b.WriteString("//")
+-			if c != "" {
+-				b.WriteString(" ")
+-				b.WriteString(c)
+-			}
++// reflowParagraph lays one paragraph out as semantic lines, each given as its text after "//".
++// It returns the paragraph as written when any of its lines is not prose.
++func reflowParagraph(raws []string, limit int) []string {
++	for _, raw := range raws {
++		if !commentlint.IsProseLine(raw) {
++			return raws
+ 		}
+-		return b.String()
+ 	}
+-
+-	return &edit{
+-		start:   fset.Position(cg.Pos()).Offset,
+-		end:     fset.Position(cg.End()).Offset,
+-		line:    fset.Position(cg.Pos()).Line,
+-		old:     build(origContentLines),
+-		text:    build(newContentLines),
+-		wrapped: wrapped,
++	lines := layoutParagraph(raws, limit)
++	if lines == nil {
++		return raws
+ 	}
++	for i, line := range lines {
++		lines[i] = " " + line
++	}
++	return lines
+ }
+ 
+-func equalLines(a, b []string) bool {
+-	if len(a) != len(b) {
+-		return false
+-	}
+-	for i := range a {
+-		if a[i] != b[i] {
+-			return false
++// joinCommentLines renders comment lines, each given as its text after "//", as source text.
++// Every line after the first starts with indent.
++func joinCommentLines(raws []string, indent string) string {
++	var b strings.Builder
++	for i, raw := range raws {
++		if i > 0 {
++			b.WriteString("\n")
++			b.WriteString(indent)
+ 		}
++		b.WriteString("//")
++		b.WriteString(raw)
+ 	}
+-	return true
++	return b.String()
+ }
+ 
+ // applyEdits splices non-overlapping edits into src, applied last-to-first so earlier offsets stay valid.
+diff --git a/tools/godocreflow/reflow_test.go b/tools/godocreflow/reflow_test.go
+index 4a367e0a6..7f2a018be 100644
+--- a/tools/godocreflow/reflow_test.go
++++ b/tools/godocreflow/reflow_test.go
+@@ -2,14 +2,13 @@ package main
+ 
+ import (
+ 	"go/token"
+-	"reflect"
+-	"strings"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// wideEnough is a max width at which the width fallback never fires.
++// wideEnough is a line-length limit no test line reaches.
+ const wideEnough = 1000
+ 
+ // pkgHeader is the file header and package clause that the test sources start with.
+@@ -21,8 +20,8 @@ package pkg
+ 
+ // reflowSource returns src with its reflow edits applied, or src unchanged when nothing qualifies.
+ // err is non-nil only on a parse failure.
+-func reflowSource(fset *token.FileSet, filename, src string, maxWidth int) (string, error) {
+-	edits, err := collectEdits(fset, filename, src, maxWidth)
++func reflowSource(fset *token.FileSet, filename, src string, limit int) (string, error) {
++	edits, _, err := collectEdits(fset, filename, src, limit)
+ 	if err != nil {
+ 		return src, err
+ 	}
+@@ -32,30 +31,27 @@ func reflowSource(fset *token.FileSet, filename, src string, maxWidth int) (stri
+ 	return applyEdits(src, edits), nil
+ }
+ 
+-func mustReflow(t *testing.T, src string) string {
+-	t.Helper()
+-	return mustReflowWidth(t, src, wideEnough)
+-}
+-
+-func mustReflowWidth(t *testing.T, src string, maxWidth int) string {
++func mustReflow(t *testing.T, src string, limit int) string {
+ 	t.Helper()
+ 	fset := token.NewFileSet()
+-	out, err := reflowSource(fset, "test.go", src, maxWidth)
++	out, err := reflowSource(fset, "test.go", src, limit)
+ 	if err != nil {
+ 		t.Fatalf("reflowSource: %v", err)
+ 	}
+ 	return out
+ }
+ 
+-// TestReflowSource_ReflowsDocComments covers every doc-comment kind that the tool reflows.
++// TestReflowSource_ReflowsDocComments covers every doc-comment kind that the tool reflows,
++// and the breaks it keeps, joins and makes.
+ func TestReflowSource_ReflowsDocComments(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name string
+-		src  string
+-		want string
++		name  string
++		src   string
++		limit int
++		want  string
+ 	}{
+ 		{
+ 			name: "exported func doc",
+@@ -65,6 +61,7 @@ func LoadPortfolio(dir string) (*Portfolio, error) {
+ 	return nil, nil
+ }
+ `,
++			limit: wideEnough,
+ 			want: pkgHeader + `// LoadPortfolio reads every position file in dir and validates each one against the schema.
+ // It merges the valid files into a single Portfolio,
+ // and it returns an error if any file fails validation or two files declare the same position ID.
+@@ -82,6 +79,7 @@ func LoadPortfolio(dir string) (*Portfolio, error) {
+ 	return nil, nil
+ }
+ `,
++			limit: wideEnough,
+ 			want: pkgHeader + `// LoadPortfolio reads every position file in dir and validates each one against the schema.
+ // It merges the valid files into a single Portfolio,
+ // and it returns an error if any file fails validation or two files declare the same position ID.
+@@ -96,6 +94,7 @@ func LoadPortfolio(dir string) (*Portfolio, error) {
+ // exists solely for that purpose.
+ package pkg
+ `,
++			limit: wideEnough,
+ 			want: `// Package pkg provides utilities for testing this reflow tool,
+ // and it exists solely for that purpose.
+ package pkg
+@@ -110,6 +109,7 @@ package pkg
+ // also long enough to want a break.
+ package pkg
+ `,
++			limit: wideEnough,
+ 			want: `// pkg.go implements the pkg package,
+ // and this header line alone is long enough to want a break.
+ 
+@@ -126,18 +126,105 @@ package pkg
+ 	MaxRetries = 3
+ )
+ `,
++			limit: wideEnough,
+ 			want: pkgHeader + `const (
+ 	// MaxRetries caps the number of retry attempts,
+ 	// and it exists to bound worst-case latency under failure.
+ 	MaxRetries = 3
+ )
++`,
++		},
++		{
++			name: "prose paragraph beside a heading",
++			src: pkgHeader + `// Foo does a thing.
++//
++// # Usage
++//
++// Call Foo once at startup, and it
++// sets up the cache.
++func Foo() {}
++`,
++			limit: wideEnough,
++			want: pkgHeader + `// Foo does a thing.
++//
++// # Usage
++//
++// Call Foo once at startup,
++// and it sets up the cache.
++func Foo() {}
++`,
++		},
++		{
++			name: "prose paragraph beside a list",
++			src: pkgHeader + `// Foo supports two modes, and the
++// caller picks one.
++//
++//   - fast, which skips validation
++//   - safe, which validates every field
++func Foo() {}
++`,
++			limit: wideEnough,
++			want: pkgHeader + `// Foo supports two modes,
++// and the caller picks one.
++//
++//   - fast, which skips validation
++//   - safe, which validates every field
++func Foo() {}
++`,
++		},
++		{
++			// The conjunction opens no clause, so a break before it would be a wrapped break.
++			name: "compound predicate joined onto one line",
++			src: pkgHeader + `// Foo reads the file, and returns
++// an error on failure.
++func Foo() {}
++`,
++			limit: wideEnough,
++			want: pkgHeader + `// Foo reads the file, and returns an error on failure.
++func Foo() {}
++`,
++		},
++		{
++			name: "written break at a colon kept",
++			src: pkgHeader + `// Foo writes two files:
++// the index and the log, and it
++// returns the count.
++func Foo() {}
++`,
++			limit: wideEnough,
++			want: pkgHeader + `// Foo writes two files:
++// the index and the log,
++// and it returns the count.
++func Foo() {}
++`,
++		},
++		{
++			name: "line reaching the limit split at a colon",
++			src: pkgHeader + `// Foo writes two files: the index of every record and the log.
++func Foo() {}
++`,
++			limit: 50,
++			want: pkgHeader + `// Foo writes two files:
++// the index of every record and the log.
++func Foo() {}
++`,
++		},
++		{
++			name: "line reaching the limit split at the latest break that fits",
++			src: pkgHeader + `// Foo opens the store: it reads every record in order: it then writes a summary.
++func Foo() {}
++`,
++			limit: 60,
++			want: pkgHeader + `// Foo opens the store: it reads every record in order:
++// it then writes a summary.
++func Foo() {}
+ `,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := mustReflow(t, tt.src)
++			got := mustReflow(t, tt.src, tt.limit)
+ 			if got != tt.want {
+ 				t.Errorf("got:\n%s\nwant:\n%s", got, tt.want)
+ 			}
+@@ -147,15 +234,15 @@ package pkg
+ 
+ // TestReflowSource_LeavesUntouched covers every source the tool must return byte-for-byte.
+ // Those are out-of-scope declarations, generated files, and already-reflowed comments.
+-// The width fallback leaves a source untouched when it is disabled or every line already fits.
++// A line reaching the limit is left as written when no accepted or written break can split it.
+ func TestReflowSource_LeavesUntouched(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	tests := []struct {
+-		name     string
+-		src      string
+-		maxWidth int
++		name  string
++		src   string
++		limit int
+ 	}{
+ 		{
+ 			name: "unexported func doc",
+@@ -163,23 +250,22 @@ func TestReflowSource_LeavesUntouched(t *testing.T) {
+ // It merges the valid files into a single Portfolio, and returns an error on failure.
+ func loadPortfolio(dir string) {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "single-line comment",
+ 			src: pkgHeader + `// Foo does a thing.
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+-			// A comment that already occupies one physical source line is left alone, whatever its length.
+-			// There is no existing hard-wrap to reflow.
++			// A comment that occupies one physical source line under the limit has no hard wrap to reflow.
+ 			name: "single physical line group",
+ 			src: `// Package pkg provides utilities for testing this reflow tool, and it exists solely for that purpose.
+ package pkg
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "go:generate directive",
+@@ -187,7 +273,16 @@ package pkg
+ //go:generate mockgen -source=foo.go
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
++		},
++		{
++			name: "lym directive",
++			src: pkgHeader + `// Foo does a thing across several files, and
++// it needs a seam.
++//lym:seam
++func Foo() {}
++`,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "indented code example",
+@@ -196,7 +291,7 @@ func Foo() {}
+ //	Foo()
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "generated file",
+@@ -207,7 +302,7 @@ package pkg
+ // Foo does a thing, and it needs no further explanation beyond this single sentence run on long.
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "struct field doc is out of scope",
+@@ -217,7 +312,7 @@ type Config struct {
+ 	Timeout int
+ }
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "doc comment heading",
+@@ -228,7 +323,7 @@ type Config struct {
+ // Use Bar instead, and remove all call sites before the next major release.
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "doc comment list",
+@@ -239,7 +334,7 @@ func Foo() {}
+ //   - strict, which also rejects unknown fields
+ func Foo() {}
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+ 			name: "already reflowed",
+@@ -250,32 +345,46 @@ func LoadPortfolio(dir string) (*Portfolio, error) {
+ 	return nil, nil
+ }
+ `,
+-			maxWidth: wideEnough,
++			limit: wideEnough,
+ 		},
+ 		{
+-			name: "width fallback disabled at zero",
+-			src: pkgHeader + `// Foo validates the request thoroughly and writes a well-formed structured response back to the caller immediately.
++			name: "sentence reaching the limit keeps its written break",
++			src: pkgHeader + `// Foo opens the store and reads every record in
++// order and writes a summary of the records.
+ func Foo() {}
+ `,
+-			maxWidth: 0,
++			limit: 40,
+ 		},
+ 		{
+-			// Max width well above every existing line's length: the fallback must never fire.
+-			name: "width fallback leaves short lines alone",
+-			src: pkgHeader + `// LoadPortfolio reads every position file in dir and validates each one against the schema.
+-// It merges the valid files into a single Portfolio,
+-// and it returns an error if any file fails validation or two files declare the same position ID.
+-func LoadPortfolio(dir string) (*Portfolio, error) {
+-	return nil, nil
+-}
++			name: "line reaching the limit with no break point stays whole",
++			src: pkgHeader + `// Foo opens the store and reads every record in order.
++func Foo() {}
++`,
++			limit: 40,
++		},
++		{
++			// The only break leaves a piece that still reaches the limit, so splitting would add a lint finding.
++			name: "line whose only break leaves a piece over the limit stays whole",
++			src: pkgHeader + `// Foo writes two files: the index of every record and the log.
++func Foo() {}
+ `,
+-			maxWidth: 100,
++			limit: 30,
++		},
++		{
++			// Each line is under the limit as written, but the laid-out second line would be joined onto the first.
++			name: "paragraph whose layout would join a line over the limit stays as written",
++			src: pkgHeader + `// Foo reads every record from the store and writes a detailed summary of the results, and the
++// collection of data from the current transaction and the prior transaction
++// is validated against the complete collection before the final result can be returned.
++func Foo() {}
++`,
++			limit: 120,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := mustReflowWidth(t, tt.src, tt.maxWidth)
++			got := mustReflow(t, tt.src, tt.limit)
+ 			if got != tt.src {
+ 				t.Errorf("source was changed, want left alone:\n%s", got)
+ 			}
+@@ -283,74 +392,29 @@ func LoadPortfolio(dir string) (*Portfolio, error) {
+ 	}
+ }
+ 
+-func TestWidthFallbackAppliesToOverwideAtomicLine(t *testing.T) {
++// TestCollectEdits_ReportsLongProseLinesInReflowedNumbering covers the lines the run names for a hand rewrite.
++// It reports a prose line in a group that needs no edit, numbered after the lines an earlier edit adds.
++// It reports no list-item line.
++func TestCollectEdits_ReportsLongProseLinesInReflowedNumbering(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	// One long compound-predicate sentence has no semicolon or conjunction boundary to split at:
+-	// the ordinary semantic splitter produces a single atomic line, which the width fallback must then wrap.
+-	src := pkgHeader + `// Foo validates the request thoroughly and writes a well-formed structured response back to the caller immediately.
++	src := pkgHeader + `// Foo does a thing. It sets up the cache,
++// and it logs.
+ func Foo() {}
+-`
+-	got := mustReflowWidth(t, src, 60)
+-	for _, line := range strings.Split(got, "\n") {
+-		if strings.HasPrefix(strings.TrimSpace(line), "//") && len(line) > 60 {
+-			t.Errorf("line exceeds max-width=60: %q", line)
+-		}
+-	}
+-	if !strings.Contains(got, "// Foo validates the request thoroughly") {
+-		t.Errorf("expected wrapped content preserved, got:\n%s", got)
+-	}
+-	// No word may be lost or reordered: whitespace-collapsed content must match the original.
+-	collapse := func(s string) string {
+-		return strings.Join(strings.Fields(strings.ReplaceAll(s, "//", " ")), " ")
+-	}
+-	if collapse(got) != collapse(src) {
+-		t.Errorf("wrap fallback changed comment content:\ngot:  %s\nwant: %s", collapse(got), collapse(src))
+-	}
+-}
+ 
+-//testtiming:keep pins the exact slices wrapLongLine returns for each case, where the width-fallback test only bounds line length
+-func TestWrapLongLine(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	cases := []struct {
+-		name      string
+-		content   string
+-		prefixLen int
+-		maxWidth  int
+-		want      []string
+-	}{
+-		{
+-			name:      "fits, no wrap",
+-			content:   "short line",
+-			prefixLen: 3,
+-			maxWidth:  100,
+-			want:      []string{"short line"},
+-		},
+-		{
+-			name:      "disabled",
+-			content:   "a very long line that would otherwise need wrapping for sure",
+-			prefixLen: 3,
+-			maxWidth:  0,
+-			want:      []string{"a very long line that would otherwise need wrapping for sure"},
+-		},
+-		{
+-			name:      "wraps at word boundary",
+-			content:   "one two three four five six seven eight",
+-			prefixLen: 0,
+-			maxWidth:  12,
+-			want:      []string{"one two", "three four", "five six", "seven eight"},
+-		},
++// Bar opens the store and reads every record in order.
++//
++//   - a list item that is long enough to reach the limit.
++func Bar() {}
++`
++	_, got, err := collectEdits(token.NewFileSet(), "test.go", src, 40)
++	if err != nil {
++		t.Fatalf("collectEdits: %v", err)
+ 	}
+-	for _, c := range cases {
+-		t.Run(c.name, func(t *testing.T) {
+-			t.Parallel()
+-			got := wrapLongLine(c.content, c.prefixLen, c.maxWidth)
+-			if !reflect.DeepEqual(got, c.want) {
+-				t.Errorf("wrapLongLine(%q, %d, %d) = %#v, want %#v", c.content, c.prefixLen, c.maxWidth, got, c.want)
+-			}
+-		})
++	// The first group grows from two lines to three, so Bar's line 9 in the source is line 10 in the reflowed file.
++	want := []int{10}
++	if !slices.Equal(got, want) {
++		t.Errorf("collectEdits long lines = %v; want %v", got, want)
+ 	}
+ }
+diff --git a/tools/godocreflow/split.go b/tools/godocreflow/split.go
+index 562ae1cf7..63f68b0b2 100644
+--- a/tools/godocreflow/split.go
++++ b/tools/godocreflow/split.go
+@@ -1,13 +1,16 @@
+ // split.go holds the splitter that decides where a semantic line break goes.
+-// It breaks at sentence ends, semicolons, and independent-clause conjunctions.
++// It breaks at sentence ends, semicolons, and independent-clause conjunctions,
++// and it keeps only the breaks the comment line rules accept, splitting a line that reaches the length limit.
+ // The docstring structure handling is not here; reflow.go does that part.
+ 
+ package main
+ 
+ import (
+ 	"regexp"
++	"slices"
+ 	"strings"
+-	"unicode/utf8"
++
++	"github.com/Knatte18/loomyard/internal/commentlint"
+ )
+ 
+ // abbreviations lists lowercase words whose trailing period must never be treated as a sentence end.
+@@ -228,37 +231,127 @@ func reflowText(text string) []string {
+ 	return lines
+ }
+ 
+-// wrapLongLine is a last-resort fallback for a line that no sentence, semicolon or conjunction split can shorten.
+-// prefixLen is the visual width of everything before the content on its rendered line: indentation plus "// ".
+-// The content is returned unchanged as a single-element slice when the line fits.
+-// It fits when prefixLen plus the content's width is at most maxWidth, or when maxWidth is non-positive (disabled).
+-//
+-// This is a targeted exception to semantic line breaks, not general fixed-column wrapping.
+-// It fires only on a line the boundary splitting could not shorten,
+-// and it greedily packs words up to the column budget rather than breaking mid-phrase at an arbitrary column.
+-func wrapLongLine(content string, prefixLen, maxWidth int) []string {
+-	if maxWidth <= 0 || prefixLen+utf8.RuneCountInString(content) <= maxWidth {
+-		return []string{content}
++// layoutParagraph lays the text of one prose paragraph out as semantic lines, given the paragraph's lines as written.
++// It starts from the sentence and clause splits and the written breaks the comment line rules accept.
++// It keeps a break only where those rules accept it or the paragraph as written already breaks there.
++// A line whose text reaches limit is split at such a break, as late as keeps each piece under limit.
++// It returns nil when the layout holds a line that reaches limit and that the paragraph does not hold as written:
++// such a line is new to the lint, so the paragraph is better left as written.
++func layoutParagraph(written []string, limit int) []string {
++	writtenBreaks := map[int]bool{}
++	acceptedWrittenBreaks := map[int]bool{}
++	wordsBefore := 0
++	for i, line := range written[:len(written)-1] {
++		wordsBefore += len(strings.Fields(line))
++		writtenBreaks[wordsBefore] = true
++		if commentlint.IsSemanticBreak(line, written[i+1]) {
++			acceptedWrittenBreaks[wordsBefore] = true
++		}
++	}
++
++	var lines [][]string
++	for _, line := range reflowText(strings.Join(written, " ")) {
++		lines = append(lines, strings.Fields(line))
+ 	}
+-	budget := maxWidth - prefixLen
+-	words := strings.Fields(content)
+-	if budget < 1 || len(words) == 0 {
+-		return []string{content} // pathological config or nothing to wrap -- leave as-is
++	lines = splitAtBreaks(lines, acceptedWrittenBreaks)
++	lines = joinRejectedBreaks(lines, writtenBreaks)
++	var split [][]string
++	wordsBefore = 0
++	for _, line := range lines {
++		split = append(split, splitLongLine(line, wordsBefore, writtenBreaks, limit)...)
++		wordsBefore += len(line)
+ 	}
++	lines = joinRejectedBreaks(split, writtenBreaks)
+ 
+-	var lines []string
+-	cur := words[0]
+-	curLen := utf8.RuneCountInString(cur)
+-	for _, w := range words[1:] {
+-		wLen := utf8.RuneCountInString(w)
+-		if curLen+1+wLen <= budget {
+-			cur += " " + w
+-			curLen += 1 + wLen
+-			continue
++	writtenTexts := map[string]bool{}
++	for _, line := range written {
++		writtenTexts[strings.TrimSpace(line)] = true
++	}
++	result := make([]string, len(lines))
++	for i, line := range lines {
++		text := strings.Join(line, " ")
++		if commentlint.TextReachesLimit(text, limit) && !writtenTexts[text] {
++			return nil
+ 		}
+-		lines = append(lines, cur)
+-		cur, curLen = w, wLen
++		result[i] = text
+ 	}
+-	lines = append(lines, cur)
+-	return lines
++	return result
++}
++
++// splitAtBreaks splits lines, each given as its words, at every break that falls inside a line.
++// breaks holds the paragraph's word counts before each break.
++func splitAtBreaks(lines [][]string, breaks map[int]bool) [][]string {
++	var result [][]string
++	wordsBefore := 0
++	for _, line := range lines {
++		start := 0
++		for n := 1; n < len(line); n++ {
++			if breaks[wordsBefore+n] {
++				result = append(result, line[start:n])
++				start = n
++			}
++		}
++		result = append(result, line[start:])
++		wordsBefore += len(line)
++	}
++	return result
++}
++
++// joinRejectedBreaks joins each line, given as its words, onto the line before it across a rejected break.
++// A break is rejected when the comment line rules do not accept it and writtenBreaks does not hold it.
++// writtenBreaks holds the paragraph's word counts before each break as written.
++func joinRejectedBreaks(lines [][]string, writtenBreaks map[int]bool) [][]string {
++	joined := [][]string{lines[0]}
++	wordsBefore := len(lines[0])
++	for _, line := range lines[1:] {
++		last := len(joined) - 1
++		if writtenBreaks[wordsBefore] || commentlint.IsSemanticBreak(strings.Join(joined[last], " "), strings.Join(line, " ")) {
++			joined = append(joined, line)
++		} else {
++			joined[last] = slices.Concat(joined[last], line)
++		}
++		wordsBefore += len(line)
++	}
++	return joined
++}
++
++// splitLongLine splits a line, given as its words, whose text reaches limit.
++// It splits only where the comment line rules accept a break or where writtenBreaks holds one.
++// At each split it takes the latest such break that keeps the piece under limit, or the earliest when none does.
++// wordsBefore is the paragraph's word count before the line, the offset into writtenBreaks.
++func splitLongLine(words []string, wordsBefore int, writtenBreaks map[int]bool, limit int) [][]string {
++	reachesLimit := func(piece []string) bool {
++		return commentlint.TextReachesLimit(strings.Join(piece, " "), limit)
++	}
++	var pieces [][]string
++	start := 0
++	for start < len(words) {
++		rest := words[start:]
++		if !reachesLimit(rest) {
++			pieces = append(pieces, rest)
++			break
++		}
++		cut := 0
++		for n := 1; n < len(rest); n++ {
++			breakAccepted := writtenBreaks[wordsBefore+start+n] ||
++				commentlint.IsSemanticBreak(strings.Join(rest[:n], " "), strings.Join(rest[n:], " "))
++			if !breakAccepted {
++				continue
++			}
++			if reachesLimit(rest[:n]) {
++				if cut == 0 {
++					cut = n
++				}
++				break
++			}
++			cut = n
++		}
++		if cut == 0 {
++			pieces = append(pieces, rest)
++			break
++		}
++		pieces = append(pieces, rest[:cut])
++		start += cut
++	}
++	return pieces
+ }
