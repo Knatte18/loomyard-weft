@@ -1,55 +1,56 @@
-# Fix five fabric faults the one-repository hardener could not raise
+# Fabric: give five undriven failure cases a way forward
 
-The one-repository hardener's fourth round recorded five faults as observations, outside its incremental scope.
-This change fixes each.
+A review of the one-repository verbs drove five cases that end in a raw git error, a silent skip or an unnamed command.
+This change fixes each, in `internal/fabricengine`, `internal/fabriccli` and `internal/battencli`.
 
-## O1 — a killed clone names its way forward
+## What changes
 
-A `lym fabric clone` killed after it made the records store and before `_bolt` left a hub that `lym fabric reconcile` failed on with a raw `gitrepo: … not a git repository` error,
-while a plain re-clone answered `hub already exists at …` with no way forward.
+- **Killed clone.**
+  A `lym fabric clone` killed after its records store exists and before `_bolt` does left a hub no verb finished:
+  `lym fabric reconcile` failed with a raw `dotgit: not a git repository`, and a re-clone answered `hub already exists`.
+  `reconcile` now refuses such a hub before its first Bolt pull (`RefuseHubWithoutBolt`).
+  The refusal, and `CloneHub`'s `hub already exists` error, name the `--reset` clone that replaces the hub.
+  For a one-repository hub, the refusal names both the join and the seed; the `CloneHub` error names the join.
+- **Unreadable records layout.**
+  `lym fabric merge` read the weft SHA from stale tracking refs when the records store's `remote.origin.fetch` was unset, and said nothing.
+  `resolveMergeSources` now reads the layout first and returns the error that names the refspecs to restore.
+  The same read now guards `fastForwardWeft` (which warns and skips), `FetchPairTips` and `ReturnToPreviousTransition`.
+  `catchUpPair`'s fetch in `internal/battencli` returns the layout error as it is, instead of wrapping it as an unreachable origin.
+  The error matches the new `ErrRecordsLayout`.
+- **Kept local archive tags.**
+  `--remote` on `lym fabric remove` and `lym fabric cleanup` already pushes the slug's local `archive/<slug>/*` tags that origin lacks,
+  including a tag `DropLocal` kept.
+  The push stays as it is: the help of both verbs and `DropLocal`'s doc now say so.
+- **Plain archive tags on a one-repository origin.**
+  `lym fabric cleanup --remote` lists, as `plain_archive_tags`, each `refs/tags/archive/*` and `refs/tags/archive-owner/*` ref an earlier binary pushed.
+  Each entry carries the commands that move the tag under the records namespace and delete the plain ref.
+  A failed listing is named in `plain_archive_tags_error` and never changes the exit code.
+- **Discard re-run.**
+  A killed discard's pending record named "the command that discarded the task branch", which no operator can type.
+  `DiscardTaskBranch` takes the command, and the job and the pending record carry it as `rerun`.
+  `lym batten cancel <slug> --remove` passes its own command.
+  The cleanup path passes none, since the dobby's next tick re-runs the discard, and keeps the described way forward.
 
-- `fabricengine.RefuseHubWithoutBolt` refuses a hub whose `_bolt` holds no repository.
-  The refusal names the clone that replaces it, `lym fabric clone <origin URLs> --into <parent of the hub> --reset`, with `--single-repo` and the code store's URL alone for a one-repository hub.
-  The reconcile verb calls it before its Bolt pull.
-- `CloneHub`'s three "hub already exists" refusals name the same clone re-run with `--reset`.
-- `reconcile_missingbolt_integration_test.go` removes `_bolt` from a hubforge one-repository hub and asserts both messages.
+## Design decisions
 
-## O2 — fetches read the records layout first
+- A local archive tag may leave the machine.
+  The smallest change is to document the push the code already makes rather than give `DropLocal`'s tags a prefix the push skips.
+- `PlainArchiveTagsOnOrigin` only reports, so the moving commands are printed and never run.
+  They push atomically, so a failed move deletes nothing.
+- `DiscardTaskBranch`'s signature gains a `rerun` string.
+  A job written by an earlier binary has none and gets the old wording.
 
-A records store whose `remote.origin.fetch` was unset let `lym fabric merge` stage a merge from stale tracking refs with `ok: true`.
+## To check by hand
 
-- `resolveMergeSources` reads the records store's origin layout before it fetches, and a layout it cannot read is the verb's refusal, naming the refspecs to restore.
-- `FastForwardPair`'s records pull and the two code-tip settle fetches in `codetipsettle.go` do the same.
-  The fast-forward logs the gap and continues to the code side; the settles return it.
-- The Bolt pull behind `lym machine name` already read the layout and is unchanged.
-
-## O3 — the archive-tag push is named
-
-A takeover's `DropLocal` keeps the tips it moves off under local `archive/<slug>/<sha>` tags, and a later remote teardown of the slug pushes each one origin lacks.
-The parent ruled that these tags may leave the machine, so the behaviour stays and the docs now name it:
-
-- `lym fabric remove --help` and `lym fabric cleanup --help` say that `--remote` pushes the slug's local archive tags that origin lacks before it deletes a branch.
-- `DropLocal`'s doc no longer says the tags stay local.
-
-## O4 — legacy plain archive tags are listed
-
-An archive tag an earlier binary pushed under a one-repository origin's plain `refs/tags/` was named by no verb.
-
-- `fabricengine.PlainArchiveTagsOnOrigin` lists plain `refs/tags/archive/*` and `refs/tags/archive-owner/*` refs on a one-repository origin.
-  Each entry names the `git fetch` and the atomic `git push` that move the tag under `refs/lym/code-tags/` and delete the plain ref.
-- `lym fabric cleanup --remote` reports them under `plain_archive_tags`.
-- `onerepository_lifecycle_integration_test.go` pins the listing.
-
-## O5 — a discard's re-run is a command
-
-A killed discard's pending record said "run the command that discarded the task branch again".
-
-- `DiscardTaskBranch` takes the discarding command, and the job and pending record carry it as the removal and cleanup kinds carry theirs.
-  `lym batten cancel <slug> --remove` passes itself;
-  the batten cleanup passes none, since the dobby's next tick runs the discard again.
-- The way forward prints the command when the record holds one.
+- `catchUpPair`'s layout error is returned as is (`internal/battencli/catchup.go`).
+  A review judged its earlier wrapping, which reported the error as an unreachable origin, a misreport; confirm the new path reads right.
+- The `lym fabric cleanup` help names the records namespace through `fabricengine.RecordsNamespaceRoot` (`internal/fabriccli/fabric.go`).
+  A review flagged the namespace's spelling in the help; read the rendered help.
+- The layout reads added for the merge, fast-forward, fetch-tips and return-to-transition paths
+  (`internal/fabricengine/mergeguards.go`, `parenttips.go`, `codetipsettle.go`) have integration tests for some paths.
+  A review found the coverage of these reads thin; check that each path has a test of an unreadable layout.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** fabric
+**Blast radius:** fabricengine
