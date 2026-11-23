@@ -656,13 +656,35 @@
         "bug",
         "shuttle"
       ],
-      "issues": [],
+      "issues": [
+        195
+      ],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\n2026-11-23: `ly:godocreflow-worsens-findings:code-burler-fix` sat idle for 30 minutes at Code-Burler-Fix.\nDobby sent its idle notice; asked by the orch, the agent answered that it had been idle after loading its skills and only then started reading its prompt file.\nSo the task prompt was never typed after the skill-load turn, and only the orch's creel message woke it.\nThe same morning the API answered 529 Overloaded to other agents, and LOOM reported another agent held at its skill-load turn by API errors; the two may share a cause.\n\n## Expected\n\nOnce the skill-load turn ends, the agent's prompt is typed, or a failure to type it is retried and noticed, so no agent waits for a parent's message to start.\n",
+      "body": "## Seen\n\n2026-11-23: `ly:godocreflow-worsens-findings:code-burler-fix` sat idle for 30 minutes at Code-Burler-Fix.\nDobby sent its idle notice; asked by the orch, the agent answered that it had been idle after loading its skills and only then started reading its prompt file.\nSo the task prompt was never typed after the skill-load turn, and only the orch's creel message woke it.\nThe same morning the API answered 529 Overloaded to other agents, and LOOM reported another agent held at its skill-load turn by API errors; the two may share a cause.\n\n## Expected\n\nOnce the skill-load turn ends, the agent's prompt is typed, or a failure to type it is retried and noticed, so no agent waits for a parent's message to start.\n\n\n## From issue #195\n\nImported from [issue #195](https://github.com/Knatte18/loomyard/issues/195).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `/.lym/shuttle/`.\n\n## Seen\n\nA tapestry run's Plan-Bouncer seed session got only the skill bootstrap (\"Load these skills now … scribe:prose …\"), answered it, and then sat at an empty prompt.\nThe line pointing it at its `prompt.md` never arrived.\nThe session's `events.jsonl` shows `SessionStart`, one `UserPromptSubmit` and `Stop` within three seconds, and nothing more.\n\nIt happened twice in a row on the same row:\n\n- Session `8a36796b…`, spawned at 11:00:20, idle from about 11:00 to 11:04.\n- Session `724ef172…`, spawned at 11:04:32 (lym's own respawn), with the same pattern: `SessionStart` 10:04:32Z, `UserPromptSubmit` 10:04:33Z, `Stop` 10:04:35Z.\n\n`lym loom status` showed `current_producer: Plan-Bouncer` with empty `error` and `wait` throughout, and no notice reached the parent orch.\nThe operator noticed the stall by watching the pane.\n`lym loom goto --to Plan-Bouncer` was refused as `shed_busy` because the live driver held the run lock.\n\n## Workaround\n\nThe parent orch posted the missing line to the strand by creel:\n`Read \u003cworktree\u003e/.lym/shuttle/\u003cid\u003e/prompt.md in full first; it is your complete, authoritative instructions.`\nThe session took it as its next `UserPromptSubmit` and started working.\n\n## Expected\n\nThe task prompt reaches the session after the skill bootstrap every time.\nIf a session ends its bootstrap turn and no task prompt follows within a short bound, lym delivers it again or raises a notice to the parent.\nA respawn on that row does not repeat the same failure.\n",
       "created": "2026-11-23T10:12:24Z",
-      "revised": "2026-11-23T10:12:24Z"
+      "revised": "2026-11-23T10:24:57Z"
+    },
+    {
+      "id": 1607,
+      "handle": "B8",
+      "slug": "idle-check-long-strand-name",
+      "title": "Idle check misses the input box when a long strand name fills its top border, holding the start prompt",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle"
+      ],
+      "issues": [
+        196
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #196](https://github.com/Knatte18/loomyard/issues/196).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/shed/`.\n\nRoot cause of #195 (a spawned session gets its skill bootstrap but never its task prompt).\n\n## Seen\n\nshuttle's idle check does not see the input box when the strand name fills the box's top border, so it holds the start prompt and the segment colour, and the session waits at an empty prompt.\nThe run's step log (`.lym/shed/\u003cslug\u003e/steps/\u003ctrace\u003e.stderr.log`):\n\n```\nlevel=WARN msg=\"shuttle: could not type the segment color\" color=orange error=\"shuttle: the session is not idle: strand \\\"ebb49562…\\\": no input box is on screen; a menu or picker may be open; retry once the session is idle. The pane's last lines:\n● ok scribe:prose, scribe:code-quality,\n  scribe:testing\n✻ Sautéed for 5s · done 11.08\n─ dop:models-torque-drag-adapter:plan-burler-review ─\n❯ \n─────────────────────────────────────────────────────\n  ⏵⏵ bypass permissions on (shift+tab to cycle) · …\"\nlevel=WARN msg=\"shuttle: the start prompt was held busy, sending it again\" retry=1 reason=\"a turn is running\"\n```\n\nThe input box is on screen.\nIts top border holds the strand name `dop:models-torque-drag-adapter:plan-burler-review`, which leaves one `─` on each side in a pane about 53 columns wide.\nThe earlier stall on the same run shows the same shape: `── dop:models-torque-drag-adapter:plan-bouncer-seed ─`.\n\nIt hits a run whose slug and role names are long in a narrow pane: here slug `models-torque-drag-adapter` with the roles `plan-bouncer-seed` and `plan-burler-review`.\nRuns in other hubs, with shorter slugs, do not hit it.\nThree sessions in a row on this run stalled, and the retry hit the same check each time.\nNo notice reached the parent, since the run's `error` stayed empty.\n\nI read this from the log and the pane text, not from lym's source, so the exact rule in the idle check is inferred.\n\n## Workaround\n\n- The parent orch posts the run's `promptLine` (from the session's `run.json`) to the strand by creel; the session takes it as its next prompt.\n- The operator widened the run's panes so the name leaves room in the border.\n\n## Expected\n\nThe idle check finds the input box by the `❯` prompt line and the borders around it, whatever text the top border carries and however few `─` are left beside it.\nA start prompt still held after its retries raises a notice to the parent, naming the strand.\n",
+      "created": "2026-11-23T10:25:00Z",
+      "revised": "2026-11-23T10:25:00Z"
     }
   ],
   "prime_owner": "neve",
