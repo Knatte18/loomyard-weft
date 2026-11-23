@@ -1,6 +1,6 @@
 # Start prompt held when a long strand name fills the input box top border
 
-`prompt-not-typed-after-skills` · Task · bug, shuttle · running · Record-Write
+`prompt-not-typed-after-skills` · Task · bug, shuttle · running · Drift-Baseline
 
 Folds issues #195 (symptom) and #196 (cause), and the orch's own sighting.
 
