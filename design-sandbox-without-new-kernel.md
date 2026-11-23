@@ -1,6 +1,6 @@
 # Study: close the bus and tmux exposures without a kernel newer than 7.0
 
-`sandbox-without-new-kernel` · Task · research, shuttle, reed, claude
+`sandbox-without-new-kernel` · Task · research, shuttle, reed, claude · starting · Worktree-Create
 
 ## Aim
 
