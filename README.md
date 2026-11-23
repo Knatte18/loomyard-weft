@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 08:18 UTC; every age below is as of then.
+Rendered 2026-11-23 08:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Fix | neve | 16h<br>16h | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (16)
+## [P0 Root: entries under no project](project-root.md) (17)
 
 Owner `neve`
 
@@ -52,7 +52,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Bugs (7)
+### Bugs (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -63,6 +63,7 @@ Owner `neve`
 | B5 |  | **Autonomy mode's goto hook and halt-notice stamps have no tests**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-hook-wiring-untested, halt-notice-call-sites-untested | [`autonomy-wiring-untested`](design-autonomy-wiring-untested.md) | 3m<br>3m | loom, orch, testkit |
 | B6 |  | **Board view lists a done beam-project task under P0** | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | 0m<br>0m | board |
 | B7 |  | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil** | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | 0m<br>0m | loom, landing |
+| B8 |  | **Run agents ask a question and exit before the reply; drift judge asks in its pane** | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | 0m<br>0m | shuttle, creel, drift, stencil |
 
 ### Enhancements (1)
 
