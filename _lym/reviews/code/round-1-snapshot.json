@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "c8507768e9e765fb00b8d458e11cdd48397b6d09",
+  "added_decisions": [
+    {
+      "title": "Close as overtaken only after a darn-path test",
+      "digest": "b9475f4cc4162f1860c5218545f3c664a9fa56cd44d4d0c08bc066ec8df543fa"
+    },
+    {
+      "title": "No test seam: the bug was fixed on the base by 6fa7f1740",
+      "digest": "b933afd4252eb33f998d020273b31d40b990c10a5d1ab8f50d5113b4b8c08354"
+    }
+  ]
+}
