@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The transient agent-start error did not clear. Four launches of the code-burler-review seat (round 1 attempts 1 and 1b, each with its own retry) all failed the same way: the readiness check reads \"no input box is on screen; a menu or picker may be open\" while the pane shows the prompt and rules. A plain re-launch has already failed four times, so resume would not settle it. The likeliest cause is in code: inputBoxInterior / isTopBoxRule in internal/shuttleengine/claudeengine/session.go accept only a right-labelled or cut-labelled top rule, and the captured top rule (\" ly:verify-budget-notice-no-slug:code-burler-review ─\") is neither, so the box is never found. Whether the parser must accept that rule, or the log writer dropped the leading rule glyphs, cannot be settled from the files left on disk (the startup captures are gone and driver.log is empty). That needs code read and judged, so a stronger agent or the run's parent takes it. Case brief: _lym/shed/verify-budget-notice-no-slug/tackler/attempt-1/case-brief.md",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/verify-budget-notice-no-slug/_lym/shed/verify-budget-notice-no-slug/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/verify-budget-notice-no-slug/_lym/shed/verify-budget-notice-no-slug/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/verify-budget-notice-no-slug/_lym/shed/verify-budget-notice-no-slug/tackler/attempt-1/case-brief.md"
+}

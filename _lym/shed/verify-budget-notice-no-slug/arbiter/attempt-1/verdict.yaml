@@ -1,0 +1,21 @@
+verdict: hand-on
+reason: |-
+  Error stop at Code-Burler-Review: the seat never became ready on any of its four launches, each held with "no input box is on screen".
+  The cause is a gap in the readiness parser, and it fails the same way every time, so it is not a transient.
+  The captured top rule " ly:verify-budget-notice-no-slug:code-burler-review ─" is 53 columns, exactly the width of the 53-glyph bottom rule.
+  So the pane really drew the label at full width: it fits without an ellipsis cut and leaves no room for a leading "───" run. The log did not trim it.
+  isTopBoxRule in internal/shuttleengine/claudeengine/session.go:342 accepts only a line that starts with "───" and ends with "─", a line ending in "… ─", or a plain rule.
+  This line is none of those, so inputBoxInterior finds no top rule and reports the box absent.
+  The seat label is built from this run's slug and the seat name, so a plain re-launch at the same pane width fails the same way.
+  The fix belongs in the shuttle engine's readiness parser. That is outside this task's code (the verify-budget notice in loomshed/loomcli), and neither the board entry nor the decision record settles it.
+  So it is not my fix to make. This error stop has no repair verbs and I recorded nothing.
+verbs: []
+question: |-
+  The code-burler-review seat of run verify-budget-notice-no-slug never becomes ready.
+  Its labelled top rule " ly:verify-budget-notice-no-slug:code-burler-review ─" exactly fills the 53-column pane, with no leading "───" run and no "… ─" cut.
+  isTopBoxRule (internal/shuttleengine/claudeengine/session.go:342) rejects that shape, so the readiness check reads "no input box" on every launch.
+  A plain re-launch will fail again.
+  Will you fix isTopBoxRule in its own task, then re-launch this run at Code-Burler-Review?
+  The fix would accept a top rule that ends in " ─" after a label filling the line, while still requiring the bottom rule to be plain.
+  Or will you re-launch the seat in a wider pane, so the label leaves room for a leading rule run?
+  The task's own commit ef4006a7f is untouched; I committed nothing.
