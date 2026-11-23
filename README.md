@@ -34,7 +34,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | Drift-Recheck | neve | 4h<br>4h | landing, loom |
+| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | Describe | neve | 4h<br>4h | landing, loom |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 11m<br>11m | shuttle, reed, claude |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
