@@ -22,6 +22,12 @@ Check that `run_settings` takes `hardener.reviewer` and `hardener.fixer` as list
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): A one-entry reviewer list passes preflight
+
+Decision: hardenshed's preflight accepts a reviewer list of one entry; the refusal of two neighbouring equal entries stays for lists of two or more.
+
+Rationale: The operator set the template default to sonnet[high] alone with no rotation (2026-11-22), which the one-entry refusal would reject.
+
 ## Constraints
 
 ## Auto-mode assumptions
