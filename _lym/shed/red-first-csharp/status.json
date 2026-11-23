@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,100 @@
       "output": "",
       "at": "2026-11-23T13:45:19Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/red-first-csharp/_lym/landing/summary.md",
+      "at": "2026-11-23T14:33:23Z",
+      "started_at": "2026-11-23T13:45:43Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T13:59:43.498770317Z",
+          "end": "2026-11-23T13:59:44.056075846Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T14:09:58.50759847Z",
+          "end": "2026-11-23T14:09:58.550088869Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T14:18:55.662077631Z",
+          "end": "2026-11-23T14:18:55.674294451Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T14:25:13.718905441Z",
+          "end": "2026-11-23T14:25:13.74808304Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T13:59:45.623916137Z",
+          "end": "2026-11-23T14:09:40.540426898Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-23T14:09:41.004505796Z",
+          "end": "2026-11-23T14:09:58.162251129Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T14:09:58.678641397Z",
+          "end": "2026-11-23T14:18:17.953646901Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-23T14:18:18.39249073Z",
+          "end": "2026-11-23T14:18:55.518110924Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T14:18:55.717230453Z",
+          "end": "2026-11-23T14:25:01.711724623Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-23T14:25:02.297890602Z",
+          "end": "2026-11-23T14:25:13.461894921Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T14:25:13.828284413Z",
+          "end": "2026-11-23T14:32:16.443874584Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T14:32:16.541126053Z",
+          "end": "2026-11-23T14:32:16.560719034Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T14:32:16.622648685Z",
+          "end": "2026-11-23T14:32:17.053816515Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T14:32:17.163194264Z",
+          "end": "2026-11-23T14:32:17.163375683Z"
+        }
+      ]
     }
   ],
   "product": {
