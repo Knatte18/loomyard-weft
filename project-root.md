@@ -30,7 +30,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-## Bugs (10)
+## Bugs (11)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -44,6 +44,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B8 |  | **Run agents ask a question and exit before the reply; drift judge asks in its pane** | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | 0m<br>0m | shuttle, creel, drift, stencil |
 | B9 |  | **Plan amendment during Webster loses the record of committed batches** | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | 0m<br>0m | webster, loom |
 | B10 |  | **Verify gate requires a fail-on-base test for a tests-only task** | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | 0m<br>0m | gate, darn |
+| B11 |  | **tools/godocreflow worsens wrapped-break findings instead of clearing them** | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | 0m<br>0m | tools, lint |
 
 ## Enhancements (1)
 
