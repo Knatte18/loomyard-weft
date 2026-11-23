@@ -30,4 +30,13 @@ Rationale: Codex is disabled in this hub (operator, 2026-11-23) and its subscrip
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - F2 (class decision, severity MEDIUM, open in rounds 1; answered since by: F2: Codex sessions keep starting fresh)
+  - attach-interrupted-stop-untested (class design, severity MEDIUM, open in rounds 1)
+  - codex-excluded-from-every-engine (class decision, severity MEDIUM, open in rounds 1)
+  - resumed-start-retry-reuses-resume (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
