@@ -1,0 +1,1025 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index d9e95015d..3d178fe71 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -189,7 +189,8 @@ producers:
+       # given none and posts no notice of its own.
+       escalate_decisions: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+-      # which accepts it or orders another round, instead of to the auto-accept.
++      # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
++      # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+       blocking_escalates: true
+ 
+   - name: Code-Burler-Review
+diff --git a/contracts/recipes/sampler-recipe.yaml b/contracts/recipes/sampler-recipe.yaml
+index aff3e49cf..7e9dd3e9f 100644
+--- a/contracts/recipes/sampler-recipe.yaml
++++ b/contracts/recipes/sampler-recipe.yaml
+@@ -144,7 +144,8 @@ producers:
+       # given none and posts no notice of its own.
+       escalate_decisions: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+-      # which accepts it or orders another round, instead of to the auto-accept.
++      # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
++      # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+       blocking_escalates: true
+ 
+   - name: Code-Burler-Review
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index 5ecf0a8b2..812816791 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -390,7 +390,8 @@ producers:
+       # given none and posts no notice of its own.
+       escalate_decisions: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+-      # which accepts it or orders another round, instead of to the auto-accept.
++      # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
++      # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+       blocking_escalates: true
+       # No model/effort/version key: the row refuses them as unknown keys, and loom.yaml's judge,
+       # seed and per-segment judge and seed keys are the only source of this row's passes' models.
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 9bb055385..eb4f83783 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -127,6 +127,9 @@ A `Bouncer` row's optional boolean `blocking_escalates` key defaults to false.
+ When true, a round in the soft-cap window whose ledger holds an open BLOCKING entry, or cannot be read,
+ escalates with cause `budget` to the run's parent, which accepts it or orders another round;
+ neither the auto-accept nor the soft-cap rule's accept passes such a round.
++Before it escalates, a verifier pass on the judge's model checks the open BLOCKING entries
++whose findings the round's fixer reported fixed against the fix commits;
++each entry it confirms fixed is resolved in the ledger, and only the entries left open reach the parent.
+ A round whose review holds a `decision`-class finding is handed over the same way under `escalate_decisions`,
+ unless every open BLOCKING entry is of class `decision`.
+ The shipped Code-Review rows set it.
+diff --git a/contracts/stencils/bouncer/bouncer-template-verify.md b/contracts/stencils/bouncer/bouncer-template-verify.md
+new file mode 100644
+index 000000000..3428a5dad
+--- /dev/null
++++ b/contracts/stencils/bouncer/bouncer-template-verify.md
+@@ -0,0 +1,62 @@
++<!-- This is the Bouncer's verify prompt: the short check of the BLOCKING findings a round's fixer reported fixed.
++     The Bouncer runs it only at a spent budget, on a row that sets blocking_escalates, before it hands open BLOCKING ledger entries to the run's parent.
++     Each entry the agent closes is marked resolved in the ledger; every other entry goes to the parent.
++     It is filled via internal/stencil.Fill and handed to the shuttle as the agent's entire instruction set.
++     Every marker below is a required top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Bouncer — verify the fixed BLOCKING findings, round {{.round}}
++
++You check whether this round's fix commits fixed the BLOCKING findings listed below, and nothing else.
++You are no reviewer: never raise a new finding, never edit code, and never rule on an entry this file does not list.
++
++{{.parent_directive}}
++{{.edit_directive}}
++
++## Open BLOCKING ledger entries
++
++The judge's ledger at `{{.ledger_path}}` holds these entries open at severity BLOCKING:
++
++{{.ledger_entries}}
++
++## Findings the fixer reported fixed
++
++The fixer's report at `{{.fixer_report_path}}` marks these BLOCKING findings of the review at `{{.review_path}}` fixed:
++
++{{.fixed_findings}}
++
++## How to check
++
++1. Map each ledger entry to the review finding it records, by its key and the finding's summary and location.
++   An entry that maps to none of the findings above stays open.
++   Name the finding you mapped a closed entry to.
++2. Find the fix commits in `{{.worktree}}`: each fix commit's subject names the finding ids it fixes,
++   so `git log --oneline` lists them and `git show <commit>` shows each one.
++3. Read the finding in the review, the commit's diff, and the code as the commit leaves it.
++4. Close an entry only when the code now does what the finding asks at every site it names,
++   and the commit leaves no new BLOCKING problem at those sites.
++   Otherwise keep it open.
++
++## Output file (write EXACTLY ONE file: `{{.verification_path}}`)
++
++Write `{{.verification_path}}` as `---`-delimited YAML frontmatter:
++
++```
++---
++round: {{.round}}
++entries:
++  - key: ledger-entry-key
++    status: closed
++    finding: F1
++    reason: "one line citing the commit and the code that fixes the finding"
++---
++```
++
++Frontmatter rules, all strict:
++
++- `round` is {{.round}}.
++- Write one entry per ledger entry listed above, its `key` exactly as listed.
++- `status` is exactly `closed` or `open`.
++- `finding` is the id of the finding listed above that the entry maps to, required on a `closed` entry.
++- List each `key` once.
++- `reason` is a double-quoted, single-line YAML string.
++- An entry you leave out stays open.
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index a9dde7335..1034e9b2e 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -84,6 +84,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"gatefix-body-card", GatefixBodyCard, []string{"card_ids", "gate_call", "worktree_root"}},
+ 		{"webster-template-plan-fix", WebsterTemplatePlanFix, []string{"edit_directive", "friction_directive", "parent_directive", "plan_dir", "record_path", "reply_path", "specs_dir", "worktree_root"}},
+ 		{"bouncer-template-escalation", BouncerTemplateEscalation, []string{"cause", "cause_detail", "decide_options", "decision_record_path", "judge_stencil_path", "ledger_path", "review_path", "round", "segment", "slug", "verdict_path", "worktree"}},
++		{"bouncer-template-verify", BouncerTemplateVerify, []string{"edit_directive", "fixed_findings", "fixer_report_path", "ledger_entries", "ledger_path", "parent_directive", "review_path", "round", "verification_path", "worktree"}},
+ 		{"bouncer-fragment-decide-capped", BouncerFragmentDecideCapped, []string{"slug"}},
+ 		{"bouncer-fragment-parent-review", BouncerFragmentParentReview, nil},
+ 		{"bouncer-fragment-decision", BouncerFragmentDecision, []string{"blocking_findings", "decide_verbs", "decision_findings", "refusal", "slug"}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 5b2657dd9..ff91abf4c 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -350,6 +350,12 @@ var BouncerTemplateSeed []byte
+ //go:embed bouncer/bouncer-template-judge.md
+ var BouncerTemplateJudge []byte
+ 
++// BouncerTemplateVerify is the Bouncer's shipped-default verify prompt:
++// the check, at a spent budget, of the BLOCKING findings a round's fixer reported fixed.
++//
++//go:embed bouncer/bouncer-template-verify.md
++var BouncerTemplateVerify []byte
++
+ // BouncerTemplateEscalation is the Bouncer's shipped-default escalation brief.
+ // A one-shot fork of the run's parent session reads it.
+ //
+@@ -983,6 +989,7 @@ var entries = []registryEntry{
+ 	{"burler-fix-check-rubric", &BurlerFixCheckRubric},
+ 	{"bouncer-template-seed", &BouncerTemplateSeed},
+ 	{"bouncer-template-judge", &BouncerTemplateJudge},
++	{"bouncer-template-verify", &BouncerTemplateVerify},
+ 	{"bouncer-template-escalation", &BouncerTemplateEscalation},
+ 	{"bouncer-fragment-decide-open", &BouncerFragmentDecideOpen},
+ 	{"bouncer-fragment-decide-capped", &BouncerFragmentDecideCapped},
+@@ -1100,6 +1107,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"fix-reviewer":         {"landing-template-fix-review"},
+ 	"pr-reviewer":          {"landing-template-pr-review"},
+ 	"bouncer-judge":        {"bouncer-template-judge"},
++	"bouncer-verify":       {"bouncer-template-verify"},
+ 	"bouncer-seed":         {"bouncer-template-seed", "harden-template-seed"},
+ 	"friction":             {"friction-template-reflection"},
+ 	"describe":             {"landing-template-describe"},
+diff --git a/docs/overview.md b/docs/overview.md
+index 98c52e09a..8028a0d92 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1520,6 +1520,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `discussion_auto_accept`/`code_auto_accept` make a perch accept a harvested round at a spent budget.
+   The perch then skips the soft-cap rule.
+   On a perch whose Bouncer sets `blocking_escalates`, a round with an open BLOCKING finding escalates to the run's parent instead of being accepted.
++  A verifier pass first checks each such finding the fixer reported fixed against the fix commits, and closes the ones it confirms.
+   `split_max_bounces`, `split_hard_max_bounces` and `split_auto_accept` are the split perch's budget, hard cap and auto-accept.
+   `split_auto_accept` defaults to false, and a null `split_max_bounces` and a 0 `split_hard_max_bounces` take the shared values.
+   `tapestry.yaml` is the tapestry recipe's module, per-worktree, and holds the plan perch's own keys.
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index ec609a1fc..b8fbaaebc 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -173,6 +173,9 @@ type BouncerConfig struct {
+ 	// the parent accepts it or orders another round.
+ 	// A round that EscalateDecisions would escalate with cause decision is handed over the same way.
+ 	// The exception is a round whose open BLOCKING entries are all of class decision, which the arbiter may rule on.
++	// Before handing the round over, a verifier pass on the judge's model checks the fix commits.
++	// It checks the open BLOCKING entries whose findings the round's fixer reported fixed.
++	// Each entry it confirms fixed is resolved in the ledger, so only the entries left open reach the parent.
+ 	BlockingEscalates bool
+ 	// EscalateDecisions makes a judged round escalate with cause decision, whatever the judge ruled.
+ 	// It does so when its accepted review holds a finding of class decision; false, the default, changes nothing.
+@@ -294,7 +297,8 @@ type Bouncer struct {
+ // The soft-cap rule's automatic continue is exempt as well.
+ // With cfg.AutoAccept set, a spent budget turns a freshly judged CONTINUE or CIRCLING round into an automatic accept.
+ // Such a round returns Done instead of running the soft-cap rule.
+-// With cfg.BlockingEscalates set, a spent budget over an open BLOCKING ledger entry escalates to the parent instead.
++// With cfg.BlockingEscalates set, a spent budget over an open BLOCKING ledger entry escalates to the parent instead,
++// unless a verifier pass confirms the round's fix closed it.
+ // A judge that never recovers halts within MaxBounces counted Stucks.
+ // A continue past the soft cap buys exactly one judged round.
+ //
+@@ -1206,13 +1210,15 @@ func (b *Bouncer) droppedKeyRefusal(round int, ledger ledgerFile) string {
+ }
+ 
+ // rejudge retires a refused judgment: it archives the round's three judge outputs, so the round reads as unjudged.
++// It archives the round's fix verification too, since that ruled on the retired ledger's keys.
+ // It then degrades with a Reason naming the verdict and the cause, and the next call re-judges the round.
+-// The judge stays the only writer of those files.
++// rejudge itself writes none of those files.
+ // The Stuck spends one counted bounce unit, is never BudgetExempt and never escalates,
+ // so a segment at its budget halts on it.
+ // A failed archive degrades naming that failure instead.
+ func (b *Bouncer) rejudge(ctx context.Context, round int, verdict bouncerVerdict, cause string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+-	if err := archiveStaleOutputs(judgeOutputs(b.cfg.RunDir, round), b.cfg.Now); err != nil {
++	retired := append(judgeOutputs(b.cfg.RunDir, round), verificationPath(b.cfg.RunDir, round))
++	if err := archiveStaleOutputs(retired, b.cfg.Now); err != nil {
+ 		return b.degrade(ctx, "shedadapters: bouncer failed to archive a refused judgment's outputs", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "cause", err)
+ 	}
+ 	return b.degrade(ctx, fmt.Sprintf("shedadapters: bouncer refused round %d's %s judgment: %s; way forward: the round is re-judged", round, verdict, cause), "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "verdict", verdict)
+@@ -1412,7 +1418,8 @@ func (b *Bouncer) acceptRound(round int, ptr shedengine.OutputPointer) (shedengi
+ // so a round past a new generation that reset Shed's count is still settled by the rule.
+ // In order:
+ // first, in an open window, BlockingEscalates applies.
+-// A round whose ledger holds an open BLOCKING entry or cannot be read escalates with cause budget.
++// A round escalates with cause budget when its ledger cannot be read.
++// It does so too when the ledger holds an open BLOCKING entry that the fix verification leaves open.
+ // The detail names the open keys, and an escalation already recorded for the round is returned as recorded.
+ // Second, AutoAccept applies with the soft cap reached, a harvest (spawned) and no escalation record.
+ // The round then records an automatic accept and passes through acceptRound.
+@@ -1541,11 +1548,13 @@ func (b *Bouncer) softCapRule(round int, verdict bouncerVerdict, ptr shedengine.
+ }
+ 
+ // blockingEscalationDetail returns the budget escalation detail of a round that BlockingEscalates hands to the parent.
+-// That is a round whose ledger holds an open BLOCKING entry, and the detail names each such key,
+-// or a round whose ledger cannot be read.
++// That is a round whose ledger cannot be read.
++// It is also a round whose ledger holds an open BLOCKING entry that the fix verification leaves open.
++// The detail names each such key.
++// The verification first closes each entry whose finding the fixer reported fixed and a verifier pass confirms.
+ // An entry of class leftOut is not counted.
+ // An empty leftOut counts every class, and an entry with no class always counts.
+-// It returns "" when BlockingEscalates is off or the ledger holds no counted entry.
++// It returns "" when BlockingEscalates is off or no counted entry stays open.
+ func (b *Bouncer) blockingEscalationDetail(round int, leftOut burlerengine.Class) string {
+ 	if !b.cfg.BlockingEscalates {
+ 		return ""
+@@ -1557,7 +1566,15 @@ func (b *Bouncer) blockingEscalationDetail(round int, leftOut burlerengine.Class
+ 	if len(keys) == 0 {
+ 		return ""
+ 	}
+-	return fmt.Sprintf("the spent budget leaves BLOCKING findings open (%s), which only the parent may accept: accept them, or continue for another round", strings.Join(keys, ", "))
++	keys, note := b.closeVerifiedBlocking(round, keys)
++	if len(keys) == 0 {
++		return ""
++	}
++	detail := fmt.Sprintf("the spent budget leaves BLOCKING findings open (%s), which only the parent may accept: accept them, or continue for another round", strings.Join(keys, ", "))
++	if note != "" {
++		detail += "; " + note
++	}
++	return detail
+ }
+ 
+ // openBlockingKeys returns the keys of round's ledger entries that are open at severity BLOCKING, in ledger order.
+diff --git a/internal/shedadapters/bouncer_verify_test.go b/internal/shedadapters/bouncer_verify_test.go
+new file mode 100644
+index 000000000..3cba10957
+--- /dev/null
++++ b/internal/shedadapters/bouncer_verify_test.go
+@@ -0,0 +1,271 @@
++// bouncer_verify_test.go covers the check, at a spent budget, of the BLOCKING findings a round's fixer reported fixed.
++// It pins which rounds spawn the verifier, the spec it spawns, and how its verification closes ledger entries.
++
++package shedadapters
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// The fixer reports and verifications the rows of TestBouncer_FixVerification write.
++const (
++	fixedF1Report              = "---\ndispositions:\n  - id: F1\n    disposition: fixed\n---\nfixed in one commit\n"
++	fixedDifferentlyF1Report   = "---\ndispositions:\n  - id: F1\n    disposition: fixed-differently\n---\n"
++	fixedF1AndM1Report         = "---\ndispositions:\n  - id: F1\n    disposition: fixed\n  - id: M1\n    disposition: fixed\n---\n"
++	fixedF1DisputedF2Report    = "---\ndispositions:\n  - id: F1\n    disposition: fixed\n  - id: F2\n    disposition: disputed\n---\n"
++	disputedF1Report           = "---\ndispositions:\n  - id: F1\n    disposition: disputed\n---\n"
++	spawnedFalseFixedF1Report  = "---\nspawned: false\ndispositions:\n  - id: F1\n    disposition: fixed\n---\n"
++	closedHard                 = "---\nround: 2\nentries:\n  - key: hard\n    status: closed\n    finding: F1\n    reason: \"commit abc1234 guards the nil map\"\n---\n"
++	closedHardAsF2             = "---\nround: 2\nentries:\n  - key: hard\n    status: closed\n    finding: F2\n    reason: \"commit abc1234 guards the nil map\"\n---\n"
++	closedHardWithoutFinding   = "---\nround: 2\nentries:\n  - key: hard\n    status: closed\n    reason: \"commit abc1234 guards the nil map\"\n---\n"
++	closedHardOfRoundOne       = "---\nround: 1\nentries:\n  - key: hard\n    status: closed\n    finding: F1\n    reason: \"commit abc1234 guards the nil map\"\n---\n"
++	closedHardOpenOther        = "---\nround: 2\nentries:\n  - key: hard\n    status: closed\n    finding: F1\n    reason: \"commit abc1234 guards the nil map\"\n  - key: other\n    status: open\n    reason: \"the second site is untouched\"\n---\n"
++	openHard                   = "---\nround: 2\nentries:\n  - key: hard\n    status: open\n    reason: \"the guard misses the second site\"\n---\n"
++	maybeHard                  = "---\nround: 2\nentries:\n  - key: hard\n    status: maybe\n---\n"
++	emptyKeyClosed             = "---\nround: 2\nentries:\n  - key: \"\"\n    status: closed\n    finding: F1\n---\n"
++	duplicateHardClosedAndOpen = "---\nround: 2\nentries:\n  - key: hard\n    status: closed\n    finding: F1\n  - key: hard\n    status: open\n---\n"
++)
++
++// TestBouncer_FixVerification covers a BlockingEscalates round at a spent budget.
++// Its ledger holds an open BLOCKING entry.
++// When the fixer reported that entry's finding fixed, a verifier pass checks it first.
++// A closed entry mapped to a finding the fixer reported fixed is resolved in the ledger.
++// The round then settles without the parent.
++// An entry left open, a closed entry mapped to another finding, or a check that fails, escalates with cause budget.
++// Only the keys still open reach the parent.
++// A round whose fixer did not report the finding fixed, or whose fix left the target unchanged, spawns no verifier.
++// A re-call over the escalation spawns no verifier either.
++//
++//testtiming:keep pins the fix verification's spawn, its spec and how its ruling closes ledger entries, which no other test reaches
++func TestBouncer_FixVerification(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// fixerReport is round 2's fixer report; empty writes none.
++		fixerReport string
++		// verification is the file the verifier writes; empty writes nothing.
++		verification string
++		// onDisk is a verification already on disk before the first Call.
++		onDisk string
++		// unchangedTarget records round 2's target as the same before and after its fix.
++		unchangedTarget bool
++		// decision adds a decision-class finding to the review and sets EscalateDecisions.
++		decision bool
++		// extra adds findings to the review beside the BLOCKING F1.
++		extra []reviewFixtureFinding
++		// twoKeys adds a second open BLOCKING entry, `other`, to round 2's ledger.
++		twoKeys bool
++		// spawnError makes the verifier's run fail.
++		spawnError bool
++		// blockLedgerRewrite makes the ledger's temporary sibling unwritable.
++		blockLedgerRewrite bool
++		wantOutcome        shedengine.Outcome
++		wantCause          EscalationCause
++		wantDetail         string
++		wantVerifierRuns   int
++		wantResolved       bool
++	}{
++		{name: "AConfirmedFixClosesTheEntryAndTheRoundAccepts", fixerReport: fixedF1AndM1Report, verification: closedHard,
++			extra:       []reviewFixtureFinding{{"M1", "MEDIUM", "design"}},
++			wantOutcome: shedengine.Done, wantVerifierRuns: 1, wantResolved: true},
++		{name: "AFixedDifferentlyFindingIsVerified", fixerReport: fixedDifferentlyF1Report, verification: closedHard,
++			wantOutcome: shedengine.Done, wantVerifierRuns: 1, wantResolved: true},
++		{name: "AFixTheVerifierKeepsOpenEscalatesNamingIt", fixerReport: fixedF1Report, verification: openHard,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)", wantVerifierRuns: 1},
++		{name: "APartialCloseEscalatesNamingOnlyTheKeyLeftOpen", fixerReport: fixedF1Report, verification: closedHardOpenOther, twoKeys: true,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (other)", wantVerifierRuns: 1, wantResolved: true},
++		{name: "AKeyClosedForAFindingTheFixerDisputedStaysOpen", fixerReport: fixedF1DisputedF2Report, verification: closedHardAsF2,
++			extra:       []reviewFixtureFinding{{"F2", "BLOCKING", "design"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)", wantVerifierRuns: 1},
++		{name: "AVerifierThatWritesNothingEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "the check of the findings the fixer reported fixed failed", wantVerifierRuns: 1},
++		{name: "AVerifierThatFailsToRunEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report, spawnError: true,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "the check of the findings the fixer reported fixed failed", wantVerifierRuns: 1},
++		{name: "AVerificationOfAnUnknownStatusEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report, verification: maybeHard,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: `status "maybe"`, wantVerifierRuns: 1},
++		{name: "AVerificationWithAnEmptyKeyEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report, verification: emptyKeyClosed,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "an empty key", wantVerifierRuns: 1},
++		{name: "AVerificationListingAKeyTwiceEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report, verification: duplicateHardClosedAndOpen,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "more than once", wantVerifierRuns: 1},
++		{name: "AClosedEntryNamingNoFindingEscalatesNamingTheFailedCheck", fixerReport: fixedF1Report, verification: closedHardWithoutFinding,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "names no finding", wantVerifierRuns: 1},
++		{name: "ALedgerThatCannotBeRewrittenEscalatesWithTheKeyOpen", fixerReport: fixedF1Report, verification: closedHard, blockLedgerRewrite: true,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "the verified findings could not be closed in the ledger", wantVerifierRuns: 1},
++		{name: "AVerificationOnDiskIsUsedWithoutAVerifier", fixerReport: fixedF1Report, onDisk: closedHard,
++			wantOutcome: shedengine.Done, wantResolved: true},
++		{name: "AVerificationOnDiskOfAnotherRoundIsReplacedByAVerifierRun", fixerReport: fixedF1Report, onDisk: closedHardOfRoundOne, verification: closedHard,
++			wantOutcome: shedengine.Done, wantVerifierRuns: 1, wantResolved: true},
++		{name: "ADisputedFindingIsNotVerified", fixerReport: disputedF1Report,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "AReportTheEngineWroteForAFixerItNeverSpawnedIsNotVerified", fixerReport: spawnedFalseFixedF1Report,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "ARoundWithNoFixerReportIsNotVerified",
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "AFixThatLeftTheTargetUnchangedIsNotVerified", fixerReport: fixedF1Report, verification: closedHard, unchangedTarget: true,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "AConfirmedFixLeavesADecisionFindingToTheDecisionEscalation", fixerReport: fixedF1Report, verification: closedHard, decision: true,
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationDecision, wantVerifierRuns: 1, wantResolved: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			entries := []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}}
++			if tt.twoKeys {
++				entries = append(entries, evidenceEntry{"other", "open", "scope", "BLOCKING"})
++			}
++			ledger := evidenceLedgerContent(t, 2, entries...)
++			shuttle := &shedfake.Shuttle{}
++			shuttle.RunFn = func(spec shuttleengine.Spec) (shuttleengine.Result, error) {
++				switch {
++				case len(spec.OutputFiles) == 3:
++					_ = os.WriteFile(spec.OutputFiles[0], []byte(bouncerVerdictContent("CONTINUE")), 0o644)
++					_ = os.WriteFile(spec.OutputFiles[1], []byte(ledger), 0o644)
++					_ = os.WriteFile(spec.OutputFiles[2], []byte("---\nround: 3\nexclude_lenses: []\nfocus: []\n---\n"), 0o644)
++				case spec.Role == bouncerVerifyRole && tt.spawnError:
++					return shuttleengine.Result{}, errors.New("the verifier could not start")
++				case tt.verification != "":
++					_ = os.WriteFile(spec.OutputFiles[0], []byte(tt.verification), 0o644)
++				}
++				return shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, nil
++			}
++			cfg := newBouncerFixture(t, withNestedRunDir(), withShuttle(shuttle), withEscalationInputs()).Config
++			cfg.CirclingCheckpoint = 2
++			cfg.Bounces = spentBounces
++			cfg.AutoAccept = true
++			cfg.BlockingEscalates = true
++			cfg.EscalateDecisions = tt.decision
++			seams := &circlingSeams{}
++			carry := &carryOverRecorder{}
++			seams.install(&cfg)
++			carry.install(&cfg)
++			findings := append([]reviewFixtureFinding{{"F1", "BLOCKING", "design"}}, tt.extra...)
++			if tt.decision {
++				findings = append(findings, reviewFixtureFinding{"D1", "LOW", "decision"})
++			}
++			layoutBouncerRun(t, cfg, []bouncerJudgeFixture{
++				{round: 1, report: bouncerReport(1), verdict: bouncerVerdictContent("CONTINUE"), ledger: bouncerLedgerContent(1)},
++				{round: 2, report: decisionReviewContent(findings...)},
++			})
++			writeEvidenceLedger(t, cfg.RunDir, 1, evidenceEntry{"alpha", "open", "design", "MEDIUM"})
++			for path, content := range map[string]string{roundFixerReportPath(cfg.RunDir, 2): tt.fixerReport, verificationPath(cfg.RunDir, 2): tt.onDisk} {
++				if content == "" {
++					continue
++				}
++				if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++				}
++			}
++			if tt.unchangedTarget {
++				if err := updateRoundSnapshot(cfg.RunDir, 2, func(rec *roundSnapshot, _ bool) { rec.TargetID, rec.PostFixTargetID = "tree-1", "tree-1" }); err != nil {
++					t.Fatalf("updateRoundSnapshot() = %v; want nil", err)
++				}
++			}
++			if tt.blockLedgerRewrite {
++				if err := os.Mkdir(ledgerPath(cfg.RunDir, 2)+".tmp", 0o755); err != nil {
++					t.Fatalf("Mkdir(ledger temporary) = %v; want nil", err)
++				}
++			}
++			b, err := NewBouncer(cfg)
++			if err != nil {
++				t.Fatalf("NewBouncer(...) error = %v; want nil", err)
++			}
++
++			ptr := shedfake.RequireOutcome(t, b, tt.wantOutcome)
++
++			verifierSpecs := verifierSpecsOf(shuttle)
++			if len(verifierSpecs) != tt.wantVerifierRuns {
++				t.Errorf("verifier runs = %d; want %d", len(verifierSpecs), tt.wantVerifierRuns)
++			}
++			if len(verifierSpecs) > 0 {
++				requireVerifierSpec(t, verifierSpecs[0], cfg)
++			}
++			got, err := readLedger(cfg.RunDir, 2)
++			if err != nil {
++				t.Fatalf("readLedger(round 2) = %v; want nil", err)
++			}
++			hardStatus := "open"
++			if tt.wantResolved {
++				hardStatus = "resolved"
++			}
++			wantLedger := ledgerFile{Round: 2, Prose: "prose", Entries: []ledgerEntry{
++				{Key: "alpha", Rounds: []int{2}, Status: "resolved", Class: burlerengine.ClassDesign, Severity: burlerengine.SeverityMedium},
++				{Key: "hard", Rounds: []int{2}, Status: hardStatus, Class: burlerengine.ClassScope, Severity: burlerengine.SeverityBlocking},
++			}}
++			if tt.twoKeys {
++				wantLedger.Entries = append(wantLedger.Entries,
++					ledgerEntry{Key: "other", Rounds: []int{2}, Status: "open", Class: burlerengine.ClassScope, Severity: burlerengine.SeverityBlocking})
++			}
++			if !reflect.DeepEqual(got, wantLedger) {
++				t.Errorf("round 2 ledger = %+v; want %+v", got, wantLedger)
++			}
++			if tt.wantOutcome == shedengine.Done {
++				if len(carry.entries) != 1 || len(carry.entries[0].Findings) != 0 {
++					t.Errorf("carry-over entries = %+v; want one with no finding, the verified entry closed", carry.entries)
++				}
++				return
++			}
++			requireEscalation(t, &cfg, tt.wantCause)
++			if tt.wantDetail != "" {
++				if brief, err := os.ReadFile(escalationPath(cfg.RunDir, 2)); err != nil || !strings.Contains(string(brief), tt.wantDetail) {
++					t.Errorf("escalation brief = %q, %v; want it to carry %q", brief, err, tt.wantDetail)
++				}
++			}
++
++			again := shedfake.RequireOutcome(t, b, shedengine.Awaiting)
++			if !reflect.DeepEqual(again, ptr) {
++				t.Errorf("second Call() pointer = %+v; want %+v", again, ptr)
++			}
++			if runs := len(verifierSpecsOf(shuttle)); runs != tt.wantVerifierRuns {
++				t.Errorf("verifier runs after the re-call = %d; want %d", runs, tt.wantVerifierRuns)
++			}
++		})
++	}
++}
++
++// verifierSpecsOf returns the specs of the verifier passes shuttle ran, in order.
++func verifierSpecsOf(shuttle *shedfake.Shuttle) []shuttleengine.Spec {
++	var specs []shuttleengine.Spec
++	for _, spec := range shuttle.Specs {
++		if spec.Role == bouncerVerifyRole {
++			specs = append(specs, spec)
++		}
++	}
++	return specs
++}
++
++// requireVerifierSpec fails the test unless spec is round 2's verifier pass on the judge's model and config role.
++// Its prompt must name the fixed finding, the open ledger key, the fixer report and the output file.
++// It must not list a finding the fixer did not report fixed at severity BLOCKING.
++func requireVerifierSpec(t *testing.T, spec shuttleengine.Spec, cfg BouncerConfig) {
++	t.Helper()
++	if want := []string{verificationPath(cfg.RunDir, 2)}; !slices.Equal(spec.OutputFiles, want) {
++		t.Errorf("verifier OutputFiles = %v; want %v", spec.OutputFiles, want)
++	}
++	if spec.ModelChoice != cfg.Models.Judge || spec.ConfigRole != agentconfig.RoleBouncerJudge || spec.Round != "2" {
++		t.Errorf("verifier spec = model %+v, config role %q, round %q; want the judge's model, %q and round 2", spec.ModelChoice, spec.ConfigRole, spec.Round, agentconfig.RoleBouncerJudge)
++	}
++	for _, want := range []string{"`F1` (BLOCKING)", "- `hard`", roundFixerReportPath(cfg.RunDir, 2), filepath.Base(verificationPath(cfg.RunDir, 2))} {
++		if !strings.Contains(spec.Prompt, want) {
++			t.Errorf("verifier prompt lacks %q", want)
++		}
++	}
++	for _, unwanted := range []string{"`M1`", "`F2`"} {
++		if strings.Contains(spec.Prompt, unwanted) {
++			t.Errorf("verifier prompt carries %q; want only the BLOCKING findings the fixer reported fixed", unwanted)
++		}
++	}
++}
+diff --git a/internal/shedadapters/bouncerdecision.go b/internal/shedadapters/bouncerdecision.go
+index 5b022c273..ea0947156 100644
+--- a/internal/shedadapters/bouncerdecision.go
++++ b/internal/shedadapters/bouncerdecision.go
+@@ -187,8 +187,8 @@ func (b *Bouncer) settleDecisionContinue(ctx context.Context, round int, verdict
+ // Inside it the accept is retired and the round escalates with cause budget, which only the parent accepts.
+ // A refused accept is re-judged while budget is left;
+ // at the budget below the hard cap it is retired and the round escalates again.
+-// At the budget at or past the hard cap the judge outputs are archived and the run halts,
+-// so a resume re-judges the round under the recorded accept.
++// At the budget at or past the hard cap the judge outputs and the round's fix verification are archived,
++// and the run halts, so a resume re-judges the round under the recorded accept.
+ func (b *Bouncer) settleDecisionAccept(ctx context.Context, round int, verdict bouncerVerdict, ledger ledgerFile, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	refusal := b.decisionRefusal(round, verdict, ledger, CirclingAccept)
+ 	if refusal == "" && verdict != verdictConverged {
+@@ -207,7 +207,8 @@ func (b *Bouncer) settleDecisionAccept(ctx context.Context, round int, verdict b
+ 		}
+ 		return b.escalateDecision(round, refusal, true, ptr)
+ 	}
+-	if err := archiveStaleOutputs(judgeOutputs(b.cfg.RunDir, round), b.cfg.Now); err != nil {
++	retired := append(judgeOutputs(b.cfg.RunDir, round), verificationPath(b.cfg.RunDir, round))
++	if err := archiveStaleOutputs(retired, b.cfg.Now); err != nil {
+ 		return b.degrade(ctx, "shedadapters: bouncer failed to archive a held accept's judge outputs", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "cause", err)
+ 	}
+ 	reason := fmt.Sprintf("%sbouncer %s: round %d's recorded accept is held by a refusal at the budget and the perch's hard cap (%s); way forward: run `lym loom resume`, whose next Call re-judges the round under the recorded accept", DecisionHaltPrefix, b.cfg.Name, round, refusal)
+diff --git a/internal/shedadapters/bouncerfiles.go b/internal/shedadapters/bouncerfiles.go
+index d7fa09e21..07e9bc7f4 100644
+--- a/internal/shedadapters/bouncerfiles.go
++++ b/internal/shedadapters/bouncerfiles.go
+@@ -1,4 +1,5 @@
+-// bouncerfiles.go holds the strict parsers for the Bouncer's three file contracts: verdict, ledger and focus.
++// bouncerfiles.go holds the strict parsers for the Bouncer's three file contracts: verdict, ledger and focus,
++// and the renderers of the ledger and focus files the Bouncer itself writes.
+ // Parsers fail loud on a malformed file;
+ // the Bouncer's Call turns that error into a logger warning and shedengine.Stuck.
+ 
+@@ -143,9 +144,9 @@ type ledgerEntryYAML struct {
+ 	Key      string `yaml:"key"`
+ 	Rounds   []int  `yaml:"rounds"`
+ 	Status   string `yaml:"status"`
+-	Class    string `yaml:"class"`
+-	Severity string `yaml:"severity"`
+-	Fix      string `yaml:"fix"`
++	Class    string `yaml:"class,omitempty"`
++	Severity string `yaml:"severity,omitempty"`
++	Fix      string `yaml:"fix,omitempty"`
+ }
+ 
+ // parseLedger parses a bouncer ledger file into a ledgerFile.
+@@ -213,6 +214,35 @@ func parseLedger(content []byte) (ledgerFile, error) {
+ 	}, nil
+ }
+ 
++// renderLedger marshals ledger into a ledger file's bytes: the YAML frontmatter, then the prose when there is any.
++// An entry's empty class, severity and fix are left out.
++func renderLedger(ledger ledgerFile) ([]byte, error) {
++	header := ledgerHeader{Round: ledger.Round, Ledger: make([]ledgerEntryYAML, len(ledger.Entries))}
++	for i, entry := range ledger.Entries {
++		header.Ledger[i] = ledgerEntryYAML{
++			Key:      entry.Key,
++			Rounds:   entry.Rounds,
++			Status:   entry.Status,
++			Class:    string(entry.Class),
++			Severity: string(entry.Severity),
++			Fix:      entry.Fix,
++		}
++	}
++	headerBytes, err := yaml.Marshal(header)
++	if err != nil {
++		return nil, fmt.Errorf("bouncer: render ledger file frontmatter: %w", err)
++	}
++	var out strings.Builder
++	out.WriteString("---\n")
++	out.Write(headerBytes)
++	out.WriteString("---\n")
++	if ledger.Prose != "" {
++		out.WriteString(ledger.Prose)
++		out.WriteString("\n")
++	}
++	return []byte(out.String()), nil
++}
++
+ // readLedger reads and parses round's ledger file inside runDir, wrapping either failure with the round.
+ func readLedger(runDir string, round int) (ledgerFile, error) {
+ 	raw, err := os.ReadFile(ledgerPath(runDir, round))
+diff --git a/internal/shedadapters/bouncerverify.go b/internal/shedadapters/bouncerverify.go
+new file mode 100644
+index 000000000..dbff6fc90
+--- /dev/null
++++ b/internal/shedadapters/bouncerverify.go
+@@ -0,0 +1,320 @@
++// bouncerverify.go checks the open BLOCKING ledger entries at a spent budget.
++// It covers only entries whose findings the round's fixer reported fixed.
++// A short verifier pass checks only those entries against the fix commits;
++// each entry it closes is marked resolved in the round's ledger, so the run's parent hears only of the entries left open.
++
++package shedadapters
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strconv"
++	"strings"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/editdirective"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/parentdirective"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencil"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++// bouncerVerifyRole is the base of the shuttleengine.Spec.Role every verifier pass carries.
++// The spawn and its attach probe name the same role, so a logged attach stays attributable.
++const bouncerVerifyRole = "bouncer-verify"
++
++// verifyStencil is the stencilstore name of the verifier pass's prompt template.
++const verifyStencil = "bouncer-template-verify"
++
++// The two legal statuses of a verification entry.
++const (
++	verificationClosed = "closed"
++	verificationOpen   = "open"
++)
++
++// verificationPath returns the path of the verifier's output file for round inside runDir.
++func verificationPath(runDir string, round int) string {
++	return filepath.Join(runDir, fmt.Sprintf("round-%d-verification.md", round))
++}
++
++// verificationHeader mirrors a verification file's YAML frontmatter shape.
++type verificationHeader struct {
++	Round   int                     `yaml:"round"`
++	Entries []verificationEntryYAML `yaml:"entries"`
++}
++
++// verificationEntryYAML is the verifier's ruling on one ledger key.
++// Finding is the id of the review finding the key maps to.
++type verificationEntryYAML struct {
++	Key     string `yaml:"key"`
++	Status  string `yaml:"status"`
++	Finding string `yaml:"finding"`
++	Reason  string `yaml:"reason"`
++}
++
++// parseVerification returns the keys a verification file for round closes, each mapped to the review finding id it names.
++// It refuses a file with no frontmatter, invalid YAML, another round, an entry with no key, or a key listed twice.
++// It also refuses a status other than closed or open, and a closed entry that names no finding.
++func parseVerification(content []byte, round int) (map[string]string, error) {
++	header, err := splitFrontmatter(content, "verification")
++	if err != nil {
++		return nil, err
++	}
++	var parsed verificationHeader
++	if err := yaml.Unmarshal([]byte(header), &parsed); err != nil {
++		return nil, fmt.Errorf("bouncer: verification file frontmatter is not valid YAML: %w", err)
++	}
++	if parsed.Round != round {
++		return nil, fmt.Errorf("bouncer: verification file names round %d; want %d", parsed.Round, round)
++	}
++	closed := map[string]string{}
++	seen := map[string]bool{}
++	for _, entry := range parsed.Entries {
++		if strings.TrimSpace(entry.Key) == "" {
++			return nil, errors.New("bouncer: verification file has an entry with an empty key")
++		}
++		if seen[entry.Key] {
++			return nil, fmt.Errorf("bouncer: verification file lists key %q more than once", entry.Key)
++		}
++		seen[entry.Key] = true
++		switch entry.Status {
++		case verificationClosed:
++			finding := strings.TrimSpace(entry.Finding)
++			if finding == "" {
++				return nil, fmt.Errorf("bouncer: verification file entry %q is closed and names no finding", entry.Key)
++			}
++			closed[entry.Key] = finding
++		case verificationOpen:
++		default:
++			return nil, fmt.Errorf("bouncer: verification file entry %q has status %q; want exactly %q or %q", entry.Key, entry.Status, verificationClosed, verificationOpen)
++		}
++	}
++	return closed, nil
++}
++
++// closeVerifiedBlocking checks keys, round's open BLOCKING ledger keys, against the fix commits.
++// It returns the keys still open.
++// It checks only a round with no escalation record.
++// The round's fixer must have reported a BLOCKING finding fixed or fixed differently.
++// Its fix must have changed the review target when the round's snapshot record says.
++// A fixer report the fixer wrote exists only after its gate passed, since a failed gate archives the round.
++// A verification already on disk is used as it stands; otherwise one verifier pass writes it.
++// A key is closed only when the verification closes it and names a finding the fixer reported fixed.
++// Each closed key is marked resolved in the ledger.
++// note names why nothing was checked when a step failed, and is "" otherwise;
++// a failure leaves every key open, so the parent is asked.
++func (b *Bouncer) closeVerifiedBlocking(round int, keys []string) (open []string, note string) {
++	if _, _, escalated, err := readEscalation(b.cfg.RunDir, round); err != nil || escalated {
++		return keys, ""
++	}
++	fixed := b.fixedBlockingFindings(round)
++	if len(fixed) == 0 || b.fixLeftTargetUnchanged(round) {
++		return keys, ""
++	}
++	closed, err := b.verification(round, keys, fixed)
++	if err != nil {
++		logger.Warn("shedadapters: bouncer could not verify the fixed BLOCKING findings; the parent is asked", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "cause", err)
++		return keys, fmt.Sprintf("the check of the findings the fixer reported fixed failed: %v", err)
++	}
++	fixedIDs := make(map[string]bool, len(fixed))
++	for _, finding := range fixed {
++		fixedIDs[finding.ID] = true
++	}
++	confirmed := map[string]bool{}
++	for _, key := range keys {
++		if findingID, ok := closed[key]; ok && fixedIDs[findingID] {
++			confirmed[key] = true
++		} else {
++			open = append(open, key)
++		}
++	}
++	if len(confirmed) == 0 {
++		return keys, ""
++	}
++	if err := markLedgerResolved(b.cfg.RunDir, round, confirmed); err != nil {
++		logger.Warn("shedadapters: bouncer could not close the verified BLOCKING entries in the ledger; the parent is asked", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "cause", err)
++		return keys, fmt.Sprintf("the verified findings could not be closed in the ledger: %v", err)
++	}
++	logger.Info("shedadapters: bouncer closed BLOCKING entries the verifier confirmed fixed", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "open", open)
++	return open, ""
++}
++
++// fixedBlockingFindings returns the BLOCKING findings of round's review.
++// Only those its fixer reported fixed or fixed differently count.
++// A missing or unparseable review or fixer report, and a report the engine wrote for a fixer it never spawned, give none.
++func (b *Bouncer) fixedBlockingFindings(round int) []burlerengine.Finding {
++	content, err := os.ReadFile(roundFixerReportPath(b.cfg.RunDir, round))
++	if err != nil {
++		return nil
++	}
++	report, err := burlerengine.ParseFixerReport(content)
++	if err != nil || report.Spawned != nil {
++		return nil
++	}
++	findings, err := b.reviewFindings(round)
++	if err != nil {
++		return nil
++	}
++	disposition := make(map[string]burlerengine.Disposition, len(report.Dispositions))
++	for _, entry := range report.Dispositions {
++		disposition[entry.ID] = entry.Disposition
++	}
++	var fixed []burlerengine.Finding
++	for _, finding := range findings {
++		switch disposition[finding.ID] {
++		case burlerengine.DispositionFixed, burlerengine.DispositionFixedDifferently:
++			if finding.Severity == burlerengine.SeverityBlocking {
++				fixed = append(fixed, finding)
++			}
++		}
++	}
++	return fixed
++}
++
++// fixLeftTargetUnchanged reports whether round's snapshot record holds equal target ids from before and after the fix.
++// A record that is missing, unreadable or lacks either id does not say, and reports false.
++func (b *Bouncer) fixLeftTargetUnchanged(round int) bool {
++	record, found, err := readRoundSnapshot(b.cfg.RunDir, round)
++	return err == nil && found && record.TargetID != "" && record.TargetID == record.PostFixTargetID
++}
++
++// verification returns the keys round's verification closes, each mapped to its finding id.
++// It runs one verifier pass when no readable verification exists.
++// keys and fixed fill the pass's prompt.
++func (b *Bouncer) verification(round int, keys []string, fixed []burlerengine.Finding) (map[string]string, error) {
++	path := verificationPath(b.cfg.RunDir, round)
++	if content, err := os.ReadFile(path); err == nil {
++		if closed, err := parseVerification(content, round); err == nil {
++			return closed, nil
++		}
++	} else if !errors.Is(err, fs.ErrNotExist) {
++		return nil, fmt.Errorf("read %s: %w", path, err)
++	}
++	if err := b.runVerifier(round, keys, fixed); err != nil {
++		return nil, err
++	}
++	content, err := os.ReadFile(path)
++	if err != nil {
++		return nil, fmt.Errorf("the verifier wrote no verification: %w", err)
++	}
++	closed, err := parseVerification(content, round)
++	if err != nil {
++		return nil, fmt.Errorf("the verifier's file %s: %w", path, err)
++	}
++	return closed, nil
++}
++
++// runVerifier runs one verifier pass for round on the judge's model, which writes round's verification file.
++// It attaches to a live verifier when one holds that file; otherwise it archives a stale file and spawns one.
++// A render, probe, archive or run failure is an error.
++func (b *Bouncer) runVerifier(round int, keys []string, fixed []burlerengine.Finding) error {
++	engine := b.cfg.Shuttle.EngineName(b.cfg.Models.Judge)
++	prompt, err := b.RenderVerifyPrompt(engine, round, keys, fixed)
++	if err != nil {
++		return err
++	}
++	spec := shuttleengine.Spec{
++		Prompt:       prompt,
++		PromptEngine: engine,
++		OutputFiles:  []string{verificationPath(b.cfg.RunDir, round)},
++		ModelChoice:  b.cfg.Models.Judge,
++		Role:         b.role(bouncerVerifyRole),
++		Segment:      b.colorSegment(),
++		Round:        strconv.Itoa(round),
++		ConfigRole:   agentconfig.RoleBouncerJudge,
++	}
++	result, attached, err := b.cfg.Shuttle.Attach(spec)
++	if err != nil {
++		return fmt.Errorf("probe for a live verifier: %w", err)
++	}
++	if !attached {
++		if err := archiveStaleOutputs(spec.OutputFiles, b.cfg.Now); err != nil {
++			return fmt.Errorf("archive a stale verification: %w", err)
++		}
++		result, err = b.cfg.Shuttle.Run(spec)
++		if err != nil {
++			return fmt.Errorf("run the verifier: %w", err)
++		}
++	}
++	b.recordPass(round, false, result)
++	return nil
++}
++
++// RenderVerifyPrompt fills the verifier pass's prompt for round for the named engine.
++// keys are the open BLOCKING ledger keys it rules on, and fixed the BLOCKING findings the fixer reported fixed.
++// The edit directive is the engine's own copy.
++// It fails when the template or a directive cannot be read or filled.
++func (b *Bouncer) RenderVerifyPrompt(engine string, round int, keys []string, fixed []burlerengine.Finding) (string, error) {
++	template, err := stencilstore.Read(b.cfg.StencilsDir, verifyStencil)
++	if err != nil {
++		return "", fmt.Errorf("read the verify template: %w", err)
++	}
++	parentDirective, err := parentdirective.Directive(b.cfg.StencilsDir, b.cfg.ParentName, false)
++	if err != nil {
++		return "", fmt.Errorf("read the parent directive: %w", err)
++	}
++	editDirective, err := editdirective.Directive(b.cfg.StencilsDir, engine)
++	if err != nil {
++		return "", fmt.Errorf("read the edit directive: %w", err)
++	}
++	keyLines := make([]string, len(keys))
++	for i, key := range keys {
++		keyLines[i] = fmt.Sprintf("- `%s`", key)
++	}
++	findingLines := make([]string, len(fixed))
++	for i, finding := range fixed {
++		findingLines[i] = findingLine(finding)
++	}
++	prompt, err := stencil.Fill(template, map[string]string{
++		"round":                    strconv.Itoa(round),
++		"review_path":              filepath.Join(b.cfg.RunDir, b.cfg.ReportName(round)),
++		"fixer_report_path":        roundFixerReportPath(b.cfg.RunDir, round),
++		"ledger_path":              ledgerPath(b.cfg.RunDir, round),
++		"ledger_entries":           strings.Join(keyLines, "\n"),
++		"fixed_findings":           strings.Join(findingLines, "\n"),
++		"verification_path":        verificationPath(b.cfg.RunDir, round),
++		"worktree":                 b.cfg.WorktreeRoot,
++		parentdirective.MarkerName: parentDirective,
++		editdirective.MarkerName:   editDirective,
++	})
++	if err != nil {
++		return "", fmt.Errorf("fill the verify template: %w", err)
++	}
++	return string(prompt), nil
++}
++
++// markLedgerResolved rewrites round's ledger with each open entry whose key closed holds marked resolved.
++// Every other entry, the round and the prose stay as they were.
++// The rewrite goes to a temporary sibling that is renamed over the ledger, so a failed write leaves the ledger intact.
++func markLedgerResolved(runDir string, round int, closed map[string]bool) error {
++	ledger, err := readLedger(runDir, round)
++	if err != nil {
++		return err
++	}
++	for i, entry := range ledger.Entries {
++		if entry.Status == "open" && closed[entry.Key] {
++			ledger.Entries[i].Status = "resolved"
++		}
++	}
++	content, err := renderLedger(ledger)
++	if err != nil {
++		return err
++	}
++	path := ledgerPath(runDir, round)
++	temporary := path + ".tmp"
++	if err := os.WriteFile(temporary, content, 0o644); err != nil {
++		return fmt.Errorf("write ledger of round %d: %w", round, err)
++	}
++	if err := os.Rename(temporary, path); err != nil {
++		_ = os.Remove(temporary)
++		return fmt.Errorf("replace ledger of round %d: %w", round, err)
++	}
++	return nil
++}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 0cd0cb0a2..6a208a412 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -166,6 +166,10 @@
+ // A continue below the hard cap maps to Stuck, BudgetExempt when the cause is budget or the budget is reached.
+ // With BouncerConfig.BlockingEscalates, a spent budget over an open BLOCKING ledger entry escalates with cause budget,
+ // so no accept passes such a round without the parent.
++// Before it does, a verifier pass checks the fix commits.
++// It covers the entries whose findings the round's fixer reported fixed.
++// It writes round-<N>-verification.md, and each entry it closes is resolved in the ledger.
++// The parent hears only of the rest.
+ // The escalation rules read only files in the run directory, so a harvest and a replay settle alike.
+ // A pass that settles a judged round calls the CarryOver seam, which only writes the segment's `## Open risks` entry:
+ // it approves nothing, and a failure is the settle's own error, so neither Approve nor Commit runs.
+diff --git a/internal/shuttleparity/producers_test.go b/internal/shuttleparity/producers_test.go
+index 822a3b7fe..a90e0313f 100644
+--- a/internal/shuttleparity/producers_test.go
++++ b/internal/shuttleparity/producers_test.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/batcher"
++	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/frictionengine"
+ 	"github.com/Knatte18/loomyard/internal/gatefixer"
+@@ -108,6 +109,7 @@ func producers(t *testing.T, fx parityFixture) []producer {
+ 		{"internal/weaverengine#attemptSpec", buildWeaverAttempt},
+ 		{"internal/shedadapters#Bouncer.runSeedSpawn", buildBouncerSeed},
+ 		{"internal/shedadapters#Bouncer.judgeCall", buildBouncerJudge},
++		{"internal/shedadapters#Bouncer.runVerifier", buildBouncerVerify},
+ 		{"internal/gatefixer#SpawnOrAttach", buildGateFixer},
+ 		{"internal/frictionengine#buildReflectionSpec", buildReflection},
+ 	}
+@@ -464,6 +466,22 @@ func buildBouncerJudge(fx parityFixture, engine string) (shuttleengine.Spec, err
+ 	}), nil
+ }
+ 
++func buildBouncerVerify(fx parityFixture, engine string) (shuttleengine.Spec, error) {
++	bouncer, err := standInBouncer(fx.env)
++	if err != nil {
++		return shuttleengine.Spec{}, err
++	}
++	fixed := []burlerengine.Finding{{ID: "F1", Severity: burlerengine.SeverityBlocking, Summary: "stand-in finding", Fix: "stand-in fix"}}
++	prompt, err := bouncer.RenderVerifyPrompt(engine, 1, []string{"stand-in-key"}, fixed)
++	if err != nil {
++		return shuttleengine.Spec{}, err
++	}
++	return promptSpec(engine, prompt, shuttleengine.Spec{
++		ConfigRole: agentconfig.RoleBouncerJudge,
++		Role:       "bouncer-verify",
++	}), nil
++}
++
+ func buildGateFixer(fx parityFixture, engine string) (shuttleengine.Spec, error) {
+ 	env := fx.env
+ 	skills, err := languageSkillsOf(env)
+diff --git a/pattern/PATTERN-sole-parsers.md b/pattern/PATTERN-sole-parsers.md
+index dcb26fe3e..d680395a8 100644
+--- a/pattern/PATTERN-sole-parsers.md
++++ b/pattern/PATTERN-sole-parsers.md
+@@ -15,6 +15,7 @@ Each on-disk format has one parser; consumers read only its model.
+ - The lens report's outcome: `internal/lensreport`.
+ - The burler review file and the fixer-report frontmatter: `internal/burlerengine`.
+ - Bridge envelope: `internal/slackengine`.
++- The Bouncer's verification file: `internal/shedadapters`, through `parseVerification`.
+ 
+ A format another task adds joins this list with its sole parser.
+ 
