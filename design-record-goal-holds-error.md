@@ -1,6 +1,6 @@
 # Decision record written with a CLI error envelope as its Goal
 
-`record-goal-holds-error` · Task · bug, loom, darn · starting · Worktree-Create
+`record-goal-holds-error` · Task · bug, loom, darn · starting · Seed-Child
 
 Imported from [issue #181](https://github.com/Knatte18/loomyard/issues/181).
 
