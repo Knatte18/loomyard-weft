@@ -1,0 +1,14 @@
+{
+  "session_id": "f03cfbe1-6e6c-4dc7-904c-4a7ed1cbb227",
+  "row": "Friction-Reflect",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 20,
+  "cache_write_tokens": 35545,
+  "cache_read_tokens": 238532,
+  "output_tokens": 8667,
+  "cost_usd": 0.011163945,
+  "started": "2026-11-23T13:45:37Z",
+  "ended": "2026-11-23T13:46:29Z"
+}
