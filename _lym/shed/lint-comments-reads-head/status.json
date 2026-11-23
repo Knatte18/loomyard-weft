@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -234,6 +234,30 @@
       "started_at": "2026-11-23T11:45:40Z",
       "routed_to": "Code-Burler-Review",
       "by": "shed"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/lint-comments-reads-head/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-23T11:48:38Z",
+      "started_at": "2026-11-23T11:46:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-23T11:48:37.663138573Z",
+          "end": "2026-11-23T11:48:37.663325312Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-23T11:48:37.724333352Z",
+          "end": "2026-11-23T11:48:37.724564794Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
