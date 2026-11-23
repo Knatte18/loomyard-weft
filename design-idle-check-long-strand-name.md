@@ -45,3 +45,8 @@ I read this from the log and the pane text, not from lym's source, so the exact 
 
 The idle check finds the input box by the `❯` prompt line and the borders around it, whatever text the top border carries and however few `─` are left beside it.
 A start prompt still held after its retries raises a notice to the parent, naming the strand.
+
+## Related
+
+This may be the cause of `prompt-not-typed-after-skills`, which holds issue #195.
+`isTopBoxRule` in `internal/shuttleengine/claudeengine/session.go` on main (fetched 2026-11-23) takes a labelled top rule only when it starts with three rule glyphs or ends in `… ─`, so `─ dop:…:plan-burler-review ─` is not seen as the top rule.
