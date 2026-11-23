@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-23T12:34:11Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/red-first-non-go-scoper/_lym/landing/summary.md",
+      "at": "2026-11-23T12:45:23Z",
+      "started_at": "2026-11-23T12:34:19Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T12:36:46.834678161Z",
+          "end": "2026-11-23T12:36:46.886017467Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T12:36:47.126703597Z",
+          "end": "2026-11-23T12:43:01.291750823Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T12:43:01.418837275Z",
+          "end": "2026-11-23T12:43:49.486613912Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T12:43:49.615895295Z",
+          "end": "2026-11-23T12:43:50.36098881Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T12:43:50.531599153Z",
+          "end": "2026-11-23T12:43:50.531819525Z"
+        }
+      ]
     }
   ],
   "product": {
