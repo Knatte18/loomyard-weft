@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 10:22 UTC; every age below is as of then.
+Rendered 2026-11-23 10:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -13,7 +13,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | board |
-| T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Record-Write | neve | 1h<br>1h | reed, claude |
+| T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Drift-Baseline | neve | 1h<br>1h | reed, claude |
 | T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | shuttle, creel, drift, stencil |
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | tools, lint |
 | T13 | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | loom, darn |
@@ -68,7 +68,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | 23m<br>23m | board |
+| E1 |  | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | 24m<br>24m | board |
 
 ## Features (1)
 
