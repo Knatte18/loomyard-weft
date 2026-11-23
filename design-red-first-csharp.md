@@ -1,6 +1,6 @@
 # Red-first gate must support C# repositories
 
-`red-first-csharp` · Task · enhancement, gate, loom, dotnet · starting · Open-Window
+`red-first-csharp` · Task · enhancement, gate, loom, dotnet · starting · Seed-IDE
 
 Imported from [issue #208](https://github.com/Knatte18/loomyard/issues/208).
 
