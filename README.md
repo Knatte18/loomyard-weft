@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 13:34 UTC; every age below is as of then.
+Rendered 2026-11-23 13:35 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -43,7 +43,7 @@ Owner `neve`
 | T1 | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | darn · light | Code-Burler-Fix | neve | 3h<br>55m | git, batten, landing |
 | T2 | **PR-Review re-ask is never delivered: pr-reviewer strand may not sign as the program LOOM** | [`pr-review-reask-not-delivered`](design-pr-review-reask-not-delivered.md) | darn · light | landing · Finalize | neve | 1h<br>1h | creel, loom |
 | T7 | **Webster stops after an amended plan send the parent no notice, and webster reset leaves the run tied to the dropped code tip** | [`webster-amend-stop-no-notice`](design-webster-amend-stop-no-notice.md) | darn · light | Darn-Write | neve | 48m<br>48m | webster, loom |
-| T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Code-Bouncer | neve | 16h<br>5h | fabric |
+| T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Drift-Recheck | neve | 16h<br>5h | fabric |
 
 ### Layer A (2)
 
@@ -56,7 +56,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 4m<br>4m | landing, shuttle |
+| T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 5m<br>4m | landing, shuttle |
 
 ### Layer C (1)
 
@@ -85,7 +85,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | 4m<br>4m | gate, loom, dotnet |
+| E1 |  | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | 5m<br>5m | gate, loom, dotnet |
 
 ### Features (1)
 
