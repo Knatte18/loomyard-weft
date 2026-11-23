@@ -1,6 +1,6 @@
 # A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve
 
-`agent-script-tmux-ate-memory` · Task · bug, process, shuttle · running · Darn-Write
+`agent-script-tmux-ate-memory` · Task · bug, process, shuttle · running · Drift-Verify
 
 ## Seen
 

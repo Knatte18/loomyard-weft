@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 19:48 UTC; every age below is as of then.
+Rendered 2026-11-23 19:50 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,10 +12,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 30m<br>30m | reed |
-| T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 48m<br>48m | shuttle, reed, claude |
-| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Darn-Write | neve | 25m<br>21m | process, shuttle |
-| T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | Darn-Write | neve | 13m<br>13m | reed, shuttle, process |
+| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 33m<br>33m | reed |
+| T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 51m<br>51m | shuttle, reed, claude |
+| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Drift-Verify | neve | 27m<br>23m | process, shuttle |
+| T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | Darn-Write | neve | 15m<br>15m | reed, shuttle, process |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 10h<br>10h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ## Layer A (1)
@@ -28,7 +28,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T4<br>T10<br>T8<br>T5 | 6h<br>13m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
+| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T4<br>T10<br>T8<br>T5 | 6h<br>15m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
 ## Research (2)
 
@@ -41,16 +41,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 51m<br>51m | landing, creel |
+| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 54m<br>54m | landing, creel |
 
 ## Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh** | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | 0m<br>0m | shuttle, shed |
+| E1 |  | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh** | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | 2m<br>2m | shuttle, shed |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>31m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>33m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
