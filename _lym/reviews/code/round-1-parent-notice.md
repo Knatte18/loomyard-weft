@@ -1,0 +1,1 @@
+Review segment of task `webster-amend-stop-no-notice` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/webster-amend-stop-no-notice/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept webster-amend-stop-no-notice" or "lym loom circling continue webster-amend-stop-no-notice".

@@ -1,12 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/webster-amend-stop-no-notice/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept webster-amend-stop-no-notice` or `lym loom circling continue webster-amend-stop-no-notice`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `webster-amend-stop-no-notice` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/webster-amend-stop-no-notice/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept webster-amend-stop-no-notice\" or \"lym loom circling continue webster-amend-stop-no-notice\".",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
-    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
-    "wait": ""
+    "last": "Code-Bouncer → awaiting",
+    "wait": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/webster-amend-stop-no-notice/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept webster-amend-stop-no-notice` or `lym loom circling continue webster-amend-stop-no-notice`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -224,6 +225,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Bouncer"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/webster-amend-stop-no-notice/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T14:20:41Z",
+      "started_at": "2026-11-23T14:20:09Z"
     }
   ],
   "product": {
