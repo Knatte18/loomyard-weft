@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-23T09:23:13.70684746+01:00",
+  "deadline": "2026-11-23T09:33:13.70684746+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/godocreflow-worsens-findings/drive-reports/drive-envelope-20261123-092313-16ca.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/godocreflow-worsens-findings/drive-reports/drive-report-20261123-092313-a9e5.md",
+  "strand_guid": "2e9cfc48c5b625656104513aae253b5d"
+}
