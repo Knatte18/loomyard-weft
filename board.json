@@ -425,6 +425,26 @@
       "body": "## Seen\n\n`orch-autonomy-mode` landed as `30ed1ee58` with findings `goto-hook-wiring-untested` and `halt-notice-call-sites-untested` (scope, MEDIUM) open:\nno test pins the goto hook that clears the PR-Review record, nor the `autonomy:` stamp at each halt-notice call site.\n\n## Idea\n\nAdd those tests.\n",
       "created": "2026-11-23T08:15:18Z",
       "revised": "2026-11-23T08:15:18Z"
+    },
+    {
+      "id": 1583,
+      "handle": "B6",
+      "slug": "board-done-beam-task-under-p0",
+      "title": "Board view lists a done beam-project task under P0",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [
+        188
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).\n\nSeen: lym board list --text showed a task that had landed in a beam project under P0, the root project, instead of under its beam.\n\nWorkaround: none; the entry was left until prune.\n\nExpected: a done task stays listed under its own project until it is pruned.",
+      "created": "2026-11-23T08:18:55Z",
+      "revised": "2026-11-23T08:18:55Z"
     }
   ],
   "prime_owner": "neve",
