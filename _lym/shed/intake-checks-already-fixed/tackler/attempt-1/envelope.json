@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The transient agent-start stop has not cleared and a plain re-launch will not clear it. Every launch of Code-Burler-Review in round 1 and round 1b (five starts, about 16 minutes) reached an idle pane with the skills loaded, and each start failed with \"no input box is on screen\". The cause is in the box detector: its top-rule check (internal/shuttleengine/claudeengine/session.go, isTopBoxRule at line 342) does not accept the left-labelled top rule `─ ly:intake-checks-already-fixed:code-burler-review ─` that this role's pane draws, so inputBoxInterior finds no box. The label is fixed by the run and role names, so each re-launch draws the same rule. Fixing it means changing and testing the detector, which needs code read and judged, so the case goes to a stronger agent or the run's parent. The case brief is at _lym/shed/intake-checks-already-fixed/tackler/attempt-1/case-brief.md.",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/tackler/attempt-1/case-brief.md"
+}

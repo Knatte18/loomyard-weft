@@ -1,0 +1,21 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Burler-Review",
+    "history_length": 8,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-23T12:32:25.098802983+01:00",
+  "deadline": "2026-11-23T13:02:25.098802983+01:00",
+  "strand_guid": "1c2cd61765410b65cb574439bb56ea4b",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/drive-reports/drive-envelope-20261123-123138-a9da.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/drive-reports/drive-report-20261123-123224-dcb4.md",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYMHUB/intake-checks-already-fixed/_lym/shed/intake-checks-already-fixed/tackler/attempt-1/case-brief.md",
+  "snapshot": {
+    "head": "997f952cdd3cf4308f166a0588be6f9de8b9656b",
+    "branch": "intake-checks-already-fixed",
+    "dirty": {}
+  }
+}
