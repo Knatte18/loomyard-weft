@@ -1,6 +1,6 @@
 # A note carries depends_on, shown on the board and kept when promoted
 
-`note-depends-on` · Task · enhancement, board · running · Drift-Verify
+`note-depends-on` · Task · enhancement, board · running · Code-Bouncer
 
 ## Seen
 
