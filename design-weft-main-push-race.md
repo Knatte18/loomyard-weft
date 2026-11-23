@@ -1,6 +1,6 @@
 # Find who pushes weft main outside the board push lock
 
-`weft-main-push-race` · Task · research, fabric, board, batten
+`weft-main-push-race` · Task · research, fabric, board, batten · starting · Worktree-Create
 
 ## Goal
 
