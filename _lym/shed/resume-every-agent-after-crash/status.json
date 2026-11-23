@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -196,6 +195,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/resume-every-agent-after-crash/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-23T20:47:05Z",
       "started_at": "2026-11-23T20:46:41Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/resume-every-agent-after-crash/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T20:48:07Z",
+      "started_at": "2026-11-23T20:48:07Z",
+      "by": "shed"
     }
   ],
   "product": {

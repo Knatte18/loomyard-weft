@@ -1,0 +1,936 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 964bb908c..32027003f 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -293,7 +293,9 @@ A session the operator chose to sit in, an interactive Discussion, PR-Review, sa
+ Mail from `<shortname>:LOOM` whose text holds `[row reached]` says a run reached a row you asked to hear of.
+ Name the rows in `notify_parent_on`, a list of the recipe's row names such as `["Drift-Verify"]`, in `loom.yaml` or the task's `run_settings`.
+ lym sends it as the run calls the row, once each time the run reaches it;
+-a re-call after an escalation's answer or a resumed halt spawns a fresh agent and sends it again;
++a re-call after an escalation's answer spawns a fresh agent;
++a re-call after a resumed halt whose agent ended before its work did resumes that agent's session;
++lym sends the row-reached mail again in both cases;
+ a row the run skips sends none, and a call after a yield or a pause sends none.
+ Brief the row's agent by creel once `lym reed list` shows its strand, ending the message with "Answer briefly, then continue your task."
+ A name that is no row of the run's recipe refuses the run's steps, naming the recipe's rows.
+diff --git a/internal/loomcli/arbiterconsume.go b/internal/loomcli/arbiterconsume.go
+index b1db907c6..14603118b 100644
+--- a/internal/loomcli/arbiterconsume.go
++++ b/internal/loomcli/arbiterconsume.go
+@@ -24,7 +24,7 @@ func (c *loomCLI) loomConsumeAttempt(_ context.Context, attempt string) error {
+ 
+ // relaunchRequest builds the request that relaunches the run runID over the receiver's status files.
+ // Its guard ends the run's fixers once guard admits the move,
+-// and its Admitted hook resets a PR-Review review that the move lands on.
++// and its Admitted hook sets aside the interrupted shuttle runs and resets a PR-Review review that the move lands on.
+ func (c *loomCLI) relaunchRequest(runID string, guard shedengine.GotoGuard) shedengine.RelaunchRequest {
+ 	return shedengine.RelaunchRequest{
+ 		StatusPath:              c.shedPaths.StatusPath,
+@@ -34,6 +34,6 @@ func (c *loomCLI) relaunchRequest(runID string, guard shedengine.GotoGuard) shed
+ 		RunID:                   runID,
+ 		MissingStatusWayForward: c.shedPaths.MissingStatusWayForward,
+ 		Guard:                   c.gotoGuardEndingFixers(guard),
+-		Admitted:                c.prReviewGotoAdmitted(),
++		Admitted:                c.gotoAdmitted(),
+ 	}
+ }
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index fe51d095e..a16d5d20b 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -476,7 +476,7 @@ func (c *loomCLI) specFor(verb string) shedverbs.Spec {
+ 		spec.Hooks.AfterInterrupt = c.loomAfterInterrupt
+ 		spec.Hooks.ConsumeAttempt = c.loomConsumeAttempt
+ 		spec.GotoGuard = c.gotoGuardEndingFixers(c.settledGuard())
+-		spec.GotoAdmitted = c.prReviewGotoAdmitted()
++		spec.GotoAdmitted = c.gotoAdmitted()
+ 	}
+ 	if recipeIsLoom(c.recipe) {
+ 		// A fixer escalate halt goes to the arbiter first on a loom run, so a driver's build re-launch leaves it alone.
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index f544ef74b..bf05d1a99 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -87,6 +87,11 @@ type loomCLI struct {
+ 	// Nil means the runner stops them.
+ 	// A test sets it to record the call.
+ 	stopOrphanedRuns func(stepsDir string) (shuttleengine.StepStopReport, error)
++	// retireRuns, when set, sets aside the interrupted shuttle runs an admitted goto restarts.
++	// It stands in for the receiver's runner.
++	// Nil means the runner sets them aside.
++	// A test sets it to record the call.
++	retireRuns func() (int, error)
+ 	// runner is the constructed shuttle runner.
+ 	// It is carried on the struct so run.go can pass it to landingDeps as the landing seam's Shuttle value.
+ 	runner *shuttleengine.Runner
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 244c72749..d493bd263 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -200,6 +200,8 @@
+ // The told goto guard refuses a goto onto Finalize while the parent's code checkout holds tracked dirt,
+ // and a goto onto a review or fix row whose verdict is settled.
+ // It ends every fixer role registered under the pair once a goto is admitted, before the move is written.
++// Once the move is written, the goto sets aside the worktree's interrupted shuttle runs,
++// so the rows it restarts start fresh sessions instead of resuming one.
+ //
+ // # Go driver
+ //
+diff --git a/internal/loomcli/gotoresume.go b/internal/loomcli/gotoresume.go
+new file mode 100644
+index 000000000..17d9b1171
+--- /dev/null
++++ b/internal/loomcli/gotoresume.go
+@@ -0,0 +1,45 @@
++// gotoresume.go sets aside the interrupted shuttle runs a goto restarts, so the rows it moves onto start fresh sessions.
++
++package loomcli
++
++import "github.com/Knatte18/loomyard/internal/logger"
++
++// gotoAdmitted returns the hook a written goto calls with its target.
++// It first sets aside every interrupted shuttle run of the worktree:
++// a goto restarts the work on purpose,
++// and a start that resumed such a run's session would carry on the work the goto discards.
++// It then resets a PR-Review review the move lands on.
++// A receiver with no location returns nil.
++func (c *loomCLI) gotoAdmitted() func(target string) error {
++	reset := c.prReviewGotoAdmitted()
++	if reset == nil {
++		return nil
++	}
++	return func(target string) error {
++		c.retireInterruptedRuns()
++		return reset(target)
++	}
++}
++
++// retireInterruptedRuns sets aside the worktree's interrupted shuttle runs and logs how many it set aside.
++// A failure is logged and never fails the goto, since the move is already written;
++// it can only let a row the goto restarts resume an interrupted session.
++func (c *loomCLI) retireInterruptedRuns() {
++	retire := c.retireRuns
++	if retire == nil {
++		retire = func() (int, error) {
++			runner, err := c.stepStopRunner()
++			if err != nil {
++				return 0, err
++			}
++			return runner.RetireInterruptedRuns()
++		}
++	}
++	retired, err := retire()
++	if err != nil {
++		logger.Warn("loom: a goto could not set aside the interrupted shuttle runs, so a row it restarts may resume one", "error", err)
++	}
++	if retired > 0 {
++		logger.Info("loom: a goto set aside the interrupted shuttle runs, so the rows it restarts start fresh sessions", "runs", retired)
++	}
++}
+diff --git a/internal/loomcli/gotoresume_test.go b/internal/loomcli/gotoresume_test.go
+new file mode 100644
+index 000000000..e3bf48e85
+--- /dev/null
++++ b/internal/loomcli/gotoresume_test.go
+@@ -0,0 +1,51 @@
++// gotoresume_test.go pins that an admitted goto sets aside the interrupted shuttle runs once,
++// and that a failed set-aside leaves the goto standing.
++
++package loomcli
++
++import (
++	"errors"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestGotoAdmitted_SetsAsideInterruptedRuns pins that the hook sets the runs aside once per goto.
++// A failed set-aside never fails the goto, whose move is already written.
++func TestGotoAdmitted_SetsAsideInterruptedRuns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name      string
++		retireErr error
++	}{
++		{"SetAsideSucceeds", nil},
++		{"SetAsideFailsAndTheGotoStands", errors.New("reed config unreadable")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			calls := 0
++			c := &loomCLI{
++				location: &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."},
++				runID:    "self",
++				retireRuns: func() (int, error) {
++					calls++
++					return 1, tt.retireErr
++				},
++			}
++
++			hook := c.gotoAdmitted()
++			if hook == nil {
++				t.Fatal("gotoAdmitted() = nil; want a hook for a receiver with a location")
++			}
++			if err := hook("Darn-Write"); err != nil {
++				t.Errorf("hook(Darn-Write) error = %v; want nil", err)
++			}
++			if calls != 1 {
++				t.Errorf("set-aside calls = %d; want 1", calls)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/rownotice.go b/internal/loomcli/rownotice.go
+index 80f469ba5..ae72a338f 100644
+--- a/internal/loomcli/rownotice.go
++++ b/internal/loomcli/rownotice.go
+@@ -46,7 +46,7 @@ func watchRows(shed *shedengine.Shed, rows []string, recipe string, paths rowNot
+ }
+ 
+ // rowNoticeProducer tells the run's parent that the run reached row, once per visit, then calls the row's own producer.
+-// A re-call after an escalation's answer or a resumed halt is a new visit, since it spawns a fresh agent.
++// A re-call after an escalation's answer or a resumed halt is a new visit.
+ type rowNoticeProducer struct {
+ 	row    string
+ 	inner  shedengine.ShedProducer
+diff --git a/internal/shuttleengine/attach.go b/internal/shuttleengine/attach.go
+index ba4b18070..429fa1694 100644
+--- a/internal/shuttleengine/attach.go
++++ b/internal/shuttleengine/attach.go
+@@ -228,6 +228,8 @@ func (r *Runner) attach(spec Spec, gate GateSpec, removeSuperseded bool) (*Run,
+ // removeSupersededStrands removes the strand of each candidate that reed tracks as live or as an own-window strand with a dead pane,
+ // so the fresh run the caller starts next does not run beside the session it supersedes.
+ // A candidate whose strand is untracked or a dead window 0 strand has nothing to remove.
++// A candidate still reading running is respawn-eligible only once its agent is gone,
++// so its stop is recorded as interrupted and the start that follows resumes its session.
+ func (r *Runner) removeSupersededStrands(candidates []attachCandidate, strands []reedengine.StrandStatus) error {
+ 	for _, c := range candidates {
+ 		strand, tracked := strandStatusByGUID(strands, c.state.StrandGUID)
+@@ -235,7 +237,7 @@ func (r *Runner) removeSupersededStrands(candidates []attachCandidate, strands [
+ 			continue
+ 		}
+ 		logger.Warn("shuttle: attach: removing the strand of a superseded run before a fresh run", "runDir", c.runDir, "strandGUID", c.state.StrandGUID)
+-		if err := r.stopRecorded(c.runDir, c.state.StrandGUID); err != nil {
++		if err := r.stopRecorded(c.runDir, c.state.StrandGUID, c.state.Outcome == runOutcomeRunning); err != nil {
+ 			return fmt.Errorf("shuttle: attach: could not remove the superseded strand %s of run %s: %w; way forward: run \"lym reed remove %s\", then re-step the row", c.state.StrandGUID, c.runDir, err, c.state.StrandGUID)
+ 		}
+ 	}
+diff --git a/internal/shuttleengine/attach_test.go b/internal/shuttleengine/attach_test.go
+index ae0229e09..aaa345c58 100644
+--- a/internal/shuttleengine/attach_test.go
++++ b/internal/shuttleengine/attach_test.go
+@@ -368,6 +368,51 @@ func TestAttach_RemovesSupersededStrands(t *testing.T) {
+ 	}
+ }
+ 
++// TestAttach_RecordsASupersededRunningCandidateAsInterrupted pins how a superseding attach records a candidate.
++// A candidate still reading running is recorded as stopped and interrupted,
++// so the start after the attach resumes its session.
++// A candidate with a terminal outcome keeps it and is not marked interrupted.
++func TestAttach_RecordsASupersededRunningCandidateAsInterrupted(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	deadOwnWindow := func(guid string) reedengine.StrandStatus {
++		return reedengine.StrandStatus{GUID: guid, PaneID: "%" + guid, OwnWindow: true, Present: true}
++	}
++	reed := &fakeReed{StatusQueue: []reedengine.StatusResult{{Strands: []reedengine.StrandStatus{deadOwnWindow("strand-running"), deadOwnWindow("strand-died")}}}}
++	fx := newFixture(t, reed, &fakeEngine{}, withConfig(fastConfig), withSeparateRunDir())
++	seedPresentReedState(t, fx.DotLym)
++	outputFile := filepath.Join(fx.RunRoot, "out.md")
++	runningDir := seedAttachRun(t, fx.RunRoot, "run-running", seedAttachRunOpts{
++		strandGUID: "strand-running", sessionID: "session-1", outputFiles: []string{outputFile}, outcome: runOutcomeRunning, includeOutcome: true,
++	})
++	diedDir := seedAttachRun(t, fx.RunRoot, "run-died", seedAttachRunOpts{
++		strandGUID: "strand-died", sessionID: "session-2", outputFiles: []string{outputFile}, outcome: string(OutcomeDied), includeOutcome: true,
++	})
++
++	if _, found, err := fx.Runner.Attach(Spec{OutputFiles: []string{outputFile}, Timeout: time.Minute}); err != nil || found {
++		t.Fatalf("Attach() found, error = %v, %v; want false, nil", found, err)
++	}
++
++	tests := []struct {
++		name            string
++		runDir          string
++		wantOutcome     string
++		wantInterrupted bool
++	}{
++		{"running candidate", runningDir, runOutcomeStopped, true},
++		{"died candidate", diedDir, string(OutcomeDied), false},
++	}
++	for _, tt := range tests {
++		record, _, err := loadRunState(tt.runDir)
++		if err != nil {
++			t.Fatal(err)
++		}
++		if record.Outcome != tt.wantOutcome || record.Interrupted != tt.wantInterrupted {
++			t.Errorf("%s record Outcome, Interrupted = %q, %v; want %q, %v", tt.name, record.Outcome, record.Interrupted, tt.wantOutcome, tt.wantInterrupted)
++		}
++	}
++}
++
+ // TestAttach_Multiplicity covers candidate evaluation order and one-live-match-or-none:
+ // the multiplicity rule applies only to the surviving ATTACHABLE set;
+ // an error verdict dominates whatever the other candidates say;
+diff --git a/internal/shuttleengine/carryover.go b/internal/shuttleengine/carryover.go
+index 95a66460a..12cb23688 100644
+--- a/internal/shuttleengine/carryover.go
++++ b/internal/shuttleengine/carryover.go
+@@ -128,42 +128,56 @@ func unfinished(rs RunState, now time.Time, bound time.Duration) bool {
+ 	return false
+ }
+ 
+-// carriedInstructions returns the instructions a new run of the role key carries over: the carried and operator instructions of the newest run of key under the runner's run-directory root, without repeats, when that run is unfinished.
+-// An empty key, no run of key, a newest run that is not unfinished and a run whose engine is not registered carry none.
+-func (r *Runner) carriedInstructions(key string) []string {
++// predecessor is the newest earlier run of a role under a runner's run-directory root.
++type predecessor struct {
++	runDir string
++	state  RunState
++}
++
++// newestPredecessor returns the newest run of the role key under the runner's run-directory root, and whether one exists.
++// An empty key, an unreadable root and a root with no run of key find none.
++func (r *Runner) newestPredecessor(key string) (predecessor, bool) {
+ 	if key == "" {
+-		return nil
++		return predecessor{}, false
+ 	}
+ 	root := runDirRoot(r.cfg, r.anchorPath)
+ 	entries, err := os.ReadDir(root)
+ 	if err != nil {
+-		return nil
++		return predecessor{}, false
+ 	}
+-	var newest RunState
+-	var newestDir string
++	var newest predecessor
++	found := false
+ 	for _, entry := range entries {
+ 		if !entry.IsDir() {
+ 			continue
+ 		}
+ 		runDir := filepath.Join(root, entry.Name())
+-		rs, found, err := loadRunState(runDir)
+-		if err != nil || !found || rs.RoleKey != key {
++		rs, ok, err := loadRunState(runDir)
++		if err != nil || !ok || rs.RoleKey != key {
+ 			continue
+ 		}
+-		if newestDir == "" || rs.CreatedAt > newest.CreatedAt || (rs.CreatedAt == newest.CreatedAt && runDir > newestDir) {
+-			newest, newestDir = rs, runDir
++		if !found || rs.CreatedAt > newest.state.CreatedAt || (rs.CreatedAt == newest.state.CreatedAt && runDir > newest.runDir) {
++			newest, found = predecessor{runDir: runDir, state: rs}, true
+ 		}
+ 	}
+-	if newestDir == "" || !unfinished(newest, r.clock.Now(), relaunchBound(r.cfg)) {
++	return newest, found
++}
++
++// carriedInstructions returns the instructions a new run carries over from pred.
++// pred is the newest run of its role, and found reports whether there is one.
++// They are pred's carried and operator instructions, without repeats, when pred is unfinished.
++// No predecessor, one that is not unfinished and one whose engine is not registered carry none.
++func (r *Runner) carriedInstructions(pred predecessor, found bool) []string {
++	if !found || !unfinished(pred.state, r.clock.Now(), relaunchBound(r.cfg)) {
+ 		return nil
+ 	}
+-	engine, _, err := r.engineFor(newest)
++	engine, _, err := r.engineFor(pred.state)
+ 	if err != nil {
+ 		return nil
+ 	}
+ 	seen := map[string]bool{}
+ 	var carried []string
+-	for _, instruction := range append(append([]string(nil), newest.CarriedInstructions...), operatorInstructions(newestDir, newest, engine)...) {
++	for _, instruction := range append(append([]string(nil), pred.state.CarriedInstructions...), operatorInstructions(pred.runDir, pred.state, engine)...) {
+ 		if !seen[instruction] {
+ 			seen[instruction] = true
+ 			carried = append(carried, instruction)
+diff --git a/internal/shuttleengine/crashresume.go b/internal/shuttleengine/crashresume.go
+new file mode 100644
+index 000000000..c015724b9
+--- /dev/null
++++ b/internal/shuttleengine/crashresume.go
+@@ -0,0 +1,144 @@
++// crashresume.go resumes an interrupted run's session when a later start of its role re-runs the same work.
++// A session a crash, a reboot or a killed pane ended had not finished its work, so the start that re-runs it resumes it.
++// A deliberate restart sets such a run aside, so the start runs a fresh session.
++
++package shuttleengine
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// interruptedResumePreamble opens the prompt of a start that resumes an interrupted session.
++// The session already holds its first prompt and its own progress,
++// so the preamble tells it to continue rather than start over.
++const interruptedResumePreamble = "lym resumed this session after it ended before its task was done, by a crash, a reboot or a killed pane.\n" +
++	"The files it wrote are still in the worktree, and its work so far is in this session.\n" +
++	"Below is its task as lym renders it now. Read it again, check the state on disk, and continue from where the session stopped instead of starting over.\n\n"
++
++// resumableAfterInterruption reports whether rs is a run whose session a later start of its role may resume at now.
++// Its session ended before its work did:
++// the run died, lym stopped it as interrupted, or it reads running while its waiter is gone and no relaunch holds it.
++// A run set aside or with no session is not.
++// Neither is one that finished, timed out, ended on API errors or was stopped on purpose.
++func resumableAfterInterruption(rs RunState, now time.Time, bound time.Duration) bool {
++	if rs.NoResume || rs.SessionID == "" {
++		return false
++	}
++	switch rs.Outcome {
++	case string(OutcomeDied):
++		return true
++	case runOutcomeStopped:
++		return rs.Interrupted
++	case runOutcomeRunning:
++		return !runIsLive(rs, now, bound)
++	}
++	return false
++}
++
++// interruptedResume is a start's spec turned into a resume of an interrupted session.
++// It carries what the resume check reported.
++type interruptedResume struct {
++	spec Spec
++	// warning is the resume check's warning, empty when the check confirmed the session.
++	warning string
++	// copied is whether the check copied the session's transcript into the account the resume runs under.
++	copied bool
++}
++
++// resumeInterrupted returns spec as a resume of pred's session, and whether the start resumes it.
++// pred is the newest run of spec's role, and found is false when there is none.
++// It resumes a spec that names its output files and no session of its own, on an engine that can resume a session.
++// It does so when pred declares the same output files and is resumable after its interruption.
++// The resumed spec's prompt opens with interruptedResumePreamble.
++// It takes no skill-load turn, since the session already holds the skills its first launch loaded.
++// A resume check can refuse, as for a session with no transcript on this machine or one a live process holds.
++// The refusal is logged, and the start runs a fresh session.
++func (r *Runner) resumeInterrupted(spec Spec, engine Engine, pred predecessor, found bool) (interruptedResume, bool) {
++	if !found || spec.Unawaited || spec.ResumeSessionID != "" || !outputFilesSetEqual(pred.state.OutputFiles, spec.OutputFiles) {
++		return interruptedResume{}, false
++	}
++	if !resumableAfterInterruption(pred.state, r.clock.Now(), relaunchBound(r.cfg)) {
++		return interruptedResume{}, false
++	}
++	if _, ok := engine.(SessionResumer); !ok {
++		return interruptedResume{}, false
++	}
++	resumed := spec
++	resumed.ResumeSessionID = pred.state.SessionID
++	resumed.SkipSkillLoadTurn = true
++	resumed.Prompt = interruptedResumePreamble + spec.Prompt
++	warning, copied, err := r.checkResume(resumed, engine)
++	if err != nil {
++		logger.Warn("shuttle: the interrupted session cannot be resumed, so the start runs a fresh one", "runDir", pred.runDir, "sessionID", pred.state.SessionID, "role", pred.state.RoleKey, "error", err)
++		return interruptedResume{}, false
++	}
++	logger.Info("shuttle: resuming an interrupted session", "runDir", pred.runDir, "sessionID", pred.state.SessionID, "role", pred.state.RoleKey)
++	return interruptedResume{spec: resumed, warning: warning, copied: copied}, true
++}
++
++// setAside marks the run in runDir so that no later start resumes its session.
++// A run directory that is gone has nothing to mark.
++// A failed write is logged, since it can only let a later start resume the session.
++func setAside(runDir string) {
++	if _, err := os.Stat(runDir); errors.Is(err, os.ErrNotExist) {
++		return
++	}
++	if err := updateRunState(runDir, markNoResume); err != nil {
++		logger.Warn("shuttle: could not set the run aside, so a later start may resume its session", "runDir", runDir, "error", err)
++	}
++}
++
++// markNoResume is the record change that sets a run aside.
++// It leaves a record that is absent or already set aside as it is.
++func markNoResume(rs RunState, found bool) (RunState, error) {
++	if !found || rs.NoResume {
++		return rs, errLeaveRunRecord
++	}
++	rs.NoResume = true
++	return rs, nil
++}
++
++// RetireInterruptedRuns sets aside every run under the runner's run-directory root.
++// It takes the runs whose session a later start of their role would resume.
++// A deliberate restart of the work, such as a goto, calls it, so the starts that re-run that work run fresh sessions.
++// It returns how many runs it set aside.
++// A record that does not decode is skipped.
++// A failed write does not stop the scan, and every failure is returned joined once the scan ends.
++func (r *Runner) RetireInterruptedRuns() (int, error) {
++	if r.toldErr != nil {
++		return 0, r.toldErr
++	}
++	root := runDirRoot(r.cfg, r.anchorPath)
++	entries, err := os.ReadDir(root)
++	if errors.Is(err, os.ErrNotExist) {
++		return 0, nil
++	}
++	if err != nil {
++		return 0, fmt.Errorf("shuttle: retire interrupted runs: read run dir root: %w", err)
++	}
++	now, bound := r.clock.Now(), relaunchBound(r.cfg)
++	retired := 0
++	var errs []error
++	for _, entry := range entries {
++		if !entry.IsDir() {
++			continue
++		}
++		runDir := filepath.Join(root, entry.Name())
++		rs, found, err := loadRunState(runDir)
++		if err != nil || !found || !resumableAfterInterruption(rs, now, bound) {
++			continue
++		}
++		if err := updateRunState(runDir, markNoResume); err != nil {
++			errs = append(errs, fmt.Errorf("shuttle: retire interrupted run %s: %w", runDir, err))
++			continue
++		}
++		retired++
++	}
++	return retired, errors.Join(errs...)
++}
+diff --git a/internal/shuttleengine/crashresume_test.go b/internal/shuttleengine/crashresume_test.go
+new file mode 100644
+index 000000000..87c7f6d5f
+--- /dev/null
++++ b/internal/shuttleengine/crashresume_test.go
+@@ -0,0 +1,226 @@
++// crashresume_test.go covers the resume of an interrupted run's session by a later start of its role.
++// It also covers the set-aside of interrupted runs that a deliberate restart makes.
++
++package shuttleengine
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// interruptedSession is the session id of a seeded earlier run.
++const interruptedSession = "11111111-2222-3333-4444-555555555555"
++
++// TestStart_ResumesAnInterruptedRunsSession pins when a start resumes the session of its role's newest earlier run.
++// A resumed start prepares that session with the continue preamble and no skill-load turn;
++// any other start prepares a fresh session with the prompt as given.
++// The earlier run is set aside once a start of its output files is up, resumed or fresh.
++func TestStart_ResumesAnInterruptedRunsSession(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	died := RunState{Outcome: string(OutcomeDied), SessionID: interruptedSession}
++	tests := []struct {
++		name        string
++		predecessor RunState
++		// otherOutputs makes the earlier run declare another output file than the start.
++		otherOutputs bool
++		// plainEngine starts on an engine without the SessionResumer capability.
++		plainEngine bool
++		checkErr    error
++		wantResumed bool
++		// carried seeds the earlier run's carried operator instructions.
++		carried []string
++	}{
++		{name: "a run that died is resumed", predecessor: died, wantResumed: true},
++		{name: "a resumed run keeps its carried instructions out of the prompt and tells no one", predecessor: died, wantResumed: true, carried: []string{"keep the branch"}},
++		{name: "a run whose stop was recorded as interrupted is resumed", predecessor: RunState{Outcome: runOutcomeStopped, Interrupted: true, SessionID: interruptedSession}, wantResumed: true},
++		{name: "a run reading running with its waiter gone is resumed", predecessor: RunState{Outcome: runOutcomeRunning, PID: deadPID, SessionID: interruptedSession}, wantResumed: true},
++		{name: "a run stopped on purpose starts fresh", predecessor: RunState{Outcome: runOutcomeStopped, SessionID: interruptedSession}},
++		{name: "a run that timed out starts fresh", predecessor: RunState{Outcome: string(OutcomeTimeout), SessionID: interruptedSession}},
++		{name: "a run with a live waiter starts fresh", predecessor: RunState{Outcome: runOutcomeRunning, PID: os.Getpid(), SessionID: interruptedSession}},
++		{name: "a run set aside starts fresh", predecessor: RunState{Outcome: string(OutcomeDied), SessionID: interruptedSession, NoResume: true}},
++		{name: "a run with no session starts fresh", predecessor: RunState{Outcome: string(OutcomeDied)}},
++		{name: "a run of other output files starts fresh and is not set aside", predecessor: died, otherOutputs: true},
++		{name: "a session the resume check refuses starts fresh", predecessor: died, checkErr: fmt.Errorf("%w: none under the project", ErrNoTranscript)},
++		{name: "an engine that cannot resume a session starts fresh", predecessor: died, plainEngine: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reed := &fakeReed{AddStrandResult: reedengine.Strand{GUID: "strand-1", Name: "hub:task:darn"}}
++			fake := &fakeEngine{PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-new"}}
++			readyStart(reed, fake)
++			var engine Engine = &resumeFakeEngine{fakeEngine: fake, Err: tt.checkErr}
++			if tt.plainEngine {
++				engine = fake
++			}
++			fx := newFixture(t, reed, engine, withConfig(fastConfig))
++			var notices []string
++			fx.Runner.SetNotifier(func(line string) error {
++				notices = append(notices, line)
++				return nil
++			})
++			outputFile := filepath.Join(t.TempDir(), "out.md")
++			predecessor := tt.predecessor
++			predecessor.CarriedInstructions = tt.carried
++			predecessor.RunID, predecessor.RoleKey = "run-old", "darn"
++			predecessor.CreatedAt = time.Date(2026, 11, 23, 8, 0, 0, 0, time.UTC).Format(time.RFC3339)
++			predecessor.OutputFiles = []string{outputFile}
++			if tt.otherOutputs {
++				predecessor.OutputFiles = []string{filepath.Join(t.TempDir(), "other.md")}
++			}
++			seedPredecessor(t, fx, predecessor, "PROMPT:skill load\n")
++
++			run, err := fx.Runner.Start(Spec{Prompt: "do the task", OutputFiles: []string{outputFile}, Role: "darn"})
++			if err != nil {
++				t.Fatalf("Start() error = %v; want nil", err)
++			}
++
++			wantSession, wantPrompt, wantSkip := "", "do the task", false
++			if tt.wantResumed {
++				wantSession, wantPrompt, wantSkip = interruptedSession, interruptedResumePreamble+"do the task", true
++			}
++			if len(fake.PrepareCalls) != 1 {
++				t.Fatalf("Prepare calls = %d; want 1", len(fake.PrepareCalls))
++			}
++			if got := fake.PrepareCalls[0].Spec; got.ResumeSessionID != wantSession || got.Prompt != wantPrompt || got.SkipSkillLoadTurn != wantSkip {
++				t.Errorf("prepared ResumeSessionID, Prompt, SkipSkillLoadTurn = %q, %q, %v; want %q, %q, %v",
++					got.ResumeSessionID, got.Prompt, got.SkipSkillLoadTurn, wantSession, wantPrompt, wantSkip)
++			}
++			record, _, err := loadRunState(filepath.Join(fx.RunRoot, "run-old"))
++			if err != nil {
++				t.Fatal(err)
++			}
++			if wantSetAside := !tt.otherOutputs; record.NoResume != wantSetAside {
++				t.Errorf("earlier run NoResume = %v; want %v", record.NoResume, wantSetAside)
++			}
++			if !tt.wantResumed {
++				return
++			}
++			started, _, err := loadRunState(run.RunDir())
++			if err != nil {
++				t.Fatal(err)
++			}
++			if !slices.Equal(started.CarriedInstructions, tt.carried) {
++				t.Errorf("new record CarriedInstructions = %q; want %q", started.CarriedInstructions, tt.carried)
++			}
++			if len(notices) != 0 {
++				t.Errorf("notices = %q; want none for a resumed start", notices)
++			}
++		})
++	}
++}
++
++// TestStart_FailedResumeRetriesAsAFreshSession pins how a start retries a resumed attempt.
++// An attempt that dies before its first input is not resumed again.
++// The failed attempt and the earlier run are both set aside.
++// The retry prepares a fresh session with the prompt as given.
++func TestStart_FailedResumeRetriesAsAFreshSession(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	live := reedengine.StatusResult{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: true}}}
++	dead := reedengine.StatusResult{Strands: []reedengine.StrandStatus{{GUID: "strand-1", PaneID: "%1", Live: false}}}
++	reed := &fakeReed{StatusQueue: []reedengine.StatusResult{live, dead, live}, CaptureQueue: []string{"$ claude ...", "❯ "}}
++	fake := &fakeEngine{StartupScript: []StartupState{StartupPending, StartupReady}}
++	seedStartupFakes(reed, fake)
++	cfg := fastConfig
++	cfg.StartRetries = 1
++	clock := &awaitClock{fakeClock: newFakeClock(time.Now())}
++	fx := newFixture(t, reed, &resumeFakeEngine{fakeEngine: fake}, withConfig(cfg), withClock(clock))
++	outputFile := filepath.Join(t.TempDir(), "out.md")
++	seedPredecessor(t, fx, RunState{
++		RunID: "run-old", RoleKey: "darn", Outcome: string(OutcomeDied), SessionID: interruptedSession,
++		CreatedAt:   time.Date(2026, 11, 23, 8, 0, 0, 0, time.UTC).Format(time.RFC3339),
++		OutputFiles: []string{outputFile},
++	}, "PROMPT:skill load\n")
++
++	run, err := fx.Runner.Start(Spec{Prompt: "do the task", OutputFiles: []string{outputFile}, Role: "darn"})
++
++	if err != nil || run == nil {
++		t.Fatalf("Start() = %v, %v; want the ready run", run, err)
++	}
++	if len(fake.PrepareCalls) != 2 {
++		t.Fatalf("Prepare calls = %d; want 2, the resumed attempt that died and the retry", len(fake.PrepareCalls))
++	}
++	if got := fake.PrepareCalls[0].Spec; got.ResumeSessionID != interruptedSession || got.Prompt != interruptedResumePreamble+"do the task" {
++		t.Errorf("first attempt ResumeSessionID, Prompt = %q, %q; want the resume of %q", got.ResumeSessionID, got.Prompt, interruptedSession)
++	}
++	if got := fake.PrepareCalls[1].Spec; got.ResumeSessionID != "" || got.Prompt != "do the task" || got.SkipSkillLoadTurn {
++		t.Errorf("retry ResumeSessionID, Prompt, SkipSkillLoadTurn = %q, %q, %v; want a fresh session with the prompt as given",
++			got.ResumeSessionID, got.Prompt, got.SkipSkillLoadTurn)
++	}
++	for _, runDir := range runDirsUnder(t, fx.RunRoot) {
++		record, _, err := loadRunState(runDir)
++		if err != nil {
++			t.Fatal(err)
++		}
++		wantSetAside := runDir != run.RunDir()
++		if record.NoResume != wantSetAside {
++			t.Errorf("run %s NoResume = %v; want %v", record.RunID, record.NoResume, wantSetAside)
++		}
++	}
++}
++
++// TestRunner_RetireInterruptedRuns_SetsAsideOnlyResumableRuns pins which runs a deliberate restart sets aside.
++// Only a run whose session a later start would resume is marked, and a missing run root marks nothing.
++// A run whose record cannot be rewritten fails the call without keeping it from marking the others.
++func TestRunner_RetireInterruptedRuns_SetsAsideOnlyResumableRuns(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	fx := newFixture(t, &fakeReed{}, &fakeEngine{}, withConfig(fastConfig), withSeparateRunDir())
++
++	if retired, err := fx.Runner.RetireInterruptedRuns(); retired != 0 || err != nil {
++		t.Fatalf("RetireInterruptedRuns() over a missing root = %d, %v; want 0, nil", retired, err)
++	}
++
++	runs := map[string]struct {
++		record      RunState
++		wantRetired bool
++	}{
++		"died":        {RunState{Outcome: string(OutcomeDied), SessionID: interruptedSession}, true},
++		"interrupted": {RunState{Outcome: runOutcomeStopped, Interrupted: true, SessionID: interruptedSession}, true},
++		"waiterless":  {RunState{Outcome: runOutcomeRunning, PID: deadPID, SessionID: interruptedSession}, true},
++		"live":        {RunState{Outcome: runOutcomeRunning, PID: os.Getpid(), SessionID: interruptedSession}, false},
++		"stopped":     {RunState{Outcome: runOutcomeStopped, SessionID: interruptedSession}, false},
++		"timed-out":   {RunState{Outcome: string(OutcomeTimeout), SessionID: interruptedSession}, false},
++		"unwritable":  {RunState{Outcome: string(OutcomeDied), SessionID: interruptedSession}, false},
++	}
++	for id, run := range runs {
++		runDir := filepath.Join(fx.RunRoot, id)
++		if err := os.MkdirAll(runDir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		run.record.RunID = id
++		if err := saveRunState(runDir, run.record); err != nil {
++			t.Fatal(err)
++		}
++	}
++	unwritableDir := filepath.Join(fx.RunRoot, "unwritable")
++	permkit.Chmod(t, unwritableDir, 0o555)
++
++	retired, err := fx.Runner.RetireInterruptedRuns()
++	if retired != 3 {
++		t.Errorf("RetireInterruptedRuns() retired = %d; want 3", retired)
++	}
++	if err == nil || !strings.Contains(err.Error(), unwritableDir) {
++		t.Errorf("RetireInterruptedRuns() error = %v; want one naming %s", err, unwritableDir)
++	}
++	for id, run := range runs {
++		record, _, err := loadRunState(filepath.Join(fx.RunRoot, id))
++		if err != nil {
++			t.Fatal(err)
++		}
++		if record.NoResume != run.wantRetired {
++			t.Errorf("%s run NoResume = %v; want %v", id, record.NoResume, run.wantRetired)
++		}
++	}
++}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 8d522546a..07b997cfa 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -117,9 +117,23 @@
+ // and a record still reading running whose output files all exist keeps running, so a stop never hides finished work.
+ // The record is written first; a failed write leaves the strand untouched.
+ // Runner.StopStepRuns and Runner.StopOrphanedStepRuns apply the same record-then-remove order to every run of a step.
++// They record each stop as interrupted, since the step ended before the run's work did.
+ // A run whose agent cannot be addressed is stopped only when its engine proves no process holds its session;
+ // otherwise it stays running and is listed under StepStopReport.Held.
+ //
++// # Resuming an interrupted session
++//
++// A start resumes the session of its role's newest earlier run.
++// It does so when that run declares the same output files and its session ended before its work did.
++// A crash, a reboot or a killed pane ends a session that way.
++// Such a run died, reads running with its waiter gone, or carries a stop recorded as interrupted.
++// The resume needs the engine's SessionResumer capability.
++// A resume check that refuses, as for a missing transcript, starts fresh.
++// The resumed session takes no skill-load turn, and its prompt opens with a line telling it to continue its work.
++// Once a start of those output files is up, the earlier run is set aside and never resumed again.
++// Runner.RetireInterruptedRuns sets aside every interrupted run, for a deliberate restart such as a goto.
++// A run that timed out, ended on API errors or was stopped on purpose is never resumed.
++//
+ // # Attach
+ //
+ // Runner.Attach answers one question:
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index d0f59bee3..8d5f734de 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -549,6 +549,9 @@ const EditRecordsFileName = "edit-records.jsonl"
+ // The error wraps ErrNotStarted.
+ // A start whose role's newest earlier run ended unfinished appends that run's operator instructions to the prompt;
+ // it also records them in the new run's record and tells the notifier.
++// The start resumes that run's session instead when the run declares the same output files and was interrupted.
++// The resumed session already holds the instructions, so the prompt carries none and the notifier is told nothing.
++// Once a start of those output files is up, the earlier run is set aside and no later start resumes it.
+ func (r *Runner) Start(spec Spec) (*Run, error) {
+ 	return r.StartGated(spec, GateSpec{})
+ }
+@@ -636,10 +639,20 @@ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 	}
+ 
+ 	// Read before the sweep, which may remove the predecessor's directory once its strand is gone.
+-	carried := r.carriedInstructions(roleKey(spec))
++	pred, predFound := r.newestPredecessor(roleKey(spec))
++	carried := r.carriedInstructions(pred, predFound)
++	resume, resuming := r.resumeInterrupted(spec, engine, pred, predFound)
++	freshSpec, freshWarning, freshCopied := spec, resumeWarning, transcriptCopied
+ 	if len(carried) > 0 {
+-		spec.Prompt += carryOverBlock(carried)
++		freshSpec.Prompt += carryOverBlock(carried)
+ 	}
++	if resuming {
++		spec, resumeWarning, transcriptCopied = resume.spec, resume.warning, resume.copied
++	} else {
++		spec = freshSpec
++	}
++	// A start of the predecessor's output files takes its place, so once the start is up no later start resumes it.
++	takesPlace := predFound && !spec.Unawaited && outputFilesSetEqual(pred.state.OutputFiles, spec.OutputFiles)
+ 
+ 	r.sweepOrphansOpportunistic()
+ 
+@@ -647,11 +660,20 @@ func (r *Runner) start(spec Spec, gate GateSpec) (*Run, Result, error) {
+ 	for attempt := 1; ; attempt++ {
+ 		run, result, err := r.launch(spec, gate, engine, engineName, resumeWarning, carried, transcriptCopied)
+ 		if err == nil {
+-			if len(carried) > 0 {
++			if takesPlace {
++				setAside(pred.runDir)
++			}
++			if len(carried) > 0 && !resuming {
+ 				r.noticeCarriedInstructions(run.state.StrandName, roleKey(spec), carried)
+ 			}
+ 			return run, Result{}, nil
+ 		}
++		if resuming && run != nil {
++			// The resumed session never came up, so the next start runs a fresh session instead of trying it again.
++			setAside(run.runDir)
++			setAside(pred.runDir)
++			spec, resumeWarning, transcriptCopied, resuming = freshSpec, freshWarning, freshCopied, false
++		}
+ 		if run == nil || !run.startRetryable(result) || attempt >= attempts {
+ 			return nil, result, err
+ 		}
+diff --git a/internal/shuttleengine/rundir.go b/internal/shuttleengine/rundir.go
+index e71aae032..5e55c5e5f 100644
+--- a/internal/shuttleengine/rundir.go
++++ b/internal/shuttleengine/rundir.go
+@@ -178,6 +178,13 @@ type RunState struct {
+ 	// The record's Outcome stays running, so every reader that compares the outcome reads a relaunching run as running.
+ 	// RunState.relaunching reads the mark against its bound.
+ 	RelaunchingAt string `json:"relaunchingAt,omitempty"`
++	// Interrupted is true on a stopped record when lym stopped the run because its session had ended.
++	// It is also true when the run's step was gone, and false when the stop was on purpose.
++	// A later start of the run's role may then resume its session.
++	Interrupted bool `json:"interrupted,omitempty"`
++	// NoResume is true once a later start of the run's role, or a deliberate restart of its work, took the run's place.
++	// No start resumes the session of a run that carries it.
++	NoResume bool `json:"noResume,omitempty"`
+ }
+ 
+ // relaunchBound is how long a record's relaunching mark holds its run live: twice the startup timeout.
+diff --git a/internal/shuttleengine/stepstop.go b/internal/shuttleengine/stepstop.go
+index d02cb2de0..64b77f2f8 100644
+--- a/internal/shuttleengine/stepstop.go
++++ b/internal/shuttleengine/stepstop.go
+@@ -49,6 +49,8 @@ func (r *Runner) SetStepTie(tie StepTie) {
+ // StopStepRuns stops every run under the runner's run-directory root that is still running.
+ // A run qualifies when its record names tie as its step.
+ // Each is stopped through the stop verb, which records the stop before removing the strand.
++// The stop is recorded as interrupted, since the step ended before the run's work did,
++// so a later start of the run's role resumes its session.
+ // A strand is removable when it is live, held for a relaunch, or an own-window strand whose pane is present but not live.
+ // That covers a dead pane or one showing only its shell.
+ // So a step stop ends the window of a run whose own-window agent died.
+@@ -153,7 +155,7 @@ func (r *Runner) stopStepRunsWhere(selects func(RunState) bool, listUntied bool)
+ 		if err != nil || !found || current.Outcome != runOutcomeRunning || current.Step == nil || !selects(current) {
+ 			continue
+ 		}
+-		if err := r.stopRecorded(candidate.runDir, rs.StrandGUID); err != nil {
++		if err := r.stopRecorded(candidate.runDir, rs.StrandGUID, true); err != nil {
+ 			report.Failed = append(report.Failed, StepStopFailure{Strand: name, Error: err.Error()})
+ 			continue
+ 		}
+diff --git a/internal/shuttleengine/stop.go b/internal/shuttleengine/stop.go
+index 7c6576d44..15439fab9 100644
+--- a/internal/shuttleengine/stop.go
++++ b/internal/shuttleengine/stop.go
+@@ -155,7 +155,7 @@ func (r *Runner) StopStrand(guid string) error {
+ 	if err != nil {
+ 		return removeStrandIfPresent(r.reed, guid)
+ 	}
+-	return r.stopRecorded(runDir, guid)
++	return r.stopRecorded(runDir, guid, false)
+ }
+ 
+ // stopRecorded writes the stop into the record at runDir, then removes the strand guid names.
+@@ -163,8 +163,9 @@ func (r *Runner) StopStrand(guid string) error {
+ // The record is read and written in one hold of its lock,
+ // so a stop racing another writer of the record loses neither change.
+ // A record already terminal keeps its outcome, and one still reading running whose output files all exist keeps running.
++// interrupted marks the stopped record as one whose session ended unfinished, which a later start of its role resumes.
+ // A failed read or write returns its error with the strand untouched.
+-func (r *Runner) stopRecorded(runDir, guid string) error {
++func (r *Runner) stopRecorded(runDir, guid string, interrupted bool) error {
+ 	var stopped RunState
+ 	recorded := false
+ 	err := updateRunState(runDir, func(rs RunState, found bool) (RunState, error) {
+@@ -172,6 +173,7 @@ func (r *Runner) stopRecorded(runDir, guid string) error {
+ 			return rs, errLeaveRunRecord
+ 		}
+ 		rs.Outcome = runOutcomeStopped
++		rs.Interrupted = interrupted
+ 		stopped, recorded = rs, true
+ 		return rs, nil
+ 	})
+diff --git a/internal/shuttleengine/stop_test.go b/internal/shuttleengine/stop_test.go
+index d1d86b32c..c2126696d 100644
+--- a/internal/shuttleengine/stop_test.go
++++ b/internal/shuttleengine/stop_test.go
+@@ -109,6 +109,9 @@ func TestStop_RecordsTheStopBeforeRemovingTheStrand(t *testing.T) {
+ 				if record.Outcome != tt.wantOutcome {
+ 					t.Errorf("recorded outcome = %q; want %q", record.Outcome, tt.wantOutcome)
+ 				}
++				if record.Interrupted {
++					t.Errorf("recorded Interrupted = true; want false for a stop on purpose")
++				}
+ 				if removed := len(fake.RemoveStrandCalls) > 0; removed != tt.wantRemoved {
+ 					t.Errorf("strand removed = %v; want %v", removed, tt.wantRemoved)
+ 				}
+@@ -183,7 +186,7 @@ func TestStopStrand_UnrecordableStopRemovesNothing(t *testing.T) {
+ 				t.Fatalf("read run.json: %v", err)
+ 			}
+ 
+-			if err := fx.Runner.stopRecorded(runDir, "strand-1"); err == nil {
++			if err := fx.Runner.stopRecorded(runDir, "strand-1", false); err == nil {
+ 				t.Fatal("stopRecorded() error = nil; want the record failure")
+ 			}
+ 
+@@ -340,6 +343,9 @@ func TestRunner_StopStepRuns_StopsOnlyTheStepsRuns(t *testing.T) {
+ 		if record.Outcome != wantOutcome {
+ 			t.Errorf("%s run outcome = %q; want %q", name, record.Outcome, wantOutcome)
+ 		}
++		if wantInterrupted := wantOutcome == runOutcomeStopped; record.Interrupted != wantInterrupted {
++			t.Errorf("%s run interrupted = %v; want %v, since a step stop records every stop it makes as interrupted", name, record.Interrupted, wantInterrupted)
++		}
+ 	}
+ 
+ 	seed("run-7", RunState{StrandGUID: "guid-failing", Outcome: runOutcomeRunning, Step: &tie})
+@@ -462,6 +468,9 @@ func TestRunner_StopOrphanedStepRuns_StopsOnlyRunsWhoseWaiterIsGone(t *testing.T
+ 		if record.Outcome != wantOutcome {
+ 			t.Errorf("%s run outcome = %q; want %q", name, record.Outcome, wantOutcome)
+ 		}
++		if wantInterrupted := wantOutcome == runOutcomeStopped; record.Interrupted != wantInterrupted {
++			t.Errorf("%s run interrupted = %v; want %v, since an orphaned step's stop is recorded as interrupted", name, record.Interrupted, wantInterrupted)
++		}
+ 	}
+ }
+ 
