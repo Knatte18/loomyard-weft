@@ -37,4 +37,12 @@ Rationale: Issue 189 is the policy refusal; disconnect handling is a separate ch
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - orch-start-waits-before-save-and-register (class design, severity MEDIUM, open in rounds 1)
+  - read-failure-after-paste-requeues-command (class design, severity MEDIUM, open in rounds 1)
+  - transcript-filename-literal-repeated (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
