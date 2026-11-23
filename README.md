@@ -20,48 +20,42 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 4d · Owner `neve`
 
-## [P0 Root: entries under no project](project-root.md) (27)
+## [P0 Root: entries under no project](project-root.md) (26)
 
 Owner `neve`
 
-### Running (8)
+### Running (7)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | Code-Burler-Review | neve | 15h<br>14h | dobby, landing |
+| T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | Code-Burler-Review | neve | 15h<br>15h | dobby, landing |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle | Raddle-Write | neve | 16h<br>14h | batten, fabric |
-| T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light | Code-Bouncer | neve | 58m<br>57m | loom, landing |
-| T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | Code-Burler-Fix | neve | 58m<br>57m | shuttle, creel, drift, stencil |
-| T9 | **Plan amendment during Webster loses the record of committed batches**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | darn · light | halted · Code-Bouncer | neve | 58m<br>57m | webster, loom |
-| T10 | **Verify gate requires a fail-on-base test for a tests-only task**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | darn · light | landing · Finalize | neve | 58m<br>57m | gate, darn |
+| T7 | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | darn · light | Code-Bouncer | neve | 59m<br>58m | loom, landing |
+| T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | Code-Burler-Fix | neve | 58m<br>58m | shuttle, creel, drift, stencil |
+| T9 | **Plan amendment during Webster loses the record of committed batches**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | darn · light | halted · Code-Bouncer | neve | 58m<br>58m | webster, loom |
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Code-Burler-Review | neve | 58m<br>57m | tools, lint |
-| T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 12h<br>45m | fabric |
+| T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 12h<br>46m | fabric |
 
-### Ready (7)
+### Ready (8)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Config keys nest under the area they govern, named with dots**<br>• loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent | [`config-keys-nested-by-area`](design-config-keys-nested-by-area.md) | motif |  | 1h<br>9m | config, loom, drift, docs |
-| T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light |  | 58m<br>57m | board |
-| T5 | **RC button shows green while Remote Control is disabled by organization policy**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 27m<br>27m | reed, claude |
-| T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 58m<br>56m | loom, darn |
-| T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 58m<br>56m | landing, git |
-| T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 51m<br>51m | fabric, board, batten |
-| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 0m<br>0m | preflight, fabric |
+| T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light |  | 59m<br>58m | board |
+| T5 | **RC button shows green while Remote Control is disabled by organization policy**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 28m<br>27m | reed, claude |
+| T6 | **Verify-budget notice names no run**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light |  | 27m<br>18m | loom |
+| T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 58m<br>57m | loom, darn |
+| T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 58m<br>57m | landing, git |
+| T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 52m<br>52m | fabric, board, batten |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 1m<br>0m | preflight, fabric |
 
 ### Layer A (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Verify-budget notice names no run**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light | T10 | 26m<br>18m | loom |
-| T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 58m<br>56m | lint, loom |
-| T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light | T7 | 1h<br>45m | loom, landing, dobby, orch, reed, testkit |
-
-### Layer B (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T19 | **Red-first gate holds every run in a hub whose test scoper is not go**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T10<br>T6 | 0m<br>0m | gate, loom, dotnet |
+| T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 58m<br>57m | lint, loom |
+| T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light | T7 | 1h<br>46m | loom, landing, dobby, orch, reed, testkit |
+| T19 | **Red-first gate holds every run in a hub whose test scoper is not go**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T6 | 0m<br>0m | gate, loom, dotnet |
 
 ### Research (3)
 
@@ -77,11 +71,17 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Narrowed code_auto_accept reaches hubs only as a flag** | [`code-auto-accept-flag-only`](design-code-auto-accept-flag-only.md) | 7m<br>7m | loom, config |
 | B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 7m<br>7m | loom |
-| B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 6m<br>6m | loom |
-| B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 6m<br>6m | loom |
+| B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 7m<br>7m | loom |
+| B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 7m<br>7m | loom |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>16h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+
+### Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T10 | **Verify gate requires a fail-on-base test for a tests-only task**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | 58m<br>57m | gate, darn |
