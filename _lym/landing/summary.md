@@ -1,31 +1,31 @@
-# Preflight worktree-clean skips lym's own `_lym/usage` records
+# Preflight worktree-clean ignores lym's own usage records
 
-Preflight's worktree-clean check now ignores uncommitted files under `_lym/usage`.
-That directory holds lym's per-session usage records, written when each agent session ends.
-A session can end after the run's records commit and before the check.
-When that happened, the check reported the untracked `session-<id>.json` as a dirty `_lym` change and halted the run as `blocked`, though lym had written the file itself (issues #190 and #194).
+Preflight's `worktree-clean` check no longer counts `_lym/usage` as an uncommitted state change.
+lym writes a usage record there as each agent session ends,
+and a session can end between a run's records commit and the check.
+The check then refused lym's own bookkeeping, halted the run at its first step as `blocked`,
+and escalated a state lym created to the orch.
 
-## Change
+`runStateExemptRels` in `internal/preflight` now lists `shedrun.UsageDir`'s relative path
+beside the run-records root and the loom friction paths.
+Its doc comment and the package doc in `doc.go` say why the usage directory is exempt.
+Everything else under `_lym` still counts.
 
-`runStateExemptRels` in `internal/preflight/preflight.go` names the paths under `_lym` that worktree-clean skips.
-It now lists `shedrun.UsageDirRel()` beside the run-records root and the friction directory.
-The records commits that already sweep `_lym` still commit the usage records.
-Preflight just no longer waits for them.
-Every other path under `_lym` still counts as dirty.
+Closes #190
+Closes #194
 
 ## Design decisions
 
-- Exempting the directory in Preflight was chosen over committing the usage records before the check.
-  A commit there would still race a session that ends after it.
-  Preflight already keeps one exemption list for lym bookkeeping that is in flight, and the usage records belong on it.
-- The whole usage directory is exempt, not only `session-*.json`.
-  Its other records, `run.json` and `landed.json`, are also lym's own writes.
+- The check skips the directory; it does not commit the records first or git-ignore them.
+  A commit before the check would still race with a session that ends after it,
+  and the exemption is the mechanism the other lym-owned state under `_lym` already uses.
+- The usage records stay uncommitted until the next records commit or the run's removal, like the friction notes.
 
 ## Tests
 
-`TestCheckResolved_LymOwnStateIsExempt` now writes a session usage record through `shedrun.WriteSessionUsage` alongside the other exempt state.
-It asserts that worktree-clean still passes.
-On the merge base, the record falls outside the exempt paths, so the test's clean assertion meets a worktree-clean failure there.
+`TestCheckResolved_LymOwnStateIsExempt` now also writes an agent session's usage record with `shedrun.WriteSessionUsage`.
+It asserts that Fabric's unscoped `Clean` sees the record as a change while the worktree-clean check passes over it,
+and that a file under `_lym` outside the exempt state still refuses.
 
 ## Merge danger
 
