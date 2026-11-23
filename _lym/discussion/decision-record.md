@@ -26,6 +26,12 @@ Decision: TestPRFindingsCLI_SendsBackBlockingFindings passes on the base for bot
 
 Rationale: No test can fail on a base that already holds the fix.
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: F1 fixed
+
+Decision: Accept the code review at round 1. F1 (findings-path-built-twice) is fixed in b18c1caa4: blockingFindingsRun returns the findings path, built once, and the subtest no longer rebuilds it.
+
+Rationale: A mechanical test fix, visible in the commit and passing its gates; another round would only confirm it.
+
 ## Constraints
 
 ## Auto-mode assumptions
