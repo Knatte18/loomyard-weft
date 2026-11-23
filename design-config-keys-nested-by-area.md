@@ -1,6 +1,6 @@
 # Config keys nest under the area they govern, named with dots
 
-`config-keys-nested-by-area` · Task · enhancement, config, loom, drift, docs · starting · Worktree-Create
+`config-keys-nested-by-area` · Task · enhancement, config, loom, drift, docs · starting · Seed-Child
 
 ## Seen
 
