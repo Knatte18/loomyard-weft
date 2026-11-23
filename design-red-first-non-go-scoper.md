@@ -1,6 +1,6 @@
 # Red-first gate holds every run in a hub whose test scoper is not go
 
-`red-first-non-go-scoper` · Task · bug, gate, loom, dotnet · running · PR-Review
+`red-first-non-go-scoper` · Task · bug, gate, loom, dotnet · landing · Finalize
 
 Imported from [issue #192](https://github.com/Knatte18/loomyard/issues/192).
 
