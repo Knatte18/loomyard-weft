@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Fix | neve | 16h<br>16h | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (17)
+## [P0 Root: entries under no project](project-root.md) (18)
 
 Owner `neve`
 
@@ -52,7 +52,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Bugs (8)
+### Bugs (9)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -64,6 +64,7 @@ Owner `neve`
 | B6 |  | **Board view lists a done beam-project task under P0** | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | 0m<br>0m | board |
 | B7 |  | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil** | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | 0m<br>0m | loom, landing |
 | B8 |  | **Run agents ask a question and exit before the reply; drift judge asks in its pane** | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | 0m<br>0m | shuttle, creel, drift, stencil |
+| B9 |  | **Plan amendment during Webster loses the record of committed batches** | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | 0m<br>0m | webster, loom |
 
 ### Enhancements (1)
 
