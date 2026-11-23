@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 09:49 UTC; every age below is as of then.
+Rendered 2026-11-23 09:50 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -29,20 +29,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light |  | 59m<br>50m | loom |
 | T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 1h<br>1h | fabric, board, batten |
 | T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light |  | 1h<br>1h | loom, landing, dobby, orch, reed, testkit |
-| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 32m<br>32m | preflight, fabric |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 33m<br>32m | preflight, fabric |
 
 ## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree** | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 1h<br>1h | lint, loom |
-| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T6 | 32m<br>32m | gate, loom, dotnet |
+| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T6 | 33m<br>32m | gate, loom, dotnet |
 
 ## Draft (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T15<br>T8<br>T3 | 17m<br>17m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T15<br>T8<br>T3 | 18m<br>18m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ## Research (2)
 
