@@ -34,7 +34,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Drift-Recheck | neve | 4h<br>4h | reed, slack |
+| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Describe | neve | 4h<br>4h | reed, slack |
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | Code-Burler-Fix | neve | 5h<br>5h | landing, shuttle |
 | T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | darn · speed | Darn-Write | neve | 10m<br>10m | shuttle, reed, claude |
 | T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Bouncer | neve | 5h<br>4h | gate, loom, dotnet |
