@@ -2,8 +2,6 @@
 
 `harden-fabric-undriven-cases` · Task · bug, fabric
 
-Depends on: [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md)
-
 ## Seen
 
 `harden-fabric-single-repo-verbs` round 4 drove the cases round 3 left undriven and approved, but could raise none of what it found as a finding:
