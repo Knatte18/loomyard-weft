@@ -1,0 +1,1797 @@
+diff --git a/cmd/lym/spawnobservability_test.go b/cmd/lym/spawnobservability_test.go
+index 4bb103654..c7f83362f 100644
+--- a/cmd/lym/spawnobservability_test.go
++++ b/cmd/lym/spawnobservability_test.go
+@@ -67,6 +67,11 @@ var spawnObservabilityAllowedSpawners = []scankit.Entry{
+ 			"close an import cycle; the callers of RunMemoryCapped log the command and its end, " +
+ 			"and the one-time probe's systemd-run spawn goes unlogged, since a caller sees only its outcome",
+ 	},
++	{
++		Key: "internal/proc/processscope_linux.go",
++		Why: "structurally barred: internal/logger imports internal/proc, so importing logger here would " +
++			"close an import cycle; the callers of CapProcessMemory and OOMKillsInCgroup log the busctl and journalctl spawns",
++	},
+ 	{
+ 		Key: "internal/hubforge/hub.go",
+ 		Why: "not governed: a test-fixture builder, not a code path reachable from a lym command",
+diff --git a/internal/creelcli/smoke_helpers_test.go b/internal/creelcli/smoke_helpers_test.go
+index 9b483294f..136e64d67 100644
+--- a/internal/creelcli/smoke_helpers_test.go
++++ b/internal/creelcli/smoke_helpers_test.go
+@@ -7,7 +7,6 @@ package creelcli
+ import (
+ 	"bytes"
+ 	"context"
+-	"encoding/json"
+ 	"os/exec"
+ 	"runtime"
+ 	"strings"
+@@ -23,7 +22,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+-	"github.com/Knatte18/loomyard/internal/reedcli"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -65,13 +63,11 @@ func newSmokeHub(t *testing.T) *smokeHub {
+ 	}
+ 	smoke := &smokeHub{hub: hub, cwd: hub.PrimeWorktree(), reed: reedengine.New(reedConfig, reedGeometry, shuttleengines.EnvScrub())}
+ 
+-	var up bytes.Buffer
+-	if code := clihelp.ExecuteIn(reedcli.Command(), smoke.cwd, &up, []string{"up"}); code != 0 {
+-		t.Fatalf("lym reed up = %d; output: %s", code, up.String())
++	if _, err := smoke.reed.Up(); err != nil {
++		t.Fatalf("reed Up() = %v", err)
+ 	}
+ 	t.Cleanup(func() {
+-		var down bytes.Buffer
+-		clihelp.ExecuteIn(reedcli.Command(), smoke.cwd, &down, []string{"down"})
++		smoke.reed.Down()
+ 	})
+ 
+ 	root, err := lymtemp.ProcessRoot()
+@@ -85,26 +81,15 @@ func newSmokeHub(t *testing.T) *smokeHub {
+ 	return smoke
+ }
+ 
+-// addStrand runs `lym reed add --cmd <command> --role <role>` in the hub and returns the strand's name and guid.
++// addStrand adds a strand running command with no provider tag, as `lym reed add --cmd <command> --role <role>` does.
++// It returns the strand's name and guid.
+ func (s *smokeHub) addStrand(t *testing.T, role, command string) (name, guid string) {
+ 	t.Helper()
+-	var out bytes.Buffer
+-	if code := clihelp.ExecuteIn(reedcli.Command(), s.cwd, &out, []string{"add", "--cmd", command, "--role", role}); code != 0 {
+-		t.Fatalf("lym reed add --cmd %q = %d; output: %s", command, code, out.String())
+-	}
+-	var added struct {
+-		Name string `json:"name"`
+-		GUID string `json:"guid"`
+-	}
+-	if err := json.Unmarshal(out.Bytes(), &added); err != nil || added.GUID == "" {
+-		t.Fatalf("lym reed add printed %q; want the strand's name and guid: %v", out.String(), err)
+-	}
+-	return added.Name, added.GUID
++	return s.addProviderStrand(t, role, command, "")
+ }
+ 
+ // addProviderStrand adds a strand running command through the smoke hub's reed engine, with the provider tag set.
+ // It returns the strand's name and guid.
+-// `lym reed add` names no provider, so a strand that needs one is added here.
+ func (s *smokeHub) addProviderStrand(t *testing.T, role, command, provider string) (name, guid string) {
+ 	t.Helper()
+ 	strand, err := s.reed.AddStrand(reedengine.AddSpec{Role: role, Cmd: command, Provider: provider, Display: render.Display{Anchor: render.AnchorOwnWindow}})
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 310423c3e..9546271f2 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -59,6 +59,15 @@
+ // proc cannot log, so the caller logs the command it hands over and its end.
+ // The one-time probe's `systemd-run` spawn goes unlogged; a caller sees only its outcome, through MemoryCapCoversTree.
+ //
++// CapProcessMemory moves a process that is already running into a new transient scope with a memory cap and no swap.
++// It asks the systemd user manager over D-Bus through `busctl`.
++// It waits until the process has joined the scope and checks the scope's `memory.max`.
++// The scope's `OOMPolicy` is `continue`, so a kill at the cap ends one process and leaves the rest running.
++// ProcessOOMKills reads a process's cgroup and the OOM kills its `memory.events` counts.
++// OOMKillsInCgroup reads the name and pid of each process the kernel journal records as OOM-killed in a cgroup.
++// It reads through `journalctl`.
++// All three are Linux only, and the caller logs their spawns.
++//
+ // IsSpawnAgain reports whether a start failed on a temporary resource shortage, EAGAIN from fork or exec.
+ // NoteSpawnAgain records the time of each such refusal process-wide, and LastSpawnAgain reads it back,
+ // so a caller that sees a later failure can judge whether a host resource shortage preceded it.
+diff --git a/internal/proc/export_linux_test.go b/internal/proc/export_linux_test.go
+index 9e127b4c4..22294d003 100644
+--- a/internal/proc/export_linux_test.go
++++ b/internal/proc/export_linux_test.go
+@@ -2,7 +2,10 @@
+ 
+ package proc
+ 
+-import "os/exec"
++import (
++	"context"
++	"os/exec"
++)
+ 
+ // SelfCgroupFile is the file that names the cgroup of the process reading it.
+ const SelfCgroupFile = selfCgroupFile
+@@ -21,6 +24,37 @@ func KilledAtOwnLimit(events string) bool {
+ 	return killedAtOwnLimit(events)
+ }
+ 
++// ParseOOMKills returns the kills that the kernel messages in journal record for tasks of cgroup, oldest first.
++func ParseOOMKills(journal, cgroup string) []OOMKill {
++	return parseOOMKills(journal, cgroup)
++}
++
++// OOMKillCount returns the oom_kill count of the content of a cgroup's memory.events file.
++func OOMKillCount(events string) int {
++	return oomKillCount(events)
++}
++
++// WaitForScope waits until process pid's cgroup is the scope unit's, asking readEnded for the scope's state now and then.
++func WaitForScope(ctx context.Context, readEnded func() (state string, ended bool), pid int, unit string) (string, error) {
++	return waitForScope(ctx, readEnded, pid, unit)
++}
++
++// ScopeEnded reports whether the user manager at busctlPath shows the scope unit as failed or inactive.
++func ScopeEnded(ctx context.Context, busctlPath, unit string) (state string, ended bool) {
++	return scopeEnded(ctx, busctlPath, unit)
++}
++
++// UnitObjectPathLabel returns the last element of the D-Bus object path of the unit named unit.
++func UnitObjectPathLabel(unit string) string {
++	return unitObjectPathLabel(unit)
++}
++
++// ScopeStateEnded reads busctl's answer to a get-property of a unit's ActiveState.
++// It reports whether that state is failed or inactive.
++func ScopeStateEnded(answer string) (state string, ended bool) {
++	return scopeStateEnded(answer)
++}
++
+ // RunMemoryCappedWithoutScope runs cmd capped at limit bytes as a host whose user manager cannot cap a scope does.
+ func RunMemoryCappedWithoutScope(cmd *exec.Cmd, limit int64) (killed bool, err error) {
+ 	killed, _, err = runMemoryCapped(cmd, limit, memoryScope{}, startDirect)
+diff --git a/internal/proc/processscope.go b/internal/proc/processscope.go
+new file mode 100644
+index 000000000..592eed15b
+--- /dev/null
++++ b/internal/proc/processscope.go
+@@ -0,0 +1,46 @@
++// processscope.go caps the memory of a process that is already running and reads the OOM kills its scope saw.
++
++package proc
++
++// OOMKill is one process the kernel's OOM killer ended.
++type OOMKill struct {
++	// PID is the pid the killed process had.
++	PID int
++	// Name is the command name the kernel logged for it.
++	Name string
++}
++
++// CapProcessMemory moves the running process pid into a new transient scope named unit.
++// The scope caps the memory at limit bytes and allows no swap.
++// It exists so a long-lived process tree, such as an agent's pane, has a runaway descendant killed inside its scope.
++// The kill happens before the host runs out of memory.
++// Every process pid starts from then on joins the scope; one it started before stays where it was.
++// The scope's OOM policy is continue, so a kill at the cap ends the process the kernel picks and nothing else.
++// The scope is collected once it empties.
++// It returns the scope's cgroup path below the cgroup v2 mount.
++// An error wraps ErrMemoryCap and names its cause.
++// A cause is no `busctl` on PATH.
++// Another is a user manager that refuses the scope or never moves the process.
++// A third is a user manager that does not hand the memory controller to its scopes.
++// On Windows it always returns an error that wraps ErrMemoryCap and errors.ErrUnsupported.
++func CapProcessMemory(pid int, unit string, limit int64) (cgroup string, err error) {
++	return capProcessMemoryPlatform(pid, unit, limit)
++}
++
++// ProcessOOMKills returns the cgroup of process pid and the count of processes the kernel's OOM killer ended in it.
++// The count covers a kill at the cgroup's own limit and one at the limit of a cgroup above it or of the host.
++// On Windows it always returns errors.ErrUnsupported.
++func ProcessOOMKills(pid int) (cgroup string, kills int, err error) {
++	return processOOMKillsPlatform(pid)
++}
++
++// OOMKillsInCgroup returns the processes of cgroup that the current boot's kernel journal records as OOM-killed.
++// It returns them oldest first.
++// cgroup is a path below the cgroup v2 mount, as CapProcessMemory and ProcessOOMKills return it.
++// A journal that records none returns none.
++// So does a journal the caller may not read, as outside the adm and systemd-journal groups.
++// An error names a journal that could not be read at all.
++// On Windows it always returns errors.ErrUnsupported.
++func OOMKillsInCgroup(cgroup string) ([]OOMKill, error) {
++	return oomKillsInCgroupPlatform(cgroup)
++}
+diff --git a/internal/proc/processscope_linux.go b/internal/proc/processscope_linux.go
+new file mode 100644
+index 000000000..a609f1891
+--- /dev/null
++++ b/internal/proc/processscope_linux.go
+@@ -0,0 +1,232 @@
++// processscope_linux.go moves a running process into a memory-capped scope of the systemd user manager over D-Bus.
++// It also reads a process's OOM kill count from its cgroup and the killed processes' names from the kernel journal.
++
++package proc
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"os/exec"
++	"path"
++	"path/filepath"
++	"regexp"
++	"strconv"
++	"strings"
++	"time"
++
++	"golang.org/x/sys/unix"
++)
++
++// busctl names the command that calls the systemd user manager over D-Bus.
++const busctl = "busctl"
++
++// journalctl names the command that reads the systemd journal.
++const journalctl = "journalctl"
++
++// scopeJoinTimeout bounds the scope's start: the user manager's answer and the move of the process into the scope.
++// scopeJoinPoll is the wait between two reads of the process's cgroup while it moves.
++// scopeStatePollEvery is how many of those reads pass between two reads of the scope's state.
++// scopeEndedReadsToFail is how many state reads in a row must show the scope ended before the wait gives up on it:
++// a scope whose start job is still queued reads inactive too.
++const (
++	scopeJoinTimeout      = 5 * time.Second
++	scopeJoinPoll         = 20 * time.Millisecond
++	scopeStatePollEvery   = 10
++	scopeEndedReadsToFail = 2
++)
++
++// journalReadTimeout bounds the read of the kernel journal.
++const journalReadTimeout = 10 * time.Second
++
++// oomKillCountKey is the key of the memory.events line that counts the processes the OOM killer ended in the cgroup.
++const oomKillCountKey = "oom_kill"
++
++// capProcessMemoryPlatform asks the user manager for a transient scope named unit holding pid, capped at limit bytes.
++// The answer comes before the scope has started, so it waits until pid's cgroup is the scope's.
++// It then checks that the scope's memory.max is limit rounded down to a whole page.
++func capProcessMemoryPlatform(pid int, unit string, limit int64) (string, error) {
++	starter, err := exec.LookPath(busctl)
++	if err != nil {
++		return "", fmt.Errorf("%w: %s is not on PATH: %w", ErrMemoryCap, busctl, err)
++	}
++	bounded, cancel := context.WithTimeout(context.Background(), scopeJoinTimeout)
++	defer cancel()
++	if out, err := exec.CommandContext(bounded, starter, startScopeArgs(pid, unit, limit)...).CombinedOutput(); err != nil {
++		return "", fmt.Errorf("%w: the user manager refused the scope %s: %w: %s", ErrMemoryCap, unit, err, strings.TrimSpace(string(out)))
++	}
++	cgroup, err := waitForScope(bounded, func() (string, bool) { return scopeEnded(bounded, starter, unit) }, pid, unit)
++	if err != nil {
++		return "", err
++	}
++	wantMax := strconv.FormatInt(limit&^int64(unix.Getpagesize()-1), 10)
++	held, err := os.ReadFile(filepath.Join(cgroupMount, filepath.FromSlash(cgroup), cgroupMemoryMaxFile))
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", fmt.Errorf("%w: the user manager does not hand the memory controller to the scope %s", ErrMemoryCap, unit)
++	}
++	if err != nil {
++		return "", fmt.Errorf("%w: read the %s of the scope %s: %w", ErrMemoryCap, cgroupMemoryMaxFile, unit, err)
++	}
++	if got := strings.TrimSpace(string(held)); got != wantMax {
++		return "", fmt.Errorf("%w: the scope %s holds %s %s, not %s", ErrMemoryCap, unit, cgroupMemoryMaxFile, got, wantMax)
++	}
++	return cgroup, nil
++}
++
++// startScopeArgs returns busctl's arguments for starting the transient scope unit that holds pid.
++// The scope is capped at limit bytes with no swap.
++// Its OOM policy is continue, so a kill at the cap never stops the scope and with it every process left in it.
++// It is collected once it empties, whatever ended it.
++func startScopeArgs(pid int, unit string, limit int64) []string {
++	return []string{
++		"--user", "call", "org.freedesktop.systemd1", "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager",
++		"StartTransientUnit", "ssa(sv)a(sa(sv))", unit, "fail", "5",
++		"PIDs", "au", "1", strconv.Itoa(pid),
++		"MemoryMax", "t", strconv.FormatInt(limit, 10),
++		"MemorySwapMax", "t", "0",
++		"OOMPolicy", "s", "continue",
++		"CollectMode", "s", "inactive-or-failed",
++		"0",
++	}
++}
++
++// waitForScope waits until process pid's cgroup is the scope unit's and returns that cgroup.
++// Every scopeStatePollEvery reads it calls readEnded, which answers the scope's state and whether that state is ended.
++// scopeEndedReadsToFail answers of ended in a row end the wait,
++// so a start job that failed after the user manager accepted it does not hold the wait to its timeout.
++// A process that ends, a scope that ended or a ctx that is done first returns an error wrapping ErrMemoryCap.
++func waitForScope(ctx context.Context, readEnded func() (state string, ended bool), pid int, unit string) (string, error) {
++	cgroupFile := processCgroupFile(pid)
++	endedReads := 0
++	for polls := 1; ; polls++ {
++		cgroup, ok := readCgroupV2Path(cgroupFile)
++		if !ok {
++			return "", fmt.Errorf("%w: process %d ended before it joined the scope %s", ErrMemoryCap, pid, unit)
++		}
++		if path.Base(cgroup) == unit {
++			return cgroup, nil
++		}
++		if polls%scopeStatePollEvery == 0 {
++			state, ended := readEnded()
++			if !ended {
++				endedReads = 0
++			} else if endedReads++; endedReads >= scopeEndedReadsToFail {
++				return "", fmt.Errorf("%w: the scope %s is %s, so process %d never joined it", ErrMemoryCap, unit, state, pid)
++			}
++		}
++		select {
++		case <-ctx.Done():
++			return "", fmt.Errorf("%w: process %d was still in %s when the wait for the scope %s ended", ErrMemoryCap, pid, cgroup, unit)
++		case <-time.After(scopeJoinPoll):
++		}
++	}
++}
++
++// scopeEnded reports whether the user manager at busctlPath shows the scope unit as failed or inactive, with that state.
++// The scope's collect mode drops a failed unit at once, and the user manager reads a dropped unit as inactive.
++// A state that cannot be read reports false, so the wait goes on to its timeout.
++func scopeEnded(ctx context.Context, busctlPath, unit string) (state string, ended bool) {
++	args := []string{"--user", "get-property", "org.freedesktop.systemd1", "/org/freedesktop/systemd1/unit/" + unitObjectPathLabel(unit),
++		"org.freedesktop.systemd1.Unit", "ActiveState"}
++	out, err := exec.CommandContext(ctx, busctlPath, args...).Output()
++	if err != nil {
++		return "", false
++	}
++	return scopeStateEnded(string(out))
++}
++
++// unitObjectPathLabel escapes the unit name into the last element of the unit's D-Bus object path.
++// Every byte but a letter, or a digit past the first byte, becomes an underscore and its two lower-case hex digits.
++func unitObjectPathLabel(unit string) string {
++	var label strings.Builder
++	for i := 0; i < len(unit); i++ {
++		c := unit[i]
++		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (i > 0 && c >= '0' && c <= '9') {
++			label.WriteByte(c)
++			continue
++		}
++		fmt.Fprintf(&label, "_%02x", c)
++	}
++	return label.String()
++}
++
++// scopeStateEnded reads busctl's answer to a get-property of a unit's ActiveState, such as `s "failed"`.
++// It returns the state and whether it is failed or inactive.
++func scopeStateEnded(answer string) (state string, ended bool) {
++	state = strings.Trim(strings.TrimPrefix(strings.TrimSpace(answer), "s "), `"`)
++	return state, state == "failed" || state == "inactive"
++}
++
++// processCgroupFile names the file that lists the cgroup of process pid.
++func processCgroupFile(pid int) string {
++	return "/proc/" + strconv.Itoa(pid) + "/cgroup"
++}
++
++// processOOMKillsPlatform reads pid's cgroup and the oom_kill count of that cgroup's memory.events file.
++func processOOMKillsPlatform(pid int) (string, int, error) {
++	cgroup, ok := readCgroupV2Path(processCgroupFile(pid))
++	if !ok {
++		return "", 0, fmt.Errorf("read the cgroup of process %d: no cgroup v2 path in %s", pid, processCgroupFile(pid))
++	}
++	events, err := os.ReadFile(filepath.Join(cgroupMount, filepath.FromSlash(cgroup), cgroupMemoryEventsFile))
++	if err != nil {
++		return cgroup, 0, fmt.Errorf("read the OOM kills of process %d's cgroup: %w", pid, err)
++	}
++	return cgroup, oomKillCount(string(events)), nil
++}
++
++// oomKillCount returns the oom_kill count of the content of a cgroup's memory.events file, 0 when it holds none.
++func oomKillCount(events string) int {
++	for _, line := range strings.Split(events, "\n") {
++		name, value, found := strings.Cut(line, " ")
++		if !found || name != oomKillCountKey {
++			continue
++		}
++		if count, err := strconv.Atoi(value); err == nil {
++			return count
++		}
++	}
++	return 0
++}
++
++// oomKillsInCgroupPlatform reads the current boot's kernel messages that name cgroup as a killed task's cgroup.
++// journalctl exits 1 when no message matches, which reads as no kill.
++func oomKillsInCgroupPlatform(cgroup string) ([]OOMKill, error) {
++	bounded, cancel := context.WithTimeout(context.Background(), journalReadTimeout)
++	defer cancel()
++	read := exec.CommandContext(bounded, journalctl, "--dmesg", "--boot", "--output=cat", "--no-pager",
++		"--grep", "task_memcg="+regexp.QuoteMeta(cgroup)+",")
++	var stderr strings.Builder
++	read.Stderr = &stderr
++	out, err := read.Output()
++	var exit *exec.ExitError
++	if errors.As(err, &exit) && exit.ExitCode() == 1 && len(out) == 0 {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("read the kernel journal: %w: %s", err, strings.TrimSpace(stderr.String()))
++	}
++	return parseOOMKills(string(out), cgroup), nil
++}
++
++// oomKillLine matches the kernel's oom-kill message, capturing the killed task's cgroup, name and pid.
++var oomKillLine = regexp.MustCompile(`oom-kill:.*,task_memcg=([^,]*),task=(.*),pid=(\d+),uid=\d+`)
++
++// parseOOMKills returns the kills that the kernel messages in journal record for tasks of cgroup, oldest first.
++func parseOOMKills(journal, cgroup string) []OOMKill {
++	var kills []OOMKill
++	for _, line := range strings.Split(journal, "\n") {
++		match := oomKillLine.FindStringSubmatch(line)
++		if match == nil || match[1] != cgroup {
++			continue
++		}
++		pid, err := strconv.Atoi(match[3])
++		if err != nil {
++			continue
++		}
++		kills = append(kills, OOMKill{PID: pid, Name: match[2]})
++	}
++	return kills
++}
+diff --git a/internal/proc/processscope_linux_test.go b/internal/proc/processscope_linux_test.go
+new file mode 100644
+index 000000000..b714ef650
+--- /dev/null
++++ b/internal/proc/processscope_linux_test.go
+@@ -0,0 +1,115 @@
++// processscope_linux_test.go covers the scope cap of a running process against a real systemd user manager.
++// A capped process keeps running when the kernel kills a runaway child at the cap, and its scope counts the kill.
++
++package proc_test
++
++import (
++	"bufio"
++	"errors"
++	"io"
++	"io/fs"
++	"os"
++	"os/exec"
++	"path"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestCapProcessMemory_KillsARunawayChildInTheScopeAndTheProcessLivesOn(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	if !proc.MemoryCapCoversTree() {
++		t.Skip("this host has no systemd user manager that caps a scope's memory")
++	}
++
++	// The shell waits for a line, runs the hog as a plain child, says it lives on, and waits for its stdin to close.
++	hog := memoryHog(t, hogOverCap)
++	cmd := exec.Command("sh", "-c", `read -r line; "$0"; echo survived; read -r line`, hog.Path)
++	cmd.Env = hog.Env
++	stdin, err := cmd.StdinPipe()
++	if err != nil {
++		t.Fatal(err)
++	}
++	stdout, err := cmd.StdoutPipe()
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := cmd.Start(); err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(func() {
++		_ = stdin.Close()
++		_ = cmd.Wait()
++	})
++	pid := cmd.Process.Pid
++	unit := "lym-proc-test-" + strconv.Itoa(pid) + ".scope"
++
++	cgroup, err := proc.CapProcessMemory(pid, unit, testMemoryCap)
++	if err != nil {
++		t.Fatalf("CapProcessMemory(%d, %q, %d) = %v; want nil", pid, unit, testMemoryCap, err)
++	}
++	if path.Base(cgroup) != unit {
++		t.Errorf("CapProcessMemory(%d, %q, %d) cgroup = %q; want one ending in the unit", pid, unit, testMemoryCap, cgroup)
++	}
++	held, err := os.ReadFile(filepath.Join(proc.CgroupMount, filepath.FromSlash(cgroup), "memory.max"))
++	if got := strings.TrimSpace(string(held)); err != nil || got != strconv.Itoa(testMemoryCap) {
++		t.Errorf("the scope's memory.max = %q, %v; want %d", got, err, testMemoryCap)
++	}
++	// A host that does not account swap has no memory.swap.max to read.
++	swap, err := os.ReadFile(filepath.Join(proc.CgroupMount, filepath.FromSlash(cgroup), "memory.swap.max"))
++	if got := strings.TrimSpace(string(swap)); !errors.Is(err, fs.ErrNotExist) && (err != nil || got != "0") {
++		t.Errorf("the scope's memory.swap.max = %q, %v; want 0", got, err)
++	}
++
++	if _, err := io.WriteString(stdin, "run\n"); err != nil {
++		t.Fatal(err)
++	}
++	line, err := bufio.NewReader(stdout).ReadString('\n')
++	if err != nil || line != "survived\n" {
++		t.Fatalf("the capped shell printed %q, %v; want survived", line, err)
++	}
++	gotCgroup, kills, err := proc.ProcessOOMKills(pid)
++	if err != nil || gotCgroup != cgroup || kills != 1 {
++		t.Errorf("ProcessOOMKills(%d) = %q, %d, %v; want %q, 1, nil", pid, gotCgroup, kills, err, cgroup)
++	}
++
++	// The journal may not hold the kernel's line yet, or may be closed to this user, so it may name no kill.
++	// Any kill it names in the fresh scope is the hog's, under the kernel's command name of at most 15 bytes.
++	wantName := filepath.Base(hog.Path)
++	if len(wantName) > 15 {
++		wantName = wantName[:15]
++	}
++	named, err := proc.OOMKillsInCgroup(cgroup)
++	if err != nil {
++		t.Fatalf("OOMKillsInCgroup(%q) = %v; want nil", cgroup, err)
++	}
++	for _, kill := range named {
++		if kill.Name != wantName || kill.PID <= 0 {
++			t.Errorf("OOMKillsInCgroup(%q) names %+v; want only kills of %q", cgroup, kill, wantName)
++		}
++	}
++}
++
++func TestCapProcessMemory_AnEndedProcessIsACapError(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	if !proc.MemoryCapCoversTree() {
++		t.Skip("this host has no systemd user manager that caps a scope's memory")
++	}
++
++	ended := exec.Command("true")
++	if err := ended.Run(); err != nil {
++		t.Fatal(err)
++	}
++	pid := ended.Process.Pid
++	unit := "lym-proc-test-" + strconv.Itoa(pid) + ".scope"
++	// The user manager refuses a pid that no longer exists, so the error comes from the refused scope.
++	if _, err := proc.CapProcessMemory(pid, unit, testMemoryCap); !errors.Is(err, proc.ErrMemoryCap) || !strings.Contains(err.Error(), "refused the scope") {
++		t.Errorf("CapProcessMemory(%d, %q, %d) of an ended process = %v; want an error wrapping ErrMemoryCap that names the refused scope", pid, unit, testMemoryCap, err)
++	}
++}
+diff --git a/internal/proc/processscope_parse_linux_test.go b/internal/proc/processscope_parse_linux_test.go
+new file mode 100644
+index 000000000..33d33261d
+--- /dev/null
++++ b/internal/proc/processscope_parse_linux_test.go
+@@ -0,0 +1,74 @@
++// processscope_parse_linux_test.go covers the parsing of the kernel journal and of a scope's memory events for OOM kills.
++
++package proc_test
++
++import (
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestParseOOMKills(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const cgroup = "/user.slice/user-1000.slice/user@1000.service/app.slice/lym-pane-42.scope"
++	tests := []struct {
++		name    string
++		journal string
++		want    []proc.OOMKill
++	}{
++		{
++			"AKillInTheCgroup",
++			"tail invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=200\n" +
++				"oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=/,mems_allowed=0,oom_memcg=" + cgroup + ",task_memcg=" + cgroup + ",task=tail,pid=116496,uid=1000\n" +
++				"Memory cgroup out of memory: Killed process 116496 (tail) total-vm:79888kB\n",
++			[]proc.OOMKill{{PID: 116496, Name: "tail"}},
++		},
++		{
++			"TwoKillsOldestFirst",
++			"oom-kill:constraint=CONSTRAINT_MEMCG,oom_memcg=" + cgroup + ",task_memcg=" + cgroup + ",task=script,pid=7,uid=1000\n" +
++				"oom-kill:constraint=CONSTRAINT_MEMCG,oom_memcg=" + cgroup + ",task_memcg=" + cgroup + ",task=go build,pid=9,uid=1000\n",
++			[]proc.OOMKill{{PID: 7, Name: "script"}, {PID: 9, Name: "go build"}},
++		},
++		{
++			"AKillInAnotherCgroupWhoseNameStartsTheSame",
++			"oom-kill:constraint=CONSTRAINT_MEMCG,oom_memcg=" + cgroup + "x,task_memcg=" + cgroup + "x,task=tail,pid=5,uid=1000\n",
++			nil,
++		},
++		{"NoKill", "", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := proc.ParseOOMKills(tt.journal, cgroup); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("ParseOOMKills(%q) = %+v; want %+v", tt.journal, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestOOMKillCount(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name   string
++		events string
++		want   int
++	}{
++		{"TwoKills", "low 0\nhigh 0\nmax 3\noom 2\noom_kill 2\noom_group_kill 0\n", 2},
++		{"NoKill", "max 0\noom 0\noom_kill 0\n", 0},
++		{"NoKillLine", "max 0\n", 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := proc.OOMKillCount(tt.events); got != tt.want {
++				t.Errorf("OOMKillCount(%q) = %d; want %d", tt.events, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/proc/processscope_state_linux_test.go b/internal/proc/processscope_state_linux_test.go
+new file mode 100644
+index 000000000..ed1678fde
+--- /dev/null
++++ b/internal/proc/processscope_state_linux_test.go
+@@ -0,0 +1,146 @@
++// processscope_state_linux_test.go covers the reading of a scope unit's state from the user manager's D-Bus answers,
++// and the wait for a scope that gives up once the state shows the scope ended.
++
++package proc_test
++
++import (
++	"context"
++	"errors"
++	"os"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestUnitObjectPathLabel(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		unit string
++		want string
++	}{
++		{"lym-pane-42.scope", "lym_2dpane_2d42_2escope"},
++		{"7zip.scope", "_37zip_2escope"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.unit, func(t *testing.T) {
++			t.Parallel()
++			if got := proc.UnitObjectPathLabel(tt.unit); got != tt.want {
++				t.Errorf("UnitObjectPathLabel(%q) = %q; want %q", tt.unit, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestScopeStateEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name      string
++		answer    string
++		wantState string
++		wantEnded bool
++	}{
++		{"ActiveIsNotEnded", "s \"active\"\n", "active", false},
++		{"ActivatingIsNotEnded", "s \"activating\"\n", "activating", false},
++		{"FailedIsEnded", "s \"failed\"\n", "failed", true},
++		{"InactiveIsEnded", "s \"inactive\"\n", "inactive", true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			state, ended := proc.ScopeStateEnded(tt.answer)
++			if state != tt.wantState || ended != tt.wantEnded {
++				t.Errorf("ScopeStateEnded(%q) = %q, %v; want %q, %v", tt.answer, state, ended, tt.wantState, tt.wantEnded)
++			}
++		})
++	}
++}
++
++func TestScopeEnded_ABusctlThatCannotRunReadsAsNotEnded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	state, ended := proc.ScopeEnded(context.Background(), "/nonexistent/busctl", "lym-pane-1.scope")
++	if state != "" || ended {
++		t.Errorf("ScopeEnded() with no busctl = %q, %v; want an empty state and false", state, ended)
++	}
++}
++
++func TestProcessOOMKills_ReadsTheCgroupOfARunningProcess(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	cgroup, kills, err := proc.ProcessOOMKills(os.Getpid())
++	if err != nil {
++		t.Skipf("this host lists no memory.events for the test process's cgroup: %v", err)
++	}
++	if !strings.HasPrefix(cgroup, "/") || kills < 0 {
++		t.Errorf("ProcessOOMKills(own pid) = %q, %d; want a cgroup path and a count of 0 or more", cgroup, kills)
++	}
++}
++
++// The tests below empty PATH with t.Setenv, so they do not run in parallel.
++
++func TestCapProcessMemory_WithoutBusctlOnPathIsACapError(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Setenv("PATH", t.TempDir())
++	_, err := proc.CapProcessMemory(os.Getpid(), "lym-pane-1.scope", 1<<30)
++	if !errors.Is(err, proc.ErrMemoryCap) || !strings.Contains(err.Error(), "is not on PATH") {
++		t.Errorf("CapProcessMemory() with no busctl = %v; want an error wrapping ErrMemoryCap that names the missing busctl", err)
++	}
++}
++
++func TestOOMKillsInCgroup_WithoutJournalctlOnPathIsAnError(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Setenv("PATH", t.TempDir())
++	if kills, err := proc.OOMKillsInCgroup("/app.slice/lym-pane-1.scope"); err == nil || kills != nil {
++		t.Errorf("OOMKillsInCgroup() with no journalctl = %v, %v; want no kills and an error", kills, err)
++	}
++}
++
++func TestWaitForScope_GivesUpOnAScopeReadEndedTwiceInARow(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	listing, err := os.ReadFile(proc.SelfCgroupFile)
++	if err != nil || !strings.Contains("\n"+string(listing), "\n0::") {
++		t.Skip("this host lists no cgroup v2 path for a process")
++	}
++
++	// The test process never joins the scope, so the wait runs on until a state read ends it or the fake cancels the wait.
++	// Once the scripted states run out, the fake cancels the wait and answers active.
++	tests := []struct {
++		name      string
++		states    []string
++		wantErr   string
++		wantReads int
++	}{
++		{"TwoInactiveReadsInARowEndTheWait", []string{"inactive", "inactive"}, "is inactive", 2},
++		{"OneInactiveReadIsNotEnough", []string{"inactive", "active"}, "was still in", 3},
++		{"AnActiveScopeIsWaitedOn", nil, "was still in", 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
++			defer cancel()
++			reads := 0
++			readEnded := func() (string, bool) {
++				reads++
++				if reads > len(tt.states) {
++					cancel()
++					return "active", false
++				}
++				return tt.states[reads-1], tt.states[reads-1] == "inactive"
++			}
++			_, err := proc.WaitForScope(ctx, readEnded, os.Getpid(), "lym-no-such-scope-0.scope")
++			if !errors.Is(err, proc.ErrMemoryCap) || !strings.Contains(err.Error(), tt.wantErr) {
++				t.Errorf("WaitForScope() = %v; want an error wrapping ErrMemoryCap that holds %q", err, tt.wantErr)
++			}
++			if reads != tt.wantReads {
++				t.Errorf("WaitForScope() read the scope's state %d time(s); want %d", reads, tt.wantReads)
++			}
++		})
++	}
++}
+diff --git a/internal/proc/processscope_windows.go b/internal/proc/processscope_windows.go
+new file mode 100644
+index 000000000..0cf7db650
+--- /dev/null
++++ b/internal/proc/processscope_windows.go
+@@ -0,0 +1,23 @@
++// processscope_windows.go stands in for the scope cap of a running process, which Windows has no systemd for.
++
++package proc
++
++import (
++	"errors"
++	"fmt"
++)
++
++// capProcessMemoryPlatform always fails: Windows has no user manager to start a scope.
++func capProcessMemoryPlatform(int, string, int64) (string, error) {
++	return "", fmt.Errorf("%w: %w", ErrMemoryCap, errors.ErrUnsupported)
++}
++
++// processOOMKillsPlatform always fails: Windows has no cgroup to read.
++func processOOMKillsPlatform(int) (string, int, error) {
++	return "", 0, errors.ErrUnsupported
++}
++
++// oomKillsInCgroupPlatform always fails: Windows has no kernel journal to read.
++func oomKillsInCgroupPlatform(string) ([]OOMKill, error) {
++	return nil, errors.ErrUnsupported
++}
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index 4263d19ce..dc9cc84a7 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -4,6 +4,10 @@
+ // The per-hub watchdog daemon (`lym reed watchdog`) discovers the hub's tmux sessions and repairs their names.
+ // It retires when its own `lym` binary is replaced, so a deploy never leaves an old daemon running stale code.
+ // Every clean exit spawns a successor only when a session is still listed, so none is left without a watchdog.
++// Each entered session's watch reads the OOM kill count of the cgroup of each capped strand pane.
++// A new kill reaches the worktree's parent orch as a notice signed by the REED program.
++// The notice names the strand, the pane and the killed process from the kernel journal.
++// A daemon that starts afresh counts a pane's earlier kills as new and tells them again.
+ //
+ // In a task pair, `down` first calls `pairteardown.Teardown.EndBeforeSessionDown`, then kills the session.
+ // The pre-step reads local state only and never waits at the network gate.
+diff --git a/internal/reedcli/entersession_integration_test.go b/internal/reedcli/entersession_integration_test.go
+index bedc49c65..17bb39e46 100644
+--- a/internal/reedcli/entersession_integration_test.go
++++ b/internal/reedcli/entersession_integration_test.go
+@@ -17,7 +17,7 @@ import (
+ )
+ 
+ // TestEnterSession_DrivesTheToldTmux seeds a worktree config that names one tmux path and sets watchdog to off.
+-// It then asserts that enterSession's engine drives a different told path and starts no watcher.
++// It then asserts that enterSession's engine drives a different told path and starts no name-repair loop.
+ func TestEnterSession_DrivesTheToldTmux(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -41,14 +41,15 @@ func TestEnterSession_DrivesTheToldTmux(t *testing.T) {
+ 	hubforge.SeedConfig(t, h, map[string]string{"reed": string(seeded)})
+ 
+ 	told := filepath.Join(scratch, "told-tmux")
+-	ws, err := enterSession(h.Path, told, reedengine.SessionName(prime))
++	ws, err := enterSession(h.Path, told, reedengine.SessionName(prime), watchdogDefaultTiming())
+ 	if err != nil {
+ 		t.Fatalf("enterSession: %v", err)
+ 	}
++	t.Cleanup(ws.cancel)
+ 	if got := ws.eng.TmuxPath(); got != told {
+ 		t.Errorf("engine TmuxPath() = %q, want the told path %q", got, told)
+ 	}
+-	if ws.cancel != nil {
+-		t.Error("enterSession with watchdog: off returned a non-nil cancel; want no watcher started")
++	if ws.repairsNames {
++		t.Error("enterSession with watchdog: off started the name-repair loop; want none")
+ 	}
+ }
+diff --git a/internal/reedcli/oomnotice.go b/internal/reedcli/oomnotice.go
+new file mode 100644
+index 000000000..5a604569b
+--- /dev/null
++++ b/internal/reedcli/oomnotice.go
+@@ -0,0 +1,163 @@
++// oomnotice.go tells a worktree's parent orch when the kernel's OOM killer ends a process in one of its strand panes.
++// Each entered session's watch goroutine reads its strand panes' OOM kill counts and posts a notice for each new kill.
++
++package reedcli
++
++import (
++	"context"
++	"fmt"
++	"path"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++)
++
++// reedProgram is the program name the watchdog signs its notices with.
++const reedProgram = "REED"
++
++// paneOOMKills maps the cgroup of each capped strand pane a session showed at its last read to a count.
++// The count is the OOM kills in that cgroup that notices have told of.
++type paneOOMKills map[string]int
++
++// paneOOMNotice is one capped strand pane whose cgroup counts OOM kills no notice has told of yet.
++type paneOOMNotice struct {
++	strand string
++	pane   string
++	cgroup string
++	// told is the count of kills in cgroup that earlier notices told of.
++	told int
++	// newKills is the count of kills in cgroup past told.
++	newKills int
++}
++
++// paneOOMBoundaries holds what a session's OOM watch reads and writes outside the process.
++type paneOOMBoundaries struct {
++	// strands reads the session's strands with their pane shell pids.
++	strands func() ([]reedengine.StrandStatus, error)
++	// paneKills reads a pane shell's cgroup and the count of OOM kills in it.
++	paneKills func(pid int) (cgroup string, kills int, err error)
++	// journalKills reads the kills the kernel journal records for a cgroup, oldest first.
++	journalKills func(cgroup string) ([]proc.OOMKill, error)
++	// post sends a notice line to the worktree's parent orch.
++	post func(line string) error
++}
++
++// engineOOMBoundaries returns the boundaries of the session that eng drives in the worktree at location.
++func engineOOMBoundaries(eng *reedengine.Engine, location *lymcwd.Location) paneOOMBoundaries {
++	return paneOOMBoundaries{
++		strands: func() ([]reedengine.StrandStatus, error) {
++			status, err := eng.Status()
++			return status.Strands, err
++		},
++		paneKills:    proc.ProcessOOMKills,
++		journalKills: proc.OOMKillsInCgroup,
++		post: func(line string) error {
++			_, err := orchcli.NotifyAsker(location, reedProgram, line)
++			return err
++		},
++	}
++}
++
++// planPaneOOMNotices returns a notice for each live capped strand pane.
++// A pane gets one when its cgroup counts more OOM kills than seen holds.
++// readKills reads a pane shell's cgroup and its kill count; a pane it cannot read is skipped.
++// A pane whose cgroup is not a pane scope, so one the memory cap never reached, is skipped:
++// that cgroup may hold other panes or the tmux server, and its kills are none of this strand's.
++// seen is not advanced; it loses each cgroup no live pane is in any more.
++// A cgroup first seen counts from 0, so a kill before the daemon first looked is still told.
++func planPaneOOMNotices(strands []reedengine.StrandStatus, readKills func(pid int) (string, int, error), seen paneOOMKills) []paneOOMNotice {
++	var notices []paneOOMNotice
++	current := make(map[string]bool, len(strands))
++	for _, s := range strands {
++		if s.PanePID <= 0 {
++			continue
++		}
++		cgroup, kills, err := readKills(s.PanePID)
++		if cgroup != "" {
++			current[cgroup] = true
++		}
++		if err != nil || !strings.HasPrefix(path.Base(cgroup), reedengine.PaneScopeUnitPrefix) {
++			continue
++		}
++		if told := seen[cgroup]; kills > told {
++			notices = append(notices, paneOOMNotice{strand: s.Name, pane: s.PaneID, cgroup: cgroup, told: told, newKills: kills - told})
++		}
++	}
++	for cgroup := range seen {
++		if !current[cgroup] {
++			delete(seen, cgroup)
++		}
++	}
++	return notices
++}
++
++// paneOOMNoticeLine returns the notice line for notice in the worktree session.
++// killed is what the kernel journal records for the pane's cgroup, oldest first.
++// The journal is cumulative and the kernel's line can land after the kill is counted,
++// so the line names the notice.newKills entries that follow the notice.told it already told of.
++// When the journal holds fewer, or could not be read, the line counts the kills and gives journalErr.
++func paneOOMNoticeLine(session string, notice paneOOMNotice, killed []proc.OOMKill, journalErr error) string {
++	what := fmt.Sprintf("%d process(es) the kernel journal does not name", notice.newKills)
++	if journalErr != nil {
++		what += fmt.Sprintf(" (%v)", journalErr)
++	} else if end := notice.told + notice.newKills; len(killed) >= end {
++		names := make([]string, 0, notice.newKills)
++		for _, kill := range killed[notice.told:end] {
++			names = append(names, fmt.Sprintf("%s (pid %d)", kill.Name, kill.PID))
++		}
++		what = strings.Join(names, ", ")
++	}
++	return fmt.Sprintf("reed: the kernel's OOM killer ended %s at the memory cap of strand %s, pane %s, in worktree %s; the pane lives on",
++		what, notice.strand, notice.pane, session)
++}
++
++// reportPaneOOMKills posts a notice to the parent orch for each capped strand pane with a new OOM kill.
++// It reports whether it posted any.
++// A kill counts as told in seen only once its post succeeds, so a failed post is retried at the next read.
++// A failure to read the session's strands or to post is logged and never stops the watch.
++func reportPaneOOMKills(hub, session string, b paneOOMBoundaries, seen paneOOMKills) (posted bool) {
++	strands, err := b.strands()
++	if err != nil {
++		logger.Debug("reed: watchdog could not read the strands to check their OOM kills", "hub", hub, "session", session, "err", err)
++		return false
++	}
++	for _, notice := range planPaneOOMNotices(strands, b.paneKills, seen) {
++		logger.Debug("reed: watchdog reading the kernel journal through journalctl for a pane's OOM kills", "hub", hub, "session", session, "cgroup", notice.cgroup)
++		killed, journalErr := b.journalKills(notice.cgroup)
++		line := paneOOMNoticeLine(session, notice, killed, journalErr)
++		if err := b.post(line); err != nil {
++			logger.Warn("reed: watchdog could not post a pane's OOM kill to its parent", "hub", hub, "session", session, "err", err)
++			continue
++		}
++		logger.Warn(line, "hub", hub, "cgroup", notice.cgroup)
++		seen[notice.cgroup] = notice.told + notice.newKills
++		posted = true
++	}
++	return posted
++}
++
++// watchPaneOOMKills reports every new OOM kill in a capped strand pane of session until ctx is done.
++// It reads at once, then waits timing.DiscoveryCycle between reads.
++// The wait doubles up to timing.DiscoveryCeiling across reads that post nothing.
++// It runs in its own goroutine because reading the strands waits on the worktree's reed operation lock.
++// The journal read and the post take time of their own.
++func watchPaneOOMKills(ctx context.Context, hub, session string, b paneOOMBoundaries, timing watchdogTiming) {
++	seen := paneOOMKills{}
++	cadence := timing.DiscoveryCycle
++	for {
++		posted := reportPaneOOMKills(hub, session, b, seen)
++		cadence = reedengine.NextWakeCadence(cadence, timing.DiscoveryCycle, timing.DiscoveryCeiling, posted)
++		timer := time.NewTimer(cadence)
++		select {
++		case <-ctx.Done():
++			timer.Stop()
++			return
++		case <-timer.C:
++		}
++	}
++}
+diff --git a/internal/reedcli/oomnotice_test.go b/internal/reedcli/oomnotice_test.go
+new file mode 100644
+index 000000000..ddb7a0767
+--- /dev/null
++++ b/internal/reedcli/oomnotice_test.go
+@@ -0,0 +1,249 @@
++// oomnotice_test.go pins which strand panes the watchdog tells of an OOM kill, the line it tells it in,
++// and that a new kill reaches the parent orch's post once.
++
++package reedcli
++
++import (
++	"context"
++	"errors"
++	"reflect"
++	"slices"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestPlanPaneOOMNotices(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	// Each pane shell's pid reads as the cgroup and kill count below; pid 4 cannot be read.
++	// Pid 6 shares a tmux scope the memory cap never reached.
++	kills := map[int]struct {
++		cgroup string
++		count  int
++	}{
++		1: {"/app.slice/lym-pane-1.scope", 0},
++		2: {"/app.slice/lym-pane-2.scope", 2},
++		3: {"/app.slice/lym-pane-3.scope", 3},
++		6: {"/app.slice/tmux-spawn-0a1b.scope", 3},
++	}
++	readKills := func(pid int) (string, int, error) {
++		k, ok := kills[pid]
++		if !ok {
++			return "", 0, errors.New("no such process")
++		}
++		return k.cgroup, k.count, nil
++	}
++	strands := []reedengine.StrandStatus{
++		{Name: "quiet", PaneID: "%1", PanePID: 1},
++		{Name: "first-sight", PaneID: "%2", PanePID: 2},
++		{Name: "one-more", PaneID: "%3", PanePID: 3},
++		{Name: "unreadable", PaneID: "%4", PanePID: 4},
++		{Name: "dead", PaneID: "%5"},
++		{Name: "uncapped", PaneID: "%6", PanePID: 6},
++	}
++	tests := []struct {
++		name     string
++		seen     paneOOMKills
++		want     []paneOOMNotice
++		wantSeen paneOOMKills
++	}{
++		{
++			"ANewKillIsToldFromTheCountToldBeforeAndAGonePaneIsForgotten",
++			paneOOMKills{"/app.slice/lym-pane-3.scope": 2, "/app.slice/lym-pane-9.scope": 1},
++			[]paneOOMNotice{
++				{strand: "first-sight", pane: "%2", cgroup: "/app.slice/lym-pane-2.scope", told: 0, newKills: 2},
++				{strand: "one-more", pane: "%3", cgroup: "/app.slice/lym-pane-3.scope", told: 2, newKills: 1},
++			},
++			paneOOMKills{"/app.slice/lym-pane-3.scope": 2},
++		},
++		{
++			"KillsAlreadyToldAreNotToldAgain",
++			paneOOMKills{"/app.slice/lym-pane-2.scope": 2, "/app.slice/lym-pane-3.scope": 3},
++			nil,
++			paneOOMKills{"/app.slice/lym-pane-2.scope": 2, "/app.slice/lym-pane-3.scope": 3},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := planPaneOOMNotices(strands, readKills, tt.seen)
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("planPaneOOMNotices() = %+v; want %+v", got, tt.want)
++			}
++			if !reflect.DeepEqual(tt.seen, tt.wantSeen) {
++				t.Errorf("planPaneOOMNotices() left seen %v; want %v", tt.seen, tt.wantSeen)
++			}
++		})
++	}
++}
++
++func TestPaneOOMNoticeLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name       string
++		told       int
++		killed     []proc.OOMKill
++		journalErr error
++		want       string
++	}{
++		{
++			"TheJournalNamesTheKillAfterTheOneAlreadyTold",
++			1,
++			[]proc.OOMKill{{PID: 10, Name: "go"}, {PID: 11, Name: "script"}},
++			nil,
++			"reed: the kernel's OOM killer ended script (pid 11) at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on",
++		},
++		{
++			"TheJournalHoldsOnlyTheKillAlreadyTold",
++			1,
++			[]proc.OOMKill{{PID: 10, Name: "go"}},
++			nil,
++			"reed: the kernel's OOM killer ended 1 process(es) the kernel journal does not name at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on",
++		},
++		{
++			"TheJournalNamesNoKill",
++			0,
++			nil,
++			nil,
++			"reed: the kernel's OOM killer ended 1 process(es) the kernel journal does not name at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on",
++		},
++		{
++			"TheJournalCannotBeRead",
++			0,
++			nil,
++			errors.New("permission denied"),
++			"reed: the kernel's OOM killer ended 1 process(es) the kernel journal does not name (permission denied) at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			notice := paneOOMNotice{strand: "ly:darn", pane: "%7", cgroup: "/app.slice/lym-pane-7.scope", told: tt.told, newKills: 1}
++			if got := paneOOMNoticeLine("task-a", notice, tt.killed, tt.journalErr); got != tt.want {
++				t.Errorf("paneOOMNoticeLine() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// oomBoundariesOfOnePane returns boundaries that show one capped strand pane whose cgroup counts *kills.
++// The journal holds journal, and the post appends to *posted and answers *postErr.
++func oomBoundariesOfOnePane(kills *int, journal []proc.OOMKill, posted *[]string, postErr *error) paneOOMBoundaries {
++	return paneOOMBoundaries{
++		strands: func() ([]reedengine.StrandStatus, error) {
++			return []reedengine.StrandStatus{{Name: "ly:darn", PaneID: "%7", PanePID: 7}}, nil
++		},
++		paneKills:    func(int) (string, int, error) { return "/app.slice/lym-pane-7.scope", *kills, nil },
++		journalKills: func(string) ([]proc.OOMKill, error) { return journal, nil },
++		post: func(line string) error {
++			*posted = append(*posted, line)
++			return *postErr
++		},
++	}
++}
++
++func TestReportPaneOOMKills(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const namedLine = "reed: the kernel's OOM killer ended script (pid 11) at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on"
++	const countedLine = "reed: the kernel's OOM killer ended 1 process(es) the kernel journal does not name at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on"
++	kills := 1
++	var posted []string
++	var postErr error = errors.New("creel is down")
++	boundaries := oomBoundariesOfOnePane(&kills, []proc.OOMKill{{PID: 11, Name: "script"}}, &posted, &postErr)
++	seen := paneOOMKills{}
++
++	if got := reportPaneOOMKills("hub", "task-a", boundaries, seen); got {
++		t.Errorf("reportPaneOOMKills() with a failing post = %v; want false", got)
++	}
++	if !slices.Equal(posted, []string{namedLine}) || len(seen) != 0 {
++		t.Fatalf("after a failed post: posted %q, seen %v; want one posted line and nothing told", posted, seen)
++	}
++
++	postErr = nil
++	if got := reportPaneOOMKills("hub", "task-a", boundaries, seen); !got {
++		t.Errorf("reportPaneOOMKills() retrying the failed post = %v; want true", got)
++	}
++	if want := []string{namedLine, namedLine}; !slices.Equal(posted, want) || seen["/app.slice/lym-pane-7.scope"] != 1 {
++		t.Fatalf("after the retry: posted %q, seen %v; want %q and the kill told", posted, seen, want)
++	}
++
++	if got := reportPaneOOMKills("hub", "task-a", boundaries, seen); got || len(posted) != 2 {
++		t.Errorf("reportPaneOOMKills() with the same count = %v, posted %q; want false and no new post", got, posted)
++	}
++
++	// A second kill is counted before the journal holds its line, so the journal still holds only the first kill.
++	kills = 2
++	if got := reportPaneOOMKills("hub", "task-a", boundaries, seen); !got {
++		t.Errorf("reportPaneOOMKills() with a new kill = %v; want true", got)
++	}
++	if want := []string{namedLine, namedLine, countedLine}; !slices.Equal(posted, want) {
++		t.Errorf("posted %q; want %q", posted, want)
++	}
++}
++
++func TestWatchPaneOOMKills_PostsANewKillOnceAndStopsWithItsContext(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	kills := 1
++	var postErr error
++	var posted []string
++	boundaries := oomBoundariesOfOnePane(&kills, []proc.OOMKill{{PID: 11, Name: "script"}}, &posted, &postErr)
++	lines := make(chan string, 8)
++	boundaries.post = func(line string) error {
++		lines <- line
++		return nil
++	}
++	reads := make(chan struct{}, 1024)
++	readKills := boundaries.paneKills
++	boundaries.paneKills = func(pid int) (string, int, error) {
++		select {
++		case reads <- struct{}{}:
++		default:
++		}
++		return readKills(pid)
++	}
++	timing := watchdogTiming{DiscoveryCycle: time.Millisecond, DiscoveryCeiling: time.Millisecond}
++	ctx, cancel := context.WithCancel(context.Background())
++	done := make(chan struct{})
++	go func() {
++		defer close(done)
++		watchPaneOOMKills(ctx, "hub", "task-a", boundaries, timing)
++	}()
++
++	const want = "reed: the kernel's OOM killer ended script (pid 11) at the memory cap of strand ly:darn, pane %7, in worktree task-a; the pane lives on"
++	select {
++	case got := <-lines:
++		if got != want {
++			t.Errorf("the watch posted %q; want %q", got, want)
++		}
++	case <-time.After(30 * time.Second):
++		t.Fatal("the watch posted no notice for a new kill")
++	}
++	// The watch reads on after the post; the kill must not be told again by any of those reads.
++	for range 3 {
++		select {
++		case <-reads:
++		case <-time.After(30 * time.Second):
++			t.Fatal("the watch stopped reading the strand panes")
++		}
++	}
++	cancel()
++	select {
++	case <-done:
++	case <-time.After(30 * time.Second):
++		t.Fatal("the watch did not stop when its context was done")
++	}
++	if extra := len(lines); extra != 0 {
++		t.Errorf("the watch posted %d more notice(s) for the same kill; want none", extra)
++	}
++}
+diff --git a/internal/reedcli/watchdog.go b/internal/reedcli/watchdog.go
+index 372b08781..af0946a04 100644
+--- a/internal/reedcli/watchdog.go
++++ b/internal/reedcli/watchdog.go
+@@ -196,14 +196,13 @@ func sessionsAreIdle(names []string, err error) bool {
+ 
+ // watchedSession is one worktree session the daemon has entered.
+ // It holds the *reedengine.Engine built for the session.
+-// Its cancel stops the name-repair goroutine running on its behalf, if any.
++// Its cancel stops every goroutine running on its behalf: the OOM watch, and the name-repair loop when there is one.
+ //
+-// cancel is nil for a `watchdog: off` worktree.
+-// enterSession starts no goroutine for such a worktree, but the entry is still kept:
+-// departure bookkeeping in runWatchdogLoop stays uniform across enabled and disabled worktrees.
++// repairsNames is false for a `watchdog: off` worktree, which runs no name-repair loop but still has its OOM watch.
+ type watchedSession struct {
+-	eng    *reedengine.Engine
+-	cancel context.CancelFunc
++	eng          *reedengine.Engine
++	cancel       context.CancelFunc
++	repairsNames bool
+ }
+ 
+ // planSessionDiff compares one discovery cycle's live session names against the daemon's known set.
+@@ -315,13 +314,14 @@ func resolveWatchedSession(hub, sessionName string) (*lymcwd.Location, error) {
+ 	return lymcwd.ResolveWorktree(worktreeRoot)
+ }
+ 
+-// enterSession builds the watchedSession entry for a newly-appeared live tmux session name,
+-// starting its name-repair goroutine unless the worktree's own config says watchdog: off.
++// enterSession builds the watchedSession entry for a newly-appeared live tmux session name.
++// It starts the session's OOM watch, paced by timing.
++// It also starts the name-repair goroutine, unless the worktree's own config says watchdog: off.
+ //
+ // The config loads leniently on purpose: a worktree with no _lym still resolves the embedded template.
+ // The daemon therefore watches that worktree instead of refusing it.
+ //
+-// A watchdog: off worktree still gets an entry, with a nil cancel and no goroutine started at all.
++// A watchdog: off worktree still gets an entry and its OOM watch, which only reads, but no name-repair goroutine.
+ // The entry keeps the session known and keeps departure bookkeeping uniform across enabled and disabled worktrees.
+ //
+ // The engine drives tmuxPath, the binary the daemon was told, whatever the worktree's own config names.
+@@ -329,7 +329,7 @@ func resolveWatchedSession(hub, sessionName string) (*lymcwd.Location, error) {
+ // That binary is the tmux value of the worktree whose spawn started the daemon.
+ // The watchers ignore every other worktree's tmux value, including a debugging wrapper.
+ // Nothing compares the two, since a config value and a resolved path to one binary differ as text.
+-func enterSession(hub, tmuxPath, sessionName string) (watchedSession, error) {
++func enterSession(hub, tmuxPath, sessionName string, timing watchdogTiming) (watchedSession, error) {
+ 	location, err := resolveWatchedSession(hub, sessionName)
+ 	if err != nil {
+ 		return watchedSession{}, err
+@@ -347,21 +347,23 @@ func enterSession(hub, tmuxPath, sessionName string) (watchedSession, error) {
+ 	cfg.Tmux = tmuxPath
+ 	eng := reedengine.New(cfg, geom, shuttleengines.EnvScrub())
+ 
++	ctx, cancel := context.WithCancel(context.Background())
++	go watchPaneOOMKills(ctx, hub, sessionName, engineOOMBoundaries(eng, location), timing)
++
+ 	// A worktree reaches the daemon's discovery loop only after "lym reed up" already booted it,
+ 	// and that boot already validated cfg.Watchdog loudly (ensureServerAndSessionLocked), so the
+ 	// only value this needs to recognize here is the "off" spelling itself — every other value,
+ 	// valid or not, behaves as enabled, failing safe toward watching for a value it cannot parse.
+ 	if strings.EqualFold(strings.TrimSpace(cfg.Watchdog), "off") {
+-		return watchedSession{eng: eng}, nil
++		return watchedSession{eng: eng, cancel: cancel}, nil
+ 	}
+ 
+-	ctx, cancel := context.WithCancel(context.Background())
+ 	go func() {
+ 		if err := eng.WatchNames(ctx, shuttleengines.SessionNamers(dirs)); err != nil {
+ 			logger.Debug("reed: watchdog's name repair loop returned", "session", sessionName, "err", err)
+ 		}
+ 	}()
+-	return watchedSession{eng: eng, cancel: cancel}, nil
++	return watchedSession{eng: eng, cancel: cancel, repairsNames: true}, nil
+ }
+ 
+ // dispatchReap starts the one off-loop goroutine that reaps sessionName, registering it with wg and
+@@ -436,6 +438,12 @@ func dispatchReap(wg *sync.WaitGroup, done chan<- string, hub, tmuxPath, shellPa
+ //     That exclusion is load-bearing: a session under reap that tmux still lists would otherwise read as appeared,
+ //     and the daemon would start watching a session it is killing.
+ //
++// Entering a session also starts its OOM watch.
++// The watch posts a notice to the worktree's parent orch for each new OOM kill in a strand pane.
++// The `watchdog: off` value does not stop the watch, which only reads.
++// The watch runs in its own goroutine, never in a cycle.
++// Reading the strands waits on the worktree's reed operation lock, so one long operation must not stall discovery.
++//
+ // A cycle whose listing is affirmative resets the idle count, even when every session in it was reaped:
+ // the hub socket did answer with sessions.
+ // A hub that goes quiet later is seen by the following cycles through the normal idle path.
+@@ -465,9 +473,7 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 	var wg sync.WaitGroup
+ 	defer func() {
+ 		for name, ws := range known {
+-			if ws.cancel != nil {
+-				ws.cancel()
+-			}
++			ws.cancel()
+ 			logger.Debug("reed: watchdog stopped watching session on daemon exit", "hub", hub, "session", name)
+ 		}
+ 		// The daemon never returns mid-reap and never force-kills its own reaper:
+@@ -581,9 +587,7 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 		for _, name := range reap {
+ 			// Cancelling the entry first stops a goroutine from polling a session the daemon is killing.
+ 			if ws, ok := known[name]; ok {
+-				if ws.cancel != nil {
+-					ws.cancel()
+-				}
++				ws.cancel()
+ 				delete(known, name)
+ 			}
+ 			inFlight[name] = true
+@@ -593,7 +597,7 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 
+ 		appeared, departed := planSessionDiff(remaining, known)
+ 		for _, name := range appeared {
+-			ws, err := enterSession(hub, tmuxPath, name)
++			ws, err := enterSession(hub, tmuxPath, name, timing)
+ 			if err != nil {
+ 				// A name that does not resolve to a worktree is skipped.
+ 				// It is retried only when it next re-appears in the live set, since an immediate retry would fail the same way.
+@@ -608,9 +612,7 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 			if !ok {
+ 				continue
+ 			}
+-			if ws.cancel != nil {
+-				ws.cancel()
+-			}
++			ws.cancel()
+ 			delete(known, name)
+ 			logger.Debug("reed: watchdog session departed", "hub", hub, "session", name)
+ 		}
+diff --git a/internal/reedcli/watchdog_integration_test.go b/internal/reedcli/watchdog_integration_test.go
+index d191cb870..ae2efb7e4 100644
+--- a/internal/reedcli/watchdog_integration_test.go
++++ b/internal/reedcli/watchdog_integration_test.go
+@@ -452,7 +452,7 @@ func TestWatchdogDaemon(t *testing.T) {
+ 	// The one daemon that keeps running, never restarted and with loopDone still open, rediscovers the re-upped session.
+ 	// enterSession is the function the daemon's discovery loop calls for each appeared name.
+ 	// It must read the flipped value from disk, not the value it held before the down/up.
+-	// So a watchdog:off worktree enters the known set but starts no watcher.
++	// So a watchdog:off worktree enters the known set but starts no name-repair loop.
+ 	t.Run("ReEntryReReadsFlippedConfig", func(t *testing.T) {
+ 		if _, err := eng1.Up(); err != nil {
+ 			t.Fatalf("eng1.Up() (prime back before the flip): %v", err)
+@@ -508,13 +508,13 @@ func TestWatchdogDaemon(t *testing.T) {
+ 
+ 		// enterSession is the function the running daemon's discovery loop calls for each newly appeared name.
+ 		// Called here with the same hub, tmux and session identity, it shows what the daemon reads on its next discovery cycle.
+-		ws, err := enterSession(h.Path, tmuxPath, offEng.SessionName())
++		ws, err := enterSession(h.Path, tmuxPath, offEng.SessionName(), watchdogDefaultTiming())
+ 		if err != nil {
+ 			t.Fatalf("enterSession (after down + flip-to-off + up): %v", err)
+ 		}
+-		if ws.cancel != nil {
+-			ws.cancel()
+-			t.Error("enterSession() after down + flip-to-off + up returned a non-nil cancel; want nil — re-entry must re-read the flipped config rather than the value it held before the down/up")
++		t.Cleanup(ws.cancel)
++		if ws.repairsNames {
++			t.Error("enterSession() after down + flip-to-off + up started the name-repair loop; want none — re-entry must re-read the flipped config rather than the value it held before the down/up")
+ 		}
+ 		if ws.eng == nil {
+ 			t.Error("enterSession() after re-entry returned a nil eng; want a built Engine so departure bookkeeping stays uniform")
+diff --git a/internal/reedengine/config.go b/internal/reedengine/config.go
+index c6be48f72..64406768c 100644
+--- a/internal/reedengine/config.go
++++ b/internal/reedengine/config.go
+@@ -36,6 +36,9 @@ type Config struct {
+ 	// WindowSplit is the direction a shared window splits in: "width" or "height".
+ 	WindowSplit string `yaml:"window_split"`
+ 
++	// PaneMemoryMaxMiB is the memory cap, in MiB, of the scope each strand pane runs in.
++	PaneMemoryMaxMiB int `yaml:"pane_memory_max_mib"`
++
+ 	TmuxConf string `yaml:"tmux_conf"`
+ 
+ 	// SegmentColors maps a loom segment key to a palette color name.
+@@ -58,19 +61,20 @@ func ConfigSpec() configengine.Spec {
+ 		Name:     "reed",
+ 		Template: []byte(ConfigTemplate()),
+ 		Categories: map[string]configengine.Category{
+-			"tmux":             configengine.CategoryExecutable,
+-			"shell":            configengine.CategoryExecutable,
+-			"width":            configengine.CategoryNone,
+-			"height":           configengine.CategoryNone,
+-			"debug_log":        configengine.CategoryCrossPair,
+-			"mouse":            configengine.CategoryCrossPair,
+-			"watchdog":         configengine.CategoryNone,
+-			"operator_quiet_s": configengine.CategoryNone,
+-			"window_share_max": configengine.CategoryNone,
+-			"window_split":     configengine.CategoryNone,
+-			"tmux_conf":        configengine.CategorySourcedFile,
+-			"segment_colors":   configengine.CategoryNone,
+-			"buttons":          configengine.CategoryExecutable,
++			"tmux":                configengine.CategoryExecutable,
++			"shell":               configengine.CategoryExecutable,
++			"width":               configengine.CategoryNone,
++			"height":              configengine.CategoryNone,
++			"debug_log":           configengine.CategoryCrossPair,
++			"mouse":               configengine.CategoryCrossPair,
++			"watchdog":            configengine.CategoryNone,
++			"operator_quiet_s":    configengine.CategoryNone,
++			"window_share_max":    configengine.CategoryNone,
++			"window_split":        configengine.CategoryNone,
++			"pane_memory_max_mib": configengine.CategoryNone,
++			"tmux_conf":           configengine.CategorySourcedFile,
++			"segment_colors":      configengine.CategoryNone,
++			"buttons":             configengine.CategoryExecutable,
+ 		},
+ 		OpenMaps: ConfigOpenMaps(),
+ 		RetiredKeys: map[string]configengine.Category{
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 1267b5835..4d61c1917 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -37,7 +37,7 @@ func seedLymConfig(t *testing.T, tmpDir, module, content string) {
+ 	}
+ }
+ 
+-//testtiming:keep pins every shipped template default through a seeded reed.yaml: tmux and shell per GOOS, width, height, debug_log off, mouse on, window_share_max 2 and window_split width; its covering tests run this code without asserting it
++//testtiming:keep pins every shipped template default through a seeded reed.yaml: tmux and shell per GOOS, width, height, debug_log off, mouse on, window_share_max 2, window_split width and pane_memory_max_mib 8192; its covering tests run this code without asserting it
+ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tmpDir := t.TempDir()
+@@ -73,6 +73,9 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 	if cfg.WindowSplit != "width" {
+ 		t.Errorf("WindowSplit = %q, want %q", cfg.WindowSplit, "width")
+ 	}
++	if cfg.PaneMemoryMaxMiB != 8192 {
++		t.Errorf("PaneMemoryMaxMiB = %d, want 8192", cfg.PaneMemoryMaxMiB)
++	}
+ 	if cfg.DebugLog != "0" {
+ 		t.Errorf("DebugLog = %q, want %q", cfg.DebugLog, "0")
+ 	}
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 06ba3c7db..b5fde15ba 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -49,6 +49,15 @@
+ // Every key binding that runs `lym` names the pinning binary's absolute path from selfexec.ResolveLymBinary.
+ // So no prelude, binding, button or Slack line names a running test binary.
+ //
++// Every strand pane runs in a memory-capped scope of the systemd user manager.
++// So a runaway process it starts is killed inside that scope before the host runs out of memory.
++// The same chokepoint moves the fresh pane's shell into a scope named `lym-pane-<pid>.scope`.
++// It does so before it types anything, through `proc.CapProcessMemory`.
++// The scope is capped at `pane_memory_max_mib` with no swap.
++// A kill at the cap ends the process the kernel picks, and the pane lives on.
++// A pane the cap cannot reach launches uncapped with a Warn naming the cause.
++// Such a pane runs on a host whose user manager holds no memory controller, or on Windows.
++//
+ // A strand's full name is formed once, in AddStrand under the state lock, from the told prefix and the role.
+ // The name is a birth attribute and the only lookup key; a lookup matches the full name or its role segment.
+ // A role already held is numbered `-N`, and an explicit name that is held refuses.
+diff --git a/internal/reedengine/panememory.go b/internal/reedengine/panememory.go
+new file mode 100644
+index 000000000..80943630c
+--- /dev/null
++++ b/internal/reedengine/panememory.go
+@@ -0,0 +1,53 @@
++// panememory.go moves a fresh strand pane into a memory-capped scope of the systemd user manager.
++
++package reedengine
++
++import (
++	"fmt"
++	"strconv"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/proc"
++)
++
++// defaultPaneMemoryMaxMiB is the pane memory cap, in MiB, a Config without a positive pane_memory_max_mib takes.
++const defaultPaneMemoryMaxMiB = 8192
++
++// PaneScopeUnitPrefix starts the name of the scope a strand pane runs in; the pane's shell pid and ".scope" end it.
++const PaneScopeUnitPrefix = "lym-pane-"
++
++// paneMemoryMax returns cfg's pane memory cap in bytes, floored to the default for a zero or negative value.
++func paneMemoryMax(cfg Config) int64 {
++	mib := cfg.PaneMemoryMaxMiB
++	if mib <= 0 {
++		mib = defaultPaneMemoryMaxMiB
++	}
++	return int64(mib) << 20
++}
++
++// capPaneMemoryLocked moves the shell of paneID, the fresh pane of s, into a scope capped at the configured bytes.
++// A runaway process the pane starts is then killed inside the scope, before the host runs out of memory,
++// and the pane and its other processes live on.
++// A pane the cap cannot reach still launches: the cause is logged at Warn and the launch goes on uncapped.
++func (e *Engine) capPaneMemoryLocked(paneID string, s *Strand) {
++	out, err := e.tmux.output("display-message", "-p", "-t", paneID, "#{pane_pid}")
++	if err != nil {
++		logger.Warn("reed: the pane runs with no memory cap, since its shell's pid could not be read", "strand", s.GUID, "pane", paneID, "err", err)
++		return
++	}
++	pid, err := strconv.Atoi(strings.TrimSpace(out))
++	if err != nil || pid <= 0 {
++		logger.Warn("reed: the pane runs with no memory cap, since tmux named no shell pid for it", "strand", s.GUID, "pane", paneID, "answer", strings.TrimSpace(out))
++		return
++	}
++	limit := paneMemoryMax(e.cfg)
++	unit := fmt.Sprintf("%s%d.scope", PaneScopeUnitPrefix, pid)
++	logger.Info("reed: moving the pane's shell into a memory-capped scope through busctl", "strand", s.GUID, "pane", paneID, "pid", pid, "scope", unit, "bytes", limit)
++	cgroup, err := proc.CapProcessMemory(pid, unit, limit)
++	if err != nil {
++		logger.Warn("reed: the pane runs with no memory cap", "strand", s.GUID, "name", s.Name, "pane", paneID, "pid", pid, "cause", err)
++		return
++	}
++	logger.Info("reed: the pane runs in a memory-capped scope", "strand", s.GUID, "pane", paneID, "cgroup", cgroup, "bytes", limit)
++}
+diff --git a/internal/reedengine/panememory_integration_test.go b/internal/reedengine/panememory_integration_test.go
+new file mode 100644
+index 000000000..900eb116b
+--- /dev/null
++++ b/internal/reedengine/panememory_integration_test.go
+@@ -0,0 +1,60 @@
++// panememory_integration_test.go proves against a real tmux that a strand pane runs in a scope held to the memory cap.
++
++package reedengine
++
++import (
++	"os"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine/render"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestAddStrand_ThePaneRunsInAScopeHeldToTheTemplatesMemoryCap(t *testing.T) {
++	tiergate.Require(t, 2)
++	t.Parallel()
++	if !proc.MemoryCapCoversTree() {
++		t.Skip("this host has no systemd user manager that caps a scope's memory")
++	}
++	e := newColdScratchEngine(t)
++
++	s, err := e.AddStrand(AddSpec{NameOverride: "capped", Provider: "claude", Display: render.Display{Anchor: render.AnchorOwnWindow}})
++	if err != nil {
++		t.Fatalf("AddStrand = %v, want nil", err)
++	}
++	status, err := e.Status()
++	if err != nil {
++		t.Fatalf("Status = %v, want nil", err)
++	}
++	pid := 0
++	for _, st := range status.Strands {
++		if st.GUID == s.GUID {
++			pid = st.PanePID
++		}
++	}
++	if pid <= 0 {
++		t.Fatalf("Status lists no live pane pid for the added strand: %+v", status.Strands)
++	}
++	listing, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/cgroup")
++	if err != nil {
++		t.Fatal(err)
++	}
++	cgroup, found := "", false
++	for _, line := range strings.Split(string(listing), "\n") {
++		if cgroup, found = strings.CutPrefix(line, "0::"); found {
++			break
++		}
++	}
++	if !found {
++		t.Fatalf("the pane shell's cgroup listing %q holds no cgroup v2 line", listing)
++	}
++	held, err := os.ReadFile(filepath.Join("/sys/fs/cgroup", cgroup, "memory.max"))
++	want := strconv.Itoa(8192 << 20)
++	if got := strings.TrimSpace(string(held)); err != nil || got != want {
++		t.Errorf("memory.max of the pane's cgroup %s = %q, %v; want %s", cgroup, got, err, want)
++	}
++}
+diff --git a/internal/reedengine/panememory_test.go b/internal/reedengine/panememory_test.go
+new file mode 100644
+index 000000000..a4de41760
+--- /dev/null
++++ b/internal/reedengine/panememory_test.go
+@@ -0,0 +1,74 @@
++// panememory_test.go pins the pane memory cap's size and that a pane the cap cannot reach still launches with a warning.
++
++package reedengine
++
++import (
++	"errors"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestPaneMemoryMax(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		mib  int
++		want int64
++	}{
++		{"AHubsOwnValue", 1024, 1073741824},
++		{"ZeroTakesTheDefault", 0, 8589934592},
++		{"NegativeTakesTheDefault", -1, 8589934592},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := paneMemoryMax(Config{PaneMemoryMaxMiB: tt.mib}); got != tt.want {
++				t.Errorf("paneMemoryMax(pane_memory_max_mib %d) = %d; want %d", tt.mib, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning pins the degraded path.
++// It captures the process-global logger, so it does not run in parallel.
++func TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning(t *testing.T) {
++	tiergate.Require(t, 0)
++	tests := []struct {
++		name    string
++		answer  string
++		err     error
++		wantLog string
++	}{
++		{"TheShellPidCannotBeRead", "", errors.New("no such pane"), "its shell's pid could not be read"},
++		{"TheShellPidIsNotANumber", "not-a-pid\n", nil, "named no shell pid"},
++		{"TheShellPidIsZero", "0\n", nil, "named no shell pid"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			e := newTestEngine(t)
++			fake := launchFake(t, e, nil)
++			fake.answerFormat("#{pane_pid}", tt.answer, tt.err)
++			buf := logcapture.CaptureVerbose(t)
++
++			st := &ReedState{SelvagePaneID: "%selvage", Strands: []Strand{{GUID: "guid-c"}}}
++			if err := e.launchStrandLocked(st, &st.Strands[0], "claude"); err != nil {
++				t.Fatalf("launchStrandLocked: %v", err)
++			}
++			log := buf.String()
++			if !strings.Contains(log, "the pane runs with no memory cap") || !strings.Contains(log, tt.wantLog) {
++				t.Errorf("log %q; want the no-cap warning naming %q", log, tt.wantLog)
++			}
++			if tt.err != nil && !strings.Contains(log, tt.err.Error()) {
++				t.Errorf("log %q; want it to name the cause %q", log, tt.err)
++			}
++			sends := fake.ArgvFor("send-keys")
++			if len(sends) == 0 || sends[len(sends)-1][len(sends[len(sends)-1])-1] != "Enter" {
++				t.Errorf("send-keys calls %v; want the launch to still submit its command", sends)
++			}
++		})
++	}
++}
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index 0fff551f7..954006b39 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -97,6 +97,8 @@ func (e *Engine) launchStrandLocked(st *ReedState, s *Strand, launchCmd string)
+ 
+ 	s.PaneID = paneID
+ 	e.killReplacedOwnWindowPaneLocked(previousPaneID, paneID)
++	// The cap comes before anything is typed into the pane, so every process the launch starts runs under it.
++	e.capPaneMemoryLocked(paneID, s)
+ 	// Both title commands only mirror the display: allow-set-title off stops the agent inside from overwriting the name.
+ 	// No lookup or delivery resolves through a title, so a failure of either costs display only and never fails the launch.
+ 	// A tmux that predates allow-set-title skips the option, and the version probe has already logged that fallback once.
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index 438fd6e37..37e0f7543 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -8,6 +8,7 @@ watchdog: ${env:LYM_REED_WATCHDOG:-on}  # per-worktree name repair gate (on/off;
+ operator_quiet_s: 5  # seconds since an attached client's last activity on a strand's pane within which lym types nothing into that pane; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
+ window_share_max: 2  # the largest group of strands, as their spawner declares it, that share one window; a larger group gives each strand a window of its own, and 0 gives every grouped strand its own; an integer of at least 0, and a negative value fails "lym reed up", "lym reed resume" and every add, naming the key; a group keeps the choice its first strand made, so an edit reaches only groups started after it; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
+ window_split: width  # how a shared window lays out its strands: width puts them side by side, height stacks them; any other value fails "lym reed up", "lym reed resume" and every add, naming the key, and a remove still removes and reports it; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
++pane_memory_max_mib: 8192  # the memory cap, in MiB with no swap, of the systemd user scope each agent pane runs in; the kernel kills a process that takes the pane past it, and the pane and the rest of its processes live on; a test lym gate test runs sits in a capped scope of its own, outside this one; 0 or less takes this default; a pane the cap cannot reach starts uncapped with a warning in the hub log naming the cause; an edit reaches panes launched after it; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
+ tmux_conf: ${env:LYM_REED_TMUX_CONF:-}  # a tmux config file reed sources into a hub server on the boot that starts that server, before reed's own option pins, so reed's values win; empty, the default, sources nothing and keeps the hermetic server; a leading ~/ expands to the home directory, and the value must be an absolute path to an existing regular file holding no whitespace and none of * ? [ \ ' " ; # { } $; a changed value takes effect at the hub server's next start; an already-materialized reed.yaml lacking this key takes the default until "lym config reconcile" writes it; set LYM_REED_TMUX_CONF in the shell profile instead of committing a personal path
+ segment_colors:  # tmux color per loom segment; each value must be a palette color (blue, purple, cyan, green, orange, yellow, pink, red), a value outside it fails "lym reed up" and is no color everywhere else
+   coordinator: blue
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index 986e380bd..e3806b614 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -8,6 +8,7 @@ watchdog: ${env:LYM_REED_WATCHDOG:-on}  # per-worktree name repair gate (on/off;
+ operator_quiet_s: 5  # seconds since an attached client's last activity on a strand's pane within which lym types nothing into that pane; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
+ window_share_max: 2  # the largest group of strands, as their spawner declares it, that share one window; a larger group gives each strand a window of its own, and 0 gives every grouped strand its own; an integer of at least 0, and a negative value fails "lym reed up", "lym reed resume" and every add, naming the key; a group keeps the choice its first strand made, so an edit reaches only groups started after it; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
+ window_split: width  # how a shared window lays out its strands: width puts them side by side, height stacks them; any other value fails "lym reed up", "lym reed resume" and every add, naming the key, and a remove still removes and reports it; an already-materialized reed.yaml lacking this key takes this default until "lym config reconcile" writes it
++pane_memory_max_mib: 8192  # parsed but not applied on Windows, which has no systemd user scope to cap a pane in; each launch logs a warning that the pane runs uncapped
+ tmux_conf: ${env:LYM_REED_TMUX_CONF:-}  # parsed but neither validated nor sourced on Windows, since psmux reads its own config at start
+ segment_colors:  # tmux color per loom segment; each value must be a palette color (blue, purple, cyan, green, orange, yellow, pink, red), a value outside it fails "lym reed up" and is no color everywhere else
+   coordinator: blue
