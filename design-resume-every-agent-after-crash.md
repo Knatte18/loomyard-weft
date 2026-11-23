@@ -1,6 +1,6 @@
 # A run agent killed by a crash or reboot resumes its own session instead of starting fresh
 
-`resume-every-agent-after-crash` · Task · enhancement, shuttle, shed · starting · Open-Window
+`resume-every-agent-after-crash` · Task · enhancement, shuttle, shed · starting · Seed-IDE
 
 ## Seen
 
