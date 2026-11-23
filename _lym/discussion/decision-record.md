@@ -18,4 +18,11 @@ Seen in hub mo, run hydraulics-gaps, at PR-Review with pr_review_ask_parent on. 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - merge-danger-omits-undelivered-ask-state (class consistency, severity MEDIUM, open in rounds 1)
+  - parent-review-ask-strand-claim-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
