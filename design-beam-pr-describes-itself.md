@@ -1,6 +1,6 @@
 # A beam pull request description is rewritten after each member landing
 
-`beam-pr-describes-itself` · Task · enhancement, dobby, landing · running · Drift-Baseline
+`beam-pr-describes-itself` · Task · enhancement, dobby, landing · running · Drift-Await
 
 Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
 
