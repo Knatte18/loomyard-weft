@@ -1,6 +1,6 @@
 # Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it
 
-`failed-ask-hides-satisfied` · Task · bug, landing, loom · starting · Worktree-Create
+`failed-ask-hides-satisfied` · Task · bug, landing, loom · starting · Seed-Child
 
 Depends on: [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md)
 
