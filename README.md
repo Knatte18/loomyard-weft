@@ -42,7 +42,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **PR-Review re-ask is never delivered: pr-reviewer strand may not sign as the program LOOM** | [`pr-review-reask-not-delivered`](design-pr-review-reask-not-delivered.md) | darn · light | Darn-Write | neve | 7m<br>7m | creel, loom |
 | T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light | landing · Finalize | neve | 2h<br>2h | shuttle |
-| T4 | **Driver on older lym build hard-fails a run when the board's stencil is newer** | [`old-driver-fails-newer-stencil`](design-old-driver-fails-newer-stencil.md) | darn · light | Darn-Write | neve | 7m<br>6m | stencil, loom |
+| T4 | **Driver on older lym build hard-fails a run when the board's stencil is newer** | [`old-driver-fails-newer-stencil`](design-old-driver-fails-newer-stencil.md) | darn · light | Darn-Write | neve | 7m<br>7m | stencil, loom |
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Code-Bouncer | neve | 3h<br>3h | reed, claude |
 | T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light | landing · Finalize | neve | 3h<br>3h | loom |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 15h<br>3h | fabric |
@@ -81,16 +81,10 @@ Owner `neve`
 | B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 3h<br>3h | loom |
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 3h<br>3h | loom |
 | B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 2h<br>2h | git, batten, landing |
-| B7 |  | **Every darn escalates to the parent when round 1 fixed a BLOCKING finding** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | 1h<br>1h | loom |
+| B7 |  | **Every darn escalates to the parent when round 1 fixed a BLOCKING finding** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | 2h<br>2h | loom |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>19h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | 2h<br>2h | board |
