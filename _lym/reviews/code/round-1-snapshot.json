@@ -11,5 +11,6 @@
       "title": "No test seam: the bug was fixed on the base by 6fa7f1740",
       "digest": "b933afd4252eb33f998d020273b31d40b990c10a5d1ab8f50d5113b4b8c08354"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
