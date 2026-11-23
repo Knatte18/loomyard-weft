@@ -227,7 +227,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "slack-click-silent-fail",
         "red-first-csharp",
         "async-run-pusher",
         "pr-review-dead-session-unseen",
@@ -337,53 +336,6 @@
       "created": "2026-11-23T14:26:03Z",
       "revised": "2026-11-23T14:26:12Z",
       "profile": "light"
-    },
-    {
-      "id": 1618,
-      "handle": "T2",
-      "slug": "slack-click-silent-fail",
-      "title": "Reed's Slack button click leaves forwarding off with no trace",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "reed",
-        "slack"
-      ],
-      "issues": [
-        212
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #212](https://github.com/Knatte18/loomyard/issues/212).\n\nOn the prime's reed session, clicking the slack toggle in the status bar left `lym slack status` at forwarding [] and relay_live false, and showed nothing on the bar. No trace log of a `slack toggle` run was written. Running the same command by hand from the prime anchor, `lym slack toggle slack --socket \u003creed socket\u003e --tmux /usr/bin/tmux --client /dev/pts/15`, turned forwarding on for mo:orch, started the relay and made the channel at once. The session's @lym_button_dir and @lym_orch_dir both name the prime anchor. The toggle command in @lym_slack_toggle_command sends stdout and stderr to /dev/null, so a failure before the bar redraw leaves no sign. Expected: a click flips the button, or the bar or a log shows why it did not.\n\n## Issue comment, 2026-11-23\n\nLikely related: bc5799ced (2026-11-17) moved the Slack toggle to the orch's session only, read through the new `@lym_orch_dir`, and its description lists a real tmux Slack click as not run by hand. The relay's last healthy time before this was 2026-11-12, so no click had been made on the new toggle until now. In a task session the bar draws the away toggle alone, and away does nothing while the relay is down.",
-      "status": "done",
-      "created": "2026-11-23T14:26:07Z",
-      "revised": "2026-11-23T14:26:12Z",
-      "profile": "light"
-    },
-    {
-      "id": 1619,
-      "handle": "T5",
-      "slug": "landlock-area-study",
-      "title": "Study: a lym-started Landlock area instead of bwrap",
-      "kind": "task",
-      "labels": [
-        "research",
-        "shuttle",
-        "reed",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Aim\n\nFind whether lym can close the two exposures in note `sandbox-closed-area-build` without `bwrap`, root or AppArmor, by applying Landlock to its own process before it starts reed's tmux server and the agents, so every child inherits the restriction.\nThe two exposures: an agent reaching `/run/user/\u003cuid\u003e/bus` (and so `systemd-run --user`), and an agent typing into other hubs' tmux panes through the sockets in `/tmp/tmux-\u003cuid\u003e`.\n\n## Questions\n\n- Which Landlock ABI each machine's running kernel supports: Neve (this machine) measured; OSL-1046 from its kernel version as recorded in the repo or docs, marked unmeasured.\n- Whether that ABI can deny connecting to a pathname unix socket (the D-Bus socket, other hubs' tmux sockets) while allowing the hub's own tmux and creel sockets, and what the filesystem rules must allow for git, Go, Claude Code and lym to work.\n- Where in lym the restriction is applied (which process, before which spawn), and what breaks: `lym reed attach` from outside, landing deploy, `lym reed window`, `lym ide`, hibernate.\n- What Claude Code PreToolUse hooks add as a second line, and what they cannot stop (a script or test binary run by the agent).\n\n## Bounds\n\nOne small Go probe program that applies a Landlock ruleset and tries the socket connects and file writes, run on Neve only, at most three runs.\nNo change to lym's code.\nThe report goes to `docs/research/platform/landlock-area-2026-11-23.md`, ending with a recommendation and the tasks it would take.\n",
-      "status": "done",
-      "created": "2026-11-23T18:27:06Z",
-      "revised": "2026-11-23T18:27:06Z",
-      "profile": "speed"
     }
   ],
   "prime_owner": "neve",
