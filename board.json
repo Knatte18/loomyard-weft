@@ -502,6 +502,27 @@
       "body": "Imported from [issue #204](https://github.com/Knatte18/loomyard/issues/204).\n\nSeen in hub mo, run hydraulics-gaps, PR NORCE-DrillingAndWells/Models#326. The 'Regression check' block that lym appends after the change description reads 'Baseline: captured at \u003csha\u003e, the task's branch point.' This is internal process wording in repository-facing text, and the run's PR-Review agent cannot edit it. Expected: neutral wording such as 'the base of this branch'.",
       "created": "2026-11-23T12:46:14Z",
       "revised": "2026-11-23T12:46:14Z"
+    },
+    {
+      "id": 1611,
+      "handle": "B8",
+      "slug": "parent-review-stale-window",
+      "title": "Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "shuttle"
+      ],
+      "issues": [
+        206
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #206](https://github.com/Knatte18/loomyard/issues/206).\n\nSeen in hub mo, beam dop-support-3, run hydraulics-gaps, at PR-Review with pr_review_ask_parent on. The parent orch strand mo:dop-support-3:orch is live at pane %10 in window @8, but lym loom parent-review ask records each ask from the PR-Review session as no-parent, apparently looking for the orch in window @4. The asks the row itself sends at a new head are delivered: asks 3 and 7 were answered. lym loom parent-review answer then refuses a no-parent ask ('ask 9 is already no-parent; ... wait for the next [pr-review request]'), and lym loom pr-continue refuses with 'no satisfied answer from your parent stands at \u003chead\u003e'. Once the parent is satisfied at an unchanged head, the review therefore cannot end. Workaround: turn pr_review_ask_parent off for the run with lym config loom --layer local --set pr_review_ask_parent=false in the task worktree, then have the PR-Review agent run pr-continue. Expected: the ask resolves the orch's current pane, and a parent can answer, or record a satisfied verdict for, the head that a no-parent ask named. Related: #200.",
+      "created": "2026-11-23T12:46:18Z",
+      "revised": "2026-11-23T12:46:18Z"
     }
   ],
   "prime_owner": "neve",
