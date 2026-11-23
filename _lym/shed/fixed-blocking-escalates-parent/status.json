@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-23T13:44:18Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/landing/summary.md",
+      "at": "2026-11-23T14:10:53Z",
+      "started_at": "2026-11-23T13:45:18Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T13:55:26.226470474Z",
+          "end": "2026-11-23T13:55:26.24568689Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T13:55:26.338187043Z",
+          "end": "2026-11-23T14:09:19.362187537Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T14:09:19.443544169Z",
+          "end": "2026-11-23T14:09:34.996900971Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T14:09:35.074698689Z",
+          "end": "2026-11-23T14:09:35.405646369Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T14:09:35.450654625Z",
+          "end": "2026-11-23T14:09:35.450826887Z"
+        }
+      ]
     }
   ],
   "product": {
