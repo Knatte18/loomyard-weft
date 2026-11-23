@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Harden-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -421,6 +421,22 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/reviews/harden/round-4-bouncer-ledger.md",
       "at": "2026-11-23T08:21:05Z",
       "started_at": "2026-11-23T08:20:27Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/landing/summary.md",
+      "at": "2026-11-23T08:22:05Z",
+      "started_at": "2026-11-23T08:21:20Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T08:22:04.913834968Z",
+          "end": "2026-11-23T08:22:04.913901563Z"
+        }
+      ]
     }
   ],
   "product": {
