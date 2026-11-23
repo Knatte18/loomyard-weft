@@ -1,6 +1,6 @@
 # Verify-budget notice names no run
 
-`verify-budget-notice-no-slug` · Task · bug, loom
+`verify-budget-notice-no-slug` · Task · bug, loom · starting · Worktree-Create
 
 ## Seen
 
