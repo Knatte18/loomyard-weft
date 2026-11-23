@@ -21,6 +21,12 @@ Drive each case on a sandbox one-repository hub, live, after `harden-fabric-undr
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Sandbox hub on a local bare origin
+
+Decision: Drive the three cases on a one-repository hub cloned from a local bare origin under the task worktree's .scratch; no GitHub repository is touched. The task agent creates the bare origin; the parent runs lym fabric clone --single-repo into it; the agent drives the cases, files each fault as a board note and commits the report.
+
+Rationale: A local origin keeps the trial off GitHub; a task session may not run fabric clone.
+
 ## Constraints
 
 ## Auto-mode assumptions
