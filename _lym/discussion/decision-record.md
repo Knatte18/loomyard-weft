@@ -16,6 +16,12 @@ Provenance: task slug `halt-escalation-messages`; note file `Darn-Write.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: all findings fixed
+
+Decision: Accept the code review at round 1. The fixer fixed F1 to F5, the BLOCKING recordwrite-envelope-reason-way-forward included, each in its own commit with its gates passing.
+
+Rationale: Every finding has a committed fix; another round would only confirm them.
+
 ## Constraints
 
 ## Auto-mode assumptions
