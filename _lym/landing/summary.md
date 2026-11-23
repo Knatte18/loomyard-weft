@@ -1,28 +1,29 @@
-# Intake closes an issue the main branch already fixed
+# Board intake closes issues the main branch already fixed
 
-Board intake now checks whether an issue's fault is already fixed before it puts the issue on the board.
-Imported bugs whose fault was fixed on the base took run slots in a full queue and found nothing to do.
+Three imported bugs recently ran as full tasks and each found its fault already fixed on the base.
+Each took a run slot for nothing.
+Board intake now checks for that before it puts a bug on the board.
 
-## What changes
-
-- `contracts/orchrole/role-intake.md` gives the intake fork a fourth outcome beside a new note, a fold and a close as noise: a close as already fixed.
-  The fork judges it from the main branch's code and history, read with git and never checked out or changed.
-  It looks at the code path the issue names and the commits that touch that path since the issue was filed or since the build it reports.
-  It closes the issue with `"completed":true`, its reason naming the fixing commit on the main branch and what the fork saw on the path.
-  When the fork cannot tell, or cannot name the fixing commit, the issue goes on the board as before.
-- `lym board intake close` keeps its payload.
-  Its help and the `ly:board` skill now show the already-fixed form, a reason naming the commit with `"completed":true`.
+The intake fork's rules in `contracts/orchrole/role-intake.md` gain a fourth outcome beside new note, fold and close as noise: close as already fixed.
+The fork judges it from the code on the hub's main branch and its history, read with git and never checked out or changed.
+It looks at the code path the issue names, and at the commits touching that path since the issue was filed or since the build it reports.
+It closes the issue as completed, its reason naming the fixing commit on the main branch and what the fork saw on the path.
+When the fork cannot tell, or cannot name the fixing commit, the issue becomes a note or a fold as before.
 
 ## Design decisions
 
-- **No new `close` field for the fixing commit.**
-  The free-text `reason` already carries the commit to the issue's closing comment, and `completed` already closes it as completed.
-  A structured field would need the CLI to resolve the commit against the main branch, a git read that only fabric may do,
-  for a value only a human reads on GitHub.
-- **No fixing commit, no close.**
-  A fault the fork believes gone but cannot tie to a commit goes on the board, so a darn run settles it as before.
+- `lym board intake close` needs no new field.
+  It already takes `"completed":true`, and the reason is free text, so the fixing commit goes in the reason.
+  Only the command's help text and examples in `internal/boardcli/intake.go` change, and the `ly:board` skill documents the same form.
+- A commit that cannot be named is not enough to close.
+  This keeps the outcome conservative: a doubtful issue still reaches the board.
+
+## To check by hand
+
+- Nothing was run against a live hub: the new outcome is a rule for the intake fork, not code.
+  Run intake once on an issue whose fix is on main and confirm the fork closes it as completed with the commit named.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** intake
+**Blast radius:** board
