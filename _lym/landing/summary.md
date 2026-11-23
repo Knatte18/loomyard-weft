@@ -1,42 +1,45 @@
-# Halt the PR-Review wait when its session ends while the review is open
+# Halt the PR-Review wait when its session ends during an open review
 
-The PR-Review row's wait judged only the pull request's status, the pull request record and the task worktree.
-It never checked whether the session it reviews in was still running.
-When that session's strand was removed, the row went on waiting with status running and no agent to commit fixes or end the review.
-Nothing ended it until someone killed the `lym loom step` process by hand.
+Closes #210
 
-Now each wake that leaves the review open reads whether the session the call keeps is live.
-When it is not, the row halts with a reason that names the way forward: `lym loom resume`, which re-enters the row and resumes the recorded session by its session id.
-A halt reaches the parent as any judged stop does, so an autonomous run's parent can act on it.
+The PR-Review row's wait never noticed that its agent session had ended.
+After `lym reed remove` ended the session, `lym loom step` stayed at `running` and spawned no new session, until the process was killed by hand.
+Nothing else ends an open review without the agent, which commits fixes and records the operator's ending.
+
+`PRReview.wait` in `internal/landingshed/prreview.go` now takes a `keepsSession` flag.
+It is set when the call started or reused the review's session.
+It is not set when the review had already ended at entry, or when the entry read found a merged pull request, which gets no session.
+At each wake that reads the status and leaves the review open, `haltOnEndedSession` asks `SessionLive` for the recorded strand.
+When the session is gone, the row halts with a stop that names the way forward: `lym loom resume`, which resumes the recorded session.
 
 ## Design decisions
 
-- **Halt, not re-spawn.**
-  The board entry allowed either.
-  A strand removed by `lym reed remove` or ended by the operator is often deliberate, and re-spawning it at every wake could loop on a session that dies at start.
-  A halt hands the call to the parent, and the resume path already resumes the recorded session.
-  The Sampler-Session row handles a session that ends mid-build the same way.
-- **Only a session the call keeps is watched.**
-  `wait` takes a `keepsSession` flag.
-  It is set when the call started or reused the session, and unset for a wait entered on a review already ended or a pull request merged at entry.
-  In those cases the record can still name an old dead strand, and halting on it would be wrong.
-  A record whose review has ended is never watched either.
-- **Where the check runs.**
-  It runs on a wake that read no status and on a wake whose judgement left the review open.
-  A wake that stopped and resumed the session around its read skips the check, since the resume just made the session live.
-  A merge, approval or continue flag that the status read sees still ends the review before the check runs.
-  So an agent that runs `lym loom pr-continue` and then exits still ends the review cleanly.
+- The liveness check runs only after the wake has judged the status read.
+  A review that ended, merged or continued in that same wake ends normally, and is never halted for a session that was allowed to end.
+- Halting, not re-spawning, is the chosen answer to the issue's "re-spawn or halt".
+  The halt is a stop the parent can act on, and the resume path already resumes the recorded session.
+- A failed `SessionLive` read does not end the call.
+  It logs one Warn per episode of failures and lets the wait go on; a later successful read clears the episode.
+- `doc.go` and the `PRReview` doc comment state the new halt.
 
 ## Tests
 
-`TestPRReview_Wait` gains two rows in `internal/landingshed/prreview_wait_test.go`:
+`TestPRReview_Wait` gains three rows:
+a session that ends while the review is open halts naming the resume;
+a failed liveness read keeps waiting and logs once;
+a wait entered on an already ended review keeps waiting through a transient poll failure and never checks liveness.
 
-- `ASessionThatEndsWhileTheReviewIsOpenHaltsNamingTheResume`: the session dies after the first wake.
-  The next wake halts naming `lym loom resume`, with one start and no stop.
-  On the merge base this row waits until the test cancels it, and fails.
-- `AReviewEndedAtEntryKeepsNoSessionSoItsDeadStrandDoesNotHaltTheWait`: a review ended at entry, whose record names a dead strand, keeps waiting through a transient poll failure.
+## To check by hand
+
+- The wake's liveness check in `internal/landingshed/prreview.go` runs after the status read.
+  A wake that reads no status skips it, so confirm that a session that ends during a long stretch without a status read is still caught at the next read.
+- The failed-liveness-read handling in `haltOnEndedSession` logs and continues instead of ending the call.
+  Confirm that this matches the intended policy for a reed that stays down.
+- The halt after judging is pinned by the new `TestPRReview_Wait` row.
+  Confirm that the row exercises the order of judging before the liveness check.
+- The full landing-shed suite was not run by hand here, and no regression check ran for this task.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** landing
+**Blast radius:** landingshed
