@@ -12,7 +12,8 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 - The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, has landed as `2722a66ef`, so both campaigns are judged.
 - The second campaign ran with the model rotation the template then set (opus, fable, sonnet).
   Hardener rounds now default to `sonnet[high]` alone, and a rotation is set per run through `hardener.reviewer` and `hardener.fixer` (`a66d41345`), so judge the rotation's cost and effect against that change.
-- The five faults the second campaign found but could not raise are the task `harden-fabric-undriven-cases`.
+- The five faults the second campaign found but could not raise were the task `harden-fabric-undriven-cases`, which has landed as `540e8c9b5`.
+  Judge that fix as the campaign's follow-through.
 - Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-<n>-focus.md`, `round-<n>-review.md`, `round-<n>-acceptance.md`, `round-<n>-usage.yaml` and the snapshots, beside its decision record and the landed commits.
 
 ## Questions
@@ -26,7 +27,7 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 - **Seen in the second campaign**: round 2's reviewer recorded smaller faults (O1 to O6) only as prose, since an incremental round admits only BLOCKING findings on changed hunks.
   Round 3's reviewer (sonnet, medium, 4 min) approved with half its focus undriven: the killed discard, the keep-local tag push, a failed step with no kill, and `adopt --archives` over real owner tags.
   A settled harden segment cannot be reopened (`lym loom goto` refuses), so the orch had no way to order another round. Judge each of these, and whether the remaining focus should block approval.
-  Round 4 again raised what it found outside the incremental scope only as prose; those are the O1 to O5 of `harden-fabric-undriven-cases`.
+  Round 4 again raised what it found outside the incremental scope only as prose; those are the O1 to O5 that `harden-fabric-undriven-cases` fixed.
   A suspected cause is the stencils, not the model: `contracts/stencils/harden/harden-rubric-review.md` asks for OK, WARN or FAIL on every focus entry,
   while `contracts/stencils/burler/burler-review-format.md` lets an incremental round raise only BLOCKING findings on changed hunks, so such a round can only approve. Judge that conflict.
   Since `8cf7f4775`, a later hardener round cannot approve with its focus undriven:
