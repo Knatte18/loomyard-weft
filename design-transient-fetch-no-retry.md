@@ -1,6 +1,6 @@
 # Runs stop and escalate on a transient GitHub fetch failure instead of retrying
 
-`transient-fetch-no-retry` · Task · bug, git, batten, landing · running · Record-Write
+`transient-fetch-no-retry` · Task · bug, git, batten, landing · running · Drift-Baseline
 
 Imported from [issue #193](https://github.com/Knatte18/loomyard/issues/193).
 
