@@ -1,6 +1,6 @@
 # Decision record written with a CLI error envelope as its Goal
 
-`record-goal-holds-error` · Task · bug, loom, darn · running · Record-Write
+`record-goal-holds-error` · Task · bug, loom, darn · running · Drift-Baseline
 
 Imported from [issue #181](https://github.com/Knatte18/loomyard/issues/181).
 
