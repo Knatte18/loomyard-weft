@@ -1,6 +1,6 @@
 # Study: a lym-started Landlock area instead of bwrap
 
-`landlock-area-study` · Task · research, shuttle, reed, claude · landing · Finalize
+`landlock-area-study` · Task · research, shuttle, reed, claude · done
 
 ## Aim
 

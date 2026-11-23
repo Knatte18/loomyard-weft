@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 18:46 UTC; every age below is as of then.
+Rendered 2026-11-23 18:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -8,12 +8,11 @@ Owner `neve`
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (4)
+## Running (3)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | PR-Review | neve | 5h<br>5h | landing, shuttle |
-| T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | darn · speed | landing · Finalize | neve | 19m<br>19m | shuttle, reed, claude |
 | T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Bouncer | neve | 5h<br>5h | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
@@ -43,8 +42,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>1d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
-## Done (1)
+## Done (2)
 
 | # | Entry | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- |
 | T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | 4h<br>4h | reed, slack |
+| T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | 20m<br>20m | shuttle, reed, claude |
