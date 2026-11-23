@@ -364,7 +364,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe orch got creel mail #2450 from `ly:LOOM` (2026-11-23):\n\"Darn-Write gate: the verify gate has run past its 30m0s budget and is at attempt 3; it goes on until its attempts are spent; no verify run has failed yet\".\nNeither the sender nor the text names the run, and three darn runs were in Darn-Write at the time,\nso the orch could only guess which run it meant.\nThe line is built by `verifyBudgetNotice` in `internal/loomshed/verifybudget.go`, which takes the gate site but no slug.\n\n## Idea\n\nPut the run's slug in the line, as other parent notices do, so the parent knows which run it is about without a status read.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-23T08:50:21Z",
       "revised": "2026-11-23T08:59:08Z",
       "profile": "light"
