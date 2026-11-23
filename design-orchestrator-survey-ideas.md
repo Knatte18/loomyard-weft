@@ -36,8 +36,9 @@ Each bullet names its source project and the lym module it would touch.
   so the parent can brief that row's agent as it starts; there is still no queue of guidance lym itself folds into the prompt.
 - **Batched operator questions with recorded assumptions** (Spec Kit `/clarify`, Conductor): Discussion-Write asks at most a few ranked questions,
   each with a recommended answer, and records unanswered ones as assumptions.
-  Since 2026-11-19 a run's autonomous agents put their questions to the run's parent orch, not to the operator in their pane;
-  Discussion, which the operator sits in, still asks in its pane, so this lead concerns Discussion only.
+  Since 2026-11-19 a run's autonomous agents put their questions to the run's parent orch, not to the operator in their pane.
+  Discussion asks in its pane only when `discussion_interactive` is `true`, which is off by default and forced off by autonomy mode (`30ed1ee58`),
+  so this lead concerns an interactive Discussion only.
 - **Rate-limit wait**: the orch watcher wakes the orch after a usage reset; tender itself schedules no resume.
 - **Standing goals and scheduled routines** (ORCH, CAO, Fusion): periodic triage, dependency bumps or `selfreport` sweeps.
 
