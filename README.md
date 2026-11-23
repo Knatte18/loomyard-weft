@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 07:51 UTC; every age below is as of then.
+Rendered 2026-11-23 07:52 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -36,7 +36,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · solid | Code-Burler-Review | neve | 13h<br>11h | burler, loom, darn, arbiter, shed |
 | T2 | **Per-task beam settings: drop the member-line exception and fix the open findings**<br>• land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-fixups`](design-per-task-settings-fixups.md) | darn · light | Code-Burler-Fix | neve | 13h<br>13h | dobby, config, reconcile, board |
-| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | Code-Burler-Fix | neve | 11h<br>11h | burler, config |
+| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | Code-Bouncer | neve | 11h<br>11h | burler, config |
 
 ### Layer A (2)
 
@@ -49,7 +49,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 13h<br>11h | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 14h<br>11h | burler, fabric |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
