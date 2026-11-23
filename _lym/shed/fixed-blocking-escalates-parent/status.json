@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -192,6 +192,22 @@
       "output": "",
       "at": "2026-11-23T14:34:30Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/landing/summary.md",
+      "at": "2026-11-23T14:35:20Z",
+      "started_at": "2026-11-23T14:34:37Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T14:35:20.159523255Z",
+          "end": "2026-11-23T14:35:20.159574591Z"
+        }
+      ]
     }
   ],
   "product": {
