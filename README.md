@@ -24,7 +24,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Bouncer | neve | 15h<br>15h | fabric |
+| T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Review | neve | 15h<br>15h | fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (10)
 
@@ -36,7 +36,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · solid | Drift-Expect | neve | 13h<br>10h | burler, loom, darn, arbiter, shed |
 | T2 | **Per-task beam settings: drop the member-line exception and fix the open findings**<br>• land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-fixups`](design-per-task-settings-fixups.md) | darn · light | Darn-Write | neve | 13h<br>13h | dobby, config, reconcile, board |
-| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | Preflight | neve | 10h<br>10h | burler, config |
+| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | Record-Write | neve | 10h<br>10h | burler, config |
 
 ### Layer A (2)
 
