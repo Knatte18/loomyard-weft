@@ -400,6 +400,27 @@
       "body": "Imported from [issue #213](https://github.com/Knatte18/loomyard/issues/213).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/parent-review/asks.json`.\n\n## Seen\n\nUnder autonomy, PR-Review deadlocked twice on 2026-11-23, in `hydraulics-gaps` and `steady-wob-nan-at-zero-rotation`.\n708cdadc5 fixes the first link: the PR-Review agent's own `parent-review ask` is now delivered, and a refused post ends `undelivered` rather than `no-parent`.\nThe links below remain.\n\nIn `steady-wob-nan-at-zero-rotation`'s `.lym/parent-review/asks.json`:\n\n- Ask 2 is the row's own ask at head 038cf197. The orch answered it `--satisfied`, and it is `done`.\n- Asks 3 and 4 were sent from the agent's pane at the same head and did not reach the orch.\n- `lym loom pr-continue` then refused with \"no satisfied answer from your parent stands at 038cf197; ask your parent again with lym loom parent-review ask\".\n\n## Still open\n\n1. `pr-continue` judges by the latest ask at the head.\n   A later ask that did not reach the parent hides a satisfied answer the parent already gave at the same head.\n   Any failed later ask now does this, including `undelivered` and `timeout`.\n2. The parent has no verb to settle an ask it never received.\n   `parent-review answer` refuses a `no-parent` ask, and presumably an `undelivered` one too, and `parent-review ask` refuses any caller but the PR-Review session.\n   Once the agent's asks keep failing, only a hand edit of `\"autonomy\": false` in the weft's `_lym/shed/\u003cslug\u003e/pull-request.json` lets `pr-continue` pass.\n3. 708cdadc5 notes that no test runs the ask from a real creel pane, so the strand claim creel accepts from a live PR-Review pane is unproven.\n\n## Idea\n\n- Let `pr-continue` pass when a satisfied parent answer stands at the current head, whatever the state of later asks at that head.\n- Let the parent record a satisfied answer at the current head without a delivered ask, for example `lym loom parent-review answer \u003cslug\u003e --head \u003csha\u003e --satisfied`.\n- Add a test that runs the ask verb from a live non-orch pane.\n\nRelated: #200, #206, #211.\n",
       "created": "2026-11-23T14:26:03Z",
       "revised": "2026-11-23T14:26:03Z"
+    },
+    {
+      "id": 1618,
+      "handle": "B3",
+      "slug": "slack-click-silent-fail",
+      "title": "Reed's Slack button click leaves forwarding off with no trace",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "slack"
+      ],
+      "issues": [
+        212
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #212](https://github.com/Knatte18/loomyard/issues/212).\n\nOn the prime's reed session, clicking the slack toggle in the status bar left `lym slack status` at forwarding [] and relay_live false, and showed nothing on the bar. No trace log of a `slack toggle` run was written. Running the same command by hand from the prime anchor, `lym slack toggle slack --socket \u003creed socket\u003e --tmux /usr/bin/tmux --client /dev/pts/15`, turned forwarding on for mo:orch, started the relay and made the channel at once. The session's @lym_button_dir and @lym_orch_dir both name the prime anchor. The toggle command in @lym_slack_toggle_command sends stdout and stderr to /dev/null, so a failure before the bar redraw leaves no sign. Expected: a click flips the button, or the bar or a log shows why it did not.\n\n## Issue comment, 2026-11-23\n\nLikely related: bc5799ced (2026-11-17) moved the Slack toggle to the orch's session only, read through the new `@lym_orch_dir`, and its description lists a real tmux Slack click as not run by hand. The relay's last healthy time before this was 2026-11-12, so no click had been made on the new toggle until now. In a task session the bar draws the away toggle alone, and away does nothing while the relay is down.",
+      "created": "2026-11-23T14:26:07Z",
+      "revised": "2026-11-23T14:26:07Z"
     }
   ],
   "prime_owner": "neve",
