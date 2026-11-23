@@ -20,6 +20,12 @@ Decision: The orch runs no tests. Add a tier-1 test in internal/loomcli that dri
 
 Rationale: Issue #187 came from an overnight run whose binary cannot be traced now; the installed lym (cce041999, 2026-11-23 08:00) contains 6fa7f1740, but only a tapestry run is pinned by a test.
 
+### Added after Discussion (parent, 2026-11-23): No test seam: the bug was fixed on the base by 6fa7f1740
+
+Decision: TestPRFindingsCLI_SendsBackBlockingFindings passes on the base for both the tapestry and darn rows, since 6fa7f1740 wires the landing seams before pr-findings builds its shed. The entry lands as overtaken, with the test as a guard.
+
+Rationale: No test can fail on a base that already holds the fix.
+
 ## Constraints
 
 ## Auto-mode assumptions
