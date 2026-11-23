@@ -34,9 +34,9 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 9m<br>9m | reed |
-| T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 27m<br>27m | shuttle, reed, claude |
-| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Preflight | neve | 4m<br>0m | process, shuttle |
+| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 10m<br>10m | reed |
+| T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 28m<br>28m | shuttle, reed, claude |
+| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Record-Write | neve | 4m<br>1m | process, shuttle |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
@@ -49,7 +49,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T10<br>T8<br>T4 | 6h<br>0m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
+| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T1<br>T2<br>T10<br>T8<br>T4 | 6h<br>1m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
 ### Research (2)
 
@@ -62,7 +62,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 30m<br>30m | landing, creel |
+| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 31m<br>31m | landing, creel |
 
 ### Features (1)
 
