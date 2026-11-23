@@ -36,6 +36,12 @@ After the reset it committed an empty records commit carrying `Warp-SHA: e1ab782
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Defect 3 covers webster reset only
+
+Decision: Only webster reset commits a Run-Transition naming the new tip; lym loom goto stays unchanged.
+
+Rationale: goto writes only the status file and never moves the code tip, so it has no stale tip to correct.
+
 ## Constraints
 
 ## Auto-mode assumptions
