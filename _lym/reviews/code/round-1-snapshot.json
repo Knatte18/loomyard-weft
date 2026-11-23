@@ -7,5 +7,6 @@
       "title": "What an entry may depend on",
       "digest": "6a016650fd43349b5a23a28d3204815b8f6020070c7353e1de63021ae329c8d8"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
