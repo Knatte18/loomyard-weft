@@ -1,6 +1,6 @@
 # A beam pull request description is rewritten after each member landing
 
-`beam-pr-describes-itself` · Task · enhancement, dobby, landing · starting · Worktree-Create
+`beam-pr-describes-itself` · Task · enhancement, dobby, landing · starting · Seed-Child
 
 Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
 
