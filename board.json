@@ -234,7 +234,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #189](https://github.com/Knatte18/loomyard/issues/189).\n\n## Seen\n\nIn the DrillOpPlan hub (lym build 30ed1ee58802), the RC button of the orch pane shows green, as if Remote Control were on.\nRemote Control is off: the organization's policy disables it, and `/remote-control` in the same session answers \"Remote Control is disabled by your organization's policy.\"\nThe hub's `orch.yaml` sets no `remote_control`, and after this build its default is off, as the reconcile notice said.\n\nClicking the button makes reed answer that Remote Control is already on, which it is not (operator, 2026-11-23).\n\n## Expected\n\nThe RC button shows Remote Control's real state for the session.\nWhere the organization's policy disables Remote Control, the button shows it off or unavailable, and a click does not claim it is on.\n\n## Workaround\n\nNone needed: the operator ignores the button.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-23T08:49:41Z",
       "revised": "2026-11-23T08:50:08Z",
       "profile": "light"
