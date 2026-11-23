@@ -1,0 +1,32 @@
+{
+  "session_id": "c4798535-c6f7-41f1-aa90-a6bc8842c2d9",
+  "row": "Harden-Bouncer",
+  "role": "harden-bouncer-judge",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 86341,
+  "cache_read_tokens": 167200,
+  "output_tokens": 9922,
+  "cost_usd": 0.3485485,
+  "started": "2026-11-22T20:51:17Z",
+  "ended": "2026-11-23T07:28:51Z",
+  "models": [
+    {
+      "model": "\u003csynthetic\u003e",
+      "input_tokens": 0,
+      "cache_write_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 18,
+      "cache_write_tokens": 86341,
+      "cache_read_tokens": 167200,
+      "output_tokens": 9922,
+      "cost_usd": 0.3485485
+    }
+  ]
+}
