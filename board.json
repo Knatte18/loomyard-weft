@@ -216,35 +216,6 @@
       "record_body_sha256": "3f56fa505b303d0f8f41eb1bccc52825ae906d2c4c1ce8d2bdb93ed6e1ee32f1"
     },
     {
-      "id": 1583,
-      "handle": "T2",
-      "slug": "board-done-beam-task-under-p0",
-      "title": "Board view lists a done beam-project task under P0",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "board"
-      ],
-      "issues": [
-        188
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).\n\nSeen: lym board list --text showed a task that had landed in a beam project under P0, the root project, instead of under its beam.\n\nWorkaround: none; the entry was left until prune.\n\nExpected: a done task stays listed under its own project until it is pruned.",
-      "status": "done",
-      "created": "2026-11-23T08:18:55Z",
-      "revised": "2026-11-23T08:19:36Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1585,
       "handle": "T8",
       "slug": "agents-exit-before-reply",
