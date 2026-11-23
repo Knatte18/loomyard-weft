@@ -31,6 +31,12 @@ Decision: Option (b): a stop the driver hands over to a fresh build is not filed
 
 Rationale: The existing hand-over already recovers the run; the remaining harm is the false halt note, which became issue 198.
 
+### Added after Discussion (arbiter, 2026-11-23): Every failed halt on a newer board stencil is build-skew
+
+Decision: Keep failedHalt in internal/loomcli/halt.go as written: a failed halt whose error chain holds a stencilstore.NewerBoardCopyError is classified build-skew whether or not the driver later hands the run over to a fresh build. Do not narrow the kind to the hand-over case.
+
+Rationale: The board entry calls the stencil guard correct; the harm in issue 198 was reporting the skew halt as producer-hard-failure. A skew halt the driver does not hand over (no newer build on disk, or its one hand-over spent) has the same cause, a lym binary to update, not a lym defect, and its tackler settles the stop. The halt note is written before the driver decides, so narrowing would need knowledge the note writer lacks. This applies the Narrow-to-the-false-hard-failure-report entry to the same error without widening the task's scope.
+
 ## Constraints
 
 ## Auto-mode assumptions
