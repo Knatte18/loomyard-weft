@@ -36,14 +36,14 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 9m<br>9m | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 27m<br>27m | shuttle, reed, claude |
-| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | starting · Seed-Child | neve | 4m<br>0m | process, shuttle |
+| T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve** | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Preflight | neve | 4m<br>0m | process, shuttle |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | T10 | 5h<br>4h |  |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | T10 | 5h<br>5h |  |
 
 ### Layer B (1)
 
