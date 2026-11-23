@@ -114,10 +114,19 @@ An old key whose value is null is dropped and reported, since the new path's abs
 A file holding both an old key and its new path keeps the new path's value, drops the old key and reports the drop with both names.
 `configsync`'s `Result` reports each move; the walk commits a moved worktree file as it commits any other write it makes there.
 `hubreconcile`'s walk mails the hub's orch one line per walk that moved anything, naming each file and each old and new full name.
+Every lym verb outside `lym config` that loads the loom or tapestry config runs `hubreconcile.EnsureOrWarn` before that load, as the start verbs do today, so the first such verb on a new build runs the walk.
+Once the stamp names the running build, the call costs the stamp read and board file checks a start verb pays today.
+The `lym config` verbs run no walk: they are D4's ways forward, and `lym config reconcile --apply` reconciles its own layer.
+`EnsureOrWarn`'s warning names re-running the verb once the walk ends, beside the start verbs it names today.
 Bound: the move only renames keys the table names; it never removes a key the table lacks and never touches the machine layer, which holds no loom or tapestry key.
-Bound: the walk runs once per build per machine, so a file that gains an old key after it, by a merge, a pull or a pair the walk skipped as incomplete, keeps the key until the next build's walk or the `lym config reconcile --apply` of its layer that D4's refusal names meanwhile.
+Bound: the walk runs once per build per machine, at the first verb that loads the loom or tapestry config.
+A file the walk has not moved keeps its old key until the next walk or the `lym config reconcile --apply` of its layer that D4's refusal names meanwhile, and that verb's load refuses it under D4.
+That covers a file that gains an old key after the walk, by a merge, a pull or a pair the walk skipped as incomplete.
+On a new build it also covers a file of a worktree the walk skipped as mid-merge, and any file when `EnsureOrWarn` failed or waited out `DefaultLockWait` behind another verb's walk;
+re-running the verb once that walk ends loads the moved file.
+Bound: while a worktree stays mid-merge or the board pull skips the hub-wide write, the stamp stays stale, so every such verb on the hub reruns the walk, taking the hub lock and pulling the board, until the merge ends or the board is brought up to date.
 
-Rationale: the reconcile already visits every file layer, on every machine, before any command runs, so one rule covers the shared hub base, the tracked worktree files and each machine's local files.
+Rationale: the walk visits every file layer of the machine it runs on, and running it before the first load on a new build lets one rule cover the shared hub base, the tracked worktree files and each machine's local files, and lets in-flight runs carry over with no operator step.
 Moving before the prune keeps a local file's old key from being pruned as unknown.
 
 ### D6 — configsync moves profiles.yaml's blocks before it follows the template
@@ -139,7 +148,7 @@ Each hub-wide walk, after its hub-wide config write has committed and outside it
 A `configreg` helper applies each module's move table to a module-keyed settings object, and D6 uses the same helper.
 The rewrite goes through `boardengine`'s own write path under its lock, keeps every key it does not move, and covers every entry.
 It is idempotent and needs no marker: a board with no old key is not written.
-A failed read or write is logged, leaves the board as it was and marks the walk skipped, so the build stamp stays stale and the next start verb's walk retries, as after a skipped hub-wide write.
+A failed read or write is logged, leaves the board as it was and marks the walk skipped, so the build stamp stays stale and the next walk retries, as after a skipped hub-wide write.
 A walk whose hub-wide write was skipped runs no D7 carry; its stale stamp brings the retry.
 The orch gets one line naming each entry and each old and new full name.
 Bound: a walk runs once per build per machine, so an old-name entry written after it by an older build waits for the next build's walk; Seed-Child refuses it meanwhile under D4, naming the new name and `lym board upsert`.
@@ -215,10 +224,11 @@ Rationale: This is the decision record as it stands (Scope Out, support-log Q10)
 - D5: an absent hub base `loom.yaml` seeded from a prime copy holding `code_max_bounces: 2` holds `code.max_bounces: 2`.
 - D5: a file setting both `code_max_bounces` and `code.max_bounces` keeps the new path's value and reports the dropped old key.
 - D5: the walk mails the orch one line naming each moved key's old and new full names, and a walk that moved nothing mails none.
+- D5: after a rebuild that leaves the build stamp stale, a non-start loom verb of an in-flight run whose hub base and local `loom.yaml` hold `code_max_bounces: 2` resolves `loom.code.max_bounces` to 2 and does not halt.
 - D6: after the walk, an untouched seeded `profiles.yaml` parses to the same YAML value as the new template, and a profile the operator added with `loom: {code_max_bounces: 3}` holds `loom: {code: {max_bounces: 3}}`.
 - D6: a seeded `profiles.yaml` whose shipped `solid.tapestry` block the operator changed to `loom` `code_max_bounces: 3` holds `loom` `code.max_bounces: 3` after the walk.
 - D7: after the walk, a board entry with `run_settings` `{"loom": {"code_max_bounces": 2}, "drift": {"scope": "full"}}` holds `{"loom": {"code": {"max_bounces": 2}}, "drift": {"scope": "full"}}`, and a second walk writes no board commit.
-- D7: a walk whose board write fails leaves the entry as it was and the build stamp stale, and the next start verb's walk carries it.
+- D7: a walk whose board write fails leaves the entry as it was and the build stamp stale, and the next walk carries it.
 - D8: each perch's budget resolves from `<perch>.max_bounces`, falling back to `review.max_bounces`, for the discussion, code, split and plan perches.
 - D8: the task `lym beam merge-parent` files carries `{"loom": {"code": {"max_bounces": N, "hard_max_bounces": M}}}` and its Seed-Child applies those budgets.
 - D8: a segment with an empty `code.reviewer_model` takes `review.reviewer_model`, and a recipe reference `loom.split.reviewer_fan` passes recipe build and resolves the nested value.
@@ -233,3 +243,5 @@ Rationale: This is the decision record as it stands (Scope Out, support-log Q10)
 
 - `PATTERN-config-layers`'s background needs the move table under "Keys the template lacks": a key its module's move table names is moved by every reconcile, refused at load with that layer's reconcile command, `lym config reconcile --apply` or `lym config reconcile --layer default --apply`, as the way forward, and removable by `--unset`.
 - The template comments cross-reference keys through a `<segment>_` pattern, so they need a prose rewrite, not a find and replace.
+- D5's `EnsureOrWarn` before every loom or tapestry config load widens `loomcli`'s `arm`, which runs it today for `start` and `resume` alone, and reaches each other CLI outside `lym config` that loads either config, including the loaders `webstercli` and `shuttleparity` reach.
+- D5's re-run way forward changes `hubreconcile`'s `reconcileWayForward`, which names start verbs alone today.
