@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/reviews/code/round-1-escalation.md; record the answer with `lym loom decision add fixed-blocking-escalates-parent`, then decide with `lym loom circling accept fixed-blocking-escalates-parent` or `lym loom circling continue fixed-blocking-escalates-parent`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `fixed-blocking-escalates-parent` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add fixed-blocking-escalates-parent --by parent\", one entry per answered finding, then decide with \"lym loom circling accept fixed-blocking-escalates-parent\" or \"lym loom circling continue fixed-blocking-escalates-parent\".",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
