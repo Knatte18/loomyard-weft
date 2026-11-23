@@ -190,7 +190,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `later-transition-push-wait`.\n\nTakes: the Sketch's decision record; the existing detached push `lym fabric push` spawned by `fabricengine.SpawnStatusPush`, `pairteardown.PushRun` and `HandOver`, `statuscommit`'s owed backoff, and loom's pre-push reconcile in `internal/loomcli/prepush.go`\nDelivers: transitions and driver-stop record commits of batten and loom runs that commit and return with no push, fetch, reconcile or admission; one locked pusher per records worktree that pushes records then code, retries owed pushes without records, stops on refusals, pauses and hand-over marks, runs loom's reconcile and hands taken-over runs over, the prime's per batten run; the pusher started from each commit, each dobby tick and each resume; Worktree-Teardown pushing to completion before removal; the three PATTERN entries and the glossary line rewritten\nExports: the pusher's start call that the seams, the dobby tick and the resume paths share, and `fabricengine.PairPush`'s no-record mode\n\nThe part changes these packages:\n\n- internal/fabricengine (about 900 changed lines)\n- internal/fabriccli (about 150 changed lines)\n- internal/pairteardown (about 250 changed lines)\n- internal/statuscommit (about 150 changed lines)\n- internal/battencli (about 350 changed lines)\n- internal/battenshed (about 150 changed lines)\n- internal/loomcli (about 350 changed lines)\n- internal/dobbyengine (about 200 changed lines)\n- internal/beamcli (about 80 changed lines)\n- internal/runproc (about 40 changed lines)\n- internal/tendercli (about 40 changed lines)\n- internal/heddleengine (about 5 changed lines)\n- pattern (about 80 changed lines)\n",
-      "status": "running · Plan-Burler-Review",
+      "status": "running · Plan-Burler-Fix",
       "created": "2026-11-23T09:31:43Z",
       "revised": "2026-11-23T09:31:43Z",
       "profile": "solid",
@@ -238,7 +238,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #206](https://github.com/Knatte18/loomyard/issues/206).\n\nSeen in hub mo, beam dop-support-3, run hydraulics-gaps, at PR-Review with pr_review_ask_parent on. The parent orch strand mo:dop-support-3:orch is live at pane %10 in window @8, but lym loom parent-review ask records each ask from the PR-Review session as no-parent, apparently looking for the orch in window @4. The asks the row itself sends at a new head are delivered: asks 3 and 7 were answered. lym loom parent-review answer then refuses a no-parent ask ('ask 9 is already no-parent; ... wait for the next [pr-review request]'), and lym loom pr-continue refuses with 'no satisfied answer from your parent stands at \u003chead\u003e'. Once the parent is satisfied at an unchanged head, the review therefore cannot end. Workaround: turn pr_review_ask_parent off for the run with lym config loom --layer local --set pr_review_ask_parent=false in the task worktree, then have the PR-Review agent run pr-continue. Expected: the ask resolves the orch's current pane, and a parent can answer, or record a satisfied verdict for, the head that a no-parent ask named. Related: #200.",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-23T12:46:18Z",
       "revised": "2026-11-23T12:46:29Z",
       "profile": "light"
