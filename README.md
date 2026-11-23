@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>5m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>6m | burler, shed, orch, quarry, report |
 
 ## [P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric](project-single-repo-hub.md) (2)
 
@@ -43,7 +43,7 @@ Owner `neve`
 | T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | darn · light | Code-Bouncer | neve | 53m<br>27m | board |
 | T2 | **Board view lists a done beam-project task under P0**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn · light | Code-Burler-Review | neve | 2h<br>2h | board |
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Darn-Write | neve | 2h<br>2h | reed, claude |
-| T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light | Drift-Expect | neve | 2h<br>1h | loom |
+| T6 | **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light | Darn-Write | neve | 2h<br>1h | loom |
 | T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | halted · Code-Bouncer | neve | 2h<br>2h | shuttle, creel, drift, stencil |
 | T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree** | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | Darn-Write | neve | 2h<br>2h | lint, loom |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 14h<br>2h | fabric |
@@ -53,7 +53,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light |  | 39m<br>26m | shuttle |
+| T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light |  | 40m<br>26m | shuttle |
 
 ### Layer A (1)
 
