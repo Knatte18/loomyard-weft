@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 07:53 UTC; every age below is as of then.
+Rendered 2026-11-23 07:54 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -36,7 +36,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · solid | Code-Burler-Review | neve | 13h<br>11h | burler, loom, darn, arbiter, shed |
 | T2 | **Per-task beam settings: drop the member-line exception and fix the open findings**<br>• land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`per-task-settings-fixups`](design-per-task-settings-fixups.md) | darn · light | Describe | neve | 13h<br>13h | dobby, config, reconcile, board |
-| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | PR-Review | neve | 11h<br>11h | burler, config |
+| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | darn · light | landing · Finalize | neve | 11h<br>11h | burler, config |
 
 ### Layer A (2)
 
