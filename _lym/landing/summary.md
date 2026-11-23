@@ -1,0 +1,60 @@
+# Resume an interrupted run agent's session instead of starting it fresh
+
+A row's agent session that ended before its work did, by a crash, a reboot or a killed pane, now comes back as the same session when the row is re-called.
+Before this change every role but PR-Review, the sampler, the orch and an account switch started a fresh agent.
+That agent kept the files on disk but lost everything the old session had learned.
+
+## What changes
+
+The resume sits in `shuttleengine`'s `Runner.start`, the one path every awaited launch takes,
+so every role whose spec names a role or a name override gets it with no change of its own.
+`start` already looked up the role's newest earlier run to carry operator instructions over.
+It now also resumes that run's session (`crashresume.go`) when:
+
+- the earlier run declares the same output files as the new spec, so a new review round or a new weaver attempt, whose files differ, starts fresh;
+- its session ended before its work did: the run died, reads `running` with its waiter gone, or carries a stop recorded as interrupted;
+- it records a session and is not set aside;
+- the engine has the `SessionResumer` capability and its resume check accepts the session.
+
+A refused check, such as a session with no transcript on this machine or one a live process still holds, is logged and the start runs a fresh session with the carry-over as before.
+The resumed launch takes no skill-load turn.
+Its prompt is the task as rendered now, opened by a preamble that tells the agent it was resumed after an interruption and to continue from where it stopped.
+Operator instructions are not appended to a resumed prompt, since the session already holds them; they are still recorded in the new run's record.
+
+Two `RunState` fields carry the distinction between an interruption and a deliberate end:
+
+- `Interrupted` marks a `stopped` record whose stop was lym's cleanup rather than a decision.
+  `StopStepRuns` and `StopOrphanedStepRuns`, which the loop calls for a watchdog-killed step, a step whose process vanished and the orphaned steps it finds at start, now record every stop they make this way.
+  So does an attach that removes the dead strand of a run still reading `running` before a fresh start.
+  `StopStrand`, `Run.Stop` and every other stop stay deliberate, and their records are never resumed.
+- `NoResume` sets a run aside.
+  A start of the same output files sets it on the earlier run once it is up, resumed or fresh, so a later visit of the row never resumes a stale session.
+  A resumed start whose provider never came up sets it on both runs, so the next start runs fresh instead of retrying the resume.
+  `Runner.RetireInterruptedRuns` sets it on every run a later start would resume.
+
+`loomcli` calls `RetireInterruptedRuns` from the goto's `Admitted` hook, on `lym loom goto` and on the arbiter's relaunch, before the PR-Review reset.
+A goto therefore restarts its rows with fresh sessions.
+A failed set-aside is logged and does not fail the goto, whose move is already written.
+
+## Design decisions
+
+- **One seam, not one per role.** The resume decision lives in shuttle's start, keyed by the role key and the output-file set the record already carries, so no producer learns about it.
+  The callers that pass `ResumeSessionID` themselves, and unawaited sessions, are left as they were.
+- **What counts as deliberate.** A goto, a run stopped through the stop verb, a timeout and an API-error end start fresh.
+  A new review round and a re-call after an escalation's answer start fresh through the output-file check, since a round or attempt names its own files and an escalated row's run ended done.
+  A watchdog kill counts as an interruption, so the killed step's agent is resumed with its context.
+- **Codex starts fresh.** The board entry assumes the Codex engine takes a resume ID, but `codexengine.validateSpec` refuses one and Codex has no `SessionResumer`.
+  A Codex run's re-call therefore keeps today's fresh start; giving Codex a resume path is provider work outside this change.
+
+## Tests
+
+- `TestStart_ResumesAnInterruptedRunsSession` pins which earlier runs a start resumes and which it starts fresh over.
+  It also pins the resumed launch's session, prompt and skipped load turn, and that the earlier run is set aside only when the output files match.
+- `TestRunner_RetireInterruptedRuns_SetsAsideOnlyResumableRuns` pins the set-aside a deliberate restart makes.
+- The step-stop tests now assert that every stop they record is marked interrupted.
+- `TestGotoAdmitted_SetsAsideInterruptedRuns` pins that an admitted goto sets the runs aside once, and that a failed set-aside leaves the goto standing.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** shuttle
