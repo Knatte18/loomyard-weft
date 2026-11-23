@@ -16,7 +16,7 @@
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
      report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=93bd2ff284ce4c36892d294ed31c5d8a2eded35e5cd6a563c4e766f68215493c build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
+lym-stencil: sha256=c71224e9781c3445da85e70be95ed3568828e87405880db01695b61edda45ad0 build=3c59eb46624dd2ff19dc6502f9759b88b1a9a0ae time=2026-11-23T13:30:43Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -109,9 +109,9 @@ When the task's board entry is labelled `bug`, the fix's test must fail before t
 Write a test that reaches the bug through code the merge base already has, so it fails on the merge base and passes with the fix.
 Once you end your turn, the row's red-first gate runs the tests your diff adds or changes once on the merge base's code.
 It fails when every one of them passes there.
-When the diff adds or changes no test, or the check cannot judge them, as on a hub whose scoper is not go,
-it holds your handoff without spending an attempt until a new commit or your parent's record lands.
-When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
+On a hub whose scoper is not go the check cannot judge the tests, and the gate passes.
+When the diff adds or changes no test, it holds your handoff without spending an attempt until a new commit or your parent's record lands.
+When the bug has no seam a test can reach, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
 and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
 When the entry fixes no bug, as one that only adds tests pinning existing behaviour, its tests pass on the merge base by design:
 invent no bug, and before you write code ask your parent the same way to record that under a title opening `No bug fixed`.
