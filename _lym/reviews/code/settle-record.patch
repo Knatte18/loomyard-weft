@@ -1,0 +1,300 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 98c52e09a..3ac580a3f 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -951,7 +951,7 @@ User-facing modules each get one `lym <module>` namespace:
+   The operator's message in Slack sets the presence to `slack`, and a line the operator types in an orch's pane sets it back to `terminal`, through the orch's prompt hook (`lym slack hook`), which tells those lines from the ones lym types.
+   While the presence is `slack`, the turn-end hook of an orch whose button is on posts each turn's final reply to its channel.
+   While the orch's autonomy is on, the hook posts only a reply that opens with `[operator]`.
+-  reed's status bar shows the session orch's button and the presence as the `slack` and `away` toggles; a click on `slack` flips that orch's button, and on `away` switches the presence.
++  reed's status bar shows the session orch's button and the presence as the `slack` and `away` toggles; a click on `slack` flips that orch's button, and on `away` switches the presence; a click that fails shows why on the bar, and in the trace log when the click runs in a lym worktree.
+   While the presence is `slack`, each worktree's dobby leaves `SLACK` one line for a run waiting at PR-Review or Sampler-Session, every `remind_after_min` minutes of the wait.
+   ✅ Implemented. See the `internal/slackengine` and `internal/slackcli` package documentation.
+ - **gate** — the tier runner:
+diff --git a/internal/reedengine/slacktoggle.go b/internal/reedengine/slacktoggle.go
+index c408c590d..70cb9d6b9 100644
+--- a/internal/reedengine/slacktoggle.go
++++ b/internal/reedengine/slacktoggle.go
+@@ -8,16 +8,20 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
++// toggleMessageMillis is how long, in milliseconds, a message ShowToggleOutcome shows stays on the clicking client's bar.
++// tmux's default display-time is under a second, too short to read a refusal off the bar.
++const toggleMessageMillis = "10000"
++
+ // ShowToggleOutcome redraws the status bar of the clicking client on the tmux server at socketPath,
+ // so the toggle's state job runs again and the new state shows at once.
+-// It first shows message on that client when message is not empty.
++// It first shows message on that client for toggleMessageMillis when message is not empty.
+ // It reads nothing of reed's, and a failed tmux call is logged at Debug and never returned.
+ func ShowToggleOutcome(tmuxPath, socketPath, client, message string) {
+ 	cmd := newTmuxCmdForSocketPath(tmuxPath, socketPath)
+ 	if message != "" {
+ 		// display-message expands formats and strftime fields, so every # and % of the text is doubled to show literally.
+ 		shown := strings.NewReplacer("#", "##", "%", "%%").Replace(message)
+-		if err := cmd.run("display-message", "-c", client, shown); err != nil {
++		if err := cmd.run("display-message", "-d", toggleMessageMillis, "-c", client, shown); err != nil {
+ 			logger.Debug("reed: could not show a Slack toggle's message", "client", client, "err", err)
+ 		}
+ 	}
+diff --git a/internal/reedengine/slacktoggle_test.go b/internal/reedengine/slacktoggle_test.go
+index a6d8965b8..7c4df78f1 100644
+--- a/internal/reedengine/slacktoggle_test.go
++++ b/internal/reedengine/slacktoggle_test.go
+@@ -46,8 +46,9 @@ func recordingTmux(t *testing.T) (tmuxPath string, calls func() [][]string) {
+ 	}
+ }
+ 
+-// TestShowToggleOutcome pins the tmux calls a Slack toggle's click ends with.
+-// A message is shown on the clicking client first, with every # and % doubled, and the bar redraw follows in every case.
++// TestShowToggleOutcome pins the tmux calls that show a toggle's outcome on the clicking client's bar.
++// A message is shown on the clicking client first for ten seconds, with every # and % doubled,
++// and the bar redraw follows in every case.
+ // It sets the process-global version probe, so it does not run in parallel.
+ func TestShowToggleOutcome(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -62,10 +63,10 @@ func TestShowToggleOutcome(t *testing.T) {
+ 	}{
+ 		{"EmptyMessageOnlyRedraws", "", func() [][]string { return [][]string{redraw} }},
+ 		{"MessageIsShownThenRedrawn", "slack on", func() [][]string {
+-			return [][]string{{"-S", socketPath, "display-message", "-c", client, "slack on"}, redraw}
++			return [][]string{{"-S", socketPath, "display-message", "-d", "10000", "-c", client, "slack on"}, redraw}
+ 		}},
+ 		{"HashAndPercentInTheMessageAreDoubled", "#3 is 50% done", func() [][]string {
+-			return [][]string{{"-S", socketPath, "display-message", "-c", client, "##3 is 50%% done"}, redraw}
++			return [][]string{{"-S", socketPath, "display-message", "-d", "10000", "-c", client, "##3 is 50%% done"}, redraw}
+ 		}},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/slackcli/cli.go b/internal/slackcli/cli.go
+index 8819b8030..e0d792c17 100644
+--- a/internal/slackcli/cli.go
++++ b/internal/slackcli/cli.go
+@@ -99,6 +99,7 @@ type slackCLI struct {
+ 	// newStrandClient builds the creel client of the strand named strand, which `hook` reads the log and posts as.
+ 	newStrandClient func(strand string) (strandClient, error)
+ 	// showToggle redraws the clicking client's status bar, showing message on it first when message is not empty.
++	// It needs no hub, so it is set before any wiring and serves a toggle whose wiring failed.
+ 	showToggle func(tmuxPath, socketPath, client, message string)
+ 	// ensure starts the relay when it is down, for the hub's prime.
+ 	// It reports whether the relay started or was already live.
+@@ -171,6 +172,7 @@ var worktreeFreeVerbs = []string{relayVerb, barVerb}
+ // preRun fills the seams the verb about to run reads.
+ // A verb of a hub first resolves the worktree it runs in; a verb of worktreeFreeVerbs resolves none.
+ // A failure is written as a refusal and aborts the verb.
++// A failed `toggle` also reports the refusal on the clicked bar, since its click discards what it prints.
+ // The bare group needs nothing and prints its help.
+ func (c *slackCLI) preRun(cmd *cobra.Command, args []string) error {
+ 	if cmd.HasSubCommands() {
+@@ -190,7 +192,11 @@ func (c *slackCLI) preRun(cmd *cobra.Command, args []string) error {
+ 		return c.wire(c, location)
+ 	}()
+ 	if err != nil {
+-		clihelp.Abort(cmd.Context(), output.Err(cmd.OutOrStdout(), err.Error()))
++		code := output.Err(cmd.OutOrStdout(), err.Error())
++		if cmd.Name() == toggleVerb {
++			c.reportToggle(cmd, args[0], err)
++		}
++		clihelp.Abort(cmd.Context(), code)
+ 	}
+ 	return nil
+ }
+diff --git a/internal/slackcli/doc.go b/internal/slackcli/doc.go
+index 79e5c3f9a..7df240207 100644
+--- a/internal/slackcli/doc.go
++++ b/internal/slackcli/doc.go
+@@ -26,6 +26,9 @@
+ // `toggle` is what a click on the bar's slack or away toggle runs.
+ // Switched on, the slack toggle starts this hub's relay, which makes the orch's channel;
+ // switched off, it leaves the channel and ends this hub's relay once no orch of the hub has its button on.
++// The click discards what `toggle` prints.
++// A failed toggle is therefore shown on the clicked bar, its pre-run's refusals included, and logged at Warn.
++// The trace log exists only in a lym worktree, so a click from a directory that is no worktree is shown on the bar alone.
+ //
+ // `login` reads the bot token and the app-level token in one run.
+ // On a terminal it reads each with echo off; any other input it reads to its end and splits at white space.
+diff --git a/internal/slackcli/toggle.go b/internal/slackcli/toggle.go
+index 00c1fb094..ab37dcfe9 100644
+--- a/internal/slackcli/toggle.go
++++ b/internal/slackcli/toggle.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/spf13/cobra"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
+ )
+@@ -18,6 +19,13 @@ import (
+ const (
+ 	// barVerb is the name of the hidden verb reed's status bar runs for the toggles' state.
+ 	barVerb = "bar"
++	// toggleVerb is the name of the hidden verb a click on one of reed's Slack toggles runs.
++	toggleVerb = "toggle"
++	// toggleSocketFlag, toggleTmuxFlag and toggleClientFlag name the flags of `toggle` that name the clicked bar:
++	// the tmux server's socket path, the tmux binary and the clicking client.
++	toggleSocketFlag = "socket"
++	toggleTmuxFlag   = "tmux"
++	toggleClientFlag = "client"
+ 	// toggleSlack and toggleAway are the toggles `toggle` takes, named as reed's ranges name them.
+ 	toggleSlack = "slack"
+ 	toggleAway  = "away"
+@@ -98,9 +106,8 @@ func (c *slackCLI) barSlackWord(dir string) (string, bool) {
+ 
+ // toggleCmd returns the hidden `slack toggle` verb.
+ func (c *slackCLI) toggleCmd() *cobra.Command {
+-	var tmuxPath, socketPath, client string
+ 	cmd := &cobra.Command{
+-		Use:         "toggle <toggle> --socket <path> --tmux <path> --client <name>",
++		Use:         toggleVerb + " <toggle> --socket <path> --tmux <path> --client <name>",
+ 		Short:       "flip an orch's slack button or the presence, as a click on reed's toggle asks",
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+@@ -117,30 +124,46 @@ changes the presence.
+ toggle away sets the presence to terminal while it is slack, as back does, and
+ otherwise does what away does.
+ 
+-It then redraws the clicking client's status bar on the server at --socket,
+-showing the refusal there first when the toggle failed.`,
++It then redraws the clicking client's status bar on the server at --socket.
++The click discards what the verb prints, so a toggle that failed, or a refusal
++before it started such as a directory that is no worktree, is shown on that bar
++first. A click run in a lym worktree also writes the refusal to that worktree's
++trace log.`,
+ 		Args: cobra.ExactArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			return c.runVerb(cmd, func() (map[string]any, error) {
+ 				fields, err := c.toggle(args[0])
+-				message := ""
+-				if err != nil {
+-					message = "lym: " + err.Error()
+-				}
+-				c.showToggle(tmuxPath, socketPath, client, message)
++				c.reportToggle(cmd, args[0], err)
+ 				return fields, err
+ 			})
+ 		},
+ 	}
+-	cmd.Flags().StringVar(&socketPath, "socket", "", "socket path of the tmux server whose bar was clicked")
+-	cmd.Flags().StringVar(&tmuxPath, "tmux", "", "path of the tmux binary")
+-	cmd.Flags().StringVar(&client, "client", "", "the clicking tmux client")
+-	for _, flag := range []string{"socket", "tmux", "client"} {
++	cmd.Flags().String(toggleSocketFlag, "", "socket path of the tmux server whose bar was clicked")
++	cmd.Flags().String(toggleTmuxFlag, "", "path of the tmux binary")
++	cmd.Flags().String(toggleClientFlag, "", "the clicking tmux client")
++	for _, flag := range []string{toggleSocketFlag, toggleTmuxFlag, toggleClientFlag} {
+ 		_ = cmd.MarkFlagRequired(flag)
+ 	}
+ 	return cmd
+ }
+ 
++// reportToggle ends a click on the named Slack toggle by redrawing the status bar of the client that cmd's flags name.
++// When err is not nil it first shows err on that bar and logs it at Warn.
++// The click line discards the verb's output.
++// The bar, and the trace log in a lym worktree, are therefore the only places a failed click shows.
++func (c *slackCLI) reportToggle(cmd *cobra.Command, toggle string, err error) {
++	message := ""
++	if err != nil {
++		message = "lym: " + err.Error()
++		logger.Warn("slack: a click on a Slack toggle failed", "toggle", toggle, "err", err)
++	}
++	// Each flag is declared as a string on the toggle verb, so reading it cannot fail.
++	tmuxPath, _ := cmd.Flags().GetString(toggleTmuxFlag)
++	socketPath, _ := cmd.Flags().GetString(toggleSocketFlag)
++	client, _ := cmd.Flags().GetString(toggleClientFlag)
++	c.showToggle(tmuxPath, socketPath, client, message)
++}
++
+ // toggle flips the named toggle: slack the button of the worktree's orch, and away the presence.
+ func (c *slackCLI) toggle(name string) (map[string]any, error) {
+ 	switch name {
+diff --git a/internal/slackcli/toggle_test.go b/internal/slackcli/toggle_test.go
+index a1728f479..1b4b41211 100644
+--- a/internal/slackcli/toggle_test.go
++++ b/internal/slackcli/toggle_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/google/go-cmp/cmp"
+@@ -13,6 +14,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -170,6 +172,48 @@ func TestToggle(t *testing.T) {
+ 		})
+ 	}
+ 
++	// Not parallel: logcapture.Capture redirects the process-global logger output.
++	t.Run("AFailedClickLogsOneWarnRecordNamingTheToggleAndTheRefusal", func(t *testing.T) {
++		buf := logcapture.Capture(t)
++		h := newHarness(t, nil)
++		h.configure()
++		h.installPreRun = true
++
++		h.run("", toggleArgs(toggleSlack)...)
++
++		// Other parallel tests may log the same message, so the three parts are checked on one record's line.
++		for _, line := range strings.Split(buf.String(), "\n") {
++			if strings.Contains(line, "slack: a click on a Slack toggle failed") &&
++				strings.Contains(line, "toggle=slack") &&
++				strings.Contains(line, "this directory is no worktree") {
++				return
++			}
++		}
++		t.Errorf("no single log line holds the Warn message, toggle=slack and the refusal; log:\n%s", buf.String())
++	})
++
++	t.Run("TheProductionCLIHasTheBarSeamBeforeAnyWiring", func(t *testing.T) {
++		t.Parallel()
++		if productionCLI().showToggle == nil {
++			t.Error("productionCLI().showToggle = nil; want set, since a toggle whose wiring failed must still reach the bar")
++		}
++	})
++
++	t.Run("ARefusalBeforeTheToggleStartsIsShownOnTheBar", func(t *testing.T) {
++		t.Parallel()
++		h := newHarness(t, nil)
++		h.configure()
++		h.installPreRun = true
++
++		code, env := h.run("", toggleArgs(toggleSlack)...)
++
++		wantRefused(t, code, env, "this directory is no worktree")
++		h.wantCalls()
++		if diff := cmp.Diff(wantRedraw("lym: slack-test: this directory is no worktree"), h.redraws, cmp.AllowUnexported(toggleRedraw{})); diff != "" {
++			t.Errorf("redraws mismatch (-want +got):\n%s", diff)
++		}
++	})
++
+ 	t.Run("AnUnknownToggleIsRefusedAndTheRedrawShowsTheRefusal", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newHarness(t, nil)
+diff --git a/internal/slackcli/wiring.go b/internal/slackcli/wiring.go
+index 5e1db44f3..64d9b92e1 100644
+--- a/internal/slackcli/wiring.go
++++ b/internal/slackcli/wiring.go
+@@ -53,6 +53,7 @@ func productionCLI() *slackCLI {
+ 		resolveLocation: lymcwd.Resolve,
+ 		wire:            wireProduction,
+ 		readHiddenLine:  readHiddenTerminalLine,
++		showToggle:      reedengine.ShowToggleOutcome,
+ 	}
+ }
+ 
+@@ -135,7 +136,6 @@ func wireProduction(c *slackCLI, location *lymcwd.Location) error {
+ 		}
+ 		return client, nil
+ 	}
+-	c.showToggle = reedengine.ShowToggleOutcome
+ 	c.ensure = func(geom slackengine.Geometry) (slackengine.StartOutcome, error) {
+ 		return slackengine.EnsureRelay(geom, primeName)
+ 	}
