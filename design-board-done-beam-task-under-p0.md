@@ -1,6 +1,6 @@
 # Board view lists a done beam-project task under P0
 
-`board-done-beam-task-under-p0` · Task · bug, board · running · Code-Burler-Review
+`board-done-beam-task-under-p0` · Task · bug, board · running · Code-Burler-Fix
 
 Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).
 
