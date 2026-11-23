@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 18m<br>18m | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 36m<br>36m | shuttle, reed, claude |
 | T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Darn-Write | neve | 12m<br>9m | process, shuttle |
-| T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | starting · Seed-Child | neve | 0m<br>0m | reed, shuttle, process |
+| T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | starting · Open-IDE | neve | 0m<br>0m | reed, shuttle, process |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 10h<br>10h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ## Layer A (1)
@@ -47,4 +47,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>18m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>19m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
