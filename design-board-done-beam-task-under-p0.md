@@ -1,6 +1,6 @@
 # Board view lists a done beam-project task under P0
 
-`board-done-beam-task-under-p0` · Task · bug, board · running · Drift-Baseline
+`board-done-beam-task-under-p0` · Task · bug, board · running · Drift-Await
 
 Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).
 
