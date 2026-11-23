@@ -233,7 +233,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).\n\nSeen: lym board list --text showed a task that had landed in a beam project under P0, the root project, instead of under its beam.\n\nWorkaround: none; the entry was left until prune.\n\nExpected: a done task stays listed under its own project until it is pruned.",
-      "status": "running · Code-Bouncer",
+      "status": "halted · Code-Bouncer",
       "created": "2026-11-23T08:18:55Z",
       "revised": "2026-11-23T08:19:36Z",
       "run_settings": {
@@ -295,7 +295,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #183](https://github.com/Knatte18/loomyard/issues/183).\n\nWhat happened: `tools/godocreflow` was run over trimmed Go files to clear 624 wrapped-break findings from `lym loom lint-comments`.\nFindings rose to 916.\nIt skips whole comment blocks that hold a heading or list, and it joins lines past the length limit.\nThe commit was dropped and the findings were fixed by hand.\n\nWhy abnormal: the reflow tool is meant to fix these findings and produced more of them.\n\nWhat to do: make godocreflow process blocks with headings or lists, and make it respect the line length limit, or stop pointing at it as a fix.\n\nProvenance: task doc-go-trim-pass; note Darn-Write.md.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-23T08:19:09Z",
       "revised": "2026-11-23T08:20:12Z",
       "run_settings": {
@@ -350,7 +350,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #181](https://github.com/Knatte18/loomyard/issues/181).\n\nA Darn-Write session found the decision record's `## Goal` holding `{\"error\":\"invalid json: invalid character 'h' ...\",\"ok\":false}` where the board body belongs, followed only by the triage section.\nThe task's own text was missing, so the agent rebuilt the scope from the linked issues and triage notes, and the parent's added decision confirmed it.\n\nThis is abnormal: a lym verb's error envelope was rendered into the record as if it were the Goal, and nothing refused it before Discussion.\nThe record writer (Record-Write) should refuse, or fail the run, when the Goal body is a CLI error envelope or otherwise not the board body; the upstream step that fed it the error should also be traced.\n\nProvenance: task slug `halt-escalation-messages`; note file `Darn-Write.md`.",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-23T08:19:14Z",
       "revised": "2026-11-23T08:20:19Z",
       "profile": "light"
