@@ -1,6 +1,6 @@
 # Run transitions commit locally; a per-worktree pusher brings them to origin
 
-`async-run-pusher` · Task · enhancement, batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle · starting · Open-IDE
+`async-run-pusher` · Task · enhancement, batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle · running · Preflight
 
 Decision record: [Sketch](decision-async-run-pusher.md)
 
