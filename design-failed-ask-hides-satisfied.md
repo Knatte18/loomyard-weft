@@ -2,8 +2,6 @@
 
 `failed-ask-hides-satisfied` · Task · bug, landing, loom · running · Drift-Expect
 
-Depends on: [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md)
-
 Imported from [issue #213](https://github.com/Knatte18/loomyard/issues/213).
 
 Import note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/parent-review/asks.json`.
