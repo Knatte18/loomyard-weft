@@ -1,0 +1,14 @@
+{
+  "session_id": "d5c9eb97-764a-4fd5-affe-e8b5f03b9789",
+  "row": "Friction-Reflect",
+  "role": "friction",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 24,
+  "cache_write_tokens": 19142,
+  "cache_read_tokens": 234195,
+  "output_tokens": 2499,
+  "cost_usd": 0.11973199999999999,
+  "started": "2026-11-23T12:48:07Z",
+  "ended": "2026-11-23T12:48:37Z"
+}
