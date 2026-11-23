@@ -25,6 +25,12 @@ None needed: the operator ignores the button.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): F4: scope is connect and policy refusal
+
+Decision: This task covers the RC button's state at connect and on a policy refusal only. A later disconnect or turn-off of remote control is out of scope.
+
+Rationale: Issue 189 is the policy refusal; disconnect handling is a separate change.
+
 ## Constraints
 
 ## Auto-mode assumptions
