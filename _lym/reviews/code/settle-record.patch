@@ -1,0 +1,1451 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index f757b2e83..59e2f7a08 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -182,6 +182,13 @@ producers:
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Code-Review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
++      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
++      # given none and posts no notice of its own.
++      escalate_decisions: true
++      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
++      # which accepts it or orders another round, instead of to the auto-accept.
++      blocking_escalates: true
+ 
+   - name: Code-Burler-Review
+     engine: BurlerReview
+@@ -237,6 +244,9 @@ producers:
+       role_prefix: code
+       fixer_fan_setting: loom.code_fixer_fan
+       review_row: Code-Burler-Review
++      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
++      # findings to the parent.
++      decisions_escalated: true
+       # The verify gate runs the tree-scoped command, or the hub's `code-burler-fix` key, on the
+       # committed tree after each round, lints the comments from the merge base on every attempt,
+       # and re-prompts the fix session with the findings until it passes. The row runs its own key
+diff --git a/contracts/recipes/hardener-recipe.yaml b/contracts/recipes/hardener-recipe.yaml
+index d69f294e2..1a9156cf7 100644
+--- a/contracts/recipes/hardener-recipe.yaml
++++ b/contracts/recipes/hardener-recipe.yaml
+@@ -72,6 +72,10 @@ producers:
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Harden-Review
+       harden_round: true
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the arbiter, and to the
++      # run's parent where the arbiter cannot rule; a focus entry the round left undriven or marked WARN is one,
++      # so no round settles past it. Harden-Burler-Fix sets decisions_escalated so its fixer is given none.
++      escalate_decisions: true
+ 
+   - name: Harden-Burler-Review
+     engine: BurlerReview
+@@ -125,6 +129,8 @@ producers:
+       role_prefix: harden
+       fixer_fan_setting: hardener.fixer_fan
+       review_row: Harden-Burler-Review
++      # decisions_escalated says Harden-Bouncer's escalate_decisions sends the round's decision-class findings on.
++      decisions_escalated: true
+       # No gates key: the engine fixes the row's gates to clean, verify and live.
+       profile:
+         target:
+diff --git a/contracts/recipes/sampler-recipe.yaml b/contracts/recipes/sampler-recipe.yaml
+index 93b8afba3..aff3e49cf 100644
+--- a/contracts/recipes/sampler-recipe.yaml
++++ b/contracts/recipes/sampler-recipe.yaml
+@@ -139,6 +139,13 @@ producers:
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Code-Review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
++      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
++      # given none and posts no notice of its own.
++      escalate_decisions: true
++      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
++      # which accepts it or orders another round, instead of to the auto-accept.
++      blocking_escalates: true
+ 
+   - name: Code-Burler-Review
+     engine: BurlerReview
+@@ -196,6 +203,9 @@ producers:
+       role_prefix: code
+       fixer_fan_setting: loom.code_fixer_fan
+       review_row: Code-Burler-Review
++      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
++      # findings to the parent.
++      decisions_escalated: true
+       # The verify gate runs the tree-scoped command, or the hub's `code-burler-fix` key, on the
+       # committed tree after each round, lints the comments from the merge base on every attempt,
+       # and re-prompts the fix session with the findings until it passes. The row runs its own key
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index a5577a321..5ecf0a8b2 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -385,6 +385,13 @@ producers:
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Code-Review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
++      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
++      # given none and posts no notice of its own.
++      escalate_decisions: true
++      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
++      # which accepts it or orders another round, instead of to the auto-accept.
++      blocking_escalates: true
+       # No model/effort/version key: the row refuses them as unknown keys, and loom.yaml's judge,
+       # seed and per-segment judge and seed keys are the only source of this row's passes' models.
+ 
+@@ -459,6 +466,9 @@ producers:
+       role_prefix: code
+       fixer_fan_setting: loom.code_fixer_fan
+       review_row: Code-Burler-Review
++      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
++      # findings to the parent.
++      decisions_escalated: true
+       # The verify gate runs on the committed tree after each round and re-prompts the round
+       # session with the findings until it passes. It first runs the headroom lint from the merge
+       # base with the parent branch, then lints the comments the round added from its own latest
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 426df2f51..9bb055385 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -118,9 +118,18 @@ A `Bouncer` row's optional boolean `escalate_decisions` key defaults to false.
+ When true, a judged round whose review holds a `decision`-class finding escalates with cause `decision`.
+ The arbiter settles that escalation where the board entry and the decision record answer it,
+ and the run's parent settles it otherwise.
++Where `blocking_escalates` is set, a CONTINUE or CIRCLING round in the soft-cap window whose ledger holds an open BLOCKING entry
++of another class escalates with cause `budget` to the parent alone instead.
+ A `BurlerFix` row's optional boolean `decisions_escalated` key (default false) says its segment's Bouncer does so:
+ the fixer is given no `decision` finding and the row posts no parent notice of its own.
+-Loom's recipe sets both keys on its Discussion-Review rows and on no other row.
++The shipped recipes set both keys on their Discussion-Review, Code-Review, split and Harden-Review rows.
++A `Bouncer` row's optional boolean `blocking_escalates` key defaults to false.
++When true, a round in the soft-cap window whose ledger holds an open BLOCKING entry, or cannot be read,
++escalates with cause `budget` to the run's parent, which accepts it or orders another round;
++neither the auto-accept nor the soft-cap rule's accept passes such a round.
++A round whose review holds a `decision`-class finding is handed over the same way under `escalate_decisions`,
++unless every open BLOCKING entry is of class `decision`.
++The shipped Code-Review rows set it.
+ 
+ A `MultiLLM` row runs one lead and its advisors as seats.
+ Its keys are `role`, `segment` and `seats`, and the optional `gates`, `timeout_min`, `interactive` and `tokens`.
+diff --git a/contracts/stencils/bouncer/bouncer-fragment-decision.md b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+index 744d85841..492974de9 100644
+--- a/contracts/stencils/bouncer/bouncer-fragment-decision.md
++++ b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+@@ -19,7 +19,7 @@ Settle each remaining finding yourself when it is a run-level call, and put it t
+ {{.refusal}}
+ 
+ When a refusal is named, the round is re-judged before the recorded answer acts while budget is left.
+-An `accept` passes the round over every BLOCKING finding listed once a judgment is admitted, and at or past the hard cap halts the run if the refusal still holds at the budget.
++An `accept` passes the round over every BLOCKING finding listed once a judgment is admitted, except that over a CONTINUE or CIRCLING verdict an open BLOCKING ledger entry of another class holds it: the round then runs another round, or inside the soft-cap window escalates again with cause budget, which only the parent accepts. An `accept` at or past the hard cap halts the run if the refusal still holds at the budget.
+ A `continue` runs another round whose fresh reviewers re-review the artifact, so a listed BLOCKING finding reaches that round's fixer only if they raise it again.
+ 
+ ### Way forward
+diff --git a/contracts/stencils/bouncer/bouncer-template-escalation.md b/contracts/stencils/bouncer/bouncer-template-escalation.md
+index 6f33d507b..fb3c56728 100644
+--- a/contracts/stencils/bouncer/bouncer-template-escalation.md
++++ b/contracts/stencils/bouncer/bouncer-template-escalation.md
+@@ -2,7 +2,7 @@
+      Go renders it into the Bouncer run directory (round-<N>-escalation.md) and the parent notice points at it.
+      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
+      Go interpolates only paths, round, cause, segment and slug, plus the decide fragment it picks by the hard cap; the wording lives here and nowhere else.
+-     cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the decision cause's detail and nothing for any other cause. -->
++     cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the cause's detail, and nothing for a cause that carries none. -->
+ 
+ # Escalation — review segment `{{.segment}}`, round {{.round}}
+ 
+@@ -11,7 +11,11 @@ The run's review segment `{{.segment}}` for task `{{.slug}}` has stopped at roun
+ The cause is `{{.cause}}`:
+ 
+ - `circling`: the judge found no progress on recurring gating findings, or a design-wrong finding returned after a continue.
+-- `budget`: the soft-cap rule could not read its inputs: the round's review, its ledger or the previous round's ledger.
++- `budget`: the budget is spent and the round cannot settle as an accept by itself:
++  BLOCKING findings are still open, the round's live gate is red, or the soft-cap rule could not read its inputs.
++  The detail below, when present, names which.
++  A round whose review also holds `decision`-class findings reaches this cause when such BLOCKING findings are open,
++  and its detail names those findings.
+ - `hard-cap`: the round is at or past the perch's hard cap with a design-wrong finding still open, or a continue was recorded there.
+ - `decision`: the round's review holds a finding the review cannot settle itself.
+ - `stalemate`: the review target stayed unchanged for the configured number of rounds in a row.
+@@ -46,7 +50,8 @@ A recorded operator decision is one of:
+ These never count: an `Idea` or agent-suggestion passage, an operator view not marked as a decision, a decision-record entry added with `--by arbiter` or `--by parent`, a writer's auto-pick, and an `## Auto-mode assumptions` entry.
+ `--by` is an unverified label, since only `--by arbiter` is restricted, so a `--by operator` entry counts only when it was in the committed decision record before the escalation.
+ Never settle a question whose answer widens the task's scope, and never accept over an open design-wrong finding unless a recorded operator decision covers that finding.
+-At cause `budget`, decide nothing: report back to your parent session which input could not be read.
++At cause `budget`, decide nothing: report back to your parent session what the cause names,
++which the parent settles by accepting the round or ordering another one.
+ 
+ When a recorded operator decision answers the question:
+ 
+diff --git a/contracts/stencils/burler/burler-assist-cluster-fan.md b/contracts/stencils/burler/burler-assist-cluster-fan.md
+index f6028b299..4466f65fe 100644
+--- a/contracts/stencils/burler/burler-assist-cluster-fan.md
++++ b/contracts/stencils/burler/burler-assist-cluster-fan.md
+@@ -26,5 +26,5 @@ Write nothing to your report while any subagent is outstanding: consolidate only
+ Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
+ These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
+ 
+-Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
++Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead, and a `decision`-class finding that records an undriven or WARN focus entry keeps `origin: focus`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
+ The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
+diff --git a/contracts/stencils/burler/burler-assist-consolidation.md b/contracts/stencils/burler/burler-assist-consolidation.md
+index ec3a67bc5..939d1442d 100644
+--- a/contracts/stencils/burler/burler-assist-consolidation.md
++++ b/contracts/stencils/burler/burler-assist-consolidation.md
+@@ -8,6 +8,6 @@
+ 
+ An assistant reviewer reviews the same target beside you and writes one report; your prompt names its report and its end marker.
+ Before you consolidate, and before you write anything to the review file, wait for the assistant's end marker as your prompt says.
+-When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}` (a finding that raises the plan executor's halt reason keeps `origin: webster` instead), merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
++When the marker reads `done`, read the assistant's report and judge each of its findings with the same skepticism as a fork's: keep a finding that holds against what you read, tagged in its frontmatter with `origin: {{.assist_origin}}` (a finding that raises the plan executor's halt reason keeps `origin: webster` instead, and a `decision`-class finding that records an undriven or WARN focus entry keeps `origin: focus`), merge one that repeats a finding you keep, and move a false one to the `## Rejected` section with a one-line reason.
+ When the marker reads anything else, consolidate without the assistant.
+ The verdict is yours alone: the assistant's verdict is one more opinion, never a vote.
+diff --git a/contracts/stencils/burler/burler-cluster-fan.md b/contracts/stencils/burler/burler-cluster-fan.md
+index 1889a0635..f2af74e98 100644
+--- a/contracts/stencils/burler/burler-cluster-fan.md
++++ b/contracts/stencils/burler/burler-cluster-fan.md
+@@ -29,5 +29,5 @@ Then wait for the forks: {{template "engine-fork-wait"}}
+ Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+ These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
+ 
+-Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
++Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead, and a `decision`-class finding that records an undriven or WARN focus entry keeps `origin: focus`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
+ The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
+diff --git a/contracts/stencils/burler/burler-review-format.md b/contracts/stencils/burler/burler-review-format.md
+index c22209ae5..2dc011c47 100644
+--- a/contracts/stencils/burler/burler-review-format.md
++++ b/contracts/stencils/burler/burler-review-format.md
+@@ -56,6 +56,8 @@ Frontmatter rules, all strict:
+ - A finding kept from the parent orch's report carries `origin: parent` and an optional `parent_ids` list naming the report ids it covers, such as `parent_ids: [P1, P3]`.
+   No other finding carries `parent_ids`.
+ - A finding that raises the plan executor's halt reason, when the review step quotes one, carries `origin: webster`.
++- A finding that records a focus entry the round left undriven or marked WARN carries `origin: focus` and the class `decision`.
++  The rubric says when a round raises one, and a cluster round's consolidation keeps that origin.
+ - A finding's `location` opens with the file's path, followed by `:<line>` or `#<symbol>`.
+   It names the site the fix changes, which may lie apart from where the defect shows:
+   a wrong value that one file prints and another sets is located where it is set.
+@@ -73,6 +75,8 @@ Frontmatter rules, all strict:
+   A carried finding keeps its `class`, keeps or lowers its `severity`, and keeps its location path or moves to a file the changes file lists.
+ - In an incremental round a new finding is `BLOCKING` and sits on a changed hunk, in a file the changes file lists.
+   A card a listed added entry marked as amending the plan names is exempt from the file rule, and so is a new `origin: webster` finding.
++  In a hardener round, a new `origin: focus` finding of class `decision` is exempt from the file rule too,
++  and from the changed-hunk rule.
+ 
+ Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
+ The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.
+diff --git a/contracts/stencils/burler/burler-step-review.md b/contracts/stencils/burler/burler-step-review.md
+index 2973dd51e..949176309 100644
+--- a/contracts/stencils/burler/burler-step-review.md
++++ b/contracts/stencils/burler/burler-step-review.md
+@@ -54,3 +54,4 @@ a section without that heading has none of them.
+   Locate a regression a fix caused in an untouched file at the changed line that causes it, and name the broken site in its `summary`.
+   A card that an added entry marked as amending the plan names may be located whether or not the changes file lists it.
+   A finding raising the plan executor's halt reason, when the section above quotes one, carries `origin: webster` and may sit outside the changed files.
++  In a hardener round, a new `origin: focus` finding of class `decision` may sit outside the changed hunks and files.
+diff --git a/contracts/stencils/harden/harden-rubric-review.md b/contracts/stencils/harden/harden-rubric-review.md
+index d254a0f94..8afae7dcf 100644
+--- a/contracts/stencils/harden/harden-rubric-review.md
++++ b/contracts/stencils/harden/harden-rubric-review.md
+@@ -50,6 +50,12 @@ and the paths of the round's focus file, the charter, and of the decision record
+   `lym harden sandbox new` builds a two-repository hub, and `lym harden sandbox new --single-repo` a one-repository hub.
+ - **The focus list is a floor.**
+   Walk every focus entry and record OK, WARN or FAIL for each.
++  A focus entry you did not drive, or recorded WARN, is a finding of its own:
++  class `decision`, severity BLOCKING, `origin: focus`, located at the module source the entry concerns,
++  its summary naming the entry and why it was not driven or what the WARN is, and its fix the drive the entry still needs.
++  Such a finding goes to the arbiter or the run's parent, which orders another round over the entry or accepts it with a stated reason,
++  so no round settles while a focus entry is undriven.
++  A held focus finding that this round drove OK is resolved, its answer quoting the title of the decision record entry that ordered the drive.
+   Then improvise many more adversarial scenarios of your own:
+   crash and rebirth, scope across hubs and worktrees, dead-but-present state, orphans of an operation that failed midway, rapid churn,
+   and verbs combined in orders nothing has tried.
+@@ -96,6 +102,7 @@ and the paths of the round's focus file, the charter, and of the decision record
+ 
+ - **Converged.**
+   The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding, whose live gate is green, and whose reviewer model differs from the previous round's.
++  A review that left a focus entry undriven or WARN holds an `origin: focus` finding, so it never converges.
+   It reads all three from the round's facts.
+ - **Re-seed from the residue.**
+   The focus file derives the next round's assignment from what this round left standing, never "review it again":
+diff --git a/docs/overview.md b/docs/overview.md
+index 67cfea918..391f6fa78 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1514,6 +1514,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A per-perch 0 takes `review_hard_max_bounces`, and a hard cap below its perch's budget is refused at load.
+   `discussion_auto_accept`/`code_auto_accept` make a perch accept a harvested round at a spent budget.
+   The perch then skips the soft-cap rule.
++  On a perch whose Bouncer sets `blocking_escalates`, a round with an open BLOCKING finding escalates to the run's parent instead of being accepted.
+   `split_max_bounces`, `split_hard_max_bounces` and `split_auto_accept` are the split perch's budget, hard cap and auto-accept.
+   `split_auto_accept` defaults to false, and a null `split_max_bounces` and a 0 `split_hard_max_bounces` take the shared values.
+   `tapestry.yaml` is the tapestry recipe's module, per-worktree, and holds the plan perch's own keys.
+diff --git a/internal/burlercli/validate.go b/internal/burlercli/validate.go
+index 9f39b3aa5..0bc3082b9 100644
+--- a/internal/burlercli/validate.go
++++ b/internal/burlercli/validate.go
+@@ -129,6 +129,12 @@ func checkRoundInRunDirectory(cwd, reviewFile string) (refusal error, builderNot
+ 		}
+ 		paths.ConflictDir = runplan.ConflictDir(location.AnchorPath())
+ 	}
++	// Only the hardener's review raises a focus finding outside the changed files.
++	hardenSubdir, found, err := loomrecipe.BouncerRunSubdir(loomshed.NameHardenBouncer)
++	if err != nil {
++		return nil, fmt.Sprintf("the hardener review run directory could not be read from the recipe, so the parse alone decided: %s", err)
++	}
++	paths.FocusFindings = found && filepath.Clean(runDir) == filepath.Join(loomengine.LoomReviewsDir(location), hardenSubdir)
+ 	roundContext, err := shedadapters.BuildRoundContext(runDir, round, paths)
+ 	if err != nil {
+ 		return nil, fmt.Sprintf("the round context could not be built, so the parse alone decided: %s", err)
+diff --git a/internal/burlercli/validate_integration_test.go b/internal/burlercli/validate_integration_test.go
+index f575bd8e3..34d1617b7 100644
+--- a/internal/burlercli/validate_integration_test.go
++++ b/internal/burlercli/validate_integration_test.go
+@@ -15,6 +15,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomrecipe"
++	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -60,6 +62,14 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 		t.Fatalf("ResolveWithin(%s) = %v; want nil", worktree, err)
+ 	}
+ 	reviews := loomengine.LoomReviewsDir(location)
++	hardenSubdir, found, err := loomrecipe.BouncerRunSubdir(loomshed.NameHardenBouncer)
++	if err != nil || !found {
++		t.Fatalf("BouncerRunSubdir(%s) = %q, %v, %v; want a run_subdir", loomshed.NameHardenBouncer, hardenSubdir, found, err)
++	}
++	codeSubdir, found, err := loomrecipe.BouncerRunSubdir(loomshed.NameCodeBouncer)
++	if err != nil || !found {
++		t.Fatalf("BouncerRunSubdir(%s) = %q, %v, %v; want a run_subdir", loomshed.NameCodeBouncer, codeSubdir, found, err)
++	}
+ 
+ 	tests := []struct {
+ 		name string
+@@ -67,6 +77,10 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 		runDir       string
+ 		bare         bool
+ 		brokenRecord bool
++		// focusReview writes a review with a complete prior list.
++		// Its one new finding is BLOCKING, class decision and origin focus, and sits outside the changed files.
++		// The changes file lists only a.go.
++		focusReview bool
+ 		// cwd is the seam cwd the verb runs from; empty is the worktree.
+ 		cwd string
+ 		// wantRefusal is the substring of the refusal an exit 1 carries, empty for exit 0.
+@@ -79,6 +93,8 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 		{name: "SeamCwdOutsideAGitRepository", runDir: filepath.Join(reviews, "run-no-repo"), cwd: t.TempDir()},
+ 		{name: "RunDirectoryOutsideTheReviewRunRoot", runDir: filepath.Join(worktree, "elsewhere")},
+ 		{name: "BuilderErrorFallsBackToTheParse", runDir: filepath.Join(reviews, "run-broken"), brokenRecord: true, wantNote: "round context could not be built"},
++		{name: "FocusFindingAdmittedInTheHardenerRunDirectory", runDir: filepath.Join(reviews, hardenSubdir), focusReview: true},
++		{name: "FocusFindingRefusedInTheCodeRunDirectory", runDir: filepath.Join(reviews, codeSubdir), focusReview: true, wantRefusal: "does not list"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -89,7 +105,16 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 				t.Fatalf("MkdirAll(%s) = %v; want nil", tt.runDir, err)
+ 			}
+ 			review := filepath.Join(tt.runDir, "round-2-review.md")
+-			if err := os.WriteFile(review, []byte("---\nverdict: APPROVED\n---\nnothing found\n"), 0o644); err != nil {
++			content := "---\nverdict: APPROVED\n---\nnothing found\n"
++			if tt.focusReview {
++				content = "---\nverdict: BLOCKING\nfindings:\n" +
++					"  - id: F2\n    severity: BLOCKING\n    class: decision\n    origin: focus\n    location: z.go:1\n    summary: s2\n    fix: f2\n" +
++					"prior:\n  - id: F1\n    status: resolved\n---\n\n### [BLOCKING] s2\n\n**Location:** z.go:1\n\n**Issue:** an undriven focus entry.\n"
++				if err := os.WriteFile(filepath.Join(tt.runDir, "round-2-changes.md"), []byte("a.go\n"), 0o644); err != nil {
++					t.Fatalf("WriteFile(changes file) = %v; want nil", err)
++				}
++			}
++			if err := os.WriteFile(review, []byte(content), 0o644); err != nil {
+ 				t.Fatalf("WriteFile(%s) = %v; want nil", review, err)
+ 			}
+ 			cwd := tt.cwd
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 1b97afd24..57c41661b 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -305,4 +305,7 @@
+ // Profile.HaltReason adds a halt-reason block to the review prompt.
+ // RoundContext.HaltReason lets the finding it asks for sit outside the changed files.
+ // That finding is tagged `origin: webster` (WebsterOrigin), and it must still be BLOCKING in an incremental round.
++// A `decision`-class finding tagged `origin: focus` (FocusOrigin) records an undriven or WARN focus entry.
++// RoundContext.FocusFindings, set for a hardener round, lets it sit outside the changed files,
++// and it must still be BLOCKING in an incremental round.
+ package burlerengine
+diff --git a/internal/burlerengine/roundcheck.go b/internal/burlerengine/roundcheck.go
+index b6fa5b810..21ea9a433 100644
+--- a/internal/burlerengine/roundcheck.go
++++ b/internal/burlerengine/roundcheck.go
+@@ -69,6 +69,10 @@ type RoundContext struct {
+ 	// HaltReason is the stuck reason of the plan executor call that sent the run back to review, empty when none.
+ 	// A new BLOCKING `origin: webster` finding is exempt from the changed-file rule while it is set.
+ 	HaltReason string
++	// FocusFindings marks a hardener round.
++	// Its review raises a `decision`-class finding for each focus entry it left undriven.
++	// A new BLOCKING `origin: focus` finding of that class is exempt from the changed-file rule while it is set.
++	FocusFindings bool
+ 	// ParentReportPath is the report of the round's parent-review ask, empty when the round holds none.
+ 	ParentReportPath string
+ 	// PriorReviewPath, PriorFixerReportPath and ChangesPath name the files the prior-findings block points at.
+@@ -80,6 +84,11 @@ type RoundContext struct {
+ 	WorktreeRoot string
+ }
+ 
++// FocusOrigin is the origin of a `decision`-class review finding that records an undriven or WARN focus entry.
++// The run's arbiter or parent rules on such a finding.
++// Driving the entry later or accepting it is a call, not a fix.
++const FocusOrigin = "focus"
++
+ // roundCheckGateName labels the round-check entry in a gate outcome.
+ const roundCheckGateName = "round"
+ 
+@@ -106,7 +115,8 @@ func roundRefusal(problem, rewrite string) error {
+ // A new `origin: parent` finding is exempt from the BLOCKING and changed-file rules.
+ // It is exempt only when its parent_ids are all ids of the round's parent report.
+ // A carried or new finding located in a file that an entry of ctx.AmendingTexts names passes the changed-file rule.
+-// A new BLOCKING finding with `origin: webster` passes it too, when ctx.HaltReason is set.
++// A new BLOCKING finding with `origin: webster` passes it too when ctx.HaltReason is set.
++// So does a new BLOCKING `decision`-class finding with `origin: focus` when ctx.FocusFindings is set.
+ func CheckReviewRound(content []byte, ctx *RoundContext) error {
+ 	_, findings, err := ParseReview(content)
+ 	if err != nil {
+@@ -315,6 +325,11 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 			return roundRefusal(fmt.Sprintf("has a second new finding %q with `origin: webster` at %q, which the changes file does not list, but the plan executor's halt reason admits one", f.ID, path),
+ 				fmt.Sprintf("with %q located at a file the changes file lists, or without it", f.ID))
+ 		}
++		// A focus entry left undriven has no changed hunk to sit on, and the parent's call on it needs no fix of the round.
++		// Only a hardener round raises one, and it sets ctx.FocusFindings.
++		if outsideChanges && c.ctx.FocusFindings && f.Origin == FocusOrigin && f.Class == ClassDecision {
++			continue
++		}
+ 		if outsideChanges {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q at %q, which the changes file does not list", f.ID, path),
+ 				fmt.Sprintf("with %q located at the changed line that causes it, or without it", f.ID))
+diff --git a/internal/burlerengine/roundcheck_test.go b/internal/burlerengine/roundcheck_test.go
+index 7a032b608..9e25bf437 100644
+--- a/internal/burlerengine/roundcheck_test.go
++++ b/internal/burlerengine/roundcheck_test.go
+@@ -97,6 +97,11 @@ func TestCheckReviewRound(t *testing.T) {
+ 		f.Origin = WebsterOrigin
+ 		return f
+ 	}
++	focusing := func(ctx *RoundContext) { ctx.FocusFindings = true }
++	fromFocus := func(f Finding, class Class) Finding {
++		f.Origin, f.Class = FocusOrigin, class
++		return f
++	}
+ 	const planCard = "_lym/plan/14-card-slug.md"
+ 	const amendingEntry = "### Rework the slug card\n\nAmend plan card 14-card-slug to name the retry."
+ 	held := func(titles ...string) func(*RoundContext) {
+@@ -190,6 +195,10 @@ func TestCheckReviewRound(t *testing.T) {
+ 		{name: "NewWebsterFindingWithNoHaltReasonIsRefused", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}, wantErr: "does not list"},
+ 		{name: "NewWebsterFindingWithAHaltReasonPasses", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}},
+ 		{name: "NewWebsterFindingBelowBlockingIsRefused", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityMedium, planCard+":3"))}, wantErr: "only at BLOCKING"},
++		{name: "NewFocusDecisionOnAnUntouchedFilePasses", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassDecision), fromFocus(finding("F2", SeverityBlocking, "y.go:1"), ClassDecision)}},
++		{name: "NewFocusDecisionOnAnUntouchedFileOutsideAHardenerRoundIsRefused", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassDecision)}, wantErr: "does not list"},
++		{name: "NewFocusFindingOfAnotherClassOnAnUntouchedFileIsRefused", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassScope)}, wantErr: "does not list"},
++		{name: "NewFocusDecisionBelowBlockingIsRefused", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityMedium, "z.go:1"), ClassDecision)}, wantErr: "only at BLOCKING"},
+ 		{
+ 			name: "HeldPairOneResolvedAndOneCarried",
+ 			ctx: round(func(ctx *RoundContext) {
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 3132fb26e..93e54822e 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -161,7 +161,7 @@ func Modules() []Module {
+ 		{Name: "language", Template: languageconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(languageconfig.Load), Spec: languageconfig.ConfigSpec},
+ 		{Name: "lenses", Template: lenses.ConfigTemplate, PerNameMaps: lenses.ConfigPerNameMaps(), CheckLoad: lenses.CheckLoad, Spec: lenses.ConfigSpec},
+ 		{Name: "logger", Template: loggerconfig.ConfigTemplate, CheckLoad: checkLoad(loggerconfig.Load), Spec: loggerconfig.ConfigSpec},
+-		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Spec: loomengine.ConfigSpec},
++		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Reinterpretations: []Reinterpretation{{ID: loomengine.CodeAutoAcceptBlockingReinterpretationID, Rewrite: loomengine.FlagCodeAutoAccept, RunsWithoutFile: true}}, Spec: loomengine.ConfigSpec},
+ 		{Name: "models", Template: modelspec.ConfigTemplate, SeedOnly: true, CheckLoad: checkLoad(modelspec.LoadRegistry), Spec: modelspec.ConfigSpec},
+ 		{Name: "orch", Template: orchengine.ConfigTemplate, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Reinterpretations: []Reinterpretation{{ID: orchengine.RemoteControlOffReinterpretationID, Rewrite: orchengine.FlagRemoteControlDefault}}, Spec: orchengine.ConfigSpec},
+ 		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, CheckLoad: checkProfiles, Spec: runprofile.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index a6bd3f8c6..101d8f4e9 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -123,6 +123,29 @@ func TestModules_OrchRegistersRemoteControlReinterpretation(t *testing.T) {
+ 	}
+ }
+ 
++// TestModules_LoomRegistersCodeAutoAcceptReinterpretation pins the loom module's code_auto_accept reinterpretation.
++// A hub that sets code_auto_accept: true gets the notice that an open BLOCKING finding now escalates.
++// It does so only while the row declares the reinterpretation.
++//
++//testtiming:keep pins the loom row's Reinterpretations entry, which no walk test reads
++func TestModules_LoomRegistersCodeAutoAcceptReinterpretation(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	loom, found := Lookup("loom")
++	if !found {
++		t.Fatal("Lookup(\"loom\") found no module; want the loom module registered")
++	}
++	if len(loom.Reinterpretations) != 1 {
++		t.Fatalf("loom Reinterpretations = %d entries; want 1", len(loom.Reinterpretations))
++	}
++	if got := loom.Reinterpretations[0].ID; got != "loom-code-auto-accept-escalates-blocking" {
++		t.Errorf("loom Reinterpretations[0].ID = %q; want %q", got, "loom-code-auto-accept-escalates-blocking")
++	}
++	if loom.Reinterpretations[0].Rewrite == nil {
++		t.Error("loom Reinterpretations[0].Rewrite is nil; want the rewrite function")
++	}
++}
++
+ // TestModules_EveryTemplateKeyClassified pins that each module's Categories classify every template unit.
+ // It also pins that Categories name only paths the template holds.
+ // The derived LocalKeys, LocalDenied and MachineKeys must match the record.
+diff --git a/internal/loomengine/config.go b/internal/loomengine/config.go
+index 82fe97201..05be61dd7 100644
+--- a/internal/loomengine/config.go
++++ b/internal/loomengine/config.go
+@@ -518,6 +518,8 @@ type Config struct {
+ 	// A nil budget takes ReviewMaxBounces, and a budget of 0 runs no review round for the perch.
+ 	// A hard cap of 0 takes ReviewHardMaxBounces.
+ 	// A flag true makes the perch accept a harvested round at a spent budget instead of running the soft-cap rule.
++	// On a perch whose Bouncer sets blocking_escalates, a round with an open BLOCKING finding escalates.
++	// It goes to the run's parent instead.
+ 	DiscussionMaxBounces     *int `yaml:"discussion_max_bounces"`
+ 	PlanMaxBounces           *int `yaml:"-"`
+ 	CodeMaxBounces           *int `yaml:"code_max_bounces"`
+diff --git a/internal/loomengine/reinterpret.go b/internal/loomengine/reinterpret.go
+new file mode 100644
+index 000000000..073f78f5e
+--- /dev/null
++++ b/internal/loomengine/reinterpret.go
+@@ -0,0 +1,48 @@
++// reinterpret.go carries a hub's loom.yaml across the change of what code_auto_accept: true does at a spent budget.
++
++package loomengine
++
++import (
++	"fmt"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++)
++
++// CodeAutoAcceptBlockingReinterpretationID names the change to code_auto_accept.
++// The setting stopped accepting a round with an open BLOCKING finding at a spent budget.
++const CodeAutoAcceptBlockingReinterpretationID = "loom-code-auto-accept-escalates-blocking"
++
++// codeAutoAcceptKey is the loom.yaml key whose meaning the change narrowed.
++const codeAutoAcceptKey = "code_auto_accept"
++
++// FlagCodeAutoAccept carries a hub loom.yaml across a change to what code_auto_accept: true does.
++// It no longer accepts a round with an open BLOCKING finding at a spent budget.
++// Such a round now escalates to the run's parent, which accepts it or orders another round.
++// A file that sets code_auto_accept to true is flagged with that way forward, and left unchanged.
++// So is a file that sets none, and an absent file (nil existing), since both take the template's default of true.
++// A file that sets it to false is neither changed nor flagged.
++// The worktrees argument is unused, as the check judges the file alone.
++func FlagCodeAutoAccept(existing []byte, _ []configengine.HubWorktree) (rewritten []byte, rewrote, flagged []string, err error) {
++	var keys map[string]yaml.Node
++	if err := yaml.Unmarshal(existing, &keys); err != nil {
++		return nil, nil, nil, fmt.Errorf("parse the loom config: %w", err)
++	}
++	if node, set := keys[codeAutoAcceptKey]; set {
++		var enabled bool
++		if err := node.Decode(&enabled); err != nil {
++			return nil, nil, nil, fmt.Errorf("read %s of the loom config: %w", codeAutoAcceptKey, err)
++		}
++		if !enabled {
++			return existing, nil, nil, nil
++		}
++	}
++	return existing, nil, []string{fmt.Sprintf(
++		"has %s: true, set here or taken from the template default, "+
++			"which no longer accepts a round with an open BLOCKING finding at a spent budget "+
++			"on a perch whose recipe row sets blocking_escalates, as the shipped Code-Review rows do; "+
++			"such a round now escalates to the run's parent with cause budget, which accepts it or orders another round, "+
++			"and the value stays as it is",
++		codeAutoAcceptKey)}, nil
++}
+diff --git a/internal/loomengine/reinterpret_test.go b/internal/loomengine/reinterpret_test.go
+new file mode 100644
+index 000000000..dac1917d1
+--- /dev/null
++++ b/internal/loomengine/reinterpret_test.go
+@@ -0,0 +1,69 @@
++// reinterpret_test.go covers FlagCodeAutoAccept over hub loom.yaml bytes.
++
++package loomengine_test
++
++import (
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestFlagCodeAutoAccept pins the outcomes of the check.
++// A file that sets code_auto_accept to true is flagged with the way forward and left unchanged.
++// A file that sets none, and an absent file, are flagged too, since they take the template default of true.
++// A file that sets it to false is neither changed nor flagged.
++// A file that is no mapping, or sets a value that is no bool, fails.
++func TestFlagCodeAutoAccept(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const wayForward = "escalates to the run's parent with cause budget"
++	tests := []struct {
++		name  string
++		input string
++		// absent passes nil bytes, as the walk does for a hub with no loom.yaml.
++		absent      bool
++		wantFlagged bool
++		wantError   bool
++	}{
++		{name: "SetOn", input: "model: sonnet\ncode_auto_accept: true\n", wantFlagged: true},
++		{name: "SetOff", input: "code_auto_accept: false\n"},
++		{name: "OtherKeysOnly", input: "model: sonnet\n", wantFlagged: true},
++		{name: "HeaderOnly", input: "# tuned for this hub\n", wantFlagged: true},
++		{name: "AbsentFile", absent: true, wantFlagged: true},
++		{name: "NotABool", input: "code_auto_accept: maybe\n", wantError: true},
++		{name: "NotAMapping", input: "- a\n- b\n", wantError: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var existing []byte
++			if !tt.absent {
++				existing = []byte(tt.input)
++			}
++			rewritten, rewrote, flagged, err := loomengine.FlagCodeAutoAccept(existing, nil)
++			if tt.wantError {
++				if err == nil {
++					t.Errorf("FlagCodeAutoAccept(%q) = nil error; want a parse error", tt.input)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("FlagCodeAutoAccept(%q): %v", tt.input, err)
++			}
++			if string(rewritten) != tt.input {
++				t.Errorf("FlagCodeAutoAccept(%q) rewritten = %q; want the input unchanged", tt.input, rewritten)
++			}
++			if len(rewrote) != 0 {
++				t.Errorf("FlagCodeAutoAccept(%q) rewrote = %v; want none", tt.input, rewrote)
++			}
++			switch {
++			case tt.wantFlagged && (len(flagged) != 1 || !strings.Contains(flagged[0], wayForward)):
++				t.Errorf("FlagCodeAutoAccept(%q) flagged = %v; want one line naming %q", tt.input, flagged, wayForward)
++			case !tt.wantFlagged && len(flagged) != 0:
++				t.Errorf("FlagCodeAutoAccept(%q) flagged = %v; want none", tt.input, flagged)
++			}
++		})
++	}
++}
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index 2e3e7fb25..10cbc2237 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -50,7 +50,7 @@ code_hard_max_bounces: 0  # hard cap of the Code-Review perch: a round numbered
+ split_max_bounces: 2  # bounce budget of the split perch: N gives N judged Burler rounds over each new raddle proposal, 2 by default; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once and the proposal is filed unreviewed
+ split_hard_max_bounces: 0  # hard cap of the split perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
+ discussion_auto_accept: false  # true makes the Discussion-Review perch accept a harvested round at a spent budget instead of running the soft-cap rule
+-code_auto_accept: true  # true, the default, makes the Code-Review perch accept a harvested round at a spent budget with its open findings, BLOCKING ones included, instead of running the soft-cap rule; false restores the soft-cap rule
++code_auto_accept: true  # true, the default, makes the Code-Review perch accept a harvested round at a spent budget with its open findings instead of running the soft-cap rule; a round with an open BLOCKING finding is never accepted this way but escalates to the run's parent, which accepts it or orders another round; false restores the soft-cap rule
+ split_auto_accept: false  # true makes the split perch accept a harvested round at a spent budget with its open findings instead of running the soft-cap rule, and its approval files the proposal; false, the default, runs the soft-cap rule
+ pr_review_ask_parent: false  # true has the PR-Review row ask the parent orch for a review once the run's pull request is open, naming the slug, the pull request and its branches; the orch answers the PR-Review session, whose agent fixes any findings; false, the default, leaves asking to the operator; settable per run through run_settings
+ pr_review_parent_timeout_min: 60  # minutes from a PR-Review ask to the parent orch to its deadline; a positive integer, 60 by default; settable per run through run_settings
+diff --git a/internal/loomrecipe/decisionswitches_test.go b/internal/loomrecipe/decisionswitches_test.go
+index 683b3a1ca..7166e0a4b 100644
+--- a/internal/loomrecipe/decisionswitches_test.go
++++ b/internal/loomrecipe/decisionswitches_test.go
+@@ -1,9 +1,12 @@
+-// decisionswitches_test.go pins which shipped recipe rows carry the decision-escalation switches:
+-// escalate_decisions on a Bouncer row and decisions_escalated on a BurlerFix row.
++// decisionswitches_test.go pins which shipped recipe rows carry a switch that hands a review round to the run's parent.
++// escalate_decisions sits on a Bouncer row.
++// decisions_escalated sits on a BurlerFix or HardenFix row.
++// blocking_escalates sits on a Bouncer row.
+ //
+-// The two are one switch in two rows.
++// The first two are one switch in two rows.
+ // The Bouncer sends a round's decision-class findings to the run's parent,
+ // and the fix row of the same segment keeps them out of the fixer and posts nothing.
++// blocking_escalates sends a spent budget with an open BLOCKING finding to the parent instead of an accept.
+ // It parses the real embedded recipes and reads no worktree, staying offline.
+ 
+ package loomrecipe
+@@ -17,21 +20,38 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly asserts which rows carry both switches.
+-// In the tapestry recipe they are Discussion-Bouncer and Discussion-Burler-Fix; no darn row carries them.
+-// The arras recipe carries them on those two rows and on its split perch's Raddle-Bouncer and Raddle-Burler-Fix.
+-// The Plan-Review and Code-Review rows therefore keep the fix row's own parent notice.
+-func TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly(t *testing.T) {
++// TestDecisionSwitches_SetOnTheRowsThatAskTheParent asserts which rows carry each switch.
++// The decision switches sit on the Discussion-Review, Code-Review, split and Harden-Review perches,
++// so the Plan-Review rows keep the fix row's own parent notice.
++// blocking_escalates sits on every Code-Bouncer row.
++//
++//testtiming:keep pins which shipped recipe rows set escalate_decisions, decisions_escalated and blocking_escalates
++func TestDecisionSwitches_SetOnTheRowsThatAskTheParent(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeArras} {
+-		t.Run(name, func(t *testing.T) {
++	tests := []struct {
++		recipe                                    string
++		wantEscalate, wantEscalated, wantBlocking []string
++	}{
++		{recipe: shedrun.RecipeTapestry,
++			wantEscalate:  []string{"Code-Bouncer", "Discussion-Bouncer"},
++			wantEscalated: []string{"Code-Burler-Fix", "Discussion-Burler-Fix"},
++			wantBlocking:  []string{"Code-Bouncer"}},
++		{recipe: shedrun.RecipeDarn, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}},
++		{recipe: shedrun.RecipeSampler, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}},
++		{recipe: shedrun.RecipeArras,
++			wantEscalate:  []string{"Discussion-Bouncer", "Raddle-Bouncer"},
++			wantEscalated: []string{"Discussion-Burler-Fix", "Raddle-Burler-Fix"}},
++		{recipe: shedrun.RecipeHardener, wantEscalate: []string{"Harden-Bouncer"}, wantEscalated: []string{"Harden-Burler-Fix"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.recipe, func(t *testing.T) {
+ 			t.Parallel()
+-			recipe, err := parseEmbeddedRecipe(name)
++			recipe, err := parseEmbeddedRecipe(tt.recipe)
+ 			if err != nil {
+-				t.Fatalf("parseEmbeddedRecipe(%s) error = %v; want nil", name, err)
++				t.Fatalf("parseEmbeddedRecipe(%s) error = %v; want nil", tt.recipe, err)
+ 			}
+-			var gotEscalate, gotEscalated []string
++			var gotEscalate, gotEscalated, gotBlocking []string
+ 			for _, row := range recipe.Producers {
+ 				if set, _ := row.Config["escalate_decisions"].(bool); set {
+ 					gotEscalate = append(gotEscalate, row.Name)
+@@ -39,23 +59,21 @@ func TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly(t *testing.T) {
+ 				if set, _ := row.Config["decisions_escalated"].(bool); set {
+ 					gotEscalated = append(gotEscalated, row.Name)
+ 				}
++				if set, _ := row.Config["blocking_escalates"].(bool); set {
++					gotBlocking = append(gotBlocking, row.Name)
++				}
+ 			}
+ 			sort.Strings(gotEscalate)
+ 			sort.Strings(gotEscalated)
+-			var wantEscalate, wantEscalated []string
+-			switch name {
+-			case shedrun.RecipeTapestry:
+-				wantEscalate = []string{"Discussion-Bouncer"}
+-				wantEscalated = []string{"Discussion-Burler-Fix"}
+-			case shedrun.RecipeArras:
+-				wantEscalate = []string{"Discussion-Bouncer", "Raddle-Bouncer"}
+-				wantEscalated = []string{"Discussion-Burler-Fix", "Raddle-Burler-Fix"}
++			sort.Strings(gotBlocking)
++			if !reflect.DeepEqual(gotEscalate, tt.wantEscalate) {
++				t.Errorf("rows with escalate_decisions = %v; want %v", gotEscalate, tt.wantEscalate)
+ 			}
+-			if !reflect.DeepEqual(gotEscalate, wantEscalate) {
+-				t.Errorf("rows with escalate_decisions = %v; want %v", gotEscalate, wantEscalate)
++			if !reflect.DeepEqual(gotEscalated, tt.wantEscalated) {
++				t.Errorf("rows with decisions_escalated = %v; want %v", gotEscalated, tt.wantEscalated)
+ 			}
+-			if !reflect.DeepEqual(gotEscalated, wantEscalated) {
+-				t.Errorf("rows with decisions_escalated = %v; want %v", gotEscalated, wantEscalated)
++			if !reflect.DeepEqual(gotBlocking, tt.wantBlocking) {
++				t.Errorf("rows with blocking_escalates = %v; want %v", gotBlocking, tt.wantBlocking)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+index 9fd45193f..aa2576f71 100644
+--- a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
++++ b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+@@ -499,6 +499,13 @@ producers:
+       # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+       # under it in the decision record's Open risks section, and a test pins it equal to segment.
+       carry_over: Code-Review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
++      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
++      # given none and posts no notice of its own.
++      escalate_decisions: true
++      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
++      # which accepts it or orders another round, instead of to the auto-accept.
++      blocking_escalates: true
+       # No model/effort/version key: the row refuses them as unknown keys, and loom.yaml's judge,
+       # seed and per-segment judge and seed keys are the only source of this row's passes' models.
+ 
+@@ -573,6 +580,9 @@ producers:
+       role_prefix: code
+       fixer_fan_setting: loom.code_fixer_fan
+       review_row: Code-Burler-Review
++      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
++      # findings to the parent.
++      decisions_escalated: true
+       # The verify gate runs on the committed tree after each round and re-prompts the round
+       # session with the findings until it passes. It first runs the headroom lint from the merge
+       # base with the parent branch, then lints the comments the round added from its own latest
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 227e52090..ec609a1fc 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -167,8 +167,12 @@ type BouncerConfig struct {
+ 	// It accepts only a CONTINUE or CIRCLING verdict this call's judge just wrote at the soft cap;
+ 	// it needs a round with no decision or escalation record, and an escalated round returns its record.
+ 	AutoAccept bool
+-	// BlockingEscalates sends a spent budget to the soft-cap rule if the ledger is unreadable or has an open BLOCKING entry.
+-	// It only turns auto-accepts into rule runs and never accepts what the rule would not.
++	// BlockingEscalates hands a round in the soft-cap window to the run's parent with cause budget.
++	// It does so when the round's ledger holds an open BLOCKING entry or cannot be read.
++	// Neither the auto-accept nor the soft-cap rule's accept then passes the round:
++	// the parent accepts it or orders another round.
++	// A round that EscalateDecisions would escalate with cause decision is handed over the same way.
++	// The exception is a round whose open BLOCKING entries are all of class decision, which the arbiter may rule on.
+ 	BlockingEscalates bool
+ 	// EscalateDecisions makes a judged round escalate with cause decision, whatever the judge ruled.
+ 	// It does so when its accepted review holds a finding of class decision; false, the default, changes nothing.
+@@ -290,6 +294,7 @@ type Bouncer struct {
+ // The soft-cap rule's automatic continue is exempt as well.
+ // With cfg.AutoAccept set, a spent budget turns a freshly judged CONTINUE or CIRCLING round into an automatic accept.
+ // Such a round returns Done instead of running the soft-cap rule.
++// With cfg.BlockingEscalates set, a spent budget over an open BLOCKING ledger entry escalates to the parent instead.
+ // A judge that never recovers halts within MaxBounces counted Stucks.
+ // A continue past the soft cap buys exactly one judged round.
+ //
+@@ -1406,17 +1411,19 @@ func (b *Bouncer) acceptRound(round int, ptr shedengine.OutputPointer) (shedengi
+ // It is also open when the round is at or past the hard cap by its number,
+ // so a round past a new generation that reset Shed's count is still settled by the rule.
+ // In order:
+-// first, with the soft cap reached, AutoAccept set, a harvest (spawned) and no escalation record:
+-// a round that BlockingEscalates does not send to the rule records an automatic accept and passes through acceptRound;
+-// BlockingEscalates sends a round whose ledger holds an open BLOCKING entry, or cannot be read, to the rule instead.
+-// Second, a stalemate escalates with cause stalemate, which the round's own stalemate record always answers again.
++// first, in an open window, BlockingEscalates applies.
++// A round whose ledger holds an open BLOCKING entry or cannot be read escalates with cause budget.
++// The detail names the open keys, and an escalation already recorded for the round is returned as recorded.
++// Second, AutoAccept applies with the soft cap reached, a harvest (spawned) and no escalation record.
++// The round then records an automatic accept and passes through acceptRound.
++// Third, a stalemate escalates with cause stalemate, which the round's own stalemate record always answers again.
+ // In an open window a stalemate yields to softCapRule when its ledger holds no design-wrong entry.
+-// Third, an open window or a CIRCLING verdict over a round whose escalation record exists or cannot be read escalates:
++// Fourth, an open window or a CIRCLING verdict over a round whose escalation record exists or cannot be read escalates:
+ // the escalation returns the recorded Awaiting, or the unreadable-record Stuck.
+-// Fourth, an open window runs softCapRule.
+-// Fifth, a CIRCLING verdict escalates with cause circling,
++// Fifth, an open window runs softCapRule.
++// Sixth, a CIRCLING verdict escalates with cause circling,
+ // and a CONTINUE calls ensureFocus(round + 1) and returns Stuck.
+-// A round whose live gate is red, or whose live state cannot be read, skips the automatic accept at the first step.
++// A round whose live gate is red, or whose live state cannot be read, skips the automatic accept at the second step.
+ // It escalates with cause budget instead.
+ //
+ // Bound: the rule accepts fixes no reviewer saw only when no open BLOCKING or MEDIUM entry is tagged design-wrong.
+@@ -1426,7 +1433,12 @@ func (b *Bouncer) settleUndecided(round int, verdict bouncerVerdict, spawned boo
+ 	windowOpen := softCapReached || b.atHardCap(round)
+ 	_, _, escalated, readErr := readEscalation(b.cfg.RunDir, round)
+ 
+-	if softCapReached && b.cfg.AutoAccept && spawned && readErr == nil && !escalated && !b.blockingSendsToRule(round) {
++	if windowOpen {
++		if detail := b.blockingEscalationDetail(round, ""); detail != "" {
++			return b.escalateWith(round, EscalationBudget, detail, ptr)
++		}
++	}
++	if softCapReached && b.cfg.AutoAccept && spawned && readErr == nil && !escalated {
+ 		if detail := b.liveRedDetail(round); detail != "" {
+ 			return b.escalateWith(round, EscalationBudget, detail, ptr)
+ 		}
+@@ -1528,32 +1540,47 @@ func (b *Bouncer) softCapRule(round int, verdict bouncerVerdict, ptr shedengine.
+ 	return shedengine.Stuck, ptr, nil
+ }
+ 
+-// blockingSendsToRule reports whether BlockingEscalates sends round to the soft-cap rule instead of the auto-accept:
+-// its ledger holds an open BLOCKING entry or cannot be read.
+-func (b *Bouncer) blockingSendsToRule(round int) bool {
++// blockingEscalationDetail returns the budget escalation detail of a round that BlockingEscalates hands to the parent.
++// That is a round whose ledger holds an open BLOCKING entry, and the detail names each such key,
++// or a round whose ledger cannot be read.
++// An entry of class leftOut is not counted.
++// An empty leftOut counts every class, and an entry with no class always counts.
++// It returns "" when BlockingEscalates is off or the ledger holds no counted entry.
++func (b *Bouncer) blockingEscalationDetail(round int, leftOut burlerengine.Class) string {
+ 	if !b.cfg.BlockingEscalates {
+-		return false
++		return ""
+ 	}
+-	blocking, err := b.openBlocking(round)
++	keys, err := b.openBlockingKeys(round, leftOut)
+ 	if err != nil {
+-		logger.Warn("shedadapters: bouncer could not read the ledger for the blocking check, sending the round to the soft-cap rule", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "cause", err)
++		return fmt.Sprintf("the round's ledger could not be read, so the spent budget cannot settle as an accept: %v", err)
+ 	}
+-	return blocking || err != nil
++	if len(keys) == 0 {
++		return ""
++	}
++	return fmt.Sprintf("the spent budget leaves BLOCKING findings open (%s), which only the parent may accept: accept them, or continue for another round", strings.Join(keys, ", "))
+ }
+ 
+-// openBlocking reports whether round's ledger holds an entry that is open at severity BLOCKING.
++// openBlockingKeys returns the keys of round's ledger entries that are open at severity BLOCKING, in ledger order.
++// It leaves out the entries of class leftOut; an empty leftOut counts every class.
+ // A ledger that cannot be read or parsed is an error.
+-func (b *Bouncer) openBlocking(round int) (bool, error) {
++func (b *Bouncer) openBlockingKeys(round int, leftOut burlerengine.Class) ([]string, error) {
+ 	ledger, err := readLedger(b.cfg.RunDir, round)
+ 	if err != nil {
+-		return false, err
++		return nil, err
+ 	}
++	return openBlockingKeysOf(ledger, leftOut), nil
++}
++
++// openBlockingKeysOf returns the keys of ledger's entries that are open at severity BLOCKING, in ledger order.
++// It leaves out the entries of class leftOut; an empty leftOut counts every class.
++func openBlockingKeysOf(ledger ledgerFile, leftOut burlerengine.Class) []string {
++	var keys []string
+ 	for _, entry := range ledger.Entries {
+-		if entry.Status == "open" && entry.Severity == burlerengine.SeverityBlocking {
+-			return true, nil
++		if entry.Status == "open" && entry.Severity == burlerengine.SeverityBlocking && (leftOut == "" || entry.Class != leftOut) {
++			keys = append(keys, entry.Key)
+ 		}
+ 	}
+-	return false, nil
++	return keys
+ }
+ 
+ // liveRedDetail returns the escalation detail of a round whose live gate is red or whose live state cannot be read.
+@@ -1572,6 +1599,12 @@ func (b *Bouncer) liveRedDetail(round int) string {
+ 	return ""
+ }
+ 
++// softCapWindowOpen reports whether round is in the soft-cap window:
++// the budget is reached by Shed's count, or the round is at or past the hard cap by its number.
++func (b *Bouncer) softCapWindowOpen(round int) bool {
++	return b.budgetReached(round) || b.atHardCap(round)
++}
++
+ // budgetReached reports whether the segment's bounce budget is spent.
+ // The comparison is count >= budget, the same one Shed applies to the history it read before appending.
+ // In an amendment the budget is AmendAllowance, clamped to the seam's own budget.
+diff --git a/internal/shedadapters/bouncer_escalation_test.go b/internal/shedadapters/bouncer_escalation_test.go
+index 8d88ec078..8e423f976 100644
+--- a/internal/shedadapters/bouncer_escalation_test.go
++++ b/internal/shedadapters/bouncer_escalation_test.go
+@@ -432,7 +432,8 @@ func TestBouncer_HaltRunsTheHaltSeam(t *testing.T) {
+ 
+ // TestBouncer_AutoAccept covers BouncerConfig.AutoAccept.
+ // A spent budget over a verdict this call's judge just wrote settles as an automatic accept.
+-// A replay and a BlockingEscalates round go to the soft-cap rule.
++// A replay goes to the soft-cap rule.
++// A BlockingEscalates round whose ledger holds an open BLOCKING entry escalates to the parent with cause budget.
+ // The rule's continue rows run over an untagged MEDIUM entry, which pins that a missing `fix` key reads as design-wrong.
+ func TestBouncer_AutoAccept(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -444,6 +445,12 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 		autoAccept bool
+ 		// blockingEscalates is BouncerConfig.BlockingEscalates.
+ 		blockingEscalates bool
++		// escalateDecisions is BouncerConfig.EscalateDecisions.
++		escalateDecisions bool
++		// hardCap is BouncerConfig.HardCap; 0 sets none.
++		hardCap int
++		// report replaces round 2's review report; empty keeps the report with no findings.
++		report string
+ 		// ledger is the judged round's ledger; nil holds the one open gating entry.
+ 		ledger      []evidenceEntry
+ 		bounces     func() (int, int, bool, error)
+@@ -454,12 +461,16 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 		wantCause EscalationCause
+ 		// liveRed is BouncerConfig.LiveRed; nil tells none.
+ 		liveRed func(round int) (bool, error)
+-		// wantDetail is text the escalation brief must carry.
+-		wantDetail string
++		// wantDetail and wantDetailAlso are text the escalation brief must carry.
++		wantDetail, wantDetailAlso string
+ 		// wantSettled expects a settled accept on disk whose automatic value is wantAutomaticValue.
+ 		wantSettled        bool
+ 		wantAutomaticValue bool
+ 		wantExempt         bool
++		// wantJudgeKept expects round 2's verdict and ledger files still in place, so no rejudge archived them.
++		wantJudgeKept bool
++		// wantSnapshot expects round 2's decision snapshot on disk, which a carry-over reads.
++		wantSnapshot bool
+ 		// wantContinue expects the rule's pending continue on disk: cause budget, automatic true.
+ 		wantContinue bool
+ 		// wantCarried, when non-nil, is the keys of the findings the accept carries over, sorted.
+@@ -468,9 +479,42 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 		{name: "BlockingEscalates accepts a ledger with no open BLOCKING entry and carries its open findings", verdict: "CONTINUE", harvest: true, autoAccept: true, blockingEscalates: true, bounces: spentBounces,
+ 			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"beta", "open", "design", "MEDIUM"}, {"gone", "resolved", "design", "BLOCKING"}},
+ 			wantOutcome: shedengine.Done, wantSettled: true, wantAutomaticValue: true, wantCarried: []string{"beta"}},
+-		{name: "BlockingEscalates sends an open BLOCKING entry to the rule, which continues", verdict: "CONTINUE", harvest: true, autoAccept: true, blockingEscalates: true, bounces: spentBounces,
++		{name: "BlockingEscalates escalates an open BLOCKING entry to the parent instead of accepting", verdict: "CONTINUE", harvest: true, autoAccept: true, blockingEscalates: true, bounces: spentBounces,
+ 			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
+-			wantOutcome: shedengine.Stuck, wantExempt: true, wantContinue: true},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "BlockingEscalates escalates an open BLOCKING entry without auto-accept instead of running the rule", verdict: "CONTINUE", harvest: true, blockingEscalates: true, bounces: spentBounces,
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "BlockingEscalates below the budget leaves an open BLOCKING entry to the next round", verdict: "CONTINUE", harvest: true, autoAccept: true, blockingEscalates: true, bounces: belowBounces,
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Stuck, wantJudgeKept: true},
++		{name: "BlockingEscalates escalates with cause budget at the hard cap with the budget unspent", verdict: "CONTINUE", harvest: true, blockingEscalates: true, hardCap: 2, bounces: belowBounces,
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)"},
++		{name: "BlockingEscalates hands a decision finding over an open BLOCKING entry to the parent as a budget escalation", verdict: "CONTINUE", harvest: true, blockingEscalates: true, escalateDecisions: true, bounces: spentBounces,
++			report:      decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}),
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "BLOCKING findings open (hard)",
++			wantDetailAlso: "the review also holds decision findings (D1)", wantSnapshot: true},
++		{name: "an accept over a decision finding below the budget leaves an open BLOCKING entry to the next round", verdict: "CONTINUE", harvest: true, escalateDecisions: true, bounces: belowBounces, decide: CirclingAccept,
++			report:      decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}),
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Stuck, wantJudgeKept: true},
++		{name: "an accept over a decision finding at the spent budget escalates an open BLOCKING entry to the parent", verdict: "CONTINUE", harvest: true, escalateDecisions: true, bounces: spentBounces, decide: CirclingAccept,
++			report:      decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}),
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationBudget, wantDetail: "leaves BLOCKING findings open (hard)"},
++		{name: "BlockingEscalates leaves a decision finding over an open BLOCKING decision entry to the decision escalation", verdict: "CONTINUE", harvest: true, blockingEscalates: true, escalateDecisions: true, bounces: spentBounces,
++			report:      decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}),
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "decision", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationDecision},
++		{name: "a CONVERGED verdict over an open BLOCKING entry and a decision finding keeps the decision escalation", verdict: "CONVERGED", harvest: true, blockingEscalates: true, escalateDecisions: true, bounces: spentBounces,
++			report:      decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}),
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Awaiting, wantCause: EscalationDecision},
++		{name: "a recorded parent continue over a BlockingEscalates escalation runs another round", verdict: "CONTINUE", harvest: true, autoAccept: true, blockingEscalates: true, bounces: spentBounces, decide: CirclingContinue,
++			ledger:      []evidenceEntry{{"alpha", "resolved", "design", "MEDIUM"}, {"hard", "open", "scope", "BLOCKING"}},
++			wantOutcome: shedengine.Stuck, wantExempt: true},
+ 		{name: "a harvested CONTINUE at a spent budget settles automatically", verdict: "CONTINUE", harvest: true, autoAccept: true, bounces: spentBounces,
+ 			wantOutcome: shedengine.Done, wantSettled: true, wantAutomaticValue: true},
+ 		{name: "a harvested CIRCLING at a spent budget settles automatically", verdict: "CIRCLING", harvest: true, autoAccept: true, bounces: spentBounces,
+@@ -514,6 +558,10 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 			cfg.Bounces = tt.bounces
+ 			cfg.AutoAccept = tt.autoAccept
+ 			cfg.BlockingEscalates = tt.blockingEscalates
++			cfg.EscalateDecisions = tt.escalateDecisions
++			if tt.hardCap != 0 {
++				cfg.HardCap = tt.hardCap
++			}
+ 			cfg.LiveRed = tt.liveRed
+ 			seams.install(&cfg)
+ 			carry.install(&cfg)
+@@ -521,6 +569,9 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 				{round: 1, report: bouncerReport(1), verdict: bouncerVerdictContent("CONTINUE"), ledger: bouncerLedgerContent(1)},
+ 				{round: 2, report: bouncerReport(2)},
+ 			}
++			if tt.report != "" {
++				rounds[1].report = tt.report
++			}
+ 			if !tt.harvest {
+ 				rounds[1].verdict = bouncerVerdictContent(tt.verdict)
+ 				rounds[1].ledger = bouncerLedgerContent(2)
+@@ -561,6 +612,18 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 			if ptr.BudgetExempt != tt.wantExempt {
+ 				t.Errorf("BudgetExempt = %v; want %v", ptr.BudgetExempt, tt.wantExempt)
+ 			}
++			if tt.wantJudgeKept {
++				for _, path := range []string{verdictPath(cfg.RunDir, 2), ledgerPath(cfg.RunDir, 2)} {
++					if _, err := os.Stat(path); err != nil {
++						t.Errorf("Stat(%s) = %v; want the judge output in place, not archived by a rejudge", path, err)
++					}
++				}
++			}
++			if tt.wantSnapshot {
++				if _, err := os.Stat(decisionSnapshotPath(cfg.RunDir, 2)); err != nil {
++					t.Errorf("Stat(decision snapshot) = %v; want the snapshot written before the escalation", err)
++				}
++			}
+ 			if tt.wantCause != "" {
+ 				requireEscalation(t, &cfg, tt.wantCause)
+ 			}
+@@ -569,6 +632,11 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 					t.Errorf("escalation brief = %q, %v; want it to carry %q", brief, err, tt.wantDetail)
+ 				}
+ 			}
++			if tt.wantDetailAlso != "" {
++				if brief, err := os.ReadFile(escalationPath(cfg.RunDir, 2)); err != nil || !strings.Contains(string(brief), tt.wantDetailAlso) {
++					t.Errorf("escalation brief = %q, %v; want it to carry %q", brief, err, tt.wantDetailAlso)
++				}
++			}
+ 			if tt.wantOutcome != shedengine.Awaiting && tt.decide == "" {
+ 				requireNoEscalation(t, &cfg)
+ 				if ptr.ParentNotice != "" {
+@@ -604,19 +672,42 @@ func TestBouncer_AutoAccept(t *testing.T) {
+ 				}
+ 			} else if tt.decide == "" && exists {
+ 				t.Errorf("decision file exists (%q); want none", decision)
++			} else if tt.decide == CirclingAccept && settled {
++				t.Errorf("decision file = (%q, settled %v); want the held accept not settled", decision, settled)
+ 			}
+ 		})
+ 	}
+ }
+ 
+-// softCapPath is one of the three ways a round reaches the soft-cap rule.
++// TestBouncer_BlockingEscalatesAnUnreadableLedger pins the escalation of a spent budget over an unreadable ledger.
++// The round escalates to the parent with cause budget, and the detail says the ledger could not be read.
++func TestBouncer_BlockingEscalatesAnUnreadableLedger(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	b, cfg, _ := escalationBouncer(t, "CONTINUE", func(c *BouncerConfig) {
++		c.BlockingEscalates = true
++		c.Bounces = spentBounces
++	})
++	if err := os.WriteFile(ledgerPath(cfg.RunDir, 2), []byte("not a ledger\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile(ledger round 2) = %v; want nil", err)
++	}
++
++	outcome, _, err := b.settleUndecided(2, verdictContinue, true, shedengine.OutputPointer{})
++
++	if err != nil || outcome != shedengine.Awaiting {
++		t.Fatalf("settleUndecided() = %q, %v; want awaiting, nil", outcome, err)
++	}
++	requireEscalation(t, cfg, EscalationBudget)
++	if brief, err := os.ReadFile(escalationPath(cfg.RunDir, 2)); err != nil || !strings.Contains(string(brief), "could not be read") {
++		t.Errorf("escalation brief = %q, %v; want it to carry %q", brief, err, "could not be read")
++	}
++}
++
++// softCapPath is one of the two ways a round reaches the soft-cap rule.
+ // A harvest with no auto-accept reaches it, and so does a replay on an auto-accept perch.
+-// A harvest on an auto-accept perch reaches it when an open BLOCKING entry is one blocking_escalates sends there.
+ type softCapPath struct {
+-	name                          string
+-	harvest, autoAccept, blocking bool
+-	// severity replaces MEDIUM in the judged ledger, so the BLOCKING path has the open BLOCKING entry it needs.
+-	severity string
++	name                string
++	harvest, autoAccept bool
+ }
+ 
+ // softCapRuleRow is one case of TestBouncer_SoftCapRule, run once on each softCapPath.
+@@ -655,9 +746,8 @@ func TestBouncer_SoftCapRule(t *testing.T) {
+ 	mechanical := taggedEntry{"mech", "open", "design", "MEDIUM", "mechanical"}
+ 	atFourOfThree := func() (int, int, bool, error) { return 4, 3, true, nil }
+ 	paths := []softCapPath{
+-		{name: "harvest", harvest: true, severity: "MEDIUM"},
+-		{name: "replay with auto-accept", autoAccept: true, severity: "MEDIUM"},
+-		{name: "blocking_escalates", harvest: true, autoAccept: true, blocking: true, severity: "BLOCKING"},
++		{name: "harvest", harvest: true},
++		{name: "replay with auto-accept", autoAccept: true},
+ 	}
+ 	rows := []softCapRuleRow{
+ 		{name: "no design-wrong entry accepts and carries the open MEDIUM mechanical key", ledger: []taggedEntry{{"low", "open", "design", "LOW", "design-wrong"}, mechanical},
+@@ -719,13 +809,7 @@ func runSoftCapRuleRow(t *testing.T, row softCapRuleRow, path softCapPath) {
+ 	if bounces == nil {
+ 		bounces = spentBounces
+ 	}
+-	ledger := make([]taggedEntry, len(row.ledger))
+-	for i, entry := range row.ledger {
+-		if entry.severity == "MEDIUM" {
+-			entry.severity = path.severity
+-		}
+-		ledger[i] = entry
+-	}
++	ledger := row.ledger
+ 
+ 	seams := &circlingSeams{}
+ 	carry := &carryOverRecorder{}
+@@ -735,7 +819,6 @@ func runSoftCapRuleRow(t *testing.T, row softCapRuleRow, path softCapPath) {
+ 	cfg.Bounces = bounces
+ 	cfg.HardCap = row.hardCap
+ 	cfg.AutoAccept = path.autoAccept
+-	cfg.BlockingEscalates = path.blocking
+ 	cfg.LiveRed = row.liveRed
+ 	seams.install(&cfg)
+ 	carry.install(&cfg)
+diff --git a/internal/shedadapters/bouncerdecision.go b/internal/shedadapters/bouncerdecision.go
+index a2cbabad0..5b022c273 100644
+--- a/internal/shedadapters/bouncerdecision.go
++++ b/internal/shedadapters/bouncerdecision.go
+@@ -87,10 +87,14 @@ func (b *Bouncer) decisionFindings(round int) ([]burlerengine.Finding, error) {
+ // It does the same when the round's escalation or decision file has another cause;
+ // it does the same for a settled accept.
+ // A round with no decision yet escalates with cause decision after writing the snapshot of the decision record.
++// The exception is a round that BlockingEscalates hands to the parent with cause budget.
+ // A pending continue is re-judged when the dropped-key check refuses it;
+ // otherwise it runs another round, or at the hard cap it is retired and escalated again.
+ // A pending accept passes the round when the refusal check admits it;
+ // the decision findings are left out of its BLOCKING checks.
++// An accept over a CONTINUE or CIRCLING verdict rules only on the decision-class findings,
++// so an open BLOCKING ledger entry of another class holds it:
++// outside the soft-cap window the round runs another round, and inside it the round escalates with cause budget.
+ // A refused accept is re-judged while budget is left;
+ // at the budget it is retired and escalated again below the hard cap, and it halts the run at or past the hard cap.
+ func (b *Bouncer) routeDecisions(ctx context.Context, round int, verdict bouncerVerdict, ledger ledgerFile, spawned bool) (shedengine.Outcome, shedengine.OutputPointer, error, bool) {
+@@ -124,7 +128,7 @@ func (b *Bouncer) routeDecisions(ctx context.Context, round int, verdict bouncer
+ 		if !escalated {
+ 			logger.Info("shedadapters: bouncer escalating a decision-class finding to the parent", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", round, "verdict", verdict, "spawned", spawned)
+ 		}
+-		outcome, ptr, err = b.escalateUndecided(round, verdict, ledger, ptr)
++		outcome, ptr, err = b.escalateUndecided(round, verdict, ledger, findings, ptr)
+ 	case decision == CirclingContinue:
+ 		outcome, ptr, err = b.settleDecisionContinue(ctx, round, verdict, ledger, ptr)
+ 	default:
+@@ -134,11 +138,25 @@ func (b *Bouncer) routeDecisions(ctx context.Context, round int, verdict bouncer
+ }
+ 
+ // escalateUndecided escalates round with cause decision after writing its snapshot.
++// With BlockingEscalates set, a CONTINUE or CIRCLING round in the soft-cap window escalates with cause budget instead.
++// That applies when its ledger holds an open BLOCKING entry of a class other than decision, or cannot be read.
++// Only the parent may accept such a round, and the detail names the decision-class findings in findings.
++// A CONVERGED verdict keeps cause decision, since the refusal check already shows the open entry.
+ // A round that already carries the escalation record returns the same Awaiting.
+-func (b *Bouncer) escalateUndecided(round int, verdict bouncerVerdict, ledger ledgerFile, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
++func (b *Bouncer) escalateUndecided(round int, verdict bouncerVerdict, ledger ledgerFile, findings []burlerengine.Finding, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := writeDecisionSnapshot(b.cfg.RunDir, round, b.cfg.DecisionRecordPath); err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): %w; way forward: make the named path writable, then run `lym loom start`, which re-escalates the round", b.cfg.Name, bouncerEngineLabel, err)
+ 	}
++	if verdict != verdictConverged && b.softCapWindowOpen(round) {
++		if detail := b.blockingEscalationDetail(round, burlerengine.ClassDecision); detail != "" {
++			ids := make([]string, len(findings))
++			for i, finding := range findings {
++				ids[i] = finding.ID
++			}
++			detail += fmt.Sprintf("; the review also holds decision findings (%s), which the parent rules on", strings.Join(ids, ", "))
++			return b.escalateWith(round, EscalationBudget, detail, ptr)
++		}
++	}
+ 	return b.escalateDecision(round, b.decisionRefusal(round, verdict, ledger, CirclingAccept), false, ptr)
+ }
+ 
+@@ -163,12 +181,21 @@ func (b *Bouncer) settleDecisionContinue(ctx context.Context, round int, verdict
+ 
+ // settleDecisionAccept acts on a pending accept recorded for a decision escalation.
+ // An admitted accept passes the round.
+-// A refused one is re-judged while budget is left;
++// The exception is a CONTINUE or CIRCLING verdict whose ledger holds an open BLOCKING entry of another class.
++// Such an accept rules only on the decision findings and passes nothing else.
++// Outside the soft-cap window that round runs another round.
++// Inside it the accept is retired and the round escalates with cause budget, which only the parent accepts.
++// A refused accept is re-judged while budget is left;
+ // at the budget below the hard cap it is retired and the round escalates again.
+ // At the budget at or past the hard cap the judge outputs are archived and the run halts,
+ // so a resume re-judges the round under the recorded accept.
+ func (b *Bouncer) settleDecisionAccept(ctx context.Context, round int, verdict bouncerVerdict, ledger ledgerFile, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	refusal := b.decisionRefusal(round, verdict, ledger, CirclingAccept)
++	if refusal == "" && verdict != verdictConverged {
++		if keys := openBlockingKeysOf(ledger, burlerengine.ClassDecision); len(keys) > 0 {
++			return b.holdAcceptOverOpenEntries(round, keys, ptr)
++		}
++	}
+ 	switch {
+ 	case refusal == "":
+ 		return b.acceptRound(round, ptr)
+@@ -187,6 +214,22 @@ func (b *Bouncer) settleDecisionAccept(ctx context.Context, round int, verdict b
+ 	return shedengine.Stuck, shedengine.OutputPointer{Reason: reason, Halt: true}, nil
+ }
+ 
++// holdAcceptOverOpenEntries holds a recorded accept that the ledger's open BLOCKING entries of another class outrule.
++// keys names those entries.
++// Outside the soft-cap window the next round starts so the fixer fixes them.
++// Inside it the accept is retired and the round escalates with cause budget, so only the parent accepts.
++func (b *Bouncer) holdAcceptOverOpenEntries(round int, keys []string, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
++	if !b.softCapWindowOpen(round) {
++		b.ensureFocus(round + 1)
++		return shedengine.Stuck, ptr, nil
++	}
++	detail := fmt.Sprintf("the recorded accept rules only on decision findings and leaves BLOCKING findings open (%s), which only the parent may accept: accept them, or continue for another round", strings.Join(keys, ", "))
++	if err := b.retireContinue(round); err != nil {
++		return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): retire the accept decision of round %d held by open BLOCKING entries: %w; way forward: make the named path writable, then run `lym loom start`, which re-escalates the round", b.cfg.Name, bouncerEngineLabel, round, err)
++	}
++	return b.escalateWith(round, EscalationBudget, detail, ptr)
++}
++
+ // escalateDecision renders the decision detail of round and escalates it with cause decision.
+ // A detail that cannot be rendered warns and escalates without it.
+ func (b *Bouncer) escalateDecision(round int, refusal string, held bool, ptr shedengine.OutputPointer) (shedengine.Outcome, shedengine.OutputPointer, error) {
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index 32f89e6a1..d8712992d 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -85,6 +85,8 @@ type BurlerHalfDeps struct {
+ 	// The review producer reads it on every call and puts the reason in the review prompt.
+ 	// Empty for a segment that reads none.
+ 	HaltConflictDir string
++	// FocusFindings marks a hardener segment's review, whose round check admits a focus finding outside the changed files.
++	FocusFindings bool
+ 	// Diff reads the unified diff a spawned reviewer is given in pieces, read by the review producer once per spawning call.
+ 	// Nil gives no diff, and so does a failed read, which is logged.
+ 	Diff func() (string, error)
+@@ -166,6 +168,8 @@ type BurlerReviewProducer struct {
+ 	amendmentTitles func() ([]string, error)
+ 	// haltConflictDir, when non-empty, is the conflict directory whose halt-reason file each call reads.
+ 	haltConflictDir string
++	// focusFindings marks a hardener segment's review, whose round context admits a focus finding outside the changed files.
++	focusFindings bool
+ 	// diff, when non-nil, reads the diff a spawned reviewer is given.
+ 	diff func() (string, error)
+ 	// rubric, when non-nil, reads each round's rubric.
+@@ -196,7 +200,7 @@ func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlereng
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, amendmentTitles: deps.AmendmentTitles, haltConflictDir: deps.HaltConflictDir, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, amendmentTitles: deps.AmendmentTitles, haltConflictDir: deps.HaltConflictDir, focusFindings: deps.FocusFindings, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // recordRoundStart writes round's snapshot record when none exists yet.
+@@ -269,7 +273,7 @@ func (p *BurlerReviewProducer) roundProfile(round int, fan, rubric string) burle
+ 	profile.PriorFixerReports = append(append([]string{}, p.profile.PriorFixerReports...), priorFixerReports...)
+ 	profile.ClusterExclude = nil
+ 	profile.ClusterExcludeHeld = nil
+-	roundContext, err := BuildRoundContext(p.runDir, round, RoundContextSources{DecisionRecordPath: p.decisionRecordPath, AmendmentTitles: p.amendmentTitles, ConflictDir: p.haltConflictDir})
++	roundContext, err := BuildRoundContext(p.runDir, round, RoundContextSources{DecisionRecordPath: p.decisionRecordPath, AmendmentTitles: p.amendmentTitles, ConflictDir: p.haltConflictDir, FocusFindings: p.focusFindings})
+ 	if err != nil {
+ 		logger.Warn("shedadapters: burler review could not build the round context; the round is reviewed in full", "producer", p.name, "engine", burlerReviewEngineLabel, "round", round, "error", err)
+ 	}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 38dc93191..0cd0cb0a2 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -164,6 +164,8 @@
+ // A recorded decision is acted on first, whatever the budget.
+ // A pending accept settles its record and maps to Done after Approve and Commit.
+ // A continue below the hard cap maps to Stuck, BudgetExempt when the cause is budget or the budget is reached.
++// With BouncerConfig.BlockingEscalates, a spent budget over an open BLOCKING ledger entry escalates with cause budget,
++// so no accept passes such a round without the parent.
+ // The escalation rules read only files in the run directory, so a harvest and a replay settle alike.
+ // A pass that settles a judged round calls the CarryOver seam, which only writes the segment's `## Open risks` entry:
+ // it approves nothing, and a failure is the settle's own error, so neither Approve nor Commit runs.
+diff --git a/internal/shedadapters/roundcontext.go b/internal/shedadapters/roundcontext.go
+index bbfa4ab58..a3cc5c97e 100644
+--- a/internal/shedadapters/roundcontext.go
++++ b/internal/shedadapters/roundcontext.go
+@@ -95,6 +95,8 @@ type RoundContextSources struct {
+ 	AmendmentTitles func() ([]string, error)
+ 	// ConflictDir is the directory holding the plan executor's halt-reason file.
+ 	ConflictDir string
++	// FocusFindings marks a hardener segment's round, which may raise a focus finding outside the changed files.
++	FocusFindings bool
+ }
+ 
+ // amendingEntryTexts returns the full text of every added entry of the decision record whose title amendmentTitles lists.
+@@ -219,6 +221,7 @@ func BuildRoundContext(runDir string, round int, paths RoundContextSources) (*bu
+ 		AddedTexts:           texts,
+ 		AmendingTexts:        amendingTexts,
+ 		HaltReason:           haltReason,
++		FocusFindings:        paths.FocusFindings,
+ 		HasChanges:           hasChanges,
+ 		Changed:              changed,
+ 		PriorReviewPath:      reviewPath,
+diff --git a/internal/shedadapters/roundcontext_test.go b/internal/shedadapters/roundcontext_test.go
+index 7b3810151..fcb012b0f 100644
+--- a/internal/shedadapters/roundcontext_test.go
++++ b/internal/shedadapters/roundcontext_test.go
+@@ -123,9 +123,11 @@ func TestBuildRoundContext(t *testing.T) {
+ 		withAnchor bool
+ 		// withPlanPaths passes the amendment record and the conflict directory to the builder.
+ 		withPlanPaths bool
+-		wantNil       bool
+-		wantErr       bool
+-		check         func(t *testing.T, got *burlerengine.RoundContext, e env)
++		// withFocusFindings marks the round as a hardener round to the builder.
++		withFocusFindings bool
++		wantNil           bool
++		wantErr           bool
++		check             func(t *testing.T, got *burlerengine.RoundContext, e env)
+ 	}{
+ 		{name: "RoundOneHasNoEarlierRound", round: 1, setup: complete, wantNil: true},
+ 		{
+@@ -358,6 +360,14 @@ func TestBuildRoundContext(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "FocusFindingsComesFromTheSources", withFocusFindings: true, setup: complete,
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if !got.FocusFindings {
++					t.Error("FocusFindings = false; want true")
++				}
++			},
++		},
+ 		{
+ 			name: "PlanPathsLeftEmptyReadNothing",
+ 			setup: then(func(t *testing.T, e env) {
+@@ -399,6 +409,7 @@ func TestBuildRoundContext(t *testing.T) {
+ 			if tt.withPlanPaths {
+ 				paths.AmendmentTitles, paths.ConflictDir = amendmentTitlesFile(e.amendment), e.conflictDir
+ 			}
++			paths.FocusFindings = tt.withFocusFindings
+ 
+ 			got, err := BuildRoundContext(e.runDir, round, paths)
+ 
+diff --git a/internal/shedrecipe/entries_bouncer_test.go b/internal/shedrecipe/entries_bouncer_test.go
+index 7219cfd4c..19e39de79 100644
+--- a/internal/shedrecipe/entries_bouncer_test.go
++++ b/internal/shedrecipe/entries_bouncer_test.go
+@@ -1427,7 +1427,7 @@ func TestBouncerEntry_BlockingEscalatesAndColorSegment(t *testing.T) {
+ 		{name: "absent keys auto-accept in the review color", autoAccept: true, wantOutcome: shedengine.Done, wantSegment: segmentcolor.Review},
+ 		{name: "a decision finding without escalate_decisions settles as today", autoAccept: true, decisionReview: true, wantOutcome: shedengine.Done, wantSegment: segmentcolor.Review},
+ 		{name: "escalate_decisions escalates a decision finding to the parent", extra: Config{"escalate_decisions": true}, autoAccept: true, decisionReview: true, wantOutcome: shedengine.Awaiting, wantSegment: segmentcolor.Review},
+-		{name: "blocking_escalates sends the open BLOCKING entry to the rule, which continues", extra: Config{"blocking_escalates": true}, autoAccept: true, wantOutcome: shedengine.Stuck, wantSegment: segmentcolor.Review},
++		{name: "blocking_escalates escalates the open BLOCKING entry to the parent", extra: Config{"blocking_escalates": true}, autoAccept: true, wantOutcome: shedengine.Awaiting, wantSegment: segmentcolor.Review},
+ 		{name: "a null auto-accept is false, so the soft-cap rule runs", autoAccept: nil, wantOutcome: shedengine.Stuck, wantSegment: segmentcolor.Review},
+ 		{name: "a hard cap of 1 offers only accept", extra: Config{"blocking_escalates": true}, autoAccept: true, hardCap: 1, wantOutcome: shedengine.Awaiting, wantSegment: segmentcolor.Review},
+ 		{name: "color_segment colors the judge", extra: Config{"color_segment": "merge"}, autoAccept: true, wantOutcome: shedengine.Done, wantSegment: segmentcolor.Merge},
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index d289ae780..cdfda4928 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -180,7 +180,7 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	snapshot := reviewTargetSnapshot(env, runSubdir)
+ 	snapshot.Scope, snapshot.Paths = profile.FixScope, profile.Target.Paths
+ 	opts := burlerengine.RunOpts{Timeout: burlerRowTimeout(timeoutS, env), ReviewKey: segment.ReviewKey}
+-	halfDeps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, Diff: diff, Rubric: rubric}
++	halfDeps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, FocusFindings: hardenRound, Diff: diff, Rubric: rubric}
+ 	// Only the plan segment's review answers to the plan amendment record and the plan executor's halt reason.
+ 	if row.Name == loomshed.NamePlanBurlerReview {
+ 		halfDeps.AmendmentTitles, halfDeps.HaltConflictDir = amendmentTitlesAt(env.AmendmentPath), env.HaltConflictDir
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index 8ec8cf304..fff92d0fc 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -325,6 +325,46 @@ func TestBurlerReviewEntry_ProfileMapping(t *testing.T) {
+ 		}
+ 	})
+ 
++	// Only a harden_round row's round check admits a new focus finding outside the changed files.
++	t.Run("HardenRoundSetsTheFocusFindingsPermission", func(t *testing.T) {
++		const review = "---\nverdict: BLOCKING\nfindings:\n" +
++			"  - id: F2\n    severity: BLOCKING\n    class: decision\n    origin: focus\n    location: z.go:1\n    summary: s2\n    fix: f2\n" +
++			"prior:\n  - id: F1\n    status: resolved\n---\n\n### [BLOCKING] s2\n\n**Location:** z.go:1\n\n**Issue:** an undriven focus entry.\n"
++		tests := []struct {
++			name        string
++			hardenRound bool
++			wantErr     string
++		}{
++			{name: "HardenRoundAdmitsIt", hardenRound: true},
++			{name: "OtherRowRefusesIt", wantErr: "does not list"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				env := hardenTestEnv(t)
++				writeJudgedRoundOne(t, filepath.Join(env.RunRoot, "review-segment"))
++				cfg := minimalReviewConfig()
++				if tt.hardenRound {
++					cfg["harden_round"] = true
++				}
++
++				profile, _ := captureReview(t, "review-row", cfg, env)
++
++				if profile.Round == nil {
++					t.Fatal("profile.Round = nil; want the round-2 context")
++				}
++				ctx := *profile.Round
++				ctx.HasChanges, ctx.Changed = true, []string{"c.go"}
++				err := burlerengine.CheckReviewRound([]byte(review), &ctx)
++				if tt.wantErr == "" && err != nil {
++					t.Errorf("CheckReviewRound() = %v; want the focus finding admitted", err)
++				}
++				if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)) {
++					t.Errorf("CheckReviewRound() = %v; want a refusal containing %q", err, tt.wantErr)
++				}
++			})
++		}
++	})
++
+ 	t.Run("NoStageDiffGivesNoDiff", func(t *testing.T) {
+ 		profile, _ := captureReview(t, "review-row", minimalReviewConfig(), newTestEnv(t))
+ 
