@@ -290,7 +290,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #187](https://github.com/Knatte18/loomyard/issues/187).\n\nSeen: during a run's PR-Review row, lym loom pr-findings failed with: NewParentAlign: Deps.OpenFabric must not be nil.\n\nWorkaround: the PR findings were sent to the PR-Review agent by creel mail instead.\n\nExpected: pr-findings builds its parent-align dependencies itself and records the findings.",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-23T08:18:57Z",
       "revised": "2026-11-23T08:19:37Z",
       "run_settings": {
