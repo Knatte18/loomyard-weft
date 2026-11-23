@@ -1,6 +1,6 @@
 # Red-first gate must support C# repositories
 
-`red-first-csharp` · Task · enhancement, gate, loom, dotnet · running · Drift-Await
+`red-first-csharp` · Task · enhancement, gate, loom, dotnet · running · Drift-Expect
 
 Imported from [issue #208](https://github.com/Knatte18/loomyard/issues/208).
 
