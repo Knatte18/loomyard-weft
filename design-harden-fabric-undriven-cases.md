@@ -1,6 +1,6 @@
 # Fix the five fabric faults the one-repository hardener found but could not raise
 
-`harden-fabric-undriven-cases` · Task · bug, fabric
+`harden-fabric-undriven-cases` · Task · bug, fabric · starting · Worktree-Create
 
 ## Seen
 
