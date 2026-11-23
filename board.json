@@ -469,6 +469,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe orch got creel mail #2450 from `ly:LOOM` (2026-11-23):\n\"Darn-Write gate: the verify gate has run past its 30m0s budget and is at attempt 3; it goes on until its attempts are spent; no verify run has failed yet\".\nNeither the sender nor the text names the run, and three darn runs were in Darn-Write at the time,\nso the orch could only guess which run it meant.\nThe line is built by `verifyBudgetNotice` in `internal/loomshed/verifybudget.go`, which takes the gate site but no slug.\n\n## Idea\n\nPut the run's slug in the line, as other parent notices do, so the parent knows which run it is about without a status read.\n",
+      "status": "draft",
       "created": "2026-11-23T08:50:21Z",
       "revised": "2026-11-23T08:59:08Z",
       "profile": "light"
@@ -668,6 +669,28 @@
       "body": "## Seen\n\nOn 2026-11-23 three imported bugs ran as darn tasks and each found the fault already fixed on the base:\n`pr-findings-open-fabric-nil` (fixed by `6fa7f1740`), `amend-plan-loses-webster-batches` (no losing path left) and `rules-read-plan-gated-403` (fixed by `895eab670` two days before).\nEach took a run slot in a full queue for nothing.\n\n## Wanted\n\nOperator decision (2026-11-23): board intake checks whether a bug is already fixed before it puts it on the board.\n\n- The intake fork's rules, `contracts/orchrole/role-intake.md`, gain a fourth outcome beside new note, fold and close as noise:\n  close as already fixed, its reason naming the commit on `main` that fixed it and how the fork saw it.\n- The fork judges it from the code on `main` and its history, as the three runs above did in their first minutes:\n  the code path the issue names, and commits since the issue's build that touch it.\n- When it cannot tell, the issue goes on the board as now.\n- `lym board intake close` may need a reason form that names the fixing commit; decide in the run.\n",
       "created": "2026-11-23T09:59:04Z",
       "revised": "2026-11-23T09:59:04Z"
+    },
+    {
+      "id": 1605,
+      "handle": "B6",
+      "slug": "transient-fetch-no-retry",
+      "title": "Runs stop and escalate on a transient GitHub fetch failure instead of retrying",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "git",
+        "batten",
+        "landing"
+      ],
+      "issues": [
+        193
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #193](https://github.com/Knatte18/loomyard/issues/193).\n\n## Seen\n\nAround 10:08 and again at 10:33 on 2026-11-23, GitHub was unreachable from this host for a short time.\n`git fetch` failed with `HTTP/2 stream 1 was closed cleanly, but before getting all response header fields`, and `git ls-remote` failed with HTTP/2 stream resets and HTTP/1.1 connection resets.\n\nThree batten runs in one hub stopped on it within a minute of each other and escalated to the parent orch as questions:\n\n- `friction-profile-rules` failed at Run-Shed: `battencli: origin reconcile ... git fetch origin +refs/heads/\u003cparent\u003e:refs/remotes/origin/\u003cparent\u003e: exit 128`.\n- `models-wemod-robustness-sanity` blocked at Finalize with a landing stop: the PR had been merged on GitHub, but the parent's upstream could not be fetched.\n- `models-torque-drag-adapter` stopped at the start of its run on `git ls-remote origin`.\n\nEach stop's tackler or arbiter handed the question back (\"should the run be re-launched once GitHub answers?\"), two of them saying no parent was recorded for the run.\nA minute later `git ls-remote origin` answered at once.\n\n## Workaround\n\nThe orch checked `git ls-remote origin`, then ran `lym batten run \u003cslug\u003e` for the two batten stops and `lym loom resume` in the task worktree for the Finalize stop.\nAll three went on without any other change.\n\n## Expected\n\nA transient network failure on a git fetch, push or ls-remote is retried by lym with backoff, for a bounded time, before the run stops.\nOnly a failure that outlasts the retries reaches the parent, and then as a notice naming the failing remote operation, not as a question.\n",
+      "created": "2026-11-23T10:04:39Z",
+      "revised": "2026-11-23T10:04:39Z"
     }
   ],
   "prime_owner": "neve",
