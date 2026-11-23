@@ -340,9 +340,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl"
       ]
+    },
+    "4": {
+      "slug": "pairteardown-prime-handover",
+      "cards": [
+        "04-pairteardown-prime-handover",
+        "05-runpusher-package",
+        "06-loom-pusher-verb"
+      ],
+      "cardHashes": {
+        "04-pairteardown-prime-handover": "27939c7192e7dd30fb69695c1bcd97f8baf189eabf8333369207ea0d900a5356",
+        "05-runpusher-package": "bad8b973c0532967e3cf0987694398bc68b8ee4bafd6a641eb576c66ce5772a1",
+        "06-loom-pusher-verb": "beb5ef382197c0d89b8afcc63f2682b38f0a57a75b9a22c6f515602f0fc49559"
+      },
+      "startSha": "97303640bbbe4579b2234cf7d712f9ae319d2c47",
+      "kind": "fork",
+      "spawnedAt": "2026-11-23T19:03:08Z",
+      "sessionId": "6fa86a76-ebda-487d-9c48-7537f995f3b2",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "cfa281363eaac554bf5541cf36d5f31c",
   "masterSessionId": "6fa86a76-ebda-487d-9c48-7537f995f3b2",
   "masterEngine": "claude",
