@@ -20,6 +20,12 @@ Decision: The incident in issue #185 cannot be traced to a run. The reported pat
 
 Rationale: No run in this hub matches the report; a test of the path is the only evidence available.
 
+### Added after Discussion (parent, 2026-11-23): No test seam: the reported path loses no run record
+
+Decision: TestAmendsPlanDuringWebster_KeepsDoneBatches passes on the merge base because no step of the reported path (decision add --amends-plan, goto Plan-Burler-Review, Plan-Burler-Fix) moves _lym/webster/state.json; only Plan-Write's and Parts-Plan-Write's rotation, webster run --fresh and webster reset --to start do. The test lands as a guard, not as a fix.
+
+Rationale: The red-first gate expects a test that fails on base; here there is no bug on the path to show.
+
 ## Constraints
 
 ## Auto-mode assumptions
