@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>7h | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>8h | burler, shed, orch, quarry, report |
 
 ## [P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric](project-single-repo-hub.md) (1)
 
@@ -35,7 +35,7 @@ Owner `neve`
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | Describe | neve | 5h<br>5h | landing, shuttle |
-| T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | darn · speed | Describe | neve | 19m<br>19m | shuttle, reed, claude |
+| T5 | **Study: a lym-started Landlock area instead of bwrap** | [`landlock-area-study`](design-landlock-area-study.md) | darn · speed | PR-Review | neve | 19m<br>19m | shuttle, reed, claude |
 | T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Code-Burler-Review | neve | 5h<br>5h | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 9h<br>9h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
