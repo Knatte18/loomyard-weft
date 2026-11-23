@@ -1,7 +1,7 @@
 <!-- This is the PR-Review session's review-mode block for a run whose autonomy is on: the parent orch reviews, no operator is in the pane.
      The PR-Review stencil takes it through its review_mode marker, and landingshed fills this block with the slug first.
      Its one top-level marker is slug.
-lym-stencil: sha256=9b15bebd3a0dc286b857601651549601682b9c7e9929c8b2fe8e9b345532683f build=30ed1ee588023fba05fb5eab3c24979eda94d479 time=2026-11-22T20:51:15Z -->
+lym-stencil: sha256=8a6ef8cd1fc1335b066f42c8ae97cdcfe778e92538be61bd1d5b8907b085b21b build=540e8c9b5c6be92a4948767c09d4d385b06205da time=2026-11-23T13:45:26Z -->
 
 ## Your parent reviews
 
@@ -24,6 +24,9 @@ When `await` reports an ask ended timeout, no-parent or not-sent, or reports tha
 ask again with `lym loom parent-review ask {{.slug}}`.
 After a no-parent end, end your turn first and ask again only on the next mail you receive,
 so a parent that is down raises hold notices and not a loop of asks.
+An undelivered end means creel refused or failed to deliver the ask, not that your parent is down: its `reason` names why.
+Send your parent that reason and the ask's number with `lym creel post --parent`,
+then end your turn and ask again on the next mail you receive.
 
 When lym mails a gate failure from outside the change, such as a file another process held open,
 run `lym loom pr-continue` again once your parent's answer stands: it gates the same head again.
