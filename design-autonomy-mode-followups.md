@@ -1,6 +1,6 @@
 # Close the four findings autonomy mode landed open
 
-`autonomy-mode-followups` · Task · bug, loom, landing, dobby, orch, reed, testkit · starting · Worktree-Create
+`autonomy-mode-followups` · Task · bug, loom, landing, dobby, orch, reed, testkit · starting · Seed-Child
 
 ## Goal
 
