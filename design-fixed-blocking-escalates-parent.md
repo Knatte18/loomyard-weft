@@ -1,6 +1,6 @@
 # Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring
 
-`fixed-blocking-escalates-parent` · Task · bug, loom, config · running · Darn-Write
+`fixed-blocking-escalates-parent` · Task · bug, loom, config · running · Drift-Verify
 
 ## fixed-blocking-escalates-parent
 
