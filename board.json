@@ -349,7 +349,7 @@
       "isolated": false,
       "brief": "The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run",
       "body": "## Seen\n\n`internal/hardenshed/template.yaml` sets `reviewer: [opus, fable, sonnet]` and `fixer: [opus, fable, sonnet]`, so every hardener campaign rotates through the three models round by round.\nThe rotation came from the hardener's own run (`7346d6a8c`, 2026-11-19); the operator never chose it.\nFable is too dear for a default, and sonnet found plenty in the Crucible campaigns: what a round finds rests on its seeded focus, not on the model.\n\n## Decision\n\nOperator, 2026-11-22:\n\n- The template default for `reviewer` and `fixer` is `sonnet[high]` alone, with no rotation.\n- Which models a campaign uses, a rotation included, is the operator's choice per run, set in the task's `run_settings` under `hardener`.\n- The template comments and any doc or pattern text that describes the rotation as the default say so.\n\nCheck that `run_settings` takes `hardener.reviewer` and `hardener.fixer` as lists, and fix it if not.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-22T20:50:17Z",
       "revised": "2026-11-22T20:51:25Z",
       "run_settings": {
