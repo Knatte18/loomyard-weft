@@ -40,6 +40,12 @@ Decision: Install the raw tmux and script refusal row in every run session, inte
 
 Rationale: Board item 1 says every run agent's Bash; the operator wants no agent to start raw tmux or script after the 2026-11-23 freeze. The sampler's tmux trials are its scope.
 
+### Added after Discussion (parent, 2026-11-23): F5: lym gate test refuses a run agent's whole tmux tier
+
+Decision: lym gate test refuses a run agent's tmux-tier run that names no package target and no test filter, naming the single-test form as the way forward; prose in the stencils alone is not enough.
+
+Rationale: Board item 2 requires that a run cannot start the whole tmux tier; only a check in the gate enforces that.
+
 ## Constraints
 
 ## Auto-mode assumptions
