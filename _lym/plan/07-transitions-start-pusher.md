@@ -40,6 +40,8 @@
 - `internal/loomcli#TestRecipeKeyedWiring`
 - `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
 - `cmd/lym#unboundedWaitFiles`
+- `internal/tendercli#resumeCmd`
+- `internal/tenderengine#Deps`
 
 **Delete:**
 - `internal/statuscommit#retryOwedPush`
@@ -62,13 +64,16 @@
 - `internal/battencli#commitCancelRecord`
 - `internal/battencli#pushRecordsOrOwe`
 - `internal/loomcli#loomPark`
+- `internal/tendercli/doc.go`
+- `internal/tenderengine/doc.go`
 
 **Intent:**
 Make every transition and every driver-stop records commit of a batten or loom run commit locally and start its worktree's pusher,
 never push (D1, D8).
 
 `statuscommit`:
-- `Deps` loses `Push`, `Admit`, `Owed` and `Sleep` and gains `StartPush func()`, which starts the worktree's pusher and logs its own failure.
+- `Deps` loses `Push`, `Admit`, `Owed` and `Sleep` and gains `StartPush func() bool`,
+  which starts the worktree's pusher, logs its own failure and reports whether a pusher started; a failed start reads false.
   `New` panics on a nil `StartPush`.
 - `New`'s closure keeps the mid-merge skip and the commit's hard error, then calls `StartPush` after a commit that made one.
   It takes no network-gate admission, pushes nothing, fetches nothing and waits for nothing.
@@ -81,11 +86,11 @@ and loom's is the run's pair, whose target carries the run's slug.
 So neither builder chooses between a prime and a pair target, and `TestStart`'s target rows pin what each gets.
 
 batten:
-- `commitStatusDeps` loses `Admit`, `Owed` and `Sleep` and gains `StartPush func()`.
+- `commitStatusDeps` loses `Admit`, `Owed` and `Sleep` and gains `StartPush func() bool`.
   It keeps `Push`, its `push` method and `pushRecordsOrOwe`, which only the out-of-scope pushes call:
   the cancel's tracked-intent record (`commitCancelRecord`) and the re-adopt's failed-stop record (`internal/battencli/readopt.go`).
-  `battenCommitStatusDeps` keeps filling `Push` for them and fills `StartPush`, logging a failed start at Warn:
-  the next commit, tick or resume starts one.
+  `battenCommitStatusDeps` keeps filling `Push` for them and fills `StartPush` with `runpusher.Start`'s started value,
+  logging a failed start at Warn and returning false: the next commit, tick or resume starts one.
 - `newCommitStatusSeam` has one core for every row: start rows, skipped rows and running rows alike commit and start the pusher,
   and the seam never calls `Push`.
   The start core, the `push_pending` mark and the start-row exception of `926b5c28e` go.
@@ -96,11 +101,12 @@ batten:
 - The file comment of `internal/battencli/commitstatus.go` states the new seam.
 
 loom:
-- `commitStatusDeps` loses `Push`, `Admit`, `Owed` and `Sleep` and gains `StartPush func()`.
-- `loomCommitStatusDeps` commits unguarded and fills `StartPush`; `commitStatusDepsGuardedBy` goes,
+- `commitStatusDeps` loses `Push`, `Admit`, `Owed` and `Sleep` and gains `StartPush func() bool`.
+- `loomCommitStatusDeps` commits unguarded and fills `StartPush` as batten's does, with `runpusher.Start`'s started value and a failed start logged and read false;
+  `commitStatusDepsGuardedBy` goes,
   since neither a transition nor `commit-records` runs the pre-push check: the pusher runs it before each push (D7, card 6).
 - `newCommitStatusSeam` drops its stopped-commit branch.
-- `commitRecordsVerb` commits and starts the pusher; its envelope is ok with `committed` and `pusher_started`.
+- `commitRecordsVerb` commits and starts the pusher; its envelope is ok with `committed` and `pusher_started`, the value `StartPush` returned.
   A merge-state probe failure and a commit failure stay error envelopes with their ways forward;
   every push branch goes, with `pushFailureWayForward`.
   The commit always lands when the tree has something to commit.
@@ -109,6 +115,10 @@ loom:
 - `prePushCheck`, `guardedCommit` and `guardedPush` stay for the pushes out of scope:
   the landing's, and the pull-request record commits `pullRequestRecordCommitter` guards.
 - The opening comment of `internal/loomcli/wiring_commitstatus_test.go` names the core's skip and commit dispositions and the pusher start.
+
+tender:
+- The `lym tender resume` help in `resumeCmd` and the `PushDeferred` field doc of `tenderengine.Deps` say a lift spawns no push for a transition's commits,
+  since the dobby's tick restarts the pair's pusher once no pause covers it; neither says a transition pushes synchronously.
 
 A machine adopting the run reads origin's last transition and re-runs that row (D2); adoption itself is unchanged.
 
@@ -124,7 +134,7 @@ Tests, all tier0 unless named:
 - `TestCommitRunRecords` rows: a commit starts the pusher and calls no `Push`; a mid-merge pair or a clean tree starts none;
   a commit failure is returned.
 - `TestFreshStartCommitsWorktreeCreateThroughTheSeam` asserts the seeded Worktree-Create commit starts the pusher and pushes nothing.
-- `TestCommitRecordsVerb_Success` asserts the ok envelope with `pusher_started`, and `TestCommitRecordsVerb_ErrorEnvelopes` keeps only the probe and commit rows.
+- `TestCommitRecordsVerb_Success` asserts the ok envelope with `pusher_started` true when `StartPush` returns true and false when it returns false, and `TestCommitRecordsVerb_ErrorEnvelopes` keeps only the probe and commit rows.
 - The loom seam tests, `TestLoomPark` and `stubRecordsDeps` drop `Push` and assert `StartPush` where they asserted a push.
 - `TestPrePushCheckWiredIntoDeps` keeps only its pull-request row.
 - `TestCommitStatusSeam_Real`, `TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark` and `TestRecipeKeyedWiring` are tier1;

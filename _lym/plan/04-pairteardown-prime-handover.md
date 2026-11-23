@@ -25,6 +25,10 @@ Hand over each batten run a prime push meets taken over, and then push the rest 
   with nothing pushed, so the pusher retries the whole pass in its backoff and the retried pass hands the run over again.
   It stops pushing again once a push returns anything but a `*TakeoversError`, and returns that push's result.
   A hand-over's own `ErrHandedOver` return is the expected end of each hand-over and is not a failure.
+  This branch serves every prime push, one that names a run included,
+  since card 3 reads every batten run's takeover on any push of the prime's records.
+  When the push names a run among the pending ones, `PushRun` returns an error wrapping `ErrHandedOver` once the later push returns,
+  as its single-run hand-over does today, so its caller stops.
 - The pair path keeps today's single takeover and its hand-over.
 
 `pairteardown/doc.go`'s `PushRun` paragraph says it is the push the pusher, the teardown and the catch-up run,
@@ -34,8 +38,10 @@ and names the prime's many-run hand-over.
 each with two batten runs' unpushed prime commits and one run taken over on origin:
 - `PushRun(prime, prime, "", ...)` returns nil, the taken-over run's hand-over mark stands, its owner archive tag holds the prime's tip,
   its pair is removed, and origin's prime records hold the other run's commits in order and none of the taken-over run's;
+- `PushRun(prime, prime, <the taken-over run's slug>, ...)` returns an error wrapping `ErrHandedOver`,
+  and origin's prime records hold the other run's commits;
 - with a pre-receive hook on origin refusing tags, the hand-over's archive fails:
   an error wrapping `ErrTakeoverPassOwed` that `IsPushOwed` reads owed, no hand-over mark, and origin's prime records unchanged;
   once the hook is removed, a second `PushRun` hands the run over and lands the other run's commits.
 
-**ImpactSummary:** PushRun gains one branch for the prime's many-run takeover; every caller that passes a run slug keeps its path.
+**ImpactSummary:** PushRun gains one branch for the prime's many-run takeover, which every prime push reaches; every pair push keeps its path.

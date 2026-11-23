@@ -17,6 +17,7 @@
 - `plan:internal/runpusher#NewDeps` -> `func NewDeps(t Target) Deps`
 - `plan:internal/runpusher#Run` -> `func Run(ctx context.Context, t Target, deps Deps) error`
 - `plan:internal/runpusher#PushUntilLanded` -> `func PushUntilLanded(ctx context.Context, push func() error, owed func(error) bool, sleep func(time.Duration), atCeiling func(error)) error`
+- `plan:internal/runpusher#RestartPusher` -> `func RestartPusher(start func() (bool, error), key string)`
 - `plan:internal/runpusher#TestStart` -> `func TestStart(t *testing.T)`
 - `plan:internal/runpusher#TestRun` -> `func TestRun(t *testing.T)`
 - `plan:internal/lymdirs#PusherDirName` -> `const PusherDirName = "pusher"`
@@ -39,6 +40,7 @@
 - `internal/hubgeom#PauseGeometry`
 - `internal/pauserecord#ReadCoverage`
 - `internal/selfexec#LymBinary`
+- `internal/logger#EpisodeSet`
 - `internal/statuscommit/testmain_test.go`
 - `internal/runproc#TestEndSubject_EndsTheRunsThenTheSubjectAndItsDobbyLast`
 
@@ -48,8 +50,8 @@ Glossary: the background process that brings one worktree's run commits to origi
 
 `Target` names one worktree: its `*lymcwd.Location`, the run slug a pair's pusher passes, and whether it is a pair.
 `TargetOf` builds it, reading the prime from `fabricengine.IsPrimeWorktree`.
-A prime's target always carries an empty slug, whatever slug the caller passes,
-so the prime's push reads every batten run's takeover (card 3) and never one run's alone.
+A prime's target always carries an empty slug, whatever slug the caller passes:
+the prime's pusher carries every batten run's commits and names no one run, and its push reads every batten run's takeover (card 3).
 So every transition seam passes its run's slug: a batten run commits into the prime and gets the prime's target,
 a loom run in its pair gets the pair's target with that slug.
 `LockPath` is `<HubScratchDir>/<lymdirs.PusherDirName>/<records worktree name>.lock`, one lock per records worktree, taken through `internal/lock`.
@@ -75,6 +77,10 @@ An anchor change of the prime ends the hub's `RolePush` processes (`internal/fab
 its commits stay local, and the next commit, dobby tick or resume starts a pusher again.
 Under `go test` the spawn returns an error and starts nothing.
 Start reports whether it spawned one; two racing starts may both spawn, and the loser exits at the lock.
+
+`RestartPusher` is the restart the dobby's tick and both resumes share (card 8): it runs `start` once and returns nothing.
+A failed start logs one Warn per episode keyed by `key`, through a `logger.EpisodeSet`,
+and a later successful start logs the recovery; it never fails or drops anything of its caller's.
 
 **Run.**
 `Run` is the pusher's body; `Deps` holds its seams:
@@ -133,4 +139,4 @@ a refused push and a handed-over push: one push and return;
 a prime target: the guard and the pause seams are nil and never called;
 a cancelled context during the backoff: the context's error.
 
-**ImpactSummary:** A new leaf of fabric, pause and runproc reads with no caller yet, plus one lymdirs constant and one wake-scan list entry.
+**ImpactSummary:** A new leaf of fabric, pause and runproc reads with no caller yet, its restart helper, plus one lymdirs constant and one wake-scan list entry.

@@ -27,6 +27,8 @@ The worktree `l` names is the hub's prime or a task pair's code worktree, its re
   or when it has no upstream configured and holds at least one commit.
   A branch whose upstream is set but whose tracking ref is absent, as after a fetch pruned it, reads level:
   origin ended it, and it is left to its teardown.
+  A push that finds a branch gone from origin with its entry ended deletes the branch's tracking ref (card 1),
+  so once one pusher has met it, later ticks read it level.
 - The prime is ahead when its records branch is; its code branch is the operator's and never counts.
 - A pair is ahead when its records branch is, or when its code branch holds the code tip
   that the `Warp-SHA` trailer of its local records tip names and that branch's tracking ref lacks that tip.
@@ -44,6 +46,8 @@ each tracking ref is the local tip or a descendant of it.
 A branch with no upstream fails it.
 A branch whose upstream is set and whose tracking ref is absent reads held, as `RunCommitsAhead` reads it level:
 origin ended it, so its teardown has nothing to push.
+The push before the read deletes the tracking ref of a branch gone from origin with its entry ended (card 1),
+so a pair whose ended branch origin deleted reads held.
 Worktree-Teardown removes a pair only while it holds (card 10).
 
 `fabricengine/doc.go` gains one line naming the three reads.

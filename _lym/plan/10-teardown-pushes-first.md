@@ -11,6 +11,8 @@
 - `internal/battenshed#TestWorktreeTeardown_ShutdownFailureNeverCallsRemove`
 - `internal/battenshed#TestWorktreeTeardown_PrimeLockDispositions`
 - `internal/battencli#TestBattenIntegration_Rows`
+- `internal/battencli#TestWire_BuildsLazilyForANonexistentTaskWorktree`
+- `internal/testkit/envkit#nilLegal`
 
 **Create:**
 - `plan:internal/battenshed#recordingPrimeLock` -> `func recordingPrimeLock(rec *teardownCallRecorder) PrimeLock`
@@ -35,6 +37,9 @@ Today it removes the pair under the prime lock with no push of its own, trusting
 
 - `TeardownDeps` gains `Push func(ctx context.Context) error` and `Level func() (bool, error)`.
   A nil `Push` pushes nothing and a nil `Level` reads level, so a hand-built receiver keeps today's sequence.
+  `envkit`'s `nilLegal` gains `Teardown.Push` and `Teardown.Level`, since nil is their documented default.
+  `NilSeams` then skips both, so loomcli's `intentionallyNil` stays as it is:
+  an entry there for a path `NilSeams` skips fails `TestWire_EverySeamFilled`.
 - `worktreeTeardownProducer.Call` runs, in order:
   take the prime lock; shut the session down; release the lock;
   `Push`, with no prime lock held, so the owed backoff never holds it;
@@ -42,6 +47,8 @@ Today it removes the pair under the prime lock with no push of its own, trusting
   when it reads true, `Remove`, then release.
   A `Push` error wrapping `fabricengine.ErrEntryEnded` means origin ended the pair's records branch and nothing is left to push:
   the producer takes the lock and removes without reading `Level`.
+  A pair whose code branch origin deleted while its entry ended pushes with no error and loses that branch's tracking ref (card 1),
+  so `Level` reads it held (card 2) and the removal goes on for such a pair.
   A `Push` error wrapping `fabricengine.ErrHandedOver` is Stuck naming the hand-over:
   the hand-over already removed the pair and the run belongs to the other machine, so no resume here applies.
   Any other failed `Push`, a refused push, is Stuck with the push error, whose text carries its record's way forward,
@@ -65,5 +72,7 @@ Tests, all tier0 unless named:
   a handed-over push is Stuck naming the hand-over; a failed `Level` is Stuck; a push error wrapping `ErrEntryEnded` removes without reading `Level`.
 - `TestWorktreeTeardown_PrimeLockDispositions` gains a row: a Stuck push still released the first hold and takes no second.
 - `TestBattenIntegration_Rows` is tier1 and gains a row: a resumed Worktree-Teardown whose pair is already gone finishes Done.
+- `TestWire_BuildsLazilyForANonexistentTaskWorktree` gains the rows `TeardownPush` and `TeardownLevel`, asserting `battenCLI.wire` fills both,
+  since `nilLegal` keeps `TestWire_EverySeamFilled` from checking them.
 
 **ImpactSummary:** One producer's sequence and its two new seams, wired in batten's wire; no other row changes.

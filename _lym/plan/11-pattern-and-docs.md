@@ -35,7 +35,7 @@ State the Decisions in the three PATTERN entries, their backgrounds, the glossar
   its restarts are the next commit, the dobby's tick and a resume. Held by `TestNew_OrdinaryPath`, `TestNewCommitStatusSeam` and `TestRun`.
 - "An owed push holds the run" becomes "An owed push no longer holds the run":
   the pusher retries it in its backoff and writes no owed record, so `PushOwed` stays unset while it retries;
-  a refused push's record keeps its refusal and way forward. Held by `TestPushPairAnchored_OwedUnrecorded` and `TestRun`.
+  a refused push's record keeps its refusal and way forward. Held by `TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide` and `TestRun`.
 - "The start rows commit only" goes.
 - "A takeover hands over" adds that a takeover re-runs from what origin holds, that the pair's pusher hands its run over,
   and that the prime's pusher hands over each batten run its unpushed commits name, archiving them and replaying the rest.

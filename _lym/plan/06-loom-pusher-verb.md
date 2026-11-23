@@ -32,7 +32,8 @@ It lives in loomcli because a pair's pusher runs loom's pre-push check (D7), whi
   It resolves the worktree its `--worktree` flag names through `lymcwd.ResolveWorktree`, never the cwd,
   since the pusher starts in the hub's Bolt directory.
   It builds the target with `runpusher.TargetOf` and the prime with `primeOfHub`, then runs `runpusher.Run` with `pusherDeps`.
-  A worktree that does not resolve fails the verb with the resolve error; the next commit or dobby tick starts a pusher again.
+  A worktree that does not resolve fails the verb with the resolve error, its message ending in
+  `; way forward: run lym loom pusher --worktree with the path of an existing code worktree; the next commit, dobby tick or resume starts the pusher again`.
 - `resolvePersistentPreRun` skips `pusher`, as it skips `checklist`, so the verb arms no run.
 - `pusherDeps` starts from `runpusher.NewDeps(t)` and fills:
   `Push`, through `pushRun` (`pairteardown.PushRun` in production, discarding its result)
@@ -60,6 +61,6 @@ and both waits at `StatusPushLockWait`, and its `Guard` stops with an error wrap
 a prime target's `Push` calls `pushRun` with the prime, an empty slug and `InsidePair` false, and it carries no `Guard`;
 both carry `Notify`.
 `TestResolvePersistentPreRun_SkipsSlugGroups` is tier0 and gains a row:
-`pusher --worktree <a missing directory>` exits 1 with the resolve error, not the pre-run's arming refusal.
+`pusher --worktree <a missing directory>` exits 1 with the resolve error and its way-forward clause, not the pre-run's arming refusal.
 
 **ImpactSummary:** One new hidden loom verb and one pre-run skip; no existing verb, check or caller changes.
