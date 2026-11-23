@@ -1,6 +1,6 @@
 # PR-Review re-ask is never delivered: pr-reviewer strand may not sign as the program LOOM
 
-`pr-review-reask-not-delivered` · Task · bug, creel, loom · running · PR-Review
+`pr-review-reask-not-delivered` · Task · bug, creel, loom · landing · Finalize
 
 Imported from [issue #200](https://github.com/Knatte18/loomyard/issues/200).
 
