@@ -1,0 +1,521 @@
+diff --git a/contracts/orchrole/role-autonomy.md b/contracts/orchrole/role-autonomy.md
+index 3413c1a88..9d8c13103 100644
+--- a/contracts/orchrole/role-autonomy.md
++++ b/contracts/orchrole/role-autonomy.md
+@@ -45,6 +45,8 @@ A relay opens `[operator] severe halt <slug>:`, then the halt, what you tried an
+ 
+ A `[pr-review request]` line asks you to review a run's open pull request.
+ Answer it with `lym loom parent-review answer <slug> --ask <n>`, with `--satisfied` or `--findings-file <path>`.
++When a run's latest PR-Review ask ended no-parent or undelivered, such as one its PR-Review session mails you, answer that ask the same way:
++your answer stands at the head the ask named.
+ Never approve, merge, close or comment on the pull request on GitHub.
+ 
+ ## A drained beam
+diff --git a/contracts/stencils/landing/landing-block-pr-review-autonomous.md b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+index 13b6f1ddc..4c2b48a36 100644
+--- a/contracts/stencils/landing/landing-block-pr-review-autonomous.md
++++ b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+@@ -25,7 +25,10 @@ After a no-parent end, end your turn first and ask again only on the next mail y
+ so a parent that is down raises hold notices and not a loop of asks.
+ An undelivered end means creel refused or failed to deliver the ask, not that your parent is down: its `reason` names why.
+ Send your parent that reason and the ask's number with `lym creel post --parent`,
+-then end your turn and ask again on the next mail you receive.
++then end your turn.
++On the next mail after a no-parent or undelivered end, run `await` first:
++your parent may have answered that ask, and its answer then stands.
++Ask again only when `await` still reports the ask ended no-parent or undelivered.
+ 
+ When lym mails a gate failure from outside the change, such as a file another process held open,
+ run `lym loom pr-continue` again once your parent's answer stands: it gates the same head again.
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 28cf3ef5b..c78210f6c 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -53,6 +53,8 @@
+ // An ask moves only from pending-post to open and from either to an end state:
+ // done, timeout, no-parent, undelivered or not-sent.
+ // An ended ask may be cleared (ClearParentAsk): a cleared ask answers nothing, and the seat that made it asks again.
++// The one move out of an end state is AnswerParentAskOrUnreached's answer to a latest ask that never reached the parent:
++// one that ended no-parent or undelivered under the tag the caller names becomes done.
+ // Every move takes the record's one lock, so an answer and a timeout never both land.
+ // The chair keeps every finding of a done parent report, tagged `origin: parent` (ParentOrigin).
+ // It lists the report ids it covers in `parent_ids` (Finding.ParentIDs).
+diff --git a/internal/burlerengine/parentreview.go b/internal/burlerengine/parentreview.go
+index 617e0baeb..f21692bc3 100644
+--- a/internal/burlerengine/parentreview.go
++++ b/internal/burlerengine/parentreview.go
+@@ -344,7 +344,7 @@ const (
+ 	ParentAnswerPastDeadline ParentAnswerRefusalKind = "past-deadline"
+ )
+ 
+-// ParentAnswerRefusal is the error AnswerParentAsk returns for an answer it did not record.
++// ParentAnswerRefusal is the error AnswerParentAskOrUnreached returns for an answer it did not record.
+ // Latest is the run's latest ask as it stands after the call, and the zero ask when the run holds none.
+ type ParentAnswerRefusal struct {
+ 	Kind   ParentAnswerRefusalKind
+@@ -355,17 +355,21 @@ func (r *ParentAnswerRefusal) Error() string {
+ 	return fmt.Sprintf("burler: parent-review answer refused (%s); the latest ask is %d, %s", r.Kind, r.Latest.Number, r.Latest.State)
+ }
+ 
+-// AnswerParentAsk records the parent's answer to the ask numbered number as one step under the record's lock.
++// AnswerParentAskOrUnreached records the parent's answer to the ask numbered number as one step under the record's lock.
+ // It writes the report and sets the ask done.
+ // findings become the report's items in their order, with ids P1, P2 and so on; no findings make a satisfied report.
+ // It answers only the run's latest ask, and only while that ask is pending-post or open and now is before its deadline.
+ // An ask still pending-post or open at or past its deadline is set timeout instead, and the answer refused.
++// A latest ask made under a non-empty unreachedTag that ended no-parent or undelivered is answered too, unless cleared.
++// Its request never reached the parent through lym, and the parent may still review the subject it named, at any time.
+ // Every refusal is a *ParentAnswerRefusal and writes no report.
+-func AnswerParentAsk(files ParentReviewFiles, number int, now time.Time, findings []ParentFinding) (ParentAsk, error) {
++func AnswerParentAskOrUnreached(files ParentReviewFiles, number int, unreachedTag string, now time.Time, findings []ParentFinding) (ParentAsk, error) {
+ 	var refusal *ParentAnswerRefusal
+ 	var answered ParentAsk
+ 	err := state.UpdateJSON(files.Record, files.Lock, func(record ParentAskRecord, _ bool) (ParentAskRecord, error) {
+ 		latest, ok := record.Latest()
++		unreached := ok && unreachedTag != "" && latest.Tag == unreachedTag && !latest.Cleared &&
++			(latest.State == ParentAskNoParent || latest.State == ParentAskUndelivered)
+ 		switch {
+ 		case !ok:
+ 			refusal = &ParentAnswerRefusal{Kind: ParentAnswerNoAsk}
+@@ -373,12 +377,12 @@ func AnswerParentAsk(files ParentReviewFiles, number int, now time.Time, finding
+ 		case latest.Number != number:
+ 			refusal = &ParentAnswerRefusal{Kind: ParentAnswerNotLatest, Latest: latest}
+ 			return record, errParentAskUnchanged
+-		case latest.State.Ended():
++		case latest.State.Ended() && !unreached:
+ 			refusal = &ParentAnswerRefusal{Kind: ParentAnswerEnded, Latest: latest}
+ 			return record, errParentAskUnchanged
+ 		}
+ 		ask := &record.Asks[len(record.Asks)-1]
+-		if !now.Before(ask.Deadline) {
++		if !unreached && !now.Before(ask.Deadline) {
+ 			ask.State = ParentAskTimeout
+ 			refusal = &ParentAnswerRefusal{Kind: ParentAnswerPastDeadline, Latest: *ask}
+ 			return record, nil
+diff --git a/internal/burlerengine/parentreview_test.go b/internal/burlerengine/parentreview_test.go
+index db1856d6e..7cf687866 100644
+--- a/internal/burlerengine/parentreview_test.go
++++ b/internal/burlerengine/parentreview_test.go
+@@ -164,24 +164,99 @@ func expireAt(now time.Time) func(burlerengine.ParentReviewFiles) error {
+ 
+ // TestAnswerParentAsk verifies an answer writes the report and sets the ask done,
+ // and that each refusal names its kind, writes no report and leaves the ask as the refusal says.
++// It also verifies which ended asks under the unreached tag an answer still reaches.
+ func TestAnswerParentAsk(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
++	const unreachedTag = "[pr-review request]"
+ 	active := burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase.Add(time.Minute)}
+ 	findings := []burlerengine.ParentFinding{
+ 		{Severity: burlerengine.SeverityMedium, Class: burlerengine.ClassDesign, Change: "name the lock in D5"},
+ 		{Change: "drop the duplicated bound"},
+ 	}
+ 	tests := []struct {
+-		name        string
+-		asks        []burlerengine.ParentAsk
+-		number      int
+-		now         time.Time
+-		findings    []burlerengine.ParentFinding
+-		wantRefusal burlerengine.ParentAnswerRefusalKind
+-		wantStates  []burlerengine.ParentAskState
+-		wantReport  burlerengine.ParentReport
++		name string
++		asks []burlerengine.ParentAsk
++		// unreachedTag is the tag whose no-parent or undelivered latest ask the call still answers; empty answers none.
++		unreachedTag string
++		number       int
++		now          time.Time
++		findings     []burlerengine.ParentFinding
++		wantRefusal  burlerengine.ParentAnswerRefusalKind
++		wantStates   []burlerengine.ParentAskState
++		wantReport   burlerengine.ParentReport
+ 	}{
++		{
++			name:         "a no-parent ask under the unreached tag is answered",
++			asks:         []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskNoParent}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase,
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++			wantReport:   burlerengine.ParentReport{Ask: 1, Satisfied: true, Findings: []burlerengine.ParentFinding{}},
++		},
++		{
++			name:         "an undelivered ask under the unreached tag is answered past its deadline",
++			asks:         []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskUndelivered, Deadline: parentAskBase}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase.Add(time.Hour),
++			findings:     findings[1:],
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++			wantReport:   burlerengine.ParentReport{Ask: 1, Findings: []burlerengine.ParentFinding{{ID: "P1", Change: "drop the duplicated bound"}}},
++		},
++		{
++			name:         "a no-parent ask under another tag is refused",
++			asks:         []burlerengine.ParentAsk{{Tag: "[code-review request]", State: burlerengine.ParentAskNoParent}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase,
++			wantRefusal:  burlerengine.ParentAnswerEnded,
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskNoParent},
++		},
++		{
++			name:        "a no-parent ask under the tag is refused when the call names no unreached tag",
++			asks:        []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskNoParent}},
++			number:      1,
++			now:         parentAskBase,
++			wantRefusal: burlerengine.ParentAnswerEnded,
++			wantStates:  []burlerengine.ParentAskState{burlerengine.ParentAskNoParent},
++		},
++		{
++			name:        "a no-parent ask with no tag is refused when the call names no unreached tag",
++			asks:        []burlerengine.ParentAsk{{State: burlerengine.ParentAskNoParent}},
++			number:      1,
++			now:         parentAskBase,
++			wantRefusal: burlerengine.ParentAnswerEnded,
++			wantStates:  []burlerengine.ParentAskState{burlerengine.ParentAskNoParent},
++		},
++		{
++			name:         "a cleared no-parent ask under the unreached tag is refused",
++			asks:         []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskNoParent, Cleared: true}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase,
++			wantRefusal:  burlerengine.ParentAnswerEnded,
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskNoParent},
++		},
++		{
++			name:         "a timed-out ask under the unreached tag is refused",
++			asks:         []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskTimeout}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase,
++			wantRefusal:  burlerengine.ParentAnswerEnded,
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskTimeout},
++		},
++		{
++			name:         "an older no-parent ask under the unreached tag is refused once a newer ask exists",
++			asks:         []burlerengine.ParentAsk{{Tag: unreachedTag, State: burlerengine.ParentAskNoParent}, {Tag: unreachedTag, State: burlerengine.ParentAskTimeout}},
++			unreachedTag: unreachedTag,
++			number:       1,
++			now:          parentAskBase,
++			wantRefusal:  burlerengine.ParentAnswerNotLatest,
++			wantStates:   []burlerengine.ParentAskState{burlerengine.ParentAskNoParent, burlerengine.ParentAskTimeout},
++		},
+ 		{
+ 			name:       "no findings make a satisfied report",
+ 			asks:       []burlerengine.ParentAsk{active},
+@@ -240,14 +315,14 @@ func TestAnswerParentAsk(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			files := recordParentAsks(t, tt.asks...)
+-			ask, err := burlerengine.AnswerParentAsk(files, tt.number, tt.now, tt.findings)
++			ask, err := burlerengine.AnswerParentAskOrUnreached(files, tt.number, tt.unreachedTag, tt.now, tt.findings)
+ 			if got := parentAskStates(t, files); !reflect.DeepEqual(got, tt.wantStates) {
+ 				t.Errorf("ask states = %v; want %v", got, tt.wantStates)
+ 			}
+ 			if tt.wantRefusal != "" {
+ 				var refusal *burlerengine.ParentAnswerRefusal
+ 				if !errors.As(err, &refusal) || refusal.Kind != tt.wantRefusal {
+-					t.Fatalf("AnswerParentAsk() error = %v; want a %s refusal", err, tt.wantRefusal)
++					t.Fatalf("AnswerParentAskOrUnreached()error = %v; want a %s refusal", err, tt.wantRefusal)
+ 				}
+ 				if _, statErr := os.Stat(files.ReportPath(tt.number)); !errors.Is(statErr, os.ErrNotExist) {
+ 					t.Errorf("report at %s stat error = %v; want no report", files.ReportPath(tt.number), statErr)
+@@ -255,10 +330,10 @@ func TestAnswerParentAsk(t *testing.T) {
+ 				return
+ 			}
+ 			if err != nil {
+-				t.Fatalf("AnswerParentAsk() error = %v", err)
++				t.Fatalf("AnswerParentAskOrUnreached()error = %v", err)
+ 			}
+ 			if ask.State != burlerengine.ParentAskDone || ask.Report != files.ReportPath(tt.number) || !ask.AnsweredAt.Equal(tt.now) {
+-				t.Errorf("AnswerParentAsk() = %+v; want done with report %s answered at %s", ask, files.ReportPath(tt.number), tt.now)
++				t.Errorf("AnswerParentAskOrUnreached()= %+v; want done with report %s answered at %s", ask, files.ReportPath(tt.number), tt.now)
+ 			}
+ 			data, err := os.ReadFile(ask.Report)
+ 			if err != nil {
+@@ -289,13 +364,13 @@ func TestAnswerParentAsk_FailedWriteAtDeadline(t *testing.T) {
+ 	files := recordParentAsks(t, burlerengine.ParentAsk{State: burlerengine.ParentAskOpen, Deadline: parentAskBase})
+ 	permkit.Chmod(t, files.Dir, 0o500)
+ 
+-	_, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase.Add(time.Minute), nil)
++	_, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", parentAskBase.Add(time.Minute), nil)
+ 	if err == nil {
+-		t.Fatal("AnswerParentAsk() error = nil; want the failed record write")
++		t.Fatal("AnswerParentAskOrUnreached()error = nil; want the failed record write")
+ 	}
+ 	var refusal *burlerengine.ParentAnswerRefusal
+ 	if errors.As(err, &refusal) {
+-		t.Errorf("AnswerParentAsk() error = %v; want a write error, not a refusal", err)
++		t.Errorf("AnswerParentAskOrUnreached()error = %v; want a write error, not a refusal", err)
+ 	}
+ 	if got, want := parentAskStates(t, files), []burlerengine.ParentAskState{burlerengine.ParentAskOpen}; !reflect.DeepEqual(got, want) {
+ 		t.Errorf("ask states = %v; want %v", got, want)
+@@ -314,7 +389,9 @@ func TestAnswerParentAsk_RacingTheDeadline(t *testing.T) {
+ 		var answerErr, expireErr error
+ 		var expired burlerengine.ParentAsk
+ 		var wg sync.WaitGroup
+-		wg.Go(func() { _, answerErr = burlerengine.AnswerParentAsk(files, 1, parentAskBase.Add(-time.Second), nil) })
++		wg.Go(func() {
++			_, answerErr = burlerengine.AnswerParentAskOrUnreached(files, 1, "", parentAskBase.Add(-time.Second), nil)
++		})
+ 		wg.Go(func() { expired, _, expireErr = burlerengine.ExpireParentAsk(files, parentAskBase) })
+ 		wg.Wait()
+ 		if expireErr != nil {
+@@ -350,9 +427,9 @@ var twoParentFindings = []burlerengine.ParentFinding{
+ func answeredParentAsk(t *testing.T, findings []burlerengine.ParentFinding) (burlerengine.ParentReviewFiles, burlerengine.ParentAsk) {
+ 	t.Helper()
+ 	files := recordParentAsks(t, liveParentAsk)
+-	ask, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase, findings)
++	ask, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", parentAskBase, findings)
+ 	if err != nil {
+-		t.Fatalf("AnswerParentAsk() error = %v", err)
++		t.Fatalf("AnswerParentAskOrUnreached()error = %v", err)
+ 	}
+ 	return files, ask
+ }
+@@ -493,9 +570,9 @@ func TestSettleParentAsk(t *testing.T) {
+ 			files := recordParentAsks(t, tt.ask)
+ 			var report string
+ 			if tt.answer {
+-				answered, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase, twoParentFindings)
++				answered, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", parentAskBase, twoParentFindings)
+ 				if err != nil {
+-					t.Fatalf("AnswerParentAsk() error = %v", err)
++					t.Fatalf("AnswerParentAskOrUnreached()error = %v", err)
+ 				}
+ 				report = answered.Report
+ 			}
+@@ -537,7 +614,7 @@ func TestSettleParentAsk(t *testing.T) {
+ 	}
+ }
+ 
+-// TestReadParentReport verifies ReadParentReport returns what AnswerParentAsk wrote, with ids P1 up.
++// TestReadParentReport verifies ReadParentReport returns what AnswerParentAskOrUnreached wrote, with ids P1 up.
+ // It errors when the file is missing.
+ func TestReadParentReport(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -658,8 +735,8 @@ func TestParentCoverageGateEntry_Gate(t *testing.T) {
+ 			t.Parallel()
+ 			files := recordParentAsks(t, liveParentAsk)
+ 			if tt.answer {
+-				if _, err := burlerengine.AnswerParentAsk(files, 1, parentAskBase, tt.findings); err != nil {
+-					t.Fatalf("AnswerParentAsk() error = %v", err)
++				if _, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", parentAskBase, tt.findings); err != nil {
++					t.Fatalf("AnswerParentAskOrUnreached()error = %v", err)
+ 				}
+ 			}
+ 			if tt.dropReport {
+diff --git a/internal/driftengine/judgeparent_test.go b/internal/driftengine/judgeparent_test.go
+index 79786f23b..752b97024 100644
+--- a/internal/driftengine/judgeparent_test.go
++++ b/internal/driftengine/judgeparent_test.go
+@@ -181,8 +181,8 @@ func TestParentAgreementGate(t *testing.T) {
+ 			now := func() time.Time {
+ 				clockReads++
+ 				if tt.answerOnNow && clockReads == 1 {
+-					if _, err := burlerengine.AnswerParentAsk(files, 1, judgeParentNow.Add(-time.Minute), findings); err != nil {
+-						t.Fatalf("AnswerParentAsk() error = %v; want nil", err)
++					if _, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", judgeParentNow.Add(-time.Minute), findings); err != nil {
++						t.Fatalf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 					}
+ 				}
+ 				return judgeParentNow
+@@ -264,8 +264,8 @@ func recordJudgeAsk(t *testing.T, files burlerengine.ParentReviewFiles, prior bu
+ 		t.Fatalf("RecordParentAsk() error = %v; want nil", err)
+ 	}
+ 	if answered {
+-		if _, err := burlerengine.AnswerParentAsk(files, recorded.Number, judgeParentNow.Add(-time.Minute), findings); err != nil {
+-			t.Fatalf("AnswerParentAsk() error = %v; want nil", err)
++		if _, err := burlerengine.AnswerParentAskOrUnreached(files, recorded.Number, "", judgeParentNow.Add(-time.Minute), findings); err != nil {
++			t.Fatalf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 		}
+ 	}
+ }
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index 3b3ebd264..8fbc798e2 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -2071,8 +2071,8 @@ func (a *autonomousJudge) asks() []burlerengine.ParentAsk {
+ func (a *autonomousJudge) answerLatestSatisfied() {
+ 	a.t.Helper()
+ 	asks := a.asks()
+-	if _, err := burlerengine.AnswerParentAsk(a.files, asks[len(asks)-1].Number, a.clock, nil); err != nil {
+-		a.t.Fatalf("AnswerParentAsk() error = %v; want nil", err)
++	if _, err := burlerengine.AnswerParentAskOrUnreached(a.files, asks[len(asks)-1].Number, "", a.clock, nil); err != nil {
++		a.t.Fatalf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 	}
+ }
+ 
+diff --git a/internal/landingshed/prreviewask_test.go b/internal/landingshed/prreviewask_test.go
+index 7568ef858..855f5c487 100644
+--- a/internal/landingshed/prreviewask_test.go
++++ b/internal/landingshed/prreviewask_test.go
+@@ -156,9 +156,9 @@ func TestReadPRReviewStanding(t *testing.T) {
+ 				}
+ 				switch spec.answer {
+ 				case "satisfied":
+-					_, err = burlerengine.AnswerParentAsk(files, recorded.Number, prReviewNow, nil)
++					_, err = burlerengine.AnswerParentAskOrUnreached(files, recorded.Number, "", prReviewNow, nil)
+ 				case "findings":
+-					_, err = burlerengine.AnswerParentAsk(files, recorded.Number, prReviewNow, []burlerengine.ParentFinding{{Change: "rename the helper"}})
++					_, err = burlerengine.AnswerParentAskOrUnreached(files, recorded.Number, "", prReviewNow, []burlerengine.ParentFinding{{Change: "rename the helper"}})
+ 				}
+ 				if err == nil && spec.cleared {
+ 					err = burlerengine.ClearParentAsk(files, recorded.Number)
+diff --git a/internal/loomcli/commitrecords_test.go b/internal/loomcli/commitrecords_test.go
+index 3c7c7b05c..cd0ab662d 100644
+--- a/internal/loomcli/commitrecords_test.go
++++ b/internal/loomcli/commitrecords_test.go
+@@ -346,8 +346,8 @@ func TestPRContinueVerb(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("RecordParentAsk() error: %v", err)
+ 		}
+-		if _, err := burlerengine.AnswerParentAsk(files, recorded.Number, now, nil); err != nil {
+-			t.Fatalf("AnswerParentAsk() error: %v", err)
++		if _, err := burlerengine.AnswerParentAskOrUnreached(files, recorded.Number, "", now, nil); err != nil {
++			t.Fatalf("AnswerParentAskOrUnreached() error: %v", err)
+ 		}
+ 		review := prContinueReview{
+ 			head: func() (string, error) { return head, nil },
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 254706fa3..bbd2b4080 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -48,6 +48,8 @@
+ //
+ // `parent-review answer` records the parent orch's answer to the run's latest ask.
+ // It admits the operator's unnamed shell, the run's parent orch and the strand the ask went to.
++// It also answers a latest PR-Review ask that ended no-parent or undelivered,
++// so a parent the ask never reached can still settle its head.
+ // `parent-review await` is the asking agent's capped wait on the same ask, and it writes nothing but a timeout.
+ // `parent-review ask` records and posts a PR-Review ask at the task head for the review's session.
+ // It signs the post as the session's own strand, where the PR-Review row's own ask signs as the loom program.
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+index 3bf19a975..60d879eae 100644
+--- a/internal/loomcli/parentreview.go
++++ b/internal/loomcli/parentreview.go
+@@ -200,6 +200,8 @@ func parentAnswerRefusalText(slug string, number int, refusal *burlerengine.Pare
+ }
+ 
+ // parentReviewAnswerVerb records the parent's answer in input to the run's latest ask and sets the ask done.
++// A PR-Review ask that ended no-parent or undelivered is answered too,
++// so the parent's verdict stands at the head it named.
+ // A refusal carries a way forward and writes nothing.
+ // An ask found at or past its deadline is the exception: the call sets it timeout.
+ func parentReviewAnswerVerb(out io.Writer, slug string, deps parentReviewDeps, input parentAnswerInput) int {
+@@ -230,7 +232,7 @@ func parentReviewAnswerVerb(out io.Writer, slug string, deps parentReviewDeps, i
+ 		return refuse("%s", refusal)
+ 	}
+ 
+-	ask, err := burlerengine.AnswerParentAsk(deps.files, input.ask, deps.now(), findings)
++	ask, err := burlerengine.AnswerParentAskOrUnreached(deps.files, input.ask, landingshed.PRReviewAskLineTag, deps.now(), findings)
+ 	var refusal *burlerengine.ParentAnswerRefusal
+ 	if errors.As(err, &refusal) {
+ 		return refuse("%s", parentAnswerRefusalText(slug, input.ask, refusal, parent, parentErr))
+@@ -461,7 +463,9 @@ in the file's order.
+ 
+ It answers only the run's latest ask while that ask is pending-post or open
+ and before its deadline; an ask at or past its deadline is set timeout and the
+-answer refused. A call the parent still wants made after a refusal goes in with
++answer refused. A PR-Review ask that ended no-parent or undelivered never
++reached the parent, so it is answered too, and the answer stands at the head
++the ask named. A call the parent still wants made after a refusal goes in with
+ "lym loom decision add <slug> --by parent". A refused answer to a PR-Review ask
+ waits for the PR-Review session's next "[pr-review request]" line instead,
+ since no decision ends a review.
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+index b09a9af02..077a73449 100644
+--- a/internal/loomcli/parentreview_test.go
++++ b/internal/loomcli/parentreview_test.go
+@@ -273,6 +273,29 @@ func TestParentReviewAnswerVerb(t *testing.T) {
+ 			wantNot:    []string{"lym loom decision add"},
+ 			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen, burlerengine.ParentAskTimeout},
+ 		},
++		{
++			name:       "the parent answers a no-parent PR-Review ask at the head it named",
++			asks:       []burlerengine.ParentAsk{{Tag: landingshed.PRReviewAskLineTag, Digest: parentReviewHead, State: burlerengine.ParentAskNoParent}},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			setup:      func(d *parentReviewDeps) { d.strandName = parentReviewParent },
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
++		{
++			name:       "the parent answers an undelivered PR-Review ask with findings",
++			asks:       []burlerengine.ParentAsk{{Tag: landingshed.PRReviewAskLineTag, Digest: parentReviewHead, State: burlerengine.ParentAskUndelivered, Strand: "ly:orch-asked", Deadline: parentReviewNow}},
++			findings:   "findings:\n  - change: rename the helper\n",
++			input:      parentAnswerInput{ask: 1},
++			setup:      func(d *parentReviewDeps) { d.strandName = parentReviewParent },
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++			wantReport: []burlerengine.ParentFinding{{ID: "P1", Change: "rename the helper"}},
++		},
++		{
++			name:       "a cleared no-parent PR-Review ask is refused",
++			asks:       []burlerengine.ParentAsk{{Tag: landingshed.PRReviewAskLineTag, State: burlerengine.ParentAskNoParent, Cleared: true}},
++			input:      parentAnswerInput{ask: 1, satisfied: true},
++			want:       []string{"already no-parent", landingshed.PRReviewAskLineTag},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskNoParent},
++		},
+ 		{
+ 			name: "an answer to a PR-Review ask a newer open one replaced names the newer ask",
+ 			asks: []burlerengine.ParentAsk{
+@@ -610,8 +633,8 @@ func TestParentReviewAwaitVerb(t *testing.T) {
+ 				}
+ 				clock = clock.Add(d)
+ 				if tt.answerAfter > 0 && !clock.Before(parentReviewNow.Add(tt.answerAfter)) {
+-					if _, err := burlerengine.AnswerParentAsk(deps.files, len(tt.asks), clock, nil); err != nil {
+-						t.Errorf("AnswerParentAsk() error = %v", err)
++					if _, err := burlerengine.AnswerParentAskOrUnreached(deps.files, len(tt.asks), "", clock, nil); err != nil {
++						t.Errorf("AnswerParentAskOrUnreached() error = %v", err)
+ 					}
+ 				}
+ 				return nil
+diff --git a/internal/shedadapters/bouncer_parent_test.go b/internal/shedadapters/bouncer_parent_test.go
+index 1f2107f86..1eff5a177 100644
+--- a/internal/shedadapters/bouncer_parent_test.go
++++ b/internal/shedadapters/bouncer_parent_test.go
+@@ -69,8 +69,8 @@ func TestBouncer_JudgeCall_AsksTheParentBeforeJudging(t *testing.T) {
+ 				inner := shuttle.DuringRun
+ 				shuttle.DuringRun = func() {
+ 					findings := []burlerengine.ParentFinding{{Change: "tighten the seam"}}
+-					if _, err := burlerengine.AnswerParentAsk(files, 1, bouncerJudgeTestClock, findings); err != nil {
+-						t.Errorf("AnswerParentAsk() error = %v; want nil", err)
++					if _, err := burlerengine.AnswerParentAskOrUnreached(files, 1, "", bouncerJudgeTestClock, findings); err != nil {
++						t.Errorf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 					}
+ 					inner()
+ 				}
+@@ -116,6 +116,8 @@ func TestBouncer_JudgeCall_AsksTheParentBeforeJudging(t *testing.T) {
+ // The verdict is CONVERGED and already on disk at Call entry, with the subject unchanged since it was judged.
+ // It is refused when the round's parent ask holds findings.
+ // The refusal archives the verdict, spawns no judge, and approves nothing.
++//
++//testtiming:keep pins the recovered CONVERGED verdict's refusal over parent findings: its reason, the verdict's archive, and that no judge or commit runs
+ func TestBouncer_Call_RefusesARecoveredConvergedOverParentFindings(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -151,8 +153,8 @@ func TestBouncer_Call_RefusesARecoveredConvergedOverParentFindings(t *testing.T)
+ 		t.Fatalf("RecordParentAsk() error = %v; want nil", err)
+ 	}
+ 	findings := []burlerengine.ParentFinding{{Change: "tighten the seam"}}
+-	if _, err := burlerengine.AnswerParentAsk(files, asked.Number, bouncerJudgeTestClock, findings); err != nil {
+-		t.Fatalf("AnswerParentAsk() error = %v; want nil", err)
++	if _, err := burlerengine.AnswerParentAskOrUnreached(files, asked.Number, "", bouncerJudgeTestClock, findings); err != nil {
++		t.Fatalf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 	}
+ 
+ 	ptr := shedfake.RequireOutcome(t, h.b, shedengine.Stuck)
+diff --git a/internal/shedadapters/parentseat_test.go b/internal/shedadapters/parentseat_test.go
+index 1e276cf40..c6223bdc6 100644
+--- a/internal/shedadapters/parentseat_test.go
++++ b/internal/shedadapters/parentseat_test.go
+@@ -140,8 +140,8 @@ func (f *parentFixture) recordAsk(t *testing.T, prior priorAsk) {
+ 		t.Fatalf("RecordParentAsk() error = %v; want nil", err)
+ 	}
+ 	if answered {
+-		if _, err := burlerengine.AnswerParentAsk(f.files, recorded.Number, priorAskedAt.Add(time.Minute), prior.findings); err != nil {
+-			t.Fatalf("AnswerParentAsk() error = %v; want nil", err)
++		if _, err := burlerengine.AnswerParentAskOrUnreached(f.files, recorded.Number, "", priorAskedAt.Add(time.Minute), prior.findings); err != nil {
++			t.Fatalf("AnswerParentAskOrUnreached() error = %v; want nil", err)
+ 		}
+ 	}
+ }
