@@ -24,7 +24,7 @@
      The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.yaml's subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax;
      only `{{` begins a template action.
-lym-stencil: sha256=7a8b20754ca7186c79236a71849c8b01a90679a666988c541d8ff79590a05bbb build=3d3b48127d0bbb6a48c2351ed4168bd9bf5974a1 time=2026-11-21T18:23:39Z -->
+lym-stencil: sha256=aacac3efdd15cc544065d726782417f487dc15c9eb259d83d39c8ee5589acda6 build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -102,7 +102,8 @@ Cover:
 
 When the entry is labelled `bug`, the design also settles the observed fault and how to reproduce it,
 its root cause or what is still unknown about it,
-and the test that will fail on the merge base and pass after the fix, or why no test seam exists.
+and the test that will fail on the merge base and pass after the fix,
+why no test seam exists, or that the entry fixes no bug.
 The fault and its cause are facts Step 2 researches, never interview questions;
 the record states all three as the discussion spec's bug-entry rule says.
 

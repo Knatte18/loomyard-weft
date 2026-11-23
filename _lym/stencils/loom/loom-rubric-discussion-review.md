@@ -4,7 +4,7 @@
      and the Discussion-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=3d0eee0adae243bea36c64a423062976a1c83e8a54674cb235a4682e6e60f488 build=86145ecf7bd69eef6b1342cec056181deceda2f6 time=2026-11-21T14:59:20Z -->
+lym-stencil: sha256=94a8485c504cebc52a061c811f18afb9f602ef91eec7773333cea588bdca95ca build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
 
 # Discussion-Review rubric
 
@@ -48,7 +48,7 @@ Do not flag any of the following as a finding:
 - **A bug entry's record without its fault, cause or test.**
   For a board entry labelled `bug`, the record states the observed fault and how to reproduce it,
   the root cause or what is still unknown about it,
-  and the test that fails on the merge base or why no test seam exists.
+  and the test that fails on the merge base, why no test seam exists, or that the entry fixes no bug.
   A record that omits one of them is a finding.
 - **A Decision that edits the task's own board entry.**
   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.

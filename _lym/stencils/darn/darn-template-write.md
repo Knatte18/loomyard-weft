@@ -16,7 +16,7 @@
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
      report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=d0ffca1620ff1bad9e4b19008715fc86231bec362348f5afcfc0d50aec0cd88d build=e6bc01f580442bd35515e59b5244ffc38d9f869b time=2026-11-21T18:36:54Z -->
+lym-stencil: sha256=93bd2ff284ce4c36892d294ed31c5d8a2eded35e5cd6a563c4e766f68215493c build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -113,6 +113,8 @@ When the diff adds or changes no test, or the check cannot judge them, as on a h
 it holds your handoff without spending an attempt until a new commit or your parent's record lands.
 When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
 and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
+When the entry fixes no bug, as one that only adds tests pinning existing behaviour, its tests pass on the merge base by design:
+invent no bug, and before you write code ask your parent the same way to record that under a title opening `No bug fixed`.
 
 The commit that fixes the bug records the cause its test confirmed as a trailer line in the last paragraph of its commit message:
 
