@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-23T21:05:19.597433974+01:00",
+  "deadline": "2026-11-23T21:35:19.597433974+01:00",
+  "strand_guid": "e3ad37b7b00fee0bcc7458606ba7b7e5",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/agent-script-tmux-ate-memory/_lym/shed/agent-script-tmux-ate-memory/drive-reports/drive-envelope-20261123-210519-9314.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/agent-script-tmux-ate-memory/_lym/shed/agent-script-tmux-ate-memory/drive-reports/drive-report-20261123-210519-ff7a.md",
+  "snapshot": {
+    "head": "f97cd8ff68082b391c0526f0f1083e84ec65337e",
+    "branch": "agent-script-tmux-ate-memory",
+    "dirty": {}
+  }
+}
