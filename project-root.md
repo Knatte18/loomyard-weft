@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 17m<br>17m | reed |
+| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | Darn-Write | neve | 18m<br>18m | reed |
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 36m<br>36m | shuttle, reed, claude |
 | T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Darn-Write | neve | 12m<br>8m | process, shuttle |
 | T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | starting · Worktree-Create | neve | 0m<br>0m | reed, shuttle, process |
@@ -41,7 +41,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 38m<br>38m | landing, creel |
+| B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 39m<br>39m | landing, creel |
 
 ## Features (1)
 
