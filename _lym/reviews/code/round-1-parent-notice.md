@@ -1,0 +1,1 @@
+Review segment of task `amend-plan-loses-webster-batches` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/amend-plan-loses-webster-batches/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept amend-plan-loses-webster-batches" or "lym loom circling continue amend-plan-loses-webster-batches".
