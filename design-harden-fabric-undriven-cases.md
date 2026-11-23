@@ -1,6 +1,8 @@
 # Fix the five fabric faults the one-repository hardener found but could not raise
 
-`harden-fabric-undriven-cases` · Note · bug, fabric
+`harden-fabric-undriven-cases` · Task · bug, fabric · draft
+
+Depends on: [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md)
 
 ## Seen
 
