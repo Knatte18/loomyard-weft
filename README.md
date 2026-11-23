@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 14:31 UTC; every age below is as of then.
+Rendered 2026-11-23 14:32 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -34,30 +34,30 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Darn-Write | neve | 5m<br>5m | reed, slack |
-| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | halted · Code-Bouncer | neve | 5h<br>52m | loom, config |
+| T2 | **Reed's Slack button click leaves forwarding off with no trace** | [`slack-click-silent-fail`](design-slack-click-silent-fail.md) | darn · light | Darn-Write | neve | 6m<br>6m | reed, slack |
+| T5 | **Bouncer escalation fixes: fixed BLOCKING findings, soft-cap accept, auto-accept flag, untested wiring** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | darn · light | halted · Code-Bouncer | neve | 5h<br>53m | loom, config |
 | T6 | **Parent-review asks look up the orch pane in a stale tmux window, so an approved PR review cannot end** | [`parent-review-stale-window`](design-parent-review-stale-window.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | landing, shuttle |
-| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Darn-Write | neve | 1h<br>52m | gate, loom, dotnet |
-| T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Review | neve | 4h<br>4h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+| T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Darn-Write | neve | 1h<br>53m | gate, loom, dotnet |
+| T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Review | neve | 5h<br>5h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 1h<br>1h | landing, shuttle |
-| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | T10 | 33m<br>3m |  |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | T10 | 34m<br>4m |  |
 
 ### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | T4 | 5m<br>5m | landing, loom |
+| T1 | **Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it** | [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md) | darn · light | T4 | 6m<br>6m | landing, loom |
 
 ### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T2<br>T5<br>T6<br>T9<br>T10<br>T4<br>T8<br>T1 | 1h<br>3m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
+| T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T2<br>T5<br>T6<br>T9<br>T10<br>T4<br>T8<br>T1 | 1h<br>4m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
 ### Research (2)
 
@@ -71,9 +71,3 @@ Owner `neve`
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>21h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T7 | **Webster stops after an amended plan send the parent no notice, and webster reset leaves the run tied to the dropped code tip** | [`webster-amend-stop-no-notice`](design-webster-amend-stop-no-notice.md) | 1h<br>1h | webster, loom |
