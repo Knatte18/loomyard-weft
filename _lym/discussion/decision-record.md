@@ -34,6 +34,12 @@ The earlier OOM kills at 20:13 and 20:14 (`pkg.test`, `proc.test`, `testcover.te
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): F4: tmux/script refusal reaches interactive run sessions too
+
+Decision: Install the raw tmux and script refusal row in every run session, interactive ones included (Discussion seat, PR session, interactive drift judge, raddle, seat chair), except the sampler, whose stencil tells it to start tmux -L for its trials; the exemption is a named switch on the spawn spec, not a check of Interactive.
+
+Rationale: Board item 1 says every run agent's Bash; the operator wants no agent to start raw tmux or script after the 2026-11-23 freeze. The sampler's tmux trials are its scope.
+
 ## Constraints
 
 ## Auto-mode assumptions
