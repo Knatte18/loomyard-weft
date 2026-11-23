@@ -5,7 +5,7 @@
      They render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
      It carries no marker, so it names no path of either half.
-lym-stencil: sha256=3f082891e37d43b4d0ace08cf82368327cd150ae609498457d9fbf69ce34fd00 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+lym-stencil: sha256=b63e7bc3656eb4e6a4a1dbd380ebcfd3436ea8173d985f2c047962518077aa10 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 
 ## Review-file format
 
@@ -57,6 +57,8 @@ Frontmatter rules, all strict:
 - A finding kept from the parent orch's report carries `origin: parent` and an optional `parent_ids` list naming the report ids it covers, such as `parent_ids: [P1, P3]`.
   No other finding carries `parent_ids`.
 - A finding that raises the plan executor's halt reason, when the review step quotes one, carries `origin: webster`.
+- A finding that records a focus entry the round left undriven or marked WARN carries `origin: focus` and the class `decision`.
+  The rubric says when a round raises one, and a cluster round's consolidation keeps that origin.
 - A finding's `location` opens with the file's path, followed by `:<line>` or `#<symbol>`.
   It names the site the fix changes, which may lie apart from where the defect shows:
   a wrong value that one file prints and another sets is located where it is set.
@@ -74,6 +76,8 @@ Frontmatter rules, all strict:
   A carried finding keeps its `class`, keeps or lowers its `severity`, and keeps its location path or moves to a file the changes file lists.
 - In an incremental round a new finding is `BLOCKING` and sits on a changed hunk, in a file the changes file lists.
   A card a listed added entry marked as amending the plan names is exempt from the file rule, and so is a new `origin: webster` finding.
+  In a hardener round, a new `origin: focus` finding of class `decision` is exempt from the file rule too,
+  and from the changed-hunk rule.
 
 Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
 The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.

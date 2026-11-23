@@ -2,8 +2,8 @@
      Go renders it into the Bouncer run directory (round-<N>-escalation.md) and the parent notice points at it.
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug, plus the decide fragment it picks by the hard cap; the wording lives here and nowhere else.
-     cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the decision cause's detail and nothing for any other cause.
-lym-stencil: sha256=742c618dcd0dcbf394a506cab643cbd13d304fbe9d382a26df80d3627e3cf058 build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
+     cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the cause's detail, and nothing for a cause that carries none.
+lym-stencil: sha256=37aa207e14abef0e97b1f9c6d449a7ddd12005095fbbb337fe4049f90c5ddad8 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -12,7 +12,11 @@ The run's review segment `{{.segment}}` for task `{{.slug}}` has stopped at roun
 The cause is `{{.cause}}`:
 
 - `circling`: the judge found no progress on recurring gating findings, or a design-wrong finding returned after a continue.
-- `budget`: the soft-cap rule could not read its inputs: the round's review, its ledger or the previous round's ledger.
+- `budget`: the budget is spent and the round cannot settle as an accept by itself:
+  BLOCKING findings are still open, the round's live gate is red, or the soft-cap rule could not read its inputs.
+  The detail below, when present, names which.
+  A round whose review also holds `decision`-class findings reaches this cause when such BLOCKING findings are open,
+  and its detail names those findings.
 - `hard-cap`: the round is at or past the perch's hard cap with a design-wrong finding still open, or a continue was recorded there.
 - `decision`: the round's review holds a finding the review cannot settle itself.
 - `stalemate`: the review target stayed unchanged for the configured number of rounds in a row.
@@ -47,7 +51,8 @@ A recorded operator decision is one of:
 These never count: an `Idea` or agent-suggestion passage, an operator view not marked as a decision, a decision-record entry added with `--by arbiter` or `--by parent`, a writer's auto-pick, and an `## Auto-mode assumptions` entry.
 `--by` is an unverified label, since only `--by arbiter` is restricted, so a `--by operator` entry counts only when it was in the committed decision record before the escalation.
 Never settle a question whose answer widens the task's scope, and never accept over an open design-wrong finding unless a recorded operator decision covers that finding.
-At cause `budget`, decide nothing: report back to your parent session which input could not be read.
+At cause `budget`, decide nothing: report back to your parent session what the cause names,
+which the parent settles by accepting the round or ordering another one.
 
 When a recorded operator decision answers the question:
 

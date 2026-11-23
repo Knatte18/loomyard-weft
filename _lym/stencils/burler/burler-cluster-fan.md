@@ -7,7 +7,7 @@
      {{.lens_list}} is the round's lenses as one bullet per lens in fan order;
      {{.lens_report_path}} is the path each fork's report is saved at;
      and {{.lens_report_spec_path}} is the deployed spec of that report's format.
-lym-stencil: sha256=221e521bf4c03b01602d1f9c8eb17117f74a73639f16cc085b30f00a6c5b8dda build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+lym-stencil: sha256=059d2c37c1d234fbe7f3e32c4d8f872be204a5ae04584a3cb3d832daf27efd62 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message, one per lens listed here, {{template "engine-fork-spawn"}}.
 
 Lenses for this round:
@@ -30,5 +30,5 @@ Then wait for the forks: {{template "engine-fork-wait"}}
 Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
 These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
 
-Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
+Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead, and a `decision`-class finding that records an undriven or WARN focus entry keeps `origin: focus`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
 The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.

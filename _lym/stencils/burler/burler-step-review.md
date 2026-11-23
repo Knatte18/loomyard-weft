@@ -15,7 +15,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=1a1377f844d43589072b2aa2c02150ca1ba96448ff6b8befddf779a936d7187c build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+lym-stencil: sha256=70f279b40d923f9d890438140b46d1209379e2c2eb83b862a1108b0520038c42 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 
 ## Cluster rules
 
@@ -55,3 +55,4 @@ a section without that heading has none of them.
   Locate a regression a fix caused in an untouched file at the changed line that causes it, and name the broken site in its `summary`.
   A card that an added entry marked as amending the plan names may be located whether or not the changes file lists it.
   A finding raising the plan executor's halt reason, when the section above quotes one, carries `origin: webster` and may sit outside the changed files.
+  In a hardener round, a new `origin: focus` finding of class `decision` may sit outside the changed hunks and files.

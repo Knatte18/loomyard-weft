@@ -4,7 +4,7 @@
      and the Harden-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=860b5e8e74ef585a24013f5551dd8965f52d7d80957fa1624f1954e075e3ae22 build=a66d41345930d98b4d4c518362ce09291dbdf563 time=2026-11-23T07:57:13Z -->
+lym-stencil: sha256=d5b62236d9c754095003e84d723a6cc0302af8b0d44de87537596ec9d11fb87d build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 
 # Hardener rubric
 
@@ -51,6 +51,12 @@ and the paths of the round's focus file, the charter, and of the decision record
   `lym harden sandbox new` builds a two-repository hub, and `lym harden sandbox new --single-repo` a one-repository hub.
 - **The focus list is a floor.**
   Walk every focus entry and record OK, WARN or FAIL for each.
+  A focus entry you did not drive, or recorded WARN, is a finding of its own:
+  class `decision`, severity BLOCKING, `origin: focus`, located at the module source the entry concerns,
+  its summary naming the entry and why it was not driven or what the WARN is, and its fix the drive the entry still needs.
+  Such a finding goes to the arbiter or the run's parent, which orders another round over the entry or accepts it with a stated reason,
+  so no round settles while a focus entry is undriven.
+  A held focus finding that this round drove OK is resolved, its answer quoting the title of the decision record entry that ordered the drive.
   Then improvise many more adversarial scenarios of your own:
   crash and rebirth, scope across hubs and worktrees, dead-but-present state, orphans of an operation that failed midway, rapid churn,
   and verbs combined in orders nothing has tried.
@@ -97,6 +103,7 @@ and the paths of the round's focus file, the charter, and of the decision record
 
 - **Converged.**
   The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding and whose live gate is green.
+  A review that left a focus entry undriven or WARN holds an `origin: focus` finding, so it never converges.
   It reads both from the round's facts.
 - **Re-seed from the residue.**
   The focus file derives the next round's assignment from what this round left standing, never "review it again":

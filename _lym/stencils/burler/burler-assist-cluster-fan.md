@@ -7,7 +7,7 @@
      {{.lens_list}} is the round's lenses as one bullet per lens in fan order;
      {{.lens_report_path}} is the path each subagent's report is saved at;
      and {{.lens_report_spec_path}} is the deployed spec of that report's format.
-lym-stencil: sha256=8cba15ac75b0d994ca3734afff87ab12a394a78234a1bbf02cbf6dac2ac428d0 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+lym-stencil: sha256=89b5b69be56caa8e91d3ea2fa005a5566d7f2a9990b7644baa3c9af8292d8546 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
 This is a cluster round: after exploring the target fully, run one subagent per lens listed here, inside this one turn.
 
 Lenses for this round:
@@ -27,5 +27,5 @@ Write nothing to your report while any subagent is outstanding: consolidate only
 Once the last subagent has returned, and before you consolidate, save each subagent's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a subagent that returned no report gets its file too.
 These lens reports are part of your write surface, beside your report, as the write-surface rules in your prompt name them.
 
-Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
+Consolidation: judge every subagent finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`; a finding that raises the plan executor's halt reason keeps `origin: webster` instead, and a `decision`-class finding that records an undriven or WARN focus entry keeps `origin: focus`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each, and order kept findings by severity.
 The consolidated report is your ONE report, and the review is complete once it is fully written to disk.
