@@ -77,7 +77,7 @@ _No rounds yet._
 - Q2 (auto-pick): `pr_review_*` area name? `pr`, keeping `review_` in the rest, per the entry's list of areas.
 - Q3 (auto-pick): a bare model key that names an area? It becomes `<area>.model`.
 - Q4 (auto-pick): which other templates nest? None besides `tapestry.yaml`, which shares the perch key builders with loom.
-- Q5 (auto-pick): how are file layers carried? By a `configsync` move table on every reconcile, with `profiles.yaml` by a reinterpretation and board `run_settings` by a once-per-hub walk step.
+- Q5 (auto-pick): how are file layers carried? By a `configsync` move table on every reconcile, which also moves `profiles.yaml`'s blocks before it follows the template, and board `run_settings` by a step of every hub-wide walk.
 - Q6 (auto-pick): what happens to an old name written later? Refused everywhere, naming the new full name.
 - Q7 (auto-pick): old and new both set in one file? The new path wins and the dropped old key is reported.
 - Q8 (auto-pick): how do Go messages render a key? Through one `configengine` helper from named constants.

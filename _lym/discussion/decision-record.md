@@ -84,12 +84,18 @@ An old name is caught by its own check, separate from `RetiredKeys`:
 - an old key that names its new area, such as `discussion`, matches only a non-mapping value, so every new `discussion.*` path is judged by the template and its category as any other key;
 - it refuses whatever the old key's category was.
 
-The check refuses an old name, naming the new full name and `lym config reconcile`, which moves it, as the way forward:
+The check refuses an old name, naming the old and new full names and one way forward for its site:
 
-- in a local file, a worktree file or a hub base file the loader reads, where a key the template lacks otherwise only warns;
-- in a task's `run_settings` and a profile block, through `configreg.PrepareRunSettings`;
-- in `lym config <module> --set`;
-- in a recipe's setting reference, such as `loom.discussion_reviewer_fan`, at recipe build.
+- in a local or worktree file the loader reads, `lym config reconcile --apply` in that worktree, which moves it (D5);
+- in a hub base file the loader reads, `lym config reconcile --layer default --apply` from the hub's prime worktree, which moves it (D5);
+- in a task's `run_settings` and a profile block, through `configreg.PrepareRunSettings`, whose refusal names the old and new full names alone, so its caller's own way forward is the one printed:
+  Seed-Child's existing wrapper names `lym board upsert` for the task and `lym config profiles` from the hub's prime worktree for the profile,
+  and `lym board upsert` and the profile check refuse the write itself, which the operator repeats with the new name;
+- in `lym config <module> --set`, the same command with the new path, such as `lym config loom --set code.max_bounces=2`;
+- in a recipe's setting reference, such as `loom.discussion_reviewer_fan`, at recipe build, the reference with the new full name, such as `loom.discussion.reviewer_fan`.
+
+In a worktree or hub base file a key the template lacks otherwise only warns, and the two reconcile commands are the ways forward that warning already names;
+in a local file the check replaces the refusal of a key the template lacks for the old names, so that refusal names `lym config reconcile --apply`.
 
 `lym config <module> --unset` admits an old name and removes it, so the operator's removal route stays open.
 The loom spec's existing refusal of the tapestry plan keys keeps its old names and names the new `tapestry.plan.*` path.
@@ -100,6 +106,7 @@ Rationale: a tuned value is never lost without a signal, and `PATTERN-refusal-wa
 ### D5 — Every reconcile moves old keys in the files it reconciles
 
 `configsync` applies the module's move table to every file it reconciles: a hub base file, a worktree file and a local file, before it merges, prunes or strips the file.
+When a hub base file is absent and `configsync` seeds it from the prime worktree's copy, it moves that copy's old keys before `sparseSeed` prunes it to the template's units, so the seed carries their values.
 It is idempotent: a file with no old key comes back unchanged, so no marker guards it, and each machine's walk carries that machine's own untracked local files.
 The move keeps the value and its comment and every other key's comment.
 An old bare key that names its new area is told from the new map by shape: a non-mapping value is the old key.
@@ -108,27 +115,34 @@ A file holding both an old key and its new path keeps the new path's value, drop
 `configsync`'s `Result` reports each move; the walk commits a moved worktree file as it commits any other write it makes there.
 `hubreconcile`'s walk mails the hub's orch one line per walk that moved anything, naming each file and each old and new full name.
 Bound: the move only renames keys the table names; it never removes a key the table lacks and never touches the machine layer, which holds no loom or tapestry key.
-Bound: the walk runs once per build per machine, so a file that gains an old key after it, by a merge, a pull or a pair the walk skipped as incomplete, keeps the key until `lym config reconcile` or the next build's walk; D4's refusal names that way forward meanwhile.
+Bound: the walk runs once per build per machine, so a file that gains an old key after it, by a merge, a pull or a pair the walk skipped as incomplete, keeps the key until the next build's walk or the `lym config reconcile --apply` of its layer that D4's refusal names meanwhile.
 
 Rationale: the reconcile already visits every file layer, on every machine, before any command runs, so one rule covers the shared hub base, the tracked worktree files and each machine's local files.
 Moving before the prune keeps a local file's old key from being pruned as unknown.
 
-### D6 — profiles.yaml is carried once per hub by a reinterpretation
+### D6 — configsync moves profiles.yaml's blocks before it follows the template
 
-A `configreg.Reinterpretation` on the profiles module moves the loom and tapestry keys in every recipe block of every profile in the hub's `profiles.yaml`, using each module's move table.
-It runs in the walk after `configsync`'s merge, so a profile the operator never changed has already taken the new template.
-It keeps the file's comments and every other key, and its lines go to the orch with the walk's other reinterpretation lines.
+Reconciling `profiles.yaml`, `configsync` moves the loom and tapestry keys in every recipe block of every profile, using each module's move table,
+in the file and in the template base it reads, before `yamlengine.FollowTemplate` merges the new template in.
+The follow then compares file, base and template at the new paths:
+a shipped block the operator never changed takes the new template, and a shipped value the operator changed stays theirs.
+It moves through the D7 helper under D5's rule for a block holding both an old key and its new path.
+It keeps the file's comments and every other key, and reports each move in `configsync`'s `Result`, which the walk mails with D5's lines.
+Like D5 it is idempotent and needs no marker, and `lym config reconcile --layer default --apply` runs it too.
 
-Rationale: `profiles.yaml` is a seed-only file whose blocks hold other modules' keys, which `configsync`'s per-module move cannot see; the board marker of a reinterpretation runs it once per hub.
+Rationale: a move after the follow would find an operator's changed value at the old key beside the template's default at the new path, and the template base the follow rewrites no longer tells the two apart; moving file and base first leaves that call to the follow.
+`profiles.yaml`'s blocks hold other modules' keys, which D5's per-module move does not reach, so the profiles module moves them itself.
 
 ### D7 — Board run_settings are carried by every hub-wide walk
 
 Each hub-wide walk, after its hub-wide config write has committed and outside it, moves the loom and tapestry keys of every board entry's `run_settings` to their new paths.
 A `configreg` helper applies each module's move table to a module-keyed settings object, and D6 uses the same helper.
 The rewrite goes through `boardengine`'s own write path under its lock, keeps every key it does not move, and covers every entry.
-It is idempotent and needs no marker: a board with no old key is not written, and a failed read or write is logged and retried by the next walk.
+It is idempotent and needs no marker: a board with no old key is not written.
+A failed read or write is logged, leaves the board as it was and marks the walk skipped, so the build stamp stays stale and the next start verb's walk retries, as after a skipped hub-wide write.
+A walk whose hub-wide write was skipped runs no D7 carry; its stale stamp brings the retry.
 The orch gets one line naming each entry and each old and new full name.
-Bound: a walk runs once per build per machine, so an old-name entry written after it by an older build waits for the next walk; Seed-Child refuses it meanwhile under D4, naming the new name.
+Bound: a walk runs once per build per machine, so an old-name entry written after it by an older build waits for the next build's walk; Seed-Child refuses it meanwhile under D4, naming the new name and `lym board upsert`.
 
 Rationale: an entry not yet started would otherwise reach Seed-Child with an old name and be refused there under D4.
 Running outside the hub-wide write keeps the two board writes from nesting.
@@ -150,6 +164,12 @@ Rationale: the move is a rename only; every fallback and default keeps its meani
 
 Rationale: `configengine` already classifies, layers, merges, sets and validates by dotted path, so only the names change.
 
+### Added after Discussion (parent, 2026-11-23): F4: dotted names are rendered, input forms stay
+
+Decision: The dotted full name, such as loom.discussion.review_ask_parent, is how messages, comments, docs, stencils and halt notices render a key. run_settings stays a module-keyed nested object, and --set keeps its form lym config loom --set discussion.review_ask_parent=true. No one-token --set form and no flat dotted run_settings keys.
+
+Rationale: This is the decision record as it stands (Scope Out, support-log Q10); a one-token input form would widen the task.
+
 ## Constraints
 
 - `PATTERN-config-layers`: layers are read only through `configengine`, a reconcile on a binary change only through `hubreconcile.Ensure`, and no reconcile touches the machine layer.
@@ -160,20 +180,23 @@ Rationale: `configengine` already classifies, layers, merges, sets and validates
   `configengine.Spec`'s `Categories` are dotted paths, `configengine.ValidateLocal` walks leaf paths, and layer merging, `--set` and `--unset` take dotted paths.
   `configengine.TopLevelValue` reads top-level keys only, and D2 leaves every key its readers read flat.
 - Fact, from `internal/hubreconcile/walk.go`: the hub-wide walk runs `configsync`'s reconcile, over every registered module's board file, before it applies reinterpretations, inside one hub-wide write; each worktree's reconcile commits what it wrote.
-  D5, D6 and D8's reinterpretation read rely on that order.
+  D5 and D6 move inside `configsync`, and D8's reinterpretation read relies on that order.
 
 ## Auto-mode assumptions
 
 - Run-wide review keys nest under `review` (D1).
 - `pr_review_*` nests under `pr` (D1).
 - A bare area model key becomes `<area>.model` (D1).
-- The entry's "by a reinterpretation, as other key moves were" is read as "automatically, on the reconcile, as earlier moves were": `configsync`'s move table carries the file layers, a reinterpretation carries `profiles.yaml`, and each walk carries board `run_settings` (D5 to D7).
+- The entry's "by a reinterpretation, as other key moves were" is read as "automatically, on the reconcile, as earlier moves were": `configsync`'s move table carries the file layers and `profiles.yaml`'s blocks, and each walk carries board `run_settings` (D5 to D7).
 - An old name is refused after the move, not read as an alias (D4).
 
 ## Open risks
 
 - The entry says `run_settings` and `lym config --set` "use the dotted full name, file included"; this record keeps `run_settings` as a nested module object and `lym config loom --set discussion.review_ask_parent=…`, with no form that takes `loom.discussion.review_ask_parent` as one token. The parent decides whether a one-token form is wanted.
-- A hub whose machines run different builds: an older build loads the moved hub base `loom.yaml` against its flat template and refuses it, prunes the new nested keys from its own machine's local files, and still accepts old names in `run_settings` and profiles, until it upgrades.
+- A hub whose machines run different builds: an older build loads a moved hub base file against its flat template.
+  It refuses one holding a map where its old key was a scalar, `discussion`, `raddle` or `friction` in `loom.yaml` and `plan` or `parts` in `tapestry.yaml`,
+  and otherwise warns of the moved maps and runs on template defaults for every moved key.
+  It also prunes the new nested keys from its own machine's local files and still accepts old names in `run_settings` and profiles, until it upgrades.
 - Any run that lands a new loom or tapestry key before this run merges lands it flat; the D1 template criterion fails at this run's merge until the key is nested.
 
 ## Acceptance criteria
@@ -183,17 +206,19 @@ Rationale: `configengine` already classifies, layers, merges, sets and validates
 - Review: D2 — no other module's template changes its keys.
 - D3: a run-settings refusal, a local-layer refusal and a budget refusal name the key as `loom.<area>.<key>`, rendered through `configengine.KeyName` (new).
 - Review: D3 — every template comment, stencil, spec, recipe, pattern and doc outside `docs/research/` names a config key by its full dotted name.
-- D4: an old key in a task's `run_settings`, a profile block, `lym config loom --set`, a local file, a worktree file and a recipe setting reference is each refused, naming the new full name and `lym config reconcile` as the way forward.
+- D4: an old key in a local file, a worktree file, a hub base file, a task's `run_settings` at Seed-Child, a profile block, `lym config loom --set` and a recipe setting reference is each refused, naming the old and new full names and that site's way forward of D4, and Seed-Child's refusal prints one way forward.
 - D4: a local file setting `discussion: {reviewer_fan: ""}` is refused as a Guard key by its new path, and one setting `discussion: {timeout_min: 60}` is admitted.
 - D4: `lym config loom --unset code_max_bounces` removes the old key from a file that still holds it.
 - D4: the loom spec still refuses `plan_max_bounces` and names `tapestry.plan.max_bounces`.
 - D5: reconciling a hub base, a worktree and a local `loom.yaml` that set `code_max_bounces: 2` and `discussion: sonnet[medium]` leaves `code.max_bounces: 2` and `discussion.model: sonnet[medium]`, keeps the other keys' comments, reports the moves, and a second reconcile changes nothing.
 - D5: a local file holding only old keys keeps their values through a reconcile that prunes unknown keys.
+- D5: an absent hub base `loom.yaml` seeded from a prime copy holding `code_max_bounces: 2` holds `code.max_bounces: 2`.
 - D5: a file setting both `code_max_bounces` and `code.max_bounces` keeps the new path's value and reports the dropped old key.
 - D5: the walk mails the orch one line naming each moved key's old and new full names, and a walk that moved nothing mails none.
-- D6: after the walk, an untouched seeded `profiles.yaml` equals the new template, and a profile the operator added with `loom: {code_max_bounces: 3}` holds `loom: {code: {max_bounces: 3}}`.
+- D6: after the walk, an untouched seeded `profiles.yaml` parses to the same YAML value as the new template, and a profile the operator added with `loom: {code_max_bounces: 3}` holds `loom: {code: {max_bounces: 3}}`.
+- D6: a seeded `profiles.yaml` whose shipped `solid.tapestry` block the operator changed to `loom` `code_max_bounces: 3` holds `loom` `code.max_bounces: 3` after the walk.
 - D7: after the walk, a board entry with `run_settings` `{"loom": {"code_max_bounces": 2}, "drift": {"scope": "full"}}` holds `{"loom": {"code": {"max_bounces": 2}}, "drift": {"scope": "full"}}`, and a second walk writes no board commit.
-- D7: a walk whose board write fails leaves the entry as it was, and the next walk carries it.
+- D7: a walk whose board write fails leaves the entry as it was and the build stamp stale, and the next start verb's walk carries it.
 - D8: each perch's budget resolves from `<perch>.max_bounces`, falling back to `review.max_bounces`, for the discussion, code, split and plan perches.
 - D8: the task `lym beam merge-parent` files carries `{"loom": {"code": {"max_bounces": N, "hard_max_bounces": M}}}` and its Seed-Child applies those budgets.
 - D8: a segment with an empty `code.reviewer_model` takes `review.reviewer_model`, and a recipe reference `loom.split.reviewer_fan` passes recipe build and resolves the nested value.
@@ -206,5 +231,5 @@ Rationale: `configengine` already classifies, layers, merges, sets and validates
 
 ## Notes for the plan writer
 
-- `PATTERN-config-layers`'s background needs the move table under "Keys the template lacks": a key its module's move table names is moved by every reconcile, refused at load with `lym config reconcile` as the way forward, and removable by `--unset`.
+- `PATTERN-config-layers`'s background needs the move table under "Keys the template lacks": a key its module's move table names is moved by every reconcile, refused at load with that layer's reconcile command, `lym config reconcile --apply` or `lym config reconcile --layer default --apply`, as the way forward, and removable by `--unset`.
 - The template comments cross-reference keys through a `<segment>_` pattern, so they need a prose rewrite, not a find and replace.
