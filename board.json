@@ -277,36 +277,6 @@
       "profile": "light"
     },
     {
-      "id": 1588,
-      "handle": "T11",
-      "slug": "godocreflow-worsens-findings",
-      "title": "tools/godocreflow worsens wrapped-break findings instead of clearing them",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "tools",
-        "lint"
-      ],
-      "issues": [
-        183
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #183](https://github.com/Knatte18/loomyard/issues/183).\n\nWhat happened: `tools/godocreflow` was run over trimmed Go files to clear 624 wrapped-break findings from `lym loom lint-comments`.\nFindings rose to 916.\nIt skips whole comment blocks that hold a heading or list, and it joins lines past the length limit.\nThe commit was dropped and the findings were fixed by hand.\n\nWhy abnormal: the reflow tool is meant to fix these findings and produced more of them.\n\nWhat to do: make godocreflow process blocks with headings or lists, and make it respect the line length limit, or stop pointing at it as a fix.\n\nProvenance: task doc-go-trim-pass; note Darn-Write.md.",
-      "status": "done",
-      "created": "2026-11-23T08:19:09Z",
-      "revised": "2026-11-23T08:20:12Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1589,
       "handle": "T12",
       "slug": "lint-comments-reads-head",
@@ -321,9 +291,7 @@
         182
       ],
       "recipe": "darn",
-      "depends_on": [
-        "godocreflow-worsens-findings"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #182](https://github.com/Knatte18/loomyard/issues/182).\n\nWhat happened: `lym loom lint-comments --base` reads committed HEAD, not the working tree.\nA fix to a flagged comment could be verified only after committing it.\n\nWhy abnormal: a lint run during editing gives no feedback on uncommitted changes, which forces a commit per check cycle.\n\nWhat to do: lint the working tree, or add a flag that does, or document the HEAD-only behaviour in the verb's help.\n\nProvenance: task doc-go-trim-pass; note Darn-Write.md.",

@@ -2,8 +2,6 @@
 
 `lint-comments-reads-head` · Task · bug, lint, loom · running · Drift-Baseline
 
-Depends on: [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md)
-
 Imported from [issue #182](https://github.com/Knatte18/loomyard/issues/182).
 
 What happened: `lym loom lint-comments --base` reads committed HEAD, not the working tree.
