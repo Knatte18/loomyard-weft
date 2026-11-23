@@ -1,6 +1,6 @@
 # PR-Review row does not notice its session ended
 
-`pr-review-dead-session-unseen` · Note · bug, landing, shuttle
+`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · draft
 
 Imported from [issue #210](https://github.com/Knatte18/loomyard/issues/210).
 
