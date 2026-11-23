@@ -1,6 +1,6 @@
 # A beam pull request description is rewritten after each member landing
 
-`beam-pr-describes-itself` · Task · enhancement, dobby, landing · running · Describe
+`beam-pr-describes-itself` · Task · enhancement, dobby, landing · running · PR-Review
 
 ## Seen
 
