@@ -49,6 +49,12 @@ The wiring that lets a hardener round raise a focus finding (`FocusFindings` int
 
 ## Decisions
 
+### Added after Discussion (arbiter, 2026-11-23): below-window-accept-blocking is settled by another round below the soft-cap window
+
+Decision: The below-window-accept-blocking entry needs no code change. A decision accept recorded below the soft-cap window over a CONTINUE or CIRCLING verdict whose ledger holds an open BLOCKING entry of another class keeps the base behaviour of holdAcceptOverOpenEntries in internal/shedadapters/bouncerdecision.go: it passes nothing and starts another round so the fixer fixes the entry; inside the soft-cap window the accept is retired and the round escalates to the parent with cause budget. The run does not add a parent ask below the window. Review finding F11 (below-window-accept-blocking-unrecorded-reading) is answered by this decision, and the fixer changes nothing for it.
+
+Rationale: The entry names its harm as a run landing past an open BLOCKING finding without the parent. At the base the below-window accept no longer passes such an entry: another round runs, and once the budget is spent the soft-cap window's BLOCKING check escalates with cause budget, which only the parent accepts. So the harm cannot occur, and the entry's premise (the accept passes over the entry) does not hold at the base. Asking the parent below the window, while budget is left for the fixer, would also go against this task's main entry, fixed-blocking-escalates-parent, whose aim is to ask the parent only when a BLOCKING finding stays open after the fixer and the check.
+
 ## Constraints
 
 ## Auto-mode assumptions
