@@ -1,6 +1,6 @@
 # Hardener rounds default to sonnet[high]; any model rotation is set per run
 
-`hardener-models-per-run` · Task · enhancement, burler, config · starting · Open-Window
+`hardener-models-per-run` · Task · enhancement, burler, config · starting · Seed-IDE
 
 ## Seen
 
