@@ -1,6 +1,8 @@
 # One-repository fabric cases no hardener round drove
 
-`single-repo-undriven-cases` · Note · bug, fabric
+`single-repo-undriven-cases` · Task · bug, fabric
+
+Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md)
 
 ## Seen
 
