@@ -36,13 +36,19 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus**<br>• A held decision finding gates until the parent rules, and a spent budget with BLOCKING findings open escalates to the parent instead of auto-accepting<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`code-bouncer-asks-parent`](design-code-bouncer-asks-parent.md) | darn · solid | Code-Burler-Review | neve | 14h<br>11h | burler, loom, darn, arbiter, shed |
 | T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | Darn-Write | neve | 14h<br>14h | dobby, landing |
-| T6 | **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`note-depends-on`](design-note-depends-on.md) | darn · light | Code-Burler-Review | neve | 19m<br>18m | board |
+| T6 | **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`note-depends-on`](design-note-depends-on.md) | darn · light | Code-Burler-Review | neve | 19m<br>19m | board |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle | T5 | 15h<br>13h | batten, fabric |
+
+### Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | `draft` **Board view lists a done beam-project task under P0** | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | darn | T6 | 0m<br>0m | board |
 
 ### Research (3)
 
@@ -52,7 +58,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Bugs (14)
+### Bugs (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -61,7 +67,6 @@ Owner `neve`
 | B3 |  | **ClearReviewSession may keep the PR-Review parent ask after goto**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding clear-review-session-keeps-parent-review-asked | [`clear-review-keeps-parent-ask`](design-clear-review-keeps-parent-ask.md) | 4m<br>4m | landing, loom |
 | B4 |  | **Some dobby halt notices lack their autonomy stamp**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding dobby-run-notices-unstamped-autonomy | [`dobby-notices-unstamped-autonomy`](design-dobby-notices-unstamped-autonomy.md) | 4m<br>4m | dobby, orch |
 | B5 |  | **Autonomy mode's goto hook and halt-notice stamps have no tests**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-hook-wiring-untested, halt-notice-call-sites-untested | [`autonomy-wiring-untested`](design-autonomy-wiring-untested.md) | 4m<br>4m | loom, orch, testkit |
-| B6 |  | **Board view lists a done beam-project task under P0** | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | 0m<br>0m | board |
 | B7 |  | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil** | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | 0m<br>0m | loom, landing |
 | B8 |  | **Run agents ask a question and exit before the reply; drift judge asks in its pane** | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | 0m<br>0m | shuttle, creel, drift, stencil |
 | B9 |  | **Plan amendment during Webster loses the record of committed batches** | [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md) | 0m<br>0m | webster, loom |
@@ -75,7 +80,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Config keys nest under the area they govern, named with dots**<br>• loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent | [`config-keys-nested-by-area`](design-config-keys-nested-by-area.md) | 8m<br>8m | config, loom, drift, docs |
+| E1 |  | **Config keys nest under the area they govern, named with dots**<br>• loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent | [`config-keys-nested-by-area`](design-config-keys-nested-by-area.md) | 9m<br>9m | config, loom, drift, docs |
 
 ### Features (1)
 
