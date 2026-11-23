@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-23T07:29:56Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/hardener-models-per-run/_lym/landing/summary.md",
+      "at": "2026-11-23T07:43:29Z",
+      "started_at": "2026-11-23T07:30:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T07:31:41.078003052Z",
+          "end": "2026-11-23T07:31:41.093118827Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T07:31:41.152429048Z",
+          "end": "2026-11-23T07:42:50.292140906Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T07:42:50.341038497Z",
+          "end": "2026-11-23T07:42:50.34391706Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T07:42:50.386844046Z",
+          "end": "2026-11-23T07:42:50.649265627Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T07:42:50.686509134Z",
+          "end": "2026-11-23T07:42:50.690226145Z"
+        }
+      ]
     }
   ],
   "product": {
