@@ -1,38 +1,34 @@
-# Hardener rounds default to sonnet[high]; a model rotation is set per run
+# Hardener rounds default to sonnet[high]; a rotation is set per run
 
-The hardener template's `reviewer` and `fixer` defaults rotated every campaign through `opus`, `fable` and `sonnet`, round by round.
-The operator never chose that rotation.
-Fable costs too much for a default,
-and what a round finds depends on its seeded focus rather than on its model.
+The hardener template rotated `reviewer` and `fixer` through `opus`, `fable` and `sonnet` round by round.
+That rotation came from the hardener's own run, not from an operator choice.
+Fable is too dear for a default, and what a round finds rests on its seeded focus more than on its model.
+The template now sets both lists to `["sonnet[high]"]`, one model with no rotation.
+An operator who wants a rotation sets `hardener.reviewer` and `hardener.fixer` as lists in the task's `run_settings`.
 
 ## What changes
 
-- `internal/hardenshed/template.yaml` sets `reviewer` and `fixer` to `["sonnet[high]"]` alone.
-  Each key's comment says the default is one model with no rotation.
-  It also says a rotation over several models is the operator's choice per run, set in the task's `run_settings` as `hardener.reviewer` or `hardener.fixer`.
-- The `hardenshed` package doc's Config section states the same default and per-run choice.
-  Its Method section no longer describes rotation as how every campaign runs.
-  It names rotation as an option the operator sets for a run that wants agreement across models.
-- `TestLoadConfig`'s template defaults follow the new values.
+- `internal/hardenshed/template.yaml`: the `reviewer` and `fixer` defaults are `sonnet[high]` alone, and their comments say a rotation is a per-run choice.
+- `internal/hardenshed/campaign.go`: `CheckCampaign` no longer refuses a one-entry reviewer list.
+  The one-entry list is the new default, so the old refusal would have rejected every default campaign.
+  Lists of two or more entries are still refused when the cyclic expansion repeats a model in neighbouring rounds.
+- `internal/hardenshed/doc.go`: the package doc states the one-model default and drops the claim that rounds rotate models.
+- `contracts/stencils/harden/harden-rubric-review.md`: the judge's CONVERGED rule no longer requires the reviewer model to differ from the previous round's.
+  With one model by default, that clause could never be met, so no campaign could converge.
+- `run_settings` already takes `hardener.reviewer` and `hardener.fixer` as lists; `TestPrepareRunSettings` in `internal/configreg` now pins that.
 
-## Preflight accepts a one-entry reviewer list
+## Design decisions
 
-`CheckCampaign` refused a reviewer list of one entry, which would have rejected the new default.
-It now passes a one-entry list as a single-model campaign.
-It still refuses a list of two or more entries whose cyclic expansion puts one model in neighbouring rounds.
-`TestCheckCampaign`'s `ReviewerListOfOneEntryPasses` row pins the single-entry case.
+- The refusal of equal neighbouring models stays for multi-entry lists, so a per-run rotation still cannot repeat a model back to back.
+- The CONVERGED rule keeps its other two conditions: no BLOCKING or MEDIUM finding, and a green live gate.
 
-## run_settings already takes lists
+## To check by hand
 
-Both keys are open to a task's `run_settings`, and `PrepareRunSettings` passes list values through to the local `hardener` document.
-`CheckValues` then parses each entry as a model-spec.
-No code needed a fix.
-A new `TestPrepareRunSettings` row checks this: a `hardener` object holding `reviewer` and `fixer` lists produces a document carrying both lists in order.
-
-The hub's own `hardener.yaml` sets neither key, so the new template default takes effect there once this lands.
-A hub file that wrote the old rotation out explicitly keeps it, which is that hub's own setting.
+- The judge's rule for CONVERGED in `contracts/stencils/harden/harden-rubric-review.md` no longer reads the reviewer model.
+  Check that no judge prompt or Go code outside that stencil still expects a model change as a condition.
+  A grep of `internal` and `contracts` found none, but the finding was raised as BLOCKING and is worth a second look.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** hardener
+**Blast radius:** hardenshed
