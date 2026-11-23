@@ -27,4 +27,14 @@ Today only test binaries run under a cap: lym's 2 GiB `systemd-run` scope per te
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - degraded-launch-warning-untested (class design, severity MEDIUM, open in rounds 1)
+  - oom-kill-misattributed-in-shared-cgroup (class design, severity MEDIUM, open in rounds 1)
+  - oom-notice-delivery-untested (class design, severity MEDIUM, open in rounds 1)
+  - oom-notice-names-earlier-kill (class design, severity MEDIUM, open in rounds 1)
+  - oom-step-stalls-watchdog-loop (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
