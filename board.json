@@ -500,7 +500,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #204](https://github.com/Knatte18/loomyard/issues/204).\n\nSeen in hub mo, run hydraulics-gaps, PR NORCE-DrillingAndWells/Models#326. The 'Regression check' block that lym appends after the change description reads 'Baseline: captured at \u003csha\u003e, the task's branch point.' This is internal process wording in repository-facing text, and the run's PR-Review agent cannot edit it. Expected: neutral wording such as 'the base of this branch'.",
-      "status": "running · Drift-Await",
+      "status": "running · Drift-Expect",
       "created": "2026-11-23T12:46:14Z",
       "revised": "2026-11-23T12:46:27Z",
       "profile": "light"
@@ -549,7 +549,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #207](https://github.com/Knatte18/loomyard/issues/207).\n\n## What happened\n\nRun `models-torque-drag-adapter` (tapestry, under autonomy) went `blocked` at Webster after a parent decision with `--amends-plan` and a replan.\n`lym loom status` gave:\n\n\u003e webster: the auto-rebaseline of the changed plan blocks this run: webster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed outside its Card Index; ...\n\nThe parent orch got no creel mail for this stop.\nIts last mail from the run was the arbiter's \"settled the review escalation at Plan-Bouncer and resumed the run\" (12:21 UTC); the block came later, and only the operator noticed it.\nEvery other stop of the same run (question stops, batten failures) was mailed by `dop:LOOM` or `dop:BATTEN`.\n\n## Two defects\n\n1. A Webster auto-rebaseline block sends no stop notice to the run's parent. Under autonomy the orch must hear of every stop, so this one stalls the run silently.\n2. The Plan rows that apply an `--amends-plan` decision edit `00-overview.md` outside its Card Index (here, the plan's opening summary) even when batches have already begun, and the plan gate accepts that, but Webster's rebaseline then refuses it. The plan rows should keep to the Card Index after a begun batch, or Plan's gate should refuse the edit, so the two agree.\n\n3. After that, the run blocked again because batch 03 was dead from before the amendment. It named `lym webster reset --to batch-start --batch 03` as the way forward.\n   That reset moved the code branch and origin back to e1ab782 and committed `webster: reset` to the records with `Warp-SHA` but no `Run-Transition` trailer.\n   The run's last transition still named the dropped tip 9fff222, so `lym loom resume` refused (\"the code tip 9fff222 the run's last transition names is not on origin yet\"), and `lym loom goto --to Webster` wrote no transition either.\n   Past `runfsm.CodeTipGrace` the dobby would have returned the run to its previous transition.\n   `webster reset` (and `goto`) should commit a transition naming the new tip.\n   None of these stops sent the parent a notice either.\n\n## Fix applied by hand\n\nThe orch restored the summary paragraph in `00-overview.md`, kept the Card Index line, committed it, and ran `lym loom resume`.\nAfter the reset it committed an empty records commit carrying `Warp-SHA: e1ab782…` and `Run-Transition: models-torque-drag-adapter`, pushed it, and ran `lym loom resume`; Webster then ran.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Baseline",
       "created": "2026-11-23T12:46:21Z",
       "revised": "2026-11-23T12:46:29Z",
       "profile": "light"

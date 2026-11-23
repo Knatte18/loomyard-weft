@@ -1,6 +1,6 @@
 # PR body's appended regression block uses internal task wording
 
-`pr-regression-block-wording` · Task · bug, drift, landing · running · Drift-Await
+`pr-regression-block-wording` · Task · bug, drift, landing · running · Drift-Expect
 
 Imported from [issue #204](https://github.com/Knatte18/loomyard/issues/204).
 
