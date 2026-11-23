@@ -1,6 +1,6 @@
 # lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil
 
-`pr-findings-open-fabric-nil` · Task · bug, loom, landing · halted · Code-Bouncer
+`pr-findings-open-fabric-nil` · Task · bug, loom, landing · running · Drift-Recheck
 
 Imported from [issue #187](https://github.com/Knatte18/loomyard/issues/187).
 
