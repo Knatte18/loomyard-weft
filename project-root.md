@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 12:40 UTC; every age below is as of then.
+Rendered 2026-11-23 12:41 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,9 +12,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | darn · light | starting · Seed-IDE | neve | 2h<br>0m | git, batten, landing |
-| T2 | **PR-Review re-ask is never delivered: pr-reviewer strand may not sign as the program LOOM** | [`pr-review-reask-not-delivered`](design-pr-review-reask-not-delivered.md) | darn · light | Darn-Write | neve | 20m<br>20m | creel, loom |
-| T4 | **Driver on older lym build hard-fails a run when the board's stencil is newer** | [`old-driver-fails-newer-stencil`](design-old-driver-fails-newer-stencil.md) | darn · light | Darn-Write | neve | 20m<br>20m | stencil, loom |
+| T1 | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | darn · light | starting · Open-IDE | neve | 2h<br>1m | git, batten, landing |
+| T2 | **PR-Review re-ask is never delivered: pr-reviewer strand may not sign as the program LOOM** | [`pr-review-reask-not-delivered`](design-pr-review-reask-not-delivered.md) | darn · light | Darn-Write | neve | 21m<br>21m | creel, loom |
+| T4 | **Driver on older lym build hard-fails a run when the board's stencil is newer** | [`old-driver-fails-newer-stencil`](design-old-driver-fails-newer-stencil.md) | darn · light | Darn-Write | neve | 21m<br>21m | stencil, loom |
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | landing · Finalize | neve | 3h<br>3h | reed, claude |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Code-Burler-Review | neve | 16h<br>4h | fabric |
 | T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | Darn-Write | neve | 3h<br>3h | gate, loom, dotnet |
