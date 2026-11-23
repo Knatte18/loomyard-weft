@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "56745a62fbc97fd6c73956cbe16a48c3f181908c",
+  "added_decisions": [
+    {
+      "title": "What an entry may depend on",
+      "digest": "6a016650fd43349b5a23a28d3204815b8f6020070c7353e1de63021ae329c8d8"
+    }
+  ]
+}
