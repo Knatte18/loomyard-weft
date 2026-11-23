@@ -24,6 +24,12 @@ The report goes to `docs/research/platform/landlock-area-2026-11-23.md`, ending 
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-23): The allow list lives in one readable place
+
+Decision: The report proposes where the area's allow list is kept: one file the operator can read and edit (for example a config module area with read, write and exec path lists), plus the paths lym derives from the hub itself, and how lym shows the list in force. Every path the probe needed is listed with why.
+
+Rationale: The operator wants the list of what agents may touch written down in one place, not spread through code.
+
 ## Constraints
 
 ## Auto-mode assumptions
