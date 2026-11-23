@@ -1,0 +1,80 @@
+{
+  "sketch": "later-transition-push-wait",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "harden-fabric-undriven-cases", "revised": "2026-11-23T08:31:55Z"},
+    {"slug": "weft-main-push-race", "revised": "2026-11-23T08:25:31Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"}
+  ],
+  "parts": [
+    {
+      "slug": "async-run-pusher",
+      "title": "Run transitions commit locally; a per-worktree pusher brings them to origin",
+      "type": "enhancement",
+      "labels": ["batten", "fabric", "loom", "landing", "cli", "dobby", "process", "tender", "pattern", "heddle"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D5", "D6", "D7", "D8"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 900},
+        {"path": "internal/fabriccli", "size": 150},
+        {"path": "internal/pairteardown", "size": 250},
+        {"path": "internal/statuscommit", "size": 150},
+        {"path": "internal/battencli", "size": 350},
+        {"path": "internal/battenshed", "size": 150},
+        {"path": "internal/loomcli", "size": 350},
+        {"path": "internal/dobbyengine", "size": 200},
+        {"path": "internal/beamcli", "size": 80},
+        {"path": "internal/runproc", "size": 40},
+        {"path": "internal/tendercli", "size": 40},
+        {"path": "internal/heddleengine", "size": 5},
+        {"path": "pattern", "size": 80}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; the existing detached push `lym fabric push` spawned by `fabricengine.SpawnStatusPush`, `pairteardown.PushRun` and `HandOver`, `statuscommit`'s owed backoff, and loom's pre-push reconcile in `internal/loomcli/prepush.go`",
+        "delivers": "transitions and driver-stop record commits of batten and loom runs that commit and return with no push, fetch, reconcile or admission; one locked pusher per records worktree that pushes records then code, retries owed pushes without records, stops on refusals, pauses and hand-over marks, runs loom's reconcile and hands taken-over runs over, the prime's per batten run; the pusher started from each commit, each dobby tick and each resume; Worktree-Teardown pushing to completion before removal; the three PATTERN entries and the glossary line rewritten",
+        "exports": "the pusher's start call that the seams, the dobby tick and the resume paths share, and `fabricengine.PairPush`'s no-record mode"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D1: a transition of a batten run and of a loom run commits with its trailers and returns without a push, a fetch, an origin reconcile or a network-gate admission, for a running row, a skipped row, a start row and the seeded Worktree-Create commit.",
+        "D1: `commitRunRecords` and the `commit-records` verb commit and start the worktree's pusher without a push.",
+        "D2: a run adopted by another machine after unpushed transitions resumes at the last transition origin holds and re-runs that row from the top.",
+        "D3: after a commit with the start conditions holding, one pusher starts;\nwith the pusher lock held, a refused-push record standing for the records branch, or, for a pair, a pause or a hand-over mark, none starts.",
+        "D3: a pusher whose worktree was removed exits.",
+        "D3: a batten transition starts the prime's pusher and a loom transition the pair's.",
+        "D3: the pusher pushes the records side before the code side, pushes again when the local tip moved during its push, and exits once origin holds the local tip.",
+        "D3: a commit made while the pusher is exiting is pushed, by that pusher or by one the commit starts.",
+        "D3: ending a run's processes leaves its worktree's pusher, registered under `runproc.HubOwner` with role `runproc.RolePush`, running.",
+        "Constraint, as a regression check: a transition commit made while a pusher replays local commits onto origin's tip is kept, and origin receives every commit in its order.",
+        "D5: an owed push is retried by the pusher until it lands, writes no failed-push record, leaves `PushOwed` unset in the run's read, and the run's next transition commits meanwhile;\na deferred push is told from the returned error, and one creel notice goes out once the backoff reaches 60 s.",
+        "D5: a refused push, of the records or the code side, leaves a failed-push record and creel notice, and no commit or dobby tick starts that worktree's pusher until the record is cleared;\na refused prime push holds every batten run's pushes on this machine, and an owed-class record another caller wrote stops no pusher.",
+        "D5: a dobby tick starts a pusher for a prime or pair ahead of origin with its start conditions holding,\na branch with commits and no upstream included,\nand a pair whose records branch is level and whose local code branch holds its records tip's code tip that origin lacks included;\nit starts none for one that is level, for a pair whose code branch is ahead only by commits no transition names,\nor for one whose upstream is set with its tracking ref pruned.",
+        "D5: a resume starts the pusher before the run acts.",
+        "D5: Worktree-Teardown shuts the session down, pushes with the prime lock released, removes the pair only after its records and code reach origin, and a refused push halts it with the pair kept.",
+        "D6: after another machine's takeover of a loom run, its pair's pusher hands the run over on its rejected push with `InsidePair` true and exits, the unpushed tips are under owner archive tags, and no commit or tick starts that pair's pusher again.",
+        "D6: a batten run taken over while the prime holds its unpushed transitions is handed over on the prime pusher's rejected push;\nits unpushed prime commits go under an owner archive tag and are never replayed, and the other batten runs' commits reach origin;\na failed takeover read, archive push or hand-over replays nothing and is retried.",
+        "D6: between a pair pusher's records push and its code push, a read of the run on its own machine acts, and one on another machine answers the code-tip wait.",
+        "D7: a pair's pusher runs the reconcile before its push; an entry owned elsewhere is handed over, and a stopped or ended entry pauses the run and the pusher pushes nothing more.",
+        "D7: a commit made after a pause covers the run is not pushed until the resume.",
+        "D8: with origin unreachable, the run walks its next rows and the dobby still schedules it.",
+        "Review: `PATTERN-run-fsm`, `PATTERN-pair-remote` and `PATTERN-owner-machine` and their backgrounds state the Decisions and no longer state a transition push before the run acts or the start-row exception.",
+        "Review: `internal/heddleengine/glossary.md` carries the pusher line D3 gives."
+      ],
+      "pattern_changes": ["PATTERN-run-fsm", "PATTERN-pair-remote", "PATTERN-owner-machine"],
+      "expected_cost_usd": 40,
+      "cost_line": "tapestry/solid with a stored record over 17 runs: fixed 30.87 USD plus 0.33 USD per 100 changed lines, about 2,800 lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 40,
+    "line": "one tapestry/solid part on the stored-record cell (17 runs): 30.87 USD fixed plus about 9 USD for about 2,800 changed lines",
+    "next_best": {
+      "split": "two chained tapestries: the fabric and pair-teardown push modes and prime hand-over first (D5's no-record mode, D6), then the pusher, the seams, the dobby tick, teardown and PATTERN on top",
+      "expected_usd": 71,
+      "line": "two tapestry/solid parts on the same 17-run cell: 2 × 30.87 USD fixed plus about 9 USD for the same 2,800 lines, with no concurrency since the second takes the first's interface"
+    },
+    "cells": [{"recipe": "tapestry", "profile": "solid", "stored_record": true}]
+  }
+}
