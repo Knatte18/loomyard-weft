@@ -30,7 +30,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 20m<br>20m | fabric |
+| B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 21m<br>21m | fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (24)
 
@@ -53,7 +53,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 47m<br>0m | preflight, fabric |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 48m<br>0m | preflight, fabric |
 
 ### Layer A (2)
 
@@ -68,7 +68,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T5 | `draft` **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light |  | 1h<br>1h | reed, claude |
 | T6 | `draft` **Verify-budget notice names no run** | [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md) | darn · light |  | 1h<br>1h | loom |
-| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T15<br>T8 | 32m<br>32m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T15<br>T8 | 33m<br>33m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 | T14 | `draft` **Landing blames the token when the branch-rules read returns a plan-limit 403** | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 1h<br>1h | landing, git |
 
 ### Research (2)
