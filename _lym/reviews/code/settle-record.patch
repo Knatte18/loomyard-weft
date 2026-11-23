@@ -1,0 +1,47 @@
+diff --git a/internal/driftengine/verdict.go b/internal/driftengine/verdict.go
+index 1983f4885..b26932f7b 100644
+--- a/internal/driftengine/verdict.go
++++ b/internal/driftengine/verdict.go
+@@ -55,7 +55,7 @@ func renderVerdict(rec Records, baseHead string) string {
+ 			mode = scope.Diff
+ 		}
+ 		if baseHead != "" {
+-			lines = append(lines, fmt.Sprintf("- Baseline: captured at `%s`, the task's branch point.", baseHead))
++			lines = append(lines, fmt.Sprintf("- Baseline: captured at `%s`, the base of this branch.", baseHead))
+ 		}
+ 		lines = append(lines, "- Diff: "+diffText(mode))
+ 		lines = append(lines, checkLines(scope.LastCheck)...)
+@@ -97,9 +97,9 @@ func scopeText(scope ScopeRecord) string {
+ 		return "full."
+ 	}
+ 	if scope.ScopeSource != "" {
+-		return fmt.Sprintf("off, set by `%s`; the task is not regression-checked.", scope.ScopeSource)
++		return fmt.Sprintf("off, set by `%s`; this change is not regression-checked.", scope.ScopeSource)
+ 	}
+-	return "off; the task is not regression-checked."
++	return "off; this change is not regression-checked."
+ }
+ 
+ // diffText renders the diff line's value.
+diff --git a/internal/driftengine/verdict_test.go b/internal/driftengine/verdict_test.go
+index 26630942e..38d3cefce 100644
+--- a/internal/driftengine/verdict_test.go
++++ b/internal/driftengine/verdict_test.go
+@@ -42,7 +42,7 @@ func TestVerdict(t *testing.T) {
+ 			"ScopeOffNamesItsSource",
+ 			&ScopeRecord{Scope: ScopeOff, ScopeSource: "drift.scope"},
+ 			JudgedRecord{},
+-			join("## Regression check", "", "- Scope: off, set by `drift.scope`; the task is not regression-checked."),
++			join("## Regression check", "", "- Scope: off, set by `drift.scope`; this change is not regression-checked."),
+ 		},
+ 		{
+ 			"DeferredSaysNoCompareRan",
+@@ -144,7 +144,7 @@ func TestVerdict(t *testing.T) {
+ 		}
+ 		writeVerdictRecords(t, d, scope, JudgedRecord{}, fabricengine.Trailer{Key: BaselineTrailerKey, Value: "digest"})
+ 		want := strings.Join([]string{"## Regression check", "", "- Scope: full.",
+-			"- Baseline: captured at `code-head-0`, the task's branch point.",
++			"- Baseline: captured at `code-head-0`, the base of this branch.",
+ 			"- Diff: lines.",
+ 			"- Last check: passed at `head2`. 0 changed cells, 0 expected, 0 judged as matching, 0 reused from stored rulings, 0 unexpected.",
+ 			"- Left out as capture metadata, not results: files `_source.txt`, `b.txt`; keys `captured_at`."}, "\n")
