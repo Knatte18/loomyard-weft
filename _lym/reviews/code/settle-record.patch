@@ -1,0 +1,980 @@
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index 427a6ba95..358924e29 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -345,7 +345,7 @@ func (c *battenCLI) armAt(location *lymcwd.Location, runID string, explicit bool
+ 		c.runVerdict = hubRunVerdict(location, runID)
+ 	}
+ 	if verb == "run" && c.readopt.Add == nil {
+-		c.readopt = hubReadoptSeams(location)
++		c.readopt = hubReadoptSeams(location, c.reconcileOptions)
+ 	}
+ 	c.preDrive = c.preDriveCheck
+ 
+@@ -517,7 +517,7 @@ func battenInterruptPolicy(row string) string {
+ // The caller needs the location before it can read the seed that picks the recipe;
+ // resolving the location again here would cost a second `git rev-parse` on every call.
+ func ArmAt(location *lymcwd.Location, verb string, runID string) (shedverbs.Spec, error) {
+-	c := &battenCLI{}
++	c := &battenCLI{reconcileOptions: fabricengine.RunStartReconcileOptions()}
+ 	return c.armAt(location, runID, true, verb)
+ }
+ 
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index 205cf614b..c64000068 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -201,8 +201,10 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 		},
+ 		ExemptGate:          func() (func(), error) { return pauserecord.SetGateExemptAll(), nil },
+ 		TaskWorktreePresent: func() (bool, error) { return taskWorktreePresent(location, slug) },
+-		Reconcile:           func() (fabricengine.OriginReport, error) { return reconcileRun(location, slug, true) },
+-		PullBolt:            func() error { return boardengine.PullBolt(boltDir) },
++		Reconcile: func() (fabricengine.OriginReport, error) {
++			return reconcileRun(location, slug, true, fabricengine.ReconcileOptions{})
++		},
++		PullBolt: func() error { return boardengine.PullBolt(boltDir) },
+ 		Owner: func() (string, string, bool, error) {
+ 			identity, err := machinename.ReadIdentity()
+ 			if err != nil {
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 605632a32..02d99aa62 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -258,6 +258,9 @@ type battenCLI struct {
+ 	// readopt carries the seams that re-make a live pair whose task worktree is gone.
+ 	// A receiver that skips the arm leaves it zero, which reads as no re-adoption.
+ 	readopt readoptSeams
++	// reconcileOptions bounds the run-scope origin reconcile of a resume and of a gone pair's re-adoption.
++	// The zero value makes one attempt, which a hand-populated receiver keeps.
++	reconcileOptions fabricengine.ReconcileOptions
+ 	// continuePass carries the hidden --continue-pass value of "run".
+ 	// The pass is one that dobby schedules into a run it already drives,
+ 	// so the pre-run skips the resume's origin reconcile, the Open-Window re-run and the pause refusal.
+@@ -442,8 +445,10 @@ Example:
+ 
+ // Command returns the cobra command tree for the batten module.
+ func Command() *cobra.Command {
+-	c := &battenCLI{spec: &shedverbs.Spec{}}
+-	c.reconcile = func(slug string) (fabricengine.OriginReport, error) { return reconcileRun(c.location, slug, false) }
++	c := &battenCLI{spec: &shedverbs.Spec{}, reconcileOptions: fabricengine.RunStartReconcileOptions()}
++	c.reconcile = func(slug string) (fabricengine.OriginReport, error) {
++		return reconcileRun(c.location, slug, false, c.reconcileOptions)
++	}
+ 
+ 	parent := &cobra.Command{
+ 		Use:   "batten",
+@@ -777,8 +782,10 @@ type FirstPassOptions struct {
+ // The returned error is reserved for a failure to arm the run or to read the envelope back.
+ // The run's own driver lock, inside the pass, refuses a second driver.
+ func StartFirstPass(location *lymcwd.Location, slug string, opts FirstPassOptions) (map[string]any, error) {
+-	c := &battenCLI{spec: &shedverbs.Spec{}, firstPassAnchor: opts.Anchor}
+-	c.reconcile = func(slug string) (fabricengine.OriginReport, error) { return reconcileRun(c.location, slug, false) }
++	c := &battenCLI{spec: &shedverbs.Spec{}, firstPassAnchor: opts.Anchor, reconcileOptions: fabricengine.RunStartReconcileOptions()}
++	c.reconcile = func(slug string) (fabricengine.OriginReport, error) {
++		return reconcileRun(c.location, slug, false, c.reconcileOptions)
++	}
+ 	armed, err := c.armAt(location, slug, true, "run")
+ 	if err != nil {
+ 		return nil, err
+diff --git a/internal/battencli/readopt.go b/internal/battencli/readopt.go
+index d5a30c703..b7178e6b9 100644
+--- a/internal/battencli/readopt.go
++++ b/internal/battencli/readopt.go
+@@ -62,14 +62,15 @@ func hubTaskBranch(location *lymcwd.Location, slug string) (string, fabricengine
+ }
+ 
+ // hubReadoptSeams builds the re-adoption seams over the prime location of a hub.
+-func hubReadoptSeams(location *lymcwd.Location) readoptSeams {
++// opts bounds the run-scope reconcile's remote calls and its retries of an unreachable origin.
++func hubReadoptSeams(location *lymcwd.Location, opts fabricengine.ReconcileOptions) readoptSeams {
+ 	return readoptSeams{
+ 		Gone: func(slug string) (bool, error) {
+ 			present, err := taskWorktreePresent(location, slug)
+ 			return !present, err
+ 		},
+ 		Reconcile: func(slug string) (fabricengine.OriginReport, error) {
+-			return reconcileGoneRun(location, slug)
++			return reconcileGoneRun(location, slug, opts)
+ 		},
+ 		Prune: func() error { return fabricengine.PruneRegistrations(location) },
+ 		Add: func(slug string) error {
+@@ -132,14 +133,15 @@ func hubReadoptSeams(location *lymcwd.Location) readoptSeams {
+ // reconcileGoneRun runs the run-scope origin reconcile of slug from the prime.
+ // It judges a run whose pair worktree is absent.
+ // The run scope tears no pair down and moves no ref of the absent pair.
++// opts bounds the reconcile's remote calls and its retries of an unreachable origin.
+ // Each entry of the report's mutation record is logged at Info, since a resume has no envelope to carry it.
+ // The report is returned with the error, so a partial record is still logged.
+-func reconcileGoneRun(location *lymcwd.Location, slug string) (fabricengine.OriginReport, error) {
++func reconcileGoneRun(location *lymcwd.Location, slug string, opts fabricengine.ReconcileOptions) (fabricengine.OriginReport, error) {
+ 	teardown, err := pairteardown.New(location)
+ 	if err != nil {
+ 		return fabricengine.OriginReport{}, err
+ 	}
+-	report, err := fabricengine.ReconcileOrigin(location, fabricengine.ReconcileScope{Run: slug, PairMayBeAbsent: true}, teardown.OriginSeams(pairteardown.HubSeamOptions(location)), fabricengine.ReconcileOptions{})
++	report, err := fabricengine.ReconcileOrigin(location, fabricengine.ReconcileScope{Run: slug, PairMayBeAbsent: true}, teardown.OriginSeams(pairteardown.HubSeamOptions(location)), opts)
+ 	for _, mutation := range report.Mutations.Entries() {
+ 		logger.Info("battencli: origin reconcile mutation", "slug", slug, "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
+ 	}
+diff --git a/internal/battencli/readopt_integration_test.go b/internal/battencli/readopt_integration_test.go
+index 7fb2e791e..e44a79836 100644
+--- a/internal/battencli/readopt_integration_test.go
++++ b/internal/battencli/readopt_integration_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"path/filepath"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -66,10 +67,10 @@ func requireStatusState(t *testing.T, c *battenCLI, want shedengine.State) {
+ // It returns the receiver with the report its resume reconcile judged last.
+ func readoptReceiver(h *hubforge.Hub, slug string) (*battenCLI, *fabricengine.OriginReport) {
+ 	c := &battenCLI{location: h.Location, slug: slug}
+-	c.readopt = hubReadoptSeams(h.Location)
++	c.readopt = hubReadoptSeams(h.Location, fabricengine.ReconcileOptions{})
+ 	var second fabricengine.OriginReport
+ 	c.reconcile = func(slug string) (fabricengine.OriginReport, error) {
+-		report, err := reconcileRun(h.Location, slug, false)
++		report, err := reconcileRun(h.Location, slug, false, fabricengine.ReconcileOptions{})
+ 		second = report
+ 		return report, err
+ 	}
+@@ -275,6 +276,49 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("AResumeReconcileRetriesATransportFailureAndResumesOnceOriginAnswers", func(t *testing.T) {
++		t.Parallel()
++
++		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++		const slug = "retry-pair"
++		hubforge.AddPair(t, h, slug)
++		repos := []string{h.PrimeWorktree(), h.PrimeRecords()}
++		originURLs := make([]string, len(repos))
++		for i, repo := range repos {
++			originURLs[i] = gitkit.Git(t, repo, "remote", "get-url", "origin")
++			gitkit.Git(t, repo, "remote", "set-url", "origin", "http://127.0.0.1:1/x")
++		}
++		var sleeps int
++		opts := fabricengine.ReconcileOptions{
++			RetryBound:    time.Minute,
++			RetryInterval: time.Second,
++			Sleep: func(time.Duration) {
++				sleeps++
++				for i, repo := range repos {
++					gitkit.Git(t, repo, "remote", "set-url", "origin", originURLs[i])
++				}
++			},
++		}
++		c := &battenCLI{location: h.Location, slug: slug}
++		var report fabricengine.OriginReport
++		c.reconcile = func(slug string) (fabricengine.OriginReport, error) {
++			var err error
++			report, err = reconcileRun(h.Location, slug, false, opts)
++			return report, err
++		}
++
++		if err := c.reconcileResume(); err != nil {
++			t.Fatalf("reconcileResume() = %v; want nil, the run resumed", err)
++		}
++
++		if report.Unreachable {
++			t.Error("the reconcile reported origin unreachable; want it retried until origin answered")
++		}
++		if sleeps != 1 {
++			t.Errorf("retry sleeps = %d; want 1, the one wait before origin answered", sleeps)
++		}
++	})
++
+ 	t.Run("APrefixSetOverALiveBareSlugPairKeepsItsBranch", func(t *testing.T) {
+ 		t.Parallel()
+ 
+@@ -282,7 +326,7 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		const slug = "bare-pair"
+ 		hubforge.AddPair(t, h, slug)
+ 		hubforge.SeedFabricConfig(t, h, "branch_prefix: hanf/\npathspec: \"\"\n")
+-		seams := hubReadoptSeams(h.Location)
++		seams := hubReadoptSeams(h.Location, fabricengine.ReconcileOptions{})
+ 
+ 		if got, err := seams.TaskBranch(slug); err != nil || got != slug {
+ 			t.Errorf("TaskBranch(%q) = %q, %v; want the bare slug %q", slug, got, err, slug)
+diff --git a/internal/battencli/resumereconcile.go b/internal/battencli/resumereconcile.go
+index d18160c09..395919e09 100644
+--- a/internal/battencli/resumereconcile.go
++++ b/internal/battencli/resumereconcile.go
+@@ -23,14 +23,15 @@ const (
+ // reconcileRun runs the run-scope origin reconcile of slug from the prime, with the hub seams the pair teardown builds.
+ // The run scope tears no pair down.
+ // With judgeOnly the reconcile only judges: it moves no ref and tears nothing down.
++// opts bounds the reconcile's remote calls and its retries of an unreachable origin.
+ // Each entry of the report's mutation record is logged at Info, since a resume has no envelope to carry it.
+ // The report is returned with the error, so a partial record is still logged.
+-func reconcileRun(location *lymcwd.Location, slug string, judgeOnly bool) (fabricengine.OriginReport, error) {
++func reconcileRun(location *lymcwd.Location, slug string, judgeOnly bool, opts fabricengine.ReconcileOptions) (fabricengine.OriginReport, error) {
+ 	teardown, err := pairteardown.New(location)
+ 	if err != nil {
+ 		return fabricengine.OriginReport{}, err
+ 	}
+-	report, err := fabricengine.ReconcileOrigin(location, fabricengine.ReconcileScope{Run: slug, JudgeOnly: judgeOnly}, teardown.OriginSeams(pairteardown.HubSeamOptions(location)), fabricengine.ReconcileOptions{})
++	report, err := fabricengine.ReconcileOrigin(location, fabricengine.ReconcileScope{Run: slug, JudgeOnly: judgeOnly}, teardown.OriginSeams(pairteardown.HubSeamOptions(location)), opts)
+ 	for _, mutation := range report.Mutations.Entries() {
+ 		logger.Info("battencli: origin reconcile mutation", "slug", slug, "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
+ 	}
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 5a2a8db0e..4f8b942c1 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -233,7 +233,9 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		SpawnPass: func(slug string, continuePass, noReopen bool) (<-chan dobbyengine.PassExit, error) {
+ 			return spawnPass(geom, slug, continuePass, noReopen)
+ 		},
+-		TearDownLeftovers: func(pairs []dobbyengine.LeftoverPair) <-chan map[string]error { return tearDownLeftovers(prime, pairs) },
++		TearDownLeftovers: func(pairs []dobbyengine.LeftoverPair) <-chan map[string]error {
++			return tearDownLeftovers(prime, pairs, fabricengine.RunStartReconcileOptions())
++		},
+ 		Notice: func(_ context.Context, line string) error {
+ 			return requirePosted(orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line))
+ 		},
+@@ -391,9 +393,10 @@ func describeGate(spec shuttleengine.Spec) shuttleengine.GateSpec {
+ }
+ 
+ // tearDownLeftovers tears down each of pairs by its kind in a goroutine of its own.
++// opts bounds the origin reconcile that tears down the ended runs' pairs.
+ // It then regenerates the hub workspace file once, so it no longer lists a removed pair.
+ // The channel delivers once, mapping each slug to nil when its pair was removed and to the reason otherwise.
+-func tearDownLeftovers(prime *lymcwd.Location, pairs []dobbyengine.LeftoverPair) <-chan map[string]error {
++func tearDownLeftovers(prime *lymcwd.Location, pairs []dobbyengine.LeftoverPair, opts fabricengine.ReconcileOptions) <-chan map[string]error {
+ 	result := make(chan map[string]error, 1)
+ 	go func() {
+ 		results := make(map[string]error, len(pairs))
+@@ -406,7 +409,7 @@ func tearDownLeftovers(prime *lymcwd.Location, pairs []dobbyengine.LeftoverPair)
+ 			results[pair.Slug] = tearDownLeftover(prime, pair)
+ 		}
+ 		if len(ended) > 0 {
+-			maps.Copy(results, reconcileEnded(prime, ended))
++			maps.Copy(results, reconcileEnded(prime, ended, opts))
+ 		}
+ 		if _, err := fabricengine.RegenerateHubWorkspace(fabricengine.NewMutations(prime.HubPath), prime); err != nil {
+ 			logger.Warn(`beamcli: the hub workspace file was not regenerated after a leftover teardown; run "lym fabric reconcile" once the cause is fixed`, "error", err)
+@@ -448,12 +451,13 @@ func tearDownLeftover(prime *lymcwd.Location, pair dobbyengine.LeftoverPair) err
+ // That reconcile tears down the local pair of every run origin has ended, and moves the hub's branches behind origin.
+ // Each entry of its mutation record is logged at Info.
+ // It maps each of slugs to nil when the reconcile removed its pair, and to the reason otherwise.
+-func reconcileEnded(prime *lymcwd.Location, slugs []string) map[string]error {
++// opts bounds the reconcile's remote calls and its retries of an unreachable origin.
++func reconcileEnded(prime *lymcwd.Location, slugs []string, opts fabricengine.ReconcileOptions) map[string]error {
+ 	teardown, err := pairteardown.New(prime)
+ 	if err != nil {
+ 		return endedTeardownResults(slugs, fabricengine.OriginReport{}, err)
+ 	}
+-	report, err := fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, teardown.OriginSeams(pairteardown.HubSeamOptions(prime)), fabricengine.ReconcileOptions{})
++	report, err := fabricengine.ReconcileOrigin(prime, fabricengine.ReconcileScope{}, teardown.OriginSeams(pairteardown.HubSeamOptions(prime)), opts)
+ 	for _, mutation := range report.Mutations.Entries() {
+ 		logger.Info("beamcli: origin reconcile mutation", "kind", string(mutation.Kind), "target", mutation.Target, "detail", mutation.Detail)
+ 	}
+diff --git a/internal/beamcli/dobbyleftover_integration_test.go b/internal/beamcli/dobbyleftover_integration_test.go
+index cdcb4ea20..e525e0678 100644
+--- a/internal/beamcli/dobbyleftover_integration_test.go
++++ b/internal/beamcli/dobbyleftover_integration_test.go
+@@ -94,7 +94,7 @@ func TestTearDownLeftovers_RemovesALandedAndACancelledPairAndTheirWorkspaceFolde
+ 	got := <-tearDownLeftovers(prime, []dobbyengine.LeftoverPair{
+ 		{Slug: landed, Kind: dobbyengine.LeftoverLanded},
+ 		{Slug: cancelled, Kind: dobbyengine.LeftoverCancelled},
+-	})
++	}, fabricengine.ReconcileOptions{})
+ 
+ 	if want := map[string]error{landed: nil, cancelled: nil}; !reflect.DeepEqual(got, want) {
+ 		t.Errorf("tearDownLeftovers() = %v; want %v", got, want)
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 4278d7c05..18f133422 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -87,6 +87,20 @@ func (o ReconcileOptions) attempts() int {
+ 	return 1 + int(o.RetryBound/o.RetryInterval)
+ }
+ 
++// The retry bound and interval of a reconcile that a run's start, resume or leftover teardown performs.
++const (
++	runStartRetryBound    = time.Minute
++	runStartRetryInterval = 10 * time.Second
++)
++
++// RunStartReconcileOptions returns the options of an origin reconcile that a run performs.
++// That covers a run's start, its resume and its leftover teardown.
++// An unreachable origin is retried every ten seconds for a minute before the reconcile reports it unreachable.
++// The retries run under the hub's remote-refs locks, so the bound is the shortest that still waits out a brief drop.
++func RunStartReconcileOptions() ReconcileOptions {
++	return ReconcileOptions{RetryBound: runStartRetryBound, RetryInterval: runStartRetryInterval}
++}
++
+ // deadline returns the bound of one remote call.
+ func (o ReconcileOptions) deadline() time.Duration {
+ 	if o.AttemptDeadline <= 0 {
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 676eb329d..c318092dd 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -648,7 +648,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 			gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+ 			gitkit.Git(t, weft, "remote", "set-url", "origin", refusedOriginURL)
+ 
+-			if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(nil), fabricengine.MachineNames{}); err != nil {
++			if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(func(time.Duration) {}), fabricengine.MachineNames{}); err != nil {
+ 				t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+ 			}
+ 
+@@ -717,6 +717,31 @@ func TestPushFailureClasses(t *testing.T) {
+ 		})
+ 	})
+ 
++	t.Run("APushOfABranchNeverPushedThatFailsInTransitLandsOnTheRetryOnceOriginAnswers", func(t *testing.T) {
++		f, fake := newFailureFixture(t)
++		weft := f.hub.PrimeRecords()
++		realURL := gitkit.Git(t, weft, "remote", "get-url", "origin")
++		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
++		gitkit.Git(t, weft, "remote", "set-url", "origin", refusedOriginURL)
++		var sleeps int
++		backoff := countingBackoff(&sleeps, func(int) { gitkit.Git(t, weft, "remote", "set-url", "origin", realURL) })
++
++		if _, err := fabricengine.CoalescePushRequest(fabricengine.PushSpawn{WeftPath: weft}, fake.options(backoff), fabricengine.MachineNames{}); err != nil {
++			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
++		}
++
++		if got, want := bareBranchTip(t, f.hub.RecordsBare, gitkit.CurrentBranch(t, weft)), gitkit.RevParse(t, weft, "HEAD"); got != want {
++			t.Errorf("origin tip = %s; want the pushed local HEAD %s", got, want)
++		}
++		if sleeps != 1 {
++			t.Errorf("backoff sleeps = %d; want 1", sleeps)
++		}
++		requireNoFailedPush(t, f.hub.Location.HubPath)
++		if len(fake.lines) != 0 {
++			t.Errorf("mails = %q; want none", fake.lines)
++		}
++	})
++
+ 	t.Run("APushFailingForNoNamedReasonWritesAnOtherRecordAndMails", func(t *testing.T) {
+ 		f, fake := newFailureFixture(t)
+ 		weft := f.hub.PrimeRecords()
+diff --git a/internal/fabricengine/pushclassified.go b/internal/fabricengine/pushclassified.go
+index 30e8356f9..e0fab9487 100644
+--- a/internal/fabricengine/pushclassified.go
++++ b/internal/fabricengine/pushclassified.go
+@@ -104,6 +104,8 @@ type pushJob struct {
+ // A task branch origin rewound is not pushed either, since a plain push would restore the commits the rewind dropped.
+ // A gone branch whose entry is not ended and an unreachable origin are retried by one backoff before they are recorded.
+ //
++// A push that fails in transit is pushed again once per delay of the push backoff before it is recorded.
++//
+ // A rejection is retried before it is recorded, over the push backoff.
+ // Retries continue while each fails with a bare rejection or an unnamed error such as a failed fetch,
+ // so a push that lost a race with another push of the branch lands instead of reporting a divergence.
+@@ -150,7 +152,7 @@ func pushClassified(rec *Mutations, hubPath, side, path string, opts SyncOptions
+ 	if side == failedPushSideBolt && hadUnpushedErr == nil && !hadUnpushed {
+ 		return job.clear()
+ 	}
+-	pushErr := job.push()
++	pushErr := job.retryTransportPush(job.push())
+ 	if pushErr == nil {
+ 		return job.landed(hadUnpushed, hadUnpushedErr)
+ 	}
+@@ -186,6 +188,25 @@ func (j *pushJob) push() error {
+ 	return j.repo.PushRebaseFree(ns)
+ }
+ 
++// retryTransportPush pushes again after each delay of the push backoff while pushErr is a transport failure.
++// It returns the first push that did not fail in transit, or the last transport failure once the backoff is spent.
++// A connection that drops mid-push leaves no refusal to classify, so only another push of the branch settles it.
++func (j *pushJob) retryTransportPush(pushErr error) error {
++	sleep := j.opts.BackoffSleep
++	if sleep == nil {
++		sleep = time.Sleep
++	}
++	for attempt, delay := range gitrepo.PushBackoffDelays() {
++		if !gitexec.IsTransportFailure(pushErr) {
++			return pushErr
++		}
++		logger.Warn("fabricengine: push failed in transit, retrying", "side", j.side, "branch", j.branch, "attempt", attempt+1, "error", pushErr)
++		sleep(delay)
++		pushErr = j.push()
++	}
++	return pushErr
++}
++
+ // refuseUnseededBoard refuses a board push for a board with no upstream in a one-repository records store.
+ // Such a board is a --single-repo seed whose clone stopped before it set the upstreams.
+ // A seeded board takes its upstream at the seed push, and a joined board adopts origin's board branch.
+diff --git a/internal/gitexec/transport.go b/internal/gitexec/transport.go
+index 3467d97e3..73d22ef5c 100644
+--- a/internal/gitexec/transport.go
++++ b/internal/gitexec/transport.go
+@@ -5,6 +5,7 @@ package gitexec
+ 
+ import (
+ 	"errors"
++	"regexp"
+ 	"strings"
+ )
+ 
+@@ -18,7 +19,10 @@ var remoteSubcommands = map[string]bool{
+ 	"clone":     true,
+ }
+ 
+-// transportPhrases are the lower-cased stderr fragments git prints when it cannot reach the remote.
++// transportPhrases are the lower-cased stderr fragments git prints when a remote operation fails in transit.
++// Git prints them when it cannot reach the remote.
++// It prints them when the connection drops before the remote's answer is complete.
++// It prints them when the remote's front end answers with a gateway error before git reaches the repository.
+ var transportPhrases = []string{
+ 	"could not resolve host",
+ 	"connection refused",
+@@ -28,12 +32,45 @@ var transportPhrases = []string{
+ 	"network is unreachable",
+ 	"failed to connect to",
+ 	"operation too slow",
++	"http/2 stream",
++	"recv failure",
++	"send failure",
++	"empty reply from server",
++	"early eof",
++	"unexpected disconnect while reading sideband packet",
++	"gnutls_handshake() failed",
++	"tls connection was non-properly terminated",
++	"the requested url returned error: 502",
++	"the requested url returned error: 503",
++	"the requested url returned error: 504",
++}
++
++// httpClientStatusPattern matches the HTTP 4xx status git prints in lower-cased stderr.
++// Such an answer is a refusal that running the command again does not lift.
++// The statuses of httpRetryableClientStatuses are the exception.
++// The remote may close the connection after refusing, so a disconnect phrase can follow the refusal in the same stderr.
++var httpClientStatusPattern = regexp.MustCompile(`(?:the requested url returned error: |rpc failed; http )(4\d\d)`)
++
++// httpRetryableClientStatuses are the 4xx statuses that name a moment rather than a refusal.
++// They are a request timeout and a rate limit.
++var httpRetryableClientStatuses = map[string]bool{"408": true, "429": true}
++
++// holdsHTTPClientRefusal reports whether the lower-cased stderr holds a 4xx status other than a retryable one.
++func holdsHTTPClientRefusal(stderr string) bool {
++	for _, match := range httpClientStatusPattern.FindAllStringSubmatch(stderr, -1) {
++		if !httpRetryableClientStatuses[match[1]] {
++			return true
++		}
++	}
++	return false
+ }
+ 
+ // IsTransportFailure reports whether err holds a *GitError for a remote operation that failed to reach the remote.
+ // Remote operations are push, fetch, pull, ls-remote and clone.
+ // A *GitError with a non-zero Timeout counts too, since git was killed for outliving its deadline or stalling twice.
+ // A rejected push, an authentication failure, a missing ref or a local command is not a transport failure.
++// A stderr holding an HTTP 4xx status is a refusal, whatever disconnect phrase follows it.
++// The exceptions are 408 and 429, which name a moment rather than a refusal.
+ // An error with no *GitError in its chain is not one either.
+ // An unlisted stderr message is not a transport failure.
+ func IsTransportFailure(err error) bool {
+@@ -48,6 +85,9 @@ func IsTransportFailure(err error) bool {
+ 		return true
+ 	}
+ 	stderr := strings.ToLower(gitErr.Stderr)
++	if holdsHTTPClientRefusal(stderr) {
++		return false
++	}
+ 	for _, phrase := range transportPhrases {
+ 		if strings.Contains(stderr, phrase) {
+ 			return true
+diff --git a/internal/gitexec/transport_test.go b/internal/gitexec/transport_test.go
+index b44f54a11..20f9f445f 100644
+--- a/internal/gitexec/transport_test.go
++++ b/internal/gitexec/transport_test.go
+@@ -25,9 +25,22 @@ func TestIsTransportFailure(t *testing.T) {
+ 		"connect: Network is unreachable",
+ 		"fatal: unable to access 'x': Failed to connect to h port 443",
+ 		"fatal: unable to access 'x': Operation too slow. Less than 1000 bytes/sec transferred the last 60 seconds",
++		"fatal: unable to access 'x': HTTP/2 stream 1 was closed cleanly, but before getting all response header fields",
++		"error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: INTERNAL_ERROR (err 2)",
++		"fatal: unable to access 'x': HTTP/2 stream 1 was reset",
++		"error: RPC failed; curl 56 Recv failure: Connection was aborted",
++		"fatal: unable to access 'x': Send failure: Broken pipe",
++		"fatal: unable to access 'x': Empty reply from server",
++		"fetch-pack: unexpected disconnect while reading sideband packet",
++		"fatal: early EOF",
++		"fatal: unable to access 'x': gnutls_handshake() failed: Error in the pull function.",
++		"error: RPC failed; curl 56 GnuTLS recv error (-110): The TLS connection was non-properly terminated.",
++		"fatal: unable to access 'x': The requested URL returned error: 502",
++		"fatal: unable to access 'x': The requested URL returned error: 503",
++		"fatal: unable to access 'x': The requested URL returned error: 504",
+ 	}
+ 	for _, p := range phrases {
+-		for _, sub := range []string{"push", "fetch"} {
++		for _, sub := range []string{"push", "fetch", "ls-remote"} {
+ 			err := &gitexec.GitError{Args: []string{sub, "origin"}, ExitCode: 128, Stderr: p}
+ 			if !gitexec.IsTransportFailure(err) {
+ 				t.Errorf("%s %q: want true", sub, p)
+@@ -51,6 +64,12 @@ func TestIsTransportFailure(t *testing.T) {
+ 		{"non-ff push with -c", &gitexec.GitError{Args: []string{"-c", "push.autoSetupRemote=true", "push"}, Stderr: "! [rejected] (non-fast-forward)"}, false},
+ 		{"auth push", &gitexec.GitError{Args: []string{"push"}, Stderr: "fatal: Authentication failed"}, false},
+ 		{"missing ref fetch", &gitexec.GitError{Args: []string{"fetch", "origin", "nope"}, Stderr: "fatal: couldn't find remote ref nope"}, false},
++		{"forbidden fetch", &gitexec.GitError{Args: []string{"fetch", "origin"}, Stderr: "fatal: unable to access 'x': The requested URL returned error: 403"}, false},
++		{"missing repository ls-remote", &gitexec.GitError{Args: []string{"ls-remote", "origin"}, Stderr: "fatal: unable to access 'x': The requested URL returned error: 404"}, false},
++		{"too-large push with a sideband disconnect", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "error: RPC failed; HTTP 413 curl 22 The requested URL returned error: 413\nsend-pack: unexpected disconnect while reading sideband packet"}, false},
++		{"too-large push with a send failure", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "error: RPC failed; HTTP 413\nfatal: unable to access 'x': Send failure: Broken pipe"}, false},
++		{"rate-limited fetch with a receive failure", &gitexec.GitError{Args: []string{"fetch", "origin"}, Stderr: "fatal: unable to access 'x': The requested URL returned error: 429\nerror: RPC failed; curl 56 Recv failure"}, true},
++		{"timed-out request with a disconnect", &gitexec.GitError{Args: []string{"fetch", "origin"}, Stderr: "error: RPC failed; HTTP 408\nfetch-pack: unexpected disconnect while reading sideband packet"}, true},
+ 		{"pull with phrase", &gitexec.GitError{Args: []string{"pull"}, Stderr: "Connection refused"}, true},
+ 		{"timed-out remote command without a phrase", &gitexec.GitError{Args: []string{"ls-remote", "origin"}, ExitCode: -1, Timeout: time.Minute}, true},
+ 		{"timed-out local command", &gitexec.GitError{Args: []string{"status"}, ExitCode: -1, Timeout: time.Minute}, false},
+diff --git a/internal/landingshed/finalize_pr.go b/internal/landingshed/finalize_pr.go
+index dc5ef3d2f..4d89fb70c 100644
+--- a/internal/landingshed/finalize_pr.go
++++ b/internal/landingshed/finalize_pr.go
+@@ -464,6 +464,8 @@ func pullRequestCommitTitle(title string, number int) string {
+ // So Finalize halts within about two and a half windows.
+ // It then fetches the parent's upstream and fast-forwards the parent pair to it,
+ // so the parent-side merge that follows finds the parent holding the task's work.
++// A transient failure of that fetch is an error the driver re-steps over its network waits;
++// the re-entry finds the pull request merged and lands through the already-landed path.
+ // It returns nil when the landing goes on; each halt opens with LandingStopPrefix.
+ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger, landing prLanding, title, message string) *ending {
+ 	pr := fz.deps.PullRequest
+@@ -522,6 +524,9 @@ func (fz *Finalize) mergeOnGitHub(ctx context.Context, parentHandle parentMerger
+ 	}
+ 
+ 	if _, err := fz.deps.ReadParentTips(true); err != nil {
++		if terr := transientFailure(ctx, finalizeName, "fetch the parent's upstream after the merge", err); terr != nil {
++			return &ending{err: terr}
++		}
+ 		return halt(ctx, finalizeName, LandingStopPrefix+fz.mergedButNotPulledReason(landing.record, fmt.Sprintf("the parent's upstream could not be fetched: %v", err)))
+ 	}
+ 	result, err := parentHandle.FastForwardPair(fabricengine.SyncOptions{SkipPush: fz.deps.PushSkipped})
+diff --git a/internal/landingshed/finalize_pr_test.go b/internal/landingshed/finalize_pr_test.go
+index a281bbe53..e49c2cc81 100644
+--- a/internal/landingshed/finalize_pr_test.go
++++ b/internal/landingshed/finalize_pr_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/google/go-cmp/cmp"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/githubclient"
+ 	"github.com/Knatte18/loomyard/internal/mergeresolve"
+ 	"github.com/Knatte18/loomyard/internal/pullrequest"
+@@ -111,6 +112,8 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 		beamPR *BeamPullRequest
+ 		// beamReadErr makes the read of the beam's landing record fail.
+ 		beamReadErr error
++		// tipsErr makes the parent tips read fail once the GitHub merge has been called, leaving every earlier read as it was.
++		tipsErr error
+ 		// commitsMissing lists the task commits the merged pull request lacks.
+ 		commitsMissing []string
+ 
+@@ -387,6 +390,16 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			name: "AFailingFastForwardAfterTheMergeHaltsNamingLoomResume", mode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}), ffErr: errors.New("not fast-forward"),
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"merged on GitHub", "not fast-forward", "lym loom resume"}, wantOrder: "task-push,fast-forward", wantCalls: []string{"Status 7", wantGitHubMerge},
+ 		},
++		{
++			name: "ATransientParentFetchAfterTheMergeIsAnErrorTheDriverResteps", mode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}),
++			tipsErr: &gitexec.GitError{Args: []string{"fetch", "origin"}, ExitCode: 128, Stderr: "fatal: unable to access 'x': Connection refused"},
++			wantErr: true, wantErrText: "fetch the parent's upstream after the merge", wantOrder: "task-push", wantCalls: []string{"Status 7", wantGitHubMerge},
++		},
++		{
++			name: "AParentFetchRefusedAfterTheMergeHaltsNamingLoomResume", mode: "on", record: recorded(), scripts: mergeScript(open, scriptedCall{}),
++			tipsErr:     errors.New("fatal: couldn't find remote ref main"),
++			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"merged on GitHub", "the parent's upstream could not be fetched", "lym loom resume"}, wantOrder: "task-push", wantCalls: []string{"Status 7", wantGitHubMerge},
++		},
+ 		{
+ 			name: "ABeamsRecordedOpenPullRequestIsSquashMergedOnGitHubWithNoEditAndTheRecordDropsAfterTheParentPush", mode: "off", squashOff: true,
+ 			beam: true, beamPR: recordedBeam, scripts: mergeScript(open, scriptedCall{}),
+@@ -518,7 +531,11 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			t.Parallel()
+ 			var order []string
+ 			api := &fakePullRequestAPI{scripts: tt.scripts}
++			merged := false
+ 			api.onCall = func(method string) {
++				if method == "Merge" {
++					merged = true
++				}
+ 				if method == "Reopen" {
+ 					order = append(order, "reopen")
+ 				}
+@@ -526,6 +543,15 @@ func TestFinalize_PullRequest(t *testing.T) {
+ 			deps := newTestDeps(t)
+ 			deps.Slug = "me"
+ 			deps.Config.Squash = !tt.squashOff
++			if tt.tipsErr != nil {
++				readTips := deps.ReadParentTips
++				deps.ReadParentTips = func(fetch bool) (fabricengine.ParentTips, error) {
++					if merged {
++						return fabricengine.ParentTips{}, tt.tipsErr
++					}
++					return readTips(fetch)
++				}
++			}
+ 			if tt.parentOwnedElsewhere {
+ 				deps.ParentOwner = func() (ParentOwnership, error) { return ParentOwnership{Owner: "other-machine"}, nil }
+ 			}
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 9666cbdc8..c823d48e4 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -38,13 +38,18 @@
+ //     hand over to a fresh driver of the on-disk build, once per build;
+ //   - a stop an applied tackler resume returned to: the arbiter decides;
+ //   - a blocked stop the told `ArbiterSeam.JudgesFirst` marks: the arbiter decides, with no tackler call;
+-//   - a transient error that outlived its re-step: the tackler decides;
++//   - a git transport or GitHub API failure below its re-step cap: wait for the remote, then re-step;
++//   - such a failure past that cap: hand back with a notice naming the failing remote operation, with no tackler call;
++//   - any other transient error that outlived its re-step: the tackler decides;
+ //   - an interrupted step under the re-invoke policy, below the repair cap: re-step;
+ //   - an interrupted step under the hand-back policy: hand back;
+ //   - a producer, bootstrap or unseeded error, an interrupted step over the repair cap, or a blocked stop:
+ //     the tackler decides;
+ //   - anything else: hand back.
+ //
++// The network-failure waits grow with each re-step.
++// A remote that drops for a minute or two is waited out.
++// Only a failure that outlasts the waits reaches the parent, as a notice rather than a question.
+ // The landing-halt, budget-exhausted and precondition-unmet rows only hand back; they never resume a run.
+ // A recipe's told `GotoGuard` rejects a tackler verdict whose goto it refuses or cannot decide.
+ //
+@@ -55,9 +60,10 @@
+ // # Seams a recipe fills
+ //
+ // The step, status, run-lock, envelope, report, pause, hand-back, tackler, open-attempts and clock seams are required.
+-// The rest are optional, and an unwired one only removes rows or agents from the table:
++// The rest are optional, and an unwired one only removes rows or agents from the table, `Wait` excepted:
+ // `Arbiter`, `Arbiter.JudgesFirst`, `HandOver`, `Tamper`, `StartCheck`, `HandsBack` and `Watched`;
+ // also `CommitRecords` and `WriteFrictionNote`.
++// An unwired `Wait` removes no row: the driver then waits on the real clock before a re-step.
+ // A stop a removed row would have caught meets the later rows unchanged.
+ // No unwired seam adds a resume path: a tackler escalation with no arbiter hands back.
+ //
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 799a06687..175a46f0b 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -84,6 +84,8 @@ type Deps struct {
+ 	// Now is the clock.
+ 	Now func() time.Time
+ 
++	// Wait waits delay before a re-step, returning early with ctx's error once ctx ends; nil waits on the real clock.
++	Wait func(ctx context.Context, delay time.Duration) error
+ 	// CommitRecords commits the run's records at a done stop; nil commits nothing.
+ 	// A done stop that reported friction: failed calls it again after its hand-back report; repeat calls must do nothing.
+ 	CommitRecords func() error
+@@ -284,6 +286,11 @@ func (d *goDriver) settleStop(ctx context.Context, stop Stop) (attempt string, e
+ 			d.exit = ExitBusy
+ 			return "", true, nil
+ 		}
++		if decision.Wait > 0 {
++			if err := d.wait(ctx, decision.Wait); err != nil {
++				return "", true, err
++			}
++		}
+ 		if decision.Action != driveActionHandBack && decision.Action != driveActionRelayHandBack {
+ 			if err := d.holdPause(ctx); err != nil {
+ 				return "", true, err
+@@ -956,9 +963,37 @@ func (d *goDriver) handBackStop(stop Stop, decision driveDecision, cause error)
+ 	if decision.Action == driveActionRelayHandBack {
+ 		h.Relay = stop.ParentNotice
+ 	}
++	if decision.NetworkNotice {
++		h.Relay = d.networkNotice(stop)
++	}
+ 	return d.handBackAs(stop, h, decision.Rule)
+ }
+ 
++// networkNotice words the parent's notice for a stop a network failure left after every re-step:
++// the row, how long the driver waited for the remote, the failing remote operation as the stop's error quotes it,
++// and that the run resumes once the remote answers.
++func (d *goDriver) networkNotice(stop Stop) string {
++	return fmt.Sprintf("Run %s stopped at %s: a network failure outlasted %d re-steps over %s. Failing remote operation: %s. Resume the run once the remote answers.",
++		d.deps.RunID, stop.CurrentProducer, len(networkRestepWaits), networkRestepSpan(), stop.Error)
++}
++
++// wait waits delay before a re-step through the Wait seam, or on the real clock when it is unwired.
++// A context that ends first returns its error.
++func (d *goDriver) wait(ctx context.Context, delay time.Duration) error {
++	logger.Info("sheddriver: drive: waiting for the remote before a re-step", "run", d.deps.RunID, "delay", delay)
++	if d.deps.Wait != nil {
++		return d.deps.Wait(ctx, delay)
++	}
++	timer := time.NewTimer(delay)
++	defer timer.Stop()
++	select {
++	case <-ctx.Done():
++		return ctx.Err()
++	case <-timer.C:
++		return nil
++	}
++}
++
+ // handBackAs records the hand-back in the settle records, with outcome as its reason.
+ // Then the stop report is written, the run parked and the parent notified.
+ func (d *goDriver) handBackAs(stop Stop, h driveHandBack, outcome string) error {
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index 06f16548f..8ccf76607 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -97,6 +97,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		return driveEnvelopeJSON(t, map[string]any{"ok": false, "kind": "producer", "transient": "api", "error": "the API timed out"},
+ 			map[string]any{"state": "failed", "current_producer": "Build", "history_length": 2})
+ 	}
++	const fetchFailure = "battencli: origin reconcile: git fetch origin: exit 128: fatal: unable to access 'x': HTTP/2 stream 1 was closed cleanly, but before getting all response header fields"
++	networkFailure := func(t *testing.T) []byte {
++		return driveEnvelopeJSON(t, map[string]any{"ok": false, "kind": "bootstrap", "transient": string(shedengine.TransientGitTransport), "error": fetchFailure},
++			map[string]any{"state": "failed", "current_producer": "Run-Shed", "history_length": 2})
++	}
+ 	unseededFailure := func(t *testing.T) []byte {
+ 		return driveEnvelopeJSON(t, map[string]any{"ok": false, "kind": "unseeded", "error": "no seed"},
+ 			map[string]any{"state": "failed", "current_producer": "Build", "history_length": 2})
+@@ -249,6 +254,12 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		wantBuild string
+ 		// wantRestepCommits, when set, is the commits the last re-step settle record lists.
+ 		wantRestepCommits []string
++		// waitErr is what the Wait seam answers with once it has recorded its call.
++		waitErr error
++		// waitMovesTo, when set, is the status the run shows from the first Wait call on, as an orch goto made during the wait.
++		waitMovesTo *shedengine.Status
++		// wantRunErr is the error Run must return; nil wants none.
++		wantRunErr error
+ 	}{
+ 		{name: "done commits and exits with no park", steps: []func(*testing.T) []byte{done}, wantCalls: []string{"step", "commit-records"}, wantExit: ExitDone},
+ 		{
+@@ -306,6 +317,28 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			wantCalls:   []string{"step", "tackler", "snapshot", "snapshot", "consume:tackler/1", "step", "commit-records"},
+ 			wantActions: []string{shedrun.SettleSpawn, shedrun.SettleRestep}, wantSettlers: []string{shedrun.SettlerTackler, shedrun.SettlerTackler}, wantReports: 1, wantExit: ExitDone,
+ 		},
++		{
++			name:  "a network failure that outlasts every wait is re-stepped after each, then parked with a notice naming the failing operation and no tackler",
++			steps: []func(*testing.T) []byte{networkFailure, networkFailure, networkFailure, networkFailure}, orchRecorded: true,
++			wantCalls:    []string{"step", "wait:15s", "step", "wait:30s", "step", "wait:1m0s", "step"},
++			wantActions:  []string{shedrun.SettleRestep, shedrun.SettleRestep, shedrun.SettleRestep, shedrun.SettleHandBack},
++			wantSettlers: []string{shedrun.SettlerGoRule, shedrun.SettlerGoRule, shedrun.SettlerGoRule, shedrun.SettlerParent},
++			wantReports:  1, wantParked: true, wantNotifies: 1, wantHandBack: true, wantExit: ExitHandBack,
++			wantNotice: "Run run-1 stopped at Run-Shed: a network failure outlasted 3 re-steps over 1m45s. Failing remote operation: " + fetchFailure +
++				". Resume the run once the remote answers. " + driveNoticeTail,
++			wantNoNotice: "Question:",
++		},
++		{
++			name:  "a wait the context ends returns its error with no re-step, settle record or hand-back",
++			steps: []func(*testing.T) []byte{networkFailure}, orchRecorded: true, waitErr: context.Canceled,
++			wantCalls: []string{"step", "wait:15s"}, wantRunErr: context.Canceled,
++		},
++		{
++			name:  "an orch goto made during the network wait is honoured: a moved record and a re-step at the new row, none at the failed stop",
++			steps: []func(*testing.T) []byte{networkFailure, done}, waitMovesTo: &gotoMoved,
++			wantCalls:   []string{"step", "wait:15s", "step", "commit-records"},
++			wantActions: []string{shedrun.SettleMoved}, wantSettlers: []string{shedrun.SettlerGoRule}, wantExit: ExitDone,
++		},
+ 		{
+ 			name:  "a third reinvoke failure reaches the tackler, and a hand-back parks with its question",
+ 			steps: []func(*testing.T) []byte{interrupted}, settleSeed: repairSeed(StopKey{CurrentProducer: "Build", HistoryLength: 2, State: "running"}),
+@@ -775,6 +808,9 @@ func TestGoDriver_Settle(t *testing.T) {
+ 						statusReads++
+ 						return tt.statusSeq[min(statusReads, len(tt.statusSeq))-1], true, nil
+ 					}
++					if tt.waitMovesTo != nil && slices.ContainsFunc(calls, func(call string) bool { return strings.HasPrefix(call, "wait:") }) {
++						return *tt.waitMovesTo, true, nil
++					}
+ 					if len(tt.statuses) > 0 {
+ 						return tt.statuses[min(stepsTaken, len(tt.statuses))-1], true, nil
+ 					}
+@@ -842,6 +878,10 @@ func TestGoDriver_Settle(t *testing.T) {
+ 					return openTackler, tt.openArbiter, tt.openApplied, nil
+ 				},
+ 				Now: func() time.Time { return driveTestEpoch },
++				Wait: func(_ context.Context, delay time.Duration) error {
++					calls = append(calls, "wait:"+delay.String())
++					return tt.waitErr
++				},
+ 				CommitRecords: func() error {
+ 					calls = append(calls, "commit-records")
+ 					return nil
+@@ -928,8 +968,8 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			}
+ 
+ 			exit, err := Run(context.Background(), deps)
+-			if err != nil {
+-				t.Fatalf("Run() = %v; want nil", err)
++			if !errors.Is(err, tt.wantRunErr) {
++				t.Fatalf("Run() = %v; want %v", err, tt.wantRunErr)
+ 			}
+ 
+ 			if exit != tt.wantExit {
+@@ -1033,6 +1073,34 @@ func TestGoDriver_Settle(t *testing.T) {
+ 	}
+ }
+ 
++// TestGoDriver_Wait pins the real-clock branch of the wait before a re-step.
++// Every production driver takes that branch, since none wires Deps.Wait.
++func TestGoDriver_Wait(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	ended, end := context.WithCancel(context.Background())
++	end()
++	tests := []struct {
++		name  string
++		ctx   context.Context
++		delay time.Duration
++		want  error
++	}{
++		{"a context that has ended returns its error without waiting the delay", ended, time.Hour, context.Canceled},
++		{"a delay that elapses returns nil", context.Background(), time.Nanosecond, nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			d := &goDriver{deps: Deps{RunID: "run-1"}}
++			if err := d.wait(tt.ctx, tt.delay); !errors.Is(err, tt.want) {
++				t.Errorf("wait(%v) = %v; want %v", tt.delay, err, tt.want)
++			}
++		})
++	}
++}
++
+ // TestDriveVerb pins the driver lock around a driver: a lock held past the grace refuses with the recipe's refusal and touches nothing, a lock released within the grace is taken, a lock directory that cannot be created ends the recipe's retry clause, a free lock clears the stale files, runs once and prints the run's fields, and a run that released the lock early for a hand-over leaves it free with no double release.
+ func TestDriveVerb(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/sheddriver/driverules.go b/internal/sheddriver/driverules.go
+index 057ac71c5..7aa0f9ca2 100644
+--- a/internal/sheddriver/driverules.go
++++ b/internal/sheddriver/driverules.go
+@@ -25,6 +25,21 @@ const driveRepairCap = 2
+ // A loop that died sooner after its re-step than this counts against the cap, so a loop that keeps dying still reaches the tackler.
+ const wakeRestartGap = 10 * time.Minute
+ 
++// networkRestepWaits are the waits before each re-step of a stop a network failure left, in order;
++// a stop still failing after the last of them goes to the parent.
++// A remote that GitHub or the network drops for a minute or two answers again within them.
++var networkRestepWaits = []time.Duration{15 * time.Second, 30 * time.Second, time.Minute}
++
++// networkRestepSpan returns the sum of networkRestepWaits.
++// It is the time the driver gives a remote before the parent hears of it.
++func networkRestepSpan() time.Duration {
++	var span time.Duration
++	for _, wait := range networkRestepWaits {
++		span += wait
++	}
++	return span
++}
++
+ // Stop is what the loop's envelope says about one stop, or what a status says when the driver acts on a stop it did not step to.
+ // The loop-object fields are empty for a stop built from a status, and Raw holds the envelope bytes verbatim.
+ type Stop struct {
+@@ -192,10 +207,14 @@ const (
+ // driveDecision is the table's answer for one stop.
+ // Rule is the rule text the stop report quotes.
+ // FrictionNote asks for a friction note on a paused stop that carries no reason, from the envelope or the status.
++// Wait is how long a re-step waits before it steps; zero steps at once.
++// NetworkNotice asks a hand-back to tell the parent which remote operation failed, in place of any question.
+ type driveDecision struct {
+-	Action       driveAction
+-	Rule         string
+-	FrictionNote bool
++	Action        driveAction
++	Rule          string
++	FrictionNote  bool
++	Wait          time.Duration
++	NetworkNotice bool
+ }
+ 
+ // binaryEligible reports whether a newer on-disk build could change what happens at the stop:
+@@ -267,6 +286,10 @@ func decideDrive(stop Stop, facts driveFacts) driveDecision {
+ 		return driveDecision{Action: driveActionArbiter, Rule: "a tackler resume returned to the same stop: the arbiter decides"}
+ 	case state == string(shedengine.StateBlocked) && facts.ArbiterFirst:
+ 		return driveDecision{Action: driveActionArbiter, Rule: "a blocked stop at a row the arbiter judges first: the arbiter decides"}
++	case networkFailure(stop) && facts.RepairCount < len(networkRestepWaits):
++		return driveDecision{Action: driveActionRestep, Rule: "a network failure: wait for the remote, then re-step", Wait: networkRestepWaits[facts.RepairCount]}
++	case networkFailure(stop):
++		return driveDecision{Action: driveActionHandBack, Rule: "a network failure that outlasted its re-steps: notify the parent and hand back", NetworkNotice: true}
+ 	case !stop.OK && stop.Transient != "":
+ 		return driveDecision{Action: driveActionTackler, Rule: "a transient error that outlived its re-step: the tackler decides"}
+ 	case stop.Kind == shedverbs.KindInterrupted && stop.InterruptPolicy == shedverbs.InterruptPolicyReinvoke && facts.RepairCount < driveRepairCap:
+@@ -279,6 +302,19 @@ func decideDrive(stop Stop, facts driveFacts) driveDecision {
+ 	return driveDecision{Action: driveActionHandBack, Rule: "no rule names the stop: hand back"}
+ }
+ 
++// networkFailure reports whether stop is an error a git transport or GitHub API failure left:
++// the remote did not answer, and the same step can succeed once it does.
++func networkFailure(stop Stop) bool {
++	if stop.OK {
++		return false
++	}
++	switch shedengine.TransientClass(stop.Transient) {
++	case shedengine.TransientGitTransport, shedengine.TransientGitHubAPI:
++		return true
++	}
++	return false
++}
++
+ // budgetExhausted reports whether stop is a blocked stop halted by an exhausted bounce budget.
+ // The halt shows as a reason starting with shedengine.ReasonBounceBudgetExhausted.
+ // For a stop built from a status, the error carries that prefix instead.
+diff --git a/internal/sheddriver/driverules_test.go b/internal/sheddriver/driverules_test.go
+index 97a2820f7..1b84f80e2 100644
+--- a/internal/sheddriver/driverules_test.go
++++ b/internal/sheddriver/driverules_test.go
+@@ -5,6 +5,7 @@ package sheddriver
+ import (
+ 	"reflect"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -46,6 +47,9 @@ func TestDecideDrive(t *testing.T) {
+ 		records          []SettleRecord
+ 		want             driveAction
+ 		wantFrictionNote bool
++		// wantWait is the wait before a re-step, and wantNetworkNotice whether the hand-back names the failing remote operation.
++		wantWait          time.Duration
++		wantNetworkNotice bool
+ 	}{
+ 		{name: "done", stop: Stop{OK: true, State: "done", LoopState: "done"}, want: driveActionDone},
+ 		{name: "busy kind", stop: errorStop(shedverbs.KindBusy, ""), want: driveActionBusyExit},
+@@ -80,7 +84,12 @@ func TestDecideDrive(t *testing.T) {
+ 		{name: "landing halt at a row the arbiter judges first still hands back", stop: landingHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
+ 		{name: "budget halt at a row the arbiter judges first still hands back", stop: budgetHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
+ 		{name: "precondition halt at a row the arbiter judges first still hands back", stop: preconditionHaltStop, facts: driveFacts{ArbiterFirst: true}, want: driveActionHandBack},
+-		{name: "transient error goes to the tackler", stop: errorStop(shedverbs.KindProducer, "network"), want: driveActionTackler},
++		{name: "transient error of a class other than a network failure goes to the tackler", stop: errorStop(shedverbs.KindProducer, string(shedengine.TransientAgentStart)), want: driveActionTackler},
++		{name: "git transport failure waits 15 s and re-steps", stop: errorStop(shedverbs.KindBootstrap, string(shedengine.TransientGitTransport)), want: driveActionRestep, wantWait: 15 * time.Second},
++		{name: "second git transport failure waits 30 s", stop: errorStop(shedverbs.KindBootstrap, string(shedengine.TransientGitTransport)), facts: driveFacts{RepairCount: 1}, want: driveActionRestep, wantWait: 30 * time.Second},
++		{name: "third GitHub API failure waits a minute", stop: errorStop(shedverbs.KindProducer, string(shedengine.TransientGitHubAPI)), facts: driveFacts{RepairCount: 2}, want: driveActionRestep, wantWait: time.Minute},
++		{name: "git transport failure after three re-steps hands back with a network notice", stop: errorStop(shedverbs.KindBootstrap, string(shedengine.TransientGitTransport)), facts: driveFacts{RepairCount: 3}, want: driveActionHandBack, wantNetworkNotice: true},
++		{name: "git transport failure on a changed build hands over", stop: errorStop(shedverbs.KindBootstrap, string(shedengine.TransientGitTransport)), facts: driveFacts{BuildChanged: true}, want: driveActionHandOver},
+ 		{name: "interrupted under reinvoke re-steps", stop: interruptedStop(shedverbs.InterruptPolicyReinvoke), want: driveActionRestep},
+ 		{name: "second reinvoke failure re-steps", stop: interruptedStop(shedverbs.InterruptPolicyReinvoke), facts: driveFacts{RepairCount: 1}, want: driveActionRestep},
+ 		{name: "third reinvoke failure goes to the tackler", stop: interruptedStop(shedverbs.InterruptPolicyReinvoke), facts: driveFacts{RepairCount: driveRepairCap}, want: driveActionTackler},
+@@ -114,6 +123,9 @@ func TestDecideDrive(t *testing.T) {
+ 			if got.Action != tt.want || got.FrictionNote != tt.wantFrictionNote {
+ 				t.Errorf("decideDrive() = action %q, friction note %v; want %q, %v", got.Action, got.FrictionNote, tt.want, tt.wantFrictionNote)
+ 			}
++			if got.Wait != tt.wantWait || got.NetworkNotice != tt.wantNetworkNotice {
++				t.Errorf("decideDrive() = wait %s, network notice %v; want %s, %v", got.Wait, got.NetworkNotice, tt.wantWait, tt.wantNetworkNotice)
++			}
+ 			if got.Rule == "" {
+ 				t.Error("decideDrive() carries no rule text for the stop report")
+ 			}
+diff --git a/pattern/PATTERN-shed-driver.md b/pattern/PATTERN-shed-driver.md
+index 0212f0ab8..6cfa71793 100644
+--- a/pattern/PATTERN-shed-driver.md
++++ b/pattern/PATTERN-shed-driver.md
+@@ -29,9 +29,10 @@ That second clause is review discipline, not a scan, as the verb set's first cla
+ The arming module fills `Deps` and `TacklerDeps`; the optional groups are the recipe-specific part.
+ 
+ - `Arbiter`, `Verify`, `HandOver` and `Tamper` are optional groups on `Deps`.
+-  `Watched`, `CommitRecords` and `WriteFrictionNote` are optional closures.
++  `Watched`, `CommitRecords`, `WriteFrictionNote` and `Wait` are optional closures.
+ - `TacklerDeps.Snapshot` and `GotoRoutedFrom` shape the tackler's tamper comparison and the rows its resume may name.
+-- A nil group or closure only removes rows or agents from the rule table.
++- A nil group or closure, `Wait` excepted, only removes rows or agents from the rule table.
++  A nil `Wait` removes no row: the driver waits on the real clock before a re-step.
+   A stop a removed row would have caught meets the later rows unchanged.
+   It ends in the tackler under its spawn budget, a re-step under the repair cap, or a hand-back.
+   No unwired seam adds a resume path.
