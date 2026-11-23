@@ -29,6 +29,10 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
   Round 4 again raised what it found outside the incremental scope only as prose; those are the O1 to O5 of `harden-fabric-undriven-cases`.
   A suspected cause is the stencils, not the model: `contracts/stencils/harden/harden-rubric-review.md` asks for OK, WARN or FAIL on every focus entry,
   while `contracts/stencils/burler/burler-review-format.md` lets an incremental round raise only BLOCKING findings on changed hunks, so such a round can only approve. Judge that conflict.
+  Since `8cf7f4775`, a later hardener round cannot approve with its focus undriven:
+  the reviewer raises a `decision`-class, BLOCKING, `origin: focus` finding for each focus entry it left undriven or marked WARN,
+  `burlerengine.CheckReviewRound` exempts it from the changed-file rule, and the arbiter and then the parent rule on it.
+  That answers whether the remaining focus should block approval going forward; judge the campaign's rounds as they ran, and whether the new finding is enough for the rubric conflict.
 
 ## Bounds
 
