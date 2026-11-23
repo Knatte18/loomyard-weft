@@ -91,4 +91,13 @@ An undriven or WARN focus entry has no way to block, so round 3 recorded its gap
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - below-window-decision-accept-passes-open-blocking (class design, severity BLOCKING, open in rounds 2)
+  - budget-escalation-decision-detail-unasserted (class design, severity BLOCKING, open in rounds 2)
+  - code-auto-accept-meaning-change-no-reinterpretation (class design, severity BLOCKING, open in rounds 1, 2)
+  - hardener-focus-permission-wiring-untested (class design, severity BLOCKING, open in rounds 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
