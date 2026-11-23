@@ -1,5 +1,6 @@
 {
   "fix_scope": "source",
   "target_paths": null,
-  "target_id": "a3d2028baa18291248e8e5a31b4a8725c5ed404c"
+  "target_id": "a3d2028baa18291248e8e5a31b4a8725c5ed404c",
+  "decisions_routed": true
 }
