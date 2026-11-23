@@ -1,6 +1,6 @@
 # Per-task beam settings: drop the member-line exception and fix the open findings
 
-`per-task-settings-fixups` · Task · bug, dobby, config, reconcile, board · running · Record-Write
+`per-task-settings-fixups` · Task · bug, dobby, config, reconcile, board · running · Drift-Baseline
 
 ## Goal
 
