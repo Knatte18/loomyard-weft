@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-23T12:49:05Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pr-regression-block-wording/_lym/landing/summary.md",
+      "at": "2026-11-23T12:58:18Z",
+      "started_at": "2026-11-23T12:49:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T12:50:39.473105706Z",
+          "end": "2026-11-23T12:50:39.568638995Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T12:50:39.743211992Z",
+          "end": "2026-11-23T12:56:38.002144355Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T12:56:38.121402619Z",
+          "end": "2026-11-23T12:56:52.733940653Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T12:56:52.874920847Z",
+          "end": "2026-11-23T12:56:53.448201398Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T12:56:53.595604631Z",
+          "end": "2026-11-23T12:56:53.625309976Z"
+        }
+      ]
     }
   ],
   "product": {
