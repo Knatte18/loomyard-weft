@@ -1,34 +1,37 @@
-# Pin pr-findings' landing wiring on a darn run
+# Pin pr-findings on a darn run with a CLI test
 
-Issue #187 reported `lym loom pr-findings` failing on a run's PR-Review row with `NewParentAlign: Deps.OpenFabric must not be nil`.
-That failure is the one 6fa7f1740 (closes #155) fixed:
-the verb builds the run's shed to read the PR-Review row's send-back edge,
-and since that commit `(*loomCLI).prReviewSendBackEdge` wires the landing seams before it builds the shed.
-The run that filed #187 used a lym binary that can no longer be traced, and the installed lym already contains 6fa7f1740,
-so the report came from a binary built before the fix.
+`lym loom pr-findings` was reported to fail with `NewParentAlign: Deps.OpenFabric must not be nil`.
+The base already fixes this: commit 6fa7f1740 wires the landing seams before `pr-findings` builds the run's shed.
+The failing binary cannot be traced, and only a tapestry run had a test pinning the wiring.
+This change adds the missing darn-run test and changes no production code.
 
-The fix was pinned for a tapestry run only, whose first landing row is Parent-Align.
-This change adds the darn recipe, whose first landing row is Finalize, so both recipes' landing wiring is pinned.
-The entry is closed as overtaken by 6fa7f1740, and no production code changes.
+Closes #187
 
-## Changes
+## What changes
 
-- `internal/loomcli/prfindings_integration_test.go`: `TestPRFindingsCLI_SendsBackOnATapestryRun` becomes `TestPRFindingsCLI_SendsBackBlockingFindings`, a table over the tapestry and darn recipes.
-  Each row seeds the template pair's run with its recipe, feeds `pr-findings` a BLOCKING findings file through the real cobra tree, and asserts `send_back: true`.
-  The hub setup moves into the helper `blockingFindingsRun`.
+`internal/loomcli/prfindings_integration_test.go`:
+
+- `TestPRFindingsCLI_SendsBackOnATapestryRun` becomes `TestPRFindingsCLI_SendsBackBlockingFindings`, a table test with a `Tapestry` and a `Darn` subtest.
+- Each subtest seeds a run of its recipe, then drives `pr-findings` through the real cobra tree with a BLOCKING findings file.
+  It asserts exit code 0 and `send_back: true` in the envelope.
+- The recipes differ in their first landing row: Parent-Align on tapestry, Finalize on darn.
+  Each refuses to build without the landing seams, so the two subtests cover both wirings.
+- The shared setup moves to a helper, `blockingFindingsRun`, which returns the code worktree and the findings path.
 
 ## Design decisions
 
-- Following the parent's recorded decision, the darn row is a table row of the existing test, not a second test:
-  both rows pin one behavior, that the verb builds the shed with its landing rows wired.
-- The task is labelled `bug`, but the new row passes on the merge base, because 6fa7f1740 already fixed the defect.
-  The parent recorded this as a no-test-seam decision: the entry lands as overtaken, with the test as a guard.
+- Both subtests pass on the base, so the entry lands as overtaken by 6fa7f1740, with the test as a guard.
+  No test can fail on a base that already holds the fix, so there is no failing-first seam.
+- The subtests run in parallel and share no state: each copies its own hub.
 
-## To check
+## To check by hand
 
-- That both rows pass at tier 1: `lym gate test ./internal/loomcli --tier 1`.
+- Finding `findings-path-built-twice` (consistency, `internal/loomcli/prfindings_integration_test.go`) is fixed in this diff:
+  `blockingFindingsRun` builds the findings path once and the subtest no longer rebuilds it.
+  Confirm no second construction of that path remains.
+- Nothing was run beyond the tier-1 gate on this test.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** tests
+**Blast radius:** loomcli
