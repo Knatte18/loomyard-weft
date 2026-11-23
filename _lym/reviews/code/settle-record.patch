@@ -1,0 +1,64 @@
+diff --git a/internal/preflight/doc.go b/internal/preflight/doc.go
+index 73297a6ae..116610398 100644
+--- a/internal/preflight/doc.go
++++ b/internal/preflight/doc.go
+@@ -16,7 +16,8 @@
+ // there is no coherent worktree to check, and that is a determined verdict.
+ //
+ // The worktree-clean check skips lym's own state under `_lym` on the state side:
+-// the run-records root, the loom friction directory and the friction directory's reflection archives.
++// the run-records root, the usage directory, the loom friction directory,
++// and the friction directory's reflection archives.
+ // Counting them would make a run refuse its own bookkeeping on every re-step.
+ // Everything else under `_lym` still counts.
+ //
+diff --git a/internal/preflight/preflight.go b/internal/preflight/preflight.go
+index 35cd1c217..2ebb57b56 100644
+--- a/internal/preflight/preflight.go
++++ b/internal/preflight/preflight.go
+@@ -19,12 +19,19 @@ import (
+ // settle records, tackler and arbiter attempts, and stop markers.
+ // The friction directory holds the halt and crash-resume notes lym writes and the notes agents write.
+ // A reflection moves the notes it covered into a timestamped archive sibling.
++// The usage directory holds the usage record lym writes when each agent session ends,
++// and a session can end between the run's records commit and the check.
+ // Those writes, deletions and moves stay uncommitted until a later records commit or the run's removal.
+ // The check ignores them because they are lym's own bookkeeping in flight, never work a run could lose.
+ // Counting them would let one halt's note cause the next halt.
+ // It is the one place that decides which lym state the check skips.
+ func runStateExemptRels() []string {
+-	return []string{shedrun.RunsRootRel(), loomengine.LoomFrictionDirRel(), loomengine.LoomFrictionArchivesRelPattern()}
++	return []string{
++		shedrun.RunsRootRel(),
++		shedrun.UsageDirRel(),
++		loomengine.LoomFrictionDirRel(),
++		loomengine.LoomFrictionArchivesRelPattern(),
++	}
+ }
+ 
+ // Check resolves cwd into a *lymcwd.Location and validates the tier-1 and tier-2 preconditions against it.
+diff --git a/internal/preflight/preflight_integration_test.go b/internal/preflight/preflight_integration_test.go
+index d088a348f..ed130fa97 100644
+--- a/internal/preflight/preflight_integration_test.go
++++ b/internal/preflight/preflight_integration_test.go
+@@ -431,7 +431,8 @@ func TestCheckResolved_Failures(t *testing.T) {
+ // TestCheckResolved_LymOwnStateIsExempt leaves lym's own state under `_lym` uncommitted.
+ // It asserts that the worktree-clean check passes over that state.
+ // The state is the files that lym's stop and settle paths write into a run's directory.
+-// It also holds a new friction note and a committed halt note that a reflection moved into an archive.
++// It also holds a new friction note, a committed halt note that a reflection moved into an archive,
++// and an agent session's usage record.
+ // Fabric's own unscoped Clean must see the changes first, so the pass is never a gitignore's doing.
+ // A file under `_lym` outside the exempt state then still refuses.
+ // Each anchor builds its own hub, since a subpath anchor moves `_lym` below the worktree's root.
+@@ -472,6 +473,10 @@ func TestCheckResolved_LymOwnStateIsExempt(t *testing.T) {
+ 			for _, path := range runState {
+ 				writeFile(t, path)
+ 			}
++			sessionUsage := shedrun.SessionUsageRecord{SessionID: "db065ed3-54e1-4008-bacd-df683191b516"}
++			if err := shedrun.WriteSessionUsage(shedrun.UsageDir(l), sessionUsage); err != nil {
++				t.Fatalf("WriteSessionUsage: %v", err)
++			}
+ 
+ 			if clean, _, err := fabricengine.Clean(l); err != nil || clean {
+ 				t.Fatalf("fabricengine.Clean() = (%v, %v); want (false, nil) with the run state written", clean, err)
