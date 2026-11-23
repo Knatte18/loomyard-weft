@@ -1,6 +1,6 @@
 # Config keys nest under the area they govern, named with dots
 
-`config-keys-nested-by-area` · Task · enhancement, config, loom, drift, docs · starting · Open-IDE
+`config-keys-nested-by-area` · Task · enhancement, config, loom, drift, docs · running · Discussion-Write
 
 ## Seen
 
