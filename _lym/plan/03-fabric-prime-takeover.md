@@ -15,12 +15,12 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/fabricengine#TakeoversError` -> `type TakeoversError struct`
-- `plan:internal/fabricengine#TakeoversError.Error` -> `func (e *TakeoversError) Error() string`
-- `plan:internal/fabricengine#ErrTakeoverPassOwed` -> `var ErrTakeoverPassOwed error`
-- `plan:internal/fabricengine#EndedHandedOver` -> `const EndedHandedOver = "handed-over"`
-- `plan:internal/fabricengine#primeTakeovers` -> `func primeTakeovers(l *lymcwd.Location, weftPath string, ahead []string, here MachineNames) (pending []*TakeoverError, handedOver []string, err error)`
-- `plan:internal/fabricengine_test#newPrimeRunsAhead` -> `func newPrimeRunsAhead(t *testing.T, slugs []string) *lymcwd.Location`
+- `internal/fabricengine#TakeoversError`
+- `internal/fabricengine#TakeoversError.Error`
+- `internal/fabricengine#ErrTakeoverPassOwed`
+- `internal/fabricengine#EndedHandedOver`
+- `internal/fabricengine#primeTakeovers`
+- `internal/fabricengine_test#newPrimeRunsAhead`
 
 **Uses:**
 - `internal/fabricengine#takeoverStop`

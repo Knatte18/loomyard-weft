@@ -29,8 +29,8 @@
 - `internal/lymdirs/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#RunCommitsAhead`
-- `plan:internal/fabricengine#RefusedPushStands`
+- `internal/fabricengine#RunCommitsAhead`
+- `internal/fabricengine#RefusedPushStands`
 - `internal/fabricengine#ReadHandOverMark`
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#RunProcDir`

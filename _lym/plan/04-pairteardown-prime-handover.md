@@ -9,8 +9,8 @@
 
 **Uses:**
 - `internal/fabricengine#HandOverTips`
-- `plan:internal/fabricengine#TakeoversError`
-- `plan:internal/fabricengine#ErrTakeoverPassOwed`
+- `internal/fabricengine#TakeoversError`
+- `internal/fabricengine#ErrTakeoverPassOwed`
 
 **Intent:**
 Hand over each batten run a prime push meets taken over, and then push the rest (D6).

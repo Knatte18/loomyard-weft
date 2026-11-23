@@ -1,12 +1,12 @@
 # Card 2 — fabric-pusher-reads
 
 **Create:**
-- `plan:internal/fabricengine#RunCommitsAhead` -> `func RunCommitsAhead(l *lymcwd.Location) (bool, error)`
-- `plan:internal/fabricengine#RefusedPushStands` -> `func RefusedPushStands(l *lymcwd.Location) (bool, error)`
-- `plan:internal/fabricengine#TipsOnOrigin` -> `func TipsOnOrigin(l *lymcwd.Location) (bool, error)`
-- `plan:internal/fabricengine_test#TestRunCommitsAhead` -> `func TestRunCommitsAhead(t *testing.T)`
-- `plan:internal/fabricengine_test#TestRefusedPushStands` -> `func TestRefusedPushStands(t *testing.T)`
-- `plan:internal/fabricengine_test#TestTipsOnOrigin` -> `func TestTipsOnOrigin(t *testing.T)`
+- `internal/fabricengine#RunCommitsAhead`
+- `internal/fabricengine#RefusedPushStands`
+- `internal/fabricengine#TipsOnOrigin`
+- `internal/fabricengine_test#TestRunCommitsAhead`
+- `internal/fabricengine_test#TestRefusedPushStands`
+- `internal/fabricengine_test#TestTipsOnOrigin`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

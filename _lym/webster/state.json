@@ -1,18 +1,18 @@
 {
   "runGuid": "6ff25e5ca7adb29450263f933d600f99",
-  "planFingerprint": "071008aa9868b7713204bc4ed750ee54ee0027127415cfb368381aa0c25b4496",
+  "planFingerprint": "b38854fdf4697031f888f9518f51d00e03dccd50e195595f0223864d53cc275f",
   "planFileHashes": {
     "00-overview.md": "0fafdea14d3a59d47a65f37059b064624e00fbb32bd5c9a7aaff798922655d5b",
-    "01-fabric-owed-unrecorded.md": "924c4e58c613d806f2fd3c6750ec6d490806e8fae52c76c6b95926ac9f11b779",
-    "02-fabric-pusher-reads.md": "c763dd992bba23dbc9d3b9e4f441230f8c1dbf84b242f627d94e9956ce26b656",
-    "03-fabric-prime-takeover.md": "13419a4aeb85fa90398d49c6bbf72dd376955798cfd3733ab4ad0ad71ed2356e",
-    "04-pairteardown-prime-handover.md": "2319dbb715c8ef7e9470d9e0679514dacb60aebc4013e7945f6c82b436dd46fb",
-    "05-runpusher-package.md": "33480deda8204537a9508271c7f34690a4d79d5b722273ce742b781319aaa42d",
+    "01-fabric-owed-unrecorded.md": "f5a8565e8bbf6bf427884a8a806c760ed7603a858e75f9c5884a95bb70880854",
+    "02-fabric-pusher-reads.md": "fb60d903517dca7265a15a7ee7a439e10d794d50cb955930d51000ae91accd0d",
+    "03-fabric-prime-takeover.md": "ec4324e4a3518c33171211605d20e78cbd3959903b5a90f7c9a54365ac0c56cd",
+    "04-pairteardown-prime-handover.md": "27939c7192e7dd30fb69695c1bcd97f8baf189eabf8333369207ea0d900a5356",
+    "05-runpusher-package.md": "bad8b973c0532967e3cf0987694398bc68b8ee4bafd6a641eb576c66ce5772a1",
     "06-loom-pusher-verb.md": "beb5ef382197c0d89b8afcc63f2682b38f0a57a75b9a22c6f515602f0fc49559",
     "07-transitions-start-pusher.md": "a2836d528c50c66668c5bbb9324be8b28d6a07e9cb65d5a551d206754b3b4722",
     "08-restarts-start-pusher.md": "c5f8cad1aa2e53809df338f685ef3b44e2be70c3e787b81623f8a3103dad5b4e",
     "09-runread-local-code-tip.md": "e1df74f125c16ff260eb78e3ccbd2bf62f1feed0b192cca6f7f18a07f096b64e",
-    "10-teardown-pushes-first.md": "6c2f94fcb80c0ca2979aa0c98d1a09ac802cadb68f9b6474a5b8ab53a88781a9",
+    "10-teardown-pushes-first.md": "ee5cd8ebf6583661bd8a7908392b6d228a9fc5ab695ee762dce693dfa72cfd75",
     "11-pattern-and-docs.md": "f965550ffc46bb6e7acc5b7bab090f4eba05aac279529d538d12380b9403114e"
   },
   "planOverviewFrameHash": "2efed6786b6e2a727966a5f058bc7a8d846129883d5a33585b54138d6c2666a8",
@@ -304,21 +304,49 @@
         "03-fabric-prime-takeover"
       ],
       "cardHashes": {
-        "01-fabric-owed-unrecorded": "924c4e58c613d806f2fd3c6750ec6d490806e8fae52c76c6b95926ac9f11b779",
-        "02-fabric-pusher-reads": "c763dd992bba23dbc9d3b9e4f441230f8c1dbf84b242f627d94e9956ce26b656",
-        "03-fabric-prime-takeover": "13419a4aeb85fa90398d49c6bbf72dd376955798cfd3733ab4ad0ad71ed2356e"
+        "01-fabric-owed-unrecorded": "f5a8565e8bbf6bf427884a8a806c760ed7603a858e75f9c5884a95bb70880854",
+        "02-fabric-pusher-reads": "fb60d903517dca7265a15a7ee7a439e10d794d50cb955930d51000ae91accd0d",
+        "03-fabric-prime-takeover": "ec4324e4a3518c33171211605d20e78cbd3959903b5a90f7c9a54365ac0c56cd"
       },
       "startSha": "540e8c9b5c6be92a4948767c09d4d385b06205da",
       "kind": "fork",
       "spawnedAt": "2026-11-23T18:36:47Z",
       "sessionId": "6fa86a76-ebda-487d-9c48-7537f995f3b2",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fabric-owed-unrecorded",
+        "status": "done",
+        "head_sha": "97303640bbbe4579b2234cf7d712f9ae319d2c47",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/fabricengine/pushanchored.go",
+          "internal/fabricengine/pushanchored_integration_test.go",
+          "internal/fabricengine/pushclassified.go",
+          "internal/fabricengine/pusherreads.go",
+          "internal/fabricengine/pusherreads_integration_test.go",
+          "internal/fabricengine/rejectedtakeover_integration_test.go",
+          "internal/fabricengine/takeover.go",
+          "internal/gitrepo/blobread.go"
+        ]
+      },
+      "cardShas": [
+        "97303640bbbe4579b2234cf7d712f9ae319d2c47"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "cfa281363eaac554bf5541cf36d5f31c",
   "masterSessionId": "6fa86a76-ebda-487d-9c48-7537f995f3b2",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl"
+  ]
 }

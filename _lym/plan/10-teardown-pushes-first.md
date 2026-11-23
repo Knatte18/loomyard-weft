@@ -19,8 +19,8 @@
 
 **Uses:**
 - `plan:internal/runpusher#PushUntilLanded`
-- `plan:internal/fabricengine#TipsOnOrigin`
-- `plan:internal/fabricengine#ErrEntryEnded`
+- `internal/fabricengine#TipsOnOrigin`
+- `internal/fabricengine#ErrEntryEnded`
 - `internal/pairteardown#PushRun`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_BeamRecipe`

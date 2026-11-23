@@ -22,8 +22,8 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/fabricengine#ErrEntryEnded` -> `var ErrEntryEnded error`
-- `plan:internal/gitrepo#Repo.DeleteRemoteTrackingRef` -> `func (r *Repo) DeleteRemoteTrackingRef(remote, branch string, ns RefNamespace) error`
+- `internal/fabricengine#ErrEntryEnded`
+- `internal/gitrepo#Repo.DeleteRemoteTrackingRef`
 
 **Uses:**
 - `internal/fabricengine_test#newDivergedPair`
