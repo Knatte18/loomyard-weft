@@ -1,6 +1,6 @@
 # Plan amendment during Webster loses the record of committed batches
 
-`amend-plan-loses-webster-batches` · Task · bug, webster, loom · running · Darn-Write
+`amend-plan-loses-webster-batches` · Task · bug, webster, loom · running · Drift-Verify
 
 Imported from [issue #185](https://github.com/Knatte18/loomyard/issues/185).
 
