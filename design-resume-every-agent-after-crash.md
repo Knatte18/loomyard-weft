@@ -1,6 +1,6 @@
 # A run agent killed by a crash or reboot resumes its own session instead of starting fresh
 
-`resume-every-agent-after-crash` · Task · enhancement, shuttle, shed · running · Code-Bouncer
+`resume-every-agent-after-crash` · Task · enhancement, shuttle, shed · running · Code-Burler-Review
 
 ## Seen
 
