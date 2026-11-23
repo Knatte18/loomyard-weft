@@ -1,6 +1,6 @@
 # PR body's appended regression block uses internal task wording
 
-`pr-regression-block-wording` · Task · bug, drift, landing · running · Preflight
+`pr-regression-block-wording` · Task · bug, drift, landing · running · Record-Write
 
 Imported from [issue #204](https://github.com/Knatte18/loomyard/issues/204).
 
