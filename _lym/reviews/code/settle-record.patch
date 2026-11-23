@@ -1,0 +1,440 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index f757b2e83..7a30a9b2f 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -132,7 +132,9 @@ producers:
+         # or changes fails on the merge base: it runs `lym gate red-first` over the row's gate key, which
+         # runs those tests once on the merge base's code. An entry without the label passes it at once,
+         # and so does a bug the parent recorded, with lym loom decision add, under a title opening
+-        # "No test seam". A diff that adds no test, and a check that cannot judge the tests, hold the run
++        # "No test seam", and an entry that fixes no bug, such as one that only adds tests pinning
++        # existing behaviour, recorded the same way under a title opening "No bug fixed".
++        # A diff that adds no test, and a check that cannot judge the tests, hold the run
+         # without spending an attempt until a new commit or that record lands. It has no fixer: only the
+         # writer can make a test show the bug.
+         - name: red-first
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index 23e215456..00f7f89ad 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -129,11 +129,13 @@ The Discussion-Write lead's record for a `bug` entry states up front what the re
+ - `## Goal` names the observed fault and the steps that reproduce it.
+ - `## Constraints` states the root cause and the evidence it rests on, or names what is still unknown about it.
+ - An `## Acceptance criteria` bullet names the test that fails on the merge base and passes after the fix,
+-  or states why no test seam exists.
++  states why no test seam exists, or states that the entry fixes no bug.
+   The test reaches the bug through code the merge base already has.
+ 
+ A record's statement that no test seam exists does not lift the red-first gate;
+ only the parent's `### Added after Discussion` entry whose title opens `No test seam` does.
++A `bug` entry that fixes no bug, such as one that only adds tests pinning existing behaviour,
++is lifted the same way by the parent's added entry whose title opens `No bug fixed`.
+ 
+ ### Parts no writer authors
+ 
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 8ba2a770c..fcfad2adc 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -112,6 +112,8 @@ When the diff adds or changes no test, or the check cannot judge them, as on a h
+ it holds your handoff without spending an attempt until a new commit or your parent's record lands.
+ When the bug has no seam a test can reach, or the check cannot judge it, send your parent `lym creel post --parent --expect-reply "<text>"` naming why,
+ and ask it to record that with `lym loom decision add` under a title opening `No test seam`; then end your turn to wait.
++When the entry fixes no bug, as one that only adds tests pinning existing behaviour, its tests pass on the merge base by design:
++invent no bug, and before you write code ask your parent the same way to record that under a title opening `No bug fixed`.
+ 
+ The commit that fixes the bug records the cause its test confirmed as a trailer line in the last paragraph of its commit message:
+ 
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index 93e32d861..e67193171 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -47,7 +47,7 @@ Do not flag any of the following as a finding:
+ - **A bug entry's record without its fault, cause or test.**
+   For a board entry labelled `bug`, the record states the observed fault and how to reproduce it,
+   the root cause or what is still unknown about it,
+-  and the test that fails on the merge base or why no test seam exists.
++  and the test that fails on the merge base, why no test seam exists, or that the entry fixes no bug.
+   A record that omits one of them is a finding.
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index 3049b1def..b973f3c12 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -101,7 +101,8 @@ Cover:
+ 
+ When the entry is labelled `bug`, the design also settles the observed fault and how to reproduce it,
+ its root cause or what is still unknown about it,
+-and the test that will fail on the merge base and pass after the fix, or why no test seam exists.
++and the test that will fail on the merge base and pass after the fix,
++why no test seam exists, or that the entry fixes no bug.
+ The fault and its cause are facts Step 2 researches, never interview questions;
+ the record states all three as the discussion spec's bug-entry rule says.
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 67cfea918..ef9f56b6b 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1106,7 +1106,7 @@ User-facing modules each get one `lym <module>` namespace:
+   One gated `Darn-Write` writer reads the record as its scope, edits, tests and commits;
+   its `drift` gate entry checks the code's changes against that expectation.
+   For an entry labelled `bug`, its `red-first` gate entry runs `lym gate red-first` and holds the handoff until a test the diff adds or changes fails on the merge base,
+-  unless the parent recorded an added decision titled `No test seam`;
++  unless the parent recorded an added decision titled `No test seam`, or `No bug fixed` for a change that only adds tests pinning existing behaviour;
+   a diff with no test, or a check that cannot judge the tests, holds the handoff without spending an attempt until a new commit or that record;
+   the fix's commit carries a `Root-Cause:` trailer that the `Code-Review` perch checks.
+   `Drift-Verify` checks the writer's code by containment and has a judge rule on the expected changes.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index ffcfbb5bf..9bec1367e 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -488,6 +488,9 @@
+ // - 1 for a refusal, and for a run that judged none of the tests, such as a timeout or a crash.
+ // - 128 plus the signal number after a terminating signal.
+ //
++// The green exit's way forward names a second path, for a change that fixes no bug.
++// That path is a recorded decision whose title opens `gateslot.NoBugFixedTitle`.
++//
+ // A test is red when `gateslot.NamedFailedTests` names its package and name in the output,
+ // or `gateslot.PackagesFailedOutsideTests` names its package, so a test that does not build on the base counts as red.
+ // Bound: `go.mod` and `go.sum` are not put back.
+diff --git a/internal/gatecli/redfirst.go b/internal/gatecli/redfirst.go
+index 30ac59c5f..c0dae69af 100644
+--- a/internal/gatecli/redfirst.go
++++ b/internal/gatecli/redfirst.go
+@@ -166,6 +166,7 @@ func runRedFirst(ctx context.Context, out io.Writer, request redFirstRequest) in
+ 	}
+ 	return redFirstCall{
+ 		request: request, tiers: tiers, root: root, module: module, base: base, changed: changed, tests: tests, baseTree: baseTree,
++		runTiers: runTest,
+ 	}.run(ctx, out)
+ }
+ 
+@@ -185,6 +186,9 @@ type redFirstCall struct {
+ 	tests []testreach.ChangedTest
+ 	// baseTree reads the files of the base commit.
+ 	baseTree redundancyTree
++	// runTiers runs one package's tests through the gate key's tiers and returns the exit code.
++	// A test replaces it to stand in for the real tier runs.
++	runTiers func(ctx context.Context, out io.Writer, request testRequest) int
+ }
+ 
+ // run lays the base's production files and the non-Go files they embed over the working tree.
+@@ -227,7 +231,7 @@ func (c redFirstCall) run(ctx context.Context, out io.Writer) int {
+ 		run.targets = testTargetsOf(c.module, group)
+ 		run.args = []string{"-overlay=" + overlayPath, "-run=^(" + strings.Join(testNamesOf(group), "|") + ")$"}
+ 		run.stderr = sink
+-		code := runTest(runCtx, sink, run)
++		code := c.runTiers(runCtx, sink, run)
+ 		if caught.Load() != 0 {
+ 			output.Err(out, redFirstVerb+": the call was cancelled; way forward: re-run the same command")
+ 			return exitAfterSignal(caught, 1)
+@@ -245,8 +249,11 @@ func (c redFirstCall) run(ctx context.Context, out io.Writer) int {
+ 	case unjudgedCode == 0:
+ 		output.Err(out, fmt.Sprintf("%s: every test the diff adds or changes passed on the base %s: %s; "+
+ 			"a test that passes before the fix does not show the bug; "+
+-			"way forward: make a test reach the bug through code the base already has, so it fails there, and commit it, then re-run the same command",
+-			redFirstVerb, c.base, strings.Join(labels, ", ")))
++			"way forward: when the change fixes a bug, make a test reach the bug through code the base already has, so it fails there, "+
++			"and commit it, then re-run the same command; "+
++			"when it fixes no bug, as a change that only adds tests pinning existing behaviour, "+
++			"the run's parent records that with `lym loom decision add` under a title opening %q",
++			redFirstVerb, c.base, strings.Join(labels, ", "), gateslot.NoBugFixedTitle))
+ 		return gateslot.RedFirstGreenExit
+ 	}
+ 	return output.Err(out, fmt.Sprintf("%s: the tiers exited %d on the base %s and judged none of %s; "+
+diff --git a/internal/gatecli/redfirst_integration_test.go b/internal/gatecli/redfirst_integration_test.go
+index 02309cf4d..657e843f4 100644
+--- a/internal/gatecli/redfirst_integration_test.go
++++ b/internal/gatecli/redfirst_integration_test.go
+@@ -100,8 +100,8 @@ func TestGateRedFirst(t *testing.T) {
+ 	t.Run("ATestThatPassesOnTheBaseExitsWithTheGreenCode", func(t *testing.T) {
+ 		writeTest("TestTwoIsTwo", "\tif Two() != 2 {\n\t\tt.Fatal(\"Two() != 2\")\n\t}\n")
+ 		code, _, message := run()
+-		if code != gateslot.RedFirstGreenExit || !strings.Contains(message, "does not show the bug") {
+-			t.Errorf("red-first = exit %d, error %q; want exit %d saying the test does not show the bug", code, message, gateslot.RedFirstGreenExit)
++		if code != gateslot.RedFirstGreenExit || !strings.Contains(message, "does not show the bug") || !strings.Contains(message, `under a title opening "No bug fixed"`) {
++			t.Errorf("red-first = exit %d, error %q; want exit %d saying the test does not show the bug and naming the No bug fixed way forward", code, message, gateslot.RedFirstGreenExit)
+ 		}
+ 	})
+ 	t.Run("AChangedTestDoesNotRunUnderItsNameInAnotherTargetPackage", func(t *testing.T) {
+diff --git a/internal/gatecli/redfirst_test.go b/internal/gatecli/redfirst_test.go
+index 80bcc7aa5..742b64a04 100644
+--- a/internal/gatecli/redfirst_test.go
++++ b/internal/gatecli/redfirst_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"encoding/json"
+ 	"errors"
++	"io"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -319,6 +320,63 @@ func TestJudgeRedFirst_ReadsTheRunsExitCodeAndFailureReport(t *testing.T) {
+ 	}
+ }
+ 
++func TestRedFirstCallRun_JudgesTheTierRunsOfTheChangedTestsOnTheBase(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const pkg = "example.com/m/calc"
++	clamp := testreach.ChangedTest{Package: pkg, File: "calc_test.go", Name: "TestClamp", New: true}
++	redReport := gateslot.FailureReportHeader + "\ntier0 (exit 1), log /l/tier0.log:\n  " + pkg + " TestClamp:\n"
++
++	rows := []struct {
++		name         string
++		tierExit     int
++		tierOutput   string
++		wantExit     int
++		wantContains []string
++	}{
++		{
++			name: "ATestThatFailedOnTheBaseExitsZeroNamingIt", tierExit: 1, tierOutput: redReport,
++			wantExit: 0, wantContains: []string{`"ok":true`, pkg + ".TestClamp"},
++		},
++		{
++			name: "ATestThatPassedOnTheBaseExitsWithTheGreenCodeNamingBothWaysForward", tierExit: 0, tierOutput: "ok\n",
++			wantExit: gateslot.RedFirstGreenExit,
++			wantContains: []string{
++				"does not show the bug", "when the change fixes a bug", "when it fixes no bug",
++				"under a title opening", gateslot.NoBugFixedTitle,
++			},
++		},
++		{
++			name: "ARunThatJudgedNoneExitsOne", tierExit: 1, tierOutput: "timeout\n",
++			wantExit: 1, wantContains: []string{"judged none of"},
++		},
++	}
++	for _, tt := range rows {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			call := redFirstCall{
++				module: goModule{dir: t.TempDir(), rel: ".", path: "example.com/m"}, root: t.TempDir(), base: "abc123",
++				tests: []testreach.ChangedTest{clamp}, baseTree: memoryTree{},
++				runTiers: func(_ context.Context, out io.Writer, _ testRequest) int {
++					_, _ = io.WriteString(out, tt.tierOutput)
++					return tt.tierExit
++				},
++			}
++			var out bytes.Buffer
++			code := call.run(context.Background(), &out)
++			if code != tt.wantExit {
++				t.Errorf("run() = exit %d, output %q; want exit %d", code, out.String(), tt.wantExit)
++			}
++			for _, want := range tt.wantContains {
++				if !strings.Contains(out.String(), want) {
++					t.Errorf("run() output = %q; want it to contain %q", out.String(), want)
++				}
++			}
++		})
++	}
++}
++
+ func TestNoSeamWayForward_NamesTheRecordTheParentAddsUnderTheGatesTitle(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gateslot/redfirst.go b/internal/gateslot/redfirst.go
+index d1eb498d4..f7539bfee 100644
+--- a/internal/gateslot/redfirst.go
++++ b/internal/gateslot/redfirst.go
+@@ -13,7 +13,7 @@ const RedFirstNoTestExit = 4
+ 
+ // RedFirstUnjudgedExit is the exit code of a `lym gate red-first` call that cannot judge the diff's tests on the base.
+ // The cause is a hub scoper that is not go.
+-// Only a parent's recorded NoTestSeamTitle decision lifts it.
++// Only a parent's recorded NoTestSeamTitle or NoBugFixedTitle decision lifts it.
+ const RedFirstUnjudgedExit = 5
+ 
+ // BugLabel is the board label of an entry whose run must show its fix's test failing on the merge base.
+@@ -23,6 +23,11 @@ const BugLabel = "bug"
+ // The parent records that entry as its stop, and the red-first gate then passes without running the call.
+ const NoTestSeamTitle = "No test seam"
+ 
++// NoBugFixedTitle opens the title of the decision record's added entry that names a bug-labelled entry fixing no bug.
++// Such an entry only adds tests that pin existing behaviour, so its tests pass on the merge base by design.
++// The parent records that entry, and the red-first gate then passes without running the call.
++const NoBugFixedTitle = "No bug fixed"
++
+ // RedFirstCall renders the call a site runs to check that the diff's tests fail on the merge base.
+ // It is `lym gate red-first --gate <key>`, and runs the tiers of the named gate key.
+ func RedFirstCall(key string) string {
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index c0d87538a..34c62a1a7 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -65,8 +65,9 @@
+ // The red-first gate (NewRedFirstGate) holds a darn writer's handoff on a bug fix until its test is shown red first.
+ // An entry without the `bug` label (gateslot.BugLabel) passes at once and runs nothing.
+ // So does a decision record holding an added entry whose title opens gateslot.NoTestSeamTitle.
++// So does one whose title opens gateslot.NoBugFixedTitle, for a change that only adds tests pinning existing behaviour.
+ // A diff that adds or changes no test, or a hub whose scoper is not go, holds the run without spending an attempt.
+-// The hold lasts until a new commit or the parent's no-test-seam record.
++// The hold lasts until a new commit or the parent's record.
+ // Failing exits name their way forward, and any other exit code, a timeout or a runner crash fails terminally.
+ // A labels or record read error is the gate's returned error.
+ //
+diff --git a/internal/loomshed/redfirstgate.go b/internal/loomshed/redfirstgate.go
+index 20ec8a919..d81c130ba 100644
+--- a/internal/loomshed/redfirstgate.go
++++ b/internal/loomshed/redfirstgate.go
+@@ -29,7 +29,7 @@ type RedFirstGate struct {
+ // NewRedFirstGate returns the closures of a must-pass gate entry that proves a bug fix's test was red before the fix.
+ // Each call reads the entry's labels, and an entry without gateslot.BugLabel passes at once and runs nothing.
+ // It then reads the decision record at recordPath.
+-// An added entry whose title opens with gateslot.NoTestSeamTitle passes at once and runs nothing.
++// An added entry there whose title opens with gateslot.NoTestSeamTitle or gateslot.NoBugFixedTitle passes the same way.
+ // The title is compared case-insensitively.
+ // Otherwise it runs command through verifytree.Verify over worktreeRoot, keeping its record, marker and log in verifyDir.
+ // command is the site's own `lym gate red-first --gate <key>` call.
+@@ -167,7 +167,7 @@ func (g *redFirstGate) final() (shuttleengine.GateResult, error) {
+ }
+ 
+ // exempt reports whether the entry needs no red-first check:
+-// it is not labelled a bug, or the parent recorded that the bug has no test seam.
++// it is not labelled a bug, or the parent recorded that the bug has no test seam or that the change fixes no bug.
+ func (g *redFirstGate) exempt() (bool, error) {
+ 	entryLabels, err := g.labels()
+ 	if err != nil {
+@@ -185,9 +185,11 @@ func (g *redFirstGate) exempt() (bool, error) {
+ 		return false, fmt.Errorf("loomshed: red-first gate: parse the decision record's added entries: %w", err)
+ 	}
+ 	for _, entry := range added {
+-		if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(gateslot.NoTestSeamTitle)) {
+-			logger.Info("loomshed: red-first gate ran nothing, the decision record names a bug no test can reach", "gate", g.siteLabel, "attempt", g.attempt, "title", entry.Title)
+-			return true, nil
++		for _, title := range []string{gateslot.NoTestSeamTitle, gateslot.NoBugFixedTitle} {
++			if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(title)) {
++				logger.Info("loomshed: red-first gate ran nothing, the decision record lifts the check", "gate", g.siteLabel, "attempt", g.attempt, "title", entry.Title)
++				return true, nil
++			}
+ 		}
+ 	}
+ 	return false, nil
+@@ -214,8 +216,8 @@ func (g *redFirstGate) verify() (verifytree.Result, *shuttleengine.GateResult, e
+ }
+ 
+ // holdsForCommitOrRecord reports whether a failed red-first run is a refusal the writer's next turn may not lift.
+-// Only a commit that adds a failing test, or the parent's no-test-seam record, lifts a diff with no test;
+-// only that record lifts a check that cannot judge the tests.
++// Only a commit that adds a failing test, or the parent's record that lifts the gate, lifts a diff with no test;
++// only such a record lifts a check that cannot judge the tests.
+ func holdsForCommitOrRecord(res verifytree.Result) bool {
+ 	if res.TimedOut || res.RunnerCrash {
+ 		return false
+@@ -228,10 +230,10 @@ func redFirstHoldLine(res verifytree.Result) string {
+ 	if res.ExitCode == gateslot.RedFirstNoTestExit {
+ 		return fmt.Sprintf("The red-first gate holds your handoff, spending no attempt, since the diff adds or changes no test (log: %s): "+
+ 			"add and commit a test that fails on the merge base and passes with the fix, then end your turn; "+
+-			"when the bug has no seam a test can reach, %s", res.Log, noSeamAsk())
++			"when the bug has no seam a test can reach, %s", res.Log, parentRecordAsk(gateslot.NoTestSeamTitle))
+ 	}
+ 	return fmt.Sprintf("The red-first gate holds your handoff, spending no attempt, since it cannot judge the diff's tests on the merge base: "+
+-		"the hub's scoper is not go (log: %s); %s", res.Log, noSeamAsk())
++		"the hub's scoper is not go (log: %s); %s", res.Log, parentRecordAsk(gateslot.NoTestSeamTitle))
+ }
+ 
+ // redFirstHoldSendFailed is the way forward the wait loop logs when the hold's line cannot reach the writer.
+@@ -254,16 +256,18 @@ func redFirstFailure(res verifytree.Result) shuttleengine.GateResult {
+ 		terminal = true
+ 		fmt.Fprintf(&b, "The red-first check's test runner crashed, so it judged none of the diff's tests: %s. %s", res.Detail, redFirstNoMend)
+ 	case res.ExitCode == gateslot.RedFirstGreenExit:
+-		b.WriteString("Every test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.\n\n" +
+-			"Way forward: make a test fail on the merge base and pass with the fix, " +
+-			"reaching the bug through code the base already has, and commit it.")
++		fmt.Fprintf(&b, "Every test the diff adds or changes passed on the merge base, so none of them fails before the change.\n\n"+
++			"Way forward: when the change fixes a bug, make a test fail on the merge base and pass with the fix, "+
++			"reaching the bug through code the base already has, and commit it. "+
++			"When the change fixes no bug, as one that only adds tests pinning existing behaviour, invent no bug and keep the tests: %s",
++			parentRecordAsk(gateslot.NoBugFixedTitle))
+ 	case res.ExitCode == gateslot.RedFirstNoTestExit:
+ 		fmt.Fprintf(&b, "The diff adds or changes no test, so nothing shows the bug the fix fixes.\n\n"+
+ 			"Way forward: add and commit a test that fails on the merge base and passes with the fix. "+
+-			"When the bug has no seam a test can reach, %s", noSeamAsk())
++			"When the bug has no seam a test can reach, %s", parentRecordAsk(gateslot.NoTestSeamTitle))
+ 	case res.ExitCode == gateslot.RedFirstUnjudgedExit:
+ 		fmt.Fprintf(&b, "The red-first check cannot judge the diff's tests on the merge base: "+
+-			"the hub's scoper is not go. The log tail names it.\n\nWay forward: %s", noSeamAsk())
++			"the hub's scoper is not go. The log tail names it.\n\nWay forward: %s", parentRecordAsk(gateslot.NoTestSeamTitle))
+ 	default:
+ 		terminal = true
+ 		fmt.Fprintf(&b, "The red-first check failed with exit code %d, so it judged none of the diff's tests. %s", res.ExitCode, redFirstNoMend)
+@@ -278,11 +282,11 @@ func redFirstFailure(res verifytree.Result) shuttleengine.GateResult {
+ 	return shuttleengine.GateResult{Passed: false, Findings: b.String(), Terminal: terminal}
+ }
+ 
+-// noSeamAsk is the way forward that only the run's parent can take.
+-// The parent records the bug as having no seam a test can reach.
+-func noSeamAsk() string {
++// parentRecordAsk is a way forward that only the run's parent can take:
++// it records, under an added decision whose title opens title, why the red-first check does not apply.
++func parentRecordAsk(title string) string {
+ 	return fmt.Sprintf("send your parent `lym creel post --parent --expect-reply \"<text>\"` asking it to record that with "+
+-		"`lym loom decision add` under a title opening %q and naming why, then end your turn.", gateslot.NoTestSeamTitle)
++		"`lym loom decision add` under a title opening %q and naming why, then end your turn.", title)
+ }
+ 
+ // redFirstNoMend closes the findings of a red-first run that judged none of the diff's tests.
+diff --git a/internal/loomshed/redfirstgate_test.go b/internal/loomshed/redfirstgate_test.go
+index b2f3d7cdb..7cbe53e56 100644
+--- a/internal/loomshed/redfirstgate_test.go
++++ b/internal/loomshed/redfirstgate_test.go
+@@ -64,6 +64,13 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 			command:    "exit 9",
+ 			wantPassed: true,
+ 		},
++		{
++			name:       "a record whose added entry opens No bug fixed passes and runs nothing",
++			labels:     bugLabels,
++			record:     noBugFixedRecord,
++			command:    "exit 3",
++			wantPassed: true,
++		},
+ 		{
+ 			name:    "a bug entry whose decision record cannot be read is the gate's error",
+ 			labels:  bugLabels,
+@@ -79,14 +86,17 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ 			wantRan:    true,
+ 		},
+ 		{
+-			name:    "a check that exits 3 fails with the green way forward",
++			name:    "a check that exits 3 fails with the green way forward for a bug and for a change that fixes none",
+ 			labels:  bugLabels,
+ 			record:  validDecisionRecord,
+ 			command: "echo green-marker; exit 3",
+ 			wantRan: true,
+ 			wantFindings: []string{
+-				"Every test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.",
+-				"Way forward: make a test fail on the merge base and pass with the fix, reaching the bug through code the base already has, and commit it.",
++				"Every test the diff adds or changes passed on the merge base, so none of them fails before the change.",
++				"Way forward: when the change fixes a bug, make a test fail on the merge base and pass with the fix, reaching the bug through code the base already has, and commit it.",
++				"When the change fixes no bug, as one that only adds tests pinning existing behaviour, invent no bug and keep the tests:",
++				"lym creel post --parent --expect-reply",
++				`under a title opening "No bug fixed"`,
+ 				"Full log: ", "green-marker",
+ 			},
+ 		},
+@@ -265,6 +275,10 @@ func TestRedFirstGate_VerdictPerLabelRecordAndExitCode(t *testing.T) {
+ const noTestSeamRecord = validDecisionRecord +
+ 	"\n### Added after Discussion (parent, 2026-11-19): No test seam: the bug lives in a tmux race\n\nDecision text.\n"
+ 
++// noBugFixedRecord is a decision record whose added entry records that the bug-labelled entry fixes no bug.
++const noBugFixedRecord = validDecisionRecord +
++	"\n### Added after Discussion (parent, 2026-11-23): No bug fixed: the task only adds golden tests\n\nDecision text.\n"
++
+ // TestRedFirstGate_FinalOnTheHeldTreeFailsFromTheHoldWithoutRunningTheCheck pins the final evaluation of a held tree.
+ // It answers the hold's refusal as a failure with its findings.
+ // It runs the check no second time.
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index d538eb7ed..2abeb490a 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -62,6 +62,7 @@
+ // It holds until a test the diff adds or changes fails on the merge base.
+ // The parent may instead record a decision titled `No test seam`.
+ // That fits a bug no test can reach or a check that cannot judge the tests.
++// A decision titled `No bug fixed` passes it too, for a change that only adds tests pinning existing behaviour.
+ // A diff that adds no test, and a check that cannot judge the tests, hold the run without spending an attempt.
+ // The hold lasts until a new commit or that record, so its entry is MayHold.
+ // An entry without the label passes at once.
