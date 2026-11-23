@@ -26,6 +26,12 @@ Decision: TestAmendsPlanDuringWebster_KeepsDoneBatches passes on the merge base 
 
 Rationale: The red-first gate expects a test that fails on base; here there is no bug on the path to show.
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: F1 fixed, F2 fixed differently
+
+Decision: Accept the code review at round 1. F1 (webster-state-filename-literal) is fixed: the test reads the record through websterengine.LoadState before and after the goto. F2 is fixed as the review's own fallback allows.
+
+Rationale: Mechanical test fixes, visible in internal/loomcli/amendduringwebster_test.go; another round would only confirm them.
+
 ## Constraints
 
 ## Auto-mode assumptions
