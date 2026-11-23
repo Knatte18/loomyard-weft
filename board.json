@@ -233,7 +233,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).\n\nSeen: lym board list --text showed a task that had landed in a beam project under P0, the root project, instead of under its beam.\n\nWorkaround: none; the entry was left until prune.\n\nExpected: a done task stays listed under its own project until it is pruned.",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-23T08:18:55Z",
       "revised": "2026-11-23T08:19:36Z",
       "run_settings": {
