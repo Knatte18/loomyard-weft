@@ -1,6 +1,6 @@
 # Run agents ask a question and exit before the reply; drift judge asks in its pane
 
-`agents-exit-before-reply` · Task · bug, shuttle, creel, drift, stencil · running · Code-Bouncer
+`agents-exit-before-reply` · Task · bug, shuttle, creel, drift, stencil · running · Drift-Recheck
 
 Imported from [issue #186](https://github.com/Knatte18/loomyard/issues/186).
 
