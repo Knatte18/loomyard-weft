@@ -30,7 +30,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-## Bugs (12)
+## Bugs (13)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -46,6 +46,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B10 |  | **Verify gate requires a fail-on-base test for a tests-only task** | [`red-first-tests-only-task`](design-red-first-tests-only-task.md) | 0m<br>0m | gate, darn |
 | B11 |  | **tools/godocreflow worsens wrapped-break findings instead of clearing them** | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | 0m<br>0m | tools, lint |
 | B12 |  | **lym loom lint-comments --base checks committed HEAD, not the working tree** | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | 0m<br>0m | lint, loom |
+| B13 |  | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | 0m<br>0m | loom, darn |
 
 ## Enhancements (1)
 
