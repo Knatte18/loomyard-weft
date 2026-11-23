@@ -1,0 +1,1375 @@
+diff --git a/internal/creelcli/delivery.go b/internal/creelcli/delivery.go
+index f66900c63..02f2f0de5 100644
+--- a/internal/creelcli/delivery.go
++++ b/internal/creelcli/delivery.go
+@@ -114,7 +114,18 @@ func (o shuttleOps) SessionIdle(guid string) (shuttleengine.IdleProbe, error) {
+ func (o shuttleOps) Send(guid, text string) error { return o.runner.Send(guid, text) }
+ 
+ func (o shuttleOps) RunCommand(guid string, command creelengine.Command) error {
+-	return runSessionCommand(o.runner, guid, command)
++	return runSessionCommand(sessionCommandOps{Runner: o.runner, reed: o.reed}, guid, command)
++}
++
++// sessionCommandOps is the shuttle runner's session commands, with the RC mark set through the worktree's reed engine.
++type sessionCommandOps struct {
++	*shuttleengine.Runner
++	reed *reedengine.Engine
++}
++
++// MarkRemoteControlOn sets the RC mark on the live pane of the strand guid.
++func (o sessionCommandOps) MarkRemoteControlOn(guid string) error {
++	return o.reed.MarkRemoteControlOn(guid)
+ }
+ 
+ func (o shuttleOps) Interrupt(guid string) error { return o.runner.InterruptRestoring(guid) }
+@@ -126,12 +137,14 @@ type sessionCommands interface {
+ 	ReloadPlugins(guid string) error
+ 	TypeColor(guid string, color segmentcolor.Color) error
+ 	LoadSkills(guid string, skills []string) error
+-	TurnOnRemoteControl(guid, name string) error
++	TurnOnRemoteControl(guid, name string) (connected bool, err error)
++	MarkRemoteControlOn(guid string) error
+ }
+ 
+ // runSessionCommand runs command through ops.
+ // compact takes its argument as the focus, color as the segment color, and load-skills as a space-separated skill list;
+ // remote-control takes it as the remote session's name.
++// remote-control marks the strand's pane for the RC button only once the session records its connection.
+ // A command outside the closed set is refused.
+ func runSessionCommand(ops sessionCommands, guid string, command creelengine.Command) error {
+ 	switch command.Name {
+@@ -146,12 +159,33 @@ func runSessionCommand(ops sessionCommands, guid string, command creelengine.Com
+ 	case creelengine.CommandLoadSkills:
+ 		return ops.LoadSkills(guid, strings.Fields(command.Argument))
+ 	case creelengine.CommandRemoteControl:
+-		return ops.TurnOnRemoteControl(guid, command.Argument)
++		return turnOnRemoteControl(ops, guid, command.Argument)
+ 	default:
+ 		return fmt.Errorf("creel: unknown command %q", command.Name)
+ 	}
+ }
+ 
++// turnOnRemoteControl types the remote-control command named name into the strand guid's session.
++// It marks the strand's pane once the session records its remote control connecting.
++// That holds also when the paste was not seen to land and the session connected anyway.
++// The delivery error is still returned.
++// A connection the provider refuses, such as by an organization's policy, leaves the pane unmarked and the RC button dim.
++// A failed mark is logged and the command still succeeds, since it has landed and the mark is display only.
++func turnOnRemoteControl(ops sessionCommands, guid, name string) error {
++	connected, err := ops.TurnOnRemoteControl(guid, name)
++	if connected {
++		if markErr := ops.MarkRemoteControlOn(guid); markErr != nil {
++			logger.Warn("creel: could not mark the pane of a session whose remote control connected", "strandGUID", guid, "err", markErr)
++		}
++		return err
++	}
++	if err != nil {
++		return err
++	}
++	logger.Info("creel: the session recorded no remote-control connection after the command, so the RC button stays dim", "strandGUID", guid, "name", name)
++	return nil
++}
++
+ // errWorktreeGone marks a worktree that no longer resolves as a worktree, so the listing skips it instead of failing.
+ var errWorktreeGone = errors.New("creel: the worktree is gone")
+ 
+diff --git a/internal/creelcli/delivery_test.go b/internal/creelcli/delivery_test.go
+index 624fb8558..3878ec7ba 100644
+--- a/internal/creelcli/delivery_test.go
++++ b/internal/creelcli/delivery_test.go
+@@ -72,8 +72,15 @@ func (s *stubOps) RunCommand(string, creelengine.Command) error { return s.comma
+ func (s *stubOps) Interrupt(string) error { return s.interruptErr }
+ 
+ // recordingCommands is a sessionCommands that records the one call it received as "method(arguments)".
++// A pane mark after a remote-control command is appended to that call.
+ type recordingCommands struct {
+ 	called string
++	// connected is what TurnOnRemoteControl reports.
++	connected bool
++	// turnOnErr is the error TurnOnRemoteControl returns.
++	turnOnErr error
++	// markErr is the error MarkRemoteControlOn returns.
++	markErr error
+ }
+ 
+ func (r *recordingCommands) ClearSession(guid string) error {
+@@ -101,9 +108,14 @@ func (r *recordingCommands) LoadSkills(guid string, skills []string) error {
+ 	return nil
+ }
+ 
+-func (r *recordingCommands) TurnOnRemoteControl(guid, name string) error {
++func (r *recordingCommands) TurnOnRemoteControl(guid, name string) (bool, error) {
+ 	r.called = "TurnOnRemoteControl(" + guid + "," + name + ")"
+-	return nil
++	return r.connected, r.turnOnErr
++}
++
++func (r *recordingCommands) MarkRemoteControlOn(guid string) error {
++	r.called += " MarkRemoteControlOn(" + guid + ")"
++	return r.markErr
+ }
+ 
+ // restoringPane is a pane drawn like Claude's across an interrupt.
+@@ -454,6 +466,26 @@ func TestHubDelivery(t *testing.T) {
+ 				t.Errorf("runSessionCommand(%s) called %q, %v; want %q", tt.command.Name, recorder.called, err, tt.want)
+ 			}
+ 		}
++		connected := &recordingCommands{connected: true}
++		remoteControl := creelengine.Command{Name: creelengine.CommandRemoteControl, Argument: "neve::ly:orch"}
++		want := "TurnOnRemoteControl(guid-orch,neve::ly:orch) MarkRemoteControlOn(guid-orch)"
++		if err := runSessionCommand(connected, "guid-orch", remoteControl); err != nil || connected.called != want {
++			t.Errorf("runSessionCommand(remote-control) on a session that connects called %q, %v; want %q", connected.called, err, want)
++		}
++		turnOnFailed := errors.New("transcript unreadable")
++		failed := &recordingCommands{turnOnErr: turnOnFailed}
++		wantUnmarked := "TurnOnRemoteControl(guid-orch,neve::ly:orch)"
++		if err := runSessionCommand(failed, "guid-orch", remoteControl); !errors.Is(err, turnOnFailed) || failed.called != wantUnmarked {
++			t.Errorf("runSessionCommand(remote-control) on a failed turn-on called %q, %v; want %q and the turn-on error", failed.called, err, wantUnmarked)
++		}
++		markFailed := &recordingCommands{connected: true, markErr: errors.New("tmux is gone")}
++		if err := runSessionCommand(markFailed, "guid-orch", remoteControl); err != nil || markFailed.called != want {
++			t.Errorf("runSessionCommand(remote-control) on a failed mark called %q, %v; want %q and nil", markFailed.called, err, want)
++		}
++		unconfirmed := &recordingCommands{connected: true, turnOnErr: turnOnFailed}
++		if err := runSessionCommand(unconfirmed, "guid-orch", remoteControl); !errors.Is(err, turnOnFailed) || unconfirmed.called != want {
++			t.Errorf("runSessionCommand(remote-control) on an unconfirmed paste that connected called %q, %v; want %q and the turn-on error", unconfirmed.called, err, want)
++		}
+ 
+ 		hub, prime, _ := newHub(t)
+ 		strand := creelengine.Strand{Name: "ly:orch", GUID: "guid-orch", Worktree: prime}
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index 5fcf8fe73..c62411a1c 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -145,6 +145,11 @@ type orchCLI struct {
+ 	injectRemoteControl func(receiver, name string) error
+ 	// markRemoteControl sets the RC mark on the live pane of the strand guid in this worktree's session; nil marks none.
+ 	markRemoteControl func(guid string) error
++	// remoteControlCheckpoint returns how far the provider's record of the orch session sessionID reaches now.
++	remoteControlCheckpoint func(sessionID string) (int64, error)
++	// awaitRemoteControl reports whether the orch session sessionID records its remote control connecting past checkpoint.
++	// It waits a bounded time for the record.
++	awaitRemoteControl func(sessionID string, checkpoint int64) (bool, error)
+ }
+ 
+ // Command returns the cobra command tree for the orch module.
+@@ -272,6 +277,12 @@ func wireCLI(c *orchCLI, location *lymcwd.Location) error {
+ 		return injectRemoteControlCommand(location, receiver, name)
+ 	}
+ 	c.markRemoteControl = reed.MarkRemoteControlOn
++	c.remoteControlCheckpoint = func(sessionID string) (int64, error) {
++		return c.runner.RemoteControlCheckpoint(orchEngine, sessionID)
++	}
++	c.awaitRemoteControl = func(sessionID string, checkpoint int64) (bool, error) {
++		return c.runner.AwaitRemoteControl(orchEngine, sessionID, checkpoint)
++	}
+ 	c.spawnWatcher = c.spawnWatcherProcess
+ 	c.startLockWait = stopStartLockWait
+ 	c.sleep = time.Sleep
+diff --git a/internal/orchcli/remotecontrol.go b/internal/orchcli/remotecontrol.go
+index 5ffbc4fa8..789c4dacb 100644
+--- a/internal/orchcli/remotecontrol.go
++++ b/internal/orchcli/remotecontrol.go
+@@ -1,5 +1,6 @@
+ // remotecontrol.go holds remote control for the orch and for every agent reed's RC button serves.
+-// It forms the session name a launch of the orch passes and marks the launched pane for the button.
++// It forms the session name a launch of the orch passes,
++// and it marks the launched pane for the button once the session records its remote control connecting.
+ // It also holds the hidden verb `rc-on`, which a click on the RC button runs.
+ 
+ package orchcli
+@@ -88,25 +89,53 @@ func (c *orchCLI) launchRemoteControlName(listed reedengine.StrandStatus, hasStr
+ 	return name
+ }
+ 
+-// markLaunchedRemoteControl marks the pane of the strand guid, which a launch started with remote control on.
+-// reed's RC button then shows the orch lit.
+-// A failed mark is logged at Warn and never fails the caller, since the mark is display only.
+-func (c *orchCLI) markLaunchedRemoteControl(guid string) {
++// launchRemoteControlCheckpoint returns how far the orch session sessionID's record reaches before a launch resumes it.
++// A launch without remote control, or one with no session to resume, starts from zero.
++// read is false when the record cannot be read; the launch then leaves its pane unmarked, logged at Warn.
++func (c *orchCLI) launchRemoteControlCheckpoint(sessionID, remoteControlName string) (checkpoint int64, read bool) {
++	if remoteControlName == "" || sessionID == "" {
++		return 0, true
++	}
++	checkpoint, err := c.remoteControlCheckpoint(sessionID)
++	if err != nil {
++		logger.Warn("orch: could not read where the orch session's record ends, so the RC button stays dim after the launch", "sessionID", sessionID, "err", err)
++		return 0, false
++	}
++	return checkpoint, true
++}
++
++// markLaunchedRemoteControl marks the pane of the strand started, which a launch asked to start with remote control on.
++// It marks only once the session records its remote control connecting, so reed's RC button shows the orch lit only then.
++// The record counts past checkpoint when started resumed the session resumed, and whole when it started another session.
++// A connection the provider refuses, such as by an organization's policy, leaves the pane unmarked and the button dim.
++// A failed read or mark is logged at Warn and never fails the caller, since the mark is display only.
++func (c *orchCLI) markLaunchedRemoteControl(started startedSession, resumed string, checkpoint int64) {
+ 	if c.markRemoteControl == nil {
+ 		return
+ 	}
+-	if err := c.markRemoteControl(guid); err != nil {
+-		logger.Warn("orch: could not mark the orch pane's remote control for the RC button", "strandGUID", guid, "err", err)
++	if started.SessionID != resumed {
++		checkpoint = 0
++	}
++	connected, err := c.awaitRemoteControl(started.SessionID, checkpoint)
++	if err != nil {
++		logger.Warn("orch: could not read whether the orch session's remote control connected, so the RC button stays dim", "strandGUID", started.GUID, "err", err)
++		return
++	}
++	if !connected {
++		logger.Info("orch: the orch session recorded no remote-control connection, so the RC button stays dim", "strandGUID", started.GUID, "sessionID", started.SessionID)
++		return
++	}
++	if err := c.markRemoteControl(started.GUID); err != nil {
++		logger.Warn("orch: could not mark the orch pane's remote control for the RC button", "strandGUID", started.GUID, "err", err)
+ 	}
+ }
+ 
+-// turnOnRemoteControl queues the remote-control command into the agent pane runs, through creel, then marks pane.
++// turnOnRemoteControl queues the remote-control command into the agent pane runs, through creel.
+ // The name is the one remote_control_name forms for the agent, whatever orch.yaml's switch says.
++// It marks nothing: creel marks the pane once the session records its remote control connecting.
+ // It refuses a pane that runs no agent and a pane whose mark already reads on; both send nothing.
+-// A failed mark is logged and the click still succeeds with a warning field, since the command is already queued.
+-// An agent whose engine has no remote control gets nothing typed, and its pane is marked all the same.
+-// What Claude Code shows for a second command in a session with remote control on is unverified.
+-func (c *orchCLI) turnOnRemoteControl(pane reedengine.AgentPane, mark func() error) (map[string]any, error) {
++// An agent whose engine has no remote control gets nothing typed.
++func (c *orchCLI) turnOnRemoteControl(pane reedengine.AgentPane) (map[string]any, error) {
+ 	if pane.StrandName == "" {
+ 		return nil, errors.New("orch: the active pane runs no agent; way forward: select an agent's pane and click RC again")
+ 	}
+@@ -120,12 +149,7 @@ func (c *orchCLI) turnOnRemoteControl(pane reedengine.AgentPane, mark func() err
+ 	if err := c.injectRemoteControl(pane.StrandName, name); err != nil {
+ 		return nil, fmt.Errorf("orch: queue the remote-control command for %s: %w; way forward: repair what the error names and click RC again", pane.StrandName, err)
+ 	}
+-	fields := map[string]any{"strand": pane.StrandName, "remote_control_name": name}
+-	if err := mark(); err != nil {
+-		logger.Warn("orch: could not mark the agent pane's remote control for the RC button", "strand", pane.StrandName, "pane", pane.PaneID, "err", err)
+-		fields["warning"] = fmt.Sprintf("the command is queued, but marking the pane failed (%v); the RC button stays dim, and another click would queue the command again", err)
+-	}
+-	return fields, nil
++	return map[string]any{"strand": pane.StrandName, "remote_control_name": name}, nil
+ }
+ 
+ // injectRemoteControlCommand queues creel's remote-control command with name into the strand receiver.
+@@ -151,10 +175,12 @@ func (c *orchCLI) remoteControlOnCmd() *cobra.Command {
+ directory: the session's own worktree for the prime and a beam, the parent's for
+ a task. It acts on the agent of the clicking client's active pane. It queues
+ creel's remote-control command into that agent, under the name orch.yaml's
+-remote_control_name forms, whether or not remote_control is on, and marks the
+-pane so the RC button shows lit. The command is typed once the session is idle.
+-A pane that runs no agent and a pane already marked refuse and send nothing. A
+-session whose remote control was turned off inside Claude Code takes
++remote_control_name forms, whether or not remote_control is on. The command is
++typed once the session is idle, and the pane is marked so the RC button shows
++lit only once the session records its remote control connecting. A connection
++the provider refuses, such as by an organization's policy, leaves the button
++dim. A pane that runs no agent and a pane already marked refuse and send
++nothing. A session whose remote control was turned off inside Claude Code takes
+ /remote-control typed by hand in its pane.
+ 
+ It then redraws the clicking client's status bar on the server at --socket,
+@@ -168,9 +194,7 @@ showing the refusal there first when the click failed.`,
+ 			var fields map[string]any
+ 			pane, err := reedengine.ClientAgentPane(tmuxPath, socketPath, client)
+ 			if err == nil {
+-				fields, err = c.turnOnRemoteControl(pane, func() error {
+-					return reedengine.MarkPaneRemoteControlOn(tmuxPath, socketPath, pane.PaneID)
+-				})
++				fields, err = c.turnOnRemoteControl(pane)
+ 			}
+ 			message := ""
+ 			if err != nil {
+diff --git a/internal/orchcli/remotecontrol_test.go b/internal/orchcli/remotecontrol_test.go
+index 37beab25f..b1427d73a 100644
+--- a/internal/orchcli/remotecontrol_test.go
++++ b/internal/orchcli/remotecontrol_test.go
+@@ -1,5 +1,5 @@
+ // remotecontrol_test.go covers remote control without a live session:
+-// the name a launch passes and the pane it marks, and the RC click over a fake inject and mark.
++// the name a launch passes and the pane it marks once the session connects, and the RC click over a fake inject.
+ 
+ package orchcli
+ 
+@@ -7,6 +7,7 @@ import (
+ 	"bytes"
+ 	"encoding/json"
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
+@@ -26,7 +27,8 @@ import (
+ const remoteControlTemplate = "{machine}::{name}"
+ 
+ // TestStart_LaunchPassesAndMarksRemoteControl pins the name a relaunch passes on the orch spec.
+-// It also pins the pane mark the relaunch asks for: the new strand's guid when the name is set, and none otherwise.
++// It also pins the pane mark the relaunch asks for:
++// the new strand's guid once the session records its connection past the pre-launch checkpoint, and none otherwise.
+ func TestStart_LaunchPassesAndMarksRemoteControl(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -46,16 +48,31 @@ func TestStart_LaunchPassesAndMarksRemoteControl(t *testing.T) {
+ 		markErr error
+ 		// recordedSession seeds the orch state with this session id, so the launch resumes it.
+ 		recordedSession string
+-		wantName        string
++		// resumeErr fails the resume of recordedSession, so the launch falls back to a fresh session.
++		resumeErr error
++		// notConnected makes the session record no remote-control connection, as when the provider refuses it.
++		notConnected bool
++		// checkpointErr fails the read of the record's end before a resume.
++		checkpointErr error
++		wantName      string
++		// wantAwait is the session and checkpoint the connection was awaited from, empty for no wait.
++		wantAwait string
++		wantMark  bool
+ 	}{
+-		{name: "SwitchOn", switchOn: true, wantName: "neve::tst:orch"},
+-		{name: "FailedMarkStillLaunches", switchOn: true, markErr: errors.New("tmux is gone"), wantName: "neve::tst:orch"},
++		{name: "SwitchOn", switchOn: true, wantName: "neve::tst:orch", wantAwait: "minted-id@0", wantMark: true},
++		{name: "RefusedConnectionLeavesThePaneUnmarked", switchOn: true, notConnected: true, wantName: "neve::tst:orch", wantAwait: "minted-id@0"},
++		{name: "FailedMarkStillLaunches", switchOn: true, markErr: errors.New("tmux is gone"), wantName: "neve::tst:orch", wantAwait: "minted-id@0", wantMark: true},
+ 		{name: "SwitchOff"},
+ 		{name: "EngineWithoutRemoteControl", switchOn: true, noRemoteControl: true},
+-		{name: "CodexDefaultEngineStillTakesTheOrchsPinnedEngine", switchOn: true, codexDefault: true, wantName: "neve::tst:orch"},
++		{name: "CodexDefaultEngineStillTakesTheOrchsPinnedEngine", switchOn: true, codexDefault: true, wantName: "neve::tst:orch", wantAwait: "minted-id@0", wantMark: true},
+ 		{name: "NoListedStrandWithoutAFixedName", switchOn: true, unlisted: true},
+ 		{name: "MachineNameFails", switchOn: true, machineErr: errors.New("no hostname")},
+-		{name: "ResumedSession", switchOn: true, recordedSession: "sess-1", wantName: "neve::tst:orch"},
++		{name: "ResumedSessionCountsOnlyPastTheCheckpoint", switchOn: true, recordedSession: "sess-1", wantName: "neve::tst:orch", wantAwait: "sess-1@42", wantMark: true},
++		{
++			name: "ResumeFallingBackToAFreshLaunchCountsTheWholeTranscript", switchOn: true, recordedSession: "sess-1", resumeErr: noTranscriptErr,
++			wantName: "neve::tst:orch", wantAwait: "minted-id@0", wantMark: true,
++		},
++		{name: "UnreadableCheckpointLeavesThePaneUnmarked", switchOn: true, recordedSession: "sess-1", checkpointErr: errors.New("transcript unreadable"), wantName: "neve::tst:orch"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -65,13 +82,19 @@ func TestStart_LaunchPassesAndMarksRemoteControl(t *testing.T) {
+ 				listed = append(listed, reedengine.StrandStatus{GUID: "old-guid", Name: "tst:orch"})
+ 			}
+ 			h := newStartHarness(t, listed...)
++			h.starter.resumeErr = tt.resumeErr
+ 			h.cli.cfg.RemoteControl, h.cli.cfg.RemoteControlName = tt.switchOn, remoteControlTemplate
+ 			h.cli.machineName = func() (string, error) { return "neve", tt.machineErr }
+-			var marked []string
++			var marked, awaited []string
+ 			h.cli.markRemoteControl = func(guid string) error {
+ 				marked = append(marked, guid)
+ 				return tt.markErr
+ 			}
++			h.cli.remoteControlCheckpoint = func(string) (int64, error) { return 42, tt.checkpointErr }
++			h.cli.awaitRemoteControl = func(sessionID string, checkpoint int64) (bool, error) {
++				awaited = append(awaited, fmt.Sprintf("%s@%d", sessionID, checkpoint))
++				return !tt.notConnected, nil
++			}
+ 			if tt.noRemoteControl {
+ 				h.cli.engines = shuttleengine.NewEngineSet("none", nil)
+ 			}
+@@ -86,18 +109,25 @@ func TestStart_LaunchPassesAndMarksRemoteControl(t *testing.T) {
+ 				t.Fatalf("beamUp exit %d, env %v; want 0", code, env)
+ 			}
+ 
+-			if len(h.starter.specs) != 1 {
+-				t.Fatalf("started %d sessions; want 1", len(h.starter.specs))
++			wantStarts, wantResume := 1, tt.recordedSession
++			if tt.resumeErr != nil {
++				wantStarts, wantResume = 2, ""
+ 			}
+-			spec := h.starter.specs[0]
++			if len(h.starter.specs) != wantStarts {
++				t.Fatalf("started %d sessions; want %d", len(h.starter.specs), wantStarts)
++			}
++			spec := h.starter.specs[len(h.starter.specs)-1]
+ 			if spec.RemoteControlName != tt.wantName {
+ 				t.Errorf("orch spec RemoteControlName = %q; want %q", spec.RemoteControlName, tt.wantName)
+ 			}
+-			if spec.ResumeSessionID != tt.recordedSession {
+-				t.Errorf("orch spec ResumeSessionID = %q; want %q", spec.ResumeSessionID, tt.recordedSession)
++			if spec.ResumeSessionID != wantResume {
++				t.Errorf("orch spec ResumeSessionID = %q; want %q", spec.ResumeSessionID, wantResume)
++			}
++			if got := strings.Join(awaited, "; "); got != tt.wantAwait {
++				t.Errorf("awaited the connection from %q; want %q", got, tt.wantAwait)
+ 			}
+ 			var wantMarked []string
+-			if tt.wantName != "" {
++			if tt.wantMark {
+ 				wantMarked = []string{"new-guid"}
+ 			}
+ 			if !slices.Equal(marked, wantMarked) {
+@@ -107,10 +137,10 @@ func TestStart_LaunchPassesAndMarksRemoteControl(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRemoteControlOnVerb_ReadsTheClientsPaneAndMarksItsID runs the rc-on verb against a fake tmux script.
+-// An agent pane is marked by its own id after the command is queued,
++// TestRemoteControlOnVerb_QueuesForTheClientsPaneWithoutMarkingIt runs the rc-on verb against a fake tmux script.
++// An agent pane gets the command queued and is left unmarked, since only its session's recorded connection lights it,
+ // and a client whose active pane cannot be read fails the verb naming the client, with nothing queued or marked.
+-func TestRemoteControlOnVerb_ReadsTheClientsPaneAndMarksItsID(t *testing.T) {
++func TestRemoteControlOnVerb_QueuesForTheClientsPaneWithoutMarkingIt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	if runtime.GOOS == "windows" {
+@@ -123,9 +153,8 @@ func TestRemoteControlOnVerb_ReadsTheClientsPaneAndMarksItsID(t *testing.T) {
+ 		wantCode      int
+ 		wantError     string
+ 		wantInject    string
+-		wantMark      bool
+ 	}{
+-		{name: "AgentPaneIsMarkedByItsID", wantInject: "tst:orch neve::tst:orch", wantMark: true},
++		{name: "AgentPaneIsQueuedAndLeftUnmarked", wantInject: "tst:orch neve::tst:orch"},
+ 		{name: "UnreadablePaneNamesTheClient", paneReadFails: true, wantCode: 1, wantError: `read the active pane of client "/dev/pts/3"`},
+ 	}
+ 	for _, tt := range tests {
+@@ -171,43 +200,37 @@ func TestRemoteControlOnVerb_ReadsTheClientsPaneAndMarksItsID(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("read the fake tmux's call log: %v", err)
+ 			}
+-			marked := strings.Contains(string(calls), "set-option -p -t %7 @lym_rc 1\n")
+-			if marked != tt.wantMark {
+-				t.Errorf("tmux calls %q; want the pane mark set: %v", calls, tt.wantMark)
++			if strings.Contains(string(calls), "set-option") {
++				t.Errorf("tmux calls %q; want the pane mark left alone", calls)
+ 			}
+ 		})
+ 	}
+ }
+ 
+ // TestTurnOnRemoteControl pins the RC click:
+-// it queues the command under the name remote_control_name forms for the clicked agent and marks its pane,
+-// and every refusal queues nothing and marks nothing.
++// it queues the command under the name remote_control_name forms for the clicked agent,
++// and every refusal queues nothing.
+ func TestTurnOnRemoteControl(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	injectFailed := errors.New("creel is down")
+-	markFailed := errors.New("tmux is gone")
+ 	tests := []struct {
+ 		name      string
+ 		pane      reedengine.AgentPane
+ 		injectErr error
+-		markErr   error
+ 		// wantInject is the receiver and name queued, empty for none.
+ 		wantInject string
+-		wantMarks  int
+ 		wantErr    string
+-		// wantWarning expects the success to carry a warning field.
+-		wantWarning bool
+ 	}{
+ 		{
+-			name:       "QueuesAndMarks",
++			name:       "Queues",
+ 			pane:       reedengine.AgentPane{PaneID: "%1", StrandName: "tst:orch"},
+-			wantInject: "tst:orch neve::tst:orch", wantMarks: 1,
++			wantInject: "tst:orch neve::tst:orch",
+ 		},
+ 		{
+ 			name:       "ServesAnAgentOtherThanTheOrch",
+ 			pane:       reedengine.AgentPane{PaneID: "%2", StrandName: "tst:slug:darn"},
+-			wantInject: "tst:slug:darn neve::tst:slug:darn", wantMarks: 1,
++			wantInject: "tst:slug:darn neve::tst:slug:darn",
+ 		},
+ 		{name: "PaneWithNoAgentRefuses", pane: reedengine.AgentPane{PaneID: "%3"}, wantErr: "runs no agent"},
+ 		{
+@@ -221,17 +244,11 @@ func TestTurnOnRemoteControl(t *testing.T) {
+ 			wantErr: "does not parse",
+ 		},
+ 		{
+-			name:       "FailedInjectFailsAndMarksNothing",
++			name:       "FailedInjectFails",
+ 			pane:       reedengine.AgentPane{PaneID: "%1", StrandName: "tst:orch"},
+ 			injectErr:  injectFailed,
+ 			wantInject: "tst:orch neve::tst:orch", wantErr: injectFailed.Error(),
+ 		},
+-		{
+-			name:       "FailedMarkStillSucceedsWithAWarning",
+-			pane:       reedengine.AgentPane{PaneID: "%1", StrandName: "tst:orch"},
+-			markErr:    markFailed,
+-			wantInject: "tst:orch neve::tst:orch", wantMarks: 1, wantWarning: true,
+-		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -244,17 +261,9 @@ func TestTurnOnRemoteControl(t *testing.T) {
+ 				injected = append(injected, receiver+" "+name)
+ 				return tt.injectErr
+ 			}
+-			marks := 0
+-			mark := func() error {
+-				marks++
+-				return tt.markErr
+-			}
+ 
+-			fields, err := c.turnOnRemoteControl(tt.pane, mark)
++			_, err := c.turnOnRemoteControl(tt.pane)
+ 
+-			if _, hasWarning := fields["warning"]; hasWarning != tt.wantWarning {
+-				t.Errorf("fields = %v; want a warning field: %v", fields, tt.wantWarning)
+-			}
+ 			if tt.wantErr == "" && err != nil {
+ 				t.Fatalf("turnOnRemoteControl() = %v; want nil", err)
+ 			}
+@@ -264,9 +273,6 @@ func TestTurnOnRemoteControl(t *testing.T) {
+ 			if got := strings.Join(injected, "; "); got != tt.wantInject {
+ 				t.Errorf("injected %q; want %q", got, tt.wantInject)
+ 			}
+-			if marks != tt.wantMarks {
+-				t.Errorf("mark called %d times; want %d", marks, tt.wantMarks)
+-			}
+ 		})
+ 	}
+ }
+diff --git a/internal/orchcli/start.go b/internal/orchcli/start.go
+index a9dba475b..0803a9f9f 100644
+--- a/internal/orchcli/start.go
++++ b/internal/orchcli/start.go
+@@ -782,14 +782,12 @@ func (c *orchCLI) relaunchStrand(st orchengine.State, strand reedengine.StrandSt
+ 		return "", "", err
+ 	}
+ 	remoteControlName := c.launchRemoteControlName(strand, hasStrand)
++	checkpoint, checkpointRead := c.launchRemoteControlCheckpoint(st.SessionID, remoteControlName)
+ 	started, source, abandoned, err := c.launchOrch(st, note, remoteControlName)
+ 	report.AbandonedSession = abandoned
+ 	if err != nil {
+ 		return "", "", err
+ 	}
+-	if remoteControlName != "" {
+-		c.markLaunchedRemoteControl(started.GUID)
+-	}
+ 	report.Strand = started.GUID
+ 	if started.Warning != "" {
+ 		report.Warnings = append(report.Warnings, started.Warning)
+@@ -805,6 +803,9 @@ func (c *orchCLI) relaunchStrand(st orchengine.State, strand reedengine.StrandSt
+ 	if err := c.saveFreshLaunch(next, firstFailure, creel, receiver); err != nil {
+ 		return "", "", err
+ 	}
++	if remoteControlName != "" && checkpointRead {
++		c.markLaunchedRemoteControl(started, st.SessionID, checkpoint)
++	}
+ 	logger.Info("orch: launched orchestrator session", "strandGUID", started.GUID, "sessionID", started.SessionID, "promptSource", source, "abandonedSessionID", abandoned)
+ 	if source == orchengine.SourceResume {
+ 		report.SessionID = started.SessionID
+diff --git a/internal/reedengine/bar.go b/internal/reedengine/bar.go
+index 4dcab6950..1cbf0b647 100644
+--- a/internal/reedengine/bar.go
++++ b/internal/reedengine/bar.go
+@@ -18,7 +18,7 @@
+ // The server-global @lym_slack_state_command holds the job's line.
+ // The RC button belongs to the agent of the window's active pane.
+ // It is drawn only while that pane carries @lym_strand_name and the session carries @lym_button_dir.
+-// It is lit while that pane carries @lym_rc, the mark a click on RC or a launch with remote control sets.
++// It is lit while that pane carries @lym_rc, the mark set once the pane's session records its remote control connecting.
+ // The action row is read from the session user options @lym_buttons_plain and @lym_buttons_agent.
+ // No Go decision reads @strand_color, @lym_unseen or @lym_prime_session.
+ // Neither does one read a check mark's options or the action row's options.
+diff --git a/internal/reedengine/remotecontrol.go b/internal/reedengine/remotecontrol.go
+index e35c5a369..9c7a48542 100644
+--- a/internal/reedengine/remotecontrol.go
++++ b/internal/reedengine/remotecontrol.go
+@@ -1,6 +1,7 @@
+-// remotecontrol.go holds the RC button's pane mark, which shows that lym turned remote control on in an agent's session.
+-// It holds the engine-less read and write a click on the RC button runs.
+-// It also holds the engine op a launch with remote control runs.
++// remotecontrol.go holds the RC button's pane mark.
++// The mark shows that an agent's session recorded its remote control connecting.
++// It holds the engine-less pane read a click on the RC button runs.
++// It also holds the engine op that sets the mark once a session's connection is recorded.
+ 
+ package reedengine
+ 
+@@ -9,7 +10,8 @@ import (
+ 	"strings"
+ )
+ 
+-// remoteControlPaneOption is the pane user option marking that lym turned remote control on in the pane's session.
++// remoteControlPaneOption is the pane user option marking that the pane's session recorded its remote control connecting.
++// A request the provider refused sets no mark.
+ // The RC button is lit while the window's active pane carries it, and the mark dies with the pane.
+ const remoteControlPaneOption = "@lym_rc"
+ 
+@@ -46,11 +48,6 @@ func clientAgentPaneVia(cmd TmuxCmd, client string) (AgentPane, error) {
+ 	return AgentPane{PaneID: fields[0], StrandName: fields[1], RemoteControlOn: fields[2] != ""}, nil
+ }
+ 
+-// MarkPaneRemoteControlOn sets the RC mark on the pane paneID of the tmux server at socketPath.
+-func MarkPaneRemoteControlOn(tmuxPath, socketPath, paneID string) error {
+-	return markPaneRemoteControlOnVia(newTmuxCmdForSocketPath(tmuxPath, socketPath), paneID)
+-}
+-
+ // markPaneRemoteControlOnVia sets the RC mark on paneID over cmd, so a test can replace the tmux command.
+ func markPaneRemoteControlOnVia(cmd TmuxCmd, paneID string) error {
+ 	if err := cmd.run("set-option", "-p", "-t", paneID, remoteControlPaneOption, remoteControlPaneMark); err != nil {
+@@ -60,7 +57,8 @@ func markPaneRemoteControlOnVia(cmd TmuxCmd, paneID string) error {
+ }
+ 
+ // MarkRemoteControlOn sets the RC mark on the live pane of the strand guid in this session.
+-// A launch that started the strand with remote control on calls it, so the RC button shows the strand lit.
++// Its caller calls it once the strand's session records its remote control connecting,
++// so the RC button shows the strand lit.
+ // Nothing is persisted: a failed call returns an error for the caller to log.
+ func (e *Engine) MarkRemoteControlOn(guid string) error {
+ 	return e.withOpLock(func() error {
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 913545db7..093410886 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -244,6 +244,9 @@
+ // A resume reuses the file its launch wrote; a Prepare that runs again reads the passages afresh.
+ // The settings set `CLAUDE_CODE_SUBAGENT_EFFORT` to the role's effort on a model the efforts table does not name.
+ // A spec that names a remote-control session adds `--remote-control` with that name to the launch and resume lines.
++// A session's remote control reads as connected once its transcript holds a `bridge-session` record.
++// Claude Code writes that record when the connection is made.
++// A connection Claude Code refuses, such as one an organization's policy disables, writes none.
+ //
+ // Both the deny hooks and the notice are built from one deny list in settings.go, so the two cannot drift.
+ // The Claude rows come first; the Bash denies render the rows of `internal/shellguard`'s table as PreToolUse(Bash) hooks,
+diff --git a/internal/shuttleengine/claudeengine/remotecontrol.go b/internal/shuttleengine/claudeengine/remotecontrol.go
+new file mode 100644
+index 000000000..92843dd77
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/remotecontrol.go
+@@ -0,0 +1,101 @@
++// remotecontrol.go implements shuttleengine.RemoteControlReader for Claude.
++// It reads whether a session's remote control connected from the record Claude Code writes into the session's transcript.
++
++package claudeengine
++
++import (
++	"bufio"
++	"bytes"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io"
++	"io/fs"
++	"os"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++)
++
++var _ shuttleengine.RemoteControlReader = (*Claude)(nil)
++
++// bridgeSessionRecordType is the transcript record type Claude Code writes once a session's remote control connects.
++// A connection the provider refuses, such as one an organization's policy disables, writes none.
++const bridgeSessionRecordType = "bridge-session"
++
++// RemoteControlCheckpoint returns the size of the transcript of the session sessionID run in workdir.
++// A session with no transcript yet returns zero.
++func (c *Claude) RemoteControlCheckpoint(sessionID, workdir string) (int64, error) {
++	projectDir, err := c.sessionProjectDir(sessionID, workdir)
++	if err != nil {
++		return 0, err
++	}
++	path := transcriptPathIn(projectDir, sessionID)
++	info, err := os.Stat(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return 0, nil
++	}
++	if err != nil {
++		return 0, fmt.Errorf("claudeengine: read the size of transcript %s: %w", path, err)
++	}
++	return info.Size(), nil
++}
++
++// RemoteControlConnected reports whether the session sessionID run in workdir recorded its remote control connecting.
++// Only the transcript from the byte offset checkpoint on is read.
++// A session with no transcript records no connection.
++func (c *Claude) RemoteControlConnected(sessionID, workdir string, checkpoint int64) (bool, error) {
++	projectDir, err := c.sessionProjectDir(sessionID, workdir)
++	if err != nil {
++		return false, err
++	}
++	return bridgeSessionRecordedIn(transcriptPathIn(projectDir, sessionID), checkpoint)
++}
++
++// bridgeSessionRecordedIn reports whether the transcript at path holds a bridge-session record at or past checkpoint.
++// A transcript shorter than checkpoint has been rewritten since and is read whole.
++// A missing transcript holds none, and a line still being written is not read as a record.
++func bridgeSessionRecordedIn(path string, checkpoint int64) (bool, error) {
++	file, err := os.Open(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	if err != nil {
++		return false, fmt.Errorf("claudeengine: open transcript %s: %w", path, err)
++	}
++	defer file.Close()
++	info, err := file.Stat()
++	if err != nil {
++		return false, fmt.Errorf("claudeengine: read the size of transcript %s: %w", path, err)
++	}
++	if checkpoint > info.Size() {
++		checkpoint = 0
++	}
++	if _, err := file.Seek(checkpoint, io.SeekStart); err != nil {
++		return false, fmt.Errorf("claudeengine: seek transcript %s: %w", path, err)
++	}
++	reader := bufio.NewReader(file)
++	for {
++		line, readErr := reader.ReadBytes('\n')
++		if bytes.Contains(line, []byte(bridgeSessionRecordType)) && isBridgeSessionRecord(line) {
++			return true, nil
++		}
++		if errors.Is(readErr, io.EOF) {
++			return false, nil
++		}
++		if readErr != nil {
++			return false, fmt.Errorf("claudeengine: read transcript %s: %w", path, readErr)
++		}
++	}
++}
++
++// isBridgeSessionRecord reports whether line is a bridge-session record naming the remote session it connected.
++func isBridgeSessionRecord(line []byte) bool {
++	var record struct {
++		Type            string `json:"type"`
++		BridgeSessionID string `json:"bridgeSessionId"`
++	}
++	if json.Unmarshal(line, &record) != nil {
++		return false
++	}
++	return record.Type == bridgeSessionRecordType && record.BridgeSessionID != ""
++}
+diff --git a/internal/shuttleengine/claudeengine/remotecontrol_test.go b/internal/shuttleengine/claudeengine/remotecontrol_test.go
+new file mode 100644
+index 000000000..8eb6f6824
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/remotecontrol_test.go
+@@ -0,0 +1,134 @@
++// remotecontrol_test.go covers which Claude transcripts read as a connected remote control,
++// and the checkpoint and connection reads over a session's transcript on disk.
++
++package claudeengine
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++const (
++	userLine   = `{"type":"user","message":{"role":"user","content":"go"}}` + "\n"
++	bridgeLine = `{"type":"bridge-session","sessionId":"s","bridgeSessionId":"cse_01","lastSequenceNum":0}` + "\n"
++)
++
++// TestBridgeSessionRecordedIn pins which transcripts read as a session whose remote control connected.
++func TestBridgeSessionRecordedIn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const (
++		policyLine = `{"type":"system","subtype":"local_command",` +
++			`"content":"<local-command-stdout>Remote Control is disabled by your organization's policy.</local-command-stdout>"}` + "\n"
++		quotedLine          = `{"type":"user","message":{"role":"user","content":"a \"bridge-session\" record"}}` + "\n"
++		bridgeWithoutIDLine = `{"type":"bridge-session","sessionId":"s"}` + "\n"
++	)
++	tests := []struct {
++		name string
++		// transcript is the file's content; absent leaves no file.
++		transcript string
++		absent     bool
++		// checkpointAfter sets the checkpoint to the end of this prefix of transcript.
++		checkpointAfter string
++		// checkpoint is used as is when checkpointAfter is empty.
++		checkpoint int64
++		want       bool
++	}{
++		{name: "BridgeRecordConnects", transcript: userLine + bridgeLine, want: true},
++		{name: "PolicyRefusalRecordsNoConnection", transcript: userLine + policyLine},
++		{name: "BridgeRecordBeforeTheCheckpointIsOld", transcript: bridgeLine + userLine + policyLine, checkpointAfter: bridgeLine + userLine},
++		{name: "BridgeRecordAtTheCheckpointConnects", transcript: userLine + bridgeLine, checkpointAfter: userLine, want: true},
++		{name: "ShrunkTranscriptIsReadWhole", transcript: bridgeLine, checkpoint: 1 << 20, want: true},
++		{name: "RecordTypeQuotedInAMessageIsNoConnection", transcript: quotedLine},
++		{name: "BridgeRecordWithoutASessionIDIsNoConnection", transcript: userLine + bridgeWithoutIDLine},
++		{name: "BridgeRecordStillBeingWrittenIsNotRead", transcript: userLine + strings.TrimSuffix(bridgeLine, "\"lastSequenceNum\":0}\n")},
++		{name: "MissingTranscriptRecordsNoConnection", absent: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "s.jsonl")
++			if !tt.absent {
++				if err := os.WriteFile(path, []byte(tt.transcript), 0o644); err != nil {
++					t.Fatalf("write the transcript: %v", err)
++				}
++			}
++			checkpoint := tt.checkpoint
++			if tt.checkpointAfter != "" {
++				checkpoint = int64(len(tt.checkpointAfter))
++			}
++
++			got, err := bridgeSessionRecordedIn(path, checkpoint)
++
++			if err != nil {
++				t.Fatalf("bridgeSessionRecordedIn() error = %v; want nil", err)
++			}
++			if got != tt.want {
++				t.Errorf("bridgeSessionRecordedIn(%d) = %v; want %v", checkpoint, got, tt.want)
++			}
++		})
++	}
++}
++
++// TestClaude_RemoteControlReadsTheSessionTranscript pins the checkpoint as the transcript's size.
++// A missing transcript checkpoints at zero.
++// It also pins that the connection read looks in that same transcript for a bridge-session record past the checkpoint.
++// It is not parallel: it points HOME at a fake Claude config directory.
++func TestClaude_RemoteControlReadsTheSessionTranscript(t *testing.T) {
++	tiergate.Require(t, 0)
++	const (
++		workdir   = "/work/tree"
++		sessionID = "sess-1"
++	)
++	tests := []struct {
++		name string
++		// absent leaves no transcript before the checkpoint is taken.
++		absent bool
++		// before is the transcript when the checkpoint is taken, and after is appended to it before the connection is read.
++		before, after  string
++		wantCheckpoint int64
++		wantConnected  bool
++	}{
++		{name: "MissingTranscriptCheckpointsAtZeroAndRecordsNoConnection", absent: true},
++		{name: "CheckpointIsTheTranscriptSize", before: userLine, wantCheckpoint: int64(len(userLine))},
++		{name: "BridgeRecordAppendedPastTheCheckpointConnects", before: userLine, after: bridgeLine, wantCheckpoint: int64(len(userLine)), wantConnected: true},
++		{name: "BridgeRecordBeforeTheCheckpointIsOld", before: bridgeLine + userLine, wantCheckpoint: int64(len(bridgeLine + userLine))},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			home := t.TempDir()
++			t.Setenv("HOME", home)
++			t.Setenv(claudeConfigDirEnv, "")
++			projectDir := projectDirUnder(filepath.Join(home, claudeConfigDirName, projectsDirName), workdir)
++			path := filepath.Join(projectDir, sessionID+".jsonl")
++			if err := os.MkdirAll(projectDir, 0o755); err != nil {
++				t.Fatalf("make the project directory: %v", err)
++			}
++			engine := New()
++			if !tt.absent {
++				if err := os.WriteFile(path, []byte(tt.before), 0o644); err != nil {
++					t.Fatalf("write the transcript: %v", err)
++				}
++			}
++
++			checkpoint, err := engine.RemoteControlCheckpoint(sessionID, workdir)
++			if err != nil || checkpoint != tt.wantCheckpoint {
++				t.Fatalf("RemoteControlCheckpoint() = %d, %v; want %d, nil", checkpoint, err, tt.wantCheckpoint)
++			}
++			if !tt.absent {
++				if err := os.WriteFile(path, []byte(tt.before+tt.after), 0o644); err != nil {
++					t.Fatalf("append to the transcript: %v", err)
++				}
++			}
++			connected, err := engine.RemoteControlConnected(sessionID, workdir, checkpoint)
++
++			if err != nil || connected != tt.wantConnected {
++				t.Errorf("RemoteControlConnected() = %v, %v; want %v, nil", connected, err, tt.wantConnected)
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/transcriptread.go b/internal/shuttleengine/claudeengine/transcriptread.go
+index d4e213ec3..800425cfb 100644
+--- a/internal/shuttleengine/claudeengine/transcriptread.go
++++ b/internal/shuttleengine/claudeengine/transcriptread.go
+@@ -159,6 +159,11 @@ func projectDirUnder(projects, workdir string) string {
+ 	return filepath.Join(projects, string(encoded))
+ }
+ 
++// transcriptPathIn returns the path of the transcript of the session sessionID inside projectDir.
++func transcriptPathIn(projectDir, sessionID string) string {
++	return filepath.Join(projectDir, sessionID+".jsonl")
++}
++
+ // LocateSessions returns the sessions Claude Code recorded under the worktree path in every known config directory.
+ // They are sorted by session ID.
+ // A session id found in several directories is returned once, as its most recently written copy, which holds every turn.
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index c53f310fa..d9cf0cece 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -168,6 +168,8 @@
+ // Runner.SendConditioned gives one line to a session only while it is in a named state, and refuses at once otherwise.
+ // Runner.ClearSession and Runner.CompactSession use the same guarded path.
+ // So do Runner.ReloadPlugins and Runner.TurnOnRemoteControl.
++// Runner.TurnOnRemoteControl and Runner.AwaitRemoteControl report a connection only once the provider records one,
++// so a connection the provider refuses, such as by an organization's policy, reads as none.
+ // A command taken as a prompt fails with ErrCommandTakenAsPrompt instead of confirming.
+ // Every interrupt goes through a pane guard that sends the key only to a running turn;
+ // a pane with no running turn gets no key and ErrNoRunningTurn, and an open rewind picker fails with ErrRewindPickerOpen.
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 8d4e106cb..565fbd3b1 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -676,3 +676,14 @@ type RemoteController interface {
+ 	// The sequence starts no turn.
+ 	RemoteControlSequence(name string) []PaneInput
+ }
++
++// RemoteControlReader is an optional engine capability: reading whether a session's remote control connected.
++// It reads the provider's own record of the session, so it reports what the provider did, never what lym asked for.
++// An engine without it never reports a connection.
++type RemoteControlReader interface {
++	// RemoteControlCheckpoint returns how far the provider's record of the session sessionID, run in workdir, reaches now.
++	// A session with no record yet returns zero.
++	RemoteControlCheckpoint(sessionID, workdir string) (int64, error)
++	// RemoteControlConnected reports whether that record shows the session's remote control connecting past checkpoint.
++	RemoteControlConnected(sessionID, workdir string, checkpoint int64) (bool, error)
++}
+diff --git a/internal/shuttleengine/enginedispatch_test.go b/internal/shuttleengine/enginedispatch_test.go
+index 68449dfec..618434c7d 100644
+--- a/internal/shuttleengine/enginedispatch_test.go
++++ b/internal/shuttleengine/enginedispatch_test.go
+@@ -267,7 +267,10 @@ func dispatchOps() []dispatchOp {
+ 		{"Runner.LoadSkills", func(r *dispatchRig) error { return r.fx.Runner.LoadSkills("strand-1", []string{"s"}) }, "SkillLoadMessage", ""},
+ 		{"Runner.TypeColor", func(r *dispatchRig) error { return r.fx.Runner.TypeColor("strand-1", segmentcolor.Green) }, "ColorSequence", ""},
+ 		{"Runner.ClearSession", func(r *dispatchRig) error { return r.fx.Runner.ClearSession("strand-1") }, "ClearSessionSequence", ""},
+-		{"Runner.TurnOnRemoteControl", func(r *dispatchRig) error { return r.fx.Runner.TurnOnRemoteControl("strand-1", "name") }, "RemoteControlSequence", ""},
++		{"Runner.TurnOnRemoteControl", func(r *dispatchRig) error {
++			_, err := r.fx.Runner.TurnOnRemoteControl("strand-1", "name")
++			return err
++		}, "RemoteControlSequence", ""},
+ 		{"Runner.InterruptSettle", func(r *dispatchRig) error {
+ 			got, err := r.fx.Runner.InterruptSettle("strand-1")
+ 			if err == nil && got != 9*time.Millisecond {
+diff --git a/internal/shuttleengine/remotecontrol.go b/internal/shuttleengine/remotecontrol.go
+new file mode 100644
+index 000000000..be281d407
+--- /dev/null
++++ b/internal/shuttleengine/remotecontrol.go
+@@ -0,0 +1,82 @@
++// remotecontrol.go reads whether a session's remote control connected.
++// It waits a bounded time for the provider to record the connection.
++
++package shuttleengine
++
++import (
++	"fmt"
++	"time"
++)
++
++const (
++	// remoteControlConnectWait bounds how long a check waits for a session to record its remote control connecting.
++	// A connection lands about a second after the request; a refused one never lands.
++	remoteControlConnectWait = 20 * time.Second
++	// remoteControlPollTick is the interval between two reads of the provider's record during that wait.
++	remoteControlPollTick = 500 * time.Millisecond
++)
++
++// RemoteControlCheckpoint returns how far the provider's record of the session sessionID on engineName reaches now.
++// A later AwaitRemoteControl from it sees only a connection recorded after this call.
++// An engine that cannot read remote control returns zero.
++func (r *Runner) RemoteControlCheckpoint(engineName, sessionID string) (int64, error) {
++	if r.toldErr != nil {
++		return 0, r.toldErr
++	}
++	engine, err := r.engines.Lookup(engineName)
++	if err != nil {
++		return 0, err
++	}
++	return r.remoteControlCheckpoint(engine, sessionID)
++}
++
++// AwaitRemoteControl reports whether the session sessionID on engineName records a connection past checkpoint.
++// It waits a bounded time for the record.
++// It reports false when none comes: the provider refused the connection, or the engine cannot read remote control.
++func (r *Runner) AwaitRemoteControl(engineName, sessionID string, checkpoint int64) (bool, error) {
++	if r.toldErr != nil {
++		return false, r.toldErr
++	}
++	engine, err := r.engines.Lookup(engineName)
++	if err != nil {
++		return false, err
++	}
++	return r.awaitRemoteControl(engine, sessionID, checkpoint)
++}
++
++// remoteControlCheckpoint returns how far engine's record of the session sessionID reaches now.
++// An engine that reads no remote control returns zero.
++func (r *Runner) remoteControlCheckpoint(engine Engine, sessionID string) (int64, error) {
++	reader, ok := engine.(RemoteControlReader)
++	if !ok || sessionID == "" {
++		return 0, nil
++	}
++	checkpoint, err := reader.RemoteControlCheckpoint(sessionID, r.paneCwd)
++	if err != nil {
++		return 0, fmt.Errorf("shuttle: read where session %s's record ends before turning on remote control: %w", sessionID, err)
++	}
++	return checkpoint, nil
++}
++
++// awaitRemoteControl polls engine's record of the session sessionID for a remote-control connection past checkpoint.
++// It reports false once remoteControlConnectWait has passed on the runner's clock with none recorded.
++func (r *Runner) awaitRemoteControl(engine Engine, sessionID string, checkpoint int64) (bool, error) {
++	reader, ok := engine.(RemoteControlReader)
++	if !ok || sessionID == "" {
++		return false, nil
++	}
++	deadline := r.clock.Now().Add(remoteControlConnectWait)
++	for {
++		connected, err := reader.RemoteControlConnected(sessionID, r.paneCwd, checkpoint)
++		if err != nil {
++			return false, fmt.Errorf("shuttle: read whether session %s's remote control connected: %w", sessionID, err)
++		}
++		if connected {
++			return true, nil
++		}
++		if !r.clock.Now().Before(deadline) {
++			return false, nil
++		}
++		r.clock.Sleep(remoteControlPollTick)
++	}
++}
+diff --git a/internal/shuttleengine/remotecontrol_test.go b/internal/shuttleengine/remotecontrol_test.go
+new file mode 100644
+index 000000000..f93f93463
+--- /dev/null
++++ b/internal/shuttleengine/remotecontrol_test.go
+@@ -0,0 +1,211 @@
++// remotecontrol_test.go covers the bounded remote-control wait and the checkpoint it counts from.
++
++package shuttleengine
++
++import (
++	"errors"
++	"fmt"
++	"slices"
++	"sync"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// remoteControlRecord is a scripted provider record of a session's remote-control connections.
++type remoteControlRecord struct {
++	mu sync.Mutex
++	// checkpoint is what RemoteControlCheckpoint answers until pasted reports true.
++	checkpoint int64
++	// pasted reports whether the command has been pasted; nil means it never reports true.
++	pasted func() bool
++	// checkpointAfterPaste is what RemoteControlCheckpoint answers once pasted reports true.
++	checkpointAfterPaste int64
++	// checkpointErr fails RemoteControlCheckpoint.
++	checkpointErr error
++	// connectAtRead is the read, counted from one, from which the record shows a connection; zero never shows one.
++	connectAtRead int
++	// readErr fails every read.
++	readErr error
++	// readFrom holds the checkpoint each read was given, in order.
++	readFrom []int64
++}
++
++func (r *remoteControlRecord) RemoteControlCheckpoint(string, string) (int64, error) {
++	r.mu.Lock()
++	defer r.mu.Unlock()
++	if r.checkpointErr != nil {
++		return 0, r.checkpointErr
++	}
++	if r.pasted != nil && r.pasted() {
++		return r.checkpointAfterPaste, nil
++	}
++	return r.checkpoint, nil
++}
++
++func (r *remoteControlRecord) RemoteControlConnected(_, _ string, checkpoint int64) (bool, error) {
++	r.mu.Lock()
++	defer r.mu.Unlock()
++	r.readFrom = append(r.readFrom, checkpoint)
++	if r.readErr != nil {
++		return false, r.readErr
++	}
++	return r.connectAtRead > 0 && len(r.readFrom) >= r.connectAtRead, nil
++}
++
++// remoteControlReadingEngine is a fake engine whose remote-control connections come from a scripted record.
++type remoteControlReadingEngine struct {
++	*fakeEngine
++	*remoteControlRecord
++}
++
++// remoteControlPasteEngine is the slash paste engine with a scripted record of remote-control connections.
++type remoteControlPasteEngine struct {
++	*slashPasteEngine
++	*remoteControlRecord
++}
++
++// TestRunner_AwaitRemoteControl pins the bounded wait for a session to record its remote control connecting.
++// It also pins the checkpoint the wait starts from:
++// the engine's answer, and zero for an engine that cannot read remote control or a session with no ID.
++func TestRunner_AwaitRemoteControl(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	readFailed := errors.New("transcript unreadable")
++	tests := []struct {
++		name          string
++		connectAtRead int
++		readErr       error
++		// noReader runs on an engine that cannot read remote control.
++		noReader bool
++		// emptySessionID passes no session ID instead of "session-1".
++		emptySessionID bool
++		wantConnected  bool
++		wantErr        error
++		wantReads      int
++		wantWaited     time.Duration
++	}{
++		{name: "ConnectionRecordedAtOnce", connectAtRead: 1, wantConnected: true, wantReads: 1},
++		{name: "ConnectionRecordedAfterTwoTicks", connectAtRead: 3, wantConnected: true, wantReads: 3, wantWaited: time.Second},
++		{name: "RefusedConnectionReportsFalseOnceTheWaitPasses", wantReads: 41, wantWaited: 20 * time.Second},
++		{name: "UnreadableRecordFails", readErr: readFailed, wantErr: readFailed, wantReads: 1},
++		{name: "EngineWithoutTheReaderReportsFalse", noReader: true},
++		{name: "EmptySessionIDReadsNothing", connectAtRead: 1, emptySessionID: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			record := &remoteControlRecord{checkpoint: 7, connectAtRead: tt.connectAtRead, readErr: tt.readErr}
++			var engine Engine = &remoteControlReadingEngine{fakeEngine: readyAgentEngine(), remoteControlRecord: record}
++			wantCheckpoint := int64(7)
++			if tt.noReader || tt.emptySessionID {
++				wantCheckpoint = 0
++			}
++			if tt.noReader {
++				engine = readyAgentEngine()
++			}
++			sessionID := "session-1"
++			if tt.emptySessionID {
++				sessionID = ""
++			}
++			start := time.Date(2026, 11, 23, 9, 0, 0, 0, time.UTC)
++			clock := newFakeClock(start)
++			runner := newFixture(t, &fakeReed{}, engine, withClock(clock)).Runner
++
++			checkpoint, err := runner.RemoteControlCheckpoint("", sessionID)
++			if err != nil || checkpoint != wantCheckpoint {
++				t.Fatalf("RemoteControlCheckpoint() = %d, %v; want %d, nil", checkpoint, err, wantCheckpoint)
++			}
++			connected, err := runner.AwaitRemoteControl("", sessionID, checkpoint)
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Errorf("AwaitRemoteControl() error = %v; want %v", err, tt.wantErr)
++			}
++			if connected != tt.wantConnected {
++				t.Errorf("AwaitRemoteControl() = %v; want %v", connected, tt.wantConnected)
++			}
++			if got := len(record.readFrom); got != tt.wantReads {
++				t.Errorf("record read %d times; want %d", got, tt.wantReads)
++			}
++			if i := slices.IndexFunc(record.readFrom, func(from int64) bool { return from != wantCheckpoint }); i >= 0 {
++				t.Errorf("read %d was given checkpoint %d; want %d", i+1, record.readFrom[i], wantCheckpoint)
++			}
++			if got := clock.Now().Sub(start); got != tt.wantWaited {
++				t.Errorf("waited %v; want %v", got, tt.wantWaited)
++			}
++		})
++	}
++}
++
++// TestRunner_TurnOnRemoteControl_ReportsTheRecordedConnection pins when a typed command reports a connection.
++// It reports one only once the session's record shows one past the point it reached before the paste.
++// A failed read of the record after the paste is no error, a paste not seen to land still waits for the connection,
++// and a failed checkpoint read types nothing.
++//
++//testtiming:keep pins the connected result TurnOnRemoteControl returns and the checkpoint its read starts from
++func TestRunner_TurnOnRemoteControl_ReportsTheRecordedConnection(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	readFailed := errors.New("transcript unreadable")
++	checkpointFailed := errors.New("transcript size unreadable")
++	unconfirmed := fmt.Errorf("paste unconfirmed: %w", ErrSubmissionNotLanded)
++	tests := []struct {
++		name          string
++		connectAtRead int
++		readErr       error
++		checkpointErr error
++		// pasteErr fails the paste after it was made.
++		pasteErr      error
++		wantConnected bool
++		wantErr       error
++		wantPastes    int
++	}{
++		{name: "RecordedConnectionReportsConnected", connectAtRead: 1, wantConnected: true, wantPastes: 1},
++		{name: "RefusedConnectionReportsFalse", wantPastes: 1},
++		{name: "UnreadableRecordAfterThePasteReportsFalseWithoutAnError", readErr: readFailed, wantPastes: 1},
++		{name: "UnreadableCheckpointFailsBeforeThePaste", checkpointErr: checkpointFailed, wantErr: checkpointFailed},
++		{
++			name: "UnconfirmedPasteStillReportsTheRecordedConnection", connectAtRead: 1, pasteErr: unconfirmed,
++			wantConnected: true, wantErr: ErrSubmissionNotLanded, wantPastes: 1,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			runner, reed, _, _ := newSlashPasteRunnerAppending(t, "", false, false, "", remoteControlReadingShape, nil)
++			reed.PasteSubmitErr = tt.pasteErr
++			engine, err := runner.engines.Lookup("")
++			if err != nil {
++				t.Fatalf("look up the runner's engine: %v", err)
++			}
++			record := engine.(*remoteControlPasteEngine).remoteControlRecord
++			record.checkpoint, record.checkpointAfterPaste = 42, 99
++			record.pasted = func() bool { return len(reed.PasteSubmitCalls) > 0 }
++			record.connectAtRead, record.readErr, record.checkpointErr = tt.connectAtRead, tt.readErr, tt.checkpointErr
++
++			connected, err := runner.TurnOnRemoteControl("strand-1", "neve::tst:orch")
++
++			if !errors.Is(err, tt.wantErr) || (tt.wantErr == nil && err != nil) {
++				t.Errorf("TurnOnRemoteControl() error = %v; want %v", err, tt.wantErr)
++			}
++			if connected != tt.wantConnected {
++				t.Errorf("TurnOnRemoteControl() = %v; want %v", connected, tt.wantConnected)
++			}
++			if len(reed.PasteSubmitCalls) != tt.wantPastes {
++				t.Errorf("pastes = %+v; want %d", reed.PasteSubmitCalls, tt.wantPastes)
++			}
++			if tt.wantPastes > 0 && len(record.readFrom) == 0 {
++				t.Errorf("the record was never read after the paste")
++			}
++			if tt.wantPastes == 0 && len(record.readFrom) != 0 {
++				t.Errorf("the record was read %v although nothing was pasted", record.readFrom)
++			}
++			for i, from := range record.readFrom {
++				if from != 42 {
++					t.Errorf("read %d was given checkpoint %d; want the pre-paste checkpoint 42", i+1, from)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/shuttleengine/session.go b/internal/shuttleengine/session.go
+index e78f342f8..60b1877af 100644
+--- a/internal/shuttleengine/session.go
++++ b/internal/shuttleengine/session.go
+@@ -441,24 +441,54 @@ func (r *Runner) ReloadPlugins(guid string) error {
+ 
+ // TurnOnRemoteControl sends the provider's remote-control command into the live pane of the run identified by guid.
+ // The command carries the session name name.
+-// An engine without the RemoteController capability types nothing.
++// It then reports whether the session's own record shows its remote control connecting within a bounded wait,
++// so a connection the provider refuses, such as by an organization's policy, reports false.
++// A paste not seen to land still waits for the connection, and the call reports it beside ErrSubmissionNotLanded.
++// A failed read of the record after the paste is logged and reports false with no error, since the command has landed.
++// An engine without the RemoteController capability types nothing and reports false.
+ // It waits for an idle session first,
+ // and it fails with ErrSessionBusy while the session or its input box is held.
+ // It refuses a name containing a newline, since the name is sent as one line.
+-func (r *Runner) TurnOnRemoteControl(guid, name string) error {
++func (r *Runner) TurnOnRemoteControl(guid, name string) (bool, error) {
+ 	if r.toldErr != nil {
+-		return r.toldErr
++		return false, r.toldErr
+ 	}
+ 	if strings.ContainsAny(name, "\r\n") {
+-		return fmt.Errorf("shuttle: remote-control name for strand %q spans several lines; it is typed as one line, so join it into one", guid)
++		return false, fmt.Errorf("shuttle: remote-control name for strand %q spans several lines; it is typed as one line, so join it into one", guid)
++	}
++	state, _, err := FindRun(r.cfg, r.anchorPath, guid)
++	if err != nil {
++		return false, fmt.Errorf("shuttle: %q is not a shuttle strand: %w", guid, err)
++	}
++	engine, _, err := r.engineFor(state)
++	if err != nil {
++		return false, err
+ 	}
+-	return r.sendSessionSequence(guid, "", func(cycler SessionCycler) []PaneInput {
++	checkpoint, err := r.remoteControlCheckpoint(engine, state.SessionID)
++	if err != nil {
++		return false, err
++	}
++	typed := false
++	err = r.sendSessionSequence(guid, "", func(cycler SessionCycler) []PaneInput {
+ 		controller, ok := cycler.(RemoteController)
+ 		if !ok {
+ 			return nil
+ 		}
++		typed = true
+ 		return controller.RemoteControlSequence(name)
+ 	})
++	if !typed {
++		return false, err
++	}
++	if err != nil && !errors.Is(err, ErrSubmissionNotLanded) {
++		return false, err
++	}
++	connected, awaitErr := r.awaitRemoteControl(engine, state.SessionID, checkpoint)
++	if awaitErr != nil {
++		logger.Warn("shuttle: could not read whether the session's remote control connected after its command landed", "strandGUID", guid, "sessionID", state.SessionID, "err", awaitErr)
++		return false, err
++	}
++	return connected, err
+ }
+ 
+ // TypeColor sends the provider's color command for color into the live pane of the run identified by guid.
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index e71fe399b..a43d12aa1 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -616,6 +616,8 @@ const (
+ 	parserlessPasteShape
+ 	// clearlessPasteShape hides the input-box clear.
+ 	clearlessPasteShape
++	// remoteControlReadingShape adds a scripted record of remote-control connections, which starts empty.
++	remoteControlReadingShape
+ )
+ 
+ // newSlashPasteRunner returns a runner over a live strand "strand-1" on a paste-path engine.
+@@ -649,6 +651,8 @@ func newSlashPasteRunnerAppending(t *testing.T, box string, active, noColor bool
+ 		engine = parserlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, InputBoxClearer: slash, SessionCycler: slash, RemoteController: slash}
+ 	case clearlessPasteShape:
+ 		engine = clearlessPasteEngine{Engine: slash, TextPaster: slash, InputBoxReader: slash, SessionCycler: slash, RemoteController: slash}
++	case remoteControlReadingShape:
++		engine = &remoteControlPasteEngine{slashPasteEngine: slash, remoteControlRecord: &remoteControlRecord{}}
+ 	}
+ 	cfg := Config{SubmitSettleMS: 100, SubmitConfirmTimeoutS: 30, SendReadyTimeoutS: 60}
+ 	fx := newFixture(t, appending, engine, withConfig(cfg), withStrand("strand-1"), withClock(clock))
+@@ -946,13 +950,16 @@ func TestRunner_TurnOnRemoteControl_PastesTheNamedCommandThroughTheGuardedSend(t
+ 	t.Parallel()
+ 
+ 	const name = "neve::tst:orch"
+-	checkPastedSessionCommand(t, "/remote-control "+name, func(r *Runner) error { return r.TurnOnRemoteControl("strand-1", name) })
++	checkPastedSessionCommand(t, "/remote-control "+name, func(r *Runner) error {
++		_, err := r.TurnOnRemoteControl("strand-1", name)
++		return err
++	})
+ 
+ 	t.Run("a name spanning several lines is refused and nothing is typed", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, multiLine := range []string{"a\nb", "a\r\nb"} {
+ 			runner, reed, _ := newSlashPasteRunner(t, "", false, false)
+-			if err := runner.TurnOnRemoteControl("strand-1", multiLine); err == nil {
++			if _, err := runner.TurnOnRemoteControl("strand-1", multiLine); err == nil {
+ 				t.Errorf("TurnOnRemoteControl(%q) = nil error", multiLine)
+ 			}
+ 			if len(reed.PasteSubmitCalls) != 0 || len(sentCalls(reed)) != 0 {
+@@ -965,8 +972,8 @@ func TestRunner_TurnOnRemoteControl_PastesTheNamedCommandThroughTheGuardedSend(t
+ 		t.Parallel()
+ 		reed := &fakeReed{StatusQueue: liveStrandStatus(true), CaptureQueue: []string{"IDLE"}}
+ 		runner := newFixture(t, reed, readyCyclerEngine(), withStrand("strand-1")).Runner
+-		if err := runner.TurnOnRemoteControl("strand-1", name); err != nil {
+-			t.Errorf("TurnOnRemoteControl() = %v, want nil", err)
++		if connected, err := runner.TurnOnRemoteControl("strand-1", name); connected || err != nil {
++			t.Errorf("TurnOnRemoteControl() = %v, %v; want false, nil", connected, err)
+ 		}
+ 		if len(reed.PasteSubmitCalls) != 0 || len(sentCalls(reed)) != 0 {
+ 			t.Errorf("typed without the capability: pastes %+v, sent %v", reed.PasteSubmitCalls, sentCalls(reed))
+@@ -977,7 +984,7 @@ func TestRunner_TurnOnRemoteControl_PastesTheNamedCommandThroughTheGuardedSend(t
+ 		t.Parallel()
+ 		reed := &fakeReed{StatusQueue: liveStrandStatus(true)}
+ 		runner := NewRunner(reed, singleEngineSet(&fakeEngine{}), "", t.TempDir(), Config{RunTimeoutMin: 5})
+-		if err := runner.TurnOnRemoteControl("strand-1", name); err == nil || !strings.Contains(err.Error(), "empty path") {
++		if _, err := runner.TurnOnRemoteControl("strand-1", name); err == nil || !strings.Contains(err.Error(), "empty path") {
+ 			t.Errorf("TurnOnRemoteControl() = %v, want an error naming the empty path", err)
+ 		}
+ 		if len(reed.CallLog) != 0 {

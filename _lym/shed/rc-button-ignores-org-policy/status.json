@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -215,6 +214,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/rc-button-ignores-org-policy/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-23T12:28:14Z",
       "started_at": "2026-11-23T12:27:42Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/rc-button-ignores-org-policy/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-23T12:30:23Z",
+      "started_at": "2026-11-23T12:30:23Z",
+      "by": "shed"
     }
   ],
   "product": {
