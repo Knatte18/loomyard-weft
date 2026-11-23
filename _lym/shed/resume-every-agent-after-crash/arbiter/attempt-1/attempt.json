@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-23T21:47:15.919703068+01:00",
+  "deadline": "2026-11-23T22:17:15.919703068+01:00",
+  "strand_guid": "",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/resume-every-agent-after-crash/_lym/shed/resume-every-agent-after-crash/drive-reports/drive-envelope-20261123-214715-9153.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/resume-every-agent-after-crash/_lym/shed/resume-every-agent-after-crash/drive-reports/drive-report-20261123-214715-1b39.md",
+  "snapshot": {
+    "head": "3e8f331bde7b8db45cd3131dddf29c96db260d7b",
+    "branch": "resume-every-agent-after-crash",
+    "dirty": {}
+  }
+}
