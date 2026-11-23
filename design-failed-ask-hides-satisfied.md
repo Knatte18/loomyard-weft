@@ -1,6 +1,8 @@
 # Autonomy: a failed later ask hides the parent's satisfied answer, and the parent cannot settle it
 
-`failed-ask-hides-satisfied` · Task · bug, landing, loom · draft
+`failed-ask-hides-satisfied` · Task · bug, landing, loom
+
+Depends on: [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md)
 
 Imported from [issue #213](https://github.com/Knatte18/loomyard/issues/213).
 
