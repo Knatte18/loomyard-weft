@@ -1,6 +1,6 @@
 # lym loom lint-comments --base checks committed HEAD, not the working tree
 
-`lint-comments-reads-head` · Task · bug, lint, loom · starting · Worktree-Create
+`lint-comments-reads-head` · Task · bug, lint, loom · starting · Seed-Child
 
 Depends on: [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md)
 
