@@ -1,6 +1,6 @@
 # Study: a lym-started Landlock area instead of bwrap
 
-`landlock-area-study` · Task · research, shuttle, reed, claude · running · Preflight
+`landlock-area-study` · Task · research, shuttle, reed, claude · running · Record-Write
 
 ## Aim
 
