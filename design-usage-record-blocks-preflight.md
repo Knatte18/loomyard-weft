@@ -1,6 +1,6 @@
 # Preflight worktree-clean blocks on lym's own _lym/usage session record
 
-`usage-record-blocks-preflight` · Task · bug, preflight, fabric · running · Darn-Write
+`usage-record-blocks-preflight` · Task · bug, preflight, fabric · running · Drift-Verify
 
 Imported from [issue #190](https://github.com/Knatte18/loomyard/issues/190).
 
