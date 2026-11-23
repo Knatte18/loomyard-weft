@@ -14,7 +14,7 @@
 - `internal/beamcli/doc.go`
 
 **Create:**
-- `plan:internal/battencli#TestBattenPreRun_ResumeStartsThePusher` -> `func TestBattenPreRun_ResumeStartsThePusher(t *testing.T)`
+- `internal/battencli#TestBattenPreRun_ResumeStartsThePusher`
 
 **Uses:**
 - `internal/runpusher#Start`

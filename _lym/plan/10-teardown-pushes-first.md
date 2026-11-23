@@ -15,7 +15,7 @@
 - `internal/testkit/envkit#nilLegal`
 
 **Create:**
-- `plan:internal/battenshed#recordingPrimeLock` -> `func recordingPrimeLock(rec *teardownCallRecorder) PrimeLock`
+- `internal/battenshed#recordingPrimeLock`
 
 **Uses:**
 - `internal/runpusher#PushUntilLanded`

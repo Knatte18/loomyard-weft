@@ -1,6 +1,6 @@
 {
   "runGuid": "6ff25e5ca7adb29450263f933d600f99",
-  "planFingerprint": "19ac017bdffb9bd12620e747e9f32111a10940e754fa8e7458cd26dc1179f834",
+  "planFingerprint": "d6c027936f99453af90aba45eab42a54148b565c8c30d880c6c970602097a302",
   "planFileHashes": {
     "00-overview.md": "0fafdea14d3a59d47a65f37059b064624e00fbb32bd5c9a7aaff798922655d5b",
     "01-fabric-owed-unrecorded.md": "f5a8565e8bbf6bf427884a8a806c760ed7603a858e75f9c5884a95bb70880854",
@@ -10,9 +10,9 @@
     "05-runpusher-package.md": "4503382b33ba9c92be9a437de10cbbd2dc043dd1b38e884b875d58fdcd800ebb",
     "06-loom-pusher-verb.md": "5a10d0ca4b058a63330e32af59745eea1d9341bf9f6a8bda377dabe261e26273",
     "07-transitions-start-pusher.md": "9a999d9d60735fac1dde053f021660cbd0d8584f9b4fc7a68e7abf09d8f0ad09",
-    "08-restarts-start-pusher.md": "c6adf67b1e0db7d0d46c1a537e97fe888b8f79d8722d0ea72b72a7a919143d04",
+    "08-restarts-start-pusher.md": "7fb4a0683b1f8be87da738a1d1f77fb026539d650ed53ba0d07acd5b1e0510b9",
     "09-runread-local-code-tip.md": "e1df74f125c16ff260eb78e3ccbd2bf62f1feed0b192cca6f7f18a07f096b64e",
-    "10-teardown-pushes-first.md": "6eb1de33822247006e2fe9ecc15ad8fd7a329e5758736fbfd72b620f30439302",
+    "10-teardown-pushes-first.md": "ef251fbbcb9aa9d9a0f548fb9e37321d2e7a2b7ca9a2c54ebc4ad8d176483755",
     "11-pattern-and-docs.md": "f965550ffc46bb6e7acc5b7bab090f4eba05aac279529d538d12380b9403114e"
   },
   "planOverviewFrameHash": "2efed6786b6e2a727966a5f058bc7a8d846129883d5a33585b54138d6c2666a8",
@@ -428,9 +428,9 @@
         "11-pattern-and-docs"
       ],
       "cardHashes": {
-        "08-restarts-start-pusher": "c6adf67b1e0db7d0d46c1a537e97fe888b8f79d8722d0ea72b72a7a919143d04",
+        "08-restarts-start-pusher": "7fb4a0683b1f8be87da738a1d1f77fb026539d650ed53ba0d07acd5b1e0510b9",
         "09-runread-local-code-tip": "e1df74f125c16ff260eb78e3ccbd2bf62f1feed0b192cca6f7f18a07f096b64e",
-        "10-teardown-pushes-first": "6eb1de33822247006e2fe9ecc15ad8fd7a329e5758736fbfd72b620f30439302",
+        "10-teardown-pushes-first": "ef251fbbcb9aa9d9a0f548fb9e37321d2e7a2b7ca9a2c54ebc4ad8d176483755",
         "11-pattern-and-docs": "f965550ffc46bb6e7acc5b7bab090f4eba05aac279529d538d12380b9403114e"
       },
       "startSha": "1a9cdd29e31bbaefeac56d47e3f46f3cfc9327aa",
@@ -438,17 +438,41 @@
       "spawnedAt": "2026-11-23T19:50:16Z",
       "sessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-restarts-start-pusher",
+        "status": "done",
+        "head_sha": "b74a788e542c3f9873ff94e52f5d1c9861ed2929",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/battencli/commitstatus.go",
+          "internal/battencli/lifecycle_integration_test.go",
+          "internal/battenshed/deps.go",
+          "internal/battenshed/teardown.go",
+          "internal/battenshed/teardown_test.go",
+          "internal/loomcli/resume_test.go"
+        ]
+      },
+      "cardShas": [
+        "b74a788e542c3f9873ff94e52f5d1c9861ed2929"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-a37a6f5b946942794.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-a37a6f5b946942794.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "65459e66c4bb1484f09377e2bcbac09a",
   "masterSessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ade78cd057a81a074.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ab90cdec4502bf6d8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ab90cdec4502bf6d8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-a37a6f5b946942794.jsonl"
   ]
 }
