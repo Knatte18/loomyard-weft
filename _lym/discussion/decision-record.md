@@ -50,6 +50,12 @@ Fix O1 to O5 as each proposes; for O3, the operator decides whether a tag `DropL
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): O3: local archive tags may leave the machine
+
+Decision: YES: keep pushLocalArchiveTags as is. Say in lym fabric remove --help and cleanup --help that --remote pushes the slug's local archive tags origin lacks, and correct DropLocal's doc.
+
+Rationale: The smallest change: behaviour stays, and the docs name the push the code already makes.
+
 ## Constraints
 
 ## Auto-mode assumptions
