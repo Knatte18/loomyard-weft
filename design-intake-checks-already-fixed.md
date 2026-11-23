@@ -1,6 +1,6 @@
 # Intake checks whether an issue is already fixed before it reaches the board
 
-`intake-checks-already-fixed` · Note · enhancement, board
+`intake-checks-already-fixed` · Task · enhancement, board
 
 ## Seen
 
