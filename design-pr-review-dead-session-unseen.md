@@ -1,6 +1,6 @@
 # PR-Review row does not notice its session ended
 
-`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · starting · Worktree-Create
+`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · starting · Seed-Child
 
 Depends on: [`parent-review-stale-window`](design-parent-review-stale-window.md)
 
