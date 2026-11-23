@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -116,6 +116,30 @@
       "at": "2026-11-23T20:28:59Z",
       "started_at": "2026-11-23T20:28:38Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/resume-every-agent-after-crash/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-23T20:34:57Z",
+      "started_at": "2026-11-23T20:29:06Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-23T20:34:56.142286791Z",
+          "end": "2026-11-23T20:34:56.145226909Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-23T20:34:56.351881729Z",
+          "end": "2026-11-23T20:34:56.352605362Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
