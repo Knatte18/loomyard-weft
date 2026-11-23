@@ -1,0 +1,2842 @@
+diff --git a/contracts/orchrole/role-beams.md b/contracts/orchrole/role-beams.md
+index d5d0f3703..ced40794a 100644
+--- a/contracts/orchrole/role-beams.md
++++ b/contracts/orchrole/role-beams.md
+@@ -52,8 +52,10 @@ Write the description for a reader of the pull request:
+ 
+ Change any part of it whenever you or the operator want, then run `lym beam describe <slug>` again.
+ 
+-While the pull request is recorded, a member's landing notice asks you to add the landing to the description and run `lym beam describe <slug>`; do so.
+-A member gets that notice only when its `beam.land_notice` reads on.
++While the pull request is recorded, the beam's dobby rewrites the description after each member landing,
++and it updates the pull request itself, whatever the member's `beam.land_notice` reads.
++A rewrite that fails leaves the recorded description standing, and dobby posts you why;
++fix the description by hand and run `lym beam describe <slug>`, or leave it to the next member landing.
+ 
+ Never merge a pull request, and never close one to add work.
+ Work lands into the beam while the pull request stays open.
+diff --git a/contracts/stencils/beam/beam-template-describe.md b/contracts/stencils/beam/beam-template-describe.md
+new file mode 100644
+index 000000000..bd1aff42c
+--- /dev/null
++++ b/contracts/stencils/beam/beam-template-describe.md
+@@ -0,0 +1,52 @@
++<!-- This is the beam describer agent's launch prompt: the cold session a beam's dobby spawns after a member lands while the beam's pull request is recorded, to rewrite the beam's change description as it now stands.
++     It is filled via internal/stencil.Fill (internal/dobbyengine's BeamDescribePrompt) and typed into the agent's session as its entire instruction set.
++     Every marker below is a top-level {{.X}} substitution and every one is required non-empty:
++     {{.slug}} is the beam's slug, {{.description_path}} the recorded description the agent reads, {{.draft_path}} the one file the agent writes,
++     {{.beam_branch}} and {{.parent_branch}} the beam's branch and the branch it lands on, {{.changes}} the beam's commits as a list,
++     {{.parent_directive}} the parent directive rendered by internal/parentdirective, naming the nearest live orch when there is one,
++     and {{.edit_directive}} the edit directive of the engine the prompt launches on, rendered by internal/editdirective. -->
++
++# Beam description
++
++{{.parent_directive}}
++{{.edit_directive}}
++
++You rewrite the change description of beam `{{.slug}}`.
++A member has landed in it since the description was recorded.
++The description is the title and body of the beam's pull request.
++Its reader is a reviewer who knows the codebase but has not followed the beam.
++You start cold: everything you know comes from the sources below.
++
++## What to read
++
++- The description recorded now, `{{.description_path}}`.
++  Keep what still holds, and replace what the beam has since changed.
++- The beam's board entry, via `lym board get '{"slug":"{{.slug}}"}'`.
++- The beam's commits that its parent branch lacks, oldest first, where each `#<number>` entry is a member pull request:
++
++{{.changes}}
++
++- The beam's diff, read as `git diff {{.parent_branch}}...{{.beam_branch}}`, and each member's own commit message.
++  Use read-only git only.
++
++## What to write
++
++Write one file, `{{.draft_path}}`, rewritten whole.
++Follow the format of the final-summary spec (`loom-final-summary-spec.md`), with these content rules:
++
++1. The end result: what the beam ended up with, never the way there.
++2. Every member pull request, listed by its number, so a reader can follow each step to the result on its own.
++3. A Merge danger section called for the beam's whole landing.
++
++Never list the decisions made along the way, from the project record or elsewhere.
++Never describe how the work was run.
++Write no `Co-Authored-By` line and no credit lines.
++
++## Rules
++
++- Write only `{{.draft_path}}`, and never edit `{{.description_path}}`.
++- Never commit, and never run a git command that changes the repository.
++- Write the draft once, whole.
++  Lym records the first draft that passes its check, so never edit the draft after that, except to fix a finding lym names.
++- When you end your turn, lym checks the draft and names each finding for you to fix.
++- End your turn once the draft is written.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 4f34d64fa..5b2657dd9 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -631,6 +631,13 @@ var TwillJudgePlain []byte
+ //go:embed beam/beam-template-board-tidy.md
+ var BeamTemplateBoardTidy []byte
+ 
++// BeamTemplateDescribe is the beam describer agent's shipped-default opening prompt.
++// It opens the cold session a beam's dobby spawns after a member landing under a recorded pull request.
++// The session rewrites the beam's change description as it now stands.
++//
++//go:embed beam/beam-template-describe.md
++var BeamTemplateDescribe []byte
++
+ // RetroTemplateTask is the retro task's shipped-default board body.
+ // It is the goal of the darn task `lym retro` files: the scripts to run, the reading cap, the questions and the report.
+ //
+@@ -1059,6 +1066,7 @@ var entries = []registryEntry{
+ 	{"engine/claude/question-tool", &EngineClaudeQuestionTool},
+ 	{"engine/codex/question-tool", &EngineCodexQuestionTool},
+ 	{"beam-template-board-tidy", &BeamTemplateBoardTidy},
++	{"beam-template-describe", &BeamTemplateDescribe},
+ 	{"retro-template-task", &RetroTemplateTask},
+ 	{"gatefix-frame-cold", &GatefixFrameCold},
+ 	{"gatefix-body-darn", &GatefixBodyDarn},
+@@ -1101,6 +1109,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"drift-expect":         {"drift-template-expect"},
+ 	"drift-judge":          {"drift-template-judge"},
+ 	"board-tidy":           {"beam-template-board-tidy"},
++	"beam-describe":        {"beam-template-describe"},
+ }
+ 
+ // askOperatorPhrases is the closed list of phrases that tell an agent to put a question to the operator in its pane.
+diff --git a/docs/overview.md b/docs/overview.md
+index 67cfea918..102df1a65 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -291,7 +291,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/agentconfig/         the hub-wide `agents.yaml` config: the skills each role lym starts loads, and the effort of its Claude sessions and their subagents by role and model, a leaf
+ ├── internal/agentname/           the sole former, parser and validator of agent names (`<shortname>:<slug>:<role>`), a stdlib-only leaf
+ ├── internal/beamcli/             the beam CLI command (`lym beam`, the making and starting of beams from board project entries, and the wiring of their dobby, the prime's carrying the hibernate request and bringing back the Slack relay)
+-├── internal/dobbyengine/         dobby, the daemon of a beam worktree: it starts released tasks, drives their batten runs in passes and spawns the board-tidy agent
++├── internal/dobbyengine/         dobby, the daemon of a beam worktree: it starts released tasks, drives their batten runs in passes and spawns the board-tidy agent and a beam's describer agent
+ ├── internal/boardcli/            the board CLI command
+ ├── internal/boardengine/         the board domain kernel
+ ├── internal/boardserve/          the board's loopback server: the viewer page, the board's view projection, its live changes and the page's writes
+@@ -837,13 +837,15 @@ User-facing modules each get one `lym <module>` namespace:
+   The pawl recipe is a loom recipe whose rows are Preflight, Record-Write, Beam-Up, Beam-Await, Finalize and Beam-Down, with Beam-Await as its build row and no review round of its own.
+   At Beam-Await the beam's orch works the landing with the operator through `lym beam describe`, which records the change description the orch writes, the end result and every member pull request, never the record's added entries, and updates a recorded pull request, `lym beam pr open`, `update`, `status` and `close`, and `lym beam ready`, which is final;
+   Finalize then merges the beam into its parent, through the pull request the beam's landing record names when one is recorded, and keeps that pull request's text.
++  While a pull request is recorded, a describer agent rewrites the description after each member landing.
++  The beam's dobby spawns it and records its draft as `lym beam describe` records the orch's text.
+   An autonomous beam's Beam-Await row posts one `[beam drained]` line to its orch once the beam holds commits beyond its parent and no member, child pair or ready record stands.
+   Land starts a short batten run over the `beam` recipe, after a refusal that stops it while members or forked pairs remain under the beam.
+   Start brings up a beam's dobby and orch, the one the acting worktree is or the one a slug names, or with `--all` the prime and every beam this machine owns, each part only when it is not live.
+   Stop takes a beam's orch and dobby down.
+   Status prints, once, the dobby section a beam's window draws, for the prime and for each local beam:
+   alive or not, the runs it drives with their state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, and the beam's orch: strand live, watcher live and the recorded session, then one adopt check item per subject, shown only when the hub holds a record of it: the subject, its state, the tier in flight, the tiers done and the paths of its log and output.
+-  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices and the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents), and spawns the board-tidy agent every few landings.
++  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices and the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents), spawns the board-tidy agent every few landings, and, while a beam's pull request is recorded, spawns a describer agent after each member landing to rewrite the beam's change description.
+   No dobby builds the shared coverage maps: the operator builds them on command with `lym gate test --map`, and the gate's `reach` and `mutation` steps refresh only a task worktree's own.
+   It logs to its `dobby.log` the changes it sees, such as a task start, a run changing state and a failing pass episode, plus a heartbeat line every ten minutes.
+   A front task, filed through `internal/fronttask`, is the one open task of its worktree that dobby starts first, past `max_runs`, while no other task of that worktree starts.
+diff --git a/internal/beamcli/deps.go b/internal/beamcli/deps.go
+index 3868ce38a..88a1ceb84 100644
+--- a/internal/beamcli/deps.go
++++ b/internal/beamcli/deps.go
+@@ -313,7 +313,7 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 		// The stamp runs inside the description's own commit, after the description validated.
+ 		// One commit then holds both files, and a refused description stamps nothing.
+ 		// A repeat commit over an unchanged directory is a no-op.
+-		RecordDescription: func(slug string, at time.Time) (string, error) {
++		RecordDescription: func(slug, from string, at time.Time) (string, error) {
+ 			beam, err := beamOf(slug)
+ 			if err != nil {
+ 				return "", err
+@@ -330,7 +330,11 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 				_, _, err := fabricengine.CommitAnchoredPaths(fabricengine.NewMutations(""), beam, []string{loomengine.LandingDirRel()}, fmt.Sprintf("beam: change description for %s", slug), fabricengine.EnvSyncOptions())
+ 				return err
+ 			}
+-			if err := landingshed.RecordBeamDescription(slug, path, commit); err != nil {
++			record := func() error { return landingshed.RecordBeamDescription(slug, path, commit) }
++			if from != "" {
++				record = func() error { return landingshed.ReplaceBeamDescription(slug, from, path, commit) }
++			}
++			if err := record(); err != nil {
+ 				return "", err
+ 			}
+ 			return path, nil
+@@ -451,15 +455,7 @@ func hubLandDeps(prime *lymcwd.Location) landDeps {
+ 			if err != nil {
+ 				return nil, err
+ 			}
+-			findings, err := summaryparser.ValidateDescription(summaryparser.Path(loomengine.LandingDir(beam)))
+-			if err != nil {
+-				return nil, err
+-			}
+-			var lines []string
+-			for _, finding := range findings {
+-				lines = append(lines, finding.Error())
+-			}
+-			return lines, nil
++			return descriptionFindings(summaryparser.Path(loomengine.LandingDir(beam)))
+ 		},
+ 		// A pawl run's Finalize reads merged pull requests through this list, so ready and Finalize agree on what one lacks.
+ 		MergedLacks: func(slug, mergedHead string) ([]string, error) {
+@@ -541,6 +537,20 @@ func beamDraftDeps(location *lymcwd.Location, slug, parentBranch string) landing
+ 	}
+ }
+ 
++// descriptionFindings lists the findings of the change description at path as their error texts, none when it is valid.
++// A missing file is a finding.
++func descriptionFindings(path string) ([]string, error) {
++	findings, err := summaryparser.ValidateDescription(path)
++	if err != nil {
++		return nil, err
++	}
++	var lines []string
++	for _, finding := range findings {
++		lines = append(lines, finding.Error())
++	}
++	return lines, nil
++}
++
+ // pairWorktreePresent reports whether this machine holds the worktree of slug's pair.
+ func pairWorktreePresent(prime *lymcwd.Location, slug string) bool {
+ 	info, err := os.Stat(fabricengine.WorktreePath(prime, slug))
+diff --git a/internal/beamcli/deps_integration_test.go b/internal/beamcli/deps_integration_test.go
+index 6b4d8fed1..f964f5aa5 100644
+--- a/internal/beamcli/deps_integration_test.go
++++ b/internal/beamcli/deps_integration_test.go
+@@ -201,6 +201,7 @@ func TestHubLandDeps_ParentUnmergedReadsTheUpstreamTip(t *testing.T) {
+ // TestHubLandDeps_DraftThenRecordStampsAndCommits asserts the DraftDescription seam lists a member's landing.
+ // It also asserts that the draft skips a records-only commit.
+ // Recording the draft stamps the landing record with the beam's slug and the time, and both files go in one commit.
++// The describer agent's facts list the same landing, and a draft recorded from its own path replaces the description.
+ func TestHubLandDeps_DraftThenRecordStampsAndCommits(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -252,7 +253,7 @@ func TestHubLandDeps_DraftThenRecordStampsAndCommits(t *testing.T) {
+ 	if err := os.WriteFile(path, []byte(called), 0o644); err != nil {
+ 		t.Fatalf("write the orch's merge danger call: %v", err)
+ 	}
+-	if recorded, err := deps.RecordDescription("b", at); err != nil || recorded != path {
++	if recorded, err := deps.RecordDescription("b", "", at); err != nil || recorded != path {
+ 		t.Fatalf("RecordDescription() = %q, %v; want %q, nil", recorded, err, path)
+ 	}
+ 
+@@ -273,4 +274,31 @@ func TestHubLandDeps_DraftThenRecordStampsAndCommits(t *testing.T) {
+ 			t.Errorf("HEAD of the records worktree changes %q; want it to hold %s", committed, file)
+ 		}
+ 	}
++
++	facts, err := beamDescribeFacts(prime, beam, "b")
++	if err != nil {
++		t.Fatalf("beamDescribeFacts() = _, %v; want nil", err)
++	}
++	origin, _, err := deps.OriginRecord("b")
++	if err != nil {
++		t.Fatalf("OriginRecord(b) = _, _, %v; want nil", err)
++	}
++	if facts.DescriptionPath != path || facts.ParentBranch != origin.ParentBranch || facts.Branch != gitkit.CurrentBranch(t, worktree) {
++		t.Errorf("beamDescribeFacts() = %+v; want the description %s, the beam's branch and the parent %s", facts, path, origin.ParentBranch)
++	}
++	if !strings.Contains(facts.Changes, "#12 Add widgets") || strings.Contains(facts.Changes, "bookkeeping") {
++		t.Errorf("beamDescribeFacts().Changes = %q; want the landing listed and not the records-only commit", facts.Changes)
++	}
++
++	rewritten := "# Ship the beam\n\nGroups the work and its widgets.\n\n- #12 Add widgets\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** widgets\n"
++	draftPath := filepath.Join(t.TempDir(), "draft.md")
++	if err := os.WriteFile(draftPath, []byte(rewritten), 0o644); err != nil {
++		t.Fatalf("write the describer's draft: %v", err)
++	}
++	if recorded, err := deps.RecordDescription("b", draftPath, at.Add(time.Hour)); err != nil || recorded != path {
++		t.Fatalf("RecordDescription(from the draft) = %q, %v; want %q, nil", recorded, err, path)
++	}
++	if description, err := os.ReadFile(path); err != nil || string(description) != rewritten {
++		t.Errorf("description after the rewrite = %q, %v; want the draft %q", description, err, rewritten)
++	}
+ }
+diff --git a/internal/beamcli/describe.go b/internal/beamcli/describe.go
+index ee378b654..b7a3e27cc 100644
+--- a/internal/beamcli/describe.go
++++ b/internal/beamcli/describe.go
+@@ -1,6 +1,7 @@
+ // describe.go implements `lym beam describe`: it judges the named beam and records the change description its orch wrote.
+ // It stamps the description in the landing record, commits it and brings a recorded pull request up to date.
+ // With --draft it writes a starting point for the orch to edit instead.
++// The same sequence records the draft the beam's describer agent writes after a member landing.
+ 
+ package beamcli
+ 
+@@ -10,52 +11,76 @@ import (
+ 	"strings"
+ )
+ 
++// describeVerb is the verb the describe sequence's refusals and ways forward name.
++const describeVerb = "lym beam describe"
++
+ // describe records the beam slug's change description, which its orch wrote.
+ // It returns the description's path and the verbs that follow.
+ // When the landing record names a pull request, it then runs `lym beam pr update`'s sequence,
+ // so the pull request carries the recorded text.
+ // With draft it instead writes a starting point where no description stands yet and records nothing.
+-// It refuses an entry that is no open beam of this machine's pair;
+-// a beam whose pawl run is absent or not at Beam-Await;
+-// or a beam whose ready record stands.
+-// Together these keep anything at or after landing from rewriting the description.
++// It refuses what judgeDescribable refuses.
+ func describe(ctx context.Context, deps landDeps, slug string, draft bool) (map[string]any, error) {
+-	const verb = "lym beam describe"
+-	owners, err := deps.ReadOwners()
+-	if err != nil {
+-		return nil, fmt.Errorf("%s: read the board's owners: %w", verb, err)
+-	}
+-	if err := judgeLandEntry(deps, owners, verb, slug); err != nil {
+-		return nil, err
+-	}
+-	if err := judgeAwaitingRun(deps, verb, slug); err != nil {
++	if err := judgeDescribable(deps, slug); err != nil {
+ 		return nil, err
+ 	}
+-	if err := judgeNotReady(deps, verb, slug); err != nil {
+-		return nil, err
+-	}
+-
+ 	if draft {
+ 		path, err := deps.DraftDescription(slug)
+ 		if err != nil {
+-			return nil, describeFailure(verb, slug, "draft", err)
++			return nil, describeFailure(slug, "draft", err)
+ 		}
+ 		return map[string]any{
+ 			"slug":        slug,
+ 			"description": path,
+ 			"drafted":     true,
+-			"way_forward": fmt.Sprintf("edit the draft into the beam's end result and its member pull requests, call the Merge danger door and blast radius, then run `%s %s` to record it", verb, slug),
++			"way_forward": fmt.Sprintf("edit the draft into the beam's end result and its member pull requests, call the Merge danger door and blast radius, then run `%s %s` to record it", describeVerb, slug),
+ 		}, nil
+ 	}
++	return recordDescription(ctx, deps, slug, "")
++}
++
++// rewriteDescription writes the draft at draftPath over the beam slug's change description.
++// It then records the description as describe does.
++// It refuses what judgeDescribable refuses, and a draft with a finding;
++// either refusal leaves the recorded description standing.
++func rewriteDescription(ctx context.Context, deps landDeps, slug, draftPath string) (map[string]any, error) {
++	if err := judgeDescribable(deps, slug); err != nil {
++		return nil, err
++	}
++	return recordDescription(ctx, deps, slug, draftPath)
++}
+ 
+-	path, err := deps.RecordDescription(slug, deps.Now().UTC())
++// judgeDescribable refuses an entry that is no open beam of this machine's pair;
++// a beam whose pawl run is absent or not at Beam-Await;
++// or a beam whose ready record stands.
++// Together these keep anything at or after landing from rewriting the description.
++func judgeDescribable(deps landDeps, slug string) error {
++	owners, err := deps.ReadOwners()
++	if err != nil {
++		return fmt.Errorf("%s: read the board's owners: %w", describeVerb, err)
++	}
++	if err := judgeLandEntry(deps, owners, describeVerb, slug); err != nil {
++		return err
++	}
++	if err := judgeAwaitingRun(deps, describeVerb, slug); err != nil {
++		return err
++	}
++	return judgeNotReady(deps, describeVerb, slug)
++}
++
++// recordDescription records the beam slug's change description, from the draft at from when it is set.
++// It returns the description's path and the verbs that follow.
++// When the landing record names a pull request, it then runs `lym beam pr update`'s sequence,
++// so the pull request carries the recorded text.
++func recordDescription(ctx context.Context, deps landDeps, slug, from string) (map[string]any, error) {
++	path, err := deps.RecordDescription(slug, from, deps.Now().UTC())
+ 	if err != nil {
+-		return nil, describeFailure(verb, slug, "record", err)
++		return nil, describeFailure(slug, "record", err)
+ 	}
+ 	result := map[string]any{"slug": slug, "description": path}
+ 	record, found, err := deps.Landing(slug)
+ 	if err != nil {
+-		return nil, fmt.Errorf("%s: the description of %s is recorded, but the landing record is unreadable: %w; way forward: fix the cause it names, then run `lym beam pr update %s` when a pull request is recorded", verb, slug, err, slug)
++		return nil, afterRecordError{fmt.Errorf("%s: the description of %s is recorded, but the landing record is unreadable: %w; way forward: fix the cause it names, then run `lym beam pr update %s` when a pull request is recorded", describeVerb, slug, err, slug)}
+ 	}
+ 	if !found || record.PullRequest == nil {
+ 		result["way_forward"] = fmt.Sprintf("run `lym beam pr open %s` to open the pull request when the operator says so", slug)
+@@ -63,7 +88,7 @@ func describe(ctx context.Context, deps landDeps, slug string, draft bool) (map[
+ 	}
+ 	updated, err := prUpdate(ctx, deps, slug)
+ 	if err != nil {
+-		return nil, fmt.Errorf("%s: the description of %s is recorded, but its pull request is not updated: %w", verb, slug, err)
++		return nil, afterRecordError{fmt.Errorf("%s: the description of %s is recorded, but its pull request is not updated: %w", describeVerb, slug, err)}
+ 	}
+ 	for _, key := range []string{"number", "url", "head", "way_forward"} {
+ 		result[key] = updated[key]
+@@ -71,12 +96,19 @@ func describe(ctx context.Context, deps landDeps, slug string, draft bool) (map[
+ 	return result, nil
+ }
+ 
++// afterRecordError wraps the failure of a step that follows the record of a description, which stands recorded by then.
++type afterRecordError struct{ err error }
++
++func (e afterRecordError) Error() string { return e.err.Error() }
++
++func (e afterRecordError) Unwrap() error { return e.err }
++
+ // describeFailure words a failed draft or record step of the description of slug.
+ // A failure that already names its way forward keeps it;
+ // any other gets the way forward of fixing the cause and running the verb again.
+-func describeFailure(verb, slug, step string, err error) error {
++func describeFailure(slug, step string, err error) error {
+ 	if strings.Contains(err.Error(), "way forward:") {
+-		return fmt.Errorf("%s: %w", verb, err)
++		return fmt.Errorf("%s: %w", describeVerb, err)
+ 	}
+-	return fmt.Errorf("%s: %s the description of %s: %w; way forward: fix the cause it names, then run `%s %s` again", verb, step, slug, err, verb, slug)
++	return fmt.Errorf("%s: %s the description of %s: %w; way forward: fix the cause it names, then run `%s %s` again", describeVerb, step, slug, err, describeVerb, slug)
+ }
+diff --git a/internal/beamcli/describe_test.go b/internal/beamcli/describe_test.go
+index 1c482fb65..c80fd5e84 100644
+--- a/internal/beamcli/describe_test.go
++++ b/internal/beamcli/describe_test.go
+@@ -215,6 +215,11 @@ func TestDescribe(t *testing.T) {
+ 			if edits := w.api.Calls(prkit.MethodEdit); !slices.Equal(edits, tt.wantEdits) {
+ 				t.Errorf("describe(%q) Edit calls = %v; want %v", tt.slug, edits, tt.wantEdits)
+ 			}
++			for _, from := range w.recordedFrom {
++				if from != "" {
++					t.Errorf("describe(%q) recorded from the draft %q; want the description recorded in place", tt.slug, from)
++				}
++			}
+ 			if len(tt.wantErr) > 0 {
+ 				if err == nil {
+ 					t.Fatalf("describe(%q) = nil; want a refusal naming %v", tt.slug, tt.wantErr)
+@@ -236,3 +241,67 @@ func TestDescribe(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestRewriteDescription asserts the rewrite records the description from the describer agent's draft.
++// It also asserts a recorded pull request is updated, and a beam describe that refuses leaves nothing recorded.
++func TestRewriteDescription(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const draftPath = "/hub/b/.lym/beam/describe/20261122T120000Z.md"
++	tests := []struct {
++		name  string
++		setup func(w *landWorld)
++		// wantErr is empty for a recorded draft, else every substring the refusal names.
++		wantErr []string
++		// wantFrom are the draft paths the RecordDescription seam is called with.
++		wantFrom  []string
++		wantEdits []string
++	}{
++		{
++			name: "DraftIsRecordedAndThePullRequestUpdated",
++			setup: func(w *landWorld) {
++				recordPullRequest(w)
++				w.api.Script(prkit.MethodStatus, prkit.Answer{Status: pullrequest.Status{State: pullrequest.StateOpen}})
++			},
++			wantFrom:  []string{draftPath},
++			wantEdits: []string{"5|Ship the beam|Groups the work."},
++		},
++		{
++			name:    "ReadyBeamIsRefusedWithNothingRecorded",
++			setup:   func(w *landWorld) { w.ready["b"] = true },
++			wantErr: []string{"lym beam describe:", "final", "lym batten status b"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newLandWorld()
++			w.ready["b"] = false
++			tt.setup(w)
++
++			_, err := rewriteDescription(context.Background(), w.deps(), "b", draftPath)
++
++			if !slices.Equal(w.recordedFrom, tt.wantFrom) {
++				t.Errorf("rewriteDescription() recorded from = %v; want %v", w.recordedFrom, tt.wantFrom)
++			}
++			if edits := w.api.Calls(prkit.MethodEdit); !slices.Equal(edits, tt.wantEdits) {
++				t.Errorf("rewriteDescription() Edit calls = %v; want %v", edits, tt.wantEdits)
++			}
++			if len(tt.wantErr) == 0 {
++				if err != nil {
++					t.Fatalf("rewriteDescription() = %v; want the draft recorded", err)
++				}
++				return
++			}
++			if err == nil {
++				t.Fatalf("rewriteDescription() = nil; want a refusal naming %v", tt.wantErr)
++			}
++			for _, want := range tt.wantErr {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("rewriteDescription() error = %q; want it to name %q", err.Error(), want)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 4bca59257..5a2a8db0e 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -1,6 +1,6 @@
+ // dobbydeps.go fills the seams of dobbyengine.Run over a hub.
+ // It covers the runs and tasks it reads, the pass it spawns, and the notices it sends.
+-// It also covers the board tidy it sends, and the teardown of the leftover pairs it starts.
++// It also covers the board tidy it sends, a beam's description rewrite, and the teardown of the leftover pairs it starts.
+ // It also covers the hibernate request the prime's dobby carries, and the registration of the dobby process itself.
+ 
+ package beamcli
+@@ -33,6 +33,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fronttask"
+ 	"github.com/Knatte18/loomyard/internal/hibernatecli"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+@@ -51,6 +52,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/slackengine"
++	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/tendercli"
+ 	"github.com/Knatte18/loomyard/internal/tenderengine"
+ )
+@@ -66,6 +68,10 @@ const (
+ 	defaultNoticeQuiet = 30 * time.Minute
+ 	// tidyModelSpec is the model spec the board-tidy agent runs on.
+ 	tidyModelSpec = "sonnet[medium]"
++	// describeGateName labels the gate over the describer agent's draft.
++	describeGateName = "Beam-Describe-Gate"
++	// describeGateAttempts is how many times the gate re-prompts the describer agent over a draft with a finding.
++	describeGateAttempts = 3
+ 	// passErrorTailBytes bounds how much of a pass's output dobby keeps to read its error text from.
+ 	passErrorTailBytes = 16 << 10
+ 	// passErrorTextRunes bounds the error text of a pass that printed no envelope.
+@@ -294,7 +300,7 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	}
+ 	if geom.Slug != "" {
+ 		// The removed worktree's config is gone by the time this stops a strand, so the runner is built over the prime.
+-		deps.PrimeTidyShuttle = &runnerTidyShuttle{worktree: prime}
++		deps.PrimeTidyShuttle = &runnerAgentShuttle{worktree: prime}
+ 		deps.CanLand = func() (dobbyengine.LandReading, error) { return beamLandReading(prime, geom.Slug) }
+ 		deps.Land = func() error {
+ 			_, err := land(hubLandDeps(prime), geom.Slug)
+@@ -305,16 +311,85 @@ func hubDobbyDeps(prime *lymcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			record, found, err := pawlengine.ReadLanding(loomengine.BeamLandingPath(worktree), loomengine.BeamLandingLockPath(worktree), geom.Slug)
+ 			return found && record.PullRequest != nil, err
+ 		}
++		if describe, err := beamDescribeDeps(prime, worktree, geom.Slug, dirs); err != nil {
++			logger.Warn("beamcli: the describer agent's model or timeout does not resolve; the beam's description rewrite is off", "beam", geom.Slug, "error", err)
++		} else {
++			deps.BeamDescribe = describe
++		}
+ 	}
+-	if choice, err := resolveTidyModel(dirs); err != nil {
++	if choice, err := resolveModel(dirs, tidyModelSpec); err != nil {
+ 		logger.Warn("beamcli: the board-tidy model does not resolve; the board tidy is off", "spec", tidyModelSpec, "error", err)
+ 	} else {
+ 		deps.TidyModel = choice
+-		deps.TidyShuttle = &runnerTidyShuttle{worktree: worktree}
++		deps.TidyShuttle = &runnerAgentShuttle{worktree: worktree}
+ 	}
+ 	return deps, nil
+ }
+ 
++// beamDescribeDeps fills the description rewrite's seams for the beam slug over the hub of prime.
++// beam is the beam's worktree.
++// The describer agent runs on landing.yaml's describe model for its describe_timeout_min.
++// The Describe row's session runs on the same two keys.
++// Its shuttle run is gated on its draft passing as a change description, so a draft with a finding re-prompts it.
++func beamDescribeDeps(prime, beam *lymcwd.Location, slug string, dirs configengine.Dirs) (dobbyengine.BeamDescribeDeps, error) {
++	cfg, err := landingshed.LoadConfig(dirs, "landing")
++	if err != nil {
++		return dobbyengine.BeamDescribeDeps{}, err
++	}
++	choice, err := resolveModel(dirs, cfg.Describe)
++	if err != nil {
++		return dobbyengine.BeamDescribeDeps{}, err
++	}
++	return dobbyengine.BeamDescribeDeps{
++		Shuttle:  &runnerAgentShuttle{worktree: beam, gate: describeGate},
++		Model:    choice,
++		Timeout:  time.Duration(cfg.DescribeTimeoutMin) * time.Minute,
++		Facts:    func() (dobbyengine.BeamDescribeFacts, error) { return beamDescribeFacts(prime, beam, slug) },
++		Findings: descriptionFindings,
++		Record: func(ctx context.Context, draftPath string) (bool, error) {
++			_, err := rewriteDescription(ctx, hubLandDeps(prime), slug, draftPath)
++			var afterRecord afterRecordError
++			return errors.As(err, &afterRecord), err
++		},
++	}, nil
++}
++
++// beamDescribeFacts reads what the describer agent's prompt names about the beam slug, whose worktree is beam:
++// its recorded description, its branch, its parent branch and the commits on its line that the parent lacks.
++// The commits leave out the records-only ones, as the beam's draft does.
++func beamDescribeFacts(prime, beam *lymcwd.Location, slug string) (dobbyengine.BeamDescribeFacts, error) {
++	origin, found, err := fabricengine.ReadOriginFor(prime, slug)
++	if err != nil {
++		return dobbyengine.BeamDescribeFacts{}, err
++	}
++	if !found {
++		return dobbyengine.BeamDescribeFacts{}, fmt.Errorf("the pair of the beam %s has no readable origin record; way forward: run `lym fabric reconcile` to restore its records worktree", slug)
++	}
++	pair, err := fabricengine.Open(beam)
++	if err != nil {
++		return dobbyengine.BeamDescribeFacts{}, err
++	}
++	branch, err := pair.CurrentBranch()
++	if err != nil {
++		return dobbyengine.BeamDescribeFacts{}, err
++	}
++	commits, err := beamDraftDeps(beam, slug, origin.ParentBranch).Commits()
++	if err != nil {
++		return dobbyengine.BeamDescribeFacts{}, err
++	}
++	return dobbyengine.BeamDescribeFacts{
++		DescriptionPath: summaryparser.Path(loomengine.LandingDir(beam)),
++		Branch:          branch,
++		ParentBranch:    origin.ParentBranch,
++		Changes:         landingshed.RenderBeamChanges(commits),
++	}, nil
++}
++
++// describeGate is the gate the describer agent's run carries over its one output file, the draft.
++func describeGate(spec shuttleengine.Spec) shuttleengine.GateSpec {
++	return shuttleengine.GateSpec{{Name: describeGateName, Gate: landingshed.NewDescriptionGate(spec.OutputFiles[0]), Attempts: describeGateAttempts}}
++}
++
+ // tearDownLeftovers tears down each of pairs by its kind in a goroutine of its own.
+ // It then regenerates the hub workspace file once, so it no longer lists a removed pair.
+ // The channel delivers once, mapping each slug to nil when its pair was removed and to the reason otherwise.
+@@ -712,9 +787,9 @@ func passErrorText(printed []byte, waitErr error) string {
+ 	return ""
+ }
+ 
+-// resolveTidyModel resolves the board-tidy agent's model spec through the hub's model registry.
+-func resolveTidyModel(dirs configengine.Dirs) (shuttleengine.ModelChoice, error) {
+-	spec, err := modelspec.Parse(tidyModelSpec)
++// resolveModel resolves the model spec through the hub's model registry.
++func resolveModel(dirs configengine.Dirs, spec string) (shuttleengine.ModelChoice, error) {
++	parsed, err := modelspec.Parse(spec)
+ 	if err != nil {
+ 		return shuttleengine.ModelChoice{}, err
+ 	}
+@@ -722,43 +797,49 @@ func resolveTidyModel(dirs configengine.Dirs) (shuttleengine.ModelChoice, error)
+ 	if err != nil {
+ 		return shuttleengine.ModelChoice{}, err
+ 	}
+-	resolved, err := registry.Resolve(spec)
++	resolved, err := registry.Resolve(parsed)
+ 	if err != nil {
+ 		return shuttleengine.ModelChoice{}, err
+ 	}
+ 	return shuttleengine.NewModelChoice(resolved), nil
+ }
+ 
+-// runnerTidyShuttle adapts the shuttle runner over the dobby's worktree to dobbyengine.TidyShuttle.
+-// The runner is built on the first start, so a config that does not load fails the tidy and never the dobby.
+-type runnerTidyShuttle struct {
++// runnerAgentShuttle adapts the shuttle runner over a worktree to dobbyengine.AgentShuttle, for the agents dobby spawns.
++// The runner is built on the first start, so a config that does not load fails the agent's step and never the dobby.
++type runnerAgentShuttle struct {
+ 	worktree *lymcwd.Location
+-	once     sync.Once
+-	runner   *shuttleengine.Runner
+-	err      error
++	// gate builds the gate a started run carries from its spec; nil starts the run ungated.
++	gate   func(spec shuttleengine.Spec) shuttleengine.GateSpec
++	once   sync.Once
++	runner *shuttleengine.Runner
++	err    error
+ }
+ 
+ // Start launches spec in a fresh window and returns its strand's GUID once the agent is running.
+-// The run is waited on in the background, so shuttle enforces the spec's timeout and settles the run.
+-func (s *runnerTidyShuttle) Start(spec shuttleengine.Spec) (string, error) {
++// The run is waited on in the background, so shuttle enforces the spec's timeout and gate and settles the run.
++func (s *runnerAgentShuttle) Start(spec shuttleengine.Spec) (string, error) {
+ 	s.once.Do(func() { s.runner, s.err = battencli.ShuttleRunner(s.worktree) })
+ 	if s.err != nil {
+ 		return "", s.err
+ 	}
+-	run, err := s.runner.StartGated(spec, nil)
++	var gate shuttleengine.GateSpec
++	if s.gate != nil {
++		gate = s.gate(spec)
++	}
++	run, err := s.runner.StartGated(spec, gate)
+ 	if err != nil {
+ 		return "", err
+ 	}
+ 	go func() {
+ 		result, err := run.Wait()
+-		logger.Debug("beamcli: the board-tidy agent's run ended", "outcome", result.Outcome, "error", err)
++		logger.Debug("beamcli: a dobby agent's run ended", "role", spec.Role, "outcome", result.Outcome, "error", err)
+ 	}()
+ 	return run.StrandGUID(), nil
+ }
+ 
+ // EngineName names the engine choice launches on under the runner's engine set.
+-// A runner that cannot be built returns the build's error, so the tidy reports it instead of rendering a prompt.
+-func (s *runnerTidyShuttle) EngineName(choice shuttleengine.ModelChoice) (string, error) {
++// A runner that cannot be built returns the build's error, so the step reports it instead of rendering a prompt.
++func (s *runnerAgentShuttle) EngineName(choice shuttleengine.ModelChoice) (string, error) {
+ 	s.once.Do(func() { s.runner, s.err = battencli.ShuttleRunner(s.worktree) })
+ 	if s.err != nil {
+ 		return "", s.err
+@@ -767,7 +848,7 @@ func (s *runnerTidyShuttle) EngineName(choice shuttleengine.ModelChoice) (string
+ }
+ 
+ // StopStrand ends the strand guid names through shuttle's stop verb.
+-func (s *runnerTidyShuttle) StopStrand(guid string) error {
++func (s *runnerAgentShuttle) StopStrand(guid string) error {
+ 	s.once.Do(func() { s.runner, s.err = battencli.ShuttleRunner(s.worktree) })
+ 	if s.err != nil {
+ 		return s.err
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 2fda2c4c8..e74cb1b9c 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -60,9 +60,29 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("hubDobbyDeps(beam) = %v; want nil", err)
+ 	}
+-	stopper, ok := beamDeps.PrimeTidyShuttle.(*runnerTidyShuttle)
++	stopper, ok := beamDeps.PrimeTidyShuttle.(*runnerAgentShuttle)
+ 	if !ok || stopper.worktree != prime {
+-		t.Errorf("beam PrimeTidyShuttle = %#v; want a *runnerTidyShuttle over the prime's location", beamDeps.PrimeTidyShuttle)
++		t.Errorf("beam PrimeTidyShuttle = %#v; want a *runnerAgentShuttle over the prime's location", beamDeps.PrimeTidyShuttle)
++	}
++	if beamDeps.BeamDescribe.Record == nil {
++		t.Errorf("beam BeamDescribe.Record = nil; want the description rewrite wired")
++	}
++	if beamDeps.BeamDescribe.Timeout != 30*time.Minute {
++		t.Errorf("beam BeamDescribe.Timeout = %v; want the landing config's describe_timeout_min, 30 minutes", beamDeps.BeamDescribe.Timeout)
++	}
++	wantModel, err := resolveModel(fabricengine.ConfigDirs(prime), "sonnet[medium]")
++	if err != nil {
++		t.Fatalf("resolveModel(sonnet[medium]) = %v; want nil", err)
++	}
++	if got := beamDeps.BeamDescribe.Model; got.Engine != wantModel.Engine || got.Model != wantModel.Model || got.Effort != wantModel.Effort {
++		t.Errorf("beam BeamDescribe.Model = %+v; want the landing config's describe model %+v", got, wantModel)
++	}
++	describeShuttle, ok := beamDeps.BeamDescribe.Shuttle.(*runnerAgentShuttle)
++	if !ok || describeShuttle.gate == nil {
++		t.Errorf("beam BeamDescribe.Shuttle = %#v; want a *runnerAgentShuttle carrying the describe gate", beamDeps.BeamDescribe.Shuttle)
++	}
++	if tidyShuttle, ok := beamDeps.TidyShuttle.(*runnerAgentShuttle); !ok || tidyShuttle.gate != nil {
++		t.Errorf("beam TidyShuttle = %#v; want a *runnerAgentShuttle with no gate", beamDeps.TidyShuttle)
+ 	}
+ 
+ 	primeGeom, err := hubgeom.DobbyGeometry(prime, prime.WorktreeName)
+@@ -76,6 +96,9 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 	if primeDeps.PrimeTidyShuttle != nil {
+ 		t.Errorf("prime PrimeTidyShuttle = %#v; want nil", primeDeps.PrimeTidyShuttle)
+ 	}
++	if primeDeps.BeamDescribe.Record != nil {
++		t.Errorf("prime BeamDescribe.Record is set; want the prime's dobby to rewrite no description")
++	}
+ 
+ 	// The watch opens only a directory that exists, and a tick creates it as a side effect.
+ 	// So the check comes before any tick.
+diff --git a/internal/beamcli/dobbydeps_test.go b/internal/beamcli/dobbydeps_test.go
+index ead69de43..5a135ea75 100644
+--- a/internal/beamcli/dobbydeps_test.go
++++ b/internal/beamcli/dobbydeps_test.go
+@@ -1,16 +1,100 @@
+ // dobbydeps_test.go pins how the dobby reads a hub reconcile's report on the ended runs it asked to tear down.
++// It also pins the gate the describer agent's run carries over its draft, and the findings read of a description.
+ 
+ package beamcli
+ 
+ import (
+ 	"errors"
++	"os"
++	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// validBeamDescription is a change description that passes validation.
++const validBeamDescription = "# Ship the beam\n\nGroups the work.\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** beam\n"
++
++func TestDescribeGate_JudgesTheSpecsOneOutputFile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// content is the draft's content; empty leaves no draft.
++		content    string
++		wantPassed bool
++	}{
++		{name: "ValidDraftPasses", content: validBeamDescription, wantPassed: true},
++		{name: "DraftWithAFindingFails", content: "# Ship the beam\n"},
++		{name: "MissingDraftFails"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			draft := filepath.Join(t.TempDir(), "draft.md")
++			if tt.content != "" {
++				if err := os.WriteFile(draft, []byte(tt.content), 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", draft, err)
++				}
++			}
++			gate := describeGate(shuttleengine.Spec{OutputFiles: []string{draft}})
++			if len(gate) != 1 || gate[0].Name != describeGateName || gate[0].Attempts != describeGateAttempts {
++				t.Fatalf("describeGate() = %+v; want the one %s entry with %d attempts", gate, describeGateName, describeGateAttempts)
++			}
++			result, err := gate[0].Gate()
++			if err != nil || result.Passed != tt.wantPassed {
++				t.Errorf("gate() = %+v, %v; want passed %v", result, err, tt.wantPassed)
++			}
++		})
++	}
++}
++
++func TestDescriptionFindings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// content is the description's content; empty leaves no file.
++		content   string
++		wantCheck string
++	}{
++		{name: "ValidDescriptionHasNone", content: validBeamDescription},
++		{name: "EmptyBodyIsNamed", content: "# Ship the beam\n", wantCheck: summaryparser.CheckEmptyBody},
++		{name: "MissingFileIsAFinding", wantCheck: summaryparser.CheckMissing},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "summary.md")
++			if tt.content != "" {
++				if err := os.WriteFile(path, []byte(tt.content), 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++				}
++			}
++			findings, err := descriptionFindings(path)
++			if err != nil {
++				t.Fatalf("descriptionFindings() = _, %v; want nil", err)
++			}
++			if tt.wantCheck == "" {
++				if len(findings) != 0 {
++					t.Errorf("descriptionFindings() = %v; want none", findings)
++				}
++				return
++			}
++			if len(findings) != 1 || !strings.Contains(findings[0], tt.wantCheck) {
++				t.Errorf("descriptionFindings() = %v; want the one %s finding", findings, tt.wantCheck)
++			}
++		})
++	}
++}
++
+ func TestRunNoticeTags(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 2f2890074..d9f2674b1 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -65,8 +65,10 @@
+ // # describe
+ //
+ // `describe <slug>` records the beam's change description and returns its path.
+-// The beam's orch writes the description, `summary.md` in the beam's landing directory;
+-// lym never assembles or rewrites it.
++// The beam's orch writes the description, `summary.md` in the beam's landing directory.
++// Under a recorded pull request the beam's dobby also rewrites it after each member landing:
++// its describer agent writes a draft, and the same sequence records the draft in place of the description.
++// A refused draft leaves the recorded description standing.
+ // It runs anywhere in the hub and refuses what `land`'s entry check refuses.
+ // It refuses a beam with no pawl run, a run not at Beam-Await, and a beam whose ready record stands.
+ // A run at Beam-Await passes in every state, so a halted run is served.
+diff --git a/internal/beamcli/land.go b/internal/beamcli/land.go
+index eca611cad..8b84af927 100644
+--- a/internal/beamcli/land.go
++++ b/internal/beamcli/land.go
+@@ -39,9 +39,12 @@ import (
+ // Only the `merge-parent` verb calls these four.
+ // DraftDescription writes a starting point for the beam's change description and returns its path.
+ // It refuses when a description already stands.
+-// RecordDescription validates the change description the orch wrote and stamps the landing record's DescribedAt with at.
++// RecordDescription validates the change description and stamps the landing record's DescribedAt with at.
++// With from empty it records the description the orch wrote in place.
++// Otherwise it first writes the draft at from over the description.
++// The description stands as it was when the draft is refused or the commit fails.
+ // It commits the landing directory and returns the description's path.
+-// Only the `describe` verb calls these two.
++// Only the `describe` verb and the description rewrite after a member landing call these two.
+ // PullRequestSide reads the beam pair's origin facts: its branch and its parent branch.
+ // It uses the pull request API when the origin allows one.
+ // PushBeam pushes the beam branch and returns the head it pushed.
+@@ -84,7 +87,7 @@ type landDeps struct {
+ 	HeldSlugs      func() ([]string, error)
+ 
+ 	DraftDescription  func(slug string) (path string, err error)
+-	RecordDescription func(slug string, at time.Time) (path string, err error)
++	RecordDescription func(slug, from string, at time.Time) (path string, err error)
+ 
+ 	PullRequestSide func(slug string) (beamPullRequestSide, error)
+ 	PushBeam        func(slug string) (head string, err error)
+diff --git a/internal/beamcli/land_test.go b/internal/beamcli/land_test.go
+index 3e27b65cf..7982b08fc 100644
+--- a/internal/beamcli/land_test.go
++++ b/internal/beamcli/land_test.go
+@@ -51,12 +51,14 @@ type landWorld struct {
+ 	// held and heldErr are what HeldSlugs answers: the slugs run directories and task branches hold.
+ 	held    []string
+ 	heldErr error
+-	// drafted and recorded hold the slug of each DraftDescription and RecordDescription call;
++	// drafted and recorded hold the slug of each DraftDescription and RecordDescription call,
++	// and recordedFrom the draft path each RecordDescription call names;
+ 	// draftErr and recordErr are what those seams fail with.
+-	drafted   []string
+-	draftErr  error
+-	recorded  []string
+-	recordErr error
++	drafted      []string
++	draftErr     error
++	recorded     []string
++	recordedFrom []string
++	recordErr    error
+ 	// api is the fake GitHub every pull request side holds; origin and sideErr are what PullRequestSide answers with.
+ 	api     *prkit.API
+ 	origin  landingshed.Origin
+@@ -181,8 +183,9 @@ func (w *landWorld) deps() landDeps {
+ 			}
+ 			return "/hub/" + slug + "/_lym/landing/summary.md", nil
+ 		},
+-		RecordDescription: func(slug string, _ time.Time) (string, error) {
++		RecordDescription: func(slug, from string, _ time.Time) (string, error) {
+ 			w.recorded = append(w.recorded, slug)
++			w.recordedFrom = append(w.recordedFrom, from)
+ 			if w.recordErr != nil {
+ 				return "", w.recordErr
+ 			}
+diff --git a/internal/dobbyengine/describe.go b/internal/dobbyengine/describe.go
+new file mode 100644
+index 000000000..5a6e11e8c
+--- /dev/null
++++ b/internal/dobbyengine/describe.go
+@@ -0,0 +1,347 @@
++// describe.go implements dobby's description rewrite for a beam whose pull request is recorded.
++// After a member landing it spawns the describer agent over the beam.
++// Once the agent's draft passes as a change description, it records the draft in place of the beam's description.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/editdirective"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/parentdirective"
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencil"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++const (
++	// BeamDescribeRole is the agent-name role of the describer agent's strand.
++	BeamDescribeRole = "beam-describe"
++	// beamDescribeStencilName is the registered name of the describer agent's opening stencil.
++	beamDescribeStencilName = "beam-template-describe"
++	// noBeamChanges stands in the prompt for the beam's changes when its line holds no commit its parent lacks.
++	noBeamChanges = "- none: the beam holds no commit its parent branch lacks"
++	// describeStandsWayForward ends each line that reports a rewrite that recorded nothing.
++	describeStandsWayForward = "; the recorded description stands, and the next member landing rewrites it again"
++)
++
++// BeamDescribeFacts carries what the describer agent's prompt names about the beam.
++type BeamDescribeFacts struct {
++	// DescriptionPath is the beam's recorded change description, which the agent reads.
++	DescriptionPath string
++	// Branch is the beam's branch.
++	Branch string
++	// ParentBranch is the branch the beam lands on.
++	ParentBranch string
++	// Changes lists the commits on the beam's line that its parent branch lacks, oldest first, one markdown list item each.
++	// A member pull request's merge is listed by its number.
++	Changes string
++}
++
++// BeamDescribeDeps holds the seams of a beam's description rewrite, which the hub wiring sets for a beam's dobby.
++// A nil Record leaves the rewrite off.
++type BeamDescribeDeps struct {
++	// Shuttle starts and stops the describer agent.
++	Shuttle AgentShuttle
++	// Model is the model the agent runs on, resolved by the hub wiring.
++	Model shuttleengine.ModelChoice
++	// Timeout is how long the agent may run.
++	Timeout time.Duration
++	// Facts reads what the agent's prompt names about the beam.
++	Facts func() (BeamDescribeFacts, error)
++	// Findings lists what keeps the draft at path from passing as a change description, none when it passes.
++	Findings func(path string) ([]string, error)
++	// Record writes the draft at path over the beam's change description, commits it and updates the recorded pull request.
++	// recorded reports whether the description was recorded;
++	// an error with recorded set means a step after the record failed, the pull request update among them.
++	// An error with recorded unset leaves the recorded description standing.
++	Record func(ctx context.Context, path string) (recorded bool, err error)
++}
++
++// BeamDescribePromptInput carries what the describer stencil's markers are filled from.
++type BeamDescribePromptInput struct {
++	// Slug is the beam's slug.
++	Slug string
++	// DraftPath is the one file the agent writes.
++	DraftPath string
++	// Parent is the name of the nearest live orch, empty when there is none.
++	Parent string
++	// Facts are the beam's recorded description, branches and changes.
++	Facts BeamDescribeFacts
++}
++
++// BeamDescribePrompt composes the describer agent's launch prompt for the engine named engine.
++// It reads the describer stencil from stencilsDir at call time and fills its markers from in.
++// The parent directive names in.Parent, and the edit directive is the one of engine.
++// Empty changes are named as a beam with no commit its parent lacks.
++// A stencil read or fill error is returned wrapped with the stencil's name.
++func BeamDescribePrompt(stencilsDir, engine string, in BeamDescribePromptInput) (string, error) {
++	directive, err := parentdirective.Directive(stencilsDir, in.Parent, false)
++	if err != nil {
++		return "", err
++	}
++	editDirective, err := editdirective.Directive(stencilsDir, engine)
++	if err != nil {
++		return "", err
++	}
++	template, err := stencilstore.Read(stencilsDir, beamDescribeStencilName)
++	if err != nil {
++		return "", fmt.Errorf("dobby: describer prompt: read stencil %q: %w", beamDescribeStencilName, err)
++	}
++	changes := in.Facts.Changes
++	if strings.TrimSpace(changes) == "" {
++		changes = noBeamChanges
++	}
++	filled, err := stencil.Fill(template, map[string]string{
++		"slug":                     in.Slug,
++		"description_path":         in.Facts.DescriptionPath,
++		"draft_path":               in.DraftPath,
++		"beam_branch":              in.Facts.Branch,
++		"parent_branch":            in.Facts.ParentBranch,
++		"changes":                  changes,
++		parentdirective.MarkerName: directive,
++		editdirective.MarkerName:   editDirective,
++	})
++	if err != nil {
++		return "", fmt.Errorf("dobby: describer prompt: fill stencil %q: %w", beamDescribeStencilName, err)
++	}
++	return string(filled), nil
++}
++
++// BeamDescribeSpec composes the shuttle spec the describer agent launches from.
++// PromptEngine is engine, the engine the prompt was rendered for, which must be the one model resolves to.
++// OutputFiles holds draftPath alone.
++// ConfigRole is the describer role, whose skills come from agents.yaml (role `describer`).
++// Segment is the describe segment, since the agent writes a pull request's description.
++func BeamDescribeSpec(prompt, draftPath, engine string, model shuttleengine.ModelChoice, timeout time.Duration) shuttleengine.Spec {
++	return shuttleengine.Spec{
++		Prompt:       prompt,
++		PromptEngine: engine,
++		ConfigRole:   agentconfig.RoleDescriber,
++		OutputFiles:  []string{draftPath},
++		ModelChoice:  model,
++		Timeout:      timeout,
++		Role:         BeamDescribeRole,
++		Segment:      segmentcolor.Describe,
++	}
++}
++
++// describes reports whether this dobby rewrites its beam's description: a beam's dobby whose rewrite seams are set.
++func (d *daemon) describes() bool {
++	return d.geom.Slug != "" && d.deps.BeamDescribe.Record != nil && d.deps.PullRequestRecorded != nil
++}
++
++// describeStep spawns the describer agent over the member landings not yet described, unless one is in flight.
++// It also settles the agent in flight, which keeps the loop out of its idle backoff.
++// It spawns only while Deps.PullRequestRecorded reads a pull request;
++// landings counted while none is recorded are dropped, since no pull request carries the text.
++// An unreadable landing record keeps the landings until it reads, and is logged once per episode.
++// A spawn that fails drops the landings and tells the nearest live orch why, so the next member landing tries again.
++func (d *daemon) describeStep(ctx context.Context, now time.Time) error {
++	if !d.describes() {
++		return nil
++	}
++	current, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		return err
++	}
++	if current.Describe != nil {
++		waiting, err := d.settleDescribe(ctx, now, *current.Describe)
++		d.busy = d.busy || waiting
++		return err
++	}
++	if len(current.LandedSinceDescribe) == 0 {
++		return nil
++	}
++	recorded, err := d.deps.PullRequestRecorded()
++	if err != nil {
++		d.describePullRequest.Fail("dobbyengine: the beam's landing record is unreadable; the description rewrite waits", "worktree", d.geom.WorktreeName, "error", err)
++		return nil
++	}
++	d.describePullRequest.Recover("dobbyengine: the beam's landing record reads again; the description rewrite goes on", "worktree", d.geom.WorktreeName)
++	if !recorded {
++		return d.endDescribe(current.LandedSinceDescribe)
++	}
++	if err := d.spawnDescribe(now, current.LandedSinceDescribe); err != nil {
++		return d.endFailedSpawn(ctx, now, current.LandedSinceDescribe, err)
++	}
++	return nil
++}
++
++// endFailedSpawn tells the nearest live orch why a spawn failed with cause, then drops landings.
++// The line goes out first, so a post that fails keeps the landings and the next tick tries the spawn again.
++// It returns an error only when the line cannot be posted or the landings cannot be dropped.
++func (d *daemon) endFailedSpawn(ctx context.Context, now time.Time, landings []string, cause error) error {
++	line := fmt.Sprintf("%s: the description rewrite after %s did not start: %v%s", d.geom.Slug, strings.Join(landings, ", "), cause, describeStandsWayForward)
++	if err := d.postLine(ctx, line); err != nil {
++		return errors.Join(cause, err)
++	}
++	if err := d.endDescribe(landings); err != nil {
++		return errors.Join(cause, err)
++	}
++	d.logLine(now, "description rewrite did not start: "+oneLine(cause.Error()))
++	return nil
++}
++
++// postLine sends line to the nearest live orch through the Notice seam and returns the post's failure.
++// A nil Notice posts nothing.
++func (d *daemon) postLine(ctx context.Context, line string) error {
++	if d.deps.Notice == nil {
++		return nil
++	}
++	if err := d.deps.Notice(ctx, line); err != nil {
++		return fmt.Errorf("post the description rewrite's line: %w", err)
++	}
++	return nil
++}
++
++// spawnDescribe starts the describer agent over landed and records it in the state record.
++// A record that cannot be written ends the agent again, so no unrecorded agent is left running.
++func (d *daemon) spawnDescribe(now time.Time, landed []string) error {
++	describe := d.deps.BeamDescribe
++	facts, err := describe.Facts()
++	if err != nil {
++		return fmt.Errorf("read the beam's facts for the describer agent: %w", err)
++	}
++	orch, err := d.deps.NearestOrch()
++	if err != nil {
++		return fmt.Errorf("read the nearest live orch: %w", err)
++	}
++	if err := os.MkdirAll(d.geom.DescribeDir, 0o755); err != nil {
++		return err
++	}
++	draftPath := filepath.Join(d.geom.DescribeDir, now.UTC().Format("20060102T150405Z")+".md")
++	engine, err := describe.Shuttle.EngineName(describe.Model)
++	if err != nil {
++		return fmt.Errorf("resolve the describer agent's engine: %w", err)
++	}
++	prompt, err := BeamDescribePrompt(d.deps.StencilsDir, engine, BeamDescribePromptInput{Slug: d.geom.Slug, DraftPath: draftPath, Parent: orch, Facts: facts})
++	if err != nil {
++		return err
++	}
++	guid, err := describe.Shuttle.Start(BeamDescribeSpec(prompt, draftPath, engine, describe.Model, describe.Timeout))
++	if err != nil {
++		return fmt.Errorf("start the describer agent: %w", err)
++	}
++	err = UpdateState(d.geom.StatePath, func(s *State) error {
++		s.Describe = &DescribeState{StrandGUID: guid, DraftPath: draftPath, Deadline: now.Add(describe.Timeout), Landings: slices.Clone(landed)}
++		return nil
++	})
++	if err != nil {
++		d.stopDescribeStrand(guid)
++		return err
++	}
++	logger.Info("dobbyengine: the describer agent started", "worktree", d.geom.WorktreeName, "landings", len(landed), "draft", draftPath)
++	d.logLine(now, fmt.Sprintf("description rewrite started after %s: %s", strings.Join(landed, ", "), draftPath))
++	return nil
++}
++
++// settleDescribe ends the agent in flight once its draft passes or its deadline has passed.
++// It reports whether the agent still runs.
++// A passing draft is recorded through BeamDescribeDeps.Record.
++// A record that fails, and a deadline passed with no passing draft, post one line to the nearest live orch naming why.
++// A record that committed the description but not the pull request update names `lym beam pr update` as the way forward.
++// Either way the agent's landings leave the landings to describe, so the next member landing rewrites the description.
++// A draft that cannot be read is an error while the deadline stands, and counts as no passing draft once it has passed.
++func (d *daemon) settleDescribe(ctx context.Context, now time.Time, describe DescribeState) (waiting bool, err error) {
++	if describe.OwedLine != "" {
++		return d.concludeDescribe(ctx, describe, describe.OwedLine)
++	}
++	landings := strings.Join(describe.Landings, ", ")
++	findings, written, readErr := d.draftFindings(describe.DraftPath)
++	if readErr == nil && written && len(findings) == 0 {
++		d.stopDescribeStrand(describe.StrandGUID)
++		recorded, recordErr := d.deps.BeamDescribe.Record(ctx, describe.DraftPath)
++		line := ""
++		switch {
++		case recordErr == nil:
++			d.logLine(now, "description rewritten after "+landings)
++		case recorded:
++			d.logLine(now, "description recorded, its pull request not updated: "+oneLine(recordErr.Error()))
++			line = fmt.Sprintf("%s: the description rewrite after %s: %v; way forward: run `lym beam pr update %s`", d.geom.Slug, landings, recordErr, d.geom.Slug)
++		default:
++			d.logLine(now, "description rewrite not recorded: "+oneLine(recordErr.Error()))
++			line = fmt.Sprintf("%s: the description rewrite after %s was not recorded: %v%s", d.geom.Slug, landings, recordErr, describeStandsWayForward)
++		}
++		return d.concludeDescribe(ctx, describe, line)
++	}
++	if now.Before(describe.Deadline) {
++		if readErr != nil {
++			return true, fmt.Errorf("check the describer agent's draft: %w", readErr)
++		}
++		return true, nil
++	}
++	d.stopDescribeStrand(describe.StrandGUID)
++	cause := "no draft written"
++	switch {
++	case readErr != nil:
++		cause = "draft unreadable: " + readErr.Error()
++	case written:
++		cause = "draft findings: " + strings.Join(findings, "; ")
++	}
++	d.logLine(now, "description rewrite timed out: "+cause)
++	return d.concludeDescribe(ctx, describe, fmt.Sprintf("%s: the describer agent gave no valid description after %s by its deadline (%s)%s", d.geom.Slug, landings, cause, describeStandsWayForward))
++}
++
++// concludeDescribe posts line to the nearest live orch when it is not empty, then ends the agent and drops its landings.
++// The line is stored in the agent's record first and the agent is ended only once the post went out,
++// so a post that fails is an error and the next tick posts the stored line without recording again.
++func (d *daemon) concludeDescribe(ctx context.Context, describe DescribeState, line string) (waiting bool, err error) {
++	if line != "" && describe.OwedLine == "" {
++		err := UpdateState(d.geom.StatePath, func(s *State) error {
++			if s.Describe != nil {
++				s.Describe.OwedLine = line
++			}
++			return nil
++		})
++		if err != nil {
++			return true, err
++		}
++	}
++	if line != "" {
++		if err := d.postLine(ctx, line); err != nil {
++			return true, err
++		}
++	}
++	return false, d.endDescribe(describe.Landings)
++}
++
++// draftFindings reports whether the draft at path is written and, when it is, what keeps it from passing.
++func (d *daemon) draftFindings(path string) (findings []string, written bool, err error) {
++	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
++		return nil, false, nil
++	} else if err != nil {
++		return nil, false, err
++	}
++	findings, err = d.deps.BeamDescribe.Findings(path)
++	return findings, true, err
++}
++
++// endDescribe clears the agent in flight and drops landings from the landings to describe.
++// A landing counted after the agent started stays, so it gets a rewrite of its own.
++func (d *daemon) endDescribe(landings []string) error {
++	return UpdateState(d.geom.StatePath, func(s *State) error {
++		s.Describe = nil
++		s.LandedSinceDescribe = slices.DeleteFunc(s.LandedSinceDescribe, func(slug string) bool { return slices.Contains(landings, slug) })
++		return nil
++	})
++}
++
++// stopDescribeStrand ends the describer agent's strand;
++// a failure is logged, since the agent ends on its own at its timeout.
++func (d *daemon) stopDescribeStrand(guid string) {
++	if err := d.deps.BeamDescribe.Shuttle.StopStrand(guid); err != nil {
++		logger.Warn("dobbyengine: the describer agent's strand did not stop", "worktree", d.geom.WorktreeName, "strand", guid, "error", err)
++	}
++}
+diff --git a/internal/dobbyengine/describe_test.go b/internal/dobbyengine/describe_test.go
+new file mode 100644
+index 000000000..bc52b80b2
+--- /dev/null
++++ b/internal/dobbyengine/describe_test.go
+@@ -0,0 +1,649 @@
++// describe_test.go pins dobby's description rewrite over a fake shuttle, fake seams and a temp state record.
++// It covers the landings the rewrite applies to and the spawn under a recorded pull request.
++// It covers the record of a passing draft.
++// It also covers the line a refused record or a timed-out agent posts, and the agent's prompt and launch spec.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// describeTimeout is the describer agent's timeout in the harness.
++const describeTimeout = 30 * time.Minute
++
++// describeHarness drives a beam dobby's landing count and description rewrite over fakes.
++type describeHarness struct {
++	t       *testing.T
++	d       *daemon
++	shuttle *tidyShuttleFake
++	notices []string
++	// logged holds the dobby log lines written, without their timestamps.
++	logged []string
++	landed []string
++	// pullRequest and pullRequestErr are what the PullRequestRecorded seam answers.
++	pullRequest    bool
++	pullRequestErr error
++	// findings are what the Findings seam answers for a written draft.
++	findings []string
++	// recorded holds the draft path of each Record call, which fails with recordErr.
++	// recordedDespiteErr is what Record reports as recorded beside that error.
++	recorded           []string
++	recordErr          error
++	recordedDespiteErr bool
++	// noticeErr is what the Notice seam fails with, posting nothing.
++	noticeErr error
++	now       time.Time
++}
++
++// fakeBeamDescribeDeps returns describe seams over shuttle.
++// Its facts read, its draft has no findings and its record succeeds.
++func fakeBeamDescribeDeps(shuttle AgentShuttle) BeamDescribeDeps {
++	return BeamDescribeDeps{
++		Shuttle: shuttle,
++		Model:   shuttleengine.ModelChoice{Engine: "b", Model: "sonnet"},
++		Timeout: describeTimeout,
++		Facts: func() (BeamDescribeFacts, error) {
++			return BeamDescribeFacts{
++				DescriptionPath: "/hub/b/_lym/landing/summary.md",
++				Branch:          "b",
++				ParentBranch:    "main",
++				Changes:         "- #266 Tool-joint pressure loss, merged 2026-10-30 13:05 UTC",
++			}, nil
++		},
++		Findings: func(string) ([]string, error) { return nil, nil },
++		Record:   func(context.Context, string) (bool, error) { return true, nil },
++	}
++}
++
++// beamWorktreeRoot returns a directory that reads as a beam's live worktree, which holds a git link.
++func beamWorktreeRoot(t *testing.T) string {
++	t.Helper()
++	root := t.TempDir()
++	if err := os.WriteFile(filepath.Join(root, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile() = %v; want nil", err)
++	}
++	return root
++}
++
++// startHookShuttle is a shuttle fake that runs after after each start has been recorded.
++type startHookShuttle struct {
++	*tidyShuttleFake
++	after func()
++}
++
++func (s *startHookShuttle) Start(spec shuttleengine.Spec) (string, error) {
++	guid, err := s.tidyShuttleFake.Start(spec)
++	s.after()
++	return guid, err
++}
++
++func newDescribeHarness(t *testing.T) *describeHarness {
++	t.Helper()
++	stencils := filepath.Join(t.TempDir(), "stencils")
++	stencilkit.SeedInto(t, stencils)
++	root := t.TempDir()
++	h := &describeHarness{t: t, shuttle: &tidyShuttleFake{}, pullRequest: true, now: time.Date(2026, 11, 22, 12, 0, 0, 0, time.UTC)}
++	describe := fakeBeamDescribeDeps(h.shuttle)
++	describe.Findings = func(string) ([]string, error) { return h.findings, nil }
++	describe.Record = func(_ context.Context, path string) (bool, error) {
++		h.recorded = append(h.recorded, path)
++		return h.recordedDespiteErr, h.recordErr
++	}
++	h.d = &daemon{
++		geom: Geometry{WorktreeName: "b", Slug: "b", StatePath: filepath.Join(root, StateFileName), DescribeDir: filepath.Join(root, DescribeDirName)},
++		deps: Deps{
++			Landings:            func() ([]string, error) { return slices.Clone(h.landed), nil },
++			PullRequestRecorded: func() (bool, error) { return h.pullRequest, h.pullRequestErr },
++			StencilsDir:         stencils,
++			NearestOrch:         func() (string, error) { return "ly:orch", nil },
++			Log: func(_, line string, _ bool) {
++				_, text, _ := strings.Cut(line, " ")
++				h.logged = append(h.logged, text)
++			},
++			Notice: func(_ context.Context, line string) error {
++				if h.noticeErr != nil {
++					return h.noticeErr
++				}
++				h.notices = append(h.notices, line)
++				return nil
++			},
++			BeamDescribe: describe,
++		},
++	}
++	return h
++}
++
++// step runs the landing count and the description step at the harness's clock.
++func (h *describeHarness) step() {
++	h.t.Helper()
++	if err := h.d.countLandings(h.now); err != nil {
++		h.t.Fatalf("countLandings() = %v; want nil", err)
++	}
++	if err := h.d.describeStep(context.Background(), h.now); err != nil {
++		h.t.Fatalf("describeStep() = %v; want nil", err)
++	}
++}
++
++func (h *describeHarness) state() State {
++	h.t.Helper()
++	current, _, err := ReadState(h.d.geom.StatePath)
++	if err != nil {
++		h.t.Fatalf("ReadState() = %v; want nil", err)
++	}
++	return current
++}
++
++// writeDraft writes the in-flight agent's draft.
++func (h *describeHarness) writeDraft() {
++	h.t.Helper()
++	path := h.state().Describe.DraftPath
++	if err := os.WriteFile(path, []byte("# Ship the beam\n"), 0o644); err != nil {
++		h.t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++	}
++}
++
++func TestDescribeStep(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	t.Run("a member landing under a recorded pull request starts the describer over the description and the beam's changes", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		if len(h.shuttle.started) != 1 {
++			t.Fatalf("agents started = %d; want 1", len(h.shuttle.started))
++		}
++		wantDraft := filepath.Join(h.d.geom.DescribeDir, h.now.UTC().Format("20060102T150405Z")+".md")
++		for _, want := range []string{wantDraft, "/hub/b/_lym/landing/summary.md", "#266 Tool-joint pressure loss", "`b`", "main"} {
++			if !strings.Contains(h.shuttle.started[0].Prompt, want) {
++				t.Errorf("prompt does not name %q", want)
++			}
++		}
++		describe := h.state().Describe
++		if describe == nil || describe.StrandGUID != "strand-1" || describe.DraftPath != wantDraft ||
++			!describe.Deadline.Equal(h.now.Add(describeTimeout)) || !slices.Equal(describe.Landings, []string{"m1"}) {
++			t.Fatalf("state Describe = %+v; want strand-1 over %s, a deadline 30 minutes out and the landing m1", describe, wantDraft)
++		}
++		if want := "description rewrite started after m1: " + wantDraft; !slices.Equal(h.logged, []string{want}) {
++			t.Errorf("log lines = %q; want the one %q", h.logged, want)
++		}
++		h.d.busy = false
++		h.step()
++		if !h.d.busy {
++			t.Errorf("daemon busy = false with the agent in flight; want true, so the loop keeps out of its idle backoff")
++		}
++	})
++
++	t.Run("a spawn that fails records no agent, drops the landings and tells the orch why", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name    string
++			breakIt func(h *describeHarness)
++			wantErr string
++		}{
++			{
++				name: "FactsUnreadable",
++				breakIt: func(h *describeHarness) {
++					h.d.deps.BeamDescribe.Facts = func() (BeamDescribeFacts, error) { return BeamDescribeFacts{}, errors.New("no origin record") }
++				},
++				wantErr: "read the beam's facts for the describer agent: no origin record",
++			},
++			{
++				name: "NearestOrchUnreadable",
++				breakIt: func(h *describeHarness) {
++					h.d.deps.NearestOrch = func() (string, error) { return "", errors.New("creel is down") }
++				},
++				wantErr: "read the nearest live orch: creel is down",
++			},
++			{
++				name:    "EngineUnresolved",
++				breakIt: func(h *describeHarness) { h.shuttle.engineErr = errors.New("the runner did not build") },
++				wantErr: "resolve the describer agent's engine: the runner did not build",
++			},
++			{
++				name:    "StencilMissing",
++				breakIt: func(h *describeHarness) { stencilkit.Remove(h.t, h.d.deps.StencilsDir, beamDescribeStencilName) },
++				wantErr: beamDescribeStencilName,
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newDescribeHarness(t)
++				h.step()
++				h.landed = []string{"m1"}
++				tt.breakIt(h)
++				if err := h.d.countLandings(h.now); err != nil {
++					t.Fatalf("countLandings() = %v; want nil", err)
++				}
++				if err := h.d.describeStep(context.Background(), h.now); err != nil {
++					t.Errorf("describeStep() = %v; want nil, the failure posted to the orch", err)
++				}
++				if len(h.notices) != 1 || !strings.Contains(h.notices[0], "b: the description rewrite after m1 did not start: ") ||
++					!strings.Contains(h.notices[0], tt.wantErr) || !strings.HasSuffix(h.notices[0], describeStandsWayForward) {
++					t.Errorf("notices = %q; want the one line naming the failed start and %q", h.notices, tt.wantErr)
++				}
++				if got := h.state(); len(h.shuttle.started) != 0 || got.Describe != nil || len(got.LandedSinceDescribe) != 0 {
++					t.Errorf("agents started, state = %d, Describe %+v, landings %v; want none started, none recorded and no landings left", len(h.shuttle.started), got.Describe, got.LandedSinceDescribe)
++				}
++			})
++		}
++	})
++
++	t.Run("a spawn failure whose post fails keeps the landings and posts on the next tick", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.landed = []string{"m1"}
++		h.d.deps.NearestOrch = func() (string, error) { return "", errors.New("creel is down") }
++		h.noticeErr = errors.New("creel is down")
++		if err := h.d.countLandings(h.now); err != nil {
++			t.Fatalf("countLandings() = %v; want nil", err)
++		}
++		err := h.d.describeStep(context.Background(), h.now)
++		if err == nil || !strings.Contains(err.Error(), "post the description rewrite's line: creel is down") {
++			t.Errorf("describeStep() = %v; want the post's error", err)
++		}
++		if got := h.state().LandedSinceDescribe; !slices.Equal(got, []string{"m1"}) {
++			t.Fatalf("landings to describe = %v; want m1 kept", got)
++		}
++		h.noticeErr = nil
++		if err := h.d.describeStep(context.Background(), h.now); err != nil {
++			t.Errorf("describeStep() = %v; want nil once the post goes out", err)
++		}
++		if got := h.state().LandedSinceDescribe; len(h.notices) != 1 || len(got) != 0 {
++			t.Errorf("notices, landings to describe = %q, %v; want the one line and none left", h.notices, got)
++		}
++	})
++
++	t.Run("a state record that cannot be written after the start ends the started agent again", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.landed = []string{"m1"}
++		h.d.deps.BeamDescribe.Shuttle = &startHookShuttle{tidyShuttleFake: h.shuttle, after: func() {
++			if err := os.Remove(h.d.geom.StatePath); err != nil {
++				t.Errorf("Remove(%s) = %v; want nil", h.d.geom.StatePath, err)
++			}
++			if err := os.Mkdir(h.d.geom.StatePath, 0o755); err != nil {
++				t.Errorf("Mkdir(%s) = %v; want nil", h.d.geom.StatePath, err)
++			}
++		}}
++		if err := h.d.countLandings(h.now); err != nil {
++			t.Fatalf("countLandings() = %v; want nil", err)
++		}
++		if err := h.d.describeStep(context.Background(), h.now); err == nil {
++			t.Errorf("describeStep() = nil; want the state write's error")
++		}
++		if !slices.Equal(h.shuttle.stopped, []string{"strand-1"}) {
++			t.Errorf("strands stopped = %v; want [strand-1], the agent that was started", h.shuttle.stopped)
++		}
++	})
++
++	t.Run("a draft whose findings do not read fails the step while the deadline stands, and ends the agent after it", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		h.writeDraft()
++		h.d.deps.BeamDescribe.Findings = func(string) ([]string, error) { return nil, errors.New("the draft is unreadable") }
++		err := h.d.describeStep(context.Background(), h.now)
++		if err == nil || !strings.Contains(err.Error(), "check the describer agent's draft: the draft is unreadable") {
++			t.Errorf("describeStep() = %v; want the findings error", err)
++		}
++		if h.state().Describe == nil || len(h.recorded) != 0 {
++			t.Errorf("state Describe, drafts recorded = %+v, %v; want the agent kept and nothing recorded", h.state().Describe, h.recorded)
++		}
++		h.now = h.now.Add(describeTimeout + time.Minute)
++		if err := h.d.describeStep(context.Background(), h.now); err != nil {
++			t.Fatalf("describeStep() past the deadline = %v; want nil", err)
++		}
++		want := "b: the describer agent gave no valid description after m1 by its deadline (draft unreadable: the draft is unreadable)" + describeStandsWayForward
++		if !slices.Equal(h.notices, []string{want}) || !slices.Equal(h.shuttle.stopped, []string{"strand-1"}) {
++			t.Errorf("notices, strands stopped = %q, %v; want the one %q and [strand-1]", h.notices, h.shuttle.stopped, want)
++		}
++		if got := h.state(); got.Describe != nil || len(got.LandedSinceDescribe) != 0 {
++			t.Fatalf("state = Describe %+v, landings %v; want both cleared", got.Describe, got.LandedSinceDescribe)
++		}
++		h.landed = []string{"m1", "m2"}
++		h.step()
++		if len(h.shuttle.started) != 2 {
++			t.Errorf("agents started = %d; want a second agent for the next landing", len(h.shuttle.started))
++		}
++	})
++
++	t.Run("a landing with no pull request recorded starts none and is dropped", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.pullRequest = false
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		h.pullRequest = true
++		h.step()
++		if len(h.shuttle.started) != 0 || len(h.state().LandedSinceDescribe) != 0 {
++			t.Errorf("agents started, landings to describe = %d, %v; want none of either", len(h.shuttle.started), h.state().LandedSinceDescribe)
++		}
++	})
++
++	t.Run("an unreadable landing record keeps the landing until it reads", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.pullRequestErr = errors.New("the landing record is unreadable")
++		h.landed = []string{"m1"}
++		h.step()
++		if got := h.state().LandedSinceDescribe; len(h.shuttle.started) != 0 || !slices.Equal(got, []string{"m1"}) {
++			t.Fatalf("agents started, landings to describe = %d, %v; want none started and m1 kept", len(h.shuttle.started), got)
++		}
++		h.pullRequestErr = nil
++		h.step()
++		if len(h.shuttle.started) != 1 {
++			t.Errorf("agents started = %d; want 1 once the record reads", len(h.shuttle.started))
++		}
++	})
++
++	t.Run("a passing draft is recorded once and ends the agent, and a landing meanwhile gets a rewrite of its own", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		draft := h.state().Describe.DraftPath
++		h.landed = []string{"m1", "m2"}
++		h.writeDraft()
++		// A strand that does not stop keeps nothing from the record: the agent ends at its own timeout.
++		h.shuttle.stopErr = errors.New("the strand is gone")
++		h.d.busy = true
++		h.step()
++		if !h.d.busy {
++			t.Errorf("daemon busy = false after the agent settled; want the true an earlier step set kept")
++		}
++		if !slices.Equal(h.recorded, []string{draft}) {
++			t.Fatalf("drafts recorded = %v; want [%s]", h.recorded, draft)
++		}
++		if !slices.Equal(h.shuttle.stopped, []string{"strand-1"}) {
++			t.Errorf("strands stopped = %v; want [strand-1]", h.shuttle.stopped)
++		}
++		if !slices.Contains(h.logged, "description rewritten after m1") || len(h.notices) != 0 {
++			t.Errorf("log lines, notices = %q, %q; want the rewrite line and no notice", h.logged, h.notices)
++		}
++		if got := h.state(); got.Describe != nil || !slices.Equal(got.LandedSinceDescribe, []string{"m2"}) {
++			t.Fatalf("state = Describe %+v, landings %v; want no agent and m2 left to describe", got.Describe, got.LandedSinceDescribe)
++		}
++		h.step()
++		if len(h.shuttle.started) != 2 || len(h.recorded) != 1 {
++			t.Fatalf("agents started, drafts recorded = %d, %d; want a second agent and no second record", len(h.shuttle.started), len(h.recorded))
++		}
++		if got := h.state().Describe.Landings; !slices.Equal(got, []string{"m2"}) {
++			t.Errorf("second agent's landings = %v; want [m2]", got)
++		}
++	})
++
++	t.Run("a record that fails posts why, and the next landing rewrites again", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name               string
++			recordedDespiteErr bool
++			recordErr          string
++			wantNotice         string
++			wantLog            string
++		}{
++			{
++				name:       "Refused",
++				recordErr:  "lym beam describe: the beam b is flagged ready",
++				wantNotice: "b: the description rewrite after m1 was not recorded: lym beam describe: the beam b is flagged ready; the recorded description stands, and the next member landing rewrites it again",
++				wantLog:    "description rewrite not recorded: lym beam describe: the beam b is flagged ready",
++			},
++			{
++				name:               "RecordedButPullRequestNotUpdated",
++				recordedDespiteErr: true,
++				recordErr:          "lym beam describe: the description of b is recorded, but its pull request is not updated: push refused",
++				wantNotice:         "b: the description rewrite after m1: lym beam describe: the description of b is recorded, but its pull request is not updated: push refused; way forward: run `lym beam pr update b`",
++				wantLog:            "description recorded, its pull request not updated: lym beam describe: the description of b is recorded, but its pull request is not updated: push refused",
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newDescribeHarness(t)
++				h.recordErr = errors.New(tt.recordErr)
++				h.recordedDespiteErr = tt.recordedDespiteErr
++				h.step()
++				h.landed = []string{"m1"}
++				h.step()
++				h.writeDraft()
++				h.step()
++				if !slices.Equal(h.notices, []string{tt.wantNotice}) {
++					t.Errorf("notices = %q; want the one %q", h.notices, tt.wantNotice)
++				}
++				if !slices.Contains(h.logged, tt.wantLog) {
++					t.Errorf("log lines = %q; want %q", h.logged, tt.wantLog)
++				}
++				if got := h.state(); got.Describe != nil || len(got.LandedSinceDescribe) != 0 {
++					t.Fatalf("state = Describe %+v, landings %v; want both cleared", got.Describe, got.LandedSinceDescribe)
++				}
++				h.landed = []string{"m1", "m2"}
++				h.step()
++				if len(h.shuttle.started) != 2 {
++					t.Errorf("agents started = %d; want a second agent for the next landing", len(h.shuttle.started))
++				}
++			})
++		}
++	})
++
++	t.Run("a line whose post fails is posted on the next tick, and the draft is not recorded again", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.recordErr = errors.New("the beam b is flagged ready")
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		h.writeDraft()
++		h.noticeErr = errors.New("creel is down")
++		err := h.d.describeStep(context.Background(), h.now)
++		if err == nil || !strings.Contains(err.Error(), "post the description rewrite's line: creel is down") {
++			t.Errorf("describeStep() = %v; want the post's error", err)
++		}
++		if got := h.state(); got.Describe == nil || got.Describe.OwedLine == "" || len(h.recorded) != 1 {
++			t.Fatalf("state Describe, drafts recorded = %+v, %d; want the agent kept with its line owed and one record", got.Describe, len(h.recorded))
++		}
++		h.noticeErr = nil
++		h.step()
++		want := "b: the description rewrite after m1 was not recorded: the beam b is flagged ready" + describeStandsWayForward
++		if !slices.Equal(h.notices, []string{want}) || len(h.recorded) != 1 {
++			t.Errorf("notices, drafts recorded = %q, %d; want the one %q and no second record", h.notices, len(h.recorded), want)
++		}
++		if got := h.state(); got.Describe != nil || len(got.LandedSinceDescribe) != 0 {
++			t.Errorf("state = Describe %+v, landings %v; want both cleared", got.Describe, got.LandedSinceDescribe)
++		}
++	})
++
++	t.Run("an agent with no passing draft by its deadline is ended with a line naming why", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name     string
++			draft    bool
++			findings []string
++			cause    string
++		}{
++			{name: "NoDraft", cause: "no draft written"},
++			{name: "DraftWithFindings", draft: true, findings: []string{"empty-body: body is empty"}, cause: "draft findings: empty-body: body is empty"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newDescribeHarness(t)
++				h.findings = tt.findings
++				h.step()
++				h.landed = []string{"m1"}
++				h.step()
++				if tt.draft {
++					h.writeDraft()
++					h.step()
++					if h.state().Describe == nil || len(h.recorded) != 0 {
++						t.Fatalf("state Describe, drafts recorded = %+v, %v; want the agent still waited on and nothing recorded", h.state().Describe, h.recorded)
++					}
++				}
++				h.now = h.now.Add(describeTimeout + time.Minute)
++				h.step()
++				want := "b: the describer agent gave no valid description after m1 by its deadline (" + tt.cause + "); the recorded description stands, and the next member landing rewrites it again"
++				if !slices.Equal(h.notices, []string{want}) {
++					t.Errorf("notices = %q; want the one %q", h.notices, want)
++				}
++				if !slices.Equal(h.shuttle.stopped, []string{"strand-1"}) || len(h.recorded) != 0 {
++					t.Errorf("strands stopped, drafts recorded = %v, %v; want [strand-1] and none", h.shuttle.stopped, h.recorded)
++				}
++				if got := h.state(); got.Describe != nil || len(got.LandedSinceDescribe) != 0 {
++					t.Errorf("state = Describe %+v, landings %v; want both cleared", got.Describe, got.LandedSinceDescribe)
++				}
++			})
++		}
++	})
++
++	t.Run("the prime's dobby rewrites nothing", func(t *testing.T) {
++		t.Parallel()
++		h := newDescribeHarness(t)
++		h.d.geom.Slug = ""
++		h.step()
++		h.landed = []string{"m1"}
++		h.step()
++		if len(h.shuttle.started) != 0 || len(h.state().LandedSinceDescribe) != 0 {
++			t.Errorf("agents started, landings to describe = %d, %v; want none of either", len(h.shuttle.started), h.state().LandedSinceDescribe)
++		}
++	})
++}
++
++// TestRun_DescribeFailureLeavesTheTidyRunning drives ticks in which the describe step fails every tick.
++// The board-tidy step of the same ticks still settles its agent, and no tick is logged as failing.
++func TestRun_DescribeFailureLeavesTheTidyRunning(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	h := newLoopHarness(t, 3)
++	stencils := filepath.Join(t.TempDir(), "stencils")
++	stencilkit.SeedInto(t, stencils)
++	stateDir := filepath.Dir(h.geom.StatePath)
++	h.geom.WorktreeName, h.geom.Slug, h.geom.WorktreeRoot = "b", "b", beamWorktreeRoot(t)
++	h.geom.DescribeDir = filepath.Join(stateDir, DescribeDirName)
++	h.geom.TidyDir = filepath.Join(stateDir, TidyDirName)
++
++	landingReads := 0
++	h.deps.Landings = func() ([]string, error) {
++		landingReads++
++		if landingReads == 1 {
++			return nil, nil
++		}
++		return []string{"m1"}, nil
++	}
++	h.deps.LoadConfig = func() (Config, error) { return Config{BoardTidyEvery: 1, BoardTidyTimeoutMin: 30}, nil }
++	h.deps.TidyShuttle = &tidyShuttleFake{}
++	h.deps.TidyModel = shuttleengine.ModelChoice{Engine: "b", Model: "sonnet"}
++	h.deps.StencilsDir = stencils
++	h.deps.NearestOrch = func() (string, error) { return "ly:orch", nil }
++	h.deps.PullRequestRecorded = func() (bool, error) { return true, nil }
++	h.deps.BeamDescribe = fakeBeamDescribeDeps(&tidyShuttleFake{})
++	h.deps.BeamDescribe.Findings = func(string) ([]string, error) { return nil, errors.New("the draft is unreadable") }
++
++	// Tick 2 starts both agents; the draft and the report written after it make tick 3 settle both.
++	h.perTick = func(n int) error {
++		if n != 2 {
++			return nil
++		}
++		current, _, err := ReadState(h.geom.StatePath)
++		if err != nil {
++			return err
++		}
++		if current.Describe == nil || current.Tidy == nil {
++			t.Errorf("state after tick 2 = Describe %+v, Tidy %+v; want both agents started", current.Describe, current.Tidy)
++			return nil
++		}
++		for _, path := range []string{current.Describe.DraftPath, current.Tidy.ReportPath} {
++			if err := os.WriteFile(path, []byte("# Ship the beam\n"), 0o644); err != nil {
++				return err
++			}
++		}
++		return nil
++	}
++
++	if err := h.run(t); err != nil {
++		t.Fatalf("Run() = %v; want nil", err)
++	}
++	if !slices.ContainsFunc(h.noticed(), func(line string) bool { return strings.Contains(line, "board tidy after 1 landings") }) {
++		t.Errorf("notices = %q; want the board-tidy report line, which the failing describe step must not hold back", h.noticed())
++	}
++	if _, found := h.loggedLine("tick failing: check the describer agent's draft: the draft is unreadable"); found {
++		t.Errorf("the log holds a failing tick; want the describe error logged by its own episode only")
++	}
++	current, _, err := ReadState(h.geom.StatePath)
++	if err != nil || current.Describe == nil || current.Tidy != nil {
++		t.Errorf("state = Describe %+v, Tidy %+v, error %v; want the describer kept and the tidy settled", current.Describe, current.Tidy, err)
++	}
++}
++
++func TestBeamDescribePrompt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	stencils := filepath.Join(t.TempDir(), "stencils")
++	stencilkit.SeedInto(t, stencils)
++
++	input := BeamDescribePromptInput{
++		Slug:      "hydraulics",
++		DraftPath: "/hub/hydraulics/.lym/beam/describe/20261122T120000Z.md",
++		Parent:    "ly:orch",
++		Facts: BeamDescribeFacts{
++			DescriptionPath: "/hub/hydraulics/_lym/landing/summary.md",
++			Branch:          "hydraulics",
++			ParentBranch:    "main",
++			Changes:         "- #266 Tool-joint pressure loss, merged 2026-10-30 13:05 UTC",
++		},
++	}
++	prompt, err := BeamDescribePrompt(stencils, "claude", input)
++	if err != nil {
++		t.Fatalf("BeamDescribePrompt() = _, %v; want nil", err)
++	}
++	stencilkit.RequireEditDirectiveOf(t, stencils, prompt, "claude", "codex")
++	codexPrompt, err := BeamDescribePrompt(stencils, "codex", input)
++	if err != nil {
++		t.Fatalf("BeamDescribePrompt(codex) = _, %v; want nil", err)
++	}
++	stencilkit.RequireEditDirectiveOf(t, stencils, codexPrompt, "codex", "claude")
++	for _, want := range []string{"`hydraulics`", input.DraftPath, input.Facts.DescriptionPath, "main...hydraulics", input.Facts.Changes, "ly:orch"} {
++		if !strings.Contains(prompt, want) {
++			t.Errorf("BeamDescribePrompt() lacks %q", want)
++		}
++	}
++	if strings.Contains(prompt, "{{") {
++		t.Errorf("BeamDescribePrompt() holds an unfilled marker")
++	}
++	input.Facts.Changes = ""
++	empty, err := BeamDescribePrompt(stencils, "claude", input)
++	if err != nil || !strings.Contains(empty, noBeamChanges) {
++		t.Errorf("BeamDescribePrompt(no changes) = %v; want the prompt to name a beam with no commit its parent lacks", err)
++	}
++
++	spec := BeamDescribeSpec(prompt, input.DraftPath, "claude", shuttleengine.ModelChoice{Engine: "b", Model: "sonnet"}, describeTimeout)
++	if spec.PromptEngine != "claude" || spec.Segment != segmentcolor.Describe || spec.ConfigRole != agentconfig.RoleDescriber {
++		t.Errorf("BeamDescribeSpec() = engine %q, segment %v, config role %q; want claude, the describe segment and the describer role", spec.PromptEngine, spec.Segment, spec.ConfigRole)
++	}
++	if spec.Role != BeamDescribeRole || !slices.Equal(spec.OutputFiles, []string{input.DraftPath}) || spec.Timeout != describeTimeout {
++		t.Errorf("BeamDescribeSpec() = role %q, outputs %v, timeout %v; want the role, the draft and the timeout", spec.Role, spec.OutputFiles, spec.Timeout)
++	}
++}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 26a58f9d3..789d0be51 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -26,7 +26,7 @@
+ //
+ //   - The lock at Geometry.LockPath is the one decision whether this process is the dobby.
+ //     A lock that stays held returns ErrDobbyRunning.
+-//   - A beam dobby ends when its worktree is gone.
++//   - A beam dobby ends when its worktree is gone, after it stops the tidy and describer agents it last saw in flight.
+ //     The test is the absence of the worktree's `.git` and never of its root,
+ //     because every state write recreates the record's directory.
+ //     The prime's dobby never takes the exit.
+@@ -144,9 +144,8 @@
+ //   - A run seen past its Land row that dobby remembered ahead of it with `land_notice` on owes one line
+ //     through Deps.Notice to the nearest live orch.
+ //     A run whose `land_notice` read off owes none.
+-//   - While Deps.PullRequestRecorded reads a pull request recorded for the beam,
+-//     a landed line ends with the beam's follow-up `lym beam describe <slug>`.
+-//     A nil PullRequestRecorded and the prime's dobby add no follow-up.
++//   - A landed line asks the orch for nothing:
++//     a member landing under a recorded pull request gets the description rewrite.
+ //   - An owed line stays in the state record and is posted every tick until a post succeeds.
+ //   - A run first seen past its Land row gets no line, and a done board entry owes none by itself.
+ //
+@@ -160,6 +159,28 @@
+ //     Past `board_tidy_timeout_min` dobby ends the agent and posts a no-report line.
+ //   - A landing whose run records `lym batten cleanup --apply` removed before dobby read them is not counted.
+ //
++// The description rewrite:
++//
++//   - A beam's dobby whose Deps.BeamDescribe.Record is set records each landing it counts as one to describe.
++//     A landing that waits on a board-tidy agent in flight is described once the tidy settles.
++//   - While Deps.PullRequestRecorded reads a pull request recorded for the beam,
++//     dobby spawns the describer agent over the landings to describe, unless one is in flight.
++//     The agent rewrites the beam's description whole.
++//     It reads the recorded one, the beam's commits and every member pull request.
++//     Its one output is a draft under `.lym/beam/describe/`, named by its UTC timestamp.
++//   - Landings counted while no pull request is recorded are dropped;
++//     an unreadable landing record keeps them until it reads, logged once per episode.
++//   - Once the draft passes Deps.BeamDescribe.Findings, dobby ends the agent.
++//     It records the draft through Deps.BeamDescribe.Record,
++//     which replaces the beam's description, commits it and updates the pull request.
++//   - A spawn that fails, a record that fails, and an agent with no passing draft by its timeout
++//     leave the recorded description standing.
++//     Dobby posts one line to the nearest live orch naming why,
++//     and the next member landing rewrites the description again.
++//     A record that committed the description but not the pull request update posts the way forward `lym beam pr update`.
++//   - An error of the description step is logged once per episode and holds no other step of the tick.
++//   - The prime's dobby rewrites nothing.
++//
+ // The done-run clear:
+ //
+ //   - Each tick with no anchor change standing removes the records, scratch and task branch of each listed run
+diff --git a/internal/dobbyengine/geometry.go b/internal/dobbyengine/geometry.go
+index 9422ad291..a724da644 100644
+--- a/internal/dobbyengine/geometry.go
++++ b/internal/dobbyengine/geometry.go
+@@ -22,6 +22,8 @@ const (
+ 	StateFileName = "state.json"
+ 	// TidyDirName is the directory of the board-tidy reports in the worktree's `.lym/beam/` directory.
+ 	TidyDirName = "tidy"
++	// DescribeDirName is the directory of the describer agent's drafts in the worktree's `.lym/beam/` directory.
++	DescribeDirName = "describe"
+ )
+ 
+ // Geometry holds every path and name dobby needs, each absolute and handed in by the hub wiring.
+@@ -51,6 +53,9 @@ type Geometry struct {
+ 	PrimeLogPath string
+ 	// TidyDir is the board-tidy reports directory under the worktree's `.lym/beam/`, each named by its UTC timestamp.
+ 	TidyDir string
++	// DescribeDir is the describer agent's drafts directory under the worktree's `.lym/beam/`.
++	// Each draft is named by its UTC timestamp.
++	DescribeDir string
+ 	// PrimeRunsDir is the prime's batten runs directory.
+ 	PrimeRunsDir string
+ 	// LymExecutable is the absolute path of the lym binary dobby re-executes and spawns passes with.
+diff --git a/internal/dobbyengine/landnotice.go b/internal/dobbyengine/landnotice.go
+index f3b3cb074..5e09ccec7 100644
+--- a/internal/dobbyengine/landnotice.go
++++ b/internal/dobbyengine/landnotice.go
+@@ -1,7 +1,6 @@
+ // landnotice.go implements the landing notice: one creel line to the nearest live orch.
+ // It goes out once a run seen ahead of its Land row lands or ends without landing.
+ // It goes only when the run's land_notice setting read on, as read ahead of Land or, when that never read, after it.
+-// While a beam's pull request is recorded, a landed line carries the beam's follow-up.
+ 
+ package dobbyengine
+ 
+@@ -50,16 +49,13 @@ func (s LandNoticeState) read() bool {
+ // The reading of land_notice comes from Deps.LandNotice.
+ // A failed read keeps the run's last reading and is logged once per episode.
+ // A run past Land that was never read is read again at each tick, and its notice waits for a read to succeed.
+-// A landed line it decides carries the beam's follow-up while the beam's pull request is recorded.
+-// A failed read of the landing record decides nothing this tick and is logged once per episode.
+ func (d *daemon) landNotices(ctx context.Context, now time.Time, runs []RunView) {
+-	followUp, followUpRead := d.pullRequestFollowUp()
+ 	requests := d.readLandNoticeRequests(runs, d.unreadLandNoticeRuns(runs))
+ 	err := UpdateState(d.geom.StatePath, func(s *State) error {
+ 		if s.LandNotices == nil {
+ 			s.LandNotices = map[string]LandNoticeState{}
+ 		}
+-		rememberRuns(s.LandNotices, runs, requests, followUpRead, followUp)
++		rememberRuns(s.LandNotices, runs, requests)
+ 		return nil
+ 	})
+ 	if err != nil {
+@@ -114,14 +110,13 @@ func (d *daemon) unreadLandNoticeRuns(runs []RunView) map[string]bool {
+ 
+ // rememberRuns refreshes memory from the runs listed this tick.
+ // A run is remembered with the land_notice reading in requests, when it has one.
+-// While decides is set, a remembered run past its Land row that was read at least once gets its notice decided:
++// A remembered run past its Land row that was read at least once gets its notice decided:
+ // a line when its remembered reading is on, and none when it is off.
+ // A remembered run past Land that was never read stays undecided until a read succeeds.
+-// A landed line ends with followUp, empty for none.
+ // A run that owes nothing after this is forgotten, and so is one whose line an older binary had already posted.
+ // A run first seen past its Land row is never remembered.
+ // The memory of a run not listed this tick is dropped unless it owes something.
+-func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests map[string]bool, decides bool, followUp string) {
++func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests map[string]bool) {
+ 	listed := make(map[string]bool, len(runs))
+ 	for _, run := range runs {
+ 		listed[run.Slug] = true
+@@ -141,11 +136,11 @@ func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests ma
+ 			continue
+ 		}
+ 		memory[run.Slug] = note
+-		if !note.read() || !decides {
++		if !note.read() {
+ 			continue
+ 		}
+ 		if note.Requested {
+-			note.Line = landNoticeLine(run, followUp)
++			note.Line = landNoticeLine(run)
+ 		}
+ 		if !note.owed() {
+ 			delete(memory, run.Slug)
+@@ -160,27 +155,6 @@ func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests ma
+ 	}
+ }
+ 
+-// pullRequestFollowUp returns the follow-up a landed line carries.
+-// It is set while the beam's landing record holds a pull request.
+-// The follow-up asks the orch to add the landing to the change description and to run `lym beam describe <slug>`.
+-// It is empty while no pull request is recorded, for the prime's dobby, and for a dobby with no PullRequestRecorded seam.
+-// It also reports whether the read succeeded; a failed read is logged once per episode.
+-func (d *daemon) pullRequestFollowUp() (string, bool) {
+-	if d.deps.PullRequestRecorded == nil || d.geom.Slug == "" {
+-		return "", true
+-	}
+-	recorded, err := d.deps.PullRequestRecorded()
+-	if err != nil {
+-		d.landNoticePullRequest.Fail("dobbyengine: the beam's landing record is unreadable; no landing notice is decided", "worktree", d.geom.WorktreeName, "error", err)
+-		return "", false
+-	}
+-	d.landNoticePullRequest.Recover("dobbyengine: the beam's landing record reads again; landing notices are decided", "worktree", d.geom.WorktreeName)
+-	if !recorded {
+-		return "", true
+-	}
+-	return fmt.Sprintf("; add it to the change description, then run `lym beam describe %s`, which updates the pull request", d.geom.Slug), true
+-}
+-
+ // settleLandNotices posts each owed line through Deps.Notice and drops a memory once it owes nothing.
+ // A failed post keeps the line for the next tick, with no cap on the tries, and is logged once per episode.
+ func (d *daemon) settleLandNotices(ctx context.Context, now time.Time) {
+@@ -216,20 +190,20 @@ func (d *daemon) dropLandNotice(slug string) {
+ }
+ 
+ // landNoticeLine is the line a run's landing notice posts.
+-// It names the slug and the outcome, and for a landing the head of its landing commit followed by followUp.
++// It names the slug and the outcome, and for a landing the head of its landing commit.
+ // A landing that changed no code path on the parent branch says so in place of naming its commit as the landing.
+-func landNoticeLine(run RunView, followUp string) string {
++func landNoticeLine(run RunView) string {
+ 	if !run.Landed {
+ 		return fmt.Sprintf("%s %s: %s; lym batten status %s shows the run", runNoticePrefix, run.Slug, landNoticeOutcome(run), run.Slug)
+ 	}
+ 	if run.LandingCommit == "" {
+-		return fmt.Sprintf("%s %s: landed, commit unknown%s", runNoticePrefix, run.Slug, followUp)
++		return fmt.Sprintf("%s %s: landed, commit unknown", runNoticePrefix, run.Slug)
+ 	}
+ 	commit := run.LandingCommit[:min(len(run.LandingCommit), landingCommitWidth)]
+ 	if run.EmptyLanding {
+-		return fmt.Sprintf("%s %s: landed with an empty diff: no file of its parent branch changed, which stays at %s%s", runNoticePrefix, run.Slug, commit, followUp)
++		return fmt.Sprintf("%s %s: landed with an empty diff: no file of its parent branch changed, which stays at %s", runNoticePrefix, run.Slug, commit)
+ 	}
+-	return fmt.Sprintf("%s %s: landed as %s%s", runNoticePrefix, run.Slug, commit, followUp)
++	return fmt.Sprintf("%s %s: landed as %s", runNoticePrefix, run.Slug, commit)
+ }
+ 
+ // landNoticeOutcome names how a run past its Land row ended.
+diff --git a/internal/dobbyengine/landnotice_test.go b/internal/dobbyengine/landnotice_test.go
+index 6ce3665ce..d3fe6ffdb 100644
+--- a/internal/dobbyengine/landnotice_test.go
++++ b/internal/dobbyengine/landnotice_test.go
+@@ -1,6 +1,6 @@
+ // landnotice_test.go pins the landing notice over a pass harness.
+ // It covers which runs get a line under each reading of land_notice and the line's text.
+-// It covers a beam with a recorded pull request adding its follow-up to a landed line.
++// It covers a member landing under a recorded pull request, whose line carries no follow-up.
+ // It covers the owed line's posts until one succeeds, and the memory's upkeep.
+ 
+ package dobbyengine
+@@ -28,8 +28,6 @@ func TestLandNotices(t *testing.T) {
+ 	const landedLine = "[dobby notice] task: landed as 0123456789ab"
+ 	const emptyLandingLine = "[dobby notice] task: landed with an empty diff: no file of its parent branch changed, which stays at 0123456789ab"
+ 	const unknownCommitLine = "[dobby notice] task: landed, commit unknown"
+-	const memberFollowUp = "; add it to the change description, then run `lym beam describe b`, which updates the pull request"
+-	const memberLandedLine = landedLine + memberFollowUp
+ 	const unlandedLine = "[dobby notice] task: ended without landing; lym batten status task shows the run"
+ 
+ 	tests := []struct {
+@@ -48,11 +46,8 @@ func TestLandNotices(t *testing.T) {
+ 		rebuildBeforeTick int
+ 		// beam makes the dobby the one of beam b, with the run's board entry a member of b while the run is ahead of Land.
+ 		beam bool
+-		// pullRequest is what b's landing record reads as holding, and failPullRequestOnTick the one-based tick whose read fails.
+-		pullRequest           bool
+-		failPullRequestOnTick int
+-		// pullRequestFromTick, when set, makes b's landing record hold a pull request from that one-based tick on.
+-		pullRequestFromTick int
++		// pullRequest is what b's landing record reads as holding.
++		pullRequest bool
+ 		// ticks are the run listings of successive ticks.
+ 		ticks [][]RunView
+ 		// failPosts is how many posts fail before the Notice seam succeeds.
+@@ -76,13 +71,7 @@ func TestLandNotices(t *testing.T) {
+ 		{name: "TheLookupFollowsARequestRaisedBetweenTicks", requestedByTick: []bool{false, true}, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}},
+ 		{name: "AFailedLookupKeepsTheLastReading", requestedByTick: []bool{true, false}, failLookupOnTick: 2, ticks: [][]RunView{{running}, {running}, {landed}}, want: []string{landedLine}},
+ 		{name: "AMemberWhoseLookupReadsOffGetsNoLineUnderAPullRequest", beam: true, pullRequest: true, ticks: [][]RunView{{running}, {landed}}},
+-		{name: "AMemberWhoseLookupReadsOnGetsTheFollowUpUnderAPullRequest", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "ABeamWithNoPullRequestSendsARequestedMemberNoFollowUp", beam: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}},
+-		{name: "AnUnlandedMemberLineCarriesNoFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {unlanded}}, want: []string{unlandedLine}},
+-		{name: "AFailedLandingRecordReadDecidesNothingUntilItReads", beam: true, pullRequest: true, requested: true, failPullRequestOnTick: 2, ticks: [][]RunView{{running}, {landed}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberLandingInTheTickThePullRequestIsRecordedGetsTheFollowUp", beam: true, requested: true, pullRequestFromTick: 2, ticks: [][]RunView{{running}, {landed}}, want: []string{memberLandedLine}},
+-		{name: "AMemberLandedWithNoCommitCarriesTheFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landedNoCommit}}, want: []string{unknownCommitLine + memberFollowUp}},
+-		{name: "AMemberLandedWithAnEmptyDiffCarriesTheFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landedEmpty}}, want: []string{emptyLandingLine + memberFollowUp}},
++		{name: "AMemberLandingUnderAPullRequestCarriesNoFollowUp", beam: true, pullRequest: true, requested: true, ticks: [][]RunView{{running}, {landed}}, want: []string{landedLine}},
+ 		{name: "ARunNeverReadAheadOfLandWaitsPastLandForARead", requested: true, failLookupThroughTick: 3, ticks: [][]RunView{{running}, {running}, {landed}, {landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AnOlderMemoryHoldingARequestIsNotReadAgainPastLand", seed: &LandNoticeState{Requested: true}, ticks: [][]RunView{{landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AClearOnlyMemoryOfAnOlderBinaryGetsNoSecondNotice", requested: true, seed: &LandNoticeState{Requested: true, ClearOwed: true}, ticks: [][]RunView{{landed}, {landed}}},
+@@ -111,12 +100,7 @@ func TestLandNotices(t *testing.T) {
+ 			}
+ 			if tt.beam {
+ 				h.d.geom.Slug = "b"
+-				h.d.deps.PullRequestRecorded = func() (bool, error) {
+-					if tickNumber == tt.failPullRequestOnTick {
+-						return false, errors.New("the landing record is unreadable")
+-					}
+-					return tt.pullRequest || (tt.pullRequestFromTick != 0 && tickNumber >= tt.pullRequestFromTick), nil
+-				}
++				h.d.deps.PullRequestRecorded = func() (bool, error) { return tt.pullRequest, nil }
+ 			}
+ 			if tt.seed != nil {
+ 				err := UpdateState(h.d.geom.StatePath, func(s *State) error {
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 451251cb1..7061a81cc 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -85,8 +85,9 @@ type Deps struct {
+ 	CheckBinary func(beforeExec func(), failed func(error))
+ 	// StartTicks returns the start time `proc.StartTime` reads, empty when unreadable; nil reads this process's pid.
+ 	StartTicks func() string
+-	// PrimeTidyShuttle stops the board-tidy agent of a beam with no worktree, at the prime's location; nil stops nothing.
+-	PrimeTidyShuttle TidyShuttle
++	// PrimeTidyShuttle stops the board-tidy and describer agents of a beam with no worktree, at the prime's location;
++	// nil stops nothing.
++	PrimeTidyShuttle AgentShuttle
+ 	// ReexecLockWait is how long a re-exec waits for the dobby lock; zero means ten seconds.
+ 	ReexecLockWait time.Duration
+ 	// Locked runs once the lock is held, before the state record is written; nil does nothing.
+@@ -141,7 +142,7 @@ type Deps struct {
+ 	// A nil Landings, or a nil TidyShuttle, leaves the board tidy off.
+ 	Landings func() ([]string, error)
+ 	// TidyShuttle starts and stops the board-tidy agent.
+-	TidyShuttle TidyShuttle
++	TidyShuttle AgentShuttle
+ 	// TidyModel is the model the board-tidy agent runs on, resolved by the hub wiring.
+ 	TidyModel shuttleengine.ModelChoice
+ 	// StencilsDir is the hub's stencils directory, where the board-tidy stencil is read at call time.
+@@ -163,9 +164,11 @@ type Deps struct {
+ 	// A nil BeamReady, as on the prime, holds nothing.
+ 	BeamReady func() (bool, error)
+ 	// PullRequestRecorded reads whether the beam's landing record holds a pull request.
+-	// While it does, a landed line carries the beam's follow-up.
++	// While it does, a member landing gets the beam's description rewritten.
+ 	// A nil PullRequestRecorded, as on the prime, reads none.
+ 	PullRequestRecorded func() (bool, error)
++	// BeamDescribe are the seams of the beam's description rewrite after a member landing; a nil Record rewrites nothing.
++	BeamDescribe BeamDescribeDeps
+ 	// LandNotice reports whether land_notice is on for the run slug.
+ 	// It reads through the per-task lookup from the run's worktree up.
+ 	// A nil LandNotice reads every run as off.
+@@ -315,9 +318,11 @@ type daemon struct {
+ 	startTicks string
+ 	// held is the dobby lock once taken, nil before.
+ 	held *lock.FileLock
+-	// keptTidy is the tidy agent in flight the state record last showed, which a beam dobby whose worktree is gone stops.
+-	keptTidy  *TidyState
+-	stateRead logger.Episode
++	// keptTidy and keptDescribe are the tidy and describer agents in flight the state record last showed.
++	// A beam dobby whose worktree is gone stops them.
++	keptTidy     *TidyState
++	keptDescribe *DescribeState
++	stateRead    logger.Episode
+ 	// loggedRuns holds the label last logged for each listed run, by slug, in memory only.
+ 	loggedRuns map[string]string
+ 	// primeOwed reports that a heartbeat failed to read the runs, so the next listing records labels silently.
+@@ -369,8 +374,10 @@ type daemon struct {
+ 	// readyRead and readyPost are the failure episodes of the ready record's read and of the member notices a beam owes.
+ 	readyRead logger.Episode
+ 	readyPost logger.Episode
+-	// landNoticePullRequest is the failure episode of the landing notices' read of the beam's landing record.
+-	landNoticePullRequest logger.Episode
++	// describePullRequest is the failure episode of the description rewrite's read of the beam's landing record.
++	describePullRequest logger.Episode
++	// describeFailures is the failure episode of the description step, whose error never holds the steps after it.
++	describeFailures logger.Episode
+ 	// landNoticeLookup guards each run's land_notice lookup by its slug.
+ 	landNoticeLookup logger.EpisodeSet
+ 	// landNoticePosts guards each owed landing notice's post by its slug.
+@@ -467,7 +474,7 @@ func (d *daemon) recordStart() error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	d.keptTidy = record.Tidy
++	d.keptTidy, d.keptDescribe = record.Tidy, record.Describe
+ 	own := found && record.PID == os.Getpid()
+ 	if own && record.StartTicks == d.startTicks {
+ 		return nil
+@@ -500,34 +507,34 @@ func (d *daemon) worktreeGone() bool {
+ 	return errors.Is(err, fs.ErrNotExist)
+ }
+ 
+-// readKeptTidy reads the state record's tidy in flight without creating a directory.
++// readKeptAgents reads the state record's tidy and describer agents in flight without creating a directory.
+ // The prime's dobby, which never takes the exit, reads nothing.
+ // A record that does not decode reads as absent with one Warn.
+-func (d *daemon) readKeptTidy() (*TidyState, error) {
++func (d *daemon) readKeptAgents() (*TidyState, *DescribeState, error) {
+ 	if d.geom.Slug == "" {
+-		return d.keptTidy, nil
++		return d.keptTidy, d.keptDescribe, nil
+ 	}
+ 	record, _, err := state.ReadJSON[State](d.geom.StatePath, lockPath(d.geom.StatePath))
+ 	if errors.Is(err, state.ErrDecode) {
+ 		logger.Warn("dobbyengine: the state record does not decode and reads as absent", "path", d.geom.StatePath, "error", err)
+-		return nil, nil
++		return nil, nil, nil
+ 	}
+-	return record.Tidy, err
++	return record.Tidy, record.Describe, err
+ }
+ 
+-// rememberKeptTidy keeps the tidy a read found, so a dobby whose worktree vanishes can stop the agent the last tick saw.
+-// A failed read is logged once per episode and keeps the earlier one.
+-func (d *daemon) rememberKeptTidy(kept *TidyState, readErr error) {
++// rememberKeptAgents keeps the agents a read found, so a dobby whose worktree vanishes can stop those the last tick saw.
++// A failed read is logged once per episode and keeps the earlier ones.
++func (d *daemon) rememberKeptAgents(tidy *TidyState, describe *DescribeState, readErr error) {
+ 	if readErr != nil {
+ 		d.stateRead.Fail("dobbyengine: the state record is unreadable; the dobby goes on", "worktree", d.geom.WorktreeName, "error", readErr)
+ 		return
+ 	}
+ 	d.stateRead.Recover("dobbyengine: the state record reads again", "worktree", d.geom.WorktreeName)
+-	d.keptTidy = kept
++	d.keptTidy, d.keptDescribe = tidy, describe
+ }
+ 
+ // exitWorktreeGone writes the reason a beam dobby ends to the prime's dobby log.
+-// It also stops the tidy agent the dobby last saw in flight.
++// It also stops the tidy and describer agents the dobby last saw in flight.
+ // It touches nothing at the removed worktree's path.
+ func (d *daemon) exitWorktreeGone() {
+ 	logPrime := func(text string) {
+@@ -536,15 +543,22 @@ func (d *daemon) exitWorktreeGone() {
+ 		}
+ 	}
+ 	logPrime(fmt.Sprintf("stop: the worktree of beam %s is gone", d.geom.Slug))
+-	if d.keptTidy == nil || d.deps.PrimeTidyShuttle == nil {
++	if d.deps.PrimeTidyShuttle == nil {
+ 		return
+ 	}
+-	guid := d.keptTidy.StrandGUID
+-	if err := d.deps.PrimeTidyShuttle.StopStrand(guid); err != nil {
+-		logPrime(fmt.Sprintf("the board-tidy agent %s of beam %s did not stop: %v; way forward: lym reed remove %s", guid, d.geom.Slug, err, guid))
+-		return
++	stop := func(kind, guid string) {
++		if err := d.deps.PrimeTidyShuttle.StopStrand(guid); err != nil {
++			logPrime(fmt.Sprintf("the %s agent %s of beam %s did not stop: %v; way forward: lym reed remove %s", kind, guid, d.geom.Slug, err, guid))
++			return
++		}
++		logPrime(fmt.Sprintf("stopped the %s agent %s of beam %s", kind, guid, d.geom.Slug))
++	}
++	if d.keptTidy != nil {
++		stop("board-tidy", d.keptTidy.StrandGUID)
++	}
++	if d.keptDescribe != nil {
++		stop("describer", d.keptDescribe.StrandGUID)
+ 	}
+-	logPrime(fmt.Sprintf("stopped the board-tidy agent %s of beam %s", guid, d.geom.Slug))
+ }
+ 
+ // loop ticks and waits until ctx ends or another machine owns the beam.
+@@ -587,12 +601,12 @@ func (d *daemon) loop(ctx context.Context, events <-chan struct{}) error {
+ 			break
+ 		}
+ 
+-		kept, readErr := d.readKeptTidy()
++		keptTidy, keptDescribe, readErr := d.readKeptAgents()
+ 		if d.worktreeGone() {
+ 			d.exitWorktreeGone()
+ 			return nil
+ 		}
+-		d.rememberKeptTidy(kept, readErr)
++		d.rememberKeptAgents(keptTidy, keptDescribe, readErr)
+ 
+ 		// A re-exec would cut a teardown in flight short, half done, so the check waits for it to end.
+ 		if d.teardown == nil {
+@@ -650,11 +664,12 @@ func (d *daemon) standingMove() string {
+ // It records the sleeps the watch saw and fills in the state record's pid when none is set.
+ // A sleep the watch sees, and a record found without a pid, owe every run a full pass until a tick returns nil.
+ // An anchor-move record of the geometry holds the scheduling.
+-// While one exists, a tick spawns no pass, starts no task and runs no tidy step.
++// While one exists, a tick spawns no pass, starts no task and runs no tidy or description step.
+ // It still owes what it owed before.
+ // That is logged once per episode,
+ // and the state record's upkeep and the landing count go on.
+ // The adopt hold holds the scheduling the same way, and the beam's landing step too.
++// An error of the description step is logged once per episode and holds neither the tidy step nor the landing step.
+ // A sleep the watch sees owes the catch-up from origin, which runs first, before any scheduling.
+ // While it stands owed the tick holds the scheduling and the landing step as under an anchor change.
+ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+@@ -712,6 +727,11 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 	}
+ 	if scheduling {
+ 		d.clearDoneRuns(now)
++		if err := d.describeStep(ctx, now); err != nil {
++			d.describeFailures.Fail("dobbyengine: the description step failed; the loop goes on", "worktree", d.geom.WorktreeName, "error", err)
++		} else {
++			d.describeFailures.Recover("dobbyengine: the description step succeeds again", "worktree", d.geom.WorktreeName)
++		}
+ 		if err := d.tidyStep(ctx, now); err != nil {
+ 			return err
+ 		}
+diff --git a/internal/dobbyengine/loop_move_test.go b/internal/dobbyengine/loop_move_test.go
+index ef0093971..977bc34ce 100644
+--- a/internal/dobbyengine/loop_move_test.go
++++ b/internal/dobbyengine/loop_move_test.go
+@@ -15,8 +15,8 @@ import (
+ )
+ 
+ // TestRun_NoPassWhileAMoveStands drives ticks with a move record present and then removed.
+-// While the record stands, no pass, task or tidy agent starts, though a landing is still counted.
+-// The next tick starts the due pass, the ready task and the tidy agent.
++// While the record stands, no pass, task, tidy agent or describer agent starts, though a landing is still counted.
++// The next tick starts the due pass, the ready task, the tidy agent and the describer agent.
+ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -30,9 +30,14 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	stencilkit.SeedInto(t, stencils)
+ 	h.geom.MoveRecords = []string{record}
+ 	h.geom.TidyDir = filepath.Join(filepath.Dir(h.geom.StatePath), TidyDirName)
++	h.geom.DescribeDir = filepath.Join(filepath.Dir(h.geom.StatePath), DescribeDirName)
++	h.geom.Slug, h.geom.WorktreeRoot = "beam", beamWorktreeRoot(t)
+ 
+ 	passes, fullPasses := map[string]int{}, map[string]int{}
+ 	shuttle := &tidyShuttleFake{}
++	describeShuttle := &tidyShuttleFake{}
++	h.deps.PullRequestRecorded = func() (bool, error) { return true, nil }
++	h.deps.BeamDescribe = fakeBeamDescribeDeps(describeShuttle)
+ 	landingReads := 0
+ 	h.deps.Runs = func() ([]RunView, error) { return []RunView{runningRun("due")}, nil }
+ 	h.deps.SpawnPass = func(slug string, continuePass, _ bool) (<-chan PassExit, error) {
+@@ -68,8 +73,8 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 	h.perTick = func(n int) error {
+ 		switch n {
+ 		case 1, 2:
+-			if len(passes) != 0 || len(shuttle.started) != 0 {
+-				t.Errorf("after tick %d with the record standing, passes = %v and tidy agents = %d; want none", n, passes, len(shuttle.started))
++			if len(passes) != 0 || len(shuttle.started) != 0 || len(describeShuttle.started) != 0 {
++				t.Errorf("after tick %d with the record standing, passes = %v, tidy agents = %d and describer agents = %d; want none", n, passes, len(shuttle.started), len(describeShuttle.started))
+ 			}
+ 			if n == 2 {
+ 				if err := os.Remove(record); err != nil {
+@@ -77,8 +82,8 @@ func TestRun_NoPassWhileAMoveStands(t *testing.T) {
+ 				}
+ 			}
+ 		case 3:
+-			if passes["due"] != 1 || passes["fresh"] != 1 || len(shuttle.started) != 1 {
+-				t.Errorf("after tick 3 with the record gone, passes = %v and tidy agents = %d; want one pass of the due run, one first pass of the ready task and one tidy agent", passes, len(shuttle.started))
++			if passes["due"] != 1 || passes["fresh"] != 1 || len(shuttle.started) != 1 || len(describeShuttle.started) != 1 {
++				t.Errorf("after tick 3 with the record gone, passes = %v, tidy agents = %d and describer agents = %d; want one pass of the due run, one first pass of the ready task, one tidy agent and one describer agent", passes, len(shuttle.started), len(describeShuttle.started))
+ 			}
+ 		}
+ 		return nil
+diff --git a/internal/dobbyengine/loop_worktreegone_test.go b/internal/dobbyengine/loop_worktreegone_test.go
+index 0dcf23259..c0157b039 100644
+--- a/internal/dobbyengine/loop_worktreegone_test.go
++++ b/internal/dobbyengine/loop_worktreegone_test.go
+@@ -69,6 +69,14 @@ func (r *goneRig) setTidy(t *testing.T, tidy *TidyState) {
+ 	}
+ }
+ 
++// setDescribe rewrites the state record's describer in flight.
++func (r *goneRig) setDescribe(t *testing.T, describe *DescribeState) {
++	t.Helper()
++	if err := UpdateState(r.h.geom.StatePath, func(s *State) error { s.Describe = describe; return nil }); err != nil {
++		t.Fatalf("UpdateState() = %v; want nil", err)
++	}
++}
++
+ // removeWorktree removes the whole worktree, as a teardown does.
+ func (r *goneRig) removeWorktree(t *testing.T) {
+ 	t.Helper()
+@@ -135,6 +143,27 @@ func TestRun_WorktreeGoneExits(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a describer in flight is stopped beside the tidy and both lines land in the prime's log", func(t *testing.T) {
++		t.Parallel()
++		r := newGoneRig(t, "beam-a", tidy)
++		r.setDescribe(t, &DescribeState{StrandGUID: "d1"})
++		r.h.perTick = func(n int) error {
++			if n == 1 {
++				r.removeWorktree(t)
++			}
++			return nil
++		}
++		if err := r.h.run(t); err != nil {
++			t.Fatalf("Run() = %v; want nil", err)
++		}
++		if !slices.Equal(r.shuttle.stopped, []string{"s1", "d1"}) {
++			t.Errorf("stopped = %v; want [s1 d1]", r.shuttle.stopped)
++		}
++		if text := r.primeLogText(t); !strings.Contains(text, "stopped the describer agent d1 of beam beam-a") {
++			t.Errorf("prime log = %q; want the describer's stop line", text)
++		}
++	})
++
+ 	t.Run("a failed stop names lym reed remove in the prime's log", func(t *testing.T) {
+ 		t.Parallel()
+ 		r := newGoneRig(t, "beam-a", tidy)
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index ad73134e3..d60e782d6 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -38,6 +38,10 @@ type State struct {
+ 	LandingsMachineOnly bool `json:"landings_machine_only,omitempty"`
+ 	// Tidy is the board-tidy agent in flight, nil when none is.
+ 	Tidy *TidyState `json:"tidy,omitempty"`
++	// LandedSinceDescribe holds the slugs of the member landings the beam's description is not yet rewritten after.
++	LandedSinceDescribe []string `json:"landed_since_describe,omitempty"`
++	// Describe is the describer agent in flight, nil when none is.
++	Describe *DescribeState `json:"describe,omitempty"`
+ 	// LandNotices is the memory of the landing notices of the runs seen ahead of their Land row, keyed by slug.
+ 	LandNotices map[string]LandNoticeState `json:"land_notices,omitempty"`
+ 	// Land is the landing step taken in the current episode: a land request asked for or a notice posted.
+@@ -106,6 +110,19 @@ type TidyState struct {
+ 	Deadline   time.Time `json:"deadline"`
+ }
+ 
++// DescribeState is the describer agent in flight.
++// Landings are the member landings its draft covers, which leave the landings to describe once the agent settles.
++// OwedLine is the line for the nearest live orch that the settled agent still owes, empty when none is owed.
++// It is set once the draft is recorded or the deadline has passed.
++// A post that fails is then retried without recording again.
++type DescribeState struct {
++	StrandGUID string    `json:"strand_guid"`
++	DraftPath  string    `json:"draft_path"`
++	Deadline   time.Time `json:"deadline"`
++	Landings   []string  `json:"landings,omitempty"`
++	OwedLine   string    `json:"owed_line,omitempty"`
++}
++
+ // ReadState reads the record at path under its lock and reports whether it was found.
+ // An absent file and a file that does not decode both read as not found; the latter logs one Warn.
+ func ReadState(path string) (State, bool, error) {
+diff --git a/internal/dobbyengine/tidy.go b/internal/dobbyengine/tidy.go
+index 53bd44605..98b25a785 100644
+--- a/internal/dobbyengine/tidy.go
++++ b/internal/dobbyengine/tidy.go
+@@ -30,8 +30,8 @@ const (
+ 	tidyStencilName = "beam-template-board-tidy"
+ )
+ 
+-// TidyShuttle is the part of shuttle the board-tidy agent runs through.
+-type TidyShuttle interface {
++// AgentShuttle is the part of shuttle the agents dobby spawns run through: the board-tidy agent and the describer agent.
++type AgentShuttle interface {
+ 	// EngineName names the engine a launch with choice resolves to, which the prompt is rendered for.
+ 	// It returns an error when the shuttle behind the launch cannot be built, so no prompt is rendered for it.
+ 	EngineName(choice shuttleengine.ModelChoice) (string, error)
+@@ -109,6 +109,7 @@ func TidySpec(prompt, reportPath, engine string, model shuttleengine.ModelChoice
+ // So run records left from before the dobby, or a record rewritten fresh, trigger no tidy.
+ // While a board-tidy agent is in flight nothing is counted,
+ // so the record's slugs since the last tidy are exactly the agent's.
++// A dobby that rewrites its beam's description also records each landing it counts as one to describe.
+ // A baselined record not yet marked machine-only has its landed-since-tidy list emptied once, ahead of the count.
+ // The list may hold other machines' landings.
+ func (d *daemon) countLandings(now time.Time) error {
+@@ -144,6 +145,9 @@ func (d *daemon) countLandings(now time.Time) error {
+ 		for _, slug := range fresh {
+ 			s.CountedLandings[slug] = true
+ 			s.LandedSinceTidy = append(s.LandedSinceTidy, slug)
++			if d.describes() {
++				s.LandedSinceDescribe = append(s.LandedSinceDescribe, slug)
++			}
+ 		}
+ 		return nil
+ 	})
+diff --git a/internal/hubgeom/dobbygeom.go b/internal/hubgeom/dobbygeom.go
+index 1bd85044e..928f50816 100644
+--- a/internal/hubgeom/dobbygeom.go
++++ b/internal/hubgeom/dobbygeom.go
+@@ -62,6 +62,7 @@ func DobbyGeometry(prime *lymcwd.Location, worktree string) (dobbyengine.Geometr
+ 		OutPath:       filepath.Join(beamDir, dobbyengine.OutFileName),
+ 		PrimeLogPath:  filepath.Join(DobbyBeamDir(prime), dobbyengine.LogFileName),
+ 		TidyDir:       filepath.Join(beamDir, dobbyengine.TidyDirName),
++		DescribeDir:   filepath.Join(beamDir, dobbyengine.DescribeDirName),
+ 		PrimeRunsDir:  shedrun.RunsRoot(prime),
+ 		LymExecutable: executable,
+ 		MoveRecords:   moveRecords,
+diff --git a/internal/landingshed/beamdescribe.go b/internal/landingshed/beamdescribe.go
+index 2524abec1..7e1369f3b 100644
+--- a/internal/landingshed/beamdescribe.go
++++ b/internal/landingshed/beamdescribe.go
+@@ -1,11 +1,15 @@
+-// beamdescribe.go implements the two halves of a beam's change description, which the beam's orch writes.
++// beamdescribe.go implements the halves of a beam's change description.
++// The beam's orch or its describer agent writes the description.
+ // DraftBeamDescription offers a starting point from the board entry and the beam's member pull requests;
+-// RecordBeamDescription validates the orch's text and commits it.
++// RecordBeamDescription validates the orch's text and commits it;
++// ReplaceBeamDescription validates the describer agent's draft and commits it in place of the recorded text.
+ 
+ package landingshed
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"regexp"
+@@ -157,6 +161,66 @@ func RecordBeamDescription(slug, path string, commit func() error) error {
+ 	return nil
+ }
+ 
++// ReplaceBeamDescription validates the draft at draftPath, which the beam's describer agent wrote.
++// It then writes the draft over the description at path atomically and commits it through commit.
++// A write that fails leaves the description at path as it stood.
++// slug names the beam in the way forward of a refusal.
++// It refuses a missing draft or one with a finding, naming each finding, and leaves the description at path as it stands.
++// A failed commit puts back the description that stood at path, or removes the file when none stood.
++// A read, write or commit failure is an error naming the step.
++func ReplaceBeamDescription(slug, draftPath, path string, commit func() error) error {
++	fail := func(step string, err error) error {
++		return fmt.Errorf("landingshed: replace the beam description: %s: %w", step, err)
++	}
++	findings, err := summaryparser.ValidateDescription(draftPath)
++	if err != nil {
++		return fail("validate the draft", err)
++	}
++	if len(findings) > 0 {
++		parts := make([]string, len(findings))
++		for i, finding := range findings {
++			parts[i] = finding.Error()
++		}
++		return fail("validate the draft", fmt.Errorf("%s; the description at %s stands; way forward: edit it and run \"lym beam describe %s\"", strings.Join(parts, "; "), path, slug))
++	}
++	draft, err := os.ReadFile(draftPath)
++	if err != nil {
++		return fail("read the draft", err)
++	}
++	previous, err := os.ReadFile(path)
++	stood := err == nil
++	if err != nil && !errors.Is(err, fs.ErrNotExist) {
++		return fail("read the recorded description", err)
++	}
++	if err := writeBytesAtomic(path, "description", draft); err != nil {
++		return fail("write the description", err)
++	}
++	if err := commit(); err != nil {
++		var restoreErr error
++		if stood {
++			restoreErr = writeBytesAtomic(path, "description", previous)
++		} else {
++			restoreErr = os.Remove(path)
++		}
++		return fail("commit the description", errors.Join(err, restoreErr))
++	}
++	return nil
++}
++
++// RenderBeamChanges renders commits, oldest first, as a markdown list with one entry per commit.
++// A pull request's merge writes its subject ending in ` (#<number>)`.
++// Such a commit is listed by that pull request's number, title and merge time.
++// Any other commit, a merge from the parent included, is listed by its object name, subject and commit time.
++// Either entry carries the first sentence of the commit's body on an indented line, when the body has one.
++// No commits render as "".
++func RenderBeamChanges(commits []BeamCommit) string {
++	entries := make([]string, len(commits))
++	for i, commit := range commits {
++		entries[i] = beamCommitEntry(commit)
++	}
++	return strings.Join(entries, "\n")
++}
++
+ // beamDraft renders the draft: the title cut to beamDescriptionTitleMax characters as a heading.
+ // Then come the brief, the list of commits and the Merge danger placeholders, each set off by a blank line.
+ func beamDraft(title, brief string, commits []BeamCommit) string {
+@@ -168,12 +232,8 @@ func beamDraft(title, brief string, commits []BeamCommit) string {
+ 	if brief = strings.TrimSpace(brief); brief != "" {
+ 		sections = append(sections, brief)
+ 	}
+-	if len(commits) > 0 {
+-		entries := make([]string, len(commits))
+-		for i, commit := range commits {
+-			entries[i] = beamCommitEntry(commit)
+-		}
+-		sections = append(sections, beamChangesHeading+"\n\n"+strings.Join(entries, "\n"))
++	if changes := RenderBeamChanges(commits); changes != "" {
++		sections = append(sections, beamChangesHeading+"\n\n"+changes)
+ 	}
+ 	sections = append(sections, beamMergeDangerDraft)
+ 	return "# " + title + "\n\n" + strings.Join(sections, "\n\n") + "\n"
+diff --git a/internal/landingshed/beamdescribe_test.go b/internal/landingshed/beamdescribe_test.go
+index 1587f7d07..476917e2f 100644
+--- a/internal/landingshed/beamdescribe_test.go
++++ b/internal/landingshed/beamdescribe_test.go
+@@ -1,9 +1,11 @@
+-// beamdescribe_test.go covers DraftBeamDescription and RecordBeamDescription over told seams and a temp description path.
++// beamdescribe_test.go covers DraftBeamDescription, RecordBeamDescription and ReplaceBeamDescription.
++// It runs them over told seams and a temp description path.
+ 
+ package landingshed
+ 
+ import (
+ 	"errors"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -215,6 +217,111 @@ func TestRecordBeamDescription(t *testing.T) {
+ 	}
+ }
+ 
++// TestReplaceBeamDescription asserts a valid draft is committed in place of the recorded description.
++// A missing draft or one with a finding is refused with the description left standing,
++// and a failed commit puts back what stood, or removes the file when nothing stood.
++func TestReplaceBeamDescription(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		slug     = "my-beam"
++		recorded = "# Ship the beam\n\nThe beam adds the hydraulics model.\n\n## Member pull requests\n\n- #266 Tool-joint pressure loss\n\n" +
++			"## Merge danger\n\n**Door:** two-way\n**Blast radius:** hydraulics\n"
++		rewritten = "# Ship the beam\n\nThe beam adds the hydraulics model and its tool joints.\n\n## Member pull requests\n\n" +
++			"- #266 Tool-joint pressure loss\n- #270 Tool-joint wear\n\n## Merge danger\n\n**Door:** two-way\n**Blast radius:** hydraulics\n"
++	)
++	commitErr := errors.New("index locked")
++	tests := []struct {
++		name string
++		// existing is the description standing before the call, and draft the draft's content; empty leaves no file.
++		existing  string
++		draft     string
++		commitErr error
++		// wantErr are the substrings the failure carries; empty wants the draft committed.
++		wantErr     []string
++		wantIs      error
++		wantCommits int
++		// wantFile is the description after the call; empty wants no file.
++		wantFile string
++	}{
++		{name: "ValidDraftIsCommittedInPlaceOfTheDescription", existing: recorded, draft: rewritten, wantCommits: 1, wantFile: rewritten},
++		{
++			name: "DraftWithAFindingLeavesTheDescriptionStanding", existing: recorded, draft: "# Ship the beam\n",
++			wantErr: []string{"empty-body: body is empty", "stands", `"lym beam describe my-beam"`}, wantFile: recorded,
++		},
++		{name: "MissingDraftLeavesTheDescriptionStanding", existing: recorded, wantErr: []string{"validate the draft"}, wantFile: recorded},
++		{
++			name: "FailedCommitPutsTheDescriptionBack", existing: recorded, draft: rewritten, commitErr: commitErr,
++			wantErr: []string{"commit the description"}, wantIs: commitErr, wantCommits: 1, wantFile: recorded,
++		},
++		{
++			name: "FailedCommitWithNoDescriptionBeforeRemovesTheFile", draft: rewritten, commitErr: commitErr,
++			wantErr: []string{"commit the description"}, wantIs: commitErr, wantCommits: 1,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			dir := t.TempDir()
++			path := filepath.Join(dir, "landing", "summary.md")
++			draftPath := filepath.Join(dir, "describe", "draft.md")
++			if tt.existing != "" {
++				writeDescription(t, path, tt.existing)
++			}
++			if tt.draft != "" {
++				writeDescription(t, draftPath, tt.draft)
++			}
++			commits := 0
++			var committed string
++			commit := func() error {
++				commits++
++				content, err := os.ReadFile(path)
++				if err != nil {
++					t.Errorf("ReadFile(%s) at the commit = %v; want the draft in place", path, err)
++				}
++				committed = string(content)
++				return tt.commitErr
++			}
++
++			err := ReplaceBeamDescription(slug, draftPath, path, commit)
++
++			if commits != tt.wantCommits {
++				t.Errorf("commits = %d; want %d", commits, tt.wantCommits)
++			}
++			if commits > 0 && committed != tt.draft {
++				t.Errorf("description at the commit = %q; want the draft %q", committed, tt.draft)
++			}
++			got, readErr := os.ReadFile(path)
++			if tt.wantFile == "" {
++				if !errors.Is(readErr, fs.ErrNotExist) {
++					t.Errorf("description after the call = %q, %v; want no file", got, readErr)
++				}
++			} else if readErr != nil || string(got) != tt.wantFile {
++				t.Errorf("description after the call = %q, %v; want %q", got, readErr, tt.wantFile)
++			}
++			if len(tt.wantErr) == 0 {
++				if err != nil {
++					t.Fatalf("ReplaceBeamDescription() = %v; want nil", err)
++				}
++				return
++			}
++			if err == nil {
++				t.Fatalf("ReplaceBeamDescription() = nil; want an error carrying %q", tt.wantErr)
++			}
++			for _, want := range tt.wantErr {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("error = %q; want it to carry %q", err.Error(), want)
++				}
++			}
++			if tt.wantIs != nil && !errors.Is(err, tt.wantIs) {
++				t.Errorf("error = %v; want it to wrap %v", err, tt.wantIs)
++			}
++		})
++	}
++}
++
+ // writeDescription writes content at path, creating its directory.
+ func writeDescription(t *testing.T, path, content string) {
+ 	t.Helper()
+diff --git a/internal/shuttleparity/producers_test.go b/internal/shuttleparity/producers_test.go
+index 12aea2739..822a3b7fe 100644
+--- a/internal/shuttleparity/producers_test.go
++++ b/internal/shuttleparity/producers_test.go
+@@ -102,6 +102,7 @@ func producers(t *testing.T, fx parityFixture) []producer {
+ 		{"internal/landingshed#PRReview.sessionSpec", buildPRReview},
+ 		{"internal/loomcli#driverSpec", buildDriver},
+ 		{"internal/dobbyengine#TidySpec", buildBoardTidy},
++		{"internal/dobbyengine#BeamDescribeSpec", buildBeamDescribe},
+ 		{"internal/mergeresolve#buildConflictSpec", buildConflict},
+ 		{"internal/shedarbiter#Spec", buildArbiter},
+ 		{"internal/weaverengine#attemptSpec", buildWeaverAttempt},
+@@ -314,6 +315,28 @@ func buildBoardTidy(fx parityFixture, engine string) (shuttleengine.Spec, error)
+ 	}), nil
+ }
+ 
++func buildBeamDescribe(fx parityFixture, engine string) (shuttleengine.Spec, error) {
++	env := fx.env
++	prompt, err := dobbyengine.BeamDescribePrompt(env.StencilsDir, engine, dobbyengine.BeamDescribePromptInput{
++		Slug:      env.Slug,
++		DraftPath: standInPath(env, "describe-draft.md"),
++		Parent:    env.ParentName,
++		Facts: dobbyengine.BeamDescribeFacts{
++			DescriptionPath: standInPath(env, "summary.md"),
++			Branch:          "beam-stand-in",
++			ParentBranch:    "main",
++			Changes:         "- stand-in change",
++		},
++	})
++	if err != nil {
++		return shuttleengine.Spec{}, err
++	}
++	return promptSpec(engine, prompt, shuttleengine.Spec{
++		ConfigRole: agentconfig.RoleDescriber,
++		Role:       dobbyengine.BeamDescribeRole,
++	}), nil
++}
++
+ func buildConflict(fx parityFixture, engine string) (shuttleengine.Spec, error) {
+ 	env := fx.env
+ 	skills, err := languageSkillsOf(env)

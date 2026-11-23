@@ -2,6 +2,6 @@
 round: 1
 decision: accept
 cause: budget
-settled: false
+settled: true
 automatic: false
 ---
