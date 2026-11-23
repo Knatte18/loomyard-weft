@@ -27,3 +27,14 @@ All three went on without any other change.
 
 A transient network failure on a git fetch, push or ls-remote is retried by lym with backoff, for a bounded time, before the run stops.
 Only a failure that outlasts the retries reaches the parent, and then as a notice naming the failing remote operation, not as a question.
+
+
+## From issue #203
+
+Imported from [issue #203](https://github.com/Knatte18/loomyard/issues/203).
+
+Seen: on a machine with an unstable connection, one git ls-remote origin failure (HTTP/2 stream closed before response headers, exit 128) halted a darn run at Run-Shed's origin reconcile. The tackler retried twice within seconds, handed the stop back, and the parent orch got a question. A hand pass right after was refused with 'origin is unreachable', and a third pass a minute later went through. Weft pushes of the board and of a records branch failed the same way, each with its own notice. 10 of 10 ls-remote calls succeeded a few minutes later.
+
+Workaround: the orch re-ran lym batten run by hand until origin answered.
+
+Expected: network calls to origin retry with backoff over a minute or more before a run halts, and a stop whose cause is a transient network error is retried by dobby rather than handed to the parent as a question.
