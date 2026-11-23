@@ -688,6 +688,24 @@
       "body": "Left open when `code-bouncer-asks-parent` landed (8cf7f4775), as finding `hardener-focus-permission-wiring-untested`.\n\nThe wiring that lets a hardener round raise a focus finding (`FocusFindings` into the round context) is not covered end to end, in `internal/burlercli` and `internal/shedadapters/roundcontext.go`.\n",
       "created": "2026-11-23T09:10:10Z",
       "revised": "2026-11-23T09:10:10Z"
+    },
+    {
+      "id": 1598,
+      "handle": "B3",
+      "slug": "below-window-accept-blocking",
+      "title": "Decision accept below the soft-cap window passes an open BLOCKING finding",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Left open when `code-bouncer-asks-parent` landed (8cf7f4775), as finding `below-window-decision-accept-passes-open-blocking`.\n\nA decision accept recorded below the soft-cap window passes over an open BLOCKING ledger entry of another class, in `internal/shedadapters/bouncerdecision.go`.\nThat lets a run land past an open BLOCKING finding, which the landed task was meant to stop: the run should ask the parent instead.\n",
+      "created": "2026-11-23T09:10:19Z",
+      "revised": "2026-11-23T09:10:19Z"
     }
   ],
   "prime_owner": "neve",
