@@ -26,6 +26,9 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 - **Seen in the second campaign**: round 2's reviewer recorded smaller faults (O1 to O6) only as prose, since an incremental round admits only BLOCKING findings on changed hunks.
   Round 3's reviewer (sonnet, medium, 4 min) approved with half its focus undriven: the killed discard, the keep-local tag push, a failed step with no kill, and `adopt --archives` over real owner tags.
   A settled harden segment cannot be reopened (`lym loom goto` refuses), so the orch had no way to order another round. Judge each of these, and whether the remaining focus should block approval.
+  Round 4 again raised what it found outside the incremental scope only as prose; those are the O1 to O5 of `harden-fabric-undriven-cases`.
+  A suspected cause is the stencils, not the model: `contracts/stencils/harden/harden-rubric-review.md` asks for OK, WARN or FAIL on every focus entry,
+  while `contracts/stencils/burler/burler-review-format.md` lets an incremental round raise only BLOCKING findings on changed hunks, so such a round can only approve. Judge that conflict.
 
 ## Bounds
 
