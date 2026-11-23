@@ -25,6 +25,12 @@ Provenance: task `godocreflow-worsens-findings`; notes `loom-halt.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Narrow to the false hard-failure report
+
+Decision: Option (b): a stop the driver hands over to a fresh build is not filed as producer-hard-failure; it gets no halt note, or a distinct anomaly kind the selfreport path does not turn into an issue. No pre-step hand-over (option c).
+
+Rationale: The existing hand-over already recovers the run; the remaining harm is the false halt note, which became issue 198.
+
 ## Constraints
 
 ## Auto-mode assumptions
