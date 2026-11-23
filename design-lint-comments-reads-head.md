@@ -1,6 +1,6 @@
 # lym loom lint-comments --base checks committed HEAD, not the working tree
 
-`lint-comments-reads-head` · Task · bug, lint, loom · running · Code-Bouncer
+`lint-comments-reads-head` · Task · bug, lint, loom · halted · Code-Bouncer
 
 Imported from [issue #182](https://github.com/Knatte18/loomyard/issues/182).
 
