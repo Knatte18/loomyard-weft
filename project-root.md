@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 10:21 UTC; every age below is as of then.
+Rendered 2026-11-23 10:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -38,7 +38,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T8 | 49m<br>49m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+| T10 | `draft` **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | T16<br>T8 | 50m<br>50m | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ## Sketches (1)
 
@@ -61,14 +61,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 1h<br>1h | loom |
 | B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 1h<br>1h | loom |
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 1h<br>1h | loom |
-| B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 16m<br>16m | git, batten, landing |
+| B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 17m<br>17m | git, batten, landing |
 | B7 |  | **Agent sits idle after its skill-load turn; its prompt is never typed** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | 9m<br>9m | shuttle |
 
 ## Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | 22m<br>22m | board |
+| E1 |  | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | 23m<br>23m | board |
 
 ## Features (1)
 
