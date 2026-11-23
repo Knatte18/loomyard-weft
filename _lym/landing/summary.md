@@ -1,34 +1,53 @@
-# Type the start prompt when a long strand name fills the box's top rule
+# Find the input box under a long strand label; notice a held start prompt
 
-A spawned Claude session whose strand name nearly fills the input box's top border never got its start prompt.
-In a narrow pane Claude draws that border as `─ <strand name> ─`, with one rule glyph on each side of the label.
-`isTopBoxRule` in `internal/shuttleengine/claudeengine/session.go` took a labelled top rule only when it opened with three rule glyphs or ended in a cut label (`… ─`).
-It missed this shape, so the idle check read "no input box is on screen".
-Every send of the start prompt was held busy, the retries hit the same check, and the start ended with the prompt untyped (issues #195 and #196).
+A spawned session could sit at an empty prompt, its task prompt never typed, with no notice to the parent.
+shuttle's idle check did not see the input box when the strand name nearly or fully filled the box's top border,
+so it held the start prompt as busy on every send and its retries.
+`isTopBoxRule` in `internal/shuttleengine/claudeengine/session.go` took a labelled top rule only when it started with three rule glyphs or ended in `… ─`.
+A label with one `─` on each side (`─ dop:models-torque-drag-adapter:plan-burler-review ─`) matched neither.
+A label that filled the pane with no ellipsis (` ly:run:code-burler-review ─`) matched neither.
 
-## Changes
+Closes #195
+Closes #196
 
-- `isTopBoxRule` now takes any line that starts and ends with a rule glyph as a labelled top rule, whatever the label says.
-  The cut-label form and the plain rule still count.
-  A label with no rule glyph after it still does not, and the bottom rule must still be a plain rule,
-  so a draft line shaped like a labelled rule below the caret still never closes the box.
-  `TestInputBoxText` gains a row built from the pane capture in #196, which reads no box on the old check.
-- `sendStartPrompt` in `internal/shuttleengine/run.go` now tells the parent, through the runner's notifier, when the start prompt is still held busy after its last send.
-  The notice names the strand and the last hold's reason, delimited as agent text, since the reason may quote the input box.
-  Before this, such a start showed only as a warning in the log.
-  Only an autonomous run on a runner with a notifier sends the notice, and a notifier error is only logged.
-  `TestStartup_SendFailuresTearDown` now asserts the notice on every row whose prompt stays held busy, and no notice on the others.
+## What changes
+
+- `isTopBoxRule` takes a line that starts and ends with a rule glyph, whatever its label says.
+  Before, it needed three leading glyphs.
+- It takes a line ending in a space and one rule glyph (`labelledRuleEnd`), with or without an ellipsis before it.
+  Before, it needed the `…`.
+- The bottom rule still has to be a plain rule, so a draft line shaped like a labelled rule below the caret never closes the box.
+- A start prompt that is still held busy after its last send now notices the parent once, naming the strand.
+  `Run.sendStartPrompt` calls the new `noticeStartPromptHeld` on the last hold,
+  whether the retry cap or the run's deadline ended the retries.
+  The start still ends as before: prompt untyped, strand torn down, the error carrying the pane's last lines.
 
 ## Design decisions
 
-- A respawn on the same row no longer repeats the failure because the box check itself is fixed.
-  The respawn path is unchanged.
-- The notice fires when the retries run out or the run's deadline cuts them short.
-  It does not fire for a held skill-load send, which has its own failure path.
-- Whether this hub's own sighting on 2026-11-23 had the same cause cannot be settled from the code.
-  The #196 capture shows this cause, and the fix covers any strand name of that shape.
+- The notice follows the existing held-turn notices.
+  It goes only to an autonomous run (`Spec.Interactive` false) on a runner with a notifier, and a notifier error is logged and never ends the run.
+- The hold's reason can quote the input box, so the notice delimits it as agent text like the other notices.
+- The notice names the strand by `StrandName` and falls back to `StrandGUID`.
+- The input-box fix is a loosening of the top-rule match, not a search for the `❯` line with borders around it.
+  The top-rule check still decides where the box starts.
+- I did not judge whether the 529 Overloaded errors from the same morning contributed to the sighting in this hub.
+
+## Tests
+
+- `TestInputBoxText` gains a row for the one-glyph-each-side label from the #196 capture and one for a label that fills the pane with one glyph after it.
+  The existing row for a cut label with no glyph after it stays a non-match.
+- `TestStartup_SendFailuresTearDown` now installs a notifier and asserts per row:
+  exactly one notice naming the held start for each held-busy row, carrying its delimited reason,
+  and none for an interactive run or for a start that is not held busy.
+
+## To check by hand
+
+- Top rule matching, `isTopBoxRule` in `internal/shuttleengine/claudeengine/session.go`:
+  a label ending in a space and one rule glyph counts as a top rule with no glyph or ellipsis before the label.
+  Check that no line a draft or agent output can produce above the caret matches by accident and opens a false box.
+- Nothing was run against a live session with a narrow pane and a long strand name.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** shuttle
+**Blast radius:** shuttleengine
