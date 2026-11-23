@@ -26,6 +26,12 @@ Operator, 2026-11-22: the description is updated at every member landing, and re
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: all findings fixed
+
+Decision: Accept the code review at round 1. The BLOCKING finding describer-stencil-restates-summary-format is fixed: beam-template-describe.md points at the final-summary spec instead of restating its format. The fixer fixed F1 to F14, F6 differently: the blast radius stays the one word the final-summary spec allows, beam, and the body names the description, its commits and the pull request.
+
+Rationale: Every finding has a committed fix and the gates passed; F6's alternative follows the spec every gate enforces.
+
 ## Constraints
 
 ## Auto-mode assumptions
