@@ -31,4 +31,13 @@ Rationale: Every finding has a committed fix and its gates passed; another round
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - latest-fitting-break-untested (class design, severity MEDIUM, open in rounds 1)
+  - layout-leaves-changed-lines-over-limit (class design, severity BLOCKING, open in rounds 1)
+  - long-line-report-covers-wrong-lines (class design, severity MEDIUM, open in rounds 1)
+  - long-line-report-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
