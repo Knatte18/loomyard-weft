@@ -61,4 +61,13 @@ Rationale: The entry names its harm as a run landing past an open BLOCKING findi
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - F11 (class decision, severity LOW, open in rounds 1; answered since by: below-window-accept-blocking is settled by another round below the soft-cap window)
+  - verifier-closes-unfixed-blocking-key (class design, severity MEDIUM, open in rounds 1)
+  - verify-test-no-partial-close-row (class design, severity MEDIUM, open in rounds 1)
+  - verify-test-spawn-error-and-write-failure-rows (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
