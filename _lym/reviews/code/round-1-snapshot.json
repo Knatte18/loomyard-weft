@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "f2c8ee60e38e8ced7e351dcce40cb13159f65317",
+  "added_decisions": [
+    {
+      "title": "Untraceable incident driven in a test",
+      "digest": "6805ff0d598836758032b901aba1ba9074878b2dd3fea1a9aad7152075cf3c5b"
+    },
+    {
+      "title": "No test seam: the reported path loses no run record",
+      "digest": "b83e9c4ee5004cba4ce5448b705614e7b121f280be150af982e646b908151f0f"
+    }
+  ]
+}
