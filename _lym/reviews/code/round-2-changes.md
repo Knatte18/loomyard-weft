@@ -1,0 +1,16 @@
+docs/overview.md
+internal/dotnetimpact/source_test.go
+internal/gatecli/doc.go
+internal/gatecli/redfirst.go
+internal/gatecli/redfirstdotnet.go
+internal/gatecli/redfirstdotnet_test.go
+internal/gatecli/test_integration_test.go
+internal/gateslot/config.go
+internal/gateslot/config_test.go
+internal/gateslot/doc.go
+internal/gateslot/failedtests_test.go
+internal/gateslot/redfirst.go
+internal/gateslot/runlog.go
+internal/gateslot/runlog_test.go
+internal/gitrepo/blobread.go
+internal/gitrepo/blobread_integration_test.go
