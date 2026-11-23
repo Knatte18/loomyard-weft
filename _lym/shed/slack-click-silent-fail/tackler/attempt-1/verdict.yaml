@@ -1,8 +1,0 @@
-verdict: resume
-reason: >-
-  The bootstrap stop (trace 8e9a247a6ffadc79, stderr log line 3) refused the step because the code tip
-  dce6b8617af8c501a1a61106a83f8b5f3324806c, named by the run's last transition, was not on origin yet.
-  The refusal's own way forward is to re-run "lym batten run slack-click-silent-fail" once the code push lands.
-  The push has now landed: `git ls-remote origin refs/heads/main` returns dce6b8617af8c501a1a61106a83f8b5f3324806c,
-  which is the tip (local origin/main equals it), and `git merge-base --is-ancestor` confirms it is present.
-  The cause was environmental and has cleared, so a plain re-launch settles it. No goto is needed.
