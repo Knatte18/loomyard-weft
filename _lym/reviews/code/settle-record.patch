@@ -1,0 +1,67 @@
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index ccccbb6bd..cef61cf59 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -251,6 +251,7 @@ func (c *loomCLI) wireTreeScope(location *lymcwd.Location) error {
+ // treeScopeSettings returns the verify attempts and verify budget of a run whose verify source is tree_scope.
+ // A hardener run reads hardener.yaml's verify_attempts and has no verify budget.
+ // Any other run reads darn.yaml's verify_attempts and verify_budget_min, its notice going to the run's parent orch.
++// The notice opens with the run's slug, since the orch reads the notices of every run of the hub.
+ // A load error carries its way forward.
+ // That is the editor's for a malformed tree key, and the hub reconcile's for darn.yaml otherwise.
+ func (c *loomCLI) treeScopeSettings(location *lymcwd.Location) (int, loomshed.VerifyBudget, error) {
+@@ -269,7 +270,7 @@ func (c *loomCLI) treeScopeSettings(location *lymcwd.Location) (int, loomshed.Ve
+ 	return cfg.VerifyAttempts, loomshed.VerifyBudget{
+ 		Limit: time.Duration(cfg.VerifyBudgetMin) * time.Minute,
+ 		Notify: func(line string) error {
+-			_, err := orchcli.NotifyParent(location, loomProgram, line)
++			_, err := orchcli.NotifyParent(location, loomProgram, fmt.Sprintf("loom %s: %s", location.WorktreeName, line))
+ 			return err
+ 		},
+ 	}, nil
+diff --git a/internal/loomcli/notifystamp_integration_test.go b/internal/loomcli/notifystamp_integration_test.go
+index dfa709097..656b78297 100644
+--- a/internal/loomcli/notifystamp_integration_test.go
++++ b/internal/loomcli/notifystamp_integration_test.go
+@@ -1,4 +1,5 @@
+-// notifystamp_integration_test.go proves the halt notices loomcli's seams post carry the run's autonomy, over a real hub.
++// notifystamp_integration_test.go proves what loomcli's seams stamp on the notices they post, over a real hub:
++// a halt notice carries the run's autonomy, and a verify-budget notice names the run.
+ // Creel's daemon runs in process on a fake delivery.
+ 
+ package loomcli
+@@ -145,3 +146,34 @@ func TestHaltNoticeSeams_CarryTheRunsAutonomy(t *testing.T) {
+ 		t.Errorf("posted subjects = %q; want %q", got, want)
+ 	}
+ }
++
++// TestVerifyBudgetNotice_NamesTheRun pins that a darn run's verify-budget notice opens with the run's slug.
++// Several runs post to one orch, so a notice without the slug leaves the orch guessing which run it is about.
++// It runs without t.Parallel: the strand environment variable is process-global.
++func TestVerifyBudgetNotice_NamesTheRun(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv(agentname.StrandNameEnv, "")
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "budget-task")
++	startNoticeOrch(t, h)
++	seedDarnHubConfig(t, h.Path, "3")
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("budget-task"))
++	if err != nil {
++		t.Fatalf("lymcwd.ResolveWorktree(budget-task) = %v; want nil", err)
++	}
++	c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
++	_, budget, err := c.treeScopeSettings(pair)
++	if err != nil {
++		t.Fatalf("treeScopeSettings() = _, _, %v; want nil", err)
++	}
++
++	if err := budget.Notify("Darn-Write gate: the verify gate has run past its 30m0s budget"); err != nil {
++		t.Fatalf("Notify() = %v; want nil", err)
++	}
++
++	want := []string{"loom budget-task: Darn-Write gate: the verify gate has run past its 30m0s budget"}
++	if got := postedSubjects(t, h); !slices.Equal(got, want) {
++		t.Errorf("posted subjects = %q; want %q", got, want)
++	}
++}
