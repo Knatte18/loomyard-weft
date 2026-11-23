@@ -1,0 +1,1 @@
+Review segment of task `transient-fetch-no-retry` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/transient-fetch-no-retry/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept transient-fetch-no-retry" or "lym loom circling continue transient-fetch-no-retry".
