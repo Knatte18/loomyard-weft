@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "e5633fe620afb9b6d9ed3255582406ab7ee034ca",
+  "added_decisions": [
+    {
+      "title": "O3: local archive tags may leave the machine",
+      "digest": "15982f2bf3b64b6b62df935fc442d0cdc56860477aa18f6ec822bc7c7777879e"
+    }
+  ]
+}
