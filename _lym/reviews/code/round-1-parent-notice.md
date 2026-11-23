@@ -1,0 +1,1 @@
+Review segment of task `rc-button-ignores-org-policy` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/rc-button-ignores-org-policy/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept rc-button-ignores-org-policy" or "lym loom circling continue rc-button-ignores-org-policy".
