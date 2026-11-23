@@ -1,6 +1,8 @@
 # A note carries depends_on, shown on the board and kept when promoted
 
-`note-depends-on` · Note · enhancement, board
+`note-depends-on` · Task · enhancement, board · draft
+
+Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
 
 ## Seen
 

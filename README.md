@@ -44,6 +44,12 @@ Owner `neve`
 | T3 | **A beam pull request description is rewritten after each member landing**<br>• After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md) | darn · light | T2 | 13h<br>13h | dobby, landing |
 | T4 | **Later run transitions still wait for a records push to origin**<br>• After the start rows, every transition still waits 10 to 20 s for a push; push only where a takeover needs it. | [`later-transition-push-wait`](design-later-transition-push-wait.md)<br>[Sketch](decision-later-transition-push-wait.md) | raddle | T5 | 15h<br>13h | batten, fabric |
 
+### Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start | [`note-depends-on`](design-note-depends-on.md) | darn | T2 | 0m<br>0m | board |
+
 ### Research (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
@@ -57,12 +63,6 @@ Owner `neve`
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 11h<br>11h | fabric |
-
-### Enhancements (1)
-
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E1 |  | **A note carries depends_on, shown on the board and kept when promoted**<br>• Only a task carries depends_on, so a note that must wait for a running task looks ready to start | [`note-depends-on`](design-note-depends-on.md) | 0m<br>0m | board |
 
 ### Features (1)
 
