@@ -1,0 +1,1456 @@
+diff --git a/contracts/stencils/parent/parent-directive-operator-ban.md b/contracts/stencils/parent/parent-directive-operator-ban.md
+index 397d6e1af..e3ee19a7e 100644
+--- a/contracts/stencils/parent/parent-directive-operator-ban.md
++++ b/contracts/stencils/parent/parent-directive-operator-ban.md
+@@ -1,4 +1,4 @@
+ <!-- This is the operator-ban line.
+      internal/parentdirective.Directive fills it into parent-directive-parent as the operator_ban marker when the role is not interactive.
+      It declares no marker and must stay marker-free. -->
+-Put every question you would ask the operator to your parent this way: it answers itself or asks the operator, and a question to the operator in your pane is never the way forward.
++Put every question you would ask the operator to your parent this way: it answers itself or asks the operator, and a question in your pane is never the way forward, since nothing written there reaches your parent.
+diff --git a/contracts/stencils/parent/parent-directive-parent.md b/contracts/stencils/parent/parent-directive-parent.md
+index 30c3a8b31..bccfcafb6 100644
+--- a/contracts/stencils/parent/parent-directive-parent.md
++++ b/contracts/stencils/parent/parent-directive-parent.md
+@@ -8,7 +8,7 @@
+ ## Your parent
+ 
+ Your parent is `{{.parent_name}}`, the session that spawned this worktree's run.
+-Ask it with `lym creel post --parent --expect-reply "<text>"`, then end your turn; the answer arrives as `[creel]` mail.
++Ask it with `lym creel post --parent --expect-reply "<text>"`, then end your turn: your run waits for the answer, which arrives as `[creel]` mail and starts your next turn.
+ Answer a creel message with `lym creel post --reply <id> "<text>"`.
+ When the post is refused, follow the way forward its refusal names, posting to the strand it points you to;
+ when no strand answers, the question goes where your role's instructions send a stop it cannot settle.
+diff --git a/docs/overview.md b/docs/overview.md
+index 67cfea918..db27d74b3 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -392,7 +392,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/reportconfig/        the hub-wide `report.yaml` config: the run count a cell of `lym report cost` needs before it shows figures
+ ├── internal/hubregistry/         the machine record of hubs in the per-user state directory, which maps a hub's shortname to its path, over `internal/state` and the Bolt shortname record
+ ├── internal/creelconfig/         the hub-wide `creel.yaml` config: the shortnames of the hubs whose orch this hub obeys
+-├── internal/creelcli/            the `lym creel` commands (`post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release`, `hubs` and the hidden `daemon`, `hook-read` and `hook-wait`), their hub wiring and the delivery adapter over reed and shuttle
++├── internal/creelcli/            the `lym creel` commands (`post`, `inject`, `interrupt`, `forward`, `read`, `inbox`, `log`, `hold`, `release`, `hubs` and the hidden `daemon`, `hook-read` and `hook-wait`), their hub wiring, the delivery adapter over reed and shuttle, and the Go client with its reply probe
+ ├── internal/creelengine/         the per-hub message daemon: the journal-folded pool of mail and queued injects, sender identity, reminders for a strand without hook delivery, the per-strand mail flags, the tool-boundary and Stop claim, the idle waiter and bell, injects, holds, the removed-holder sweep and the socket protocol, over a delivery seam
+ ├── internal/slackcli/            the `lym slack` commands (`login`, `setup`, `start`, `stop`, `away`, `back`, `status` and the hidden `relay`, `hook`, `bar` and `toggle`), their pane check and hub wiring
+ ├── internal/slackengine/         the per-hub Slack relay: the Web API client, the Socket Mode connection, the machine's credential and presence files and the hub's setup, forwarding, channel-map and relay-state files, the push-woken inbound read of each orch's channel with its presence commands, the outbound read of mail for SLACK, and the relay's run loop and double-fork start
+@@ -670,6 +670,7 @@ User-facing modules each get one `lym <module>` namespace:
+   a start whose skill-load hold read its cap of API errors ends `api-error` too, after the hold's back-offs.
+   Any other turn end without every output file never ends a run:
+   `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call).
++  A turn end that would end a run, or start its gate's evaluation, is held too while creel's `awaits-reply` reports the run's strand awaiting the reply to a question it asked, so the reply starts a turn in a live session; every runner that notifies a parent asks it.
+   An autonomous run notifies its parent once per held turn end as creel mail to the orch,
+   and once per permission or input dialog its pane shows past 60 s,
+   and once per edit loop, one file edited back to content it held earlier `edit_loop_edits` times within `edit_loop_window_s`,
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 2f00fed2b..1155d6360 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -22,6 +22,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -514,6 +515,7 @@ func (c *battenCLI) primeShuttle(dirs configengine.Dirs) (sheddriver.AgentShuttl
+ 		_, err := notifyRunParent(location, c.slug, line)
+ 		return err
+ 	})
++	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(location, battenProgram))
+ 	// The tackler and the arbiter work for the task's run,
+ 	// so their sessions count toward the task worktree's usage records.
+ 	if taskLocation, err := taskWorktreeLocation(location, c.slug); err != nil {
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index df824e96f..8a030d548 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -24,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
++	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -297,6 +298,38 @@ func TestWire_EverySeamFilled(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrimeShuttle_WiresTheReplyProbe pins that the prime's runner holds a reply probe.
++// The tackler and the arbiter run through that runner.
++func TestPrimeShuttle_WiresTheReplyProbe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	hub := t.TempDir()
++	// A .git directory marks the worktree as the prime.
++	if err := os.MkdirAll(filepath.Join(hub, "hub-repo", ".git"), 0o755); err != nil {
++		t.Fatalf("MkdirAll(.git) = %v; want nil", err)
++	}
++	location := &lymcwd.Location{
++		RepoName:     "example",
++		HubPath:      hub,
++		WorktreeName: "hub-repo",
++		AnchorRel:    ".",
++	}
++	c := &battenCLI{location: location}
++
++	shuttle, err := c.primeShuttle(fabricengine.ConfigDirs(location))
++	if err != nil {
++		t.Fatalf("primeShuttle() error = %v; want nil", err)
++	}
++	runnerShuttle, ok := shuttle.(sheddriver.RunnerShuttle)
++	if !ok {
++		t.Fatalf("primeShuttle() = %T; want a sheddriver.RunnerShuttle", shuttle)
++	}
++	if !runnerShuttle.Runner.HasReplyProbe() {
++		t.Error("Runner.HasReplyProbe() = false; want the reply probe wired on the prime's runner")
++	}
++}
++
+ // TestRestepSkips pins which child statuses the binary re-step leaves alone:
+ // a blocked landing, decision or escalate halt, and nothing else.
+ func TestRestepSkips(t *testing.T) {
+diff --git a/internal/burlercli/cli.go b/internal/burlercli/cli.go
+index ded046e62..b20551910 100644
+--- a/internal/burlercli/cli.go
++++ b/internal/burlercli/cli.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/spf13/cobra"
+ )
+ 
+@@ -23,6 +24,10 @@ type burlerCLI struct {
+ 	// engine is the constructed burlerengine.Engine the run verb closes over.
+ 	engine *burlerengine.Engine
+ 
++	// runner is the shuttle runner in hub mode, kept so a test can read how wire configured it.
++	// Standalone mode leaves it nil.
++	runner *shuttleengine.Runner
++
+ 	// languageSkills are the hub's language skills that a code round's seats load after burler's own skills.
+ 	// Hub mode loads them from the hub's language.yaml; standalone mode leaves them empty.
+ 	languageSkills []string
+diff --git a/internal/burlercli/wiring.go b/internal/burlercli/wiring.go
+index 1ff38ed2d..02ff15d19 100644
+--- a/internal/burlercli/wiring.go
++++ b/internal/burlercli/wiring.go
+@@ -9,6 +9,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/cliwire"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/languageconfig"
+@@ -148,6 +149,7 @@ func (c *burlerCLI) wireHub(loc *lymcwd.Location, stencilsDirOverride, targetDir
+ 		_, err := orchcli.NotifyAsker(loc, burlerProgram, line)
+ 		return err
+ 	})
++	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(loc, burlerProgram))
+ 
+ 	// A `lym burler` run is not a tapestry run and has no friction directory in either mode.
+ 	burlerGeom, err := hubgeom.BurlerGeometry(loc)
+@@ -156,6 +158,7 @@ func (c *burlerCLI) wireHub(loc *lymcwd.Location, stencilsDirOverride, targetDir
+ 	}
+ 	burlerGeom.DefaultEngine = shuttleCfg.Engine
+ 	c.engine = burlerengine.New(seatengine.RunnerShuttle(runner), burlerGeom, lensesCfg, stencilsDir, "", languageSkills)
++	c.runner = runner
+ 	c.languageSkills = languageSkills
+ 	c.mode = "hub"
+ 	c.stateDir = ""
+diff --git a/internal/burlercli/wiring_test.go b/internal/burlercli/wiring_test.go
+index e0316f6d4..8ea6939a2 100644
+--- a/internal/burlercli/wiring_test.go
++++ b/internal/burlercli/wiring_test.go
+@@ -138,6 +138,9 @@ func TestWire_SelectsModeAndWiresItsFields(t *testing.T) {
+ 		if c.engine == nil {
+ 			t.Fatal("c.engine = nil; want a constructed *burlerengine.Engine")
+ 		}
++		if !c.runner.HasReplyProbe() {
++			t.Error("c.runner.HasReplyProbe() = false; want the reply probe wired in hub mode")
++		}
+ 		if c.reedUp != nil {
+ 			t.Error("wireHub armed c.reedUp; want nil -- hub mode's reed session is not run's to boot")
+ 		}
+diff --git a/internal/creelcli/cli_test.go b/internal/creelcli/cli_test.go
+index 9ba3ce609..da907e013 100644
+--- a/internal/creelcli/cli_test.go
++++ b/internal/creelcli/cli_test.go
+@@ -1879,6 +1879,54 @@ func TestCreelCLI(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the reply probe reports a strand's unanswered question and no question of another strand", func(t *testing.T) {
++		r, orch, location := orchRig(t)
++		worker := r.name("worker")
++		pane := creelfake.LiveStrand(orch)
++		pane.PanePID = os.Getpid()
++		r.delivery.SetStrands(pane, creelfake.LiveStrand(worker))
++		if post := runCreel(r.cwd, "post", "--expect-reply", worker, "which schema?"); post.code != 0 {
++			t.Fatalf("post --expect-reply exit = %d, output %q; want 0", post.code, post.raw)
++		}
++		probe := AwaitsReplyProbe(location, "LOOM")
++		for _, tt := range []struct {
++			strand string
++			want   bool
++		}{{orch, true}, {worker, false}} {
++			got, err := probe(tt.strand)
++			if err != nil {
++				t.Fatalf("probe(%q) = %v", tt.strand, err)
++			}
++			if got != tt.want {
++				t.Errorf("probe(%q) = %v; want %v", tt.strand, got, tt.want)
++			}
++		}
++	})
++
++	t.Run("the reply probe run from a non-orch strand pane signs as that strand and answers for it", func(t *testing.T) {
++		r := newRig(t)
++		orch, worker := r.name("orch"), r.name("worker")
++		t.Setenv(agentname.StrandNameEnv, worker)
++		pane := creelfake.LiveStrand(worker)
++		pane.PanePID = os.Getpid()
++		r.delivery.SetStrands(creelfake.LiveStrand(orch), pane)
++		r.startDaemon(t)
++		location, err := lymcwd.Resolve(r.cwd)
++		if err != nil {
++			t.Fatalf("Resolve(%q) = %v", r.cwd, err)
++		}
++		if post := runCreel(r.cwd, "post", "--expect-reply", orch, "which schema?"); post.code != 0 {
++			t.Fatalf("post --expect-reply exit = %d, output %q; want 0", post.code, post.raw)
++		}
++		got, err := AwaitsReplyProbe(location, "LOOM")(worker)
++		if err != nil {
++			t.Fatalf("probe(%q) from the worker's pane = %v; want an answer", worker, err)
++		}
++		if !got {
++			t.Errorf("probe(%q) = false; want true for the worker's open question", worker)
++		}
++	})
++
+ 	t.Run("a program client's ReadAll with a failing handler leaves the reply unread for the next ReadAll", func(t *testing.T) {
+ 		r, orch, location := orchRig(t)
+ 		program, err := NewProgramClient(location, "BATTEN")
+diff --git a/internal/creelcli/doc.go b/internal/creelcli/doc.go
+index 75eced030..748c0009d 100644
+--- a/internal/creelcli/doc.go
++++ b/internal/creelcli/doc.go
+@@ -55,6 +55,8 @@
+ // NewProgramClient signs as `<shortname>:<PROGRAM>` and claims no strand.
+ // NewStrandClient claims a strand and no program; the daemon's identity rules still decide who the caller is.
+ // A strand claim from a process in no strand pane is refused with `creelengine.ErrStrandClaimOutsidePane`.
++// AwaitsReplyProbe asks whether a strand awaits the reply to a question it asked.
++// It signs as the caller's own non-orch strand when run in that strand's pane, and as a program otherwise.
+ // ReadWait acknowledges the mail only when the handler returns nil.
+ // A connection lost before or after the handler ran sends the read again,
+ // so the handler can run a second time for mail it already saw.
+diff --git a/internal/creelcli/goclient.go b/internal/creelcli/goclient.go
+index 308a160a5..d0211e2e7 100644
+--- a/internal/creelcli/goclient.go
++++ b/internal/creelcli/goclient.go
+@@ -169,6 +169,44 @@ func (c *GoClient) Log(filter creelengine.LogFilter) ([]creelengine.LogEntry, er
+ 	return resp.Log, err
+ }
+ 
++// AwaitsReply reports whether strand awaits the reply to a question it asked.
++func (c *GoClient) AwaitsReply(strand string) (bool, error) {
++	resp, err := c.client.Call(creelengine.Request{Verb: creelengine.VerbAwaitsReply, From: strand}, goCallTimeout, nil)
++	return resp.AwaitsReply, err
++}
++
++// AwaitsReplyProbe returns a probe that reports whether a strand of the location's hub awaits a reply.
++// The reply is the answer to a question the strand asked.
++// Each call asks the hub's daemon.
++// A caller in the pane of a strand that is not an orch's signs as that strand.
++// It signs as program when the daemon refuses that claim as coming from outside the pane.
++// Any other caller signs as program.
++func AwaitsReplyProbe(location *lymcwd.Location, program string) func(strand string) (bool, error) {
++	return func(strand string) (bool, error) {
++		if claimed := os.Getenv(agentname.StrandNameEnv); claimsNonOrchStrand(claimed) {
++			client, err := NewStrandClient(location, claimed)
++			if err != nil {
++				return false, err
++			}
++			awaits, err := client.AwaitsReply(strand)
++			if !errors.Is(err, creelengine.ErrStrandClaimOutsidePane) {
++				return awaits, err
++			}
++		}
++		client, err := NewProgramClient(location, program)
++		if err != nil {
++			return false, err
++		}
++		return client.AwaitsReply(strand)
++	}
++}
++
++// claimsNonOrchStrand reports whether name is a strand name whose role is not an orch's.
++func claimsNonOrchStrand(name string) bool {
++	parsed, err := agentname.Parse(name)
++	return err == nil && !agentname.MatchesRole(parsed.Role, agentname.RoleOrch)
++}
++
+ // Hold holds receiver's deliveries to the caller's own for duration.
+ func (c *GoClient) Hold(receiver string, duration time.Duration) error {
+ 	_, err := c.client.Call(creelengine.Request{Verb: creelengine.VerbHold, Receiver: receiver, ForSeconds: int64(duration / time.Second)}, goCallTimeout, nil)
+diff --git a/internal/creelcli/goclient_test.go b/internal/creelcli/goclient_test.go
+index 11e749d9f..5fd902d64 100644
+--- a/internal/creelcli/goclient_test.go
++++ b/internal/creelcli/goclient_test.go
+@@ -22,6 +22,31 @@ func TestGoClient_DropRunOnAHubWithNoJournalAnswersNothingAndConnectsToNoDaemon(
+ 	}
+ }
+ 
++func TestClaimsNonOrchStrand(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		in   string
++		want bool
++	}{
++		{"WorkerStrandIsNonOrch", "ly:alpha:driver", true},
++		{"OrchStrandIsOrch", "ly:orch", false},
++		{"BeamOrchStrandIsOrch", "ly:alpha:orch", false},
++		{"ProgramNameIsNoStrand", "ly:BATTEN", false},
++		{"EmptyNameIsNoStrand", "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := claimsNonOrchStrand(tt.in); got != tt.want {
++				t.Errorf("claimsNonOrchStrand(%q) = %v; want %v", tt.in, got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestProgramClaim(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/creelengine/awaitsreply_test.go b/internal/creelengine/awaitsreply_test.go
+new file mode 100644
+index 000000000..2581075e8
+--- /dev/null
++++ b/internal/creelengine/awaitsreply_test.go
+@@ -0,0 +1,129 @@
++// awaitsreply_test.go pins awaits-reply: which questions a strand still waits on, in the store and through the daemon.
++
++package creelengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestStore_AwaitsReply(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// setup brings the store to the state the row asks alpha about.
++		setup func(t *testing.T, e *env)
++		want  bool
++	}{
++		{"AQuestionAStrandHoldsUnansweredIsAwaited", func(t *testing.T, e *env) {
++			e.postMarked(t, strand(alpha), orch, "which schema?")
++		}, true},
++		{"AnAnswerTheAskerHasNotReadIsStillAwaited", func(t *testing.T, e *env) {
++			id := e.postMarked(t, strand(alpha), orch, "which schema?")
++			e.readBodies(t, strand(orch), "")
++			if _, err := e.store.Reply(strand(orch), id, "v2"); err != nil {
++				t.Fatalf("Reply: %v", err)
++			}
++		}, true},
++		{"AnAnswerTheAskerReadEndsTheWait", func(t *testing.T, e *env) {
++			id := e.postMarked(t, strand(alpha), orch, "which schema?")
++			e.readBodies(t, strand(orch), "")
++			if _, err := e.store.Reply(strand(orch), id, "v2"); err != nil {
++				t.Fatalf("Reply: %v", err)
++			}
++			e.readBodies(t, strand(alpha), "")
++		}, false},
++		{"APlainMessageIsNoQuestion", func(t *testing.T, e *env) {
++			e.post(t, strand(alpha), orch, "fyi")
++		}, false},
++		{"AQuestionAProgramHoldsIsNeverChasedSoItIsNotCounted", func(t *testing.T, e *env) {
++			// A read makes batten's mailbox known, so it can hold mail.
++			e.readBodies(t, program(batten), "")
++			e.postMarked(t, strand(alpha), batten, "which schema?")
++		}, false},
++		{"AnotherStrandsQuestionIsNotTheAskers", func(t *testing.T, e *env) {
++			e.postMarked(t, strand(beta), orch, "which schema?")
++		}, false},
++		{"AQuestionSettledUnansweredEndsTheWait", func(t *testing.T, e *env) {
++			e.writeJournal(t, "2026-10-01",
++				`{"event":"posted","at":"2026-10-01T12:00:00Z","id":1,"from":"`+alpha+`","to":"`+orch+`","kind":"mail","body":"which schema?","expect_reply":true}`,
++				`{"event":"read","at":"2026-10-01T12:00:00Z","id":1,"by":"`+orch+`"}`,
++				`{"event":"unanswered","at":"2026-10-01T12:30:00Z","id":1,"reason":"`+creelengine.UnansweredNoReply+`"}`,
++			)
++			e.reopen(t)
++		}, false},
++		{"AQuestionReturnedUnreadToItsAskerIsNotAwaited", func(t *testing.T, e *env) {
++			e.writeJournal(t, "2026-10-01",
++				`{"event":"posted","at":"2026-10-01T12:00:00Z","id":1,"from":"`+alpha+`","to":"`+orch+`","kind":"mail","body":"which schema?","expect_reply":true}`,
++				`{"event":"returned","at":"2026-10-01T12:30:00Z","id":1,"to":"`+alpha+`","receiver":"`+orch+`"}`,
++			)
++			e.reopen(t)
++		}, false},
++		{"UnreadMailAnsweringAnotherStrandsQuestionIsNotTheAskers", func(t *testing.T, e *env) {
++			id := e.postMarked(t, strand(beta), orch, "which schema?")
++			e.readBodies(t, strand(orch), "")
++			replyID, err := e.store.Reply(strand(orch), id, "v2")
++			if err != nil {
++				t.Fatalf("Reply: %v", err)
++			}
++			if err := e.store.Forward(strand(beta), replyID, alpha); err != nil {
++				t.Fatalf("Forward: %v", err)
++			}
++		}, false},
++		{"AQuestionItsRemovedAskerLeftIsNoLongerAwaited", func(t *testing.T, e *env) {
++			_, waiter, err := e.store.PostWait(strand(alpha), orch, "which schema?")
++			if err != nil {
++				t.Fatalf("PostWait: %v", err)
++			}
++			e.start(t)
++			e.del.SetStrands(creelfake.LiveStrand(beta), creelfake.LiveStrand(orch))
++			e.sweepStep()
++			e.sweepLast()
++			if outcome := awaitOutcome(t, waiter); outcome.Kind != creelengine.OutcomeUnanswered {
++				t.Fatalf("wait answered %v; want unanswered", outcome.Kind)
++			}
++		}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			e := newEnv(t)
++			tt.setup(t, e)
++			got, err := e.store.AwaitsReply(alpha)
++			if err != nil {
++				t.Fatalf("AwaitsReply(%q): %v", alpha, err)
++			}
++			if got != tt.want {
++				t.Errorf("AwaitsReply(%q) = %v; want %v", alpha, got, tt.want)
++			}
++		})
++	}
++
++	t.Run("AnEmptyStrandIsRefused", func(t *testing.T) {
++		t.Parallel()
++		e := newEnv(t)
++		_, err := e.store.AwaitsReply("")
++		wantErr(t, err, "names no strand", "way forward")
++	})
++}
++
++func TestDaemon_AwaitsReplyAnswersThroughTheProtocol(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	r := newRig(t, true)
++	r.start()
++	c := r.client(strandClaim(alpha), nil, creelfake.NewClock(epoch))
++	mustCall(t, c, creelengine.Request{Verb: creelengine.VerbPost, Receiver: orch, Text: "which schema?", ExpectReply: true})
++	for _, tt := range []struct {
++		strand string
++		want   bool
++	}{{alpha, true}, {beta, false}} {
++		if got := mustCall(t, c, creelengine.Request{Verb: creelengine.VerbAwaitsReply, From: tt.strand}).AwaitsReply; got != tt.want {
++			t.Errorf("awaits-reply for %q = %v; want %v", tt.strand, got, tt.want)
++		}
++	}
++}
+diff --git a/internal/creelengine/chase.go b/internal/creelengine/chase.go
+index 585fefeb0..edac4b136 100644
+--- a/internal/creelengine/chase.go
++++ b/internal/creelengine/chase.go
+@@ -39,8 +39,17 @@ const (
+ 	UnansweredNoReply = "no-reply"
+ 	// UnansweredHolderGone means the holder was removed after reading the message, with no reply.
+ 	UnansweredHolderGone = "holder-gone"
++	// UnansweredAskerGone means the sender was removed while the message still awaited a reply.
++	UnansweredAskerGone = "asker-gone"
+ )
+ 
++// isOpenQuestion reports whether msg is a question its strand holder has yet to answer or settle:
++// it expects a reply, no reply, unanswered outcome or return to its sender is recorded, and a strand holds it.
++// The holder's answer, the chase clock, or the removal of the holder or the sender settles it.
++func isOpenQuestion(msg *Message) bool {
++	return msg.ExpectReply && !msg.Replied && msg.Unanswered == "" && msg.EndedUnreadBy == "" && isStrandName(msg.Holder)
++}
++
+ // isChaseable reports whether the chase clock runs on msg:
+ // it expects a reply, its strand holder read it and has not answered it, and no unanswered outcome is recorded.
+ // A chase carries no mark, so it is never chaseable itself, and a message a program holds is never chased.
+diff --git a/internal/creelengine/doc.go b/internal/creelengine/doc.go
+index 44360065c..430f3ce65 100644
+--- a/internal/creelengine/doc.go
++++ b/internal/creelengine/doc.go
+@@ -110,6 +110,9 @@
+ // It is journaled undelivered when none waits.
+ // `post --expect-reply` marks a message that expects a reply, and `post --wait-reply` implies it.
+ // The holder's reply clears the mark, and retention keeps the mark while the message is unread.
++// awaits-reply answers whether a strand awaits the reply to a question it asked:
++// a strand holds its marked message, unanswered and not settled unanswered, or it holds an unread reply to one.
++// Only the Go client sends it, and it changes nothing.
+ //
+ // forward moves an unread message the caller holds to another receiver.
+ // The holder changes, the sender stays, and the caller joins the message's path.
+@@ -269,6 +272,8 @@
+ // When that step is no strand, the message is journaled undelivered and a waiting sender is told so.
+ // Unread program mail waiting for a hub orch's strand is the exception: it stays under the orch's name.
+ // A read message that expects a reply and has none is settled unanswered with the reason `holder-gone`.
++// A question a gone strand of this hub sent and nobody has answered is settled unanswered with the reason `asker-gone`,
++// so a later strand of the same name inherits none.
+ // Each inject queued for the gone holder expires.
+ //
+ // # Notice tags
+diff --git a/internal/creelengine/protocol.go b/internal/creelengine/protocol.go
+index aa416c584..092b1b3cd 100644
+--- a/internal/creelengine/protocol.go
++++ b/internal/creelengine/protocol.go
+@@ -36,6 +36,9 @@ const (
+ 	// VerbHookWait holds a strand's idle waiter until the daemon rings it or a newer waiter supersedes it.
+ 	// A ring to a waiter whose request set takes_mail carries the claimed messages, which the client acknowledges.
+ 	VerbHookWait = "hook-wait"
++	// VerbAwaitsReply answers whether the strand in From awaits the reply to a question it asked.
++	// Only the Go client sends it.
++	VerbAwaitsReply = "awaits-reply"
+ )
+ 
+ // CodeStrandClaimOutsidePane is the Response.Code of a refused strand claim for a listed strand, from no strand pane.
+@@ -61,7 +64,7 @@ type Request struct {
+ 	Argument string      `json:"argument,omitempty"`
+ 	// ID is the message or inject a verb concerns: a reply or forward target, a wait's id, or the log id filter.
+ 	ID int64 `json:"id,omitempty"`
+-	// From is the sender filter of read and log.
++	// From is the sender filter of read and log, and the strand awaits-reply asks about.
+ 	From string `json:"from,omitempty"`
+ 	// Wait makes the verb wait: post for its reply, inject for its outcome, read for unread mail, hook-wait for a ring.
+ 	Wait bool `json:"wait,omitempty"`
+@@ -125,6 +128,8 @@ type Response struct {
+ 	AckRequired bool         `json:"ack_required,omitempty"`
+ 	Inbox       *InboxResult `json:"inbox,omitempty"`
+ 	Log         []LogEntry   `json:"log,omitempty"`
++	// AwaitsReply is the answer of awaits-reply.
++	AwaitsReply bool `json:"awaits_reply,omitempty"`
+ 	// Outcome is how a waited-on thing settled, with the reply or returned message in Message.
+ 	Outcome OutcomeKind `json:"outcome,omitempty"`
+ 	Message *Message    `json:"message,omitempty"`
+diff --git a/internal/creelengine/server.go b/internal/creelengine/server.go
+index dbe173c49..8cb7bad48 100644
+--- a/internal/creelengine/server.go
++++ b/internal/creelengine/server.go
+@@ -350,6 +350,12 @@ func (d *daemon) dispatch(conn *net.UnixConn, reader *bufio.Reader, sender Sende
+ 			return err
+ 		}
+ 		ok.Inbox = &inbox
++	case VerbAwaitsReply:
++		awaits, err := store.AwaitsReply(req.From)
++		if err != nil {
++			return err
++		}
++		ok.AwaitsReply = awaits
+ 	case VerbForward:
+ 		if err := store.Forward(sender, req.ID, req.Receiver); err != nil {
+ 			return err
+diff --git a/internal/creelengine/sweep.go b/internal/creelengine/sweep.go
+index 6dda3df1c..2d286346f 100644
+--- a/internal/creelengine/sweep.go
++++ b/internal/creelengine/sweep.go
+@@ -34,7 +34,8 @@ type sweeper struct {
+ 	lastError  string
+ }
+ 
+-// sweepLoop sweeps while a strand holds unread mail, a read message still awaiting a reply, or a queued inject.
++// sweepLoop sweeps while a strand holds unread mail, a read message still awaiting a reply, a queued inject,
++// or a strand of this hub has sent a question still open.
+ // Unread program mail waiting for a hub orch's strand does not count.
+ // The wait starts at sweepBackoffBase and doubles up to sweepBackoffCeiling while the strand-name set holds;
+ // it returns to the base on a change of that set or a failed sweep.
+@@ -177,7 +178,8 @@ func isStrandName(full string) bool {
+ 	return err == nil
+ }
+ 
+-// sweepNeeded reports whether a strand holds unread mail, a read message still awaiting a reply, or a queued inject.
++// sweepNeeded reports whether a strand holds unread mail, a read message still awaiting a reply, a queued inject,
++// or a strand of this hub has sent a question still open.
+ func (s *Store) sweepNeeded() bool {
+ 	return len(s.sweepSubjects()) > 0
+ }
+@@ -188,7 +190,15 @@ func (s *Store) waitsForHubOrch(msg *Message) bool {
+ 	return msg.Status == StatusUnread && len(msg.Path) == 0 && s.isHubOrchName(msg.Holder) && agentname.IsProgram(msg.From) && !isExternalName(msg.From)
+ }
+ 
++// isOpenQuestionOfThisHub reports whether msg is an open question sent by a strand of this hub.
++// A question from another hub or machine names a sender this hub's strand listing never holds.
++// It is therefore never the sweep's to settle.
++func isOpenQuestionOfThisHub(msg *Message) bool {
++	return isOpenQuestion(msg) && isStrandName(msg.From) && msg.SendingHub == "" && msg.SendingMachine == ""
++}
++
+ // sweepSubjects returns the strands that hold unread mail, a chaseable message or have an inject queued, in name order.
++// It also returns each strand that sent a question still open.
+ // Unread mail from a program to an orch of this hub that no strand forwarded counts for no strand, since it waits for the orch's strand and is never returned.
+ func (s *Store) sweepSubjects() []string {
+ 	s.mu.Lock()
+@@ -198,6 +208,9 @@ func (s *Store) sweepSubjects() []string {
+ 		if (msg.Status == StatusUnread && isStrandName(msg.Holder) && !s.waitsForHubOrch(msg)) || isChaseable(msg) {
+ 			seen[msg.Holder] = true
+ 		}
++		if isOpenQuestionOfThisHub(msg) {
++			seen[msg.From] = true
++		}
+ 	}
+ 	for _, entry := range s.state.injects {
+ 		if entry.Outcome == injectQueued {
+@@ -219,6 +232,7 @@ func (s *Store) sweepSubjects() []string {
+ // A reply wait on it is answered as returned.
+ // Unread program mail to a hub orch that no strand forwarded is not returned; it stays for the orch's strand.
+ // Each message the strand read and left unanswered while it expected a reply is settled unanswered, with no chase sent.
++// Each open question the strand itself sent is settled unanswered too, so a later strand of the same name inherits none.
+ // Each inject queued for the strand expires.
+ func (s *Store) releaseGoneHolder(holder string) error {
+ 	listing := s.listStrands()
+@@ -255,6 +269,18 @@ func (s *Store) releaseGoneHolder(holder string) error {
+ 				return err
+ 			}
+ 		}
++		var askedIDs []int64
++		for id, msg := range s.state.messages {
++			if msg.From == holder && isOpenQuestionOfThisHub(msg) {
++				askedIDs = append(askedIDs, id)
++			}
++		}
++		sort.Slice(askedIDs, func(i, j int) bool { return askedIDs[i] < askedIDs[j] })
++		for _, id := range askedIDs {
++			if err := s.settleUnansweredLocked(id, UnansweredAskerGone, listing); err != nil {
++				return err
++			}
++		}
+ 		for _, entry := range s.queuedEntriesLocked(holder) {
+ 			if err := s.settleInjectLocked(entry.ID, eventExpired); err != nil {
+ 				return err
+diff --git a/internal/creelengine/verbs.go b/internal/creelengine/verbs.go
+index 215443b1f..cb22704b2 100644
+--- a/internal/creelengine/verbs.go
++++ b/internal/creelengine/verbs.go
+@@ -1079,6 +1079,33 @@ func (s *Store) Inbox(sender Sender) (InboxResult, error) {
+ 	return result, err
+ }
+ 
++// AwaitsReply reports whether strand awaits the reply to a question it asked.
++// It does while the strand has sent a message expecting a reply that is neither answered nor settled unanswered.
++// It also does while the strand holds an unread reply to one of its messages.
++// Each such question settles: its holder answers it, the chases settle it unanswered,
++// or the removal of its holder or the strand ends it.
++// A question a program holds is never chased, so it is not counted.
++// It refuses an empty strand.
++func (s *Store) AwaitsReply(strand string) (bool, error) {
++	if strand == "" {
++		return false, errors.New("creel: awaits-reply names no strand; way forward: name the strand whose questions to read")
++	}
++	awaits := false
++	err := s.do(func() error {
++		for _, msg := range s.state.messages {
++			asked := msg.From == strand && isOpenQuestion(msg)
++			original := s.state.messages[msg.ReplyTo]
++			answered := msg.Holder == strand && msg.Status == StatusUnread && original != nil && original.From == strand
++			if asked || answered {
++				awaits = true
++				return nil
++			}
++		}
++		return nil
++	})
++	return awaits, err
++}
++
+ // Forward moves an unread message the caller holds to receiver.
+ // The holder changes, From stays, and the caller joins the message's path.
+ // A message from another hub or machine is forwarded only to a strand of this hub.
+diff --git a/internal/driftengine/judge.go b/internal/driftengine/judge.go
+index 78bda328a..1085ab0e1 100644
+--- a/internal/driftengine/judge.go
++++ b/internal/driftengine/judge.go
+@@ -27,8 +27,9 @@ const judgeTimeout = 60 * time.Minute
+ // The judge stencil's mode text, autonomous and with the operator in the pane.
+ // It names no engine's tool, so it holds whichever engine the judge launches on.
+ const (
+-	autonomousJudgeMode = "No operator is present, so make best-judgment rulings and never block on a dialog."
+-	operatorJudgeMode   = "The operator is present at your pane and decides each ruling: you present each cell or case, discuss it and record the operator's ruling.\n" +
++	autonomousJudgeMode = "No operator is present, so make best-judgment rulings and never block on a dialog.\n" +
++		"A question you cannot settle from the request goes to your parent as creel mail, as your parent directive says, never into your pane, which no one reads."
++	operatorJudgeMode = "The operator is present at your pane and decides each ruling: you present each cell or case, discuss it and record the operator's ruling.\n" +
+ 		"Ask in plain text in the pane and wait for the operator's typed reply; never call a tool that opens a question dialog, which the run cannot drive."
+ )
+ 
+diff --git a/internal/gatecli/cardfixer.go b/internal/gatecli/cardfixer.go
+index c6eafd2b6..1e2b85e91 100644
+--- a/internal/gatecli/cardfixer.go
++++ b/internal/gatecli/cardfixer.go
+@@ -11,6 +11,7 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gatefixer"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -30,6 +31,8 @@ const (
+ 	fixerRecordFile = "fixer.json"
+ 	// fixerBodyStencil names the body stencil a card gate's fixer prompt joins behind the shared cold frame.
+ 	fixerBodyStencil = "gatefix-body-card"
++	// cardFixerProgram is the program name the card fixer's reply probe signs with.
++	cardFixerProgram = "GATE"
+ )
+ 
+ // cardFixerKit is what the detached runner needs to hand a red call to a cold fixer.
+@@ -128,6 +131,7 @@ func newStrandRig(location *lymcwd.Location) (strandRig, error) {
+ 	runner := shuttleengine.NewRunner(reed, engines, reedGeom.AnchorPath, reedGeom.WorktreeRoot, shuttleCfg)
+ 	runner.SetPause(pauseGeom)
+ 	runner.SetSessionEnd(shedadapters.UsageRecorder(location, shuttleengines.RecordReaders(dirs)))
++	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(location, cardFixerProgram))
+ 	return strandRig{runner: runner, reed: reed, engines: engines, shuttleCfg: shuttleCfg, anchorRoot: reedGeom.AnchorPath}, nil
+ }
+ 
+diff --git a/internal/gatecli/strandrig_test.go b/internal/gatecli/strandrig_test.go
+new file mode 100644
+index 000000000..b7b57672c
+--- /dev/null
++++ b/internal/gatecli/strandrig_test.go
+@@ -0,0 +1,32 @@
++// strandrig_test.go pins how the card fixer's strand rig configures the runner it builds.
++
++package gatecli
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestNewStrandRig_RunnerHoldsAReplyProbe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	hub := t.TempDir()
++	// A .git directory marks the worktree as the prime.
++	if err := os.MkdirAll(filepath.Join(hub, "hub-repo", ".git"), 0o755); err != nil {
++		t.Fatalf("MkdirAll(.git) = %v; want nil", err)
++	}
++	location := &lymcwd.Location{RepoName: "example", HubPath: hub, WorktreeName: "hub-repo", AnchorRel: "."}
++
++	rig, err := newStrandRig(location)
++	if err != nil {
++		t.Fatalf("newStrandRig() error = %v; want nil", err)
++	}
++	if !rig.runner.HasReplyProbe() {
++		t.Error("rig.runner.HasReplyProbe() = false; want the reply probe wired on the card fixer's runner")
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index d05891789..f860a5c29 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/configreg"
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/driftengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -710,6 +711,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		_, err := orchcli.NotifyAsker(location, loomProgram, line)
+ 		return err
+ 	})
++	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(location, loomProgram))
+ 	runner.SetSessionEnd(shedadapters.UsageRecorder(location, shuttleengines.RecordReaders(fabricengine.ConfigDirs(location))))
+ 
+ 	websterGeom := hubgeom.WebsterGeometry(location)
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 4f99b70b4..78f1b0371 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -194,6 +194,9 @@ func TestWire_EverySeamFilled(t *testing.T) {
+ 	if c.env.GateFixer == nil {
+ 		t.Error("GateFixer is nil; want it set after wire()")
+ 	}
++	if !c.runner.HasReplyProbe() {
++		t.Error("runner.HasReplyProbe() = false; want the reply probe wired by wire()")
++	}
+ 
+ 	nils := envkit.NilSeams(c.env)
+ 	for _, path := range nils {
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index c53f310fa..beb2bee6a 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -55,6 +55,10 @@
+ // # Run outcomes
+ //
+ // A turn end without every output file never ends a run: Wait holds it and keeps polling the same agent.
++// Runner.SetReplyProbe tells a Runner how to ask whether a strand awaits the reply to a question it asked.
++// While the run's strand awaits one, a turn end that would end the run or start its gate's evaluation is held,
++// so the reply starts a turn in a live session; the hold sends no notice.
++// The hold ends once no reply is awaited on two probes in a row and the agent's pane reads idle.
+ // A run ends only as done, died, timeout, api-error or a mechanism failure.
+ // A hold never extends the run's deadline, and each Attach starts a fresh deadline.
+ // RunState.Outcome records whether a run ever ended, so "has this run already ended?" is a fact on disk.
+diff --git a/internal/shuttleengine/replyhold.go b/internal/shuttleengine/replyhold.go
+new file mode 100644
+index 000000000..9f64e1ed3
+--- /dev/null
++++ b/internal/shuttleengine/replyhold.go
+@@ -0,0 +1,106 @@
++// replyhold.go holds a run's finishing turn end while its agent awaits the reply to a question it asked.
++// The runner's reply probe answers whether the run's strand awaits one.
++// The reply starts the agent's next turn, and that turn's end decides afresh.
++
++package shuttleengine
++
++import (
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// replyQuietProbes is how many probes in a row, gateRecheckEvery apart, must find no reply awaited before a hold may end.
++// A reply read between two probes starts the agent's turn, which ends the hold first when it writes a turn start.
++// A turn the reply wakes may write none, so the release also needs the agent's pane idle.
++const replyQuietProbes = 2
++
++// replyHold is one turn end held while the run's strand awaits a reply.
++type replyHold struct {
++	// probedAt is the run clock's time of the latest probe.
++	probedAt time.Time
++	// quietProbes counts the latest probes in a row that found no reply awaited.
++	quietProbes int
++}
++
++// awaitsReply asks the runner's reply probe whether the run's strand awaits a reply.
++// A runner told no probe and a run whose record names no strand answer false.
++// A probe error answers false too, so the run ends as it would with no probe; it warns once per episode.
++func (run *Run) awaitsReply() bool {
++	probe, strand := run.runner.replyProbe, run.state.StrandName
++	if probe == nil || strand == "" {
++		return false
++	}
++	awaits, err := probe(strand)
++	if err != nil {
++		run.failures.Fail("reply-probe", "shuttle: reply probe failed, reading the strand as awaiting no reply", "strandGUID", run.state.StrandGUID, "strand", strand, "error", err)
++		return false
++	}
++	run.failures.Recover("reply-probe", "shuttle: reply probe answers again", "strandGUID", run.state.StrandGUID, "strand", strand)
++	return awaits
++}
++
++// holdForReply reports whether a turn end that would end the run, or start its gate's evaluation, is held for a reply.
++// It starts the hold when the run's strand awaits one.
++// The hold sends no notice, since the parent already holds the question, and it never extends the run deadline.
++func (run *Run) holdForReply() bool {
++	if !run.awaitsReply() {
++		return false
++	}
++	run.replyHold = &replyHold{probedAt: run.clock.Now()}
++	logger.Info("shuttle: turn end held, the agent awaits a reply", "strandGUID", run.state.StrandGUID, "strand", run.state.StrandName)
++	return true
++}
++
++// agentBusy reports whether the run's pane shows the agent mid-turn.
++// An engine that cannot read idleness and a pane that cannot be captured read as not busy,
++// so the hold never depends on a reading it cannot take.
++func (run *Run) agentBusy() bool {
++	cycler, ok := run.engine.(SessionCycler)
++	if !ok {
++		return false
++	}
++	capture, err := run.runner.reed.CapturePane(run.state.StrandGUID)
++	if err != nil {
++		return false
++	}
++	return run.engine.Startup(capture) != StartupReady || !cycler.IdleSession(capture)
++}
++
++// releaseReplyHold ends the held turn end once replyQuietProbes probes in a row find no reply awaited.
++// The pane must also read idle.
++// A busy pane keeps the hold, and the next probe interval reads it again.
++// It reports whether Wait finishes with the returned Result and error.
++// An ungated run then finalizes done.
++// A gated one evaluates its gate at the boundary, as at the turn end it held;
++// under a pause the boundary waits for the first uncovered tick.
++func (run *Run) releaseReplyHold() (Result, bool, error) {
++	hold := run.replyHold
++	now := run.clock.Now()
++	if now.Sub(hold.probedAt) < gateRecheckEvery {
++		return Result{}, false, nil
++	}
++	hold.probedAt = now
++	if run.awaitsReply() {
++		hold.quietProbes = 0
++		return Result{}, false, nil
++	}
++	hold.quietProbes++
++	if hold.quietProbes < replyQuietProbes || run.agentBusy() {
++		return Result{}, false, nil
++	}
++	run.replyHold = nil
++	logger.Info("shuttle: turn end released, no reply awaited", "strandGUID", run.state.StrandGUID, "strand", run.state.StrandName)
++	if len(run.gate) == 0 {
++		result, err := run.finalizeAndRemoveDiedWindow(OutcomeDone)
++		return result, true, err
++	}
++	if run.covered {
++		run.boundaryHeld = true
++		return Result{}, false, nil
++	}
++	if run.gateAtBoundary && run.boundaryIdle() {
++		return run.handleGatedBoundary()
++	}
++	return Result{}, false, nil
++}
+diff --git a/internal/shuttleengine/replyhold_test.go b/internal/shuttleengine/replyhold_test.go
+new file mode 100644
+index 000000000..8ee4c00ed
+--- /dev/null
++++ b/internal/shuttleengine/replyhold_test.go
+@@ -0,0 +1,364 @@
++// replyhold_test.go pins the reply hold:
++// a turn end that would end a run, or start its gate's evaluation, waits while the run's strand awaits a reply.
++
++package shuttleengine
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"sync"
++	"sync/atomic"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// scriptedReplyProbe is a reply probe whose answer a test changes between ticks.
++// It records the strands it was asked about.
++type scriptedReplyProbe struct {
++	mu      sync.Mutex
++	awaits  bool
++	err     error
++	strands []string
++}
++
++func (p *scriptedReplyProbe) probe(strand string) (bool, error) {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	p.strands = append(p.strands, strand)
++	return p.awaits, p.err
++}
++
++func (p *scriptedReplyProbe) set(awaits bool) {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	p.awaits = awaits
++}
++
++func (p *scriptedReplyProbe) asked() []string {
++	p.mu.Lock()
++	defer p.mu.Unlock()
++	return slices.Clone(p.strands)
++}
++
++// busyPaneReed is a fakeReed whose pane reads mid-turn while busy is set.
++// Otherwise the pane reads idle and shows the last text typed into it, so a send confirms.
++type busyPaneReed struct {
++	*fakeReed
++	busy atomic.Bool
++}
++
++func (r *busyPaneReed) CapturePane(string) (string, error) {
++	if r.busy.Load() {
++		return "RUNNING", nil
++	}
++	r.fakeReed.mu.Lock()
++	defer r.fakeReed.mu.Unlock()
++	typed := ""
++	if n := len(r.fakeReed.SendTextCalls); n > 0 {
++		typed = r.fakeReed.SendTextCalls[n-1].Text
++	}
++	return "IDLE\n" + typed, nil
++}
++
++var _ ReedOps = (*busyPaneReed)(nil)
++
++// replyHoldRun is a run waiting on one seeded turn end while its strand awaits a reply.
++type replyHoldRun struct {
++	run        *Run
++	clk        *multiStepClock
++	reed       *busyPaneReed
++	probe      *scriptedReplyProbe
++	eventsPath string
++}
++
++// newReplyHoldRun builds a run over one seeded turn end, with every output file present and the probe awaiting a reply.
++// The engine reads session signals and an idle pane.
++// A nil gate leaves the run ungated, and a zero pause geometry leaves the runner with no pause record.
++// A test scripts the run with at, one step per poll tick.
++func newReplyHoldRun(t *testing.T, strand string, probeErr error, gate GateSpec, pause pauserecord.Geometry) *replyHoldRun {
++	t.Helper()
++	runDir := t.TempDir()
++	eventsPath := filepath.Join(runDir, "events.jsonl")
++	outputFile := filepath.Join(runDir, "out.md")
++	if err := os.WriteFile(eventsPath, []byte("STOP:asked my parent\n"), 0o644); err != nil {
++		t.Fatalf("seed events: %v", err)
++	}
++	touchOutputFile(t, outputFile)
++
++	probe := &scriptedReplyProbe{awaits: true, err: probeErr}
++	reed := &busyPaneReed{fakeReed: &fakeReed{StatusQueue: liveStrandStatus(true)}}
++	engine := &idleEngine{sessionFakeEngine: sessionFakeEngine{
++		waitingEngine: waitingEngine{fakeEngine: fakeEngine{StartupScript: []StartupState{StartupReady}}},
++		liveness:      LivenessAlive,
++	}}
++	fx := newFixture(t, reed, engine, withConfig(gateConfig))
++	fx.Runner.SetReplyProbe(probe.probe)
++	if pause.RecordPath != "" {
++		fx.Runner.SetPause(pause)
++	}
++
++	steps := make([]func(), 40)
++	for i := range steps {
++		steps[i] = func() {}
++	}
++	clk := &multiStepClock{fakeClock: newFakeClock(time.Now()), steps: steps}
++	opts := []runOpt{
++		withRunDir(runDir),
++		withRunState(RunState{StrandGUID: "strand-1", StrandName: strand, EventsPath: eventsPath}),
++		withRunClock(clk, clk.Now().Add(time.Minute)),
++	}
++	if gate != nil {
++		opts = append(opts, withRunGate(gate))
++	}
++	run := fx.newRun(Spec{OutputFiles: []string{outputFile}, Timeout: time.Minute}, opts...)
++	return &replyHoldRun{run: run, clk: clk, reed: reed, probe: probe, eventsPath: eventsPath}
++}
++
++// at runs fn after the sleep of poll tick step, after anything already scripted for that step.
++func (h *replyHoldRun) at(step int, fn func()) {
++	previous := h.clk.steps[step]
++	h.clk.steps[step] = func() {
++		previous()
++		fn()
++	}
++}
++
++func TestRun_Wait_ReplyHold(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const askingStrand = "ly:task:darn"
++	tests := []struct {
++		name string
++		// strand is the strand name the run's record holds.
++		strand   string
++		probeErr error
++		gated    bool
++		// replyAt is the script step at which the strand stops awaiting a reply, and replyTurn whether a turn end follows then.
++		replyAt   int
++		replyTurn bool
++		// busyUntil is the script step at which the pane stops reading mid-turn; zero leaves the pane idle throughout.
++		busyUntil int
++		// eventLines maps a script step to a line appended to the events file then.
++		eventLines map[int]string
++		// wantSteps is how many script steps, one per poll tick, ran before Wait returned.
++		wantSteps int
++		// wantAsked is whether the probe was asked about the strand.
++		wantAsked bool
++	}{
++		{
++			name:   "a reply starts the agent's next turn, and that turn's end finishes the run",
++			strand: askingStrand, replyAt: 3, replyTurn: true,
++			wantSteps: 4, wantAsked: true,
++		},
++		{
++			name:   "a gated run evaluates its gate only at the turn end after the reply",
++			strand: askingStrand, gated: true, replyAt: 3, replyTurn: true,
++			wantSteps: 4, wantAsked: true,
++		},
++		{
++			// The probe runs every five seconds of a one-second poll, and two quiet probes end the hold: ten ticks.
++			name:   "a question settled with no reply ends the hold after two quiet probes",
++			strand: askingStrand, replyAt: 0,
++			wantSteps: 10, wantAsked: true,
++		},
++		{
++			name:   "a gated run whose question settles with no reply evaluates its gate when the hold ends",
++			strand: askingStrand, gated: true, replyAt: 0,
++			wantSteps: 10, wantAsked: true,
++		},
++		{
++			// The reply's turn writes no turn start, so only the pane shows the agent is still working on it.
++			name:   "a reply read with no turn start holds the run while the pane reads mid-turn",
++			strand: askingStrand, replyAt: 3, busyUntil: 14,
++			wantSteps: 15, wantAsked: true,
++		},
++		{
++			name:   "a gated run holds its gate while a reply's turn writes no turn start and the pane reads mid-turn",
++			strand: askingStrand, gated: true, replyAt: 3, busyUntil: 14,
++			wantSteps: 15, wantAsked: true,
++		},
++		{
++			name:   "a turn start after the reply ends the hold, and only that turn's end finishes the run",
++			strand: askingStrand, replyAt: 3, eventLines: map[int]string{3: "START", 20: "STOP:answered"},
++			wantSteps: 21, wantAsked: true,
++		},
++		{
++			name:   "a probe error ends the run as a runner with no probe does",
++			strand: askingStrand, probeErr: errors.New("creel daemon down"), replyAt: 3, replyTurn: true,
++			wantSteps: 0, wantAsked: true,
++		},
++		{
++			name:   "a run whose record names no strand is never probed",
++			strand: "", replyAt: 3, replyTurn: true,
++			wantSteps: 0, wantAsked: false,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			gateCalls := 0
++			var gate GateSpec
++			if tt.gated {
++				gate = GateSpec{{Gate: func() (GateResult, error) {
++					gateCalls++
++					return GateResult{Passed: true}, nil
++				}, Attempts: 1}}
++			}
++			h := newReplyHoldRun(t, tt.strand, tt.probeErr, gate, pauserecord.Geometry{})
++
++			gateCallsAtReply := -1
++			h.at(tt.replyAt, func() {
++				gateCallsAtReply = gateCalls
++				h.probe.set(false)
++				if tt.replyTurn {
++					appendEventsLine(t, h.eventsPath, "STOP:answered")
++				}
++			})
++			gateCallsWhileBusy := -1
++			if tt.busyUntil > 0 {
++				h.reed.busy.Store(true)
++				h.at(tt.busyUntil, func() {
++					gateCallsWhileBusy = gateCalls
++					h.reed.busy.Store(false)
++				})
++			}
++			for step, line := range tt.eventLines {
++				h.at(step, func() { appendEventsLine(t, h.eventsPath, line) })
++			}
++
++			result, err := h.run.Wait()
++			if err != nil {
++				t.Fatalf("Wait() error: %v", err)
++			}
++			if result.Outcome != OutcomeDone {
++				t.Errorf("Outcome = %q; want %q", result.Outcome, OutcomeDone)
++			}
++			if h.clk.next != tt.wantSteps {
++				t.Errorf("script steps run before Wait returned = %d; want %d", h.clk.next, tt.wantSteps)
++			}
++			asked := h.probe.asked()
++			if tt.wantAsked != (len(asked) > 0) {
++				t.Errorf("probe asked about %q; want asked = %v", asked, tt.wantAsked)
++			}
++			for _, strand := range asked {
++				if strand != tt.strand {
++					t.Errorf("probe asked about %q; want only %q", strand, tt.strand)
++				}
++			}
++			if tt.gated {
++				if gateCallsAtReply != 0 {
++					t.Errorf("gate evaluations before the hold ended = %d; want 0", gateCallsAtReply)
++				}
++				if gateCalls == 0 {
++					t.Errorf("gate evaluations = 0; want the gate evaluated once the hold ended")
++				}
++				if tt.busyUntil > 0 && gateCallsWhileBusy != 0 {
++					t.Errorf("gate evaluations while the pane read mid-turn = %d; want 0", gateCallsWhileBusy)
++				}
++			}
++		})
++	}
++}
++
++// TestRun_Wait_ReplyHold_ReleaseOfAFailingGateRepromptsOnce pins that a released hold is gone:
++// the failing gate is evaluated once and re-prompts once, rather than again at every probe interval.
++// It does not run in parallel: stubInputSleep replaces a package-level seam.
++func TestRun_Wait_ReplyHold_ReleaseOfAFailingGateRepromptsOnce(t *testing.T) {
++	tiergate.Require(t, 0)
++	stubInputSleep(t)
++	gateCalls := 0
++	gate := GateSpec{{Gate: func() (GateResult, error) {
++		gateCalls++
++		if gateCalls == 1 {
++			return GateResult{Findings: "the output misses a section"}, nil
++		}
++		return GateResult{Passed: true}, nil
++	}, Attempts: 2}}
++	h := newReplyHoldRun(t, "ly:task:darn", nil, gate, pauserecord.Geometry{})
++
++	h.at(0, func() { h.probe.set(false) })
++	// The hold releases at the eleventh tick, so a probe asked after step 12 shows a hold that outlived its release.
++	probesAtRelease, probesBeforeTurnEnd := -1, -1
++	h.at(12, func() { probesAtRelease = len(h.probe.asked()) })
++	gateCallsBeforeTurnEnd, sendsBeforeTurnEnd := -1, -1
++	h.at(19, func() {
++		gateCallsBeforeTurnEnd = gateCalls
++		sendsBeforeTurnEnd = len(h.reed.SendTextCalls)
++		probesBeforeTurnEnd = len(h.probe.asked())
++	})
++	h.at(20, func() { appendEventsLine(t, h.eventsPath, "STOP:fixed") })
++
++	result, err := h.run.Wait()
++	if err != nil {
++		t.Fatalf("Wait() error: %v", err)
++	}
++	if result.Outcome != OutcomeDone {
++		t.Errorf("Outcome = %q; want %q", result.Outcome, OutcomeDone)
++	}
++	if gateCallsBeforeTurnEnd != 1 {
++		t.Errorf("gate evaluations before the next turn end = %d; want 1", gateCallsBeforeTurnEnd)
++	}
++	if sendsBeforeTurnEnd != 1 {
++		t.Errorf("re-prompts sent before the next turn end = %d; want 1", sendsBeforeTurnEnd)
++	}
++	if probesBeforeTurnEnd != probesAtRelease {
++		t.Errorf("probes asked between the release and the next turn end = %d; want 0", probesBeforeTurnEnd-probesAtRelease)
++	}
++	if gateCalls != 2 {
++		t.Errorf("gate evaluations = %d; want 2, one per turn end", gateCalls)
++	}
++}
++
++// TestRun_Wait_ReplyHold_ReleaseUnderAPauseWaitsForTheLift pins a hold that releases while a pause covers the run:
++// the gate runs on the first uncovered tick, and not before.
++func TestRun_Wait_ReplyHold_ReleaseUnderAPauseWaitsForTheLift(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	gateCalls := 0
++	gate := GateSpec{{Gate: func() (GateResult, error) {
++		gateCalls++
++		return GateResult{Passed: true}, nil
++	}, Attempts: 1}}
++	h := newReplyHoldRun(t, "ly:task:darn", nil, gate, pauserecord.Geometry{RecordPath: recordPath, Slug: "slug"})
++
++	h.at(0, func() { h.probe.set(false) })
++	h.at(1, func() { addLiveEntry(t, recordPath, pauserecord.ScopeHub, h.clk.Now()) })
++	gateCallsWhileCovered := -1
++	h.at(13, func() {
++		gateCallsWhileCovered = gateCalls
++		resumedAt := h.clk.Now()
++		_, err := pauserecord.Update(recordPath, resumedAt, func(record *pauserecord.Record) error {
++			entry := record.Live[0]
++			entry.ResumedAt = resumedAt
++			record.Live = nil
++			record.Resumed = append(record.Resumed, entry)
++			return nil
++		})
++		if err != nil {
++			t.Fatalf("lift the pause: %v", err)
++		}
++	})
++
++	result, err := h.run.Wait()
++	if err != nil {
++		t.Fatalf("Wait() error: %v", err)
++	}
++	if result.Outcome != OutcomeDone {
++		t.Errorf("Outcome = %q; want %q", result.Outcome, OutcomeDone)
++	}
++	if gateCallsWhileCovered != 0 {
++		t.Errorf("gate evaluations while the pause covered the run = %d; want 0", gateCallsWhileCovered)
++	}
++	if gateCalls != 1 {
++		t.Errorf("gate evaluations = %d; want 1, on the first uncovered tick", gateCalls)
++	}
++	if h.clk.next != 14 {
++		t.Errorf("script steps run before Wait returned = %d; want 14, the tick after the lift", h.clk.next)
++	}
++}
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 27f57a68f..2e0bad419 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -58,6 +58,8 @@ type Runner struct {
+ 	notifier func(line string) error
+ 	// sessionEnd receives the report of each ended session; nil, the default, calls nothing.
+ 	sessionEnd func(SessionEnd)
++	// replyProbe reports whether a strand awaits the reply to a question it asked; nil, the default, holds no turn end.
++	replyProbe func(strand string) (bool, error)
+ 	// pause is the pause geometry the runner was told, the zero value when it was told none and reads no record.
+ 	pause pauserecord.Geometry
+ 	// step is the shed step the runner's process runs, nil when it was told none; start copies it into each run's record.
+@@ -99,6 +101,19 @@ func (r *Runner) SetNotifier(notify func(line string) error) {
+ 	r.notifier = notify
+ }
+ 
++// SetReplyProbe sets the probe Wait asks whether a run's strand awaits the reply to a question it asked.
++// A turn end that would end the run, or start its gate's evaluation, is held while the probe answers true,
++// so the reply reaches a live session instead of a finished run.
++// A nil probe, the default, holds no turn end.
++func (r *Runner) SetReplyProbe(probe func(strand string) (bool, error)) {
++	r.replyProbe = probe
++}
++
++// HasReplyProbe reports whether the runner was told a reply probe.
++func (r *Runner) HasReplyProbe() bool {
++	return r.replyProbe != nil
++}
++
+ // SetPause tells the runner the pause geometry it reads, so a run start waits while a pause covers the geometry's slug,
+ // and a run's Wait skips its deadline and notices while covered.
+ // The geometry is also what every send judges its target's coverage by:
+@@ -408,6 +423,10 @@ type Run struct {
+ 	// turnStartRead is true when the latest pollEventsTick read a turn start past the latest turn end the loop holds.
+ 	// It also ends a held wait; that turn end is the held one the tick returns, else the one on show.
+ 	turnStartRead bool
++	// turnStartSeen is true when the latest pollEventsTick read any turn start.
++	turnStartSeen bool
++	// replyHold is the turn end held while the run's strand awaits a reply, nil when none is held; it lives for one Wait.
++	replyHold *replyHold
+ 	// pendingHold is the held turn end whose parent notice a Spec.HoldDeferral run has not sent yet; nil when none.
+ 	// pendingHoldAt is the run clock's time when it was read.
+ 	// Both live in memory for one Wait.
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 100ebc9e0..9d4a7bee5 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -45,6 +45,11 @@
+ // finalize then evaluates the gate once more over the tree as it stands.
+ // Every shell outstanding when the run ends, by whatever exit, is recorded in Result.EndedShells.
+ //
++// A turn end that would end the run, or start its gate's evaluation, is held in one case.
++// The case is the runner's reply probe reporting the run's strand awaiting the reply to a question it asked.
++// replyhold.go holds the rules.
++// Any event or turn start read afterwards ends that hold, so the turn the reply starts decides afresh at its end.
++//
+ // The events-tick Done branch splits in two, on whether run.gate is empty:
+ // An ungated run's Done finalizes without consulting the gate.
+ // A gated Done instead evaluates the gate's entries through run.evaluateGate().
+@@ -324,6 +329,9 @@ func (run *Run) Wait() (Result, error) {
+ 			run.endHeldWait()
+ 			run.pendingHold = nil
+ 		}
++		if err == nil && (run.eventsRead || run.turnStartSeen) {
++			run.replyHold = nil
++		}
+ 		if err != nil {
+ 			eventsFailures++
+ 			if eventsFailures >= maxEventsReadRetries {
+@@ -351,7 +359,10 @@ func (run *Run) Wait() (Result, error) {
+ 				}
+ 			} else if outcome != "" && (outcome != OutcomeDone || len(run.gate) == 0) {
+ 				// Any other outcome, or a Done with no gate, finalizes at once.
+-				return run.finalizeAndRemoveDiedWindow(outcome)
++				// The exception is a Done held while the agent awaits a reply.
++				if outcome != OutcomeDone || !run.holdForReply() {
++					return run.finalizeAndRemoveDiedWindow(outcome)
++				}
+ 			} else if outcome == OutcomeDone {
+ 				// A gated Done marks the writer's turn boundary: per-turn gate state resets here.
+ 				run.endReworkSpans(run.clock.Now())
+@@ -363,19 +374,25 @@ func (run *Run) Wait() (Result, error) {
+ 				if run.covered {
+ 					// A pause covers the session: nothing is evaluated or sent until the first uncovered tick.
+ 					run.boundaryHeld = true
+-				} else if run.boundaryIdle() {
++				} else if !run.holdForReply() && run.boundaryIdle() {
++					// A boundary held for a reply is evaluated once the hold ends.
+ 					if result, finished, ferr := run.handleGatedBoundary(); finished {
+ 						return result, ferr
+ 					}
+ 				}
+ 			} else if run.boundaryHeld && !run.covered && run.gateAtBoundary {
+-				// The pause lifted: evaluate the held arrival as if it had come now.
++				// The pause lifted: evaluate the held arrival as if it had come now, unless it is held for a reply.
+ 				run.boundaryHeld = false
+-				if run.boundaryIdle() {
++				if !run.holdForReply() && run.boundaryIdle() {
+ 					if result, finished, ferr := run.handleGatedBoundary(); finished {
+ 						return result, ferr
+ 					}
+ 				}
++			} else if run.replyHold != nil {
++				// A turn end held for a reply: it ends once no reply is awaited, and nothing else is evaluated meanwhile.
++				if result, finished, ferr := run.releaseReplyHold(); finished {
++					return result, ferr
++				}
+ 			} else if !run.covered && (run.gatePending || run.unsentReprompt) && run.gateAtBoundary {
+ 				// No new arrival, an entry is pending or a re-prompt is unsent, and the writer is idle:
+ 				// re-evaluate, so a verdict recorded since is read without waiting for the writer to speak.
+@@ -949,6 +966,7 @@ func startupCaptureExcerpt(capture string) string {
+ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	run.eventsRead = false
+ 	run.turnStartRead = false
++	run.turnStartSeen = false
+ 	startOffset := run.offset
+ 	data, newOffset, err := readEventsFrom(run.state.EventsPath, startOffset)
+ 	if err != nil {
+@@ -965,6 +983,7 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	run.offset = newOffset
+ 	guardArmed := run.holdGuard
+ 	turnStarts := turnStartOffsets(run.engine, data, startOffset)
++	run.turnStartSeen = len(turnStarts) > 0
+ 	if len(turnStarts) > 0 {
+ 		run.holdGuard = false
+ 		run.promptTurnStarted = true
+diff --git a/internal/webstercli/wiring.go b/internal/webstercli/wiring.go
+index 083a50a6b..5a95dcceb 100644
+--- a/internal/webstercli/wiring.go
++++ b/internal/webstercli/wiring.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/batcher"
+ 	"github.com/Knatte18/loomyard/internal/cliwire"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -200,6 +201,7 @@ func (c *websterCLI) wireHub(loc *lymcwd.Location, stencilsDir, planDir, targetD
+ 		_, err := orchcli.NotifyAsker(loc, websterProgram, line)
+ 		return err
+ 	})
++	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(loc, websterProgram))
+ 
+ 	c.setRunner(runner, engines, reedEngine)
+ 	c.shuttleCfg = shuttleCfg
+diff --git a/internal/webstercli/wiring_test.go b/internal/webstercli/wiring_test.go
+index f7a298d6f..3b0288272 100644
+--- a/internal/webstercli/wiring_test.go
++++ b/internal/webstercli/wiring_test.go
+@@ -133,6 +133,9 @@ func TestWire_ModeHubSelectsHubMode(t *testing.T) {
+ 			if c.refMatcher == nil {
+ 				t.Error("refMatcher = nil; want a non-nil matcher in hub mode")
+ 			}
++			if !c.runner.HasReplyProbe() {
++				t.Error("runner.HasReplyProbe() = false; want the reply probe wired in hub mode")
++			}
+ 			if c.runDeps().InstructionFiles == nil {
+ 				t.Error("runDeps().InstructionFiles = nil; want Master's instruction file lister supplied for `lym webster run`")
+ 			}
