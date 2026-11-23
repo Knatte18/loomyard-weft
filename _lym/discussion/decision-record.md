@@ -55,6 +55,12 @@ Add those tests.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): No bug fixed: the four findings were fixed by 30ed1ee58
+
+Decision: All four findings are already fixed and pinned on the base. This run adds one row to TestGotoSpec_AdmittedHookClearsThePRReviewRecordOnlyForThatRow: a recorded strand on a receiver with no runner, the exact case finding 1 named. It changes nothing else.
+
+Rationale: The run found each finding fixed and tested on HEAD; only that one case is unpinned.
+
 ## Constraints
 
 ## Auto-mode assumptions
