@@ -1,6 +1,6 @@
 # Intake checks whether an issue is already fixed before it reaches the board
 
-`intake-checks-already-fixed` · Task · enhancement, board · starting · Seed-IDE
+`intake-checks-already-fixed` · Task · enhancement, board · starting · Open-IDE
 
 ## Seen
 
