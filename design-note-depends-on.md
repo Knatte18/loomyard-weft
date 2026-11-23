@@ -1,6 +1,6 @@
 # A note carries depends_on, shown on the board and kept when promoted
 
-`note-depends-on` · Task · enhancement, board · running · Code-Burler-Review
+`note-depends-on` · Task · enhancement, board · running · Code-Burler-Fix
 
 ## Seen
 
