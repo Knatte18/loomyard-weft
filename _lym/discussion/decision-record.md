@@ -38,4 +38,16 @@ Rationale: Every finding has a committed fix and the gates passed; F6's alternat
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - describe-error-blocks-tidy-and-landing (class design, severity MEDIUM, open in rounds 1)
+  - describer-stencil-restates-summary-format (class consistency, severity BLOCKING, open in rounds 1)
+  - merge-danger-called-two-way-for-outward-push (class consistency, severity MEDIUM, open in rounds 1)
+  - pr-update-failure-misreported-as-unrecorded (class design, severity MEDIUM, open in rounds 1)
+  - tick-wiring-of-describe-step-unpinned (class design, severity MEDIUM, open in rounds 1)
+  - unreadable-draft-keeps-attempt-in-flight (class design, severity MEDIUM, open in rounds 1)
+  - worktree-gone-leaves-describer-running (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
