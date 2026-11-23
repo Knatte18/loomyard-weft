@@ -354,6 +354,23 @@
         }
       },
       "profile": "light"
+    },
+    {
+      "id": 1624,
+      "handle": "B2",
+      "slug": "reed-switch-wrong-client",
+      "title": "reed switch and a button's {strand} read the most recent client's session, not the clicker's",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Same display-message -c with no -t defect the RC click had, in switch.go and buttonclick.go",
+      "body": "`switchClientVia` (`internal/reedengine/switch.go`) reads the clicking client's `#{session_id}` and `runButtonVia`'s strand lookup (`internal/reedengine/buttonclick.go`) reads `#{@lym_strand_name}`, each with `display-message -p -c \u003cclient\u003e` and no `-t`.\nRun from outside tmux, tmux expands that format against the most recently active client's session, so on a server with clients in several sessions `reed switch` can step from another client's session and a `{strand}` button can name another session's agent.\nThe RC click had the same defect and now reads its row of `list-clients -F`, which tmux expands per client; `TestClientAgentPane_ReadsEachClientsOwnSession` shows the two-client setup a test of these needs.",
+      "created": "2026-11-23T20:51:38Z",
+      "revised": "2026-11-23T20:51:38Z"
     }
   ],
   "prime_owner": "neve",
