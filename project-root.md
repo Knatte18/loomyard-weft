@@ -19,11 +19,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T9 | **Red-first gate must support C# repositories** | [`red-first-csharp`](design-red-first-csharp.md) | darn · solid | Darn-Write | neve | 57m<br>48m | gate, loom, dotnet |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Plan-Burler-Review | neve | 4h<br>4h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
-## Layer A (1)
+## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **PR-Review row does not notice its session ended** | [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md) | darn · light | T6 | 57m<br>57m | landing, shuttle |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | T10 | 29m<br>0m |  |
 
 ## Layer B (1)
 
@@ -36,12 +37,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T5<br>T6<br>T7<br>T9<br>T10<br>T2<br>T4<br>T1 | 1h<br>1m | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
-
-## Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light |  | 29m<br>0m |  |
 
 ## Research (2)
 
