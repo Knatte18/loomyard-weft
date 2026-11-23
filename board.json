@@ -670,6 +670,24 @@
       "body": "Left open when `code-bouncer-asks-parent` landed (8cf7f4775), as finding `code-auto-accept-meaning-change-no-reinterpretation`.\n\nThe narrowed meaning of `code_auto_accept` reaches hubs only through a flagging reinterpretation in `internal/loomengine/reinterpret.go`, with no rewrite.\nConfirm a flag is enough, or rewrite the hub layers that set the key.\n",
       "created": "2026-11-23T09:10:09Z",
       "revised": "2026-11-23T09:10:09Z"
+    },
+    {
+      "id": 1597,
+      "handle": "B2",
+      "slug": "hardener-focus-wiring-untested",
+      "title": "Hardener focus-finding wiring is not tested end to end",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Left open when `code-bouncer-asks-parent` landed (8cf7f4775), as finding `hardener-focus-permission-wiring-untested`.\n\nThe wiring that lets a hardener round raise a focus finding (`FocusFindings` into the round context) is not covered end to end, in `internal/burlercli` and `internal/shedadapters/roundcontext.go`.\n",
+      "created": "2026-11-23T09:10:10Z",
+      "revised": "2026-11-23T09:10:10Z"
     }
   ],
   "prime_owner": "neve",
