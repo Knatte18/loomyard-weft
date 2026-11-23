@@ -1,0 +1,502 @@
+diff --git a/internal/boardcli/bodyfile.go b/internal/boardcli/bodyfile.go
+index 5c69dd574..751dba2f6 100644
+--- a/internal/boardcli/bodyfile.go
++++ b/internal/boardcli/bodyfile.go
+@@ -6,6 +6,8 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"os"
++
++	"github.com/Knatte18/loomyard/internal/output"
+ )
+ 
+ // stdinPath is the --body-file value that reads stdin.
+@@ -15,6 +17,8 @@ const stdinPath = "-"
+ // applyBodyFile sets fields["body"] from the file named by bodyFile, or from stdin when bodyFile is "-".
+ // payloadArg is the raw payload argument, only consulted to refuse stdin feeding both the payload and the body.
+ // It refuses a payload that already carries "body", and a read failure names the path.
++// It refuses a file holding a CLI error envelope line outside a closed fenced code block:
++// a failed verb's captured output leaves one where the body belongs.
+ func applyBodyFile(fields map[string]any, bodyFile, payloadArg string, stdin io.Reader) error {
+ 	if bodyFile == stdinPath && payloadArg == stdinPath {
+ 		return fmt.Errorf(`stdin cannot supply both the payload and the body: pass the payload as an argument, or give --body-file a path`)
+@@ -32,6 +36,10 @@ func applyBodyFile(fields map[string]any, bodyFile, payloadArg string, stdin io.
+ 	if err != nil {
+ 		return fmt.Errorf("read --body-file %s: %w", bodyFile, err)
+ 	}
++	if envelope, isEnvelope := output.ErrorEnvelopeLine(string(data)); isEnvelope {
++		return fmt.Errorf("--body-file %s holds a CLI error envelope, %s, where the body's text belongs: "+
++			"the verb whose output fed the file failed, so fix that verb's call and write the file again", bodyFile, envelope)
++	}
+ 	fields["body"] = string(data)
+ 	return nil
+ }
+diff --git a/internal/boardcli/bodyfile_test.go b/internal/boardcli/bodyfile_test.go
+index 813ffe7fe..db0d8e404 100644
+--- a/internal/boardcli/bodyfile_test.go
++++ b/internal/boardcli/bodyfile_test.go
+@@ -21,8 +21,9 @@ func writeBodyFile(t *testing.T, content string) string {
+ 	return path
+ }
+ 
+-// TestApplyBodyFile asserts applyBodyFile sets the body from a file, from stdin and from an empty file,
+-// and it refuses a missing file, a body already in the payload, and stdin claimed for both payload and body.
++// TestApplyBodyFile asserts applyBodyFile sets the body from a file, from stdin and from an empty file.
++// It also asserts that it refuses a missing file, a body already in the payload and stdin claimed for both.
++// A file holding a CLI error envelope is refused too.
+ func TestApplyBodyFile(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -79,6 +80,14 @@ func TestApplyBodyFile(t *testing.T) {
+ 			wantErr:       "drop",
+ 			wantFields:    map[string]any{"slug": "s", "body": "x"},
+ 		},
++		{
++			name:          "a file holding a CLI error envelope is refused naming the envelope",
++			fields:        map[string]any{"slug": "s"},
++			fileContent:   str("## From some-note\n\n{\"error\":\"invalid json: invalid character 's' looking for beginning of value\",\"ok\":false}\n"),
++			payloadSource: "{}",
++			wantErr:       `holds a CLI error envelope, {"error":"invalid json: invalid character 's' looking for beginning of value","ok":false}`,
++			wantFields:    map[string]any{"slug": "s"},
++		},
+ 		{
+ 			name:          "stdin for both payload and body is refused",
+ 			fields:        map[string]any{},
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index f12bee402..75d3f8bcf 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -23,6 +23,7 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"time"
++	"unicode"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -592,7 +593,7 @@ Optional fields:
+   "front", "on_land", "discussed" — marks only lym writes: a front task, its land action, an approved Discussion
+ 
+ Flag:
+-  --body-file <path>  read "body" from the file, or "-" for stdin; not with "body".
++  --body-file <path>  read "body" from the file, or "-" for stdin; not with "body"; not for a file with an error envelope line.
+ 
+ Example:
+   lym board upsert '{"slug":"my-task","title":"My Task","brief":"Short summary","kind":"task","labels":["enhancement"]}'` + slugLimitNote(),
+@@ -823,6 +824,7 @@ Fields:
+ Examples:
+   lym board get '{"id":96}'
+   lym board get B4
++  lym board get my-task
+   lym board get '{"slug":"my-task"}' --body
+   lym board get '{"slug":"my-task"}' --record` + slugLimitNote(),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+@@ -987,7 +989,8 @@ A task the merge creates is "draft", and a "set_status" of null releases it.
+ Flag:
+   --body-file <path>  read the upsert's "body" from the file, or from stdin when the path is "-"; every other field still comes from the payload.
+                       Refused when the payload's "upsert" also carries "body" (drop one of them),
+-                      and when the payload argument is itself "-" (stdin can feed only one of them).
++                      and when the payload argument is itself "-" (stdin can feed only one of them),
++                      and when the file holds a CLI error envelope line outside a fenced code block (a failed verb's captured output).
+ 
+ Example:
+   lym board merge '{"remove_slugs":["old"],"upsert":{"slug":"new","title":"New"},"set_status":{"slug":"new","status":"active"}}'` + slugLimitNote(),
+@@ -1188,10 +1191,13 @@ func writeListing(out io.Writer, tasks []boardengine.BriefTask, text bool) int {
+ // keys declares the slug|id|handle group and any further keys;
+ // each of its required keys must be present, and a null value counts as present.
+ // A raw payload that is a bare handle, such as B4, reads as {"handle":"B4"}.
++// Any other bare slug, such as my-task, reads as {"slug":"my-task"}.
+ func resolveLookup(raw []byte, keys payloadKeys) (any, map[string]any, error) {
+ 	var m map[string]any
+ 	if _, _, ok := boardengine.ParseHandle(string(raw)); ok {
+ 		m = map[string]any{"handle": string(raw)}
++	} else if isBareSlug(string(raw)) {
++		m = map[string]any{"slug": string(raw)}
+ 	} else if err := json.Unmarshal(raw, &m); err != nil {
+ 		return nil, nil, fmt.Errorf("invalid json: %v", err)
+ 	}
+@@ -1210,6 +1216,21 @@ func resolveLookup(raw []byte, keys payloadKeys) (any, map[string]any, error) {
+ 	return selector, m, nil
+ }
+ 
++// isBareSlug reports whether raw has the shape of a slug standing alone:
++// a letter first, then only letters, digits, hyphens, underscores and dots.
++// No JSON object has that shape, so the reading never shadows a payload.
++func isBareSlug(raw string) bool {
++	for i, r := range raw {
++		if unicode.IsLetter(r) {
++			continue
++		}
++		if i == 0 || !(unicode.IsDigit(r) || r == '-' || r == '_' || r == '.') {
++			return false
++		}
++	}
++	return raw != ""
++}
++
+ // lookupSelector returns the selector that m addresses.
+ // The selector is the slug string, the integral float64 id, or the boardengine.Handle.
+ // It refuses a payload that has none of the three keys or more than one.
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 7a137142b..ed72a1dd2 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -855,6 +855,45 @@ func stepLookupContract(t *testing.T, f *cliFixture) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "get_by_bare_slug",
++			setup: func(t *testing.T) {
++				f.reset(t)
++				runCLI(t, "upsert", `{"slug":"halt-escalation-messages","title":"H","kind":"task","labels":["bug"]}`)
++			},
++			verb:         "get",
++			payload:      `halt-escalation-messages`,
++			wantExitCode: 0,
++			wantOK:       true,
++			assertResult: func(t *testing.T, result map[string]any) {
++				task, _ := result["task"].(map[string]any)
++				if task["slug"] != "halt-escalation-messages" {
++					t.Errorf("get halt-escalation-messages: got %v; want halt-escalation-messages", task)
++				}
++			},
++		},
++		{
++			name: "get_bare_payload_with_leading_digit_is_invalid_json",
++			setup: func(t *testing.T) {
++				f.reset(t)
++			},
++			verb:         "get",
++			payload:      `1abc`,
++			wantExitCode: 1,
++			wantOK:       false,
++			wantError:    "invalid json:",
++		},
++		{
++			name: "get_bare_payload_with_space_is_invalid_json",
++			setup: func(t *testing.T) {
++				f.reset(t)
++			},
++			verb:         "get",
++			payload:      `my task`,
++			wantExitCode: 1,
++			wantOK:       false,
++			wantError:    "invalid json:",
++		},
+ 		{
+ 			name: "set_status_bare_handle_lacks_status",
+ 			setup: func(t *testing.T) {
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 783183448..374f1d523 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -19,13 +19,13 @@
+ // A payload command's `Use` names its keys in one `{…}` token, written in the grammar `payloadLegend` states once.
+ // Each parser validates against one `payloadKeys`, and an unknown key is refused.
+ // The addressing verbs take exactly one key of `entrySelector`: a `slug`, a numeric `id` or a `handle` such as `B4`.
+-// A payload argument that is a bare handle reads as `{"handle":…}`.
++// A payload argument that is a bare handle reads as `{"handle":…}`, and any other bare slug as `{"slug":…}`.
+ // `upsert` takes `front`, `on_land` and `discussed` only as the entry's stored values, since only lym writes them.
+ // `get` and `list` carry an entry's `parent_beam`, `root` when the prime is the parent.
+ // `list` names the machine that owns the hub's prime as `prime_owner`.
+ //
+ // `upsert --body-file <path>` reads `body` from a file, or from stdin when the path is `-`;
+-// it is refused beside a payload `body`.
++// it is refused beside a payload `body`, and refused when the file holds a CLI error envelope line.
+ // `upsert --record-file <path>` replaces an existing entry's stored decision record from a file path only.
+ // The file must first pass `discussionparser`'s record checks, and a failing file writes nothing.
+ // The live-branch refusal runs on a probe the verb hands the engine; the verb itself runs no git.
+diff --git a/internal/boardcli/payload.go b/internal/boardcli/payload.go
+index efc74af7b..cd3688dd3 100644
+--- a/internal/boardcli/payload.go
++++ b/internal/boardcli/payload.go
+@@ -9,7 +9,7 @@ import (
+ )
+ 
+ // payloadLegend states the grammar of a board payload command's `{…}` Use token.
+-const payloadLegend = "A payload is one JSON object as a single quoted argument; ? marks an optional key, a|b exactly one of the keys, <task> stands for upsert's payload, and an unknown key is refused. A payload naming one entry by slug|id|handle may instead be the bare handle, such as B4."
++const payloadLegend = "A payload is one JSON object as a single quoted argument; ? marks an optional key, a|b exactly one of the keys, <task> stands for upsert's payload, and an unknown key is refused. A payload naming one entry by slug|id|handle may instead be the bare handle, such as B4, or the bare slug, such as my-task."
+ 
+ // payloadKeys declares the keys one payload object accepts, exactly as its command's Use token spells them.
+ type payloadKeys struct {
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 577b04da5..a18524478 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -290,7 +290,7 @@ func (b *Board) RemoveTask(idOrSlug any) error {
+ 
+ // RemoveCommand returns the `lym board remove` command line that removes the entry slug names.
+ // The JSON payload is single-quoted for a shell.
+-// A way forward names this command, since the verb takes a JSON payload or a bare handle, never a bare slug.
++// A way forward names this command with its JSON payload spelled out.
+ func RemoveCommand(slug string) string {
+ 	payload, _ := json.Marshal(map[string]string{"slug": slug})
+ 	return "lym board remove '" + string(payload) + "'"
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 34c62a1a7..745fb7159 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -111,6 +111,7 @@
+ // The Record-Write row's producer (NewRecordWrite) writes a darn run's decision record and support log with no agent.
+ // BoardRecord renders the record with the entry's body verbatim in one fenced block under `## Goal`.
+ // A board with no entry for the run is reported as Stuck.
++// So is an entry body holding a CLI error envelope, which a failed verb's captured output leaves there.
+ //
+ // A raddle run's state is RaddleState, the run's `state.json`.
+ // It is read and updated through internal/state under one lock, so a key it does not declare survives a rewrite.
+diff --git a/internal/loomshed/recordwrite.go b/internal/loomshed/recordwrite.go
+index 14910bcbd..efba7486d 100644
+--- a/internal/loomshed/recordwrite.go
++++ b/internal/loomshed/recordwrite.go
+@@ -10,6 +10,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fsx"
++	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+@@ -43,6 +44,19 @@ func NewRecordWrite(name string, deps RecordWriteDeps) shedengine.ShedProducer {
+ 	return &recordWrite{name: name, deps: deps}
+ }
+ 
++// errorEnvelopeBodyReason is the Stuck reason of a board entry body holding a CLI error envelope.
++// Its verb is the envelope line.
++// Such a body is a failed verb's output captured where the entry's text belongs,
++// so a record written from it would carry no scope.
++// A beam project's run holds nothing at this row, so its body takes an edit in place.
++// Any other run holds the entry, so its body is corrected only once the run is ended and removed.
++const errorEnvelopeBodyReason = "the board entry's body holds a CLI error envelope where its text belongs: %s; " +
++	"way forward for a beam project: write the entry's own text with \"lym board upsert --body-file <path>\", " +
++	"then \"lym loom resume\"; " +
++	"for any other run: end it with \"lym batten cancel <slug> --remove\" from the hub's prime worktree, " +
++	"write the entry's own text with \"lym board upsert --body-file <path>\", " +
++	"release the slug with \"lym board set-status '{\"slug\":\"<slug>\",\"status\":null}'\", then \"lym batten run <slug>\""
++
+ // recordSections are the headings of the decision record after its Goal, each written empty.
+ var recordSections = []string{
+ 	"## Scope",
+@@ -123,7 +137,8 @@ func StoredRecordSupportLog() []byte {
+ // otherwise it is the board-rendered log, whether or not the record was missing too.
+ // A file that exists is never overwritten, so a resume keeps every entry added to the record after it was written.
+ // The commit runs on every call, so a pair a crash left written but uncommitted is committed on resume.
+-// A board with no entry for the run is Stuck, and a read, write or commit failure is a returned error.
++// A board with no entry for the run is Stuck, and so is an entry body holding a CLI error envelope, with nothing written.
++// A read, write or commit failure is a returned error.
+ func (p *recordWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name); err != nil {
+ 		return "", shedengine.OutputPointer{}, err
+@@ -166,6 +181,12 @@ func (p *recordWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 				}
+ 				return shedengine.Stuck, shedengine.OutputPointer{Reason: "the board holds no entry for this run; way forward: restore the entry with \"lym board upsert\", then \"lym loom resume\""}, nil
+ 			}
++			if envelope, isEnvelope := output.ErrorEnvelopeLine(body); isEnvelope {
++				if err := cancelErr(ctx, p.name); err != nil {
++					return "", shedengine.OutputPointer{}, err
++				}
++				return shedengine.Stuck, shedengine.OutputPointer{Reason: fmt.Sprintf(errorEnvelopeBodyReason, envelope)}, nil
++			}
+ 			if err := fsx.AtomicWriteBytes(p.deps.RecordPath, BoardRecord(body)); err != nil {
+ 				return "", shedengine.OutputPointer{}, p.fail(ctx, "write the decision record", err)
+ 			}
+diff --git a/internal/loomshed/recordwrite_test.go b/internal/loomshed/recordwrite_test.go
+index 9b17e7f8f..11a2f0742 100644
+--- a/internal/loomshed/recordwrite_test.go
++++ b/internal/loomshed/recordwrite_test.go
+@@ -103,6 +103,7 @@ func TestRecordWrite_Call(t *testing.T) {
+ 		{"InlineCodeOnly", "Rename `Foo` to `Bar`"},
+ 		{"SectionHeadings", "## Decisions\nstay out\n\n## Open risks\nnone\n"},
+ 		{"InnerFencedBlock", "Before\n```go\n## Decisions\nx := 1\n```\nAfter\n"},
++		{"QuotedErrorEnvelopeInAFence", "The verb failed:\n```json\n{\"ok\":false,\"error\":\"boom\"}\n```\n"},
+ 		{"UnclosedInnerFence", "Before\n```go\n## Decisions\nnever closed\n"},
+ 	}
+ 	for _, tt := range bodies {
+@@ -271,6 +272,25 @@ func TestRecordWrite_Call(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ErrorEnvelopeBodyIsStuckNamingTheEnvelope", func(t *testing.T) {
++		t.Parallel()
++		envelope := `{"error":"invalid json: invalid character 'h' looking for beginning of value","ok":false}`
++		f := newRecordWriteFixture(t, "## From halt-names-missing-findings-path\n\n"+envelope+"\n\n", true)
++
++		outcome, pointer, err := f.producer.Call(context.Background())
++		if err != nil || outcome != shedengine.Stuck {
++			t.Fatalf("Call() = %q, %v; want Stuck, nil", outcome, err)
++		}
++		for _, want := range []string{envelope, `lym batten cancel <slug> --remove`, `lym board upsert --body-file <path>`, `lym loom resume`, `lym board set-status '{"slug":"<slug>","status":null}'`, `lym batten run <slug>`} {
++			if !strings.Contains(pointer.Reason, want) {
++				t.Errorf("Reason = %q; want it to name %q", pointer.Reason, want)
++			}
++		}
++		if _, err := os.Stat(f.deps.RecordPath); !errors.Is(err, os.ErrNotExist) || f.commits != 0 {
++			t.Errorf("record stat error = %v, commits = %d; want nothing written and nothing committed", err, f.commits)
++		}
++	})
++
+ 	t.Run("SeamErrorsAreReturned", func(t *testing.T) {
+ 		t.Parallel()
+ 		boom := errors.New("boom")
+diff --git a/internal/loomshed/seam_enforcement_test.go b/internal/loomshed/seam_enforcement_test.go
+index f2031b712..45a3ea91d 100644
+--- a/internal/loomshed/seam_enforcement_test.go
++++ b/internal/loomshed/seam_enforcement_test.go
+@@ -100,6 +100,9 @@ var loomshedAllowedImports = []string{
+ 	// internal/boardengine is the filing type and the re-check error Raddle-File's seams carry.
+ 	// No geometry is resolved through it.
+ 	"github.com/Knatte18/loomyard/internal/boardengine",
++	// internal/output recognises a CLI error envelope line in an entry body.
++	// It imports only the standard library and resolves no geometry.
++	"github.com/Knatte18/loomyard/internal/output",
+ }
+ 
+ func TestToldGeometryInvariant_AllowlistOnly(t *testing.T) {
+diff --git a/internal/output/output.go b/internal/output/output.go
+index 9de1795c3..305e52471 100644
+--- a/internal/output/output.go
++++ b/internal/output/output.go
+@@ -1,6 +1,7 @@
+ // output.go holds the JSON envelope helpers for CLI output.
+ //
+ // Ok and Err write JSON responses in one envelope: an ok flag, plus the caller's fields or an error message.
++// ErrorEnvelopeLine finds an error envelope inside text that should hold none.
+ 
+ package output
+ 
+@@ -40,3 +41,73 @@ func ErrFields(w io.Writer, msg string, fields map[string]any) int {
+ 	fmt.Fprintln(w, string(data))
+ 	return 1
+ }
++
++// ErrorEnvelopeLine returns the first line of text that is a whole error envelope:
++// a JSON object whose "ok" is false and whose "error" is a string.
++// A line inside a closed fenced code block is never matched, so a text that quotes an envelope in a block passes.
++// A fence closes on a line of the opener's character at least as long as the opener and nothing else.
++// A fence left open to the end of the text hides nothing, since an unclosed fence is likelier a typo than a quotation.
++// It reports false when no line is one.
++// A failed verb's standard output, captured into a file or a variable, leaves one where the expected text belongs.
++func ErrorEnvelopeLine(text string) (string, bool) {
++	var lines []string
++	for line := range strings.Lines(text) {
++		lines = append(lines, strings.TrimSpace(line))
++	}
++
++	fenceChar, fenceLength, openedAt := byte(0), 0, 0
++	for index, trimmed := range lines {
++		if fenceChar == 0 {
++			if char, length := fenceRun(trimmed); length >= 3 {
++				fenceChar, fenceLength, openedAt = char, length, index
++				continue
++			}
++			if envelope, ok := envelopeOf(trimmed); ok {
++				return envelope, true
++			}
++			continue
++		}
++		if char, length := fenceRun(trimmed); char == fenceChar && length >= fenceLength && strings.Trim(trimmed, string(fenceChar)) == "" {
++			fenceChar = 0
++		}
++	}
++	if fenceChar != 0 {
++		for _, trimmed := range lines[openedAt+1:] {
++			if envelope, ok := envelopeOf(trimmed); ok {
++				return envelope, true
++			}
++		}
++	}
++	return "", false
++}
++
++// fenceRun returns the fence character that line opens with and the length of its run.
++// The length is zero when the line opens with neither a backtick nor a tilde.
++func fenceRun(line string) (char byte, length int) {
++	if line == "" || (line[0] != '`' && line[0] != '~') {
++		return 0, 0
++	}
++	char = line[0]
++	for length < len(line) && line[length] == char {
++		length++
++	}
++	return char, length
++}
++
++// envelopeOf reports whether line is a whole error envelope, and returns it.
++func envelopeOf(line string) (string, bool) {
++	if !strings.HasPrefix(line, "{") {
++		return "", false
++	}
++	var envelope struct {
++		OK    *bool   `json:"ok"`
++		Error *string `json:"error"`
++	}
++	if json.Unmarshal([]byte(line), &envelope) != nil {
++		return "", false
++	}
++	if envelope.OK != nil && !*envelope.OK && envelope.Error != nil {
++		return line, true
++	}
++	return "", false
++}
+diff --git a/internal/output/output_test.go b/internal/output/output_test.go
+index 28419dbce..2f3b211c4 100644
+--- a/internal/output/output_test.go
++++ b/internal/output/output_test.go
+@@ -160,3 +160,40 @@ func TestErrFields_NilFieldsMatchesErr(t *testing.T) {
+ 		t.Errorf("ErrFields(w, msg, nil) = %q; want byte-identical to Err(w, msg) = %q", errFieldsBuf.String(), errBuf.String())
+ 	}
+ }
++
++// TestErrorEnvelopeLine asserts that ErrorEnvelopeLine finds a line holding a whole error envelope.
++// It also asserts that text with none passes.
++func TestErrorEnvelopeLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		text     string
++		wantLine string
++		wantOK   bool
++	}{
++		{"BareEnvelope", "{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}\n", "{\"error\":\"invalid json: invalid character 'h' looking for beginning of value\",\"ok\":false}", true},
++		{"EnvelopeUnderAHeading", "## From some-note\n\n  {\"ok\":false,\"error\":\"boom\"}  \n\nMore text.\n", "{\"ok\":false,\"error\":\"boom\"}", true},
++		{"EnvelopeWithFields", "{\"ok\":false,\"error\":\"boom\",\"slug\":\"x\"}", "{\"ok\":false,\"error\":\"boom\",\"slug\":\"x\"}", true},
++		{"PlainProse", "Fix the login redirect.\n\nKeep `session` intact.\n", "", false},
++		{"SuccessEnvelope", "{\"ok\":true,\"task\":null}\n", "", false},
++		{"FalseOkWithoutError", "{\"ok\":false}\n", "", false},
++		{"ErrorWithoutOk", "{\"error\":\"boom\"}\n", "", false},
++		{"NonStringError", "{\"ok\":false,\"error\":3}\n", "", false},
++		{"EnvelopeInsideProseLine", "The verb printed {\"ok\":false,\"error\":\"boom\"} here.\n", "", false},
++		{"EnvelopeInsideAFencedBlock", "The verb failed:\n\n```json\n{\"ok\":false,\"error\":\"boom\"}\n```\n", "", false},
++		{"BareEnvelopeAfterAFencedBlock", "```json\n{\"ok\":false,\"error\":\"quoted\"}\n```\n{\"ok\":false,\"error\":\"boom\"}\n", "{\"ok\":false,\"error\":\"boom\"}", true},
++		{"EnvelopeInsideANestedFence", "````md\n```\n{\"ok\":false,\"error\":\"boom\"}\n```\n````\n", "", false},
++		{"EnvelopeInsideATildeFenceHoldingBackticks", "~~~\n```\n{\"ok\":false,\"error\":\"boom\"}\n~~~\n", "", false},
++		{"EnvelopeAfterAnUnclosedFence", "```go\ncode\n\n## From x\n\n{\"ok\":false,\"error\":\"boom\"}\n", "{\"ok\":false,\"error\":\"boom\"}", true},
++		{"Empty", "", "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if line, ok := output.ErrorEnvelopeLine(tt.text); line != tt.wantLine || ok != tt.wantOK {
++				t.Errorf("ErrorEnvelopeLine(%q) = %q, %v; want %q, %v", tt.text, line, ok, tt.wantLine, tt.wantOK)
++			}
++		})
++	}
++}
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 07a5de0ee..2cc66c329 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -39,10 +39,11 @@ The board gives every entry a short handle, such as `T4`, `P1`, `B2` or `E7`:
+ The number is the lowest of its letter not in use, and it stays while the entry lives;
+ a promote or a type change gives the entry a new handle of its new letter.
+ The operator names entries by handle,
+-and every verb that takes `slug` or `id` takes `handle` instead, or the bare handle as its whole argument:
++and every verb that takes `slug` or `id` takes `handle` instead, or the bare handle or the bare slug as its whole argument:
+ 
+ ```
+ lym board get B4
++lym board get my-task
+ lym board set-status '{"handle":"T4","status":null}'
+ ```
+ 
