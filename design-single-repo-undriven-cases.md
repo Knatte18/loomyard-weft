@@ -1,6 +1,6 @@
 # One-repository fabric cases no hardener round drove
 
-`single-repo-undriven-cases` · Task · bug, fabric · starting · Worktree-Create
+`single-repo-undriven-cases` · Task · bug, fabric · starting · Seed-Child
 
 Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md)
 
