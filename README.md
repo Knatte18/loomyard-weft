@@ -45,7 +45,7 @@ Owner `neve`
 | T4 | **Driver on older lym build hard-fails a run when the board's stencil is newer** | [`old-driver-fails-newer-stencil`](design-old-driver-fails-newer-stencil.md) | darn · light | Darn-Write | neve | 13m<br>13m | stencil, loom |
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | landing · Finalize | neve | 3h<br>3h | reed, claude |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Code-Burler-Review | neve | 15h<br>4h | fabric |
-| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | Record-Write | neve | 3h<br>3h | gate, loom, dotnet |
+| T19 | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | Drift-Baseline | neve | 3h<br>3h | gate, loom, dotnet |
 
 ### Draft (1)
 

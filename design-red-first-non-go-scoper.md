@@ -1,6 +1,6 @@
 # Red-first gate holds every run in a hub whose test scoper is not go
 
-`red-first-non-go-scoper` · Task · bug, gate, loom, dotnet · running · Record-Write
+`red-first-non-go-scoper` · Task · bug, gate, loom, dotnet · running · Drift-Baseline
 
 Depends on: [`verify-budget-notice-no-slug`](design-verify-budget-notice-no-slug.md)
 
