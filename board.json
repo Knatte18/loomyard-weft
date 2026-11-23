@@ -248,30 +248,6 @@
       "profile": "light"
     },
     {
-      "id": 1589,
-      "handle": "T12",
-      "slug": "lint-comments-reads-head",
-      "title": "lym loom lint-comments --base checks committed HEAD, not the working tree",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "lint",
-        "loom"
-      ],
-      "issues": [
-        182
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #182](https://github.com/Knatte18/loomyard/issues/182).\n\nWhat happened: `lym loom lint-comments --base` reads committed HEAD, not the working tree.\nA fix to a flagged comment could be verified only after committing it.\n\nWhy abnormal: a lint run during editing gives no feedback on uncommitted changes, which forces a commit per check cycle.\n\nWhat to do: lint the working tree, or add a flag that does, or document the HEAD-only behaviour in the verb's help.\n\nProvenance: task doc-go-trim-pass; note Darn-Write.md.",
-      "status": "done",
-      "created": "2026-11-23T08:19:12Z",
-      "revised": "2026-11-23T08:20:20Z",
-      "profile": "light"
-    },
-    {
       "id": 1594,
       "handle": "T5",
       "slug": "rc-button-ignores-org-policy",
