@@ -273,36 +273,6 @@
       "profile": "light"
     },
     {
-      "id": 1584,
-      "handle": "T7",
-      "slug": "pr-findings-open-fabric-nil",
-      "title": "lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "loom",
-        "landing"
-      ],
-      "issues": [
-        187
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #187](https://github.com/Knatte18/loomyard/issues/187).\n\nSeen: during a run's PR-Review row, lym loom pr-findings failed with: NewParentAlign: Deps.OpenFabric must not be nil.\n\nWorkaround: the PR findings were sent to the PR-Review agent by creel mail instead.\n\nExpected: pr-findings builds its parent-align dependencies itself and records the findings.",
-      "status": "done",
-      "created": "2026-11-23T08:18:57Z",
-      "revised": "2026-11-23T08:19:37Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1585,
       "handle": "T8",
       "slug": "agents-exit-before-reply",
@@ -326,36 +296,6 @@
       "status": "running · Code-Burler-Fix",
       "created": "2026-11-23T08:19:00Z",
       "revised": "2026-11-23T08:19:39Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
-      "id": 1586,
-      "handle": "T9",
-      "slug": "amend-plan-loses-webster-batches",
-      "title": "Plan amendment during Webster loses the record of committed batches",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "loom"
-      ],
-      "issues": [
-        185
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #185](https://github.com/Knatte18/loomyard/issues/185).\n\nSeen: on a loom run in Webster, lym loom decision add --amends-plan sent the run back to Plan-Burler-Review. Webster's state.json, which recorded four committed batches, was lost. Plan-Burler-Fix then failed with create-already-exists on cards 1-4, because their Create entries had already landed on the task branch.\n\nWorkaround: the parent ruled by decision that the landed Creates become Edit entries, and validate-plan then passed.\n\nExpected: an amendment during Webster keeps the record of committed batches, and the plan rework sees which cards already landed, so it neither re-creates their files nor needs a hand ruling.",
-      "status": "done",
-      "created": "2026-11-23T08:19:03Z",
-      "revised": "2026-11-23T08:19:48Z",
       "run_settings": {
         "loom": {
           "code_assist_reviewer_fan": "review-code",
@@ -507,9 +447,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "pr-findings-open-fabric-nil"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested",
       "body": "## Goal\n\nClose the four findings `orch-autonomy-mode` (`30ed1ee58`) landed open in its \"To check by hand\" list.\n\n## lym loom goto's stop path may read an unwired reed runner\n\n### Seen\n\n`orch-autonomy-mode` landed as `30ed1ee58` with Code-Burler finding `goto-stop-reads-unwired-reed-runner` (scope, BLOCKING) open in its \"To check by hand\" list:\nthe goto stop path may read a reed runner that is not wired.\n\n### Idea\n\nCheck the path; wire the runner or fix the read, with a test.\n\n## ClearReviewSession may keep the PR-Review parent ask after goto\n\n### Seen\n\n`orch-autonomy-mode` landed as `30ed1ee58` with finding `clear-review-session-keeps-parent-review-asked` (design, MEDIUM) open:\n`ClearReviewSession` in `internal/pullrequest` may leave the PR-Review parent ask state set after `lym loom goto`.\n\n### Idea\n\nClear the ask state with the session, with a test.\n\n## Some dobby halt notices lack their autonomy stamp\n\n### Seen\n\n`orch-autonomy-mode` landed as `30ed1ee58` with finding `dobby-run-notices-unstamped-autonomy` (scope, MEDIUM) open:\nnot every halt notice dobby sends carries its `autonomy:` stamp, so the orch may handle such a halt under the wrong autonomy.\n\n### Idea\n\nStamp every dobby halt notice, with a test per call site.\n\n## Autonomy mode's goto hook and halt-notice stamps have no tests\n\n### Seen\n\n`orch-autonomy-mode` landed as `30ed1ee58` with findings `goto-hook-wiring-untested` and `halt-notice-call-sites-untested` (scope, MEDIUM) open:\nno test pins the goto hook that clears the PR-Review record, nor the `autonomy:` stamp at each halt-notice call site.\n\n### Idea\n\nAdd those tests.\n\n",
@@ -707,9 +645,7 @@
         "harden-fabric-undriven-cases",
         "weft-main-push-race",
         "agents-exit-before-reply",
-        "beam-pr-describes-itself",
-        "pr-findings-open-fabric-nil",
-        "amend-plan-loses-webster-batches"
+        "beam-pr-describes-itself"
       ],
       "isolated": false,
       "brief": "",

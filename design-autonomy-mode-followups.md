@@ -2,8 +2,6 @@
 
 `autonomy-mode-followups` · Task · bug, loom, landing, dobby, orch, reed, testkit
 
-Depends on: [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md)
-
 ## Goal
 
 Close the four findings `orch-autonomy-mode` (`30ed1ee58`) landed open in its "To check by hand" list.

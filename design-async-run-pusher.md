@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-async-run-pusher.md)
 
-Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md), [`weft-main-push-race`](design-weft-main-push-race.md), [`agents-exit-before-reply`](design-agents-exit-before-reply.md), [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md), [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md), [`amend-plan-loses-webster-batches`](design-amend-plan-loses-webster-batches.md)
+Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md), [`weft-main-push-race`](design-weft-main-push-race.md), [`agents-exit-before-reply`](design-agents-exit-before-reply.md), [`beam-pr-describes-itself`](design-beam-pr-describes-itself.md)
 
 Filed from the Sketch `later-transition-push-wait`.
 
