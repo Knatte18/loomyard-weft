@@ -1,6 +1,6 @@
 # Run agents ask a question and exit before the reply; drift judge asks in its pane
 
-`agents-exit-before-reply` · Task · bug, shuttle, creel, drift, stencil · starting · Worktree-Create
+`agents-exit-before-reply` · Task · bug, shuttle, creel, drift, stencil · starting · Seed-Child
 
 Imported from [issue #186](https://github.com/Knatte18/loomyard/issues/186).
 

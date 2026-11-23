@@ -161,7 +161,7 @@
       "isolated": false,
       "brief": "Hardener run on the one-repository fabric paths the first campaign could not drive",
       "body": "## Focus\n\nSecond hardener campaign on the one-repository hub layout that 57015a52 added: one origin holds the code under `refs/heads/` and `refs/tags/`, and the records and board under `refs/lym/heads/` and `refs/lym/tags/`.\nEverything else in fabric, the two-repository layout included, is out of scope, and no round is steered outside this focus.\n\nThe first campaign, `harden-fabricengine`, could not drive the regions behind the mutating `lym fabric` verbs, since a task session was refused them.\n`harden-sandbox-fabric-verbs` (4037bdf36) now lets a hardener round run every fabric verb inside its own `.lym/harden-sandbox` hubs.\nThis campaign drives what the first left unverified, on one-repository sandbox hubs (`lym harden sandbox new --single-repo`), with real git and real `lym` verbs:\n\n- **The sandbox exception itself**: every mutating fabric verb runs inside the round's own sandbox hub, and stays refused against the real hub and another worktree's sandbox root.\n- **Joining**: a second `lym fabric clone \u003curl\u003e` of a seeded origin takes the one-repository layout, gets the refspecs and `branch.main.merge refs/lym/heads/main`, and sees the board.\n- **Namespace leaks on every path**: add, push, pull, sync, replay, hand-over, checkout, remove, teardown, reconcile, `cleanup --apply` and `prune --apply` never put a records ref under plain `refs/heads/` or `refs/tags/` on origin.\n- **Archive tags**: the archive tag of a discarded task branch lands under `refs/lym/tags/`, never plain `refs/tags/`; it was once seen there in a sandbox trial.\n- **Two clones at once**: pushes and pulls from two clones of the same origin, a board write from each, a lease that loses.\n- **Remote delete**: lym's own delete of a missing namespaced branch records no deletion; of a present one removes it under `refs/lym/heads/`.\n- **A pair verb killed mid-operation**: what origin and the hub hold after each kill, and whether the verbs a reader runs name a way forward.\n- **A killed seed and its way forward**: after the seeding `lym` is killed, `lym board sync` and `lym fabric clone --single-repo ... --reset` lead to a working hub; `seed-killed-way-forward-loops` fixes the wording first.\n\nEvery finding states the repro steps that showed it.\n",
-      "status": "running · Harden-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-22T16:05:57Z",
       "revised": "2026-11-22T16:05:57Z",
       "run_settings": {
@@ -475,7 +475,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #187](https://github.com/Knatte18/loomyard/issues/187).\n\nSeen: during a run's PR-Review row, lym loom pr-findings failed with: NewParentAlign: Deps.OpenFabric must not be nil.\n\nWorkaround: the PR findings were sent to the PR-Review agent by creel mail instead.\n\nExpected: pr-findings builds its parent-align dependencies itself and records the findings.",
-      "status": "starting · Seed-Child",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-23T08:18:57Z",
       "revised": "2026-11-23T08:19:37Z",
       "run_settings": {
@@ -507,7 +507,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #186](https://github.com/Knatte18/loomyard/issues/186).\n\nSeen: on a loom run, the recovery agent and the code fixer each mailed the parent orch a question and ended their session before the reply arrived; the reply came back from creel as returned. The drift judge instead put its question in its own pane, where no notice reaches the orch, and the run sat waiting until the operator noticed.\n\nWorkaround: the orch watched the run's idle panes and answered by creel mail; the returned replies were dropped, and the runs went on without them.\n\nExpected: an agent that asks with --expect-reply waits for the reply before it ends, and every run agent, the drift judge included, asks its parent by creel mail rather than in its pane.",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-Child",
       "created": "2026-11-23T08:19:00Z",
       "revised": "2026-11-23T08:19:39Z",
       "run_settings": {
@@ -566,7 +566,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #184](https://github.com/Knatte18/loomyard/issues/184).\n\nThe loom run for a tests-only task halted `blocked` at `Darn-Write` (anomaly `escalation-to-human`) after the gate failed three times.\nThe gate finding was the same each time:\n\n```\nEvery test the diff adds or changes passed on the merge base, so none of them shows the bug the fix fixes.\n\nWay forward: make a test fail on the merge base and pass with the fix, reaching the bug through code the base already has, and commit it.\n```\n\nThe task adds golden tests that pin existing behaviour; it fixes no bug.\nIts new tests pass on the merge base by design, so the \"fails on base, passes with fix\" check can never be satisfied.\nThe agent had no valid way forward, and the run burned its verify budget and escalated.\n\nWhat to do:\n- Have the verify gate skip the fail-on-base check for a task that is not a bug fix (a tests-only or golden-test task), or let the Sketch or plan declare that kind.\n- Reword the finding so it does not tell the agent to invent a bug when the task has none.\n\nProvenance: task `board-readme-golden-tests`, note `loom-halt.md`.\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Open-Window",
       "created": "2026-11-23T08:19:06Z",
       "revised": "2026-11-23T08:20:04Z",
       "run_settings": {
