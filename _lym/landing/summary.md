@@ -1,67 +1,61 @@
-# Check fixed BLOCKING findings before a spent budget asks the parent
+# Bouncer: verify fixed BLOCKING findings before asking the parent
 
-A darn's Code-Review budget is spent after one round, and the judge never re-reviews a fix.
-So a BLOCKING finding that the fixer fixed, committed and gated stayed `open` in the ledger.
-`blocking_escalates` then handed the round to the parent with cause `budget`.
-That happened in four darn runs on 2026-11-23, and the orch accepted each one by hand after reading the fixer report and the commit.
+A run whose budget is spent over an open BLOCKING ledger entry no longer escalates to the parent when the fixer fixed that finding and a short check confirms it.
+Four darn runs on 2026-11-23 stopped at Code-Bouncer with cause `budget` after round 1, though the fixer had fixed every finding and passed its gates.
+Nothing re-reviewed the fix, so the ledger kept the entry `open` and the orch had to read the fixer report and accept each time.
 
 ## What changes
 
-- **A verifier pass runs before the budget escalation.**
-  In `internal/shedadapters/bouncerverify.go`, `blockingEscalationDetail` first calls `closeVerifiedBlocking` on the round's open BLOCKING ledger keys.
-  The verifier runs when the round's fixer report marks a BLOCKING finding `fixed` or `fixed-differently`.
-  It also needs a round with no escalation record yet, and a fix that changed the review target according to the round's snapshot record.
-  When all three hold, one verifier pass runs on the judge's model and config role, with role `bouncer-verify`.
-  Its prompt is the new stencil `bouncer-template-verify`.
-  It reads the listed ledger keys, the findings the fixer reported fixed and the fix commits, and writes `round-<N>-verification.md`, marking each key `closed` or `open`.
-- **A confirmed entry is closed in the ledger.**
-  Go marks each key that the verifier closed, and that it was asked about, `resolved` in the round's ledger, using the new `renderLedger`.
-  The auto-accept, the soft-cap rule and the carry-over then see it closed.
-  Only the keys still open reach the parent. If the check fails (no file, or a file that does not parse), every key stays open and the detail says so.
-- **A fixer report counts as a green gate.**
-  A failed fixer gate archives the round's review, fixer report and acceptance record, so a judged round's fixer report exists only after the gate passed.
-- **Re-calls and re-judges stay consistent.**
-  A re-call over a recorded escalation spawns no verifier, and a verification already on disk is reused.
-  `rejudge` archives the verification along with the judge's outputs, because it ruled on the retired ledger's keys.
-- The stencil is registered in `contracts/stencils/stencils.go`, both in the registry and in the role-to-opening-stencil map.
-  The verifier spawn has a parity row in `internal/shuttleparity`.
-  The shed-recipe spec, `docs/overview.md`, the package doc and the three recipes' `blocking_escalates` comments describe the check.
+With `blocking_escalates` set, the Bouncer now runs a verifier pass before it escalates a spent budget.
+The pass runs on the judge's model and checks only the open BLOCKING entries whose findings the round's fixer reported `fixed` or `fixed differently`, against the fix commits.
+It writes `round-N-verification.md`, which marks each key `closed` or `open`.
+The Bouncer marks each key the verifier closes `resolved` in the round's ledger, and the escalation names only the keys left open.
+When none is left, the round is judged as if the ledger held no open BLOCKING entry.
+
+The new code is in `internal/shedadapters/bouncerverify.go`, with a `bouncer-template-verify` stencil for the prompt.
+`bouncer.go` calls it from `blockingEscalationDetail`.
+The darn, sampler and tapestry recipes, `shed-recipe-spec.md`, `docs/overview.md` and `pattern/PATTERN-sole-parsers.md` describe it.
 
 ## Design decisions
 
-- The check lives in the Bouncer at the point where it would escalate, not in the judge.
-  The judge stays a sit-rep reader that never opens the fixer's diff.
-  The verifier costs one short pass, and only when a spent budget meets a finding the fixer reported fixed.
-- Go rewrites the judge's ledger and adds no separate record for the readers to subtract.
-  As a result, every reader of the ledger (the soft-cap rule, the carry-over, the next round's judge) sees the same closed entry.
-- The verifier reuses the judge's model and `bouncer-judge` config role, so it adds no new model setting and no new agents.yaml role.
-- It runs only under `blocking_escalates`, which only the Code-Review rows set. No new recipe key turns it on.
+- **Every failure asks the parent.**
+  A missing or unparseable fixer report or review, a verifier that fails or writes a malformed file, and a ledger rewrite that fails all leave every key open.
+  The escalation detail then carries a note saying why the check did not run.
+- **A key closes only on a named finding.**
+  The verifier must name the review finding id for each closed key, and that id must be one the fixer reported fixed.
+  A fixer report written for a fixer that never spawned counts for nothing.
+- **No check when the fix changed nothing.**
+  When the round's snapshot record shows the review target unchanged by the fix, the verifier does not run.
+- **The ledger rewrite is atomic.**
+  `markLedgerResolved` writes a temporary sibling and renames it over the ledger.
+  `renderLedger` is new in `bouncerfiles.go`, and the ledger's optional fields are now `omitempty`.
+- **The verification file is retired with the judge's outputs.**
+  A re-judge and a held decision accept archive it, since it ruled on the retired ledger's keys.
+- **An existing verification is reused.**
+  A readable verification on disk is used as it stands, and a live verifier is attached to instead of respawned.
+- **`below-window-accept-blocking` needs no code change.**
+  A decision accept below the soft-cap window already passes nothing over an open BLOCKING entry of another class and starts another round.
+  Inside the window the accept is retired and the round escalates with cause `budget`.
+  A parent ask below the window would also go against this task's aim of asking the parent only after the fixer and the check.
+  Only the doc comment in `bouncerdecision.go` changes.
 
-## The other board entries folded into this task
+## Scope
 
-- `below-window-accept-blocking`: no change. `holdAcceptOverOpenEntries` already holds a decision accept when the ledger has an open BLOCKING entry of another class.
-  Below the soft-cap window it runs another round, and inside the window it escalates with cause `budget`.
-  The `TestBouncer_AutoAccept` row "an accept over a decision finding below the budget leaves an open BLOCKING entry to the next round" pins this. The run cannot land past the entry.
-- `budget-escalation-untested`: no change. The `TestBouncer_AutoAccept` row "BlockingEscalates hands a decision finding over an open BLOCKING entry to the parent as a budget escalation" asserts the appended detail "the review also holds decision findings (D1)".
-- `code-auto-accept-flag-only`: a flag is enough. `code_auto_accept: true` still auto-accepts every round without an open BLOCKING entry.
-  The narrower meaning comes from the recipe rows' `blocking_escalates`, not from the hub value, so there is nothing in the hub layers to rewrite.
-- `hardener-focus-wiring-untested`: no change. The wiring is covered end to end.
-  `TestBurlerReviewEntry`'s "HardenRoundSetsTheFocusFindingsPermission" covers the recipe row through the producer, round context and round check.
-  `TestValidateReviewVerb_RoundChecks` covers the `lym burler validate` path for the hardener and code run directories.
+The diff covers the main entry and settles `below-window-accept-blocking`.
+It does not touch the other three board entries, so each is still open:
+`budget-escalation-untested` (`internal/shedadapters/bouncer_escalation_test.go`),
+`code-auto-accept-flag-only` (`internal/loomengine/reinterpret.go`),
+and `hardener-focus-wiring-untested` (`internal/burlercli`, `internal/shedadapters/roundcontext.go`).
 
-## Tests
+## To check by hand
 
-`TestBouncer_FixVerification` in `internal/shedadapters/bouncer_verify_test.go` covers these cases:
-
-- a confirmed fix that closes its entry, so the round accepts;
-- a fix the verifier keeps open, a verifier that writes nothing, and an unknown status, each of which escalates with cause `budget`;
-- a verification already on disk, which is reused;
-- a disputed finding, a round with no fixer report, and an unchanged target, none of which spawns a verifier;
-- a decision finding beside a confirmed fix, which goes to the decision escalation.
-
-It also checks the verifier's spec and prompt, and that a re-call spawns no further pass.
+- `verifier-closes-unfixed-blocking-key` (design, MEDIUM): in `closeVerifiedBlocking`, check that the verifier cannot close a key whose finding the fixer did not report fixed.
+- `verify-test-no-partial-close-row` (design, MEDIUM): `bouncer_verify_test.go` has no row where the verifier closes some keys and leaves others open.
+- `verify-test-spawn-error-and-write-failure-rows` (design, MEDIUM): `bouncer_verify_test.go` has no row for a failed verifier spawn or a failed ledger write.
+- `F11` (decision, LOW): answered by the `below-window-accept-blocking` decision above, which changes no code.
+- The verifier prompt in `contracts/stencils/bouncer/bouncer-template-verify.md` was not run against a real model.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** shedadapters
+**Blast radius:** bouncer
