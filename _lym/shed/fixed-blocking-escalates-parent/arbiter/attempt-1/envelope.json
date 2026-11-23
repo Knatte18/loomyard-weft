@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Round 1 of Code-Bouncer escalated with cause decision. Its only decision finding is F11, and there is no refusal and no BLOCKING finding.\nF11 asks whether below-window-accept-blocking needs the run to ask the parent below the soft-cap window.\nThe board entry names the harm as a run landing past an open BLOCKING finding without the parent.\nAt the base, holdAcceptOverOpenEntries (internal/shedadapters/bouncerdecision.go) passes nothing below the window: it starts another round.\nInside the window it retires the accept and escalates with cause budget, which only the parent accepts.\nSo the harm cannot occur.\nThe task's main entry also aims to ask the parent only when a BLOCKING finding stays open after the fix and the check.\nSo the board entry settles F11 as needing no change, and I recorded that as an arbiter decision.\nThe answer needs no fix, so I accepted the round.\nThe open design-wrong finding F1 is answered by the fix in place (commit 37727ca0b).\ncloseVerifiedBlocking now closes a key only when the verification maps it to a finding that fixedBlockingFindings returned.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add fixed-blocking-escalates-parent --by arbiter --title \"below-window-accept-blocking is settled by another round below the soft-cap window\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling accept fixed-blocking-escalates-parent"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/shed/fixed-blocking-escalates-parent/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/fixed-blocking-escalates-parent/_lym/shed/fixed-blocking-escalates-parent/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step fixed-blocking-escalates-parent --until-stop --arbiter-attempt 1"
+}
