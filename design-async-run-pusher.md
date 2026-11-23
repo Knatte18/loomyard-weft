@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-async-run-pusher.md)
 
-Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md), [`agents-exit-before-reply`](design-agents-exit-before-reply.md)
+Depends on: [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md)
 
 Filed from the Sketch `later-transition-push-wait`.
 
