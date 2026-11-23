@@ -436,30 +436,6 @@
       "profile": "light"
     },
     {
-      "id": 1610,
-      "handle": "T3",
-      "slug": "pr-regression-block-wording",
-      "title": "PR body's appended regression block uses internal task wording",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "drift",
-        "landing"
-      ],
-      "issues": [
-        204
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #204](https://github.com/Knatte18/loomyard/issues/204).\n\nSeen in hub mo, run hydraulics-gaps, PR NORCE-DrillingAndWells/Models#326. The 'Regression check' block that lym appends after the change description reads 'Baseline: captured at \u003csha\u003e, the task's branch point.' This is internal process wording in repository-facing text, and the run's PR-Review agent cannot edit it. Expected: neutral wording such as 'the base of this branch'.",
-      "status": "done",
-      "created": "2026-11-23T12:46:14Z",
-      "revised": "2026-11-23T12:46:27Z",
-      "profile": "light"
-    },
-    {
       "id": 1611,
       "handle": "T6",
       "slug": "parent-review-stale-window",
