@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "abf81690825359bbc1ad93c35771c692d1fb1a5e",
+  "added_decisions": [
+    {
+      "title": "F4: tmux/script refusal reaches interactive run sessions too",
+      "digest": "df497a612dcb19d42c27fa2c689f4574ef9518ce2260c2e69d8af62de69f9e71"
+    },
+    {
+      "title": "F5: lym gate test refuses a run agent's whole tmux tier",
+      "digest": "e4ece3e8fb32737538c11a0cf26ca483a1dbc229d54a5c3d67266d8d9b42eba1"
+    }
+  ]
+}

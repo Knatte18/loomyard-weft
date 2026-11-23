@@ -1,0 +1,12 @@
+contracts/stencils/burler/burler-template-fixer.md
+contracts/stencils/darn/darn-fragment-make-change.md
+contracts/stencils/landing/landing-template-conflict.md
+contracts/stencils/landing/landing-template-fixer.md
+contracts/stencils/loom/loom-fragment-arbiter-fix.md
+contracts/stencils/weaver/weaver-template-batch.md
+contracts/stencils/webster/webster-body-implementer.md
+contracts/stencils/webster/webster-prefix-verify-fix-fork.md
+internal/darnengine/spec.go
+internal/shellguard/doc.go
+internal/shellguard/rows.go
+internal/shuttleengine/claudeengine/testdata/settings-golden.json
