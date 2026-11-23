@@ -1,77 +1,56 @@
-# Light the RC button only once the session's remote control connects
+# Light the RC button only once Remote Control connects
 
-The RC button showed green in a session where the organization's policy disables Remote Control, and a click then answered that remote control was already on (issue #189).
-The cause: lym set the button's pane mark, `@lym_rc`, when it *asked* for remote control, never from whether the session's remote control connected.
-It set the mark in two places:
+The RC button lit green as soon as lym asked for Remote Control, whether or not the session got it.
+Where an organization's policy disables Remote Control, the button showed on and a click answered that it was already on.
 
-- right after an orch launch or resume with `--remote-control`;
-- right after an RC click queued `/remote-control`.
+Now the pane's `@lym_rc` mark is set only once the session's own transcript records the connection.
+Claude Code writes a `bridge-session` record naming the remote session when it connects, and writes none for a refused request.
+A refused request leaves the button dim, so a later click is not told Remote Control is already on.
 
-A request the provider refused still lit the button,
-and `rc-on` then refused the next click as "already on".
+Closes #189
 
 ## What changes
 
-Claude Code writes a `bridge-session` record (`type: "bridge-session"` with a `bridgeSessionId`) into the session's transcript once its remote control connects.
-A refused connection writes none; the policy refusal is only a `local_command` output line.
-The mark now follows that record:
-
-- **claudeengine** implements a new optional engine capability, `shuttleengine.RemoteControlReader`.
-  `RemoteControlCheckpoint` returns the transcript's current size.
-  `RemoteControlConnected` reports whether a `bridge-session` record starts at or past that offset.
-  A transcript shorter than the checkpoint has been rewritten since and is read whole.
-  A line still being written does not count.
-- **shuttleengine**: `Runner.TurnOnRemoteControl` now returns `(connected bool, err error)`.
-  It takes the checkpoint before it pastes the command, then waits up to 20 s on the runner's clock, polling every 500 ms, for a connection past it.
-  `Runner.RemoteControlCheckpoint` and `Runner.AwaitRemoteControl` expose the same read by engine name and session ID for the orch launch.
-  An engine without the capability never reports a connection.
-- **creelcli**: delivering creel's `remote-control` command marks the strand's pane, through reed's `MarkRemoteControlOn`, only when shuttle reports a connection.
-  Otherwise it logs at Info and leaves the button dim.
-  A failed mark is logged at Warn and the command still succeeds.
-- **orchcli**:
-  - A launch with remote control on reads the resumed session's checkpoint before the launch.
-  - After the launch it waits for a connection and marks the pane only on one.
-    A launch that ends up starting a fresh session counts the whole transcript.
-    An unreadable checkpoint leaves the pane unmarked.
-  - The `rc-on` click verb only queues the command and no longer marks the pane; creel marks it once the session connects.
-- **reedengine**: the engine-less `MarkPaneRemoteControlOn`, whose only caller was the click verb, is removed.
-  The comments on `@lym_rc` and the bar now say the mark means "the session recorded its connection".
+- `shuttleengine` gains an optional `RemoteControlReader` engine capability, implemented for Claude in `claudeengine/remotecontrol.go`.
+  `RemoteControlCheckpoint` returns the transcript's size before the request.
+  `RemoteControlConnected` scans the transcript from that offset for a `bridge-session` record with a non-empty `bridgeSessionId`.
+  A transcript shorter than the checkpoint is read whole, and a line still being written is not read as a record.
+- `Runner.AwaitRemoteControl` polls that record for up to 20 seconds, every 500 ms, on the runner's clock.
+  `Runner.TurnOnRemoteControl` now takes the checkpoint, pastes the command, waits, and returns `(connected bool, err error)`.
+  A paste not seen to land still waits for the connection, and reports it beside `ErrSubmissionNotLanded`.
+  A failed read after the paste is logged and reports not connected, since the command has landed.
+- `creelcli` marks the pane only when `TurnOnRemoteControl` reports connected.
+  A failed mark is logged and does not fail the command.
+- `orchcli`'s `rc-on` click no longer marks the pane itself: it queues the command through creel, which marks once the connection is recorded.
+  A launch of the orch with remote control takes a checkpoint before it resumes the session, and marks after its state is saved and its process registered.
+  A fresh launch instead of a resume counts the whole record.
+- `reedengine` drops the engine-less `MarkPaneRemoteControlOn`, so every mark goes through `Engine.MarkRemoteControlOn`.
+  Its comments now say the mark means the connection was recorded.
 
 ## Design decisions
 
-- **Transcript record rather than the pane screen.**
-  The transcript holds a structured record of a real connection, while the screen only holds English text that an agent could also write.
-  The record is the positive signal; the refusal message is never matched.
-- **Checkpoint by byte offset.**
-  A resumed session appends to its old transcript, which may hold a `bridge-session` record from an earlier run.
-  Without the checkpoint, that stale record would light the button even when the new request is refused.
-- **Turning remote control off inside Claude Code** still leaves the mark set, as before.
-  The `rc-on` refusal keeps naming the hand-typed `/remote-control` as the way forward.
-  No transcript record of a disconnect was found to read.
-- **A pane marked by an older build** keeps its mark until the pane is relaunched, since the mark dies with the pane.
+- The check reads what the provider did, never what lym asked for.
+  An engine without `RemoteControlReader` never reports a connection, so its button stays dim.
+- Scope is the button's state at connect and on a policy refusal.
+  A later disconnect or turn-off of Remote Control is not handled and belongs to a separate change.
+- The 20-second bound sits on the paths that wait: the creel command delivery and the orch launch.
+  A connection lands about a second after the request, so the bound is only paid in full on a refusal.
 
-## Tests
+## To check by hand
 
-- `claudeengine.TestBridgeSessionRecordedIn` covers which transcripts read as connected:
-  - a policy refusal;
-  - a record before, or exactly at, the checkpoint;
-  - a shrunk transcript;
-  - the record type quoted inside a message;
-  - a half-written line;
-  - a missing file.
-- `shuttleengine.TestRunner_AwaitRemoteControl` pins the bounded wait on a fake clock:
-  - a connection recorded at once, or after two ticks;
-  - a refused connection, false after 41 reads and 20 s;
-  - a read error;
-  - an engine without the reader.
-- `TestRunner_TurnOnRemoteControl_ReportsTheRecordedConnection` pins that the pre-paste checkpoint reaches the read.
-- `creelcli`'s command-dispatch test pins that only a connected session gets `MarkRemoteControlOn`.
-- `orchcli`:
-  - `TestStart_LaunchPassesAndMarksRemoteControl` gains rows for a refused connection, the resume checkpoint (`sess-1@42`) and an unreadable checkpoint.
-  - `TestRemoteControlOnVerb_QueuesForTheClientsPaneWithoutMarkingIt` asserts that the click verb never touches `@lym_rc`.
-    It fails on the merge base, which set the mark at queue time.
+- Nothing was run against a real organization policy.
+  In a hub whose policy disables Remote Control, launch the orch and click RC: the button should stay dim and reed should not claim it is on.
+  Where Remote Control is allowed, the button should light within a few seconds.
+- The `bridge-session` record name and its `bridgeSessionId` field are taken from Claude Code's transcript format and are not covered by any contract.
+  Check them against the Claude Code build in use.
+- The orch launch waits for the connection (up to 20 seconds) inside `relaunchStrand`, after the save and register but before the launch reports.
+  Check that this delay is acceptable on `lym orch start`.
+- A read failure after a paste in `TurnOnRemoteControl` returns not connected with no error.
+  Check that a command whose paste landed is never queued a second time because of it.
+- The transcript filename suffix `.jsonl` is built in `transcriptPathIn` in `claudeengine/transcriptread.go`.
+  Check that no other place in `claudeengine` still repeats the literal.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** reed
+**Blast radius:** orch
