@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-23 07:57 UTC; every age below is as of then.
+Rendered 2026-11-23 07:58 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -63,9 +63,3 @@ Owner `neve`
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>14h | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T6 | **Hardener rounds default to sonnet[high]; any model rotation is set per run**<br>• The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`hardener-models-per-run`](design-hardener-models-per-run.md) | 11h<br>11h | burler, config |

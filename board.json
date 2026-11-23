@@ -331,34 +331,6 @@
       "body": "## Seen\n\n`harden-fabric-single-repo-verbs` approved in round 3 with part of its focus undriven (`round-3-focus.md` and `round-3-review.md` in its archived records, Coverage section):\n\n- The discard half of a killed teardown, re-run through the command its pending record prints; only a hubforge test with a Topology seam covers it.\n- Whether a teardown now pushes to origin a local `archive/\u003cslug\u003e/*` tag the operator kept local on purpose, and whether any verb output or help text names it.\n- A failed remote step without a kill keeping its pending record (O3's fix).\n- `lym adopt --archives` over owner-archive tags pushed by the real `ArchiveOwnerTips` path, with the code side's new `refs/lym/code-tags/` prefix.\n\nAlso left: code-side archive tags in plain `refs/tags/archive/` that an earlier binary pushed are named by no reader verb.\n\n## Idea\n\nA short live drive of these cases in a one-repository sandbox hub, fixing what fails with a test.\n",
       "created": "2026-11-22T20:36:41Z",
       "revised": "2026-11-22T20:36:41Z"
-    },
-    {
-      "id": 1578,
-      "handle": "T6",
-      "slug": "hardener-models-per-run",
-      "title": "Hardener rounds default to sonnet[high]; any model rotation is set per run",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "burler",
-        "config"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The template rotates reviewer and fixer through opus, fable, sonnet; the operator wants one default and rotations only per run",
-      "body": "## Seen\n\n`internal/hardenshed/template.yaml` sets `reviewer: [opus, fable, sonnet]` and `fixer: [opus, fable, sonnet]`, so every hardener campaign rotates through the three models round by round.\nThe rotation came from the hardener's own run (`7346d6a8c`, 2026-11-19); the operator never chose it.\nFable is too dear for a default, and sonnet found plenty in the Crucible campaigns: what a round finds rests on its seeded focus, not on the model.\n\n## Decision\n\nOperator, 2026-11-22:\n\n- The template default for `reviewer` and `fixer` is `sonnet[high]` alone, with no rotation.\n- Which models a campaign uses, a rotation included, is the operator's choice per run, set in the task's `run_settings` under `hardener`.\n- The template comments and any doc or pattern text that describes the rotation as the default say so.\n\nCheck that `run_settings` takes `hardener.reviewer` and `hardener.fixer` as lists, and fix it if not.\n",
-      "status": "done",
-      "created": "2026-11-22T20:50:17Z",
-      "revised": "2026-11-22T20:51:25Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
     }
   ],
   "prime_owner": "neve",
