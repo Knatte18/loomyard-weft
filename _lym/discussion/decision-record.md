@@ -44,4 +44,10 @@ F5 and F13 only matter while a hub still holds the retired board fields; check f
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - merge-danger-two-way-miscalled (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
