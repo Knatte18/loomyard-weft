@@ -331,6 +331,24 @@
       "body": "## Seen\n\n`harden-fabric-single-repo-verbs` approved in round 3 with part of its focus undriven (`round-3-focus.md` and `round-3-review.md` in its archived records, Coverage section):\n\n- The discard half of a killed teardown, re-run through the command its pending record prints; only a hubforge test with a Topology seam covers it.\n- Whether a teardown now pushes to origin a local `archive/\u003cslug\u003e/*` tag the operator kept local on purpose, and whether any verb output or help text names it.\n- A failed remote step without a kill keeping its pending record (O3's fix).\n- `lym adopt --archives` over owner-archive tags pushed by the real `ArchiveOwnerTips` path, with the code side's new `refs/lym/code-tags/` prefix.\n\nAlso left: code-side archive tags in plain `refs/tags/archive/` that an earlier binary pushed are named by no reader verb.\n\n## Idea\n\nA short live drive of these cases in a one-repository sandbox hub, fixing what fails with a test.\n",
       "created": "2026-11-22T20:36:41Z",
       "revised": "2026-11-22T20:36:41Z"
+    },
+    {
+      "id": 1577,
+      "handle": "E1",
+      "slug": "note-depends-on",
+      "title": "A note carries depends_on, shown on the board and kept when promoted",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Only a task carries depends_on, so a note that must wait for a running task looks ready to start",
+      "body": "## Seen\n\nOnly a task carries `depends_on` (`lym board set-deps` and `upsert` refuse it on a note; `promote` takes it at the promotion).\nA note that must wait for a running task, such as `harden-fabric-undriven-cases` waiting for `harden-fabric-single-repo-verbs`, shows nothing of that on the board,\nso the operator keeps asking whether it can start.\n\n## Wanted\n\nOperator, 2026-11-23:\n\n- `upsert` and `set-deps` accept `depends_on` on a note.\n- `lym board list --text` and the README show a note's dependencies as they show a task's.\n- `promote` keeps a note's `depends_on`; one given in the promote payload replaces it.\n- `prune` strips a done entry from a note's `depends_on` as from a task's.\n- The `ly:board` and `ly:board-policy` skills say a note may carry `depends_on`.\n",
+      "created": "2026-11-23T08:00:11Z",
+      "revised": "2026-11-23T08:00:11Z"
     }
   ],
   "prime_owner": "neve",
