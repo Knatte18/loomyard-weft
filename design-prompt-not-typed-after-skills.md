@@ -1,48 +1,44 @@
-# Agent sits idle after its skill-load turn; its prompt is never typed
+# Start prompt held when a long strand name fills the input box top border
 
-`prompt-not-typed-after-skills` · Note · bug, shuttle
+`prompt-not-typed-after-skills` · Task · bug, shuttle · draft
 
-## Seen
-
-2026-11-23: `ly:godocreflow-worsens-findings:code-burler-fix` sat idle for 30 minutes at Code-Burler-Fix.
-Dobby sent its idle notice; asked by the orch, the agent answered that it had been idle after loading its skills and only then started reading its prompt file.
-So the task prompt was never typed after the skill-load turn, and only the orch's creel message woke it.
-The same morning the API answered 529 Overloaded to other agents, and LOOM reported another agent held at its skill-load turn by API errors; the two may share a cause.
-
-## Expected
-
-Once the skill-load turn ends, the agent's prompt is typed, or a failure to type it is retried and noticed, so no agent waits for a parent's message to start.
-
-
-## From issue #195
-
-Imported from [issue #195](https://github.com/Knatte18/loomyard/issues/195).
-
-Import note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `/.lym/shuttle/`.
+Folds issues #195 (symptom) and #196 (cause), and the orch's own sighting.
 
 ## Seen
 
-A tapestry run's Plan-Bouncer seed session got only the skill bootstrap ("Load these skills now … scribe:prose …"), answered it, and then sat at an empty prompt.
-The line pointing it at its `prompt.md` never arrived.
-The session's `events.jsonl` shows `SessionStart`, one `UserPromptSubmit` and `Stop` within three seconds, and nothing more.
+A spawned row session gets its skill bootstrap, answers it, and then sits at an empty prompt: its task prompt never arrives.
+`lym loom status` keeps an empty `error` and `wait`, and no notice reaches the parent.
 
-It happened twice in a row on the same row:
+- 2026-11-23, this hub: `ly:godocreflow-worsens-findings:code-burler-fix` sat idle 30 minutes at Code-Burler-Fix until the orch's creel message woke it.
+- #195, another hub: a Plan-Bouncer seed session stalled twice in a row on the same row, lym's own respawn included; its `events.jsonl` shows `SessionStart`, one `UserPromptSubmit` and `Stop` within three seconds, and nothing more.
+  `lym loom goto --to Plan-Bouncer` was refused as `shed_busy`.
 
-- Session `8a36796b…`, spawned at 11:00:20, idle from about 11:00 to 11:04.
-- Session `724ef172…`, spawned at 11:04:32 (lym's own respawn), with the same pattern: `SessionStart` 10:04:32Z, `UserPromptSubmit` 10:04:33Z, `Stop` 10:04:35Z.
+## Cause (#196)
 
-`lym loom status` showed `current_producer: Plan-Bouncer` with empty `error` and `wait` throughout, and no notice reached the parent orch.
-The operator noticed the stall by watching the pane.
-`lym loom goto --to Plan-Bouncer` was refused as `shed_busy` because the live driver held the run lock.
+shuttle's idle check does not see the input box when the strand name fills the box's top border, so it holds the start prompt:
+
+```
+level=WARN msg="shuttle: could not type the segment color" color=orange error="shuttle: the session is not idle: strand \"ebb49562…\": no input box is on screen; a menu or picker may be open; retry once the session is idle. The pane's last lines:
+● ok scribe:prose, scribe:code-quality,
+  scribe:testing
+✻ Sautéed for 5s · done 11.08
+─ dop:models-torque-drag-adapter:plan-burler-review ─
+❯ 
+─────────────────────────────────────────────────────
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · …"
+level=WARN msg="shuttle: the start prompt was held busy, sending it again" retry=1 reason="a turn is running"
+```
+
+The top border holds the strand name with one `─` on each side in a pane about 53 columns wide.
+`isTopBoxRule` in `internal/shuttleengine/claudeengine/session.go` takes a labelled top rule only when it starts with three rule glyphs or ends in `… ─`.
+It hits long slug and role names in narrow panes; every retry hits the same check.
+Whether this hub's sighting had the same cause or the 529 Overloaded errors of that morning is for the run to judge.
 
 ## Workaround
 
-The parent orch posted the missing line to the strand by creel:
-`Read <worktree>/.lym/shuttle/<id>/prompt.md in full first; it is your complete, authoritative instructions.`
-The session took it as its next `UserPromptSubmit` and started working.
+The parent posts the session's `promptLine` (from its `run.json`) to the strand by creel, or the operator widens the pane.
 
 ## Expected
 
-The task prompt reaches the session after the skill bootstrap every time.
-If a session ends its bootstrap turn and no task prompt follows within a short bound, lym delivers it again or raises a notice to the parent.
-A respawn on that row does not repeat the same failure.
+- The idle check finds the input box by the `❯` prompt line and the borders around it, whatever text the top border carries and however few `─` are left beside it.
+- A start prompt still held after its retries raises a notice to the parent naming the strand; a respawn on the same row does not repeat the failure.
