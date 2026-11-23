@@ -38,7 +38,7 @@ Owner `neve`
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 1h<br>1h | shuttle, reed, claude |
 | T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | landing · Finalize | neve | 1h<br>1h | reed, shuttle, process |
 | T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light | Code-Burler-Fix | neve | 52m<br>43m | shuttle, shed |
-| T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Drift-Verify | neve | 11h<br>11h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
+| T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Code-Bouncer | neve | 11h<br>11h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
 
