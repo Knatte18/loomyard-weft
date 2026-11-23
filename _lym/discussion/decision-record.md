@@ -14,6 +14,12 @@ Expected: an agent that asks with --expect-reply waits for the reply before it e
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): Accept round 1: F1 fixed, F2 fixed differently
+
+Decision: Accept the code review at round 1. BLOCKING F1 (probe-refused-from-nonorch-strand-pane) is fixed. BLOCKING F2 (quiet-probe-release-ends-run-mid-turn) is fixed differently: the release keeps the two quiet probes and also requires the agent's pane to read idle, as startHoldReleased reads it, so a turn the reply wakes keeps the hold while a settled question still releases. F3 to F9 are fixed, F8 through an exported Runner.HasReplyProbe accessor.
+
+Rationale: F2's own change is stricter than the proposal without holding a settled question to its deadline; every fix is committed with its gates passing.
+
 ## Constraints
 
 ## Auto-mode assumptions
