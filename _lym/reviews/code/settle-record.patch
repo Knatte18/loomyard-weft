@@ -1,0 +1,781 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 3c3dc49af..964bb908c 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -199,7 +199,8 @@ Bring it to the operator when it is a design question.
+ 
+ ## Reviewing a pull request
+ 
+-Mail from `<shortname>:LOOM` that opens `[pr-review request]` asks you to review a run's open pull request.
++Mail that opens `[pr-review request]` asks you to review a run's open pull request.
++It comes from `<shortname>:LOOM`, or from the run's PR-Review session when it asks you again after its fixes.
+ lym sends it when a run reaches PR-Review with `pr_review_ask_parent` on, in `loom.yaml` or the task's `run_settings`.
+ The operator may also have the run's PR-Review agent ask you, by a message expecting a reply.
+ Judge the change against what you know the run needs: its board entry, its decision record and the calls you settled.
+diff --git a/contracts/stencils/landing/landing-block-pr-review-autonomous.md b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+index eef416922..13b6f1ddc 100644
+--- a/contracts/stencils/landing/landing-block-pr-review-autonomous.md
++++ b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+@@ -23,6 +23,9 @@ When `await` reports an ask ended timeout, no-parent or not-sent, or reports tha
+ ask again with `lym loom parent-review ask {{.slug}}`.
+ After a no-parent end, end your turn first and ask again only on the next mail you receive,
+ so a parent that is down raises hold notices and not a loop of asks.
++An undelivered end means creel refused or failed to deliver the ask, not that your parent is down: its `reason` names why.
++Send your parent that reason and the ask's number with `lym creel post --parent`,
++then end your turn and ask again on the next mail you receive.
+ 
+ When lym mails a gate failure from outside the change, such as a file another process held open,
+ run `lym loom pr-continue` again once your parent's answer stands: it gates the same head again.
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 57c41661b..28cf3ef5b 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -50,7 +50,8 @@
+ //
+ // RunOpts.ParentAsk names the round's ask to its parent orch.
+ // Asks live in a never-tracked record that ParentReviewFilesOf locates.
+-// An ask moves only from pending-post to open and from either to an end state: done, timeout, no-parent or not-sent.
++// An ask moves only from pending-post to open and from either to an end state:
++// done, timeout, no-parent, undelivered or not-sent.
+ // An ended ask may be cleared (ClearParentAsk): a cleared ask answers nothing, and the seat that made it asks again.
+ // Every move takes the record's one lock, so an answer and a timeout never both land.
+ // The chair keeps every finding of a done parent report, tagged `origin: parent` (ParentOrigin).
+diff --git a/internal/burlerengine/parentreview.go b/internal/burlerengine/parentreview.go
+index 7a443169b..617e0baeb 100644
+--- a/internal/burlerengine/parentreview.go
++++ b/internal/burlerengine/parentreview.go
+@@ -35,6 +35,8 @@ const (
+ 	ParentAskTimeout ParentAskState = "timeout"
+ 	// ParentAskNoParent is an ask that never went out because no parent orch resolved.
+ 	ParentAskNoParent ParentAskState = "no-parent"
++	// ParentAskUndelivered is an ask whose post to a resolved parent orch creel refused or failed; Reason carries the error.
++	ParentAskUndelivered ParentAskState = "undelivered"
+ 	// ParentAskNotSent is an ask that never went out because its deadline cap left no room; Reason says why.
+ 	ParentAskNotSent ParentAskState = "not-sent"
+ )
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 4dafc66b6..2796c76aa 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -95,7 +95,7 @@
+ //
+ // Under the run's autonomy, Config.Autonomous, ApplyAutonomy forces `judge_ask_parent` on and `judge_interactive` off.
+ // It writes no layer file, so autonomy off restores each key's layered value at the next load.
+-// Under it, a judge ask that ended timeout, not-sent or no-parent halts Drift-Verify.
++// Under it, a judge ask that ended timeout, not-sent, no-parent or undelivered halts Drift-Verify.
+ // The parent agreement entry does not pass, and the rulings are not stored.
+ // The resume asks the parent again over the same rulings, with no judge spawned:
+ // it clears the ended ask, and the entry sends a new one over the unchanged digest.
+diff --git a/internal/driftengine/judgeparent.go b/internal/driftengine/judgeparent.go
+index 8c87593a2..627959090 100644
+--- a/internal/driftengine/judgeparent.go
++++ b/internal/driftengine/judgeparent.go
+@@ -199,15 +199,15 @@ func (s *JudgeParentSeat) sendJudgeAsk(seed string, round int, digest string, wa
+ }
+ 
+ // postJudgeAsk posts line to the strand ask records and returns ask set open.
+-// A failed post sets the ask no-parent with the error as its reason, and the judge goes on without the parent.
++// A failed post sets the ask undelivered with the error as its reason, and the judge goes on without the parent.
+ func (s *JudgeParentSeat) postJudgeAsk(ask burlerengine.ParentAsk, line string) burlerengine.ParentAsk {
+ 	if err := s.Post(ask.Strand, line); err != nil {
+ 		reason := fmt.Sprintf("the request was not delivered: %s", err)
+ 		logger.Warn("drift: the judge's ask to the parent was not delivered; the judge goes on without the parent", "ask", ask.Number, "error", err)
+-		if _, _, endErr := burlerengine.EndParentAsk(s.Files, ask.Number, burlerengine.ParentAskNoParent, reason); endErr != nil {
+-			logger.Warn("drift: the undelivered ask to the parent was not set no-parent", "ask", ask.Number, "error", endErr)
++		if _, _, endErr := burlerengine.EndParentAsk(s.Files, ask.Number, burlerengine.ParentAskUndelivered, reason); endErr != nil {
++			logger.Warn("drift: the undelivered ask to the parent was not set undelivered", "ask", ask.Number, "error", endErr)
+ 		}
+-		ask.State, ask.Reason = burlerengine.ParentAskNoParent, reason
++		ask.State, ask.Reason = burlerengine.ParentAskUndelivered, reason
+ 		return ask
+ 	}
+ 	if err := burlerengine.MarkParentAskPosted(s.Files, ask.Number); err != nil {
+diff --git a/internal/driftengine/judgeparent_test.go b/internal/driftengine/judgeparent_test.go
+index 0e2dda719..79786f23b 100644
+--- a/internal/driftengine/judgeparent_test.go
++++ b/internal/driftengine/judgeparent_test.go
+@@ -147,7 +147,7 @@ func TestParentAgreementGate(t *testing.T) {
+ 		},
+ 		{name: "no recorded orch strand records no-parent and passes", unrecorded: true, wantPassed: true, wantState: burlerengine.ParentAskNoParent},
+ 		{name: "a resolve error records no-parent, posts nothing and passes", resolveErr: errors.New("boom"), wantPassed: true, wantState: burlerengine.ParentAskNoParent, wantReason: "could not be resolved: boom"},
+-		{name: "a failed post records no-parent and passes", postErr: errors.New("boom"), wantPassed: true, wantState: burlerengine.ParentAskNoParent, wantPosts: 1},
++		{name: "a failed post records undelivered and passes", postErr: errors.New("boom"), wantPassed: true, wantState: "undelivered", wantReason: "the request was not delivered: boom", wantPosts: 1},
+ 		{
+ 			name:         "a held ask ended timeout and cleared is no ask, so a new one of the next round goes out",
+ 			prior:        &burlerengine.ParentAsk{State: burlerengine.ParentAskTimeout, Cleared: true, Deadline: judgeParentNow.Add(-time.Minute)},
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index ddf4c8082..dec958789 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -875,7 +875,7 @@ func (p *DriftVerify) judgeAsks(spawnID string) ([]burlerengine.ParentAsk, error
+ }
+ 
+ // endedUnanswered answers the spawn's latest ask when it is not cleared and ended without the parent's answer:
+-// timeout, not-sent or no-parent.
++// timeout, not-sent, no-parent or undelivered.
+ // Otherwise, and for a row with no parent seat, it answers false.
+ func (p *DriftVerify) endedUnanswered(spawnID string) (burlerengine.ParentAsk, bool, error) {
+ 	asks, err := p.judgeAsks(spawnID)
+@@ -884,7 +884,7 @@ func (p *DriftVerify) endedUnanswered(spawnID string) (burlerengine.ParentAsk, b
+ 	}
+ 	latest := asks[len(asks)-1]
+ 	switch latest.State {
+-	case burlerengine.ParentAskTimeout, burlerengine.ParentAskNotSent, burlerengine.ParentAskNoParent:
++	case burlerengine.ParentAskTimeout, burlerengine.ParentAskNotSent, burlerengine.ParentAskNoParent, burlerengine.ParentAskUndelivered:
+ 		if !latest.Cleared {
+ 			return latest, true, nil
+ 		}
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index ab55044df..3b3ebd264 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -1849,6 +1849,9 @@ func TestDriftVerify(t *testing.T) {
+ 					a.atArrival[1] = func() { a.clock = a.clock.Add(judgeTimeout) }
+ 				}},
+ 				{"NoParent", burlerengine.ParentAskNoParent, true, func(*autonomousJudge) {}},
++				{"Undelivered", burlerengine.ParentAskUndelivered, false, func(a *autonomousJudge) {
++					a.deps.JudgeParent.Post = func(string, string) error { return errors.New("creel: may not sign as the program") }
++				}},
+ 			}
+ 			for _, tt := range tests {
+ 				for _, autonomous := range []bool{true, false} {
+diff --git a/internal/landingshed/prreviewask.go b/internal/landingshed/prreviewask.go
+index cc6d88256..f268b3500 100644
+--- a/internal/landingshed/prreviewask.go
++++ b/internal/landingshed/prreviewask.go
+@@ -41,7 +41,7 @@ type PRReviewAsker struct {
+ // Ask records an ask for the pull request at head as the run's next ask and posts its line, asked at now.
+ // A parent that resolves gets the ask pending-post with its strand and a deadline Wait after now;
+ // it is posted and then open.
+-// A post that fails ends the ask no-parent, with the error as its reason.
++// A post that fails ends the ask undelivered, with the error as its reason.
+ // A parent that fails to resolve, or records no orch strand, makes the ask no-parent, and nothing is posted.
+ // It returns the ask as it then stands.
+ func (a PRReviewAsker) Ask(head string, now time.Time) (burlerengine.ParentAsk, error) {
+@@ -61,7 +61,7 @@ func (a PRReviewAsker) Ask(head string, now time.Time) (burlerengine.ParentAsk,
+ 	}
+ 
+ 	if err := a.Post(ask.Strand, PRReviewAskLine(a.Slug, a.URL, a.TaskBranch, a.ParentBranch, ask)); err != nil {
+-		ended, _, endErr := burlerengine.EndParentAsk(a.Files, ask.Number, burlerengine.ParentAskNoParent, fmt.Sprintf("the request was not delivered: %s", err))
++		ended, _, endErr := burlerengine.EndParentAsk(a.Files, ask.Number, burlerengine.ParentAskUndelivered, fmt.Sprintf("the request was not delivered: %s", err))
+ 		return ended, endErr
+ 	}
+ 	if err := burlerengine.MarkParentAskPosted(a.Files, ask.Number); err != nil {
+@@ -98,7 +98,7 @@ const (
+ // It is satisfied when the ask was sent at head and is done with a report that holds no findings.
+ // It is awaiting when the ask was sent at head and is pending-post or open before its deadline.
+ // Otherwise it is ask-again.
+-// That covers no ask, one sent at another head, one with findings, and one ended timeout or no-parent.
++// That covers no ask, one sent at another head, one with findings, and one ended timeout, no-parent or undelivered.
+ // It also covers one cleared, and one open past its deadline.
+ func ReadPRReviewStanding(files burlerengine.ParentReviewFiles, head string, now time.Time) (PRReviewStanding, error) {
+ 	record, _, err := burlerengine.ReadParentAsks(files)
+diff --git a/internal/landingshed/prreviewask_test.go b/internal/landingshed/prreviewask_test.go
+index ee1dc086c..7568ef858 100644
+--- a/internal/landingshed/prreviewask_test.go
++++ b/internal/landingshed/prreviewask_test.go
+@@ -40,7 +40,8 @@ func TestPRReviewAsker_Ask(t *testing.T) {
+ 		{name: "an earlier Code-Review ask numbers the new ask 2", earlier: true, wantNumber: 2, wantState: burlerengine.ParentAskOpen, wantPosts: 1},
+ 		{name: "a parent with no strand records no-parent and posts nothing", unrecorded: true, wantNumber: 1, wantState: burlerengine.ParentAskNoParent, wantReason: "no orch strand"},
+ 		{name: "a resolve error records no-parent and posts nothing", resolveErr: errors.New("boom"), wantNumber: 1, wantState: burlerengine.ParentAskNoParent, wantReason: "could not be resolved: boom"},
+-		{name: "a failing post records no-parent with its reason", postErr: errors.New("boom"), wantNumber: 1, wantState: burlerengine.ParentAskNoParent, wantReason: "boom", wantPosts: 1},
++		// A refused post reaches a parent that resolved, so it records a delivery failure, never no-parent.
++		{name: "a refused post records undelivered with its reason", postErr: errors.New("creel: may not sign as the program"), wantNumber: 1, wantState: "undelivered", wantReason: "the request was not delivered: creel: may not sign as the program", wantPosts: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 1ef9ec222..ca8618f0f 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -47,6 +47,7 @@
+ // It admits the operator's unnamed shell, the run's parent orch and the strand the ask went to.
+ // `parent-review await` is the asking agent's capped wait on the same ask, and it writes nothing but a timeout.
+ // `parent-review ask` records and posts a PR-Review ask at the task head for the review's session.
++// It signs the post as the session's own strand, where the PR-Review row's own ask signs as the loom program.
+ // Only that session runs it.
+ // It admits only a review recorded under autonomy, and it refuses an ask that already awaits an answer at the head.
+ // The Discussion-Review and Code-Review parent seats read `discussion_review_ask_parent` and `code_review_ask_parent`.
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index dff373074..e44fe8f08 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -475,7 +475,7 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 			if !found {
+ 				return burlerengine.ParentAsk{}, errors.New("loomcli: the run has no pull request record to ask the parent orch about")
+ 			}
+-			asker, err := prReviewAsker(l, rec)
++			asker, err := prReviewAsker(l, rec, "")
+ 			if err != nil {
+ 				return burlerengine.ParentAsk{}, err
+ 			}
+@@ -496,8 +496,10 @@ func pullRequestDepsGuardedBy(check prePushCheck, l *lymcwd.Location, parentBran
+ 
+ // prReviewAsker builds the asker of the PR-Review ask for the run at l and the pull request rec records.
+ // The wait from an ask to its deadline is loom.yaml's pr_review_parent_timeout_min over l's layers.
+-// The ask goes to the orch the run's parent resolves to, signed as lym's loom program and tagged with the run.
+-func prReviewAsker(l *lymcwd.Location, rec pullrequest.Record) (landingshed.PRReviewAsker, error) {
++// The ask goes to the orch the run's parent resolves to, tagged with the run.
++// It is signed as strandClaim when that names a strand that is not an orch, and as lym's loom program otherwise.
++// The PR-Review session's own ask passes its strand; the row's ask passes none.
++func prReviewAsker(l *lymcwd.Location, rec pullrequest.Record, strandClaim string) (landingshed.PRReviewAsker, error) {
+ 	cfg, err := loomengine.LoadConfig(fabricengine.ConfigDirs(l), "loom")
+ 	if err != nil {
+ 		return landingshed.PRReviewAsker{}, err
+@@ -511,7 +513,7 @@ func prReviewAsker(l *lymcwd.Location, rec pullrequest.Record) (landingshed.PRRe
+ 		Wait:         time.Duration(cfg.PRReviewParentTimeoutMin) * time.Minute,
+ 		Resolve:      func() (string, bool, error) { return orchcli.ParentStrand(l) },
+ 		Post: func(strand, line string) error {
+-			return orchcli.PostAsProgram(l, strand, loomProgram, line, creelengine.PostTags{Run: l.WorktreeName})
++			return orchcli.PostAsCaller(l, strand, loomProgram, strandClaim, line, creelengine.PostTags{Run: l.WorktreeName})
+ 		},
+ 	}, nil
+ }
+diff --git a/internal/loomcli/notifystamp_integration_test.go b/internal/loomcli/notifystamp_integration_test.go
+index dfa709097..3cbbdb4ce 100644
+--- a/internal/loomcli/notifystamp_integration_test.go
++++ b/internal/loomcli/notifystamp_integration_test.go
+@@ -30,8 +30,10 @@ import (
+ )
+ 
+ // startNoticeOrch records a prime orch strand for the hub and runs creel's daemon in process with that strand live.
++// The daemon also lists each of others.
+ // The notice clients then connect to the daemon and spawn none of their own.
+-func startNoticeOrch(t *testing.T, h *hubforge.Hub) {
++// It returns the daemon's fake delivery and the orch strand's name.
++func startNoticeOrch(t *testing.T, h *hubforge.Hub, others ...creelengine.Strand) (*creelfake.Delivery, string) {
+ 	t.Helper()
+ 	root, err := lymtemp.ProcessRoot()
+ 	if err != nil {
+@@ -50,7 +52,7 @@ func startNoticeOrch(t *testing.T, h *hubforge.Hub) {
+ 		t.Fatalf("reedengine.SaveState() = %v; want nil", err)
+ 	}
+ 	delivery := creelfake.NewDelivery()
+-	delivery.SetStrands(creelfake.LiveStrand(receiver))
++	delivery.SetStrands(append([]creelengine.Strand{creelfake.LiveStrand(receiver)}, others...)...)
+ 	// Busy, so a posted mail is not carried into the pane before the test reads the log.
+ 	delivery.SetIdle(receiver, false)
+ 	epoch := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
+@@ -75,10 +77,11 @@ func startNoticeOrch(t *testing.T, h *hubforge.Hub) {
+ 	case <-time.After(10 * time.Second):
+ 		t.Fatal("the creel daemon did not listen")
+ 	}
++	return delivery, receiver
+ }
+ 
+-// postedSubjects returns the subject of each mail the hub's creel daemon logged as posted, oldest first.
+-func postedSubjects(t *testing.T, h *hubforge.Hub) []string {
++// postedEntries returns the log entry of each mail the hub's creel daemon logged as posted, oldest first.
++func postedEntries(t *testing.T, h *hubforge.Hub) []creelengine.LogEntry {
+ 	t.Helper()
+ 	reader, err := creelcli.NewProgramClient(h.Location, "CHECK")
+ 	if err != nil {
+@@ -88,12 +91,22 @@ func postedSubjects(t *testing.T, h *hubforge.Hub) []string {
+ 	if err != nil {
+ 		t.Fatalf("Log() = %v; want nil", err)
+ 	}
+-	var subjects []string
++	var posted []creelengine.LogEntry
+ 	for _, entry := range entries {
+ 		if entry.Event == "posted" {
+-			subjects = append(subjects, entry.Subject)
++			posted = append(posted, entry)
+ 		}
+ 	}
++	return posted
++}
++
++// postedSubjects returns the subject of each mail the hub's creel daemon logged as posted, oldest first.
++func postedSubjects(t *testing.T, h *hubforge.Hub) []string {
++	t.Helper()
++	var subjects []string
++	for _, entry := range postedEntries(t, h) {
++		subjects = append(subjects, entry.Subject)
++	}
+ 	return subjects
+ }
+ 
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+index d572ec6bc..3bf19a975 100644
+--- a/internal/loomcli/parentreview.go
++++ b/internal/loomcli/parentreview.go
+@@ -78,8 +78,8 @@ type parentReviewDeps struct {
+ 	prRecord func() (pullrequest.Record, bool, error)
+ 	// head reads the task branch's current head.
+ 	head func() (string, error)
+-	// askPR records and posts a PR-Review ask for the pull request rec records at head.
+-	askPR func(rec pullrequest.Record, head string) (burlerengine.ParentAsk, error)
++	// askPR records and posts a PR-Review ask for the pull request rec records at head, signed as strandClaim.
++	askPR func(rec pullrequest.Record, head, strandClaim string) (burlerengine.ParentAsk, error)
+ }
+ 
+ // parentAnswerInput holds the flag values of one `parent-review answer` call.
+@@ -251,7 +251,7 @@ func parentReviewAnswerVerb(out io.Writer, slug string, deps parentReviewDeps, i
+ // It reads the ask record once per poll interval.
+ // An ask still pending-post or open at or past its deadline is set timeout, which ends it.
+ // It answers ready true with the ask's state once the ask has ended.
+-// That answer carries the reason of a not-sent ask and the report of a done one.
++// That answer carries the reason of a not-sent or undelivered ask and the report of a done one.
+ // It answers ready false once the cap runs out first, and the caller runs it again.
+ // A run with no ask is refused.
+ func parentReviewAwaitVerb(ctx context.Context, out io.Writer, deps parentReviewDeps) int {
+@@ -269,7 +269,7 @@ func parentReviewAwaitVerb(ctx context.Context, out io.Writer, deps parentReview
+ 		}
+ 		if ask.State.Ended() {
+ 			result := map[string]any{"ready": true, "ask": ask.Number, "state": string(ask.State)}
+-			if ask.State == burlerengine.ParentAskNotSent {
++			if ask.State == burlerengine.ParentAskNotSent || ask.State == burlerengine.ParentAskUndelivered {
+ 				result["reason"] = ask.Reason
+ 			}
+ 			if ask.State == burlerengine.ParentAskDone {
+@@ -333,7 +333,7 @@ func parentReviewAskVerb(out io.Writer, slug string, deps parentReviewDeps) int
+ 		pending, _ := record.LatestTagged(landingshed.PRReviewAskLineTag)
+ 		return refuse("ask %d, sent at this head, awaits an answer; way forward: wait for ask %d's answer with lym loom %s %s %s", pending.Number, pending.Number, parentReviewGroup, parentReviewAwaitName, slug)
+ 	}
+-	ask, err := deps.askPR(rec, head)
++	ask, err := deps.askPR(rec, head, deps.strandName)
+ 	if err != nil {
+ 		return refuse("record and send the ask: %s; %s", err, parentReviewWayAskRetry)
+ 	}
+@@ -404,17 +404,23 @@ func (s *parentReviewState) preRun(cmd *cobra.Command, args []string) error {
+ 			}
+ 			return fabric.HeadSHA()
+ 		},
+-		askPR: func(rec pullrequest.Record, head string) (burlerengine.ParentAsk, error) {
+-			asker, err := prReviewAsker(target, rec)
+-			if err != nil {
+-				return burlerengine.ParentAsk{}, err
+-			}
+-			return asker.Ask(head, time.Now())
+-		},
++		askPR: parentReviewPRAskFunc(target),
+ 	}
+ 	return nil
+ }
+ 
++// parentReviewPRAskFunc returns the seam that records and posts a PR-Review ask for the run at target.
++// The seam signs each ask as the strandClaim it is called with, the strand of the session that runs the verb.
++func parentReviewPRAskFunc(target *lymcwd.Location) func(pullrequest.Record, string, string) (burlerengine.ParentAsk, error) {
++	return func(rec pullrequest.Record, head, strandClaim string) (burlerengine.ParentAsk, error) {
++		asker, err := prReviewAsker(target, rec, strandClaim)
++		if err != nil {
++			return burlerengine.ParentAsk{}, err
++		}
++		return asker.Ask(head, time.Now())
++	}
++}
++
+ // parentReviewCmd builds the `parent-review` subtree.
+ func (c *loomCLI) parentReviewCmd() *cobra.Command {
+ 	st := &parentReviewState{}
+@@ -484,8 +490,8 @@ Example:
+ 		Short:       "wait, capped, until the run's latest parent-review ask has ended",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `await waits until the run's latest parent-review ask has ended, and prints ok
+-with ready true, the ask's state, the reason of a not-sent ask and the report
+-of a done one. An ask still pending-post or open at or past its deadline is set
++with ready true, the ask's state, the reason of a not-sent or undelivered ask
++and the report of a done one. An ask still pending-post or open at or past its deadline is set
+ timeout, which ends it. When the calling session's keep-warm cap elapses first
+ it prints ok with ready false and exits 0: run it again, in a turn that does
+ nothing else, with a shell command timeout above the cap. A run with no ask is
+@@ -511,7 +517,9 @@ Example:
+ 		Long: `ask records a PR-Review ask to the run's parent orch for the run's pull
+ request at the task branch's current head, and sends it. It prints ok with the
+ ask's number, state, head and deadline. Run it after each set of fixes, then
+-wait for the answer with "parent-review await".
++wait for the answer with "parent-review await". The ask is signed as the
++session's own strand, since creel lets only an orch's pane sign as a program.
++An ask creel refuses or fails to deliver ends undelivered, with the error as its reason.
+ 
+ Only the PR-Review session of a review recorded under autonomy may run it, from
+ its own pane, and at most one ask stands open per head. The verb ends nothing:
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+index ea1d7bd64..b09a9af02 100644
+--- a/internal/loomcli/parentreview_test.go
++++ b/internal/loomcli/parentreview_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pullrequest"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -37,8 +38,8 @@ const (
+ 
+ // parentReviewPRAsker returns the askPR seam that records through a real PRReviewAsker over files.
+ // It asks at now() and its post succeeds.
+-func parentReviewPRAsker(files burlerengine.ParentReviewFiles, now func() time.Time) func(pullrequest.Record, string) (burlerengine.ParentAsk, error) {
+-	return func(rec pullrequest.Record, head string) (burlerengine.ParentAsk, error) {
++func parentReviewPRAsker(files burlerengine.ParentReviewFiles, now func() time.Time) func(pullrequest.Record, string, string) (burlerengine.ParentAsk, error) {
++	return func(rec pullrequest.Record, head, _ string) (burlerengine.ParentAsk, error) {
+ 		asker := landingshed.PRReviewAsker{
+ 			Files:        files,
+ 			Slug:         "task-a",
+@@ -446,7 +447,7 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 			name: "a failed ask is an error naming the cause and running the verb again",
+ 			setup: func(d *parentReviewDeps) {
+ 				asSession(d)
+-				d.askPR = func(pullrequest.Record, string) (burlerengine.ParentAsk, error) {
++				d.askPR = func(pullrequest.Record, string, string) (burlerengine.ParentAsk, error) {
+ 					return burlerengine.ParentAsk{}, errors.New("disk full")
+ 				}
+ 			},
+@@ -462,6 +463,12 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 				tt.setup(&deps)
+ 			}
+ 			var out bytes.Buffer
++			var gotClaim string
++			recordAsk := deps.askPR
++			deps.askPR = func(rec pullrequest.Record, head, strandClaim string) (burlerengine.ParentAsk, error) {
++				gotClaim = strandClaim
++				return recordAsk(rec, head, strandClaim)
++			}
+ 			code := parentReviewAskVerb(&out, "task-a", deps)
+ 			record, _, err := burlerengine.ReadParentAsks(deps.files)
+ 			if err != nil {
+@@ -490,6 +497,9 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 			if !reflect.DeepEqual(env.Raw, tt.wantOK) {
+ 				t.Errorf("envelope = %v; want %v", env.Raw, tt.wantOK)
+ 			}
++			if gotClaim != parentReviewSession {
++				t.Errorf("the ask was signed as %q; want the session's strand %q", gotClaim, parentReviewSession)
++			}
+ 			if latest, _ := record.Latest(); latest.Tag != landingshed.PRReviewAskLineTag || latest.Digest != parentReviewHead {
+ 				t.Errorf("latest ask tag %q, digest %q; want the PR-Review tag and the head %q", latest.Tag, latest.Digest, parentReviewHead)
+ 			}
+@@ -497,8 +507,25 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 	}
+ }
+ 
++// TestParentReviewPRAskFunc_ReturnsTheErrorOfAHubItCannotResolveTheParentIn drives the ask seam over a run's location.
++// A hub with no parent orch resolvable returns that error and records no ask.
++func TestParentReviewPRAskFunc_ReturnsTheErrorOfAHubItCannotResolveTheParentIn(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	location := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "task-a", AnchorRel: "."}
++
++	ask, err := parentReviewPRAskFunc(location)(pullrequest.Record{URL: "https://example.test/pull/7", Head: "task-a", Base: "main"}, parentReviewHead, parentReviewSession)
++
++	if err == nil || !strings.Contains(err.Error(), "not initialized here") {
++		t.Errorf("ask seam error = %v; want the hub's not-initialized refusal", err)
++	}
++	if ask.Number != 0 {
++		t.Errorf("ask = %+v; want no ask recorded", ask)
++	}
++}
++
+ // TestParentReviewAwaitVerb verifies the await answers ready once the latest ask has ended or reaches its deadline.
+-// The answer names the state, a not-sent ask's reason and a done ask's report.
++// The answer names the state, a not-sent or undelivered ask's reason and a done ask's report.
+ // The await answers not ready once its cap runs out first.
+ func TestParentReviewAwaitVerb(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -535,6 +562,12 @@ func TestParentReviewAwaitVerb(t *testing.T) {
+ 			awaitCap: time.Minute,
+ 			want:     map[string]any{"ready": true, "ask": float64(1), "state": "not-sent", "reason": "raise review_timeout_min"},
+ 		},
++		{
++			name:     "an undelivered ask answers ready with its reason",
++			asks:     []burlerengine.ParentAsk{{State: burlerengine.ParentAskUndelivered, Reason: "the request was not delivered: refused"}},
++			awaitCap: time.Minute,
++			want:     map[string]any{"ready": true, "ask": float64(1), "state": "undelivered", "reason": "the request was not delivered: refused"},
++		},
+ 		{
+ 			name:      "the deadline reached during the wait sets the ask timeout and answers ready",
+ 			asks:      []burlerengine.ParentAsk{openParentAsk(3 * time.Second)},
+diff --git a/internal/loomcli/prreviewask_integration_test.go b/internal/loomcli/prreviewask_integration_test.go
+new file mode 100644
+index 000000000..8d0c2560d
+--- /dev/null
++++ b/internal/loomcli/prreviewask_integration_test.go
+@@ -0,0 +1,76 @@
++// prreviewask_integration_test.go proves the PR-Review ask reaches the run's parent orch over a real hub.
++// The ask is signed as its caller may sign.
++// Creel's daemon runs in process on a fake delivery.
++
++package loomcli
++
++import (
++	"os"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/burlerengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pullrequest"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestPRReviewAsker_AskReachesTheParentSignedAsTheCaller pins who signs the PR-Review ask the parent orch receives.
++// The verb's ask seam gets the session's strand, which signs the ask from the pane where creel refuses a program claim.
++// The row passes no claim, and its ask signs as the loom program.
++// Either ask is recorded open with the deadline loom.yaml's pr_review_parent_timeout_min of 60 minutes sets.
++func TestPRReviewAsker_AskReachesTheParentSignedAsTheCaller(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	session := hubforge.TestShortname + ":ask-task:pr-reviewer"
++	tests := []struct {
++		name     string
++		claim    string
++		inPane   bool
++		wantFrom string
++	}{
++		{"TheSessionInItsOwnPaneSignsAsItsStrand", session, true, session},
++		{"TheRowWithNoClaimSignsAsTheLoomProgram", "", false, hubforge.TestShortname + ":LOOM"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPair(t, h, "ask-task")
++			sessionStrand := creelfake.LiveStrand(session)
++			if tt.inPane {
++				sessionStrand.PanePID = os.Getpid()
++			}
++			delivery, receiver := startNoticeOrch(t, h, sessionStrand)
++			pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("ask-task"))
++			if err != nil {
++				t.Fatalf("lymcwd.ResolveWorktree(ask-task) = %v; want nil", err)
++			}
++			rec := pullrequest.Record{URL: "https://github.com/o/r/pull/7", Head: "ask-task", Base: "main"}
++			before := time.Now()
++
++			ask, err := parentReviewPRAskFunc(pair)(rec, "head-1", tt.claim)
++
++			after := time.Now()
++			if err != nil {
++				t.Fatalf("parentReviewPRAskFunc()()() = %v; want nil", err)
++			}
++			if ask.State != burlerengine.ParentAskOpen || ask.Strand != receiver ||
++				ask.Deadline.Before(before.Add(60*time.Minute)) || ask.Deadline.After(after.Add(60*time.Minute)) {
++				t.Errorf("ask = %+v; want an open ask to %s with its deadline 60 minutes after the ask", ask, receiver)
++			}
++			// Out of the session's pane again, so the log reader's program claim is not refused.
++			delivery.SetStrands(creelfake.LiveStrand(receiver), creelfake.LiveStrand(session))
++			posted := postedEntries(t, h)
++			if len(posted) != 1 {
++				t.Fatalf("posted mails = %+v; want exactly one", posted)
++			}
++			if got := posted[0]; got.From != tt.wantFrom || got.To != receiver || !strings.HasPrefix(got.Subject, "[pr-review request] ask-task ask 1:") {
++				t.Errorf("posted mail = from %q to %q subject %q; want from %q to %q, the ask's line", got.From, got.To, got.Subject, tt.wantFrom, receiver)
++			}
++		})
++	}
++}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 07fb94d62..05d1d2a36 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -110,6 +110,9 @@
+ // `NotifyParent` and `NotifyFrom` route a run's notice to the nearest live orch up its beam chain.
+ // They route to the prime's orch when none is live.
+ // `NotifyAsker` routes a hold notice to the orch the held agent's own question reached.
++// `PostAsProgram` signs a post as a lym program alone.
++// `PostAsCaller` signs as the calling agent's own strand when that strand is not an orch.
++// Creel lets only an orch strand's pane claim a program name.
+ // `HubOrchs` lists every worktree an orch may run in, skipping a pair still being created.
+ // `InstallPushNotifier`, `InstallReconcileNotifier` and `InstallRunMailDropper` wire notices to those routes.
+ // They serve fabric, the hub config reconcile and pairteardown; the root pre-run installs them for every lym process.
+diff --git a/internal/orchcli/notify.go b/internal/orchcli/notify.go
+index 4475d9f57..d8d184226 100644
+--- a/internal/orchcli/notify.go
++++ b/internal/orchcli/notify.go
+@@ -134,6 +134,16 @@ func PostAsProgram(location *lymcwd.Location, receiver, program, line string, ta
+ 	})
+ }
+ 
++// PostAsCaller sends line as creel mail carrying tags to the strand receiver, signed as the calling agent may sign.
++// It signs as strandClaim when that names a strand that is not an orch, and as program otherwise.
++// It serves a post from an agent's own pane.
++// Creel refuses a program claim from the pane of a strand that is not an orch.
++// A strand claim creel refuses as coming from outside that strand's pane is posted once more as program.
++// A refusal or failure comes back as an error carrying the full line.
++func PostAsCaller(location *lymcwd.Location, receiver, program, strandClaim, line string, tags creelengine.PostTags) error {
++	return postSigned(receiver, line, tags, strandClaim, notifyClientsOf(location, "", program))
++}
++
+ // postAsProgram posts line carrying tags to receiver once through the client program builds.
+ func postAsProgram(receiver, line string, tags creelengine.PostTags, program func() (notifyPoster, error)) error {
+ 	poster, err := program()
+@@ -156,7 +166,13 @@ func ParentOrchRecorded(pair *lymcwd.Location) (bool, error) {
+ // postNotice posts line carrying tags through creel to the orch strand orch answers.
+ // It signs the call as program scoped to slug from location, and an empty slug signs as the unscoped program.
+ func postNotice(location *lymcwd.Location, slug, program, line string, tags creelengine.PostTags, orch func() (string, bool, error)) (bool, error) {
+-	clients := notifyClients{
++	return notifyPrime(orch, line, tags, os.Getenv(agentname.StrandNameEnv), notifyClientsOf(location, slug, program))
++}
++
++// notifyClientsOf returns the creel clients of location's worktree a notice posts through.
++// The program client signs as program scoped to slug, and an empty slug signs as the unscoped program.
++func notifyClientsOf(location *lymcwd.Location, slug, program string) notifyClients {
++	return notifyClients{
+ 		strand: func(strandClaim string) (notifyPoster, error) {
+ 			return creelcli.NewStrandClient(location, strandClaim)
+ 		},
+@@ -164,7 +180,6 @@ func postNotice(location *lymcwd.Location, slug, program, line string, tags cree
+ 			return creelcli.NewScopedProgramClient(location, slug, program)
+ 		},
+ 	}
+-	return notifyPrime(orch, line, tags, os.Getenv(agentname.StrandNameEnv), clients)
+ }
+ 
+ // NearestLiveParent answers the orch a notice of pair goes to, as the orch's agent name and worktree.
+@@ -249,27 +264,30 @@ func notifyPrime(orch func() (string, bool, error), line string, tags creelengin
+ 		logger.Info("orch: notice not posted, no orch strand recorded", "line", line)
+ 		return false, nil
+ 	}
++	if err := postSigned(receiver, line, tags, strandClaim, clients); err != nil {
++		return false, err
++	}
++	return true, nil
++}
++
++// postSigned posts line carrying tags to receiver.
++// A strand claim naming a strand that is not an orch is tried first.
++// A claim creel refuses as coming from outside that strand's pane falls back to posting once as the program.
++func postSigned(receiver, line string, tags creelengine.PostTags, strandClaim string, clients notifyClients) error {
+ 	if claimsNonOrchStrand(strandClaim) {
+ 		poster, err := clients.strand(strandClaim)
+ 		if err != nil {
+-			return false, noticeError(line, err)
++			return noticeError(line, err)
+ 		}
+ 		_, err = poster.PostTagged(receiver, line, tags)
+ 		switch {
+ 		case err == nil:
+-			return true, nil
++			return nil
+ 		case !errors.Is(err, creelengine.ErrStrandClaimOutsidePane):
+-			return false, noticeError(line, err)
++			return noticeError(line, err)
+ 		}
+ 	}
+-	poster, err := clients.program()
+-	if err != nil {
+-		return false, noticeError(line, err)
+-	}
+-	if _, err := poster.PostTagged(receiver, line, tags); err != nil {
+-		return false, noticeError(line, err)
+-	}
+-	return true, nil
++	return postAsProgram(receiver, line, tags, clients.program)
+ }
+ 
+ // claimsNonOrchStrand reports whether strandClaim names a strand whose role is not an orch's.
+diff --git a/internal/orchcli/notify_test.go b/internal/orchcli/notify_test.go
+index cb20309e5..ef93e87b4 100644
+--- a/internal/orchcli/notify_test.go
++++ b/internal/orchcli/notify_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -91,6 +92,65 @@ func TestPostAsProgram_PostsOnceThroughTheProgramClient(t *testing.T) {
+ 	}
+ }
+ 
++// TestPostAsCaller_BuildsTheClientOfTheIdentityItSignsAs proves which client PostAsCaller builds.
++// A non-orch strand claim builds the strand client first and the program client for an empty claim.
++// Outside a hub neither client builds, so the error carries the line and the hub refusal.
++func TestPostAsCaller_BuildsTheClientOfTheIdentityItSignsAs(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const line = "[pr-review request] a-slug ask 1: review the pull request"
++	tests := []struct {
++		name        string
++		strandClaim string
++	}{
++		{"NonOrchStrandClaimBuildsTheStrandClient", "tst:a-slug:pr-reviewer"},
++		{"EmptyClaimBuildsTheProgramClient", ""},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			err := PostAsCaller(&lymcwd.Location{}, "tst:orch", "LOOM", tt.strandClaim, line, creelengine.PostTags{Run: "a-slug"})
++
++			if err == nil || !strings.Contains(err.Error(), line) || !strings.Contains(err.Error(), "not in one") {
++				t.Errorf("PostAsCaller() error = %v; want it to hold the line and the hub refusal", err)
++			}
++		})
++	}
++}
++
++// TestPostNotice_PostsOnlyWhenTheOrchIsRecorded proves postNotice posts nothing for an orch with no recorded strand.
++// With a recorded strand it builds its clients from the location, so outside a hub it returns the line with the cause.
++func TestPostNotice_PostsOnlyWhenTheOrchIsRecorded(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const line = "[batten notice] a-slug: blocked"
++	tests := []struct {
++		name     string
++		recorded bool
++		wantErr  bool
++	}{
++		{"NoOrchStrandRecordedPostsNothing", false, false},
++		{"RecordedOrchStrandOutsideAHubReturnsTheLineWithTheCause", true, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			posted, err := postNotice(&lymcwd.Location{}, "", "BATTEN", line, creelengine.PostTags{}, func() (string, bool, error) { return "tst:orch", tt.recorded, nil })
++
++			if posted {
++				t.Errorf("postNotice() posted = true; want false")
++			}
++			if tt.wantErr != (err != nil && strings.Contains(err.Error(), line)) {
++				t.Errorf("postNotice() error = %v; want an error holding the line = %v", err, tt.wantErr)
++			}
++		})
++	}
++}
++
+ func TestNotifyPrime_SignsAndPosts(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/shedadapters/parentseat.go b/internal/shedadapters/parentseat.go
+index 146e82c62..817da1deb 100644
+--- a/internal/shedadapters/parentseat.go
++++ b/internal/shedadapters/parentseat.go
+@@ -218,13 +218,13 @@ func (a *parentAsker) send(seed string, round int) int {
+ }
+ 
+ // post posts ask's line to the strand it records and sets the ask open.
+-// A failed post sets the ask no-parent with the error as its reason, and the round goes on without the parent.
++// A failed post sets the ask undelivered with the error as its reason, and the round goes on without the parent.
+ func (a *parentAsker) post(ask burlerengine.ParentAsk) {
+ 	seat := a.seat
+ 	if err := seat.Post(ask.Strand, ParentAskLine(seat.Tag, seat.Slug, a.subject(ask.Round), ask)); err != nil {
+ 		logger.Warn("shedadapters: the parent-review request was not delivered; the round goes on without the parent", "producer", a.name, "engine", a.engine, "round", ask.Round, "ask", ask.Number, "error", err)
+-		if _, _, endErr := burlerengine.EndParentAsk(seat.Files, ask.Number, burlerengine.ParentAskNoParent, fmt.Sprintf("the request was not delivered: %s", err)); endErr != nil {
+-			logger.Warn("shedadapters: the undelivered parent-review ask was not set no-parent", "producer", a.name, "engine", a.engine, "ask", ask.Number, "error", endErr)
++		if _, _, endErr := burlerengine.EndParentAsk(seat.Files, ask.Number, burlerengine.ParentAskUndelivered, fmt.Sprintf("the request was not delivered: %s", err)); endErr != nil {
++			logger.Warn("shedadapters: the undelivered parent-review ask was not set undelivered", "producer", a.name, "engine", a.engine, "ask", ask.Number, "error", endErr)
+ 		}
+ 		return
+ 	}
+diff --git a/internal/shedadapters/parentseat_test.go b/internal/shedadapters/parentseat_test.go
+index 9f00e8ade..1e276cf40 100644
+--- a/internal/shedadapters/parentseat_test.go
++++ b/internal/shedadapters/parentseat_test.go
+@@ -547,7 +547,7 @@ func TestBurlerReviewProducer_Call_ParentAskThatDoesNotGoOut(t *testing.T) {
+ 		},
+ 		{
+ 			name: "a post error", postErr: errors.New("boom"), wantResolve: 1, wantPosts: 1,
+-			wantState: burlerengine.ParentAskNoParent, wantReason: "the request was not delivered: boom", wantStrand: resolvedStrand,
++			wantState: "undelivered", wantReason: "the request was not delivered: boom", wantStrand: resolvedStrand,
+ 		},
+ 		{
+ 			name: "a wait the chair's timeout leaves no room for", skipReason: "the chair's timeout leaves no room",
