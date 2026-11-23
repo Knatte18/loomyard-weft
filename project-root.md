@@ -21,7 +21,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Code-Burler-Review | neve | 58m<br>57m | tools, lint |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 12h<br>45m | fabric |
 
-## Ready (6)
+## Ready (7)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -31,6 +31,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T13 | **Decision record written with a CLI error envelope as its Goal**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light |  | 58m<br>56m | loom, darn |
 | T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light |  | 58m<br>56m | landing, git |
 | T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs |  | 51m<br>51m | fabric, board, batten |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light |  | 0m<br>0m | preflight, fabric |
 
 ## Layer A (3)
 
@@ -40,11 +41,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T12 | **lym loom lint-comments --base checks committed HEAD, not the working tree**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`lint-comments-reads-head`](design-lint-comments-reads-head.md) | darn · light | T11 | 58m<br>56m | lint, loom |
 | T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light | T7 | 1h<br>45m | loom, landing, dobby, orch, reed, testkit |
 
-## Draft (1)
+## Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T18 | `draft` **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn |  | 0m<br>0m | preflight, fabric |
+| T19 | **Red-first gate holds every run in a hub whose test scoper is not go**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | darn · light | T10<br>T6 | 0m<br>0m | gate, loom, dotnet |
 
 ## Research (3)
 
@@ -54,7 +55,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-## Bugs (5)
+## Bugs (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -62,7 +63,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 7m<br>7m | loom |
 | B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 6m<br>6m | loom |
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 6m<br>6m | loom |
-| B6 |  | **Red-first gate holds every run in a hub whose test scoper is not go** | [`red-first-non-go-scoper`](design-red-first-non-go-scoper.md) | 0m<br>0m | gate, loom, dotnet |
 
 ## Features (1)
 
