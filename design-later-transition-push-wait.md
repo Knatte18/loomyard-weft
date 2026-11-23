@@ -1,6 +1,6 @@
 # Later run transitions still wait for a records push to origin
 
-`later-transition-push-wait` · Task · sketch, batten, fabric · starting · Worktree-Create
+`later-transition-push-wait` · Task · sketch, batten, fabric · starting · Seed-Child
 
 Decision record: [Sketch](decision-later-transition-push-wait.md)
 
