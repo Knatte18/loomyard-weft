@@ -384,9 +384,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ade78cd057a81a074.jsonl"
       ]
+    },
+    "7": {
+      "slug": "transitions-start-pusher",
+      "cards": [
+        "07-transitions-start-pusher"
+      ],
+      "cardHashes": {
+        "07-transitions-start-pusher": "9a999d9d60735fac1dde053f021660cbd0d8584f9b4fc7a68e7abf09d8f0ad09"
+      },
+      "startSha": "17341f7c24ba2e31c3d40911402802d400fef52c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-23T19:35:44Z",
+      "sessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "65459e66c4bb1484f09377e2bcbac09a",
   "masterSessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
   "masterEngine": "claude",
