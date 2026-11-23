@@ -398,16 +398,35 @@
       "spawnedAt": "2026-11-23T19:35:44Z",
       "sessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-transitions-start-pusher",
+        "status": "done",
+        "head_sha": "1a9cdd29e31bbaefeac56d47e3f46f3cfc9327aa",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/adoptcli/adopt_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "1a9cdd29e31bbaefeac56d47e3f46f3cfc9327aa"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ab90cdec4502bf6d8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ab90cdec4502bf6d8.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "65459e66c4bb1484f09377e2bcbac09a",
   "masterSessionId": "ad3ecde8-b015-403a-8104-770f585a0866",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/6fa86a76-ebda-487d-9c48-7537f995f3b2/subagents/agent-ade2412b84e91d188.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ade78cd057a81a074.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ade78cd057a81a074.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-async-run-pusher/ad3ecde8-b015-403a-8104-770f585a0866/subagents/agent-ab90cdec4502bf6d8.jsonl"
   ]
 }
