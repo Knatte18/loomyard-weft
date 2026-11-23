@@ -32,7 +32,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 28m<br>28m | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (24)
+## [P0 Root: entries under no project](project-root.md) (25)
 
 Owner `neve`
 
@@ -78,7 +78,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Bugs (5)
+### Bugs (6)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -87,6 +87,7 @@ Owner `neve`
 | B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 1h<br>1h | loom |
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 1h<br>1h | loom |
 | B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 7m<br>7m | git, batten, landing |
+| B7 |  | **Agent sits idle after its skill-load turn; its prompt is never typed** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | 0m<br>0m | shuttle |
 
 ### Enhancements (1)
 

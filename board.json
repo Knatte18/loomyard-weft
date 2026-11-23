@@ -691,6 +691,24 @@
       "body": "Imported from [issue #193](https://github.com/Knatte18/loomyard/issues/193).\n\n## Seen\n\nAround 10:08 and again at 10:33 on 2026-11-23, GitHub was unreachable from this host for a short time.\n`git fetch` failed with `HTTP/2 stream 1 was closed cleanly, but before getting all response header fields`, and `git ls-remote` failed with HTTP/2 stream resets and HTTP/1.1 connection resets.\n\nThree batten runs in one hub stopped on it within a minute of each other and escalated to the parent orch as questions:\n\n- `friction-profile-rules` failed at Run-Shed: `battencli: origin reconcile ... git fetch origin +refs/heads/\u003cparent\u003e:refs/remotes/origin/\u003cparent\u003e: exit 128`.\n- `models-wemod-robustness-sanity` blocked at Finalize with a landing stop: the PR had been merged on GitHub, but the parent's upstream could not be fetched.\n- `models-torque-drag-adapter` stopped at the start of its run on `git ls-remote origin`.\n\nEach stop's tackler or arbiter handed the question back (\"should the run be re-launched once GitHub answers?\"), two of them saying no parent was recorded for the run.\nA minute later `git ls-remote origin` answered at once.\n\n## Workaround\n\nThe orch checked `git ls-remote origin`, then ran `lym batten run \u003cslug\u003e` for the two batten stops and `lym loom resume` in the task worktree for the Finalize stop.\nAll three went on without any other change.\n\n## Expected\n\nA transient network failure on a git fetch, push or ls-remote is retried by lym with backoff, for a bounded time, before the run stops.\nOnly a failure that outlasts the retries reaches the parent, and then as a notice naming the failing remote operation, not as a question.\n",
       "created": "2026-11-23T10:04:39Z",
       "revised": "2026-11-23T10:04:39Z"
+    },
+    {
+      "id": 1606,
+      "handle": "B7",
+      "slug": "prompt-not-typed-after-skills",
+      "title": "Agent sits idle after its skill-load turn; its prompt is never typed",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n2026-11-23: `ly:godocreflow-worsens-findings:code-burler-fix` sat idle for 30 minutes at Code-Burler-Fix.\nDobby sent its idle notice; asked by the orch, the agent answered that it had been idle after loading its skills and only then started reading its prompt file.\nSo the task prompt was never typed after the skill-load turn, and only the orch's creel message woke it.\nThe same morning the API answered 529 Overloaded to other agents, and LOOM reported another agent held at its skill-load turn by API errors; the two may share a cause.\n\n## Expected\n\nOnce the skill-load turn ends, the agent's prompt is typed, or a failure to type it is retried and noticed, so no agent waits for a parent's message to start.\n",
+      "created": "2026-11-23T10:12:24Z",
+      "revised": "2026-11-23T10:12:24Z"
     }
   ],
   "prime_owner": "neve",
