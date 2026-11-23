@@ -30,7 +30,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 18m<br>18m | fabric |
+| B5 |  | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | 19m<br>19m | fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (23)
 
@@ -46,7 +46,7 @@ Owner `neve`
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | tools, lint |
 | T13 | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light | Drift-Verify | neve | 1h<br>1h | loom, darn |
 | T14 | **Landing blames the token when the branch-rules read returns a plan-limit 403** | [`rules-read-plan-gated-403`](design-rules-read-plan-gated-403.md) | darn · light | Darn-Write | neve | 1h<br>1h | landing, git |
-| T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs | Preflight | neve | 1h<br>1h | fabric, board, batten |
+| T15 | **Find who pushes weft main outside the board push lock**<br>• Board pushes of loomyard-weft refs/heads/main fail with cannot lock ref four times in a row while several runs start | [`weft-main-push-race`](design-weft-main-push-race.md) | darn · docs | Record-Write | neve | 1h<br>1h | fabric, board, batten |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 13h<br>1h | fabric |
 
 ### Ready (4)
