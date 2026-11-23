@@ -1,50 +1,37 @@
-# Show a failed Slack toggle click on the bar and in the trace log
+# Show a failed Slack toggle click on reed's status bar
 
-A click on reed's `slack` or `away` toggle runs `lym slack toggle` through the pinned line in `@lym_slack_toggle_command`, which sends the verb's stdout and stderr to `/dev/null`.
-Two failure paths left no trace:
+A click on reed's `slack` toggle could fail before the toggle ran and leave no sign.
+The click line sends the verb's output to `/dev/null`, and `lym slack toggle` set its bar seam (`showToggle`) only in `wireProduction`.
+A pre-run refusal, such as a failed worktree resolve or failed wiring, aborted the verb before the seam existed, so nothing redrew the bar and nothing was logged.
+The same command run by hand worked, which is why the failure looked silent.
 
-- A refusal in the slack group's pre-run aborted the verb before its body ran, so the clicked bar was never redrawn and no message showed. A working directory that resolves to no worktree, or a failed hub wiring, are refusals of this kind.
-- A refusal inside the toggle itself was shown with `display-message` for tmux's `display-time`, which is 750 ms on the reed server, and was logged nowhere.
-
-Either way a failed click looked like a click that did nothing, which is what issue #212 reports.
+Closes #212
 
 ## What changes
 
-- **The pre-run refusal reaches the bar.**
-  `preRun` in `internal/slackcli/cli.go` calls the toggle's new `reportToggle` when the aborting verb is `toggle`, so the refusal shows on the clicked bar like the toggle's own refusals.
-  `showToggle` is set in `productionCLI` instead of `wireProduction`, since it needs no hub and has to work when wiring failed.
-- **Every failed toggle is logged.**
-  `reportToggle` logs the refusal at Warn, which arms the durable sink and writes a trace file in the worktree's logs.
-- **The message stays up long enough to read.**
-  `reedengine.ShowToggleOutcome` shows a non-empty message with `display-message -d 10000`, held for ten seconds.
-- The toggle's flag names are constants, read through `cmd.Flags()` so the pre-run and the verb body share them.
-- The `slackcli` package doc, the verb's long help and `docs/overview.md` say that a failed click shows on the bar and in the trace log.
+- `productionCLI` sets `showToggle` to `reedengine.ShowToggleOutcome` up front, so a toggle whose wiring failed still reaches the bar.
+- `preRun` reports a failed `toggle` refusal on the clicked bar before it aborts.
+- The toggle's own failure and a pre-run refusal share one helper, `reportToggle`.
+  It reads the `--socket`, `--tmux` and `--client` flags from the command, redraws the bar with `lym: <error>` first, and logs the error at Warn.
+- `ShowToggleOutcome` shows its message for ten seconds (`display-message -d 10000`).
+  tmux's default display time is under a second, too short to read a refusal.
+- `docs/overview.md`, the `slackcli` package doc and the verb's help text describe the new behaviour.
 
 ## Design decisions
 
-- The operator's click could not be replayed without switching their Slack on, so the exact refusal that click met is not known.
-  Each other part of the click was checked against the live reed server and ruled out:
-  - the pinned line, the `MouseDown1Status` binding and the session's `@lym_button_dir` match the code;
-  - on a private tmux 3.6 server driven through a pty, the same binding shape runs the toggle line with the right arguments and run directory;
-  - the server's global environment holds no `lym` variable;
-  - a process outside every pane passes the slack pane check.
-  The fix makes every failure path visible, so the next failed click names its cause.
-- Ten seconds rather than `-d 0`: a zero delay holds the message until a key press and would cover the first status line in a session the operator is not typing in.
-- The Warn line is for a person reading the trace, so no test pins it.
+- The trace log exists only in a lym worktree.
+  A click from a directory that is no worktree is therefore shown on the bar alone, and the docs say so.
+- The ten-second display time lives in `ShowToggleOutcome`, so every caller gets it, not only the Slack toggle.
+  `internal/orchcli/remotecontrol.go` calls it for the remote-control button, whose messages now stay ten seconds too.
+- The three flags are named by constants, and `reportToggle` reads them back from the command rather than through captured variables, because `preRun` runs before `RunE` and has no access to those variables.
 
-## Tests
+## Check by hand
 
-- `TestToggle/ARefusalBeforeTheToggleStartsIsShownOnTheBar` runs `toggle slack` under the real pre-run with a directory that is no worktree.
-  It asserts the refusal envelope, that no seam ran, and one redraw carrying `lym: ` and the refusal.
-  On the merge base no redraw happens.
-- `TestShowToggleOutcome` now expects `-d 10000` on the `display-message` call.
-
-## To check
-
-- Not run by hand: a real click on the prime session's `slack` toggle after this lands.
-  If it still fails, the bar shows the refusal for ten seconds and the prime's trace log holds a `slack: a click on a Slack toggle failed` line.
+- A real tmux click on the `slack` toggle was not run.
+  Click it from a session whose directory is no worktree and confirm the refusal shows on the bar for about ten seconds.
+- Click the remote-control button and confirm its message stays for the longer display time and reads as intended.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** slackcli
+**Blast radius:** reed
