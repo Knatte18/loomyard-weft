@@ -1,6 +1,6 @@
 # RC button shows green while Remote Control is disabled by organization policy
 
-`rc-button-ignores-org-policy` · Task · bug, reed, claude · running · Drift-Expect
+`rc-button-ignores-org-policy` · Task · bug, reed, claude · running · Darn-Write
 
 Imported from [issue #189](https://github.com/Knatte18/loomyard/issues/189).
 
