@@ -7,5 +7,6 @@
       "title": "A one-entry reviewer list passes preflight",
       "digest": "976cf9526a5e847ba3e32fac961931e00c71775635a7f902011c79c7dbb4d792"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
