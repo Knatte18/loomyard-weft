@@ -6,7 +6,7 @@
      failure_digest and uncommitted_paths render as `none` on a first attempt and a clean tree.
      parent_directive, pattern_directive and friction_directive are optional and render as nothing when inactive.
      There are no {{if}} or {{range}} conditionals in this file.
-lym-stencil: sha256=d3858fbc018e25e9bfae44e64ce88b7f52ef06f581de3f8a68a3a698be2e1687 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=fe1f21f69884b5583bb0217a0a4c378ab243b243b7cc06c37a16358d1ce5cb22 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 # Weaver batch implementer — starting COLD, inheriting nothing
 
@@ -91,6 +91,12 @@ Run it once after the last card's commit, as a foreground Bash call, and fix wha
 A call that ends with `--main-packages` also runs the module's main packages, which the plan-level verify runs next.
 A failure in them is yours to fix even when an earlier batch caused it.
 A gate call that exits with code `75` and answers `done: false` is not a failure: run the same command again.
+
+## External tools and processes
+
+Learn how an external tool such as tmux behaves from a test in the repository, in the tier the hub runs that tool's tests in, never from processes you start in the shell.
+Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
+Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 
 ## Never touch Weaver's own records
 

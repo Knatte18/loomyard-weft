@@ -3,7 +3,7 @@
      internal/darnengine's DarnTable reads it for the writer's engine,
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=0cb7d8c20ca73a29711d9047d128cb807ff58bf1971b1464fa7f91697170a9a9 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=b1da8b58495c5e02cdd2f7de717fa67554a167f02657b2ad665fd757499c0209 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
@@ -15,6 +15,11 @@ lym-stencil: sha256=0cb7d8c20ca73a29711d9047d128cb807ff58bf1971b1464fa7f91697170
    A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.
    When your change needs those tests and the hub's `refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
    When `refuse_raw` lists it, report the skipped tests to your parent, or with no parent name them in the change description.
+   Learn how an external tool such as tmux behaves from a test you write in the repository, in the tier the hub runs that tool's tests in,
+   and run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it;
+   then check that the gate's report shows the test ran, not skipped.
+   Never learn it from processes you start in the shell, and never start a background or detached process from it:
+   such a process outlives your command and runs outside every memory cap lym sets.
 4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.

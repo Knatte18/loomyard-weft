@@ -1,11 +1,12 @@
-<!-- This is the landing conflict-resolution session's entire instruction set. It is shipped as an
-     embedded default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lym/stencils/landing/, and read from there at call time by mergeresolve's own spec
-     builder via internal/stencil, then handed to shuttle as the resolving agent's whole prompt.
-     Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every marker
-     non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and
-     there are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=2d9027fb4fd686c2ae24f1f5fc65834f2f40534fd95a7dc202a561a911461e7e build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- This is the landing conflict-resolution session's entire instruction set.
+     It is shipped as an embedded default in the top-level stencils package (stencils/stencils.go),
+     seeded to the Bolt checkout's `_lym/stencils/landing/`.
+     mergeresolve's spec builder reads it from there at call time and fills it through internal/stencil.
+     It hands the result to shuttle as the resolving agent's whole prompt.
+     Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
+     internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
+     There are no {{if}}/{{range}} conditionals in this file.
+lym-stencil: sha256=e68a9b0b4da8323896421ebebad343c71b0b622008ad0220c214b13df6d194ca build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 # Conflict resolution — resolve each listed path in place
 
@@ -42,6 +43,8 @@ Never run `git` in any form — resolving a path means editing its file content,
 
 Edit a file outside the listed paths only when the merged tree would otherwise stop building or its tests would fail, and only to keep it building and passing.
 Create no new file: a file you add is never part of the merge, and it halts the merge as stuck.
+
+Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 
 ## The report — your terminal act
 

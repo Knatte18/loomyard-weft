@@ -1,8 +1,9 @@
-<!-- This is the verify-gate fixer fork prefix, joined ahead of webster-body-verify-fix.md by RenderVerifyFixPrompt (render.go), filled via internal/stencil and written to a prompt file under the webster prompts directory at run entry;
-     Merriam's Agent-tool fork call is the same "Read this file and do exactly and only what it says: <this file's own path>" idiom used for a batch's own fork prompt.
-     {{.friction_directive}} is its one marker, optional (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
-     There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=811510a5018838953a6ac243ebe9c755053810e4fe22d42d6d106622e1ca6ab9 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+<!-- This is the verify-gate fixer fork prefix.
+     RenderVerifyFixPrompt (render.go) joins it ahead of webster-body-verify-fix.md, fills it via internal/stencil, and writes it to a prompt file under the webster prompts directory at run entry.
+     Merriam's Agent-tool fork call tells the fork to read that file and do exactly and only what it says, as a batch's own fork prompt does.
+     Its one marker is {{.friction_directive}}, optional (filled via stencil.FillOptional), which renders as nothing when Tier 2 is off.
+     It holds no {{if}} or {{range}} conditional.
+lym-stencil: sha256=1122a07718fb8da73e2a7fd6624c3d9dc350a51154f76f047460a99468acc676 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -18,6 +19,12 @@ You inherit Merriam's own loop instructions.
 Those are MERRIAM's actions, NOT yours.
 **NEVER run any `lym webster` command**, never poll for a report and never write one: you write no report file.
 You inherit Merriam's instruction to write its two contract files as a final action; that instruction is Merriam's, and the rules below forbid it to you.
+
+## External tools and processes
+
+Learn how an external tool such as tmux behaves from a test in the repository, in the tier the hub runs that tool's tests in, never from processes you start in the shell.
+Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
+Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 
 ## Your final action
 

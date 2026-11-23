@@ -6,7 +6,7 @@
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      fills the {{.measure_call}} marker with the measuring call the hub's gate config can run,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=9f4d3b2969d15e5bef7ca779543a0cc377146fc245ca5f8156ae5616a2913d83 build=fded58794f7b02939b6bf8675b87c64fb3fa987d time=2026-11-21T14:37:48Z -->
+lym-stencil: sha256=113d9900e945b43540e4326562764cb37d0d3b1dff9c0c29467371b735e2b96a build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
    send `lym creel post --parent --expect-reply "<text>"`, then end your turn to wait.
@@ -23,10 +23,16 @@ lym-stencil: sha256=9f4d3b2969d15e5bef7ca779543a0cc377146fc245ca5f8156ae5616a291
    A fresh subagent sees none of this session, so each prompt names the files the subagent owns and the edits to make, and tells the subagent to run no `lym gate test`.
    Keep in this session the work that needs the overview: the design, a change that spans packages, the commits and the change description.
 3. Run no `lym gate test` yourself.
-   The one exception is a value the change needs that only a test run shows, such as a golden test's output:
-   run that one test class once through `{{.measure_call}}`,
+   There are two exceptions.
+   One is a value the change needs that only a test run shows, such as a golden test's output.
+   The other is a fact the change needs about how an external tool such as tmux behaves:
+   learn it from a test you write in the repository, in the tier the hub runs that tool's tests in.
+   For either, run that one test class once through `{{.measure_call}}`,
    with the args by which the tier's runner selects one class.
+   The call names one package or project and selects one class, so it never starts a whole tier.
    The args reach every tier the call runs, so they must suit each of them.
+   Never learn how a tool behaves from processes you start in the shell, and never start a background or detached process from it:
+   such a process outlives your command and runs outside every memory cap lym sets.
    Never run a raw test command for it: a raw run can exit 0 with no output when no test ran, and only the gate's report says so.
    When that report says a project ran no test, the property that makes it run is the one its project file's `IsTestProject` condition names.
    When the tier's command holds `{args}`, run the same gate call once more with `-p:<property>=true` among the args after `--`,

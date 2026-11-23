@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=03b0cbee328f0cbc21de04355f1484e71eace8a8afa333141485e14f56a12203 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+<!-- lym-stencil: sha256=79eb7dfa580c3538f76cfbcf05ee54af063a59a7038350dc98856bb99b8f7cc1 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -94,6 +94,12 @@ A card that departs from its own text because a PATTERN entry forbids the card's
 {{template "loom-fragment-loosened-check"}}
 
 If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
+
+## External tools and processes
+
+Learn how an external tool such as tmux behaves from a test in the repository, in the tier the hub runs that tool's tests in, never from processes you start in the shell.
+Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
+Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 
 ## The sandbox rule
 

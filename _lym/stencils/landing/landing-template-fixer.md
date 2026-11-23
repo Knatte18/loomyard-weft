@@ -9,7 +9,7 @@
      plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=0b32a023df193574d0b6f787bff074129065f0f8a6e757bae5c0f6a24b21d191 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=529ee9a72b834eb10f3603dd890141ed0b034bf362b25e3cd9d9ae59fcf00178 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -48,6 +48,12 @@ When the landing failure record holds `build: true`, the gate failed in its buil
 - Leave the working tree clean when you end your turn.
 
 {{template "loom-fragment-loosened-check"}}
+
+## External tools and processes
+
+Learn how an external tool such as tmux behaves from a test in the repository, in the tier the hub runs that tool's tests in, never from processes you start in the shell.
+Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
+Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 
 ## The report — your terminal act
 

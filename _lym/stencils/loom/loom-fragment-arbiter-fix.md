@@ -1,7 +1,7 @@
 <!-- This is the arbiter's edit rules for a run whose driver lets it fix the stop itself.
      internal/shedarbiter's Prompt fills {{.worktree}} and {{.run_id}},
      then fills the result whole into loom-template-arbiter's edit_scope marker.
-lym-stencil: sha256=6e985b66c1e75a3e4115f3f076c91cb0ae945cb1ce35a8360af0db63201cd5b1 build=ab5d49e0633194a639aa9a3a5c2e407aa51911d6 time=2026-11-15T19:11:41Z -->
+lym-stencil: sha256=ad6ab3a646055749278ffc5bd6adc8091dac0d65b986693336a96361042af189 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
 
 ## Your one fix
 
@@ -14,6 +14,7 @@ You may settle the stop with one fix of your own, made and committed in `{{.work
   Leave no uncommitted change behind, a new file included.
 - The only git commands you run that change anything are `git add` and `git commit`, on the branch you found.
   Never run another git command that changes the repository, its index, its refs or its worktree.
+- Start no background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 - A `resume` after a commit names a `goto` at or before the first row whose gate checks the change, so the run's own gates check your fix before the run goes on.
   A resume after a commit with no `goto` is handed on.
 - A fix that needs more than one focused change, a choice the board entry leaves open, or a change of the task's scope is not yours to make: hand on.
