@@ -1,60 +1,51 @@
-# Resume an interrupted run agent's session instead of starting it fresh
+# Resume an interrupted run agent's session instead of starting fresh
 
-A row's agent session that ended before its work did, by a crash, a reboot or a killed pane, now comes back as the same session when the row is re-called.
-Before this change every role but PR-Review, the sampler, the orch and an account switch started a fresh agent.
-That agent kept the files on disk but lost everything the old session had learned.
+A run agent whose session ended before its work did, through a crash, a reboot or a killed pane, now resumes its recorded session when its row is called again.
+Before, the re-call spawned a fresh agent: the files it wrote stayed in the worktree, but everything the session had learned was lost.
+Only PR-Review, the sampler, the orch and account-switch relaunches resumed a session.
 
 ## What changes
 
-The resume sits in `shuttleengine`'s `Runner.start`, the one path every awaited launch takes,
-so every role whose spec names a role or a name override gets it with no change of its own.
-`start` already looked up the role's newest earlier run to carry operator instructions over.
-It now also resumes that run's session (`crashresume.go`) when:
+`shuttleengine` resumes the newest earlier run of the same role when all of these hold:
 
-- the earlier run declares the same output files as the new spec, so a new review round or a new weaver attempt, whose files differ, starts fresh;
-- its session ended before its work did: the run died, reads `running` with its waiter gone, or carries a stop recorded as interrupted;
-- it records a session and is not set aside;
-- the engine has the `SessionResumer` capability and its resume check accepts the session.
+- the new start declares the same output files as that run, names no session of its own and is awaited;
+- the run's session ended unfinished: it died, lym stopped it as interrupted, or it reads running with its waiter gone and no relaunch holding it;
+- the engine implements `SessionResumer` and its resume check accepts the session.
 
-A refused check, such as a session with no transcript on this machine or one a live process still holds, is logged and the start runs a fresh session with the carry-over as before.
-The resumed launch takes no skill-load turn.
-Its prompt is the task as rendered now, opened by a preamble that tells the agent it was resumed after an interruption and to continue from where it stopped.
-Operator instructions are not appended to a resumed prompt, since the session already holds them; they are still recorded in the new run's record.
+The resumed prompt opens with a preamble that tells the agent to re-read its task, check the disk and continue.
+It takes no skill-load turn, and it carries no carried-over instructions, since the session already holds them.
 
-Two `RunState` fields carry the distinction between an interruption and a deliberate end:
+A fresh agent still starts for a deliberate restart, and in these cases:
 
-- `Interrupted` marks a `stopped` record whose stop was lym's cleanup rather than a decision.
-  `StopStepRuns` and `StopOrphanedStepRuns`, which the loop calls for a watchdog-killed step, a step whose process vanished and the orphaned steps it finds at start, now record every stop they make this way.
-  So does an attach that removes the dead strand of a run still reading `running` before a fresh start.
-  `StopStrand`, `Run.Stop` and every other stop stay deliberate, and their records are never resumed.
-- `NoResume` sets a run aside.
-  A start of the same output files sets it on the earlier run once it is up, resumed or fresh, so a later visit of the row never resumes a stale session.
-  A resumed start whose provider never came up sets it on both runs, so the next start runs fresh instead of retrying the resume.
-  `Runner.RetireInterruptedRuns` sets it on every run a later start would resume.
+- a goto sets aside every interrupted run of the worktree (`loomcli/gotoresume.go`);
+- a re-call after an escalation's answer, a new review round, and any run stopped on purpose, finished, timed out or ended on API errors;
+- a session with no transcript on this machine, or one a live process holds: the resume check refuses and the start runs fresh.
 
-`loomcli` calls `RetireInterruptedRuns` from the goto's `Admitted` hook, on `lym loom goto` and on the arbiter's relaunch, before the PR-Review reset.
-A goto therefore restarts its rows with fresh sessions.
-A failed set-aside is logged and does not fail the goto, whose move is already written.
+`RunState` gains two optional fields:
+
+- `Interrupted`, set when lym stops a run whose session had ended, through the step stop and the removal of a superseded strand;
+- `NoResume`, set on a predecessor once a later start has taken its place, and on every interrupted run a goto sets aside.
+
+`orch-role.md` now says that a re-call after a resumed halt whose agent ended early resumes its session.
 
 ## Design decisions
 
-- **One seam, not one per role.** The resume decision lives in shuttle's start, keyed by the role key and the output-file set the record already carries, so no producer learns about it.
-  The callers that pass `ResumeSessionID` themselves, and unawaited sessions, are left as they were.
-- **What counts as deliberate.** A goto, a run stopped through the stop verb, a timeout and an API-error end start fresh.
-  A new review round and a re-call after an escalation's answer start fresh through the output-file check, since a round or attempt names its own files and an escalated row's run ended done.
-  A watchdog kill counts as an interruption, so the killed step's agent is resumed with its context.
-- **Codex starts fresh.** The board entry assumes the Codex engine takes a resume ID, but `codexengine.validateSpec` refuses one and Codex has no `SessionResumer`.
-  A Codex run's re-call therefore keeps today's fresh start; giving Codex a resume path is provider work outside this change.
+- Codex sessions keep starting fresh.
+  The crash resume covers engines with a `SessionResumer`; no Codex resume path is built, because Codex is disabled in this hub and its subscription ends.
+- A start whose resumed session never comes up sets both runs aside and retries as a fresh start, so a failed resume is not tried twice.
+- A failed set-aside write is logged and never fails the start or the goto; the cost is that a later start may resume a session it should not.
+- `carriedInstructions` now takes the predecessor `newestPredecessor` found, so one directory scan serves both the carry-over and the resume.
 
-## Tests
+## To check by hand
 
-- `TestStart_ResumesAnInterruptedRunsSession` pins which earlier runs a start resumes and which it starts fresh over.
-  It also pins the resumed launch's session, prompt and skipped load turn, and that the earlier run is set aside only when the output files match.
-- `TestRunner_RetireInterruptedRuns_SetsAsideOnlyResumableRuns` pins the set-aside a deliberate restart makes.
-- The step-stop tests now assert that every stop they record is marked interrupted.
-- `TestGotoAdmitted_SetsAsideInterruptedRuns` pins that an admitted goto sets the runs aside once, and that a failed set-aside leaves the goto standing.
+- Code review left these open; check each:
+  - Codex runs are excluded from the crash resume, in the `SessionResumer` check in `resumeInterrupted` (`internal/shuttleengine/crashresume.go`); this is the intended outcome of the decision above.
+  - `removeSupersededStrands` in `internal/shuttleengine/attach.go` records a superseded running strand's stop as interrupted; check its test covers that path.
+  - The start retry loop in `internal/shuttleengine/run.go` reuses the resume on a retried start; check a resumed start that fails to come up retries fresh.
+- Kill a pane mid-row and re-call the row: the agent should resume its session and continue from the disk state.
+- Run a goto after a crash: the rows it moves onto should start fresh sessions.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** shuttle
+**Blast radius:** shuttleengine
