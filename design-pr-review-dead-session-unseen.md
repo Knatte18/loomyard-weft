@@ -1,6 +1,6 @@
 # PR-Review row does not notice its session ended
 
-`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · running · Record-Write
+`pr-review-dead-session-unseen` · Task · bug, landing, shuttle · running · Drift-Baseline
 
 Depends on: [`parent-review-stale-window`](design-parent-review-stale-window.md)
 
