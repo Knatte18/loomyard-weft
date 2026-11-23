@@ -1,11 +1,11 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -186,6 +186,13 @@
       "started_at": "2026-11-23T10:16:52Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested-by-area/_lym/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-11-23T10:18:29Z",
+      "started_at": "2026-11-23T10:18:09Z"
     }
   ],
   "product": {
