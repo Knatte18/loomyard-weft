@@ -11,7 +11,9 @@ The memsample journal line at 20:20:05 shows `script(2)=6185M`, with the user sl
 - pid 424182, age 3 s, rss 3583M: `script -qfc tmux -S /home/knatte/Code/loomyard-LYMHUB/rc-click-wrong-client-session/.scratch/tm/sock attach -t beta /dev/null`
 - pid 424180, age 3 s, rss 2679M: the same command for session `alpha`
 
-The Darn-Write agent of `rc-click-wrong-client-session` built its own tmux server under its worktree's `.scratch/tm` to reproduce the multi-client RC bug, and attached two clients through `script`.
+The Darn-Write agent of `rc-click-wrong-client-session` built its own tmux server under its worktree's `.scratch/tm` to reproduce the multi-client RC bug, and ran `(script -qfc "tmux -S $S attach -t alpha" /dev/null </dev/zero >/dev/null 2>&1 &)`, the same for `beta`.
+With stdin on `/dev/zero`, `script` reads zero bytes without end and queues them in memory for a tmux client that cannot take them, about 1 GB a second each.
+The subshell detached both, so they outlived the agent's Bash call.
 Both had systemd's user manager as parent, so they ran outside the 2 GiB memory scope lym puts each test binary in.
 The earlier OOM kills at 20:13 and 20:14 (`pkg.test`, `proc.test`, `testcover.test`) were contained by those scopes and did not freeze the machine.
 
