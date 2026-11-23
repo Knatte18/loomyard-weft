@@ -68,6 +68,26 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Code-Burler-Review",
+      "at": "2026-11-23T11:45:38Z",
+      "started_at": "2026-11-23T11:45:38Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Code-Burler-Review",
+      "at": "2026-11-23T11:46:17Z",
+      "started_at": "2026-11-23T11:46:17Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }
