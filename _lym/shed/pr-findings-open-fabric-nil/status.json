@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,118 @@
       "output": "",
       "at": "2026-11-23T08:24:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/pr-findings-open-fabric-nil/_lym/landing/summary.md",
+      "at": "2026-11-23T08:38:29Z",
+      "started_at": "2026-11-23T08:24:57Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T08:30:26.242116738Z",
+          "end": "2026-11-23T08:30:26.279945722Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:12.301968367Z",
+          "end": "2026-11-23T08:34:12.381916891Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:53.071852067Z",
+          "end": "2026-11-23T08:34:53.088016094Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T08:36:33.17730368Z",
+          "end": "2026-11-23T08:36:33.292106953Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T08:30:26.626146927Z",
+          "end": "2026-11-23T08:33:31.343328237Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:12.637416702Z",
+          "end": "2026-11-23T08:34:14.089052043Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:53.179985024Z",
+          "end": "2026-11-23T08:34:53.618309516Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T08:36:33.635301677Z",
+          "end": "2026-11-23T08:36:34.333630604Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T08:33:31.536961342Z",
+          "end": "2026-11-23T08:33:58.71737783Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-23T08:33:59.618115952Z",
+          "end": "2026-11-23T08:34:11.993751798Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:14.632595189Z",
+          "end": "2026-11-23T08:34:46.546205237Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-23T08:34:46.990735164Z",
+          "end": "2026-11-23T08:34:52.99789969Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T08:34:53.684697793Z",
+          "end": "2026-11-23T08:36:17.837573611Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "rework",
+          "start": "2026-11-23T08:36:18.426717953Z",
+          "end": "2026-11-23T08:36:19.484901319Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-23T08:36:34.476811786Z",
+          "end": "2026-11-23T08:36:34.481447183Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-23T08:36:34.645023691Z",
+          "end": "2026-11-23T08:36:35.328612587Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T08:36:35.503003729Z",
+          "end": "2026-11-23T08:36:35.504591581Z"
+        }
+      ]
     }
   ],
   "product": {
