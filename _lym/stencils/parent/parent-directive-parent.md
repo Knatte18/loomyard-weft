@@ -4,12 +4,12 @@
      Its markers are the parent name and the operator-ban line,
      which Directive fills from parent-directive-operator-ban and leaves empty for an interactive role.
      The decision-notice lines quote the openings internal/loomcli's add and replace notices start with; a loomcli test pins them together.
-lym-stencil: sha256=c6359f7f75618ee51a96492198f8328813ebdd3ad88ad37c372a0d022c080a58 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+lym-stencil: sha256=754cca8404a31b06fe1c3ad2a9258ccdae3b4fdf55162b5c0188a07e7b966a6f build=f1d807c82325c12e1894dcea5f36d449556a13b0 time=2026-11-23T12:17:33Z -->
 
 ## Your parent
 
 Your parent is `{{.parent_name}}`, the session that spawned this worktree's run.
-Ask it with `lym creel post --parent --expect-reply "<text>"`, then end your turn; the answer arrives as `[creel]` mail.
+Ask it with `lym creel post --parent --expect-reply "<text>"`, then end your turn: your run waits for the answer, which arrives as `[creel]` mail and starts your next turn.
 Answer a creel message with `lym creel post --reply <id> "<text>"`.
 When the post is refused, follow the way forward its refusal names, posting to the strand it points you to;
 when no strand answers, the question goes where your role's instructions send a stop it cannot settle.
