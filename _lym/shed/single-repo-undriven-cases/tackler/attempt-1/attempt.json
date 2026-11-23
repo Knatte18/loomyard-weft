@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Open-IDE",
+    "history_length": 4,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-23T14:47:17.046534609+01:00",
+  "deadline": "2026-11-23T14:57:17.046534609+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/single-repo-undriven-cases/drive-reports/drive-envelope-20261123-144717-2eeb.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/single-repo-undriven-cases/drive-reports/drive-report-20261123-144717-7d5b.md",
+  "strand_guid": "95ec27ce16e5d21694205638a2c7a632"
+}
