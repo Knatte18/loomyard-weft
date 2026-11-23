@@ -1,0 +1,394 @@
+diff --git a/cmd/lym/checkedcall_test.go b/cmd/lym/checkedcall_test.go
+index 14863094f..0706e116e 100644
+--- a/cmd/lym/checkedcall_test.go
++++ b/cmd/lym/checkedcall_test.go
+@@ -38,6 +38,7 @@ var checkedCallPinnedRawSites = map[string]int{
+ 	"internal/lymcwd":        0,
+ 	"internal/fabriccli":     0,
+ 	"internal/websterengine": 0,
++	"internal/commentlint":   1, // changedGoFiles' cat-file probe of an untracked path at the base
+ 
+ 	"internal/gitrepo/internal/gitoracle": 6, // CurrentSHA, SHAExists, ChangedFilesSince, CurrentBranch, HeadRef, verifyQuiet
+ }
+diff --git a/docs/overview.md b/docs/overview.md
+index 99b7afcb0..b8af1ccf2 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1303,8 +1303,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `validate-description` runs the same checks the `Describe` row's `description` gate runs, standalone.
+   It checks `_lym/landing/summary.md`, with the same exit-code and findings-envelope contract.
+   `lint-comments [--base <commit>]` runs `internal/commentlint` over the worktree:
+-  it reports the fixed-column-wrapped breaks and the over-long lines in `//` comment blocks that the working tree creates.
+-  With `--base` it reports those that the range from `--base` to HEAD creates.
++  it reports the fixed-column-wrapped breaks and the over-long lines in `//` comment blocks that the working tree creates,
++  uncommitted edits and untracked files included.
++  It compares the working tree with HEAD, or with `--base` when given.
+   `lint-pattern [--base <commit>]` runs `internal/patternlint` over the worktree:
+   it compares `PATTERN.md` at HEAD with the working tree's, or at `--base` with HEAD's.
+   It fails when the overview grew past its headroom line, naming the bytes to cut.
+diff --git a/internal/commentlint/diff.go b/internal/commentlint/diff.go
+index f3b88850b..801fa5cd6 100644
+--- a/internal/commentlint/diff.go
++++ b/internal/commentlint/diff.go
+@@ -1,4 +1,4 @@
+-// diff.go lists the `.go` files that differ between the base and the worktree, and reads both sides of each through git.
++// diff.go lists the `.go` files that differ between the base and the new side, and reads both sides of each.
+ 
+ package commentlint
+ 
+@@ -20,13 +20,16 @@ type fileChange struct {
+ 	basePath string
+ }
+ 
+-// changedGoFiles lists the `.go` files of worktree that differ from the base, sorted by path.
+-// An empty base diffs the working tree against HEAD and adds the untracked files; otherwise it diffs base against HEAD.
++// changedGoFiles lists the `.go` files of worktree that differ from baseRevision, sorted by path.
++// With workingTree it diffs the working tree against baseRevision and adds the untracked files;
++// otherwise it diffs HEAD against baseRevision.
+ // A deleted file is not listed, and a rename keeps its old path as the base side.
+-func changedGoFiles(worktree, base string) ([]fileChange, error) {
+-	diffArgs := []string{"diff", "--name-status", "-z", "--find-renames", "HEAD"}
+-	if base != "" {
+-		diffArgs = []string{"diff", "--name-status", "-z", "--find-renames", base, "HEAD"}
++// An untracked file that baseRevision holds keeps its own path as the base side.
++// Only the lines it changed count as new.
++func changedGoFiles(worktree, baseRevision string, workingTree bool) ([]fileChange, error) {
++	diffArgs := []string{"diff", "--name-status", "-z", "--find-renames", baseRevision}
++	if !workingTree {
++		diffArgs = append(diffArgs, "HEAD")
+ 	}
+ 	diffOutput, err := gitexec.Run(diffArgs, worktree)
+ 	if err != nil {
+@@ -34,15 +37,25 @@ func changedGoFiles(worktree, base string) ([]fileChange, error) {
+ 	}
+ 	changes := parseNameStatus(diffOutput)
+ 
+-	if base == "" {
++	if workingTree {
+ 		untrackedOutput, err := gitexec.Run([]string{"ls-files", "--others", "--exclude-standard", "-z"}, worktree)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("commentlint: list the untracked files: %w", err)
+ 		}
+ 		for _, path := range strings.Split(untrackedOutput, "\x00") {
+-			if path != "" {
+-				changes = append(changes, fileChange{path: path})
++			if !strings.HasSuffix(path, ".go") {
++				continue
+ 			}
++			//gitexec:raw cat-file -e signals a missing path through its exit code, which is the answer sought here
++			_, _, exitCode, err := gitexec.RunGit([]string{"cat-file", "-e", baseRevision + ":" + path}, worktree)
++			if err != nil {
++				return nil, fmt.Errorf("commentlint: look for %s at %s: %w", path, baseRevision, err)
++			}
++			change := fileChange{path: path}
++			if exitCode == 0 {
++				change.basePath = path
++			}
++			changes = append(changes, change)
+ 		}
+ 	}
+ 
+@@ -89,21 +102,17 @@ func parseNameStatus(output string) []fileChange {
+ }
+ 
+ // readChange returns the base text and the new text of one changed file.
+-// The base side comes from git at the base commit, or at HEAD when the base is empty;
+-// the new side comes from the working tree when the base is empty, and from HEAD otherwise.
++// The base side comes from git at baseRevision;
++// the new side comes from the working tree with workingTree, and from HEAD otherwise.
+ // A file with no base side has an empty base text.
+-func readChange(worktree, base string, change fileChange) (baseText, newText string, err error) {
+-	baseRevision := base
+-	if base == "" {
+-		baseRevision = "HEAD"
+-	}
++func readChange(worktree, baseRevision string, workingTree bool, change fileChange) (baseText, newText string, err error) {
+ 	if change.basePath != "" {
+ 		baseText, err = gitexec.Run([]string{"show", baseRevision + ":" + change.basePath}, worktree)
+ 		if err != nil {
+ 			return "", "", fmt.Errorf("commentlint: read %s at %s: %w", change.basePath, baseRevision, err)
+ 		}
+ 	}
+-	if base == "" {
++	if workingTree {
+ 		data, err := os.ReadFile(filepath.Join(worktree, filepath.FromSlash(change.path)))
+ 		if err != nil {
+ 			return "", "", fmt.Errorf("commentlint: read %s: %w", change.path, err)
+diff --git a/internal/commentlint/doc.go b/internal/commentlint/doc.go
+index e15aed96b..a80e3839e 100644
+--- a/internal/commentlint/doc.go
++++ b/internal/commentlint/doc.go
+@@ -3,9 +3,11 @@
+ // and a line's text stays under LineLengthLimit characters.
+ // Each finding names the rule it breaks.
+ //
+-// Lint is told the worktree and the base and resolves no cwd.
+-// With an empty base it diffs the working tree against HEAD, untracked `.go` files included;
+-// with a base commit it diffs base against HEAD with rename detection, so a pure rename adds no line.
++// Lint and LintCommitRange are told the worktree and the base and resolve no cwd.
++// Lint diffs the working tree against the base, HEAD when the base is empty, untracked `.go` files included,
++// so an uncommitted fix is checked as it stands.
++// LintCommitRange diffs the base against HEAD and reads no working tree, for a gate that verifies the committed tree.
++// Both detect renames, so a pure rename adds no line.
+ // A diff with no `.go` file yields no findings.
+ //
+ // A break between two consecutive prose lines of a paragraph is checked only when it is new:
+diff --git a/internal/commentlint/lint.go b/internal/commentlint/lint.go
+index 979ba7ef4..3026e7152 100644
+--- a/internal/commentlint/lint.go
++++ b/internal/commentlint/lint.go
+@@ -59,20 +59,37 @@ func wordSet(words ...string) map[string]bool {
+ 	return set
+ }
+ 
+-// Lint returns the comment line findings of the `.go` files that differ in worktree:
++// Lint returns the comment line findings of the `.go` files in worktree's working tree that differ from base:
+ // the new fixed-column-wrapped breaks in their `//` comment blocks,
+ // and the new or changed comment lines whose text reaches LineLengthLimit.
+-// An empty base compares the working tree, untracked files included, against HEAD;
+-// a base commit compares it against HEAD.
++// It reads the working tree, uncommitted edits and untracked files included,
++// so a fix is checked before it is committed.
++// An empty base is HEAD.
+ // Findings are ordered by file path, then line.
+ func Lint(worktree, base string) ([]Finding, error) {
+-	changes, err := changedGoFiles(worktree, base)
++	if base == "" {
++		base = "HEAD"
++	}
++	return lintChanges(worktree, base, true)
++}
++
++// LintCommitRange returns the comment line findings that the commits from base to HEAD create in worktree:
++// the new fixed-column-wrapped breaks and the new or changed comment lines whose text reaches LineLengthLimit.
++// It reads HEAD, never the working tree, so it checks the committed tree a gate verifies.
++func LintCommitRange(worktree, base string) ([]Finding, error) {
++	return lintChanges(worktree, base, false)
++}
++
++// lintChanges returns the findings of every changed `.go` file between baseRevision and the new side:
++// the working tree with workingTree, and HEAD otherwise.
++func lintChanges(worktree, baseRevision string, workingTree bool) ([]Finding, error) {
++	changes, err := changedGoFiles(worktree, baseRevision, workingTree)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 	var findings []Finding
+ 	for _, change := range changes {
+-		baseText, newText, err := readChange(worktree, base, change)
++		baseText, newText, err := readChange(worktree, baseRevision, workingTree, change)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/commentlint/lint_integration_test.go b/internal/commentlint/lint_integration_test.go
+index 759745ee0..32690a25b 100644
+--- a/internal/commentlint/lint_integration_test.go
++++ b/internal/commentlint/lint_integration_test.go
+@@ -1,4 +1,4 @@
+-// lint_integration_test.go drives Lint over a real repository.
++// lint_integration_test.go drives Lint and LintCommitRange over a real repository.
+ 
+ package commentlint
+ 
+@@ -40,7 +40,8 @@ func findingKeys(findings []Finding) []string {
+ 	return keys
+ }
+ 
+-// TestLint_OverARepository walks one repository through a pure rename, a committed edit and an uncommitted edit.
++// TestLint_OverARepository walks one repository through a pure rename and a committed edit.
++// It then adds an uncommitted edit and an untracked file.
+ // The steps share the repository and run in order, so the test is parallel as a whole and no step is.
+ func TestLint_OverARepository(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -54,31 +55,57 @@ func TestLint_OverARepository(t *testing.T) {
+ 	gitkit.Git(t, dir, "mv", "legacy.go", "renamed.go")
+ 	afterRename := commitAll(t, dir, "rename")
+ 	t.Run("a pure rename flags nothing", func(t *testing.T) {
+-		findings, err := Lint(dir, base)
+-		if err != nil {
+-			t.Fatalf("Lint() error = %v; want nil", err)
+-		}
+-		if len(findings) != 0 {
+-			t.Errorf("Lint() = %+v; want no findings", findings)
++		for name, lint := range map[string]func(string, string) ([]Finding, error){"Lint": Lint, "LintCommitRange": LintCommitRange} {
++			findings, err := lint(dir, base)
++			if err != nil {
++				t.Fatalf("%s() error = %v; want nil", name, err)
++			}
++			if len(findings) != 0 {
++				t.Errorf("%s() = %+v; want no findings", name, findings)
++			}
+ 		}
+ 	})
+ 
+ 	writeFile(t, dir, "added.go", freshWrapped)
+ 	commitAll(t, dir, "add a wrapped comment")
+-	t.Run("the base form sees committed changes", func(t *testing.T) {
++	writeFile(t, dir, "renamed.go", legacyWrapped+"\n// an uncommitted comment that wraps in the\n// middle.\nfunc Edited() {}\n")
++	writeFile(t, dir, "untracked.go", freshWrapped)
++	t.Run("the commit range form sees committed changes but not uncommitted ones", func(t *testing.T) {
++		findings, err := LintCommitRange(dir, afterRename)
++		if err != nil {
++			t.Fatalf("LintCommitRange() error = %v; want nil", err)
++		}
++		if got, want := findingKeys(findings), []string{"added.go:3"}; !slices.Equal(got, want) {
++			t.Errorf("LintCommitRange() findings = %v; want %v", got, want)
++		}
++	})
++	t.Run("the working tree form against HEAD sees an edit and an untracked file but not legacy lines", func(t *testing.T) {
++		findings, err := Lint(dir, "")
++		if err != nil {
++			t.Fatalf("Lint() error = %v; want nil", err)
++		}
++		if got, want := findingKeys(findings), []string{"renamed.go:7", "untracked.go:3"}; !slices.Equal(got, want) {
++			t.Errorf("Lint() findings = %v; want %v", got, want)
++		}
++	})
++	t.Run("the working tree form against a base sees committed and uncommitted changes", func(t *testing.T) {
+ 		findings, err := Lint(dir, afterRename)
+ 		if err != nil {
+ 			t.Fatalf("Lint() error = %v; want nil", err)
+ 		}
+-		if got, want := findingKeys(findings), []string{"added.go:3"}; !slices.Equal(got, want) {
++		if got, want := findingKeys(findings), []string{"added.go:3", "renamed.go:7", "untracked.go:3"}; !slices.Equal(got, want) {
+ 			t.Errorf("Lint() findings = %v; want %v", got, want)
+ 		}
+ 	})
+ 
+-	writeFile(t, dir, "renamed.go", legacyWrapped+"\n// an uncommitted comment that wraps in the\n// middle.\nfunc Edited() {}\n")
+-	writeFile(t, dir, "untracked.go", freshWrapped)
+-	t.Run("the worktree form sees an edit and an untracked file but not legacy lines", func(t *testing.T) {
+-		findings, err := Lint(dir, "")
++	writeFile(t, dir, "indexless.go", legacyWrapped)
++	gitkit.Git(t, dir, "add", "indexless.go")
++	gitkit.Git(t, dir, "commit", "-q", "-m", "add a legacy wrapped comment")
++	withIndexless := gitkit.Git(t, dir, "rev-parse", "HEAD")
++	gitkit.Git(t, dir, "rm", "-q", "--cached", "indexless.go")
++	gitkit.Git(t, dir, "commit", "-q", "-m", "untrack it")
++	t.Run("an untracked file the base holds flags only its new lines", func(t *testing.T) {
++		findings, err := Lint(dir, withIndexless)
+ 		if err != nil {
+ 			t.Fatalf("Lint() error = %v; want nil", err)
+ 		}
+diff --git a/internal/loomcli/lintcomments.go b/internal/loomcli/lintcomments.go
+index 71b12be78..12ec863f3 100644
+--- a/internal/loomcli/lintcomments.go
++++ b/internal/loomcli/lintcomments.go
+@@ -30,8 +30,9 @@ func (c *loomCLI) lintCommentsCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `lint-comments runs commentlint.Lint over the current worktree -- the check
+ a gate key's comments lint step also runs inside lym gate test -- and reports the result as one JSON
+-envelope. Without --base it lints the working tree against HEAD, untracked Go
+-files included; with --base it lints that commit against HEAD. A finding is
++envelope. It lints the working tree, uncommitted edits and untracked Go files
++included, so a fix is checked before it is committed: against HEAD without
++--base, and against that commit with --base. A finding is
+ a line of a // comment block that a new break leaves ending in the middle of
+ a sentence, or a new or changed line whose text reaches the comment
+ line-length limit; the envelope lists each as file:line: rule: text. It
+@@ -66,7 +67,7 @@ Example:
+ 		},
+ 	}
+ 
+-	cmd.Flags().StringVar(&base, "base", "", "lint this commit against HEAD instead of the working tree against HEAD")
++	cmd.Flags().StringVar(&base, "base", "", "lint the working tree against this commit instead of against HEAD")
+ 
+ 	return cmd
+ }
+diff --git a/internal/loomcli/lintcomments_integration_test.go b/internal/loomcli/lintcomments_integration_test.go
+index 5fbeff178..793949e6a 100644
+--- a/internal/loomcli/lintcomments_integration_test.go
++++ b/internal/loomcli/lintcomments_integration_test.go
+@@ -18,8 +18,9 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestLintCommentsCmd_OverARepository walks one repository through a wrapped comment, a clean tree and a commit range.
+-// At each step it asserts lint-comments and lint-pattern agree on the same tree.
++// TestLintCommentsCmd_OverARepository walks one repository through a wrapped comment, a clean tree and a base commit.
++// The steps that run both verbs assert that lint-comments and lint-pattern agree on the same tree.
++// The last step checks that lint-comments --base also reports an uncommitted edit.
+ // The steps share the repository and run in order, so the test is parallel as a whole and no step is.
+ func TestLintCommentsCmd_OverARepository(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -101,7 +102,7 @@ func TestLintCommentsCmd_OverARepository(t *testing.T) {
+ 	write("PATTERN.md", grownOverview)
+ 	gitkit.Git(t, dir, "add", "-A")
+ 	gitkit.Git(t, dir, "commit", "-q", "-m", "wrapped")
+-	t.Run("--base lints the committed range", func(t *testing.T) {
++	t.Run("--base lints the working tree against a base commit, on a clean tree the committed change", func(t *testing.T) {
+ 		for _, verb := range []string{"lint-comments", "lint-pattern"} {
+ 			if exitCode, env := lint(verb); exitCode != 0 || !env.OK {
+ 				t.Errorf("%s worktree form: exit code = %d, ok = %v; want 0, true for a committed tree", verb, exitCode, env.OK)
+@@ -115,4 +116,20 @@ func TestLintCommentsCmd_OverARepository(t *testing.T) {
+ 			}
+ 		}
+ 	})
++
++	write("edited.go", "package p\n\n// an uncommitted comment that wraps in the\n// middle of a sentence.\nfunc Edited() {}\n")
++	t.Run("lint-comments --base lints uncommitted edits too", func(t *testing.T) {
++		exitCode, env := lint("lint-comments", "--base", base)
++		if exitCode != 1 || env.OK {
++			t.Fatalf("exit code = %d, ok = %v; want 1, false", exitCode, env.OK)
++		}
++		findings, _ := env.Raw["findings"].([]any)
++		want := []any{
++			"edited.go:3: wrapped break: // an uncommitted comment that wraps in the",
++			"wrapped.go:3: wrapped break: // a comment that wraps in the",
++		}
++		if !slices.Equal(findings, want) {
++			t.Errorf("findings = %v; want %v", findings, want)
++		}
++	})
+ }
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index 4632a40c2..f3b8a62f5 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -143,7 +143,7 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 			}
+ 		}
+ 		if lintBase != "" {
+-			commentFindings, err := commentlint.Lint(worktreeRoot, lintBase)
++			commentFindings, err := commentlint.LintCommitRange(worktreeRoot, lintBase)
+ 			if err != nil {
+ 				return shuttleengine.GateResult{}, fmt.Errorf("loomshed: verify gate: lint the comments: %w", err)
+ 			}
+diff --git a/internal/loomshed/verifygate_integration_test.go b/internal/loomshed/verifygate_integration_test.go
+index 14b2cfd0d..d5f04105b 100644
+--- a/internal/loomshed/verifygate_integration_test.go
++++ b/internal/loomshed/verifygate_integration_test.go
+@@ -233,10 +233,20 @@ func TestVerifyGate_RoundScenario(t *testing.T) {
+ 	if !t.Run("a first round lints from the merge base and fails on a fixed-column comment the round added", func(t *testing.T) {
+ 		f.commitFiles(t, map[string]string{"a/wrapped.go": "package a\n\n// Wrapped comment that breaks in the\n// middle of a sentence.\nfunc FirstWrapped() {}\n"})
+ 		logsBefore := verifyLogs(t, f.verifyDir)
++		untracked := filepath.Join(f.worktree, "a", "untracked.go")
++		if err := os.WriteFile(untracked, []byte("package a\n\n// Untracked comment that breaks in the\n// middle of a sentence.\nfunc Untracked() {}\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
+ 		passed, findings := f.runGate(t, baseOf(initial))
++		if err := os.Remove(untracked); err != nil {
++			t.Fatal(err)
++		}
+ 		if passed || !strings.Contains(findings, "a/wrapped.go:3") {
+ 			t.Errorf("gate() passed = %v, findings = %q; want a failure naming a/wrapped.go:3", passed, findings)
+ 		}
++		if strings.Contains(findings, "untracked.go") {
++			t.Errorf("gate() findings = %q; want none naming the untracked file, the gate lints the committed range", findings)
++		}
+ 		if logs := verifyLogs(t, f.verifyDir); len(logs) != len(logsBefore) {
+ 			t.Errorf("verify logs = %q; want %q, the lint to fail before any command ran", logs, logsBefore)
+ 		}
+diff --git a/pattern/PATTERN-gate-slot.md b/pattern/PATTERN-gate-slot.md
+index 384765ae6..f877f606a 100644
+--- a/pattern/PATTERN-gate-slot.md
++++ b/pattern/PATTERN-gate-slot.md
+@@ -62,7 +62,7 @@ A mechanical gate's **closure** and its CLI self-check verb call the same packag
+   Webster-Burler-Fix's `verify` gate (`loomshed.NewVerifyGate`) goes through `verifytree.Verify`:
+   it runs the comment lint and the derived round command.
+ - A gate key's `comments` lint step in `lym gate test` and `lym loom lint-comments`: `commentlint.Lint`.
+-  The Webster-Burler-Fix round gate (`loomshed.NewVerifyGate`) joins this pair when it runs the lint.
++  The Webster-Burler-Fix round gate (`loomshed.NewVerifyGate`) runs the same rules over the committed range through `commentlint.LintCommitRange`.
+ - A gate key's `pattern` lint step in `lym gate test` and `lym loom lint-pattern`:
+   `patternlint.Lint` over `pattern.Headroom`.
+   The Webster-Burler-Fix round gate (`loomshed.NewVerifyGate`) is the pair's third caller when it is told a merge base.
