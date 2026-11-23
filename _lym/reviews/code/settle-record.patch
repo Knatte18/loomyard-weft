@@ -1,0 +1,1071 @@
+diff --git a/contracts/specs/raddle-proposal-spec.md b/contracts/specs/raddle-proposal-spec.md
+index 4f9f75066..7a9b59e6b 100644
+--- a/contracts/specs/raddle-proposal-spec.md
++++ b/contracts/specs/raddle-proposal-spec.md
+@@ -96,7 +96,6 @@ The gate, `raddle-propose` and `raddle-approve` run the checks of the proposal a
+ - `board-unchecked` — an open task or project, other than the run's own entry, that carries a module label the Sketch carries and is absent from `board_checked`.
+ - `depends-cycle` — a cycle in `depends_on`.
+ - `depends-unknown` — a `depends_on` that names no part, no board entry and no `board_checked` entry; a `board_checked` entry that is gone from the board passes as landed.
+-- `depends-note` — a `depends_on` that names a note on the board, which the board refuses at filing; its way forward is to drop the dependency or to have the operator promote the note.
+ - `packages-shared` — two parts with no `depends_on` path between them that list a common package.
+ - `recipe-invalid` — a recipe that is neither `tapestry` nor `darn`.
+ - `profile-unknown` — a profile that `profiles.yaml` does not hold, or holds without a block for the part's recipe.
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index d2c827422..f12bee402 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -185,7 +185,8 @@ available subcommands without requiring a git repo.
+ 		Long: `Turn a note into a task. A task is returned unchanged, and nothing is written.
+ The promoted entry loses its priority, which only a note carries, and its note handle: it takes
+ the lowest free T handle.
+---recipe <name> sets the task's recipe in the same write, and "depends_on" sets its dependencies.
++--recipe <name> sets the task's recipe in the same write.
++The task keeps the note's own depends_on, and a "depends_on" in the payload replaces it.
+ A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe
+ raddle, which keeps its record and releases the task so its raddle run starts: a promote with no
+ --recipe gives it raddle, --recipe raddle is accepted, and any other recipe is refused.
+@@ -202,7 +203,7 @@ Fields:
+   "slug"       string  — entry slug (one of slug, id or handle)
+   "id"         integer — entry id (one of slug, id or handle)
+   "handle"     string  — entry handle, such as B4 (one of slug, id or handle)
+-  "depends_on" array   — dependency slugs the promoted task waits on (optional)
++  "depends_on" array   — dependency slugs the promoted task waits on, replacing the note's own (optional)
+ 
+ Examples:
+   lym board promote '{"slug":"my-note"}'
+@@ -570,7 +571,7 @@ Optional fields:
+   "title"      string — display title
+   "brief"      string — one-line summary
+   "body"       string — markdown body
+-  "depends_on" array  — slugs this task depends on
++  "depends_on" array  — slugs this task or note waits on
+   "isolated"   bool   — no dependencies by design
+   "status"     string — lifecycle status
+   "kind"       string — "task", "note" or "project", default "note"
+@@ -898,8 +899,9 @@ Examples:
+ beside "prime_owner", the machine that owns the hub's prime ("" when none is recorded).
+ A task's "owner_machine" is its effective owner, its beam's or root's; only a beam project records one.
+ With --text, print a "prime owner: <machine>" line ("none" when none is recorded),
+-then the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels, [status])
+-instead of JSON; errors stay JSON.
++then the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels,
++"after <slugs>" naming the dependencies not yet met, [status]) instead of JSON; errors stay JSON.
++An entry's "pending" lists its dependencies not yet met, a note's included.
+ Without --label, the --text listing shows the root project, the prime, as a P0 row with slug root
+ before the first project, note or done entry, and last under --sort; the JSON "tasks" array holds no root row.
+ An entry's "parent_beam" is the slug of the beam above it, "root" when the prime is its parent.
+@@ -1080,14 +1082,15 @@ Example:
+ 	}
+ 	mergeCmd.Flags().StringVar(&mergeBodyFile, "body-file", "", `read the upsert's "body" from this file, or from stdin when "-"`)
+ 
+-	// set-deps subcommand: replace the depends_on list for a task.
++	// set-deps subcommand: replace the depends_on list for a task or a note.
+ 	// depends_on is required: an absent key is an error, while an explicit [] clears the list.
+ 	// That separates an intentional clear from a typo that would otherwise silently wipe the list.
+ 	setDepsCmd := &cobra.Command{
+ 		Use:         "set-deps {slug|id|handle, depends_on}",
+-		Short:       "replace a task's depends_on list",
++		Short:       "replace a task's or note's depends_on list",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Replace the full depends_on list for a task wholesale.
++		Long: `Replace the full depends_on list for a task or a note wholesale.
++A note's depends_on names what it waits for on the board; promote keeps it.
+ An absent "depends_on" is an error; an explicit [] clears the list.
+ The "notice" names siblings sharing a new depends_on and a label.
+ 
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index ca73c577c..783183448 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -44,6 +44,8 @@
+ // The guard stops a mistaken write, not a determined one.
+ //
+ // `promote` takes `--recipe <name>` and an optional `depends_on`, both set in the promotion's write.
++// The promoted task keeps the note's own `depends_on` unless the payload gives one.
++// `list --text` ends the row of an entry, task or note, that waits on an unmet dependency with `after` and those slugs.
+ // A Sketch, or any discussed note whose decision record is stored, becomes a task only with recipe raddle.
+ // `set-status` with a null status on a draft project releases its draft member tasks in the same write.
+ //
+diff --git a/internal/boardcli/text.go b/internal/boardcli/text.go
+index 4650a9e3f..746691759 100644
+--- a/internal/boardcli/text.go
++++ b/internal/boardcli/text.go
+@@ -21,6 +21,8 @@ const sketchesHeading = "sketches:"
+ // RenderCompact renders the entries as a compact listing, one line per entry, in the order given.
+ // Each line holds the handle, kind, priority, age, time since last revision, slug and title;
+ // the labels follow, joined by commas.
++// An entry that waits on a dependency not yet met then shows "after" and those dependencies' slugs, joined by commas;
++// the column is left out when no entry waits.
+ // Each column is padded to its widest value, and a line ends with "[<status>]" when the entry's status is set.
+ // The Sketches follow every other entry, in the order given, under a sketches: line.
+ // The handle column is left out when no entry has a handle.
+@@ -29,7 +31,7 @@ const sketchesHeading = "sketches:"
+ // The ages are as of now, blank for an unknown date, and each age column is left out when no entry has that date.
+ // Empty input renders as the empty string.
+ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+-	var handleWidth, kindWidth, priorityWidth, ageWidth, revisedWidth, slugWidth, titleWidth, labelsWidth int
++	var handleWidth, kindWidth, priorityWidth, ageWidth, revisedWidth, slugWidth, titleWidth, labelsWidth, afterWidth int
+ 	for _, t := range tasks {
+ 		handleWidth = max(handleWidth, utf8.RuneCountInString(t.Handle))
+ 		kindWidth = max(kindWidth, utf8.RuneCountInString(t.Kind))
+@@ -39,6 +41,7 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 		slugWidth = max(slugWidth, utf8.RuneCountInString(t.Slug))
+ 		titleWidth = max(titleWidth, utf8.RuneCountInString(t.Title))
+ 		labelsWidth = max(labelsWidth, utf8.RuneCountInString(strings.Join(t.Labels, ",")))
++		afterWidth = max(afterWidth, utf8.RuneCountInString(afterText(t)))
+ 	}
+ 
+ 	var sb, sketches strings.Builder
+@@ -60,6 +63,9 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 		line += pad(t.Slug, slugWidth) + columnGap +
+ 			pad(t.Title, titleWidth) + columnGap +
+ 			pad(strings.Join(t.Labels, ","), labelsWidth)
++		if afterWidth > 0 {
++			line += columnGap + pad(afterText(t), afterWidth)
++		}
+ 		if t.Status != nil && *t.Status != "" {
+ 			line += columnGap + "[" + *t.Status + "]"
+ 		}
+@@ -77,6 +83,15 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 	return sb.String()
+ }
+ 
++// afterText returns the listing's after cell of t:
++// "after" and the slugs of its unmet dependencies, or "" when it waits on none.
++func afterText(t boardengine.BriefTask) string {
++	if len(t.Pending) == 0 {
++		return ""
++	}
++	return "after " + strings.Join(t.Pending, ",")
++}
++
+ // primeOwnerLine returns the line that opens the `list --text` listing, naming the machine that owns the hub's prime.
+ // The line says none when the board records no owner.
+ func primeOwnerLine(primeOwner string) string {
+diff --git a/internal/boardengine/dependency.go b/internal/boardengine/dependency.go
+index 6bdb035de..9856bd54d 100644
+--- a/internal/boardengine/dependency.go
++++ b/internal/boardengine/dependency.go
+@@ -10,6 +10,8 @@ import "slices"
+ // A plain project is done when its status is done, or when it has a landing member and every landing member is done.
+ // A landing member is a task or a project whose project key names the project;
+ // a note never lands, so it holds no project open.
++// A dependency on a note is not met whatever the note's status:
++// it is met once the note has been promoted and landed, or removed.
+ type Dependencies struct {
+ 	bySlug  map[string]Task
+ 	members map[string][]string
+@@ -49,7 +51,11 @@ func (d Dependencies) met(slug string) bool {
+ func (d Dependencies) metBelow(slug string, judging map[string]bool) bool {
+ 	entry, found := d.bySlug[slug]
+ 	switch {
+-	case !found || isDone(entry):
++	case !found:
++		return true
++	case entry.Kind == KindNote:
++		return false
++	case isDone(entry):
+ 		return true
+ 	case entry.Kind != KindProject || entry.Beam || judging[slug]:
+ 		return false
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 589fec4ef..4b5a3cf77 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -5,17 +5,21 @@
+ // # Entries
+ //
+ // Board holds one store, board.json, and every entry in it is a task, a note or a project, named by its kind.
+-// Only a task is claimable, bar a project that is a beam, and only a task carries depends_on.
++// Only a task is claimable, bar a project that is a beam, and a task or a note carries depends_on.
+ // A note is an idea or observation that is not yet work to run; Promote turns it into a task once the operator decides.
++// A note's depends_on says what it waits for: the board shows it as a task's, and the promoted task keeps it.
++// It never makes a sibling, since a note never runs.
+ // Promote refuses a project, which is made a beam with `lym beam create`.
+ //
+ // A project groups entries.
+ // It carries a type label, and no depends_on, profile, run_settings or priority; its only recipe is `pawl`.
+ // A write giving it any of those fields, or another recipe, is refused naming the entry and the field to drop.
+-// A task may depend on any entry that lands, a project included.
++// A task or a note may depend on any other entry: a task, a note or a project.
+ // Dependencies judges a dependency met once that entry is done:
+ // a task or a beam when its status is done, and a plain project when its status is done or every landing member is done.
++// A dependency on a note is met only once the note is promoted and lands, or is removed or pruned, whatever its status.
+ // A landing member is a task or project under the project; a note never lands and holds no project open.
++// Removing an entry, like pruning a done one, strips its slug from every other entry's depends_on.
+ //
+ // Membership is the project key on a task or note and the order key on a project.
+ // A write that sets or changes one is judged, and each refusal names the entry, the field and the slug at fault.
+@@ -260,7 +264,7 @@
+ // It keeps its title, brief, body, project, issues, Created date and discussed flag.
+ // It drops its run and recipe fields.
+ // It writes nothing for an absent, done or already sketched entry.
+-// It refuses while another entry depends on the entry, since a note cannot be depended on.
++// An entry that another depends on stays depended on: the dependent waits until the Sketch is promoted and lands.
+ //
+ // A Sketch becomes a task only as a raddle run's entry:
+ // Board.PromoteTo with recipe `raddle`, or with no recipe, makes the task in one write.
+diff --git a/internal/boardengine/export_test.go b/internal/boardengine/export_test.go
+index 91d25dd9c..4daa198cb 100644
+--- a/internal/boardengine/export_test.go
++++ b/internal/boardengine/export_test.go
+@@ -1,5 +1,5 @@
+ // export_test.go exposes the run-lock judgment to the external tests, for the changes no board write can reach.
+-// It also holds the promote entry points that take no recipe and no depends_on, which the tests use to make a task.
++// It also holds the promote entry points that take no recipe, which the tests use to make a task.
+ 
+ package boardengine
+ 
+@@ -20,3 +20,8 @@ func (b *Board) Promote(idOrSlug any) (Task, error) {
+ func (s *Store) Promote(idOrSlug any) (task Task, changed bool, err error) {
+ 	return s.promoteTo(idOrSlug, "", nil, nil)
+ }
++
++// PromoteWithDeps promotes as Promote does, and a non-nil dependsOn replaces the entry's depends_on in the same write.
++func (s *Store) PromoteWithDeps(idOrSlug any, dependsOn []string) (task Task, changed bool, err error) {
++	return s.promoteTo(idOrSlug, "", dependsOn, nil)
++}
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index aad9bd53b..7ac47df57 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -678,9 +678,8 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 			byType[typeLabel] = append(byType[typeLabel], twl)
+ 		}
+ 	}
+-	noteTable := readmeTable{columns: []string{columnNote}, cells: func(t Task) []string { return []string{entryCell(t)} }, priority: true}
+ 	for _, typeLabel := range notesTypeOrder(types) {
+-		section(noteSectionName(typeLabel), byType[typeLabel], noteTable)
++		section(noteSectionName(typeLabel), byType[typeLabel], b.noteTable(byType[typeLabel]))
+ 	}
+ 
+ 	var done []TaskWithLayer
+@@ -698,6 +697,18 @@ func (b boardView) entrySections(project Task, level int) []string {
+ 	return lines
+ }
+ 
++// noteTable returns the table of one note section holding notes.
++// It carries the After column only when one of the notes waits on a dependency that is not met.
++func (b boardView) noteTable(notes []TaskWithLayer) readmeTable {
++	waits := slices.ContainsFunc(notes, func(twl TaskWithLayer) bool { return len(b.unmetDependencies(twl.Task)) > 0 })
++	if !waits {
++		return readmeTable{columns: []string{columnNote}, cells: func(t Task) []string { return []string{entryCell(t)} }, priority: true}
++	}
++	return readmeTable{columns: []string{columnNote, columnAfter}, cells: func(t Task) []string {
++		return []string{entryCell(t), b.afterCell(t)}
++	}, priority: true}
++}
++
+ // childProjects returns the open projects directly under project, in project's order, then by handle.
+ // The root has no order, so its children run by handle.
+ // An open project under a done project counts as directly under the root.
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index e79ba5082..d3c8453da 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -479,13 +479,12 @@ func TestFabricReplay(t *testing.T) {
+ 			wantEntries: map[string]string{"b": "B2", "x": ""},
+ 		},
+ 		{
+-			name:        "NoteWithDependsOnIsRefused",
++			name:        "NoteWithDependsOnLands",
+ 			base:        []Task{replayEntry("a"), replayEntry("b", withTitle("B"))},
+ 			origin:      []Task{replayEntry("a"), replayEntry("b", withTitle("B"))},
+ 			parent:      []Task{replayEntry("a"), replayEntry("b", withTitle("B"))},
+ 			commit:      []Task{replayEntry("a"), replayEntry("b", withTitle("B2")), replayEntry("x", asNote, withDependsOn("a"))},
+-			wantRefused: map[string]string{"x": "only a task can depend"},
+-			wantEntries: map[string]string{"b": "B2", "x": ""},
++			wantEntries: map[string]string{"b": "B2", "x": "x"},
+ 		},
+ 		{
+ 			name:        "InvalidIssueNumberIsRefused",
+diff --git a/internal/boardengine/siblings.go b/internal/boardengine/siblings.go
+index 3cae2d071..003ac07f9 100644
+--- a/internal/boardengine/siblings.go
++++ b/internal/boardengine/siblings.go
+@@ -1,5 +1,6 @@
+ // siblings.go reports the siblings a depends_on write creates.
+ // A sibling is an open task that shares a module label with the written task and waits on a dependency the write added.
++// A note never runs, so its depends_on makes no sibling.
+ 
+ package boardengine
+ 
+@@ -33,9 +34,10 @@ func SharedModuleLabels(a, b Task, v Vocabulary) []string {
+ // before holds the entries as loaded and after the entries as the mutation left them.
+ // A task X in after that is not done has the dependencies its depends_on gained over its baseline.
+ // Dependencies that are already met are left out.
+-// X's baseline is its own depends_on in before together with the depends_on of every before entry absent from after,
+-// so a merge warns only on dependencies none of the merged entries had.
+-// Another entry in after is a sibling of X when it is neither done nor abandoned and shares a module label with X.
++// X's baseline is the depends_on that X and every before task absent from after held as tasks in before,
++// so a merge warns only on dependencies none of the merged tasks had,
++// and a promoted note's own dependencies count as added.
++// Another task in after is a sibling of X when it is neither done nor abandoned and shares a module label with X.
+ // It must also wait on an entry an added dependency waits on.
+ // A dependency on a project waits on the project and on each of its landing members not yet done.
+ // A pair found from both sides is reported once, in the first orientation in after order, with both sides' dependencies.
+@@ -49,6 +51,9 @@ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
+ 	var removedDeps []string
+ 	beforeDeps := make(map[string][]string, len(before))
+ 	for _, task := range before {
++		if task.Kind != KindTask {
++			continue
++		}
+ 		beforeDeps[task.Slug] = task.DependsOn
+ 		if _, kept := afterSlugs[task.Slug]; !kept {
+ 			removedDeps = append(removedDeps, task.DependsOn...)
+@@ -58,7 +63,7 @@ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
+ 	var siblings []Sibling
+ 	reported := map[[2]string]int{}
+ 	for _, x := range after {
+-		if isDone(x) {
++		if x.Kind != KindTask || isDone(x) {
+ 			continue
+ 		}
+ 		var added []string
+@@ -76,7 +81,7 @@ func addedSiblings(before, after []Task, v Vocabulary) []Sibling {
+ 		}
+ 
+ 		for _, y := range after {
+-			if y.Slug == x.Slug || isDone(y) || (y.Status != nil && *y.Status == "abandoned") {
++			if y.Slug == x.Slug || y.Kind != KindTask || isDone(y) || (y.Status != nil && *y.Status == "abandoned") {
+ 				continue
+ 			}
+ 			var shared []string
+diff --git a/internal/boardengine/siblings_test.go b/internal/boardengine/siblings_test.go
+index 3eb33ccad..493ca6bca 100644
+--- a/internal/boardengine/siblings_test.go
++++ b/internal/boardengine/siblings_test.go
+@@ -87,6 +87,16 @@ func TestWriteSiblings(t *testing.T) {
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, map[string]any{"kind": "note"}), siblingEntry("Y", board, waitsOnD)},
+ 			act:  promote("X", "D"), want: []boardengine.Sibling{pair}, stored: map[string][]string{"X": {"D"}},
+ 		},
++		{
++			name: "promote of a note keeping a dependency an open sibling waits on",
++			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, map[string]any{"kind": "note", "depends_on": []string{"D"}}), siblingEntry("Y", board, waitsOnD)},
++			act:  promote("X"), want: []boardengine.Sibling{pair}, stored: map[string][]string{"X": {"D"}},
++		},
++		{
++			name: "a note waiting on the dependency is no sibling",
++			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, nil), siblingEntry("Y", board, map[string]any{"kind": "note", "depends_on": []string{"D"}})},
++			act:  setDeps("X", "D"),
++		},
+ 		{
+ 			name: "two siblings come in board order",
+ 			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("X", board, nil), siblingEntry("Y1", board, waitsOnD), siblingEntry("Y2", board, waitsOnD)},
+@@ -209,9 +219,9 @@ func TestWriteSiblings(t *testing.T) {
+ 			act:  setDeps("X", "P"),
+ 		},
+ 		{
+-			name: "note refused a dependency",
+-			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("Y", board, waitsOnD), siblingEntry("N", nil, map[string]any{"kind": "note"})},
+-			act:  setDeps("N", "D"), refused: true,
++			name: "note takes a dependency and makes no sibling",
++			seed: []map[string]any{siblingEntry("D", nil, nil), siblingEntry("Y", board, waitsOnD), siblingEntry("N", board, map[string]any{"kind": "note"})},
++			act:  setDeps("N", "D"), stored: map[string][]string{"N": {"D"}},
+ 		},
+ 		{
+ 			name: "unknown dependency refused",
+diff --git a/internal/boardengine/sketch.go b/internal/boardengine/sketch.go
+index 1a05af834..46e57abc3 100644
+--- a/internal/boardengine/sketch.go
++++ b/internal/boardengine/sketch.go
+@@ -19,8 +19,7 @@ const SketchType = "sketch"
+ // sketchTypeDescription is the description of the built-in sketch type label when board.yaml does not list it.
+ const sketchTypeDescription = "a note whose Discussion was approved and whose decision record is stored, waiting for triage into tasks or a project"
+ 
+-// ErrSketchRefused matches, through errors.Is, a MakeSketch the board refused as an invalid write:
+-// such as while another entry depends on the entry.
++// ErrSketchRefused matches, through errors.Is, a MakeSketch the board refused as an invalid write.
+ // Any other MakeSketch error is a failure of the write itself, after which the entry may or may not be a Sketch.
+ var ErrSketchRefused = errors.New("board refuses the entry as a Sketch")
+ 
+@@ -81,8 +80,8 @@ func endsAsSketch(before, now Task, vocab Vocabulary, removedDone map[string]boo
+ // It writes nothing when the entry is absent, done or already a Sketch.
+ // It ends a Discussion-only run: the entry leaves its run status in the same write.
+ // The run lock lets that write through, so the entry never reads as a released task.
+-// Like any write that makes an entry a note, it refuses while another entry depends on it, naming those entries.
+-// The refusal matches ErrSketchRefused.
++// An entry that another depends on becomes a Sketch too, and its dependents keep waiting.
++// A refusal of the write matches ErrSketchRefused.
+ func (b *Board) MakeSketch(slug string) error {
+ 	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
+ 		i, found := store.index(slug)
+diff --git a/internal/boardengine/sketch_test.go b/internal/boardengine/sketch_test.go
+index 7e7df5664..49a127d32 100644
+--- a/internal/boardengine/sketch_test.go
++++ b/internal/boardengine/sketch_test.go
+@@ -1,5 +1,5 @@
+ // sketch_test.go pins the Sketch end of a Discussion-only run.
+-// It covers MakeSketch's one write on a run-held task and the entries it leaves alone or refuses.
++// It covers MakeSketch's one write on a run-held task and the entries it leaves alone.
+ // It also covers the migration of a task an older binary left discussed.
+ 
+ package boardengine_test
+@@ -46,7 +46,7 @@ func mustGetEntry(t *testing.T, b *boardengine.Board, slug string) boardengine.T
+ }
+ 
+ // TestMakeSketch asserts MakeSketch turns a run-held task into a Sketch in one write.
+-// It also asserts MakeSketch leaves an absent or done entry alone and refuses an entry another depends on.
++// It also asserts MakeSketch leaves an absent or done entry alone and keeps the dependents of an entry it makes a Sketch.
+ func TestMakeSketch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -116,18 +116,20 @@ func TestMakeSketch(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("DependedOnEntryIsRefused", func(t *testing.T) {
++	t.Run("DependedOnEntryBecomesASketchAndItsDependentKeepsWaiting", func(t *testing.T) {
+ 		t.Parallel()
+ 		b := newSketchBoard(t)
+ 		mustUpsertEntry(t, b, map[string]any{"slug": "motif", "title": "Motif", "kind": "task", "labels": bugLabels})
+ 		mustUpsertEntry(t, b, map[string]any{"slug": "after", "title": "After", "kind": "task", "labels": bugLabels, "depends_on": []string{"motif"}})
+ 
+-		err := b.MakeSketch("motif")
+-		if !errors.Is(err, boardengine.ErrSketchRefused) || !strings.Contains(err.Error(), "after") || !strings.Contains(err.Error(), "set-deps") {
+-			t.Errorf("MakeSketch() error = %v; want an ErrSketchRefused refusal naming the dependent and set-deps", err)
++		if err := b.MakeSketch("motif"); err != nil {
++			t.Fatalf("MakeSketch() error = %v; want nil", err)
++		}
++		if got := mustGetEntry(t, b, "motif"); got.Kind != boardengine.KindNote {
++			t.Errorf("entry kind = %q; want note", got.Kind)
+ 		}
+-		if got := mustGetEntry(t, b, "motif"); got.Kind != boardengine.KindTask {
+-			t.Errorf("refused entry kind = %q; want task", got.Kind)
++		if got := mustGetEntry(t, b, "after"); !slices.Equal(got.DependsOn, []string{"motif"}) {
++			t.Errorf("dependent depends_on = %v; want [motif]", got.DependsOn)
+ 		}
+ 	})
+ }
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 033f6013d..13db8283f 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -35,13 +35,15 @@ func swapLockPath(path string) string {
+ 	return lock.TrackedLockPath(filepath.Dir(path), filepath.Base(path)+swapLockSuffix)
+ }
+ 
+-// BriefTask is an entry's enriched read-only view, with Layer and HasProposal computed at read time.
++// BriefTask is an entry's enriched read-only view, with Layer, Pending and HasProposal computed at read time.
+ type BriefTask struct {
+-	ID          int       `json:"id"`
+-	Handle      string    `json:"handle,omitempty"`
+-	Slug        string    `json:"slug"`
+-	Title       string    `json:"title"`
+-	DependsOn   []string  `json:"depends_on"`
++	ID        int      `json:"id"`
++	Handle    string   `json:"handle,omitempty"`
++	Slug      string   `json:"slug"`
++	Title     string   `json:"title"`
++	DependsOn []string `json:"depends_on"`
++	// Pending lists the dependencies that are not yet met, in depends_on order; empty when the entry waits on nothing.
++	Pending     []string  `json:"pending,omitempty"`
+ 	Kind        string    `json:"kind"`
+ 	Labels      []string  `json:"labels"`
+ 	Isolated    bool      `json:"isolated"`
+@@ -503,27 +505,6 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 		}
+ 	}
+ 
+-	if incoming.Kind == KindNote && len(incoming.DependsOn) > 0 {
+-		return fmt.Errorf("note %q has depends_on, and only a task can depend on another entry: clear it with \"lym board set-deps\", or make the entry a task with \"lym board promote\"", incoming.Slug)
+-	}
+-	for _, dep := range incoming.DependsOn {
+-		if snapshotIndex[dep].Kind == KindNote {
+-			rest, _ := json.Marshal(slices.DeleteFunc(slices.Clone(incoming.DependsOn), func(other string) bool { return other == dep }))
+-			return fmt.Errorf("%q depends on note %q, and a note cannot be depended on: promote the note with lym board promote '{\"slug\":\"%s\"}', or drop the dependency with lym board set-deps '{\"slug\":\"%s\",\"depends_on\":%s}'", incoming.Slug, dep, dep, incoming.Slug, rest)
+-		}
+-	}
+-	if incoming.Kind == KindNote {
+-		var dependents []string
+-		for _, t := range snapshot {
+-			if t.Slug != incoming.Slug && slices.Contains(t.DependsOn, incoming.Slug) {
+-				dependents = append(dependents, t.Slug)
+-			}
+-		}
+-		if len(dependents) > 0 {
+-			return fmt.Errorf("note %q cannot be a note: %s depend on it; clear their depends_on with \"lym board set-deps\", or keep the entry a task", incoming.Slug, strings.Join(dependents, ", "))
+-		}
+-	}
+-
+ 	projected := slices.Clone(snapshot)
+ 	if index := slices.IndexFunc(projected, func(t Task) bool { return t.Slug == incoming.Slug }); index >= 0 {
+ 		projected[index] = incoming
+@@ -774,13 +755,30 @@ func (s *Store) GetTask(selector any) (Task, bool) {
+ }
+ 
+ // RemoveTask deletes the entry that selector identifies: a slug string, a numeric id or a Handle.
++// It strips the entry's slug from the depends_on of every remaining entry.
+ // It returns an error when no entry matches.
+ func (s *Store) RemoveTask(selector any) error {
++	return s.removeEntry(selector, true)
++}
++
++// removeEntry deletes the entry that selector identifies.
++// When stripDependencies is set, it also strips that entry's slug from the depends_on of every remaining entry.
++// A caller that puts an entry of the same slug back in the same write passes false, so its dependents keep waiting.
++func (s *Store) removeEntry(selector any, stripDependencies bool) error {
+ 	i, found := s.index(selector)
+ 	if !found {
+ 		return fmt.Errorf("task not found: %v", selector)
+ 	}
++	slug := s.tasks[i].Slug
+ 	s.tasks = append(s.tasks[:i], s.tasks[i+1:]...)
++	if !stripDependencies {
++		return nil
++	}
++	for j := range s.tasks {
++		if slices.Contains(s.tasks[j].DependsOn, slug) {
++			s.tasks[j].DependsOn = slices.DeleteFunc(slices.Clone(s.tasks[j].DependsOn), func(dep string) bool { return dep == slug })
++		}
++	}
+ 	return nil
+ }
+ 
+@@ -868,6 +866,7 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 
+ 	owners := ownersOf(s.primeOwner, s.tasks)
+ 	parentOf := parentOfOrPrime(s.parentOf)
++	dependencies := NewDependencies(s.tasks)
+ 	result := make([]BriefTask, 0, len(s.tasks))
+ 	for _, t := range ordered {
+ 		if !hasAllLabels(t, labels) {
+@@ -897,6 +896,7 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 			Slug:         t.Slug,
+ 			Title:        t.Title,
+ 			DependsOn:    t.DependsOn,
++			Pending:      dependencies.Pending(t),
+ 			Kind:         t.Kind,
+ 			Labels:       t.Labels,
+ 			Isolated:     t.Isolated,
+@@ -917,7 +917,7 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 
+ // promoteTo makes the entry identified by idOrSlug a task and clears its priority.
+ // When recipe is not empty, it is set in the same write.
+-// A non-nil dependsOn replaces the task's depends_on in the same write,
++// The task keeps the note's depends_on, and a non-nil dependsOn replaces it in the same write,
+ // so a write that also releases the task never lets a run start ahead of them.
+ // An entry that is already a task takes no write, so a non-nil dependsOn that differs from its depends_on is refused.
+ // A discussed note takes recipe raddle when recipe is empty and its record is stored, or it carries the sketch label.
+@@ -1311,7 +1311,7 @@ func (s *Store) MergeTasks(removeSlugs []string, upsert map[string]any, setStatu
+ 	keepDiscussed := upsertedAgain && removedEntry.Discussed && slices.Contains(removeSlugs, slugStr)
+ 
+ 	for _, slug := range removeSlugs {
+-		s.RemoveTask(slug)
++		s.removeEntry(slug, slug != slugStr)
+ 	}
+ 
+ 	upserted, err := s.UpsertTask(upsert)
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index b5a68642d..c4a10ace7 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -121,48 +121,79 @@ func TestKindDependencyRules(t *testing.T) {
+ 		return s
+ 	}
+ 
+-	t.Run("a note with depends_on refused", func(t *testing.T) {
++	t.Run("a note carries depends_on through upsert, set-deps and a demotion", func(t *testing.T) {
+ 		s := seed(t)
+-		_, err := s.UpsertTask(map[string]any{"slug": "n", "kind": "note", "depends_on": []string{"dep"}})
+-		if err == nil || !stringContains(err.Error(), "set-deps") || !stringContains(err.Error(), "promote") {
+-			t.Errorf("expected refusal naming set-deps and promote, got %v", err)
++		if _, err := s.UpsertTask(map[string]any{"slug": "n", "kind": "note", "depends_on": []string{"dep"}}); err != nil {
++			t.Fatalf("UpsertTask(note n depending on dep) error = %v; want nil", err)
++		}
++		if err := s.SetDeps("idea", []string{"dep"}); err != nil {
++			t.Fatalf("SetDeps(idea, [dep]) error = %v; want nil", err)
+ 		}
+ 		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"dep"}}); err != nil {
+ 			t.Fatal(err)
+ 		}
+-		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "note"}); err == nil {
+-			t.Errorf("demoting a task that has depends_on should be refused")
++		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "note"}); err != nil {
++			t.Fatalf("demoting task x that has depends_on: error = %v; want nil", err)
++		}
++		for _, slug := range []string{"n", "idea", "x"} {
++			if got, _ := s.GetTask(slug); got.Kind != boardengine.KindNote || !slices.Equal(got.DependsOn, []string{"dep"}) {
++				t.Errorf("GetTask(%s) = kind %q, depends_on %v; want a note depending on [dep]", slug, got.Kind, got.DependsOn)
++			}
+ 		}
+ 	})
+ 
+-	t.Run("depending on an open note refused", func(t *testing.T) {
++	t.Run("a task and a note each take a note as a dependency", func(t *testing.T) {
+ 		s := seed(t)
+-		_, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"dep", "idea"}})
+-		want := `"x" depends on note "idea", and a note cannot be depended on: promote the note with lym board promote '{"slug":"idea"}', or drop the dependency with lym board set-deps '{"slug":"x","depends_on":["dep"]}'`
+-		if err == nil || err.Error() != want {
+-			t.Errorf("UpsertTask() error = %v; want %q", err, want)
++		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"dep", "idea"}}); err != nil {
++			t.Fatalf("UpsertTask(task x depending on note idea) error = %v; want nil", err)
++		}
++		if _, err := s.UpsertTask(map[string]any{"slug": "n", "kind": "note", "depends_on": []string{"idea"}}); err != nil {
++			t.Fatalf("UpsertTask(note n depending on note idea) error = %v; want nil", err)
++		}
++		if got, _ := s.GetTask("x"); !slices.Equal(got.DependsOn, []string{"dep", "idea"}) {
++			t.Errorf("GetTask(x) depends_on = %v; want [dep idea]", got.DependsOn)
++		}
++		if got, _ := s.GetTask("n"); !slices.Equal(got.DependsOn, []string{"idea"}) {
++			t.Errorf("GetTask(n) depends_on = %v; want [idea]", got.DependsOn)
+ 		}
+ 	})
+ 
+-	t.Run("depending on a done note refused", func(t *testing.T) {
++	t.Run("a cycle through a note is refused", func(t *testing.T) {
+ 		s := seed(t)
+-		if err := s.SetStatus("idea", stringPtr("done")); err != nil {
++		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"idea"}}); err != nil {
+ 			t.Fatal(err)
+ 		}
+-		_, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"idea"}})
+-		if err == nil || !stringContains(err.Error(), `"idea"`) {
+-			t.Errorf("expected refusal naming idea, got %v", err)
++		err := s.SetDeps("idea", []string{"x"})
++		if err == nil || !stringContains(err.Error(), "cycle detected") {
++			t.Errorf("SetDeps(idea, [x]) error = %v; want a cycle refusal", err)
+ 		}
+ 	})
+ 
+-	t.Run("demoting a task another entry depends on refused", func(t *testing.T) {
++	t.Run("demoting a task another entry depends on is allowed", func(t *testing.T) {
+ 		s := seed(t)
+ 		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"dep"}}); err != nil {
+ 			t.Fatal(err)
+ 		}
+-		_, err := s.UpsertTask(map[string]any{"slug": "dep", "kind": "note"})
+-		if err == nil || !stringContains(err.Error(), "x") || !stringContains(err.Error(), "set-deps") {
+-			t.Errorf("expected refusal naming the dependent x and set-deps, got %v", err)
++		if _, err := s.UpsertTask(map[string]any{"slug": "dep", "kind": "note"}); err != nil {
++			t.Fatalf("demoting dep to a note error = %v; want nil", err)
++		}
++		if got, _ := s.GetTask("dep"); got.Kind != boardengine.KindNote {
++			t.Errorf("GetTask(dep) kind = %q; want note", got.Kind)
++		}
++	})
++
++	t.Run("a dependency on a note stays pending even when the note is done", func(t *testing.T) {
++		s := seed(t)
++		if _, err := s.UpsertTask(map[string]any{"slug": "x", "kind": "task", "depends_on": []string{"idea"}}); err != nil {
++			t.Fatal(err)
++		}
++		if err := s.SetStatus("idea", stringPtr("done")); err != nil {
++			t.Fatal(err)
++		}
++		for _, brief := range s.ListTasksBrief(nil) {
++			if brief.Slug == "x" && !slices.Equal(brief.Pending, []string{"idea"}) {
++				t.Errorf("ListTasksBrief() x pending = %v; want [idea]", brief.Pending)
++			}
+ 		}
+ 	})
+ 
+@@ -195,11 +226,47 @@ func TestKindDependencyRules(t *testing.T) {
+ 			}
+ 		}
+ 	})
++}
++
++func TestRemoveTaskStripsTheSlugFromDependsOn(t *testing.T) {
++	tiergate.Require(t, 0)
++	seed := func(t *testing.T) *boardengine.Store {
++		t.Helper()
++		s := boardengine.NewStore("")
++		for _, fields := range []map[string]any{
++			{"slug": "gone", "kind": "task"},
++			{"slug": "stays", "kind": "task"},
++			{"slug": "waiting-task", "kind": "task", "depends_on": []string{"gone", "stays"}},
++			{"slug": "waiting-note", "kind": "note", "depends_on": []string{"stays", "gone"}},
++		} {
++			if _, err := s.UpsertTask(fields); err != nil {
++				t.Fatalf("seed %v: %v", fields["slug"], err)
++			}
++		}
++		return s
++	}
++
++	t.Run("a removed entry leaves the depends_on of a task and a note and their other dependencies stay", func(t *testing.T) {
++		s := seed(t)
++		if err := s.RemoveTask("gone"); err != nil {
++			t.Fatalf("RemoveTask(gone) error = %v; want nil", err)
++		}
++		for _, slug := range []string{"waiting-task", "waiting-note"} {
++			if got, _ := s.GetTask(slug); !slices.Equal(got.DependsOn, []string{"stays"}) {
++				t.Errorf("GetTask(%s) depends_on = %v; want [stays]", slug, got.DependsOn)
++			}
++		}
++	})
+ 
+-	t.Run("set-deps on a note refused", func(t *testing.T) {
++	t.Run("a merge that upserts a removed slug again keeps the dependencies on it", func(t *testing.T) {
+ 		s := seed(t)
+-		if err := s.SetDeps("idea", []string{"dep"}); err == nil {
+-			t.Errorf("a note must not take depends_on")
++		if _, err := s.MergeTasks([]string{"gone", "stays"}, map[string]any{"slug": "gone", "kind": "task"}, nil); err != nil {
++			t.Fatalf("MergeTasks() error = %v; want nil", err)
++		}
++		for slug, want := range map[string][]string{"waiting-task": {"gone"}, "waiting-note": {"gone"}} {
++			if got, _ := s.GetTask(slug); !slices.Equal(got.DependsOn, want) {
++				t.Errorf("GetTask(%s) depends_on = %v; want %v, the merged-away stays stripped", slug, got.DependsOn, want)
++			}
+ 		}
+ 	})
+ }
+@@ -1019,6 +1086,28 @@ func TestListTasksBriefLayerAndProposal(t *testing.T) {
+ 		t.Errorf("listed layers = %v; want %v", layers, want)
+ 	}
+ 
++	// An entry lists its dependencies not yet met as pending, a note's included, and leaves out a done one.
++	waiting := boardengine.NewStore("")
++	for _, fields := range []map[string]any{
++		{"slug": "open", "kind": "task"},
++		{"slug": "landed", "kind": "task", "status": "done"},
++		{"slug": "after-both", "kind": "task", "depends_on": []string{"landed", "open"}},
++		{"slug": "waits", "kind": "note", "depends_on": []string{"open", "landed"}},
++	} {
++		if _, err := waiting.UpsertTask(fields); err != nil {
++			t.Fatalf("unexpected error: %v", err)
++		}
++	}
++	pending := map[string][]string{}
++	for _, b := range waiting.ListTasksBrief(nil) {
++		if b.Pending != nil {
++			pending[b.Slug] = b.Pending
++		}
++	}
++	if want := map[string][]string{"after-both": {"open"}, "waits": {"open"}}; !maps.EqualFunc(pending, want, slices.Equal[[]string]) {
++		t.Errorf("listed pending = %v; want %v", pending, want)
++	}
++
+ 	// With no parent seam, each listed entry's parent beam is computed from the store's own entries,
+ 	// and the prime lists as RootSubject.
+ 	beamDir := t.TempDir()
+@@ -1958,6 +2047,33 @@ func TestPromote(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a note keeps its depends_on, and a given depends_on replaces it", func(t *testing.T) {
++		tests := []struct {
++			name  string
++			given []string
++			want  []string
++		}{
++			{"NoneGiven", nil, []string{"c"}},
++			{"Given", []string{"d"}, []string{"d"}},
++			{"EmptyGiven", []string{}, []string{}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				s := seed(t)
++				for _, fields := range []map[string]any{{"slug": "d", "kind": "task"}, {"slug": "a", "depends_on": []string{"c"}}} {
++					if _, err := s.UpsertTask(fields); err != nil {
++						t.Fatal(err)
++					}
++				}
++				got, changed, err := s.PromoteWithDeps("a", tt.given)
++				if err != nil || !changed || got.Kind != boardengine.KindTask || !slices.Equal(got.DependsOn, tt.want) {
++					t.Errorf("PromoteWithDeps(a, %v) = kind %q, depends_on %v, changed %v, err %v; want a task depending on %v",
++						tt.given, got.Kind, got.DependsOn, changed, err, tt.want)
++				}
++			})
++		}
++	})
++
+ 	t.Run("a project refused naming lym beam create", func(t *testing.T) {
+ 		s := seed(t)
+ 		if _, err := s.UpsertTask(map[string]any{"slug": "proj", "kind": "project"}); err != nil {
+@@ -1989,6 +2105,9 @@ func TestPrune(t *testing.T) {
+ 	if _, err := s.UpsertTask(map[string]any{"slug": "live", "kind": "task", "depends_on": []string{"d1"}}); err != nil {
+ 		t.Fatal(err)
+ 	}
++	if _, err := s.UpsertTask(map[string]any{"slug": "waiting", "kind": "note", "depends_on": []string{"d1", "live"}}); err != nil {
++		t.Fatal(err)
++	}
+ 	if _, err := s.UpsertTask(map[string]any{"slug": "d2"}); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -2020,6 +2139,9 @@ func TestPrune(t *testing.T) {
+ 	if len(live.DependsOn) != 0 {
+ 		t.Errorf("depends_on not stripped: %v", live.DependsOn)
+ 	}
++	if waiting, _ := s.GetTask("waiting"); !slices.Equal(waiting.DependsOn, []string{"live"}) {
++		t.Errorf("depends_on of note waiting = %v; want [live], the pruned d1 stripped", waiting.DependsOn)
++	}
+ 	if again := s.Prune(); len(again) != 0 {
+ 		t.Errorf("second prune removed %v", again)
+ 	}
+diff --git a/internal/loomcli/commitstatus_integration_test.go b/internal/loomcli/commitstatus_integration_test.go
+index c0514b93a..8120b6cb8 100644
+--- a/internal/loomcli/commitstatus_integration_test.go
++++ b/internal/loomcli/commitstatus_integration_test.go
+@@ -4,9 +4,7 @@
+ package loomcli
+ 
+ import (
+-	"errors"
+ 	"slices"
+-	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+@@ -18,8 +16,8 @@ import (
+ 
+ // TestWiredCommitStatus_FinishedRunEntry drives the seam that wireLightweight and wire each install.
+ // The test takes a run through its last transition and asserts the board entry that transition leaves.
+-// A recipe with no Finalize row leaves the run-held task a Sketch with no status;
+-// the task stays draft instead when another entry depends on it.
++// A recipe with no Finalize row leaves the run-held task a Sketch with no status.
++// It does so whether or not another entry depends on it.
+ // A recipe with a Finalize row leaves the task with the status of the last running transition.
+ // It is serial because it sets the board skip variable, which is process-global.
+ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+@@ -49,12 +47,12 @@ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ 		wantKind   string
+ 		wantLabels []string
+ 		wantStatus string
+-		// dependedOn makes another entry depend on the run's entry, so the board refuses to make it a Sketch.
++		// dependedOn makes another entry depend on the run's entry.
+ 		dependedOn bool
+ 	}{
+ 		{"FinalizeLessRunMakesTheEntryASketch", "motifrun", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", false},
+ 		{"FinalizingRunLeavesTheLastRunningStatus", "tapestryrun", shedrun.RecipeTapestry, boardengine.KindTask, []string{"bug"}, running, false},
+-		{"RefusedSketchLeavesTheEntryDraft", "dependedrun", shedrun.RecipeMotif, boardengine.KindTask, []string{"bug"}, boardengine.StatusDraft, true},
++		{"DependedOnEntryStillBecomesASketch", "dependedrun", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", true},
+ 	}
+ 	for _, w := range wirings {
+ 		for _, tt := range tests {
+@@ -169,73 +167,3 @@ func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
+ 		})
+ 	}
+ }
+-
+-// TestSketchFinish_TellsTheParentOnlyOfARefusedSketch drives a finished motif run's Finish against a real hub board.
+-// The finish posts one notice when the board refuses the Sketch, naming the dependent entry and both ways forward.
+-// It posts none when the board takes the Sketch.
+-// A notice that cannot be sent leaves the finish succeeding after the one attempt.
+-// It is serial because it sets the board skip variable, which is process-global.
+-func TestSketchFinish_TellsTheParentOnlyOfARefusedSketch(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-
+-	tests := []struct {
+-		name       string
+-		slug       string
+-		dependedOn bool
+-		wantNotice bool
+-		// notifyErr is what the notify seam returns after recording its line.
+-		notifyErr error
+-	}{
+-		{"ASketchTheBoardTakesPostsNothing", "takenrun", false, false, nil},
+-		{"ARefusedSketchPostsOneNotice", "refusedrun", true, true, nil},
+-		{"ANoticeThatCannotBeSentStillFinishesTheRun", "unsentrun", true, true, errors.New("creel is down")},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			hubforge.AddPair(t, hub, tt.slug)
+-			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
+-			if err != nil {
+-				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+-			}
+-			board, err := boardengine.OpenHub(location.HubPath)
+-			if err != nil {
+-				t.Fatalf("OpenHub() error = %v; want nil", err)
+-			}
+-			if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Finish", "kind": "task", "labels": []string{"bug"}}); err != nil {
+-				t.Fatalf("UpsertTask() error = %v; want nil", err)
+-			}
+-			dependent := tt.slug + "-after"
+-			if tt.dependedOn {
+-				if _, err := board.UpsertTask(map[string]any{"slug": dependent, "title": "After", "kind": "task", "labels": []string{"bug"}, "depends_on": []string{tt.slug}}); err != nil {
+-					t.Fatalf("UpsertTask() error = %v; want nil", err)
+-				}
+-			}
+-
+-			var notices []string
+-			finish := sketchFinish(location, shedrun.SelfRunID, func(line string) error {
+-				notices = append(notices, line)
+-				return tt.notifyErr
+-			})
+-			if err := finish(); err != nil {
+-				t.Fatalf("Finish() error = %v; want nil", err)
+-			}
+-
+-			if !tt.wantNotice {
+-				if len(notices) != 0 {
+-					t.Errorf("notices = %q; want none", notices)
+-				}
+-				return
+-			}
+-			if len(notices) != 1 {
+-				t.Fatalf("notices = %q; want one", notices)
+-			}
+-			for _, want := range []string{"loom " + tt.slug + ":", dependent, "lym board set-deps", `lym board upsert '{"slug":"` + tt.slug + `","kind":"note","labels":["sketch"],"status":null`, `"recipe":"raddle"`, "lym board set-status"} {
+-				if !strings.Contains(notices[0], want) {
+-					t.Errorf("notice = %q; want it to name %q", notices[0], want)
+-				}
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 9c92b9f83..1ef9ec222 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -27,7 +27,8 @@
+ // A finished run writes nothing when its recipe has a Finalize row, whose landing marked the entry done;
+ // it writes nothing with a RaddleFile row, whose filing ended the entry or turned it into its project.
+ // A finished motif run makes its entry a Sketch, a note of the built-in type `sketch`, with its record stored.
+-// When the board refuses that, the run warns, leaves the entry draft and mails its parent the refusal.
++// The board can refuse that as an invalid write.
++// In that case the run warns, leaves the entry draft and mails its parent the refusal.
+ //
+ // A run seeded with the recipe `pawl` is a beam's life.
+ // It has no plan, no review round and no reroute edge.
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index d05891789..5017237bd 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -297,7 +297,7 @@ func raddleFilingMarked(location *lymcwd.Location, runID string) (bool, error) {
+ }
+ 
+ // sketchFinish returns the Finish that makes the board entry of the run at location a Sketch.
+-// The board refuses the Sketch while another entry depends on the entry.
++// The board can refuse the Sketch as an invalid write.
+ // In that case it warns naming the refusal and leaves the entry draft instead,
+ // so the run still lets go of the entry and nothing starts it.
+ // It then tells the run's parent through notify, since only the parent can settle such an entry;
+@@ -326,9 +326,9 @@ func sketchFinish(location *lymcwd.Location, runID string, notify func(line stri
+ }
+ 
+ // sketchRefusedNotice renders the line that tells the parent the finished run's entry slug stays a draft task.
+-// The line names the board's refusal, which names the dependent entries, and it gives the ways forward.
++// The line names the board's refusal and gives the ways forward.
+ func sketchRefusedNotice(slug string, refusal error) string {
+-	return fmt.Sprintf("loom %s: the finished run's entry stays a draft task with its decision record stored: %v; way forward: drop or move those dependencies with `lym board set-deps '{\"slug\":\"<dependent>\",\"depends_on\":[...]}'` for each entry the refusal names, keeping its other dependencies, and make the entry a Sketch with `lym board upsert '{\"slug\":\"%s\",\"kind\":\"note\",\"labels\":[\"sketch\"],\"status\":null,\"depends_on\":[],\"isolated\":false,\"recipe\":\"\",\"profile\":\"\",\"run_settings\":null}'`, listing after `sketch` in `labels` the entry's labels that are not type labels, or give the task recipe raddle with `lym board upsert '{\"slug\":\"%s\",\"recipe\":\"raddle\"}'` and release it with `lym board set-status '{\"slug\":\"%s\",\"status\":null}'`", slug, refusal, slug, slug, slug)
++	return fmt.Sprintf("loom %s: the finished run's entry stays a draft task with its decision record stored: %v; way forward: correct what the refusal names, then make the entry a Sketch with `lym board upsert '{\"slug\":\"%s\",\"kind\":\"note\",\"labels\":[\"sketch\"],\"status\":null,\"depends_on\":[],\"isolated\":false,\"recipe\":\"\",\"profile\":\"\",\"run_settings\":null}'`, listing after `sketch` in `labels` the entry's labels that are not type labels, or give the task recipe raddle with `lym board upsert '{\"slug\":\"%s\",\"recipe\":\"raddle\"}'` and release it with `lym board set-status '{\"slug\":\"%s\",\"status\":null}'`", slug, refusal, slug, slug, slug)
+ }
+ 
+ // newCommitStatusSeam builds the shedengine.Shed.CommitStatus closure from deps.
+diff --git a/internal/raddleparser/check.go b/internal/raddleparser/check.go
+index b88db2630..e34ec2b4b 100644
+--- a/internal/raddleparser/check.go
++++ b/internal/raddleparser/check.go
+@@ -31,7 +31,6 @@ const (
+ 	CheckBoardUnchecked         = "board-unchecked"
+ 	CheckDependsCycle           = "depends-cycle"
+ 	CheckDependsUnknown         = "depends-unknown"
+-	CheckDependsNote            = "depends-note"
+ 	CheckPackagesShared         = "packages-shared"
+ 	CheckRecipeInvalid          = "recipe-invalid"
+ 	CheckProfileUnknown         = "profile-unknown"
+@@ -55,7 +54,7 @@ const (
+ 	KindProject = "project"
+ )
+ 
+-// KindNote is the board entry kind no entry can depend on, which the board refuses at filing.
++// KindNote is the board entry kind of a note.
+ const KindNote = "note"
+ 
+ // sectionOpenRisks and sectionCriteria are the decision record sections whose bullets a part carries.
+@@ -335,7 +334,6 @@ func uncheckedEntries(p Proposal, board BoardContext) []string {
+ 
+ // dependencies reports a depends_on cycle and a depends_on that names no part, no board entry and no board_checked entry.
+ // A board_checked entry gone from the board passes as landed, whether or not the run is filing.
+-// It also reports a depends_on that names a note on the board, which the board would refuse at filing.
+ func (c *checker) dependencies() []Finding {
+ 	var findings []Finding
+ 	parts := c.proposal.Parts
+@@ -383,8 +381,6 @@ func (c *checker) dependencies() []Finding {
+ 			checked := slices.ContainsFunc(c.proposal.BoardChecked, func(checked BoardCheck) bool { return checked.Slug == dep })
+ 			switch {
+ 			case isPart:
+-			case entry >= 0 && c.board.Entries[entry].Kind == KindNote:
+-				findings = append(findings, Finding{Check: CheckDependsNote, Part: part.Slug, Detail: fmt.Sprintf("depends_on names the note %q, and the board refuses a dependency on a note; way forward: drop the dependency, or have the operator promote the note with lym board promote '{\"slug\":\"%s\"}', then run lym loom raddle-propose again", dep, dep)})
+ 			case entry < 0 && !checked:
+ 				findings = append(findings, Finding{Check: CheckDependsUnknown, Part: part.Slug, Detail: fmt.Sprintf("depends_on names %q, which is no part, no board entry and no board_checked entry", dep)})
+ 			}
+diff --git a/internal/raddleparser/check_test.go b/internal/raddleparser/check_test.go
+index c36cc2f4f..df2041aec 100644
+--- a/internal/raddleparser/check_test.go
++++ b/internal/raddleparser/check_test.go
+@@ -74,17 +74,11 @@ func TestCheck(t *testing.T) {
+ 		}, []string{CheckBoardUnchecked}},
+ 		{"DependsOnCycle", func(p *Proposal, _ *BoardContext) { p.Parts[0].DependsOn = []string{"part-b"} }, []string{CheckDependsCycle}},
+ 		{"DependsOnUnknown", func(p *Proposal, _ *BoardContext) { p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "ghost") }, []string{CheckDependsUnknown}},
+-		{"DependsOnNote", func(p *Proposal, b *BoardContext) {
++		{"DependsOnANoteOnTheBoardPasses", func(p *Proposal, b *BoardContext) {
+ 			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
+ 			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
+-		}, []string{CheckDependsNote}},
+-		{"DependsOnNoteWhileFiling", func(p *Proposal, b *BoardContext) {
+-			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
+-			p.BoardChecked = append(p.BoardChecked, BoardCheck{Slug: "idea"})
+-			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
+-			b.Filing = true
+-		}, []string{CheckDependsNote}},
+-		{"DependsOnPartThatIsAlsoANoteIsNoNoteDependency", func(_ *Proposal, b *BoardContext) {
++		}, nil},
++		{"DependsOnPartThatIsAlsoANoteIsASlugClash", func(_ *Proposal, b *BoardContext) {
+ 			b.Entries = append(b.Entries, BoardEntry{Slug: "part-a", Kind: KindNote, Open: true})
+ 		}, []string{CheckSlugTaken}},
+ 		{"DependsOnCheckedEntryGoneFromTheBoardPasses", func(p *Proposal, _ *BoardContext) { dependOnGoneEntry(p) }, nil},
+@@ -195,10 +189,6 @@ func TestCheck_DetailNamesTheWayForward(t *testing.T) {
+ 		mutate func(p *Proposal, b *BoardContext)
+ 		want   []string
+ 	}{
+-		{"DependsOnNote", CheckDependsNote, func(p *Proposal, b *BoardContext) {
+-			b.Entries = append(b.Entries, BoardEntry{Slug: "idea", Kind: KindNote, Open: true})
+-			p.Parts[1].DependsOn = append(p.Parts[1].DependsOn, "idea")
+-		}, []string{`the note "idea"`, "drop the dependency", `lym board promote '{"slug":"idea"}'`}},
+ 		{"SlugInvalid", CheckSlugInvalid, func(p *Proposal, _ *BoardContext) { p.Parts[1].Slug = refusedSlug }, []string{
+ 			`slug "refused-slug" is refused`, "pick a slug the board admits", "lym loom raddle-propose",
+ 		}},
+diff --git a/plugins/ly/skills/board-policy/SKILL.md b/plugins/ly/skills/board-policy/SKILL.md
+index 29adadc38..9bb646f79 100644
+--- a/plugins/ly/skills/board-policy/SKILL.md
++++ b/plugins/ly/skills/board-policy/SKILL.md
+@@ -17,6 +17,8 @@ The commands that read and write the board are in the `ly:board` skill.
+ - A finding essentially the same as an existing note, or a correction to its subject, goes into that note;
+   any other finding stays its own note, even when its work overlaps another entry.
+   Notes are bundled only when the operator promotes them into a task.
++- A note that must wait for another entry, such as a running task, carries that entry in its `depends_on`, set with `lym board set-deps`;
++  the board then shows what it waits for, and the promoted task keeps it.
+ - A board body holds the current design only.
+   When a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now.
+   Remove the replaced drafts, recommendations and open questions in the same write, never keeping them under a "this replaces everything above" line.
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 4b6e054a0..07a5de0ee 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -16,8 +16,9 @@ Every verb prints JSON, except where `--text` asks for the compact listing.
+ 
+ Every entry carries a `kind`:
+ 
+-- `task`: concrete and claimable; only a task can run, and only a task carries `depends_on`.
++- `task`: concrete and claimable; only a task can run.
+ - `note`: an idea or observation that is not yet a task, one note per entry.
++  A note may carry `depends_on` naming the entries it waits for; `promote` keeps it, and a `depends_on` in the promote payload replaces it.
+ - `project`: a group of entries, with the handle letter `P`.
+   A task or note joins one through its `project` field, naming the project's slug,
+   and a project lists the order of its members in `order`.
+@@ -247,13 +248,15 @@ lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
+ 
+ A `body` renders as ordinary markdown with semantic line breaks.
+ A single newline is a soft break, so structure a body with headings and lists rather than relying on line breaks for layout.
+-Never name another task as a dependency in a task's brief or body: put it in `depends_on` with `lym board set-deps`.
+-The README computes each task's After column and its Ready or layer subsection from `depends_on`.
++Never name another task as a dependency in an entry's brief or body: put it in `depends_on` with `lym board set-deps`, on a note as on a task.
++The README computes each task's After column and its Ready or layer subsection from `depends_on`,
++and a note's After column from its own; `lym board list --text` ends a waiting entry's row with `after` and the slugs.
+ It drops a finished entry from After, and `prune` strips it;
+ a dependency written as prose goes stale once that entry lands.
+ Whenever you set `depends_on`, check the other tasks waiting on the same entry for overlap, not only the running ones.
+ Act on the `notice` that `set-deps` and the upsert verbs print: chain overlapping tasks with `lym board set-deps`.
+-A relation between notes has no `depends_on`, so it is a sentence in a body.
++A note may depend on another note, set with `lym board set-deps`.
++A task waiting on a note waits until the note becomes a task and lands, or is removed.
+ A body holds an entry's design while it is unbuilt.
+ The task that builds it documents the result in the repository and never rewrites its own entry's body or scope:
+ the landing marks the entry done, and `lym board prune` removes it.
