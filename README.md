@@ -38,7 +38,7 @@ Owner `neve`
 | T2 | **Study: close the bus and tmux exposures without a kernel newer than 7.0** | [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md) | darn · speed | Darn-Write | neve | 59m<br>59m | shuttle, reed, claude |
 | T4 | **A darn writer ran script -qfc tmux attach outside any memory cap and froze Neve**<br>• `beam: land_notice on` | [`agent-script-tmux-ate-memory`](design-agent-script-tmux-ate-memory.md) | darn · light | Code-Burler-Fix | neve | 35m<br>32m | process, shuttle |
 | T5 | **Every agent pane runs in a memory-capped scope, so a runaway child is killed there** | [`agent-pane-memory-cap`](design-agent-pane-memory-cap.md) | darn · light | Darn-Write | neve | 23m<br>23m | reed, shuttle, process |
-| T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light | starting · Open-IDE | neve | 10m<br>1m | shuttle, shed |
+| T6 | **A run agent killed by a crash or reboot resumes its own session instead of starting fresh**<br>• `beam: land_notice on` | [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md) | darn · light | Preflight | neve | 10m<br>1m | shuttle, shed |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Webster | neve | 10h<br>10h | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
