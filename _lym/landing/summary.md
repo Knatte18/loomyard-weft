@@ -1,31 +1,31 @@
 # lint-comments --base lints the working tree, not committed HEAD
 
-`lym loom lint-comments --base <commit>` read the new side of every file from HEAD, so a fix to a flagged comment showed only after it was committed (issue #182).
-The verb now lints the working tree, uncommitted edits and untracked `.go` files included, against `--base`, or against HEAD without it.
+`lym loom lint-comments --base <commit>` compared `<commit>` with committed HEAD.
+A fix to a flagged comment showed up in the lint only after it was committed, which forced a commit per check cycle.
 
-## What changed
+Now `--base` compares the working tree with `<commit>`, uncommitted edits and untracked `.go` files included.
+Without `--base` the verb still compares the working tree with HEAD.
+The verb's help and `docs/overview.md` describe this.
 
-- `commentlint.Lint(worktree, base)` always diffs the working tree against the base; an empty base is HEAD.
-  Its callers without a base, the gate's `comments` lint step and `lint-comments` without `--base`, behave as before.
-- The new `commentlint.LintCommitRange(worktree, base)` keeps the old base-to-HEAD comparison and reads no working tree.
-  The Webster-Burler-Fix verify gate (`loomshed.NewVerifyGate`) calls it, since that gate checks the committed tree.
-- `lint-comments`' help, the `commentlint` package doc, `docs/overview.md` and `pattern/PATTERN-gate-slot.md` describe the new behaviour.
+Closes #182
 
 ## Design decisions
 
-- The board entry offered three options; this takes the first, linting the working tree, rather than adding a flag or documenting the HEAD-only reading.
-  The verb is an editing aid, so it lints what the agent is editing.
-- Only `lint-comments` changes.
-  `lint-pattern --base` still compares `--base` with HEAD; the entry names only the comment lint.
+- `commentlint.Lint(worktree, base)` always reads the working tree; an empty base means HEAD.
+- The committed-range reading moves to a new `commentlint.LintCommitRange(worktree, base)`, which diffs base against HEAD and reads no working tree.
+  The verify gate in `internal/loomshed` (`NewVerifyGate`) calls it, so the gate keeps verifying the committed tree and an untracked scratch file cannot fail a round.
+  `PATTERN-gate-slot.md` records the split.
+- An untracked file that the base already holds, such as one removed from the index in a later commit, uses its own path as the base side.
+  Only the lines it changed count as new, so its legacy wrapped comments are not flagged.
+  Finding that out takes one `git cat-file -e` call per untracked `.go` file, marked as a raw git site and pinned in `cmd/lym/checkedcall_test.go`.
+- Untracked files that are not `.go` files are no longer listed.
+- `internal/loomcli` and `internal/gatecli` callers pass the same arguments as before; only `--base` changes meaning.
 
-## Tests
+## To check by hand
 
-- `TestLint_OverARepository` (commentlint) covers both functions over one repository.
-  `Lint` against a base reports committed and uncommitted findings together, and `LintCommitRange` reports only the committed one.
-- `TestLintCommentsCmd_OverARepository` (loomcli) adds an uncommitted wrapped comment and checks that `lint-comments --base` reports it next to the committed one.
-  This step fails on the merge base, which reports only the committed finding.
+- `lym loom lint-comments --base <commit>` on a tree with an uncommitted wrapped comment reports it.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** lint
+**Blast radius:** commentlint
