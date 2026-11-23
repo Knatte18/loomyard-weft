@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
-Depends on: [`slack-click-silent-fail`](design-slack-click-silent-fail.md), [`parent-review-stale-window`](design-parent-review-stale-window.md), [`red-first-csharp`](design-red-first-csharp.md), [`async-run-pusher`](design-async-run-pusher.md), [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md), [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md)
+Depends on: [`slack-click-silent-fail`](design-slack-click-silent-fail.md), [`red-first-csharp`](design-red-first-csharp.md), [`async-run-pusher`](design-async-run-pusher.md), [`pr-review-dead-session-unseen`](design-pr-review-dead-session-unseen.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md), [`failed-ask-hides-satisfied`](design-failed-ask-hides-satisfied.md)
 
 Filed from the Sketch `config-keys-nested-by-area`.
 
