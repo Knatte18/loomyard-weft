@@ -2,6 +2,7 @@
   "current_producer": "Code-Bouncer",
   "state": "blocked",
   "error": "bounce budget exhausted for Code-Bouncer; way forward: run \"lym loom resume\" in the task worktree: the resume grants the row one more budget; a goto keeps the spent budget and grants none",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
