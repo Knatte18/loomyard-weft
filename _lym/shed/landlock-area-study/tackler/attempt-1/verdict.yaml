@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  The bootstrap stop (trace 1352f9583bae4cf7, 2026-11-23T19:45:48+01:00) refused
+  because code tip 1016a0ec4b6a6061e275031363a82c0100f2d09a "is not on origin yet".
+  That is no longer true. A read-only check now shows origin's refs/heads/landlock-area-study
+  at exactly 1016a0ec4b6a6061e275031363a82c0100f2d09a (git ls-remote origin), so the
+  commit is present on origin by the rule that equality with the tip counts as present.
+  The error's own way forward was to re-run "lym batten run landlock-area-study" once the
+  code push lands; the push has landed. The stop is a bootstrap stop with no transient
+  class, it has not been resumed before, and no goto is needed. A plain re-launch settles it.
