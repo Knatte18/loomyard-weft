@@ -16,4 +16,8 @@ review:
     fork_fresh_tokens: 135871
     fork_cache_read_tokens: 4202923
     fork_fresh_share: 0.22362946284555577
+fix:
+    model: sonnet
+    effort: high
+    tokens_known: false
 attempt: "4"
