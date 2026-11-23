@@ -182,7 +182,7 @@
       "isolated": false,
       "brief": "After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked",
       "body": "## Seen\n\nWhile a beam's pull request is recorded, each member landing asks the orch, through its landed line, to add the landing to the change description and run `lym beam describe \u003cslug\u003e`.\nThe beam orch writes `summary.md` by hand, and nothing in lym rewrites it.\nSince `per-task-settings-fixups` the orch gets that line only when the member's `land_notice` is on, so with notices off the pull request's description falls behind.\n\n## Decision\n\nOperator, 2026-11-22: the description is updated at every member landing, and rewritten whole, never appended to.\n\n## Design\n\n- When a member lands under a recorded pull request, lym starts a describer agent on the beam.\n  It reads the current `summary.md`, the beam's commits and every member pull request, and rewrites the description as it now stands:\n  what the beam ended up with, never the way there, with every member pull request listed.\n- `lym beam describe \u003cslug\u003e` then records it and updates the pull request, as today.\n- No orch is asked: the landed line drops its follow-up.\n- A rewrite that fails leaves the old description standing and is retried at the next landing; the beam orch and the operator can still edit and record by hand.\n- Where it runs (dobby after the landing, or a row of the member's landing) and how the describer role is reused from the Describe row is for the run to settle.\n",
-      "status": "running · Code-Bouncer",
+      "status": "halted · Code-Bouncer",
       "created": "2026-11-22T18:03:09Z",
       "revised": "2026-11-22T18:17:27Z",
       "run_settings": {
@@ -239,7 +239,7 @@
       "isolated": false,
       "brief": "loom.yaml spells the area into flat key names (discussion_review_ask_parent, code_max_bounces); nest them as discussion.review_ask_parent",
       "body": "## Seen\n\n`loom.yaml` holds its keys flat with the area spelled into each name: 19 start `discussion_`, 13 `code_`, 8 `split_`, 3 `pr_`, and more.\nElsewhere a key is named bare without its file, such as `judge_ask_parent` in `drift.yaml`, which reads like the Bouncer's judge of a perch.\nT11's change description and halt notices name keys this way, so a reader cannot tell which area a key governs.\n\n## Wanted\n\nOperator, 2026-11-23: a key's name shows the area it sits in, with a dot per level, as `drift.judge_ask_parent` and `loom.discussion.review_ask_parent`.\n\n- `loom.yaml`'s prefixed keys become maps per area: `discussion`, `code`, `split`, `pr` and the others, such as `discussion.review_ask_parent` and `code.max_bounces`.\n- `run_settings`, profiles, `lym config --set`, every template comment, doc, stencil and halt notice use the dotted full name, file included.\n- Existing hub layers and board `run_settings` are carried over by a reinterpretation, as other key moves were.\n- Decide which other templates have flat prefixed keys that belong in the same change.\n",
-      "status": "running · Discussion-Bouncer",
+      "status": "halted · Discussion-Bouncer",
       "created": "2026-11-23T08:10:34Z",
       "revised": "2026-11-23T09:08:12Z"
     },
