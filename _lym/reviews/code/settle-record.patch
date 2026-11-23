@@ -1,0 +1,73 @@
+diff --git a/contracts/orchrole/role-intake.md b/contracts/orchrole/role-intake.md
+index de5c74b6a..ed2bc2288 100644
+--- a/contracts/orchrole/role-intake.md
++++ b/contracts/orchrole/role-intake.md
+@@ -23,13 +23,19 @@ When the operator asks:
+ 
+ The fork follows `ly:board` for the commands and is bound to these outcomes:
+ 
+-- It reads the full list with `--full` and takes each issue to one of three outcomes:
+-  a new note, a fold or a close as noise.
++- It reads the full list with `--full` and takes each issue to one of four outcomes:
++  a new note, a fold, a close as noise or a close as already fixed.
+ - A new note carries exactly one type label and the label of every module the issue touches.
+ - A fold goes into an existing entry only when the issue is essentially the same finding or a correction to its subject.
+   The board policy decides which, and the fold adds any module label the issue brings.
+ - A close as noise is only for an issue that has no actionable content or adds nothing to a recorded duplicate.
+   Its reason names which.
++- A close as already fixed is only for an issue whose fault the code on the hub's main branch no longer has.
++  The fork judges it from that branch and its history, read with git and never checked out or changed:
++  the code path the issue names, and the commits that touch that path since the issue was filed or since the build it reports.
++  It closes the issue with `"completed":true`,
++  its reason naming the commit on the main branch that fixed the fault and what the fork saw on the path.
++  When the fork cannot tell, or cannot name the fixing commit, the issue becomes a note or a fold like any other.
+ - A duplicate that adds anything is folded;
+   a fold the board refuses because the entry is run-held becomes a new note.
+ - The full list carries each issue's comments, and the import carries them into the entry's body.
+diff --git a/internal/boardcli/intake.go b/internal/boardcli/intake.go
+index 244077182..fbaa63724 100644
+--- a/internal/boardcli/intake.go
++++ b/internal/boardcli/intake.go
+@@ -114,7 +114,7 @@ Examples:
+ 
+ 	closeCmd := &cobra.Command{
+ 		Use:         "close {issue, reason, completed?}",
+-		Short:       "close a hub repository issue that is noise, with a stated reason",
++		Short:       "close a hub repository issue that is noise or already fixed, with a stated reason",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Comment on an open issue of the hub's repository with the reason and close it.
+ It writes nothing to the board and never edits the issue's content. A pull request and an
+@@ -125,8 +125,11 @@ Fields:
+   "reason"    string  — the comment posted before closing (required, non-empty)
+   "completed" bool    — close as completed instead of not planned (optional)
+ 
+-Example:
+-  lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'`,
++An issue already fixed is closed as completed, its reason naming the fixing commit.
++
++Examples:
++  lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
++  lym board intake close '{"issue":15,"reason":"Already fixed by 6fa7f1740 on main: it guards the nil fabric.","completed":true}'`,
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 07a5de0ee..219fe92a0 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -228,6 +228,7 @@ lym board intake list --full
+ lym board intake import '{"issue":12,"slug":"retry-backoff"}'
+ lym board intake import '{"issue":13,"into":"retry-backoff"}'
+ lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
++lym board intake close '{"issue":15,"reason":"Already fixed by 6fa7f1740 on main: it guards the nil fabric.","completed":true}'
+ ```
+ 
+ - `list` prints the number and title of each open issue no entry records;
+@@ -243,6 +244,7 @@ lym board intake close '{"issue":14,"reason":"Duplicate of #12."}'
+   only what the entry body quotes or attaches of them is available.
+   A label `upsert` on a folded entry carries the entry's whole label list, since `labels` replaces it.
+ - `close` ends a noise issue with a stated `reason` and writes nothing to the board.
++  An issue the main branch already fixed is closed with `"completed":true`, its `reason` naming the fixing commit.
+ 
+ ## Writing a body
+ 
