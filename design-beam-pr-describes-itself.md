@@ -2,8 +2,6 @@
 
 `beam-pr-describes-itself` · Task · enhancement, dobby, landing · running · Drift-Await
 
-Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
-
 ## Seen
 
 While a beam's pull request is recorded, each member landing asks the orch, through its landed line, to add the landing to the change description and run `lym beam describe <slug>`.

@@ -2,8 +2,6 @@
 
 `note-depends-on` · Task · enhancement, board · running · Darn-Write
 
-Depends on: [`per-task-settings-fixups`](design-per-task-settings-fixups.md)
-
 ## Seen
 
 Only a task carries `depends_on` (`lym board set-deps` and `upsert` refuse it on a note; `promote` takes it at the promotion).

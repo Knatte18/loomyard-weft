@@ -237,9 +237,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "per-task-settings-fixups"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "After each member landing under a recorded pull request, a describer agent rewrites the beam change description and lym beam describe updates the pull request; no orch is asked",
       "body": "## Seen\n\nWhile a beam's pull request is recorded, each member landing asks the orch, through its landed line, to add the landing to the change description and run `lym beam describe \u003cslug\u003e`.\nThe beam orch writes `summary.md` by hand, and nothing in lym rewrites it.\nSince `per-task-settings-fixups` the orch gets that line only when the member's `land_notice` is on, so with notices off the pull request's description falls behind.\n\n## Decision\n\nOperator, 2026-11-22: the description is updated at every member landing, and rewritten whole, never appended to.\n\n## Design\n\n- When a member lands under a recorded pull request, lym starts a describer agent on the beam.\n  It reads the current `summary.md`, the beam's commits and every member pull request, and rewrites the description as it now stands:\n  what the beam ended up with, never the way there, with every member pull request listed.\n- `lym beam describe \u003cslug\u003e` then records it and updates the pull request, as today.\n- No orch is asked: the landed line drops its follow-up.\n- A rewrite that fails leaves the old description standing and is retried at the next landing; the beam orch and the operator can still edit and record by hand.\n- Where it runs (dobby after the landing, or a row of the member's landing) and how the describer role is reused from the Describe row is for the run to settle.\n",
@@ -286,36 +284,6 @@
       "profile": "solid"
     },
     {
-      "id": 1575,
-      "handle": "T2",
-      "slug": "per-task-settings-fixups",
-      "title": "Per-task beam settings: drop the member-line exception and fix the open findings",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "dobby",
-        "config",
-        "reconcile",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "land_notice off means no line for beam members too, and the six review findings per-task-settings-one-lookup landed open are fixed",
-      "body": "## Goal\n\nFinish what `per-task-settings-one-lookup` (`118bee8ad`) left: remove the beam-member exception from the landing notice, and fix the review findings it landed open.\nThe full findings, with locations and proposed fixes, are in round 2's review in the run's archived records:\n`git -C loomyard-weft show archive/per-task-settings-one-lookup/d3f72e425e2a:_lym/reviews/code/round-2-review.md`.\n\n## 1. A beam member gets its landed line only when its land_notice is on\n\n`rememberRuns` in `internal/dobbyengine/landnotice.go` sends a member its landed line while the beam's pull request is recorded, whatever its `land_notice` reads.\nThis was Code-Burler finding F12, `member-line-overrides-explicit-off`.\n\nDecision, operator, 2026-11-22: no exception.\nPer-task beam settings follow one rule, and `land_notice` off means no line.\n\n- `rememberRuns` sends a member's line only when its reading is on; the follow-up stays on that line.\n- The package doc of `landnotice.go`, the doc comments of `landNotices` and `rememberRuns`, and `LandNoticeState.Member` drop the exception; `Member` goes if nothing else reads it.\n- `pattern/PATTERN-landing.md` and `pattern/PATTERN-config-layers.md` lose any mention of it.\n- Keeping the pull request's description current without the orch is out of scope: note `beam-pr-describes-itself`.\n\n## 2. The findings landed open\n\n- **F26 `reinterpret-discovers-worktrees-and-anchors`** (BLOCKING): `settingPlaces` in `internal/dobbyengine/reinterpret.go` lists the hub dir for `.git` entries and derives each anchor from the prime's.\n  The weft siblings count as worktrees, and a pair with its own anchor is read and written at the wrong dir, against PATTERN-cwd-resolution.\n  The reinterpretation gets the code worktrees as told geometry from `hubreconcile`.\n- **F2 `per-task-keys-declared-at-several-sites`** (BLOCKING): the literal `\"beam\"` remains in `dobbyengine.ConfigSpec`, the configreg registration and `beamcli` `mergeParent`, beside `beamsetting.Module`.\n- **F27 `registration-test-lacks-keep-marker`** (BLOCKING): `TestLookup_BeamCarriesThePerTaskSettingsReinterpretation` needs `//testtiming:keep` with its reason.\n- **F28 `duplicate-row-in-prepare-run-settings`** (BLOCKING): a duplicate row in `TestPrepareRunSettings` in `internal/configreg/runsettings_test.go`.\n- **F5 `carry-misses-runs-in-flight`** (MEDIUM): the one-time carry of the retired board fields into seeded runs misses a run on another machine and one behind an early board save, since board verbs run no reconcile and the marker is hub-wide.\n- **F13 `beam-project-notify-on-land-dropped`** (MEDIUM): a beam project's `notify_on_land` is folded away on load, so a board save before the carry loses it.\n\nF5 and F13 only matter while a hub still holds the retired board fields; check first whether any hub does.\n",
-      "status": "done",
-      "created": "2026-11-22T18:03:09Z",
-      "revised": "2026-11-22T18:05:43Z",
-      "run_settings": {
-        "loom": {
-          "code_assist_reviewer_fan": "review-code",
-          "code_assist_reviewer_model": "astra[medium]"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1576,
       "handle": "B1",
       "slug": "harden-fabric-undriven-cases",
@@ -345,9 +313,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "per-task-settings-fixups"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Only a task carries depends_on, so a note that must wait for a running task looks ready to start",
       "body": "## Seen\n\nOnly a task carries `depends_on` (`lym board set-deps` and `upsert` refuse it on a note; `promote` takes it at the promotion).\nA note that must wait for a running task, such as `harden-fabric-undriven-cases` waiting for `harden-fabric-single-repo-verbs`, shows nothing of that on the board,\nso the operator keeps asking whether it can start.\n\n## Wanted\n\nOperator, 2026-11-23:\n\n- `upsert` and `set-deps` accept `depends_on` on a note.\n- `lym board list --text` and the README show a note's dependencies as they show a task's.\n- `promote` keeps a note's `depends_on`; one given in the promote payload replaces it.\n- `prune` strips a done entry from a note's `depends_on` as from a task's.\n- The `ly:board` and `ly:board-policy` skills say a note may carry `depends_on`.\n",
