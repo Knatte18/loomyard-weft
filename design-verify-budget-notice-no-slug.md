@@ -1,6 +1,6 @@
 # Verify-budget notice names no run
 
-`verify-budget-notice-no-slug` · Task · bug, loom · running · Drift-Verify
+`verify-budget-notice-no-slug` · Task · bug, loom · running · Code-Bouncer
 
 ## Seen
 
