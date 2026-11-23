@@ -1,11 +1,11 @@
 {
-  "current_producer": "Harden-Burler-Review",
+  "current_producer": "Harden-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Harden-Burler-Review",
-    "last": "Harden-Bouncer → bounced to Harden-Burler-Review",
+    "now": "Harden-Burler-Fix",
+    "last": "Harden-Burler-Review → bounced to Harden-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -381,6 +381,30 @@
       "at": "2026-11-23T07:28:52Z",
       "started_at": "2026-11-22T20:51:17Z",
       "routed_to": "Harden-Burler-Review"
+    },
+    {
+      "producer": "Harden-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/harden-fabric-single-repo-verbs/_lym/reviews/harden/round-4-review.md",
+      "at": "2026-11-23T08:17:30Z",
+      "started_at": "2026-11-23T07:29:28Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-23T08:17:29.562373456Z",
+          "end": "2026-11-23T08:17:29.56295383Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-23T08:17:29.614332904Z",
+          "end": "2026-11-23T08:17:29.614454772Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Harden-Burler-Fix"
     }
   ],
   "product": {

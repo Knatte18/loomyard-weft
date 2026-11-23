@@ -1,0 +1,14 @@
+{
+  "session_id": "6506fa80-eb80-4a38-ad3c-0797cb1aa1c4",
+  "row": "Harden-Burler-Review",
+  "role": "harden-burler-review",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 362,
+  "cache_write_tokens": 496314,
+  "cache_read_tokens": 24118727,
+  "output_tokens": 110896,
+  "cost_usd": 9.524683399999995,
+  "started": "2026-11-23T07:29:29Z",
+  "ended": "2026-11-23T08:17:29Z"
+}
