@@ -1,0 +1,249 @@
+diff --git a/contracts/stencils/landing/landing-block-pr-review-autonomous.md b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+index 4c2b48a36..22b31573f 100644
+--- a/contracts/stencils/landing/landing-block-pr-review-autonomous.md
++++ b/contracts/stencils/landing/landing-block-pr-review-autonomous.md
+@@ -18,7 +18,10 @@ Your parent answers that it is satisfied, or with findings.
+ On findings, run `lym loom pr-findings <file>` first, as the section above says, then fix them, commit, and ask again as above.
+ Run `lym loom pr-continue` only once your parent's answer is satisfied at your current head.
+ It ends the review, and the ordinary landing then merges the pull request on GitHub, after its gate.
++A satisfied answer at your head stands even when a later ask at that head failed or still awaits an answer.
+ 
++When a satisfied answer from your parent already stands at your head,
++run `lym loom pr-continue` instead of asking again, whatever `await` reports of a later ask.
+ When `await` reports an ask ended timeout, no-parent or not-sent, or reports that no ask stands at your head,
+ ask again with `lym loom parent-review ask {{.slug}}`.
+ After a no-parent end, end your turn first and ask again only on the next mail you receive,
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index c78707139..bbdeae50e 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -19,6 +19,8 @@
+ // The review keeps that value.
+ // Under a recorded autonomy of false the session is interactive, for the operator to discuss the pull request in.
+ // Under a recorded autonomy of true it is non-interactive, and the parent orch reviews through recorded asks.
++// The parent's latest answer at a head stands there until the parent answers again at that head;
++// a later ask at that head that awaits or ended unanswered does not hide it.
+ // The session runs under the publish shell guard: it cannot push, merge, close or open a pull request.
+ // A wait on the pull request has no timeout.
+ // A session that ends while the review is open halts the row, and `lym loom resume` resumes it.
+diff --git a/internal/landingshed/prreviewask.go b/internal/landingshed/prreviewask.go
+index f268b3500..54144bb9d 100644
+--- a/internal/landingshed/prreviewask.go
++++ b/internal/landingshed/prreviewask.go
+@@ -88,29 +88,33 @@ const (
+ 	// PRReviewSatisfied is an ask sent at the head that the parent answered with no findings.
+ 	PRReviewSatisfied PRReviewStanding = "satisfied"
+ 	// PRReviewAwaiting is an ask sent at the head that the parent has not answered, before its deadline.
++	// No satisfied answer stands at the head.
+ 	PRReviewAwaiting PRReviewStanding = "awaiting"
+ 	// PRReviewAskAgain is any other standing: no PR-Review ask at the head, or one that does not stand.
+ 	PRReviewAskAgain PRReviewStanding = "ask-again"
+ )
+ 
+-// ReadPRReviewStanding reads the standing at head of the run's latest ask made under PRReviewAskLineTag, at now.
++// ReadPRReviewStanding reads the standing at head of the run's asks made under PRReviewAskLineTag, at now.
+ // An ask of another tag is never read as one, a review round's or the drift judge's among them.
+-// It is satisfied when the ask was sent at head and is done with a report that holds no findings.
+-// It is awaiting when the ask was sent at head and is pending-post or open before its deadline.
++// It is satisfied when the latest answered ask sent at head, not cleared, has a report that holds no findings.
++// Asks at head after that answer leave it standing, whether they await an answer or ended unanswered:
++// the parent's answer at a head holds until the parent answers again there.
++// It is awaiting when no such answer stands,
++// and the latest ask was sent at head and is pending-post or open before its deadline.
+ // Otherwise it is ask-again.
+-// That covers no ask, one sent at another head, one with findings, and one ended timeout, no-parent or undelivered.
+-// It also covers one cleared, and one open past its deadline.
++// That covers no ask, one sent at another head, a latest answer at head with findings,
++// and a latest ask ended timeout, no-parent or undelivered with no satisfied answer before it.
++// It also covers a cleared ask, and one open past its deadline.
+ func ReadPRReviewStanding(files burlerengine.ParentReviewFiles, head string, now time.Time) (PRReviewStanding, error) {
+ 	record, _, err := burlerengine.ReadParentAsks(files)
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	ask, found := record.LatestTagged(PRReviewAskLineTag)
+-	if !found || ask.Digest != head || ask.Cleared {
+-		return PRReviewAskAgain, nil
+-	}
+-	switch ask.State {
+-	case burlerengine.ParentAskDone:
++	for i := len(record.Asks) - 1; i >= 0; i-- {
++		ask := record.Asks[i]
++		if ask.Tag != PRReviewAskLineTag || ask.Digest != head || ask.Cleared || ask.State != burlerengine.ParentAskDone {
++			continue
++		}
+ 		report, err := burlerengine.ReadParentReport(ask.Report)
+ 		if err != nil {
+ 			return "", err
+@@ -118,10 +122,14 @@ func ReadPRReviewStanding(files burlerengine.ParentReviewFiles, head string, now
+ 		if len(report.Findings) == 0 {
+ 			return PRReviewSatisfied, nil
+ 		}
+-	case burlerengine.ParentAskPendingPost, burlerengine.ParentAskOpen:
+-		if now.Before(ask.Deadline) {
+-			return PRReviewAwaiting, nil
+-		}
++		break
++	}
++	ask, found := record.LatestTagged(PRReviewAskLineTag)
++	if !found || ask.Digest != head || ask.Cleared {
++		return PRReviewAskAgain, nil
++	}
++	if (ask.State == burlerengine.ParentAskPendingPost || ask.State == burlerengine.ParentAskOpen) && now.Before(ask.Deadline) {
++		return PRReviewAwaiting, nil
+ 	}
+ 	return PRReviewAskAgain, nil
+ }
+diff --git a/internal/landingshed/prreviewask_test.go b/internal/landingshed/prreviewask_test.go
+index 855f5c487..f637323b3 100644
+--- a/internal/landingshed/prreviewask_test.go
++++ b/internal/landingshed/prreviewask_test.go
+@@ -136,6 +136,48 @@ func TestReadPRReviewStanding(t *testing.T) {
+ 		{"ANoParentAskAsksAgain", []standingAsk{{tag: tag, digest: "h", state: burlerengine.ParentAskNoParent}}, landingshed.PRReviewAskAgain},
+ 		{"AClearedAskAsksAgain", []standingAsk{{tag: tag, digest: "h", state: burlerengine.ParentAskTimeout, deadline: earlier, cleared: true}}, landingshed.PRReviewAskAgain},
+ 		{"ACodeReviewAskIsNeverReadAsAPRReviewAsk", []standingAsk{{tag: "[code-review request]", digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "satisfied"}}, landingshed.PRReviewAskAgain},
++		{
++			name: "AFailedLaterAskAtTheHeadLeavesASatisfiedAnswerStanding",
++			asks: []standingAsk{
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "satisfied"},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskUndelivered},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskNoParent},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskTimeout, deadline: earlier},
++			},
++			want: landingshed.PRReviewSatisfied,
++		},
++		{
++			name: "AnOpenLaterAskAtTheHeadLeavesASatisfiedAnswerStanding",
++			asks: []standingAsk{
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "satisfied"},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later},
++			},
++			want: landingshed.PRReviewSatisfied,
++		},
++		{
++			name: "ALaterAnswerWithFindingsAtTheHeadReplacesASatisfiedAnswer",
++			asks: []standingAsk{
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "satisfied"},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "findings"},
++			},
++			want: landingshed.PRReviewAskAgain,
++		},
++		{
++			name: "AnOpenAskAfterAnAnswerWithFindingsAtTheHeadAwaits",
++			asks: []standingAsk{
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "findings"},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later},
++			},
++			want: landingshed.PRReviewAwaiting,
++		},
++		{
++			name: "AClearedSatisfiedAnswerAtTheHeadAsksAgain",
++			asks: []standingAsk{
++				{tag: tag, digest: "h", state: burlerengine.ParentAskOpen, deadline: later, answer: "satisfied", cleared: true},
++				{tag: tag, digest: "h", state: burlerengine.ParentAskUndelivered},
++			},
++			want: landingshed.PRReviewAskAgain,
++		},
+ 		{
+ 			name: "ANewerCodeReviewAskAfterASatisfiedAskAtTheHeadLeavesItSatisfied",
+ 			asks: []standingAsk{
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index bbd2b4080..244c72749 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -55,6 +55,7 @@
+ // It signs the post as the session's own strand, where the PR-Review row's own ask signs as the loom program.
+ // Only that session runs it.
+ // It admits only a review recorded under autonomy, and it refuses an ask that already awaits an answer at the head.
++// It also refuses an ask at a head where a satisfied answer stands.
+ // The Discussion-Review and Code-Review parent seats read `discussion_review_ask_parent` and `code_review_ask_parent`.
+ // They read them on each call, and an unreadable value reads as false.
+ //
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+index 60d879eae..12bcaf5fc 100644
+--- a/internal/loomcli/parentreview.go
++++ b/internal/loomcli/parentreview.go
+@@ -58,6 +58,7 @@ const (
+ 	parentReviewWayAskOperator = "way forward: the operator ends this review, so follow the operator's ending in the session's prompt"
+ 	parentReviewWayAskPane     = "way forward: run the verb from the PR-Review session's pane"
+ 	parentReviewWayAskRetry    = "way forward: run the verb again"
++	parentReviewWayAskContinue = "way forward: run lym loom pr-continue"
+ )
+ 
+ // parentReviewDeps holds every side effect of a parent-review verb, injected so that tests can supply fakes.
+@@ -300,6 +301,7 @@ func parentReviewAwaitVerb(ctx context.Context, out io.Writer, deps parentReview
+ // It refuses a run with no pull request record and a review not recorded under autonomy.
+ // It also refuses a caller that is not the record's PR-Review session.
+ // It refuses an ask still awaiting its answer at the head.
++// It refuses an ask at a head where a satisfied answer stands.
+ // It answers the ask's number, state, head and deadline.
+ // It ends nothing: only `pr-continue` and the PR-Review row end the review.
+ func parentReviewAskVerb(out io.Writer, slug string, deps parentReviewDeps) int {
+@@ -327,6 +329,9 @@ func parentReviewAskVerb(out io.Writer, slug string, deps parentReviewDeps) int
+ 	if err != nil {
+ 		return refuse("read the run's PR-Review asks: %s; %s", err, parentReviewWayAskRetry)
+ 	}
++	if standing == landingshed.PRReviewSatisfied {
++		return refuse("a satisfied answer from your parent stands at this head; %s", parentReviewWayAskContinue)
++	}
+ 	if standing == landingshed.PRReviewAwaiting {
+ 		record, _, err := burlerengine.ReadParentAsks(deps.files)
+ 		if err != nil {
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+index 077a73449..bac0f637b 100644
+--- a/internal/loomcli/parentreview_test.go
++++ b/internal/loomcli/parentreview_test.go
+@@ -393,9 +393,11 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 	autonomyOn := true
+ 	later := parentReviewNow.Add(2 * time.Hour)
+ 	tests := []struct {
+-		name  string
+-		asks  []burlerengine.ParentAsk
+-		setup func(*parentReviewDeps)
++		name string
++		asks []burlerengine.ParentAsk
++		// satisfiedThen, when set, is recorded after the latest of asks is answered satisfied.
++		satisfiedThen []burlerengine.ParentAsk
++		setup         func(*parentReviewDeps)
+ 		// want lists text the refusal must hold; empty wants an answer.
+ 		want       []string
+ 		wantStates []burlerengine.ParentAskState
+@@ -444,6 +446,14 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 			want:       []string{"ask 1", "lym loom parent-review await task-a"},
+ 			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
+ 		},
++		{
++			name:          "a satisfied answer at the head is refused naming pr-continue while a later ask is open",
++			asks:          []burlerengine.ParentAsk{prAsk(burlerengine.ParentAskOpen, time.Hour)},
++			satisfiedThen: []burlerengine.ParentAsk{prAsk(burlerengine.ParentAskOpen, time.Hour)},
++			setup:         asSession,
++			want:          []string{"a satisfied answer from your parent stands at this head", "lym loom pr-continue"},
++			wantStates:    []burlerengine.ParentAskState{burlerengine.ParentAskDone, burlerengine.ParentAskOpen},
++		},
+ 		{
+ 			name:       "the session records a PR-Review ask at the head after an earlier review ask",
+ 			asks:       []burlerengine.ParentAsk{{Tag: "[code-review request]", State: burlerengine.ParentAskTimeout}},
+@@ -482,6 +492,23 @@ func TestParentReviewAskVerb(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			deps := parentReviewFixture(t, tt.asks...)
++			if len(tt.satisfiedThen) > 0 {
++				latest, _ := func() (burlerengine.ParentAsk, bool) {
++					record, _, err := burlerengine.ReadParentAsks(deps.files)
++					if err != nil {
++						t.Fatalf("ReadParentAsks() error = %v", err)
++					}
++					return record.Latest()
++				}()
++				if _, err := burlerengine.AnswerParentAskOrUnreached(deps.files, latest.Number, "", parentReviewNow, nil); err != nil {
++					t.Fatalf("AnswerParentAskOrUnreached() error = %v", err)
++				}
++				for _, ask := range tt.satisfiedThen {
++					if _, err := burlerengine.RecordParentAsk(deps.files, ask); err != nil {
++						t.Fatalf("RecordParentAsk() error = %v", err)
++					}
++				}
++			}
+ 			if tt.setup != nil {
+ 				tt.setup(&deps)
+ 			}
