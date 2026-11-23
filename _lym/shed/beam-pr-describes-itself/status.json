@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -228,6 +228,22 @@
       "output": "",
       "at": "2026-11-23T09:53:55Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-pr-describes-itself/_lym/landing/summary.md",
+      "at": "2026-11-23T09:54:57Z",
+      "started_at": "2026-11-23T09:54:15Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-23T09:54:56.359683862Z",
+          "end": "2026-11-23T09:54:56.359749074Z"
+        }
+      ]
     }
   ],
   "product": {
