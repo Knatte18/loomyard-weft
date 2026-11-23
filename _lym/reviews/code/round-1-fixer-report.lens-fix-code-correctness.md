@@ -3,14 +3,12 @@ lens: fix-code-correctness
 outcome: reported
 ```
 
-Task: check the correctness of the `diff.go` untracked-file branch and the three added or changed test assertions.
+No findings.
 
-no findings
+The change set is a doc comment and a summary sentence, with no code. I checked the new test doc comment against the test body, and it matches:
+- **Steps up to the base commit:** the "wrapped", "clean tree" and "--base" subtests either run both verbs or assert on each verb's own tree. The "wrapped" subtest does not run both verbs on one step, but it checks one verb per step on the same tree, so "agree" is a fair reading. The "overview grown" and "CRLF" subtests are lint-pattern only.
+- **Last step:** `lint-comments --base` alone, at lines 120-134, reports the uncommitted `edited.go` finding next to the committed `wrapped.go` one. This matches "the last step checks that lint-comments --base also reports an uncommitted edit".
 
-- **`diff.go` untracked branch.** `RunGit` returns a non-zero exit as the exit code and not as an error, and `git cat-file -e <base>:<path>` on a missing path exits 128, so `err` stays nil and the file keeps no base side. A path the base holds exits 0 and gets `basePath = path`, which `readChange` reads with `git show`. With `Lint(dir, "")`, base is `"HEAD"`. An ordinary untracked file therefore still has an empty base, and `untracked.go:3` is still reported.
-- **Untracked-file row in `TestLint_OverARepository`.** After `git rm --cached` and a commit, `git diff --name-status <withIndexless>` lists `D indexless.go`, which `parseNameStatus` drops. The untracked pass then adds it with a base side, so no line counts as new and none is reported. Only `renamed.go:7` and `untracked.go:3` remain, as the row expects. With the defect in place, `indexless.go:3` would be reported and the row would fail, so the row catches the regression.
-- **Verify gate (F2).** The untracked wrapped file is written before `runGate` and removed right after it. With the defect in place the gate would use `Lint` and report `a/untracked.go:3`, so the `strings.Contains(findings, "untracked.go")` check would fail. Under `LintCommitRange` the file is not seen. The one gap is that a `t.Fatal` inside `runGate` would leave the file behind, but that ends the test anyway.
-- **F3 and F4.** These change names and comments only, with no behaviour change.
-- **Callers.** `changedGoFiles` and `readChange` keep their signatures. `LintCommitRange` takes the `workingTree == false` path, which the fix left alone.
+The summary sentence is consistent with `changedGoFiles` as the review describes it. I did not re-read `diff.go`.
 
-Further tool calls: none.
+- Read `lintcomments_integration_test.go` lines 80-135. My context held only lines 1-80, and I needed the later steps to check the doc comment's claims.

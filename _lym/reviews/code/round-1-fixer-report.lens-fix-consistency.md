@@ -3,18 +3,14 @@ lens: fix-consistency
 outcome: reported
 ```
 
+The test doc and summary edits agree with the code and the sibling text. I found nothing to flag.
+
 No findings.
 
-Task: check the change set (`diff.go` untracked base side, test header, subtest rename, verify-gate untracked-file assertion) for agreement with its surroundings.
-
-Checked and consistent:
-- `internal/commentlint/doc.go:7` says Lint covers untracked `.go` files, which still holds. Untracked files the base holds now get their own base side, and the doc names no contrary behaviour.
-- `internal/loomcli/lintcomments.go:33` says the verb lints the working tree, uncommitted edits and untracked files included. It matches the renamed subtest and the revised test doc.
-- `fileChange.basePath` ("empty when the file has no base side") and the `readChange` doc ("a file with no base side has an empty base text") are still correct. Untracked files now get a non-empty `basePath` only when `baseRevision` holds them.
-- The new `commentlint` test row runs last, after the earlier rows, and stages only `indexless.go`. The uncommitted `renamed.go` edit and the untracked `untracked.go` therefore stay differing from `withIndexless`, and the expected `renamed.go:7` and `untracked.go:3` hold.
-- In the verify-gate test the untracked file is removed straight after `runGate`, so later subtests in the scenario see the tree as before.
-
-Minor note, below the rubric's LOW (the test doc is not a stale cross-reference): the `TestLint_OverARepository` doc says it walks "a pure rename, a committed edit and an uncommitted edit". It does not mention the new untracked-file-the-base-holds step.
+- **F1 doc comment (`lintcomments_integration_test.go:22-23`):** The steps before the base commit (lines 61-118) run both verbs, and the last step (lines 121-134) runs only `lint-comments --base`. The doc's two sentences match that. The step at line 105 does run `lint-pattern --base`, so "up to the base commit" is accurate.
+- **F1 line length:** Both new doc lines are under 120 characters, one sentence per line.
+- **F2 summary edit (`_lym/landing/summary.md`):** The new sentence follows "behave as before" directly and states the one exception the review named. It does not contradict the Design decisions or Tests sections. The "Its callers" list still names `gatecli` and `lint-comments` without `--base`, which are the ones the review says are affected.
+- **Twin text:** The test file header and the summary's Tests section have no "both verbs at each step" claim left over. The summary's Tests entry for `TestLintCommentsCmd_OverARepository` already describes the uncommitted step, so it needs no edit.
 
 Tool calls:
-1. Grepped `untracked` and `no base side` across `internal/commentlint`, `lintcomments.go` and `docs`: my context lacked the surrounding docs that describe untracked-file behaviour.
+1. Read `lintcomments_integration_test.go` from line 80. My context held only the first 80 lines, so I needed the later steps to check the new doc comment against them.
