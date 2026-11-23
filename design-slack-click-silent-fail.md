@@ -1,6 +1,6 @@
 # Reed's Slack button click leaves forwarding off with no trace
 
-`slack-click-silent-fail` · Task · bug, reed, slack · running · Code-Burler-Review
+`slack-click-silent-fail` · Task · bug, reed, slack · running · Code-Burler-Fix
 
 Imported from [issue #212](https://github.com/Knatte18/loomyard/issues/212).
 
