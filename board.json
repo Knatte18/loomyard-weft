@@ -445,6 +445,27 @@
       "body": "Imported from [issue #188](https://github.com/Knatte18/loomyard/issues/188).\n\nSeen: lym board list --text showed a task that had landed in a beam project under P0, the root project, instead of under its beam.\n\nWorkaround: none; the entry was left until prune.\n\nExpected: a done task stays listed under its own project until it is pruned.",
       "created": "2026-11-23T08:18:55Z",
       "revised": "2026-11-23T08:18:55Z"
+    },
+    {
+      "id": 1584,
+      "handle": "B7",
+      "slug": "pr-findings-open-fabric-nil",
+      "title": "lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "landing"
+      ],
+      "issues": [
+        187
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #187](https://github.com/Knatte18/loomyard/issues/187).\n\nSeen: during a run's PR-Review row, lym loom pr-findings failed with: NewParentAlign: Deps.OpenFabric must not be nil.\n\nWorkaround: the PR findings were sent to the PR-Review agent by creel mail instead.\n\nExpected: pr-findings builds its parent-align dependencies itself and records the findings.",
+      "created": "2026-11-23T08:18:57Z",
+      "revised": "2026-11-23T08:18:57Z"
     }
   ],
   "prime_owner": "neve",

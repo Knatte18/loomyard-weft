@@ -30,7 +30,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-## Bugs (6)
+## Bugs (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -40,6 +40,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B4 |  | **Some dobby halt notices lack their autonomy stamp**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding dobby-run-notices-unstamped-autonomy | [`dobby-notices-unstamped-autonomy`](design-dobby-notices-unstamped-autonomy.md) | 3m<br>3m | dobby, orch |
 | B5 |  | **Autonomy mode's goto hook and halt-notice stamps have no tests**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-hook-wiring-untested, halt-notice-call-sites-untested | [`autonomy-wiring-untested`](design-autonomy-wiring-untested.md) | 3m<br>3m | loom, orch, testkit |
 | B6 |  | **Board view lists a done beam-project task under P0** | [`board-done-beam-task-under-p0`](design-board-done-beam-task-under-p0.md) | 0m<br>0m | board |
+| B7 |  | **lym loom pr-findings fails: NewParentAlign: Deps.OpenFabric must not be nil** | [`pr-findings-open-fabric-nil`](design-pr-findings-open-fabric-nil.md) | 0m<br>0m | loom, landing |
 
 ## Enhancements (1)
 
