@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Code-Bouncer","history_length":11,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a bounce-budget-exhausted halt: only the parent's resume lifts it","at":"2026-11-23T10:21:43.386617102+01:00"}
+{"stop_key":{"current_producer":"Code-Bouncer","history_length":15,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"an awaiting stop with a parent notice: relay it and hand back","at":"2026-11-23T10:32:07.750990946+01:00"}
