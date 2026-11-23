@@ -9,7 +9,10 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 ## Evidence
 
 - The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.
-- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.
+- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, has landed as `2722a66ef`, so both campaigns are judged.
+- The second campaign ran with the model rotation the template then set (opus, fable, sonnet).
+  Hardener rounds now default to `sonnet[high]` alone, and a rotation is set per run through `hardener.reviewer` and `hardener.fixer` (`a66d41345`), so judge the rotation's cost and effect against that change.
+- The five faults the second campaign found but could not raise are the task `harden-fabric-undriven-cases`.
 - Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-<n>-focus.md`, `round-<n>-review.md`, `round-<n>-acceptance.md`, `round-<n>-usage.yaml` and the snapshots, beside its decision record and the landed commits.
 
 ## Questions

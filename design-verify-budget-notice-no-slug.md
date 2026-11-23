@@ -1,6 +1,8 @@
 # Verify-budget notice names no run
 
-`verify-budget-notice-no-slug` · Note · bug, loom
+`verify-budget-notice-no-slug` · Task · bug, loom
+
+Depends on: [`red-first-tests-only-task`](design-red-first-tests-only-task.md)
 
 ## Seen
 

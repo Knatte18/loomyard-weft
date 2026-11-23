@@ -183,9 +183,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost",
-      "body": "## Goal\n\nFind out whether the hardener recipe does what it is for: drive the modules its focus names, find real faults, fix them with tests that hold, and converge.\n\n## Evidence\n\n- The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.\n- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, should have landed before this runs, so both campaigns are judged.\n- Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-\u003cn\u003e-focus.md`, `round-\u003cn\u003e-review.md`, `round-\u003cn\u003e-acceptance.md`, `round-\u003cn\u003e-usage.yaml` and the snapshots, beside its decision record and the landed commits.\n\n## Questions\n\n- **Findings**: for each finding, is it a real fault, a false positive or a matter of taste? Do its repro steps show it?\n- **Fixes**: does each fix cure its finding? Does its regression test fail with the fix broken, as the fix rules demand? Was the package doc updated?\n- **Focus**: did each round stay inside the campaign's focus? Did the focus files steer later rounds to what was left unverified?\n- **Convergence**: did the Bouncer end the campaign on a sound verdict? Were deferred findings filed as open risks and on the board?\n- **Misses**: which faults in the same code turned up after the campaign landed, outside it (such as the killed-seed way forward in `0e4782373` and the fetch prune in `f660ac101`), and could the campaign have reached them?\n- **Cost**: tokens and wall time per round, from the usage files and the run's records.\n- **Seen in the second campaign**: round 2's reviewer recorded smaller faults (O1 to O6) only as prose, since an incremental round admits only BLOCKING findings on changed hunks.\n  Round 3's reviewer (sonnet, medium, 4 min) approved with half its focus undriven: the killed discard, the keep-local tag push, a failed step with no kill, and `adopt --archives` over real owner tags.\n  A settled harden segment cannot be reopened (`lym loom goto` refuses), so the orch had no way to order another round. Judge each of these, and whether the remaining focus should block approval.\n\n## Bounds\n\n- Mostly a study of records and commits.\n- At most three findings are reproduced, on a sandbox hub against the commit before their fix, one try each; no other trial runs.\n- The report ends with a verdict and a short list of concrete changes to the hardener recipe or its stencils, each a candidate note.\n",
+      "body": "## Goal\n\nFind out whether the hardener recipe does what it is for: drive the modules its focus names, find real faults, fix them with tests that hold, and converge.\n\n## Evidence\n\n- The first fabric campaign, `harden-fabricengine`, landed as `37649c772` after three rounds.\n- The second, `harden-fabric-single-repo-verbs`, the one-repository fabric campaign with the fabric verbs in its sandbox, has landed as `2722a66ef`, so both campaigns are judged.\n- The second campaign ran with the model rotation the template then set (opus, fable, sonnet).\n  Hardener rounds now default to `sonnet[high]` alone, and a rotation is set per run through `hardener.reviewer` and `hardener.fixer` (`a66d41345`), so judge the rotation's cost and effect against that change.\n- The five faults the second campaign found but could not raise are the task `harden-fabric-undriven-cases`.\n- Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-\u003cn\u003e-focus.md`, `round-\u003cn\u003e-review.md`, `round-\u003cn\u003e-acceptance.md`, `round-\u003cn\u003e-usage.yaml` and the snapshots, beside its decision record and the landed commits.\n\n## Questions\n\n- **Findings**: for each finding, is it a real fault, a false positive or a matter of taste? Do its repro steps show it?\n- **Fixes**: does each fix cure its finding? Does its regression test fail with the fix broken, as the fix rules demand? Was the package doc updated?\n- **Focus**: did each round stay inside the campaign's focus? Did the focus files steer later rounds to what was left unverified?\n- **Convergence**: did the Bouncer end the campaign on a sound verdict? Were deferred findings filed as open risks and on the board?\n- **Misses**: which faults in the same code turned up after the campaign landed, outside it (such as the killed-seed way forward in `0e4782373` and the fetch prune in `f660ac101`), and could the campaign have reached them?\n- **Cost**: tokens and wall time per round, from the usage files and the run's records.\n- **Seen in the second campaign**: round 2's reviewer recorded smaller faults (O1 to O6) only as prose, since an incremental round admits only BLOCKING findings on changed hunks.\n  Round 3's reviewer (sonnet, medium, 4 min) approved with half its focus undriven: the killed discard, the keep-local tag push, a failed step with no kill, and `adopt --archives` over real owner tags.\n  A settled harden segment cannot be reopened (`lym loom goto` refuses), so the orch had no way to order another round. Judge each of these, and whether the remaining focus should block approval.\n\n## Bounds\n\n- Mostly a study of records and commits.\n- At most three findings are reproduced, on a sandbox hub against the commit before their fix, one try each; no other trial runs.\n- The report ends with a verdict and a short list of concrete changes to the hardener recipe or its stencils, each a candidate note.\n",
       "created": "2026-11-22T17:52:12Z",
-      "revised": "2026-11-22T20:36:34Z"
+      "revised": "2026-11-23T08:59:13Z"
     },
     {
       "id": 1572,
@@ -656,21 +656,31 @@
     },
     {
       "id": 1595,
-      "handle": "B1",
+      "handle": "T6",
       "slug": "verify-budget-notice-no-slug",
       "title": "Verify-budget notice names no run",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "loom"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "red-first-tests-only-task"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe orch got creel mail #2450 from `ly:LOOM` (2026-11-23):\n\"Darn-Write gate: the verify gate has run past its 30m0s budget and is at attempt 3; it goes on until its attempts are spent; no verify run has failed yet\".\nNeither the sender nor the text names the run, and three darn runs were in Darn-Write at the time,\nso the orch could only guess which run it meant.\nThe line is built by `verifyBudgetNotice` in `internal/loomshed/verifybudget.go`, which takes the gate site but no slug.\n\n## Idea\n\nPut the run's slug in the line, as other parent notices do, so the parent knows which run it is about without a status read.\n",
       "created": "2026-11-23T08:50:21Z",
-      "revised": "2026-11-23T08:50:21Z"
+      "revised": "2026-11-23T08:59:08Z",
+      "run_settings": {
+        "loom": {
+          "code_assist_reviewer_fan": "review-code",
+          "code_assist_reviewer_model": "astra[medium]"
+        }
+      },
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
