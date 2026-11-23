@@ -295,7 +295,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #183](https://github.com/Knatte18/loomyard/issues/183).\n\nWhat happened: `tools/godocreflow` was run over trimmed Go files to clear 624 wrapped-break findings from `lym loom lint-comments`.\nFindings rose to 916.\nIt skips whole comment blocks that hold a heading or list, and it joins lines past the length limit.\nThe commit was dropped and the findings were fixed by hand.\n\nWhy abnormal: the reflow tool is meant to fix these findings and produced more of them.\n\nWhat to do: make godocreflow process blocks with headings or lists, and make it respect the line length limit, or stop pointing at it as a fix.\n\nProvenance: task doc-go-trim-pass; note Darn-Write.md.",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-23T08:19:09Z",
       "revised": "2026-11-23T08:20:12Z",
       "run_settings": {
