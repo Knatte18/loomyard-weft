@@ -1,6 +1,6 @@
 # Reviews ask the parent instead of settling past held decisions, open BLOCKING findings or an undriven hardener focus
 
-`code-bouncer-asks-parent` · Task · bug, burler, loom, darn, arbiter, shed · running · Drift-Await
+`code-bouncer-asks-parent` · Task · bug, burler, loom, darn, arbiter, shed · running · Drift-Expect
 
 ## Goal
 
