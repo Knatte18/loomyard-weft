@@ -1,40 +1,44 @@
-# Red-first gate: a "No bug fixed" record lifts a tests-only bug entry
+# Red-first gate: a "No bug fixed" record lifts a tests-only entry
 
-A board entry labelled `bug` whose change only adds tests pinning existing behaviour, such as golden tests, could never pass Darn-Write's red-first gate.
-Its tests pass on the merge base by design, so `lym gate red-first` exited with the green code on every attempt,
-and the gate's finding told the writer to make a test fail on the merge base, which meant inventing a bug.
-The run spent its three attempts and escalated (issue #184).
-The only record that lifted the gate was the parent's `No test seam` entry, which states something else: a bug no test can reach.
+Closes #184
+
+A `bug`-labelled entry that only adds golden tests pins existing behaviour and fixes no bug.
+Its tests pass on the merge base by design, so the red-first gate's "fails on base, passes with fix" check could never be met.
+The writer had no valid way forward, spent its attempts on the same finding and escalated to a human.
 
 ## What changes
 
-- `gateslot.NoBugFixedTitle` (`"No bug fixed"`) names a second added-decision title.
-  The red-first gate's exemption now passes at once, running nothing, when the decision record holds an `### Added after Discussion` entry whose title opens either `No test seam` or `No bug fixed`, compared case-insensitively as before.
-  The parent records it with `lym loom decision add`, before Darn-Write starts or during it.
-- The green finding no longer tells every writer to make a test fail.
-  It now says that no changed test fails before the change, and names two ways forward:
-  for a bug fix, a test that fails on the merge base;
-  for a change that fixes no bug, keep the tests and ask the parent for the `No bug fixed` record.
-  The `lym gate red-first` green refusal names the same second path.
-- The darn writer's stencil tells a writer on such an entry to ask for the record before writing code, so the record is in place by the first gate arrival.
-- The discussion spec, the darn recipe's gate comment, `docs/overview.md` and the package docs of `loomshed`, `gatecli` and `shedrecipe` name the new record.
+- The parent can now record an added decision under a title opening `No bug fixed`, with `lym loom decision add`.
+  The red-first gate then passes at once and runs nothing, the same way it already does for a title opening `No test seam`.
+  The new title is `gateslot.NoBugFixedTitle`; `loomshed` compares it case-insensitively with the existing one.
+- The gate's green-exit finding no longer tells the writer to invent a bug.
+  It names both ways forward: make a test fail on the base when the change fixes a bug,
+  or ask the parent for the `No bug fixed` record when it fixes none.
+  The first sentence now reads "none of them fails before the change" instead of "none of them shows the bug the fix fixes".
+- `lym gate red-first` states the same second path in its own green-exit error.
+- The darn writer stencil tells the writer to ask its parent for the record before writing code when the entry fixes no bug.
+- The Discussion template, its review rubric and the discussion spec let a bug entry's record state that it fixes no bug
+  in place of naming a failing test or a missing seam.
+- The darn recipe comment, `docs/overview.md` and the `gatecli`, `loomshed` and `shedrecipe` package docs name the new title.
 
 ## Design decisions
 
-- The kind is declared by the parent's added decision, not by the record body or the plan.
-  This follows the existing rule that a record's own statement that no test seam exists does not lift the gate:
-  the exemption stays a call the parent makes, bounded to one run's record.
-- The green result still fails and spends an attempt rather than holding.
-  A writer on a real bug iterates on its test and needs the finding each time; a hold would silence later results.
-  The stencil's ask-first instruction keeps a tests-only run from reaching the green result at all.
-- The no-seam ask helper became `parentRecordAsk(title)`, shared by the three findings that send the writer to its parent.
+- The exemption is a parent-recorded decision, not an inference from the diff.
+  Only the parent's added entry lifts the gate; a Sketch's own statement that the entry fixes no bug does not,
+  matching how `No test seam` already works.
+- The `No test seam` ask is unchanged in wording except that both asks now come from one helper, `parentRecordAsk`, taking the title.
+- `redFirstCall` gains a `runTiers` field so a test can replace the real tier runs.
+  `runRedFirst` sets it to `runTest`, so production behaviour is unchanged.
 
 ## Tests
 
-- `TestRedFirstGate_VerdictPerLabelRecordAndExitCode` gains a row where a bug entry's record holds a `No bug fixed` entry and the check would exit green: the gate passes and runs nothing.
-  On the merge base the gate runs the check and fails it.
-- The same test's green row now pins the reworded finding, including the `No bug fixed` way forward.
-- `TestGateRedFirst` in `internal/gatecli`'s integration tests now checks that the green refusal names the `No bug fixed` record.
+- `TestRedFirstGate_VerdictPerLabelRecordAndExitCode` has a row for a `No bug fixed` record passing without running the check,
+  and its green-exit row pins the new finding.
+- `TestRedFirstCallRun_JudgesTheTierRunsOfTheChangedTestsOnTheBase` drives `redFirstCall.run` through the injectable runner
+  for a red test, a green test and a run that judged none.
+- The `TestGateRedFirst` integration case checks the green-exit message names the `No bug fixed` title.
+
+Nothing was left to check or run by hand.
 
 ## Merge danger
 
