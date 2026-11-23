@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Second hardener campaign on fabric, one-repository layout, with the fabric verbs**<br>• Hardener run on the one-repository fabric paths the first campaign could not drive<br>• `hardener: packages ["./internal/fabricengine","./internal/fabriccli","./internal/gitrepo"]`<br>• `loom: notify_parent_on ["Harden-Bouncer","Harden-Burler-Fix"]` | [`harden-fabric-single-repo-verbs`](design-harden-fabric-single-repo-verbs.md) | hardener | Harden-Burler-Review | neve | 16h<br>16h | fabric |
 
-## [P0 Root: entries under no project](project-root.md) (11)
+## [P0 Root: entries under no project](project-root.md) (14)
 
 Owner `neve`
 
@@ -52,12 +52,15 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 13d<br>13d | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 5d<br>5d | shuttle |
 
-### Bugs (2)
+### Bugs (5)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 11h<br>11h | fabric |
 | B2 |  | **lym loom goto's stop path may read an unwired reed runner**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-stop-reads-unwired-reed-runner | [`goto-stop-unwired-reed-runner`](design-goto-stop-unwired-reed-runner.md) | 0m<br>0m | loom, reed |
+| B3 |  | **ClearReviewSession may keep the PR-Review parent ask after goto**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding clear-review-session-keeps-parent-review-asked | [`clear-review-keeps-parent-ask`](design-clear-review-keeps-parent-ask.md) | 0m<br>0m | landing, loom |
+| B4 |  | **Some dobby halt notices lack their autonomy stamp**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding dobby-run-notices-unstamped-autonomy | [`dobby-notices-unstamped-autonomy`](design-dobby-notices-unstamped-autonomy.md) | 0m<br>0m | dobby, orch |
+| B5 |  | **Autonomy mode's goto hook and halt-notice stamps have no tests**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-hook-wiring-untested, halt-notice-call-sites-untested | [`autonomy-wiring-untested`](design-autonomy-wiring-untested.md) | 0m<br>0m | loom, orch, testkit |
 
 ### Enhancements (1)
 
