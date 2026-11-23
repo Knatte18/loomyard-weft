@@ -1,6 +1,6 @@
 # Red-first gate must support C# repositories
 
-`red-first-csharp` · Task · enhancement, gate, loom, dotnet · starting · Worktree-Create
+`red-first-csharp` · Task · enhancement, gate, loom, dotnet · starting · Open-Window
 
 Imported from [issue #208](https://github.com/Knatte18/loomyard/issues/208).
 
