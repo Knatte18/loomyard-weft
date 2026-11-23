@@ -24,13 +24,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | darn · docs | Code-Bouncer | neve | 4h<br>23m | fabric |
+| T8 | **One-repository fabric cases no hardener round drove** | [`single-repo-undriven-cases`](design-single-repo-undriven-cases.md) | darn · docs | Drift-Recheck | neve | 4h<br>23m | fabric |
 
 ### Research (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 20h<br>11m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 20h<br>12m | burler, fabric |
 
 ## [P0 Root: entries under no project](project-root.md) (11)
 
@@ -69,7 +69,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | 4m<br>4m |  |
+| B1 |  | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | 5m<br>5m |  |
 
 ### Features (1)
 
