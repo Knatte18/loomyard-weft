@@ -1,34 +1,41 @@
-# Refuse a CLI error envelope as a board body or decision-record Goal
+# Refuse a CLI error envelope as a board body; accept a bare slug
 
-A darn run's decision record carried `{"error":"invalid json: invalid character 'h' ...","ok":false}` as its `## Goal`, because the board entry's body itself held that text.
-The board history shows how it got there: the entry was a merged note whose body read `## From <slug>` followed by an error envelope, once per merged note.
-`lym board get <slug>` with a bare slug failed with `invalid json`, since a lookup payload took only JSON or a bare handle, and the orch role docs teach the bare-slug form.
-The failed `get --body` output went into the file that `upsert --body-file` then stored, and Record-Write rendered the body into the record unchecked.
+A Darn-Write session found a decision record whose `## Goal` held `{"error":"invalid json: invalid character 'h' ...","ok":false}` instead of the task's text.
+Nothing refused it before Discussion, so the agent rebuilt the scope from linked issues.
+
+The upstream cause was `lym board get my-task`: a bare slug was not accepted as a payload, only a bare handle such as `B4`.
+The verb printed an `invalid json` envelope, and a caller captured that output into the file it passed as the body.
+
+Closes #181
 
 ## What changes
 
-- `output.ErrorEnvelopeLine` finds a line of text that is a whole error envelope: a JSON object with `"ok": false` and a string `"error"`.
-  An envelope inside a prose line, a success envelope and plain text pass.
-- Record-Write halts Stuck when the entry body it is about to render holds such a line, writing and committing nothing.
-  The reason names the envelope, and its way forward is to end the run with `lym batten cancel`, rewrite the body with `lym board upsert --body-file`, and start the run again.
-  Cancelling first is needed because the run holds the entry's scope.
-- `lym board upsert --body-file` and `merge --body-file` refuse a file holding an error envelope, naming it, so the failed capture is caught at the board write.
-- Every `lym board` lookup verb reads a bare slug, such as `lym board get my-task`, as `{"slug":"my-task"}`.
-  A bare payload qualifies when it starts with a letter and holds only letters, digits, `-`, `_` and `.`.
-  A bare handle such as `B4` still reads as a handle first.
+- `output.ErrorEnvelopeLine` finds a line that is a whole error envelope (`"ok":false` plus a string `"error"`).
+  A line inside a closed fenced code block is skipped, so a body that quotes an envelope in a block passes.
+  A fence left open to the end of the text hides nothing.
+- `lym board upsert --body-file` and `lym board merge --body-file` refuse a file holding such a line.
+  The refusal names the failed verb as the cause.
+- The Record-Write row reports `Stuck` when the board entry's body holds an envelope, and writes no record.
+  The reason gives a way forward for a beam project (fix the body, `lym loom resume`)
+  and for any other run (cancel with `--remove`, fix the body, release the slug, run again).
+- `lym board get`, and every verb taking one entry's selector, accepts a bare slug such as `my-task` as its whole payload.
+  This removes the failure that produced the envelope.
+  The help text, `payloadLegend`, the `boardcli` package doc and the board skill document it.
 
 ## Design decisions
 
-- The detector lives in `internal/output`, which writes the envelope, so one package owns both sides of the format.
-- Record-Write checks only a body it renders, never a stored decision record, which a Discussion approved.
-- A payload body given inline in JSON is not checked: the guard targets the file and stdin route that captured command output takes.
+- A bare slug is recognised by shape: a letter first, then letters, digits, `-`, `_` and `.`.
+  No JSON object has that shape, so the reading never shadows a payload.
+- The envelope check is on the line, not on a JSON parse of the whole body, so an envelope followed by other text is still caught.
+- The check lives in `internal/output`, beside the envelope writers, so both `boardcli` and `loomshed` share one definition.
+- Record-Write refuses by returning `Stuck` with a way forward instead of failing the run, matching its existing no-entry case.
 
-## Tests
+## To check by hand
 
-- `TestErrorEnvelopeLine` pins the shapes the detector accepts and passes.
-- `TestRecordWrite_Call/ErrorEnvelopeBodyIsStuckNamingTheEnvelope` reproduces the reported body and asserts Stuck with nothing written.
-- `TestApplyBodyFile` gains a row refusing a file holding an envelope.
-- The board CLI table gains `get_by_bare_slug`, which failed with `invalid json` before the change.
+- `errorenvelopeline-matches-fenced-quote`: `ErrorEnvelopeLine` in `internal/output/output.go` skips closed fences only.
+  Check that a body quoting an envelope inside an unclosed fence being refused is the behaviour wanted.
+- `recordwrite-envelope-reason-way-forward`: `errorEnvelopeBodyReason` in `internal/loomshed/recordwrite.go` names two recovery paths.
+  Check each command in it against a real run, since none was run by hand.
 
 ## Merge danger
 
