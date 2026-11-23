@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=d3fc556581b583dbdf07f411c55f570b61d6819ecc66c9b1113f69932df60c96 build=43fbea87e2d5c57e5b9fee1fd97de36fceddf54b time=2026-11-21T19:23:05Z -->
+<!-- lym-stencil: sha256=8eea9cb40b8932bd82c680468551906b19d8b0417da8bbfe5d5060e1975c0476 build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -131,11 +131,13 @@ The Discussion-Write lead's record for a `bug` entry states up front what the re
 - `## Goal` names the observed fault and the steps that reproduce it.
 - `## Constraints` states the root cause and the evidence it rests on, or names what is still unknown about it.
 - An `## Acceptance criteria` bullet names the test that fails on the merge base and passes after the fix,
-  or states why no test seam exists.
+  states why no test seam exists, or states that the entry fixes no bug.
   The test reaches the bug through code the merge base already has.
 
 A record's statement that no test seam exists does not lift the red-first gate;
 only the parent's `### Added after Discussion` entry whose title opens `No test seam` does.
+A `bug` entry that fixes no bug, such as one that only adds tests pinning existing behaviour,
+is lifted the same way by the parent's added entry whose title opens `No bug fixed`.
 
 ### Parts no writer authors
 
