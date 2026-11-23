@@ -1,6 +1,6 @@
 # Every agent pane runs in a memory-capped scope, so a runaway child is killed there
 
-`agent-pane-memory-cap` · Task · bug, reed, shuttle, process
+`agent-pane-memory-cap` · Task · bug, reed, shuttle, process · starting · Worktree-Create
 
 ## Seen
 
