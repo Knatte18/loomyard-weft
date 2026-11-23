@@ -517,6 +517,27 @@
       "body": "Imported from [issue #200](https://github.com/Knatte18/loomyard/issues/200).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/parent-review/asks.json`.\n\nSeen in hub mo, run hydraulics-gaps, at PR-Review with pr_review_ask_parent on. Ask 3, sent by the row, reached the parent orch and was answered with findings. Asks 2 and 4, sent from the PR-Review agent's own session, were recorded in .lym/parent-review/asks.json as state no-parent, with reason: 'creel: mo:hydraulics-gaps:pr-reviewer may not sign as the program mo:LOOM: only an orch strand's pane may claim a program name'. The parent orch was live the whole time. The agent read no-parent as the parent being down and ended its turn, so the review stalled. Workaround: the parent mails the PR-Review agent directly and points it at the earlier ask's report. Expected: a re-ask from the PR-Review session is delivered (signed by a sender allowed to claim it, or sent through the row), and a refused delivery is recorded as a delivery failure, not as no-parent.",
       "created": "2026-11-23T12:19:58Z",
       "revised": "2026-11-23T12:19:58Z"
+    },
+    {
+      "id": 1609,
+      "handle": "B9",
+      "slug": "old-driver-fails-newer-stencil",
+      "title": "Driver on older lym build hard-fails a run when the board's stencil is newer",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "loom"
+      ],
+      "issues": [
+        198
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #198](https://github.com/Knatte18/loomyard/issues/198).\n\nThe `Code-Burler-Review` seat halted the run as `producer-hard-failure` at round 1 attempt 1b, before any review ran:\n\n```\nreview: stencilstore: stencil \"burler-assist-consolidation\" was written by lym build 8cf7f477563f044e178a070cfd7dd27cb9f03c78, which is newer than the running build 52d132a2c8e4e3b68e3e797e30d3e9ceb200ec50, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board\n```\n\nThe run's driver process had been started on an older lym build than the one that wrote the stencil on the board.\nThe run had been going for over thirty minutes (Preflight at 08:25Z, halt after Code-Bouncer at 08:59Z), so the board was upgraded mid-run while the driver kept the old binary.\n\nThis is abnormal because the guard is correct but its result is a hard `failed` halt of a long-running run, with the recovery left to the operator.\nNothing warns earlier that the driver binary has fallen behind the board.\n\nWhat to do: consider detecting the build skew when the driver steps between segments and halting as a resumable state, not `failed`.\nAlternatively, have the driver re-exec itself on the current binary, or surface the skew in `lym loom` status before a seat needs the stencil.\n\nProvenance: task `godocreflow-worsens-findings`; notes `loom-halt.md`.\n",
+      "created": "2026-11-23T12:20:01Z",
+      "revised": "2026-11-23T12:20:01Z"
     }
   ],
   "prime_owner": "neve",
