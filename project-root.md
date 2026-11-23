@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-23 08:17 UTC; every age below is as of then.
+Rendered 2026-11-23 08:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -34,7 +34,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Drive the four teardown and archive cases the one-repository hardener left undriven**<br>• Killed discard re-run, keep-local tag push, failed step with no kill, adopt --archives over real owner tags | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 11h<br>11h | fabric |
+| B1 |  | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | 11h<br>0m | fabric |
 | B2 |  | **lym loom goto's stop path may read an unwired reed runner**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding goto-stop-reads-unwired-reed-runner | [`goto-stop-unwired-reed-runner`](design-goto-stop-unwired-reed-runner.md) | 2m<br>2m | loom, reed |
 | B3 |  | **ClearReviewSession may keep the PR-Review parent ask after goto**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding clear-review-session-keeps-parent-review-asked | [`clear-review-keeps-parent-ask`](design-clear-review-keeps-parent-ask.md) | 2m<br>2m | landing, loom |
 | B4 |  | **Some dobby halt notices lack their autonomy stamp**<br>• Left open at the autonomy-mode landing (30ed1ee58), finding dobby-run-notices-unstamped-autonomy | [`dobby-notices-unstamped-autonomy`](design-dobby-notices-unstamped-autonomy.md) | 2m<br>2m | dobby, orch |
