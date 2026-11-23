@@ -22,6 +22,12 @@ Operator, 2026-11-23:
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-23): What an entry may depend on
+
+Decision: A task or a note may depend on any other entry: a task, a note or a project. A cycle is refused, as for tasks today. A task that depends on a note cannot start until that note has become a task and landed, or is removed, and the board shows it waiting. Removing an entry strips it from every other entry's depends_on, as prune does for a done entry.
+
+Rationale: Operator, 2026-11-23: a note may depend on a note, such as one idea building on another.
+
 ## Constraints
 
 ## Auto-mode assumptions
