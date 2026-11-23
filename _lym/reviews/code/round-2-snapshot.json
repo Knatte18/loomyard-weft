@@ -2,6 +2,7 @@
   "fix_scope": "source",
   "target_paths": null,
   "target_id": "2c84b8ed7f7f5ab86c043ea1ebf97a6cc53cf5ae",
+  "post_fix_target_id": "2c84b8ed7f7f5ab86c043ea1ebf97a6cc53cf5ae",
   "added_decisions": [
     {
       "title": "The task fixes the board viewer; the list --text listing stays as it is",
