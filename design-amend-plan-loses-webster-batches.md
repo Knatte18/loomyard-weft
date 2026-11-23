@@ -1,6 +1,6 @@
 # Plan amendment during Webster loses the record of committed batches
 
-`amend-plan-loses-webster-batches` · Task · bug, webster, loom · running · Code-Burler-Review
+`amend-plan-loses-webster-batches` · Task · bug, webster, loom · running · Code-Burler-Fix
 
 Imported from [issue #185](https://github.com/Knatte18/loomyard/issues/185).
 
