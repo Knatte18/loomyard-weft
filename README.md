@@ -24,7 +24,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 16h<br>34m | burler, fabric |
+| R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 16h<br>35m | burler, fabric |
 
 ### Bugs (1)
 
@@ -44,17 +44,17 @@ Owner `neve`
 | T5 | **RC button shows green while Remote Control is disabled by organization policy** | [`rc-button-ignores-org-policy`](design-rc-button-ignores-org-policy.md) | darn · light | Darn-Write | neve | 1h<br>1h | reed, claude |
 | T8 | **Run agents ask a question and exit before the reply; drift judge asks in its pane**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`agents-exit-before-reply`](design-agents-exit-before-reply.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | shuttle, creel, drift, stencil |
 | T11 | **tools/godocreflow worsens wrapped-break findings instead of clearing them**<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`godocreflow-worsens-findings`](design-godocreflow-worsens-findings.md) | darn · light | landing · Finalize | neve | 2h<br>2h | tools, lint |
-| T13 | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light | Code-Bouncer | neve | 2h<br>2h | loom, darn |
+| T13 | **Decision record written with a CLI error envelope as its Goal** | [`record-goal-holds-error`](design-record-goal-holds-error.md) | darn · light | Drift-Recheck | neve | 2h<br>2h | loom, darn |
 | T16 | **Fix the five fabric faults the one-repository hardener found but could not raise**<br>• Killed clone has no working way forward; merge skips the layout read; kept local tags pushed silently; legacy plain tags unnamed; discard re-run names no command<br>• `loom: code_assist_reviewer_fan review-code`<br>• `loom: code_assist_reviewer_model astra[medium]` | [`harden-fabric-undriven-cases`](design-harden-fabric-undriven-cases.md) | darn · light | Darn-Write | neve | 13h<br>1h | fabric |
 | T17 | **Close the four findings autonomy mode landed open**<br>• goto stop reads an unwired reed runner; ClearReviewSession keeps the parent ask; dobby notices lack the autonomy stamp; goto hook and notice stamps untested | [`autonomy-mode-followups`](design-autonomy-mode-followups.md) | darn · light | landing · Finalize | neve | 2h<br>1h | loom, landing, dobby, orch, reed, testkit |
-| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light | Darn-Write | neve | 1h<br>25m | preflight, fabric |
+| T18 | **Preflight worktree-clean blocks on lym's own _lym/usage session record** | [`usage-record-blocks-preflight`](design-usage-record-blocks-preflight.md) | darn · light | Darn-Write | neve | 1h<br>26m | preflight, fabric |
 
 ### Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | darn · light |  | 31m<br>5m | board |
-| T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light |  | 18m<br>4m | shuttle |
+| T1 | **Intake checks whether an issue is already fixed before it reaches the board** | [`intake-checks-already-fixed`](design-intake-checks-already-fixed.md) | darn · light |  | 31m<br>6m | board |
+| T3 | **Start prompt held when a long strand name fills the input box top border** | [`prompt-not-typed-after-skills`](design-prompt-not-typed-after-skills.md) | darn · light |  | 18m<br>5m | shuttle |
 
 ### Layer A (2)
 
@@ -91,7 +91,7 @@ Owner `neve`
 | B2 |  | **Hardener focus-finding wiring is not tested end to end** | [`hardener-focus-wiring-untested`](design-hardener-focus-wiring-untested.md) | 1h<br>1h | loom |
 | B3 |  | **Decision accept below the soft-cap window passes an open BLOCKING finding** | [`below-window-accept-blocking`](design-below-window-accept-blocking.md) | 1h<br>1h | loom |
 | B4 |  | **Decision-findings detail of a budget escalation has no test** | [`budget-escalation-untested`](design-budget-escalation-untested.md) | 1h<br>1h | loom |
-| B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 25m<br>25m | git, batten, landing |
+| B6 |  | **Runs stop and escalate on a transient GitHub fetch failure instead of retrying** | [`transient-fetch-no-retry`](design-transient-fetch-no-retry.md) | 26m<br>26m | git, batten, landing |
 | B7 |  | **Every darn escalates to the parent when round 1 fixed a BLOCKING finding** | [`fixed-blocking-escalates-parent`](design-fixed-blocking-escalates-parent.md) | 2m<br>2m | loom |
 
 ### Features (1)
