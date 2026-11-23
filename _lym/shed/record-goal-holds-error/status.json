@@ -1,0 +1,17 @@
+{
+  "current_producer": "",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "record-goal-holds-error",
+    "parent": "main",
+    "start_sha": null
+  }
+}
