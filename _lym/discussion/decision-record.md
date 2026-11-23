@@ -20,6 +20,12 @@ Decision: Accept the code review at round 1. BLOCKING F1 (probe-refused-from-non
 
 Rationale: F2's own change is stricter than the proposal without holding a settled question to its deadline; every fix is committed with its gates passing.
 
+### Added after Discussion (parent, 2026-11-23): Accept the fixed Code-Bouncer round
+
+Decision: Accept round 1: the fixer fixed both BLOCKING findings; F2's fix also requires the agent's pane to be idle before release.
+
+Rationale: Every BLOCKING finding is fixed; the budget stop needs no further round.
+
 ## Constraints
 
 ## Auto-mode assumptions
