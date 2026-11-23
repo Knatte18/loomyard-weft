@@ -1,6 +1,6 @@
 # Landing blames the token when the branch-rules read returns a plan-limit 403
 
-`rules-read-plan-gated-403` · Task · bug, landing, git · starting · Seed-Child
+`rules-read-plan-gated-403` · Task · bug, landing, git · starting · Open-Window
 
 Imported from [issue #179](https://github.com/Knatte18/loomyard/issues/179).
 
