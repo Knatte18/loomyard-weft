@@ -10,5 +10,6 @@
       "title": "F4: dotted names are rendered, input forms stay",
       "digest": "121a36c194a290389bec791cb65b18241ff59464e4ece3b79c61943fa70e0a70"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
