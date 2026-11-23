@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -98,6 +98,30 @@
       "at": "2026-11-23T12:46:18Z",
       "started_at": "2026-11-23T12:45:53Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/red-first-non-go-scoper/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-23T12:49:59Z",
+      "started_at": "2026-11-23T12:46:41Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-23T12:49:58.464985984Z",
+          "end": "2026-11-23T12:49:58.465432468Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-23T12:49:58.748584042Z",
+          "end": "2026-11-23T12:49:58.74890969Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
