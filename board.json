@@ -514,7 +514,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nOn 2026-11-23 three imported bugs ran as darn tasks and each found the fault already fixed on the base:\n`pr-findings-open-fabric-nil` (fixed by `6fa7f1740`), `amend-plan-loses-webster-batches` (no losing path left) and `rules-read-plan-gated-403` (fixed by `895eab670` two days before).\nEach took a run slot in a full queue for nothing.\n\n## Wanted\n\nOperator decision (2026-11-23): board intake checks whether a bug is already fixed before it puts it on the board.\n\n- The intake fork's rules, `contracts/orchrole/role-intake.md`, gain a fourth outcome beside new note, fold and close as noise:\n  close as already fixed, its reason naming the commit on `main` that fixed it and how the fork saw it.\n- The fork judges it from the code on `main` and its history, as the three runs above did in their first minutes:\n  the code path the issue names, and commits since the issue's build that touch it.\n- When it cannot tell, the issue goes on the board as now.\n- `lym board intake close` may need a reason form that names the fixing commit; decide in the run.\n",
-      "status": "halted · Code-Burler-Review",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-23T09:59:04Z",
       "revised": "2026-11-23T10:24:33Z",
       "profile": "light"
