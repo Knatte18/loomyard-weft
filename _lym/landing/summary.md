@@ -1,31 +1,42 @@
-# Name a kept cd and the way back when the cwd gate refuses a subdirectory
+# Name a kept cd and the way back when the cwd gate refuses a directory
 
 An agent's shell keeps the directory a `cd` moves it to for every later call.
-After a survey command that ran `cd` into a subdirectory, the next `lym` verb, such as `lym creel post`, was refused by the strict cwd gate.
-The refusal named the cwd and the anchored directory but not why the shell was there or how to get back, and it came far from the `cd` that caused it.
+After survey commands ran `cd` into subdirectories, the next `lym creel post` was refused by the strict cwd gate.
+The refusal named the cwd and the anchored directory but not the likely cause or the way back,
+and it came on a later call than the `cd` that caused it.
+
+Closes #245
 
 ## What changes
 
-- `internal/lymcwd`'s strict cwd gate (`checkCwdAnchorGate`) now adds to its refusal that a shell keeps a `cd` for every later command, so an earlier `cd` likely moved it.
-  It also names the way forward: `cd` back to the anchored directory, which the refusal names, and reach other directories through absolute paths or `git -C`.
-  The error still wraps `ErrCwdOutsideAnchor` and keeps its opening text, so callers that match on either are unaffected.
-  Every verb behind `lymcwd.Resolve` or `preflight.ResolveMode` gets the new text, creel among them, since `ResolveMode` passes the gated error through verbatim.
-- A new shipped heddle entry, `lym-shell-directory`, renders into every session's agents file after the edit-round entry.
-  It says the shell keeps a `cd` across calls, and that an absolute path, `git -C <dir>` or `env -C <dir>` reaches another directory instead.
+- The strict cwd gate in `internal/lymcwd` now adds to its refusal that a shell keeps a `cd` for every later command,
+  so an earlier `cd` likely moved it.
+  It also names the way forward: `cd` back to the anchored directory,
+  and reach other directories through absolute paths or `git -C`.
+- The refusal is now an `*AnchorGateError`.
+  It still wraps `ErrCwdOutsideAnchor` and keeps its opening text.
+- The new text reaches the verbs that surface the gate's error, creel among them.
+  The exception is `drift capture-child`, whose cwd no shell chose:
+  it reports the refusal without the cause and way forward.
+- A new shipped heddle entry, `lym-shell-directory`, renders into the agents file after the edit-round entry.
+  It says the shell keeps a `cd` across calls,
+  and to reach another directory through an absolute path, `git -C <dir>` or `env -C <dir>`.
 
 ## Design decisions
 
-- The fix sharpens the refusal and does not accept calls from any directory inside the worktree, which the entry offered as an alternative.
-  Accepting subdirectories would loosen the strict gate that `PATTERN-cwd-resolution` pins for every acting verb, not for creel alone.
-- The message changes at the gate, not in `creelcli`, because every lym verb trips over the same kept `cd`.
+- The refusal says more; the gate accepts the same directories as before.
+  The issue offered accepting any directory inside the worktree as an alternative,
+  which would have loosened the gate for every verb behind it, not for creel alone.
+- The message changes at the gate rather than in `creelcli`, because any gated verb can trip over a kept `cd`.
 
 ## Tests
 
-`TestCheckCwdAnchorGate` pins the whole refusal text for a subdirectory of an unanchored worktree.
-The test fails on the merge base, whose message has neither the cause nor the way forward.
-`ShippedEntriesArePinned` gains the new entry's row, so the pinned order and heading cover it.
+- `TestCheckCwdAnchorGate` pins the whole refusal text for a subdirectory of a root-anchored worktree
+  and for the worktree root above a subpath anchor.
+- `TestDrift_RunsInTheAnchoredDirectory` checks that the capture child's refusal carries no way forward.
+- The shipped-entry pin in `TestStore` gains the new entry's row.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** lymcwd
+**Blast radius:** agents
