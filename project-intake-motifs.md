@@ -1,6 +1,6 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-26 09:42 UTC; every age below is as of then.
+Rendered 2026-11-26 09:43 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-motifs` · Age 1h · Owner `neve`
@@ -12,6 +12,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | motif | Discussion-Burler-Review | neve | 2h<br>27m | dobby, gate |
-| T15 | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | motif | Discussion-Burler-Review | neve | 3w<br>27m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-| T16 | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md) | motif | Discussion-Bouncer | neve | 2h<br>27m | landing, fabric, report |
+| T14 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | motif | Discussion-Burler-Review | neve | 2h<br>28m | dobby, gate |
+| T15 | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | motif | Discussion-Burler-Review | neve | 3w<br>28m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| T16 | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md) | motif | Discussion-Burler-Review | neve | 2h<br>28m | landing, fabric, report |
