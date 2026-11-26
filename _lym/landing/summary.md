@@ -1,37 +1,46 @@
 # End every process a loomcli smoke fixture leaves under its temp dirs
 
-A loom verb that reconciles the hub spawns a detached `lym board sync` in the fixture's board.
-The sync runs on after the verb returns.
-In `internal/loomcli`, `TestLoomFailedReedUpRefuses` never waited for it.
-`waitForFixtureProcessesToExit` waited ten seconds at most and then returned silently, so a sync still running stayed alive.
-When such a sync was still running at the package's end, `tmuxkit.Main` failed the tier1 run with `process … left running by the package`.
-A rerun passed, because whether the sync outlives the package depends on timing.
+A loom verb that reconciles the hub spawns a detached `lym board sync` in the fixture's board,
+and the sync runs on after the verb returns.
+In `internal/loomcli`, `waitForFixtureProcessesToExit` waited at most ten seconds and then returned silently,
+and `TestLoomFailedReedUpRefuses` never called it.
+A sync still running when the package's tests ended made `tmuxkit.Main` fail the run
+with `process … left running by the package`, intermittently and unrelated to the change under test.
+
+Closes #264
 
 ## What changes
 
+Only test files change.
+
 - `waitForFixtureProcessesToExit(t, patience)` waits up to `patience` for every process whose cwd is under the test's temp root.
-  It then kills and logs each one still running.
-  It fails the test only when a killed process still runs after a second `patience`.
+  It then kills and logs each one still running, and does the same for one that appears after a kill, a further `patience` later.
+  It fails the test only when every process still running after that has already been killed.
   Callers pass `fixtureProcessPatience`, the ten seconds the old loop used.
 - The temp root is resolved through `filepath.EvalSymlinks` before the scan.
-  `/proc/<pid>/cwd` reports a resolved path, so an unresolved root that held a symlink would match no process.
-- `newBadReedUpFixture` registers the cleanup itself, right after it copies the hub.
-  This covers every subtest of `TestLoomFailedReedUpRefuses`, and `TestLoomResumeReconcilesTheHubConfigBeforeArming` drops its own call.
-- `newWiredPairFixture` keeps its callers' explicit calls.
-  Its tmux-tier users have their own teardown order, which this change leaves as it was.
-
-## Test
-
-`TestWaitForFixtureProcessesToExit_KillsAProcessThatOutlivesItsPatience` (tier1, Linux only) starts `sleep 60` under a subtest's temp dir with a 100 ms patience.
-It asserts that the process was killed by SIGKILL once the subtest returns.
-The defect and the fix both live in test-only fixture code, and the production code is unchanged.
-No test can fail on the base's production code, as the record's "No test seam" decision states.
+  `/proc/<pid>/cwd` reports a resolved path, so a root reached through a symlink would match no process.
+- `newBadReedUpFixture` registers the cleanup itself, which covers `TestLoomFailedReedUpRefuses`.
+  `TestLoomResumeReconcilesTheHubConfigBeforeArming` drops its own call.
+- `registerBootstrapTeardown` registers the cleanup before its own kills, so it runs after them.
+  This covers the tier2 tests that use the teardown, and `TestSmokeWatchdog_StartSpawnsTheDaemon` drops its own call.
+- The tier1 callers of `newWiredPairFixture` register no teardown and keep their explicit calls.
 
 ## Design decisions
 
-- The cleanup kills a lingering process rather than failing the test on it.
-  A slow board sync under load is not a defect of the test under it, and a kill keeps the package's end-of-run sweep clean.
+- The cleanup kills a lingering process instead of failing the test on it.
+  A slow board sync under load is not a defect of the test that spawned it.
   The kill is logged, so a process that always lingers still shows in the test's log.
+- A process first seen after a kill no longer fails the test at once: it is killed and given its own `patience`.
+- `TestWaitForFixtureProcessesToExit_KillsAProcessThatOutlivesItsPatience` (tier1, Linux only)
+  starts `sleep 60` under a subtest's temp dir with a 100 ms patience, and asserts that SIGKILL ended it.
+  The defect and the fix both live in `_test.go` files, so no test can fail on the base's production code.
+
+## To check
+
+- Tier2 callers of `newWiredPairFixture` leaving the detached board sync running,
+  at `registerBootstrapTeardown` in `internal/loomcli/smoke_test.go`.
+  The diff registers the cleanup there; confirm that it covers each of those callers.
+- No test exercises the path where a new process appears after the first kill.
 
 ## Merge danger
 
