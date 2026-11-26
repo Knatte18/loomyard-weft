@@ -22,7 +22,7 @@ Each bullet names its source project and the lym module it would touch.
 
 - **Quorum of differently-angled judges** (ccswarm): lym fans out lenses but has no quorum vote for high-risk segments.
   Since 2026-11-19 a run's parent orch can be asked to see and veto each Code-Review round and each drift judge ruling
-  (`code_review_ask_parent`, `judge_ask_parent`); that is one extra judge, not a quorum.
+  (`loom.code.review_ask_parent`, `drift.judge_ask_parent`); that is one extra judge, not a quorum.
 - **Risk tier by changed paths** (yylo): globs over sensitive paths choose the review depth and the gate scope.
 
 ## Engine, recipes and governance (shed, tender, orch, board)
@@ -34,12 +34,12 @@ Each bullet names its source project and the lym module it would touch.
   no tree hash guards that resume, and a retry after a timeout or a finished run still starts fresh.
 - **Evidence reuse by input identity** (yylo): verify is skipped on the same tree; a changed review prompt could rerun only the review.
 - **Guidance at the next step boundary** (Conductor): a queue of operator guidance for the next producer's prompt.
-  Partly met since 2026-11-19: `notify_parent_on` in `loom.yaml` mails the run's parent when a named row is reached,
+  Partly met since 2026-11-19: `loom.notify_parent_on` mails the run's parent when a named row is reached,
   so the parent can brief that row's agent as it starts; there is still no queue of guidance lym itself folds into the prompt.
 - **Batched operator questions with recorded assumptions** (Spec Kit `/clarify`, Conductor): Discussion-Write asks at most a few ranked questions,
   each with a recommended answer, and records unanswered ones as assumptions.
   Since 2026-11-19 a run's autonomous agents put their questions to the run's parent orch, not to the operator in their pane.
-  Discussion asks in its pane only when `discussion_interactive` is `true`, which is off by default and forced off by autonomy mode (`30ed1ee58`),
+  Discussion asks in its pane only when `loom.discussion.interactive` is `true`, which is off by default and forced off by autonomy mode (`30ed1ee58`),
   so this lead concerns an interactive Discussion only.
 - **Rate-limit wait**: the orch watcher wakes the orch after a usage reset; tender itself schedules no resume.
 - **Standing goals and scheduled routines** (ORCH, CAO, Fusion): periodic triage, dependency bumps or `selfreport` sweeps.
