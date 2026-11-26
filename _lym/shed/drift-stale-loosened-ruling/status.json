@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -211,6 +211,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/drift-stale-loosened-ruling/_lym/reviews/code/round-2-review.md",
+      "at": "2026-11-26T19:54:28Z",
+      "started_at": "2026-11-26T19:28:21Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T19:32:30.317355408Z",
+          "end": "2026-11-26T19:32:30.341891795Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T19:32:51.485018164Z",
+          "end": "2026-11-26T19:32:51.517489152Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T19:32:30.489829061Z",
+          "end": "2026-11-26T19:32:30.974497925Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-26T19:32:31.592543721Z",
+          "end": "2026-11-26T19:32:51.102899551Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T19:32:51.765172681Z",
+          "end": "2026-11-26T19:54:26.975755724Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-26T19:54:27.057305669Z",
+          "end": "2026-11-26T19:54:27.058142687Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
