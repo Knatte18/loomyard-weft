@@ -876,6 +876,25 @@
       "body": "## Seen (2026-11-26, `config-keys-nested` at Webster)\n\nWebster's Master wrote its friction note at `_lym/loom/friction/webster-master.md`, the path the friction-directive-orchestrator stencil gives it.\nThe run-exit audit (`internal/websterengine/audit.go`, class `parent-write`) allows Master only `outcome.yaml` and `summary.md`, so it flagged the note and blocked the run with all 8 batches done.\n`lym webster accept-audit` refused twice:\nfirst because HEAD carried the verify fixer's commit past the last batch head, and after `reset --to last-batch-head` and removing the note,\nbecause the note's path \"cannot be checked: outside the task worktree\", since the records side is a separate worktree.\nIts only way forward was `lym webster reset --to start`, which throws away every batch.\n\n## Idea\n\n- The parent-write audit exempts Master's own friction note path, the one its prompt names.\n- `accept-audit` accepts a finding whose path lies on the run's records side and is absent or unchanged, instead of refusing it as outside the worktree.\n- A verify fixer's commit past the last batch head does not block `accept-audit`, as a parent merge does not.\n",
       "created": "2026-11-26T13:04:19Z",
       "revised": "2026-11-26T13:04:19Z"
+    },
+    {
+      "id": 1694,
+      "handle": "E2",
+      "slug": "bridge-inbound-per-orch",
+      "title": "Cross-machine mail into the receiving orch own channel instead of a channel per orch pair",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "slack",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-26, relayed by norce:orch on osl46)\n\nThe first cross-machine test over the Slack bridge worked both ways (Neve #2650, osl46 #129).\nSetup was clumsy: `approve \u003cmachine\u003e` by name failed, and each side needed `approve \u003cmachine\u003e \u003capp id\u003e`.\nBridge channels are made per pair of orchs, so their number grows with the square of the orchs and machines.\n\n## Idea\n\nOne inbound channel per orch: its existing channel.\nAn orch on another machine posts its mail into the receiver's channel.\nThe receiving relay checks the sender bot's app id against the approved peers, as today.\nChannels then grow linearly.\n\nCost and open points:\n\n- A conversation between A and B is split across two channels.\n  A could mirror its outgoing mail into its own channel, or the two could use threads, so the operator sees the whole exchange in one place.\n- The relay must keep telling the operator's messages apart from peer bots' posts in the same channel.\n- Why approve by name found no bot `lym-neve` is unexplained; a design that still names peers must find them.\n\nThe operator will think further about it; this is a note, not a task.\n",
+      "created": "2026-11-26T13:15:12Z",
+      "revised": "2026-11-26T13:15:12Z"
     }
   ],
   "prime_owner": "neve",
