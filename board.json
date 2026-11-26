@@ -493,27 +493,6 @@
       "revised": "2026-11-26T07:33:34Z"
     },
     {
-      "id": 1637,
-      "handle": "B13",
-      "slug": "gate-no-tier0-fix-round",
-      "title": "lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "burler"
-      ],
-      "issues": [
-        237
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #237](https://github.com/Knatte18/loomyard/issues/237).\n\nA Burler code fix round ran `lym gate test ./\u003cmodule path\u003e` on a Go module and the verb answered that the hub declares no tier0.\nThe round therefore had no gate, and the agent ran `go vet` and `go test` on the module directly.\n\nThis is abnormal because the fix-round instructions end each round with the gate; a hub without a declared tier0 leaves the round with nothing to run, and the agent improvised a substitute.\n\nWhat to do: either have `lym gate test` fall back to a default tier when tier0 is undeclared, or make the refusal name the config key to add, and have the Burler code prompt say what to run when no gate exists.\n\nProvenance: task slug timesheet-suggest-tool; notes burler-code-r1.md.",
-      "created": "2026-11-26T07:33:38Z",
-      "revised": "2026-11-26T07:33:38Z"
-    },
-    {
       "id": 1638,
       "handle": "B14",
       "slug": "beam-orch-cannot-amend-record",
@@ -534,69 +513,6 @@
       "body": "Imported from [issue #236](https://github.com/Knatte18/loomyard/issues/236).\n\n## What happened\n\nIn hub `dop`, beam `models-torque-drag` (P1) holds a stored decision record.\nOn 2026-11-24 the operator made a decision that supersedes two of its decisions: a new member task maps the well's formation strength into the Models bit-rock law, where the beam record's D1 and D2 keep Models' bit-rock defaults.\nThe member's Discussion saw the conflict and asked the beam orch, which owns the beam record, to settle it.\n\nThe beam orch could not amend its own beam's record:\n\n- `lym loom decision add models-torque-drag --by parent ...` from the beam orch refused: `the caller \"dop:models-torque-drag:orch\" is a task session; way forward: a design call after the Discussion is the parent's to record; ask dop:orch to run the verb`.\n  The beam orch is an orch, not a task session, and it is the record's owner.\n- `lym board upsert --record-file` refuses an entry a run holds, and a beam's project is always held by its pawl run (`running · Beam-Await`), so that way is closed for the beam's whole life.\n\n## Expected\n\nThe beam's own orch can append a decision to, or replace, its beam's decision record while the beam lives, as a run's parent can for a task's record.\nThe caller check counts a beam orch (`\u003chub\u003e:\u003cbeam\u003e:orch`) as an orch, not as a task session.\n\n## Related\n\nThe same misclassification of the beam orch shows in parent-review: `lym loom parent-review answer` refuses the beam orch for its member's pull request (`neither the run's parent orch nor the strand the ask went to`), filed by the hub orch as Knatte18/loomyard#232.\n",
       "created": "2026-11-26T07:33:42Z",
       "revised": "2026-11-26T07:33:42Z"
-    },
-    {
-      "id": 1639,
-      "handle": "B15",
-      "slug": "gate-detailed-logger-no-test",
-      "title": "gate test: reports 'ran no test' when the detailed console logger's summary is used",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet"
-      ],
-      "issues": [
-        235
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #235](https://github.com/Knatte18/loomyard/issues/235).\n\nWith `--logger \"console;verbosity=detailed\"` passed to `lym gate test`, the gate reported that it ran no test, although the test log shows `Total tests: 1, Passed: 1`. The gate's test counter appears to misread the detailed logger's summary format.\n\nThis is abnormal because a passing run is reported as a run of nothing, which an agent may read as a failure or retry needlessly. The counter should parse the summary lines of every console logger verbosity, or read the result from a structured logger (trx) instead.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
-      "created": "2026-11-26T07:33:45Z",
-      "revised": "2026-11-26T07:33:45Z"
-    },
-    {
-      "id": 1640,
-      "handle": "B16",
-      "slug": "gate-tier3-double-filter",
-      "title": "gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet"
-      ],
-      "issues": [
-        234
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #234](https://github.com/Knatte18/loomyard/issues/234).\n\nThe tier3 command of `lym gate test` already carries a `--filter`. Passing a test filter in `{args}` adds a second `--filter`, and `dotnet test` refuses the call. An agent found that `-p:VSTestTestCaseFilter=...` works as an override, but nothing in the verb's help says so.\n\nThis is abnormal because selecting one test class is the common use of the verb. The gate should merge a caller filter into the tier's filter (or replace it) and document the way to do it.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
-      "created": "2026-11-26T07:33:49Z",
-      "revised": "2026-11-26T07:33:49Z"
-    },
-    {
-      "id": 1641,
-      "handle": "B17",
-      "slug": "darn-gate-key-tier0-only",
-      "title": "gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "darn"
-      ],
-      "issues": [
-        233
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #233](https://github.com/Knatte18/loomyard/issues/233).\n\nA prompt told an agent to run a measurement test through `lym gate test --gate darn-write`. That gate key runs tier0 only, while the test lived in tier3 (a slow-test project, category `ModelsLong`). The first call ran no test, and the orch had to allow `--tier 3` by hand.\n\nThis is abnormal because the prompt and the gate key disagree on the tier. Either the prompt generator should pass `--tier` when the named test is not tier0, or the gate should say, when it runs no test, that the filter matches nothing at this tier and name the tiers that would match.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
-      "created": "2026-11-26T07:33:52Z",
-      "revised": "2026-11-26T07:33:52Z"
     },
     {
       "id": 1642,
@@ -768,47 +684,6 @@
       "revised": "2026-11-26T07:34:26Z"
     },
     {
-      "id": 1653,
-      "handle": "B22",
-      "slug": "webster-plan-fix-begun-batch",
-      "title": "Plan fixes after begun batches block Webster; glyph-not-found on members a card creates",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "quarry"
-      ],
-      "issues": [
-        221
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #221](https://github.com/Knatte18/loomyard/issues/221).\n\n## What happened\n\nTwo Webster halts after the plan was edited by a plan review/fix round while batches were already begun.\n\n1. `blocked` / `escalation-to-human`:\n\n```\nwebster: the auto-rebaseline of the changed plan blocks this run: webster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed outside its Card Index; it carries the plan's integration verify and only its Card Index is rebaselined; way forward: restore 00-overview.md, or fix the plan: move a done card's edit to a follow-up card after the last begun batch that carries the decision, with its Card Index line in 00-overview.md, then re-step the Webster row\n```\n\n2. After the plan was fixed and the run re-stepped, `failed` / `producer-hard-failure`, plan validation refused with four `glyph-not-found` findings, all of the form:\n\n```\nglyph-not-found/\u003ccard\u003e[blocking]: target \"\u003cUnit\u003e#\u003cMember\u003e\"'s unit exists but the member is missing — check for a misspelled member\n```\n\nThe members named were ones the plan's cards (5 and 6) introduce or modify, and the targets include a method signature with a generic parameter type (`IReadOnlyList\u003cdouble\u003e`) and a nullable (`TimeSpan?`).\nCard 5 and card 6 cite the same new member as a target.\n\n## Why abnormal\n\n- The plan review loop (`Plan-Burler-Fix`) edited `00-overview.md` outside its Card Index and the run then blocked on it; the plan-fix stage gives no warning that such an edit is unrecoverable once a batch has begun, so each such fix costs an operator escalation.\n- If the glyph targets name members that an earlier card of the same plan creates, validation cannot find them at plan time and refuses a valid plan. If they are misspelled, the finding text does not say which member of the unit is closest. Either way the finding should say whether the member is expected to be created by a card.\n  I could not tell from the notes which case applies.\n\n## What to do\n\n- Have the plan-fix stage refuse or warn on edits to `00-overview.md` outside the Card Index once any batch has begun.\n- Let glyph validation accept a target that an earlier card of the plan declares as created, and print the unit's actual member names beside a `glyph-not-found` finding.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-4.md`, `loom-halt-6.md`.\n",
-      "created": "2026-11-26T07:34:29Z",
-      "revised": "2026-11-26T07:34:29Z"
-    },
-    {
-      "id": 1654,
-      "handle": "B23",
-      "slug": "webster-recovery-asking-dead",
-      "title": "Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [
-        220
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #220](https://github.com/Knatte18/loomyard/issues/220).\n\n## What happened\n\nA Webster batch's verify failed on a test the plan could not satisfy.\nThe batch recovery session ended `dead` with `dead_reason: asking`, i.e. the recovery agent stopped to ask a question instead of finishing, and `recoveries: 1`, `recovery_retry: false`.\nThen:\n\n```\nlym webster recover-batch 3 refused:\nwebster: batch 03-torque-drag-stage recovery (session ...) ended dead and the batch has no recovery left; way forward: end the run stuck, naming batch 03-torque-drag-stage\n```\n\nThe run halted `blocked` (anomaly `escalation-to-human`).\nAfter the plan was edited and rebaselined, Webster halted `blocked` again:\n\n```\nwebster: a batch of this run is at a dead end: batch 03-torque-drag-stage is dead and its recovery earns no retry, so a Master would only end the run stuck on it; way forward: 1) lym webster reset --to batch-start --batch 03; 2) re-step the Webster row; or 1) lym webster reset --to start; 2) re-step the Webster row\n```\n\n## Why abnormal\n\nA recovery agent that asks a question has no channel that answers it, so the question becomes a dead recovery with no retry.\nThe agent's question, which would tell the operator what is wrong, is not carried into the halt text: the halt note only restates \"dead_reason: asking\".\nPlan edits made to fix the cause did not clear the dead state either; a manual `webster reset` was needed.\n\n## What to do\n\n- When a recovery ends with `dead_reason: asking`, put the agent's last message in the halt/refusal note.\n- Either route the question to the parent (`lym creel post --parent --expect-reply`) or let a plan rebaseline that touches the dead batch's cards re-arm one recovery, so the operator does not need a reset.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt.md`, `loom-halt-5.md`, `webster-refusal-recover-batch.md`.\n",
-      "created": "2026-11-26T07:34:32Z",
-      "revised": "2026-11-26T07:34:32Z"
-    },
-    {
       "id": 1655,
       "handle": "B24",
       "slug": "seat-idle-no-input-box",
@@ -849,28 +724,6 @@
       "body": "Imported from [issue #218](https://github.com/Knatte18/loomyard/issues/218).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/logs`.\n\n## What happened\n\nRun `weekly-time-report` (recipe raddle, promoted from a Sketch) stopped at Seed-IDE with:\n\n\u003e run \"weekly-time-report\" cannot act: the code tip e7b0cc2 the run's last transition names is not on origin yet; way forward: run \"lym batten run weekly-time-report\" again once the code push lands\n\nTimeline from `.lym/logs` (2026-11-24, CET):\n\n- 14:45:52 Worktree-Create done; the task branch forks from the prime's local `main` at e7b0cc2, one commit ahead of `origin/main`.\n- 14:45:52 and 14:45:55 fabricengine spawned detached pushes of the new pair (`fabric --warp-path …/weekly-time-report …`).\n- 14:45:57 Seed-IDE's bootstrap checked whether e7b0cc2 is on origin, found it was not, and refused the step.\n- Shortly after, the detached push landed: `git ls-remote origin` showed `refs/heads/weekly-time-report` at e7b0cc2.\n\nThe network was slow and resetting that day (`Recv failure: Connection reset by peer` on records pushes), so the detached push took longer than the 2–5 s gap.\n\n## Effect\n\n- The run stopped as failed, and the tackler handed it back to the parent asking whether to push the prime's `main`, which was not needed.\n- A plain `lym batten run weekly-time-report` afterwards went straight through Seed-IDE to Run-Shed.\n\n## Expected\n\nA check that the code tip is on origin, right after lym itself spawned the push that puts it there, should wait for that push, or retry for a while, instead of failing the run.\nThe stop should also say that lym's own push of the task branch is in flight, so the tackler does not ask the parent to push the parent branch.\n",
       "created": "2026-11-26T07:34:38Z",
       "revised": "2026-11-26T07:34:38Z"
-    },
-    {
-      "id": 1658,
-      "handle": "B26",
-      "slug": "gate-timeout-hung-testhost",
-      "title": "Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "dotnet"
-      ],
-      "issues": [
-        216,
-        215
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #216](https://github.com/Knatte18/loomyard/issues/216).\n\n## What happened\n\nIn hub `dop`, run `models-torque-drag-adapter`, a Webster batch fork ran `lym gate test --tier tier3` at 2026-11-23 15:36.\nTier3 has `timeout_min: 35` in the gate config.\nThe tier's `dotnet test` testhost hung (about 4.5 min CPU in 21 h), and the gate slot stayed held for nearly 21 hours: `lym gate status` showed the slot held since 15:36 the next day.\nThe 35-minute bound never fired, so the fork, Webster and the run waited without any stop or notice to the parent orch.\nAnother hub's orch noticed the idle process; the parent orch killed the testhost by hand, and the gate then released its slot.\n\n## Expected\n\nAt `timeout_min` the gate kills the tier's whole process tree (`sh -c dotnet test` → `dotnet` → `vstest` → testhost) and reports a timeout failure to its caller.\n\n## Likely area\n\nThe timeout may kill only the direct child (`sh`), or wait on output pipes that the orphaned testhost still holds open, so the wait never returns.\n\n\n## From issue #215\n\nImported from [issue #215](https://github.com/Knatte18/loomyard/issues/215).\n\nOn a Models hub, `lym gate test --wait --gate finalize` (PID 3536339) ran tier1, `dotnet test NORCE.Models.SlowTests -p:RunSlowTests=true` with `timeout_min: 30`, from 2026-11-23 15:36 to the next day, over 20 h. The test host had used about 7 min CPU; it was hung. The gate slot stayed held the whole time and the run sat at Finalize. On the same machine a DrillOpPlan hub's tier3 gate, started the same minute with a 35-minute bound, hung the same way and its bound never fired either. The machine may have been suspended overnight, but the bound did not fire before that either (15:36 + 30 min). Expected: the gate kills the tier's process tree at timeout_min and reports a timeout.",
-      "created": "2026-11-26T07:34:45Z",
-      "revised": "2026-11-26T07:34:48Z"
     },
     {
       "id": 1659,
@@ -968,6 +821,68 @@
       "created": "2026-11-23T18:56:36Z",
       "revised": "2026-11-26T08:19:39Z",
       "profile": "solid",
+      "project": "intake-wave-1"
+    },
+    {
+      "id": 1664,
+      "handle": "T2",
+      "slug": "webster-plan-recovery",
+      "title": "Webster: plan fixes after begun batches, and recovery that ends asking",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        221,
+        220
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Plan fixes after begun batches block Webster; glyph-not-found on members a card creates\n\nImported from [issue #221](https://github.com/Knatte18/loomyard/issues/221).\n\n## What happened\n\nTwo Webster halts after the plan was edited by a plan review/fix round while batches were already begun.\n\n1. `blocked` / `escalation-to-human`:\n\n```\nwebster: the auto-rebaseline of the changed plan blocks this run: webster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed outside its Card Index; it carries the plan's integration verify and only its Card Index is rebaselined; way forward: restore 00-overview.md, or fix the plan: move a done card's edit to a follow-up card after the last begun batch that carries the decision, with its Card Index line in 00-overview.md, then re-step the Webster row\n```\n\n2. After the plan was fixed and the run re-stepped, `failed` / `producer-hard-failure`, plan validation refused with four `glyph-not-found` findings, all of the form:\n\n```\nglyph-not-found/\u003ccard\u003e[blocking]: target \"\u003cUnit\u003e#\u003cMember\u003e\"'s unit exists but the member is missing — check for a misspelled member\n```\n\nThe members named were ones the plan's cards (5 and 6) introduce or modify, and the targets include a method signature with a generic parameter type (`IReadOnlyList\u003cdouble\u003e`) and a nullable (`TimeSpan?`).\nCard 5 and card 6 cite the same new member as a target.\n\n## Why abnormal\n\n- The plan review loop (`Plan-Burler-Fix`) edited `00-overview.md` outside its Card Index and the run then blocked on it; the plan-fix stage gives no warning that such an edit is unrecoverable once a batch has begun, so each such fix costs an operator escalation.\n- If the glyph targets name members that an earlier card of the same plan creates, validation cannot find them at plan time and refuses a valid plan. If they are misspelled, the finding text does not say which member of the unit is closest. Either way the finding should say whether the member is expected to be created by a card.\n  I could not tell from the notes which case applies.\n\n## What to do\n\n- Have the plan-fix stage refuse or warn on edits to `00-overview.md` outside the Card Index once any batch has begun.\n- Let glyph validation accept a target that an earlier card of the plan declares as created, and print the unit's actual member names beside a `glyph-not-found` finding.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-4.md`, `loom-halt-6.md`.\n\n\n# Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset\n\nImported from [issue #220](https://github.com/Knatte18/loomyard/issues/220).\n\n## What happened\n\nA Webster batch's verify failed on a test the plan could not satisfy.\nThe batch recovery session ended `dead` with `dead_reason: asking`, i.e. the recovery agent stopped to ask a question instead of finishing, and `recoveries: 1`, `recovery_retry: false`.\nThen:\n\n```\nlym webster recover-batch 3 refused:\nwebster: batch 03-torque-drag-stage recovery (session ...) ended dead and the batch has no recovery left; way forward: end the run stuck, naming batch 03-torque-drag-stage\n```\n\nThe run halted `blocked` (anomaly `escalation-to-human`).\nAfter the plan was edited and rebaselined, Webster halted `blocked` again:\n\n```\nwebster: a batch of this run is at a dead end: batch 03-torque-drag-stage is dead and its recovery earns no retry, so a Master would only end the run stuck on it; way forward: 1) lym webster reset --to batch-start --batch 03; 2) re-step the Webster row; or 1) lym webster reset --to start; 2) re-step the Webster row\n```\n\n## Why abnormal\n\nA recovery agent that asks a question has no channel that answers it, so the question becomes a dead recovery with no retry.\nThe agent's question, which would tell the operator what is wrong, is not carried into the halt text: the halt note only restates \"dead_reason: asking\".\nPlan edits made to fix the cause did not clear the dead state either; a manual `webster reset` was needed.\n\n## What to do\n\n- When a recovery ends with `dead_reason: asking`, put the agent's last message in the halt/refusal note.\n- Either route the question to the parent (`lym creel post --parent --expect-reply`) or let a plan rebaseline that touches the dead batch's cards re-arm one recovery, so the operator does not need a reset.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt.md`, `loom-halt-5.md`, `webster-refusal-recover-batch.md`.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:34:29Z",
+      "revised": "2026-11-26T08:19:40Z",
+      "profile": "light",
+      "project": "intake-wave-1"
+    },
+    {
+      "id": 1665,
+      "handle": "T4",
+      "slug": "dotnet-gate-fixes",
+      "title": "Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "gate",
+        "dotnet",
+        "darn",
+        "burler"
+      ],
+      "issues": [
+        216,
+        215,
+        235,
+        234,
+        233,
+        237
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours\n\nImported from [issue #216](https://github.com/Knatte18/loomyard/issues/216).\n\n## What happened\n\nIn hub `dop`, run `models-torque-drag-adapter`, a Webster batch fork ran `lym gate test --tier tier3` at 2026-11-23 15:36.\nTier3 has `timeout_min: 35` in the gate config.\nThe tier's `dotnet test` testhost hung (about 4.5 min CPU in 21 h), and the gate slot stayed held for nearly 21 hours: `lym gate status` showed the slot held since 15:36 the next day.\nThe 35-minute bound never fired, so the fork, Webster and the run waited without any stop or notice to the parent orch.\nAnother hub's orch noticed the idle process; the parent orch killed the testhost by hand, and the gate then released its slot.\n\n## Expected\n\nAt `timeout_min` the gate kills the tier's whole process tree (`sh -c dotnet test` → `dotnet` → `vstest` → testhost) and reports a timeout failure to its caller.\n\n## Likely area\n\nThe timeout may kill only the direct child (`sh`), or wait on output pipes that the orphaned testhost still holds open, so the wait never returns.\n\n\n## From issue #215\n\nImported from [issue #215](https://github.com/Knatte18/loomyard/issues/215).\n\nOn a Models hub, `lym gate test --wait --gate finalize` (PID 3536339) ran tier1, `dotnet test NORCE.Models.SlowTests -p:RunSlowTests=true` with `timeout_min: 30`, from 2026-11-23 15:36 to the next day, over 20 h. The test host had used about 7 min CPU; it was hung. The gate slot stayed held the whole time and the run sat at Finalize. On the same machine a DrillOpPlan hub's tier3 gate, started the same minute with a 35-minute bound, hung the same way and its bound never fired either. The machine may have been suspended overnight, but the bound did not fire before that either (15:36 + 30 min). Expected: the gate kills the tier's process tree at timeout_min and reports a timeout.\n\n# gate test: reports 'ran no test' when the detailed console logger's summary is used\n\nImported from [issue #235](https://github.com/Knatte18/loomyard/issues/235).\n\nWith `--logger \"console;verbosity=detailed\"` passed to `lym gate test`, the gate reported that it ran no test, although the test log shows `Total tests: 1, Passed: 1`. The gate's test counter appears to misread the detailed logger's summary format.\n\nThis is abnormal because a passing run is reported as a run of nothing, which an agent may read as a failure or retry needlessly. The counter should parse the summary lines of every console logger verbosity, or read the result from a structured logger (trx) instead.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse\n\nImported from [issue #234](https://github.com/Knatte18/loomyard/issues/234).\n\nThe tier3 command of `lym gate test` already carries a `--filter`. Passing a test filter in `{args}` adds a second `--filter`, and `dotnet test` refuses the call. An agent found that `-p:VSTestTestCaseFilter=...` works as an override, but nothing in the verb's help says so.\n\nThis is abnormal because selecting one test class is the common use of the verb. The gate should merge a caller filter into the tier's filter (or replace it) and document the way to do it.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing\n\nImported from [issue #233](https://github.com/Knatte18/loomyard/issues/233).\n\nA prompt told an agent to run a measurement test through `lym gate test --gate darn-write`. That gate key runs tier0 only, while the test lived in tier3 (a slow-test project, category `ModelsLong`). The first call ran no test, and the orch had to allow `--tier 3` by hand.\n\nThis is abnormal because the prompt and the gate key disagree on the tier. Either the prompt generator should pass `--tier` when the named test is not tier0, or the gate should say, when it runs no test, that the filter matches nothing at this tier and name the tiers that would match.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate\n\nImported from [issue #237](https://github.com/Knatte18/loomyard/issues/237).\n\nA Burler code fix round ran `lym gate test ./\u003cmodule path\u003e` on a Go module and the verb answered that the hub declares no tier0.\nThe round therefore had no gate, and the agent ran `go vet` and `go test` on the module directly.\n\nThis is abnormal because the fix-round instructions end each round with the gate; a hub without a declared tier0 leaves the round with nothing to run, and the agent improvised a substitute.\n\nWhat to do: either have `lym gate test` fall back to a default tier when tier0 is undeclared, or make the refusal name the config key to add, and have the Burler code prompt say what to run when no gate exists.\n\nProvenance: task slug timesheet-suggest-tool; notes burler-code-r1.md.\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:38Z",
+      "revised": "2026-11-26T08:19:40Z",
+      "profile": "light",
       "project": "intake-wave-1"
     }
   ],

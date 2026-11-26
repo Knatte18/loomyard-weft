@@ -6,15 +6,17 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits](project-intake-wave-1.md) (1)
+## [P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits](project-intake-wave-1.md) (3)
 
 `intake-wave-1` · Age 0m · Owner `neve`
 
-### Draft (1)
+### Draft (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | T3 | 2d<br>0m | landing, loom, config |
+| T2 | `draft` **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | T3 | 45m<br>0m | webster, quarry |
+| T4 | `draft` **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | T3 | 46m<br>0m | gate, dotnet, darn, burler |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -48,7 +50,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-motifs` · Age 0m · Owner `neve`
 
-## [P0 Root: entries under no project](project-root.md) (36)
+## [P0 Root: entries under no project](project-root.md) (29)
 
 Owner `neve`
 
@@ -71,7 +73,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-### Bugs (24)
+### Bugs (17)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -86,19 +88,12 @@ Owner `neve`
 | B10 |  | **Finalize halts as hard failure on a GitHub API EOF that lym marks transient** | [`finalize-transient-eof-fails`](design-finalize-transient-eof-fails.md) | 46m<br>46m | landing, shed |
 | B11 |  | **A died bouncer judge session spends Code-Bouncer's bounce budget** | [`died-judge-spends-bounce-budget`](design-died-judge-spends-bounce-budget.md) | 46m<br>46m | burler, shed |
 | B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 46m<br>46m | fabric |
-| B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 46m<br>46m | gate, burler |
 | B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 45m<br>45m | loom, orch, pawl |
-| B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 45m<br>45m | gate, dotnet |
-| B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 45m<br>45m | gate, dotnet |
-| B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 45m<br>45m | gate, darn |
 | B18 |  | **A beam member's run records the prime orch as its parent orch** | [`beam-member-parent-is-prime`](design-beam-member-parent-is-prime.md) | 45m<br>45m | batten, landing, orch |
 | B19 |  | **Tackler and driver prompts of a beam member say no parent is recorded** | [`beam-member-prompt-no-parent`](design-beam-member-prompt-no-parent.md) | 45m<br>45m | stencil, shed |
 | B21 |  | **The GitHub PR body is not updated when the description file changes** | [`pr-body-not-synced`](design-pr-body-not-synced.md) | 45m<br>45m | landing |
-| B22 |  | **Plan fixes after begun batches block Webster; glyph-not-found on members a card creates** | [`webster-plan-fix-begun-batch`](design-webster-plan-fix-begun-batch.md) | 45m<br>45m | webster, quarry |
-| B23 |  | **Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset** | [`webster-recovery-asking-dead`](design-webster-recovery-asking-dead.md) | 45m<br>45m | webster |
 | B24 |  | **Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review** | [`seat-idle-no-input-box`](design-seat-idle-no-input-box.md) | 45m<br>45m | shuttle, claude |
 | B25 |  | **Seed-IDE fails the run when the task branch's detached push has not landed yet** | [`seed-ide-push-not-landed`](design-seed-ide-push-not-landed.md) | 45m<br>45m | batten, fabric |
-| B26 |  | **Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours** | [`gate-timeout-hung-testhost`](design-gate-timeout-hung-testhost.md) | 44m<br>44m | gate, dotnet |
 
 ### Enhancements (6)
 
