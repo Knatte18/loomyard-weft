@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,82 @@
       "output": "",
       "at": "2026-11-26T09:24:24Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/readme-beam-modes/_lym/landing/summary.md",
+      "at": "2026-11-26T09:58:12Z",
+      "started_at": "2026-11-26T09:24:24Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T09:33:48.585451054Z",
+          "end": "2026-11-26T09:33:48.648304982Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T09:44:06.286311093Z",
+          "end": "2026-11-26T09:44:06.298149982Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T09:48:52.836659308Z",
+          "end": "2026-11-26T09:48:52.847993805Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T09:33:48.850322071Z",
+          "end": "2026-11-26T09:43:44.31184249Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-26T09:43:45.004945995Z",
+          "end": "2026-11-26T09:44:06.086780522Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T09:44:06.353183123Z",
+          "end": "2026-11-26T09:47:56.812615131Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-26T09:47:57.224674299Z",
+          "end": "2026-11-26T09:48:52.356836965Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T09:48:52.888569123Z",
+          "end": "2026-11-26T09:57:11.220598427Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-26T09:57:11.294291281Z",
+          "end": "2026-11-26T09:57:11.301310605Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-26T09:57:11.372308353Z",
+          "end": "2026-11-26T09:57:11.786799795Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T09:57:11.865821064Z",
+          "end": "2026-11-26T09:57:11.866008584Z"
+        }
+      ]
     }
   ],
   "product": {
