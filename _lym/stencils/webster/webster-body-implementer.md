@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=79eb7dfa580c3538f76cfbcf05ee54af063a59a7038350dc98856bb99b8f7cc1 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+<!-- lym-stencil: sha256=1ea44255c3fe697ee5eae0f7e5caf497bed9da380b9994cc3ade6071ba94b255 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -127,8 +127,8 @@ It costs no self-fix attempt, never makes the report `FAILED`, and you run the s
 
 The one route to a test run is `lym gate test` with a gate's tier list and a scope form, such as `--tier <n>` with `--card <card id>` or explicit packages, never a raw test command.
 A gate line saying a tier ran no test of a project means the project skipped its own tests, and the gate's pass covers none of them.
-When your card needs those tests and the hub's `refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
-When `refuse_raw` lists it, report the skipped tests to your parent.
+When your card needs those tests and the hub's `gate.refuse_raw` does not list `dotnet test`, run them by hand as that line's way forward names, and check that the run's summary line reports them: this is the one raw test command you run.
+When `gate.refuse_raw` lists it, report the skipped tests to your parent.
 The hub's tiers and gate lists follow:
 
 {{.gate_tiers}}

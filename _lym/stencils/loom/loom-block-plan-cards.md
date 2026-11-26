@@ -1,10 +1,12 @@
-<!-- This is the loom-block-plan-cards plan-format block: the per-card file format, the rename mechanic and the minimal skeleton.
-     loom-template-plan, loom-template-part-writer and loom-template-parts-chair pull it in with the bare {{template "loom-block-plan-cards"}}, with no pipeline.
-     The fill hands it the including seat's value map, so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
-     It names no step of the stencil around it; each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=2aa4549f255119de224152fb9006045205e711337d8d5259478495cb2fc3703f build=bd41b02393cc89f1aeed62df89399a68cda8fc18 time=2026-11-03T10:48:20Z -->
+<!-- This is the loom-block-plan-cards plan-format block: the per-card file format, the rename mechanic and the skeleton.
+     The loom stencils that write plans pull it in with the bare {{template "loom-block-plan-cards"}}, with no pipeline.
+     The fill hands it the including seat's value map,
+     so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
+     It names no step of the stencil around it;
+     each including stencil states its own rule for the lines this block leaves out.
+lym-stencil: sha256=e7a3cbcdebe4924ac20498e02a44d781238622893467f312b14c3ce1d79142b9 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
-A symbol `Rename` needs the hub's `rename_tools` in `language.yaml`; the plan gate refuses one when the list is empty.
+A symbol `Rename` needs the hub's `language.rename_tools`; the plan gate refuses one when the list is empty.
 
 ### Each `NN-<card-slug>.md`
 
@@ -77,7 +79,7 @@ A genuinely new file with no predecessor belongs in a separate `Create` card, ne
    into the `Rename` pair.
 4. Never write the relocated file from scratch and delete the original — that loses
    git history exactly as an unstructured create+delete pair would.
-5. For a symbol pair, run the hub's structure-aware rename tool the implementer prompt names (`language.yaml` `rename_tools`), never a text or regex replace, then grep for zero remaining old-name references and confirm the symbol's doc comment opening names the new name.
+5. For a symbol pair, run the hub's structure-aware rename tool the implementer prompt names (`language.rename_tools`), never a text or regex replace, then grep for zero remaining old-name references and confirm the symbol's doc comment opening names the new name.
 ```
 
 ### Minimal skeleton

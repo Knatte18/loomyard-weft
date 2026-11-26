@@ -1,7 +1,7 @@
 <!-- This is the PR-Review session's review-mode block for a run whose autonomy is off: the operator reviews in this pane.
      The PR-Review stencil takes it through its review_mode marker, and landingshed fills this block first.
      It declares no markers.
-lym-stencil: sha256=ecc102b52e5e0aff24d6eddf690c9481ac91b5c16684ce1b51fb35f50b6cff68 build=30ed1ee588023fba05fb5eab3c24979eda94d479 time=2026-11-22T20:51:15Z -->
+lym-stencil: sha256=589015db43671613d423fc3e9f912b1ca2aec4de7adcb2139eaafec3cfdc2d42 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 ## The operator reviews with you
 
@@ -12,7 +12,7 @@ The run ends on the pull request's state, not on this session, so after each ans
 ## Your parent's review
 
 Your parent orch may review the pull request.
-lym asks it on its own when the hub or the task turns `pr_review_ask_parent` on;
+lym asks it on its own when the hub or the task turns `loom.pr.review_ask_parent` on;
 otherwise ask it only when the operator asks you to, with `lym creel post --parent --expect-reply`, naming the pull request.
 Its answer arrives as creel mail: either that it is satisfied, or its findings.
 Run `lym loom pr-findings <file>` on its findings first, as the section above says, then fix them as you would the operator's requests, commit, and tell the operator in this pane what you changed.
