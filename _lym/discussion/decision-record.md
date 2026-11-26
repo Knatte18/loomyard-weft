@@ -24,6 +24,12 @@ The study's "Changes to consider":
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): Item 8 is a per-campaign setting, not a code change
+
+Decision: This run makes no code change for item 8; the default reviewer in internal/hardenshed/template.yaml stays. The next hardener campaign sets an opus round through hardener.reviewer in its run_settings. Item 7's convergence verdict listing sandbox-undrivable scenarios as follow-ups for the run's parent to file stands.
+
+Rationale: hardener.reviewer is already settable per run; changing the template default would put opus into every campaign, not one.
+
 ## Constraints
 
 ## Auto-mode assumptions
