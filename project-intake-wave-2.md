@@ -1,6 +1,6 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-26 21:11 UTC; every age below is as of then.
+Rendered 2026-11-26 21:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-2` · Age 12h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Bouncer | neve | 13h<br>12h | shuttle, claude, tender, gate, burler, shed, reed |
+| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Burler-Review | neve | 13h<br>12h | shuttle, claude, tender, gate, burler, shed, reed |
 
 ## Layer A (1)
 
