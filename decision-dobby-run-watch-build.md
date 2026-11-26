@@ -181,6 +181,12 @@ Decision: D1's episode stamp is the layer's history length plus the last history
 
 Rationale: shedengine's appendOrFold folds a repeated budget-exempt Stuck into the previous entry, so history length alone misses a second block at the same row and fails the acceptance criterion that it posts a second line.
 
+### Added after Discussion (parent, 2026-11-26): Gate-hold line caps listed processes
+
+Decision: The gate-hold line names at most gateHoldProcessMax (20) descendants and 20 marked processes, then ends with '; and <n> more'. This narrows D6's 'every other marked process and each child PID'.
+
+Rationale: A line naming hundreds of PIDs is unreadable in a status pane; the count of the rest keeps the information that more exist.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: slot records are read only through `gateslot`'s pool.
