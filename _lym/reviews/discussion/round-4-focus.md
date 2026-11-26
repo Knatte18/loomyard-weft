@@ -1,0 +1,8 @@
+---
+round: 4
+focus:
+  - "decision-record.md D5, landing commit with no landing record: Finalize merges the parent into the task worktree before the parent-side merge (internal/landingshed/finalize.go near lines 379 and 1221; internal/gitrepo/merge.go near line 70 uses --ff). Which task tip does the search run over, is it kept durably across a resume, and can a hand merge followed by another run's commit still yield that other commit?"
+  - "decision-record.md D5, squash landings: squash defaults to true (internal/landingshed/template.yaml) and an empty squash reports up to date with a source that is no ancestor of the parent (TestMergeCrucible_DerivedAlreadyUpToDateIsReadFromTheRecord in internal/fabricengine/mergecrucible_integration_test.go). What does D5 record for Finalize's own pull-request merge (mergeOnGitHub), a hand squash, an adopter-first squash, a task with no net change and the archive path, and does each acceptance criterion match?"
+  - "decision-record.md D5, reading the landing record back: after the protected-branch refusal's way forward (merge on GitHub by hand, git reset --keep origin/<parent>, resume) and after the adopter-first repair (internal/landingshed/finalize_owner.go, adopterFirstRepair), can the row name a commit the parent branch does not hold?"
+  - "decision-record.md D1, ignoring the kept directory's .tmp-* files: does the mechanism comply with pattern/PATTERN-fabric-boundary.md's exclusion rule (.git/info/exclude, written through fabric), is it in place before the first write in a new, an already wired and an adopted pair, and do D1's rationale, D3 and PATTERN changes agree with it?"
+---
