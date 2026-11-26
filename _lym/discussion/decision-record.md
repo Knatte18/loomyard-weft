@@ -23,6 +23,12 @@ Read the values the way the runs resolve them, from each beam's worktree up, so 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): Mark inherited values apart from local overrides
+
+Decision: Every value the README shows that a beam can inherit from its parent (autonomy, the pull-request setting) shows whether it is inherited or the beam's own local override, for example by colour, with the legend stated once in the README.
+
+Rationale: Operator, 2026-11-26: the operator must see at a glance where each value comes from.
+
 ## Constraints
 
 ## Auto-mode assumptions
