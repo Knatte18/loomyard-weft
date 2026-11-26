@@ -19,3 +19,10 @@ At `timeout_min` the gate kills the tier's whole process tree (`sh -c dotnet tes
 ## Likely area
 
 The timeout may kill only the direct child (`sh`), or wait on output pipes that the orphaned testhost still holds open, so the wait never returns.
+
+
+## From issue #215
+
+Imported from [issue #215](https://github.com/Knatte18/loomyard/issues/215).
+
+On a Models hub, `lym gate test --wait --gate finalize` (PID 3536339) ran tier1, `dotnet test NORCE.Models.SlowTests -p:RunSlowTests=true` with `timeout_min: 30`, from 2026-11-23 15:36 to the next day, over 20 h. The test host had used about 7 min CPU; it was hung. The gate slot stayed held the whole time and the run sat at Finalize. On the same machine a DrillOpPlan hub's tier3 gate, started the same minute with a 35-minute bound, hung the same way and its bound never fired either. The machine may have been suspended overnight, but the bound did not fire before that either (15:36 + 30 min). Expected: the gate kills the tier's process tree at timeout_min and reports a timeout.
