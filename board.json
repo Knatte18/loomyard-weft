@@ -227,236 +227,6 @@
       "profile": "light"
     },
     {
-      "id": 1625,
-      "handle": "B3",
-      "slug": "revive-reads-placeholder-draft",
-      "title": "tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "tender",
-        "claude"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nOn 2026-11-26 two Claude sessions stalled on `API Error: Connection refused (ECONNREFUSED)`: `ly:rc-click-wrong-client-session:darn` and `ly:async-run-pusher:code-burler-fix`.\n`lym tender revive` skipped both with reason `the input box holds a draft: \"Resend your message to try again\"`.\nThat text is Claude Code's own prompt after an API error, not text anyone typed, so revive never reaches the case it exists for.\nNo code on `origin/main` names the string.\n\n## Workaround\n\nThe orch paused each run with `lym batten pause \u003cslug\u003e` and resumed it with `lym batten run \u003cslug\u003e`, which relaunches the row's agent on its own session.\n\n## Expected\n\nThe input-box reader in `internal/shuttleengine/claudeengine` treats Claude Code's post-error prompt as an empty box, and `tender revive` gives the session its carry-on line.\n",
-      "created": "2026-11-26T07:25:04Z",
-      "revised": "2026-11-26T07:25:04Z"
-    },
-    {
-      "id": 1626,
-      "handle": "B4",
-      "slug": "gate-fixer-reboot-reads-timeout",
-      "title": "Gate fixer interrupted by a machine stop is reported as dead (timeout)",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "gate",
-        "shuttle"
-      ],
-      "issues": [
-        248
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #248](https://github.com/Knatte18/loomyard/issues/248).\n\n## What happened\n\nA row gate spawned a cold fixer, and the machine rebooted under a minute later.\nThe run was re-stepped more than two days after that.\nThe loop's reconcile had stopped the fixer's shuttle run, but the gate fixer's record still read live.\nThe restarted driver waited on that record, classified it `dead` with reason `timeout`, and told the writer:\n\n\u003e The cold fixer ended without a reply (timeout); any change it left uncommitted is in the worktree.\n\nThe interrupted-stop detail, from the first entry after the reboot:\n\n```\nloop exit: not recorded, since no process marked the loop's exit, and the machine has booted since the loop started, so a stop of the machine likely ended it; (...) stopped shuttle runs: ly:\u003cslug\u003e:gate-fixer; left runs whose output files all exist: ly:\u003cslug\u003e:darn\n```\n\nThe fixer's shuttle `run.json` (excerpt):\n\n```\n\"createdAt\": \"2026-11-23T19:19:20Z\",\n\"outcome\": \"stopped\",\n\"roleKey\": \"gate-fixer\",\n\"interrupted\": true\n```\n\nThe gate fixer's `records.json` after the resume (excerpt):\n\n```\n\"spawnedAt\": \"2026-11-23T19:19:27Z\",\n\"status\": \"dead\",\n\"deadReason\": \"timeout\"\n```\n\n## Why it is abnormal\n\nThe fixer did not run out of time: the machine stop ended it, and lym had already recorded its run as interrupted.\n`Await` in `internal/gatefixer/await.go` checks the elapsed time since spawn before it checks whether the strand is live,\nso any fixer interrupted by a stop that outlasts its timeout is reported as `timeout` instead of `died`.\nThe writer and anyone reading the record are sent looking for a slow fixer or a timeout that is too short.\n\nThe dead record also stays in the visit's set, which `internal/gatefixer/rowgate.go` counts against the fixer budget.\nThe interrupted fixer's session is not resumed, so the failure it was given falls back to the writer.\n\n## What to do\n\n- Report a fixer whose run is marked interrupted, or whose strand is gone across a reboot, as interrupted or `died`, not `timeout`.\n- Consider resuming its session, or spawning a replacement that does not use up the budget, as is done for interrupted run agents.\n\nProvenance: task `sandbox-without-new-kernel`, note `loom-halt.md`.\n",
-      "created": "2026-11-26T07:32:58Z",
-      "revised": "2026-11-26T07:32:58Z"
-    },
-    {
-      "id": 1627,
-      "handle": "E1",
-      "slug": "periodic-pair-push",
-      "title": "Periodic async push of pairs whatever made the commits",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "dobby"
-      ],
-      "issues": [
-        247
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #247](https://github.com/Knatte18/loomyard/issues/247).\n\n## Idea\n\nAgents should only have to commit; they should never have to think about pushing.\nlym takes care of every push itself, asynchronously, without blocking an agent.\n\n## Seen\n\nlym already pushes asynchronously after `lym fabric commit`, but only then.\nAn agent that commits with plain `git commit` leaves its commits unpushed until some later lym step pushes the pair, and the push failures that follow land on whichever step happens to push next.\n\n## Proposal\n\nA periodic pusher in lym, for example in the dobby or its own small daemon, that pushes each live pair's code and records branches when they are ahead of origin, however the commits were made.\n\n- Periodic and not aggressive: a fixed interval of minutes, not a push per commit.\n- Never blocks an agent or a row; a failed push is retried at the next period, with backoff, and reported once rather than per attempt.\n- Rows that need origin current, such as Finalize, still push synchronously as now.\n",
-      "created": "2026-11-26T07:33:02Z",
-      "revised": "2026-11-26T07:33:02Z"
-    },
-    {
-      "id": 1631,
-      "handle": "B7",
-      "slug": "unreachable-origin-halts-failed",
-      "title": "Unreachable origin halts the run as failed repeatedly instead of one retryable stop",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shed",
-        "landing",
-        "fabric"
-      ],
-      "issues": [
-        243
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #243](https://github.com/Knatte18/loomyard/issues/243).\n\nAn unreachable origin halted the run as `failed` with anomaly `producer-hard-failure` seven times in a row, across PR-Review and Finalize, instead of waiting or blocking once.\n\nWhat happened:\n- PR-Review and Finalize halted with `landingshed: ... push the task branch ... fabricengine: ls-remote of \u003ctask\u003e-weft ... Recv failure: Connection reset by peer`.\n- Finalize then halted three more times with `landingshed: Finalize: read who owns the run: board: origin is unreachable, so the owner write was not pushed: fetching origin for the board ... failed (gitrepo: ... git exited 128 ...)`.\n- One halt in between was `blocked` with anomaly `escalation-to-human`: `owner check: origin was unreachable, so who owns this run could not be judged; re-run \"lym loom resume\" in the task worktree once origin answers`.\n- Each halt wrote a note and a history entry; the history shows `Finalize / stuck` then `Finalize / goto` before each re-failure.\n\nWhy it is abnormal:\n- A transient network failure is classed as a hard failure, the same class as a producer defect, and the run state becomes `failed`.\n- The same condition surfaced under three different halt shapes (`failed`, `blocked`, `failed`), so the operator cannot tell one outage from three problems.\n- Each re-step re-ran immediately and failed again within about a minute, so the retries consumed attempts without waiting for the remote.\n\nWhat to do:\n- Classify unreachable-origin errors (ls-remote, fetch exit 128, connection reset) as one retryable or `blocked` kind with a single note, and have the driver wait or back off before re-stepping.\n- Keep `failed` for errors that retrying cannot fix.\n\nProvenance: task `retire-d9`; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-8.md, loom-halt-9.md.\n",
-      "created": "2026-11-26T07:33:16Z",
-      "revised": "2026-11-26T07:33:16Z"
-    },
-    {
-      "id": 1632,
-      "handle": "B8",
-      "slug": "finalize-ignored-leftover-dir",
-      "title": "Finalize blocks on untracked leftovers of a project the merge-in deleted",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "landing"
-      ],
-      "issues": [
-        242
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #242](https://github.com/Knatte18/loomyard/issues/242).\n\n## Seen\n\nA darn run's Finalize merged its parent beam into the task worktree after its pull request had merged on GitHub.\nThe beam had just taken in a main commit that deleted a whole C# project.\nThe task worktree still held that project's directory with only untracked, gitignored content: `bin/`, `obj/` and generated fixtures.\nOnce git removed the tracked files, the directory was no longer ignored by the deleted `.gitignore`, so it showed as untracked.\nFinalize then blocked: \"the task worktree has uncommitted changes after the merge-in: …/NORCE.Import.CommonLibHarness/; commit or remove them on the task branch, then resume\".\n\nThe run had no live agent left to remove it.\nThe orch may not edit a task worktree, and the Go driver only asked the parent a question and stopped again on resume.\nThe only ways forward were a goto back to the writer, which would re-run review and PR rows for a merged pull request, or the operator removing the directory by hand.\n\n## Workaround\n\nThe operator removes the leftover directory by hand, then the orch runs `lym loom resume` in the task worktree.\n\n## Expected\n\nFinalize's merge-in treats a directory that holds only files the merge's base ignored, under a path the merge deleted, as leftover output:\nit removes it, or ignores it in the clean-tree check, and goes on.\nFailing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.\n",
-      "created": "2026-11-26T07:33:20Z",
-      "revised": "2026-11-26T07:33:20Z"
-    },
-    {
-      "id": 1634,
-      "handle": "B10",
-      "slug": "finalize-transient-eof-fails",
-      "title": "Finalize halts as hard failure on a GitHub API EOF that lym marks transient",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "landing",
-        "shed"
-      ],
-      "issues": [
-        240
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #240](https://github.com/Knatte18/loomyard/issues/240).\n\nA `lym loom step` at the Finalize producer read a pull request's status from the GitHub API and got `unexpected EOF`.\nThe step was refused with `transient=github-api`, yet the run halted as `failed` with anomaly `producer-hard-failure`.\n\nQuoted from the trace:\n\n```\nlevel=WARN msg=\"shed: step refused\" kind=producer transient=github-api error=\"landingshed: Finalize: read the pull request's status: pullrequest: read pull request #54: Get \\\"https://api.github.com/repos/\u003cowner\u003e/\u003crepo\u003e/pulls/54\\\": unexpected EOF\"\n```\n\nHalt note text: `loom halted failed at Finalize`, `state: failed`, `anomaly: producer-hard-failure`, 15 history entries, all earlier steps done or skipped.\n\nThis is abnormal because lym itself labels the error transient, and a single dropped connection to the API then ends a run that had finished every earlier step.\nOther network failures in the same run (an unreachable origin before a push) were retried until they landed, so the Finalize read is inconsistent with them.\n\nSuggested fix: when a step is refused with a non-empty `transient` kind, retry it with backoff, or leave the run resumable, instead of recording `producer-hard-failure`.\nA failure of this kind should reach `failed` only after the retry budget is spent.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt-2.md`.\n",
-      "created": "2026-11-26T07:33:27Z",
-      "revised": "2026-11-26T07:33:27Z"
-    },
-    {
-      "id": 1635,
-      "handle": "B11",
-      "slug": "died-judge-spends-bounce-budget",
-      "title": "A died bouncer judge session spends Code-Bouncer's bounce budget",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "shed"
-      ],
-      "issues": [
-        239
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #239](https://github.com/Knatte18/loomyard/issues/239).\n\nOn a flaky network, Code-Bouncer's judge session twice failed to start: shuttle logged 'provider never became ready; strand torn down', relaunched, and the second run finished at once with no transcript. shedadapters then logged 'bouncer judge run did not complete ... outcome=died', and the row stopped with 'bounce budget exhausted for Code-Bouncer'. The judge never gave a verdict, so no bounce happened, yet the run stalled until a manual `lym loom resume`.\n\nExpected: a judge that dies before giving a verdict is relaunched, or the row halts as an infrastructure failure, without spending the bounce budget meant for real verdicts.",
-      "created": "2026-11-26T07:33:30Z",
-      "revised": "2026-11-26T07:33:30Z"
-    },
-    {
-      "id": 1636,
-      "handle": "B12",
-      "slug": "push-failures-mailed-one-by-one",
-      "title": "Transient push failures are mailed to the orch one by one instead of retried",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [
-        238
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #238](https://github.com/Knatte18/loomyard/issues/238).\n\nOn a network that resets HTTPS connections now and then (git exits 128 with 'Recv failure: Connection reset by peer'), every failed background push sends the orch a creel message naming `lym fabric push` or `lym board sync` as the way forward. In one hour on one hub the orch got eight such messages, for the bolt branch main, task code branches and records branches, and each retry by hand succeeded at once or failed again only because the connection was still flaky.\n\nExpected: fabric retries a transport failure itself with backoff, and mails the orch only once retries are exhausted. One message then covers every branch still unpushed, rather than one message per push. The next pair push already carries a withheld code side, so a single summary would suffice.\n\nRelated: #193 (closed), which made runs retry transient fetch failures; pushes have no such retry.",
-      "created": "2026-11-26T07:33:34Z",
-      "revised": "2026-11-26T07:33:34Z"
-    },
-    {
-      "id": 1638,
-      "handle": "B14",
-      "slug": "beam-orch-cannot-amend-record",
-      "title": "Beam orch cannot amend its own beam's decision record",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "loom",
-        "orch",
-        "pawl"
-      ],
-      "issues": [
-        236
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #236](https://github.com/Knatte18/loomyard/issues/236).\n\n## What happened\n\nIn hub `dop`, beam `models-torque-drag` (P1) holds a stored decision record.\nOn 2026-11-24 the operator made a decision that supersedes two of its decisions: a new member task maps the well's formation strength into the Models bit-rock law, where the beam record's D1 and D2 keep Models' bit-rock defaults.\nThe member's Discussion saw the conflict and asked the beam orch, which owns the beam record, to settle it.\n\nThe beam orch could not amend its own beam's record:\n\n- `lym loom decision add models-torque-drag --by parent ...` from the beam orch refused: `the caller \"dop:models-torque-drag:orch\" is a task session; way forward: a design call after the Discussion is the parent's to record; ask dop:orch to run the verb`.\n  The beam orch is an orch, not a task session, and it is the record's owner.\n- `lym board upsert --record-file` refuses an entry a run holds, and a beam's project is always held by its pawl run (`running · Beam-Await`), so that way is closed for the beam's whole life.\n\n## Expected\n\nThe beam's own orch can append a decision to, or replace, its beam's decision record while the beam lives, as a run's parent can for a task's record.\nThe caller check counts a beam orch (`\u003chub\u003e:\u003cbeam\u003e:orch`) as an orch, not as a task session.\n\n## Related\n\nThe same misclassification of the beam orch shows in parent-review: `lym loom parent-review answer` refuses the beam orch for its member's pull request (`neither the run's parent orch nor the strand the ask went to`), filed by the hub orch as Knatte18/loomyard#232.\n",
-      "created": "2026-11-26T07:33:42Z",
-      "revised": "2026-11-26T07:33:42Z"
-    },
-    {
-      "id": 1642,
-      "handle": "B18",
-      "slug": "beam-member-parent-is-prime",
-      "title": "A beam member's run records the prime orch as its parent orch",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten",
-        "landing",
-        "orch"
-      ],
-      "issues": [
-        232
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #232](https://github.com/Knatte18/loomyard/issues/232).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-24, the run `models-stick-slip-map`, a member of the beam `models-torque-drag` and spawned from the beam's worktree, records the prime's orch `dop:orch` as its parent orch.\nIts PR-Review sent the `[pr-review request]` for PR #52 (into the beam branch `hanf/models-torque-drag`) to `dop:orch`, as ask 1 from the PR-Review session and as ask 2 from `dop:LOOM`.\nThe beam's orch `dop:models-torque-drag:orch`, which owns and released the run, reviewed the PR, and its answer was refused:\n\n```\ncaller dop:models-torque-drag:orch is neither the run's parent orch nor the strand the ask went to\n```\n\nThe beam's dobby sends its notices for the same run to `dop:orch` too.\nKnatte18/loomyard#231 shows the same gap in the tackler and driver prompts of a beam member.\n\n## Expected\n\nA beam member's run records the beam's orch as its parent orch, so its parent-review asks, notices and escalations go to the beam's orch and that orch's answer is accepted.\n\n## Workaround\n\nThe prime orch forwards each ask and notice to the beam's orch, and runs `lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e --satisfied` in the task worktree on the beam orch's verdict.\n",
-      "created": "2026-11-26T07:33:55Z",
-      "revised": "2026-11-26T07:33:55Z"
-    },
-    {
-      "id": 1643,
-      "handle": "B19",
-      "slug": "beam-member-prompt-no-parent",
-      "title": "Tackler and driver prompts of a beam member say no parent is recorded",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil",
-        "shed"
-      ],
-      "issues": [
-        231
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #231](https://github.com/Knatte18/loomyard/issues/231).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-10, the shed tackler of run `models-backend`, a member of the beam `adopt-models-sim`, got a prompt whose section \"Your parent\" read:\n\n```\nNo parent is recorded for this run.\nWhen you are blocked, write your report and stop.\n```\n\nThe run had a parent: the beam's orch `dop:adopt-models-sim:orch`, which owned and released it.\nOther tackler and driver prompts in the hub carried the same text, in the form \"No parent is recorded for the run, so the question is written for whoever owns it.\"\nThe tackler escalated on a merge conflict and stopped; the prime orch saw the stop and passed it to the beam orch by hand.\n\n## Expected\n\nThe tackler and driver prompts of a beam member name the beam's orch as the parent, so a blocked tackler or driver reaches it directly.\n\n## Workaround\n\nThe prime orch forwards a beam member's stop to the beam's orch by creel.\n",
-      "created": "2026-11-26T07:33:58Z",
-      "revised": "2026-11-26T07:33:58Z"
-    },
-    {
       "id": 1645,
       "handle": "E3",
       "slug": "keep-landed-records-in-weft",
@@ -479,27 +249,6 @@
       "revised": "2026-11-26T07:34:04Z"
     },
     {
-      "id": 1648,
-      "handle": "E5",
-      "slug": "scope-closes-at-code-review",
-      "title": "Close the scope of a task when its first Code-Review round starts, and have lym hold the line",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler"
-      ],
-      "issues": [
-        226
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #226](https://github.com/Knatte18/loomyard/issues/226).\n\n## Seen (operator, 2026-11-24)\n\nA task's scope can still change late.\nIn the C# hubs a parent orch recorded decisions that widened a task while the run was at PR-Review, after Code-Review had finished, and the reviewers never judged the diff against the widened record.\nIn one run Code-Review stopped at its round cap because a decision finding spawns no fixer, so the widening was in the record but never built.\n\nThe operator's rule: decisions go in as early as possible, and once the Code-Review perch has begun it is too late.\nThe last Code-Review round is the last link that can change anything.\nWhat comes up after that becomes a note for a new task, not a change to this one.\n\n## Idea\n\nClose a task's scope when its first Code-Review round starts, and have lym hold the line, so it is not only a rule for the parent orch.\n\n- Before the line, a decision enters the record as an `Added after Discussion` entry, and `code-scope` and the plan lenses read it.\n- After the line, no decision enters the record.\n  `lym loom decision add` (and `replace`) refuse once the run stands at or past the first Code-Review round, and the refusal names the way forward: file the call as a note for a new task.\n  The refusal reaches the parent and the agent the way the other `decision add` refusals do.\n- Two things stay outside the line: feedback from a person through the PR agent, and the mechanical fixes Finalize makes to a merge or test failure.\n- The orch procedure and the parent's prompt say the same, so the parent files a note instead of trying.\n- Read first how `lym loom decision add` decides where a run stands (`internal/loomcli/decision.go` already refuses at some stages), where the Drift rows sit against the Code-Review perch, whether a Drift verdict can send a run back past the line, and how darn, tapestry and arras recipes place their Code-Review perch.\n- Related issues: taking the parent out of PR-Review, and reviewing the Describe text and catching the rest of the parent's findings earlier.\n",
-      "created": "2026-11-26T07:34:14Z",
-      "revised": "2026-11-26T07:34:14Z"
-    },
-    {
       "id": 1652,
       "handle": "F2",
       "slug": "dobby-run-watch",
@@ -519,48 +268,6 @@
       "body": "Imported from [issue #222](https://github.com/Knatte18/loomyard/issues/222).\n\n## What the orch does by hand today\n\nIn hub `dop`, the operator requires the orch to hear of every stop of every run it parents.\nlym notifies some halts, but not all: a Webster block sends no notice (#207), and a gate whose testhost hangs past `timeout_min` holds its slot with no notice at all (#216).\n\nSo the orch keeps a Claude Code Monitor per run in flight: a shell loop that polls `lym loom status` in the task worktree every 30 s, prints on every change of state or producer, and prints a warning when `lym gate status` shows the run holding a gate slot past 45 minutes.\nThe Monitor expires after 30 minutes, so the orch re-arms it by hand, and a missed re-arm left a hung tier3 gate unseen for 21 hours.\n\n## Wanted\n\nlym itself watches every run in flight and mails its parent (creel) on:\n\n- every state other than running: blocked, failed, paused, done, whatever the cause;\n- a gate slot held by the run past a bound, such as 1.5 × the tier's `timeout_min`, naming the gate's PID and its child processes;\n- optionally, every row change, for parents that want progress.\n\nThe watch lives in the dobby, not in the orch's session, so it needs no re-arming and survives the orch's context cycles.\n",
       "created": "2026-11-26T07:34:26Z",
       "revised": "2026-11-26T07:34:26Z"
-    },
-    {
-      "id": 1655,
-      "handle": "B24",
-      "slug": "seat-idle-no-input-box",
-      "title": "Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shuttle",
-        "claude"
-      ],
-      "issues": [
-        219
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #219](https://github.com/Knatte18/loomyard/issues/219).\n\n## What happened\n\nThe `Plan-Burler-Review` row (`burler-review`) halted `failed` (anomaly `producer-hard-failure`) after round 3: two consecutive `died` outcomes, both \"review never started\".\nEach attempt's seat start ended with:\n\n```\nshuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"\u003cid\u003e\": no input box is on screen; a menu or picker may be open; retry once the session is idle.\n```\n\nThe pane lines quoted in the same error show the opposite: the skill-load reply `ok scribe:prose, scribe:code-quality, scribe:testing` had finished, a `done` status line was printed, and the `❯` input prompt plus the `bypass permissions on` footer were on screen.\nThe session was idle with an input box; the idle check reported none.\nIt happened on attempts 3 and 3b, in two separate halts, with the same pane text each time (`Sautéed for 3s`, `Cogitated for 3s`, `Cooked for 2s` status lines).\n\n## Why abnormal\n\nThe seat was healthy.\nA false \"no input box\" reading kills a seat that never got its prompt, burns the review rounds, and halts the whole run as `failed`.\nThe error text itself says \"retry once the session is idle\", yet the shuttle did not retry after the capture showed an idle pane.\n\n## What to do\n\nCheck the input-box detection in the shuttle's deliver-after-skills step against a pane whose last lines are a completed skill-load reply, a `✻ \u003cverb\u003e for Ns · done` line, the `❯` prompt and the permissions footer.\nRetry the idle check for a short window before declaring `died`, so a repaint race right after the skill-load reply does not kill the seat.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-2.md`, `loom-halt-3.md`.\n",
-      "created": "2026-11-26T07:34:35Z",
-      "revised": "2026-11-26T07:34:35Z"
-    },
-    {
-      "id": 1656,
-      "handle": "B25",
-      "slug": "seed-ide-push-not-landed",
-      "title": "Seed-IDE fails the run when the task branch's detached push has not landed yet",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "batten",
-        "fabric"
-      ],
-      "issues": [
-        218
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #218](https://github.com/Knatte18/loomyard/issues/218).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/logs`.\n\n## What happened\n\nRun `weekly-time-report` (recipe raddle, promoted from a Sketch) stopped at Seed-IDE with:\n\n\u003e run \"weekly-time-report\" cannot act: the code tip e7b0cc2 the run's last transition names is not on origin yet; way forward: run \"lym batten run weekly-time-report\" again once the code push lands\n\nTimeline from `.lym/logs` (2026-11-24, CET):\n\n- 14:45:52 Worktree-Create done; the task branch forks from the prime's local `main` at e7b0cc2, one commit ahead of `origin/main`.\n- 14:45:52 and 14:45:55 fabricengine spawned detached pushes of the new pair (`fabric --warp-path …/weekly-time-report …`).\n- 14:45:57 Seed-IDE's bootstrap checked whether e7b0cc2 is on origin, found it was not, and refused the step.\n- Shortly after, the detached push landed: `git ls-remote origin` showed `refs/heads/weekly-time-report` at e7b0cc2.\n\nThe network was slow and resetting that day (`Recv failure: Connection reset by peer` on records pushes), so the detached push took longer than the 2–5 s gap.\n\n## Effect\n\n- The run stopped as failed, and the tackler handed it back to the parent asking whether to push the prime's `main`, which was not needed.\n- A plain `lym batten run weekly-time-report` afterwards went straight through Seed-IDE to Run-Shed.\n\n## Expected\n\nA check that the code tip is on origin, right after lym itself spawned the push that puts it there, should wait for that push, or retry for a while, instead of failing the run.\nThe stop should also say that lym's own push of the task branch is in flight, so the tackler does not ask the parent to push the parent branch.\n",
-      "created": "2026-11-26T07:34:38Z",
-      "revised": "2026-11-26T07:34:38Z"
     },
     {
       "id": 1659,
@@ -832,6 +539,146 @@
       "revised": "2026-11-26T08:20:21Z",
       "profile": "solid",
       "project": "intake-wave-2"
+    },
+    {
+      "id": 1670,
+      "handle": "T10",
+      "slug": "infra-stops-not-failures",
+      "title": "Machine stops, dead judges and idle seats are not producer failures",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "shuttle",
+        "claude",
+        "tender",
+        "gate",
+        "burler",
+        "shed",
+        "reed"
+      ],
+      "issues": [
+        248,
+        239,
+        219
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested",
+        "dotnet-gate-fixes",
+        "reed-client-and-bus-guard"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Gate fixer interrupted by a machine stop is reported as dead (timeout)\n\nImported from [issue #248](https://github.com/Knatte18/loomyard/issues/248).\n\n## What happened\n\nA row gate spawned a cold fixer, and the machine rebooted under a minute later.\nThe run was re-stepped more than two days after that.\nThe loop's reconcile had stopped the fixer's shuttle run, but the gate fixer's record still read live.\nThe restarted driver waited on that record, classified it `dead` with reason `timeout`, and told the writer:\n\n\u003e The cold fixer ended without a reply (timeout); any change it left uncommitted is in the worktree.\n\nThe interrupted-stop detail, from the first entry after the reboot:\n\n```\nloop exit: not recorded, since no process marked the loop's exit, and the machine has booted since the loop started, so a stop of the machine likely ended it; (...) stopped shuttle runs: ly:\u003cslug\u003e:gate-fixer; left runs whose output files all exist: ly:\u003cslug\u003e:darn\n```\n\nThe fixer's shuttle `run.json` (excerpt):\n\n```\n\"createdAt\": \"2026-11-23T19:19:20Z\",\n\"outcome\": \"stopped\",\n\"roleKey\": \"gate-fixer\",\n\"interrupted\": true\n```\n\nThe gate fixer's `records.json` after the resume (excerpt):\n\n```\n\"spawnedAt\": \"2026-11-23T19:19:27Z\",\n\"status\": \"dead\",\n\"deadReason\": \"timeout\"\n```\n\n## Why it is abnormal\n\nThe fixer did not run out of time: the machine stop ended it, and lym had already recorded its run as interrupted.\n`Await` in `internal/gatefixer/await.go` checks the elapsed time since spawn before it checks whether the strand is live,\nso any fixer interrupted by a stop that outlasts its timeout is reported as `timeout` instead of `died`.\nThe writer and anyone reading the record are sent looking for a slow fixer or a timeout that is too short.\n\nThe dead record also stays in the visit's set, which `internal/gatefixer/rowgate.go` counts against the fixer budget.\nThe interrupted fixer's session is not resumed, so the failure it was given falls back to the writer.\n\n## What to do\n\n- Report a fixer whose run is marked interrupted, or whose strand is gone across a reboot, as interrupted or `died`, not `timeout`.\n- Consider resuming its session, or spawning a replacement that does not use up the budget, as is done for interrupted run agents.\n\nProvenance: task `sandbox-without-new-kernel`, note `loom-halt.md`.\n\n\n# A died bouncer judge session spends Code-Bouncer's bounce budget\n\nImported from [issue #239](https://github.com/Knatte18/loomyard/issues/239).\n\nOn a flaky network, Code-Bouncer's judge session twice failed to start: shuttle logged 'provider never became ready; strand torn down', relaunched, and the second run finished at once with no transcript. shedadapters then logged 'bouncer judge run did not complete ... outcome=died', and the row stopped with 'bounce budget exhausted for Code-Bouncer'. The judge never gave a verdict, so no bounce happened, yet the run stalled until a manual `lym loom resume`.\n\nExpected: a judge that dies before giving a verdict is relaunched, or the row halts as an infrastructure failure, without spending the bounce budget meant for real verdicts.\n\n# tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session\n\n## Seen\n\nOn 2026-11-26 two Claude sessions stalled on `API Error: Connection refused (ECONNREFUSED)`: `ly:rc-click-wrong-client-session:darn` and `ly:async-run-pusher:code-burler-fix`.\n`lym tender revive` skipped both with reason `the input box holds a draft: \"Resend your message to try again\"`.\nThat text is Claude Code's own prompt after an API error, not text anyone typed, so revive never reaches the case it exists for.\nNo code on `origin/main` names the string.\n\n## Workaround\n\nThe orch paused each run with `lym batten pause \u003cslug\u003e` and resumed it with `lym batten run \u003cslug\u003e`, which relaunches the row's agent on its own session.\n\n## Expected\n\nThe input-box reader in `internal/shuttleengine/claudeengine` treats Claude Code's post-error prompt as an empty box, and `tender revive` gives the session its carry-on line.\n\n\n# Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review\n\nImported from [issue #219](https://github.com/Knatte18/loomyard/issues/219).\n\n## What happened\n\nThe `Plan-Burler-Review` row (`burler-review`) halted `failed` (anomaly `producer-hard-failure`) after round 3: two consecutive `died` outcomes, both \"review never started\".\nEach attempt's seat start ended with:\n\n```\nshuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"\u003cid\u003e\": no input box is on screen; a menu or picker may be open; retry once the session is idle.\n```\n\nThe pane lines quoted in the same error show the opposite: the skill-load reply `ok scribe:prose, scribe:code-quality, scribe:testing` had finished, a `done` status line was printed, and the `❯` input prompt plus the `bypass permissions on` footer were on screen.\nThe session was idle with an input box; the idle check reported none.\nIt happened on attempts 3 and 3b, in two separate halts, with the same pane text each time (`Sautéed for 3s`, `Cogitated for 3s`, `Cooked for 2s` status lines).\n\n## Why abnormal\n\nThe seat was healthy.\nA false \"no input box\" reading kills a seat that never got its prompt, burns the review rounds, and halts the whole run as `failed`.\nThe error text itself says \"retry once the session is idle\", yet the shuttle did not retry after the capture showed an idle pane.\n\n## What to do\n\nCheck the input-box detection in the shuttle's deliver-after-skills step against a pane whose last lines are a completed skill-load reply, a `✻ \u003cverb\u003e for Ns · done` line, the `❯` prompt and the permissions footer.\nRetry the idle check for a short window before declaring `died`, so a repaint race right after the skill-load reply does not kill the seat.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-2.md`, `loom-halt-3.md`.\n\n\n# Review findings carried over from two landings\n\n## Strand pane memory cap (`10ae7e112`)\n\n- The degraded-launch Warn, on a host without the memory controller delegated to the user manager, has no test of its own.\n- The OOM notice can name an earlier kill, or the wrong process, when several panes share a cgroup or the journal line lands after the kill is counted; a shared cgroup is only partly covered.\n- The notice's delivery to the parent orch is untested end to end.\n- The OOM step reads the strands, which waits on the operation lock; check that it does not stall the watchdog loop.\n\n## Resume after a crash (`dfade5f9a`)\n\n- `removeSupersededStrands` (`internal/shuttleengine/attach.go`) records a superseded running strand's stop as interrupted; check a test covers that path.\n- The start retry loop (`internal/shuttleengine/run.go`) reuses the resume on a retried start; a resumed start that fails to come up should retry fresh.\n",
+      "status": "draft",
+      "created": "2026-11-26T07:25:04Z",
+      "revised": "2026-11-26T08:20:22Z",
+      "profile": "solid",
+      "project": "intake-wave-2"
+    },
+    {
+      "id": 1671,
+      "handle": "T11",
+      "slug": "push-retry-not-halt",
+      "title": "Background pushes retry quietly; landing pushes and reads retry instead of failing",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "fabric",
+        "shed",
+        "landing",
+        "batten",
+        "dobby"
+      ],
+      "issues": [
+        247,
+        238,
+        243,
+        240,
+        218,
+        242
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested",
+        "pr-modes-no-agent",
+        "describe-review-and-sync",
+        "infra-stops-not-failures"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Operator intent (2026-11-26)\n\nLoomYard stops too often because a push to origin fails, above all on VPN at work.\nlym and the agents only commit; lym pushes in the background when it suits and retries a failed push later, with fewer pushes and less traffic.\nA finished task is the exception: its landing is pushed at once, so a milestone never stays only local.\n\n## What `async-run-pusher` (`b4236816a`) already built\n\nRun transitions commit locally, and a per-worktree pusher started by each commit, the dobby's tick and a resume pushes both sides, retries owed pushes with backoff and posts one notice after a minute.\nRead first what each part below still needs on top of it:\n`lym fabric commit`'s and `lym board sync`'s own detached pushes, the synchronous landing pushes and GitHub reads, and Seed-IDE's check of the code tip on origin.\nA part the pusher already settles is named as such in the change description and dropped.\n\nBundled from the notes below; each part keeps its note's text.\n\n# Periodic async push of pairs whatever made the commits\n\nImported from [issue #247](https://github.com/Knatte18/loomyard/issues/247).\n\n## Idea\n\nAgents should only have to commit; they should never have to think about pushing.\nlym takes care of every push itself, asynchronously, without blocking an agent.\n\n## Seen\n\nlym already pushes asynchronously after `lym fabric commit`, but only then.\nAn agent that commits with plain `git commit` leaves its commits unpushed until some later lym step pushes the pair, and the push failures that follow land on whichever step happens to push next.\n\n## Proposal\n\nA periodic pusher in lym, for example in the dobby or its own small daemon, that pushes each live pair's code and records branches when they are ahead of origin, however the commits were made.\n\n- Periodic and not aggressive: a fixed interval of minutes, not a push per commit.\n- Never blocks an agent or a row; a failed push is retried at the next period, with backoff, and reported once rather than per attempt.\n- Rows that need origin current, such as Finalize, still push synchronously as now.\n\n\n# Transient push failures are mailed to the orch one by one instead of retried\n\nImported from [issue #238](https://github.com/Knatte18/loomyard/issues/238).\n\nOn a network that resets HTTPS connections now and then (git exits 128 with 'Recv failure: Connection reset by peer'), every failed background push sends the orch a creel message naming `lym fabric push` or `lym board sync` as the way forward. In one hour on one hub the orch got eight such messages, for the bolt branch main, task code branches and records branches, and each retry by hand succeeded at once or failed again only because the connection was still flaky.\n\nExpected: fabric retries a transport failure itself with backoff, and mails the orch only once retries are exhausted. One message then covers every branch still unpushed, rather than one message per push. The next pair push already carries a withheld code side, so a single summary would suffice.\n\nRelated: #193 (closed), which made runs retry transient fetch failures; pushes have no such retry.\n\n# Unreachable origin halts the run as failed repeatedly instead of one retryable stop\n\nImported from [issue #243](https://github.com/Knatte18/loomyard/issues/243).\n\nAn unreachable origin halted the run as `failed` with anomaly `producer-hard-failure` seven times in a row, across PR-Review and Finalize, instead of waiting or blocking once.\n\nWhat happened:\n- PR-Review and Finalize halted with `landingshed: ... push the task branch ... fabricengine: ls-remote of \u003ctask\u003e-weft ... Recv failure: Connection reset by peer`.\n- Finalize then halted three more times with `landingshed: Finalize: read who owns the run: board: origin is unreachable, so the owner write was not pushed: fetching origin for the board ... failed (gitrepo: ... git exited 128 ...)`.\n- One halt in between was `blocked` with anomaly `escalation-to-human`: `owner check: origin was unreachable, so who owns this run could not be judged; re-run \"lym loom resume\" in the task worktree once origin answers`.\n- Each halt wrote a note and a history entry; the history shows `Finalize / stuck` then `Finalize / goto` before each re-failure.\n\nWhy it is abnormal:\n- A transient network failure is classed as a hard failure, the same class as a producer defect, and the run state becomes `failed`.\n- The same condition surfaced under three different halt shapes (`failed`, `blocked`, `failed`), so the operator cannot tell one outage from three problems.\n- Each re-step re-ran immediately and failed again within about a minute, so the retries consumed attempts without waiting for the remote.\n\nWhat to do:\n- Classify unreachable-origin errors (ls-remote, fetch exit 128, connection reset) as one retryable or `blocked` kind with a single note, and have the driver wait or back off before re-stepping.\n- Keep `failed` for errors that retrying cannot fix.\n\nProvenance: task `retire-d9`; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-8.md, loom-halt-9.md.\n\n\n# Finalize halts as hard failure on a GitHub API EOF that lym marks transient\n\nImported from [issue #240](https://github.com/Knatte18/loomyard/issues/240).\n\nA `lym loom step` at the Finalize producer read a pull request's status from the GitHub API and got `unexpected EOF`.\nThe step was refused with `transient=github-api`, yet the run halted as `failed` with anomaly `producer-hard-failure`.\n\nQuoted from the trace:\n\n```\nlevel=WARN msg=\"shed: step refused\" kind=producer transient=github-api error=\"landingshed: Finalize: read the pull request's status: pullrequest: read pull request #54: Get \\\"https://api.github.com/repos/\u003cowner\u003e/\u003crepo\u003e/pulls/54\\\": unexpected EOF\"\n```\n\nHalt note text: `loom halted failed at Finalize`, `state: failed`, `anomaly: producer-hard-failure`, 15 history entries, all earlier steps done or skipped.\n\nThis is abnormal because lym itself labels the error transient, and a single dropped connection to the API then ends a run that had finished every earlier step.\nOther network failures in the same run (an unreachable origin before a push) were retried until they landed, so the Finalize read is inconsistent with them.\n\nSuggested fix: when a step is refused with a non-empty `transient` kind, retry it with backoff, or leave the run resumable, instead of recording `producer-hard-failure`.\nA failure of this kind should reach `failed` only after the retry budget is spent.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt-2.md`.\n\n\n# Seed-IDE fails the run when the task branch's detached push has not landed yet\n\nImported from [issue #218](https://github.com/Knatte18/loomyard/issues/218).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/logs`.\n\n## What happened\n\nRun `weekly-time-report` (recipe raddle, promoted from a Sketch) stopped at Seed-IDE with:\n\n\u003e run \"weekly-time-report\" cannot act: the code tip e7b0cc2 the run's last transition names is not on origin yet; way forward: run \"lym batten run weekly-time-report\" again once the code push lands\n\nTimeline from `.lym/logs` (2026-11-24, CET):\n\n- 14:45:52 Worktree-Create done; the task branch forks from the prime's local `main` at e7b0cc2, one commit ahead of `origin/main`.\n- 14:45:52 and 14:45:55 fabricengine spawned detached pushes of the new pair (`fabric --warp-path …/weekly-time-report …`).\n- 14:45:57 Seed-IDE's bootstrap checked whether e7b0cc2 is on origin, found it was not, and refused the step.\n- Shortly after, the detached push landed: `git ls-remote origin` showed `refs/heads/weekly-time-report` at e7b0cc2.\n\nThe network was slow and resetting that day (`Recv failure: Connection reset by peer` on records pushes), so the detached push took longer than the 2–5 s gap.\n\n## Effect\n\n- The run stopped as failed, and the tackler handed it back to the parent asking whether to push the prime's `main`, which was not needed.\n- A plain `lym batten run weekly-time-report` afterwards went straight through Seed-IDE to Run-Shed.\n\n## Expected\n\nA check that the code tip is on origin, right after lym itself spawned the push that puts it there, should wait for that push, or retry for a while, instead of failing the run.\nThe stop should also say that lym's own push of the task branch is in flight, so the tackler does not ask the parent to push the parent branch.\n\n\n# Finalize blocks on untracked leftovers of a project the merge-in deleted\n\nImported from [issue #242](https://github.com/Knatte18/loomyard/issues/242).\n\n## Seen\n\nA darn run's Finalize merged its parent beam into the task worktree after its pull request had merged on GitHub.\nThe beam had just taken in a main commit that deleted a whole C# project.\nThe task worktree still held that project's directory with only untracked, gitignored content: `bin/`, `obj/` and generated fixtures.\nOnce git removed the tracked files, the directory was no longer ignored by the deleted `.gitignore`, so it showed as untracked.\nFinalize then blocked: \"the task worktree has uncommitted changes after the merge-in: …/NORCE.Import.CommonLibHarness/; commit or remove them on the task branch, then resume\".\n\nThe run had no live agent left to remove it.\nThe orch may not edit a task worktree, and the Go driver only asked the parent a question and stopped again on resume.\nThe only ways forward were a goto back to the writer, which would re-run review and PR rows for a merged pull request, or the operator removing the directory by hand.\n\n## Workaround\n\nThe operator removes the leftover directory by hand, then the orch runs `lym loom resume` in the task worktree.\n\n## Expected\n\nFinalize's merge-in treats a directory that holds only files the merge's base ignored, under a path the merge deleted, as leftover output:\nit removes it, or ignores it in the clean-tree check, and goes on.\nFailing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:02Z",
+      "revised": "2026-11-26T08:20:22Z",
+      "profile": "solid",
+      "project": "intake-wave-2"
+    },
+    {
+      "id": 1672,
+      "handle": "T12",
+      "slug": "beam-member-parent",
+      "title": "A beam member's run names its beam orch as parent, which may amend the beam's record",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "batten",
+        "landing",
+        "orch",
+        "stencil",
+        "shed",
+        "loom",
+        "pawl"
+      ],
+      "issues": [
+        232,
+        231,
+        236
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested",
+        "describe-review-and-sync",
+        "push-retry-not-halt",
+        "writers-commit-each-step"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# A beam member's run records the prime orch as its parent orch\n\nImported from [issue #232](https://github.com/Knatte18/loomyard/issues/232).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-24, the run `models-stick-slip-map`, a member of the beam `models-torque-drag` and spawned from the beam's worktree, records the prime's orch `dop:orch` as its parent orch.\nIts PR-Review sent the `[pr-review request]` for PR #52 (into the beam branch `hanf/models-torque-drag`) to `dop:orch`, as ask 1 from the PR-Review session and as ask 2 from `dop:LOOM`.\nThe beam's orch `dop:models-torque-drag:orch`, which owns and released the run, reviewed the PR, and its answer was refused:\n\n```\ncaller dop:models-torque-drag:orch is neither the run's parent orch nor the strand the ask went to\n```\n\nThe beam's dobby sends its notices for the same run to `dop:orch` too.\nKnatte18/loomyard#231 shows the same gap in the tackler and driver prompts of a beam member.\n\n## Expected\n\nA beam member's run records the beam's orch as its parent orch, so its parent-review asks, notices and escalations go to the beam's orch and that orch's answer is accepted.\n\n## Workaround\n\nThe prime orch forwards each ask and notice to the beam's orch, and runs `lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e --satisfied` in the task worktree on the beam orch's verdict.\n\n\n# Tackler and driver prompts of a beam member say no parent is recorded\n\nImported from [issue #231](https://github.com/Knatte18/loomyard/issues/231).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-10, the shed tackler of run `models-backend`, a member of the beam `adopt-models-sim`, got a prompt whose section \"Your parent\" read:\n\n```\nNo parent is recorded for this run.\nWhen you are blocked, write your report and stop.\n```\n\nThe run had a parent: the beam's orch `dop:adopt-models-sim:orch`, which owned and released it.\nOther tackler and driver prompts in the hub carried the same text, in the form \"No parent is recorded for the run, so the question is written for whoever owns it.\"\nThe tackler escalated on a merge conflict and stopped; the prime orch saw the stop and passed it to the beam orch by hand.\n\n## Expected\n\nThe tackler and driver prompts of a beam member name the beam's orch as the parent, so a blocked tackler or driver reaches it directly.\n\n## Workaround\n\nThe prime orch forwards a beam member's stop to the beam's orch by creel.\n\n\n# Beam orch cannot amend its own beam's decision record\n\nImported from [issue #236](https://github.com/Knatte18/loomyard/issues/236).\n\n## What happened\n\nIn hub `dop`, beam `models-torque-drag` (P1) holds a stored decision record.\nOn 2026-11-24 the operator made a decision that supersedes two of its decisions: a new member task maps the well's formation strength into the Models bit-rock law, where the beam record's D1 and D2 keep Models' bit-rock defaults.\nThe member's Discussion saw the conflict and asked the beam orch, which owns the beam record, to settle it.\n\nThe beam orch could not amend its own beam's record:\n\n- `lym loom decision add models-torque-drag --by parent ...` from the beam orch refused: `the caller \"dop:models-torque-drag:orch\" is a task session; way forward: a design call after the Discussion is the parent's to record; ask dop:orch to run the verb`.\n  The beam orch is an orch, not a task session, and it is the record's owner.\n- `lym board upsert --record-file` refuses an entry a run holds, and a beam's project is always held by its pawl run (`running · Beam-Await`), so that way is closed for the beam's whole life.\n\n## Expected\n\nThe beam's own orch can append a decision to, or replace, its beam's decision record while the beam lives, as a run's parent can for a task's record.\nThe caller check counts a beam orch (`\u003chub\u003e:\u003cbeam\u003e:orch`) as an orch, not as a task session.\n\n## Related\n\nThe same misclassification of the beam orch shows in parent-review: `lym loom parent-review answer` refuses the beam orch for its member's pull request (`neither the run's parent orch nor the strand the ask went to`), filed by the hub orch as Knatte18/loomyard#232.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:42Z",
+      "revised": "2026-11-26T08:20:23Z",
+      "profile": "light",
+      "project": "intake-wave-3"
+    },
+    {
+      "id": 1673,
+      "handle": "T13",
+      "slug": "scope-and-earlier-checks",
+      "title": "Close a task's scope at Code-Review, and catch earlier what a PR review found",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler"
+      ],
+      "issues": [
+        226
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested",
+        "describe-review-and-sync",
+        "infra-stops-not-failures"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "This task builds the scope note and items 3 to 6 of the Describe-text note's Idea; items 1 and 2 landed with `describe-review-and-sync`.\n\nBundled from the notes below; each part keeps its note's text.\n\n# Close the scope of a task when its first Code-Review round starts, and have lym hold the line\n\nImported from [issue #226](https://github.com/Knatte18/loomyard/issues/226).\n\n## Seen (operator, 2026-11-24)\n\nA task's scope can still change late.\nIn the C# hubs a parent orch recorded decisions that widened a task while the run was at PR-Review, after Code-Review had finished, and the reviewers never judged the diff against the widened record.\nIn one run Code-Review stopped at its round cap because a decision finding spawns no fixer, so the widening was in the record but never built.\n\nThe operator's rule: decisions go in as early as possible, and once the Code-Review perch has begun it is too late.\nThe last Code-Review round is the last link that can change anything.\nWhat comes up after that becomes a note for a new task, not a change to this one.\n\n## Idea\n\nClose a task's scope when its first Code-Review round starts, and have lym hold the line, so it is not only a rule for the parent orch.\n\n- Before the line, a decision enters the record as an `Added after Discussion` entry, and `code-scope` and the plan lenses read it.\n- After the line, no decision enters the record.\n  `lym loom decision add` (and `replace`) refuse once the run stands at or past the first Code-Review round, and the refusal names the way forward: file the call as a note for a new task.\n  The refusal reaches the parent and the agent the way the other `decision add` refusals do.\n- Two things stay outside the line: feedback from a person through the PR agent, and the mechanical fixes Finalize makes to a merge or test failure.\n- The orch procedure and the parent's prompt say the same, so the parent files a note instead of trying.\n- Read first how `lym loom decision add` decides where a run stands (`internal/loomcli/decision.go` already refuses at some stages), where the Drift rows sit against the Code-Review perch, whether a Drift verdict can send a run back past the line, and how darn, tapestry and arras recipes place their Code-Review perch.\n- Related issues: taking the parent out of PR-Review, and reviewing the Describe text and catching the rest of the parent's findings earlier.\n\n\n# Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier\n\nImported from [issue #225](https://github.com/Knatte18/loomyard/issues/225).\n\n## Seen (operator, 2026-11-24)\n\nIn the C# repos on one machine, a parent asked to review a PR always finds something.\nThat points to a design flaw: if the parent finds something, an earlier quality check missed it.\n\nThe operator's guess was that the delivered code often does not cover everything the Discussion's decision record asked for.\nThe operator judges the finding below, that most of it is the PR text, as not very important, and that it is solved by reviewing the Describe text too.\n\n## What the parent finds (analysis, 2026-11-24)\n\nAn analysis read 25 PR-Review rounds with findings, across four hubs; one more hub had no PR-Review records.\nAbout 65 findings are itemised in readable text; about 29 more were in scratchpad files that no longer exist.\nThe task worktrees and the Sketches of the landed tasks are gone, so the only full source is each hub's creel mail journal, and the gate attributions are mostly inferred.\nThe full report is a local file and is not committed.\n\n- About half of the findings (32 of 65) are about the PR description, not the code:\n  internal process or tool names in the text (12), wrong or overreaching claims (12), and content the task asked for that the text omits (8).\n- The rest are tests missing or too costly (10), wrong behaviour (8), doc or comment drift (7) and scope the Sketch did not hold (8).\n- The operator's guess holds only in part: 4 of 25 rounds cite a Sketch or task requirement that was missed, and all four concern the PR text or scope, not code behaviour.\n- A finding is often sent twice because the agent edits the summary file but not the GitHub PR body (about 5 rounds).\n\n## Idea\n\nThe Describe row writes the change description, which becomes the PR title, the PR body and the landing commit message.\nIt is a seat table (`DescribeTable` in `internal/landingshed/describe.go`) whose session already reads the decision record, and its only gate is mechanical (`ValidateDescription`); no agent reviews what the text says.\n\n1. Review the Describe text inside the Describe row with a second agent, an assistant seat, and send its findings back to the writer; Describe is the last step that uses an LLM, so no review runs after it.\n   The reviewer checks that the text names no internal process or tool (board, task, scoper, Sketch, decision record, \"item N of\"), that every claim holds against the diff and the task's report or measurements, and that every deliverable the Sketch says to state in the description is there.\n   The mechanical gate stays in front of it.\n   This covers the 32 findings about the text.\n2. Sync the GitHub PR body from the description on every push, and verify the two match (about 5 re-sent rounds).\n3. Run the mutation or redundancy tier on every C# task, and give the Plan a tier0 cost budget (10 test findings).\n4. Have Discussion record what the parent will check: measured figures, doc statements and test intent.\n5. Let a Code-Review finding the parent already ruled in scope reach a fixer; today a decision finding spawns none.\n6. Re-check a constant quoted in a doc when the case it was measured on changes.\n\nThe issue on taking the parent out of PR-Review leaves these checks to the cold-start reviewers, so they must run before PR-Review, and a task's scope closes at its first Code-Review round (see the issue on closing a task's scope).\n",
+      "status": "draft",
+      "created": "2026-11-26T07:34:14Z",
+      "revised": "2026-11-26T08:20:23Z",
+      "profile": "solid",
+      "project": "intake-wave-3"
     }
   ],
   "prime_owner": "neve",
