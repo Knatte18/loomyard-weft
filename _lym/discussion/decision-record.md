@@ -179,6 +179,12 @@ Decision: The dotted full name, such as loom.discussion.review_ask_parent, is ho
 
 Rationale: This is the decision record as it stands (Scope Out, support-log Q10); a one-token input form would widen the task.
 
+### Added after Discussion (parent, 2026-11-26): Fix the plan defects round 3 listed but did not raise
+
+Decision: Build the six defects listed under 'Real defects not raised' in _lym/reviews/plan/round-3-review.md as fixes, not as open risks: (1) card 9's stale-stamp test drives a verb whose nearest pre-run is loom's own and that loads the seeded key, or sets cobra.EnableTraverseRunHooks without t.Parallel and drives circling continue; (2) cards 2 and 5: the --unset removal route works for a file holding several old keys, one command removing them all, and a TestDispatchSet row holds two old keys; (3) card 8: replace the second-walk assertion that cannot fail with a tier0 row that a board with no old key and a directory at a rendered output path is not reported skipped; (4) card 9: the CodeReviewCaps row sets a hard cap beside code_max_bounces so a hub base holding only code_max_bounces 7 is not refused; (5) card 6: a walk that fails after the hub-wide commit still mails its move lines; (6) card 11: PATTERN-leaf-packages wins in internal/shellguard: pythonRefusal names the key's new full name as a literal and shellguard imports no configengine, a declared exception to PATTERN-config-key-names.
+
+Rationale: The reviewer confirmed each against the code and rated (1) and (2) BLOCKING in a full round; a leaf package's import rule is structural, while a key name literal is checked by the rename's own search.
+
 ## Constraints
 
 - `PATTERN-config-layers`: layers are read only through `configengine`, a reconcile on a binary change only through `hubreconcile.Ensure`, and no reconcile touches the machine layer.
