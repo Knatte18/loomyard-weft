@@ -8,14 +8,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits](project-intake-wave-1.md) (6)
 
-`intake-wave-1` · Age 0m · Owner `neve`
+`intake-wave-1` · Age 1m · Owner `neve`
 
 ### Draft (6)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | T3 | 2d<br>0m | landing, loom, config |
-| T2 | `draft` **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | T3 | 45m<br>0m | webster, quarry |
+| T2 | `draft` **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | T3 | 46m<br>0m | webster, quarry |
 | T4 | `draft` **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | T3 | 46m<br>0m | gate, dotnet, darn, burler |
 | T5 | `draft` **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | T3 | 2d<br>0m | reed, process |
 | T6 | `draft` **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | darn · light | T3 | 47m<br> | creel, cwd |
@@ -33,7 +33,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P3 Intake wave 2: Describe text, infra stops, push retries](project-intake-wave-2.md) (3)
 
-`intake-wave-2` · Age 0m · Owner `neve`
+`intake-wave-2` · Age 1m · Owner `neve`
 
 ### Draft (3)
 
@@ -55,7 +55,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (2)
 
-`intake-wave-3` · Age 0m · Owner `neve`
+`intake-wave-3` · Age 1m · Owner `neve`
 
 ### Draft (2)
 
@@ -66,7 +66,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (0)
 
-`intake-motifs` · Age 0m · Owner `neve`
+`intake-motifs` · Age 1m · Owner `neve`
 
 ## [P0 Root: entries under no project](project-root.md) (7)
 
@@ -84,6 +84,12 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | T8 | 2d<br>2d | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 
+### Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T14 | `draft` **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | darn | T3 | 46m<br>0m | dobby, gate |
+
 ### Research (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
@@ -97,9 +103,8 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- |
 | E3 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records-in-weft`](design-keep-landed-records-in-weft.md) | 46m<br>46m | landing, fabric, report |
 
-### Features (2)
+### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F2 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | 45m<br>45m | dobby, gate |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>10m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
