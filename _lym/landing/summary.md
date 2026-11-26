@@ -1,34 +1,41 @@
-# Drift-Verify re-judges an uncaused loosened ruling after a new commit
+# Drift: re-judge an uncaused loosened ruling once the range changes
 
-Drift-Verify stores the judge's ruling on each file of the review range in `judged.json`, under a key built from that file's diff and the range's `Loosened-Check:` trailers.
-A later pass reused the ruling while that key held.
-When a deleted test file's checks were ruled `uncaused`, a later commit that added those checks to another test left the deleted file's diff and the trailers unchanged.
-The pass reused the stale ruling and halted again on the same checks, with no judge spawned.
+`Drift-Verify` reused a stored file ruling while that file's own diff and the range's `Loosened-Check:` trailers were unchanged.
+When a deleted test file was ruled `loosened` with `uncaused` checks,
+a later commit that added those checks to another test did not change that key,
+so the row halted again on the same ruling and spawned no judge.
 
-## What changes
+Two things change:
 
-- `JudgedFile` gains an optional `range_key`: the sha256 of every file's path and diff in the range, in path order, plus the trailer lines.
-  Every new file ruling stores it.
-- `listFiles` reuses a stored ruling that holds an uncaused check only while the range's key is also unchanged.
-  Any new commit in the range therefore has the judge rule on it again.
-  Rulings with no uncaused check are still reused by the file's own key, so a commit elsewhere does not re-judge them.
-- The halt over uncaused checks names a third way forward: commit the dropped checks in a test, then `lym loom resume`, which has the judge rule on the range's files again.
-- The `driftengine` package doc states the new reuse rule and the way forward.
+- **Re-judging.** A ruling that holds an `uncaused` check, or names a carrying file,
+  is now reused only while the range's full diff is also unchanged, so a later commit that answers it reaches the judge.
+- **Moved checks.** A removed assertion that a test in another file still holds, on the same behaviour and no looser,
+  is no longer a loosened check.
+  The judge searches the repository's tests for it and lists the carrying file under the new `carried_by` field.
+  The `Loosened-Check` instructions and the `Code-Review` rubric state the same rule.
+
+The `Drift-Verify` halt now names a third way forward beside a trailer and a revert: commit the dropped checks in a test.
+
+Closes #249
 
 ## Design decisions
 
-- The re-judge is tied to any change in the range, not to the test files a ruling compares against.
-  The ruling does not record which files it compared, and an uncaused ruling halts the run anyway.
-  Under that halt, any new commit is the writer's attempt to answer it, so one judge spawn per new commit is the right cost.
-- An uncaused ruling stored before this change has no `range_key`, so the first pass after the upgrade judges it once more.
-  The field is optional, so older records still read.
+- The new range key is a hash of the whole committed diff from the review base to `HEAD`, read through a new `RangeDiff` seam.
+  The list of changed files holds only modified and deleted files,
+  so a key built from it would miss checks moved into a new test file.
+- The key is deliberately coarse: any change to the range's diff re-judges every file whose ruling depends on the range,
+  including a change that has nothing to do with the dropped checks.
+  The cost is an extra judge run.
+- Rulings with no `uncaused` check and no `carried_by` are reused as before.
+- `judged.json` gains `range_key` and `carried_by`.
+  A stored `uncaused` ruling without a `range_key` does not match, so it is judged again at the next pass that lists files.
+- `carried_by` is the judge's attestation: lym does not verify that the named file holds the check.
 
-## Tests
+## To check by hand
 
-`TestDriftVerify` gains the case "a later commit that adds the dropped checks to another test has the uncaused ruling judged again".
-It halts on an uncaused ruling and checks that the halt names the new way forward.
-It then adds a second file to the range and checks that a second judge is spawned over both files and that the pass is Done.
-On the merge base the second pass reuses the stored ruling and halts, so the case fails there.
+- No live judge was run against the new `drift-template-judge` wording.
+  The tests script the judge's answers, so they cover when a file is judged again,
+  not whether a real judge finds a moved check or rejects a looser copy of one.
 
 ## Merge danger
 
