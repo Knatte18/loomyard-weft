@@ -1,0 +1,355 @@
+{
+  "sketch": "fabric-git-free-core",
+  "shape": "project",
+  "project": {
+    "slug": "fabric-core",
+    "title": "Fabric split into a git-free core, a layout package and a thin git engine",
+    "type": "enhancement"
+  },
+  "board_checked": [
+    {"slug": "push-retry-not-halt", "revised": "2026-11-26T20:47:10Z"},
+    {"slug": "hardener-study-faults", "revised": "2026-11-26T13:19:56Z"},
+    {"slug": "keep-landed-run-records", "revised": "2026-11-26T12:03:14Z"},
+    {"slug": "no-fake-other-modules", "revised": "2026-11-26T20:51:31Z"},
+    {"slug": "whole-repo-guards-off-gates", "revised": "2026-11-26T21:13:22Z"},
+    {"slug": "pr-modes-no-agent", "revised": "2026-11-26T09:23:51Z"}
+  ],
+  "parts": [
+    {
+      "slug": "fabric-core-foundation",
+      "title": "Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "pattern", "cwd", "loom", "batten", "landing", "gate", "orch", "board", "webster", "drift", "report"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D5", "D6", "D7", "D8", "D9", "D11"],
+      "packages": [
+        {"path": "internal/fabriclayout", "size": 1800},
+        {"path": "internal/fabriccore", "size": 900},
+        {"path": "internal/fabricengine", "size": 500},
+        {"path": "internal/testkit/fabrickit", "size": 400},
+        {"path": "internal/lymcwd", "size": 40},
+        {"path": "internal/loomcli", "size": 250},
+        {"path": "internal/battencli", "size": 200},
+        {"path": "internal/fabriccli", "size": 100},
+        {"path": "internal/landingshed", "size": 80},
+        {"path": "internal/pairteardown", "size": 80},
+        {"path": "internal/beamcli", "size": 80},
+        {"path": "internal/hubgeom", "size": 80},
+        {"path": "internal/gatecli", "size": 70},
+        {"path": "internal/orchcli", "size": 60},
+        {"path": "internal/webstercli", "size": 50},
+        {"path": "internal/boardengine", "size": 40},
+        {"path": "internal/driftengine", "size": 40},
+        {"path": "internal/hubforge", "size": 30},
+        {"path": "internal/testkit/envkit", "size": 20},
+        {"path": "internal/testkit/boardkit", "size": 5},
+        {"path": "pattern", "size": 60}
+      ],
+      "contract": {
+        "takes": "today's internal/fabricengine and its importers; the decision record whole, its Added after Discussion entries included",
+        "delivers": "internal/fabriclayout with fabric's names, path constants, pure path functions, option and result types and the mutation entry as plain data; internal/fabriccore with the snapshot, phase and action list types and the outcome classes, and no rule yet; the phased snapshot reader with its dotgit and gitrepo reads and its git fallback for non-files ref storage, tested at tier1; the engine's executor loop; internal/testkit/fabrickit; every importer outside fabric that uses only layout names retargeted to internal/fabriclayout, about 470 files across the repository, with no alias left in internal/fabricengine; the leaf import-set tests and PATTERN-leaf-packages' sections for both new packages; the move of classify.go's path classification and the PATTERN-lym-files background edit that names its new home; the geometryTokenOwners and weftnameImportOwners entries for the new packages; every verb still on today's code. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', the foundation's own tests shrink: a test is kept only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "the fabriclayout names and types; fabriccore.Snapshot, its phases, the action kinds and outcome classes; the executor loop every later part drives; the fabrickit snapshot builder"
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "A tier0 test fails when `internal/fabriccore` (new) or `internal/fabriclayout` (new) imports a package outside its closed set, `gitexec`, `gitrepo`, `dotgit`, `lymcwd` and `os/exec` included (D1).",
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "`internal/testkit/fabrickit` (new) builds snapshots for both packages' tests and imports no `gitexec`, `gitkit` or `internal/hubforge` (D8).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11)."
+      ],
+      "pattern_changes": ["PATTERN-leaf-packages", "PATTERN-lym-files"],
+      "expected_cost_usd": 55.4,
+      "cost_line": "tapestry/solid stored-record fit, $35.46 fixed plus $0.33 per 100 lines over about 6,000 changed lines, deleted tests weighed as near-free; the fit rests on 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-push-origin",
+      "title": "Fabric core: push classification, retries, origin reconcile and failed-push records move to the core",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "shed", "board", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 4100},
+        {"path": "internal/fabriccore", "size": 2500},
+        {"path": "internal/fabriclayout", "size": 200},
+        {"path": "internal/testkit/fabrickit", "size": 150},
+        {"path": "internal/fabriccli", "size": 250},
+        {"path": "internal/hubforge", "size": 20},
+        {"path": "cmd/lym", "size": 30},
+        {"path": "internal/shedengine", "size": 400},
+        {"path": "internal/boardengine", "size": 1200},
+        {"path": "pattern", "size": 20}
+      ],
+      "contract": {
+        "takes": "the foundation part's layout, core types, reader and executor loop",
+        "delivers": "the rules of pushclassified, pushanchored, coalesce, failedpush, origin, originreads, originreconcile, originreconcileended, originreconcilemoves, pendingflags, pusherreads, pushlockholder and remoteonly in internal/fabriccore as phase and action-list rules over made-up snapshots, with the retry loop as wait actions and OriginSeams' teardown as a seam-call action; the engine running them, with rejectionRetryKind's error-to-class mapping and the live-pair probe before an origin move kept in the engine; these files' shedrun and shedengine imports cut: run paths, the prime run lock and the status codec reach fabric through required seams, the status readers return bytes their callers decode; D13's seam installer in internal/fabriccli, its call from cmd/lym/main.go and internal/hubforge's one-time call, each required seam's setter with its restore, the unset-seam refusal row and engine test, and shed's adapter with its test in the shed module; the D12 moves of this concern's boardkit and boardengine tests, such as pushclasses, pushanchored and originreconcile*, to internal/boardengine; PATTERN-fabric-boundary's background recorder clause restated as D4 words it, since this part's executor first records entries. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "the required-seam installer and setters later parts add seams to; the push and origin core rules ReconcileOrigin callers reach through the unchanged public verbs"
+      },
+      "depends_on": ["fabric-core-foundation"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A tier0 core test drives a push rejection loop over outcomes and stops after the same rounds today's retry classes allow, and one drives a seam call whose report feeds the next answer (D3).",
+        "A tier1 test shows a destructive action whose target turned dirty after the snapshot is refused by `internal/fabricengine/destroy.go`'s checks at execution, and one shows an origin move refused when the pair went live after the snapshot (D4).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A tier0 core row shows a verb whose snapshot marks a required seam unsupplied refuses in its pre-lock phase, before any action, naming the seam,\nand an `internal/fabricengine` test that unsets a required seam through its setter shows the verb refuse before any action, naming the seam (D13).",
+        "Each seam adapter has a test in the module that supplies it, run against that module's real data: shed status written by shed's writer, the real workspace builder (D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 65.0,
+      "cost_line": "tapestry/solid stored-record fit over about 8,900 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-teardown",
+      "title": "Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "shed", "landing"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 3900},
+        {"path": "internal/fabriccore", "size": 3000},
+        {"path": "internal/fabriclayout", "size": 150},
+        {"path": "internal/testkit/fabrickit", "size": 150},
+        {"path": "internal/fabriccli", "size": 200},
+        {"path": "internal/shedengine", "size": 100},
+        {"path": "internal/pairteardown", "size": 150}
+      ],
+      "contract": {
+        "takes": "the push and origin part's core rules, installer and setters",
+        "delivers": "the rules of remove, cleanup, cleanupremotewarp, prune, archive, ownerarchive, remoteleftover, remoteteardown, pendingteardown and teardownlock in internal/fabriccore; the teardown child as a verb of its own that reads its own snapshot under the teardown lock, takes the handed facts and parent verdicts D2 lists, and pushes every archive tag before any origin delete as a core rule, with PushWithRetryReasons' loop kept inside one action; holdTeardown's in-process path reading the child's snapshot at the child's point; the child's entry point in internal/fabriccli taking the installed seams; destroy.go keeping its guards at execution with no rule moved into it; the pending-teardown record unchanged for fabric status, fabric prune and batten cancel; the D12 move of archiveparent's shed test; a test outside fabric that removes a hubforge pair unrefused with no seam of its own. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests, the heaviest of fabric's, shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "no new API: the teardown verbs keep their public signatures"
+      },
+      "depends_on": ["fabric-core-push-origin"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A tier0 core test shows a teardown child's snapshot yields every archive tag push before any delete on origin, including a leftover tag an earlier teardown left (D2, D3).",
+        "A tier1 test shows a destructive action whose target turned dirty after the snapshot is refused by `internal/fabricengine/destroy.go`'s checks at execution, and one shows an origin move refused when the pair went live after the snapshot (D4).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A test in a package outside fabric builds a pair through `internal/hubforge` and removes it with no seam installed by the test itself, and the remove runs unrefused (D5, D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 61.7,
+      "cost_line": "tapestry/solid stored-record fit over about 7,900 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-merge-landing",
+      "title": "Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "shed", "batten", "landing"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 3000},
+        {"path": "internal/fabriccore", "size": 2200},
+        {"path": "internal/fabriclayout", "size": 200},
+        {"path": "internal/testkit/fabrickit", "size": 100},
+        {"path": "internal/shedengine", "size": 900},
+        {"path": "internal/battencli", "size": 100},
+        {"path": "internal/landingshed", "size": 100}
+      ],
+      "contract": {
+        "takes": "the teardown part's tree, with the installer and the shed adapter",
+        "delivers": "the rules of merge, mergeguards, mergelifecycle, mergestate, mergestateactive, mergestage, mergepaths, mergeerrors, midmerge, handover, takeover, takeoverwrite, integrateweft, taskpatch and taskbranchdiscard in internal/fabriccore; the shedengine.Status and shedengine.Takeover uses cut: OriginParentRunStatus and OriginBattenStatus return bytes and found, their callers decode through shed, ReadUpstreamTakeover and the result types that carried shedengine.Takeover carry fabric's own takeover entry of machine, subject and time filled by the seam's decoder, and the takeover write stays a state.WriteJSON patch of the one takeover key; the shed-module test written against today's code before the cut that pins the takeover write's status bytes, an undeclared key included, and the JSON-key parity of fabric's and shed's takeover types; the D12 moves of handover, takeoverrun and rejectedtakeover's shed tests to the shed module. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "fabric's takeover entry type in internal/fabriclayout and the takeover decoder seam"
+      },
+      "depends_on": ["fabric-core-teardown"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A test in the shed module's package, written against today's code in the part that cuts it, starts from a status file holding a key shed's status type does not declare,\nand shows a takeover write and a code-tip settle leave the same status file bytes after the cut, that key included;\na test there fails when fabric's takeover entry type and shed's takeover type declare different JSON keys (D5, D13).",
+        "Each seam adapter has a test in the module that supplies it, run against that module's real data: shed status written by shed's writer, the real workspace builder (D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 57.3,
+      "cost_line": "tapestry/solid stored-record fit over about 6,600 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-pull-replay",
+      "title": "Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "shed", "stencil", "board", "heddle"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 3200},
+        {"path": "internal/fabriccore", "size": 2200},
+        {"path": "internal/fabriclayout", "size": 150},
+        {"path": "internal/testkit/fabrickit", "size": 100},
+        {"path": "internal/stencilsource", "size": 700},
+        {"path": "internal/stencilcli", "size": 40},
+        {"path": "cmd/lym", "size": 30},
+        {"path": "internal/shedengine", "size": 400},
+        {"path": "internal/boardengine", "size": 900},
+        {"path": "internal/heddleengine", "size": 200}
+      ],
+      "contract": {
+        "takes": "the merge and landing part's tree, with the takeover entry type and the shed adapter",
+        "delivers": "the rules of pull, hubpull, replay, bolt, boltreplay, reconcile, parenttips, codetipsettle, upstreamrun, stencilcommit and warpforward's fabric side in internal/fabriccore; the code-tip settle handing the seam the previous transition's status bytes with the status and lock paths, shed's adapter writing them through state.WriteJSON, and the shed-module test before the cut that pins its status bytes; upstreamrun's done verdict asked of the seam's decoder; replay's and pull's shedrun uses through the run-path seam; StencilSource and StencilBaseByStamp moved to internal/stencilsource (new) over fabricengine.HeadContains and the path-taking reads fabric adds (commit exists, ancestor of, a path's revisions, a file at a revision), with internal/stencilcli and cmd/lym's stencilseed retargeted and their two integration tests moved with them; the D12 moves of the bolt, pull and replay tests that drive boardengine, boardkit or heddleengine. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "internal/stencilsource's StencilSource and StencilBaseByStamp; fabricengine's commit-exists, ancestor, path-revisions and file-at-revision reads"
+      },
+      "depends_on": ["fabric-core-merge-landing"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A test in the shed module's package, written against today's code in the part that cuts it, starts from a status file holding a key shed's status type does not declare,\nand shows a takeover write and a code-tip settle leave the same status file bytes after the cut, that key included;\na test there fails when fabric's takeover entry type and shed's takeover type declare different JSON keys (D5, D13).",
+        "Each seam adapter has a test in the module that supplies it, run against that module's real data: shed status written by shed's writer, the real workspace builder (D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 61.7,
+      "cost_line": "tapestry/solid stored-record fit over about 7,900 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-add-clone",
+      "title": "Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "ide", "batten", "heddle", "reconcile", "shed"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 4100},
+        {"path": "internal/fabriccore", "size": 2800},
+        {"path": "internal/fabriclayout", "size": 200},
+        {"path": "internal/testkit/fabrickit", "size": 150},
+        {"path": "internal/fabriccli", "size": 300},
+        {"path": "internal/ideengine", "size": 400},
+        {"path": "cmd/lym", "size": 150},
+        {"path": "internal/beamcli", "size": 10},
+        {"path": "internal/heddleengine", "size": 300},
+        {"path": "internal/hubreconcile", "size": 150},
+        {"path": "internal/shedrun", "size": 170}
+      ],
+      "contract": {
+        "takes": "the pull and replay part's tree, with every earlier seam and the installer",
+        "delivers": "the rules of add, addadopt, addadoptonly, addanchor, addparent, clone, checkout, checkoutstate, forkrecords, gitexclude, warpexclude, junction, junctionnames, pairbranch, pairparts, resetsubpathcheck, scratchlink, shortnamebinding, shortnamecommit, unwire, weftwiring and hubworkspace in internal/fabriccore; Add's rollback as the core's inverse action list over executed actions and pre-creation facts, the engine keeping createdToken and createdBranchToken for destroy.go, with a tier1 rollback on a real hub; add's, addanchor's and forkrecords' shedrun uses through the run-path seam; hubworkspace's vscode import cut by the workspace builder seam, installed by cmd/lym/main.go beside InstallPairFolderNamer and replacing InstallWorkspaceContent, called on every exit that regenerates the workspace today, a rollback included, with nil writing no file; the IDE module's builder and its test in internal/ideengine; builder installs in the tests outside fabric that read the hub workspace file, internal/ideengine/spawn_hub_integration_test.go and cmd/lym/prerunseams_test.go among them; internal/beamcli/dobbyleftover_integration_test.go dropping t.Parallel; the cmd/lym test that runs the binary on a hub with every seam installed; the D12 moves of the clone, worktreeseam and add_runrecords tests that drive fabriccli, heddleengine, hubreconcile, boardkit or shedrun. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests, the largest of fabric's, shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "fabricengine's workspace builder seam and its setter"
+      },
+      "depends_on": ["fabric-core-pull-replay"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A tier0 core test shows a failed or refused action ending its list, and `Add`'s inverse action list for a failure after each executed action, its pre-creation facts and its effects with no inverse included (D3, D4).",
+        "A tier1 test runs one rollback on a real hub, its inverse deletes passing `internal/fabricengine/destroy.go` with the creating call's token (D4).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A test in `cmd/lym` runs the binary on a hub and shows the seams installed: a verb that needs a required seam runs unrefused, and the workspace file is written (D13).",
+        "Each seam adapter has a test in the module that supplies it, run against that module's real data: shed status written by shed's writer, the real workspace builder (D13)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 65.6,
+      "cost_line": "tapestry/solid stored-record fit over about 9,100 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    },
+    {
+      "slug": "fabric-core-records-guards",
+      "title": "Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure",
+      "type": "enhancement",
+      "labels": ["fabric", "testkit", "pattern", "docs"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4", "D5", "D6", "D7", "D9", "D10", "D11", "D12", "D13"],
+      "packages": [
+        {"path": "internal/fabricengine", "size": 2200},
+        {"path": "internal/fabriccore", "size": 1800},
+        {"path": "internal/fabriclayout", "size": 150},
+        {"path": "internal/testkit/fabrickit", "size": 100},
+        {"path": "pattern", "size": 100},
+        {"path": "docs/research/speed", "size": 250}
+      ],
+      "contract": {
+        "takes": "the add and clone part's tree, every other concern moved",
+        "delivers": "the rules of anchor, anchorchange, anchormarker, anchormove, anchorstop, anchortarget, commit, committedfile, commitweftpaths, index, moverecord, recordsgit, recordslayout, recordsprobe, recordsreads, snapshotuncommitted, trailer and trailercommit in internal/fabriccore, Commit's secret-path refusal as a pre-lock snapshot fact the engine fills from internal/secretpath's matcher; the cross-verb livestate, onerepository_lifecycle and droplocal tests and export_test.go reduced to what no other test guards; the tier0 guard on test imports of the three fabric packages (D12) and the tier0 guard on their production dependency closure (D13); PATTERN-fabric-boundary's rule line and the new PATTERN-fabric-core entry beside the guards they cite; the remeasure doc under docs/research/speed/, measured in one session against a checkout of the commit before the foundation part that the implementer asks its parent for, which also records fabric's test lines before and after. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests and the cross-verb tests shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards",
+        "exports": "the two import guards"
+      },
+      "depends_on": ["fabric-core-add-clone"],
+      "open_risks": [],
+      "criteria": [
+        "Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).",
+        "A tier0 core table covers, for each moved verb, its refusals, its verdicts, its phase requests and its action order over made-up snapshots (D2, D3, D6).",
+        "A tier0 core test shows a verb that refuses in its pre-lock phase requests no later phase, so its reader runs no origin read (D2).",
+        "A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).",
+        "Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;\none tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).",
+        "Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.",
+        "Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; \"every test is needed\" is no reason (the added entry \"The restructure cuts fabric's test code\").",
+        "The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).",
+        "Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).",
+        "Review: the remeasure doc under `docs/research/speed/` records, before and after in one session under D10's load protocol, both fabric packages' tier1 time and fixture counts, the whole tier1 run's time, the receiving packages' added time and how many packages left the engine's gate scope, and states whether the targets were met (D10).",
+        "Review: code, docs and records name the core's output \"action list\" and its input \"snapshot\", never \"plan\" (D11).",
+        "A tier0 test fails when a test file of `internal/fabricengine`, `internal/fabriccore` (new) or `internal/fabriclayout` (new) imports a package above fabric, other than `internal/hubforge` and the admitted kits, an import of `internal/testkit/boardkit` included (D12).",
+        "Review: every moved cross-module test runs in the package of the module it pins, at its old tier, with no bare side spelling, and no test feeds fabric hand-written stand-in data for another module or a hard-coded config value in place of `internal/configengine` (D12).",
+        "A tier0 test fails when the production dependency closure of `internal/fabricengine`, `internal/fabriccore` (new) or `internal/fabriclayout` (new) holds `internal/shedengine`, `internal/shedrun`, `internal/stencilstore`, `internal/vscode` or another package above fabric (D13)."
+      ],
+      "pattern_changes": ["PATTERN-fabric-boundary", "PATTERN-fabric-core"],
+      "expected_cost_usd": 50.7,
+      "cost_line": "tapestry/solid stored-record fit over about 4,600 changed lines, deleted tests weighed as near-free; 8 runs, correlation 0.59"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": 417,
+    "line": "seven tapestry/solid parts on the stored-record fit, $35.46 fixed plus $0.33 per 100 lines each, about 51,000 changed lines in all once the parent's test-cut entry turns about half of each concern's test moves into near-free deletions; the fit rests on 8 runs at correlation 0.59. The first proposal's estimate, with every test moved, was $495",
+    "next_best": {
+      "split": "three parts: foundation with push and origin on tapestry/solid, then teardown through pull and replay, and add and clone through records and guards, each on darn/solid",
+      "expected_usd": null,
+      "line": "the tapestry part reads about $85 on the stored-record fit; the darn/solid stored-record cell reads too few runs, and on the unstored darn/solid fit the two darn parts read about $95, about $180 in all; the operator set it aside to take the parts one by one"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": false}
+    ]
+  }
+}
