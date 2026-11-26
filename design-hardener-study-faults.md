@@ -1,6 +1,6 @@
 # Faults the hardener study read in fabric, cleanup and teardown code
 
-`hardener-study-faults` · Note · bug, fabric, cleanup, batten
+`hardener-study-faults` · Task · bug, fabric, cleanup, batten
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
 

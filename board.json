@@ -512,10 +512,10 @@
     },
     {
       "id": 1676,
-      "handle": "B1",
+      "handle": "T21",
       "slug": "hardener-study-faults",
       "title": "Faults the hardener study read in fabric, cleanup and teardown code",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric",
@@ -523,6 +523,7 @@
         "batten"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [
         "config-keys-nested",
         "push-retry-not-halt"
@@ -531,26 +532,29 @@
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`), section \"Faults found by this study\", read these in the code; none was driven:\n\n- a refused credential during a one-repository seed keeps the hub and says origin may still take the push;\n- an empty teardown job clears an earlier teardown's pending record;\n- the `cleanup` remote sweep counts local tags as landed and never pushes them;\n- `--reset` is advised without regard to unpushed work;\n- `fetchRunForCatchUp` reads no records layout;\n- a `lym fabric remove` pending record can outlive its pair (`cd8090733` fixed only the cancel's records, by choice).\n\n## Idea\n\nConfirm each against the code with a test that fails first, and fix the confirmed ones.\n",
       "created": "2026-11-26T11:25:44Z",
-      "revised": "2026-11-26T11:25:44Z"
+      "revised": "2026-11-26T13:19:56Z",
+      "profile": "light"
     },
     {
       "id": 1677,
-      "handle": "B2",
+      "handle": "T5",
       "slug": "record-criterion-line-cut",
       "title": "A decision record criterion with an unindented continuation line is cut at its first line",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "parsers",
         "loom"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (raddle of `sandbox-closed-area-build`, 2026-11-26)\n\nThe stored record's D6 attach criterion runs over two lines, the second not indented under the bullet.\nThe record parser keeps only the first line as the criterion.\nRaddle could not carry the whole bullet: joined to one line, the raddle-propose gate refused it as criterion-unknown, since it matches only the cut text.\nThe second clause survived only by being restated in the part's contract.\n\n## Idea\n\nEither the record format check refuses an unindented continuation line when the record is stored,\nor the parser reads it as part of the bullet, as markdown does.\n",
       "created": "2026-11-26T11:48:30Z",
-      "revised": "2026-11-26T11:48:30Z"
+      "revised": "2026-11-26T13:19:55Z",
+      "profile": "light"
     },
     {
       "id": 1678,
@@ -870,13 +874,14 @@
         "webster"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (2026-11-26, `config-keys-nested` at Webster)\n\nWebster's Master wrote its friction note at `_lym/loom/friction/webster-master.md`, the path the friction-directive-orchestrator stencil gives it.\nThe run-exit audit (`internal/websterengine/audit.go`, class `parent-write`) allows Master only `outcome.yaml` and `summary.md`, so it flagged the note and blocked the run with all 8 batches done.\n`lym webster accept-audit` refused twice:\nfirst because HEAD carried the verify fixer's commit past the last batch head, and after `reset --to last-batch-head` and removing the note,\nbecause the note's path \"cannot be checked: outside the task worktree\", since the records side is a separate worktree.\nIts only way forward was `lym webster reset --to start`, which throws away every batch.\n\n## Idea\n\n- The parent-write audit exempts Master's own friction note path, the one its prompt names.\n- `accept-audit` accepts a finding whose path lies on the run's records side and is absent or unchanged, instead of refusing it as outside the worktree.\n- A verify fixer's commit past the last batch head does not block `accept-audit`, as a parent merge does not.\n",
-      "status": "draft",
       "created": "2026-11-26T13:04:19Z",
-      "revised": "2026-11-26T13:04:19Z"
+      "revised": "2026-11-26T13:19:55Z",
+      "profile": "light"
     },
     {
       "id": 1694,
