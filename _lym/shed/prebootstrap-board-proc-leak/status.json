@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Recheck",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Recheck",
-    "last": "Code-Bouncer → done",
+    "now": "Describe",
+    "last": "Drift-Recheck → skipped",
     "wait": ""
   },
   "history": [
@@ -201,6 +201,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/prebootstrap-board-proc-leak/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-26T21:07:43Z",
       "started_at": "2026-11-26T21:06:53Z"
+    },
+    {
+      "producer": "Drift-Recheck",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-26T21:07:44Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
