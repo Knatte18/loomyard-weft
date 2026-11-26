@@ -8,7 +8,7 @@ Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`pr-modes-no-
 
 - No mail per failed push. lym retries quietly with backoff.
   One summary notice goes to the orch when owed work has stayed unpushed past a threshold (30 minutes proposed), listing every branch still owed, and one notice when all is pushed again.
-  The status bar shows the count of unpushed branches.
+- The reed status bar shows one field, `sync: <minutes>`: the minutes since this machine last had nothing owed to origin, so the operator sees before switching machines whether work is still only local.
 - A transient network failure never fails a run: a landing push or GitHub read waits and retries.
   A refusal that retrying cannot fix (rejected push, expired login, moved branch) stops at once with one notice.
 
