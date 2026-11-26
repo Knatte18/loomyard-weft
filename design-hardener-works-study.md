@@ -1,6 +1,6 @@
 # Study whether the hardener finds and fixes real faults
 
-`hardener-works-study` · Note · research, burler, fabric
+`hardener-works-study` · Task · research, burler, fabric · draft
 
 ## Goal
 

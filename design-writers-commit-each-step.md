@@ -2,8 +2,6 @@
 
 `writers-commit-each-step` · Task · enhancement, stencil, darn
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # Iterative agents should commit often
