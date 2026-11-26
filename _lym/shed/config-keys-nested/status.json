@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Await",
+  "current_producer": "Drift-Expect",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Await",
-    "last": "Plan-Bouncer → done",
+    "now": "Drift-Expect",
+    "last": "Drift-Await → skipped",
     "wait": ""
   },
   "history": [
@@ -220,6 +220,13 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-11-26T10:04:15Z",
       "started_at": "2026-11-26T10:03:42Z"
+    },
+    {
+      "producer": "Drift-Await",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-26T10:04:16Z",
+      "reason": "drift.enabled = false"
     }
   ],
   "product": {
