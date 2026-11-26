@@ -1,0 +1,21 @@
+# Relevant files
+
+- `internal/fabricengine/originreconcile.go` `ReconcileOrigin`, `OriginSeams`, `OriginReport` — origin reconcile already takes injected seams and returns verdicts; the first concern to move
+- `internal/fabricengine/pushclassified.go` `rejectionRetryKind` — push rejection classes and retries that the core's loop must keep
+- `internal/fabricengine/mutation.go` `Mutations` — the executed-effect record the executor keeps and rollback reads
+- `internal/fabricengine/destroy.go` — destruction chokepoint whose execution-time checks stay in the engine
+- `internal/dotgit/doc.go` — in-process worktree list and its refusal for non-files ref storage, used by snapshot readers
+- `internal/hubforge/template.go` `CopyHub` — template hub copies, the bulk of fabric's fixture cost
+- `internal/hubforge/hub.go` `AddPair` — pair fixture with a foreground push, about 60 git processes each
+- `internal/gatecli/scope.go` — calls the scoper that decides the gate scope
+- `pattern/PATTERN-fabric-boundary.md` — fabric's vocabulary owner set, git-through-fabric and destruction rules the split must keep
+- `pattern/PATTERN-leaf-packages.md` — where the new packages' closed import sets go
+- `contracts/specs/raddle-proposal-spec.md` — how raddle splits this record into parts and reads a stated order
+- `docs/research/speed/fabric-test-speed-survey-2026-11-03.md` — baseline cost breakdown of fabric's tests
+- `docs/research/speed/fabric-test-cuts-remeasure-2026-11-08.md` — evidence that trimming tests did not move the wall
+- `internal/fabricengine/originreconcilemoves.go` — origin moves that call the live-pair probe just before acting, kept as an execution-time precondition
+- `internal/fabricengine/hubworkspace.go` — the hub workspace build that imports the IDE module D13 cuts
+- `internal/fabricengine/warpforward.go` — the warp forward that imports the stencil store D13 cuts
+- `internal/fabricengine/takeoverwrite.go` — takeover writes that import shed run status and paths D13 cuts
+- `internal/lymcwd/enforcement_test.go` — vocabulary scan and its owner maps that gain the new packages
+- `internal/pattern/check.go` `MaxEntryTextChars` — the PATTERN rule-text cap the PATTERN changes must fit
