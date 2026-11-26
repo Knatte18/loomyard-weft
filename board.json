@@ -906,6 +906,27 @@
       "body": "Imported from [issue #222](https://github.com/Knatte18/loomyard/issues/222).\n\n## What the orch does by hand today\n\nIn hub `dop`, the operator requires the orch to hear of every stop of every run it parents.\nlym notifies some halts, but not all: a Webster block sends no notice (#207), and a gate whose testhost hangs past `timeout_min` holds its slot with no notice at all (#216).\n\nSo the orch keeps a Claude Code Monitor per run in flight: a shell loop that polls `lym loom status` in the task worktree every 30 s, prints on every change of state or producer, and prints a warning when `lym gate status` shows the run holding a gate slot past 45 minutes.\nThe Monitor expires after 30 minutes, so the orch re-arms it by hand, and a missed re-arm left a hung tier3 gate unseen for 21 hours.\n\n## Wanted\n\nlym itself watches every run in flight and mails its parent (creel) on:\n\n- every state other than running: blocked, failed, paused, done, whatever the cause;\n- a gate slot held by the run past a bound, such as 1.5 × the tier's `timeout_min`, naming the gate's PID and its child processes;\n- optionally, every row change, for parents that want progress.\n\nThe watch lives in the dobby, not in the orch's session, so it needs no re-arming and survives the orch's context cycles.\n",
       "created": "2026-11-26T07:34:26Z",
       "revised": "2026-11-26T07:34:26Z"
+    },
+    {
+      "id": 1653,
+      "handle": "B22",
+      "slug": "webster-plan-fix-begun-batch",
+      "title": "Plan fixes after begun batches block Webster; glyph-not-found on members a card creates",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        221
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #221](https://github.com/Knatte18/loomyard/issues/221).\n\n## What happened\n\nTwo Webster halts after the plan was edited by a plan review/fix round while batches were already begun.\n\n1. `blocked` / `escalation-to-human`:\n\n```\nwebster: the auto-rebaseline of the changed plan blocks this run: webster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed outside its Card Index; it carries the plan's integration verify and only its Card Index is rebaselined; way forward: restore 00-overview.md, or fix the plan: move a done card's edit to a follow-up card after the last begun batch that carries the decision, with its Card Index line in 00-overview.md, then re-step the Webster row\n```\n\n2. After the plan was fixed and the run re-stepped, `failed` / `producer-hard-failure`, plan validation refused with four `glyph-not-found` findings, all of the form:\n\n```\nglyph-not-found/\u003ccard\u003e[blocking]: target \"\u003cUnit\u003e#\u003cMember\u003e\"'s unit exists but the member is missing — check for a misspelled member\n```\n\nThe members named were ones the plan's cards (5 and 6) introduce or modify, and the targets include a method signature with a generic parameter type (`IReadOnlyList\u003cdouble\u003e`) and a nullable (`TimeSpan?`).\nCard 5 and card 6 cite the same new member as a target.\n\n## Why abnormal\n\n- The plan review loop (`Plan-Burler-Fix`) edited `00-overview.md` outside its Card Index and the run then blocked on it; the plan-fix stage gives no warning that such an edit is unrecoverable once a batch has begun, so each such fix costs an operator escalation.\n- If the glyph targets name members that an earlier card of the same plan creates, validation cannot find them at plan time and refuses a valid plan. If they are misspelled, the finding text does not say which member of the unit is closest. Either way the finding should say whether the member is expected to be created by a card.\n  I could not tell from the notes which case applies.\n\n## What to do\n\n- Have the plan-fix stage refuse or warn on edits to `00-overview.md` outside the Card Index once any batch has begun.\n- Let glyph validation accept a target that an earlier card of the plan declares as created, and print the unit's actual member names beside a `glyph-not-found` finding.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-4.md`, `loom-halt-6.md`.\n",
+      "created": "2026-11-26T07:34:29Z",
+      "revised": "2026-11-26T07:34:29Z"
     }
   ],
   "prime_owner": "neve",
