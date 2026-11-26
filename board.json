@@ -801,6 +801,27 @@
       "body": "Imported from [issue #227](https://github.com/Knatte18/loomyard/issues/227).\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that about 12 findings were internal process or tool names in the PR text: \"item 3 of the task\", \"the test scoper cannot run C# tests there\", \"the task's branch point\", \"The board entry proposed\", \"The parent recorded...\".\nThe stencil that writes the description (`landing-template-describe`) does not forbid them, so the parent had to tell the Describe session so in each hub.\nIn one run the parent noted its own earlier instruction had caused it.\n\nThe operator's rule: LoomYard, and anything from it, does not belong in the Describe text.\nThe one exception is the \"Created using\" block at the bottom.\n\n## Idea\n\nKeep LoomYard's vocabulary out of the description the Describe row writes, and let lym hold it.\n\n- Add the rule to the Describe stencil: the description names no board, task, Sketch, decision record, parent, orch, scoper, gate, tier, perch or lym term, and no \"item N of the task\".\n- Let the Describe row's mechanical gate (`NewDescriptionGate`, which runs `summaryparser.ValidateDescription`) refuse such a term outside the credit block, with the refusal naming the term and the line.\n- Leave the credit block as it is: the `credit` keys in `landing.yaml` append it, and the term check skips it.\n- Read first how the credit block is appended to the description, and which words the check can match without refusing a repository's own legitimate names.\n- The issue on reviewing the Describe text covers claims and missing content; this issue covers the vocabulary.\n",
       "created": "2026-11-26T07:34:11Z",
       "revised": "2026-11-26T07:34:11Z"
+    },
+    {
+      "id": 1648,
+      "handle": "E5",
+      "slug": "scope-closes-at-code-review",
+      "title": "Close the scope of a task when its first Code-Review round starts, and have lym hold the line",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler"
+      ],
+      "issues": [
+        226
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #226](https://github.com/Knatte18/loomyard/issues/226).\n\n## Seen (operator, 2026-11-24)\n\nA task's scope can still change late.\nIn the C# hubs a parent orch recorded decisions that widened a task while the run was at PR-Review, after Code-Review had finished, and the reviewers never judged the diff against the widened record.\nIn one run Code-Review stopped at its round cap because a decision finding spawns no fixer, so the widening was in the record but never built.\n\nThe operator's rule: decisions go in as early as possible, and once the Code-Review perch has begun it is too late.\nThe last Code-Review round is the last link that can change anything.\nWhat comes up after that becomes a note for a new task, not a change to this one.\n\n## Idea\n\nClose a task's scope when its first Code-Review round starts, and have lym hold the line, so it is not only a rule for the parent orch.\n\n- Before the line, a decision enters the record as an `Added after Discussion` entry, and `code-scope` and the plan lenses read it.\n- After the line, no decision enters the record.\n  `lym loom decision add` (and `replace`) refuse once the run stands at or past the first Code-Review round, and the refusal names the way forward: file the call as a note for a new task.\n  The refusal reaches the parent and the agent the way the other `decision add` refusals do.\n- Two things stay outside the line: feedback from a person through the PR agent, and the mechanical fixes Finalize makes to a merge or test failure.\n- The orch procedure and the parent's prompt say the same, so the parent files a note instead of trying.\n- Read first how `lym loom decision add` decides where a run stands (`internal/loomcli/decision.go` already refuses at some stages), where the Drift rows sit against the Code-Review perch, whether a Drift verdict can send a run back past the line, and how darn, tapestry and arras recipes place their Code-Review perch.\n- Related issues: taking the parent out of PR-Review, and reviewing the Describe text and catching the rest of the parent's findings earlier.\n",
+      "created": "2026-11-26T07:34:14Z",
+      "revised": "2026-11-26T07:34:14Z"
     }
   ],
   "prime_owner": "neve",
