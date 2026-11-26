@@ -14,5 +14,6 @@
       "title": "hubforge, boardkit and envkit keep their import sets in this task",
       "digest": "efb424cc7b8a2dbecbaddcc4235c0bd2823da464534e829a42545527542dc07e"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
