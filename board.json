@@ -443,6 +443,28 @@
       "body": "Imported from [issue #244](https://github.com/Knatte18/loomyard/issues/244).\n\nThe Describe step halted the run as `failed` with anomaly `producer-hard-failure` and the message `shedadapters: Describe (seats): shuttle run outcome timeout`.\n\nWhy it is abnormal:\n- The note carries no detail on which timeout elapsed, how long the shuttle run had been going, or whether the agent was still working.\n- A timeout on a seated shuttle run is classed as a hard failure, so the run stopped as `failed` rather than being resumed or escalated.\n- The next attempt of the same step completed (`Describe / done`) about 34 minutes later, which suggests the timeout was not a defect in the producer's work.\n\nWhat to do:\n- Include the elapsed time, the timeout limit and the shuttle run's last known state in the halt reason.\n- Decide whether a shuttle outcome timeout should be a retryable or `blocked` stop instead of `failed`.\n\nProvenance: task `retire-d9`; note loom-halt.md.\n",
       "created": "2026-11-26T07:33:13Z",
       "revised": "2026-11-26T07:33:13Z"
+    },
+    {
+      "id": 1631,
+      "handle": "B7",
+      "slug": "unreachable-origin-halts-failed",
+      "title": "Unreachable origin halts the run as failed repeatedly instead of one retryable stop",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "landing",
+        "fabric"
+      ],
+      "issues": [
+        243
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #243](https://github.com/Knatte18/loomyard/issues/243).\n\nAn unreachable origin halted the run as `failed` with anomaly `producer-hard-failure` seven times in a row, across PR-Review and Finalize, instead of waiting or blocking once.\n\nWhat happened:\n- PR-Review and Finalize halted with `landingshed: ... push the task branch ... fabricengine: ls-remote of \u003ctask\u003e-weft ... Recv failure: Connection reset by peer`.\n- Finalize then halted three more times with `landingshed: Finalize: read who owns the run: board: origin is unreachable, so the owner write was not pushed: fetching origin for the board ... failed (gitrepo: ... git exited 128 ...)`.\n- One halt in between was `blocked` with anomaly `escalation-to-human`: `owner check: origin was unreachable, so who owns this run could not be judged; re-run \"lym loom resume\" in the task worktree once origin answers`.\n- Each halt wrote a note and a history entry; the history shows `Finalize / stuck` then `Finalize / goto` before each re-failure.\n\nWhy it is abnormal:\n- A transient network failure is classed as a hard failure, the same class as a producer defect, and the run state becomes `failed`.\n- The same condition surfaced under three different halt shapes (`failed`, `blocked`, `failed`), so the operator cannot tell one outage from three problems.\n- Each re-step re-ran immediately and failed again within about a minute, so the retries consumed attempts without waiting for the remote.\n\nWhat to do:\n- Classify unreachable-origin errors (ls-remote, fetch exit 128, connection reset) as one retryable or `blocked` kind with a single note, and have the driver wait or back off before re-stepping.\n- Keep `failed` for errors that retrying cannot fix.\n\nProvenance: task `retire-d9`; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-8.md, loom-halt-9.md.\n",
+      "created": "2026-11-26T07:33:16Z",
+      "revised": "2026-11-26T07:33:16Z"
     }
   ],
   "prime_owner": "neve",
