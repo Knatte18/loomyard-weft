@@ -1,57 +1,49 @@
-# Unblock Webster's run-exit audit on Master's friction note
+# webster: let Master's friction note and gate fixes clear the audit
 
-A Webster run with every batch done could end stuck with no way forward short of `lym webster reset --to start`, which throws away every batch.
-Three faults combined to cause it:
+Webster's Master writes the friction note its prompt names, and the run-exit audit flagged that write as `parent-write`.
+The run blocked with every batch done.
+`lym webster accept-audit` then refused, both because of a verify fixer's commit above the last batch head
+and because the note lies on the records side, outside the task worktree.
+The only way forward was `lym webster reset --to start`, which discards every batch.
 
-1. **The parent-write audit flagged Master's friction note.**
-   `CheckParent` allowed Master to write only `outcome.yaml` and `summary.md`.
-   The Master prompt tells Master to write a friction note under `_lym/loom/friction/`, and that write counted as a correctness finding.
-   Run now saves the note path it puts in Master's prompt as `State.MasterNotePath` at spawn.
-   `CheckParent` takes that path and skips a write to it, whether the transcript spells it as told or through the `_lym` link.
-   Both audit sites read the path from state: record-batch's whole-session parent audit and the run-exit audit.
-   The path is stored, not recomputed, because `friction.NotePath` picks a fresh `-2` name once the note exists.
-   The Master stencil's "never write anything but the contract files" rule now names the friction note too.
+## What changes
 
-2. **A verify-gate fixer's commit made `accept-audit` refuse.**
-   `AcceptPendingAudit` accepted only clean parent merges above the last batch head, and a fixer's commit is not one.
-   The verify gate now records the HEAD it passes at as `State.FixedHead`, but only when fixes moved HEAD above the pre-fix head.
-   It records nothing on a pass with no fixes.
-   `accept-audit` first checks HEAD against the last batch head.
-   If that refuses, it checks HEAD against `FixedHead` instead, but only when the last batch head is an ancestor of `FixedHead`.
-   The commits between the two are the fix commits that the gate's own commit check already vetted.
-   A commit above `FixedHead` that is not a clean parent merge still refuses, naming `reset --to last-batch-head`.
-   `lym webster reset` clears `FixedHead` the same way it clears `PreFixHead`.
-
-3. **`accept-audit` could not check a path on the records side.**
-   In a hub, `_lym` links into the separate records worktree.
-   So a pending path such as the friction note resolved outside the task worktree and was always uncheckable.
-   A path under the run's `_lym`, outside webster's run, reports and plan directories, now clears when it is absent.
-   It also clears when git, run in that directory, neither ignores it nor sees it differ from HEAD (`recordsSideStatus`).
-   A records-side path that has changed refuses, and its way forward is to restore it to the records side's last commit, then `accept-audit`.
-   The way forward in the run-exit stuck reason and the run-entry refusal (`pendingPathsWayForward`) now gives this records-side route,
-   so neither sends such a path to the reset-to-start route.
+- The parent audit lets Master write the friction note its prompt names.
+  Any other note path is still a `parent-write` finding.
+- `accept-audit` can now check a suspect path on the records side.
+  The path clears when it is unchanged since Master spawned, absence included.
+  A changed one refuses and names the records-side commit to restore it to.
+- `accept-audit` accepts the commits of a verify-gate fixer the gate passed at, as it accepts a clean parent merge.
+- A restarted run's gate takes over the earlier run's pre-fix head while that head still bounds the fixes.
+- The Master stencil and the orch role's limits table name the friction note beside the two contract files.
+  The verify-fix stencil says the listed commits may be hand commits.
 
 ## Design decisions
 
-- `FixedHead` stays as it is after a pass with no fixes, so a later clean run does not drop the earlier fixes' tolerance.
-  If HEAD is later reset below it, the ancestry check keeps it from tolerating anything.
-- Records-side acceptance excludes webster's own run state: state.json, the reports and the plan.
-  Those keep their existing checks or the reset route, since a forged state file could pass as "unchanged" once a sync commits it.
-- The records-side check runs read-only git (`diff --quiet`, `status --ignored`, `ls-files`) through the existing `Git` seam.
-  The fabric-boundary entry exempts read-only verbs.
+- **The note path is saved, not recomputed.**
+  `State.MasterNotePath` holds the path the prompt named at spawn, matched in its told and link-resolved spellings.
+- **Records-side evidence is a baseline taken before the spawn.**
+  `State.MasterRecordsBase` is the records side's HEAD from before Master could write.
+  Without it, and for webster's run, reports and plan directories, a path still clears only through the reset route.
+- **Fix commits are accepted as a recorded range.**
+  A passing gate with HEAD above its pre-fix head records `State.FixedBase` and `State.FixedHead`.
+  `accept-audit` accepts that range only when nothing but clean parent merges lies between the last batch head and `FixedBase`.
+  A commit above `FixedHead` other than a clean parent merge still refuses, and a reset clears the range.
+- **An earlier pre-fix head is kept conditionally.**
+  It must be on HEAD's history, with no batch landed above it and every commit above it passing the gate's commit check.
+- A `state.json` written before this change has none of the new fields, so it gets none of the new tolerances.
 
-## Tests
+## To check by hand
 
-- `TestCheckParent` gains rows for these cases:
-  - a write to Master's friction note is allowed, by absolute and by relative spelling;
-  - a write to another friction note is still a parent-write.
-- `TestAcceptPendingAudit_AcceptsVerifyFixCommits` accepts a fix commit up to `FixedHead`, and refuses once a commit sits above it.
-- `TestVerifyGate_*` (the pre-fix head test) asserts that a pass after HEAD moved records the passing HEAD as the fixed head.
-- `TestAcceptPendingAudit_RecordsSidePath` links `_lym` to a second repository, then checks each case:
-  - an absent note and a committed, unchanged note both clear;
-  - an edited note and an uncommitted new note both refuse toward a restore;
-  - a path under webster's run state still takes the reset route.
-  It checks both the `accept-audit` refusal and the pending way forward.
+- The commits `accept-audit` tolerates may include unvetted ones.
+  The `FixedBase`..`FixedHead` range (`recordGatePass` and `earlierPreFixHead` in `verifygate.go`,
+  `reconcileAcceptHead` in `auditledger.go`) covers whatever passed the gate's commit check, hand commits included.
+  That check admits any non-merge commit.
+- Saving and reading the Master note path may be under-tested.
+  Check that the tests cover the save in `runlevel.go` and the reads by both the record-batch and run-exit audits.
+- The Master stencil may still limit Master to its two contract files somewhere (`webster-template-master.md`).
+- A restarted gate may lose the pre-fix head (`earlierPreFixHead` and `newVerifyGate` in `verifygate.go`).
+  Check the cases where it is dropped, and that `FixedBase` then does not hide or strand earlier fix commits.
 
 ## Merge danger
 
