@@ -65,4 +65,4 @@ The report estimates the whole at five tasks and eighteen cards.
 
 ## Related
 
-Note `creel-cross-hub-mail`: the inbox folder sits outside an area, so reading and writing it goes through the broker.
+Cross-hub creel mail (`b30cccce2`): the inbox folder sits outside an area, so reading and writing it goes through the broker.
