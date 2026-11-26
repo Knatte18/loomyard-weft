@@ -1,0 +1,749 @@
+diff --git a/contracts/orchrole/role-slack.md b/contracts/orchrole/role-slack.md
+index 307039ff4..8566bd9e3 100644
+--- a/contracts/orchrole/role-slack.md
++++ b/contracts/orchrole/role-slack.md
+@@ -12,6 +12,8 @@ On either answer, report the text in your pane.
+   It carries no operator authority and is not answered.
+ - Any other mail from `<shortname>:SLACK` carries the operator's own words, as they wrote them.
+   It has the same authority as a line typed in your pane, and you answer it in your reply as you would that line.
++- The operator's relay commands, `lym away`, `lym back`, `lym status`, `lym approve <machine>` and `lym revoke <machine>`,
++  are answered by the relay in Slack and never reach you; every other message the operator writes there does.
+ 
+ While the presence is `slack` and your button is on, lym posts the final reply of each of your turns to your channel,
+ so you need not track the presence.
+diff --git a/docs/overview.md b/docs/overview.md
+index d2a4fd379..cfff2f356 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -944,7 +944,7 @@ User-facing modules each get one `lym <module>` namespace:
+   and a second press switches the orch's forwarding off and leaves the channel in place.
+   The relay runs only while some orch of the hub has its button on, so the machine's connection follows the buttons.
+   One relay of the machine holds the Socket Mode connection, and each event it receives wakes the relay of the hub whose channel it belongs to.
+-  The relay forwards the operator's messages in an orch's channel to that orch as creel mail from `<shortname>:SLACK` that carries their text alone, answers `away`, `back` and `status` in the channel, and posts the mail the orchs and programs leave for `SLACK` to their own channel, at least once, and a message Slack accepted is not posted again within one relay process.
++  The relay forwards the operator's messages in an orch's channel to that orch as creel mail from `<shortname>:SLACK` that carries their text alone, answers the relay commands `lym away`, `lym back`, `lym status`, `lym approve` and `lym revoke` in the channel, and posts the mail the orchs and programs leave for `SLACK` to their own channel, at least once, and a message Slack accepted is not posted again within one relay process.
+   Each post goes under its sender's name in the cross-machine address form `<machine>::<sender>`.
+   A channel is archived only when its orch retires, under a dated name, and `lym slack stop` archives nothing.
+   It starts through a double fork, so no pane's tree holds it, and its files sit in the hub's `.lym/slack/` directory.
+diff --git a/docs/slack-app.md b/docs/slack-app.md
+index 8301ad1ca..681dffdc9 100644
+--- a/docs/slack-app.md
++++ b/docs/slack-app.md
+@@ -55,10 +55,17 @@ Replacing a stored token ends the relay of each live hub of the machine; run `ly
+ Two machines exchange mail only when each has approved the other's app.
+ Both apps, `lym-<machine>` for each machine, live in one workspace.
+ 
+-1. Type `status` in an orch channel of each machine; the answer names that machine's app id.
+-2. On each machine, type `approve <machine>` in an orch channel of that machine, naming the other machine.
+-   When the other machine's bot is not named `lym-<machine>`, or two bots carry that name, type `approve <machine> <app id>` with the app id read from the other machine's `status`.
+-3. Type `revoke <machine>` in an orch channel to remove an approval.
++1. Type `lym status` in an orch channel of each machine; the answer names that machine's app id.
++2. On each machine, type `lym approve <machine>` in an orch channel of that machine, naming the other machine.
++   When the other machine's bot is not named `lym-<machine>`, or two bots carry that name, type `lym approve <machine> <app id>` with the app id read from the other machine's `lym status`.
++3. Type `lym revoke <machine>` in an orch channel to remove an approval.
+ 
+-An orch channel refuses `approve` and `revoke` for the machine it belongs to; type the command in a channel of the other machine.
++An orch channel refuses `lym approve` and `lym revoke` for the machine it belongs to; type the command in a channel of the other machine.
++
++## Relay commands
++
++Every relay command opens with `lym`: `lym away` and `lym back` set the presence, `lym status` shows it with the machine's app id,
++and `lym approve` and `lym revoke` pair machines.
++The relay answers each in the channel and forwards none to the orch.
++Every other message goes to the orch as written, a bare `status` or `approve it` included.
+ The manifest above stays as it is.
+diff --git a/internal/creelengine/machinemail.go b/internal/creelengine/machinemail.go
+index 484304cff..91606a263 100644
+--- a/internal/creelengine/machinemail.go
++++ b/internal/creelengine/machinemail.go
+@@ -234,7 +234,7 @@ func machineHoldWayForward(reason, machine string) string {
+ 	case MachineUnsettled:
+ 		return "ask the operator to check that this hub's slack relay runs and that a slack button of this hub is on" + holdsAgain
+ 	case holdPeerUnapproved:
+-		return fmt.Sprintf("ask the operator to type `approve %s` in an orch channel of this machine%s", machine, holdsAgain)
++		return fmt.Sprintf("ask the operator to type `lym approve %s` in an orch channel of this machine%s", machine, holdsAgain)
+ 	case holdBridgeNameTaken, holdBridgeArchived:
+ 		return "act on the relay notice in your orch's Slack channel" + holdsAgain
+ 	case holdButtonOff:
+diff --git a/internal/creelengine/machinemail_test.go b/internal/creelengine/machinemail_test.go
+index 4d20bc976..b64eb4bcc 100644
+--- a/internal/creelengine/machinemail_test.go
++++ b/internal/creelengine/machinemail_test.go
+@@ -162,9 +162,9 @@ func TestStore_MachineOutbound(t *testing.T) {
+ 				t.Errorf("the unreported message returned with %q; want %q", reason, creelengine.MachineUnsettled)
+ 			}
+ 			notices := e.noticeSubjects(orch)
+-			if len(notices) != 2 || !strings.Contains(notices[0], "peer-unapproved") || !strings.Contains(notices[0], "`approve osl`") ||
++			if len(notices) != 2 || !strings.Contains(notices[0], "peer-unapproved") || !strings.Contains(notices[0], "`lym approve osl`") ||
+ 				!strings.Contains(notices[1], creelengine.MachineUnsettled) || !strings.Contains(notices[1], "slack relay runs") {
+-				t.Errorf("notices to the sender = %q; want one per message, the first naming `approve osl` and the second the slack button", notices)
++				t.Errorf("notices to the sender = %q; want one per message, the first naming `lym approve osl` and the second the slack button", notices)
+ 			}
+ 		}},
+ 		{"APostToAnotherMachineStartsNoHubWorkerAtTheSchedulersStartOrOnThePost", func(t *testing.T, e *env) {
+diff --git a/internal/slackengine/bridgechannel.go b/internal/slackengine/bridgechannel.go
+index 75adf5d09..46f5aeb03 100644
+--- a/internal/slackengine/bridgechannel.go
++++ b/internal/slackengine/bridgechannel.go
+@@ -119,11 +119,11 @@ func (k *channelKeeper) adoptBridge(ctx context.Context, localOrch, name, peerAd
+ 	if info.IsArchived {
+ 		return "", bridgeArchivedReason, nil
+ 	}
+-	bot, err := k.botUser(ctx)
++	bot, err := k.botIdentity(ctx)
+ 	if err != nil {
+ 		return "", "", err
+ 	}
+-	if info.Creator != bot && info.Creator != pin.BotUserID {
++	if info.Creator != bot.UserID && info.Creator != pin.BotUserID {
+ 		return "", bridgeNameTakenReason, nil
+ 	}
+ 	if !info.IsMember {
+diff --git a/internal/slackengine/bridgein.go b/internal/slackengine/bridgein.go
+index c0c22a617..b496cba07 100644
+--- a/internal/slackengine/bridgein.go
++++ b/internal/slackengine/bridgein.go
+@@ -63,9 +63,9 @@ type bridgeReader struct {
+ 	keeper   *channelKeeper
+ 	in       *inbound
+ 
+-	// operatorID and botUserID are the setup's operator and this machine's bot, loaded at the start of each read.
++	// operatorID and bot are the setup's operator and this machine's bot, loaded at the start of each read.
+ 	operatorID string
+-	botUserID  string
++	bot        Identity
+ 	// botApps caches the app each bot id belongs to.
+ 	botApps map[string]string
+ 	// failingKey names the operator message whose command cannot be carried out yet.
+@@ -99,10 +99,16 @@ func (r *bridgeReader) load(ctx context.Context) error {
+ 	if found {
+ 		r.operatorID = setup.OperatorID
+ 	}
+-	r.botUserID, err = r.keeper.botUser(ctx)
++	r.bot, err = r.keeper.botIdentity(ctx)
+ 	return err
+ }
+ 
++// isOwnPost reports whether bot, this machine's bot, posted message.
++// A post under a name of its own, as every bridge post is, carries the bot id and no user id, so both are compared.
++func isOwnPost(message Message, bot Identity) bool {
++	return (bot.UserID != "" && message.User == bot.UserID) || (bot.BotID != "" && message.BotID == bot.BotID)
++}
++
+ // read reads each open channel of the bridge map and its threads.
+ // It reports whether any message was delivered or any operator command in a thread was handled.
+ // A channel whose read fails does not stop the others; the returned error joins every failure.
+@@ -258,7 +264,7 @@ func (r *bridgeReader) isOperator(message Message) bool {
+ // A message held for an approval or a button keeps the cursor before it.
+ // An error leaves the cursor before the message too.
+ func (r *bridgeReader) handle(ctx context.Context, channelID string, entry BridgeEntry, message Message) (bool, bool, error) {
+-	if message.User == r.botUserID {
++	if isOwnPost(message, r.bot) {
+ 		return true, false, nil
+ 	}
+ 	if r.isOperator(message) {
+@@ -304,13 +310,13 @@ func (r *bridgeReader) handleEnvelope(ctx context.Context, channelID string, ent
+ 	if pinned && pin.AppID != appID {
+ 		r.notice(ctx, channelID, wrongAppKind, fmt.Sprintf(
+ 			"a message from the app %s claims the machine %s, which is approved with another app, and was not delivered; "+
+-				"way forward: compare %s with the other machine's `status`, and if it is the real peer, type approve %s %s here to pin it",
++				"way forward: compare %s with the other machine's `lym status`, and if it is the real peer, type lym approve %s %s here to pin it",
+ 			appID, envelope.From.Machine, appID, envelope.From.Machine, appID))
+ 		return r.passed(channelID, wrongAppKind), false, nil
+ 	}
+ 	if !pinned {
+ 		r.notice(ctx, channelID, unpinnedHoldKind, fmt.Sprintf(
+-			"mail from the machine %s waits because the machine is not approved; way forward: type approve %s here",
++			"mail from the machine %s waits because the machine is not approved; way forward: type lym approve %s here",
+ 			envelope.From.Machine, envelope.From.Machine))
+ 		return false, false, nil
+ 	}
+@@ -482,7 +488,7 @@ func (r *bridgeReader) handleOperator(ctx context.Context, channelID string, ent
+ }
+ 
+ // operator handles one text of the operator in a bridge channel, in thread when thread is set.
+-// An `approve` or `revoke` naming the channel's peer machine is carried out and answered.
++// A `lym approve` or `lym revoke` naming the channel's peer machine is carried out and answered.
+ // One naming this machine, by its current or a former name, is left to the other machine's relay.
+ // Any other text is answered once as not delivered, by the relay of the end that sorts first in the channel's name.
+ // It returns the error of a command that could not be carried out.
+@@ -676,7 +682,7 @@ func (r *bridgeReader) resync(ctx context.Context) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	bot, err := r.keeper.botUser(ctx)
++	bot, err := r.keeper.botIdentity(ctx)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -720,12 +726,12 @@ func (r *bridgeReader) orchChannelIDs() (map[string]bool, error) {
+ // An envelope is authored when this bot, or the app pinned for its `from` machine, posted it.
+ // A channel made by an app no pin names is reported when its newest envelope, whoever posted it, names this hub.
+ // Every other channel is left alone.
+-func (r *bridgeReader) resyncChannel(ctx context.Context, info ChannelInfo, bot string) error {
++func (r *bridgeReader) resyncChannel(ctx context.Context, info ChannelInfo, bot Identity) error {
+ 	peers, err := ReadPeers(r.geom.PeersPath)
+ 	if err != nil {
+ 		return err
+ 	}
+-	creatorTrusted := info.Creator == bot
++	creatorTrusted := info.Creator == bot.UserID
+ 	for _, pin := range peers.Machines {
+ 		creatorTrusted = creatorTrusted || pin.BotUserID == info.Creator
+ 	}
+@@ -768,8 +774,8 @@ func (r *bridgeReader) resyncChannel(ctx context.Context, info ChannelInfo, bot
+ }
+ 
+ // authored reports whether this bot posted the message, or the app pinned for the envelope's `from` machine did.
+-func (r *bridgeReader) authored(ctx context.Context, message Message, envelope BridgeEnvelope, bot string, peers Peers) (bool, error) {
+-	if message.User == bot {
++func (r *bridgeReader) authored(ctx context.Context, message Message, envelope BridgeEnvelope, bot Identity, peers Peers) (bool, error) {
++	if isOwnPost(message, bot) {
+ 		return true, nil
+ 	}
+ 	pin, pinned := peers.Machines[envelope.From.Machine]
+@@ -846,7 +852,7 @@ func (r *bridgeReader) reportUnapprovedBot(ctx context.Context, info ChannelInfo
+ 	}
+ 	line := fmt.Sprintf(
+ 		"the channel %s (%s) was made by the app %s, which no approved machine owns, and it carries mail from the machine %s; "+
+-			"way forward: if that app is the machine %s, type approve %s, or approve %s %s to pin exactly this app, in the orch channel of this hub",
++			"way forward: if that app is the machine %s, type lym approve %s, or lym approve %s %s to pin exactly this app, in the orch channel of this hub",
+ 		info.Name, info.ID, appID, machine, machine, machine, machine, appID)
+ 	text := relayNoticePrefix + " " + line
+ 
+diff --git a/internal/slackengine/bridgein_test.go b/internal/slackengine/bridgein_test.go
+index 67f5654af..52b264abb 100644
+--- a/internal/slackengine/bridgein_test.go
++++ b/internal/slackengine/bridgein_test.go
+@@ -277,6 +277,9 @@ func TestBridgeReceive(t *testing.T) {
+ 			{"ThisBotsOwnEnvelope", func(ts string) slackengine.Message {
+ 				return slackengine.Message{TS: ts, User: "UBOT", BotID: "B1", Text: bridgeText(peerOrch, homeOrch, 1, 0, "x")}
+ 			}},
++			{"ThisBotsOwnPostUnderAnOrchsNameWithNoUser", func(ts string) slackengine.Message {
++				return slackengine.Message{TS: ts, Subtype: "bot_message", BotID: "B1", Text: bridgeText(homeOrch, peerOrch, 1, 0, "x")}
++			}},
+ 			{"AnotherHumansEnvelope", func(ts string) slackengine.Message {
+ 				return slackengine.Message{TS: ts, User: "U9", Text: bridgeText(peerOrch, homeOrch, 1, 0, "x")}
+ 			}},
+@@ -357,7 +360,7 @@ func TestBridgeReceive(t *testing.T) {
+ 
+ 	t.Run("AnApproveOrRevokeNamingThisMachineByAnyOfItsNamesPinsNothingAndAnswersNothing", func(t *testing.T) {
+ 		t.Parallel()
+-		for _, text := range []string{"approve home", "revoke home", "approve OLD-BOX"} {
++		for _, text := range []string{"lym approve home", "lym revoke home", "lym approve OLD-BOX"} {
+ 			r := newReceiveRun(t, testMachine)
+ 			ts := r.minutesAgo(10)
+ 			r.operatorSays(ts, text)
+@@ -398,7 +401,7 @@ func TestBridgeReceive(t *testing.T) {
+ 			t.Errorf("Read reported a delivery for another app's messages")
+ 		}
+ 		notices := r.wantNotices(1)
+-		if len(notices) == 1 && (!strings.Contains(notices[0], "A0BAD") || !strings.Contains(notices[0], "approve osl A0BAD")) {
++		if len(notices) == 1 && (!strings.Contains(notices[0], "A0BAD") || !strings.Contains(notices[0], "type lym approve osl A0BAD")) {
+ 			t.Errorf("notice = %q; want it to name the app and the command that pins it", notices[0])
+ 		}
+ 		if got := r.entry().Cursor; got != r.minutesAgo(9) {
+@@ -428,11 +431,11 @@ func TestBridgeReceive(t *testing.T) {
+ 		if got := r.entry().Cursor; got != old {
+ 			t.Errorf("delivery cursor while held = %q; want it past the message beyond retention only (%q)", got, old)
+ 		}
+-		if notices := r.wantNotices(1); len(notices) == 1 && !strings.Contains(notices[0], "approve osl") {
+-			t.Errorf("notice = %q; want it to ask for approve osl", notices[0])
++		if notices := r.wantNotices(1); len(notices) == 1 && !strings.Contains(notices[0], "type lym approve osl") {
++			t.Errorf("notice = %q; want it to ask for lym approve osl", notices[0])
+ 		}
+ 
+-		r.operatorSays(approved, "approve osl")
++		r.operatorSays(approved, "lym approve osl")
+ 		if !r.mustRead() {
+ 			t.Fatalf("the Read that handled the approve reported no delivery of the held messages")
+ 		}
+@@ -459,9 +462,9 @@ func TestBridgeReceive(t *testing.T) {
+ 		r.mustRead()
+ 		r.wantNotices(1)
+ 
+-		r.operatorSays(r.minutesAgo(19), "approve osl")
+-		r.operatorSays(r.minutesAgo(18), "revoke osl")
+-		r.operatorSays(r.minutesAgo(17), "just a line")
++		r.operatorSays(r.minutesAgo(19), "lym approve osl")
++		r.operatorSays(r.minutesAgo(18), "lym revoke osl")
++		r.operatorSays(r.minutesAgo(17), "approve osl")
+ 		if !r.mustRead() {
+ 			t.Errorf("the Read that handled the approve reported no delivery of the held message")
+ 		}
+@@ -495,7 +498,7 @@ func TestBridgeReceive(t *testing.T) {
+ 		r.unpin()
+ 		parent, reply := r.minutesAgo(10), r.minutesAgo(9)
+ 		r.slack.add(bridgeChannelID, slackengine.Message{TS: parent, User: peerBot, BotID: peerBotID, Text: "a thread", LatestReply: reply})
+-		r.slack.add(bridgeChannelID, slackengine.Message{TS: reply, ThreadTS: parent, User: testOperator, Text: "approve osl"})
++		r.slack.add(bridgeChannelID, slackengine.Message{TS: reply, ThreadTS: parent, User: testOperator, Text: "lym approve osl"})
+ 		for range 2 {
+ 			r.mustRead()
+ 		}
+@@ -518,7 +521,7 @@ func TestBridgeReceive(t *testing.T) {
+ 		refused := &slackengine.APIError{Method: "users.list", Code: "not_authed"}
+ 		r.slack.failNext("BotUsersNamed", refused, refused, refused)
+ 		ts := r.minutesAgo(10)
+-		r.operatorSays(ts, "approve osl")
++		r.operatorSays(ts, "lym approve osl")
+ 
+ 		for call := 1; call <= 2; call++ {
+ 			if _, err := r.read(); !errors.Is(err, refused) {
+@@ -672,6 +675,12 @@ func TestBridgeReceive(t *testing.T) {
+ 			{"MadeByThisMachinesBot", "UBOT", []struct{ from, to, user, bot string }{
+ 				{homeOrch, peerOrch, "UBOT", "B1"},
+ 			}, primeOrch, peerOrch},
++			{"MadeByThisMachinesBotPostingUnderAnOrchsNameWithNoUser", "UBOT", []struct{ from, to, user, bot string }{
++				{homeOrch, peerOrch, "", "B1"},
++			}, primeOrch, peerOrch},
++			{"MadeByThisMachinesBotPostingWithItsUserIDAndNoBotID", "UBOT", []struct{ from, to, user, bot string }{
++				{homeOrch, peerOrch, "UBOT", ""},
++			}, primeOrch, peerOrch},
+ 			{"MadeByAnotherCreator", "UOTHER", []struct{ from, to, user, bot string }{
+ 				{peerOrch, homeOrch, peerBot, peerBotID},
+ 			}, "", ""},
+@@ -739,7 +748,7 @@ func TestBridgeReceive(t *testing.T) {
+ 		r.mustResync()
+ 		r.mustResync()
+ 		notices := r.noticesIn(testChannel)
+-		if len(notices) != 1 || !strings.Contains(notices[0], "A0NEW") || !strings.Contains(notices[0], "approve new") {
++		if len(notices) != 1 || !strings.Contains(notices[0], "A0NEW") || !strings.Contains(notices[0], "type lym approve new") {
+ 			t.Errorf("notices in the prime channel = %q; want one naming the app and approve new", notices)
+ 		}
+ 		if got := countIn(r.relayNotices(), "A0NEW"); got != 1 {
+diff --git a/internal/slackengine/bridgeout.go b/internal/slackengine/bridgeout.go
+index fa1835a04..ad3e70c6a 100644
+--- a/internal/slackengine/bridgeout.go
++++ b/internal/slackengine/bridgeout.go
+@@ -213,7 +213,7 @@ func (s *bridgeSender) sendOne(ctx context.Context, message creelengine.MachineO
+ 	}
+ 	pin, approved := peers.Machines[peer.Machine]
+ 	if !approved {
+-		line := fmt.Sprintf("mail to %s waits because the machine %s is not approved; way forward: type approve %s in a channel of an orch of this machine",
++		line := fmt.Sprintf("mail to %s waits because the machine %s is not approved; way forward: type lym approve %s in a channel of an orch of this machine",
+ 			peerAddress, peer.Machine, peer.Machine)
+ 		return false, s.hold(ctx, message, peerUnapprovedReason, bridgeNoticeKey(peerUnapprovedReason, message.From, peerAddress), line)
+ 	}
+diff --git a/internal/slackengine/bridgeout_test.go b/internal/slackengine/bridgeout_test.go
+index 6e217928f..7ec215d0a 100644
+--- a/internal/slackengine/bridgeout_test.go
++++ b/internal/slackengine/bridgeout_test.go
+@@ -172,12 +172,12 @@ func TestBridgeSend(t *testing.T) {
+ 		}
+ 		b.wantReports(1, "peer-unapproved", "peer-unapproved", "peer-unapproved")
+ 		notices := b.wantNotices(1)
+-		if len(notices) == 1 && !strings.Contains(notices[0], "approve osl") {
+-			t.Errorf("notice = %q; want it to name approve osl", notices[0])
++		if len(notices) == 1 && !strings.Contains(notices[0], "type lym approve osl") {
++			t.Errorf("notice = %q; want it to name lym approve osl", notices[0])
+ 		}
+ 		answers := b.slack.logged("PostAs")
+-		if len(answers) != 1 || answers[0].Channel != b.entryOf(primeOrch).ID || !strings.Contains(answers[0].Arg, "approve osl") {
+-			t.Errorf("channel notices = %+v; want one in the orch's channel naming approve osl", answers)
++		if len(answers) != 1 || answers[0].Channel != b.entryOf(primeOrch).ID || !strings.Contains(answers[0].Arg, "type lym approve osl") {
++			t.Errorf("channel notices = %+v; want one in the orch's channel naming lym approve osl", answers)
+ 		}
+ 
+ 		b.approve()
+diff --git a/internal/slackengine/doc.go b/internal/slackengine/doc.go
+index f18b98b38..bfebbf7a0 100644
+--- a/internal/slackengine/doc.go
++++ b/internal/slackengine/doc.go
+@@ -32,8 +32,9 @@
+ // While no orch of the hub has its button on, no start spawns a relay.
+ //
+ // Inbound, the relay hands each message of the configured operator, once, to the orch of the channel as mail.
+-// `away`, `back` and `status` are presence commands, and `approve` and `revoke` are peer commands;
+-// both kinds are answered in Slack and sent to no orch.
++// Every relay command opens with `lym`: `lym away`, `lym back` and `lym status` are presence commands,
++// and `lym approve` and `lym revoke` are peer commands; both kinds are answered in Slack and sent to no orch.
++// Every other message, a bare `status` or `approve it` included, goes to the orch as written.
+ // Any other message of the operator first sets the presence to slack: writing in Slack shows the operator is away.
+ // A message in the channel of an orch whose button is off is answered in Slack and forwarded to no orch.
+ //
+diff --git a/internal/slackengine/inbound.go b/internal/slackengine/inbound.go
+index df397f23f..014d77c79 100644
+--- a/internal/slackengine/inbound.go
++++ b/internal/slackengine/inbound.go
+@@ -38,6 +38,10 @@ const (
+ 	threadBroadcastSubtype = "thread_broadcast"
+ 	// hintThreadSeparator joins the channel and the thread timestamp in the name of a thread hint.
+ 	hintThreadSeparator = "_"
++	// awayCommand, backCommand and statusCommand are the presence commands' words after the relay command prefix.
++	awayCommand   = "away"
++	backCommand   = "back"
++	statusCommand = "status"
+ )
+ 
+ // Clock is the relay's source of time.
+@@ -665,6 +669,8 @@ func (in *inbound) readFailed(orch string, err error) error {
+ // handle handles one message of the orch's channel and reports whether it forwarded or answered anything.
+ // It forwards the setup's operator's message of no subtype, `file_share` or `thread_broadcast`;
+ // any other subtype, a bot's message and anyone else's are skipped.
++// A relay command, `lym away`, `lym back`, `lym status`, `lym approve` or `lym revoke`, is answered and not forwarded;
++// any other text is forwarded as written.
+ // While the orch's slack button is off, such a message is answered in the channel and not forwarded.
+ // A message it forwards first sets the presence to slack.
+ // An error means the message is not handled yet and the cursor stays before it.
+@@ -675,13 +681,15 @@ func (in *inbound) handle(ctx context.Context, setup Setup, orch, channel string
+ 		return false, nil
+ 	}
+ 	text := inboundText(message.Text)
+-	switch strings.ToLower(strings.TrimSpace(text)) {
+-	case "away":
+-		return in.setPresence(ctx, channel, message, PresenceSlack)
+-	case "back":
+-		return in.setPresence(ctx, channel, message, PresenceTerminal)
+-	case "status":
+-		return in.status(ctx, channel, message)
++	if words, isCommand := relayCommandWords(text); isCommand && len(words) == 1 {
++		switch strings.ToLower(words[0]) {
++		case awayCommand:
++			return in.setPresence(ctx, channel, message, PresenceSlack)
++		case backCommand:
++			return in.setPresence(ctx, channel, message, PresenceTerminal)
++		case statusCommand:
++			return in.status(ctx, channel, message)
++		}
+ 	}
+ 	if command, isPeerCommand := parsePeerCommand(text); isPeerCommand {
+ 		return in.handlePeerCommand(ctx, channel, message, command)
+@@ -712,7 +720,8 @@ func (in *inbound) awayOnOperatorMessage() {
+ 	in.lastPresence, in.presenceKnown = PresenceSlack, true
+ }
+ 
+-// setPresence sets the presence for an `away` or `back` command and answers in the channel with the resulting state.
++// setPresence sets the presence for a `lym away` or `lym back` command.
++// It answers in the channel with the resulting state.
+ // A presence that was not written is retried.
+ func (in *inbound) setPresence(ctx context.Context, channel string, message Message, presence Presence) (bool, error) {
+ 	if _, err := WritePresence(in.geom.PresencePath, presence, in.clock.Now()); err != nil {
+@@ -724,7 +733,7 @@ func (in *inbound) setPresence(ctx context.Context, channel string, message Mess
+ 	return true, nil
+ }
+ 
+-// status answers a `status` command in the channel with the presence and this machine's app id.
++// status answers a `lym status` command in the channel with the presence and this machine's app id.
+ // The operator compares the app id with the other machine's before approving it.
+ func (in *inbound) status(ctx context.Context, channel string, message Message) (bool, error) {
+ 	presence, err := ReadPresence(in.geom.PresencePath)
+diff --git a/internal/slackengine/inbound_test.go b/internal/slackengine/inbound_test.go
+index c1a65b732..cfec62c55 100644
+--- a/internal/slackengine/inbound_test.go
++++ b/internal/slackengine/inbound_test.go
+@@ -1493,10 +1493,10 @@ func TestInboundRead(t *testing.T) {
+ 			ts, text     string
+ 			wantPresence slackengine.Presence
+ 		}{
+-			{"101.000001", "away", slackengine.PresenceSlack},
+-			{"102.000001", "status", slackengine.PresenceSlack},
+-			{"103.000001", " Back ", slackengine.PresenceTerminal},
+-			{"104.000001", "status", slackengine.PresenceTerminal},
++			{"101.000001", "lym away", slackengine.PresenceSlack},
++			{"102.000001", "lym status", slackengine.PresenceSlack},
++			{"103.000001", " LYM Back ", slackengine.PresenceTerminal},
++			{"104.000001", "lym status", slackengine.PresenceTerminal},
+ 		}
+ 		for _, step := range steps {
+ 			h.sayIn(paymentsChannel, step.ts, step.text)
+@@ -1515,7 +1515,7 @@ func TestInboundRead(t *testing.T) {
+ 		h.wantPosts()
+ 	})
+ 
+-	t.Run("OperatorMessageSetsThePresenceToSlackBeforeItIsForwardedAndBackAndStatusDoNot", func(t *testing.T) {
++	t.Run("OperatorMessageSetsThePresenceToSlackBeforeItIsForwardedAndRelayCommandsAreNotForwarded", func(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+ 			name         string
+@@ -1526,8 +1526,12 @@ func TestInboundRead(t *testing.T) {
+ 			wantPosts  []mail
+ 		}{
+ 			{"PlainText", "deploy prod", slackengine.PresenceSlack, slackengine.PresenceSlack, []mail{{primeOrch, "deploy prod"}}},
+-			{"BackCommand", "back", slackengine.PresenceTerminal, "", nil},
+-			{"StatusCommand", "status", slackengine.PresenceTerminal, "", nil},
++			{"BackCommand", "lym back", slackengine.PresenceTerminal, "", nil},
++			{"StatusCommand", "lym status", slackengine.PresenceTerminal, "", nil},
++			{"ABareCommandWordIsForwarded", "status", slackengine.PresenceSlack, slackengine.PresenceSlack, []mail{{primeOrch, "status"}}},
++			{"ApproveInPlainWordsIsForwarded", "approve it", slackengine.PresenceSlack, slackengine.PresenceSlack, []mail{{primeOrch, "approve it"}}},
++			{"ThePrefixBeforeAnUnknownCommandIsForwarded", "lym board list", slackengine.PresenceSlack, slackengine.PresenceSlack, []mail{{primeOrch, "lym board list"}}},
++			{"APresenceCommandWithMoreWordsIsForwarded", "lym back now", slackengine.PresenceSlack, slackengine.PresenceSlack, []mail{{primeOrch, "lym back now"}}},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -1579,7 +1583,7 @@ func TestInboundRead(t *testing.T) {
+ 			wantPresence slackengine.Presence
+ 		}{
+ 			{"PlainText", "deploy prod", "the slack button of " + primeOrch + " is off, so this message was not forwarded", slackengine.PresenceTerminal},
+-			{"AwayCommand", "away", "presence is now slack", slackengine.PresenceSlack},
++			{"AwayCommand", "lym away", "presence is now slack", slackengine.PresenceSlack},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -1621,7 +1625,7 @@ func TestInboundRead(t *testing.T) {
+ 		t.Parallel()
+ 		h := newHarness(t)
+ 		h.updateEntry(paymentsOrch, func(entry *slackengine.ChannelEntry) { entry.Cursor = "100.000000" })
+-		h.sayIn(paymentsChannel, "101.000001", "status")
++		h.sayIn(paymentsChannel, "101.000001", "lym status")
+ 		h.slack.failPosts(&slackengine.APIError{Method: "chat.postMessage", Code: "not_in_channel"})
+ 		h.hint(paymentsChannel)
+ 		h.mustDrain()
+@@ -1639,7 +1643,7 @@ func TestInboundRead(t *testing.T) {
+ 			h := newHarness(t)
+ 			h.startAt("100.000000")
+ 			h.say("101.000001", "m1")
+-			h.say("102.000001", "away")
++			h.say("102.000001", "lym away")
+ 			h.mailbox.setPostErr(errors.New("creel down"))
+ 			if _, err := h.readC1(); err == nil {
+ 				t.Fatalf("Drain = nil; want the post error")
+@@ -1732,7 +1736,7 @@ func TestInboundRead(t *testing.T) {
+ 		t.Parallel()
+ 		h := newHarness(t)
+ 		h.startAt("100.000000")
+-		h.say("101.000001", "away")
++		h.say("101.000001", "lym away")
+ 		if err := os.MkdirAll(h.geom.PresencePath, 0o700); err != nil {
+ 			t.Fatalf("MkdirAll = %v", err)
+ 		}
+@@ -1758,7 +1762,7 @@ func TestInboundRead(t *testing.T) {
+ 		if err := os.WriteFile(h.geom.PresencePath, []byte(`{"presence":"away"}`), 0o600); err != nil {
+ 			t.Fatalf("WriteFile = %v", err)
+ 		}
+-		h.say("101.000001", "status")
++		h.say("101.000001", "lym status")
+ 		if _, err := h.readC1(); err == nil {
+ 			t.Fatalf("Drain = nil; want the presence read error")
+ 		}
+@@ -1791,7 +1795,7 @@ func TestInboundRead(t *testing.T) {
+ 		t.Parallel()
+ 		h := newHarness(t)
+ 		h.startAt("100.000000")
+-		h.say("101.000001", "status")
++		h.say("101.000001", "lym status")
+ 		h.slack.failPosts(errors.New("slack down"))
+ 		h.mustReadC1()
+ 		h.wantCursorTS("101.000001")
+@@ -1822,7 +1826,7 @@ func TestInboundRead(t *testing.T) {
+ 		if err := slackengine.WriteCredentials(h.geom.TokenPath, slackengine.Credentials{BotToken: "xoxb-secret", AppToken: "xapp-secret"}); err != nil {
+ 			t.Fatalf("WriteCredentials = %v", err)
+ 		}
+-		h.say("101.000001", "status")
++		h.say("101.000001", "lym status")
+ 		h.mustReadC1()
+ 		h.wantAnswers("presence is terminal; this machine's app id is unknown, run lym slack login")
+ 	})
+@@ -1842,32 +1846,32 @@ func TestInboundRead(t *testing.T) {
+ 			// wantPinned are the approvals the record holds after the command, their times left out.
+ 			wantPinned map[string]slackengine.Peer
+ 		}{
+-			{"ApproveWithOneBotPinsItAndNamesItsAppID", []fakeBot{neveBot}, nil, "approve neve", []string{"approved neve: app id A0NEVE"}, pinnedNeve},
+-			{"ApproveWithNoBotListsNothingAndPinsNothing", nil, nil, "approve neve", []string{"found no bot named lym-neve", "approve neve &lt;app id&gt;"}, nil},
++			{"ApproveWithOneBotPinsItAndNamesItsAppID", []fakeBot{neveBot}, nil, "lym approve neve", []string{"approved neve: app id A0NEVE"}, pinnedNeve},
++			{"ApproveWithNoBotListsNothingAndPinsNothing", nil, nil, "lym approve neve", []string{"found no bot named lym-neve", "type lym approve neve &lt;app id&gt;"}, nil},
+ 			{
+ 				"ApproveWithTwoBotsListsTheirAppIDsAndPinsNothing",
+-				[]fakeBot{neveBot, {Name: "lym-neve", UserID: "UTWO", AppID: "A0TWO"}}, nil, "approve neve",
+-				[]string{"A0NEVE", "A0TWO", "approve neve &lt;app id&gt;"}, nil,
++				[]fakeBot{neveBot, {Name: "lym-neve", UserID: "UTWO", AppID: "A0TWO"}}, nil, "lym approve neve",
++				[]string{"A0NEVE", "A0TWO", "type lym approve neve &lt;app id&gt;"}, nil,
+ 			},
+ 			{
+ 				"ApproveWithAnAppIDPinsTheBotOfThatAppWhateverItsNameAndKeepsTheIDAsWritten",
+-				[]fakeBot{{Name: "lym-renamed", UserID: "UREN", AppID: "A0UPPER"}}, nil, "APPROVE Neve A0UPPER",
++				[]fakeBot{{Name: "lym-renamed", UserID: "UREN", AppID: "A0UPPER"}}, nil, "Lym APPROVE Neve A0UPPER",
+ 				[]string{"approved neve: app id A0UPPER"}, map[string]slackengine.Peer{"neve": {AppID: "A0UPPER", BotUserID: "UREN"}},
+ 			},
+-			{"ApproveWithAnAppIDNoBotHoldsIsRefusedNamingStatus", []fakeBot{neveBot}, nil, "approve neve A0NONE", []string{"A0NONE", "`status`"}, nil},
+-			{"RevokeRemovesThePin", nil, pinnedNeve, "revoke neve", []string{"revoked neve"}, nil},
+-			{"RevokeWithNoPinIsAnsweredAsHavingNone", nil, nil, "revoke osl", []string{"osl has no approval to revoke"}, nil},
++			{"ApproveWithAnAppIDNoBotHoldsIsRefusedNamingStatus", []fakeBot{neveBot}, nil, "lym approve neve A0NONE", []string{"A0NONE", "`lym status`"}, nil},
++			{"RevokeRemovesThePin", nil, pinnedNeve, "lym revoke neve", []string{"revoked neve"}, nil},
++			{"RevokeWithNoPinIsAnsweredAsHavingNone", nil, nil, "lym revoke osl", []string{"osl has no approval to revoke"}, nil},
+ 			{
+ 				"ApproveNamingThisMachineIsRefusedNamingTheCommandForTheOtherMachine",
+-				[]fakeBot{{Name: "lym-" + testHubMachine, UserID: "UHOME", AppID: "A0HOME"}}, nil, "approve " + testHubMachine,
+-				[]string{"approve and revoke name another machine; type approve " + testHubMachine + " in a channel of that other machine"}, nil,
++				[]fakeBot{{Name: "lym-" + testHubMachine, UserID: "UHOME", AppID: "A0HOME"}}, nil, "lym approve " + testHubMachine,
++				[]string{"lym approve and lym revoke name another machine; type lym approve " + testHubMachine + " in a channel of that other machine"}, nil,
+ 			},
+ 			{
+ 				"ApproveNamingAFormerNameIsRefusedNamingTheCommandForTheOtherMachine",
+-				nil, nil, "approve old_box",
+-				[]string{"approve and revoke name another machine; type approve " + testHubMachine + " in a channel of that other machine"}, nil,
++				nil, nil, "lym approve old_box",
++				[]string{"lym approve and lym revoke name another machine; type lym approve " + testHubMachine + " in a channel of that other machine"}, nil,
+ 			},
+-			{"ApproveWithAnInvalidNameIsRefusedNamingTheRule", nil, nil, "approve Bad_Name", []string{`the machine name "bad_name" is invalid`}, nil},
++			{"ApproveWithAnInvalidNameIsRefusedNamingTheRule", nil, nil, "lym approve Bad_Name", []string{`the machine name "bad_name" is invalid`}, nil},
+ 		}
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+@@ -1924,7 +1928,7 @@ func TestInboundRead(t *testing.T) {
+ 		h := newHarness(t)
+ 		h.startAt("100.000000")
+ 		h.slack.bots = []fakeBot{{Name: "lym-neve", UserID: "UNEVE", AppID: "A0NEVE"}}
+-		h.slack.add(testChannel, slackengine.Message{TS: "101.000001", User: "U2", Text: "approve neve"})
++		h.slack.add(testChannel, slackengine.Message{TS: "101.000001", User: "U2", Text: "lym approve neve"})
+ 		h.mustReadC1()
+ 		h.wantAnswers()
+ 		h.wantPosts()
+@@ -1940,7 +1944,7 @@ func TestInboundRead(t *testing.T) {
+ 		h.slack.bots = []fakeBot{{Name: "lym-neve", UserID: "UNEVE", AppID: "A0NEVE"}}
+ 		outage := errors.New("users.list: ratelimited_or_down")
+ 		h.slack.failNext("BotUsersNamed", outage, outage)
+-		h.say("101.000001", "approve neve")
++		h.say("101.000001", "lym approve neve")
+ 		if _, err := h.readC1(); err == nil {
+ 			t.Fatalf("Drain = nil; want the users.list refusal")
+ 		}
+diff --git a/internal/slackengine/keeper.go b/internal/slackengine/keeper.go
+index b2cd84f77..016d8da7d 100644
+--- a/internal/slackengine/keeper.go
++++ b/internal/slackengine/keeper.go
+@@ -49,8 +49,8 @@ type channelKeeper struct {
+ 	refused map[string]bool
+ 	// noticed holds the keys of the notice episodes that have mailed their notice.
+ 	noticed map[string]bool
+-	// botUserID is the Slack user id of the machine's bot, read once.
+-	botUserID string
++	// bot is who the machine's bot token belongs to, read once.
++	bot Identity
+ 	// bridgeHolds holds, per pair of orchs, the last hold its bridge channel met and when.
+ 	bridgeHolds map[string]bridgeHold
+ }
+@@ -199,11 +199,11 @@ func (k *channelKeeper) adopt(ctx context.Context, orch, name string) (ChannelEn
+ 		return ChannelEntry{}, k.refuse(refusalKey, name, fmt.Sprintf(
+ 			"the channel %s (%s) is archived, and the relay never unarchives; way forward: rename that channel in Slack, which frees the name", name, info.ID))
+ 	}
+-	bot, err := k.botUser(ctx)
++	bot, err := k.botIdentity(ctx)
+ 	if err != nil {
+ 		return ChannelEntry{}, err
+ 	}
+-	if info.Creator != bot {
++	if info.Creator != bot.UserID {
+ 		return ChannelEntry{}, k.refuse(refusalKey, name, fmt.Sprintf(
+ 			"the channel %s (%s) was made by another user than this machine's bot; way forward: rename that channel in Slack, which frees the name", name, info.ID))
+ 	}
+@@ -588,22 +588,22 @@ func (k *channelKeeper) updateEntry(orch, channelID string, change func(*Channel
+ 	})
+ }
+ 
+-// botUser returns the Slack user id of this machine's bot, which auth.test gives; it is read once and kept.
+-func (k *channelKeeper) botUser(ctx context.Context) (string, error) {
++// botIdentity returns this machine's bot, its user id and its bot id, which auth.test gives; it is read once and kept.
++func (k *channelKeeper) botIdentity(ctx context.Context) (Identity, error) {
+ 	k.mu.Lock()
+-	known := k.botUserID
++	known := k.bot
+ 	k.mu.Unlock()
+-	if known != "" {
++	if known.UserID != "" {
+ 		return known, nil
+ 	}
+ 	identity, err := k.slack.AuthTest(ctx)
+ 	if err != nil {
+-		return "", fmt.Errorf("slack: read the bot's user id: %w", err)
++		return Identity{}, fmt.Errorf("slack: read the bot's user id: %w", err)
+ 	}
+ 	k.mu.Lock()
+-	k.botUserID = identity.UserID
++	k.bot = identity
+ 	k.mu.Unlock()
+-	return identity.UserID, nil
++	return identity, nil
+ }
+ 
+ // notice mails the hub's orch one `[slack relay]` notice with line for the episode key.
+diff --git a/internal/slackengine/peercommand.go b/internal/slackengine/peercommand.go
+index 95ad90f46..253971156 100644
+--- a/internal/slackengine/peercommand.go
++++ b/internal/slackengine/peercommand.go
+@@ -1,5 +1,5 @@
+-// peercommand.go parses and runs the operator's `approve` and `revoke` commands.
+-// They pin and unpin a peer machine's Slack app.
++// peercommand.go reads the `lym` prefix of the operator's relay commands.
++// It parses and runs `lym approve` and `lym revoke`, which pin and unpin a peer machine's Slack app.
+ 
+ package slackengine
+ 
+@@ -13,14 +13,26 @@ import (
+ )
+ 
+ const (
+-	// approveVerb and revokeVerb are the two words of a peer command.
++	// relayCommandPrefix opens every relay command, `lym <command>`, so no other message of the operator is read as one.
++	relayCommandPrefix = "lym"
++	// approveVerb and revokeVerb are the two verbs of a peer command.
+ 	approveVerb = "approve"
+ 	revokeVerb  = "revoke"
+ 	// peerBotNamePrefix precedes the machine name in the name of a machine's bot, `lym-<machine>`.
+ 	peerBotNamePrefix = "lym-"
+ )
+ 
+-// peerCommand is the operator's `approve` or `revoke` command.
++// relayCommandWords returns the words of text after the relay command prefix, which matches case-insensitively.
++// It reports false when text does not open with the prefix and at least one word after it.
++func relayCommandWords(text string) ([]string, bool) {
++	fields := strings.Fields(text)
++	if len(fields) < 2 || !strings.EqualFold(fields[0], relayCommandPrefix) {
++		return nil, false
++	}
++	return fields[1:], true
++}
++
++// peerCommand is the operator's `lym approve` or `lym revoke` command.
+ type peerCommand struct {
+ 	// Verb is `approve` or `revoke`.
+ 	Verb string
+@@ -30,12 +42,12 @@ type peerCommand struct {
+ 	AppID string
+ }
+ 
+-// parsePeerCommand reads text as `approve <machine>`, `approve <machine> <app id>` or `revoke <machine>`.
+-// The verb matches case-insensitively and the machine is lower-cased; the app id is kept as written.
++// parsePeerCommand reads text as `lym approve <machine>`, `lym approve <machine> <app id>` or `lym revoke <machine>`.
++// The prefix and the verb match case-insensitively and the machine is lower-cased; the app id is kept as written.
+ // It reports false for any other text.
+ func parsePeerCommand(text string) (peerCommand, bool) {
+-	fields := strings.Fields(text)
+-	if len(fields) < 2 {
++	fields, isCommand := relayCommandWords(text)
++	if !isCommand || len(fields) < 2 {
+ 		return peerCommand{}, false
+ 	}
+ 	verb, machine := strings.ToLower(fields[0]), strings.ToLower(fields[1])
+@@ -63,7 +75,7 @@ func (in *inbound) handlePeerCommand(ctx context.Context, channel string, messag
+ 	})
+ 	if named {
+ 		in.settle()
+-		in.answer(ctx, channel, fmt.Sprintf("approve and revoke name another machine; type approve %s in a channel of that other machine", current))
++		in.answer(ctx, channel, fmt.Sprintf("lym approve and lym revoke name another machine; type lym approve %s in a channel of that other machine", current))
+ 		return true, nil
+ 	}
+ 	line, err := in.runPeerCommand(ctx, command)
+@@ -103,13 +115,13 @@ func (in *inbound) approvePeerByName(ctx context.Context, machine string) (strin
+ 	case 1:
+ 		return in.pinPeer(machine, bots[0])
+ 	case 0:
+-		return fmt.Sprintf("found no bot named %s%s; type approve %s <app id> with the app id from `status` typed in a channel of that machine", peerBotNamePrefix, machine, machine), nil
++		return fmt.Sprintf("found no bot named %s%s; type lym approve %s <app id> with the app id from `lym status` typed in a channel of that machine", peerBotNamePrefix, machine, machine), nil
+ 	}
+ 	appIDs := make([]string, 0, len(bots))
+ 	for _, bot := range bots {
+ 		appIDs = append(appIDs, bot.AppID)
+ 	}
+-	return fmt.Sprintf("found %d bots named %s%s, with app ids %s; type approve %s <app id> to pick one", len(bots), peerBotNamePrefix, machine, strings.Join(appIDs, ", "), machine), nil
++	return fmt.Sprintf("found %d bots named %s%s, with app ids %s; type lym approve %s <app id> to pick one", len(bots), peerBotNamePrefix, machine, strings.Join(appIDs, ", "), machine), nil
+ }
+ 
+ // approvePeerByAppID pins the bot of the workspace whose app id equals appID exactly, whatever its name.
+@@ -123,7 +135,7 @@ func (in *inbound) approvePeerByAppID(ctx context.Context, machine, appID string
+ 			return in.pinPeer(machine, bot)
+ 		}
+ 	}
+-	return fmt.Sprintf("found no bot of the app id %s; read the app id from `status` typed in a channel of the other machine", appID), nil
++	return fmt.Sprintf("found no bot of the app id %s; read the app id from `lym status` typed in a channel of the other machine", appID), nil
+ }
+ 
+ // pinPeer records bot as the approved app of machine and returns the line that names its app id.
