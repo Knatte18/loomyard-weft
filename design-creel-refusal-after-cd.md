@@ -1,6 +1,6 @@
 # creel post refusal after a persisted cd does not say why
 
-`creel-refusal-after-cd` · Task · bug, creel, cwd · starting · Open-IDE
+`creel-refusal-after-cd` · Task · bug, creel, cwd · running · Darn-Write
 
 Bundled from the notes below; each part keeps its note's text.
 
