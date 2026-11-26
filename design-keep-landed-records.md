@@ -1,6 +1,8 @@
 # Keep the decision record and review findings of each landed task in the weft
 
-`keep-landed-records` · Task · enhancement, landing, fabric, report · running · Discussion-Bouncer
+`keep-landed-records` · Note · sketch, landing, fabric, report
+
+Decision record: [Sketch](decision-keep-landed-records.md)
 
 Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).
 
