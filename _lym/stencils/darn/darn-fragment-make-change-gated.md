@@ -6,7 +6,7 @@
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      fills the {{.measure_call}} marker with the measuring call the hub's gate config can run,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=113d9900e945b43540e4326562764cb37d0d3b1dff9c0c29467371b735e2b96a build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=d0a7dbd310c72dd1fd3a5adf44902e8feef6832668ec36701c587700f800b78f build=ae56c20d9a4cb9476da6d6c98e7f9dd520d995e6 time=2026-11-26T11:22:32Z -->
 
 1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
    send `lym creel post --parent --expect-reply "<text>"`, then end your turn to wait.
@@ -44,5 +44,7 @@ lym-stencil: sha256=113d9900e945b43540e4326562764cb37d0d3b1dff9c0c29467371b735e2
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
 5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
-6. Commit on the task branch in small, coherent commits.
+6. Commit on the task branch after each coherent step, as soon as its edits are made, in small commits.
+   Never hold the change uncommitted until the end:
+   a stall, a dead session or a reboot then loses at most one step, and your parent sees your progress in the branch's history.
    Never push: the landing steps that follow push the branch.

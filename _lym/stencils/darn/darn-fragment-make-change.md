@@ -3,7 +3,7 @@
      internal/darnengine's DarnTable reads it for the writer's engine,
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.yaml's subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=b1da8b58495c5e02cdd2f7de717fa67554a167f02657b2ad665fd757499c0209 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=fe2ffd6f3b01fe1d79ae1800f5bd470febcab9a0ff1272c18f73701bfa3b235a build=ae56c20d9a4cb9476da6d6c98e7f9dd520d995e6 time=2026-11-26T11:22:32Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
@@ -24,5 +24,7 @@ lym-stencil: sha256=b1da8b58495c5e02cdd2f7de717fa67554a167f02657b2ad665fd757499c
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
 5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
-6. Commit on the task branch in small, coherent commits, each leaving the tree green.
+6. Commit on the task branch after each coherent step, as soon as its gate passes, in small commits that each leave the tree green.
+   Never hold the change uncommitted until the end:
+   a stall, a dead session or a reboot then loses at most one step, and your parent sees your progress in the branch's history.
    Never push: the landing steps that follow push the branch.

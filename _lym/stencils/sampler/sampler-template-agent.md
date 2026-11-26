@@ -11,7 +11,7 @@
      It is empty when the worktree has no PATTERN overview.
      The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=48fd1ff3d8d7f0e77729a2df33317fc64edeb135cfa6eb91ca5c7e12a8bb39f8 build=2ed54e596ba519f2f7be9b4b2a8d4a5be5dcd2ce time=2026-11-26T10:00:09Z -->
+lym-stencil: sha256=0a32e193f9d2811d4fb18599bb6a233174324f950e8afe1951bda0d221206f6e build=ae56c20d9a4cb9476da6d6c98e7f9dd520d995e6 time=2026-11-26T11:22:32Z -->
 
 # Sampler — work out a change with the operator
 
@@ -32,7 +32,8 @@ Say in a line or two what you understood, then wait for the operator's message.
 ## Working
 
 - Work only in `{{.task_worktree}}`.
-- Commit as you go, one commit per settled step.
+- Commit as you go, one commit per settled step, never holding the work uncommitted until the end:
+  a stall, a dead session or a reboot then loses at most one step.
 - Write any board result with `lym board` as a note.
   A run's agent never creates or promotes a task and never changes its own run's entry, and the board refuses both; the operator promotes a note when they want one.
 - Record each thing the operator settles that changes the task's scope with `lym loom decision add --by operator`.
