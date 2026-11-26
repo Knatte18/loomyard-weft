@@ -228,7 +228,6 @@
       "recipe": "tapestry",
       "depends_on": [
         "rc-click-wrong-client-session",
-        "sandbox-without-new-kernel",
         "async-run-pusher",
         "remove-record-rerun-pair-gone"
       ],
@@ -280,29 +279,6 @@
       "body": "## Seen\n\n`failed-ask-hides-satisfied` (issue 213) left out its item 3: no test runs `lym loom parent-review ask` from a live non-orch reed strand pane.\nThat is the path that failed twice on 2026-11-23 in the mo hub (creel refused the LOOM signature), and the fix (708cdadc5) is pinned only below the tmux tier.\n\n## Idea\n\nA tmux-tier test: a built lym binary in a reed strand pane, a hub with a pull request record under autonomy, and a live orch strand that receives the post; assert the ask is delivered and the parent's answer lets `pr-continue` end the review.\n",
       "created": "2026-11-23T18:56:36Z",
       "revised": "2026-11-23T18:56:36Z"
-    },
-    {
-      "id": 1619,
-      "handle": "T2",
-      "slug": "sandbox-without-new-kernel",
-      "title": "Study: close the bus and tmux exposures without a kernel newer than 7.0",
-      "kind": "task",
-      "labels": [
-        "research",
-        "shuttle",
-        "reed",
-        "claude"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Aim\n\n`docs/research/platform/landlock-area-2026-11-23.md` found that on Landlock ABI 8 (kernel 7.0, Neve) an agent still reaches the session bus, and through `systemd-run --user` escapes the area, and reaches other hubs' tmux sockets.\nPathname-socket control arrives with ABI 9 in Linux 7.1.\nFind what else closes those two exposures now, on Neve's 7.0 and on OSL-1046 (Ubuntu 24.04, no AppArmor profile for user namespaces, sudo tightly limited), with no root at run time.\n\n## Routes to weigh\n\n- seccomp user notification on `connect()`, the route the Landlock report named but did not probe: a supervisor in lym that makes allowed connects itself (`SECCOMP_IOCTL_NOTIF_ADDFD`), refusing `io_uring_setup` and the 32-bit ABIs.\n- Taking the exposures away instead of guarding them: the session bus left out of the agents' environment and its socket made unreachable for them; each hub's tmux server on a socket in a directory other hubs' agents cannot reach; whether same-uid processes can be kept apart that way at all.\n- A separate Unix user for agents, if it needs root only once at setup.\n- Landlock ABI 8 combined with any of the above, and PreToolUse hooks as a second line.\n- Anything else found that needs no kernel upgrade, no user namespaces and no root at run time.\n\nFor each route: whether it closes each exposure, what it costs lym to own, what breaks, and whether it works on OSL-1046.\n\n## Bounds\n\nAt most two probe programs, each run on Neve at most three times; routes not probed are judged from documentation and marked unmeasured.\nNo change to lym's code.\nThe report goes to `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md`, ending with a ranked recommendation and the tasks it would take.\n",
-      "status": "done",
-      "created": "2026-11-23T18:59:31Z",
-      "revised": "2026-11-23T18:59:31Z",
-      "profile": "speed"
     },
     {
       "id": 1620,
