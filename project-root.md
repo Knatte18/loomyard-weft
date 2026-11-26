@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 21:26 UTC; every age below is as of then.
+Rendered 2026-11-26 21:27 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,8 +12,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **PATTERN: tests never fake another module with made-up data** | [`no-fake-other-modules`](design-no-fake-other-modules.md) | darn · docs | Darn-Write | neve | 1h<br>34m | pattern, testkit |
-| T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md)<br>[Sketch](decision-fabric-git-free-core.md) | raddle | Raddle-Write | neve | 1h<br>9m | fabric, testkit |
+| T2 | **PATTERN: tests never fake another module with made-up data** | [`no-fake-other-modules`](design-no-fake-other-modules.md) | darn · docs | Darn-Write | neve | 1h<br>36m | pattern, testkit |
+| T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md)<br>[Sketch](decision-fabric-git-free-core.md) | raddle | Raddle-Write | neve | 1h<br>10m | fabric, testkit |
 | T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | Code-Burler-Fix | neve | 8h<br>8h | gate, testmap |
 | T19 | **Card gate runs only the card's listed packages, so a wider intent breaks tests unseen** | [`card-gate-scope-gaps`](design-card-gate-scope-gaps.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | webster, gate, loom |
 | T20 | **Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load** | [`gatemap-passedalone-flake`](design-gatemap-passedalone-flake.md) | darn · light | Darn-Write | neve | 1h<br>1h | gate |
@@ -40,20 +40,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | 9m<br>9m | testmap, gate |
+| R1 |  | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | 11m<br>11m | testmap, gate |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
 ## Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Whole-repo guards run at landing, and the dead-code check with the board tidy, not in every task gate** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | 14m<br>12m | gate, testkit |
+| E1 |  | **Whole-repo guards run at landing, and the dead-code check with the board tidy, not in every task gate** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | 15m<br>14m | gate, testkit |
 | E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) | 8h<br>8h | slack, creel |
-| E3 |  | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | 4m<br>4m | desktop |
-| E4 |  | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | 3m<br>3m | board |
+| E3 |  | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | 6m<br>6m | desktop |
+| E4 |  | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | 5m<br>5m | board |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | 4m<br>4m | termwindow, desktop |
+| F1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | 6m<br>6m | termwindow, desktop |
