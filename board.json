@@ -606,7 +606,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).\n\n## What happened\n\nDuring a code review fix round, the reach note listed `hubCancelDeps`, `Topology.SettleGonePairTeardown` and `Topology.RemoveLocal` as reached by no mapped test.\nEach is called directly by a tier1 test.\nThe maps of both packages belonged to the worktree itself and were minutes old.\n`lym gate reach` gave the same answer.\nThe note carried the caveat \"may run it unseen\".\n\n## Why it is abnormal\n\nA function that a tier1 test calls directly should be mapped to that test, above all with a fresh map of the worktree's own.\nThe false \"unreached\" answer could only be ruled out by reading the tests and running them.\nThe caveat does not say why the map missed these tests, so the reader cannot tell a map defect from a real coverage gap.\n\n## What to do\n\n- Find why the reach map misses direct calls from tier1 tests, and fix the mapping.\n- Where the map cannot see a call, have the caveat name the reason for that function.\n\nProvenance: task `remove-record-rerun-pair-gone`, note `burler-code-r2.md`.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-26T12:30:52Z",
       "revised": "2026-11-26T12:31:37Z",
       "profile": "light"
@@ -682,24 +682,24 @@
     },
     {
       "id": 1697,
-      "handle": "T5",
+      "handle": "S1",
       "slug": "fabric-git-free-core",
       "title": "Restructure fabricengine into a git-free core so its tests need few repositories",
-      "kind": "task",
+      "kind": "note",
       "labels": [
-        "enhancement",
+        "sketch",
         "fabric",
         "testkit"
       ],
       "issues": [],
-      "recipe": "motif",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Why\n\n`internal/fabricengine` sets the length of most tier1 gate runs: 211 s of a 250 s tier1 run on 2026-11-26, the next package 64 s.\nIts tests make about 340 hub copies, about 230 pairs with a push, 35 one-repository hubs and 16 second clones per run.\nTrimming and folding tests has been tried several times (`docs/research/speed/fabric-test-speed-survey-2026-11-03.md` and the landings after it); it does not solve it.\nThe cause is the structure: nearly every rule can only be tested against real git repositories.\n\n## Operator decision (2026-11-26)\n\nRestructure `fabricengine` wholesale so its tests need few real repositories; do not trim the test suite again.\n\n## Direction to discuss\n\n- A git-free core: it reads a state snapshot (refs, worktrees, records, origins) as plain data and decides what to do, returning a plan.\n  Its rules are tested in memory over made-up states, with no clone.\n- A thin git side: it reads the snapshot from git and carries out the core's plan; only it needs real repositories.\n- A few end-to-end tests that pin the seam between the two, in place of hundreds of integration tests.\n- How the existing tests move over: which become core tests over states, which stay as git-side tests, which go.\n- The test imports that pull `fabricengine` into the gate scope of other engines' changes, and how the split cuts them.\n\nDiscussion settles the boundary, the order of the move and the split into tasks for raddle.\n",
-      "status": "halted · Discussion-Bouncer",
       "created": "2026-11-26T19:56:47Z",
-      "revised": "2026-11-26T20:03:18Z"
+      "revised": "2026-11-26T21:14:02Z",
+      "discussed": true,
+      "record_body_sha256": "cd8cd020f36254ea398705bed99395d9ce6a8efd032b0bec016d190944837b28"
     },
     {
       "id": 1698,
