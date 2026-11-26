@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-26T09:16:05Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/reed-client-and-bus-guard/_lym/landing/summary.md",
+      "at": "2026-11-26T09:38:44Z",
+      "started_at": "2026-11-26T09:16:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T09:24:48.968766903Z",
+          "end": "2026-11-26T09:24:48.981716314Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T09:24:49.04993323Z",
+          "end": "2026-11-26T09:35:24.396395518Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-26T09:35:24.498581322Z",
+          "end": "2026-11-26T09:36:48.091020554Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-26T09:36:48.252413162Z",
+          "end": "2026-11-26T09:36:49.023667037Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T09:36:49.189259241Z",
+          "end": "2026-11-26T09:36:49.193194492Z"
+        }
+      ]
     }
   ],
   "product": {
