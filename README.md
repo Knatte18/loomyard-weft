@@ -100,7 +100,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Darn-Write | neve | 8h<br>31m | burler, stencil |
+| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Drift-Verify | neve | 8h<br>31m | burler, stencil |
 | T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | Code-Bouncer | neve | 7h<br>7h | drift |
 
 ### Layer A (1)
