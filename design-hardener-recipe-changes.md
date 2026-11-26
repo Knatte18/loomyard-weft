@@ -2,8 +2,6 @@
 
 `hardener-recipe-changes` · Task · enhancement, burler, stencil
 
-Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
-
 ## Seen
 
 `docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:
