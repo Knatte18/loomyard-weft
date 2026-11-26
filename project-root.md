@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 18:33 UTC; every age below is as of then.
+Rendered 2026-11-26 18:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -42,9 +42,3 @@ An entry waits only on the open entries it names under After, so the entries in 
 | E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 7h<br>7h | burler, stencil |
 | E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) |  | 5h<br>5h | slack, creel |
 | E3 |  | **Name config keys as <module>.<path> in Go comments** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | T3 | 4h<br>4h | docs |
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Webster run-exit audit flags Master friction note as a parent write, and accept-audit cannot clear it** | [`audit-flags-master-friction`](design-audit-flags-master-friction.md) | 5h<br>5h | webster |
