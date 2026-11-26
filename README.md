@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 12:16 UTC; every age below is as of then.
+Rendered 2026-11-26 12:19 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -68,16 +68,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ### [P7 A closed area per hub: Landlock and a seccomp connect supervisor](project-closed-area.md) (4)
 
-[`closed-area`](design-closed-area.md) · Age 18m · Owner `neve`
+[`closed-area`](design-closed-area.md) · Age 21m · Owner `neve`
 
 #### Draft (4)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T7 | `draft` **creel across an area: kernel-attached sender identity, the area registry and the hub directory** | [`area-creel-identity`](design-area-creel-identity.md)<br>[Sketch](decision-area-creel-identity.md) | darn · solid | T3 | 18m<br>18m | creel, cwd |
-| T14 | `draft` **Stage 1 of the closed area: supervisor, Landlock ruleset, connect filter, attach client and the in-area engines, token and relay** | [`area-seccomp-core`](design-area-seccomp-core.md)<br>[Sketch](decision-area-seccomp-core.md) | tapestry · solid | T7<br>T3<br>T10<br>T8<br>T11 | 18m<br>13m | reed, shuttle, claude, codex, creel, dobby, slack, process, cwd, git, cli, docs, pattern |
-| T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 18m<br>18m | process |
-| T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 18m<br>18m | termwindow, hibernate, batten, ide, deploy, reed |
+| T7 | `draft` **creel across an area: kernel-attached sender identity, the area registry and the hub directory** | [`area-creel-identity`](design-area-creel-identity.md)<br>[Sketch](decision-area-creel-identity.md) | darn · solid | T3 | 21m<br>21m | creel, cwd |
+| T14 | `draft` **Stage 1 of the closed area: supervisor, Landlock ruleset, connect filter, attach client and the in-area engines, token and relay** | [`area-seccomp-core`](design-area-seccomp-core.md)<br>[Sketch](decision-area-seccomp-core.md) | tapestry · solid | T7<br>T3<br>T10<br>T8<br>T11 | 21m<br>16m | reed, shuttle, claude, codex, creel, dobby, slack, process, cwd, git, cli, docs, pattern |
+| T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 21m<br>21m | process |
+| T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 21m<br>21m | termwindow, hibernate, batten, ide, deploy, reed |
 
 ### Own entries
 
@@ -85,10 +85,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 54m<br>54m | dobby, gate, batten, orch, pattern |
-| T17 | `draft` **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T3<br>T1<br>T9<br>T11<br>T12<br>T13 | 18m<br>13m | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
+| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 57m<br>57m | dobby, gate, batten, orch, pattern |
+| T17 | `draft` **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T3<br>T1<br>T9<br>T11<br>T12<br>T13 | 20m<br>16m | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
 
-## [P0 Root: entries under no project](project-root.md) (7)
+## [P0 Root: entries under no project](project-root.md) (8)
 
 Owner `neve`
 
@@ -105,16 +105,17 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-### Bugs (2)
+### Bugs (3)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 50m<br>50m | fabric, cleanup, batten |
-| B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 27m<br>27m | parsers, loom |
+| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 53m<br>53m | fabric, cleanup, batten |
+| B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 30m<br>30m | parsers, loom |
+| B3 |  | **The bridge poll fails to skip its own posts and posts a name-clash notice for each** | [`bridge-own-post-not-skipped`](design-bridge-own-post-not-skipped.md) |  | 0m<br>0m | slack |
 
 ### Enhancements (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 50m<br>50m | burler, stencil |
-| E2 |  | **Slack relay commands take a prefix, so an orch message that opens with approve or revoke is not swallowed** | [`slack-relay-command-prefix`](design-slack-relay-command-prefix.md) |  | 0m<br>0m | slack |
+| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 53m<br>53m | burler, stencil |
+| E2 |  | **Slack relay commands take a prefix, so an orch message that opens with approve or revoke is not swallowed** | [`slack-relay-command-prefix`](design-slack-relay-command-prefix.md) |  | 2m<br>2m | slack |

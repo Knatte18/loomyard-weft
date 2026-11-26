@@ -1,6 +1,6 @@
 # P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric
 
-Rendered 2026-11-26 12:16 UTC; every age below is as of then.
+Rendered 2026-11-26 12:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 7d · Owner `neve`
