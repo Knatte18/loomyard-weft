@@ -20,4 +20,14 @@ fix:
     model: opus
     effort: medium
     tokens_known: false
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-11-26T21:00:03Z
+      end: 2026-11-26T22:00:25.587760042+01:00
+      wall_seconds: 22.587760042
+      tokens_known: true
+      fresh_tokens: 31386
+      cache_read_tokens: 130257
 attempt: "3"
