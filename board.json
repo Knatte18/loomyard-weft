@@ -700,6 +700,7 @@
       "isolated": false,
       "brief": "Show autonomy and the pull-request setting per beam, for the root and hub-wide, in the rendered board README",
       "body": "## Seen (operator, 2026-11-26)\n\nThe board README does not show whether autonomy is on for a beam, for the root, or hub-wide.\nThe operator has to look in `beam.yaml` files to know which halts and pull requests reach them.\n\n## Idea\n\nIn the README's project sections, show for each beam project and for the root (`P0`):\n\n- autonomy: on or off, and where the value comes from (the beam's own `beam.yaml`, the root, or the hub-wide default);\n- the pull-request setting of `beam.yaml` `pull_request` as it resolves for the beam's members;\n- the beam's parent branch, and the beam's own open pull request as a link when it has one.\n\nState the hub-wide value once at the top when it applies to every beam.\nRead the values the way the runs resolve them, from each beam's worktree up, so the README never disagrees with what a run does.\n`lym board list --text` may show the same in the project's row.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-26T09:23:47Z",
       "revised": "2026-11-26T09:23:47Z",
       "profile": "light"
