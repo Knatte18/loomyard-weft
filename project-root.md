@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | starting · Open-IDE | neve | 2d<br>2d |  |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | Preflight | neve | 2d<br>2d |  |
 
 ## Layer A (1)
 
@@ -44,7 +44,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B11 |  | **A died bouncer judge session spends Code-Bouncer's bounce budget** | [`died-judge-spends-bounce-budget`](design-died-judge-spends-bounce-budget.md) | 32m<br>32m | burler, shed |
 | B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 32m<br>32m | fabric |
 | B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 32m<br>32m | gate, burler |
-| B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 31m<br>31m | loom, orch, pawl |
+| B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 32m<br>32m | loom, orch, pawl |
 | B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 31m<br>31m | gate, dotnet |
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 31m<br>31m | gate, dotnet |
 | B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 31m<br>31m | gate, darn |
@@ -69,7 +69,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | E5 |  | **Close the scope of a task when its first Code-Review round starts, and have lym hold the line** | [`scope-closes-at-code-review`](design-scope-closes-at-code-review.md) | 31m<br>31m | loom, burler |
 | E6 |  | **Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier** | [`review-describe-text`](design-review-describe-text.md) | 31m<br>31m | landing, burler |
 | E7 |  | **Take the parent out of PR-Review; the earlier reviewers must catch what it finds** | [`parent-out-of-pr-review`](design-parent-out-of-pr-review.md) | 31m<br>6m | landing, loom |
-| E8 |  | **Autonomy: let PR review stay with the operator for one beam** | [`autonomy-pr-review-operator`](design-autonomy-pr-review-operator.md) | 30m<br>30m | landing, config |
+| E8 |  | **Autonomy: let PR review stay with the operator for one beam** | [`autonomy-pr-review-operator`](design-autonomy-pr-review-operator.md) | 31m<br>31m | landing, config |
 
 ## Features (3)
 
