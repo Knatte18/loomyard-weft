@@ -1,4 +1,4 @@
-# Name config keys as <module>.<path> in Go comments
+# Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys
 
 `config-key-comment-sweep` · Task · enhancement, docs
 

@@ -657,7 +657,7 @@
       "id": 1695,
       "handle": "T3",
       "slug": "config-key-comment-sweep",
-      "title": "Name config keys as \u003cmodule\u003e.\u003cpath\u003e in Go comments",
+      "title": "Name config keys as \u003cmodule\u003e.\u003cpath\u003e in Go comments, and guard string literals for bare keys",
       "kind": "task",
       "labels": [
         "enhancement",
@@ -678,7 +678,7 @@
       "brief": "",
       "body": "After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.\nPATTERN-config-key-names asks that such a comment say `\u003cmodule\u003e.\u003cpath\u003e`.\n\nSweep every Go comment and package doc that names a config key to its nested `\u003cmodule\u003e.\u003cpath\u003e` form.\nA comment-only change, no behaviour or user-visible text.\nDeferred from T3 code review round 1, finding F1, to keep that run short.\n\n\n## From issue #265\n\nImported from [issue #265](https://github.com/Knatte18/loomyard/issues/265).\n\n## What happened\n\nA code review finding asked for a repository-wide sweep of config key names written without their module, and no tool finds them.\nA grep over the underscored template keys was the only practical method.\nIt missed single-word keys such as `engine` and `scoper`, and any key that ended a string literal, so messages were reported done while several were not.\nSelf-check forks caught the misses.\n\nAn earlier implementer had also found bare key names in messages and help texts outside its card's packages:\n`gatecli`, `batcher`, `battencli`, `beamcli`, `webstercli`, `hibernatecli`, `reportcli`, `preflightshed`,\n`weaverengine` (`ResolveLadder` and `settingRefusal`), `sheddriver/tackler.go`, `shedarbiter`, `burlerengine/fix.go` and `loomshed/plancontext.go`.\nSome of these may have been fixed since.\n\n## Why it is abnormal\n\nA message or help text naming a key without its module can regress at any time, and nothing detects it mechanically.\n\n## What to do\n\nAdd a guard test that scans Go string literals for a config template's key names written without their module.\n\nProvenance: task `config-keys-nested`, notes `burler-code-r1.md`, `11-module-key-messages.md`.\n",
       "created": "2026-11-26T13:52:00Z",
-      "revised": "2026-11-26T20:18:19Z",
+      "revised": "2026-11-26T20:19:01Z",
       "profile": "light"
     },
     {
@@ -807,20 +807,22 @@
       "issues": [
         260
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #260](https://github.com/Knatte18/loomyard/issues/260).\n\n## What happened\n\nA verify gate failed on `TestGateTestMap/NamedPackageIsRebuiltWhenFresh` (`internal/gatecli`, tier 1), on a branch that touched nothing in `internal/gatecli` or `internal/testcover`.\n\nThe only mismatch was one extra entry: the fixture test `alpha.TestAlphaTwo` was reported as passing only when run by itself.\n\n```\ntier1 (exit 1):\n  github.com/Knatte18/loomyard/internal/gatecli TestGateTestMap/NamedPackageIsRebuiltWhenFresh:\n    internal/gatecli/testmap_integration_test.go:1124: runTestMap() mismatch (-want +got):\n    gatecli.testMapOutcome{\n    ... // 1 ignored and 2 identical fields\n    TimedOut:    {\"alpha.TestAlphaHangs\"},\n    FailedTests: {\"alpha.TestAlphaHangs\"},\n    - \tPassedAlone: nil,\n    + \tPassedAlone: []string{\"alpha.TestAlphaTwo\"},\n    LeftOut:     {},\n    Exit:        1,\n    ... // 1 ignored field\n    }\n```\n\nThe same subtest passed in the run's other verify logs, and the `TestGateTestMap` run alone through `lym gate test --tier 1` passed.\n\n## Why it is abnormal\n\nA gate goes red on a test the change does not reach, and the agent has to spend a round deciding whether the failure is its own.\n\n## What to do\n\nThe likely cause, not confirmed, is load: the test runs with a shortened per-test limit, and a healthy fixture test can exceed it in a full run.\nMake the healthy fixture tests insensitive to that limit under load, for example by separating the limit that `TestAlphaHangs` must exceed from the one the other fixture tests run under, or by widening the margin.\n\nProvenance: task `audit-flags-master-friction`, note `burler-code-r1.md`.\n",
       "status": "draft",
       "created": "2026-11-26T20:18:33Z",
-      "revised": "2026-11-26T20:18:33Z"
+      "revised": "2026-11-26T20:18:58Z",
+      "profile": "light"
     },
     {
       "id": 1702,
-      "handle": "B5",
+      "handle": "T22",
       "slug": "beam-cancel-keeps-flag",
       "title": "batten cancel --remove of a beam leaves the project's beam flag set",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "batten"
@@ -828,12 +830,15 @@
       "issues": [
         259
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #259](https://github.com/Knatte18/loomyard/issues/259).\n\nA beam was made with lym beam create \u003cslug\u003e from the prime, then ended before any member ran with lym batten cancel \u003cslug\u003e --remove. The cancel ended the pawl run and removed the pair and its records, but the board project kept \"beam\": true and had status draft.\n\nThe flag cannot be cleared afterwards. lym board upsert '{\"slug\":\"\u003cslug\u003e\",\"beam\":false}' is refused: 'the beam flag stays set for the beam's life, which ends when lym beam land \u003cslug\u003e lands it'. But the beam has no pair and no run left to land. The only way back to a plain project was to detach the members, remove the project, upsert it again and re-attach the members and their depends_on, which changes the project's handle.\n\nThe cancel also warned: 'the beam's orch was not stopped: lym orch runs from the hub's prime worktree or a beam; \"\u003cslug\u003e\" is neither', which shows the cancel no longer saw the entry as a beam once the pair was gone.\n\nExpected: batten cancel --remove of a beam's pawl run ends the beam's life and clears the project's beam flag, leaving a plain project whose members are untouched. Alternatively, a verb such as lym beam cancel \u003cslug\u003e does so.",
+      "status": "draft",
       "created": "2026-11-26T20:18:37Z",
-      "revised": "2026-11-26T20:18:37Z"
+      "revised": "2026-11-26T20:19:00Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
