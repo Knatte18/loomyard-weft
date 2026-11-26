@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Worktree-Create",
+    "history_length": 1,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "",
+    "branch": "",
+    "dirty": null
+  },
+  "spawned_at": "2026-11-26T10:16:19.128700837+01:00",
+  "deadline": "2026-11-26T10:26:19.128700837+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/dobby-run-watch/drive-reports/drive-envelope-20261126-101619-8ea2.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/dobby-run-watch/drive-reports/drive-report-20261126-101619-f3d3.md",
+  "strand_guid": "969997e77a947443f39d9967ef1041f8"
+}

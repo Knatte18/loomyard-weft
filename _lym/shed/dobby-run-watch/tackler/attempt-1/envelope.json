@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The blocked stop at Worktree-Create named a board push that was deferred by a held lock and a board still ahead of origin, with a fix of \"run lym board sync, then re-run the verb\". The fix has already landed. The claim commit 2d1b62c55ef39493a9372247a3bc284ccdf7f6ab (\"board: owner neve for dobby-run-watch\") is an ancestor of the remote main tip a4e476057315bae5b0907ec9e0084461378972dc, per `git merge-base --is-ancestor` run in the _bolt repo, and the local _bolt HEAD equals that tip with a clean status. The remote refused the push three times (trace 2a6e317e52f49a29, log lines 36-38) only because main kept moving under it; a later board sync (ebd8b9bb, 20439b9bf5 and a4e47605 on main) carried the claim to origin. Nothing is left for the board to resolve, so a plain re-run of the verb from Worktree-Create settles it. The earlier \"task worktree not present\" warning (trace 454a34bc1aa4732d, line 9) is the expected state before Worktree-Create has created the pair, not a separate cause.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/dobby-run-watch/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/dobby-run-watch/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
