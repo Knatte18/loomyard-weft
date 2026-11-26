@@ -1,6 +1,6 @@
 # A tools/ program that measures process, file and new-binary costs, so machines and XDR exceptions can be compared
 
-`machine-cost-probe` · Note · research, tools, gate
+`machine-cost-probe` · Task · research, tools, gate · draft
 
 Imported from [issue #258](https://github.com/Knatte18/loomyard/issues/258).
 
@@ -38,3 +38,16 @@ Notes:
 - Record the load, since neither machine is ever calm; a result without the load is not comparable.
 - The result goes into a measurement report under `docs/benchmarks/`, for each machine, beside `gate-test-xdr.md`.
 - Run it with `--dir` set to a folder under `/tmp/lym-*` and one under `/tmp/zz-*` on the laptop, and with the same two on the other machine, so one run tells whether a folder exception works.
+
+## Earlier note on the same aim (`cortex-cost-measure`, 2026-11-09)
+
+### Seen (operator, 2026-11-09)
+
+Cortex XDR on OSL-1046 holds each new binary for about 10 s and scans each file a test creates, and fabricengine tests create many.
+The shard report (`docs/research/speed/fabricengine-shards-2026-11-09/report.md`) put the 242 s one-process wall down to load, but the 2026-11-08 figure of 37 to 41 s was measured on another machine, so the gap is machine and Cortex, not load.
+The package used 1.23 cores of 16 and `pmd` and `piud` were busy in nearly every sample.
+
+### Idea
+
+Separate the Cortex cost from the rest: the time a freshly built test binary waits before it runs, the time file creation takes with and without a scanned folder, and the fabricengine tier 1 wall with the repository and temp folders excluded from the scan, if the operator can have that changed.
+The result says whether to cut tests, cut file and binary creation, or ask for an exclusion.
