@@ -1,0 +1,8 @@
+---
+round: 3
+focus:
+  - "D13 in decision-record.md, the required and optional seams, with D5's sentence on test binaries: cmd/lym/main.go installs seams only under !testing.Testing(), while tests outside fabric build pairs through hubforge.AddPair, which runs Topology.Add and commits the run-records root, and drive Remove, pull, replay and origin reconcile. Settle how such a test binary gets the required seams (run-records paths, run locks, shed's codec) without widening hubforge's import set, and whether the way chosen keeps every function reachable from a main package."
+  - "D13 on the nil workspace builder: the beamcli, ideengine and machinecli tests read the hub workspace file with no builder installed. Settle what each of them does under the record's design, and whether an acceptance criterion would fail if one passed vacuously or was refused."
+  - "D13 in decision-record.md, the shed records Writes rule: today the code-tip settle (codetipsettle.go) and the takeover write (takeoverwrite.go) go through state.WriteJSON, which locks, reads, keeps undeclared keys and writes. Settle whether the record's sequence reads and writes under one held status lock, rewrites through internal/state, keeps the takeover write a one-key patch, and has an acceptance criterion that checks the bytes with an undeclared key present."
+  - "decision-record.md Open risks and support-log.md Q12 and Q15: the added entries 'push-retry-not-halt waits for the whole chain' and 'hubforge, boardkit and envkit keep their import sets in this task' direct the writer to drop the matching open risks and mark those questions answered. Check whether the record and log now agree with those entries."
+---
