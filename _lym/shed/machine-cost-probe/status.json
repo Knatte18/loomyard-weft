@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -232,6 +231,16 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/machine-cost-probe/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-26T12:55:49Z",
       "started_at": "2026-11-26T12:54:58Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/machine-cost-probe/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-26T12:57:21Z",
+      "started_at": "2026-11-26T12:57:21Z",
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
