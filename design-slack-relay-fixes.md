@@ -1,6 +1,6 @@
 # Slack relay: skip its own bridge posts, and give relay commands a prefix
 
-`slack-relay-fixes` · Task · bug, enhancement, slack · starting · Open-Window
+`slack-relay-fixes` · Task · bug, enhancement, slack · running · Darn-Write
 
 ## Part 1: the bridge poll skips its own posts
 
