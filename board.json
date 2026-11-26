@@ -856,6 +856,28 @@
       "body": "Imported from [issue #256](https://github.com/Knatte18/loomyard/issues/256).\n\n## What happened\n\nA review finding asked for an exception in a shellguard row: refuse a command unless it carries a given flag.\nA `Row` in `internal/shellguard/rows.go` denies only when every one of its `Patterns` matches, and `grep -E` has no negation, so the row has no way to state the exception.\nThe first fix spelled \"any word but `--system`\" as one regex with quote and escape parsing.\nIt failed open on input it could not parse.\nThe fixer's self-check caught it, and a second version replaced it.\n\n## Why it is abnormal\n\nA guard row with an exception has to encode negation by hand in a regex, which is hard to read and review.\nA mistake in it can let a refused command through.\n\n## What to do\n\nGive `Row` a way to state an exception, such as patterns that must not match, rendered by each engine's guard builder.\nThe design has to keep the guard failing closed: an exception matched anywhere in the payload would let a second, refused command in the same call through.\nIf rows are to stay AND-only, make the hand-built helper (`unquotedWordOtherThan`) the documented way to write an exception.\n\nProvenance: task `reed-client-and-bus-guard`, note `burler-code-r1.md`.\n",
       "created": "2026-11-26T12:30:30Z",
       "revised": "2026-11-26T12:30:30Z"
+    },
+    {
+      "id": 1688,
+      "handle": "B3",
+      "slug": "resume-restores-status-pane",
+      "title": "Loom status pane not restored after a reboot and a resumed run",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "reed",
+        "tender"
+      ],
+      "issues": [
+        253
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #253](https://github.com/Knatte18/loomyard/issues/253).\n\nAfter the machine rebooted, a task run was resumed with 'lym loom resume' (a Go driver was spawned) and drove on through Drift-Verify, Code-Review, PR-Review and into Finalize. Its loom-status strand stayed dead the whole time ('lym reed list' shows it not live, and the task's tmux session holds only its shell window), so the operator saw no overview pane and took the run for stuck while Finalize ran the slow test tier. Another task resumed by its batten driver after the same reboot got its loom-status pane back. Expected: a resumed run brings its loom-status strand back, or 'lym reed list' or the run's status says the pane is gone and how to restore it.",
+      "created": "2026-11-26T12:30:41Z",
+      "revised": "2026-11-26T12:30:41Z"
     }
   ],
   "prime_owner": "neve",
