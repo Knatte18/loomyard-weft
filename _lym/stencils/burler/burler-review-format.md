@@ -5,7 +5,7 @@
      They render it unchanged into each half's instruction directory.
      The reviewer step names its path as the format it writes; the fixer seat names its path as the format it reads.
      It carries no marker, so it names no path of either half.
-lym-stencil: sha256=b63e7bc3656eb4e6a4a1dbd380ebcfd3436ea8173d985f2c047962518077aa10 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
+lym-stencil: sha256=2df85578c8ad48dc1999c1fd328eed8a82d275254a4ed81ca037d57d1ed17b3c build=248543129a712f379d400e128ec301a69dff2eb6 time=2026-11-26T20:23:10Z -->
 
 ## Review-file format
 
@@ -76,8 +76,8 @@ Frontmatter rules, all strict:
   A carried finding keeps its `class`, keeps or lowers its `severity`, and keeps its location path or moves to a file the changes file lists.
 - In an incremental round a new finding is `BLOCKING` and sits on a changed hunk, in a file the changes file lists.
   A card a listed added entry marked as amending the plan names is exempt from the file rule, and so is a new `origin: webster` finding.
-  In a hardener round, a new `origin: focus` finding of class `decision` is exempt from the file rule too,
-  and from the changed-hunk rule.
+- A hardener round's findings are exempt from the incremental round's rule above and from a carried finding's file rule:
+  a new finding takes the severity it has and sits where the fault lives, and a carried finding may move to any file.
 
 Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
 The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.
