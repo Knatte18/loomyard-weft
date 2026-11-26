@@ -1,6 +1,8 @@
 # A closed area for lym: bwrap sandbox in stages, off by default
 
-`sandbox-closed-area-build` · Task · feature, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide · running · Discussion-Bouncer
+`sandbox-closed-area-build` · Note · sketch, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide
+
+Decision record: [Sketch](decision-sandbox-closed-area-build.md)
 
 ## Motif aim (operator, 2026-11-26)
 
