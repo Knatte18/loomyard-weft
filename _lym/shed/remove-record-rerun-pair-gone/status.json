@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -309,6 +309,22 @@
       "output": "",
       "at": "2026-11-26T08:53:27Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/remove-record-rerun-pair-gone/_lym/landing/summary.md",
+      "at": "2026-11-26T08:54:08Z",
+      "started_at": "2026-11-26T08:53:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T08:54:07.617632553Z",
+          "end": "2026-11-26T08:54:07.617656448Z"
+        }
+      ]
     }
   ],
   "product": {
