@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -184,6 +184,22 @@
       "output": "",
       "at": "2026-11-26T09:54:59Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/reed-client-and-bus-guard/_lym/landing/summary.md",
+      "at": "2026-11-26T09:55:27Z",
+      "started_at": "2026-11-26T09:54:59Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T09:55:26.350891101Z",
+          "end": "2026-11-26T09:55:26.350940453Z"
+        }
+      ]
     }
   ],
   "product": {
