@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 3d<br>2d | burler, fabric |
 
-## [P0 Root: entries under no project](project-root.md) (26)
+## [P0 Root: entries under no project](project-root.md) (27)
 
 Owner `neve`
 
@@ -56,7 +56,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-### Bugs (17)
+### Bugs (18)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -77,6 +77,7 @@ Owner `neve`
 | B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 0m<br>0m | gate, dotnet |
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 0m<br>0m | gate, dotnet |
 | B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 0m<br>0m | gate, darn |
+| B18 |  | **A beam member's run records the prime orch as its parent orch** | [`beam-member-parent-is-prime`](design-beam-member-parent-is-prime.md) | 0m<br>0m | batten, landing, orch |
 
 ### Enhancements (2)
 

@@ -674,6 +674,28 @@
       "body": "Imported from [issue #233](https://github.com/Knatte18/loomyard/issues/233).\n\nA prompt told an agent to run a measurement test through `lym gate test --gate darn-write`. That gate key runs tier0 only, while the test lived in tier3 (a slow-test project, category `ModelsLong`). The first call ran no test, and the orch had to allow `--tier 3` by hand.\n\nThis is abnormal because the prompt and the gate key disagree on the tier. Either the prompt generator should pass `--tier` when the named test is not tier0, or the gate should say, when it runs no test, that the filter matches nothing at this tier and name the tiers that would match.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
       "created": "2026-11-26T07:33:52Z",
       "revised": "2026-11-26T07:33:52Z"
+    },
+    {
+      "id": 1642,
+      "handle": "B18",
+      "slug": "beam-member-parent-is-prime",
+      "title": "A beam member's run records the prime orch as its parent orch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "landing",
+        "orch"
+      ],
+      "issues": [
+        232
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #232](https://github.com/Knatte18/loomyard/issues/232).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-24, the run `models-stick-slip-map`, a member of the beam `models-torque-drag` and spawned from the beam's worktree, records the prime's orch `dop:orch` as its parent orch.\nIts PR-Review sent the `[pr-review request]` for PR #52 (into the beam branch `hanf/models-torque-drag`) to `dop:orch`, as ask 1 from the PR-Review session and as ask 2 from `dop:LOOM`.\nThe beam's orch `dop:models-torque-drag:orch`, which owns and released the run, reviewed the PR, and its answer was refused:\n\n```\ncaller dop:models-torque-drag:orch is neither the run's parent orch nor the strand the ask went to\n```\n\nThe beam's dobby sends its notices for the same run to `dop:orch` too.\nKnatte18/loomyard#231 shows the same gap in the tackler and driver prompts of a beam member.\n\n## Expected\n\nA beam member's run records the beam's orch as its parent orch, so its parent-review asks, notices and escalations go to the beam's orch and that orch's answer is accepted.\n\n## Workaround\n\nThe prime orch forwards each ask and notice to the beam's orch, and runs `lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e --satisfied` in the task worktree on the beam orch's verdict.\n",
+      "created": "2026-11-26T07:33:55Z",
+      "revised": "2026-11-26T07:33:55Z"
     }
   ],
   "prime_owner": "neve",
