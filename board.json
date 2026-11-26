@@ -256,7 +256,7 @@
       "isolated": false,
       "brief": "The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works",
       "body": "## Seen\n\nLive drive of the one-repository sandbox (`docs/research/single-repo-undriven-cases.md`).\n`lym batten cancel \u003cslug\u003e --remove`, killed while its detached `lym fabric remote-teardown` child stalled on an origin branch delete,\nleaves a pending record of kind `remove`.\n`lym fabric status` lists it with the way forward `... run \\`lym fabric remove \u003cslug\u003e --remote\\` again`.\nRun once the pair was gone, that command answers `{\"error\":\"pair not found: nothing of \\\"disc1\\\" remains\",\"ok\":false}`.\nThe command that finished the teardown was `lym batten cancel \u003cslug\u003e --remove`.\n\n## Idea\n\nWhen the record's pair is gone, or the record came from a batten cancel, name `lym batten cancel \u003cslug\u003e --remove` as the re-run,\nthe way the `discard` record's `rerun` field already does.\n",
-      "status": "running · Drift-Expect",
+      "status": "running · Darn-Write",
       "created": "2026-11-23T13:57:29Z",
       "revised": "2026-11-23T14:27:27Z",
       "profile": "light"
