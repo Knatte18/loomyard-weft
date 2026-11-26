@@ -1,6 +1,6 @@
 # Guard rows: an update mode for the settings golden, and a row that can state an exception
 
-`guard-row-tooling` · Task · enhancement, process, claude, gate · running · Drift-Recheck
+`guard-row-tooling` · Task · enhancement, process, claude, gate · running · Describe
 
 ## Part 1: an update mode for the Claude settings golden
 
