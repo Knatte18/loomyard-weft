@@ -34,7 +34,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-## Bugs (9)
+## Bugs (10)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -47,6 +47,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B7 |  | **Unreachable origin halts the run as failed repeatedly instead of one retryable stop** | [`unreachable-origin-halts-failed`](design-unreachable-origin-halts-failed.md) | 0m<br>0m | shed, landing, fabric |
 | B8 |  | **Finalize blocks on untracked leftovers of a project the merge-in deleted** | [`finalize-ignored-leftover-dir`](design-finalize-ignored-leftover-dir.md) | 0m<br>0m | landing |
 | B9 |  | **Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure** | [`describe-held-turn-waits-timeout`](design-describe-held-turn-waits-timeout.md) | 0m<br>0m | landing, shuttle |
+| B10 |  | **Finalize halts as hard failure on a GitHub API EOF that lym marks transient** | [`finalize-transient-eof-fails`](design-finalize-transient-eof-fails.md) | 0m<br>0m | landing, shed |
 
 ## Enhancements (2)
 

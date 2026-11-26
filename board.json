@@ -506,6 +506,27 @@
       "body": "Imported from [issue #241](https://github.com/Knatte18/loomyard/issues/241).\n\nThe Describe producer (seats engine) halted the run as `failed` with `shuttle run outcome timeout`, after its agent session sat held for about 28 minutes with no output.\n\nSequence from the trace:\n\n```\n22:15:05 shuttle: run started role=describe\n22:16:51 shuttle: session state state=idle-stalled cause=interrupt\n22:16:53 shuttle: session state state=busy cause=turn\n22:16:57 shuttle: turn end held, output files missing\n22:16:57 shuttle: held turn end of a turn the operator started; no hold notice\n22:16:57 shuttle: session state state=idle-stalled cause=no-output loop=held\n22:45:06 shuttle: run finished outcome=timeout cleanedUp=false\n22:45:29 shed: step refused kind=producer transient=\"\" error=\"shedadapters: Describe (seats): shuttle run outcome timeout\"\n```\n\nThe halt note reads `loom halted failed at Describe`, `anomaly: producer-hard-failure`, 12 history entries.\n\nWhy this is abnormal:\n- The operator interrupted the agent once and typed into the pane, which made the turn \"operator-started\".\n  lym then held the turn end without a hold notice and waited silently until the run timeout.\n- The session was `idle-stalled` for the whole wait, and nothing re-prompted the agent for its missing output files or surfaced the state to the operator.\n- The timeout was then recorded as a hard failure with `transient=\"\"`, although the cause was an interrupted session and not a producer defect.\n- `cleanedUp=false` on the finished run, and the strand was stopped with `live=true` afterwards.\n\nSuggested fix: when a turn end is held for missing output files after an operator-started turn, send the agent a reminder or hand the pane back to the operator with a visible notice instead of waiting out the whole timeout.\nClassify a timeout that follows an operator interrupt as resumable, not as `producer-hard-failure`.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt.md`.\n",
       "created": "2026-11-26T07:33:24Z",
       "revised": "2026-11-26T07:33:24Z"
+    },
+    {
+      "id": 1634,
+      "handle": "B10",
+      "slug": "finalize-transient-eof-fails",
+      "title": "Finalize halts as hard failure on a GitHub API EOF that lym marks transient",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "shed"
+      ],
+      "issues": [
+        240
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #240](https://github.com/Knatte18/loomyard/issues/240).\n\nA `lym loom step` at the Finalize producer read a pull request's status from the GitHub API and got `unexpected EOF`.\nThe step was refused with `transient=github-api`, yet the run halted as `failed` with anomaly `producer-hard-failure`.\n\nQuoted from the trace:\n\n```\nlevel=WARN msg=\"shed: step refused\" kind=producer transient=github-api error=\"landingshed: Finalize: read the pull request's status: pullrequest: read pull request #54: Get \\\"https://api.github.com/repos/\u003cowner\u003e/\u003crepo\u003e/pulls/54\\\": unexpected EOF\"\n```\n\nHalt note text: `loom halted failed at Finalize`, `state: failed`, `anomaly: producer-hard-failure`, 15 history entries, all earlier steps done or skipped.\n\nThis is abnormal because lym itself labels the error transient, and a single dropped connection to the API then ends a run that had finished every earlier step.\nOther network failures in the same run (an unreachable origin before a push) were retried until they landed, so the Finalize read is inconsistent with them.\n\nSuggested fix: when a step is refused with a non-empty `transient` kind, retry it with backoff, or leave the run resumable, instead of recording `producer-hard-failure`.\nA failure of this kind should reach `failed` only after the retry budget is spent.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt-2.md`.\n",
+      "created": "2026-11-26T07:33:27Z",
+      "revised": "2026-11-26T07:33:27Z"
     }
   ],
   "prime_owner": "neve",
