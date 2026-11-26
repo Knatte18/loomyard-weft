@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "9eb3903dd15d5530c1428ca3804f5ecb9698e7c1",
+  "added_decisions": [
+    {
+      "title": "Item 8 is a per-campaign setting, not a code change",
+      "digest": "4845175f97fce42f245acb3f0319f735ab3c0baebf3eb7acbc3a224ef8d0da07"
+    }
+  ]
+}
