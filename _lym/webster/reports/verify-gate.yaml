@@ -1,0 +1,144 @@
+attempt: 1
+cap: 2
+command: lym gate test --wait --gate webster
+log_tail: |-
+    test: started 9 test binaries in tier2
+    gate test: reach report: a tier of the call was red, so the step judged nothing; written to /home/knatte/Code/loomyard-LYMHUB/config-keys-nested/.lym/gate/reach.json
+    gate test: redundancy report: a tier of the call was red, so the step judged nothing; written to /home/knatte/Code/loomyard-LYMHUB/config-keys-nested/.lym/gate/redundancy.json
+    gate test: failure report, every failure of this call:
+    tier0 (exit 1), log /home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/runs/20261126T122545Z-tier0-991287.log:
+      github.com/Knatte18/loomyard/internal/configreg TestPrepareRunSettings/hardener_concurrency_below_one_is_refused_naming_the_key:
+        internal/configreg/runsettings_test.go:349: error = "run_settings for module \"hardener\": config key \"hardener.concurrency\": 0; want at least 1; way forward: correct the value in the task's run_settings with \"lym board upsert\""; want it to name "hardener" and "\"concurrency\""
+    tier1 (exit 1), log /home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/runs/20261126T124710Z-tier1-991287.log:
+      github.com/Knatte18/loomyard/internal/loomcli TestLoomPreBootstrapPair:
+        internal/loomcli/testing.go:1464: TempDir RemoveAll cleanup: unlinkat /tmp/lym-1000/rcftg/TestLoomPreBootstrapPair1540827357/001/container/warp-bare-LYMHUB/_bolt: directory not empty
+      github.com/Knatte18/loomyard/internal/orchcli TestOrchIntegration_Refusals/permission_mode/status:
+        internal/orchcli/refusal_integration_test.go:81: refusal = "{\"error\":\"orch config: orch.permission_mode \\\"prompt\\\" is not accepted; set orch.permission_mode to bypass or remove the key\",\"ok\":false}\n"; want the fix named
+      github.com/Knatte18/loomyard/internal/orchcli TestOrchIntegration_Refusals/permission_mode/watch:
+        internal/orchcli/refusal_integration_test.go:81: refusal = "{\"error\":\"orch config: orch.permission_mode \\\"prompt\\\" is not accepted; set orch.permission_mode to bypass or remove the key\",\"ok\":false}\n"; want the fix named
+      github.com/Knatte18/loomyard/internal/shedverbs TestLoopIntegration_ArmingRefusalStopsAsBootstrap/a_child_step_refuses_while_arming:
+        internal/shedverbs/loop_arming_integration_test.go:225: exit/kind/stop = 1/interrupted/interrupted; want 1/bootstrap/error
+        internal/shedverbs/loop_arming_integration_test.go:228: error = "shedverbs: step Discussion-Write interrupted (exited: signal: terminated; command: /home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/prebuilt/lym-3beedeb96d117703 shed step self); way forward: read loop.trace_copy and loop.stderr_p...
+      github.com/Knatte18/loomyard/internal/shedverbs TestLoopIntegration_ArmingRefusalStopsAsBootstrap/the_loop's_keeper_refuses_while_arming:
+        internal/shedverbs/loop_arming_integration_test.go:225: exit/kind/stop = 1/interrupted/interrupted; want 1/bootstrap/error
+        internal/shedverbs/loop_arming_integration_test.go:228: error = "shedverbs: step Discussion-Write interrupted (exited: signal: terminated; command: /home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/prebuilt/lym-3beedeb96d117703 shed step self); way forward: read loop.trace_copy and loop.stderr_p...
+        internal/shedverbs/loop_arming_integration_test.go:231: status state = running; want failed
+    tier2 (exit 1), log /home/knatte/Code/loomyard-LYMHUB/_bolt/.lym/gate/runs/20261126T124803Z-tier2-991287.log:
+      github.com/Knatte18/loomyard/internal/reedengine TestAddStrand_ThePaneRunsInAScopeHeldToTheTemplatesMemoryCap:
+        internal/reedengine/panememory_integration_test.go:58: memory.max of the pane's cgroup /user.slice/user-1000.slice/user@1000.service/app.slice/tmux-spawn-5f8fde41-d148-4973-a2b7-9155adba8c52.scope = "max", <nil>; want 8589934592
+    gate test: the change touches PATTERN.md, contracts/orchrole/orch-role.md, contracts/recipes/arras-recipe.yaml, contracts/recipes/darn-recipe.yaml, contracts/recipes/hardener-recipe.yaml, contracts/recipes/motif-recipe.yaml, contracts/recipes/sampler-recipe.yaml, contracts/recipes/tapestry-recipe.ya...
+    gate test: failed runs: tier0 (exit 1), tier1 (exit 1), tier2 (exit 1); the exit code is tier0's
+hang: 'panic: test timed out after'
+hang_stacks: true
+failures:
+    - id: github.com/Knatte18/loomyard/internal/configreg.TestPrepareRunSettings/hardener_concurrency_below_one_is_refused_naming_the_key
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/configreg
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/orchcli.TestLoomPreBootstrapPair
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/orchcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/orchcli.TestOrchIntegration_Refusals/permission_mode/status
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/orchcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/orchcli.TestOrchIntegration_Refusals/permission_mode/watch
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/orchcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomcli
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: |-
+        --- PASS: TestLoomResumeReconcilesTheHubConfigBeforeArming (2.10s)
+        --- PASS: TestRemove_TeardownLockAgainstThePairsPush/SharedHolderPastTheWaitRefusesBeforeAnyMutation (0.24s)
+        === RUN   TestRemove_TeardownLockAgainstThePairsPush/RemoveWhoseWaitRunsOutNamesTheGivenRerun
+        --- PASS: TestDriftDeps_RunWhereTheStepsDirResolves/NoDirRunsInTheAnchor (0.80s)
+        --- PASS: TestDriftDeps_RunWhereTheStepsDirResolves/ARelativeDirJoinsTheWorktreeRoot (0.65s)
+        --- PASS: TestDriftDeps_RunWhereTheStepsDirResolves (0.00s)
+        --- PASS: TestLoomFailedReedUpRefuses/llm_driver/start_refuses_and_spawns_nothing (0.42s)
+        --- PASS: TestLoomFailedReedUpRefuses/llm_driver (0.46s)
+        === RUN   TestLoomFailedReedUpRefuses/wrong-parent_seed
+        --- PASS: TestRemove_TeardownLockAgainstThePairsPush/RemoveWhoseWaitRunsOutNamesTheGivenRerun (0.23s)
+        === RUN   TestRemove_TeardownLockAgainstThePairsPush/PushChildHoldsTheLockSharedForItsWholeRun
+        === RUN   TestAsker
+        === PAUSE TestAsker
+        === RUN   TestLiveFrom
+            live_test.go:16: tier0 test; LYM_TEST_TIER selects 1
+        --- SKIP: TestLiveFrom (0.00s)
+        === CONT  TestAsker
+        --- PASS: TestPRFindingsCLI_SendsBackBlockingFindings/Darn (1.01s)
+        --- PASS: TestPRFindingsCLI_SendsBackBlockingFindings/Tapestry (1.06s)
+        --- PASS: TestPRFindingsCLI_SendsBackBlockingFindings (0.00s)
+        --- PASS: TestRemove_TeardownLockAgainstThePairsPush/PushChildHoldsTheLockSharedForItsWholeRun (0.28s)
+        === RUN   TestRemove_TeardownLockAgainstThePairsPush/PushChildStartedDuringRemoveTakesNoLockAndPushesNothing
+        --- PASS: TestLoomFailedReedUpRefuses/wrong-parent_seed (0.39s)
+        --- PASS: TestLoomFailedReedUpRefuses (2.14s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/loomcli	7.375s
+    - id: github.com/Knatte18/loomyard/internal/shedverbs.TestLoopIntegration_ArmingRefusalStopsAsBootstrap/a_child_step_refuses_while_arming
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shedverbs
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/shedverbs.TestLoopIntegration_ArmingRefusalStopsAsBootstrap/the_loop's_keeper_refuses_while_arming
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shedverbs
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/shedverbs
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/shedverbs
+      tail: |-
+        	os/exec/exec.go:602 +0x34
+        os/exec.(*Cmd).Start.func2(0x0?)
+        	os/exec/exec.go:757 +0x2c
+        created by os/exec.(*Cmd).Start in goroutine 248
+        	os/exec/exec.go:756 +0x92e
+
+        goroutine 249 [IO wait]:
+        internal/poll.runtime_pollWait(0x7b36322d7800, 0x72)
+        	runtime/netpoll.go:351 +0x85
+        internal/poll.(*pollDesc).wait(0x382eb9430840?, 0x382eb955449c?, 0x1)
+        	internal/poll/fd_poll_runtime.go:84 +0x27
+        internal/poll.(*pollDesc).waitRead(...)
+        	internal/poll/fd_poll_runtime.go:89
+        internal/poll.(*FD).Read(0x382eb9430840, {0x382eb955449c, 0x364, 0x364})
+        	internal/poll/fd_unix.go:165 +0x2ae
+        os.(*File).read(...)
+        	os/file_posix.go:30
+        os.(*File).Read(0x382eb9b12080, {0x382eb955449c?, 0x0?, 0x9c?})
+        	os/file.go:144 +0x4f
+        bytes.(*Buffer).ReadFrom(0x382eb984e870, {0xcc5880, 0x382eb9b12080})
+        	bytes/buffer.go:229 +0x98
+        io.copyBuffer({0xcc5a20, 0x382eb984e870}, {0xcc5880, 0x382eb9b12080}, {0x0, 0x0, 0x0})
+        	io/io.go:415 +0x151
+        io.Copy(...)
+        	io/io.go:388
+        os.genericWriteTo(0x382eb9b12080?, {0xcc5a20?, 0x382eb984e870?})
+        	os/file.go:295 +0x35
+        os.(*File).WriteTo(0x382eb9b12080, {0xcc5a20, 0x382eb984e870})
+        	os/file.go:273 +0x9c
+        io.copyBuffer({0xcc5a20, 0x382eb984e870}, {0xcc5900, 0x382eb9b12080}, {0x0, 0x0, 0x0})
+        	io/io.go:411 +0x9d
+        io.Copy(...)
+        	io/io.go:388
+        os/exec.(*Cmd).writerDescriptor.func1()
+        	os/exec/exec.go:602 +0x34
+        os/exec.(*Cmd).Start.func2(0x0?)
+        	os/exec/exec.go:757 +0x2c
+        created by os/exec.(*Cmd).Start in goroutine 248
+        	os/exec/exec.go:756 +0x92e
+        FAIL	github.com/Knatte18/loomyard/internal/shedverbs	1200.014s
+    - id: github.com/Knatte18/loomyard/internal/reedengine.TestAddStrand_ThePaneRunsInAScopeHeldToTheTemplatesMemoryCap
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedengine
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYMHUB/config-keys-nested/.lym/verify/verify-1.log
+hint:
+    - 04-nest-loom-tapestry
+    - 05-moved-key-tables
+    - 09-reconcile-before-load
+    - 10-loom-key-messages
+    - 11-module-key-messages
+    - 12-template-comments
+fixer: fork
