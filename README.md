@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 10:06 UTC; every age below is as of then.
+Rendered 2026-11-26 10:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | T3<br>T8 | 2d<br>42m | landing, loom, config |
+| T1 | **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | T3<br>T8 | 2d<br>43m | landing, loom, config |
 | T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | T3 | 2h<br>1h | webster, quarry |
 | T4 | **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | T3 | 2h<br>1h | gate, dotnet, darn, burler |
 | T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light | T3 | 2h<br> | stencil, darn |
@@ -76,7 +76,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md)<br>[Sketch](decision-dobby-run-watch.md) | 2h<br>18m | dobby, gate |
+| S1 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md)<br>[Sketch](decision-dobby-run-watch.md) | 2h<br>19m | dobby, gate |
 | S2 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md)<br>[Sketch](decision-keep-landed-records.md) | 2h<br>0m | landing, fabric, report |
 
 ## [P0 Root: entries under no project](project-root.md) (4)
@@ -88,7 +88,7 @@ Owner `neve`
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | Webster | neve | 2d<br>2d | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
-| T8 | **The board README shows each beam's autonomy and PR mode, and the root's**<br>• Show autonomy and the pull-request setting per beam, for the root and hub-wide, in the rendered board README | [`readme-beam-modes`](design-readme-beam-modes.md) | darn · light | Code-Burler-Fix | neve | 42m<br>42m | board |
+| T8 | **The board README shows each beam's autonomy and PR mode, and the root's**<br>• Show autonomy and the pull-request setting per beam, for the root and hub-wide, in the rendered board README | [`readme-beam-modes`](design-readme-beam-modes.md) | darn · light | Code-Burler-Fix | neve | 43m<br>43m | board |
 
 ### Research (2)
 
