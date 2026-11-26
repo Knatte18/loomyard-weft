@@ -58,3 +58,5 @@ gates:
         reports: [reach, redundancy]
     pr-review:
         reports: []
+        tiers: [0]
+        scope: diff
