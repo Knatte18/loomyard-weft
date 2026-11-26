@@ -1,6 +1,6 @@
 # A decision record criterion with an unindented continuation line is cut at its first line
 
-`record-criterion-line-cut` · Task · bug, parsers, loom · running · Code-Burler-Fix
+`record-criterion-line-cut` · Task · bug, parsers, loom · running · Code-Bouncer
 
 ## Seen (raddle of `sandbox-closed-area-build`, 2026-11-26)
 
