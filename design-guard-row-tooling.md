@@ -1,6 +1,6 @@
 # Guard rows: an update mode for the settings golden, and a row that can state an exception
 
-`guard-row-tooling` · Task · enhancement, process, claude, gate · draft
+`guard-row-tooling` · Task · enhancement, process, claude, gate
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
