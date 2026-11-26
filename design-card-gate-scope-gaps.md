@@ -23,3 +23,27 @@ Plan writing and plan review accepted an intent broader than the card's targets.
 - Have plan review reject a repository-wide intent whose edit list is a fixed set of packages with no step that proves the set complete.
 
 Provenance: task `config-keys-nested`, notes `11-module-key-messages.md`, `10-loom-key-messages.md`.
+
+
+## From issue #262
+
+Imported from [issue #262](https://github.com/Knatte18/loomyard/issues/262).
+
+## What happened
+
+A plan had two cards that each add an exported function whose first caller is a later card.
+The tier1 guard `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` rejected each at its card gate.
+The implementer allowlisted each function in its own commit with a `Loosened-Check:` trailer.
+One allowlist entry was still present at the end of the batch, and the card that adds its caller has to remember to delete it, since a stale entry fails the guard.
+
+## Why it is abnormal
+
+An ordinary helper-then-caller card split cannot pass the card gate without loosening a check.
+The loosening and its later removal are hand work that no step of the plan states.
+
+## What to do
+
+Either have plan writing and plan review keep a new function and its first caller in one card,
+or let the card gate tolerate a function whose caller a later card of the same plan declares.
+
+Provenance: task `config-keys-nested`, note `01-config-key-name.md`.
