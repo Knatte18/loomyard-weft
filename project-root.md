@@ -51,7 +51,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B11 |  | **A died bouncer judge session spends Code-Bouncer's bounce budget** | [`died-judge-spends-bounce-budget`](design-died-judge-spends-bounce-budget.md) | 1m<br>1m | burler, shed |
 | B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 1m<br>1m | fabric |
 | B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 1m<br>1m | gate, burler |
-| B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 0m<br>0m | loom, orch, pawl |
+| B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 1m<br>1m | loom, orch, pawl |
 | B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 0m<br>0m | gate, dotnet |
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 0m<br>0m | gate, dotnet |
 | B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 0m<br>0m | gate, darn |
@@ -64,7 +64,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B24 |  | **Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review** | [`seat-idle-no-input-box`](design-seat-idle-no-input-box.md) | 0m<br>0m | shuttle, claude |
 | B25 |  | **Seed-IDE fails the run when the task branch's detached push has not landed yet** | [`seed-ide-push-not-landed`](design-seed-ide-push-not-landed.md) | 0m<br>0m | batten, fabric |
 
-## Enhancements (7)
+## Enhancements (8)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -75,6 +75,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | E5 |  | **Close the scope of a task when its first Code-Review round starts, and have lym hold the line** | [`scope-closes-at-code-review`](design-scope-closes-at-code-review.md) | 0m<br>0m | loom, burler |
 | E6 |  | **Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier** | [`review-describe-text`](design-review-describe-text.md) | 0m<br>0m | landing, burler |
 | E7 |  | **Take the parent out of PR-Review; the earlier reviewers must catch what it finds** | [`parent-out-of-pr-review`](design-parent-out-of-pr-review.md) | 0m<br>0m | landing, loom |
+| E8 |  | **Autonomy: let PR review stay with the operator for one beam** | [`autonomy-pr-review-operator`](design-autonomy-pr-review-operator.md) | 0m<br>0m | landing, config |
 
 ## Features (3)
 

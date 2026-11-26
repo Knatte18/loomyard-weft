@@ -989,6 +989,27 @@
       "body": "Imported from [issue #218](https://github.com/Knatte18/loomyard/issues/218).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/logs`.\n\n## What happened\n\nRun `weekly-time-report` (recipe raddle, promoted from a Sketch) stopped at Seed-IDE with:\n\n\u003e run \"weekly-time-report\" cannot act: the code tip e7b0cc2 the run's last transition names is not on origin yet; way forward: run \"lym batten run weekly-time-report\" again once the code push lands\n\nTimeline from `.lym/logs` (2026-11-24, CET):\n\n- 14:45:52 Worktree-Create done; the task branch forks from the prime's local `main` at e7b0cc2, one commit ahead of `origin/main`.\n- 14:45:52 and 14:45:55 fabricengine spawned detached pushes of the new pair (`fabric --warp-path …/weekly-time-report …`).\n- 14:45:57 Seed-IDE's bootstrap checked whether e7b0cc2 is on origin, found it was not, and refused the step.\n- Shortly after, the detached push landed: `git ls-remote origin` showed `refs/heads/weekly-time-report` at e7b0cc2.\n\nThe network was slow and resetting that day (`Recv failure: Connection reset by peer` on records pushes), so the detached push took longer than the 2–5 s gap.\n\n## Effect\n\n- The run stopped as failed, and the tackler handed it back to the parent asking whether to push the prime's `main`, which was not needed.\n- A plain `lym batten run weekly-time-report` afterwards went straight through Seed-IDE to Run-Shed.\n\n## Expected\n\nA check that the code tip is on origin, right after lym itself spawned the push that puts it there, should wait for that push, or retry for a while, instead of failing the run.\nThe stop should also say that lym's own push of the task branch is in flight, so the tackler does not ask the parent to push the parent branch.\n",
       "created": "2026-11-26T07:34:38Z",
       "revised": "2026-11-26T07:34:38Z"
+    },
+    {
+      "id": 1657,
+      "handle": "E8",
+      "slug": "autonomy-pr-review-operator",
+      "title": "Autonomy: let PR review stay with the operator for one beam",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "config"
+      ],
+      "issues": [
+        217
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #217](https://github.com/Knatte18/loomyard/issues/217).\n\n`beam.yaml: autonomy` is one switch for both halts and PR-Review requests. A hub wants the orch to settle halts on the prime autonomously while pull requests into the prime's branch (main) still wait for the operator's approval. Today that needs autonomy off, which also sends every halt to the operator, or autonomy on with the orch holding PR-Review by hand. Proposal: a separate key, such as `autonomy_pr_review: false`, so PR-Review requests on that beam or the prime go to the operator while halts stay autonomous.\n\n## Issue comment, 2026-11-24\n\nSeen again, with a merge into the prime's branch:\n\n- The prime runs with `autonomy: true`, and the hub wants pull requests into main to wait for a human approval.\n- The task `import-project-names` reached PR-Review; the parent answered the parent-review ask `--satisfied` and told the PR-Review agent by creel that landing waits on the operator's approval.\n- `lym loom pr-continue` ran anyway about a minute later, and Finalize squash-merged the pull request into main once its gate passed, with no human approval on GitHub.\n\nA message to the PR-Review agent is no way to hold a landing under autonomy: the satisfied answer alone ends the review.\n\nExpected: a setting, per beam and for the prime, that keeps autonomy for halts but makes PR-Review wait for a human approval of the pull request (for example a GitHub approving review) before `pr-continue` or Finalize may merge.",
+      "created": "2026-11-26T07:34:42Z",
+      "revised": "2026-11-26T07:34:42Z"
     }
   ],
   "prime_owner": "neve",
