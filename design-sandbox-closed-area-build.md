@@ -1,6 +1,13 @@
 # A closed area for lym: bwrap sandbox in stages, off by default
 
-`sandbox-closed-area-build` · Note · feature, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide
+`sandbox-closed-area-build` · Task · feature, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
+
+## Motif aim (operator, 2026-11-26)
+
+Redesign this area around the ranking of `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md` (`57d15cc02`): a seccomp connect supervisor over Landlock ABI 8 first, AppArmor per hub as the fallback, and decide what stays of the bwrap stages.
+A closed area that refuses or hides the session bus must keep the strand pane memory cap (`10ae7e112`), which starts panes through the user manager.
 
 ## Seen (operator, 2026-10-30)
 

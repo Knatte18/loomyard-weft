@@ -1,6 +1,8 @@
 # Keep the decision record and review findings of each landed task in the weft
 
-`keep-landed-records-in-weft` · Note · enhancement, landing, fabric, report
+`keep-landed-records` · Task · enhancement, landing, fabric, report · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
 Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).
 
