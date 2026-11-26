@@ -760,6 +760,26 @@
       "body": "Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `_bolt/.lym/creel/journal`.\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs could not finish its work, because the evidence was gone.\nAbout 29 findings were in scratchpad files under `/tmp` that no longer exist.\nThe decision records (Sketches) of the landed tasks could not be read: the board holds only open entries, and the task worktrees are deleted.\nSo the analysis could not say whether delivered code broke its decision record, and every gate attribution was inferred.\nThe only complete source left was each hub's creel mail journal under `_bolt/.lym/creel/journal`.\n\nThe operator wants this kept: absolutely.\n\n## Idea\n\nAt landing, store what a later study needs in the weft, where it survives the worktree's deletion.\n\n- The decision record with its `Added after Discussion` entries, as it stood at landing.\n- Every Code-Review round's findings and the fixer reports, the parent's rulings and answers, and the PR-Review findings.\n- The Describe text as it was merged, and the drift verdict.\n- A short index row per landed task, so `lym report` can read them without walking directories.\n- Read first which records survive today and where, and how landing already archives a run (the archive tag, `Reconcile leftover shuttle runs from run records`).\n- Decide the weft path and how long records are kept, and make sure findings no longer live only in a scratchpad directory.\n",
       "created": "2026-11-26T07:34:04Z",
       "revised": "2026-11-26T07:34:04Z"
+    },
+    {
+      "id": 1646,
+      "handle": "B21",
+      "slug": "pr-body-not-synced",
+      "title": "The GitHub PR body is not updated when the description file changes",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing"
+      ],
+      "issues": [
+        228
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #228](https://github.com/Knatte18/loomyard/issues/228).\n\n## Seen\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that the same findings were sent again in about five rounds.\nThe agent fixed the description file but the pull request's body on GitHub was not updated, so the parent read the old text again.\nSeen in five separate rounds across several runs.\n\n## Why it makes no sense\n\nThe description file is the one source of the PR title and body.\nA PR whose body differs from the file the run holds is wrong from the first push, and a review round is spent on text that has already been fixed.\n\n## Idea\n\nMake the PR body follow the description file on every push, and refuse to end a round while the two differ.\n\n- Read first where `pr update` runs for a task's pull request, and which path writes the description file without calling it (`lym beam describe` runs the `pr update` sequence for a beam; check the task path).\n- After each push, compare the GitHub PR body with the file, and update it or halt with a way forward naming the difference.\n- Add a test that edits the description file after the PR exists and expects the body to follow on the next push.\n",
+      "created": "2026-11-26T07:34:08Z",
+      "revised": "2026-11-26T07:34:08Z"
     }
   ],
   "prime_owner": "neve",
