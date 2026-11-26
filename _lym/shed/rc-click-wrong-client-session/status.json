@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -44,6 +43,65 @@
       "output": "",
       "at": "2026-11-23T19:19:09Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/rc-click-wrong-client-session/_lym/landing/summary.md",
+      "at": "2026-11-26T07:35:39Z",
+      "started_at": "2026-11-23T20:48:43Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-23T20:51:56.460516779Z",
+          "end": "2026-11-23T20:51:56.498143948Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-26T07:31:35.416132803Z",
+          "end": "2026-11-26T07:31:35.431934585Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-23T20:51:56.633345584Z",
+          "end": "2026-11-26T06:51:51.370023779Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-26T06:51:51.758480801Z",
+          "end": "2026-11-26T07:31:35.296832323Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T07:31:35.498836659Z",
+          "end": "2026-11-26T07:34:47.152416487Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-26T07:34:47.197415446Z",
+          "end": "2026-11-26T07:35:07.203562563Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-26T07:35:07.252224326Z",
+          "end": "2026-11-26T07:35:07.592831979Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T07:35:07.637131678Z",
+          "end": "2026-11-26T07:35:07.63729447Z"
+        }
+      ],
+      "by": "shed"
     }
   ],
   "product": {
