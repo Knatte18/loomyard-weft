@@ -1,6 +1,8 @@
-# The bridge poll fails to skip its own posts and posts a name-clash notice for each
+# Slack relay: skip its own bridge posts, and give relay commands a prefix
 
-`bridge-own-post-not-skipped` · Note · bug, slack
+`slack-relay-fixes` · Task · bug, enhancement, slack · draft
+
+## Part 1: the bridge poll skips its own posts
 
 ## Seen (operator, 2026-11-26, first live run between Neve and osl46)
 
@@ -25,3 +27,19 @@ The unit tests likely give the fake message a `User`, which is why they passed.
 Skip a message whose `bot_id` is this machine's own bot (from `auth.test`, beside the bot user id), and keep the `user` check as well.
 A test feeds a message shaped as Slack returns a `username`-override post: `subtype: bot_message`, `bot_id`, no `user`.
 Every outbound bridge post on both machines makes the false notice today, so it hides real clashes.
+
+## Part 2: relay commands take a prefix
+
+## Seen (operator, 2026-11-26)
+
+The relay reads some of the operator's messages in an orch's channel as its own commands and never forwards them to the orch (`internal/slackengine/inbound.go` `handle`, `peercommand.go` `parsePeerCommand`):
+`away`, `back` and `status` as the whole message, and any message of two or three words whose first word is `approve` or `revoke`.
+So "approve it" or "approve plan B" to the orch becomes a peer command for a machine named `it` or `plan`.
+The operator finds a bare reserved word odd.
+
+## Idea
+
+Give every relay command one prefix the operator would not write to an orch, such as `lym approve neve`, `lym status`, `lym away`,
+and forward every other message unchanged.
+A Slack slash command (`/lym approve neve`) is the other way, but it needs the app manifest changed and reinstalled on each machine.
+The relay's answers, `docs/slack-app.md` and `contracts/orchrole/role-slack.md` name the new form.
