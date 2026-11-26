@@ -1,59 +1,63 @@
 # Webster: plan fixes after begun batches, and recovery that ends asking
 
 Two Webster runs halted on plans that were valid or fixable.
-In the first, a plan fix that edited `00-overview.md` passed the plan gate, and Webster's rebaseline then refused it.
-A later card's target was also refused as `glyph-not-found`, though an earlier card creates that member.
-In the second, a recovery strand stopped to ask a question.
-The question was lost, the batch went dead with no retry, and the run needed a manual `webster reset`.
+In the first, a plan fix that edited `00-overview.md` outside its Card Index was later refused by Webster's rebaseline.
+Plan validation then refused targets as `glyph-not-found` on members the plan's cards introduce or modify.
+In the second, a recovery strand ended `dead`/`asking`.
+Its question was lost, the batch had no retry, and the run needed a manual `webster reset`.
+
+Closes #221
+Closes #220
 
 ## What changes
 
 - **Plan gate and the overview frame.**
-  `runplan.RecordedOverviewFrame` is now the one reader of a run's recorded overview frame.
-  It falls back to the stored baseline copy when the record holds no frame hash.
-  `loomshed.ValidatePlan` reads the frame through it, as Webster's rebaseline does.
+  `runplan.RecordedOverviewFrame` is now the one reader of a run's recorded overview frame,
+  and falls back to the stored baseline copy when the record holds no frame hash.
+  `loomshed.ValidatePlan` reads the frame through it, as the rebaseline does.
   A record without the hash, which the gate used to skip, is now checked against the copy's frame.
   With no frame either way, any edit to the recorded overview raises `overview-frame-edited`, since the rebaseline refuses it.
   The plan review rubric tells a fixer that the overview outside its Card Index is frozen once a batch has begun.
 - **Glyph targets a card creates.**
-  `planglyph` accepts a glyph target that spells the member named by a `Create` `plan:` handle.
-  It passes on the creating card and on every card after it.
+  A glyph target that spells the member named by a `Create` `plan:` handle passes on the creating card and every card after it.
   On an earlier card, the `glyph-not-found` detail names the creating card.
-  A missing member of a unit that exists now says that no card creates it,
-  and lists the members declared beside it: those of its owner type, or a Go package's owner-less members.
-- **A recovery that asks.**
-  A recovery strand whose turn ends on a message and writes no report is recorded `waiting`.
-  Its message, joined onto one line, is the `need`.
-  Master's existing waiting rung sends the question to the parent, and `recover-batch` resumes the batch without spending a recovery.
-  `gatefixer.LastTurnMessage` reads the message from the strand's events.
-  A turn end with no message stays `dead`/`asking`.
+  A missing member of an existing unit now says that no card creates it,
+  and lists the members declared beside it: those of its owner type, or the unit's owner-less members.
+- **A recovery with a question.**
+  The recovery prompt tells the strand to report `status: NEEDS_PARENT` with its question as the `need`.
+  Merriam sends it to the parent and resumes with `lym webster recover-batch NN --answer`, spending no recovery.
+  The resumed prompt holds each need beside its answer.
+  A resume of a waiting recovery with no answer is refused.
+- **A recovery that ends its turn with no report.**
+  It stays `dead`/`asking`.
+  Its final message, joined onto one line, is the digest's new `last_message`,
+  quoted by the `recover-batch` refusals, the dead-end refusal and Merriam's `stuck_reason`.
 - **A card edit re-arms a dead batch.**
-  When a rebaseline accepts a `--card` edit to a terminal failed, dead or stuck batch, it now records the edit in `AmendedCards`.
-  `RecoveryRetry` gives a dead recovery that holds such an amendment one more recovery, whatever its count.
-  So a plan fix to the dead batch's cards clears the dead end without a reset.
-  `RebaselineResult.CardsAmended` still lists only cards of in-flight batches.
-- Specs, package docs, the `recover-batch` help and Master's failure ladder describe the new behavior.
+  A rebaseline that accepts a `--card` edit to a terminal dead batch now records it in `AmendedCards`.
+  A failed or stuck batch that already holds an entry takes the edit too.
+  A dead recovery holding an unrendered amendment earns one more uncounted recovery, whatever its count.
 
 ## Design decisions
 
-- Of the two routes the entry offered for a recovery that asks, both are taken.
-  The question goes to the parent through the existing waiting mechanism, so the operator sees it.
-  A plan edit to the dead batch's cards also re-arms one recovery.
-  Fork strands that end asking are unchanged: their recovery is the existing answer.
-- The created-member check matches the `Create` handle's canonical body against the target's spelling and its parsed ID.
-  A target spelled differently from the canonical glyph still gets `glyph-not-found`, which now lists the members beside it.
-- The member listing costs one quarry query per missing member, and only when validation would refuse anyway.
+- The issue offered two routes for a recovery that asks, and both are taken:
+  the question reaches the parent, and a plan edit to the dead batch's cards re-arms a recovery.
+- Only an explicit `NEEDS_PARENT` report counts as a question, since almost every turn end carries a closing message.
+- A failed or stuck batch holding no amendment is not re-armed by a card edit.
+- The created-member match is on the target's spelling or its parsed ID against the `Create` handle's body.
+- The member listing costs one quarry query per missing member that no card creates.
 
-## Tests
+## To check by hand
 
-- `planglyph`: `TestValidateFormat_MissingMemberFindings` covers a use after the creating card, a use before it, and the member lists for a type and a package.
-- `loomshed`: rows in the overview-frame-edited gate table cover a frame from the baseline copy, a missing copy, and a record with no overview hash.
-- `websterengine`: a recovery whose turn ends on a message is recorded waiting with the exact need.
-  `TestRecoveryRetry` has rows for an amendment that has been rendered and one that has not.
-  The rebaseline rows for terminal batches assert the recorded amendment.
-- `gatefixer`: `TestLastTurnMessage`.
+- Finding: every recovery turn end that carried a message became `waiting`, not only a question
+  (`internal/websterengine/recoverbatch.go`, `awaitTerminal`).
+  The diff keeps such a turn end `dead`/`asking` and only records the message; check that this holds.
+  A strand that asks without writing a `NEEDS_PARENT` report therefore gets its question quoted, but not routed.
+- Finding: the sibling listing for a missing member of a Go external-test `<dir>_test` unit had no test
+  (`internal/planglyph/planglyph_test.go`, `TestValidateFormat_MissingMemberFindings`).
+  The diff adds a `sub_test#Missing` row; check that it covers the package-directory fallback in `siblingMembers`.
+- The new recovery prompt, Merriam template and plan review rubric wording has not been tried in a live run.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** webster
+**Blast radius:** loom
