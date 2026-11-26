@@ -1,6 +1,6 @@
 # Iterative agents should commit often
 
-`writers-commit-each-step` · Task · enhancement, stencil, darn · halted · Worktree-Create
+`writers-commit-each-step` · Task · enhancement, stencil, darn · starting · Worktree-Create
 
 Bundled from the notes below; each part keeps its note's text.
 
