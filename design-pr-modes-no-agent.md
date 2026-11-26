@@ -1,6 +1,6 @@
 # PR block in three modes, review, trail and off, with no agent under it
 
-`pr-modes-no-agent` · Task · enhancement, landing, loom, config · running · Drift-Verify
+`pr-modes-no-agent` · Task · enhancement, landing, loom, config · running · Code-Bouncer
 
 Note `pr-ask-live-pane-test` is folded in only to be closed: it asks for a test of the parent-review ask this task removes.
 
