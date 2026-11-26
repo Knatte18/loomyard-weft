@@ -1,6 +1,12 @@
 # Iterative agents should commit often
 
-`writers-commit-each-step` · Note · enhancement, stencil, darn
+`writers-commit-each-step` · Task · enhancement, stencil, darn · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
+
+Bundled from the notes below; each part keeps its note's text.
+
+# Iterative agents should commit often
 
 Imported from [issue #246](https://github.com/Knatte18/loomyard/issues/246).
 
@@ -13,3 +19,5 @@ An earlier writer in the same hub stalled on an API error and then died in a mac
 
 Agents that work iteratively, darn writers above all, commit after each coherent step instead of holding the whole change uncommitted until the end.
 The writer stencils and skills say so, so that a stall, a dead strand or a reboot loses at most one step, and the parent can see progress in the branch's history.
+
+

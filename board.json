@@ -288,48 +288,6 @@
       "revised": "2026-11-26T07:33:02Z"
     },
     {
-      "id": 1628,
-      "handle": "E2",
-      "slug": "writers-commit-each-step",
-      "title": "Iterative agents should commit often",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "darn"
-      ],
-      "issues": [
-        246
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #246](https://github.com/Knatte18/loomyard/issues/246).\n\n## Seen\n\nA darn writer worked through a multi-step change, editing seven files over a long stretch, without committing until its parent asked.\nAn earlier writer in the same hub stalled on an API error and then died in a machine reboot with its work uncommitted, so only the untracked files survived in the worktree.\n\n## Expected\n\nAgents that work iteratively, darn writers above all, commit after each coherent step instead of holding the whole change uncommitted until the end.\nThe writer stencils and skills say so, so that a stall, a dead strand or a reboot loses at most one step, and the parent can see progress in the branch's history.\n",
-      "created": "2026-11-26T07:33:06Z",
-      "revised": "2026-11-26T07:33:06Z"
-    },
-    {
-      "id": 1629,
-      "handle": "B5",
-      "slug": "creel-refusal-after-cd",
-      "title": "creel post refusal after a persisted cd does not say why",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel",
-        "cwd"
-      ],
-      "issues": [
-        245
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).\n\nAn agent's survey commands used `cd` into subdirectories, and the shell kept that directory for later calls.\nThe next `lym creel post` was refused because the working directory was no longer the anchored worktree root, which cost a retry.\n\nWhy it is abnormal:\n- The shell's directory persisting across calls is easy to trip over, and the refusal surfaced only on the later creel call, away from the `cd` that caused it.\n\nWhat to do:\n- Have the refusal name the anchored root and say that a previous `cd` likely moved the shell, or accept calls from any directory inside the worktree.\n- Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.\n\nProvenance: task `retire-d9`; note Darn-Write.md.\n",
-      "created": "2026-11-26T07:33:09Z",
-      "revised": "2026-11-26T07:33:09Z"
-    },
-    {
       "id": 1630,
       "handle": "B6",
       "slug": "describe-timeout-no-detail",
@@ -890,6 +848,58 @@
       "status": "draft",
       "created": "2026-11-23T20:51:38Z",
       "revised": "2026-11-26T08:19:51Z",
+      "profile": "light",
+      "project": "intake-wave-1"
+    },
+    {
+      "id": 1667,
+      "handle": "T6",
+      "slug": "creel-refusal-after-cd",
+      "title": "creel post refusal after a persisted cd does not say why",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "creel",
+        "cwd"
+      ],
+      "issues": [
+        245
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# creel post refusal after a persisted cd does not say why\n\nImported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).\n\nAn agent's survey commands used `cd` into subdirectories, and the shell kept that directory for later calls.\nThe next `lym creel post` was refused because the working directory was no longer the anchored worktree root, which cost a retry.\n\nWhy it is abnormal:\n- The shell's directory persisting across calls is easy to trip over, and the refusal surfaced only on the later creel call, away from the `cd` that caused it.\n\nWhat to do:\n- Have the refusal name the anchored root and say that a previous `cd` likely moved the shell, or accept calls from any directory inside the worktree.\n- Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.\n\nProvenance: task `retire-d9`; note Darn-Write.md.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:09Z",
+      "profile": "light",
+      "project": "intake-wave-1"
+    },
+    {
+      "id": 1668,
+      "handle": "T7",
+      "slug": "writers-commit-each-step",
+      "title": "Iterative agents should commit often",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "darn"
+      ],
+      "issues": [
+        246
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Iterative agents should commit often\n\nImported from [issue #246](https://github.com/Knatte18/loomyard/issues/246).\n\n## Seen\n\nA darn writer worked through a multi-step change, editing seven files over a long stretch, without committing until its parent asked.\nAn earlier writer in the same hub stalled on an API error and then died in a machine reboot with its work uncommitted, so only the untracked files survived in the worktree.\n\n## Expected\n\nAgents that work iteratively, darn writers above all, commit after each coherent step instead of holding the whole change uncommitted until the end.\nThe writer stencils and skills say so, so that a stall, a dead strand or a reboot loses at most one step, and the parent can see progress in the branch's history.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:06Z",
       "profile": "light",
       "project": "intake-wave-1"
     }

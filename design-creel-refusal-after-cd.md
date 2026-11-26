@@ -1,6 +1,12 @@
 # creel post refusal after a persisted cd does not say why
 
-`creel-refusal-after-cd` · Note · bug, creel, cwd
+`creel-refusal-after-cd` · Task · bug, creel, cwd · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
+
+Bundled from the notes below; each part keeps its note's text.
+
+# creel post refusal after a persisted cd does not say why
 
 Imported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).
 
@@ -15,3 +21,5 @@ What to do:
 - Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.
 
 Provenance: task `retire-d9`; note Darn-Write.md.
+
+
