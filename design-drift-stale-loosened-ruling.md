@@ -1,6 +1,8 @@
 # Drift-Verify reuses a stale loosened ruling after the moved checks land
 
-`drift-stale-loosened-ruling` · Note · bug, drift
+`drift-stale-loosened-ruling` · Task · bug, drift · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
 Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).
 

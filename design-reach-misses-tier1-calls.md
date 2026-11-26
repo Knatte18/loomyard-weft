@@ -1,6 +1,8 @@
 # gate reach: functions called directly by tier1 tests are reported as reached by no mapped test
 
-`reach-misses-tier1-calls` · Note · bug, gate, testmap
+`reach-misses-tier1-calls` · Task · bug, gate, testmap · draft
+
+Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
 Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).
 
