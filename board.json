@@ -835,6 +835,25 @@
       "body": "## Seen (2026-11-26)\n\n`cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.\nIts tests build few hubs (7 `CopyHub` calls); most are guard tests that read the whole repository's source.\nThe heaviest is the tier1 test `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym/testonlycode_linux_test.go`:\nit loads every package with `packages.LoadAllSyntax` and builds an SSA call graph of the whole program to find code only tests reach.\n`cmd/lym` imports nearly every package, so nearly every change puts it in the gate's impacted set, and the whole-repo guards run in every task gate.\n\n## Idea (operator, 2026-11-26)\n\n- Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.\n- The dead-code check, the call-graph test above, leaves the gates altogether and runs with the periodic upkeep:\n  dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`).\n  At that point the check runs on the main branch, and each dead function it finds becomes a note on the board.\n  Dead code breaks nothing, so finding it a few landings late costs little.\n- Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or with the tidy.\n",
       "created": "2026-11-26T21:11:57Z",
       "revised": "2026-11-26T21:13:22Z"
+    },
+    {
+      "id": 1704,
+      "handle": "R1",
+      "slug": "testmap-worth-evaluation",
+      "title": "Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them",
+      "kind": "note",
+      "labels": [
+        "research",
+        "testmap",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Why (operator, 2026-11-26)\n\nMuch effort went into the per-test coverage maps, and little use has been found for them.\nThe measurement in `docs/research/speed/testmap-use-measure-2026-11-21/report.md` found, over 10 darn runs:\nthe reach turn added tests in 2 runs; the mutation step raised 6 LOW findings from 27 survivors; the \"reaches none\" triage line was wrong every time and is removed;\nreach and mutation together cost about 2 minutes of gate wall time per run.\n\n## Done meanwhile (operator, 2026-11-26)\n\nThe mutation report step is off in every gate key of the loomyard hub's `gate.yaml` (`reports` without `mutation`; `webster-fix` and `pr-review` with `reports: []`).\nReach and redundancy stay on.\n\n## What to find out\n\n- Every user of the coverage maps in lym: the reach, redundancy and mutation report steps, `lym gate mutate`, `lym gate test --map`, and any other reader.\n- For each: what it has given in landed runs (tests added, findings raised and fixed) against what it costs in gate time, memory and upkeep.\n- The effect of turning the mutation step off: whether review findings, or the defects that land, change in the runs after it.\n- A recommendation per user: keep, tune or remove; and whether the maps themselves, `internal/testcover` and their upkeep, go when no user is kept.\n",
+      "created": "2026-11-26T21:16:20Z",
+      "revised": "2026-11-26T21:16:20Z"
     }
   ],
   "prime_owner": "neve",
