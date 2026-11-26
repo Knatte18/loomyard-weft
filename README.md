@@ -125,10 +125,4 @@ Owner `neve`
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 2h<br>2h | burler, stencil |
-| E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) |  | 32m<br>32m | slack, creel |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) | 1h<br>28m | parsers, loom |
+| E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) |  | 33m<br>33m | slack, creel |
