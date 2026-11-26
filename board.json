@@ -717,6 +717,27 @@
       "body": "Imported from [issue #231](https://github.com/Knatte18/loomyard/issues/231).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-10, the shed tackler of run `models-backend`, a member of the beam `adopt-models-sim`, got a prompt whose section \"Your parent\" read:\n\n```\nNo parent is recorded for this run.\nWhen you are blocked, write your report and stop.\n```\n\nThe run had a parent: the beam's orch `dop:adopt-models-sim:orch`, which owned and released it.\nOther tackler and driver prompts in the hub carried the same text, in the form \"No parent is recorded for the run, so the question is written for whoever owns it.\"\nThe tackler escalated on a merge conflict and stopped; the prime orch saw the stop and passed it to the beam orch by hand.\n\n## Expected\n\nThe tackler and driver prompts of a beam member name the beam's orch as the parent, so a blocked tackler or driver reaches it directly.\n\n## Workaround\n\nThe prime orch forwards a beam member's stop to the beam's orch by creel.\n",
       "created": "2026-11-26T07:33:58Z",
       "revised": "2026-11-26T07:33:58Z"
+    },
+    {
+      "id": 1644,
+      "handle": "B20",
+      "slug": "clone-prime-no-heddle",
+      "title": "fabric clone leaves the prime without rendered heddle",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "heddle"
+      ],
+      "issues": [
+        230
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #230](https://github.com/Knatte18/loomyard/issues/230).\n\n## Seen\n\nIn the DrillOpPlan hub, set up on 2026-11-10, the prime worktree had no `CLAUDE.local.md` after `lym fabric clone`, though heddle held content: `lym heddle show claude-file` printed lym's shipped rules (batching calls, the order of a round of edits).\nEvery worktree lym made later, beams and task worktrees, got the file rendered.\nThe Models hub showed the same: its prime anchor had no `CLAUDE.local.md`, while its beam and task worktrees, such as `support-for-dop`, had one.\nSo the orch and any other session in the prime ran without heddle's rules.\n\n## Expected\n\n`lym fabric clone` renders heddle into the prime it creates, as lym does for every worktree it makes.\n\n## Workaround\n\nThe operator ran `lym heddle render` in the prime by hand.\n",
+      "created": "2026-11-26T07:34:01Z",
+      "revised": "2026-11-26T07:34:01Z"
     }
   ],
   "prime_owner": "neve",
