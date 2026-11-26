@@ -17,9 +17,11 @@ Sources:
 |---|---|---|---|
 | `CLAUDE.local.md` | lym | `lym-batching` | Batch your calls |
 | `CLAUDE.local.md` | lym | `lym-plan-edits-before-gate` | Make every round of edits in this order |
+| `CLAUDE.local.md` | lym | `lym-shell-directory` | Keep the shell where it started |
 | `CLAUDE.local.md` | **repo** | `nicknames` | Nicknames |
 | `AGENTS.override.md` | lym | `lym-batching` | Batch your calls |
 | `AGENTS.override.md` | lym | `lym-plan-edits-before-gate` | Make every round of edits in this order |
+| `AGENTS.override.md` | lym | `lym-shell-directory` | Keep the shell where it started |
 | `.claude/settings.local.json` | lym | `lym-no-attribution` | `attribution` |
 | `.claude/settings.local.json` | lym | `lym-plugins` | `enabledPlugins`, `extraKnownMarketplaces` |
 | `.claude/settings.local.json` | lym | `lym-tool-deny` | `permissions` |
@@ -95,6 +97,18 @@ Rendered at every worktree's anchor.
 
 </details>
 
+<details>
+<summary><code>lym-shell-directory</code> — Keep the shell where it started</summary>
+
+```markdown
+## Keep the shell where it started
+
+- The shell keeps the directory a `cd` moves it to for every later command, so a `lym` verb run after the `cd` may be refused, far from the `cd` that caused it.
+- Reach another directory through an absolute path, `git -C <dir>` or `env -C <dir>` instead of `cd`.
+```
+
+</details>
+
 ## `AGENTS.override.md`
 
 Rendered at every worktree's anchor.
@@ -144,6 +158,18 @@ Rendered at every worktree's anchor.
 - Never read one file per turn.
 - Never spread an edit, a read and another edit over turns.
 - Never run the gate between the edits of one round.
+```
+
+</details>
+
+<details>
+<summary><code>lym-shell-directory</code> — Keep the shell where it started</summary>
+
+```markdown
+## Keep the shell where it started
+
+- The shell keeps the directory a `cd` moves it to for every later command, so a `lym` verb run after the `cd` may be refused, far from the `cd` that caused it.
+- Reach another directory through an absolute path, `git -C <dir>` or `env -C <dir>` instead of `cd`.
 ```
 
 </details>
