@@ -880,6 +880,24 @@
       "body": "## Seen (operator, 2026-11-26, relayed by norce:orch on osl46)\n\nThe first cross-machine test over the Slack bridge worked both ways (Neve #2650, osl46 #129).\nSetup was clumsy: `approve \u003cmachine\u003e` by name failed, and each side needed `approve \u003cmachine\u003e \u003capp id\u003e`.\nBridge channels are made per pair of orchs, so their number grows with the square of the orchs and machines.\n\n## Idea\n\nOne inbound channel per orch: its existing channel.\nAn orch on another machine posts its mail into the receiver's channel.\nThe receiving relay checks the sender bot's app id against the approved peers, as today.\nChannels then grow linearly.\n\nCost and open points:\n\n- A conversation between A and B is split across two channels.\n  A could mirror its outgoing mail into its own channel, or the two could use threads, so the operator sees the whole exchange in one place.\n- The relay must keep telling the operator's messages apart from peer bots' posts in the same channel.\n- Why approve by name found no bot `lym-neve` is unexplained; a design that still names peers must find them.\n\nThe operator will think further about it; this is a note, not a task.\n",
       "created": "2026-11-26T13:15:12Z",
       "revised": "2026-11-26T13:15:12Z"
+    },
+    {
+      "id": 1695,
+      "handle": "E3",
+      "slug": "config-key-comment-sweep",
+      "title": "Name config keys as \u003cmodule\u003e.\u003cpath\u003e in Go comments",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.\nPATTERN-config-key-names asks that such a comment say `\u003cmodule\u003e.\u003cpath\u003e`.\n\nSweep every Go comment and package doc that names a config key to its nested `\u003cmodule\u003e.\u003cpath\u003e` form.\nA comment-only change, no behaviour or user-visible text.\nDeferred from T3 code review round 1, finding F1, to keep that run short.\n",
+      "created": "2026-11-26T13:52:00Z",
+      "revised": "2026-11-26T13:52:00Z"
     }
   ],
   "prime_owner": "neve",
