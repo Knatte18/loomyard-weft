@@ -1,6 +1,6 @@
 # P7 A closed area per hub: Landlock and a seccomp connect supervisor
 
-Rendered 2026-11-26 20:47 UTC; every age below is as of then.
+Rendered 2026-11-26 20:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`closed-area`](design-closed-area.md) · Age 8h · Owner `neve`
@@ -11,6 +11,7 @@ Groups the entries filed from the Sketch `sandbox-closed-area-build`: area-creel
 
 Not to be released or worked yet (operator, 2026-11-26): there is far too little data to build it, and the right kernel is missing.
 Its tasks stay draft until the operator takes it up again.
+The closed area is built last of all, with no other run in flight (operator, 2026-11-26); this holds for every member, area-creel-identity included, though it has no blocker on the board.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
