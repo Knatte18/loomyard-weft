@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "bd3af5bfe67da568a0593e00a024dec0b5dcff3f",
+  "added_decisions": [
+    {
+      "title": "No reproduction run; fix the cleanup race as the entry asks",
+      "digest": "fb90b1d09d1bd1b4cf7a491dd0f96031daadba7115d54b9004c09bea2663caa0"
+    }
+  ]
+}
