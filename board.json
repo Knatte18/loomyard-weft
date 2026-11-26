@@ -457,7 +457,7 @@
       "isolated": false,
       "brief": "",
       "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Iterative agents should commit often\n\nImported from [issue #246](https://github.com/Knatte18/loomyard/issues/246).\n\n## Seen\n\nA darn writer worked through a multi-step change, editing seven files over a long stretch, without committing until its parent asked.\nAn earlier writer in the same hub stalled on an API error and then died in a machine reboot with its work uncommitted, so only the untracked files survived in the worktree.\n\n## Expected\n\nAgents that work iteratively, darn writers above all, commit after each coherent step instead of holding the whole change uncommitted until the end.\nThe writer stencils and skills say so, so that a stall, a dead strand or a reboot loses at most one step, and the parent can see progress in the branch's history.\n\n\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-Child",
       "created": "2026-11-26T07:33:06Z",
       "revised": "2026-11-26T11:08:07Z",
       "profile": "light",
