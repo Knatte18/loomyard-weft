@@ -1,0 +1,31 @@
+# Name a kept cd and the way back when the cwd gate refuses a subdirectory
+
+An agent's shell keeps the directory a `cd` moves it to for every later call.
+After a survey command that ran `cd` into a subdirectory, the next `lym` verb, such as `lym creel post`, was refused by the strict cwd gate.
+The refusal named the cwd and the anchored directory but not why the shell was there or how to get back, and it came far from the `cd` that caused it.
+
+## What changes
+
+- `internal/lymcwd`'s strict cwd gate (`checkCwdAnchorGate`) now adds to its refusal that a shell keeps a `cd` for every later command, so an earlier `cd` likely moved it.
+  It also names the way forward: `cd` back to the anchored directory, which the refusal names, and reach other directories through absolute paths or `git -C`.
+  The error still wraps `ErrCwdOutsideAnchor` and keeps its opening text, so callers that match on either are unaffected.
+  Every verb behind `lymcwd.Resolve` or `preflight.ResolveMode` gets the new text, creel among them, since `ResolveMode` passes the gated error through verbatim.
+- A new shipped heddle entry, `lym-shell-directory`, renders into every session's agents file after the edit-round entry.
+  It says the shell keeps a `cd` across calls, and that an absolute path, `git -C <dir>` or `env -C <dir>` reaches another directory instead.
+
+## Design decisions
+
+- The fix sharpens the refusal and does not accept calls from any directory inside the worktree, which the entry offered as an alternative.
+  Accepting subdirectories would loosen the strict gate that `PATTERN-cwd-resolution` pins for every acting verb, not for creel alone.
+- The message changes at the gate, not in `creelcli`, because every lym verb trips over the same kept `cd`.
+
+## Tests
+
+`TestCheckCwdAnchorGate` pins the whole refusal text for a subdirectory of an unanchored worktree.
+The test fails on the merge base, whose message has neither the cause nor the way forward.
+`ShippedEntriesArePinned` gains the new entry's row, so the pinned order and heading cover it.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** lymcwd
