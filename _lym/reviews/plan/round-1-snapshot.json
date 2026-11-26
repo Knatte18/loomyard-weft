@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "6d329e07ec5e66236a80c6a09f5119fffb69c03c481aa9a67850ae02e3b466ab",
+  "added_decisions": [
+    {
+      "title": "F4: dotted names are rendered, input forms stay",
+      "digest": "121a36c194a290389bec791cb65b18241ff59464e4ece3b79c61943fa70e0a70"
+    }
+  ]
+}
