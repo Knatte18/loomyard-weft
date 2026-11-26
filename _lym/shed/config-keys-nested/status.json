@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "run-exit audit found 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report (/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md: cannot be checked: outside the task worktree); way forward: 1) lym webster reset --to start; 2) re-step the Webster row",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "run-exit audit found 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report (/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md: cannot be checked: outside the task worktree); way forward: 1) lym webster reset --to start; 2) re-step the Webster row"
   },
   "history": [
     {
@@ -234,6 +234,47 @@
       "output": "",
       "at": "2026-11-26T10:04:16Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-26T13:02:22Z",
+      "started_at": "2026-11-26T10:04:16Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-26T12:24:54.58446007Z",
+          "end": "2026-11-26T12:24:54.956201038Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-26T12:57:07.789251894Z",
+          "end": "2026-11-26T12:57:08.078865153Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T12:24:55.020072223Z",
+          "end": "2026-11-26T12:48:03.805161782Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-26T12:48:04.226377354Z",
+          "end": "2026-11-26T12:48:05.23006303Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-26T12:57:08.126345009Z",
+          "end": "2026-11-26T13:02:20.932295237Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
