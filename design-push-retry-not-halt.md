@@ -172,3 +172,8 @@ it removes it, or ignores it in the clean-tree check, and goes on.
 Failing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.
 
 
+
+# Seen 2026-11-26: a busy push lock fails a dobby start
+
+With several tasks released at once, dobby's catch-up for `sandbox-closed-area-build` and `keep-landed-records` failed with `fabricengine: push lock busy: .../loomyard-weft/.weft/fabric.push.lock still held after 30s ... neither side was pushed`, and each needed a manual `lym batten run`.
+A held push lock is contention, not a failure: the catch-up should hand the owed push to the pusher and start the run.
