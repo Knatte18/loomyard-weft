@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 12:08 UTC; every age below is as of then.
+Rendered 2026-11-26 12:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -25,11 +25,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 43m<br>43m | fabric, cleanup, batten |
-| B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 20m<br>20m | parsers, loom |
+| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 50m<br>50m | fabric, cleanup, batten |
+| B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 27m<br>27m | parsers, loom |
 
-## Enhancements (1)
+## Enhancements (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 43m<br>43m | burler, stencil |
+| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 50m<br>50m | burler, stencil |
+| E2 |  | **Slack relay commands take a prefix, so an orch message that opens with approve or revoke is not swallowed** | [`slack-relay-command-prefix`](design-slack-relay-command-prefix.md) |  | 0m<br>0m | slack |
