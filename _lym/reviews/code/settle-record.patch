@@ -1,0 +1,235 @@
+diff --git a/internal/loomcli/fixtureprocesses_integration_linux_test.go b/internal/loomcli/fixtureprocesses_integration_linux_test.go
+new file mode 100644
+index 000000000..7fb35c9b9
+--- /dev/null
++++ b/internal/loomcli/fixtureprocesses_integration_linux_test.go
+@@ -0,0 +1,55 @@
++// fixtureprocesses_integration_linux_test.go pins how the smoke fixtures end the processes left under their temp dirs.
++// It reads the process table through /proc, so only Linux compiles it.
++
++package loomcli
++
++import (
++	"errors"
++	"os/exec"
++	"syscall"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestWaitForFixtureProcessesToExit_KillsAProcessThatOutlivesItsPatience asserts the fixture cleanup ends a process.
++// The process runs under the test's temp dir and does not exit within the patience.
++// It stands for a detached `lym board sync` that is still running after its verb returned.
++// It must be dead once the test returns, or it outlives the package's run and fails it.
++//
++//testtiming:keep pins that the fixture cleanup SIGKILLs a process left under the test's temp root
++func TestWaitForFixtureProcessesToExit_KillsAProcessThatOutlivesItsPatience(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	done := make(chan error, 1)
++	var cmd *exec.Cmd
++	t.Run("fixture", func(t *testing.T) {
++		waitForFixtureProcessesToExit(t, 100*time.Millisecond)
++		cmd = exec.Command("sleep", "60")
++		cmd.Dir = t.TempDir()
++		if err := cmd.Start(); err != nil {
++			t.Fatalf("start sleep: %v", err)
++		}
++		go func() { done <- cmd.Wait() }()
++	})
++	if cmd == nil || cmd.Process == nil {
++		t.Fatal("the fixture subtest started no process")
++	}
++
++	select {
++	case err := <-done:
++		var exitErr *exec.ExitError
++		if !errors.As(err, &exitErr) {
++			t.Fatalf("sleep under the fixture's temp dir ended with %v; want it killed", err)
++		}
++		status := exitErr.Sys().(syscall.WaitStatus)
++		if !status.Signaled() || status.Signal() != syscall.SIGKILL {
++			t.Errorf("sleep under the fixture's temp dir ended with status %v; want killed by SIGKILL", status)
++		}
++	case <-time.After(5 * time.Second):
++		_ = cmd.Process.Kill()
++		t.Fatal("sleep under the fixture's temp dir still runs after the fixture's cleanup; want it killed")
++	}
++}
+diff --git a/internal/loomcli/smoke_helpers_test.go b/internal/loomcli/smoke_helpers_test.go
+index d5a032954..068fce5a2 100644
+--- a/internal/loomcli/smoke_helpers_test.go
++++ b/internal/loomcli/smoke_helpers_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -250,9 +251,12 @@ var badReedUpRegistration = &hubforge.Registration{
+ 
+ // newBadReedUpFixture copies the bad-reed-config template, whose reed config makes reed Up fail.
+ // It seeds the copy's pair with seed and returns the resolved location and the worktree path.
++// A verb run against it reconciles the hub, which spawns a detached board sync,
++// so the fixture ends every process left under the copy before the copy is removed.
+ func newBadReedUpFixture(t *testing.T, seed func(*testing.T, *lymcwd.Location)) (*lymcwd.Location, string) {
+ 	t.Helper()
+ 	h := hubforge.CopyRegistered(t, badReedUpRegistration)
++	waitForFixtureProcessesToExit(t, fixtureProcessPatience)
+ 	worktree := h.PairCodeWorktree(badReedUpSlug)
+ 	loc, err := lymcwd.Resolve(worktree)
+ 	if err != nil {
+@@ -262,30 +266,68 @@ func newBadReedUpFixture(t *testing.T, seed func(*testing.T, *lymcwd.Location))
+ 	return loc, worktree
+ }
+ 
+-// waitForFixtureProcessesToExit registers a cleanup that waits for processes whose cwd is under the test's temp dirs.
+-// A push into a bare repository leaves a git process there for a moment;
+-// that process would otherwise write into a directory the temp-dir removal is deleting.
+-// It is registered after the fixture, so it runs before the fixture's removal;
+-// the wait is best effort, and the removal reports what is still left.
+-func waitForFixtureProcessesToExit(t *testing.T) {
++// fixtureProcessPatience is how long a fixture's cleanup waits for its temp dirs' processes to exit on their own.
++const fixtureProcessPatience = 10 * time.Second
++
++// fixtureProcessPoll is the interval at which a fixture's cleanup rescans for the processes under its temp dirs.
++const fixtureProcessPoll = 20 * time.Millisecond
++
++// waitForFixtureProcessesToExit registers a cleanup that ends every process whose cwd is under the test's temp dirs.
++// A push into a bare repository leaves a git process there for a moment,
++// and a verb's detached `lym board sync` runs on after the verb returns.
++// Either would otherwise write into a directory the temp-dir removal is deleting.
++// Either could also outlive the package's run, whose end fails on every process left running.
++// The cleanup waits up to patience for them to exit, then kills and logs each one still running.
++// A process that appears after a kill is killed and logged in turn, a further patience later.
++// The cleanup fails the test when the only processes left after that patience are ones it already killed.
++// It is registered after the fixture, so it runs before the fixture's removal.
++func waitForFixtureProcessesToExit(t *testing.T, patience time.Duration) {
+ 	t.Helper()
+-	root := filepath.Dir(t.TempDir())
++	root, err := filepath.EvalSymlinks(filepath.Dir(t.TempDir()))
++	if err != nil {
++		t.Fatalf("resolve the test's temp root: %v", err)
++	}
+ 	t.Cleanup(func() {
+-		for deadline := time.Now().Add(10 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+-			running := false
+-			for _, pid := range tmuxkit.Pids() {
+-				if cwd, ok := tmuxkit.ProcCwd(pid); ok && pid != os.Getpid() && strings.HasPrefix(cwd, root+string(filepath.Separator)) {
+-					running = true
+-					break
++		killed := map[int]bool{}
++		for deadline := time.Now().Add(patience); ; time.Sleep(fixtureProcessPoll) {
++			left := processesUnder(root)
++			if len(left) == 0 {
++				return
++			}
++			if time.Now().Before(deadline) {
++				continue
++			}
++			killedAnother := false
++			for _, pid := range left {
++				if killed[pid] {
++					continue
+ 				}
++				argv, _ := tmuxkit.ProcArgv(pid)
++				t.Logf("fixture process %d under %s still runs after %s; killing it: %q", pid, root, patience, argv)
++				_ = proc.KillPID(pid)
++				killed[pid] = true
++				killedAnother = true
+ 			}
+-			if !running {
++			if !killedAnother {
++				t.Errorf("fixture processes %v under %s still run %s after they were killed", left, root, patience)
+ 				return
+ 			}
++			deadline = time.Now().Add(patience)
+ 		}
+ 	})
+ }
+ 
++// processesUnder returns the pids of the live processes other than this one whose cwd is under root.
++func processesUnder(root string) []int {
++	var pids []int
++	for _, pid := range tmuxkit.Pids() {
++		if cwd, ok := tmuxkit.ProcCwd(pid); ok && pid != os.Getpid() && strings.HasPrefix(cwd, root+string(filepath.Separator)) {
++			pids = append(pids, pid)
++		}
++	}
++	return pids
++}
++
+ // hubStampPath returns the hub's build stamp file.
+ func hubStampPath(loc *lymcwd.Location) string {
+ 	return hubreconcile.Geometry{BoardDir: fabricengine.BoardDir(loc.HubPath)}.StampPath()
+diff --git a/internal/loomcli/smoke_prebootstrap_integration_test.go b/internal/loomcli/smoke_prebootstrap_integration_test.go
+index 2d26e5341..afc5317d6 100644
+--- a/internal/loomcli/smoke_prebootstrap_integration_test.go
++++ b/internal/loomcli/smoke_prebootstrap_integration_test.go
+@@ -33,7 +33,7 @@ func TestLoomPreBootstrapPair(t *testing.T) {
+ 
+ 	exe := lymbin.Build(t)
+ 	_, loc, worktree, slug := newWiredPairFixture(t)
+-	waitForFixtureProcessesToExit(t)
++	waitForFixtureProcessesToExit(t, fixtureProcessPatience)
+ 	recordsDir := fabricengine.RecordsWorktree(loc)
+ 
+ 	// The run verb on a never-seeded pair refuses on the envelope with a message naming the bootstrap verb.
+@@ -124,7 +124,7 @@ func TestLoomStatusAndPauseOnNeverBootstrappedPair(t *testing.T) {
+ 
+ 	exe := lymbin.Build(t)
+ 	_, loc, worktree, _ := newWiredPairFixture(t)
+-	waitForFixtureProcessesToExit(t)
++	waitForFixtureProcessesToExit(t, fixtureProcessPatience)
+ 	seedGoDriverRun(t, loc)
+ 
+ 	for _, verb := range []string{"status", "pause"} {
+@@ -173,7 +173,6 @@ func TestLoomResumeReconcilesTheHubConfigBeforeArming(t *testing.T) {
+ 
+ 	exe := lymbin.Build(t)
+ 	loc, worktree := newBadReedUpFixture(t, deleteBoardLensesDefault)
+-	waitForFixtureProcessesToExit(t)
+ 	recordsDir := fabricengine.RecordsWorktree(loc)
+ 	lensesPath := boardLensesDefault(loc)
+ 
+diff --git a/internal/loomcli/smoke_starttail_test.go b/internal/loomcli/smoke_starttail_test.go
+index 1fd4547a6..c98d5cc3c 100644
+--- a/internal/loomcli/smoke_starttail_test.go
++++ b/internal/loomcli/smoke_starttail_test.go
+@@ -116,9 +116,6 @@ func TestSmokeWatchdog_StartSpawnsTheDaemon(t *testing.T) {
+ 	tmuxBinaryPath(t)
+ 	exe := lymbin.Build(t)
+ 	_, loc, worktree, _ := newWiredPairFixture(t)
+-	// Registered before the teardown, so it runs after the teardown's kills:
+-	// a git child of a killed process can still be writing into the hub when the temp dir is removed.
+-	waitForFixtureProcessesToExit(t)
+ 	registerBootstrapTeardown(t, loc, worktree)
+ 
+ 	stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+diff --git a/internal/loomcli/smoke_test.go b/internal/loomcli/smoke_test.go
+index 214718004..40c6150b3 100644
+--- a/internal/loomcli/smoke_test.go
++++ b/internal/loomcli/smoke_test.go
+@@ -77,6 +77,7 @@ func tmuxBinaryPath(t *testing.T) string {
+ // registerBootstrapTeardown registers a cleanup that kills any surviving driver process for worktree
+ // and the per-hub watchdog daemon, then tears the reed substrate down.
+ // A failed assertion then never leaves a live tmux server, a detached driver, or a watchdog daemon behind.
++// Once those are gone, it ends every process still running under the test's temp dirs, such as a detached board sync.
+ //
+ // The watchdog reap is unconditional, not a branch.
+ // The smoke tier builds and runs a real binary, so testing.Testing() is false there,
+@@ -89,6 +90,9 @@ func registerBootstrapTeardown(t *testing.T, loc *lymcwd.Location, worktree stri
+ 	if err != nil {
+ 		t.Fatalf("reed geometry: %v", err)
+ 	}
++	// Registered before the kills below, so it runs after them:
++	// a git child of a killed process can still be writing into the hub when the temp dir is removed.
++	waitForFixtureProcessesToExit(t, fixtureProcessPatience)
+ 	// Registered before the first boot, so reed's boot finds the kit's hermetic server on the hub's key.
+ 	// The kill and socket-file removal run after the teardown below.
+ 	tmuxkit.KillOnCleanup(t, tmuxBinaryPath(t), reedGeom.SocketKey)
