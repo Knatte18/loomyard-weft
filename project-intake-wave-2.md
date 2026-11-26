@@ -1,6 +1,6 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-26 21:22 UTC; every age below is as of then.
+Rendered 2026-11-26 21:25 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-2` · Age 13h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Burler-Fix | neve | 13h<br>13h | shuttle, claude, tender, gate, burler, shed, reed |
+| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Burler-Fix | neve | 14h<br>13h | shuttle, claude, tender, gate, burler, shed, reed |
 
 ## Layer A (1)
 
@@ -24,4 +24,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T1<br>T9<br>T10<br>T5 | 13h<br>35m | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T1<br>T9<br>T10<br>T5 | 13h<br>37m | fabric, shed, landing, batten, dobby |
