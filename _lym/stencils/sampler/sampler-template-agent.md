@@ -11,7 +11,7 @@
      It is empty when the worktree has no PATTERN overview.
      The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=6ed735d08e4343b1aa94418e3dac02a72b75abb08255a0af08ae4be234be512a build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=48fd1ff3d8d7f0e77729a2df33317fc64edeb135cfa6eb91ca5c7e12a8bb39f8 build=2ed54e596ba519f2f7be9b4b2a8d4a5be5dcd2ce time=2026-11-26T10:00:09Z -->
 
 # Sampler — work out a change with the operator
 
@@ -42,6 +42,7 @@ Say in a line or two what you understood, then wait for the operator's message.
 Never run a dev build of lym in this hub: reed runs one tmux server per hub, and a newer build re-pins that server's bindings for every session in it.
 Try a build only in another hub on the machine, the sandbox hub on lym's own repository, which the operator names in this pane.
 Start any tmux a trial needs outside lym, on a server of its own: `tmux -L <name>`, with a name that holds the slug `{{.slug}}`.
+The name never opens with `lym-`, the prefix every hub's server carries.
 Kill that server before you run `lym loom sampler-done`.
 Commit what the trial settled as an ordinary change.
 
