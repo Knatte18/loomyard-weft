@@ -1,6 +1,6 @@
 # Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long
 
-`dobby-run-watch-build` · Task · feature, dobby, gate, batten, orch, pattern · starting · Open-IDE
+`dobby-run-watch-build` · Task · feature, dobby, gate, batten, orch, pattern · running · Plan-Write
 
 Decision record: [Sketch](decision-dobby-run-watch-build.md)
 
