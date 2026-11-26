@@ -32,7 +32,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>50m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>51m | burler, shed, orch, quarry, report |
 
 ## [P3 Intake wave 2: Describe text, infra stops, push retries](project-intake-wave-2.md) (3)
 
@@ -60,11 +60,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-wave-3` · Age 11h · Owner `neve`
 
-### Draft (2)
+### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T9<br>T11 | 12h<br>7h | batten, landing, orch, stencil, shed, loom, pawl |
+| T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T9<br>T11 | 12h<br>7h | batten, landing, orch, stencil, shed, loom, pawl |
+
+### Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
 | T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T9<br>T10 | 12h<br>11h | loom, burler |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (2)
@@ -77,7 +82,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T8 | **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | Plan-Write | neve | 8h<br>8h | dobby, gate, batten, orch, pattern |
 
-### Layer C (1)
+### Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -104,7 +109,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | landing · Finalize | neve | 8h<br>52m | burler, stencil |
+| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | landing · Finalize | neve | 8h<br>53m | burler, stencil |
 | T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md) | motif | Discussion-Bouncer | neve | 19m<br>13m | fabric, testkit |
 | T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | Darn-Write | neve | 7h<br>7h | gate, testmap |
 
