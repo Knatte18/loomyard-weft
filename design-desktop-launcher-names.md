@@ -1,6 +1,6 @@
 # Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"
 
-`desktop-launcher-names` · Note · enhancement, desktop
+`desktop-launcher-names` · Task · enhancement, desktop · draft
 
 ## Wish (operator, 2026-11-26)
 
