@@ -1,6 +1,6 @@
 # creel post refusal after a persisted cd does not say why
 
-`creel-refusal-after-cd` · Task · bug, creel, cwd · draft
+`creel-refusal-after-cd` · Task · bug, creel, cwd
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 

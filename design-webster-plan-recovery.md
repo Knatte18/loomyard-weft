@@ -1,6 +1,6 @@
 # Webster: plan fixes after begun batches, and recovery that ends asking
 
-`webster-plan-recovery` · Task · bug, webster, quarry · draft
+`webster-plan-recovery` · Task · bug, webster, quarry
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 

@@ -1,6 +1,6 @@
 # Iterative agents should commit often
 
-`writers-commit-each-step` · Task · enhancement, stencil, darn · draft
+`writers-commit-each-step` · Task · enhancement, stencil, darn
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 

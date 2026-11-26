@@ -1,6 +1,6 @@
 # Reed reads each client's own session, and shellguard refuses the session bus
 
-`reed-client-and-bus-guard` · Task · bug, reed, process · draft
+`reed-client-and-bus-guard` · Task · bug, reed, process
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
