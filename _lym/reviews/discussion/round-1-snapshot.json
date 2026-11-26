@@ -1,0 +1,8 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "db1ef1890966b9be65a1155068f4795f4ac2533e14b4bdeb6f71b97d1e368201"
+}
