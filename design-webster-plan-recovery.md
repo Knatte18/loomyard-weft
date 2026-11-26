@@ -2,8 +2,6 @@
 
 `webster-plan-recovery` · Task · bug, webster, quarry
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # Plan fixes after begun batches block Webster; glyph-not-found on members a card creates
