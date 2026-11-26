@@ -1,11 +1,11 @@
 {
-  "current_producer": "Run-Shed",
+  "current_producer": "Land",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Run-Shed",
-    "last": "Open-IDE → skipped",
+    "now": "Land",
+    "last": "Run-Shed → done",
     "wait": ""
   },
   "history": [
@@ -47,6 +47,54 @@
       "output": "",
       "at": "2026-11-26T20:03:51Z",
       "reason": "batten.open_ide = false",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-11-26T20:41:12Z",
+      "started_at": "2026-11-26T20:41:12Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Discussion-Bouncer",
+      "at": "2026-11-26T20:42:52Z",
+      "started_at": "2026-11-26T20:42:52Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-11-26T21:12:38Z",
+      "started_at": "2026-11-26T21:12:38Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → done at Discussion-Bouncer",
+      "at": "2026-11-26T21:14:23Z",
+      "started_at": "2026-11-26T21:14:23Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-26T21:14:29Z",
+      "started_at": "2026-11-26T21:14:28Z",
       "machine": "neve"
     }
   ]
