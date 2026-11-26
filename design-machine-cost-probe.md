@@ -1,6 +1,6 @@
 # A tools/ program that measures process, file and new-binary costs, so machines and XDR exceptions can be compared
 
-`machine-cost-probe` · Task · research, tools, gate · starting · Seed-Child
+`machine-cost-probe` · Task · research, tools, gate · starting · Open-Window
 
 Imported from [issue #258](https://github.com/Knatte18/loomyard/issues/258).
 
