@@ -1,11 +1,11 @@
 {
   "current_producer": "Friction-Reflect",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Friction-Reflect",
-    "last": "Finalize → done",
+    "last": "Friction-Reflect → done",
     "wait": ""
   },
   "history": [
@@ -138,6 +138,13 @@
       "output": "",
       "at": "2026-11-26T07:27:28Z",
       "started_at": "2026-11-26T07:26:50Z"
+    },
+    {
+      "producer": "Friction-Reflect",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-26T07:28:42Z",
+      "started_at": "2026-11-26T07:27:37Z"
     }
   ],
   "product": {
