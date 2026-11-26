@@ -27,4 +27,13 @@ Its only way forward was `lym webster reset --to start`, which throws away every
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - fixed-head-tolerates-unvetted-commits (class design, severity MEDIUM, open in rounds 1)
+  - master-note-path-save-and-read-untested (class design, severity MEDIUM, open in rounds 1)
+  - master-stencil-still-limits-to-two-contract-files (class consistency, severity MEDIUM, open in rounds 1)
+  - restarted-gate-loses-prefix-head (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
