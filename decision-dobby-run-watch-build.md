@@ -175,6 +175,12 @@ The watch adds lines and removes none: batten's state-changed and driver-dead no
 
 Rationale: batten's notice waits for the stop report and for an arbiter or tackler in flight, so it carries the detail the orch acts on; the watch line is the prompt floor under it.
 
+### Added after Discussion (parent, 2026-11-26): Episode stamp counts folded repeats
+
+Decision: D1's episode stamp is the layer's history length plus the last history entry's Repeats, for both batten's layer and the child's layer; RunView and ChildReading carry the last entry's Repeats for it.
+
+Rationale: shedengine's appendOrFold folds a repeated budget-exempt Stuck into the previous entry, so history length alone misses a second block at the same row and fails the acceptance criterion that it posts a second line.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: slot records are read only through `gateslot`'s pool.
