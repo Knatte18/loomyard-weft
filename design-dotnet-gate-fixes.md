@@ -1,6 +1,6 @@
 # Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers
 
-`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Code-Burler-Review
+`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Code-Burler-Fix
 
 Bundled from the notes below; each part keeps its note's text.
 
