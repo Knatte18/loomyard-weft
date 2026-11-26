@@ -192,6 +192,14 @@ Rationale: Option (b) of the hard-cap question: it closes F19's hole on resumes 
 - `pr-modes-no-agent` removes PR-Review's findings path and the parent's PR-Review ask; when it lands, D2's copy and the PR-Review part of D3 go with them, and its plan must drop or keep them knowingly.
 - `describe-review-and-sync` adds a Describe reviewer whose findings are a new review artifact; the PATTERN rule below expects it to be kept in the run's tracked records.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - landing-commit-no-durable-source (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - landing-record-trusted-after-parent-reset (class design, severity BLOCKING, open in rounds 3)
+  - records-side-tracked-gitignore-breaks-fabric-boundary (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a file written into the kept directory is staged by the loom status commit and is not reported as a dirty path outside run records.
