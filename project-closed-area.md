@@ -1,6 +1,6 @@
 # P7 A closed area per hub: Landlock and a seccomp connect supervisor
 
-Rendered 2026-11-26 21:36 UTC; every age below is as of then.
+Rendered 2026-11-26 21:37 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`closed-area`](design-closed-area.md) · Age 9h · Owner `neve`

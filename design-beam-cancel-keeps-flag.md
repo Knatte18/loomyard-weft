@@ -1,6 +1,6 @@
 # batten cancel --remove of a beam leaves the project's beam flag set
 
-`beam-cancel-keeps-flag` · Task · bug, batten
+`beam-cancel-keeps-flag` · Task · bug, batten · starting · Worktree-Create
 
 Imported from [issue #259](https://github.com/Knatte18/loomyard/issues/259).
 
