@@ -1,9 +1,9 @@
 # Card 9 — reconcile-before-load
 
 **Create:**
-- `plan:internal/hubgeom#ReconcileBeforeLoad` -> `func ReconcileBeforeLoad(l *lymcwd.Location)`
-- `plan:internal/loomcli#TestLoomVerbs_StaleStampReconcilesBeforeACirclingVerbLoads` -> `func TestLoomVerbs_StaleStampReconcilesBeforeACirclingVerbLoads(t *testing.T)`
-- `plan:internal/shedcli#TestShedVerbs_StaleStampReconcilesBeforeALoomRecipeArms` -> `func TestShedVerbs_StaleStampReconcilesBeforeALoomRecipeArms(t *testing.T)`
+- `internal/hubgeom#ReconcileBeforeLoad`
+- `internal/loomcli#TestLoomVerbs_StaleStampReconcilesBeforeACirclingVerbLoads`
+- `internal/shedcli#TestShedVerbs_StaleStampReconcilesBeforeALoomRecipeArms`
 
 **Edit:**
 - `internal/loomcli#loomCLI.arm`
