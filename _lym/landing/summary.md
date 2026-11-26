@@ -1,31 +1,27 @@
-# Reed's RC click reads the clicking client's own session
+# Read the RC click's pane from the clicking client's own session
 
-From issue #214.
+An RC click now reads the active pane of the session the clicking client is in.
+Before, `ClientAgentPane` ran `tmux display-message -p -c <client>` without `-t`,
+and tmux expanded the format against the most recently active client's session.
+With clients in several sessions, a click in a task session could target the orch's pane instead of the task's agent,
+and was refused as already on when the orch was marked.
 
-A click on reed's RC button runs `lym orch rc-on --client <name>`, which reads the clicking client's active pane through `reedengine.ClientAgentPane`.
-That read ran `tmux display-message -p -c <client>` with no `-t`.
-Run from outside tmux, display-message expands its format against the pane tmux picks as current, which is the most recently active client's session, not the `-c` client's.
-On a server with clients in several sessions every click could read the same pane, such as the orch's,
-so a click in a task session could queue remote control into the orch or be refused as already on.
+Closes #214
 
-`clientAgentPaneVia` now runs `list-clients -F '#{client_name}\t#{pane_id}\t#{@lym_strand_name}\t#{@lym_rc}'` and takes the clicking client's row.
-tmux expands each list-clients row against that client's own session, so the pane id and both pane options come from the pane the clicker sees.
+## Design
 
-## Design decisions
+- `clientAgentPaneVia` now runs `list-clients`, which expands each row's format against that client's own session,
+  and picks the row whose `client_name` equals the clicking client exactly.
+  This takes one tmux call, where resolving the client's session first and then passing `-t` would take two.
+- The errors now tell apart a client that is not attached, a row that cannot be read and a client with no active pane.
+- A tier-2, Linux-only test attaches two clients to two sessions on a real tmux server
+  and checks that each read returns its own session's pane.
 
-- `list-clients` over `display-message -t <client's session>`: it needs one tmux call and no session-name target, which an exact-match target would have to quote.
-- A client absent from the listing is now its own error, `no client "<name>" is attached`; a listed client with an empty pane id keeps the `shows no active pane` error.
+## To check by hand
 
-## Tests
-
-- `TestClientAgentPane_ReadsEachClientsOwnSession` (tier 2, live tmux) attaches one client to each of two sessions and checks each client's read names its own session's pane and strand name.
-  On the old code both reads name the last-attached client's session, so the first client's read fails.
-- `TestClientAgentPaneVia` (tier 0) pins the new argv, that other clients' rows are skipped, and the unlisted-client error.
-
-## Follow-up
-
-`reed switch` (`switch.go`) and a button's `{strand}` lookup (`buttonclick.go`) run the same `display-message -p -c <client>` with no `-t`.
-They are left as they are here and filed as board note `reed-switch-wrong-client`.
+- No hand-run of an RC click is recorded:
+  with clients attached to several sessions, click RC in a task session and confirm that the task's agent gets it,
+  including while the orch's pane is marked.
 
 ## Merge danger
 
