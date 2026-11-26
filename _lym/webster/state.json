@@ -1,11 +1,11 @@
 {
   "runGuid": "dde026a91b8266221c038c16bc327bd7",
-  "planFingerprint": "7c4bdc06d5907c69613153e7e6adb203d1041efe90f7fedf3e683639ba1be3ba",
+  "planFingerprint": "bc01b2c0b294b5896dc6b548ddd2efd319f659bf9044d82b4f3cc2af5dc8832f",
   "planFileHashes": {
     "00-overview.md": "47787b29afc8aae5ab6cb16198764bf2a6f6536d7b0bb7af0b113a1f7b663d28",
-    "01-run-watch-setting.md": "c5a4abd511d9fdb5111c796f30ad5a9f1af704bc0c9091819f9b7604fa635b59",
+    "01-run-watch-setting.md": "cf96ad995a71383bea9e8c4132de9f3d8ee5628c756574a67277b683097dd484",
     "02-run-view-history.md": "b6adc4af7d0d27d1ad58382e5069da38c15e0f5df0a3ff1aaf0b0505d7ff6300",
-    "03-run-watch-engine.md": "bdbed173abc5b08d4e37ad339c840c36c220477f86dfdea36fcaf2aeb4f01023",
+    "03-run-watch-engine.md": "a497bf72807bb42da1e5da4fd24e8e648f9e86af6fb9293e53e9c0e2e884fad9",
     "04-run-watch-wiring.md": "83fec3b74a0b5d084c31c30057f59310ad205e4116236204af7bbc4133e5441c",
     "05-gate-holder-marker.md": "800a883b6f32a242fc05ae0b3f153ddfa069c7097de136a383c4e45e5b27ce35",
     "06-gate-hold-engine.md": "f06b313fca77af92c10bfc9a2eab83d0c75e0a03db427b50a3d1708f17108608",
@@ -186,23 +186,47 @@
         "03-run-watch-engine"
       ],
       "cardHashes": {
-        "01-run-watch-setting": "c5a4abd511d9fdb5111c796f30ad5a9f1af704bc0c9091819f9b7604fa635b59",
+        "01-run-watch-setting": "cf96ad995a71383bea9e8c4132de9f3d8ee5628c756574a67277b683097dd484",
         "02-run-view-history": "b6adc4af7d0d27d1ad58382e5069da38c15e0f5df0a3ff1aaf0b0505d7ff6300",
-        "03-run-watch-engine": "bdbed173abc5b08d4e37ad339c840c36c220477f86dfdea36fcaf2aeb4f01023"
+        "03-run-watch-engine": "a497bf72807bb42da1e5da4fd24e8e648f9e86af6fb9293e53e9c0e2e884fad9"
       },
       "startSha": "8641cd5042d72bf0b060ec1d3635da01859814ff",
       "kind": "fork",
       "spawnedAt": "2026-11-26T21:00:56Z",
       "sessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-run-watch-setting",
+        "status": "done",
+        "head_sha": "a5c38f5330a17af9d460423e6de029c714ac9949",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/battencli/dobbyreads.go",
+          "internal/dobbyengine/runwatch.go",
+          "internal/dobbyengine/runwatch_test.go",
+          "internal/dobbyengine/tasksetting_test.go"
+        ]
+      },
+      "cardShas": [
+        "a5c38f5330a17af9d460423e6de029c714ac9949"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "9445140350e51be1b6ffd1f1ee99a315",
   "masterSessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/dobby-run-watch-build/_lym/loom/friction/webster-master.md",
-  "masterRecordsBase": "3c794e3e17453e387840d4dc28ed81febb00d7af"
+  "masterRecordsBase": "3c794e3e17453e387840d4dc28ed81febb00d7af",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl"
+  ]
 }

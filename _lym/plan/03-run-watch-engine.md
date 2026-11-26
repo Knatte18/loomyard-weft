@@ -1,15 +1,15 @@
 # Card 3 — run-watch-engine
 
 **Create:**
-- `plan:internal/dobbyengine#runWatchPrefix` -> `const runWatchPrefix = "[run watch]"`
-- `plan:internal/dobbyengine#RunWatchDeps` -> `type RunWatchDeps struct`
-- `plan:internal/dobbyengine#WatchReading` -> `type WatchReading struct`
-- `plan:internal/dobbyengine#OwedWatchLine` -> `type OwedWatchLine struct`
-- `plan:internal/dobbyengine#RunWatchState` -> `type RunWatchState struct`
-- `plan:internal/dobbyengine#daemon.runWatch` -> `func (d *daemon) runWatch(ctx context.Context, now time.Time)`
-- `plan:internal/dobbyengine#watchStop` -> `func watchStop(reading WatchReading) bool`
-- `plan:internal/dobbyengine#watchLine` -> `func watchLine(slug string, reading WatchReading) string`
-- `plan:internal/dobbyengine#TestRunWatch` -> `func TestRunWatch(t *testing.T)`
+- `internal/dobbyengine#runWatchPrefix`
+- `internal/dobbyengine#RunWatchDeps`
+- `internal/dobbyengine#WatchReading`
+- `internal/dobbyengine#OwedWatchLine`
+- `internal/dobbyengine#RunWatchState`
+- `internal/dobbyengine#daemon.runWatch`
+- `internal/dobbyengine#watchStop`
+- `internal/dobbyengine#watchLine`
+- `internal/dobbyengine#TestRunWatch`
 
 **Edit:**
 - `internal/dobbyengine#Deps`

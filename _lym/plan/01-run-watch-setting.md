@@ -1,16 +1,16 @@
 # Card 1 — run-watch-setting
 
 **Create:**
-- `plan:internal/beamsetting#RunWatchKey` -> `const RunWatchKey = "run_watch"`
-- `plan:internal/beamsetting#RunWatchStops` -> `const RunWatchStops = "stops"`
-- `plan:internal/beamsetting#RunWatchRows` -> `const RunWatchRows = "rows"`
-- `plan:internal/beamsetting#RunWatchOff` -> `const RunWatchOff = "off"`
-- `plan:internal/beamsetting#RunWatchValues` -> `func RunWatchValues() []string`
-- `plan:internal/dobbyengine#RunWatchKey` -> `const RunWatchKey = beamsetting.RunWatchKey`
-- `plan:internal/dobbyengine#RunWatchStops` -> `const RunWatchStops = beamsetting.RunWatchStops`
-- `plan:internal/dobbyengine#RunWatchRows` -> `const RunWatchRows = beamsetting.RunWatchRows`
-- `plan:internal/dobbyengine#RunWatchOff` -> `const RunWatchOff = beamsetting.RunWatchOff`
-- `plan:internal/dobbyengine#LookupRunWatch` -> `func LookupRunWatch(chain TaskSettingChain) (string, error)`
+- `internal/beamsetting#RunWatchKey`
+- `internal/beamsetting#RunWatchStops`
+- `internal/beamsetting#RunWatchRows`
+- `internal/beamsetting#RunWatchOff`
+- `internal/beamsetting#RunWatchValues`
+- `internal/dobbyengine#RunWatchKey`
+- `internal/dobbyengine#RunWatchStops`
+- `internal/dobbyengine#RunWatchRows`
+- `internal/dobbyengine#RunWatchOff`
+- `internal/dobbyengine#LookupRunWatch`
 
 **Edit:**
 - `internal/beamsetting/beamsetting.go`
