@@ -1,0 +1,187 @@
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index 00f7f89ad..a0e1167f7 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -60,6 +60,10 @@ Any other H3 there is refused as a `decision-heading-malformed` finding.
+ A repeated id is a `decision-id-duplicate` finding.
+ Each id appears as a whole word in a bullet of `## Acceptance criteria`.
+ So `D1` is not met by `D10`, and a range such as "D1 to D4" covers only the ids it spells.
++A bullet runs on through the lines after it up to a blank line, the next bullet or a fenced line,
++and any other indented line continues it.
++An unindented line continues it as markdown's lazy continuation does,
++unless it is an ATX heading, a thematic break or a blockquote, or opens an HTML block that can interrupt a paragraph.
+ An id no bullet names is a `decision-not-in-acceptance` finding.
+ Both checks run for every loom record, in the discussion gates, Darn-Write's post-session guard and `lym loom validate-discussion`.
+ They do not run in `lym loom decision add`.
+diff --git a/internal/discussionparser/decisionids.go b/internal/discussionparser/decisionids.go
+index da41880e3..52d3db934 100644
+--- a/internal/discussionparser/decisionids.go
++++ b/internal/discussionparser/decisionids.go
+@@ -4,6 +4,7 @@ package discussionparser
+ 
+ import (
+ 	"fmt"
++	"regexp"
+ 	"strconv"
+ 	"strings"
+ 	"unicode"
+@@ -167,7 +168,7 @@ func parseDecisionHeading(heading string) (string, bool) {
+ }
+ 
+ // bulletLines returns the unfenced lines in [first, end) that belong to a list item:
+-// the bullet line itself and the indented lines continuing it.
++// the bullet line itself and the lines continuing it.
+ func bulletLines(lines []string, fenced []bool, first, end int) []string {
+ 	var bullets []string
+ 	inItem := false
+@@ -181,7 +182,7 @@ func bulletLines(lines []string, fenced []bool, first, end int) []string {
+ 		switch {
+ 		case isBulletLine(trimmed):
+ 			inItem = true
+-		case line == "" || (inItem && trimmed == line):
++		case !continuesItem(line):
+ 			inItem = false
+ 		}
+ 		if inItem {
+@@ -191,8 +192,46 @@ func bulletLines(lines []string, fenced []bool, first, end int) []string {
+ 	return bullets
+ }
+ 
++// The unindented lines that end a list item, as CommonMark lets each interrupt a paragraph.
++var (
++	atxHeadingLine    = regexp.MustCompile(`^#{1,6}([ \t]|$)`)
++	thematicBreakLine = regexp.MustCompile(`^((-[ \t]*){3,}|(\*[ \t]*){3,}|(_[ \t]*){3,})$`)
++	// htmlBlockStartLine matches CommonMark's HTML block start conditions 1 to 6;
++	// any other tag, an autolink or a `<placeholder>` is paragraph text.
++	htmlBlockStartLine = regexp.MustCompile(`(?i)^(<!--|<\?|<![a-z]|<!\[CDATA\[` +
++		`|<(script|pre|style|textarea)([ \t>]|$)` +
++		`|</?(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt` +
++		`|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu` +
++		`|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr` +
++		`|track|ul)([ \t]|/?>|$))`)
++)
++
++// continuesItem reports whether line, right-trimmed and right after a list item's line, continues that item.
++// An indented line continues it.
++// So does an unindented line, as markdown reads a lazy continuation.
++// A record writer may leave a long criterion's second line unindented.
++// An unindented ATX heading, thematic break or blockquote ends the item.
++// So does the start of an HTML block that can interrupt a paragraph.
++// A blank line ends the item.
++func continuesItem(line string) bool {
++	if line == "" {
++		return false
++	}
++	if line[0] == ' ' || line[0] == '\t' {
++		return true
++	}
++	return line[0] != '>' &&
++		!atxHeadingLine.MatchString(line) &&
++		!thematicBreakLine.MatchString(line) &&
++		!htmlBlockStartLine.MatchString(line)
++}
++
+ // isBulletLine reports whether line, left-trimmed, starts a markdown list item.
++// A spaced thematic break such as `* * *` starts none.
+ func isBulletLine(line string) bool {
++	if thematicBreakLine.MatchString(line) {
++		return false
++	}
+ 	if len(line) >= 2 && strings.ContainsRune("-*+", rune(line[0])) && line[1] == ' ' {
+ 		return true
+ 	}
+diff --git a/internal/discussionparser/partsplice.go b/internal/discussionparser/partsplice.go
+index 3e06fc631..90590e1a6 100644
+--- a/internal/discussionparser/partsplice.go
++++ b/internal/discussionparser/partsplice.go
+@@ -34,7 +34,9 @@ type PartSplice struct {
+ // SectionBullets returns the top-level bullets of the record's `## <heading>` section, in order.
+ // The heading is given without its `## `.
+ // A bullet is its text without the marker, followed by its continuation lines, each trimmed and joined by a newline;
+-// a continuation line is an indented line that follows it with no blank line between.
++// a continuation line follows it with no blank line between.
++// It is either indented, or unindented and none of these: an ATX heading, a thematic break, a blockquote,
++// or the start of an HTML block that can interrupt a paragraph.
+ // A bullet inside a fenced block is not read.
+ // Neither is a bullet inside a `<!-- lym:carry-over … -->` block of the `## Open risks` section.
+ // A record without the section returns none.
+@@ -64,7 +66,7 @@ func SectionBullets(record []byte, heading string) []string {
+ 		case isBulletLine(line):
+ 			flush()
+ 			current = []string{bulletBody(line)}
+-		case current != nil && line != "" && (line[0] == ' ' || line[0] == '\t'):
++		case current != nil && continuesItem(line):
+ 			current = append(current, strings.TrimSpace(line))
+ 		default:
+ 			flush()
+diff --git a/internal/discussionparser/partsplice_test.go b/internal/discussionparser/partsplice_test.go
+index d2058efbe..3690a3642 100644
+--- a/internal/discussionparser/partsplice_test.go
++++ b/internal/discussionparser/partsplice_test.go
+@@ -66,7 +66,8 @@ Decision: late.
+ 
+ ## Acceptance criteria
+ 
+-- D1: first holds.
++- D1: first holds
++for every call.
+ - D2: second holds.
+ - D3: third holds.
+ 
+@@ -76,7 +77,10 @@ Decision: late.
+ - §PATTERN-two§ — changes: Two rule.
+ `)
+ 
+-// TestSectionBullets covers plain and continuation bullets, a fenced bullet, a carry-over block and an absent heading.
++// TestSectionBullets covers plain bullets and their indented and unindented continuation lines.
++// It covers a fenced bullet, a carry-over block and an absent heading.
++// It covers each kind of unindented line that ends a bullet: heading, thematic break, blockquote and HTML block.
++// It also covers lines that only resemble a heading or an HTML block, which continue the bullet.
+ func TestSectionBullets(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -89,6 +93,20 @@ func TestSectionBullets(t *testing.T) {
+ 	}{
+ 		{"PlainBullets", "## Open risks\n\n- a\n- b\n\n## Acceptance criteria\n\n- c\n", "Open risks", []string{"a", "b"}},
+ 		{"ContinuationLines", "## Open risks\n\n- a\n  more\n  - nested\n- b\n", "Open risks", []string{"a\nmore\n- nested", "b"}},
++		{"UnindentedContinuationLine", "## Acceptance criteria\n\n- D6: the client attaches\nonly inside the area.\n- D7: b\n", "Acceptance criteria", []string{"D6: the client attaches\nonly inside the area.", "D7: b"}},
++		{"IssueNumberContinues", "## Open risks\n\n- a\n#123 b\n- c\n", "Open risks", []string{"a\n#123 b", "c"}},
++		{"PlaceholderContinues", "## Open risks\n\n- a\n<slug> b\n- c\n", "Open risks", []string{"a\n<slug> b", "c"}},
++		{"HeadingEndsBullet", "## Open risks\n\n- a\n### Note\n- b\n", "Open risks", []string{"a", "b"}},
++		{"ThematicBreakEndsBullet", "## Open risks\n\n- a\n---\n- b\n", "Open risks", []string{"a", "b"}},
++		{"SpacedThematicBreakIsNoBullet", "## Open risks\n\n- a\n* * *\n- b\n", "Open risks", []string{"a", "b"}},
++		{"UnderscoreThematicBreakEndsBullet", "## Open risks\n\n- a\n___\n- b\n", "Open risks", []string{"a", "b"}},
++		{"RawTextTagEndsBullet", "## Open risks\n\n- a\n<pre>\n- b\n", "Open risks", []string{"a", "b"}},
++		{"ProcessingInstructionEndsBullet", "## Open risks\n\n- a\n<?x ?>\n- b\n", "Open risks", []string{"a", "b"}},
++		{"DeclarationEndsBullet", "## Open risks\n\n- a\n<!DOCTYPE html>\n- b\n", "Open risks", []string{"a", "b"}},
++		{"CDATAEndsBullet", "## Open risks\n\n- a\n<![CDATA[x]]>\n- b\n", "Open risks", []string{"a", "b"}},
++		{"BlockquoteEndsBullet", "## Open risks\n\n- a\n> quote\n- b\n", "Open risks", []string{"a", "b"}},
++		{"CommentEndsBullet", "## Open risks\n\n- a\n<!-- note -->\n- b\n", "Open risks", []string{"a", "b"}},
++		{"BlockTagEndsBullet", "## Open risks\n\n- a\n<details>\n- b\n", "Open risks", []string{"a", "b"}},
+ 		{"FencedBulletSkipped", "## Open risks\n\n```\n- fenced\n```\n- real\n", "Open risks", []string{"real"}},
+ 		{"CarryOverBlockSkipped", "## Open risks\n\n- own\n\n<!-- lym:carry-over code -->\n- carried\n<!-- /lym:carry-over code -->\n", "Open risks", []string{"own"}},
+ 		{"AbsentHeading", "## Goal\n\n- a\n", "Open risks", nil},
+@@ -158,7 +176,7 @@ func TestSplicePart(t *testing.T) {
+ 		Scope:          "Only the first part.",
+ 		Decisions:      []string{"D1", "D3"},
+ 		OpenRisks:      []string{"Risk one\ncontinues here."},
+-		Criteria:       []string{"D1: first holds.", "D3: third holds."},
++		Criteria:       []string{"D1: first holds\nfor every call.", "D3: third holds."},
+ 		PatternChanges: []string{"PATTERN-two"},
+ 	}
+ 
+diff --git a/internal/discussionparser/validate_test.go b/internal/discussionparser/validate_test.go
+index a63f6f3ae..e1feb318f 100644
+--- a/internal/discussionparser/validate_test.go
++++ b/internal/discussionparser/validate_test.go
+@@ -628,6 +628,10 @@ func TestCheckDecisionIDs(t *testing.T) {
+ 				{"decision-not-in-acceptance", []string{"D3"}},
+ 			},
+ 		},
++		{
++			name:   "IDOnUnindentedContinuationLineIsCovered",
++			record: record(twoDecisions, accept("- D1 holds,\nand so does D2.\n")),
++		},
+ 		{
+ 			name:   "IDInsideNonBulletProseIsNotCovered",
+ 			record: record("### D1 — x\n\nDecision: a.\n", accept("D1 is prose, not a bullet.\n")),
