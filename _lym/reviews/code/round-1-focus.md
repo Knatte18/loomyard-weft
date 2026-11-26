@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "internal/gatefixer/rowgate.go, which entry meets an interrupted fixer first: trace a driver restart after a machine stop through waitOnly (replace=false), the other entries, the final closure and spawning; settle whether the interrupted record is always replaced as the board entry asks, or can turn terminal before the carrying entry sees it, and what budget and writer note follow."
+  - "internal/gatefixer/rowgate.go waitReplacingInterrupted: settle the replacement bound (attempts plus one), the record state left on each exit (cannot spawn, bound reached, error), whether waitThenRun and markTerminal behave correctly on what is returned, and whether the replacement's spec really lets shuttle resume the interrupted session. Read the mutation survivors in this function against TestWrapRowGate."
+  - "internal/gatefixer/await.go: settle what reading the strand before the timeout changes when StrandLive keeps erroring, and whether the run record is marked interrupted by the time goneStrandReason reads it in each stop path the board entry names (reboot, reconcile, restarted driver)."
+  - "internal/shedadapters/bouncer.go judgeCall died path: follow the returned error through the engine, shedtransient and the driver re-step. Settle whether each died judge is relaunched or halts as an infrastructure failure without spending bounce budget, whether the re-step is bounded and starts cleanly over the dead run's leftovers, whether a runErr path still reaches degrade for a judge that never came up, and whether other judge spawn paths share the defect."
+  - "internal/shuttleengine/readiness.go boxCapture: check every caller against the new plain-capture fallback (placeholder read as a draft, two captures taken at different moments, how often the warning fires inside a polling wait) and whether it addresses the idle-check failure the board entry describes, including its ask about retrying before declaring died."
+  - "internal/shuttleengine/claudeengine/session.go holdsOnlyAPIErrorPrompt: settle how InputBoxText and IdleSession treat the prompt in the captures their callers actually pass (styled turned plain, plain, wrapped), so that tender revive reaches the stalled session."
+  - "internal/reedcli/oomnotice.go planPaneOOMNotices: settle the one-notice-per-cgroup skip when the first strand's read errs or yields no usable result, and across later ticks as strands come and go."
+  - "Board entry's carried-over review findings: check each one, including the earlier-kill or wrong-process part and the resumed-start retry, against the diff or the existing code and tests, and check every claim about them in _lym/landing/summary.md, including parts it says are left alone."
+  - "_lym/landing/summary.md Merge danger and the repository's own rules: check the door and blast radius against what the diff changes (a new dead reason in persisted fixer records, a bouncer call that now errors), whether docs or specs the repository names for these changes landed in the diff, and whether each commit's Root-Cause trailer names the defect fixed."
+---
+
+Seed focus only; no verdict is implied by any entry.
+The ordinary diff review of the whole range still applies.
