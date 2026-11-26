@@ -34,7 +34,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | PR-Review | neve | 2d<br>2d | reed |
+| T1 | **Reed's RC click reads the most recent client's session, not the clicker's** | [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md) | darn · light | landing · Finalize | neve | 2d<br>2d | reed |
 | T10 | **Run transitions commit locally; a per-worktree pusher brings them to origin** | [`async-run-pusher`](design-async-run-pusher.md)<br>[Sketch](decision-async-run-pusher.md) | tapestry · solid | Code-Bouncer | neve | 2d<br>2d | batten, fabric, loom, landing, cli, dobby, process, tender, pattern, heddle |
 
 ### Layer A (1)
@@ -65,9 +65,9 @@ Owner `neve`
 | B3 |  | **tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session** | [`revive-reads-placeholder-draft`](design-revive-reads-placeholder-draft.md) | 22m<br>22m | tender, claude |
 | B4 |  | **Gate fixer interrupted by a machine stop is reported as dead (timeout)** | [`gate-fixer-reboot-reads-timeout`](design-gate-fixer-reboot-reads-timeout.md) | 14m<br>14m | gate, shuttle |
 | B5 |  | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | 14m<br>14m | creel, cwd |
-| B6 |  | **Describe halts failed on an uninformative shuttle run outcome timeout** | [`describe-timeout-no-detail`](design-describe-timeout-no-detail.md) | 13m<br>13m | landing, shuttle |
-| B7 |  | **Unreachable origin halts the run as failed repeatedly instead of one retryable stop** | [`unreachable-origin-halts-failed`](design-unreachable-origin-halts-failed.md) | 13m<br>13m | shed, landing, fabric |
-| B8 |  | **Finalize blocks on untracked leftovers of a project the merge-in deleted** | [`finalize-ignored-leftover-dir`](design-finalize-ignored-leftover-dir.md) | 13m<br>13m | landing |
+| B6 |  | **Describe halts failed on an uninformative shuttle run outcome timeout** | [`describe-timeout-no-detail`](design-describe-timeout-no-detail.md) | 14m<br>14m | landing, shuttle |
+| B7 |  | **Unreachable origin halts the run as failed repeatedly instead of one retryable stop** | [`unreachable-origin-halts-failed`](design-unreachable-origin-halts-failed.md) | 14m<br>14m | shed, landing, fabric |
+| B8 |  | **Finalize blocks on untracked leftovers of a project the merge-in deleted** | [`finalize-ignored-leftover-dir`](design-finalize-ignored-leftover-dir.md) | 14m<br>14m | landing |
 | B9 |  | **Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure** | [`describe-held-turn-waits-timeout`](design-describe-held-turn-waits-timeout.md) | 13m<br>13m | landing, shuttle |
 | B10 |  | **Finalize halts as hard failure on a GitHub API EOF that lym marks transient** | [`finalize-transient-eof-fails`](design-finalize-transient-eof-fails.md) | 13m<br>13m | landing, shed |
 | B11 |  | **A died bouncer judge session spends Code-Bouncer's bounce budget** | [`died-judge-spends-bounce-budget`](design-died-judge-spends-bounce-budget.md) | 13m<br>13m | burler, shed |
@@ -95,8 +95,8 @@ Owner `neve`
 | E2 |  | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | 14m<br>14m | stencil, darn |
 | E3 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records-in-weft`](design-keep-landed-records-in-weft.md) | 13m<br>13m | landing, fabric, report |
 | E4 |  | **The Describe text names no LoomYard terms, except the Created using block** | [`describe-no-loomyard-terms`](design-describe-no-loomyard-terms.md) | 13m<br>13m | landing, stencil |
-| E5 |  | **Close the scope of a task when its first Code-Review round starts, and have lym hold the line** | [`scope-closes-at-code-review`](design-scope-closes-at-code-review.md) | 12m<br>12m | loom, burler |
-| E6 |  | **Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier** | [`review-describe-text`](design-review-describe-text.md) | 12m<br>12m | landing, burler |
+| E5 |  | **Close the scope of a task when its first Code-Review round starts, and have lym hold the line** | [`scope-closes-at-code-review`](design-scope-closes-at-code-review.md) | 13m<br>13m | loom, burler |
+| E6 |  | **Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier** | [`review-describe-text`](design-review-describe-text.md) | 13m<br>13m | landing, burler |
 | E7 |  | **Take the parent out of PR-Review; the earlier reviewers must catch what it finds** | [`parent-out-of-pr-review`](design-parent-out-of-pr-review.md) | 12m<br>12m | landing, loom |
 | E8 |  | **Autonomy: let PR review stay with the operator for one beam** | [`autonomy-pr-review-operator`](design-autonomy-pr-review-operator.md) | 12m<br>12m | landing, config |
 
@@ -104,6 +104,6 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **A PR mode that registers the PR and approves it at once, with no agent under the block** | [`pr-auto-approve-mode`](design-pr-auto-approve-mode.md) | 12m<br>12m | landing, config |
+| F1 |  | **A PR mode that registers the PR and approves it at once, with no agent under the block** | [`pr-auto-approve-mode`](design-pr-auto-approve-mode.md) | 13m<br>13m | landing, config |
 | F2 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | 12m<br>12m | dobby, gate |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
