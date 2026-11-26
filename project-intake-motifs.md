@@ -1,9 +1,9 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-26 21:18 UTC; every age below is as of then.
+Rendered 2026-11-26 21:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-motifs` · Age 12h · Owner `neve`
+`intake-motifs` · Age 13h · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.

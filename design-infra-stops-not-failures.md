@@ -1,6 +1,6 @@
 # Machine stops, dead judges and idle seats are not producer failures
 
-`infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · running · Code-Burler-Review
+`infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · running · Code-Burler-Fix
 
 Bundled from the notes below; each part keeps its note's text.
 
