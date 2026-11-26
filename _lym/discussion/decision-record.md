@@ -35,4 +35,12 @@ Provenance: task `remove-record-rerun-pair-gone`, note `burler-code-r2.md`.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - caveat-assembly-no-text-assertion (class design, severity MEDIUM, open in rounds 1)
+  - map-format-version-never-read (class design, severity MEDIUM, open in rounds 1)
+  - other-package-unseen-tests-no-caveat (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
