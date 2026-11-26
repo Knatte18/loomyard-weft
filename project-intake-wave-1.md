@@ -3,17 +3,17 @@
 Rendered 2026-11-26 09:15 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-wave-1` · Age 55m · Owner `neve`
+`intake-wave-1` · Age 56m · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (2)
+## Running (2)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light |  | 2d<br>0m | reed, process |
-| T6 | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | darn · light |  | 1h<br>0m | creel, cwd |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | starting · Worktree-Create | neve | 2d<br>0m | reed, process |
+| T6 | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | darn · light | starting · Worktree-Create | neve | 1h<br>0m | creel, cwd |
 
 ## Layer A (4)
 

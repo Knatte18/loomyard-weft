@@ -3,7 +3,7 @@
 Rendered 2026-11-26 09:15 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-motifs` · Age 55m · Owner `neve`
+`intake-motifs` · Age 56m · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
