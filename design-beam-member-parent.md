@@ -2,7 +2,7 @@
 
 `beam-member-parent` · Task · bug, batten, landing, orch, stencil, shed, loom, pawl · draft
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`push-retry-not-halt`](design-push-retry-not-halt.md), [`writers-commit-each-step`](design-writers-commit-each-step.md)
+Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
 Bundled from the notes below; each part keeps its note's text.
 
