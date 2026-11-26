@@ -552,7 +552,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (raddle of `sandbox-closed-area-build`, 2026-11-26)\n\nThe stored record's D6 attach criterion runs over two lines, the second not indented under the bullet.\nThe record parser keeps only the first line as the criterion.\nRaddle could not carry the whole bullet: joined to one line, the raddle-propose gate refused it as criterion-unknown, since it matches only the cut text.\nThe second clause survived only by being restated in the part's contract.\n\n## Idea\n\nEither the record format check refuses an unindented continuation line when the record is stored,\nor the parser reads it as part of the bullet, as markdown does.\n",
-      "status": "starting · Seed-IDE",
+      "status": "starting · Open-IDE",
       "created": "2026-11-26T11:48:30Z",
       "revised": "2026-11-26T13:19:55Z",
       "profile": "light"
