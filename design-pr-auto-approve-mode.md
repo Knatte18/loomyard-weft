@@ -11,15 +11,21 @@ With a beam, say P1, and several tasks under it, the operator wants each task to
 When all of P1 is done, one PR goes from P1 into its parent (P0 or root), and it lists every member PR.
 That lets the operator backtrack and see how the work got where it is.
 
-Today the PR block has one setting: whether there is a PR or not.
+## Decision (operator, 2026-11-26)
+
+The PR block has three modes, and no LLM takes part in any of them:
+
+- Manual: the PR is made and waits for the operator's own review and approval, as PR-Review is meant today.
+- None: no PR; the row passes, as `pull_request` off does today.
+- Auto: the PR is made and approved or merged at once, with no agent and no human, so the beam's PR history can be backtracked.
+
+How the three modes are configured is not decided yet.
 
 ## Idea
 
-Add a third mode to that setting: PR on, auto-approved at once.
-
-- The PR is made and shows up on GitHub, no agent is spawned under the PR-Review block, and the human need not look.
-- The run goes on to Finalize as if the human had approved.
+- Auto: the PR is made and shows up on GitHub, no agent is spawned, and the run goes on to Finalize as if the human had approved.
+  GitHub refuses an approval by the PR's own author, so read whether auto merges without an approval, and what a branch rule that demands one does to it.
 - A beam's own PR lists its member PRs.
   `Rewrite a beam's pull request description after each member landing` (`1cd11ee5e`) may already do part of this; read what it writes before adding more.
-- This relies on the loops before the block having done every quality check they can, so the issue on taking the parent out of PR-Review belongs with it.
-- Read first where the PR setting is read (`internal/landingshed`, `internal/pullrequest`) and how a run reaches Finalize today when a PR is approved.
+- Manual waits for a human approval whatever the autonomy, which covers the note on autonomy and PR-Review.
+- Read first where `beam.yaml` `pull_request` is read (`internal/landingshed`, `internal/pullrequest`) and how a run reaches Finalize today when a PR is approved.

@@ -103,7 +103,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **A PR mode that registers the PR and approves it at once, with no agent under the block** | [`pr-auto-approve-mode`](design-pr-auto-approve-mode.md) | 25m<br>25m | landing, config |
+| F1 |  | **A PR mode that registers the PR and approves it at once, with no agent under the block** | [`pr-auto-approve-mode`](design-pr-auto-approve-mode.md) | 25m<br>0m | landing, config |
 | F2 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | 25m<br>25m | dobby, gate |
 | F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>2d | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
