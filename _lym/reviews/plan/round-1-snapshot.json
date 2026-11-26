@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "f265cf602194274ba0de2871a4f561583dcd764ea77fccbbad70eacbd5d22d7d",
+  "added_decisions": [
+    {
+      "title": "Episode stamp counts folded repeats",
+      "digest": "07c6b97dfc9f62e21f194fa5de76256870106277d17cbbb8d9ffa0c2cf770d90"
+    }
+  ]
+}

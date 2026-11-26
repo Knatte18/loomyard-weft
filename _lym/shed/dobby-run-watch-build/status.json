@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -67,6 +67,30 @@
       "at": "2026-11-26T20:28:06Z",
       "started_at": "2026-11-26T20:27:11Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-run-watch-build/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-26T20:38:30Z",
+      "started_at": "2026-11-26T20:28:07Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-26T20:38:28.534912797Z",
+          "end": "2026-11-26T20:38:28.536123993Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-26T20:38:28.810390407Z",
+          "end": "2026-11-26T20:38:28.815578813Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
