@@ -1,0 +1,12 @@
+---
+round: 3
+focus:
+  - "In `_lym/discussion/decision-record.md`, check the test that decides whether a creel peer is inside an area (D3, used by D8's cross-hub refusal; D6's read grants and D9's scope names bear on it). Does it refuse each of these: an orphan of the attach client's `detach-client -E` command that holds an inherited connected socket and has reparented to `systemd --user`; a survivor of a dead supervisor with open connections; a peer from an area hub started after the judging hub? Can a process the test relies on leave whatever marks it, and does a genuine host process still pass?"
+  - "In `_lym/discussion/decision-record.md`, check D7's host-side refusal together with D3's boot and D13's `window`. `internal/lymcwd/lymcwd.go` takes the hub as the parent of the nearest `.git` root, so can a worktree such as `<hub>/x/wt`, with an agent-made `<hub>/x/_bolt/_lym` and `reed.yaml`, still make a host-side verb read agent-written config or run agent-chosen binaries or git? Check that the refusal runs before every root pre-run step, the stencil seed included."
+  - "In `_lym/discussion/decision-record.md`, check D7 and D8 on how a receiving daemon learns an area hub's shortname, socket path and repository identity. The receive path `Deliver` to `hubregistry.Lookup`, `CreelGeometry`, `RepositoryName` and `trustedSender` (`internal/creelengine/receive.go`) reads the sending hub's Bolt shortname file and prime `.git/config`, which area agents write. Does any value that decides socket choice or trust still come from an area-written file?"
+  - "In `_lym/discussion/decision-record.md`, check D13: which area-chosen strings reach the host Konsole's arguments through `window`? `konsoleArguments` in `internal/termwindow/termwindow.go` builds `-p tabtitle=<title>`, and Konsole reads `-p` values as property assignments. Does the stated Bound match every such input?"
+  - "In `_lym/discussion/decision-record.md`, check that D12's Bound and D16's non-claims cover every Slack effect the host relay takes from area-written input: the per-orch public channel and its name from the board project, the operator invite (`internal/slackengine/keeper.go`), and the cross-machine bridge channels and peer-bot invites (`bridgechannel.go`, `bridgeout.go`)."
+  - "In `_lym/discussion/decision-record.md`, check that D15's claim about when the rendered AppArmor profile text and hash change agrees with D6's Landlock paths, in particular any grant made per hub."
+---
+
+Each entry targets text that a fix to this round's findings is expected to change.
