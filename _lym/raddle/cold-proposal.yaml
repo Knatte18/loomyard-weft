@@ -1,0 +1,100 @@
+{
+  "sketch": "keep-landed-records",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "config-keys-nested", "revised": "2026-11-23T19:58:05Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-26T11:37:52Z"},
+    {"slug": "pr-modes-no-agent", "revised": "2026-11-26T09:23:51Z"},
+    {"slug": "describe-review-and-sync", "revised": "2026-11-26T08:20:21Z"},
+    {"slug": "push-retry-not-halt", "revised": "2026-11-26T10:03:29Z"},
+    {"slug": "beam-member-parent", "revised": "2026-11-26T08:20:23Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "hardener-study-faults", "revised": "2026-11-26T11:25:44Z"},
+    {"slug": "orchestrator-survey-ideas", "revised": "2026-11-26T08:01:36Z"},
+    {"slug": "cortex-cost-measure", "revised": "2026-11-09T12:09:36Z"}
+  ],
+  "parts": [
+    {
+      "slug": "keep-landed-run-records",
+      "title": "Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed",
+      "type": "feature",
+      "labels": ["landing", "fabric", "report", "loom", "burler", "shed", "cwd", "git", "testkit", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
+      "packages": [
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/loomengine", "size": 20},
+        {"path": "internal/loomcli", "size": 250},
+        {"path": "internal/fabricengine", "size": 200},
+        {"path": "internal/burlerengine", "size": 250},
+        {"path": "internal/landingshed", "size": 450},
+        {"path": "internal/pullrequest", "size": 30},
+        {"path": "internal/pairteardown", "size": 5},
+        {"path": "internal/testkit/prkit", "size": 5},
+        {"path": "internal/shedrun", "size": 140},
+        {"path": "internal/gitrepo", "size": 120},
+        {"path": "internal/reportengine", "size": 430},
+        {"path": "internal/reportcli", "size": 170},
+        {"path": "PATTERN.md", "size": 4},
+        {"path": "pattern", "size": 20}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record whole: the archive tags teardown pushes, the loom status commit and run-records set, the parent-review ask record's locked updates in internal/burlerengine, the landing fixer and fix review scratch reports, and Finalize's merge-in, merge and push steps",
+        "delivers": "one kept directory under each run's _lym/ that the status commit stages and the archive tag carries, holding PR findings copies, ask record and report copies seeded back after an adopt, landing fixer and fix review report copies, the landing record and the index row; and a read-only lym report landed verb that lists and extracts every archived run's kept records",
+        "exports": "the kept directory's name in internal/lymdirs; the landing record and index row types with their writers and one reader in internal/shedrun; the first-parent landing searches in internal/fabricengine; pullrequest.API.Merge returning the merge commit SHA; the cobra verb lym report landed"
+      },
+      "depends_on": [],
+      "open_risks": [
+        "`pr-modes-no-agent` removes PR-Review's findings path and the parent's PR-Review ask; when it lands, D2's copy and the PR-Review part of D3 go with them, and its plan must drop or keep them knowingly.",
+        "`describe-review-and-sync` adds a Describe reviewer whose findings are a new review artifact; the PATTERN rule below expects it to be kept in the run's tracked records."
+      ],
+      "criteria": [
+        "D1: a file written into the kept directory is staged by the loom status commit and is not reported as a dirty path outside run records.",
+        "D1: a `.tmp-*` file in the kept directory is neither staged by the status commit nor reported as dirty.",
+        "D1: `lym report` convergence over a run whose kept directory holds copies lists the same review segments as without them.",
+        "D2: a send-back, then two fix-here answers, then a second send-back, each over a distinct findings file, each leave a tracked copy with distinct numbers and their kind in the name, in the commit `lym loom pr-findings` makes; a re-run over a file already copied leaves no new copy.",
+        "D3: after an ask is recorded, answered and expired, with an answer and an expiry from two processes, the tracked copy of the ask record equals the live record and the report of every answered ask number has a tracked copy.",
+        "D3: an ask recorded after the live record is deleted, with the tracked copy present, takes the next number and leaves the earlier asks and their report copies intact; a read after the same deletion returns the earlier asks.",
+        "D3: after the live record and the live reports are deleted with the tracked copies present, the PR-Review standing read and the round settle of a done ask read its report and succeed.",
+        "D3: a write killed between a report copy and the record copy leaves a tracked record copy whose every done ask has its report copy.",
+        "D3: an archived run's tree holding the older `parent-review/round-*` directories is still decoded by `reportengine` as before.",
+        "D4: a landing fixer that runs two turns in one row, the first failing, leaves two tracked reports with distinct sequence numbers.",
+        "D4: a copy made after the row's attempt record was removed or its turn given back leaves every earlier copy of the row intact.",
+        "D4: a row whose fix review rejects once and then approves leaves two tracked fix review reports.",
+        "D2, D3, D4: a kept file written after the run's last records commit is present in the archive tag that teardown makes.",
+        "D5: a landed run's kept directory holds an index row whose landing commit, landing time, parent branch and kept-record paths match the run, and the row is in the commit Finalize's records push carries; a resumed Finalize leaves a byte-identical row, also when another run landed on the parent between the landing and the resume; a resumed Finalize whose merge makes a new commit records that commit; a cancelled run holds none.",
+        "D5: a parent that received the task's work by a hand merge, with another run's commit landed on top of it, gives an index row naming the hand merge, through a Finalize that merges that parent into the task branch itself.",
+        "D5: a pull-request squash landing Finalize makes gives a row naming the squash commit; so do a hand squash merge and an adopter-first squash with another commit on top.",
+        "D5: a task whose commits leave no net code change gives a row with no landing commit and no landing time, which says so.",
+        "D5: a parent push refused as a protected branch, the work then merged on GitHub by hand and the parent reset to origin, gives a row naming the commit on origin's parent.",
+        "D5: a beam landing's index row holds its pull request URL.",
+        "D5: the index row reader accepts a row carrying an unknown key.",
+        "D6: `lym report landed` over a hub with one archived run that has an index row and one landed run without lists both, the second marked derived.",
+        "D6: a cancelled run's tag is listed as not landed, with its reason, also when its history holds a Stuck Finalize entry.",
+        "D6: `--slug <slug>` prints each of the slug's runs with its index row, a tag with an index row before one without.",
+        "D6: `--slug <slug> --extract <dir>` writes the first run's decision record, review rounds and kept directory under `<dir>` at their `_lym/`-relative paths; `--tag` selects another run; a run without an index row extracts the same fixed subtrees; an extract into an existing empty directory writes the run there; a symlink entry in the tag tree is listed as skipped and not created.",
+        "D6: `--extract` refuses a non-empty directory, a `<dir>` that is a symlink or a non-directory, a slug with no archive tag, a `--tag` outside the slug's `archive/<slug>/` tags and a leftover extract sibling, a symlink included, and the current working directory, each refusal naming its way forward, and writes nothing.",
+        "D6: an extract that fails part-way leaves no sibling behind and `<dir>` as it was, absent or empty, except a rename that fails after an empty `<dir>` was removed, which leaves `<dir>` absent.",
+        "D7: Review: the PATTERN entry states that archive tags are never deleted, and no diff adds a deletion of an `archive/` tag."
+      ],
+      "pattern_changes": ["PATTERN-run-records", "PATTERN-pair-remote"],
+      "expected_cost_usd": 42.42,
+      "cost_line": "tapestry/solid with a stored record, 7 runs: the fit's fixed 37.09 USD plus 0.254 USD per 100 changed lines over about 2100 lines; the cell's mean is 55.64 USD"
+    }
+  ],
+  "cost": {
+    "expected_usd": 42.42,
+    "line": "one tapestry part over about 2100 changed lines, from the tapestry/solid stored-record fit (7 runs, correlation 0.64)",
+    "next_best": {
+      "split": "two chained parts: the kept-record writers and index row (D1 to D5, D7) as tapestry solid, then lym report landed (D6) as darn solid on top",
+      "expected_usd": null,
+      "line": "the writers part fits to about 40.40 USD on the tapestry/solid stored-record cell, but the darn/solid stored-record cell reads too few runs, so the total has no figure; it pays a second run's fixed start cost for a part that cannot run beside the first"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
