@@ -39,6 +39,12 @@ Provenance: task `dotnet-gate-fixes`, note `gate-fixer-darn-write.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): No reproduction run; fix the cleanup race as the entry asks
+
+Decision: The parent runs no test for this task. The failure is intermittent (one failure, then 30 of 30 passes), so a single run proves nothing. Confirm the cause by reading the code, then make the watchPaneOOMKills goroutine's exit awaitable and have the test cleanup wait for it before the temp directory is removed.
+
+Rationale: A flaky cleanup failure is not reproduced by one run; the entry names the likely cause from the code.
+
 ## Constraints
 
 ## Auto-mode assumptions
