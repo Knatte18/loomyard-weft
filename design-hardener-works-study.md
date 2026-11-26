@@ -15,7 +15,8 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 - The five faults the second campaign found but could not raise were the task `harden-fabric-undriven-cases`, which has landed as `540e8c9b5`.
   Judge that fix as the campaign's follow-through.
 - The cases round 3 left undriven (a discard or remove killed mid-operation, a fabric step that fails with no kill, and `adopt --archives`) were then driven by hand on a one-repository hub in the task `single-repo-undriven-cases`, landed as `dce6b8617` with the report `docs/research/single-repo-undriven-cases.md`.
-  It found one fault the campaign's rounds had not: the killed run's `remove` record names `lym fabric remove <slug> --remote`, which answers `pair not found` once the pair is gone (the task `remove-record-rerun-pair-gone`).
+  It found one fault the campaign's rounds had not: the killed run's `remove` record names `lym fabric remove <slug> --remote`, which answers `pair not found` once the pair is gone.
+  The task `remove-record-rerun-pair-gone` fixed it (`cd8090733`) for a record a `batten cancel --remove` wrote, which now names that cancel; the fix was not driven live.
   Judge it as a miss: could the campaign have reached it? The keep-local tag push was not among the cases it drove, and a real `adopt --archives` takeover needs a second machine, so the tags were pushed by hand.
 - Each campaign's round files are under its records worktree at `_lym/reviews/harden/`: `round-<n>-focus.md`, `round-<n>-review.md`, `round-<n>-acceptance.md`, `round-<n>-usage.yaml` and the snapshots, beside its decision record and the landed commits.
 
