@@ -41,7 +41,7 @@ All six lenses returned a report.
 
 ## Rejected alternatives
 
-- A shared index file on the board branch, one row appended per landing: every landing would write and push the board branch under its lock, adding contention and a new failure mode at landing, while the archive tags are already the list of landed runs.
+- A shared index file on the board branch, one row appended per landing: every landing would write and push the board branch under its lock, adding contention and a new failure mode at landing, while the archive tags already list the archived runs, and an index row inside a tag marks a landed one.
 - Moving the live parent-review ask record and PR findings into `_lym/`: changes locking and commit traffic of live state; a copy in the same locked update keeps the same history.
 - Copying the scratch artifacts once, at Finalize: a cancelled or crashed run would lose them; copying when each is produced keeps them for every run.
 - Putting the copies under the reviews root: `lym report`'s segment walk would read them as review segments.
@@ -49,11 +49,23 @@ All six lenses returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review returned 15 findings, two blocking; every one was fixed.
+
+- F1: D5 names the landing record in the kept directory, written at the merge and read back on a resume.
+- F2, F3, F9: D4 copies each fixer turn's report in the gate check and each fix review's report at its end, named by a sequence the copy allocates.
+- F4: D1's tracked `.gitignore` ignores the atomic writes' `.tmp-*` names.
+- F5: D3 seeds the live ask record from the tracked copy.
+- F6, F7: D6 lists partial runs as not landed and states the extract's write rules.
+- F8, F11, F12: D5 writes the row before `pushRecords`, with `_lym/`-relative paths and the landing message as merged.
+- F10: D2 keys copies by content hash.
+- F13, F14, F15: the Constraints, D7 and the PATTERN changes were corrected; the retention rule moved to `PATTERN-pair-remote`.
+- Self-check: four fork lenses reported; their findings tightened D1's writer rule, D3's seed on read, D5's record replacement on a new merge, D6's Done test and extract sibling, and D4's rationale.
 
 ## Question ledger
 
-- Q1 (auto-pick): where does the index row live? Picked: inside each run's records, read through archive tags (D5). Why: no shared write per landing; tags already list the runs.
+- Q1 (auto-pick): where does the index row live? Picked: inside each run's records, read through archive tags (D5). Why: no shared write per landing; tags already list the archived runs.
 - Q2 (auto-pick): how long are records kept? Picked: forever (D7). Why: the operator's "absolutely"; no prune exists today.
 - Q3 (auto-pick): are landing fixer reports in scope? Picked: yes (D4). Why: the entry asks that findings live nowhere only in scratch, and these are the remaining fixer reports lost.
 - Q4 (auto-pick): does the task cover older archived runs? Picked: yes, read-only, through a derived row and a fixed extract set in `lym report landed` (D6). Why: the existing archive tags already hold decision records and review rounds.
