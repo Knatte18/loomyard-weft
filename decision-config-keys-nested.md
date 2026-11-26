@@ -185,6 +185,12 @@ Decision: Build the six defects listed under 'Real defects not raised' in _lym/r
 
 Rationale: The reviewer confirmed each against the code and rated (1) and (2) BLOCKING in a full round; a leaf package's import rule is structural, while a key name literal is checked by the rename's own search.
 
+### Added after Discussion (parent, 2026-11-26): Bound the loop integration tests' wait on shed step
+
+Decision: Fix the hang of TestLoopIntegration_ArmingRefusalStopsAsBootstrap in internal/shedverbs inside this run: find why its child lym shed step self never exits under this change and fix that. Also give every TestLoopIntegration_* test that spawns shed step its own bound well under the package timeout (seconds, not minutes); on expiry it kills the child and fails with the step's last stderr and status file.
+
+Rationale: The verify gate sat 18 minutes on that test at 0% CPU until the orch killed the stuck child; a stuck step must cost seconds and name itself. The operator wants this run to fix it directly rather than a later task.
+
 ## Constraints
 
 - `PATTERN-config-layers`: layers are read only through `configengine`, a reconcile on a binary change only through `hubreconcile.Ensure`, and no reconcile touches the machine layer.
