@@ -1,6 +1,6 @@
 # PR block in three modes, review, trail and off, with no agent under it
 
-`pr-modes-no-agent` · Task · enhancement, landing, loom, config · draft
+`pr-modes-no-agent` · Task · enhancement, landing, loom, config
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
