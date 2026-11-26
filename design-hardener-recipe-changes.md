@@ -2,6 +2,8 @@
 
 `hardener-recipe-changes` · Note · enhancement, burler, stencil
 
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
+
 ## Seen
 
 `docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:

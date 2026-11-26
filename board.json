@@ -602,12 +602,37 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "config-keys-nested"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:\nboth campaigns ended on rounds that could not raise what they saw or had not driven what they claimed, and several fixes brought new faults no round caught.\n\n## Idea\n\nThe study's \"Changes to consider\":\n\n1. Exempt a hardener round's findings from the changed-file and changed-hunk rules in `burler-review-format.md` and `burlerengine.CheckReviewRound`, not only `origin: focus` ones.\n2. Name FAIL beside WARN in `harden-rubric-review.md`, so a failed focus entry always blocks.\n3. Make the rubric and the Bouncer state one convergence rule for a MEDIUM first raised in the closing round.\n4. Add a kill rule to the rubric: kill each job from each caller, once with origin applying the in-flight push and once refusing it, then type the printed command in the state left.\n5. A prior finding with an undriven half stays `open`; `resolved` needs a whole repro.\n6. The fix half drives the neighbours of its fix: the other failure kinds a new classifier receives, and every role that reads a new way forward.\n7. The verdict lists what no sandbox can drive (owner takeover, the pull-request sweep, a lost lease) as filed follow-ups.\n8. Run the next campaign with one opus round and compare it with the `sonnet[high]` rounds before keeping the default.\n",
       "created": "2026-11-26T11:25:43Z",
-      "revised": "2026-11-26T11:25:43Z"
+      "revised": "2026-11-26T11:25:44Z"
+    },
+    {
+      "id": 1676,
+      "handle": "B1",
+      "slug": "hardener-study-faults",
+      "title": "Faults the hardener study read in fabric, cleanup and teardown code",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "cleanup",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [
+        "config-keys-nested",
+        "push-retry-not-halt"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`), section \"Faults found by this study\", read these in the code; none was driven:\n\n- a refused credential during a one-repository seed keeps the hub and says origin may still take the push;\n- an empty teardown job clears an earlier teardown's pending record;\n- the `cleanup` remote sweep counts local tags as landed and never pushes them;\n- `--reset` is advised without regard to unpushed work;\n- `fetchRunForCatchUp` reads no records layout;\n- a `lym fabric remove` pending record can outlive its pair (`cd8090733` fixed only the cancel's records, by choice).\n\n## Idea\n\nConfirm each against the code with a test that fails first, and fix the confirmed ones.\n",
+      "created": "2026-11-26T11:25:44Z",
+      "revised": "2026-11-26T11:25:44Z"
     }
   ],
   "prime_owner": "neve",
