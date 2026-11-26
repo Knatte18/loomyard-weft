@@ -738,6 +738,28 @@
       "body": "Imported from [issue #230](https://github.com/Knatte18/loomyard/issues/230).\n\n## Seen\n\nIn the DrillOpPlan hub, set up on 2026-11-10, the prime worktree had no `CLAUDE.local.md` after `lym fabric clone`, though heddle held content: `lym heddle show claude-file` printed lym's shipped rules (batching calls, the order of a round of edits).\nEvery worktree lym made later, beams and task worktrees, got the file rendered.\nThe Models hub showed the same: its prime anchor had no `CLAUDE.local.md`, while its beam and task worktrees, such as `support-for-dop`, had one.\nSo the orch and any other session in the prime ran without heddle's rules.\n\n## Expected\n\n`lym fabric clone` renders heddle into the prime it creates, as lym does for every worktree it makes.\n\n## Workaround\n\nThe operator ran `lym heddle render` in the prime by hand.\n",
       "created": "2026-11-26T07:34:01Z",
       "revised": "2026-11-26T07:34:01Z"
+    },
+    {
+      "id": 1645,
+      "handle": "E3",
+      "slug": "keep-landed-records-in-weft",
+      "title": "Keep the decision record and review findings of each landed task in the weft",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "fabric",
+        "report"
+      ],
+      "issues": [
+        229
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `_bolt/.lym/creel/journal`.\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs could not finish its work, because the evidence was gone.\nAbout 29 findings were in scratchpad files under `/tmp` that no longer exist.\nThe decision records (Sketches) of the landed tasks could not be read: the board holds only open entries, and the task worktrees are deleted.\nSo the analysis could not say whether delivered code broke its decision record, and every gate attribution was inferred.\nThe only complete source left was each hub's creel mail journal under `_bolt/.lym/creel/journal`.\n\nThe operator wants this kept: absolutely.\n\n## Idea\n\nAt landing, store what a later study needs in the weft, where it survives the worktree's deletion.\n\n- The decision record with its `Added after Discussion` entries, as it stood at landing.\n- Every Code-Review round's findings and the fixer reports, the parent's rulings and answers, and the PR-Review findings.\n- The Describe text as it was merged, and the drift verdict.\n- A short index row per landed task, so `lym report` can read them without walking directories.\n- Read first which records survive today and where, and how landing already archives a run (the archive tag, `Reconcile leftover shuttle runs from run records`).\n- Decide the weft path and how long records are kept, and make sure findings no longer live only in a scratchpad directory.\n",
+      "created": "2026-11-26T07:34:04Z",
+      "revised": "2026-11-26T07:34:04Z"
     }
   ],
   "prime_owner": "neve",
