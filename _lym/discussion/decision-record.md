@@ -49,6 +49,12 @@ Find out whether the hardener recipe does what it is for: drive the modules its 
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): Reproductions dropped
+
+Decision: The study runs no reproductions; the report judges the three findings (c1 F3, c2 F2, c2 G3) from records and commits, and says that no reproduction ran and why.
+
+Rationale: The entry's bound is at most three, and a task session cannot make the sandbox hub or old-build worktree they need; the orch runs no trials itself.
+
 ## Constraints
 
 ## Auto-mode assumptions
