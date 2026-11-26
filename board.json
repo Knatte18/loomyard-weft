@@ -765,6 +765,24 @@
       "created": "2026-11-26T13:52:00Z",
       "revised": "2026-11-26T19:17:53Z",
       "profile": "light"
+    },
+    {
+      "id": 1696,
+      "handle": "B1",
+      "slug": "enter-session-test-cleanup-race",
+      "title": "TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "`TestEnterSession_DrivesTheToldTmux` in `internal/reedcli` failed once in a tier1 gate run of `dotnet-gate-fixes` (2026-11-26, run `20261126T191602Z-tier1-1241782`), then passed 30 of 30 runs with `-count=30`.\nThe failure is in cleanup, not in an assertion:\n`TempDir RemoveAll cleanup: unlinkat .../TestEnterSession_DrivesTheToldTmux.../001/container/warp-bare-LYMHUB/warp-bare: directory not empty`.\nSomething the test starts most likely still writes into its temp dir when the test returns, such as a background process or a goroutine that outlives it.\n\nIdea: make the test wait for whatever it started to stop before it returns, so cleanup finds the directory quiet.\nEach flaky failure costs a run a full red verify round, about 5 minutes, and a gate-fixer turn.\n",
+      "created": "2026-11-26T19:29:57Z",
+      "revised": "2026-11-26T19:29:57Z"
     }
   ],
   "prime_owner": "neve",
