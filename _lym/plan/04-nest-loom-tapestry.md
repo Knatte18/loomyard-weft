@@ -1,7 +1,7 @@
 # Card 4 — nest-loom-tapestry
 
 **Create:**
-- `plan:internal/configengine#NestPaths` -> `func NestPaths(values map[string]any) map[string]any`
+- `internal/configengine#NestPaths`
 
 **Edit:**
 - `internal/loomengine#`

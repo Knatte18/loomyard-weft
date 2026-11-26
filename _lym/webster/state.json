@@ -1,12 +1,12 @@
 {
   "runGuid": "9d4a5615497663a2eb2697f8dfe5f9a9",
-  "planFingerprint": "702709fb363123bf756ab38521f47e6919bc76af5a472ed475ba16ac7bc4d701",
+  "planFingerprint": "37bab6971aab6e270c8e506134e175ff4c533e144f05bdea9f8e3d4a90ef11d0",
   "planFileHashes": {
     "00-overview.md": "610cb40763b90c1096177f6029c0cf5e6613247a683b5ace4c9d5f5ff71d848a",
     "01-config-key-name.md": "fcbed441aabc6ba26a3cecb7262e0ccc9b2a4574e9c4ff87c3d908d699f48f7d",
     "02-config-moved-keys.md": "35016dfdd613237aeed75a62d3fe14eb2dfd87e455ac636a9e833b702d38fb34",
     "03-yaml-move-keys.md": "64e9a7e406a917f699b7d7312bf001e65ff492d24f1237528a8afaf1b0219773",
-    "04-nest-loom-tapestry.md": "32554f98d56a4dc3878d767d5451af37d6dac54a921923d428a0f3160314863b",
+    "04-nest-loom-tapestry.md": "c45eadb714d10dd8be26c2671aa7fe9369c14564df8d12c9a515b5b75773d9d7",
     "05-moved-key-tables.md": "db3522e00b8c3450d2223e68e8c719a4f85464bad520942bff08a5d5f277a4ce",
     "06-reconcile-moves.md": "9954ddcd864881ac813d4ce046279469fc4ce9f94d323b07b5f073d97c2b541a",
     "07-profiles-moves.md": "916d37bd9c95cb583acb34c412ff041d46e3e55fc3272abbc3497a5a0ddc989c",
@@ -741,22 +741,51 @@
         "04-nest-loom-tapestry"
       ],
       "cardHashes": {
-        "04-nest-loom-tapestry": "32554f98d56a4dc3878d767d5451af37d6dac54a921923d428a0f3160314863b"
+        "04-nest-loom-tapestry": "c45eadb714d10dd8be26c2671aa7fe9369c14564df8d12c9a515b5b75773d9d7"
       },
       "startSha": "efa897fc6d576881c50be58698c5282adfad5a44",
       "kind": "fork",
       "spawnedAt": "2026-11-26T10:14:36Z",
       "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-nest-loom-tapestry",
+        "status": "done",
+        "head_sha": "ce6608bc8e4e1cebbe1a9b4c1a7dfa9f4f3ea7c3",
+        "deviations": [
+          "contracts/stencils/stencils.go",
+          "internal/configcli/configcli_test.go",
+          "internal/configreg/configreg_test.go",
+          "internal/configreg/settinglookup.go",
+          "internal/configreg/settinglookup_test.go",
+          "internal/hardencli/cli_integration_test.go",
+          "internal/hubforge/hub_test.go",
+          "internal/landingshed/prreviewask.go",
+          "internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml",
+          "internal/loomshed/raddlewrite.go",
+          "internal/loomshed/raddlewrite_test.go",
+          "internal/shedadapters/bouncer.go"
+        ]
+      },
+      "cardShas": [
+        "ce6608bc8e4e1cebbe1a9b4c1a7dfa9f4f3ea7c3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a085a93b8a89fd2e7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a085a93b8a89fd2e7.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a085a93b8a89fd2e7.jsonl"
   ]
 }
