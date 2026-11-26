@@ -1,6 +1,6 @@
 # Restructure fabricengine into a git-free core so its tests need few repositories
 
-`fabric-git-free-core` · Task · sketch, fabric, testkit · starting · Worktree-Create
+`fabric-git-free-core` · Task · sketch, fabric, testkit · starting · Seed-Child
 
 Decision record: [Sketch](decision-fabric-git-free-core.md)
 
