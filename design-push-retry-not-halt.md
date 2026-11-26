@@ -10,8 +10,11 @@ Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`pr-modes-no-
   One summary notice goes to the orch when owed work has stayed unpushed past a threshold (30 minutes proposed), listing every branch still owed, and one notice when all is pushed again.
 - The reed status bar shows one field, `sync: <minutes>`: the minutes since this machine last had nothing owed to origin, so the operator sees before switching machines whether work is still only local.
 - Agents may still push, but a push of theirs that fails never stops them: their instructions say a failed push needs no action, since lym pushes their commits later, and no row or gate requires an agent's commits to be on origin.
-- A transient network failure never fails a run: a landing push or GitHub read waits and retries.
-  A refusal that retrying cannot fix (rejected push, expired login, moved branch) stops at once with one notice.
+- How often lym pushes is config in seconds, adaptive: a short interval while pushes go through (60 s proposed), doubled after each failed push up to a ceiling (300 s to start with), and back to the short one after a push lands.
+  The reed field shows the interval in force beside the minutes since the last sync, such as `sync: 3m · 60s`.
+- A landing makes lym push at once, but a network outage never stops other work: other runs go on committing locally.
+  A landing that needs no GitHub call merges locally and hands its owed push to the pusher; one that needs GitHub, such as a pull request, waits for the network and retries, and never fails on a transient error.
+- A refusal that retrying cannot fix (rejected push, expired login, moved branch) stops at once with one notice.
 
 ## Operator intent (2026-11-26)
 
