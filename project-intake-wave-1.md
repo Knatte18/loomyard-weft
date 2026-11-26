@@ -12,8 +12,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>1m | webster, quarry |
-| T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light | Darn-Write | neve | 3h<br>1m | stencil, darn |
+| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>2m | webster, quarry |
+| T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light | Darn-Write | neve | 3h<br>2m | stencil, darn |
 
 ## Layer A (2)
 
