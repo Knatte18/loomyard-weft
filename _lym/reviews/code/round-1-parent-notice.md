@@ -1,0 +1,1 @@
+Review segment of task `drift-stale-loosened-ruling` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/drift-stale-loosened-ruling/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept drift-stale-loosened-ruling" or "lym loom circling continue drift-stale-loosened-ruling".
