@@ -1,6 +1,6 @@
 # Background pushes retry quietly; landing pushes and reads retry instead of failing
 
-`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby · draft
+`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby
 
 Depends on: [`pr-modes-no-agent`](design-pr-modes-no-agent.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`infra-stops-not-failures`](design-infra-stops-not-failures.md)
 

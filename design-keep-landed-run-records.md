@@ -1,6 +1,6 @@
 # Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed
 
-`keep-landed-run-records` · Task · feature, landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern · draft
+`keep-landed-run-records` · Task · feature, landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern
 
 Decision record: [Sketch](decision-keep-landed-run-records.md)
 
