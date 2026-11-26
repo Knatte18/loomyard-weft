@@ -1,0 +1,538 @@
+diff --git a/contracts/stencils/drift/drift-template-judge.md b/contracts/stencils/drift/drift-template-judge.md
+index f34eceb5d..b1f29f998 100644
+--- a/contracts/stencils/drift/drift-template-judge.md
++++ b/contracts/stencils/drift/drift-template-judge.md
+@@ -49,9 +49,16 @@ Read the log, the expectation and the capture files the failing cases name, and
+ - `unexpected` when the failure is of a case the expectation does not explain.
+ 
+ Under either mode, rule on every file of the request's `files` once.
+-Decide from the file's diff what is a test and what is loosened; no language or path tells you.
++Decide from the diffs and the tests you read what is a test and what is loosened; no language or path tells you.
+ 
+-- `none` when the diff widens or removes no assertion, tolerance or limit in a test.
++An assertion the diff removes from one file is not loosened when a test in another file holds the same check on the same behaviour, no looser.
++That file may be one of the request's `files` whose diff adds the check, or one `files` does not list,
++so search the repository's tests for a removed check before you rule on it.
++Leave a check carried this way out of the file's checks, name the file that carries it in the file's `reason`,
++and list that file's repository-relative path under the file's `carried_by`: lym judges the file again when the range changes.
++A widened check, and a removed one that no test carries, is loosened.
++
++- `none` when the diff widens no assertion, tolerance or limit in a test, and removes none that no other test carries.
+ - `loosened` otherwise, with one check per loosened assertion, naming the test and what was loosened.
+ 
+ Rule each check:
+@@ -84,6 +91,8 @@ files:
+   - id: <the file's id>
+     ruling: loosened  # or: none
+     reason: <what you read in the diff>
++    carried_by:       # under either ruling, only when another file holds a removed check
++      - <that file's path>
+     checks:           # only under loosened, one per loosened assertion
+       - test: <the test holding the check>
+         loosened: <what was loosened>
+diff --git a/contracts/stencils/loom/loom-fragment-loosened-check.md b/contracts/stencils/loom/loom-fragment-loosened-check.md
+index fb2d88379..3cd66982f 100644
+--- a/contracts/stencils/loom/loom-fragment-loosened-check.md
++++ b/contracts/stencils/loom/loom-fragment-loosened-check.md
+@@ -8,6 +8,7 @@ A commit that widens or removes an assertion, tolerance or limit in a test that
+ 
+ `Loosened-Check: <test> — <what was loosened> — <measured cause>`
+ 
++An assertion that moves to a test in another file, on the same behaviour and no looser, is not removed and needs no line.
+ Write one line per check.
+ The cause is a measurement, such as the observed value that the old limit rejected, never "flaky" or "to make it pass".
+ A session that forgot a line adds it in a later commit, with no change if need be, and never rewrites history.
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index a13da8743..49e72f1b2 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -84,6 +84,7 @@ Do not flag any of the following as a finding:
+ - **Loosened checks.**
+   An assertion, tolerance or limit the diff widens or removes in a test that exists at the review base is a finding, unless a `Loosened-Check:` trailer on any commit of the review range names it and a measured cause.
+   A cause that is no measurement, such as "flaky" or "to make it pass", is a finding too.
++  A removed assertion that a test in another file still holds, on the same behaviour and no looser, is not removed.
+ - **Root cause of a bug fix.**
+   A `Root-Cause:` trailer on a commit of the review range names the defect the diff's fix removes.
+   A trailer that names a symptom, or a defect the diff does not touch, is a finding.
+diff --git a/docs/overview.md b/docs/overview.md
+index 1605ca11e..006fcfb34 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1118,8 +1118,10 @@ User-facing modules each get one `lym <module>` namespace:
+   a hub whose scoper is neither go nor dotnet passes the gate, since the check cannot judge the tests there;
+   the fix's commit carries a `Root-Cause:` trailer that the `Code-Review` perch checks.
+   `Drift-Verify` checks the writer's code by containment and has a judge rule on the expected changes.
+-  The judge also rules on each loosened check, an assertion, tolerance or limit widened in a test existing at the review base, as caused or uncaused.
+-  An uncaused one makes the row Stuck until a `Loosened-Check` trailer commit or a revert, then `lym loom resume`.
++  The judge also rules on each loosened check, an assertion, tolerance or limit widened or removed in a test existing at the review base, as caused or uncaused.
++  A removed assertion that another test still holds, no looser, is no loosened check.
++  An uncaused one makes the row Stuck until a `Loosened-Check` trailer commit, a revert or a commit adding the dropped checks to a test, then `lym loom resume`.
++  A change to a file of the review range has the judge rule on the uncaused file again.
+   The `Code-Review` perch (`Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`) reviews the committed diff.
+   It carries its open findings into the record.
+   `Drift-Recheck` then checks again, by containment and the judge, the code the perch's fixes committed.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8a030d548..76081e9aa 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -198,6 +198,7 @@ var intentionallyNil = map[string]string{
+ 	"Drift.CommitsSince":                     "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.ChangedFiles":                     "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.CommitMessages":                   "loom- and darn-only seam, batten has no Drift row",
++	"Drift.RangeDiff":                        "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.ExpectTable":                      "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.StartCapture":                     "loom- and darn-only seam, batten has no Drift row",
+ 	"Drift.RunCapture":                       "loom- and darn-only seam, batten has no Drift row",
+diff --git a/internal/driftengine/deps.go b/internal/driftengine/deps.go
+index 16130b3b9..25cedf5a2 100644
+--- a/internal/driftengine/deps.go
++++ b/internal/driftengine/deps.go
+@@ -37,6 +37,8 @@ type Deps struct {
+ 	ReviewBase func() (string, error)
+ 	// ChangedFiles lists the files that exist at base and that the commits from base to HEAD change, each with its diff.
+ 	ChangedFiles func(base string) ([]fabricengine.FileDiff, error)
++	// RangeDiff reads the full diff of the commits from base to HEAD, added files included.
++	RangeDiff func(base string) (string, error)
+ 	// CommitMessages lists the whole message of every commit from base to HEAD.
+ 	CommitMessages func(base string) ([]string, error)
+ 	// Commit commits the told anchor-relative paths under the durable drift directory with the run's records.
+diff --git a/internal/driftengine/doc.go b/internal/driftengine/doc.go
+index 748bf8abf..0196a0a4f 100644
+--- a/internal/driftengine/doc.go
++++ b/internal/driftengine/doc.go
+@@ -236,8 +236,14 @@
+ // A file's key is the sha256 of its diff, a NUL and the range's `Loosened-Check:` trailer lines,
+ // so a commit that only adds a trailer changes every key.
+ // The judge rules a file `none` or `loosened`, and each loosened check `caused` or `uncaused`.
++// An assertion removed from one file that a test in another file still holds, no looser, is not loosened,
++// and the file's ruling names that file under `carried_by`.
+ // A loosened check with no measured cause is a Stuck.
+-// Its way forward is a `Loosened-Check:` trailer on a commit of the range, or a revert, then `lym loom resume`.
++// Its way forward is a `Loosened-Check:` trailer on a commit of the range, a revert,
++// or a commit that adds the dropped checks to a test, then `lym loom resume`.
++// A ruling that holds an uncaused check or names a carrying file depends on the rest of the range.
++// It is reused only while the range's diff, over every file it adds, modifies or deletes, is unchanged.
++// A commit to another file may answer such a check, or drop the one that was carried.
+ // Bound: a trailer's measured cause is the committer's attestation, which neither the judge nor the code re-measures.
+ //
+ // Otherwise one judge is spawned under the snapshot guard.
+diff --git a/internal/driftengine/judgement.go b/internal/driftengine/judgement.go
+index d50f4cadf..538587b1b 100644
+--- a/internal/driftengine/judgement.go
++++ b/internal/driftengine/judgement.go
+@@ -23,7 +23,8 @@ const (
+ 	RulingNoMatch Ruling = "does not match"
+ 	// RulingUnexpected says a failing compare is not a change the expectation explains, under DiffCommand only.
+ 	RulingUnexpected Ruling = "unexpected"
+-	// RulingNone says a file's diff widens or removes no assertion, tolerance or limit in a test.
++	// RulingNone says a file's diff widens no assertion, tolerance or limit in a test.
++	// It also says that another test holds each one the diff removes.
+ 	RulingNone Ruling = "none"
+ 	// RulingLoosened says a file's diff loosens at least one check in a test.
+ 	RulingLoosened Ruling = "loosened"
+@@ -59,6 +60,8 @@ type FileRuling struct {
+ 	Reason string `yaml:"reason"`
+ 	// Checks are the loosened checks of the file, one per loosened assertion, and empty under RulingNone.
+ 	Checks []LoosenedRuling `yaml:"checks"`
++	// CarriedBy are the paths of the other files whose tests hold an assertion this file's diff removes.
++	CarriedBy []string `yaml:"carried_by"`
+ }
+ 
+ // LoosenedRuling is the judge's ruling on one loosened check of a file.
+diff --git a/internal/driftengine/loosened.go b/internal/driftengine/loosened.go
+index 1315c7f12..6ee0a4fa8 100644
+--- a/internal/driftengine/loosened.go
++++ b/internal/driftengine/loosened.go
+@@ -41,6 +41,21 @@ func fileRulingKey(diff string, trailerLines []string) string {
+ 	return hex.EncodeToString(sum[:])
+ }
+ 
++// rangeRulingKey returns the sha256, in hex, of the range's full diff.
++// That diff covers every file the range adds, modifies or deletes.
++// The key tells whether a ruling that depends on other files of the range still stands.
++func rangeRulingKey(rangeDiff string) string {
++	sum := sha256.Sum256([]byte(rangeDiff))
++	return hex.EncodeToString(sum[:])
++}
++
++// dependsOnRange reports whether a later change to another file of the range may overturn a ruling.
++// A change may answer a check with no measured cause, such as by adding it to another test,
++// and it may drop the check that another file carried.
++func dependsOnRange(held JudgedFile) bool {
++	return len(held.CarriedBy) > 0 || slices.ContainsFunc(held.Checks, func(check LoosenedRuling) bool { return check.Ruling == RulingUncaused })
++}
++
+ // listedFile is one file of the review range that no stored ruling covers under its current key.
+ type listedFile struct {
+ 	path string
+@@ -49,15 +64,19 @@ type listedFile struct {
+ }
+ 
+ // listedFiles is what a pass read of the review range.
+-// It holds the files the judge still rules on, the stored rulings that cover the other files,
+-// and the range's commit messages.
++// It holds the files the judge still rules on and the stored rulings that cover the other files.
++// It also holds the range's commit messages and ruling key.
+ type listedFiles struct {
+ 	unruled  []listedFile
+ 	reused   []JudgedFile
+ 	messages []string
++	rangeKey string
+ }
+ 
+-// listFiles reads the review range's changed files and commit messages and splits the files by their stored rulings.
++// listFiles reads the review range's changed files, commit messages and full diff.
++// It splits the changed files by their stored rulings.
++// A stored ruling covers a file while its key is unchanged.
++// One that holds an uncaused check or names a carrying file also requires an unchanged range key.
+ // A run whose review base is not told has no review range and lists no file.
+ func (p *DriftVerify) listFiles(rec Records) (listedFiles, error) {
+ 	d := p.deps
+@@ -76,12 +95,18 @@ func (p *DriftVerify) listFiles(rec Records) (listedFiles, error) {
+ 	if err != nil {
+ 		return listedFiles{}, fmt.Errorf("drift: %s: read the commit messages since %s: %w", p.name, base, err)
+ 	}
++	rangeDiff, err := d.RangeDiff(base)
++	if err != nil {
++		return listedFiles{}, fmt.Errorf("drift: %s: read the diff since %s: %w", p.name, base, err)
++	}
+ 
+ 	trailers := loosenedTrailerLines(messages)
+-	listed := listedFiles{messages: messages}
++	listed := listedFiles{messages: messages, rangeKey: rangeRulingKey(rangeDiff)}
+ 	for _, file := range files {
+ 		key := fileRulingKey(file.Diff, trailers)
+-		stored := slices.IndexFunc(rec.Judged.Files, func(held JudgedFile) bool { return held.Path == file.Path && held.Key == key })
++		stored := slices.IndexFunc(rec.Judged.Files, func(held JudgedFile) bool {
++			return held.Path == file.Path && held.Key == key && (!dependsOnRange(held) || held.RangeKey == listed.rangeKey)
++		})
+ 		if stored >= 0 {
+ 			listed.reused = append(listed.reused, rec.Judged.Files[stored])
+ 			continue
+@@ -114,8 +139,8 @@ func loosenedChecksOf(path string, rulings []LoosenedRuling) []LoosenedCheck {
+ 	return checks
+ }
+ 
+-// newRulings returns the file rulings the judge gave the unruled files, each stored with the key of what it judged,
+-// and the loosened checks those rulings hold.
++// newRulings returns the judge's rulings on the unruled files and the loosened checks those rulings hold.
++// Each ruling carries the key of what it judged and the range's key.
+ func (l listedFiles) newRulings(judgement Judgement, strand, at string) ([]JudgedFile, []LoosenedCheck) {
+ 	byID := make(map[string]listedFile, len(l.unruled))
+ 	for i, file := range l.unruled {
+@@ -125,7 +150,7 @@ func (l listedFiles) newRulings(judgement Judgement, strand, at string) ([]Judge
+ 	var checks []LoosenedCheck
+ 	for _, ruling := range judgement.Files {
+ 		file := byID[ruling.ID]
+-		rulings = append(rulings, JudgedFile{Path: file.path, Key: file.key, Ruling: ruling.Ruling, Reason: ruling.Reason, Checks: ruling.Checks, Strand: strand, At: at})
++		rulings = append(rulings, JudgedFile{Path: file.path, Key: file.key, RangeKey: l.rangeKey, Ruling: ruling.Ruling, Reason: ruling.Reason, Checks: ruling.Checks, CarriedBy: ruling.CarriedBy, Strand: strand, At: at})
+ 		checks = append(checks, loosenedChecksOf(file.path, ruling.Checks)...)
+ 	}
+ 	return rulings, checks
+@@ -155,13 +180,15 @@ func uncausedChecks(checks []LoosenedCheck) []LoosenedCheck {
+ }
+ 
+ // uncausedReason words the Stuck over loosened checks with no measured cause.
+-// It names each check and the two ways forward: a trailer naming the cause, or a revert of the loosening.
++// It names each check and the three ways forward:
++// a trailer naming the cause, a revert of the loosening, or a commit that adds the dropped checks to a test.
++// A commit that changes a file of the range has the judge rule on the uncaused files again.
+ func uncausedReason(checks []LoosenedCheck) string {
+ 	described := make([]string, len(checks))
+ 	for i, check := range checks {
+ 		described[i] = fmt.Sprintf("%s: %s: %s: %s", check.Path, check.Test, check.Loosened, check.Reason)
+ 	}
+-	return fmt.Sprintf("a test the change loosened has no measured cause: %s; way forward: commit a \"%s: <test> — <what was loosened> — <measured cause>\" trailer on any commit of the range, with no change if need be, or commit a revert of the loosening, then lym loom resume",
++	return fmt.Sprintf("a test the change loosened has no measured cause: %s; way forward: commit a \"%s: <test> — <what was loosened> — <measured cause>\" trailer on any commit of the range, with no change if need be, or commit a revert of the loosening, or commit the dropped checks in a test, then lym loom resume, which has the judge rule again on a file whose stored ruling the new commits may answer",
+ 		strings.Join(described, "; "), LoosenedCheckTrailerKey)
+ }
+ 
+diff --git a/internal/driftengine/records.go b/internal/driftengine/records.go
+index df55a1334..c6aca913d 100644
+--- a/internal/driftengine/records.go
++++ b/internal/driftengine/records.go
+@@ -171,10 +171,16 @@ type JudgedRecord struct {
+ type JudgedFile struct {
+ 	Path string `json:"path"`
+ 	// Key identifies the judged diff and commit messages, so a later check reuses the ruling only while they are unchanged.
+-	Key    string           `json:"key"`
+-	Ruling Ruling           `json:"ruling"`
+-	Reason string           `json:"reason"`
+-	Checks []LoosenedRuling `json:"checks,omitempty"`
++	Key string `json:"key"`
++	// RangeKey identifies the full diff of the range the ruling was given over.
++	// A ruling that holds an uncaused check or names a carrying file is reused only while it is unchanged,
++	// so a later change to any file the range adds, modifies or deletes has the file judged again.
++	RangeKey string           `json:"range_key,omitempty"`
++	Ruling   Ruling           `json:"ruling"`
++	Reason   string           `json:"reason"`
++	Checks   []LoosenedRuling `json:"checks,omitempty"`
++	// CarriedBy are the paths of the other files whose tests held an assertion this file's diff removes.
++	CarriedBy []string `json:"carried_by,omitempty"`
+ 	// Strand is the judge's strand name.
+ 	Strand string `json:"strand"`
+ 	// At is the RFC 3339 time of the ruling.
+diff --git a/internal/driftengine/verify.go b/internal/driftengine/verify.go
+index dec958789..e02dc57ba 100644
+--- a/internal/driftengine/verify.go
++++ b/internal/driftengine/verify.go
+@@ -73,7 +73,7 @@ func NewDriftVerify(name string, row Row, judgement shuttleengine.GateEntry, dep
+ // Under a recorded diff of command the declared compare replaces the capture and the diff.
+ // An exit 0 is Done, and a failing compare is ruled on case by case by one judge.
+ // Where the review base is told, each file of the review range that exists at the base is also listed,
+-// and the judge rules on the loosened checks of every file with no stored ruling under its key.
++// and the judge rules on the loosened checks of every file that no stored ruling still covers.
+ // A loosened check with no measured cause is a Stuck for the parent.
+ // A stored ruling of the same code head stands until an amendment follows it.
+ // Every Stuck for the parent opens with shedadapters.DecisionHaltPrefix.
+@@ -96,6 +96,7 @@ func (p *DriftVerify) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		seam{"EndRoles", d.EndRoles != nil},
+ 		seam{"ChangedFiles", d.ChangedFiles != nil},
+ 		seam{"CommitMessages", d.CommitMessages != nil},
++		seam{"RangeDiff", d.RangeDiff != nil},
+ 	)
+ 	if err == nil && p.judgement.Gate == nil {
+ 		err = fmt.Errorf("drift: %s is wired without a judgement gate entry", p.name)
+@@ -254,7 +255,8 @@ func (p *DriftVerify) recordUnsealed(rec Records) error {
+ // checkAndJudge runs the drift check and maps its report.
+ // A fault or an unexpected change is a Stuck.
+ // Stored rulings are reused, and the changes and files left over go to the judge.
+-// A stored ruling that a loosened check has no measured cause is a Stuck, with no judge.
++// A stored ruling that a loosened check has no measured cause is a Stuck with no judge.
++// That holds while the range's diff and trailer lines are unchanged.
+ func (p *DriftVerify) checkAndJudge(ctx context.Context, rec Records, head string) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	report, err := Check(ctx, p.deps)
+ 	if err != nil {
+diff --git a/internal/driftengine/verify_test.go b/internal/driftengine/verify_test.go
+index 8fbc798e2..6e524e321 100644
+--- a/internal/driftengine/verify_test.go
++++ b/internal/driftengine/verify_test.go
+@@ -150,14 +150,19 @@ type verifyFixture struct {
+ 	checkoutsErr   error
+ 	recordsChanged []string
+ 	// reviewBase is what the ReviewBase seam answers; changedFiles and commitMessages are what the range's reads answer.
+-	// changedFilesBases and commitMessagesBases hold the base each of those reads was called with.
++	// addedDiff is the diff of the files the range adds, which the full range diff holds after the changed files' diffs.
++	// changedFilesBases, commitMessagesBases and rangeDiffBases hold the base each of those reads was called with.
+ 	reviewBase          string
+ 	changedFiles        []fabricengine.FileDiff
++	addedDiff           string
+ 	commitMessages      []string
+ 	changedFilesBases   []string
+ 	commitMessagesBases []string
++	rangeDiffBases      []string
+ 	// fileRulings maps a listed file's path to the loosened checks the judge rules on it; a file with none is ruled none.
+ 	fileRulings map[string][]LoosenedRuling
++	// fileCarriedBy maps a listed file's path to the files the judge names as carrying its removed checks.
++	fileCarriedBy map[string][]string
+ 	// rulings maps a cell's "<case> <key>" to its ruling, which defaults to matching; rangeChecked is the open-range note.
+ 	rulings      map[string]Ruling
+ 	rangeChecked string
+@@ -249,6 +254,15 @@ func newVerifyFixture(t *testing.T) *verifyFixture {
+ 		f.commitMessagesBases = append(f.commitMessagesBases, base)
+ 		return f.commitMessages, nil
+ 	}
++	d.RangeDiff = func(base string) (string, error) {
++		f.rangeDiffBases = append(f.rangeDiffBases, base)
++		var diff strings.Builder
++		for _, file := range f.changedFiles {
++			diff.WriteString(file.Path + "\n" + file.Diff)
++		}
++		diff.WriteString(f.addedDiff)
++		return diff.String(), nil
++	}
+ 	f.deps = d
+ 	return f
+ }
+@@ -327,6 +341,9 @@ func (f *verifyFixture) filesYAML(request JudgeRequest) string {
+ 		checks := f.fileRulings[file.Path]
+ 		if len(checks) == 0 {
+ 			fmt.Fprintf(&text, "  - id: %s\n    ruling: %s\n    reason: no assertion was widened\n", file.ID, RulingNone)
++			if carriers := f.fileCarriedBy[file.Path]; len(carriers) > 0 {
++				fmt.Fprintf(&text, "    carried_by: [%s]\n", strings.Join(carriers, ", "))
++			}
+ 			continue
+ 		}
+ 		fmt.Fprintf(&text, "  - id: %s\n    ruling: %s\n    reason: a limit was widened\n    checks:\n", file.ID, RulingLoosened)
+@@ -1296,8 +1313,8 @@ func TestDriftVerify(t *testing.T) {
+ 			if len(f.requests) != 1 || len(f.requests[0].Cells) != 0 || !slices.Equal(f.requests[0].Files, []JudgeFile{wantFile}) || !slices.Equal(f.requests[0].CommitMessages, f.commitMessages) {
+ 				t.Fatalf("requests = %+v; want one judge listing %+v and the range's messages, with no cell", f.requests, wantFile)
+ 			}
+-			if !slices.Equal(f.changedFilesBases, []string{"review-base"}) || !slices.Equal(f.commitMessagesBases, []string{"review-base"}) {
+-				t.Errorf("ChangedFiles bases %q and CommitMessages bases %q; want the review base alone, not the branch point", f.changedFilesBases, f.commitMessagesBases)
++			if !slices.Equal(f.changedFilesBases, []string{"review-base"}) || !slices.Equal(f.commitMessagesBases, []string{"review-base"}) || !slices.Equal(f.rangeDiffBases, []string{"review-base"}) {
++				t.Errorf("ChangedFiles bases %q, CommitMessages bases %q and RangeDiff bases %q; want the review base alone, not the branch point", f.changedFilesBases, f.commitMessagesBases, f.rangeDiffBases)
+ 			}
+ 			scope, judged := f.records().Scope, f.records().Judged
+ 			if len(judged.Files) != 1 || judged.Files[0].Path != limitsTest || judged.Files[0].Key != fileRulingKey(widened[0].Diff, nil) || judged.Files[0].Ruling != RulingLoosened {
+@@ -1340,6 +1357,97 @@ func TestDriftVerify(t *testing.T) {
+ 			}
+ 		})
+ 
++		t.Run("a later commit that adds the dropped checks to another test has the uncaused ruling judged again", func(t *testing.T) {
++			t.Parallel()
++			const movedTo = "limits_class_test.go"
++			const untouchedTest = "names_test.go"
++			before := fabricengine.FileDiff{Path: movedTo, Diff: "+type limitsClass struct{}\n"}
++			untouched := fabricengine.FileDiff{Path: untouchedTest, Diff: "+\tname := \"limit\"\n"}
++			f := newVerifyFixture(t)
++			f.seed(countedScope(), verifyBaseline)
++			f.current = verifyBaseline
++			f.changedFiles = []fabricengine.FileDiff{widened[0], before, untouched}
++			f.commitMessages = []string{"3: widen the limit\n"}
++			f.fileRulings = uncaused
++			storedUntouched := func() JudgedFile {
++				files := f.records().Judged.Files
++				index := slices.IndexFunc(files, func(held JudgedFile) bool { return held.Path == untouchedTest })
++				if index < 0 {
++					t.Fatalf("stored files = %+v; want a ruling on %s", files, untouchedTest)
++				}
++				return files[index]
++			}
++
++			outcome, pointer, err := f.call()
++
++			requireStuck(t, outcome, pointer, err, true, "has no measured cause", "commit the dropped checks in a test", "has the judge rule again on a file whose stored ruling the new commits may answer")
++			ruledFirst := storedUntouched()
++
++			added := fabricengine.FileDiff{Path: movedTo, Diff: before.Diff + "+\tif got > 5 {\n+\t\tt.Errorf(\"limit exceeded\")\n"}
++			f.moveHead("code-head-1")
++			f.changedFiles = []fabricengine.FileDiff{widened[0], added, untouched}
++			f.commitMessages = []string{"4: add the dropped checks\n", "3: widen the limit\n"}
++			f.fileRulings = nil
++
++			requireDone(f)
++
++			wantFiles := []JudgeFile{{ID: "f1", Path: limitsTest, Diff: widened[0].Diff}, {ID: "f2", Path: movedTo, Diff: added.Diff}}
++			if f.seats.Calls != 2 || !slices.Equal(f.requests[1].Files, wantFiles) {
++				t.Fatalf("%d judge runs, requests %+v; want a second judge listing %+v", f.seats.Calls, f.requests, wantFiles)
++			}
++			if got := storedUntouched(); !reflect.DeepEqual(got, ruledFirst) {
++				t.Errorf("stored ruling on %s = %+v; want it reused as %+v", untouchedTest, got, ruledFirst)
++			}
++			if scope := f.scope(); !scope.LastCheck.Passed || len(scope.LastCheck.Loosened) != 0 {
++				t.Errorf("last check = %+v; want a pass with no loosened check", scope.LastCheck)
++			}
++		})
++
++		t.Run("a later commit that adds the dropped checks in a new test file has the uncaused ruling judged again", func(t *testing.T) {
++			t.Parallel()
++			f := newVerifyFixture(t)
++			f.seed(countedScope(), verifyBaseline)
++			f.current = verifyBaseline
++			f.changedFiles = widened
++			f.fileRulings = uncaused
++
++			outcome, pointer, err := f.call()
++
++			requireStuck(t, outcome, pointer, err, true, "has no measured cause")
++
++			f.moveHead("code-head-1")
++			f.addedDiff = "limits_class_test.go\n+\tif got > 5 {\n"
++			f.fileRulings = nil
++
++			requireDone(f)
++
++			if f.seats.Calls != 2 || !f.scope().LastCheck.Passed {
++				t.Errorf("%d judge runs and last check %+v; want a second judge and a pass", f.seats.Calls, f.scope().LastCheck)
++			}
++		})
++
++		t.Run("a ruling that names a carrying file the range adds is judged again once that file changes", func(t *testing.T) {
++			t.Parallel()
++			const carrier = "limits_class_test.go"
++			f := newVerifyFixture(t)
++			f.seed(countedScope(), verifyBaseline)
++			f.current = verifyBaseline
++			f.changedFiles = widened
++			f.addedDiff = carrier + "\n+\tif got > 5 {\n"
++			f.fileCarriedBy = map[string][]string{limitsTest: {carrier}}
++			requireDone(f)
++
++			f.moveHead("code-head-1")
++			f.addedDiff = carrier + "\n+type limitsClass struct{}\n"
++
++			requireDone(f)
++
++			wantFiles := []JudgeFile{{ID: "f1", Path: limitsTest, Diff: widened[0].Diff}}
++			if f.seats.Calls != 2 || !slices.Equal(f.requests[1].Files, wantFiles) {
++				t.Errorf("%d judge runs, requests %+v; want a second judge listing %+v", f.seats.Calls, f.requests, wantFiles)
++			}
++		})
++
+ 		t.Run("a judge spawn ruling a cell does not match and a file uncaused halts with both reasons, the no-match one first", func(t *testing.T) {
+ 			t.Parallel()
+ 			f := newVerifyFixture(t)
+@@ -1366,8 +1474,8 @@ func TestDriftVerify(t *testing.T) {
+ 
+ 			requireDone(f)
+ 
+-			if len(f.requests) != 1 || len(f.requests[0].Files) != 0 || len(f.changedFilesBases)+len(f.commitMessagesBases) != 0 {
+-				t.Errorf("requests = %+v, file reads %q and %q; want one judge for the cell alone and no range read", f.requests, f.changedFilesBases, f.commitMessagesBases)
++			if len(f.requests) != 1 || len(f.requests[0].Files) != 0 || len(f.changedFilesBases)+len(f.commitMessagesBases)+len(f.rangeDiffBases) != 0 {
++				t.Errorf("requests = %+v, range reads %q, %q and %q; want one judge for the cell alone and no range read", f.requests, f.changedFilesBases, f.commitMessagesBases, f.rangeDiffBases)
+ 			}
+ 		})
+ 
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index 43637a6b9..c04d4002d 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -212,6 +212,13 @@ func driftDeps(location *lymcwd.Location, statusPath, statusLockPath string, tab
+ 			}
+ 			return fabric.CommittedFileDiffs(base)
+ 		},
++		RangeDiff: func(base string) (string, error) {
++			fabric, err := fabricengine.Open(location)
++			if err != nil {
++				return "", err
++			}
++			return fabric.ReadCommittedDiff(base)
++		},
+ 		CommitMessages: func(base string) ([]string, error) {
+ 			fabric, err := fabricengine.Open(location)
+ 			if err != nil {
+diff --git a/internal/shedrecipe/entries_drift.go b/internal/shedrecipe/entries_drift.go
+index 097c05ae1..2cbc5749d 100644
+--- a/internal/shedrecipe/entries_drift.go
++++ b/internal/shedrecipe/entries_drift.go
+@@ -189,6 +189,7 @@ func driftVerifyEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProd
+ 		{"Drift.Compare", d.Compare},
+ 		{"Drift.ChangedFiles", d.ChangedFiles},
+ 		{"Drift.CommitMessages", d.CommitMessages},
++		{"Drift.RangeDiff", d.RangeDiff},
+ 	})
+ 	if err != nil {
+ 		return nil, err
+diff --git a/internal/shedrecipe/entries_drift_test.go b/internal/shedrecipe/entries_drift_test.go
+index 437995638..b3168387e 100644
+--- a/internal/shedrecipe/entries_drift_test.go
++++ b/internal/shedrecipe/entries_drift_test.go
+@@ -37,6 +37,7 @@ func driftTestEnv(t *testing.T) Env {
+ 		FileAt:       func(string, string) ([]byte, bool, error) { return nil, false, nil },
+ 		CommitsSince: func(string) ([]string, error) { return nil, nil },
+ 		ChangedFiles: func(string) ([]fabricengine.FileDiff, error) { return nil, nil },
++		RangeDiff:    func(string) (string, error) { return "", nil },
+ 		CommitMessages: func(string) ([]string, error) {
+ 			return nil, nil
+ 		},
+@@ -113,6 +114,7 @@ func TestDriftEntries(t *testing.T) {
+ 		{"VerifyNilCompare", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.Compare = nil }, nil, "Drift.Compare"},
+ 		{"VerifyNilChangedFiles", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.ChangedFiles = nil }, nil, "Drift.ChangedFiles"},
+ 		{"VerifyNilCommitMessages", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.CommitMessages = nil }, nil, "Drift.CommitMessages"},
++		{"VerifyNilRangeDiff", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.RangeDiff = nil }, nil, "Drift.RangeDiff"},
+ 		{"VerifyNilRecordsChangedSince", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.RecordsChangedSince = nil }, nil, "Drift.RecordsChangedSince"},
+ 		{"VerifyNilEndRoles", driftVerifyEntry, verifyCfg(verifyGate), func(e *Env) { e.Drift.EndRoles = nil }, nil, "Drift.EndRoles"},
+ 		{"BaselineNilHead", driftBaselineEntry, Config{"subject": "decision-record"}, func(e *Env) { e.Drift.Head = nil }, nil, "Drift.Head"},
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 02e6a48f9..e31c5cf59 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -779,6 +779,7 @@ func driftDeps(root string) driftengine.Deps {
+ 		FileAt:       func(string, string) ([]byte, bool, error) { return nil, false, nil },
+ 		CommitsSince: func(string) ([]string, error) { return nil, nil },
+ 		ChangedFiles: func(string) ([]fabricengine.FileDiff, error) { return nil, nil },
++		RangeDiff:    func(string) (string, error) { return "", nil },
+ 		CommitMessages: func(string) ([]string, error) {
+ 			return nil, nil
+ 		},
