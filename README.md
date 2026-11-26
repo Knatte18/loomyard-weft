@@ -60,17 +60,17 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-wave-3` · Age 11h · Owner `neve`
 
+### Layer B (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T13 | **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T9<br>T10 | 12h<br>11h | loom, burler |
+
 ### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T9<br>T11 | 12h<br>7h | batten, landing, orch, stencil, shed, loom, pawl |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T9<br>T10 | 12h<br>11h | loom, burler |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (2)
 
