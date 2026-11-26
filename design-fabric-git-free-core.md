@@ -1,6 +1,6 @@
 # Restructure fabricengine into a git-free core so its tests need few repositories
 
-`fabric-git-free-core` · Task · enhancement, fabric, testkit · starting · Worktree-Create
+`fabric-git-free-core` · Task · enhancement, fabric, testkit · starting · Open-Window
 
 ## Why
 
