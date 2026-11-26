@@ -804,6 +804,26 @@
       "body": "Imported from [issue #260](https://github.com/Knatte18/loomyard/issues/260).\n\n## What happened\n\nA verify gate failed on `TestGateTestMap/NamedPackageIsRebuiltWhenFresh` (`internal/gatecli`, tier 1), on a branch that touched nothing in `internal/gatecli` or `internal/testcover`.\n\nThe only mismatch was one extra entry: the fixture test `alpha.TestAlphaTwo` was reported as passing only when run by itself.\n\n```\ntier1 (exit 1):\n  github.com/Knatte18/loomyard/internal/gatecli TestGateTestMap/NamedPackageIsRebuiltWhenFresh:\n    internal/gatecli/testmap_integration_test.go:1124: runTestMap() mismatch (-want +got):\n    gatecli.testMapOutcome{\n    ... // 1 ignored and 2 identical fields\n    TimedOut:    {\"alpha.TestAlphaHangs\"},\n    FailedTests: {\"alpha.TestAlphaHangs\"},\n    - \tPassedAlone: nil,\n    + \tPassedAlone: []string{\"alpha.TestAlphaTwo\"},\n    LeftOut:     {},\n    Exit:        1,\n    ... // 1 ignored field\n    }\n```\n\nThe same subtest passed in the run's other verify logs, and the `TestGateTestMap` run alone through `lym gate test --tier 1` passed.\n\n## Why it is abnormal\n\nA gate goes red on a test the change does not reach, and the agent has to spend a round deciding whether the failure is its own.\n\n## What to do\n\nThe likely cause, not confirmed, is load: the test runs with a shortened per-test limit, and a healthy fixture test can exceed it in a full run.\nMake the healthy fixture tests insensitive to that limit under load, for example by separating the limit that `TestAlphaHangs` must exceed from the one the other fixture tests run under, or by widening the margin.\n\nProvenance: task `audit-flags-master-friction`, note `burler-code-r1.md`.\n",
       "created": "2026-11-26T20:18:33Z",
       "revised": "2026-11-26T20:18:33Z"
+    },
+    {
+      "id": 1702,
+      "handle": "B5",
+      "slug": "beam-cancel-keeps-flag",
+      "title": "batten cancel --remove of a beam leaves the project's beam flag set",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten"
+      ],
+      "issues": [
+        259
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #259](https://github.com/Knatte18/loomyard/issues/259).\n\nA beam was made with lym beam create \u003cslug\u003e from the prime, then ended before any member ran with lym batten cancel \u003cslug\u003e --remove. The cancel ended the pawl run and removed the pair and its records, but the board project kept \"beam\": true and had status draft.\n\nThe flag cannot be cleared afterwards. lym board upsert '{\"slug\":\"\u003cslug\u003e\",\"beam\":false}' is refused: 'the beam flag stays set for the beam's life, which ends when lym beam land \u003cslug\u003e lands it'. But the beam has no pair and no run left to land. The only way back to a plain project was to detach the members, remove the project, upsert it again and re-attach the members and their depends_on, which changes the project's handle.\n\nThe cancel also warned: 'the beam's orch was not stopped: lym orch runs from the hub's prime worktree or a beam; \"\u003cslug\u003e\" is neither', which shows the cancel no longer saw the entry as a beam once the pair was gone.\n\nExpected: batten cancel --remove of a beam's pawl run ends the beam's life and clears the project's beam flag, leaving a plain project whose members are untouched. Alternatively, a verb such as lym beam cancel \u003cslug\u003e does so.",
+      "created": "2026-11-26T20:18:37Z",
+      "revised": "2026-11-26T20:18:37Z"
     }
   ],
   "prime_owner": "neve",
