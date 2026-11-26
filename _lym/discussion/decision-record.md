@@ -473,6 +473,12 @@ Decision: D6's Bound and D16 state that an area process can open, read and write
 
 Rationale: Option (a) of the hard-cap question, as the arbiter recommends: the record must not claim what Landlock cannot hold, and the mechanism is unmeasured.
 
+### Added after Discussion (parent, 2026-11-26): A removed area file drops its registry entry
+
+Decision: Every reader and writer of the area registry, lym area start and lym area stop included, drops a hub's registry entry whose area file is gone, so a hub whose area file is removed works as it does today with no extra verb.
+
+Rationale: It holds the Goal's 'with the area off, everything works as it does today' without adding a host-side off verb, the narrower of the two options.
+
 ## Constraints
 
 - Kernel facts, from `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md` and its man-page sources:
