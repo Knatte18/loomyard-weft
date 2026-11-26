@@ -734,9 +734,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl"
       ]
+    },
+    "4": {
+      "slug": "nest-loom-tapestry",
+      "cards": [
+        "04-nest-loom-tapestry"
+      ],
+      "cardHashes": {
+        "04-nest-loom-tapestry": "32554f98d56a4dc3878d767d5451af37d6dac54a921923d428a0f3160314863b"
+      },
+      "startSha": "efa897fc6d576881c50be58698c5282adfad5a44",
+      "kind": "fork",
+      "spawnedAt": "2026-11-26T10:14:36Z",
+      "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
