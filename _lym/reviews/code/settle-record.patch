@@ -1,0 +1,479 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 1605ca11e..022eed66c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1210,8 +1210,9 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym loom resume` wakes a halted run's live, parked driver through the same branch.
+   A run awaiting at a review segment's Bouncer row with a pending circling decision takes that branch too:
+   its driver's step re-calls the Bouncer, which acts on the decision.
+-  `lym loom resume` never spawns an LLM driver, adds a strand or brings reed up.
++  `lym loom resume` never spawns an LLM driver.
+   It spawns a Go driver for a halted go-seeded run that has none.
++  Before it spawns or wakes a driver it brings reed up and restores the run's status strand, as `start` does.
+   It reads the driver strand from reed's sessionless directory.
+   It refuses every other state with its way forward.
+   [refusal-spec.md](../contracts/specs/refusal-spec.md) defines a way forward.
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index 41baca8b3..d9ee97db7 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -199,6 +199,10 @@ type loomCLI struct {
+ 	// startPusher starts the pusher of the run's pair, which a resume does before it wakes a driver.
+ 	// Nil starts nothing, which only a hand-populated receiver has.
+ 	startPusher func()
++	// restoreStatusPane brings the worktree's reed session up and keeps, replaces or adds its status strand.
++	// A resume runs it before it puts a driver to work, so a run resumed after a reboot gets its status pane back.
++	// Nil restores nothing, which only a hand-populated receiver has.
++	restoreStatusPane func() error
+ 	// pusherStart is the pusher start startPusher runs.
+ 	// Nil selects runpusher.Start.
+ 	pusherStart func(runpusher.Target) (bool, error)
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 4bc01b320..854634d9b 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -107,6 +107,9 @@
+ //   - halted with no live driver otherwise: refused, naming `lym batten run <slug>` or `lym loom start`.
+ //
+ // The driver strand is read from reed's directory, never from the run's seed.
++// As start does, a resume brings reed up and keeps, replaces or adds the status strand.
++// It does so before it spawns or wakes a driver, so a run resumed after a reboot gets its status pane back.
++// A failed restore never fails the resume: the envelope's `status_pane` names it and `lym loom start`.
+ // A start or resume that spawns or wakes a driver compares the run's stencil pins with the installed stencils.
+ // One notice to the run's parent orch names each changed or missing stencil,
+ // and the envelope lists them under `stencils_changed`.
+diff --git a/internal/loomcli/resume.go b/internal/loomcli/resume.go
+index cbe5b249d..3690bc856 100644
+--- a/internal/loomcli/resume.go
++++ b/internal/loomcli/resume.go
+@@ -3,7 +3,9 @@
+ // It spawns a Go driver for a halted go-seeded run that has none, and refuses everything else with a way forward.
+ // A run awaiting at a review segment's Bouncer row with a pending circling decision takes the halted path.
+ // Its driver's step re-calls the Bouncer, which acts on the decision.
+-// It spawns no LLM driver, adds no strand, never brings reed up and never switches a tmux client.
++// Before it spawns or wakes a driver it brings reed up and restores the status strand, as start does.
++// It spawns no LLM driver and adds no other strand.
++// It moves a viewer only when the restore replaces the status strand whose window they are viewing.
+ 
+ package loomcli
+ 
+@@ -18,6 +20,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -51,10 +54,15 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 		_ = bootstrapLock.Release()
+ 		output.Ok(out, fields)
+ 	}
++	// paneWarning is the status-pane restore's failure, empty when the pane was restored or no restore ran.
++	paneWarning := ""
+ 	// succeedAfterWake reports a run whose driver this call put to work.
+ 	// It releases the bootstrap lock before the stencil check, so the notice's post never runs under the lock.
+ 	succeedAfterWake := func(fields map[string]any) {
+ 		_ = bootstrapLock.Release()
++		if paneWarning != "" {
++			fields["status_pane"] = paneWarning
++		}
+ 		output.Ok(out, withChangedStencils(fields, c.warnChangedStencils()))
+ 	}
+ 
+@@ -137,6 +145,7 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 				return
+ 			}
+ 			if seedFound && seed.Driver == shedrun.DriverGo {
++				paneWarning = c.restoreStatusPaneBeforeWake()
+ 				c.vouchForSpawnedResume()
+ 				pid, err := c.spawnGoDriver()
+ 				if err != nil {
+@@ -163,6 +172,7 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 	if !c.refuseOverUnfinishedMerge(ctx, out, bootstrapLock, retryResume, status.CurrentProducer) {
+ 		return
+ 	}
++	paneWarning = c.restoreStatusPaneBeforeWake()
+ 	reportPath, err := c.resumeParkedDriver(driver.GUID, retryResume)
+ 	if err != nil {
+ 		if errors.Is(err, shuttleengine.ErrSessionBusy) {
+@@ -175,6 +185,22 @@ func (c *loomCLI) resumeFromRunState(ctx context.Context, out io.Writer, bootstr
+ 	succeedAfterWake(map[string]any{"run_id": runID, "state": string(status.State), "message": "the parked driver was woken", "stop_report": reportPath})
+ }
+ 
++// restoreStatusPaneBeforeWake brings reed up and restores the status strand for a driver about to be put to work.
++// A failure costs the operator the pane, not the run, so it never refuses the resume:
++// it is logged at Warn and returned as the envelope's warning, which names the restore's way forward.
++// It returns "" when the pane was restored.
++func (c *loomCLI) restoreStatusPaneBeforeWake() string {
++	if c.restoreStatusPane == nil {
++		return ""
++	}
++	err := c.restoreStatusPane()
++	if err == nil {
++		return ""
++	}
++	logger.Warn("loom: could not restore the status pane on resume; the run goes on without it", "cause", err)
++	return "the status pane could not be restored: " + err.Error() + `; run "` + retryStart + `" in the task worktree, which brings it back and leaves the live driver working`
++}
++
+ // awaitingResumability decides whether a run awaiting at row may take the halted path.
+ // It may only when row is a review segment's Bouncer row whose latest round carries a pending circling decision.
+ // Otherwise it returns the refusal to report.
+@@ -248,12 +274,17 @@ func noLiveDriverMessage(driver reedengine.DirectoryRow, driverFound bool) strin
+ func (c *loomCLI) resumeCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         "resume",
+-		Short:       "wake this task's parked loom driver after a halt, without starting anything",
++		Short:       "wake this task's halted loom driver and restore its status pane",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `resume wakes a halted run's live, parked driver by typing the resume line into
+-its pane and removing the park marker. It never spawns an LLM driver, adds or
+-attaches a strand, brings reed up or switches a tmux client. For a halted
+-go-seeded run with no driver at all it spawns a Go driver, which re-steps the run.
++its pane and removing the park marker. For a halted go-seeded run with no
++driver at all it spawns a Go driver, which re-steps the run. Before either it
++brings the worktree's tmux session up and restores the run's status pane, so a
++run resumed after a reboot shows its checklist again; a restore that fails
++never fails the resume, and the envelope's "status_pane" names the failure and
++"lym loom start", which brings the pane back. It never spawns an LLM driver or
++adds any other strand, and it moves your tmux view only when it replaces the
++status strand whose window you are viewing.
+ 
+ Reach for it in the task worktree after "lym loom circling accept" or
+ "lym loom circling continue", or whenever a run halted at a hand-back should
+diff --git a/internal/loomcli/resume_test.go b/internal/loomcli/resume_test.go
+index 59adabe6e..8c04d70c5 100644
+--- a/internal/loomcli/resume_test.go
++++ b/internal/loomcli/resume_test.go
+@@ -51,6 +51,8 @@ type resumeEnvelope struct {
+ 	Conflicts  *[]string `json:"conflicts"`
+ 	// StencilsChanged lists the stencils changed since the run started.
+ 	StencilsChanged []string `json:"stencils_changed"`
++	// StatusPane is the warning of a status-pane restore that failed.
++	StatusPane string `json:"status_pane"`
+ }
+ 
+ // newResumeVerbReceiver builds a receiver for the resume verb over the shared temp-directory fixture.
+@@ -167,7 +169,8 @@ func (s eventSender) SendDriver(guid, text string) error {
+ // It asserts that nothing was spawned, added or removed.
+ // It asserts that a resume line was typed only when a parked driver was woken.
+ // It asserts that no message names `lym loom start` as the retry of resume.
+-// Rows that name their events assert the pusher starts once before any driver wake.
++// It asserts that the status pane is restored once exactly when a driver is about to be put to work.
++// Rows that name their events assert the pusher starts once, then the pane is restored, before any driver wake.
+ // They assert it does not start for a done or covered run.
+ func TestResumeVerb(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -229,6 +232,11 @@ func TestResumeVerb(t *testing.T) {
+ 		// ordered makes the row assert wantEvents, the pusher starts and driver wakes in call order.
+ 		ordered    bool
+ 		wantEvents []string
++		// paneErr makes the status-pane restore fail.
++		paneErr error
++		// wantPaneIn holds substrings of the envelope's status_pane warning;
++		// empty means the envelope carries none.
++		wantPaneIn []string
+ 	}{
+ 		{name: "no status file", wantIn: []string{`"lym loom start"`, "task worktree"}},
+ 		{name: "done is a no-op success", runState: shedengine.StateDone, directory: noDriver, wantOK: true, wantIn: []string{"done"}, ordered: true},
+@@ -247,7 +255,7 @@ func TestResumeVerb(t *testing.T) {
+ 		{name: "blocked parked driver is woken", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, wantOK: true, wantSent: true, wantIn: []string{"woken"}},
+ 		{name: "parked driver whose pane holds a draft is refused as busy", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, sendErr: fmt.Errorf("the input box holds a draft: %w", shuttleengine.ErrSessionBusy), wantKind: shedrun.StartDriverBusyKind, wantIn: []string{"draft", `"lym loom resume" again`, "lym batten run <slug>"}},
+ 		{name: "paused parked driver is woken", runState: shedengine.StatePaused, directory: liveDriver, marker: true, wantOK: true, wantSent: true, wantIn: []string{"woken"},
+-			ordered: true, wantEvents: []string{"pusher", "wake"}},
++			ordered: true, wantEvents: []string{"pusher", "pane", "wake"}},
+ 		{name: "failed parked driver is woken", runState: shedengine.StateFailed, directory: liveDriver, marker: true, wantOK: true, wantSent: true, wantIn: []string{"woken"}},
+ 		{name: "parked driver over an unfinished merge is refused", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, merge: mergeParked, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{`"lym loom resume"`, "lym fabric merge"}},
+ 		{name: "no live driver over an unfinished merge is refused", runState: shedengine.StateBlocked, directory: deadDriver, merge: mergeParked, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{`"lym loom resume"`}},
+@@ -262,7 +270,9 @@ func TestResumeVerb(t *testing.T) {
+ 		{name: "a held driver lock over a blocked run is refused as not parked", runState: shedengine.StateBlocked, directory: noDriver, driverLock: true, wantKind: shedrun.StartNotParkedKind, wantIn: []string{"Go driver", "settling", `"lym loom resume" again`}},
+ 		{name: "a held driver lock over a running run is the already-running success", runState: shedengine.StateRunning, directory: noDriver, driverLock: true, wantOK: true, wantIn: []string{"already running"}},
+ 		{name: "a go-seeded blocked run with no strand spawns a Go driver once", runState: shedengine.StateBlocked, directory: noDriver, seedDriver: shedrun.DriverGo, wantOK: true, wantSpawns: 1, wantIn: []string{"a Go driver was spawned"},
+-			ordered: true, wantEvents: []string{"pusher", "wake"}},
++			ordered: true, wantEvents: []string{"pusher", "pane", "wake"}},
++		{name: "a failed status-pane restore still spawns the Go driver and names start", runState: shedengine.StateBlocked, directory: noDriver, seedDriver: shedrun.DriverGo, paneErr: errors.New("reed up failed"),
++			wantOK: true, wantSpawns: 1, wantIn: []string{"a Go driver was spawned"}, wantPaneIn: []string{"reed up failed", `"lym loom start"`}},
+ 		{name: "a go-seeded run under an unfinished merge is refused with no spawn", runState: shedengine.StateBlocked, directory: noDriver, seedDriver: shedrun.DriverGo, merge: mergeParked, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{"lym fabric merge"}},
+ 		{name: "an llm-seeded blocked run with no strand keeps the no-driver-strand refusal", runState: shedengine.StateBlocked, directory: noDriver, seedDriver: shedrun.DriverLLM, wantIn: []string{"no driver strand", `"lym loom start"`}},
+ 		{name: "a go-seeded running run with no driver keeps the no-live-driver refusal", runState: shedengine.StateRunning, directory: noDriver, seedDriver: shedrun.DriverGo, wantIn: []string{"no live driver", `"lym loom start"`}},
+@@ -289,6 +299,12 @@ func TestResumeVerb(t *testing.T) {
+ 			var events []string
+ 			c.startPusher = func() { events = append(events, "pusher") }
+ 			c.driverSender = eventSender{inner: sender, events: &events}
++			paneRestores := 0
++			c.restoreStatusPane = func() error {
++				paneRestores++
++				events = append(events, "pane")
++				return tt.paneErr
++			}
+ 			spawns := 0
+ 			c.spawnGoDriver = func() (int, error) {
+ 				spawns++
+@@ -376,6 +392,21 @@ func TestResumeVerb(t *testing.T) {
+ 			if spawns != tt.wantSpawns {
+ 				t.Errorf("Go driver spawns = %d; want %d", spawns, tt.wantSpawns)
+ 			}
++			wantPaneRestores := 0
++			if tt.wantSpawns > 0 || tt.wantSent || tt.sendErr != nil {
++				wantPaneRestores = 1
++			}
++			if paneRestores != wantPaneRestores {
++				t.Errorf("status-pane restores = %d; want %d", paneRestores, wantPaneRestores)
++			}
++			if len(tt.wantPaneIn) == 0 && env.StatusPane != "" {
++				t.Errorf("status_pane = %q; want none", env.StatusPane)
++			}
++			for _, want := range tt.wantPaneIn {
++				if !strings.Contains(env.StatusPane, want) {
++					t.Errorf("status_pane %q lacks %q", env.StatusPane, want)
++				}
++			}
+ 			if tt.ordered && !slices.Equal(events, tt.wantEvents) {
+ 				t.Errorf("pusher starts and driver wakes = %v; want %v", events, tt.wantEvents)
+ 			}
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index 639b27465..988cff0a5 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -1,9 +1,11 @@
+-// sharedbootstrap.go holds the bootstrap steps that `start` and `step` share.
++// sharedbootstrap.go holds the bootstrap helpers that `start`, `step` and `resume` share.
+ // Every helper here is lock-agnostic: none acquires or releases loomengine.LoomBootstrapLock.
+-// Each verb wraps its own lock window around these calls, so no helper may assume either window.
++// Each verb wraps its own lock window around these calls, so no helper may assume any one window.
+ // `start` holds the lock across the strand work, the driver spawn, and the run-lock handshake.
+ // `step` holds it around reed Up alone and releases it before it calls the producer.
+-// ensureStatusStrand is `start`'s alone, because `step` touches no strand.
++// `resume` holds it across its status-pane restore and the driver wake or spawn.
++// ensureStatusStrand is called by `start` and by `resume`'s status-pane restore.
++// `step` never calls it, because `step` touches no strand.
+ 
+ package loomcli
+ 
+@@ -331,13 +333,17 @@ func ensureFrictionDirAfterSeed(frictionDir string, seedErr error) {
+ 	friction.EnsureDir(frictionDir)
+ }
+ 
+-// ensureStatusStrand is `start`'s status-strand work: it keeps, replaces or adds the worktree's status strand.
+-// Only `start` calls it, after it has brought reed up.
+-// It runs after the bootstrap-lock acquisition and ends before the run-lock probe.
++// errStatusStrandNotReplaced marks a failed replace of the status strand.
++// It costs the operator the status pane, not the run.
++var errStatusStrandNotReplaced = errors.New("could not replace the status strand")
++
++// ensureStatusStrand keeps, replaces or adds the worktree's status strand.
++// The caller has brought reed up and holds the bootstrap lock, which this function neither acquires nor releases.
+ //
+-// It returns the first error encountered, unwrapped, and nil on success.
+-// The caller owns the bootstrap lock: this function must neither acquire nor release it.
+-// The lock's position differs between the verbs that run the bootstrap.
++// It returns nil on success.
++// A failed replace returns an error wrapping errStatusStrandNotReplaced and the cause.
++// A caller treats that error as non-fatal.
++// Any other failure is returned unwrapped.
+ func (c *loomCLI) ensureStatusStrand() error {
+ 	statusResult, err := c.reed.Status()
+ 	if err != nil {
+@@ -361,12 +367,9 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	var strand reedengine.Strand
+ 	if strandAction == statusStrandReplace {
+ 		// A replace goes through ReplaceStrand so the status strand keeps its top slot.
+-		// A failure is not fatal to the bootstrap;
+-		// it costs the operator the status pane for this run, not the run itself.
+ 		strand, err = c.reed.ReplaceStrand(staleGUID, addSpec)
+ 		if err != nil {
+-			logger.Warn("loom: could not replace the status strand; the status pane will be missing this run", "guid", staleGUID, "cause", err)
+-			return nil
++			return fmt.Errorf("%w %s: %w", errStatusStrandNotReplaced, staleGUID, err)
+ 		}
+ 	} else {
+ 		strand, err = c.reed.AddStrand(addSpec)
+@@ -376,7 +379,7 @@ func (c *loomCLI) ensureStatusStrand() error {
+ 	}
+ 	if buildErr == nil {
+ 		if err := statuspane.WriteSidecar(sidecarPath, strand.GUID, build); err != nil {
+-			logger.Warn("loom: could not record the status strand's build; the next start will replace it", "cause", err)
++			logger.Warn("loom: could not record the status strand's build; the next status-pane restore will replace it", "cause", err)
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/loomcli/smoke_drivingsurface_test.go b/internal/loomcli/smoke_drivingsurface_test.go
+index ee008dd1c..75c8c941c 100644
+--- a/internal/loomcli/smoke_drivingsurface_test.go
++++ b/internal/loomcli/smoke_drivingsurface_test.go
+@@ -3,7 +3,8 @@
+ // On the step side, "lym loom step" and "lym shed step" bring reed up.
+ // They never add, replace or remove a status strand, whatever driver the run was seeded with.
+ // A start re-arms the session's follow state and selects the run's relevant window,
+-// and a resume leaves a follow-off session off.
++// and a resume leaves a follow-off session off and replaces a stale status strand with a live one.
++// A resume that cannot replace the strand still spawns the driver and names the failure in its envelope.
+ // A start puts the status strand in the overview window after the runs strand.
+ // It replaces an own-window status strand that an older build left.
+ // ensureStatusStrand's branches are pinned at Tier 1 through resolveStatusStrandAction.
+@@ -84,6 +85,22 @@ func strandPane(t *testing.T, eng *reedengine.Engine, name string) string {
+ 	return ""
+ }
+ 
++// statusStrands returns eng's strands that carry the status strand's name.
++func statusStrands(t *testing.T, eng *reedengine.Engine) []reedengine.StrandStatus {
++	t.Helper()
++	status, err := eng.Status()
++	if err != nil {
++		t.Fatalf("reed status: %v", err)
++	}
++	var found []reedengine.StrandStatus
++	for _, s := range status.Strands {
++		if agentname.Matches(s.Name, statusStrandDisplayName) {
++			found = append(found, s)
++		}
++	}
++	return found
++}
++
+ // statusStrandPane returns the pane id of eng's status strand.
+ func statusStrandPane(t *testing.T, eng *reedengine.Engine) string {
+ 	t.Helper()
+@@ -145,18 +162,9 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 				t.Fatalf("lym loom step: %v; output: %s", err, out)
+ 			}
+ 
+-			status, err := eng.Status()
+-			if err != nil {
+-				t.Fatalf("reed status: %v", err)
+-			}
+-			var guids []string
+-			for _, s := range status.Strands {
+-				if agentname.Matches(s.Name, statusStrandDisplayName) {
+-					guids = append(guids, s.GUID)
+-				}
+-			}
+-			if len(guids) != 1 || guids[0] != added.GUID {
+-				t.Errorf("status strand guids after step = %v; want exactly [%s], the one added before the step", guids, added.GUID)
++			strands := statusStrands(t, eng)
++			if len(strands) != 1 || strands[0].GUID != added.GUID {
++				t.Errorf("status strands after step = %+v; want exactly %s, the one added before the step", strands, added.GUID)
+ 			}
+ 		})
+ 
+@@ -165,7 +173,16 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			eng := probeReedEngine(t, loc)
+ 			setFollow(t, eng, "off")
+ 			current := "=" + eng.SessionName() + ":"
++			// The viewer sits on the shell window, which outlives the resume.
++			// The resume replaces the status strand added above, so that strand's window does not.
++			if out, err := exec.Command(tmuxBinaryPath(t), "-L", eng.Socket(), "select-window", "-t", current+"shell").CombinedOutput(); err != nil {
++				t.Fatalf("select the shell window: %v; output: %s", err, out)
++			}
+ 			before := windowID(t, eng, current)
++			stale := statusStrands(t, eng)
++			if len(stale) != 1 {
++				t.Fatalf("status strands before the resume = %+v; want the one added above", stale)
++			}
+ 
+ 			out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "resume")
+ 			if err != nil || exit != 0 {
+@@ -181,9 +198,49 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			if got := windowID(t, eng, current); got != before {
+ 				t.Errorf("current window after the resume = %s; want %s left as it was", got, before)
+ 			}
++			restored := statusStrands(t, eng)
++			if len(restored) != 1 || !restored[0].Live || restored[0].GUID == stale[0].GUID {
++				t.Errorf("status strands after the resume = %+v; want one live strand replacing %s; output: %s", restored, stale[0].GUID, out)
++			}
+ 		})
+ 	})
+ 
++	t.Run("resume names a status strand it cannot replace and still spawns the driver", func(t *testing.T) {
++		_, loc, worktree, _ := newWiredPairFixture(t)
++		registerBootstrapTeardown(t, loc, worktree)
++		seedGoDriverRun(t, loc)
++		// Three steps leave the run halted with no driver; one alone leaves it running.
++		for range 3 {
++			requireNoStatusStrandAfter(t, loc, worktree, "loom step", "loom", "step")
++		}
++
++		eng := probeReedEngine(t, loc)
++		stale, err := eng.AddStrand(statusStrandAddSpec("sleep 3600", shedrun.RecipeTapestry))
++		if err != nil {
++			t.Fatalf("add status strand: %v", err)
++		}
++		// reed refuses to replace a strand with children.
++		if _, err := eng.AddStrand(reedengine.AddSpec{
++			NameOverride: "status-child",
++			Parent:       stale.GUID,
++			Cmd:          "sleep 3600",
++			Display:      render.Display{Anchor: render.AnchorOwnWindow},
++		}); err != nil {
++			t.Fatalf("add a child of the status strand: %v", err)
++		}
++
++		out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "resume")
++		if err != nil || exit != 0 {
++			t.Fatalf("lym loom resume: exit %d, err %v; output: %s", exit, err, out)
++		}
++		if !strings.Contains(out, "a Go driver was spawned") {
++			t.Errorf("lym loom resume output = %s; want the Go driver spawn", out)
++		}
++		if !strings.Contains(out, `"status_pane"`) || !strings.Contains(out, errStatusStrandNotReplaced.Error()) {
++			t.Errorf("lym loom resume output = %s; want status_pane naming %q", out, errStatusStrandNotReplaced)
++		}
++	})
++
+ 	// A beam's session holds a runs strand in its first overview window.
+ 	// An older build may have left the status strand in a window of its own, with a sidecar naming another build.
+ 	// A start puts the status strand into the overview window after the runs strand.
+diff --git a/internal/loomcli/smoke_resumearming_test.go b/internal/loomcli/smoke_resumearming_test.go
+index bf5b9036e..29be01af3 100644
+--- a/internal/loomcli/smoke_resumearming_test.go
++++ b/internal/loomcli/smoke_resumearming_test.go
+@@ -22,7 +22,7 @@ import (
+ // It then gets past the reed config load.
+ // The stamp exists afterwards, and the verb reaches the run's own state.
+ // It refuses over the missing driver with the way forward, never over a config.
+-// Resume brings no reed session up, so reed reports no session on the registered hub key.
++// A refused resume brings no reed session up, so reed reports no session on the registered hub key.
+ func TestLoomResumeReconcilesThenRefusesWithoutLiveDriver(t *testing.T) {
+ 	tiergate.Require(t, 2)
+ 	tmuxBinaryPath(t)
+@@ -49,6 +49,6 @@ func TestLoomResumeReconcilesThenRefusesWithoutLiveDriver(t *testing.T) {
+ 		t.Fatalf("reed geometry: %v", err)
+ 	}
+ 	if _, statusErr := probeReedEngine(t, loc).Status(); !errors.Is(statusErr, reedengine.ErrNoSession) {
+-		t.Errorf("reed status on key %q after loom resume = %v; want reed's no-session refusal: resume never brings reed up", reedGeom.SocketKey, statusErr)
++		t.Errorf("reed status on key %q after loom resume = %v; want reed's no-session refusal: a refused resume never brings reed up", reedGeom.SocketKey, statusErr)
+ 	}
+ }
+diff --git a/internal/loomcli/start.go b/internal/loomcli/start.go
+index e18b1370e..28e1d08e8 100644
+--- a/internal/loomcli/start.go
++++ b/internal/loomcli/start.go
+@@ -597,7 +597,9 @@ Example:
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 				return nil
+ 			}
+-			if err := c.ensureStatusStrand(); err != nil {
++			if err := c.ensureStatusStrand(); errors.Is(err, errStatusStrandNotReplaced) {
++				logger.Warn("loom: the status pane will be missing this run", "cause", err)
++			} else if err != nil {
+ 				_ = bootstrapLock.Release()
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 				return nil
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 9b9a9051c..339c17b31 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -1381,6 +1381,12 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 	c.driverPaneProbe = newReedDriverPaneProbe(reedEngine)
+ 	c.driverDirectory = newReedDriverDirectory(reedEngine)
+ 	c.bouncerSubdir = loomrecipe.BouncerRunSubdir
++	c.restoreStatusPane = func() error {
++		if _, err := reedEngine.Up(); err != nil {
++			return err
++		}
++		return c.ensureStatusStrand()
++	}
+ 	// The slug is read when the pusher starts, since the run id is armed before wire and read here lazily.
+ 	c.startPusher = func() {
+ 		start := c.pusherStart
