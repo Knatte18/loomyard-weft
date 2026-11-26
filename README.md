@@ -22,7 +22,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | starting · Seed-IDE | neve | 3h<br>1m | webster, quarry |
+| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | starting · Open-IDE | neve | 3h<br>1m | webster, quarry |
 | T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light | halted · Worktree-Create | neve | 3h<br>1m | stencil, darn |
 
 ### Layer A (2)
@@ -62,7 +62,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | darn · docs |  | 3d<br>0m | burler, fabric |
+| T6 | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | darn · docs |  | 3d<br>1m | burler, fabric |
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (2)
 
@@ -90,7 +90,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | S2 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md)<br>[Sketch](decision-keep-landed-records.md) | 3h<br>1h | landing, fabric, report |
-| S3 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md)<br>[Sketch](decision-sandbox-closed-area-build.md) | 3w<br>19m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| S3 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md)<br>[Sketch](decision-sandbox-closed-area-build.md) | 3w<br>20m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 ## [P0 Root: entries under no project](project-root.md) (3)
 
