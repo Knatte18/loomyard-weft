@@ -851,6 +851,24 @@
       "body": "## Wish (operator, 2026-11-26)\n\nThe operator runs KDE Plasma with ten virtual desktops and tiles the windows lym opens across them.\n\n- lym remembers, for each window it opens, the virtual desktop it sits on and its place in the tiling.\n  When the window is opened again, after a restart or a `lym machine start`, it lands straight back in that place.\n- A new window knows where it belongs: windows of one kind share a place the operator chose.\n  For example, every run window of the loomyard hub lands on the virtual desktop named \"Board B2\".\n- The \"start every hub\" desktop launcher is of no use until this works: it opens every hub's windows with no control over where they land.\n\n## To settle\n\n- Through what lym reads and sets a window's virtual desktop and tile on KDE Plasma (KWin scripting, D-Bus), and what it does on other desktops.\n- What \"kind\" a placement rule keys on: hub, role (orch, run strand, board session), or run.\n- Where the remembered places and the rules live: machine state, or hub config per machine.\n",
       "created": "2026-11-26T21:21:13Z",
       "revised": "2026-11-26T21:21:13Z"
+    },
+    {
+      "id": 1706,
+      "handle": "E3",
+      "slug": "desktop-launcher-names",
+      "title": "Desktop launchers are named \"lym: \u003chub\u003e\" instead of \"lym: start the hub \u003chub\u003e\"",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "desktop"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Wish (operator, 2026-11-26)\n\nThe desktop launchers `internal/desktoplauncher` writes carry names such as \"lym: start the hub odd\", which is too long; the operator needs mainly the repository's name.\nFor now each hub's launcher is named \"lym: \u003cshortname\u003e\", such as \"lym: odd\".\nLater, with a lym icon on the launcher, the name may be the shortname alone.\n",
+      "created": "2026-11-26T21:21:13Z",
+      "revised": "2026-11-26T21:21:13Z"
     }
   ],
   "prime_owner": "neve",
