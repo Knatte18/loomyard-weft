@@ -1,6 +1,6 @@
 # TestLoomPreBootstrap fixture leaves a lym board process running and fails the batch gate
 
-`prebootstrap-board-proc-leak` · Task · bug, loom, testkit · draft
+`prebootstrap-board-proc-leak` · Task · bug, loom, testkit
 
 Imported from [issue #264](https://github.com/Knatte18/loomyard/issues/264).
 
