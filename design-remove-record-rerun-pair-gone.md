@@ -1,6 +1,6 @@
 # A killed batten cancel leaves a remove record whose way forward fails once the pair is gone
 
-`remove-record-rerun-pair-gone` · Task · bug
+`remove-record-rerun-pair-gone` · Task · bug · starting · Worktree-Create
 
 Depends on: [`async-run-pusher`](design-async-run-pusher.md)
 
