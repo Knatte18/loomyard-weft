@@ -2,7 +2,7 @@
 
 `pr-modes-no-agent` · Task · enhancement, landing, loom, config
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`readme-beam-modes`](design-readme-beam-modes.md)
+Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
 Note `pr-ask-live-pane-test` is folded in only to be closed: it asks for a test of the parent-review ask this task removes.
 
