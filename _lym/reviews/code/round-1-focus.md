@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/landingshed/prreview.go openPullRequest, gateHead and wait: openPullRequest calls pushTask before the wait gates anything. Trace the resume after a gate-failure halt, and a re-entry whose task head differs from the record's GatedHead. Can a head the gate refused, or never ran, reach the pull request branch, and do the halt texts and doc comments match what happens?"
+  - "internal/landingshed/prreview.go wake, judge and foreignHeadHalt: the gate and its push run before judge looks for a foreign head. Settle what happens when a hand commit on GitHub coincides with a new task-worktree commit, a recorded Continue or ReviewEnded, an approval, or a closed pull request. Does each path halt with a way forward that works, including the resume after it?"
+  - "The operator-only ending, across internal/loomcli (pr-continue, goto, resume and the other run verbs) and internal/landingshed/finalize_pr.go: can an agent session, the autonomous orch included, get a review-mode pull request merged without the operator's approval, merge or pr-continue, for instance by moving the run past PR-Review? Check what Finalize requires of an open pull request now that its recorded-autonomy check is gone."
+  - "The mode rename (internal/dobbyengine/reinterpret.go, internal/beamsetting, internal/configreg, internal/boardengine): follow an old `on`, `merge` or `required` from every place it can be stored (hub, worktree local and machine layers, board entry run_settings and retired keys, a run already in flight) through both reinterpretations in order. Does each still load and keep its meaning, and do the rewrite and flag texts state that meaning truthfully, autonomy included?"
+  - "The retired keys (landing.pr_reviewer, the loom.pr area and its flat names) and the removed agents.yaml role pr-reviewer: does a hub, worktree or board entry that still sets any of them, in nested or flat form, in any layer, load as the answer key expects rather than refuse? Check the new comments' claims about what each layer admits."
+  - "Leftovers of the removed session, ask and send-back outside the edited files: comments, docs, stencils, CLI help and switches with no remaining user. Start with internal/shellguard (the publish row and DenyPublish comments), docs/overview.md and the parent-review and review-input code that survives."
+  - "Tests the diff deletes or rewrites (internal/landingshed, internal/loomcli, internal/burlerengine, internal/pullrequest, internal/shedadapters): did any assertion about behaviour that survives go with the removed behaviour or get loosened without a Loosened-Check trailer? Is the new halt and refusal behaviour covered, and what is the uncovered changed block the mutation report counts?"
+  - "_lym/landing/summary.md against the diff: check the claim that beam pull requests already list every member pull request, the claim about the review-code lens set, and whether Merge danger's blast radius of `landing` alone covers what the config, board and record changes can break."
+---
+
+The diff is mostly removal.
+The risk sits in what the surviving PR-Review wait, Finalize and the config carry now rely on.
