@@ -548,6 +548,26 @@
       "body": "Imported from [issue #239](https://github.com/Knatte18/loomyard/issues/239).\n\nOn a flaky network, Code-Bouncer's judge session twice failed to start: shuttle logged 'provider never became ready; strand torn down', relaunched, and the second run finished at once with no transcript. shedadapters then logged 'bouncer judge run did not complete ... outcome=died', and the row stopped with 'bounce budget exhausted for Code-Bouncer'. The judge never gave a verdict, so no bounce happened, yet the run stalled until a manual `lym loom resume`.\n\nExpected: a judge that dies before giving a verdict is relaunched, or the row halts as an infrastructure failure, without spending the bounce budget meant for real verdicts.",
       "created": "2026-11-26T07:33:30Z",
       "revised": "2026-11-26T07:33:30Z"
+    },
+    {
+      "id": 1636,
+      "handle": "B12",
+      "slug": "push-failures-mailed-one-by-one",
+      "title": "Transient push failures are mailed to the orch one by one instead of retried",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [
+        238
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #238](https://github.com/Knatte18/loomyard/issues/238).\n\nOn a network that resets HTTPS connections now and then (git exits 128 with 'Recv failure: Connection reset by peer'), every failed background push sends the orch a creel message naming `lym fabric push` or `lym board sync` as the way forward. In one hour on one hub the orch got eight such messages, for the bolt branch main, task code branches and records branches, and each retry by hand succeeded at once or failed again only because the connection was still flaky.\n\nExpected: fabric retries a transport failure itself with backoff, and mails the orch only once retries are exhausted. One message then covers every branch still unpushed, rather than one message per push. The next pair push already carries a withheld code side, so a single summary would suffice.\n\nRelated: #193 (closed), which made runs retry transient fetch failures; pushes have no such retry.",
+      "created": "2026-11-26T07:33:34Z",
+      "revised": "2026-11-26T07:33:34Z"
     }
   ],
   "prime_owner": "neve",
