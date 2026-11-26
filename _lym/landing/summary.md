@@ -1,82 +1,84 @@
 # Gate test fixes for dotnet hubs: hung tiers, loggers, filters, tier0
 
-Five `lym gate test` fixes from the dotnet hubs' reports, each in its own commit.
+Fixes to `lym gate test` from the dotnet hubs' reports.
 
-## A tier's timeout_min now ends a hung tier across a host sleep and kills the whole tree
+Closes #216
+Closes #215
+Closes #235
+Closes #234
+Closes #233
+Closes #237
 
-Two dotnet tiers whose test hosts hung held their gate slots for about 21 hours on a machine that also slept.
-Their 30- and 35-minute bounds never fired.
+## timeout_min counts across a host sleep, and the kill reaches what left the process group
 
-- `withTimeoutMin` (`internal/gatecli/tierrun.go`) replaces `context.WithTimeout` for the tier and for the build step.
-  It counts both the monotonic clock and the wall clock, whichever has run further, and reads the clock at least every 10 seconds.
-  Go's timers run on the monotonic clock, which stands still while the host sleeps,
-  so a bound the host slept through now ends the run within seconds of the host waking.
-  A timed-out run is told apart by the context's cause, `errTimeoutMinPassed`, rather than by `context.DeadlineExceeded`.
+Dotnet tiers whose test hosts hung held their gate slots for about 21 hours, and their `timeout_min` bounds never fired.
+
+- `withTimeoutMin` (`internal/gatecli/tierrun.go`) replaces `context.WithTimeout` for the tier, the build step and the `--copies` shared prebuild.
+  It counts the monotonic and the wall clock, whichever has run further, and reads them at least every 10 seconds.
+  A bound the host slept through therefore ends the run within seconds of waking.
+  A timed-out tier or build is told apart by the context's cause, `errTimeoutMinPassed`.
 - `runTiedChild` (`internal/gatecli/child.go`) gives every tied child its own environment entry, `LYM_GATE_CHILD_<pid>_<n>=1`.
-  Once the shell ends, after a timeout or not, it kills every process that carries the entry, as well as the shell's process group.
-  The group kill misses a process in a session of its own, such as a test host, and the marker kill reaches it.
-  A nested gate's children carry both gates' entries, since each name is unique.
-  On Windows nothing changes: the kill-on-close job already ends the tree.
-
-The package doc's "Timeouts" and "Child lifetime" sections drop the old limit that a process outside the group is not killed.
+  Once the shell ends, timed out or not, it kills the shell's process group and every process that carries the entry.
+  That reaches a test host in a session of its own, which the group kill misses.
+  A process that cleared its environment still escapes.
+  On Windows the kill-on-close job ends the tree as before.
 
 ## The vstest counter reads the normal and detailed loggers' summary
 
-With `--logger "console;verbosity=detailed"`, a passing run printed `Total tests: 1` / `Passed: 1`.
-The counter read only the minimal logger's one-line `Passed!` / `Failed!` summary, so the gate reported that the run ran no test.
-`vstestCounter.observeSummary` now also reads the multi-line form.
-A `Total tests: N` line opens a summary whose `Passed:`, `Failed:` and `Skipped:` lines each add their count, up to the `Total time:` line.
-A `Total tests:` line also closes a failed test's block.
+With `--logger "console;verbosity=detailed"`, a passing run was reported as having run no test.
+The counter now reads the `Total tests:` block as well as the minimal logger's one-line summary.
+The block's `Passed:`, `Failed:` and `Skipped:` lines count up to `Total time:`, a one-line summary or the end of the invocation.
+Other lines in between, such as another project's output, are passed over.
 
 ## A caller's --filter is ANDed into the tier's {filter}
 
-A tier command that renders `{filter}` also passed a caller's `--filter` through `{args}`, and `dotnet test` refuses two `--filter` options.
-`renderTierCommand` now takes `--filter X`, `--filter=X` and `--filter:X` out of the args when the command holds `{filter}`.
-It ANDs each expression with the tier's filter and the scoper's class terms, as `(tier)&(caller)&(terms)`.
-A command without `{filter}` keeps the words in `{args}` as before.
-Planning refuses a caller `--filter` for a command that spells its own `--filter` outside `{filter}`.
-The refusal names `gate.tiers.<tier>.filter` as the place for that expression.
-The verb's help and the package doc describe the merge.
+`dotnet test` refuses a second `--filter`.
+When a tier's command holds `{filter}`, a caller's `--filter X`, `--filter=X` or `--filter:X` now leaves `{args}`.
+It is ANDed with the tier's filter and the scope's class terms.
+A command without `{filter}` keeps the words in `{args}`.
+Planning refuses a caller `--filter` for a command that holds its own `--filter` and no `{filter}`,
+naming `gate.tiers.<tier>.filter` as the place for that expression.
+It also refuses words after `--` that end in a bare `--filter`.
+The verb's help states the merge.
+To stay under the help text's byte cap, it drops the inert-only note on scope `all` and the slot-lease clause of `--copies`.
 
 ## The no-test notice names the tiers a filtered call did not run
 
-A darn session measured a tier3 test through `--gate darn-write`, which runs tier0 only.
-The empty tier0 run printed the IsTestProject notice, which sent the session looking for an MSBuild property.
+A call through a gate key that runs tier0 only, filtered to a tier3 test, got the `IsTestProject` notice.
 When the words after `--` carry a test filter (`--filter` or `VSTestTestCaseFilter`),
-`filteredNoTestNotice` says instead that no test of the tier matched the filter.
-It names the declared tiers the call does not run and points at `lym gate test --tier <N> <its package or test project> -- <args>`.
-`planTierRuns` fills a new `tierRun.otherTiers` field from `notRunTiers` for that line.
+the notice now says no test of the project matched it.
+It names the declared tiers the call does not run and gives `lym gate test --tier <N>` as the way forward.
 
-## A hub without tier0 gets a refusal that names the key, and a Burler fixer gets a step for it
+## A hub without tier0 gets a refusal that names the key
 
-- When the hub declares no tier0, planning's refusal now names `gate.tiers.tier0` in full and says no call runs a tier until it exists.
-  `gateslot.Config.Tier` and `Config.Gate` name the key as well.
-- `contracts/stencils/burler/burler-template-fixer.md` tells a fixer what to do when `lym gate test` runs no tier.
-  It runs no raw test command and checks that each changed package or project still compiles.
-  It names the refusal in the fixer-report's deferred section, so the parent takes the step.
+- The refusals for a missing tier0, from planning and from a gate key, now name `gate.tiers.tier0`.
+  `gateslot.Config.Tier` names the missing tier's key too.
+- The Burler fixer stencil says what to do when `lym gate test` refuses to run any tier,
+  no change to the fixer's own call clears it, and the way forward is a gate config change.
+  The fixer runs no raw test command, checks that each changed package or project compiles,
+  and defers the refusal to its parent.
 
 ## Design decisions
 
-- Planning still refuses a `--tier N` call on a hub with no tier0.
-  The fix names the missing key instead of letting other tiers run, which keeps the rule that tier0 is the default every gate key needs.
-- The wall-clock bound departs from the awake-time bounds elsewhere in lym, such as the loop lock's.
-  A test command that outlived its minutes in wall time has failed, and holding its slots through a sleep blocks every other gate on the machine.
-- The marker kill runs after every tied child, not only after a timeout.
-  Processes that left the group, such as tmux servers a test forgot, then die with the run instead of holding the slots.
+- A hub with no tier0 is still refused, even for `--tier N`: the fix names the missing key and adds no fallback tier.
+- `timeout_min` counts wall-clock time, so a host sleep counts against it.
+  Holding slots through a sleep blocks other gates on the machine.
+- The marker kill runs after every tied child, not only after a timeout,
+  so any process a run leaves outside its group dies with the run.
 
-## Tests
+## To check by hand
 
-Every new test or row fails on the merge base:
-
-- `TestWithTimeoutMin` (tier0) checks the bound on a fake clock.
-  A reading past the bound ends the context, an open bound keeps polling every `timeoutMinPoll`, and the last poll waits only for what is left.
-- `TestRunTierKillsWhatLeftTheProcessGroup` (tier1) starts a `setsid` child from a tier command.
-  It checks that the child is dead once `runTier` returns, both for a command that exits and for one that outlives its timeout.
-- `TestRunBuildTimeout` (tier0) checks that a build outliving its `timeout_min` fails as timed out and blocks its tiers.
-- `TestVSTestCounterInvocationClosesAnOpenSummary` (tier0) checks that an invocation boundary closes an open `Total tests:` summary.
-- `TestCounters` gains a row for the detailed logger's summary.
-  `TestRenderTierCommand` gains the filter-merge rows, and `TestRunTierNoTestNotice` the two filtered-notice rows.
-  `TestPlanTierRuns` gains the exact refusals for a missing tier0 and for a doubled `--filter`.
+- No real hung `dotnet test` tree and no real host sleep was exercised: the bound is tested on fake clocks,
+  and the kill on a `setsid` child.
+- #215 reports that the bound had not fired 30 minutes in, possibly before the machine was suspended.
+  Check that the sleep explanation is enough for that report.
+- No run against a real `dotnet test` is part of the tests for the detailed logger's summary or the merged `--filter`.
+- Fixer stencil no-gate step covering every refusal, in `contracts/stencils/burler/burler-template-fixer.md`:
+  check that the step applies only to a refusal the fixer cannot clear by changing its own call.
+- Planning's `otherTiers` being unasserted, in `withOtherTiers` (`internal/gatecli/tiers.go`):
+  check that the `wantOtherTiers` rows of `TestPlanTierRuns` cover both return paths of `planTierRuns`.
+- The wall-clock term of the `timeout_min` bound being unpinned, in `withTimeoutMin` (`internal/gatecli/tierrun.go`):
+  check that the `TestWithTimeoutMin` row where only the wall clock passes the bound pins it.
 
 ## Merge danger
 
