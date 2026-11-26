@@ -96,10 +96,23 @@ Every fork returned a report.
 - **Cross-module test moves all in the foundation part.** Their drops need the core and seam tests only later parts write.
 - **Config fed to fabric tests as options instead of configengine.** The operator ruled it out: hard-coded values go stale.
 - **Seams carrying another module's types, faked in fabric's tests.** The operator ruled out stand-in data for another module.
+- **Binding `internal/fabriccli` by the import cut.** It wires the board, darn, webster and other engines into fabric's verbs; cutting those imports is a task of its own.
+- **Building the detached children's seams in `internal/fabriccli`.** That would extend fabric's shed knowledge, which `PATTERN-fabric-boundary`'s isolation section forbids; the lym binary installs them at start instead.
+- **Shed records as opaque bytes fabric copies without shed's codec.** The code-tip settle re-encodes the status it parses, so a raw copy could change the file's bytes.
+- **Moving shed's record writes to a shed-side caller of fabric's general verbs.** The takeover write's commit, push and retry under fabric's records push lock would split across two modules.
+- **The workspace passed in as bytes before the verb.** Fabric regenerates it after the verb's own changes, so no caller holds those bytes beforehand.
+- **Judging D10's target against the board entry's 211 s.** That figure records no machine load, and load moves the package's time sixfold.
+- **Core tests loading config through `internal/configengine`.** It needs fabric's spec, which the engine builds, and an initialized hub, and pulls `internal/lymcwd` and `os/exec` into tier0 core tests; engine tests keep loading real config, as the operator asked.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Seventeen design and consistency findings fixed in the record; two decision findings (Open risks 1 and 3) went to the parent.
+D12 now defines "above fabric" by dependency closure; D13 leaves `internal/fabriccli` outside the cut and has the lym binary install every seam at start,
+carries shed's records as bytes with shed's codec, replaces the workspace bytes with an installed builder, and states required and optional seams.
+D2 lists the teardown job's facts and verdicts and pins go-git's refusal of a reftable store; D3 and D4 place outcome classes, the wait action, mid-list failures, inverse actions and the recorded mutations;
+D9 lands each PATTERN edit where it first holds; D10 measures before and after in one session.
 
 ## Question ledger
 
@@ -112,9 +125,10 @@ _No rounds yet._
 - Q7 (auto-pick): layout retarget, no aliases, scans move with symbols (D7).
 - Q8 (auto-pick): shared builder kit (D8).
 - Q9 (auto-pick): order foundation, push and origin, teardown, merge, pull, add, anchors and records (D9).
-- Q10 (auto-pick): remeasure doc, 60 s target and the whole-run measure (D10). Reason: about a quarter of the 211 s baseline, in line with the share of time the speed docs put on rule tests and fixtures.
+- Q10 (auto-pick, revised in review round 1): remeasure doc, a cut of at least half against a same-session before measure, and the whole-run measure (D10). Reason: seven in ten of the package's git processes were fixture git, and the 211 s baseline records no load.
 - Q11 (auto-pick): "action list" over "plan" (D11). Reason: glossary line for "plan".
 - Q13 (operator, via `ly:orch`): fabric's tests test fabric alone (D12); real config through configengine (correction); no stand-in data for another module. Placement of each kind of moved test is an auto-pick within it.
 - Q14 (operator, via `ly:orch`): inverted dependencies cut (D13); configengine kept and where each adapter lives are auto-picks within it.
 - Q12 (open, for the parent): `push-retry-not-halt`'s dependency on this slug once it is a Sketch; under Open risks.
-- Q15 (open, for the parent): whether D12 also asks for a slimmer `internal/hubforge`; under Open risks.
+- Q15 (open, for the parent): whether D12 also asks for a slimmer `internal/hubforge`, and whether `internal/testkit/boardkit` and `internal/testkit/envkit` split off their name-only uses; under Open risks.
+- Q16 (auto-pick, review round 1): `internal/fabriccli` outside the cut, seams installed at process start; shed records as bytes with shed's codec; a workspace builder seam; required and optional seams; outcome classes and a wait action; inverse actions with ownership tokens; core rows set config values as snapshot inputs while engine tests load real config (D3, D4, D12, D13).
