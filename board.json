@@ -190,10 +190,10 @@
     },
     {
       "id": 1645,
-      "handle": "S2",
+      "handle": "T5",
       "slug": "keep-landed-records",
       "title": "Keep the decision record and review findings of each landed task in the weft",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "sketch",
         "landing",
@@ -203,12 +203,13 @@
       "issues": [
         229
       ],
+      "recipe": "raddle",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `_bolt/.lym/creel/journal`.\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs could not finish its work, because the evidence was gone.\nAbout 29 findings were in scratchpad files under `/tmp` that no longer exist.\nThe decision records (Sketches) of the landed tasks could not be read: the board holds only open entries, and the task worktrees are deleted.\nSo the analysis could not say whether delivered code broke its decision record, and every gate attribution was inferred.\nThe only complete source left was each hub's creel mail journal under `_bolt/.lym/creel/journal`.\n\nThe operator wants this kept: absolutely.\n\n## Idea\n\nAt landing, store what a later study needs in the weft, where it survives the worktree's deletion.\n\n- The decision record with its `Added after Discussion` entries, as it stood at landing.\n- Every Code-Review round's findings and the fixer reports, the parent's rulings and answers, and the PR-Review findings.\n- The Describe text as it was merged, and the drift verdict.\n- A short index row per landed task, so `lym report` can read them without walking directories.\n- Read first which records survive today and where, and how landing already archives a run (the archive tag, `Reconcile leftover shuttle runs from run records`).\n- Decide the weft path and how long records are kept, and make sure findings no longer live only in a scratchpad directory.\n",
       "created": "2026-11-26T07:34:04Z",
-      "revised": "2026-11-26T10:06:45Z",
+      "revised": "2026-11-26T11:37:51Z",
       "project": "intake-motifs",
       "discussed": true,
       "record_body_sha256": "8b4f800e4531c017c9410727e9238be4318d52e978991a2a56dc33e01a718345"

@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 11:25 UTC; every age below is as of then.
+Rendered 2026-11-26 11:37 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -25,10 +25,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 0m<br>0m | fabric, cleanup, batten |
+| B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 12m<br>12m | fabric, cleanup, batten |
 
 ## Enhancements (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 0m<br>0m | burler, stencil |
+| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 12m<br>12m | burler, stencil |
