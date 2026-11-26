@@ -166,6 +166,12 @@ Decision: D1's ignore line for the kept directory's .tmp-* names in the records 
 
 Rationale: seedWeftArtifactExcludes in internal/fabricengine/recordsgit.go writes through fabricengine.mutateGitExclude, which PATTERN-fabric-boundary names as the only exclude mutator. It runs at junction wiring (junction.go) and in ensureWeftLockDirAt, which every records commit takes before it stages, so the line is in place for a new, an already wired and an adopted pair. With the ancestry check, a record naming a local merge discarded by git reset --keep origin/<parent> is treated as absent, and the no-record rule finds the commit on the reset parent.
 
+### Added after Discussion (parent, 2026-11-26): D5 kept tip survives Finalize's repeated merge-ins
+
+Decision: D5 keeps the fixer's rule with one more exception: Finalize never rewrites the kept tip when the task's tip is still the commit the last merge-in left, the merge record's MergeCommit, or its TaskHead when that merge-in was up to date. D5 gains the acceptance criterion: a hand squash of the task into the parent, then a gate halt, then a resume, gives a row naming the squash commit.
+
+Rationale: Option (b) of the hard-cap question: it closes F19's hole on resumes and retry passes and still catches a merge fixer's later commits, which option (a) relies on a parent-side merge commit to name.
+
 ## Constraints
 
 - Every new path is named only through `internal/lymdirs` and the owning package's path accessors (`PATTERN-lym-files`).
