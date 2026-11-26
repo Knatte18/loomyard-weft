@@ -2,8 +2,6 @@
 
 `reach-misses-tier1-calls` · Task · bug, gate, testmap · running · Darn-Write
 
-Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
-
 Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).
 
 ## What happened

@@ -2,8 +2,6 @@
 
 `infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · running · Darn-Write
 
-Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # Gate fixer interrupted by a machine stop is reported as dead (timeout)

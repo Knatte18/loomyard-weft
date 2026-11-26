@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-dobby-run-watch-build.md)
 
-Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
-
 Filed from the Sketch `dobby-run-watch`.
 
 Takes: the Sketch's decision record; the dobby tick's run steps and listedRuns (internal/dobbyengine/loop.go), the landing notice and its per-run memory (landnotice.go, state.go), the done-run clear (donerun.go), RunNoticeDeps.ReadChild, the per-task lookup over hubgeom.TaskSettingChain (tasksetting.go), orchcli.NotifyRunFrom and WithRunAutonomy, gateslot.Pool.Holders and LoadConfig, gatecli's runMarker, proc.TreeSample and PIDsWithEnv, pauserecord.AwakeSince
