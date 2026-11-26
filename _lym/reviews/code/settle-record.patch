@@ -1,0 +1,1291 @@
+diff --git a/contracts/stencils/burler/burler-template-fixer.md b/contracts/stencils/burler/burler-template-fixer.md
+index 6638e65b3..4f9340418 100644
+--- a/contracts/stencils/burler/burler-template-fixer.md
++++ b/contracts/stencils/burler/burler-template-fixer.md
+@@ -42,6 +42,15 @@ Learn how an external tool such as tmux behaves from a test in the repository, i
+ Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
+ Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
+ 
++When `lym gate test` refuses to run any tier, no change to your own call clears the refusal,
++and its way forward is a change to the hub's gate config, as on a hub that declares no tier0, the round has no gate.
++Run no raw test command in its place:
++check that each package or project you changed still compiles, with the build or vet command its language uses on that one package,
++and name the refusal in the fixer-report's deferred section, so your parent takes the step the refusal names.
++A refusal that a change to your own call clears, such as dropping a word after `--`, is no such case,
++even when its way forward names the config:
++change the call and run the gate again.
++
+ ## What you may write (BLOCKING)
+ 
+ You never write the review file `{{.review_path}}`.
+diff --git a/internal/gatecli/build.go b/internal/gatecli/build.go
+index bb6ab0b38..f50891321 100644
+--- a/internal/gatecli/build.go
++++ b/internal/gatecli/build.go
+@@ -40,7 +40,7 @@ func (e *execution) runBuild(run tierRun, env []string) (result tierResult, ok b
+ 	timeout := time.Duration(step.TimeoutMin) * e.request.timeoutUnit
+ 	started := time.Now()
+ 
+-	buildCtx, cancel := context.WithTimeout(e.ctx, timeout)
++	buildCtx, cancel := withTimeoutMin(e.ctx, timeout, elapsedSinceNow(), time.After)
+ 	defer cancel()
+ 
+ 	var logBuffer bytes.Buffer
+@@ -58,7 +58,7 @@ func (e *execution) runBuild(run tierRun, env []string) (result tierResult, ok b
+ 		return tierResult{refusal: fmt.Sprintf("gate test: could not start the shell for the build in %s: %v; way forward: make build.dir an existing directory and put the platform shell on PATH, then re-run the same command", dir, runErr)}, false
+ 	}
+ 
+-	timedOut := e.ctx.Err() == nil && errors.Is(buildCtx.Err(), context.DeadlineExceeded) && exit != 0
++	timedOut := e.ctx.Err() == nil && errors.Is(context.Cause(buildCtx), errTimeoutMinPassed) && exit != 0
+ 	if timedOut {
+ 		exit = 1
+ 		line := gateslot.BuildTimeoutLine(timeout)
+diff --git a/internal/gatecli/child.go b/internal/gatecli/child.go
+index b3c520257..8d9aee445 100644
+--- a/internal/gatecli/child.go
++++ b/internal/gatecli/child.go
+@@ -5,8 +5,10 @@ package gatecli
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"os/exec"
++	"slices"
+ 	"sync/atomic"
+ 	"syscall"
+ 	"time"
+@@ -18,6 +20,18 @@ import (
+ // defaultPipeWaitDelay is how long a tier's or the build's output is still read after its shell exits.
+ const defaultPipeWaitDelay = 10 * time.Second
+ 
++// childMarkerPrefix opens the name of the environment variable that marks every process of one tied child.
++// The name carries this process's pid and the child's number, so a nested gate's marker never replaces it.
++const childMarkerPrefix = "LYM_GATE_CHILD_"
++
++// childCount numbers the tied children this process starts.
++var childCount atomic.Int64
++
++// newChildMarker returns a `NAME=1` environment entry no other tied child of any process carries.
++func newChildMarker() string {
++	return fmt.Sprintf("%s%d_%d=1", childMarkerPrefix, os.Getpid(), childCount.Add(1))
++}
++
+ // terminatingSignalSet lists the signals that `lym gate test` catches.
+ // On each one it kills the child's tree and releases its slot before it exits.
+ // On Windows only the interrupt is delivered; the others are ignored.
+@@ -29,11 +43,19 @@ var terminatingSignalSet = []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.
+ // A process it left behind that holds the output pipe cannot hang the call;
+ // a zero exit cut short that way returns nil, and a failing exit keeps its own error.
+ // What is left of the child's process group is then killed, on Windows through the child's kill-on-close job.
++// So is every process that carries the child's marker, an environment entry cmd gets on top of its own.
++// That reaches a process of the tree that left the group, such as a test host in a session of its own.
+ // A non-nil started is called with the child's pid once it is running, before the wait.
+ // A memoryLimit above 0 caps the memory of the child's tree at that many bytes through `proc.RunMemoryCappedVia`.
+ // capKilled reports that the kernel killed a process of the tree at the cap.
+ func runTiedChild(cmd *exec.Cmd, pipeWaitDelay time.Duration, memoryLimit int64, started func(pid int)) (capKilled bool, err error) {
+ 	cmd.WaitDelay = pipeWaitDelay
++	env := cmd.Env
++	if env == nil {
++		env = os.Environ()
++	}
++	marker := newChildMarker()
++	cmd.Env = append(slices.Clone(env), marker)
+ 	var tied atomic.Pointer[proc.Tied]
+ 	cmd.Cancel = func() error {
+ 		pid := cmd.Process.Pid
+@@ -71,6 +93,7 @@ func runTiedChild(cmd *exec.Cmd, pipeWaitDelay time.Duration, memoryLimit int64,
+ 	if handle := tied.Load(); handle != nil {
+ 		killLeftovers(handle.Record())
+ 	}
++	killMarkedLeftovers(marker)
+ 	if errors.Is(waitErr, exec.ErrWaitDelay) && cmd.ProcessState != nil {
+ 		// Wait reports the delay only after a zero exit: a failing exit's own error wins over it.
+ 		logger.Warn("gate test: a process the shell left behind held its output past the wait delay", "pid", cmd.Process.Pid, "delay", pipeWaitDelay)
+@@ -91,3 +114,25 @@ func killLeftovers(record proc.TreeRecord) {
+ 		logger.Info("gate test: killed what the shell left in its process group", "pid", record.PID)
+ 	}
+ }
++
++// killMarkedLeftovers kills with SIGKILL every process whose environment holds marker, a tied child's whole entry.
++// It reaches what left the child's process group, which no group kill reaches.
++// Where no process's environment is readable, as on Windows, it kills nothing: the child's job has ended its tree there.
++func killMarkedLeftovers(marker string) {
++	pids, err := proc.PIDsWithEnv(marker)
++	if errors.Is(err, errors.ErrUnsupported) {
++		return
++	}
++	if err != nil {
++		logger.Warn("gate test: could not list the processes the shell left outside its process group", "marker", marker, "cause", err)
++		return
++	}
++	for _, pid := range pids {
++		if err := proc.SignalProcess(pid, true); err != nil {
++			logger.Debug("gate test: could not kill a process the shell left outside its process group", "pid", pid, "cause", err)
++		}
++	}
++	if len(pids) > 0 {
++		logger.Info("gate test: killed what the shell left outside its process group", "processes", len(pids))
++	}
++}
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 1cd5b4c1b..a8b71cf1c 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -71,7 +71,7 @@ func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, reru
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `test runs the tiers of gate.tiers, in ascending tier number, going on past a failed one unless --stop-on-fail ends the call there.
+ --gate K runs the tiers and the scope that key K of ` + keyName(gatesKey) + ` names, and goes with none of --tier, --upto, --all and --base.
+-A key of scope card needs --card <id> per card, scope all runs every tier whole, or no tier when every changed file is inert, and scope diff runs the diff from the merge base with the pair's parent branch.
++A key of scope card needs --card <id> per card, scope all runs every tier whole, and scope diff takes the default diff scope.
+ Explicit <targets> beside --gate replace the key's scope.
+ --tier N names a tier and may repeat; the default is tier0 without --upto or --gate.
+ --upto N adds every declared tier from 0 through N, bar a manual one, which --tier alone runs.
+@@ -82,9 +82,10 @@ With --wait, and with no strand, the tiers run in this process.
+ The exit code is the first failing run's own, or 0.
+ Without --gate the scope is the explicit <targets>, --all, --card <id>, --base <rev>, or the diff from the merge base with the pair's parent branch.
+ Arguments after "--" fill each tier's {args}.
++A --filter among them is ANDed with the tier's filter where the tier's command holds {filter}.
+ --guards, and a narrower scope while ` + keyName(scoperKey) + ` is go, also run the //lym:guard tests outside the scope.
+ --map builds the tier0 and tier1 coverage maps, and refuses the flags that pick tiers or steps.
+---copies N, with --gate and explicit targets, runs N copies of the key's one tier side by side inside one lease of N times its slots.
++--copies N, with --gate and explicit targets, runs N copies of the key's one tier side by side.
+ 
+ Examples:
+ 
+diff --git a/internal/gatecli/copies.go b/internal/gatecli/copies.go
+index ceba4d513..ab39cd031 100644
+--- a/internal/gatecli/copies.go
++++ b/internal/gatecli/copies.go
+@@ -63,7 +63,7 @@ func (l *lockedWriter) Write(p []byte) (int, error) {
+ // A copy's stdout is kept in its log only, so the copies never interleave their output.
+ func runTierCopies(ctx context.Context, run tierRun, env []string, request testRequest) tierResult {
+ 	if run.tier.PrebuiltLym && len(run.invocations) > 0 {
+-		prebuildCtx, cancel := context.WithTimeout(ctx, time.Duration(run.tier.TimeoutMin)*request.timeoutUnit)
++		prebuildCtx, cancel := withTimeoutMin(ctx, time.Duration(run.tier.TimeoutMin)*request.timeoutUnit, elapsedSinceNow(), time.After)
+ 		bin, cleanup, err := prebuildLym(prebuildCtx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore, request.pipeWaitDelay, nil)
+ 		cancel()
+ 		if err != nil {
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index 824a14eeb..a6e74905a 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -25,8 +25,19 @@ const (
+ )
+ 
+ // vstestSummary matches a VSTest summary line, whose `Passed!` and `Failed!` forms carry the same four counts.
++// The minimal console logger, the default of `dotnet test`, prints it.
+ var vstestSummary = regexp.MustCompile(`(?:Passed|Failed)!\s+-\s+Failed:\s*(\d+),\s*Passed:\s*(\d+),\s*Skipped:\s*(\d+),\s*Total:\s*(\d+)`)
+ 
++// vstestTotalTests matches the line `Total tests: N` that opens the summary of the normal and detailed console loggers.
++var vstestTotalTests = regexp.MustCompile(`^\s*Total tests:\s*(\d+)\s*$`)
++
++// vstestOutcomeCount matches one outcome's line of that summary, such as `     Passed: 1`.
++// Its first group is the outcome and its second the count.
++var vstestOutcomeCount = regexp.MustCompile(`^\s*(Passed|Failed|Skipped):\s*(\d+)\s*$`)
++
++// vstestTotalTime matches the `Total time:` line that closes that summary.
++var vstestTotalTime = regexp.MustCompile(`^\s*Total time:`)
++
+ // vstestResult matches the VSTest console line that reports one test's result, such as `  Failed Ns.Tests.A [12 ms]`.
+ // Its first group is the result and its second the test's display name.
+ var vstestResult = regexp.MustCompile(`^\s*(Passed|Failed|Skipped)\s+(\S.*?)\s+\[[^\]]*\]\s*$`)
+@@ -442,7 +453,8 @@ func (c *goJSONCounter) handle(line []byte, terminated bool) error {
+ 	return err
+ }
+ 
+-// vstestCounter passes every line through and sums the counts of the VSTest summary lines.
++// vstestCounter passes every line through and sums the counts of the VSTest summaries.
++// It reads the minimal logger's one-line summary and the normal and detailed loggers' summary of several lines.
+ // It also reads each failed test's block, which opens with the `Failed <name> [<duration>]` line.
+ // The block runs up to a blank line, the next result line or a summary line.
+ // An invocation whose results file the gate read has its console counts and failures replaced by the file's.
+@@ -453,6 +465,8 @@ type vstestCounter struct {
+ 	failures []runFailure
+ 	// inFailure is set while the lines read belong to the block of the last failed test.
+ 	inFailure bool
++	// inTotals is set while the lines read belong to a summary that opened with `Total tests: N`.
++	inTotals bool
+ 	// invocationCounts and invocationFailures are the counts and the number of failures before the invocation in progress.
+ 	// Its results file replaces whatever its console output added past them.
+ 	invocationCounts   tierCounts
+@@ -466,7 +480,7 @@ func (c *vstestCounter) startInvocation() {
+ 	c.lines.mu.Lock()
+ 	defer c.lines.mu.Unlock()
+ 	c.invocationCounts, c.invocationFailures = c.counts, len(c.failures)
+-	c.inFailure = false
++	c.inFailure, c.inTotals = false, false
+ }
+ 
+ // replaceInvocation replaces what the invocation since startInvocation counted from its console output with results.
+@@ -482,7 +496,7 @@ func (c *vstestCounter) replaceInvocation(results trxResults) {
+ 	}
+ 	c.failures = append(c.failures[:c.invocationFailures:c.invocationFailures], results.failures...)
+ 	c.runMessages = append(c.runMessages, results.runMessages...)
+-	c.inFailure = false
++	c.inFailure, c.inTotals = false, false
+ }
+ 
+ // RunMessages returns a copy of the run-level messages of every results file read.
+@@ -526,8 +540,19 @@ func (c *vstestCounter) Unfinished() map[string][]string { return nil }
+ // handle runs under the line reader's lock.
+ func (c *vstestCounter) handle(line []byte, terminated bool) error {
+ 	c.observeFailure(string(line))
++	c.observeSummary(line)
++	return c.lines.passThrough(line, terminated)
++}
++
++// observeSummary folds a summary line into the counts.
++// A one-line summary carries all four counts.
++// A `Total tests: N` line adds N tests and opens a summary.
++// Each following outcome line of that summary adds its count.
++// The summary ends at its `Total time:` line, at a one-line summary or at an invocation boundary.
++// Any other line, such as one another project writes into the same stream, is passed over.
++// The patterns hold only digit groups, so the conversions cannot fail.
++func (c *vstestCounter) observeSummary(line []byte) {
+ 	if match := vstestSummary.FindSubmatch(line); match != nil {
+-		// The pattern holds only digit groups, so the conversions cannot fail.
+ 		failed, _ := strconv.Atoi(string(match[1]))
+ 		passed, _ := strconv.Atoi(string(match[2]))
+ 		skipped, _ := strconv.Atoi(string(match[3]))
+@@ -536,8 +561,35 @@ func (c *vstestCounter) handle(line []byte, terminated bool) error {
+ 		c.counts.passed += passed
+ 		c.counts.skipped += skipped
+ 		c.counts.discovered += total
++		c.inTotals = false
++		return
++	}
++	if match := vstestTotalTests.FindSubmatch(line); match != nil {
++		total, _ := strconv.Atoi(string(match[1]))
++		c.counts.discovered += total
++		c.inTotals = true
++		return
++	}
++	if !c.inTotals {
++		return
++	}
++	if vstestTotalTime.Match(line) {
++		c.inTotals = false
++		return
++	}
++	match := vstestOutcomeCount.FindSubmatch(line)
++	if match == nil {
++		return
++	}
++	count, _ := strconv.Atoi(string(match[2]))
++	switch string(match[1]) {
++	case "Passed":
++		c.counts.passed += count
++	case "Failed":
++		c.counts.failed += count
++	case "Skipped":
++		c.counts.skipped += count
+ 	}
+-	return c.lines.passThrough(line, terminated)
+ }
+ 
+ // observeFailure folds line into the failed tests.
+@@ -553,7 +605,7 @@ func (c *vstestCounter) observeFailure(line string) {
+ 		}
+ 		return
+ 	}
+-	if text == "" || vstestSummary.MatchString(text) {
++	if text == "" || vstestSummary.MatchString(text) || vstestTotalTests.MatchString(text) {
+ 		c.inFailure = false
+ 		return
+ 	}
+diff --git a/internal/gatecli/counters_test.go b/internal/gatecli/counters_test.go
+index 3f7e8b0a4..d261feb0e 100644
+--- a/internal/gatecli/counters_test.go
++++ b/internal/gatecli/counters_test.go
+@@ -58,6 +58,48 @@ func goPackageEvent(pkg, action, output string, offset, elapsed float64) string
+ 	return string(line)
+ }
+ 
++// TestVSTestCounterInvocationClosesAnOpenSummary pins that an invocation boundary closes a `Total tests:` summary.
++// An outcome line after the boundary then adds nothing, whether the invocation starts or its results file replaces it.
++func TestVSTestCounterInvocationClosesAnOpenSummary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// boundary is the counter step taken between the opening line and the outcome line.
++		boundary   func(c *vstestCounter)
++		wantCounts tierCounts
++	}{
++		{name: "AStartedInvocation", boundary: func(c *vstestCounter) { c.startInvocation() }, wantCounts: tierCounts{discovered: 9}},
++		{
++			name:       "AResultsFileThatReplacesTheInvocation",
++			boundary:   func(c *vstestCounter) { c.replaceInvocation(trxResults{counts: tierCounts{discovered: 1, passed: 1}}) },
++			wantCounts: tierCounts{discovered: 1, passed: 1},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			c, err := newCounter(counterVSTest, &bytes.Buffer{})
++			if err != nil {
++				t.Fatalf("newCounter(vstest) error = %v", err)
++			}
++			vstest := c.(*vstestCounter)
++			vstest.startInvocation()
++			if _, err := c.Write([]byte("Total tests: 9\n")); err != nil {
++				t.Fatal(err)
++			}
++			tt.boundary(vstest)
++			if _, err := c.Write([]byte("     Passed: 4\n")); err != nil {
++				t.Fatal(err)
++			}
++			if got := c.Counts(); got != tt.wantCounts {
++				t.Errorf("Counts() = %+v; want %+v", got, tt.wantCounts)
++			}
++		})
++	}
++}
++
+ func TestCounters(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -65,6 +107,8 @@ func TestCounters(t *testing.T) {
+ 	splitEvent := goEvent("output", "TestA", "=== RUN   TestA\n") + "\n"
+ 	vstestPassed := "Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 1 s - x.dll (net8.0)\n"
+ 	vstestFailed := "Failed!  - Failed:     2, Passed:     3, Skipped:     1, Total:     6, Duration: 2 s - y.dll (net8.0)\n"
++	vstestDetailedPassed := "Test Run Successful.\nTotal tests: 1\n     Passed: 1\n Total time: 0.6 Seconds\n"
++	vstestDetailedFailed := "Test Run Failed.\nTotal tests: 6\n     Passed: 3\n     Failed: 2\n    Skipped: 1\n Total time: 2.1 Seconds\n"
+ 	vstestFailedBlocks := "  Passed Ns.Tests.Kept [3 ms]\n" +
+ 		"  Failed Ns.Tests.EnumeratesTree [12 ms]\n  Error Message:\n   System.UnauthorizedAccessException : Access to the path '/r/bin/t' is denied.\n" +
+ 		"  Stack Trace:\n     at System.IO.Enumeration.FileSystemEnumerator`1.Init()\n\n" +
+@@ -264,6 +308,13 @@ func TestCounters(t *testing.T) {
+ 			wantOut:    "Starting test run\n" + vstestPassed + vstestPassed,
+ 			wantCounts: tierCounts{discovered: 24, passed: 24},
+ 		},
++		{
++			name:       "a detailed console logger's summary of several lines is summed per outcome",
++			kind:       "vstest",
++			writes:     []string{vstestDetailedPassed + vstestDetailedFailed},
++			wantOut:    vstestDetailedPassed + vstestDetailedFailed,
++			wantCounts: tierCounts{discovered: 7, passed: 4, failed: 2, skipped: 1},
++		},
+ 		{
+ 			name:       "a VSTest Failed! summary",
+ 			kind:       "vstest",
+@@ -291,6 +342,23 @@ func TestCounters(t *testing.T) {
+ 				{test: "Ns.Tests.Long", lines: []string{"l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"}},
+ 			},
+ 		},
++		{
++			name:       "a Total tests line closes a failed test's block with no blank line between",
++			kind:       "vstest",
++			writes:     []string{"  Failed Ns.Tests.One [1 ms]\n  Error Message:\n   boom\nTotal tests: 1\n     Failed: 1\n Total time: 1.0 Seconds\n"},
++			wantOut:    "  Failed Ns.Tests.One [1 ms]\n  Error Message:\n   boom\nTotal tests: 1\n     Failed: 1\n Total time: 1.0 Seconds\n",
++			wantCounts: tierCounts{discovered: 1, failed: 1},
++			wantFailures: []runFailure{
++				{test: "Ns.Tests.One", lines: []string{"boom"}},
++			},
++		},
++		{
++			name:       "a foreign line inside a Total tests summary is passed over, and Total time closes it",
++			kind:       "vstest",
++			writes:     []string{"Total tests: 2\nbuild output of another project\n     Passed: 2\n Total time: 1.0 Seconds\n     Passed: 5\n"},
++			wantOut:    "Total tests: 2\nbuild output of another project\n     Passed: 2\n Total time: 1.0 Seconds\n     Passed: 5\n",
++			wantCounts: tierCounts{discovered: 2, passed: 2},
++		},
+ 		{
+ 			name:    "a VSTest result line closes a failed test's block with no blank line between",
+ 			kind:    "vstest",
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index e8588acd1..cab367f93 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -78,7 +78,12 @@
+ // Each target and arg is quoted for the platform shell.
+ // `{filter}` renders as `--filter ` and the tier's filter expression, or as nothing when there is none.
+ // A narrowed dotnet invocation combines the tier's filter with the class terms the scoper chose.
+-// A command without `{filter}` renders no filter whatever terms it is given.
++// A `--filter` among the words after `--` leaves `{args}` and is ANDed into `{filter}` too.
++// The reason is that `dotnet test` refuses a second `--filter`.
++// A command without `{filter}` renders no filter whatever terms it is given, and keeps a `--filter` in its `{args}`.
++// Planning refuses a `--filter` after `--` for a command that holds a `--filter` of its own.
++// That refusal names the tier's `filter` key.
++// It also refuses words after `--` that end in `--filter`, which has no expression to take.
+ // `{test_targets}` stands where the targets reach `go test`.
+ // It renders each invocation's targets narrowed to the packages that hold a test function the tier runs,
+ // so a pass starts no test binary that would find no test of its tier.
+@@ -158,8 +163,9 @@
+ //
+ // Once the config is loaded, planning refuses these before any slot, naming `lym config gate`:
+ // words after `--` for a tier whose command lacks `{args}`; explicit targets no listed tier's command takes;
+-// an undeclared tier; a hub with no `tier0`; a `covers` entry naming an undeclared tier;
+-// and a guard group whose tier the hub does not declare.
++// an undeclared tier; a hub with no `tier0`, naming `gate.tiers.tier0` in full;
++// a `--filter` after `--` for a command that holds a `--filter` of its own and no `{filter}`;
++// a `covers` entry naming an undeclared tier; and a guard group whose tier the hub does not declare.
+ // Every such refusal closes with a clause for a session that is not the prime:
+ // it takes none of the steps, reports status: FAILED and leaves them to the orch.
+ //
+@@ -311,12 +317,17 @@
+ //
+ // The tier's `timeout_min`, counted once its slots are held, bounds the prebuild and every invocation of its command.
+ // A tier that outlives it has its process tree killed, fails with exit code 1 and prints `gateslot.TierTimeoutLine`.
++// The tree is the shell's process group and every process that carries the shell's marker in its environment.
++// The bound counts wall-clock time as well as awake time, whichever has run further,
++// so a tier the host slept through ends within seconds of the host waking; the build's `timeout_min` counts the same way.
+ // The work before the first tier is bounded by a ceiling;
+ // a step that outlives it fails naming the step, and the way forward is to run the same command again.
+ //
+ // # Counters, record and log
+ //
+ // A tier's output goes through its counter, `go-json` or `vstest`, which passes the text on and counts its tests.
++// The `vstest` counter reads the summary of every console logger verbosity:
++// the minimal one's `Passed!` or `Failed!` line, and the normal and detailed ones' `Total tests:` block.
+ // After each tier the verb prints `gateslot.TierSummaryLine` to stderr
+ // and writes the run record and log through `gateslot.WriteRunRecord` under `gateslot.RunLogDir`:
+ // the board's gate directory inside a hub, so the records outlive the worktree;
+@@ -339,6 +350,8 @@
+ // A passing `vstest` invocation whose output reported no test still passes and prints a line to stderr and the log.
+ // The line is there because a test project can skip all tests unless an MSBuild property is passed.
+ // The line cannot see a disabled project beside a project that ran, or name the property behind a skip.
++// When the words after `--` carry a test filter, the line says instead that no test of the project matched it.
++// It names the declared tiers the call does not run, and `--tier` as the way to run the test through its own tier.
+ //
+ // # Stray files
+ //
+@@ -568,7 +581,11 @@
+ // This holds even while a leftover process holds its output pipe.
+ // One example is an MSBuild worker node a crashed `dotnet` left.
+ // After a bounded delay the verb kills what is left of the shell's process group.
+-// Bound: a leftover that left the shell's process group, such as one in a session of its own, is not killed.
++// Every shell gets an environment entry of its own, `LYM_GATE_CHILD_<pid>_<n>=1`, which each process it starts inherits.
++// The verb then also kills every process carrying it.
++// A leftover in a session of its own, such as a test host, therefore dies too.
++// Bound: a process that cleared its environment, or runs where no environment is readable by pid, escapes that kill;
++// on Windows the shell's kill-on-close job ends its tree instead.
+ //
+ // # CPU watchdog
+ //
+diff --git a/internal/gatecli/keynames.go b/internal/gatecli/keynames.go
+index ac958e552..b3ebe0a57 100644
+--- a/internal/gatecli/keynames.go
++++ b/internal/gatecli/keynames.go
+@@ -23,9 +23,11 @@ const (
+ 	reachBudgetMinKey         = "reach_budget_min"
+ 	mutationMaxMutantsKey     = "mutation_max_mutants"
+ 	mutationBudgetMinKey      = "mutation_budget_min"
+-	// tierMemoryMBLeaf and tierTimeoutMinLeaf are the keys of one tier's mapping.
++	tiersKey                  = "tiers"
++	// tierMemoryMBLeaf, tierTimeoutMinLeaf and tierFilterLeaf are keys of one tier's mapping.
+ 	tierMemoryMBLeaf   = "memory_mb"
+ 	tierTimeoutMinLeaf = "timeout_min"
++	tierFilterLeaf     = "filter"
+ )
+ 
+ // keyName returns the full name of the gate.yaml key at path.
+@@ -33,7 +35,12 @@ func keyName(path string) string {
+ 	return configengine.KeyName(configModule, path)
+ }
+ 
++// tierKey returns the full name of the gate.yaml mapping of the tier named tier.
++func tierKey(tier string) string {
++	return keyName(tiersKey + "." + tier)
++}
++
+ // tierKeyName returns the full name of the key leaf of the gate.yaml tier named tier.
+ func tierKeyName(tier, leaf string) string {
+-	return keyName("tiers." + tier + "." + leaf)
++	return keyName(tiersKey + "." + tier + "." + leaf)
+ }
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 8a0f833fd..c85872fa6 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -131,7 +131,7 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 		return tierResult{refusal: fmt.Sprintf("gate test: %v; way forward: fix the counter of %s with \"lym config gate\" from the prime%s", err, tierName(run.number), roleClause)}
+ 	}
+ 
+-	tierCtx, cancel := context.WithTimeout(ctx, timeout)
++	tierCtx, cancel := withTimeoutMin(ctx, timeout, elapsedSinceNow(), time.After)
+ 	defer cancel()
+ 
+ 	tierEnv := slices.Concat(env, renderTierEnv(run.tier))
+@@ -163,7 +163,7 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 			causes = append(causes, line)
+ 		}
+ 	}
+-	timedOut := ctx.Err() == nil && errors.Is(tierCtx.Err(), context.DeadlineExceeded) && exit != 0
++	timedOut := ctx.Err() == nil && errors.Is(context.Cause(tierCtx), errTimeoutMinPassed) && exit != 0
+ 	if timedOut {
+ 		exit = 1
+ 		line := gateslot.TierTimeoutLine(tierName(run.number), timeout)
+@@ -230,6 +230,47 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 	}
+ }
+ 
++// timeoutMinPoll is the longest a timeout_min bound goes without reading the clock.
++const timeoutMinPoll = 10 * time.Second
++
++// errTimeoutMinPassed is the cause of a context its timeout_min bound ended.
++var errTimeoutMinPassed = errors.New("the timeout_min bound passed")
++
++// withTimeoutMin returns a context under ctx that ends with the cause errTimeoutMinPassed once timeout has passed.
++// The time passed counts from the call on the monotonic clock and on the wall clock, whichever has run further.
++// The monotonic clock stands still while the host sleeps,
++// so a bound the host slept through still ends the context within timeoutMinPoll of its waking.
++// elapsed reads the time passed since the call on both clocks, and after waits as time.After does.
++// The cancel it returns ends the context and the goroutine that watches the bound.
++func withTimeoutMin(ctx context.Context, timeout time.Duration, elapsed func() (monotonic, wall time.Duration), after func(time.Duration) <-chan time.Time) (context.Context, context.CancelFunc) {
++	bounded, cancel := context.WithCancelCause(ctx)
++	go func() {
++		for {
++			monotonic, wall := elapsed()
++			left := timeout - max(monotonic, wall)
++			if left <= 0 {
++				cancel(errTimeoutMinPassed)
++				return
++			}
++			select {
++			case <-bounded.Done():
++				return
++			case <-after(min(left, timeoutMinPoll)):
++			}
++		}
++	}()
++	return bounded, func() { cancel(context.Canceled) }
++}
++
++// elapsedSinceNow returns a reading of the time passed since this call, on the monotonic clock and on the wall clock.
++func elapsedSinceNow() func() (monotonic, wall time.Duration) {
++	start := time.Now()
++	return func() (time.Duration, time.Duration) {
++		// Round(0) strips the monotonic reading, so the second difference is the wall clock's.
++		return time.Since(start), time.Now().Round(0).Sub(start.Round(0))
++	}
++}
++
+ // envOverrideLine returns the line naming each entry of tierEnv whose variable session sets to another value.
+ // tierEnv holds the tier's own env entries, and session the environment of the session that started the call.
+ // A result the tier gives reflects the tier's values, so a session that measures through the gate must know them.
+@@ -503,15 +544,17 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 			}
+ 		}
+ 		args, resultsDir := run.args, ""
+-		var vstest *vstestCounter
++		// A summary or a failure block the last invocation left open ends here, with or without a results file.
++		vstest, _ := counter.(*vstestCounter)
++		if vstest != nil {
++			vstest.startInvocation()
++		}
+ 		if run.tier.Results == gateslot.ResultsTRX {
+-			vstest = counter.(*vstestCounter)
+ 			if dir, err := lymtemp.MkdirTemp("gate-vstest-"); err != nil {
+ 				logger.Warn("gate test: could not make the vstest results directory; the console counts stand", "tier", tierName(run.number), "cause", err)
+ 			} else {
+ 				resultsDir = dir
+ 				args = append(vstestResultsArgs(dir), run.args...)
+-				vstest.startInvocation()
+ 			}
+ 		}
+ 		command, err := renderTierCommand(run.number, run.tier, invocation.targets, testTargets, invocation.terms, args)
+@@ -608,6 +651,7 @@ func removeResultsDir(dir string) {
+ // The line reads only the invocation's total, so it names no MSBuild property.
+ // It sees no skip inside an invocation that ran some test.
+ // The hand run is offered only while the hub's `refuse_raw` does not list `dotnet test`.
++// A run whose args carry a test filter gets the line of filteredNoTestNotice instead.
+ func noTestNotice(run tierRun, inv invocation, dir string, discovered int) string {
+ 	if run.tier.Counter != counterVSTest || discovered > 0 {
+ 		return ""
+@@ -620,9 +664,29 @@ func noTestNotice(run tierRun, inv invocation, dir string, discovered int) strin
+ 	if len(inv.terms) > 0 {
+ 		classes = " under the class filter " + strings.Join(inv.terms, "|")
+ 	}
++	if holdsCallerFilter(run.args) {
++		return filteredNoTestNotice(run, project, classes)
++	}
+ 	return fmt.Sprintf("gate test: %s ran no test of %s%s: dotnet test exited 0 and reported no test, as a test project does that sets IsTestProject false unless an MSBuild property is passed, so the gate's pass covers none of its tests; the gate reads only the invocation's total, so it names no property and sees no skip inside an invocation that ran some test; way forward: when those tests must run and the hub's %s does not list dotnet test, run them by hand with dotnet test <project> -p:<property>=true, the property its project file's IsTestProject condition names, and check that the run's summary line reports them; otherwise report the skipped tests to your parent", tierName(run.number), project, classes, keyName(refuseRawKey))
+ }
+ 
++// filteredNoTestNotice returns the line of a passing `vstest` invocation of project that reported no test.
++// It covers the case where the call's own words carried a test filter.
++// classes is the clause naming the scope's class filter, empty when it set none.
++// The filter most likely names a test of a tier the call does not run,
++// so the line names the declared tiers of run.otherTiers and the call that runs the test through its own tier.
++func filteredNoTestNotice(run tierRun, project, classes string) string {
++	tier := tierName(run.number)
++	others := "the hub declares no tier besides those this call runs"
++	wayForward := "check that the filter selects a test of the project, then re-run the same command"
++	if len(run.otherTiers) > 0 {
++		others = fmt.Sprintf("the hub also declares %s, which this call does not run, and the test may belong to one of them", tierNames(run.otherTiers))
++		wayForward = "run the test through the tier that holds it, with lym gate test --tier <N> <its package or test project> -- <args> and the same words after \"--\""
++	}
++	return fmt.Sprintf("gate test: %s ran no test of %s%s: dotnet test exited 0 and no test of %s matched the filter among the words after \"--\"; %s; way forward: %s",
++		tier, project, classes, project, others, wayForward)
++}
++
+ // tierTestTargets returns the packages of targets in the module at moduleDir that hold a test run's tier executes.
+ // The tiers counted are run's own and those it covers.
+ // A target that names no directory, such as an import path, is kept.
+diff --git a/internal/gatecli/tierrun_spawn_test.go b/internal/gatecli/tierrun_spawn_test.go
+index a9429088f..a04c51f03 100644
+--- a/internal/gatecli/tierrun_spawn_test.go
++++ b/internal/gatecli/tierrun_spawn_test.go
+@@ -1,7 +1,8 @@
+ //go:build !windows
+ 
+ // tierrun_spawn_test.go covers the tier runs that start a POSIX shell and a tool such as cp.
+-// They cover a vstest tier's verdict on the results file the gate asks for, and the env line of a tier run.
++// They cover a vstest tier's verdict on the results file the gate asks for, the env line of a tier run,
++// and the kill of a command's process that left its process group.
+ 
+ package gatecli
+ 
+@@ -12,6 +13,7 @@ import (
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -19,6 +21,7 @@ import (
+ 	"github.com/google/go-cmp/cmp"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -274,6 +277,55 @@ The test running when the crash occurred: Ns.Tests.Kept</Text></RunInfo>`
+ 	}
+ }
+ 
++// TestRunTierKillsWhatLeftTheProcessGroup pins that a tier run ends a process of its command in a session of its own.
++// Such a process escapes the kill of the shell's process group, as a test host can.
++// The command starts one through setsid, waits until it wrote its pid, and then exits or outlives the tier's timeout.
++func TestRunTierKillsWhatLeftTheProcessGroup(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// tail ends the command once the escaped process is running.
++		tail         string
++		wantTimedOut bool
++	}{
++		{name: "ACommandThatExits", tail: "exit 0"},
++		{name: "ACommandThatOutlivesTheTimeout", tail: "sleep 300", wantTimedOut: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			pidFile := filepath.Join(dir, "escaped.pid")
++			command := fmt.Sprintf(`setsid sh -c 'echo $$ > "%[1]s"; exec sleep 300' >/dev/null 2>&1 & while [ ! -s "%[1]s" ]; do sleep 0.01; done; %[2]s`, pidFile, tt.tail)
++			request := testRequest{root: dir, stderr: io.Discard, timeoutUnit: 2 * time.Second, pipeWaitDelay: defaultPipeWaitDelay}
++			run := tierRun{number: 0, tier: gateslot.Tier{Command: command, Counter: counterGoJSON, TimeoutMin: 1}, invocations: []invocation{{dir: dir}}}
++
++			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++			data, err := os.ReadFile(pidFile)
++			if err != nil {
++				t.Fatalf("read the escaped process's pid: %v; runTier() = refusal %q, log %q", err, result.refusal, result.log)
++			}
++			pid, err := strconv.Atoi(strings.TrimSpace(string(data)))
++			if err != nil {
++				t.Fatalf("parse the escaped process's pid %q: %v", data, err)
++			}
++			t.Cleanup(func() { _ = proc.SignalProcess(pid, true) })
++			if result.record.TimedOut != tt.wantTimedOut {
++				t.Errorf("runTier() TimedOut = %v; want %v", result.record.TimedOut, tt.wantTimedOut)
++			}
++			// The killed process is reaped by whichever process adopted it, a moment after the kill.
++			for deadline := time.Now().Add(10 * time.Second); proc.IsRunning(pid); time.Sleep(10 * time.Millisecond) {
++				if time.Now().After(deadline) {
++					t.Fatalf("process %d, which left the command's process group, still runs after runTier() returned; want it killed with the run", pid)
++				}
++			}
++		})
++	}
++}
++
+ // TestRunTierNamesEnvThatDiffersFromTheSession pins the env line of a tier run.
+ // The line names each env value the session sets otherwise, with the tier's value and never the session's.
+ // It prints once, however many copies the run starts.
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 2768f47df..0290a3508 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -132,6 +132,136 @@ func TestRetryTier(t *testing.T) {
+ 	}
+ }
+ 
++// TestWithTimeoutMin pins the timeout_min bound on a fake clock.
++// Either clock's reading past the bound ends the context at the next poll.
++// The wall clock's reading is the one that passes it after the host slept.
++// A poll waits at most timeoutMinPoll, and no longer than what is left of the bound.
++//
++//testtiming:keep the poll lengths and the cause of the timeout_min bound on a fake clock
++func TestWithTimeoutMin(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	type reading struct{ monotonic, wall time.Duration }
++	tests := []struct {
++		name    string
++		timeout time.Duration
++		// readings are the time passed on each clock, one per poll in order; the last repeats.
++		readings []reading
++		// readyPolls is how many polls end at once; every later poll waits until the context ends.
++		readyPolls int
++		// wantPolls are the waits the bound asks for, in order.
++		wantPolls []time.Duration
++		// wantCause is the context's cause once the polls are done, nil for a context still open.
++		wantCause error
++	}{
++		{
++			name: "AWallClockPastTheBoundEndsTheContextThoughTheMonotonicClockStoodStill", timeout: 35 * time.Minute,
++			readings: []reading{{monotonic: time.Minute, wall: 21 * time.Hour}}, wantCause: errTimeoutMinPassed,
++		},
++		{
++			name: "AMonotonicClockPastTheBoundEndsTheContextThoughTheWallClockWasSetBack", timeout: 35 * time.Minute,
++			readings: []reading{{monotonic: 36 * time.Minute, wall: -time.Hour}}, wantCause: errTimeoutMinPassed,
++		},
++		{
++			name: "ABoundNotYetPassedKeepsTheContextOpen", timeout: 35 * time.Minute,
++			readings: []reading{{time.Minute, time.Minute}}, readyPolls: 1, wantPolls: []time.Duration{timeoutMinPoll, timeoutMinPoll},
++		},
++		{
++			name: "TheLastPollWaitsOnlyWhatIsLeft", timeout: 3 * time.Second,
++			readings: []reading{{time.Second, time.Second}, {3 * time.Second, 3 * time.Second}}, readyPolls: 1,
++			wantPolls: []time.Duration{2 * time.Second}, wantCause: errTimeoutMinPassed,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var read atomic.Int32
++			elapsed := func() (time.Duration, time.Duration) {
++				at := tt.readings[min(int(read.Add(1))-1, len(tt.readings)-1)]
++				return at.monotonic, at.wall
++			}
++			polls := make(chan time.Duration, len(tt.wantPolls)+1)
++			var polled atomic.Int32
++			after := func(wait time.Duration) <-chan time.Time {
++				polls <- wait
++				if int(polled.Add(1)) > tt.readyPolls {
++					return nil
++				}
++				ready := make(chan time.Time, 1)
++				ready <- time.Time{}
++				return ready
++			}
++
++			ctx, cancel := withTimeoutMin(context.Background(), tt.timeout, elapsed, after)
++			t.Cleanup(cancel)
++
++			var got []time.Duration
++			for range tt.wantPolls {
++				got = append(got, <-polls)
++			}
++			if tt.wantCause != nil {
++				<-ctx.Done()
++			}
++			if !slices.Equal(got, tt.wantPolls) {
++				t.Errorf("withTimeoutMin() polled %v; want %v", got, tt.wantPolls)
++			}
++			if cause := context.Cause(ctx); cause != tt.wantCause {
++				t.Errorf("withTimeoutMin() context cause = %v; want %v", cause, tt.wantCause)
++			}
++		})
++	}
++}
++
++// TestRunBuildTimeout pins the build step's timeout_min.
++// A build that outlives it fails as timed out, prints the build's timeout line and blocks the tiers that opt into it.
++// A build that ends in time lets its tier run.
++func TestRunBuildTimeout(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the build command is a POSIX shell sleep")
++	}
++
++	const unit = 200 * time.Millisecond
++	tests := []struct {
++		name         string
++		command      string
++		wantOK       bool
++		wantTimedOut bool
++	}{
++		{name: "ABuildThatEndsInTime", command: "exit 0", wantOK: true},
++		{name: "ABuildThatOutlivesItsTimeout", command: "sleep 300", wantTimedOut: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			var stderr bytes.Buffer
++			e := &execution{
++				ctx:       context.Background(),
++				out:       io.Discard,
++				request:   testRequest{root: dir, stderr: &stderr, timeoutUnit: unit, pipeWaitDelay: defaultPipeWaitDelay},
++				cfg:       gateslot.Config{Build: gateslot.BuildStep{Command: tt.command, Dir: dir, TimeoutMin: 1}},
++				runLogDir: t.TempDir(),
++			}
++
++			result, ok := e.runBuild(tierRun{number: 0}, []string{"PATH=" + os.Getenv("PATH")})
++
++			if ok != tt.wantOK || result.buildFailed == tt.wantOK {
++				t.Errorf("runBuild() = ok %v, buildFailed %v; want ok %v", ok, result.buildFailed, tt.wantOK)
++			}
++			timeoutLine := gateslot.BuildTimeoutLine(unit)
++			if got := strings.Contains(stderr.String(), timeoutLine); got != tt.wantTimedOut {
++				t.Errorf("runBuild() stderr = %q; want it to hold the timeout line: %v", stderr.String(), tt.wantTimedOut)
++			}
++			if blocked := e.buildFailure != ""; blocked != tt.wantTimedOut {
++				t.Errorf("runBuild() left buildFailure %q; want it set: %v", e.buildFailure, tt.wantTimedOut)
++			}
++		})
++	}
++}
++
+ // TestRunTierProcessCap pins the tier run's wiring of the process cap.
+ // A tripped cap fails a command that exited 0 and marks the result so no rerun follows.
+ // A run whose environment carries no run marker starts no cap.
+@@ -406,14 +536,31 @@ func TestRunTierNoTestNotice(t *testing.T) {
+ 	notice := func(project, classes string) string {
+ 		return "gate test: tier0 ran no test of " + project + classes + ": dotnet test exited 0 and reported no test, as a test project does that sets IsTestProject false unless an MSBuild property is passed, so the gate's pass covers none of its tests; the gate reads only the invocation's total, so it names no property and sees no skip inside an invocation that ran some test; way forward: when those tests must run and the hub's gate.refuse_raw does not list dotnet test, run them by hand with dotnet test <project> -p:<property>=true, the property its project file's IsTestProject condition names, and check that the run's summary line reports them; otherwise report the skipped tests to your parent"
+ 	}
++	filtered := func(others, wayForward string) string {
++		return "gate test: tier0 ran no test of slow.csproj: dotnet test exited 0 and no test of slow.csproj matched the filter among the words after \"--\"; " + others + "; way forward: " + wayForward
++	}
+ 	tests := []struct {
+ 		name        string
+ 		counter     string
+ 		invocations []invocation
++		// args are the call's own words after `--`, and otherTiers the declared tiers the call does not run.
++		args       []string
++		otherTiers []int
+ 		// wantExit is the tier's exit code.
+ 		wantExit int
+ 		want     []string
+ 	}{
++		{
++			name: "ACallerFilterThatMatchesNoTestNamesTheTiersTheCallDoesNotRun", counter: counterVSTest,
++			invocations: []invocation{{targets: []string{"slow.csproj"}}}, args: []string{"--filter", "FullyQualifiedName~Ns.Slow"}, otherTiers: []int{1, 3},
++			want: []string{filtered("the hub also declares tier1, tier3, which this call does not run, and the test may belong to one of them",
++				"run the test through the tier that holds it, with lym gate test --tier <N> <its package or test project> -- <args> and the same words after \"--\"")},
++		},
++		{
++			name: "ACallerFilterInAHubWithNoOtherTierNamesTheFilter", counter: counterVSTest,
++			invocations: []invocation{{targets: []string{"slow.csproj"}}}, args: []string{"-p:VSTestTestCaseFilter=Name=X"},
++			want: []string{filtered("the hub declares no tier besides those this call runs", "check that the filter selects a test of the project, then re-run the same command")},
++		},
+ 		{name: "AProjectThatReportsATestPrintsNoLine", counter: counterVSTest, invocations: []invocation{{targets: []string{"ran.csproj"}}}},
+ 		{
+ 			name:    "ANarrowedProjectThatReportsNoTestIsNamedWithItsClassFilter",
+@@ -438,7 +585,7 @@ func TestRunTierNoTestNotice(t *testing.T) {
+ 			}
+ 			var stderr bytes.Buffer
+ 			request := testRequest{root: dir, stderr: &stderr, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay}
+-			run := tierRun{number: 0, tier: gateslot.Tier{Command: command, Counter: tt.counter, TimeoutMin: 1}, invocations: tt.invocations}
++			run := tierRun{number: 0, tier: gateslot.Tier{Command: command, Counter: tt.counter, TimeoutMin: 1}, invocations: tt.invocations, args: tt.args, otherTiers: tt.otherTiers}
+ 
+ 			result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
+ 
+@@ -465,6 +612,29 @@ func TestRunTierNoTestNotice(t *testing.T) {
+ 	}
+ }
+ 
++// A `Total tests:` summary one invocation leaves open takes no outcome line of the next, on a tier with no results file.
++func TestRunTierEndsAVSTestSummaryWithItsInvocation(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the tier command is a POSIX shell case")
++	}
++
++	command := "case \"{targets}\" in *cut*) echo 'Total tests: 1';; *) echo '     Passed: 1';; esac"
++	dir := t.TempDir()
++	request := testRequest{root: dir, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay}
++	run := tierRun{
++		tier:        gateslot.Tier{Command: command, Counter: counterVSTest, TimeoutMin: 1},
++		invocations: []invocation{{dir: dir, targets: []string{"cut.csproj"}}, {dir: dir, targets: []string{"next.csproj"}}},
++	}
++
++	result := runTier(context.Background(), io.Discard, run, []string{"PATH=" + os.Getenv("PATH")}, request)
++
++	if result.refusal != "" || result.record.Discovered != 1 || result.record.Passed != 0 {
++		t.Errorf("runTier() = refusal %q, discovered %d, passed %d; want no refusal, 1 and 0", result.refusal, result.record.Discovered, result.record.Passed)
++	}
++}
++
+ // The kill line names the tier's memory cap in full, as the key to raise.
+ func TestTierMemoryCapLine(t *testing.T) {
+ 	tiergate.Require(t, 0)
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 4cf6affb4..c24bcbe03 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -58,6 +58,9 @@ type tierRun struct {
+ 	buildOnly bool
+ 	// skip names the `//lym:watch` tests whose `-skip` filter args carries, so the empty-tier check discounts them.
+ 	skip []string
++	// otherTiers are the declared tiers no listed run of the call's plan is or covers, ascending.
++	// A run that reports no test under a filter of the call's own names them.
++	otherTiers []int
+ }
+ 
+ // tierName returns the gate.yaml key and the label of tier number.
+@@ -81,15 +84,20 @@ func tierName(number int) string {
+ // So is a tier whose command holds neither {targets} nor {test_targets}, which runs whole over any scope;
+ // that line prints only once no refusal can follow.
+ // It refuses explicit targets that no kept tier's command takes, since such a call runs none of the tests named.
++// It refuses words after `--` that end in `--filter`, which has no expression to take.
+ // It refuses, naming `lym config gate`: a hub with no tier0; an undeclared tier; a dangling covers entry;
+ // words after `--` for a tier whose command lacks {args};
++// a caller `--filter` for a command that holds a `--filter` of its own and no {filter};
+ // a guard group whose tier is undeclared or whose command lacks {targets} and {test_targets}, or lacks {args};
+ // and --guards under the none scoper.
+ // It refuses --guards under the dotnet scoper too, naming only dropping --guards:
+ // no config change gives a C# hub the guard tests.
+ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun, error) {
+-	if _, err := cfg.Tier(0); err != nil {
+-		return nil, fmt.Errorf("gate test: %w", err)
++	if _, declared := cfg.Tiers[tierName(0)]; !declared {
++		return nil, configRefusal("the hub declares no tier0, and no call of lym gate test runs a tier until it does; declare %s, the tier every call without --tier, --upto or --gate runs", tierKey(tierName(0)))
++	}
++	if len(request.args) > 0 && request.args[len(request.args)-1] == vstestFilterFlag {
++		return nil, fmt.Errorf("gate test: the words after \"--\" end in %s with no expression; way forward: give the expression after %s, then re-run the same command", vstestFilterFlag, vstestFilterFlag)
+ 	}
+ 	numbers := listedTiers(cfg, request)
+ 	tiers := make(map[int]gateslot.Tier, len(numbers))
+@@ -117,6 +125,10 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		if len(request.args) > 0 && !strings.Contains(tier.Command, "{args}") {
+ 			return nil, configRefusal("words after \"--\" were given, but the command of %s holds no {args}", tierName(number))
+ 		}
++		if _, callerFilters := takeCallerFilters(request.args); len(callerFilters) > 0 && !strings.Contains(tier.Command, "{filter}") && strings.Contains(tier.Command, vstestFilterFlag) {
++			return nil, configRefusal("the words after \"--\" carry %s, and the command of %s holds a %s of its own, so dotnet test would get two and refuse the call; "+
++				"move the command's filter expression into %s and put {filter} in its place, so the gate ANDs the two", vstestFilterFlag, tierName(number), vstestFilterFlag, tierKeyName(tierName(number), tierFilterLeaf))
++		}
+ 		// The call fails here, before the tier takes its slots and the shared build runs.
+ 		if refusal := resultsArgsRefusal(number, tier, request.args); refusal != "" {
+ 			return nil, errors.New(refusal)
+@@ -165,7 +177,7 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 
+ 	if !request.guards && !sc.guardStep {
+ 		printRunWholeNotices(request, wholeTiers)
+-		return runs, nil
++		return withOtherTiers(cfg, runs), nil
+ 	}
+ 	if cfg.Scoper == "dotnet" {
+ 		return nil, errors.New("gate test: --guards needs the go scoper to find the guard tests, but " + keyName(scoperKey) + " is \"dotnet\"; way forward: drop --guards, then re-run the same command")
+@@ -208,7 +220,17 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		})
+ 	}
+ 	printRunWholeNotices(request, wholeTiers)
+-	return runs, nil
++	return withOtherTiers(cfg, runs), nil
++}
++
++// withOtherTiers returns runs, each holding in otherTiers the same declared tiers of cfg.
++// Those are the tiers that no listed run of runs is or covers.
++func withOtherTiers(cfg gateslot.Config, runs []tierRun) []tierRun {
++	others := notRunTiers(cfg, runs)
++	for i := range runs {
++		runs[i].otherTiers = others
++	}
++	return runs
+ }
+ 
+ // printRunWholeNotices names on request.stderr each tier of wholeTiers, whose command holds no target placeholder.
+@@ -364,9 +386,14 @@ func ranWhole(runs []tierRun, number int, sc scope) bool {
+ // Each target and each arg is quoted for the platform shell.
+ // number is the tier's number and terms are the class filter terms of the invocation.
+ // testTargets fill {test_targets}: the targets narrowed to the packages that hold a test of the tier.
+-// {filter} renders the tier's filter ANDed with the terms ORed together.
++// {filter} renders the tier's filter ANDed with each `--filter` of args and with the terms ORed together.
++// Those `--filter` words then leave {args}, since `dotnet test` refuses a second `--filter`.
+ // A placeholder the command does not hold is not added, so terms given to a command without {filter} filter nothing.
+ func renderTierCommand(number int, tier gateslot.Tier, targets, testTargets, terms, args []string) (string, error) {
++	var callerFilters []string
++	if strings.Contains(tier.Command, "{filter}") {
++		args, callerFilters = takeCallerFilters(args)
++	}
+ 	quotedTargets, err := quoteAll(targets)
+ 	if err != nil {
+ 		return "", err
+@@ -381,7 +408,7 @@ func renderTierCommand(number int, tier gateslot.Tier, targets, testTargets, ter
+ 	}
+ 	filter := ""
+ 	if strings.Contains(tier.Command, "{filter}") {
+-		if filter, err = filterArgument(runtime.GOOS, number, tier, terms); err != nil {
++		if filter, err = filterArgument(runtime.GOOS, number, tier, callerFilters, terms); err != nil {
+ 			return "", err
+ 		}
+ 	}
+@@ -396,18 +423,14 @@ func renderTierCommand(number int, tier gateslot.Tier, targets, testTargets, ter
+ }
+ 
+ // filterArgument returns the `--filter` argument for the shell of goos, or "" when there is no expression.
+-// With no terms the expression is the tier's filter.
+-// With terms it is the tier's filter, when it has one, ANDed with the terms ORed together.
++// The expression ANDs the tier's filter, each of callerFilters and the terms ORed together, leaving out what is empty.
+ // Terms that push the expression past greenCommandBudget are dropped.
+-// The tier's filter then stands alone, so the project runs whole within itself.
+-func filterArgument(goos string, number int, tier gateslot.Tier, terms []string) (string, error) {
+-	expression := tier.Filter
++// The other filters then stand alone, so the project runs whole within them.
++func filterArgument(goos string, number int, tier gateslot.Tier, callerFilters, terms []string) (string, error) {
++	filters := slices.DeleteFunc(append([]string{tier.Filter}, callerFilters...), func(filter string) bool { return filter == "" })
++	expression := andFilters(filters)
+ 	if len(terms) > 0 {
+-		alternatives := strings.Join(terms, "|")
+-		composed := alternatives
+-		if tier.Filter != "" {
+-			composed = "(" + tier.Filter + ")&(" + alternatives + ")"
+-		}
++		composed := andFilters(append(slices.Clone(filters), strings.Join(terms, "|")))
+ 		if len(composed) > greenCommandBudget {
+ 			logger.Info("gate test: the class filter exceeds the command budget; the project runs without it", "tier", tierName(number), "terms", len(terms))
+ 		} else {
+@@ -424,6 +447,44 @@ func filterArgument(goos string, number int, tier gateslot.Tier, terms []string)
+ 	return "--filter " + quoted, nil
+ }
+ 
++// andFilters returns filters joined as one VSTest expression that every one of them must match.
++// A single filter is returned as it is, and more are each put in parentheses.
++func andFilters(filters []string) string {
++	if len(filters) < 2 {
++		return strings.Join(filters, "")
++	}
++	return "(" + strings.Join(filters, ")&(") + ")"
++}
++
++// vstestFilterFlag is the `dotnet test` option that takes a test filter expression.
++const vstestFilterFlag = "--filter"
++
++// takeCallerFilters returns args without its `--filter` words, and the expression each of them carried.
++// It reads `--filter X`, `--filter=X` and `--filter:X`.
++func takeCallerFilters(args []string) (rest, filters []string) {
++	for i := 0; i < len(args); i++ {
++		arg := args[i]
++		switch {
++		case arg == vstestFilterFlag && i+1 < len(args):
++			filters = append(filters, args[i+1])
++			i++
++		case strings.HasPrefix(arg, vstestFilterFlag+"="), strings.HasPrefix(arg, vstestFilterFlag+":"):
++			filters = append(filters, arg[len(vstestFilterFlag)+1:])
++		default:
++			rest = append(rest, arg)
++		}
++	}
++	return rest, filters
++}
++
++// holdsCallerFilter reports whether args carry a `--filter` word, or an MSBuild VSTestTestCaseFilter property.
++func holdsCallerFilter(args []string) bool {
++	return slices.ContainsFunc(args, func(arg string) bool {
++		return arg == vstestFilterFlag || strings.HasPrefix(arg, vstestFilterFlag+"=") || strings.HasPrefix(arg, vstestFilterFlag+":") ||
++			strings.Contains(strings.ToLower(arg), "vstesttestcasefilter=")
++	})
++}
++
+ // quoteAll quotes each word as one literal shell argument.
+ func quoteAll(words []string) ([]string, error) {
+ 	quoted := make([]string, len(words))
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index ba14f85e4..ce0a5ef29 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -126,8 +126,39 @@ func TestPlanTierRuns(t *testing.T) {
+ 		want  []string
+ 		// wantStderr is text the plan must print to stderr.
+ 		wantStderr string
++		// wantOtherTiers are the otherTiers every run of the plan must hold; nil leaves them unchecked.
++		wantOtherTiers []int
+ 	}{
+ 		{name: "the default is tier0 over its all_targets in its dir", want: []string{"tier0 all dir=. ./..."}},
++		{
++			name: "every run names the declared tiers a gate key does not run",
++			mutate: func(cfg *gateslot.Config) {
++				withManualTier3(cfg)
++				cfg.Gates = map[string]gateslot.GateKey{"fast": {Tiers: []int{0}, Scope: "all"}}
++			},
++			request:        testRequest{gate: "fast"},
++			want:           []string{"tier0 all dir=. ./..."},
++			wantOtherTiers: []int{1, 3},
++		},
++		{
++			name: "a tier a listed tier covers is not among the other tiers",
++			mutate: func(cfg *gateslot.Config) {
++				withManualTier3(cfg)
++				t0 := cfg.Tiers["tier0"]
++				t0.Covers = []int{1}
++				cfg.Tiers["tier0"] = t0
++			},
++			want:           []string{"tier0 all dir=. ./..."},
++			wantOtherTiers: []int{3},
++		},
++		{
++			name:           "a plan with a guard step names the other tiers, its guard run's tier included",
++			mutate:         withManualTier3,
++			request:        testRequest{guards: true},
++			scope:          scope{form: scopeAll, whole: true, guards: tier1Guards},
++			want:           []string{"tier0 all dir=. ./...", "tier1 guard dir=sub guard"},
++			wantOtherTiers: []int{1, 3},
++		},
+ 		{
+ 			name:    "explicit targets run under the call's class filter terms, partial",
+ 			request: testRequest{targets: []string{"/c/T/T.csproj"}, terms: []string{"FullyQualifiedName~N.C.M"}},
+@@ -467,6 +498,9 @@ func TestPlanTierRuns(t *testing.T) {
+ 			got := make([]string, len(runs))
+ 			for i, run := range runs {
+ 				got[i] = describe(run)
++				if tc.wantOtherTiers != nil && !slices.Equal(run.otherTiers, tc.wantOtherTiers) {
++					t.Errorf("planTierRuns() run %q otherTiers = %v; want %v", got[i], run.otherTiers, tc.wantOtherTiers)
++				}
+ 			}
+ 			if !slices.Equal(got, tc.want) {
+ 				t.Errorf("planTierRuns() = %q; want %q", got, tc.want)
+@@ -507,7 +541,8 @@ func TestPlanTierRuns(t *testing.T) {
+ 		{
+ 			name:   "a hub with no tier0",
+ 			mutate: func(cfg *gateslot.Config) { delete(cfg.Tiers, "tier0") },
+-			want:   "declares no tier0",
++			exact: `gate test: the hub declares no tier0, and no call of lym gate test runs a tier until it does; declare gate.tiers.tier0, the tier every call without --tier, --upto or --gate runs; ` +
++				`way forward: fix it with "lym config gate" from the prime` + roleClause,
+ 		},
+ 		{
+ 			name:    "a covers entry naming an undeclared tier",
+@@ -565,6 +600,22 @@ func TestPlanTierRuns(t *testing.T) {
+ 			request: testRequest{args: []string{"--results-directory", "/elsewhere"}},
+ 			exact:   `gate test: the words after "--" hold --results-directory, which the gate sets itself because tier0 reads its results file; way forward: drop --results-directory from the words after "--", then re-run the same command`,
+ 		},
++		{
++			name: "a --filter after -- for a tier whose command holds its own --filter",
++			mutate: func(cfg *gateslot.Config) {
++				t0 := cfg.Tiers["tier0"]
++				t0.Command, t0.Counter = "dotnet test {targets} --filter TestCategory=Long {args}", "vstest"
++				cfg.Tiers["tier0"] = t0
++			},
++			request: testRequest{args: []string{"--filter", "Name=X"}},
++			exact: `gate test: the words after "--" carry --filter, and the command of tier0 holds a --filter of its own, so dotnet test would get two and refuse the call; ` +
++				`move the command's filter expression into gate.tiers.tier0.filter and put {filter} in its place, so the gate ANDs the two; way forward: fix it with "lym config gate" from the prime` + roleClause,
++		},
++		{
++			name:    "words after -- that end in --filter with no expression",
++			request: testRequest{args: []string{"-v", "--filter"}},
++			exact:   `gate test: the words after "--" end in --filter with no expression; way forward: give the expression after --filter, then re-run the same command`,
++		},
+ 	}
+ 	for _, tc := range refusals {
+ 		t.Run("refuses "+tc.name, func(t *testing.T) {
+@@ -665,7 +716,7 @@ func TestFilterArgument(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got, err := filterArgument(tt.goos, 3, gateslot.Tier{Filter: tt.filter}, nil)
++			got, err := filterArgument(tt.goos, 3, gateslot.Tier{Filter: tt.filter}, nil, nil)
+ 			if tt.wantErr != "" {
+ 				if err == nil || err.Error() != tt.wantErr {
+ 					t.Fatalf("filterArgument() error = %v; want %q", err, tt.wantErr)
+diff --git a/internal/gatecli/tiers_unix_test.go b/internal/gatecli/tiers_unix_test.go
+index 3bc39fb62..74a893897 100644
+--- a/internal/gatecli/tiers_unix_test.go
++++ b/internal/gatecli/tiers_unix_test.go
+@@ -37,7 +37,19 @@ func TestRenderTierCommand(t *testing.T) {
+ 		{name: "terms alone", command: "t {filter}", terms: []string{"FullyQualifiedName~A", "FullyQualifiedName~B"}, want: "t --filter 'FullyQualifiedName~A|FullyQualifiedName~B'"},
+ 		{name: "terms compose with the tier filter", command: "t {filter}", filter: "Category!=Slow", terms: []string{"FullyQualifiedName~A"}, want: "t --filter '(Category!=Slow)&(FullyQualifiedName~A)'"},
+ 		{name: "terms past the budget render the tier filter alone", command: "t {filter}", filter: "Category!=Slow", terms: []string{strings.Repeat("A", greenCommandBudget)}, want: "t --filter 'Category!=Slow'"},
++		{
++			name: "terms past the budget keep a filter among the args", command: "t {filter} {args}", filter: "Category!=Slow",
++			terms: []string{strings.Repeat("A", greenCommandBudget)}, args: []string{"--filter", "Name=X"},
++			want: "t --filter '(Category!=Slow)&(Name=X)' ",
++		},
+ 		{name: "terms given to a command without a filter placeholder filter nothing", command: "t {targets}", targets: []string{"p"}, terms: []string{"FullyQualifiedName~A"}, want: "t 'p'"},
++		{
++			name: "a filter among the args leaves them and composes with the tier filter and the terms", command: "t {filter} {args}", filter: "Category!=Slow",
++			terms: []string{"FullyQualifiedName~A"}, args: []string{"--filter", "Name=X", "-v", "--filter=Name!=Y", "--filter:Name!=Z"},
++			want: "t --filter '(Category!=Slow)&(Name=X)&(Name!=Y)&(Name!=Z)&(FullyQualifiedName~A)' '-v'",
++		},
++		{name: "a filter among the args alone", command: "t {filter} {args}", args: []string{"--filter", "Name=X"}, want: "t --filter 'Name=X' "},
++		{name: "a filter among the args stays there for a command without a filter placeholder", command: "t {args}", args: []string{"--filter", "Name=X"}, want: "t '--filter' 'Name=X'"},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index e590b150a..0750ea107 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -880,7 +880,7 @@ func TestConfig_TierUse(t *testing.T) {
+ 			{name: "a hub that declares no tier keeps the key with no target", cfg: Config{Gates: cfg.Gates}, key: "darn-write", want: "lym gate test --gate darn-write -- <args>"},
+ 			{name: "a key the config does not hold is refused", cfg: cfg, key: "nope", wantErr: `gates holds no key "nope"`},
+ 			{name: "a key naming an undeclared tier is refused", cfg: cfg, key: "dangling", wantErr: "gates.dangling lists tier3, which the hub does not declare"},
+-			{name: "a hub that declares tiers but no tier0 is refused", cfg: withoutTier0, key: "darn-write", wantErr: "the hub declares no tier0"},
++			{name: "a hub that declares tiers but no tier0 is refused", cfg: withoutTier0, key: "darn-write", wantErr: `gate config: the hub declares no tier0, so no gate has a tier to run; declare gate.tiers.tier0; fix it with "lym config gate" from the prime` + roleClause},
+ 			{name: "a key of scope card is refused", cfg: cfg, key: "cardkey", wantErr: "gates.cardkey has scope card"},
+ 			{name: "a key whose tier takes no {args} is refused", cfg: cfg, key: "noargs", wantErr: "gates.noargs lists tier2, whose command holds no {args}"},
+ 		}
+@@ -915,7 +915,7 @@ func TestConfig_TierUse(t *testing.T) {
+ 			{"a list naming an undeclared tier", twoTier, "dangling", nil, "gates.dangling lists tier2, which the hub does not declare"},
+ 			{"an empty list for any gate", twoTier, "empty", nil, "gates.empty is empty, and every gate verifies at least one tier"},
+ 			{"an empty list for a gate lym reads", Config{Tiers: twoTier.Tiers, Gates: map[string]GateKey{"webster-fix": {Scope: "diff"}}}, "webster-fix", nil, "gates.webster-fix is empty, and every gate verifies at least one tier"},
+-			{"a hub with no tier0", Config{Tiers: map[string]Tier{"tier1": {}}, Gates: twoTier.Gates}, "batch", nil, "the hub declares no tier0"},
++			{"a hub with no tier0", Config{Tiers: map[string]Tier{"tier1": {}}, Gates: twoTier.Gates}, "batch", nil, `gate config: the hub declares no tier0, so no gate has a tier to run; declare gate.tiers.tier0; fix it with "lym config gate" from the prime` + roleClause},
+ 			{"a hub that declares no tier", Config{Gates: twoTier.Gates}, "batch", nil, ""},
+ 			{"a hub that declares no tier and a gate the config holds no list for", Config{Gates: twoTier.Gates}, "nope", nil, `gates holds no key "nope"`},
+ 		}
+@@ -945,8 +945,9 @@ func TestConfig_TierUse(t *testing.T) {
+ 			t.Errorf("Tier(1) = (%+v, %v); want the declared tier", got, err)
+ 		}
+ 		_, err := twoTier.Tier(5)
+-		if err == nil || !strings.Contains(err.Error(), "tier5") || !strings.HasSuffix(err.Error(), `; fix it with "lym config gate" from the prime`+roleClause) {
+-			t.Errorf("Tier(5) error = %v; want a refusal naming tier5 and ending with the role clause", err)
++		want := `gate config: the hub declares no tier5, the key gate.tiers.tier5; fix it with "lym config gate" from the prime` + roleClause
++		if err == nil || err.Error() != want {
++			t.Errorf("Tier(5) error = %v; want %q", err, want)
+ 		}
+ 	})
+ 
+diff --git a/internal/gateslot/keynames.go b/internal/gateslot/keynames.go
+index 4297f5004..f4110a730 100644
+--- a/internal/gateslot/keynames.go
++++ b/internal/gateslot/keynames.go
+@@ -10,7 +10,15 @@ const configModule = "gate"
+ // busyQuitSecKey is the gate.yaml key the CPU watchdog reads.
+ const busyQuitSecKey = "busy_quit_sec"
+ 
++// tiersKey is the gate.yaml key that holds the tiers.
++const tiersKey = "tiers"
++
+ // keyName returns the full name of the gate.yaml key at path.
+ func keyName(path string) string {
+ 	return configengine.KeyName(configModule, path)
+ }
++
++// tierKeyName returns the full name of the gate.yaml mapping of the tier named tier.
++func tierKeyName(tier string) string {
++	return keyName(tiersKey + "." + tier)
++}
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 043459c3a..b3539f31d 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -385,7 +385,7 @@ func (c Config) WithDefaultDir(dir string) Config {
+ func (c Config) Tier(number int) (Tier, error) {
+ 	tier, ok := c.Tiers[tierKey(number)]
+ 	if !ok {
+-		return Tier{}, useRefusal("the hub declares no %s", tierKey(number))
++		return Tier{}, useRefusal("the hub declares no %s, the key %s", tierKey(number), tierKeyName(tierKey(number)))
+ 	}
+ 	return tier, nil
+ }
+@@ -412,7 +412,7 @@ func (c Config) Gate(key string) (GateKey, error) {
+ 		return GateKey{Scope: gate.Scope, Lints: slices.Clone(gate.Lints), Reports: slices.Clone(gate.Reports)}, nil
+ 	}
+ 	if _, declared := c.Tiers[tierKey(0)]; !declared {
+-		return GateKey{}, useRefusal("the hub declares no tier0, so no gate has a tier to run")
++		return GateKey{}, useRefusal("the hub declares no tier0, so no gate has a tier to run; declare %s", tierKeyName(tierKey(0)))
+ 	}
+ 	for _, number := range gate.Tiers {
+ 		if _, declared := c.Tiers[tierKey(number)]; !declared {
