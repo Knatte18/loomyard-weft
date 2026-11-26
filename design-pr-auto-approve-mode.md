@@ -17,14 +17,13 @@ The PR block has three modes, and no LLM takes part in any of them:
 
 - Manual: the PR is made and waits for the operator's own review and approval, as PR-Review is meant today.
 - None: no PR; the row passes, as `pull_request` off does today.
-- Auto: the PR is made and approved or merged at once, with no agent and no human, so the beam's PR history can be backtracked.
+- Trail (name proposed, not settled): the PR is made and merged at once, with no agent and no human, so the beam's PR history can be backtracked.
 
 How the three modes are configured is not decided yet.
 
 ## Idea
 
-- Auto: the PR is made and shows up on GitHub, no agent is spawned, and the run goes on to Finalize as if the human had approved.
-  GitHub refuses an approval by the PR's own author, so read whether auto merges without an approval, and what a branch rule that demands one does to it.
+- Trail: the PR is made, no agent is spawned, and Finalize merges it at once, as it does today after the operator's `lym loom pr-continue`; merging a PR without an approval has long worked in lym.
 - A beam's own PR lists its member PRs.
   `Rewrite a beam's pull request description after each member landing` (`1cd11ee5e`) may already do part of this; read what it writes before adding more.
 - Manual waits for a human approval whatever the autonomy, which covers the note on autonomy and PR-Review.
