@@ -1,9 +1,9 @@
 # Card 5 — moved-key-tables
 
 **Create:**
-- `plan:internal/loomengine#loomMovedKeys` -> `func loomMovedKeys() map[string]string`
-- `plan:internal/loomengine#tapestryMovedKeys` -> `func tapestryMovedKeys() map[string]string`
-- `plan:internal/configreg#refuseMovedKeys` -> `func refuseMovedKeys(module Module, keys map[string]any) error`
+- `internal/loomengine#loomMovedKeys`
+- `internal/loomengine#tapestryMovedKeys`
+- `internal/configreg#refuseMovedKeys`
 
 **Edit:**
 - `internal/loomengine#ConfigSpec`

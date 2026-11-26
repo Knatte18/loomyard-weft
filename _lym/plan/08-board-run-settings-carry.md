@@ -1,20 +1,20 @@
 # Card 8 — board-run-settings-carry
 
 **Create:**
-- `plan:internal/configreg#MoveRunSettings` -> `func MoveRunSettings(settings map[string]any) (map[string]any, []string, error)`
-- `plan:internal/boardengine#RewriteRunSettings` -> `func RewriteRunSettings(boardDir string, rewrite func(slug string, settings map[string]any) (map[string]any, []string, error), afterSave func() error) ([]string, error)`
-- `plan:internal/boardengine#Board.boardCriticalSectionRollingBack` -> `func (b *Board) boardCriticalSectionRollingBack(fn func(store *Store) (any, error), afterSave func() error, rollback func() error) (any, error)`
-- `plan:internal/hubreconcile#carryMovedRunSettings` -> `func carryMovedRunSettings(boardDir, label string, hooks walkHooks) (skipped bool)`
-- `plan:internal/hubreconcile#EnsureFailingRunSettingsCarry` -> `func EnsureFailingRunSettingsCarry(geom Geometry, opts Options) error`
-- `plan:internal/hubreconcile_test#TestEnsure_CarriesMovedRunSettingsOnTheBoard` -> `func TestEnsure_CarriesMovedRunSettingsOnTheBoard(t *testing.T)`
-- `plan:internal/hubreconcile#TestCarryMovedRunSettings_FailedBoardWriteIsSkippedAndLeavesTheBoard` -> `func TestCarryMovedRunSettings_FailedBoardWriteIsSkippedAndLeavesTheBoard(t *testing.T)`
+- `internal/configreg#MoveRunSettings`
+- `internal/boardengine#RewriteRunSettings`
+- `internal/boardengine#Board.boardCriticalSectionRollingBack`
+- `internal/hubreconcile#carryMovedRunSettings`
+- `internal/hubreconcile#EnsureFailingRunSettingsCarry`
+- `internal/hubreconcile_test#TestEnsure_CarriesMovedRunSettingsOnTheBoard`
+- `internal/hubreconcile#TestCarryMovedRunSettings_FailedBoardWriteIsSkippedAndLeavesTheBoard`
 
 **Edit:**
 - `internal/boardengine#Board.boardCriticalSection`
 - `internal/hubreconcile#walkHub`
 - `internal/hubreconcile#walkHooks`
 - `internal/hubreconcile#ensure`
-- `plan:internal/configreg#TestMoveSettings`
+- `internal/configreg#TestMoveSettings`
 - `internal/hubreconcile_test#TestEnsure_UnreachableBoardRemoteSkipsHubWideConfigAndLeavesStampAbsent`
 
 **Extends:**
@@ -23,7 +23,7 @@
 - `internal/configreg/doc.go`
 
 **Uses:**
-- `plan:internal/configreg#MoveSettings`
+- `internal/configreg#MoveSettings`
 - `internal/hubreconcile#mailOrch`
 - `internal/hubreconcile#carryHub`
 

@@ -1,9 +1,9 @@
 # Card 6 — reconcile-moves
 
 **Create:**
-- `plan:internal/configsync#moveOldKeys` -> `func moveOldKeys(m configreg.Module, file string, document []byte) ([]byte, []string, error)`
-- `plan:internal/hubreconcile#notifyMovedKeys` -> `func notifyMovedKeys(boardDir, label string, lines []string)`
-- `plan:internal/hubreconcile_test#TestEnsure_MovesOldConfigKeysAndMailsTheMoves` -> `func TestEnsure_MovesOldConfigKeysAndMailsTheMoves(t *testing.T)`
+- `internal/configsync#moveOldKeys`
+- `internal/hubreconcile#notifyMovedKeys`
+- `internal/hubreconcile_test#TestEnsure_MovesOldConfigKeysAndMailsTheMoves`
 
 **Edit:**
 - `internal/configsync#Result`

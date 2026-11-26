@@ -1,8 +1,8 @@
 # Card 7 — profiles-moves
 
 **Create:**
-- `plan:internal/configreg#MoveSettings` -> `func MoveSettings(document []byte, prefix string) ([]byte, []string, error)`
-- `plan:internal/configreg#TestMoveSettings` -> `func TestMoveSettings(t *testing.T)`
+- `internal/configreg#MoveSettings`
+- `internal/configreg#TestMoveSettings`
 - `internal/configsync/testdata/profiles-flat.yaml`
 
 **Edit:**
