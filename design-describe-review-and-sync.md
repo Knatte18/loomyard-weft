@@ -152,3 +152,21 @@ Classify a timeout that follows an operator interrupt as resumable, not as `prod
 Provenance: task `transient-tripout-overpull`, from `loom-halt.md`.
 
 
+
+
+## From issue #255
+
+Imported from [issue #255](https://github.com/Knatte18/loomyard/issues/255).
+
+The Describe step wrote a pull request body that names lym, LoomYard and another task, and the run's docs carried the same kind of internal names.
+Code-Review approved the diff, and PR-Review raised the leak afterwards as a send-back with three findings: one BLOCKING (the pull request body names lym internals), one MEDIUM (two document sections describe lym internals), one NIT.
+The same class of leak had already been fixed by hand-written commits earlier in the run, such as a rewrite of a document to describe test tiers by what they run instead of through the gate.
+
+This is abnormal because the output goes into a repository that does not know lym: a pull request body and repository documents should not name lym, LoomYard or other tasks.
+Neither the Describe nor the Code-Review instructions caught it, so the leak cost a PR-Review send-back and a second Code-Bouncer, Code-Burler-Review and Code-Burler-Fix cycle.
+
+What to do:
+- Tell the Describe step, and any step that writes repository documents, not to name lym, LoomYard, gates, or other tasks in a pull request body or a repository file.
+- Have Code-Review check documents and the pull request body for such names, so the finding comes before approval and not from PR-Review.
+
+Provenance: task `dead-code-and-timing-docs`; notes `pr-review-send-back-1.md`, `loom-halt.md` (history only).
