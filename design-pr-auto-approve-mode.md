@@ -17,7 +17,7 @@ The PR block has three modes, and no LLM takes part in any of them:
 
 - Manual: the PR is made and waits for the operator's own review and approval, as PR-Review is meant today.
 - None: no PR; the row passes, as `pull_request` off does today.
-- Trail (name proposed, not settled): the PR is made and merged at once, with no agent and no human, so the beam's PR history can be backtracked.
+- Trail (`pull_request: trail`, operator 2026-11-26): the PR is made and merged at once, with no agent and no human, so the beam's PR history can be backtracked.
 
 How the three modes are configured is not decided yet.
 
