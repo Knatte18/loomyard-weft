@@ -21,4 +21,8 @@ review:
     fork_fresh_tokens: 115902
     fork_cache_read_tokens: 2248406
     fork_fresh_share: 0.3614956116000973
+fix:
+    model: opus
+    effort: medium
+    tokens_known: false
 attempt: "2"
