@@ -968,6 +968,27 @@
       "body": "Imported from [issue #219](https://github.com/Knatte18/loomyard/issues/219).\n\n## What happened\n\nThe `Plan-Burler-Review` row (`burler-review`) halted `failed` (anomaly `producer-hard-failure`) after round 3: two consecutive `died` outcomes, both \"review never started\".\nEach attempt's seat start ended with:\n\n```\nshuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"\u003cid\u003e\": no input box is on screen; a menu or picker may be open; retry once the session is idle.\n```\n\nThe pane lines quoted in the same error show the opposite: the skill-load reply `ok scribe:prose, scribe:code-quality, scribe:testing` had finished, a `done` status line was printed, and the `❯` input prompt plus the `bypass permissions on` footer were on screen.\nThe session was idle with an input box; the idle check reported none.\nIt happened on attempts 3 and 3b, in two separate halts, with the same pane text each time (`Sautéed for 3s`, `Cogitated for 3s`, `Cooked for 2s` status lines).\n\n## Why abnormal\n\nThe seat was healthy.\nA false \"no input box\" reading kills a seat that never got its prompt, burns the review rounds, and halts the whole run as `failed`.\nThe error text itself says \"retry once the session is idle\", yet the shuttle did not retry after the capture showed an idle pane.\n\n## What to do\n\nCheck the input-box detection in the shuttle's deliver-after-skills step against a pane whose last lines are a completed skill-load reply, a `✻ \u003cverb\u003e for Ns · done` line, the `❯` prompt and the permissions footer.\nRetry the idle check for a short window before declaring `died`, so a repaint race right after the skill-load reply does not kill the seat.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-2.md`, `loom-halt-3.md`.\n",
       "created": "2026-11-26T07:34:35Z",
       "revised": "2026-11-26T07:34:35Z"
+    },
+    {
+      "id": 1656,
+      "handle": "B25",
+      "slug": "seed-ide-push-not-landed",
+      "title": "Seed-IDE fails the run when the task branch's detached push has not landed yet",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        218
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #218](https://github.com/Knatte18/loomyard/issues/218).\n\nImport note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/logs`.\n\n## What happened\n\nRun `weekly-time-report` (recipe raddle, promoted from a Sketch) stopped at Seed-IDE with:\n\n\u003e run \"weekly-time-report\" cannot act: the code tip e7b0cc2 the run's last transition names is not on origin yet; way forward: run \"lym batten run weekly-time-report\" again once the code push lands\n\nTimeline from `.lym/logs` (2026-11-24, CET):\n\n- 14:45:52 Worktree-Create done; the task branch forks from the prime's local `main` at e7b0cc2, one commit ahead of `origin/main`.\n- 14:45:52 and 14:45:55 fabricengine spawned detached pushes of the new pair (`fabric --warp-path …/weekly-time-report …`).\n- 14:45:57 Seed-IDE's bootstrap checked whether e7b0cc2 is on origin, found it was not, and refused the step.\n- Shortly after, the detached push landed: `git ls-remote origin` showed `refs/heads/weekly-time-report` at e7b0cc2.\n\nThe network was slow and resetting that day (`Recv failure: Connection reset by peer` on records pushes), so the detached push took longer than the 2–5 s gap.\n\n## Effect\n\n- The run stopped as failed, and the tackler handed it back to the parent asking whether to push the prime's `main`, which was not needed.\n- A plain `lym batten run weekly-time-report` afterwards went straight through Seed-IDE to Run-Shed.\n\n## Expected\n\nA check that the code tip is on origin, right after lym itself spawned the push that puts it there, should wait for that push, or retry for a while, instead of failing the run.\nThe stop should also say that lym's own push of the task branch is in flight, so the tackler does not ask the parent to push the parent branch.\n",
+      "created": "2026-11-26T07:34:38Z",
+      "revised": "2026-11-26T07:34:38Z"
     }
   ],
   "prime_owner": "neve",
