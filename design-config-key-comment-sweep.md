@@ -1,6 +1,6 @@
 # Name config keys as <module>.<path> in Go comments
 
-`config-key-comment-sweep` · Task · enhancement, docs · draft
+`config-key-comment-sweep` · Task · enhancement, docs
 
 Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md), [`dobby-run-watch-build`](design-dobby-run-watch-build.md), [`hardener-recipe-changes`](design-hardener-recipe-changes.md), [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md), [`hardener-study-faults`](design-hardener-study-faults.md), [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md), [`guard-row-tooling`](design-guard-row-tooling.md), [`resume-restores-status-pane`](design-resume-restores-status-pane.md)
 
