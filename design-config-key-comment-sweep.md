@@ -1,6 +1,6 @@
 # Name config keys as <module>.<path> in Go comments
 
-`config-key-comment-sweep` · Note · enhancement, docs
+`config-key-comment-sweep` · Task · enhancement, docs · draft
 
 After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.
 PATTERN-config-key-names asks that such a comment say `<module>.<path>`.

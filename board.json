@@ -414,13 +414,15 @@
         "stencil"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:\nboth campaigns ended on rounds that could not raise what they saw or had not driven what they claimed, and several fixes brought new faults no round caught.\n\n## Idea\n\nThe study's \"Changes to consider\":\n\n1. Exempt a hardener round's findings from the changed-file and changed-hunk rules in `burler-review-format.md` and `burlerengine.CheckReviewRound`, not only `origin: focus` ones.\n2. Name FAIL beside WARN in `harden-rubric-review.md`, so a failed focus entry always blocks.\n3. Make the rubric and the Bouncer state one convergence rule for a MEDIUM first raised in the closing round.\n4. Add a kill rule to the rubric: kill each job from each caller, once with origin applying the in-flight push and once refusing it, then type the printed command in the state left.\n5. A prior finding with an undriven half stays `open`; `resolved` needs a whole repro.\n6. The fix half drives the neighbours of its fix: the other failure kinds a new classifier receives, and every role that reads a new way forward.\n7. The verdict lists what no sandbox can drive (owner takeover, the pull-request sweep, a lost lease) as filed follow-ups.\n8. Run the next campaign with one opus round and compare it with the `sonnet[high]` rounds before keeping the default.\n",
       "status": "draft",
       "created": "2026-11-26T11:25:43Z",
-      "revised": "2026-11-26T11:25:44Z"
+      "revised": "2026-11-26T19:17:44Z",
+      "profile": "light"
     },
     {
       "id": 1676,
@@ -764,21 +766,24 @@
     },
     {
       "id": 1695,
-      "handle": "E3",
+      "handle": "T3",
       "slug": "config-key-comment-sweep",
       "title": "Name config keys as \u003cmodule\u003e.\u003cpath\u003e in Go comments",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "docs"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.\nPATTERN-config-key-names asks that such a comment say `\u003cmodule\u003e.\u003cpath\u003e`.\n\nSweep every Go comment and package doc that names a config key to its nested `\u003cmodule\u003e.\u003cpath\u003e` form.\nA comment-only change, no behaviour or user-visible text.\nDeferred from T3 code review round 1, finding F1, to keep that run short.\n",
+      "status": "draft",
       "created": "2026-11-26T13:52:00Z",
-      "revised": "2026-11-26T13:52:00Z"
+      "revised": "2026-11-26T19:17:45Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
