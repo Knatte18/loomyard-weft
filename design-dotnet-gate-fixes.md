@@ -1,6 +1,6 @@
 # Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers
 
-`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Drift-Expect
+`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Darn-Write
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
