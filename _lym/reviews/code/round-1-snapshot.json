@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "7cbfeaf6225060c44e590a874f963886e22b52ef",
+  "added_decisions": [
+    {
+      "title": "No test seam: the bug is in test-only fixture code",
+      "digest": "b9fc701ac73dbe3b8fc5d1e0f5e49ede171a4fc514a09732c3be165fab109603"
+    }
+  ]
+}
