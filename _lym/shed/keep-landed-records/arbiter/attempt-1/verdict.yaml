@@ -1,0 +1,37 @@
+verdict: hand-on
+reason: |-
+  Cause hard-cap at round 3. The review has three design-wrong findings: F19, F20 and F21. The round-3 fixer revised the decision record after the review, so I checked each finding against the record as it now reads and against the code.
+
+  F21 is answered. D1 now uses an exclude line that seedWeftArtifactExcludes writes through mutateGitExclude, which PATTERN-fabric-boundary names as the only exclude mutator. That seeding runs at junction wiring and in ensureWeftLockDirAt, which every records commit goes through before it stages.
+
+  F20 is answered. D5 now reads the landing commit back from the record only when that commit is an ancestor of the parent's head.
+
+  I recorded both rulings with `lym loom decision add --by arbiter`.
+
+  F19 is not fully answered. The fixer departed from the review's fix (a): D5 now rewrites the kept tip before each merge-in, except when the task tip is an ancestor of the parent's head. The code runs a merge-in again on every pass. Finalize.mergeAndGate runs on every pass of the run loop, including the retry pass, every resume after a gate halt or Stuck, and the locked pass taken again after a fixer session (internal/landingshed/finalize.go:376-379 and :915-919). After a hand squash or an adopter-first squash, the merge-in's own merge commit Tm is no ancestor of the parent's head. So a second pass rewrites the kept tip to Tm. Tm's merge-base with the parent then already holds the squash. If no other run lands on the parent in the meantime, the no-record rule finds no net change, and the row has no landing commit instead of naming the squash commit. This is the outcome F19 was raised to prevent: a search over a tip that Finalize's merge-in already moved.
+
+  The record still needs this fix. At the hard cap, an accept ends the segment and no run agent would carry the fix out, so I hand the stop on.
+verbs:
+  - |-
+    lym loom decision add keep-landed-records --by arbiter --title "Round-3 F20 and F21 are answered by D1 and D5 as written" --decision "…" --rationale "…"
+question: |-
+  Review round 3 of keep-landed-records is at the hard cap.
+
+  F20 and F21 are answered by the decision record as it now reads. I recorded both rulings with --by arbiter.
+
+  F19 (key landing-commit-no-durable-source, open since round 1) still has a hole in D5's kept-tip rule. D5 rewrites the kept tip before every merge-in unless the task tip is an ancestor of the parent's head. Finalize repeats the merge-in on a resume after a gate halt, on the retry pass and after a fixer session (internal/landingshed/finalize.go:376-379, :915-919). The scenario:
+
+  1. The task branch was squash-merged into the parent by hand, or by an adopter first.
+  2. The first pass's merge-in leaves the task branch at its own merge commit Tm, which is no ancestor of the parent's head.
+  3. A second pass rewrites the kept tip to Tm.
+  4. The squash search then finds no net change, and the row has no landing commit instead of naming the squash commit.
+
+  Which rule should D5 use for the kept tip? Two options:
+
+  (a) Keep the review's rule: take the task tip once, before Finalize's first merge-in, and keep it across resumes. The fixer's objection is that this misses a merge fixer's later commits. But a fixer commit lands through a parent-side merge that makes a commit, and that commit names the landing directly.
+
+  (b) Keep the fixer's rule, with one more exception: never rewrite the kept tip when the task's tip is still the commit the last merge-in left. That commit is the merge record's MergeCommit, or its TaskHead when the merge-in was up to date.
+
+  Each option needs a matching D5 acceptance criterion: a hand squash, then a gate halt, then a resume, gives a row naming the squash commit.
+
+  Because the round is at the hard cap, the review segment can only be accepted (`lym loom circling accept keep-landed-records`). Either record your D5 correction with `lym loom decision add --by parent` before or after the accept, or order another round.
