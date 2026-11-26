@@ -227,7 +227,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "rc-click-wrong-client-session",
         "async-run-pusher",
         "remove-record-rerun-pair-gone"
       ],
@@ -279,29 +278,6 @@
       "body": "## Seen\n\n`failed-ask-hides-satisfied` (issue 213) left out its item 3: no test runs `lym loom parent-review ask` from a live non-orch reed strand pane.\nThat is the path that failed twice on 2026-11-23 in the mo hub (creel refused the LOOM signature), and the fix (708cdadc5) is pinned only below the tmux tier.\n\n## Idea\n\nA tmux-tier test: a built lym binary in a reed strand pane, a hub with a pull request record under autonomy, and a live orch strand that receives the post; assert the ask is delivered and the parent's answer lets `pr-continue` end the review.\n",
       "created": "2026-11-23T18:56:36Z",
       "revised": "2026-11-23T18:56:36Z"
-    },
-    {
-      "id": 1620,
-      "handle": "T1",
-      "slug": "rc-click-wrong-client-session",
-      "title": "Reed's RC click reads the most recent client's session, not the clicker's",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [
-        214
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #214](https://github.com/Knatte18/loomyard/issues/214).\n\n`ClientAgentPane` (`internal/reedengine/remotecontrol.go:40`) runs `tmux display-message -p -c \u003cclient\u003e` without `-t`. tmux then resolves the format against the most recently active client's session, not the clicking client's. On a reed server with four clients in different sessions (one in the prime's orch session, the others in task sessions), it returned the orch session and `mo:orch` for all four. So an RC click in a task session can target the orch's pane instead of the task's agent, and is refused as already on when the orch is marked. Found while diagnosing #212. Fix: pass `-t \u003cclient\u003e` (or resolve the client's session first) in `clientAgentPaneVia`.",
-      "status": "done",
-      "created": "2026-11-23T19:17:39Z",
-      "revised": "2026-11-23T19:17:42Z",
-      "profile": "light"
     },
     {
       "id": 1624,
