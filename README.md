@@ -124,4 +124,4 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 2h<br>2h | burler, stencil |
 | E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) |  | 36m<br>36m | slack, creel |
-| E3 |  | **Name config keys as <module>.<path> in Go comments** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) |  | 0m<br>0m | docs |
+| E3 |  | **Name config keys as <module>.<path> in Go comments** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | T3 | 0m<br>0m | docs |
