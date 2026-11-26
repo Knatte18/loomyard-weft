@@ -1,0 +1,202 @@
+diff --git a/docs/shared-libs/lymcwd.md b/docs/shared-libs/lymcwd.md
+index 26f996154..b7a5d2b6a 100644
+--- a/docs/shared-libs/lymcwd.md
++++ b/docs/shared-libs/lymcwd.md
+@@ -52,6 +52,9 @@ On failure, one of two errors:
+ - `ErrNotAGitRepo` when `cwd` is outside a git repo;
+   it is also returned for a pruned worktree and for one whose gitfile names a missing git dir.
+ - `ErrCwdOutsideAnchor` when `cwd` is not exactly the anchored directory.
++  It arrives wrapped in an `*AnchorGateError`, whose text adds the likely cause, a kept `cd`, and the way forward.
++  Its `Refusal` field is the error without those two, for a process whose cwd no shell chose,
++  and its `AnchorDir` field is the anchored directory.
+ 
+ `Resolve` does NOT check for `_lym/`;
+ that stays in `internal/configengine`.
+diff --git a/internal/driftcli/anchor_integration_test.go b/internal/driftcli/anchor_integration_test.go
+index 4ea28aa8b..db9abbbaf 100644
+--- a/internal/driftcli/anchor_integration_test.go
++++ b/internal/driftcli/anchor_integration_test.go
+@@ -81,8 +81,8 @@ func TestDrift_RunsInTheAnchoredDirectory(t *testing.T) {
+ 	}
+ 
+ 	writeStatus("Drift-Await", shedengine.StateBlocked)
+-	if env := lymRun(t, bin, pair, "capture-child"); env.OK || !strings.Contains(env.Error, "does not equal the anchored directory") || env.Raw[driftengine.LastingFaultKey] != true {
+-		t.Errorf("lym drift capture-child at the worktree root = %+v; want its cwd refused and marked %s", env, driftengine.LastingFaultKey)
++	if env := lymRun(t, bin, pair, "capture-child"); env.OK || !strings.Contains(env.Error, "does not equal the anchored directory") || strings.Contains(env.Error, "way forward") || env.Raw[driftengine.LastingFaultKey] != true {
++		t.Errorf("lym drift capture-child at the worktree root = %+v; want its cwd refused with no way forward and marked %s", env, driftengine.LastingFaultKey)
+ 	}
+ 	if env := lymRun(t, bin, anchor, "capture"); !env.OK {
+ 		t.Fatalf("lym drift capture: %s", env.Error)
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index b052bde37..5c05f6d10 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -258,6 +258,11 @@ func runCaptureChild(cmd *cobra.Command) {
+ 	if err != nil {
+ 		// Only a refusal fixed by the directory is lasting; a read error on the anchor marker may pass on a fresh start.
+ 		if errors.Is(err, lymcwd.ErrNotAGitRepo) || errors.Is(err, lymcwd.ErrCwdOutsideAnchor) {
++			// No shell chose this child's cwd, and the start failure that quotes this text states its own way forward.
++			var gateErr *lymcwd.AnchorGateError
++			if errors.As(err, &gateErr) {
++				err = gateErr.Refusal
++			}
+ 			clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), map[string]any{driftengine.LastingFaultKey: true}))
+ 			return
+ 		}
+diff --git a/internal/heddleengine/shipped.json b/internal/heddleengine/shipped.json
+index 7add6ec9c..0b2407b17 100644
+--- a/internal/heddleengine/shipped.json
++++ b/internal/heddleengine/shipped.json
+@@ -16,6 +16,14 @@
+         "agents-file"
+       ]
+     },
++    {
++      "slug": "lym-shell-directory",
++      "text": "## Keep the shell where it started\n\n- The shell keeps the directory a `cd` moves it to for every later command, so a `lym` verb run after the `cd` may be refused, far from the `cd` that caused it.\n- Reach another directory through an absolute path, `git -C <dir>` or `env -C <dir>` instead of `cd`.",
++      "order": 30,
++      "targets": [
++        "agents-file"
++      ]
++    },
+     {
+       "slug": "lym-no-attribution",
+       "text": "{\"attribution\": {\"commit\": \"\", \"pr\": \"\"}}",
+diff --git a/internal/heddleengine/store_test.go b/internal/heddleengine/store_test.go
+index 6cc4b0358..1d627bb00 100644
+--- a/internal/heddleengine/store_test.go
++++ b/internal/heddleengine/store_test.go
+@@ -185,6 +185,7 @@ func TestStore(t *testing.T) {
+ 		}{
+ 			{"lym-batching", "agents-file", "## Batch your calls", false},
+ 			{"lym-plan-edits-before-gate", "agents-file", "## Make every round of edits in this order", false},
++			{"lym-shell-directory", "agents-file", "## ", true},
+ 			{"lym-no-attribution", "claude-settings", "", false},
+ 			{"lym-plugins", "claude-settings", "", false},
+ 			{"lym-tool-deny", "claude-settings", "", false},
+diff --git a/internal/lymcwd/anchor.go b/internal/lymcwd/anchor.go
+index d2a69a045..fe3ad2102 100644
+--- a/internal/lymcwd/anchor.go
++++ b/internal/lymcwd/anchor.go
+@@ -103,15 +103,42 @@ func normalizePath(p string) string {
+ 	return filepath.Clean(resolved)
+ }
+ 
++// AnchorGateError is the refusal of a cwd that is not exactly the anchored directory.
++// Its text is Refusal followed by the likely cause and the way forward.
++// The likely cause is a cd in an earlier shell call that the shell kept.
++// An agent's shell keeps its directory between calls, so the refusal surfaces away from the cd that caused it.
++// A process whose cwd no shell chose reports Refusal alone.
++type AnchorGateError struct {
++	// Refusal wraps ErrCwdOutsideAnchor and names both paths and the marker file.
++	Refusal error
++	// AnchorDir is the anchored directory the way forward names.
++	AnchorDir string
++}
++
++// Error implements error.
++func (e *AnchorGateError) Error() string {
++	return fmt.Sprintf("%v; "+
++		"a shell keeps the directory a cd moved it to for every later command, so an earlier cd likely moved it; "+
++		"way forward: cd \"%s\" and run the command again, "+
++		"and reach other directories through absolute paths or git -C instead of cd",
++		e.Refusal, e.AnchorDir)
++}
++
++// Unwrap returns Refusal.
++func (e *AnchorGateError) Unwrap() error { return e.Refusal }
++
+ // checkCwdAnchorGate returns nil when cwd is exactly the anchored directory, worktreePath joined with anchorRel.
+-// Otherwise it wraps ErrCwdOutsideAnchor in an error that names both paths and the marker file.
++// Otherwise it returns an *AnchorGateError.
+ func checkCwdAnchorGate(cwd, anchorRel, worktreePath string) error {
+ 	anchorAbs := filepath.Join(worktreePath, anchorRel)
+ 	if samePath(cwd, anchorAbs) {
+ 		return nil
+ 	}
+-	return fmt.Errorf("%w: cwd %s does not equal the anchored directory %s (recorded by %s)",
+-		ErrCwdOutsideAnchor, cwd, anchorAbs, AnchorFileName)
++	return &AnchorGateError{
++		Refusal: fmt.Errorf("%w: cwd %s does not equal the anchored directory %s (recorded by %s)",
++			ErrCwdOutsideAnchor, cwd, anchorAbs, AnchorFileName),
++		AnchorDir: anchorAbs,
++	}
+ }
+ 
+ // checkCwdWithinAnchor returns nil when cwd lies at or below the anchored directory.
+diff --git a/internal/lymcwd/gate_test.go b/internal/lymcwd/gate_test.go
+index 38b89a40e..b88e3d6f9 100644
+--- a/internal/lymcwd/gate_test.go
++++ b/internal/lymcwd/gate_test.go
+@@ -21,6 +21,7 @@ import (
+ // A ResolveWorktree caller holds a worktree root, which sits above a subpath anchor the gate would reject.
+ // buildLocation is exercised directly, so the file spawns no git and stays untagged;
+ // ResolveWorktree reaches the same applyGate=false path after finding the worktree root.
++// A row with wantMessage also pins the refusal's whole text, cause and way forward included.
+ //
+ //testtiming:keep pins the gate's accept and reject verdicts per triple as pure path math, which the resolution scenario covering its blocks only reaches through a real checkout
+ func TestCheckCwdAnchorGate(t *testing.T) {
+@@ -31,10 +32,11 @@ func TestCheckCwdAnchorGate(t *testing.T) {
+ 	hubPath := filepath.Dir(worktreePath)
+ 
+ 	tests := []struct {
+-		name      string
+-		cwd       string
+-		anchorRel string
+-		wantErr   bool
++		name        string
++		cwd         string
++		anchorRel   string
++		wantErr     bool
++		wantMessage string
+ 	}{
+ 		{
+ 			name:      "exact match at root resolves",
+@@ -53,6 +55,11 @@ func TestCheckCwdAnchorGate(t *testing.T) {
+ 			cwd:       filepath.Join(worktreePath, "sub"),
+ 			anchorRel: ".",
+ 			wantErr:   true,
++			wantMessage: "cwd is not at the recorded fabric anchor: cwd " + filepath.Join("home", "user", "repo", "sub") +
++				" does not equal the anchored directory " + filepath.Join("home", "user", "repo") + " (recorded by .lym-anchor); " +
++				"a shell keeps the directory a cd moved it to for every later command, so an earlier cd likely moved it; " +
++				"way forward: cd \"" + filepath.Join("home", "user", "repo") +
++				"\" and run the command again, and reach other directories through absolute paths or git -C instead of cd",
+ 		},
+ 		{
+ 			name:      "parent of the worktree root errors",
+@@ -71,6 +78,12 @@ func TestCheckCwdAnchorGate(t *testing.T) {
+ 			cwd:       worktreePath,
+ 			anchorRel: "backend",
+ 			wantErr:   true,
++			wantMessage: "cwd is not at the recorded fabric anchor: cwd " + filepath.Join("home", "user", "repo") +
++				" does not equal the anchored directory " + filepath.Join("home", "user", "repo", "backend") +
++				" (recorded by .lym-anchor); " +
++				"a shell keeps the directory a cd moved it to for every later command, so an earlier cd likely moved it; " +
++				"way forward: cd \"" + filepath.Join("home", "user", "repo", "backend") +
++				"\" and run the command again, and reach other directories through absolute paths or git -C instead of cd",
+ 		},
+ 	}
+ 
+@@ -88,6 +101,9 @@ func TestCheckCwdAnchorGate(t *testing.T) {
+ 			if !tt.wantErr {
+ 				return
+ 			}
++			if tt.wantMessage != "" && (err == nil || err.Error() != tt.wantMessage) {
++				t.Errorf("checkCwdAnchorGate(%q, %q, %q) = %v; want %q", tt.cwd, tt.anchorRel, worktreePath, err, tt.wantMessage)
++			}
+ 
+ 			loc, err := buildLocation(tt.cwd, worktreePath, hubPath, tt.anchorRel, false)
+ 			if err != nil {
+diff --git a/internal/lymcwd/lymcwd.go b/internal/lymcwd/lymcwd.go
+index ca8d17454..92431ba32 100644
+--- a/internal/lymcwd/lymcwd.go
++++ b/internal/lymcwd/lymcwd.go
+@@ -81,7 +81,7 @@ func Getwd() (string, error) {
+ //
+ // It returns the Location on success.
+ // It returns ErrNotAGitRepo when cwd is outside a git repo.
+-// It returns ErrCwdOutsideAnchor when cwd is not exactly the anchored directory.
++// It returns an *AnchorGateError, which wraps ErrCwdOutsideAnchor, when cwd is not exactly the anchored directory.
+ func Resolve(cwd string) (*Location, error) {
+ 	return resolveCore(cwd, true)
+ }
