@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=8eea9cb40b8932bd82c680468551906b19d8b0417da8bbfe5d5060e1975c0476 build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
+<!-- lym-stencil: sha256=e3b6950d1be864c8657836f271327323542d9291b9534f934c7eccc2d728b040 build=0edcc4491c10d7582401fc088660153f420eb2e8 time=2026-11-26T13:46:56Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -62,6 +62,10 @@ Any other H3 there is refused as a `decision-heading-malformed` finding.
 A repeated id is a `decision-id-duplicate` finding.
 Each id appears as a whole word in a bullet of `## Acceptance criteria`.
 So `D1` is not met by `D10`, and a range such as "D1 to D4" covers only the ids it spells.
+A bullet runs on through the lines after it up to a blank line, the next bullet or a fenced line,
+and any other indented line continues it.
+An unindented line continues it as markdown's lazy continuation does,
+unless it is an ATX heading, a thematic break or a blockquote, or opens an HTML block that can interrupt a paragraph.
 An id no bullet names is a `decision-not-in-acceptance` finding.
 Both checks run for every loom record, in the discussion gates, Darn-Write's post-session guard and `lym loom validate-discussion`.
 They do not run in `lym loom decision add`.
