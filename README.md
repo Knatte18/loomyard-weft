@@ -18,17 +18,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-wave-1` · Age 10h · Owner `neve`
 
-### Running (1)
+### Running (2)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | Darn-Write | neve | 2d<br>9h | landing, loom, config |
-
-### Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light |  | 11h<br>10h | gate, dotnet, darn, burler |
+| T4 | **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | starting · Worktree-Create | neve | 11h<br>10h | gate, dotnet, darn, burler |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
