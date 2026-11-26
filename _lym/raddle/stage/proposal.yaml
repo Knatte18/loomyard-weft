@@ -1,0 +1,85 @@
+{
+  "sketch": "dobby-run-watch",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "config-keys-nested", "revised": "2026-11-23T19:58:05Z"},
+    {"slug": "dotnet-gate-fixes", "revised": "2026-11-26T08:19:40Z"},
+    {"slug": "infra-stops-not-failures", "revised": "2026-11-26T08:20:22Z"},
+    {"slug": "push-retry-not-halt", "revised": "2026-11-26T10:03:29Z"},
+    {"slug": "beam-member-parent", "revised": "2026-11-26T08:20:23Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "sandbox-closed-area-build", "revised": "2026-11-26T10:49:21Z"}
+  ],
+  "parts": [
+    {
+      "slug": "dobby-run-watch-build",
+      "title": "Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long",
+      "type": "feature",
+      "labels": ["dobby", "gate", "batten", "orch", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 750},
+        {"path": "internal/beamsetting", "size": 20},
+        {"path": "internal/beamcli", "size": 120},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/gateslot", "size": 20},
+        {"path": "internal/gatecli", "size": 30},
+        {"path": "contracts", "size": 20},
+        {"path": "pattern", "size": 5}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record; the dobby tick's run steps and listedRuns (internal/dobbyengine/loop.go), the landing notice and its per-run memory (landnotice.go, state.go), the done-run clear (donerun.go), RunNoticeDeps.ReadChild, the per-task lookup over hubgeom.TaskSettingChain (tasksetting.go), orchcli.NotifyRunFrom and WithRunAutonomy, gateslot.Pool.Holders and LoadConfig, gatecli's runMarker, proc.TreeSample and PIDsWithEnv, pauserecord.AwakeSince",
+        "delivers": "a run watch step in the dobby tick posting [run watch] lines per the run_watch level, with its per-run memory, owed lines and gate-hold keys in a new watch map of the dobby state record; beam.run_watch as a per-task key with its check; a probe-tick gate-hold check with gate_hold_factor and gate_hold_min hub keys and its [dobby notice] line; the tier run's environment marker in the slot holder record; orch-role Notices, dobby doc and template, and PATTERN-config-layers naming the new lines and keys",
+        "exports": "dobbyengine.LookupRunWatch, beamsetting's RunWatchKey and its three values, the dobby state record's watch map, gateslot.Holder's marker field"
+      },
+      "depends_on": ["config-keys-nested", "dotnet-gate-fixes"],
+      "open_risks": [
+        "Mail volume: each stop now reaches the orch once more, as the watch line ahead of batten's notice.",
+        "`beam-member-parent` (T12): until it lands, the nearest live orch a beam member's dobby notice resolves to can be the prime's orch rather than the beam's, and watch and gate-hold lines go the same way."
+      ],
+      "criteria": [
+        "A driven run whose child goes from running to blocked at a row posts one `[run watch]` line naming the derived state, batten's and the child's state and row and the reason; a later tick with the same reading posts nothing (D1, D3).",
+        "A child that blocks at a row, resumes and blocks at the same row again with no tick between posts a second line, through the episode stamp (D1, D4).",
+        "A batten blocked outside Run-Shed while its child reads done posts a stop line (D1, D3).",
+        "A run started before Run-Shed with no child status posts no line under `stops` (D1, D3).",
+        "Under `stops`, a row move while running, a resume to running and batten's row moves after the child's done post nothing; under `rows` each posts one line; under `off` no reading posts and a gate-hold notice still goes (D2, D6).",
+        "Under `stops`, a child going from blocked to failed posts one line, and a batten pause lifting over a blocked child posts one line (D2).",
+        "A run whose `run_watch` has never read posts nothing and keeps no memory until a read succeeds (D2).",
+        "`run_watch` resolves through the per-task chain: the task's own worktree value, else a parent worktree's, else the hub default, else `stops`; a value outside the three is refused by the per-task check with the key and its values (D2).",
+        "A dobby restarted with the state record's memory posts no line for a reading already told; one with no memory posts one line for a run standing at a stop (D4).",
+        "A landed run posts one watch line when its copied land_notice reading is off or absent and none when it is on; the child status vanishing at teardown posts no extra line (D1, D3).",
+        "A cancelled run with land_notice on posts its watch line (D3).",
+        "A landed run whose batten reads done posts its landed line once across several ticks before the clear (D4).",
+        "A landed run whose watch line has not posted is not cleared until the line posts or is dropped (D4, D5).",
+        "Owed lines post oldest first; with no orch strand recorded they wait without counting attempts and post once one is; a failing post is retried no sooner than a probe interval and dropped after three failures; a line owed an hour of awake time is dropped (D5).",
+        "A posted watch line carries no topic or run tag and the run's autonomy stamp (D5).",
+        "A slot held under a driven run's task worktree by a tier with `timeout_min: 35` and factor 1.5 posts no notice at 52 minutes of awake time and one at 53, naming every slot the holder holds, the tier, PID, each child PID and a process outside the tree that carries the holder's marker; a sleep interval inside the hold delays it (D6).",
+        "The same hold posts once, also across a dobby restart; a multi-slot hold posts one notice; a new hold with another PID or start posts again; a holder in a sibling worktree whose path only shares a prefix posts nothing; a holder with no tier takes `gate_hold_min`; factor 0 posts nothing; a failed gate config load or a failed holder read posts nothing and warns (D6).",
+        "The config load refuses a negative `gate_hold_factor` and a `gate_hold_min` of 0, naming the key and its range (D6).",
+        "A gate-hold notice and a later run notice of the same run both reach the orch unread, neither replacing the other (D6).",
+        "Existing notice tests in `internal/battenshed`, `internal/dobbyengine` and `internal/loomcli` pass unchanged (D8).",
+        "Review: `contracts/orchrole/orch-role.md`'s Notices section names `[run watch]` lines and the gate-hold condition as D7 says (D7).",
+        "Review: `internal/dobbyengine/template.yaml` comments `run_watch`, `gate_hold_factor` and `gate_hold_min`, and `internal/dobbyengine/doc.go` describes the watch (D2, D6, D7).",
+        "Review: `pattern/PATTERN-config-layers.md`'s per-task beam setting rule names `beam.run_watch` (D2)."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 39.6,
+      "cost_line": "tapestry/solid with a stored record over 7 runs: fit $37.09 fixed plus $0.25 per 100 lines on about 1005 lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 39.6,
+    "line": "one tapestry/solid part with a stored record: fit $37.09 fixed plus $0.25 per 100 lines on about 1005 lines (7 runs)",
+    "next_best": {
+      "split": "two chained parts on dobbyengine: the run watch (D1-D5, D7, D8) first, then the gate-hold notice (D6), which keeps its keys in the run watch's state entry",
+      "expected_usd": 76.7,
+      "line": "two tapestry/solid parts with stored records: $37.09 fixed each plus $0.25 per 100 lines on about 655 and 350 lines (7 runs); as darn/solid the gate-hold part's stored-record cell reads too few runs"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
