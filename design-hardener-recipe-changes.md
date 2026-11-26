@@ -1,6 +1,6 @@
 # Hardener rounds raise what they drive and converge on one rule
 
-`hardener-recipe-changes` · Task · enhancement, burler, stencil · draft
+`hardener-recipe-changes` · Task · enhancement, burler, stencil
 
 Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
