@@ -3,7 +3,7 @@
 Rendered 2026-11-26 20:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-wave-2` · Age 11h · Owner `neve`
+`intake-wave-2` · Age 12h · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
