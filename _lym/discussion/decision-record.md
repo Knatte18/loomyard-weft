@@ -56,6 +56,12 @@ The result says whether to cut tests, cut file and binary creation, or ask for a
 
 ## Decisions
 
+### Added after Discussion (arbiter, 2026-11-26): The docs/benchmarks/ measurement reports follow the operator's runs, outside this change
+
+Decision: This change ships the tools/machinecost program and its tests only. The per-machine measurement reports under docs/benchmarks/, beside gate-test-xdr.md, are written from the operator's runs of the built binary on the laptop with Cortex XDR and on the other machine, each with one -dir under /tmp/lym-* and one under /tmp/zz-*, after the program lands. No fixer adds a docs/benchmarks/ report in this run, and no reviewer raises the missing reports as a finding again (round-1 review F3, ledger key benchmark-reports-omitted-without-deferral, is settled by this entry).
+
+Rationale: The board entry's title names the deliverable as the tools/ program. Its Notes make the reports the result of running that program on two named machines (Run it with --dir ... on the laptop, and with the same two on the other machine; The result goes into a measurement report ... for each machine), which only the operator can do: no agent session reaches both machines, and a report not made from those runs would carry made-up figures. The deferral moves no work out of the task's aim; it orders it after the tool exists.
+
 ## Constraints
 
 ## Auto-mode assumptions
