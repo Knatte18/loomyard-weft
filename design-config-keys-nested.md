@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
-Depends on: [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md)
-
 Filed from the Sketch `config-keys-nested-by-area`.
 
 Takes: the Sketch's decision record; the flat loom and tapestry templates and their readers; configengine's dotted-path layering, configsync's reconcile, hubreconcile's walk and EnsureOrWarn, configreg.PrepareRunSettings and boardengine's upsert path
