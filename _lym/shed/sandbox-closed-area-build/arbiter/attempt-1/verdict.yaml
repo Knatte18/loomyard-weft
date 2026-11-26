@@ -1,0 +1,30 @@
+verdict: hand-on
+reason: |-
+  Hard-cap escalation at round 3 of Discussion-Bouncer. Every open round-3 finding is answered by the fix already in the decision record. I checked each against the record:
+  F33: D4 refuses clone3, D3's inside test rests on two bounds, D15's filter refuses clone3, and Constraints and an acceptance criterion back it.
+  F34: D7 runs the area-file check wherever a hub is chosen, and a refusal takes no later hub step, the exit sweep included.
+  F35: D6 grants the hubs/ and token directories, and D8 takes other hubs' data from host-written records.
+  F36: D3 adds the one launcher.
+  F37: D6 adds the attach environment allow list, the empty update-environment, the attach-scope wait and no host shell.
+  F38: D2 refuses a hub that holds an operator marketplace.
+  F39: D3 adds the openat2 no-symlink rule, and D12 moves the relay files.
+  F40: D12 places each Slack record.
+  F41: the PATTERN-closed-area text is reworded, and D15 maps each clause.
+  F42: the Notes cover agent-addressing and the subreaper sentence.
+  F43: D12 and D16 cover channel retirement.
+  On the findings alone, accept would be right.
+  The round-3 review also held back two gaps it rated BLOCKING in weight, and the judge asked that the parent see them before the design is approved, which is what an accept does here.
+  I settled the gaps the board entry and the record already settle. One is the lym area deploy origin URL and branch, now taken from the area file. The other is the missing TSYNC_ESRCH filter flag, a LOW factual correction.
+  The /dev/pts gap is a choice between designs the record leaves open, so it goes to the parent.
+  This stop made no commit in the task worktree. The decisions went in through the decision verb.
+verbs:
+  - |-
+    lym loom decision add sandbox-closed-area-build --by arbiter --from .scratch/arbiter-decisions.json  (two entries: "D3's filter install sets TSYNC_ESRCH"; "lym area deploy takes its origin and branch from the area file")
+question: |-
+  The round-3 review of sandbox-closed-area-build is at its hard cap, so it can only be accepted with `lym loom circling accept sandbox-closed-area-build`. Every open finding, F33 to F43, is answered by the fixes already in the decision record. The arbiter has recorded the deploy-source and TSYNC_ESRCH calls.
+  One gap is still open, and the review asked that it be seen before approval. D6 grants every right on /dev/pts. Every terminal of the user lives there, owned by the user. So an area process can open a host shell's terminal or another hub's pane terminal, read the keystrokes typed there (sudo or ssh passphrases included) and write output to it. Landlock cannot tell one pty from another by path. This contradicts the Goal's claim that an agent cannot read a secret outside the area.
+  Which should the record say?
+  (a) A stated bound and non-claim. D6's Bound and D16 say that an area process can open, read and write any pseudo-terminal of the user, host shells and other hubs' panes included.
+  (b) A mechanism that drops the /dev/pts path grant, for example panes whose terminal tmux opens from the master descriptor (TIOCGPTPEER) rather than by path, with /dev/tty granted. This is unmeasured, so it would need a probe on Neve before stage 1, added to D14.
+  The arbiter recommends (a) now, with (b) noted as an open risk, then a decision recording it and the accept.
+  Second, a MEDIUM gap the review also held back. No decision removes a hub's area-registry entry when its area is turned off (its area file removed). D8 would then keep treating the hub as an area hub, against the Goal's "with the area off, everything works as it does today". Should turning an area off be a host-side verb that stops the area, removes the registry entry and then the file? Or should `lym area start` and `lym area stop` drop registry entries whose area file is gone?

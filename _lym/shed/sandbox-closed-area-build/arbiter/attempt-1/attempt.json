@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-26T11:46:08.846835561+01:00",
+  "deadline": "2026-11-26T12:16:08.846835561+01:00",
+  "strand_guid": "3acde84e377bb666f33166e20119a036",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/sandbox-closed-area-build/_lym/shed/sandbox-closed-area-build/drive-reports/drive-envelope-20261126-114608-583e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/sandbox-closed-area-build/_lym/shed/sandbox-closed-area-build/drive-reports/drive-report-20261126-114608-f0e8.md",
+  "snapshot": {
+    "head": "cd80907332bf7a5d4c6c8f29d32fa757884d06d4",
+    "branch": "sandbox-closed-area-build",
+    "dirty": {}
+  }
+}
