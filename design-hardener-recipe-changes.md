@@ -1,6 +1,6 @@
 # Hardener rounds raise what they drive and converge on one rule
 
-`hardener-recipe-changes` · Task · enhancement, burler, stencil · starting · Seed-IDE
+`hardener-recipe-changes` · Task · enhancement, burler, stencil · starting · Open-IDE
 
 ## Seen
 
