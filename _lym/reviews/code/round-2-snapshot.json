@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "71170bf20a7f862a306493710b80916a303827e7",
+  "added_decisions": [
+    {
+      "title": "The docs/benchmarks/ measurement reports follow the operator's runs, outside this change",
+      "digest": "9a48569d18e4a4ce79296d9201ed3754366bbdab08f42c39e47ce386368bc49e"
+    }
+  ]
+}

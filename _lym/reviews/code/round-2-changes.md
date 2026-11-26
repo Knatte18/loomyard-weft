@@ -1,0 +1,12 @@
+tools/machinecost/cli_test.go
+tools/machinecost/fileops.go
+tools/machinecost/gitload.go
+tools/machinecost/machine.go
+tools/machinecost/main.go
+tools/machinecost/newbinary.go
+tools/machinecost/newbinary_test.go
+tools/machinecost/probe.go
+tools/machinecost/probe_test.go
+tools/machinecost/report.go
+tools/machinecost/report_test.go
+tools/machinecost/starts.go
