@@ -780,6 +780,27 @@
       "body": "Imported from [issue #228](https://github.com/Knatte18/loomyard/issues/228).\n\n## Seen\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that the same findings were sent again in about five rounds.\nThe agent fixed the description file but the pull request's body on GitHub was not updated, so the parent read the old text again.\nSeen in five separate rounds across several runs.\n\n## Why it makes no sense\n\nThe description file is the one source of the PR title and body.\nA PR whose body differs from the file the run holds is wrong from the first push, and a review round is spent on text that has already been fixed.\n\n## Idea\n\nMake the PR body follow the description file on every push, and refuse to end a round while the two differ.\n\n- Read first where `pr update` runs for a task's pull request, and which path writes the description file without calling it (`lym beam describe` runs the `pr update` sequence for a beam; check the task path).\n- After each push, compare the GitHub PR body with the file, and update it or halt with a way forward naming the difference.\n- Add a test that edits the description file after the PR exists and expects the body to follow on the next push.\n",
       "created": "2026-11-26T07:34:08Z",
       "revised": "2026-11-26T07:34:08Z"
+    },
+    {
+      "id": 1647,
+      "handle": "E4",
+      "slug": "describe-no-loomyard-terms",
+      "title": "The Describe text names no LoomYard terms, except the Created using block",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "stencil"
+      ],
+      "issues": [
+        227
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #227](https://github.com/Knatte18/loomyard/issues/227).\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that about 12 findings were internal process or tool names in the PR text: \"item 3 of the task\", \"the test scoper cannot run C# tests there\", \"the task's branch point\", \"The board entry proposed\", \"The parent recorded...\".\nThe stencil that writes the description (`landing-template-describe`) does not forbid them, so the parent had to tell the Describe session so in each hub.\nIn one run the parent noted its own earlier instruction had caused it.\n\nThe operator's rule: LoomYard, and anything from it, does not belong in the Describe text.\nThe one exception is the \"Created using\" block at the bottom.\n\n## Idea\n\nKeep LoomYard's vocabulary out of the description the Describe row writes, and let lym hold it.\n\n- Add the rule to the Describe stencil: the description names no board, task, Sketch, decision record, parent, orch, scoper, gate, tier, perch or lym term, and no \"item N of the task\".\n- Let the Describe row's mechanical gate (`NewDescriptionGate`, which runs `summaryparser.ValidateDescription`) refuse such a term outside the credit block, with the refusal naming the term and the line.\n- Leave the credit block as it is: the `credit` keys in `landing.yaml` append it, and the term check skips it.\n- Read first how the credit block is appended to the description, and which words the check can match without refusing a repository's own legitimate names.\n- The issue on reviewing the Describe text covers claims and missing content; this issue covers the vocabulary.\n",
+      "created": "2026-11-26T07:34:11Z",
+      "revised": "2026-11-26T07:34:11Z"
     }
   ],
   "prime_owner": "neve",

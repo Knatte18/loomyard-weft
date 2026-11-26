@@ -42,7 +42,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B2 |  | **reed switch and a button's {strand} read the most recent client's session, not the clicker's**<br>• Same display-message -c with no -t defect the RC click had, in switch.go and buttonclick.go | [`reed-switch-wrong-client`](design-reed-switch-wrong-client.md) | 2d<br>2d |  |
 | B3 |  | **tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session** | [`revive-reads-placeholder-draft`](design-revive-reads-placeholder-draft.md) | 9m<br>9m | tender, claude |
 | B4 |  | **Gate fixer interrupted by a machine stop is reported as dead (timeout)** | [`gate-fixer-reboot-reads-timeout`](design-gate-fixer-reboot-reads-timeout.md) | 1m<br>1m | gate, shuttle |
-| B5 |  | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | 0m<br>0m | creel, cwd |
+| B5 |  | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | 1m<br>1m | creel, cwd |
 | B6 |  | **Describe halts failed on an uninformative shuttle run outcome timeout** | [`describe-timeout-no-detail`](design-describe-timeout-no-detail.md) | 0m<br>0m | landing, shuttle |
 | B7 |  | **Unreachable origin halts the run as failed repeatedly instead of one retryable stop** | [`unreachable-origin-halts-failed`](design-unreachable-origin-halts-failed.md) | 0m<br>0m | shed, landing, fabric |
 | B8 |  | **Finalize blocks on untracked leftovers of a project the merge-in deleted** | [`finalize-ignored-leftover-dir`](design-finalize-ignored-leftover-dir.md) | 0m<br>0m | landing |
@@ -60,13 +60,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B20 |  | **fabric clone leaves the prime without rendered heddle** | [`clone-prime-no-heddle`](design-clone-prime-no-heddle.md) | 0m<br>0m | fabric, heddle |
 | B21 |  | **The GitHub PR body is not updated when the description file changes** | [`pr-body-not-synced`](design-pr-body-not-synced.md) | 0m<br>0m | landing |
 
-## Enhancements (3)
+## Enhancements (4)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Periodic async push of pairs whatever made the commits** | [`periodic-pair-push`](design-periodic-pair-push.md) | 1m<br>1m | fabric, dobby |
 | E2 |  | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | 1m<br>1m | stencil, darn |
 | E3 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records-in-weft`](design-keep-landed-records-in-weft.md) | 0m<br>0m | landing, fabric, report |
+| E4 |  | **The Describe text names no LoomYard terms, except the Created using block** | [`describe-no-loomyard-terms`](design-describe-no-loomyard-terms.md) | 0m<br>0m | landing, stencil |
 
 ## Features (1)
 
