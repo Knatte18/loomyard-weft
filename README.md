@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 19:55 UTC; every age below is as of then.
+Rendered 2026-11-26 19:56 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -33,7 +33,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>30m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>31m | burler, shed, orch, quarry, report |
 
 ## [P3 Intake wave 2: Describe text, infra stops, push retries](project-intake-wave-2.md) (3)
 
@@ -92,7 +92,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 7h<br>7h | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 7h<br>7h | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (8)
+## [P0 Root: entries under no project](project-root.md) (9)
 
 Owner `neve`
 
@@ -100,7 +100,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Code-Burler-Review | neve | 8h<br>32m | burler, stencil |
+| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Code-Burler-Review | neve | 8h<br>33m | burler, stencil |
 | T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | landing · Finalize | neve | 7h<br>7h | drift |
 
 ### Layer A (1)
@@ -121,6 +121,12 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T8<br>T2<br>T18<br>T21<br>T19 | 6h<br>38m | docs |
 
+### Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **Cut fabricengine tier1 test time at least in half** | [`fabric-tests-cut`](design-fabric-tests-cut.md) | darn · solid |  | 0m<br>0m | fabric, testkit |
+
 ### Research (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
@@ -131,7 +137,7 @@ Owner `neve`
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then** | [`enter-session-test-cleanup-race`](design-enter-session-test-cleanup-race.md) | 25m<br>25m | reed |
+| B1 |  | **TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then** | [`enter-session-test-cleanup-race`](design-enter-session-test-cleanup-race.md) | 26m<br>26m | reed |
 
 ### Enhancements (1)
 
