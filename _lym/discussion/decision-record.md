@@ -191,6 +191,12 @@ Decision: Fix the hang of TestLoopIntegration_ArmingRefusalStopsAsBootstrap in i
 
 Rationale: The verify gate sat 18 minutes on that test at 0% CPU until the orch killed the stuck child; a stuck step must cost seconds and name itself. The operator wants this run to fix it directly rather than a later task.
 
+### Added after Discussion (parent, 2026-11-26): Name in full the bare keys card 11 left
+
+Decision: Card 11's fork reported bare key names left outside its packages: gatecli, batcher, battencli, beamcli, webstercli, hibernatecli, reportcli, preflightshed, weaverengine (ResolveLadder, settingRefusal), internal/sheddriver/tackler.go, shedarbiter, internal/burlerengine/fix.go and internal/loomshed/plancontext.go. Code-Review checks each and the run names every one in full before it lands.
+
+Rationale: Master's friction note recorded the list; the note is removed to clear a false parent-write audit finding, so the list lives here.
+
 ## Constraints
 
 - `PATTERN-config-layers`: layers are read only through `configengine`, a reconcile on a binary change only through `hubreconcile.Ensure`, and no reconcile touches the machine layer.
