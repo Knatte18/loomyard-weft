@@ -422,6 +422,27 @@
       "body": "Imported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).\n\nAn agent's survey commands used `cd` into subdirectories, and the shell kept that directory for later calls.\nThe next `lym creel post` was refused because the working directory was no longer the anchored worktree root, which cost a retry.\n\nWhy it is abnormal:\n- The shell's directory persisting across calls is easy to trip over, and the refusal surfaced only on the later creel call, away from the `cd` that caused it.\n\nWhat to do:\n- Have the refusal name the anchored root and say that a previous `cd` likely moved the shell, or accept calls from any directory inside the worktree.\n- Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.\n\nProvenance: task `retire-d9`; note Darn-Write.md.\n",
       "created": "2026-11-26T07:33:09Z",
       "revised": "2026-11-26T07:33:09Z"
+    },
+    {
+      "id": 1630,
+      "handle": "B6",
+      "slug": "describe-timeout-no-detail",
+      "title": "Describe halts failed on an uninformative shuttle run outcome timeout",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "shuttle"
+      ],
+      "issues": [
+        244
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #244](https://github.com/Knatte18/loomyard/issues/244).\n\nThe Describe step halted the run as `failed` with anomaly `producer-hard-failure` and the message `shedadapters: Describe (seats): shuttle run outcome timeout`.\n\nWhy it is abnormal:\n- The note carries no detail on which timeout elapsed, how long the shuttle run had been going, or whether the agent was still working.\n- A timeout on a seated shuttle run is classed as a hard failure, so the run stopped as `failed` rather than being resumed or escalated.\n- The next attempt of the same step completed (`Describe / done`) about 34 minutes later, which suggests the timeout was not a defect in the producer's work.\n\nWhat to do:\n- Include the elapsed time, the timeout limit and the shuttle run's last known state in the halt reason.\n- Decide whether a shuttle outcome timeout should be a retryable or `blocked` stop instead of `failed`.\n\nProvenance: task `retire-d9`; note loom-halt.md.\n",
+      "created": "2026-11-26T07:33:13Z",
+      "revised": "2026-11-26T07:33:13Z"
     }
   ],
   "prime_owner": "neve",
