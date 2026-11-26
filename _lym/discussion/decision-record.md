@@ -110,6 +110,12 @@ The board README shows each beam's pull-request setting (task `readme-beam-modes
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): Use the nested config key names
+
+Decision: The task's board body names pr_review_small_max, pr_review_ask_parent and pr_review_parent_timeout_min; since config-keys-nested landed (548291383) these keys are loom.pr.review_small_max, loom.pr.review_ask_parent and loom.pr.review_parent_timeout_min. Read every key the body names as its nested form, and name keys as <module>.<path> in messages and docs.
+
+Rationale: config-keys-nested landed before this run started; the body was written before it.
+
 ## Constraints
 
 ## Auto-mode assumptions
