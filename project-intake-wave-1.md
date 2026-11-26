@@ -1,6 +1,6 @@
 # P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits
 
-Rendered 2026-11-26 09:54 UTC; every age below is as of then.
+Rendered 2026-11-26 09:55 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-1` · Age 1h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | Describe | neve | 2d<br>39m | reed, process |
+| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | PR-Review | neve | 2d<br>40m | reed, process |
 
 ## Layer A (4)
 
