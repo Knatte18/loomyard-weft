@@ -1,6 +1,6 @@
 # Keep the decision record and review findings of each landed task in the weft
 
-`keep-landed-records` · Task · sketch, landing, fabric, report · starting · Seed-Child
+`keep-landed-records` · Task · sketch, landing, fabric, report · starting · Open-IDE
 
 Decision record: [Sketch](decision-keep-landed-records.md)
 
