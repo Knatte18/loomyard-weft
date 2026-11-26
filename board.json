@@ -299,7 +299,7 @@
         "pr-modes-no-agent",
         "describe-review-and-sync",
         "infra-stops-not-failures",
-        "fabric-tests-cut"
+        "fabric-git-free-core"
       ],
       "isolated": false,
       "brief": "",
@@ -738,7 +738,7 @@
     {
       "id": 1697,
       "handle": "T5",
-      "slug": "fabric-tests-cut",
+      "slug": "fabric-git-free-core",
       "title": "Cut fabricengine tier1 test time at least in half",
       "kind": "task",
       "labels": [

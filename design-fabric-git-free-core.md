@@ -1,6 +1,6 @@
 # Cut fabricengine tier1 test time at least in half
 
-`fabric-tests-cut` · Task · enhancement, fabric, testkit · draft
+`fabric-git-free-core` · Task · enhancement, fabric, testkit · draft
 
 ## Why
 
