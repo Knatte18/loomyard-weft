@@ -1,9 +1,9 @@
 # P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits
 
-Rendered 2026-11-26 19:17 UTC; every age below is as of then.
+Rendered 2026-11-26 19:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-wave-1` · Age 10h · Owner `neve`
+`intake-wave-1` · Age 11h · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -13,4 +13,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **PR block in three modes, review, trail and off, with no agent under it** | [`pr-modes-no-agent`](design-pr-modes-no-agent.md) | darn · solid | Darn-Write | neve | 3d<br>9h | landing, loom, config |
-| T4 | **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | Darn-Write | neve | 11h<br>10h | gate, dotnet, darn, burler |
+| T4 | **Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers** | [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md) | darn · light | Darn-Write | neve | 11h<br>11h | gate, dotnet, darn, burler |
