@@ -1,0 +1,1618 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 32027003f..25b15297a 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -501,7 +501,7 @@ An instruction outside a role's limits goes to the party in the right column, ne
+ 
+ | Role | Limits its stencil sets | Who carries out an instruction outside them |
+ |---|---|---|
+-| Webster master | runs no git, edits only its two contract files, spawns only forks | you, through the run's own verbs |
++| Webster master | runs no git, edits only its two contract files and its friction note, spawns only forks | you, through the run's own verbs |
+ | Implementer fork | no `lym webster` command, writes only its batch report | webster's recovery, then you |
+ | Driver | drives one run through `lym shed step`, edits no source | you, by message |
+ | Review judge | reads and judges, edits no target | the producer it sent back |
+diff --git a/contracts/stencils/webster/webster-body-verify-fix.md b/contracts/stencils/webster/webster-body-verify-fix.md
+index d7d6d4bd1..83f9425bf 100644
+--- a/contracts/stencils/webster/webster-body-verify-fix.md
++++ b/contracts/stencils/webster/webster-body-verify-fix.md
+@@ -17,7 +17,7 @@ A report that names an entry and its findings records the failure of a run-level
+ You never edit `_lym/drift/expected.yaml`.
+ A value the task's decision record or the plan shows the change meant to move is intended: leave it as it is and say so in your reply, so the entry stays failing, Webster stops, and the run's parent amends the expectation with `lym drift amend` at that Stuck.
+ Fix any other value in code, as you fix a failing test.
+-A report that lists fix commits names the commits earlier fixers made above the pre-fix head: they did not clear the failure, so check them before you build on them.
++A report that lists fix commits names the commits made above the pre-fix head, by fixers or by hand: the failure stands with them in place, so check them before you build on them.
+ 
+ ## The rules
+ 
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index e7fafd398..90505de78 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -305,7 +305,7 @@ The batch is already terminal-failed and its report archived, so you never retry
+ A policy finding comes back on the envelope's `warnings` and the batch still records, so keep going.
+ A correctness finding comes back as `{"batch_failed": true}` and goes to `lym webster recover-batch <NN>`, run as the failure ladder says.
+ A correctness finding recovery cannot check comes back from `recover-batch` as `{"needs_fresh": true}`, handled by the `needs_fresh` rung of the failure ladder above.
+-Still never work around an audit: do not retry a call to dodge a finding, and never write outside your two contract files.
++Still never work around an audit: do not retry a call to dodge a finding, and never write outside your two contract files and the friction note, when one is named.
+ 
+ ## A fabric-sync error ends your run as stuck — do not retry the verb
+ 
+@@ -316,8 +316,9 @@ Go has already recorded whatever state it committed locally, so the run is fully
+ ## What you never do
+ 
+ NEVER run any git command against `_lym`, and never reference `_lym` by any path other than `_lym/...`. Committing `_lym` state is Go's job at each bracket verb boundary, never yours.
+-NEVER edit, create, or delete any file other than `{{.outcome_path}}` and `{{.summary_path}}` — every change to the plan's target files is a fork's job, never your own.
+-You read only `{{.plan_dir}}/00-overview.md`, the `pattern/` background files the constraints section above points at, when that section is present, and the findings file a `Gate findings recorded at …` message names, and you write only your two contract files.
++NEVER edit, create, or delete any file other than `{{.outcome_path}}`, `{{.summary_path}}` and the friction note named near the top of this prompt, when one is named.
++Every change to the plan's target files is a fork's job, never your own.
++You read only `{{.plan_dir}}/00-overview.md`, the `pattern/` background files the constraints section above points at, when that section is present, and the findings file a `Gate findings recorded at …` message names, and you write only your two contract files and the friction note, when one is named.
+ A decision notice needs no read: its text is in the notice.
+ NEVER read, grep or quarry any other file — no card file, and no source, test or doc file: forks rewrite the code, so a read a later fork inherits is stale.
+ NEVER use a `/model` switch yourself.
+diff --git a/internal/webstercli/acceptaudit.go b/internal/webstercli/acceptaudit.go
+index c3d301348..e1bc04b81 100644
+--- a/internal/webstercli/acceptaudit.go
++++ b/internal/webstercli/acceptaudit.go
+@@ -28,19 +28,22 @@ func (c *websterCLI) acceptAuditCmd() *cobra.Command {
+ It checks every suspect path against the last batch head and refuses, changing
+ nothing, while any differs or cannot be checked.
+ It also refuses while HEAD carries a commit past the last batch head other
+-than a clean parent merge; run lym webster reset --to last-batch-head first,
+-which moves HEAD back to that head.
++than a clean parent merge or a verify-gate fixer's commit the gate passed at;
++run lym webster reset --to last-batch-head first, which moves HEAD back to
++that head.
+ Restore the named paths with git first, then run it.
++A path on the run's records side, outside webster's own run state, clears
++when it is unchanged, absence included, since Master spawned.
+ A contract file (outcome.yaml or summary.md) clears when it is absent or when
+ Master wrote it after every fork, recovery and verify-fixer session did; a file
+ a fork, recovery or verify-fixer session wrote last refuses, naming
+-rm as the way forward. When it accepts on an absent contract file the envelope
+-also carries next, the step that has Master write both files again.
++rm as the way forward. Accepting on an absent contract file adds next, the
++step that has Master write both files again.
+ It only edits state.json and never changes the task worktree.
+-With nothing pending it succeeds and reports an empty accepted list, so a
+-repeated call is harmless.
+-On success the envelope carries accepted, one entry per accepted finding with
+-its class, detail and paths.
++With nothing pending it succeeds with an empty accepted list, so a repeated
++call is harmless.
++On success the envelope carries accepted: each finding's class, detail and
++paths.
+ 
+ With --batch NN it instead accepts failed batch NN's uncheckable findings,
+ which otherwise make recover-batch refuse toward "lym webster reset --to start" and then "lym webster run".
+diff --git a/internal/webstercli/reset.go b/internal/webstercli/reset.go
+index 02140710d..1cc84fd21 100644
+--- a/internal/webstercli/reset.go
++++ b/internal/webstercli/reset.go
+@@ -149,6 +149,8 @@ Example:
+ 				}
+ 
+ 				st.PreFixHead = ""
++				st.FixedHead = ""
++				st.FixedBase = ""
+ 				if target == websterengine.ResetToBatchStart {
+ 					if bs := st.Batches[batch]; bs != nil {
+ 						bs.Recoveries = 0
+diff --git a/internal/webstercli/reset_test.go b/internal/webstercli/reset_test.go
+index 1118ada8f..7f9f09db2 100644
+--- a/internal/webstercli/reset_test.go
++++ b/internal/webstercli/reset_test.go
+@@ -372,6 +372,8 @@ func TestResetCmd(t *testing.T) {
+ 		fx := newResetFixture(t, h, "rst-prefix")
+ 		st := startedAt(fx.base)
+ 		st.PreFixHead = fx.base
++		st.FixedBase = fx.base
++		st.FixedHead = fx.base
+ 		fx.withRecoveryStrands(st, map[string]bool{"strand-live": true})
+ 		fx.saveState(t, st)
+ 		gitkit.CommitFile(t, fx.checkout, "rejected-fix.txt", "fix", "rejected fixer commit")
+@@ -390,8 +392,8 @@ func TestResetCmd(t *testing.T) {
+ 		if err != nil || loaded == nil {
+ 			t.Fatalf("LoadState = %v, %v", loaded, err)
+ 		}
+-		if loaded.PreFixHead != "" {
+-			t.Errorf("PreFixHead = %q after the reset; want it cleared", loaded.PreFixHead)
++		if loaded.PreFixHead != "" || loaded.FixedBase != "" || loaded.FixedHead != "" {
++			t.Errorf("PreFixHead, FixedBase, FixedHead = %q, %q, %q after the reset; want them cleared", loaded.PreFixHead, loaded.FixedBase, loaded.FixedHead)
+ 		}
+ 	}) {
+ 		return
+diff --git a/internal/websterengine/acceptbatch_test.go b/internal/websterengine/acceptbatch_test.go
+index 461b1eb86..0b7c74fe3 100644
+--- a/internal/websterengine/acceptbatch_test.go
++++ b/internal/websterengine/acceptbatch_test.go
+@@ -36,7 +36,7 @@ func (everyCommandMatches) Matches(string) bool { return true }
+ // The entry's text comes from the audit's own finding for the command cmd.
+ func readOnlyEntry(cmd string) string {
+ 	audit := shuttleengine.ForkAudit{ParentBashCommands: []string{cmd}}
+-	violations := websterengine.CheckParent(audit, "/w/outcome.yaml", "/w/summary.md", "/w", everyCommandMatches{})
++	violations := websterengine.CheckParent(audit, "/w/outcome.yaml", "/w/summary.md", "", "/w", everyCommandMatches{})
+ 	if len(violations) != 1 {
+ 		panic("CheckParent over one flagged command returned " + strconv.Itoa(len(violations)) + " violations; want 1")
+ 	}
+diff --git a/internal/websterengine/audit.go b/internal/websterengine/audit.go
+index d575c634a..b5740514a 100644
+--- a/internal/websterengine/audit.go
++++ b/internal/websterengine/audit.go
+@@ -1,7 +1,7 @@
+ // audit.go implements webster's fail-loud policy over the fork facts in shuttleengine.ForkAudit and ForkReport.
+ // Forks are implementers, so CheckFork allows Write/Edit and repo-native git.
+ // It bans nested Agent calls, fabric references, and writes to contract files, the plan, or run state.
+-// CheckParent guards Master's own parent transcript, which may write only the two contract files.
++// CheckParent guards Master's own parent transcript, which may write only the two contract files and its friction note.
+ // Every function here is pure: facts in, verdict out. Transcript reading stays in claudeengine.
+ 
+ package websterengine
+@@ -51,8 +51,8 @@ const (
+ 	// ClassNamedSpawn means Master's parent transcript recorded one or more Agent calls carrying a name parameter.
+ 	// Named forks silently lose inherited context.
+ 	ClassNamedSpawn AuditViolationClass = "named-spawn"
+-	// ClassParentWrite means Master's parent transcript wrote a file besides the two contract files.
+-	// Master may write only outcome.yaml and summary.md.
++	// ClassParentWrite means Master's parent transcript wrote a file besides the two contract files and its friction note.
++	// Master may write only outcome.yaml, summary.md and the friction note its prompt names.
+ 	// Any other write means Master is implementing a batch itself or hand-writing a batch report.
+ 	ClassParentWrite AuditViolationClass = "parent-write"
+ 	// ClassForkContractWrite means a fork's transcript wrote one of the run's two contract files.
+@@ -116,13 +116,14 @@ func (v AuditViolation) Error() string {
+ 	return fmt.Sprintf("webster: %s violation in %q: %s", v.Class, v.TranscriptPath, v.Detail)
+ }
+ 
+-// isOwnReportWrite reports whether write, resolved against workdir, is ownReport: equal to its cleaned path, or canonicalizing to the same path.
+-func isOwnReportWrite(workdir, write, ownReport string) bool {
++// isWriteOf reports whether write, resolved against workdir, is target:
++// equal to its cleaned path, or canonicalizing to the same path.
++func isWriteOf(workdir, write, target string) bool {
+ 	resolved := runplan.ResolveWritePath(workdir, write)
+-	if resolved == filepath.Clean(ownReport) {
++	if resolved == filepath.Clean(target) {
+ 		return true
+ 	}
+-	canonOwn, err := runplan.CanonicalPath(ownReport)
++	canonOwn, err := runplan.CanonicalPath(target)
+ 	if err != nil {
+ 		return false
+ 	}
+@@ -187,7 +188,7 @@ func CheckFork(f shuttleengine.ForkReport, outcomePath, summaryPath, workdir str
+ 				break
+ 			}
+ 		}
+-		if isOwnReportWrite(workdir, w, ownReport) {
++		if isWriteOf(workdir, w, ownReport) {
+ 			continue
+ 		}
+ 		for _, dir := range websterDirs {
+@@ -250,13 +251,15 @@ func dirSpellings(dir string) ([]string, error) {
+ }
+ 
+ // CheckParent reports the violations in Master's own parent session.
+-// Master may write only to the two contract files (outcomePath and summaryPath).
++// Master may write only to the two contract files, outcomePath and summaryPath, and to notePath.
++// notePath is the friction note its prompt names, compared in its told and link-resolved spellings.
++// An empty notePath allows no note.
+ // It bans three hard violations:
+-// any named spawn, any parent write outside the contract files, and any Bash command referencing the fabric repo.
++// any named spawn, any other parent write, and any Bash command referencing the fabric repo.
+ // fabricRef classifies fabric-reference commands.
+ // It must not be nil: Matches is called unguarded, and a nil interface panics.
+ // A hub run passes the fabric reference scanner; a standalone run passes a matcher that never matches.
+-func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath, workdir string, fabricRef RefMatcher) []AuditViolation {
++func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath, notePath, workdir string, fabricRef RefMatcher) []AuditViolation {
+ 	var violations []AuditViolation
+ 
+ 	for i := 1; i <= a.NamedSpawns; i++ {
+@@ -274,14 +277,15 @@ func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath, workdir st
+ 	cleanSummary := filepath.Clean(summaryPath)
+ 	for i, w := range a.ParentWrites {
+ 		cw := runplan.ResolveWritePath(workdir, w)
+-		if cw != cleanOutcome && cw != cleanSummary {
+-			violations = append(violations, AuditViolation{
+-				Class:  ClassParentWrite,
+-				Key:    parentKey(ClassParentWrite, i),
+-				Path:   w,
+-				Detail: fmt.Sprintf("Master wrote %q — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report", w),
+-			})
++		if cw == cleanOutcome || cw == cleanSummary || (notePath != "" && isWriteOf(workdir, w, notePath)) {
++			continue
+ 		}
++		violations = append(violations, AuditViolation{
++			Class:  ClassParentWrite,
++			Key:    parentKey(ClassParentWrite, i),
++			Path:   w,
++			Detail: fmt.Sprintf("Master wrote %q — Master may write only its two contract files (outcome.yaml and summary.md) and its friction note; any other write means Master implemented a batch itself or hand-wrote a batch report", w),
++		})
+ 	}
+ 
+ 	for i, cmd := range a.ParentBashCommands {
+diff --git a/internal/websterengine/audit_test.go b/internal/websterengine/audit_test.go
+index 3c2a604e8..b1bc3c6f4 100644
+--- a/internal/websterengine/audit_test.go
++++ b/internal/websterengine/audit_test.go
+@@ -2,7 +2,8 @@
+ // The cases cover CheckFork, CheckParent, and the fabricengine.RefScanner matcher.
+ // The matcher is built from a fake lymcwd.Location, never a hardcoded geometry token.
+ // SettleRetry is covered with a recording fake Sleeper.
+-// Every case is a pure fact-in/verdict-out table: no git spawn, no real sleeping, no filesystem I/O.
++// The cases are fact-in/verdict-out with no git spawn and no real sleeping.
++// Only the link-resolved path spelling touches the filesystem.
+ 
+ package websterengine
+ 
+@@ -14,6 +15,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -327,6 +329,7 @@ func TestCheckParent(t *testing.T) {
+ 
+ 	const outcomePath = "/hub/master-builder/_lym/webster/outcome.yaml"
+ 	const summaryPath = "/hub/master-builder/_lym/webster/summary.md"
++	const notePath = "/hub/master-builder/_lym/loom/friction/webster-master.md"
+ 
+ 	tests := []struct {
+ 		name  string
+@@ -382,6 +385,27 @@ func TestCheckParent(t *testing.T) {
+ 			},
+ 			wantClasses: nil,
+ 		},
++		{
++			name: "write to Master's friction note is allowed",
++			audit: shuttleengine.ForkAudit{
++				ParentWrites: []string{notePath},
++			},
++			wantClasses: nil,
++		},
++		{
++			name: "relative write to Master's friction note is allowed",
++			audit: shuttleengine.ForkAudit{
++				ParentWrites: []string{"_lym/loom/friction/webster-master.md"},
++			},
++			wantClasses: nil,
++		},
++		{
++			name: "write to another friction note is a hard error",
++			audit: shuttleengine.ForkAudit{
++				ParentWrites: []string{"/hub/master-builder/_lym/loom/friction/webster-master-2.md"},
++			},
++			wantClasses: []AuditViolationClass{ClassParentWrite},
++		},
+ 		{
+ 			name: "relative write to a source file is a hard error",
+ 			audit: shuttleengine.ForkAudit{
+@@ -425,7 +449,7 @@ func TestCheckParent(t *testing.T) {
+ 			if workdir == "" {
+ 				workdir = "/hub/master-builder"
+ 			}
+-			got := CheckParent(tt.audit, outcomePath, summaryPath, workdir, fabricRef)
++			got := CheckParent(tt.audit, outcomePath, summaryPath, notePath, workdir, fabricRef)
+ 			if len(got) != len(tt.wantClasses) {
+ 				t.Fatalf("CheckParent() = %v; want %d violation(s) of class %v", got, len(tt.wantClasses), tt.wantClasses)
+ 			}
+@@ -439,6 +463,21 @@ func TestCheckParent(t *testing.T) {
+ 			}
+ 		})
+ 	}
++
++	t.Run("write to the friction note through its link target is allowed", func(t *testing.T) {
++		workdir, records := t.TempDir(), t.TempDir()
++		if err := fslink.CreateDirLink(filepath.Join(workdir, "_lym"), records); err != nil {
++			t.Fatal(err)
++		}
++		told := filepath.Join(workdir, "_lym", "loom", "friction", "webster-master.md")
++		resolved := filepath.Join(records, "loom", "friction", "webster-master.md")
++
++		got := CheckParent(shuttleengine.ForkAudit{ParentWrites: []string{resolved}}, outcomePath, summaryPath, told, workdir, fabricRef)
++
++		if len(got) != 0 {
++			t.Errorf("CheckParent() = %v; want no violation", got)
++		}
++	})
+ }
+ 
+ // recordingSleeper is a Sleeper that never blocks.
+diff --git a/internal/websterengine/auditledger.go b/internal/websterengine/auditledger.go
+index fb34ee8d4..f3971a695 100644
+--- a/internal/websterengine/auditledger.go
++++ b/internal/websterengine/auditledger.go
+@@ -86,8 +86,13 @@ var ErrAuditNotAcceptable = errors.New("webster: pending audit findings cannot b
+ var acceptAuditHeadRefusal = headRefusal{resetStep: "lym webster reset --to last-batch-head", rerun: `re-run "lym webster accept-audit"`, redoMerge: "once accept-audit accepts the findings"}
+ 
+ // AcceptPendingAudit clears the pending audit findings and returns what it cleared, once their evidence holds.
+-// The evidence first needs HEAD to be the last recorded batch head, or a clean parent merge on top of it.
++// The evidence first needs HEAD to be the last recorded batch head, or clean parent merges on top of it.
++// The verify-gate fix commits from st.FixedBase to st.FixedHead may sit between that head and those merges.
++// They count only when nothing but clean parent merges lies between that head and st.FixedBase.
+ // Every pending path must then match that head.
++// That head cannot hold a path on the run's records side.
++// Such a path must be unchanged since the records side's commit st.MasterRecordsBase, absence included.
++// Without that commit it is unverifiable.
+ // A differing or unverifiable path, or a finding with no path, refuses with ErrAuditNotAcceptable.
+ // A refusal mutates nothing.
+ // A missing recorded commit refuses first, with the way forward for it.
+@@ -123,8 +128,8 @@ func AcceptPendingAudit(engines AuditEngines, st *State, geom Geometry, parentBr
+ 	}
+ 	head := bases.Last
+ 	if head != "" {
+-		if _, err := reconcileHead(geom.git(), geom.WorktreeRoot, head, "accept-audit: last batch head", parentBranch, acceptAuditHeadRefusal); err != nil {
+-			return nil, false, fmt.Errorf("%w: %v", ErrAuditNotAcceptable, err)
++		if err := reconcileAcceptHead(geom, st, head, parentBranch); err != nil {
++			return nil, false, err
+ 		}
+ 		if head, err = geom.git().HeadSHA(geom.WorktreeRoot); err != nil {
+ 			return nil, false, err
+@@ -142,7 +147,11 @@ func AcceptPendingAudit(engines AuditEngines, st *State, geom Geometry, parentBr
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+-	if len(differing) == 0 && len(unverifiable) == 0 && len(contracts.Uncleared) == 0 && !pathless {
++	unverifiable, recordsChanged, err := splitRecordsSidePaths(geom, st.MasterRecordsBase, unverifiable)
++	if err != nil {
++		return nil, false, err
++	}
++	if len(differing) == 0 && len(unverifiable) == 0 && len(recordsChanged) == 0 && len(contracts.Uncleared) == 0 && !pathless {
+ 		st.PendingAuditFindings = nil
+ 		return pending, len(contracts.Absent) > 0, nil
+ 	}
+@@ -160,6 +169,9 @@ func AcceptPendingAudit(engines AuditEngines, st *State, geom Geometry, parentBr
+ 	if len(gitDiffering) > 0 {
+ 		parts = append(parts, fmt.Sprintf("differs from the last batch head; %s", wayForwardSteps(restoreStep(head, gitDiffering), stepAcceptAudit)))
+ 	}
++	if len(recordsChanged) > 0 {
++		parts = append(parts, fmt.Sprintf("%s %s; %s", strings.Join(recordsChanged, ", "), noteChangedRecords, wayForwardSteps(recordsRestoreStep(st.MasterRecordsBase, recordsChanged), stepAcceptAudit)))
++	}
+ 	if len(unverifiable) > 0 || pathless {
+ 		var what []string
+ 		for _, p := range unverifiable {
+@@ -180,6 +192,37 @@ func AcceptPendingAudit(engines AuditEngines, st *State, geom Geometry, parentBr
+ 	return nil, false, fmt.Errorf("%w: %s", ErrAuditNotAcceptable, strings.Join(parts, "; "))
+ }
+ 
++// reconcileAcceptHead returns nil when HEAD reconciles to lastHead through clean parent merges.
++// It also returns nil when HEAD reconciles that way to st.FixedHead and st.FixedBase reconciles that way to lastHead.
++// The verify gate's commit check vetted only the commits above FixedBase, so nothing but such merges may lie below it.
++// Otherwise it refuses, wrapping ErrAuditNotAcceptable, with the refusal worded against lastHead.
++// A failed git read is returned as it is.
++func reconcileAcceptHead(geom Geometry, st *State, lastHead string, parentBranch ParentBranchFunc) error {
++	git := geom.git()
++	_, refusal := reconcileHead(git, geom.WorktreeRoot, lastHead, "accept-audit: last batch head", parentBranch, acceptAuditHeadRefusal)
++	if refusal == nil {
++		return nil
++	}
++	var mismatch headMismatchError
++	if !errors.As(refusal, &mismatch) {
++		return refusal
++	}
++	base, fixed := st.FixedBase, st.FixedHead
++	if base != "" && fixed != lastHead && git.SHAExists(geom.WorktreeRoot, base) && git.SHAExists(geom.WorktreeRoot, fixed) {
++		_, err := walkParentMerges(git, geom.WorktreeRoot, lastHead, base, "accept-audit: verify-gate fixed base", parentBranch, acceptAuditHeadRefusal)
++		if err == nil {
++			_, err = reconcileHead(git, geom.WorktreeRoot, fixed, "accept-audit: verify-gate fixed head", parentBranch, acceptAuditHeadRefusal)
++		}
++		if err == nil {
++			return nil
++		}
++		if !errors.As(err, &mismatch) {
++			return err
++		}
++	}
++	return fmt.Errorf("%w: %v", ErrAuditNotAcceptable, refusal)
++}
++
+ // AcceptBatchFabricReference clears the Uncheckable entries of failed batch n.
+ // It clears them only when every entry is a pathless fabric-reference finding and the batch's evidence holds,
+ // so that `lym webster recover-batch n` can proceed instead of refusing toward the reset-to-start route.
+diff --git a/internal/websterengine/auditseverity_test.go b/internal/websterengine/auditseverity_test.go
+index 44a3daf89..a7d0ec297 100644
+--- a/internal/websterengine/auditseverity_test.go
++++ b/internal/websterengine/auditseverity_test.go
+@@ -149,10 +149,10 @@ func TestCheckParent_KeysDistinctAndStable(t *testing.T) {
+ 		NamedSpawns:  2,
+ 		ParentWrites: []string{"/w/a.go", "/w/b.go"},
+ 	}
+-	first := CheckParent(audit, "/w/o.yaml", "/w/s.md", "/w", NeverMatches{})
++	first := CheckParent(audit, "/w/o.yaml", "/w/s.md", "", "/w", NeverMatches{})
+ 	audit.NamedSpawns = 3
+ 	audit.ParentWrites = append(audit.ParentWrites, "/w/c.go")
+-	grown := CheckParent(audit, "/w/o.yaml", "/w/s.md", "/w", NeverMatches{})
++	grown := CheckParent(audit, "/w/o.yaml", "/w/s.md", "", "/w", NeverMatches{})
+ 
+ 	seen := map[string]bool{}
+ 	for _, v := range first {
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 36ad95954..070e95b09 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -124,6 +124,7 @@
+ // A correctness finding means the delta or the run's own state may be wrong:
+ // a fork writing Master's contract files, the plan directory or webster's run directory beyond its report;
+ // a parent write under `_lym`, to tracked content, under `.lym`, or in another worktree;
++// Master's write to the friction note its prompt names (State.MasterNotePath) is no finding at all;
+ // a fabric reference whose command the injected ReadOnly classifier does not accept.
+ // A policy finding breaks a steering rule without touching correctness, such as a named spawn or a nested agent call.
+ // The ledger in state.json dispositions each finding once per run.
+@@ -142,6 +143,13 @@
+ // An OK report whose delta deleted a symbol a later card targets is handed back once as *LaterTargetRemovedError.
+ // That happens while the fork still holds the batch's context.
+ // A pending correctness finding stays in state.json until `lym webster accept-audit` clears it on evidence.
++// That evidence needs HEAD at the last batch head, or above it only by two kinds of commit.
++// Those are clean parent merges and the verify-gate fix commits from State.FixedBase to State.FixedHead.
++// The fix commits count only while nothing but clean parent merges lies between the last batch head and FixedBase.
++// A path on the run's records side, outside webster's own run state, has evidence of its own.
++// State.MasterRecordsBase is the records side's HEAD from before Master spawned.
++// Such a path clears when it is unchanged since that commit, absence included.
++// Without that commit such a path cannot be checked.
+ // Run entry refuses with ErrPendingAuditFindings meanwhile.
+ // The paths that do not clear that way clear only through `lym webster reset --to start` and then `lym webster run`.
+ // The contract files outcome.yaml and summary.md have no blob to compare;
+@@ -244,6 +252,9 @@
+ // The run-exit fork audit, the gate's commit check (fixCommitRejection) and the Code-Review perch therefore bound them.
+ // The gate, not the verb, judges a fix: a dead cold fixer leaves the failure for the next evaluation.
+ // The first failed evaluation records HEAD as `PreFixHead`, which `reset --to pre-fix` targets.
++// A later run's gate keeps that head while no batch has landed above it and the commit check passes above it.
++// A pass with HEAD above it records it as `FixedBase` and HEAD as `FixedHead`.
++// accept-audit accepts the fix commits in that range.
+ // A failure is rerun once and only a failure that survives the rerun goes to a fixer;
+ // a hang (classifyHang) or a crashed test runner is never rerun, since neither is flakiness.
+ // Tests that fail once and pass on the rerun are reported as flaky, not failed.
+diff --git a/internal/websterengine/findingtext.go b/internal/websterengine/findingtext.go
+index 5eb6be11a..f4cc68c1f 100644
+--- a/internal/websterengine/findingtext.go
++++ b/internal/websterengine/findingtext.go
+@@ -1,11 +1,14 @@
+-// findingtext.go builds the text that audit and --fresh refusals share:
+-// the findings clause, which names each finding once with its path,
+-// and the reason a path cannot be checked; each refusal ends in a numbered list of steps from the helpers here.
++// findingtext.go builds the text that audit and --fresh refusals share.
++// That text includes the findings clause, which names each finding once with its path.
++// It also covers the reason a path cannot be checked and the status of a records-side path.
++// Each refusal ends in a numbered list of steps from the helpers here.
+ 
+ package websterengine
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"os"
+ 	"path/filepath"
+ 	"strings"
+ 
+@@ -29,6 +32,10 @@ const (
+ 
+ 	// noteClearedContract is the note of a contract file the evidence clears.
+ 	noteClearedContract = "cleared: absent, or Master wrote it last"
++	// noteClearedRecords is the note of a records-side path the evidence clears.
++	noteClearedRecords = "cleared: unchanged since Master spawned"
++	// noteChangedRecords is the note of a records-side path that differs from what it held when Master spawned.
++	noteChangedRecords = "changed since Master spawned"
+ 
+ 	// stepAcceptAudit is the step that accepts the pending findings.
+ 	stepAcceptAudit = "lym webster accept-audit"
+@@ -144,6 +151,93 @@ func uncheckableReason(geom Geometry, st *State, path string) (reason string, un
+ 	}
+ }
+ 
++// recordsBaseline returns the records side's HEAD commit, which a records-side path is later compared against.
++// It returns "" when there is no `_lym` directory, or none that a commit holds yet.
++func recordsBaseline(geom Geometry) (string, error) {
++	records := filepath.Join(geom.PaneCwd, lymdirs.LymDirName)
++	if _, err := os.Stat(records); errors.Is(err, os.ErrNotExist) {
++		return "", nil
++	} else if err != nil {
++		return "", fmt.Errorf("webster: stat %s: %w", records, err)
++	}
++	return geom.git().EnclosingCommit(records, "HEAD")
++}
++
++// recordsSideStatus reports whether path lies on the run's records side, and whether it is clean there.
++// The records side is the `_lym` directory the pane sees, wherever its link resolves.
++// Webster's run, reports and plan directories are no part of it.
++// Those hold the run's own state and have checks of their own.
++// base is the records side's commit from before Master could write.
++// Without a base its repository holds, no path counts as on the records side, so none clears.
++// A path is clean when its content is what base holds, absence included.
++// The error is a link-resolution, stat or git probe failure.
++func recordsSideStatus(geom Geometry, base, path string) (onRecords, clean bool, err error) {
++	if _, pathless := pathlessEntryClass(path); base == "" || path == "" || pathless {
++		return false, false, nil
++	}
++	canon, err := runplan.CanonicalPath(runplan.ResolveWritePath(geom.PaneCwd, path))
++	if err != nil {
++		return false, false, err
++	}
++	records, err := runplan.CanonicalPath(filepath.Join(geom.PaneCwd, lymdirs.LymDirName))
++	if err != nil {
++		return false, false, err
++	}
++	if !runplan.PathWithin(records, canon) {
++		return false, false, nil
++	}
++	for _, dir := range []string{geom.WebsterDir, geom.ReportsDir, geom.PlanDir} {
++		own, err := runplan.CanonicalPath(dir)
++		if err != nil {
++			return false, false, err
++		}
++		if runplan.PathWithin(own, canon) {
++			return false, false, nil
++		}
++	}
++	known, err := geom.git().EnclosingCommit(records, base)
++	if err != nil || known == "" {
++		return false, false, err
++	}
++	rel, err := filepath.Rel(records, canon)
++	if err != nil {
++		return false, false, fmt.Errorf("webster: relate %s to %s: %w", canon, records, err)
++	}
++	now, err := geom.git().WorktreeBlob(records, canon)
++	if err != nil {
++		return false, false, err
++	}
++	// The leading "./" makes git read the path against the records directory, not its repository's root.
++	then, err := geom.git().CommitBlob(records, base, "./"+filepath.ToSlash(rel))
++	if err != nil {
++		return false, false, err
++	}
++	return true, now == then, nil
++}
++
++// splitRecordsSidePaths drops every clean records-side path from paths, judged against base.
++// It returns the changed records-side paths apart from the rest, each in input order.
++func splitRecordsSidePaths(geom Geometry, base string, paths []string) (rest, changed []string, err error) {
++	for _, p := range paths {
++		onRecords, clean, err := recordsSideStatus(geom, base, p)
++		if err != nil {
++			return nil, nil, err
++		}
++		switch {
++		case !onRecords:
++			rest = append(rest, p)
++		case !clean:
++			changed = append(changed, p)
++		}
++	}
++	return rest, changed, nil
++}
++
++// recordsRestoreStep is the step that restores records-side paths to the records side's commit base.
++func recordsRestoreStep(base string, paths []string) string {
++	return fmt.Sprintf("restore %s to records-side commit %s (rm a path that commit does not hold)", strings.Join(paths, " "), base)
++}
++
+ // restoreStep is the step that restores paths to head with git.
+ func restoreStep(head string, paths []string) string {
+ 	return fmt.Sprintf("git checkout %s -- %s (rm a path the head does not hold)", head, strings.Join(paths, " "))
+diff --git a/internal/websterengine/git.go b/internal/websterengine/git.go
+index ad503de85..1e6e57a36 100644
+--- a/internal/websterengine/git.go
++++ b/internal/websterengine/git.go
+@@ -37,6 +37,10 @@ type Git interface {
+ 	// AddedPaths returns, sorted, the repository-relative paths that a commit in base..head adds over its first parent.
+ 	// A path a later commit in the range deletes still counts.
+ 	AddedPaths(worktree, base, head string) ([]string, error)
++	// EnclosingCommit returns the commit rev names in the repository holding dir.
++	// dir may be a subdirectory of that repository.
++	// It returns "" when git resolves no such commit there.
++	EnclosingCommit(dir, rev string) (string, error)
+ }
+ 
+ // realGit implements Git over the repository on disk;
+@@ -83,6 +87,8 @@ func (realGit) AddedPaths(worktree, base, head string) ([]string, error) {
+ 	return addedPaths(worktree, base, head)
+ }
+ 
++func (realGit) EnclosingCommit(dir, rev string) (string, error) { return enclosingCommit(dir, rev) }
++
+ func (realGit) PathDiffers(worktree, base, path string) (bool, error) {
+ 	return worktreePathDiffers(worktree, base, path)
+ }
+diff --git a/internal/websterengine/gitfake_test.go b/internal/websterengine/gitfake_test.go
+index 043bdf474..e44c4e6b8 100644
+--- a/internal/websterengine/gitfake_test.go
++++ b/internal/websterengine/gitfake_test.go
+@@ -347,6 +347,17 @@ func (g *fakeGit) CommitLog(_, base, head string) ([]websterengine.CommitLogEntr
+ 
+ func (g *fakeGit) IgnoredPath(_, path string) (bool, error) { return g.ignored[path], nil }
+ 
++// EnclosingCommit answers HEAD with the fake's head and a registered commit with itself.
++func (g *fakeGit) EnclosingCommit(_, rev string) (string, error) {
++	if rev == "HEAD" {
++		return g.head, nil
++	}
++	if g.SHAExists("", rev) {
++		return rev, nil
++	}
++	return "", nil
++}
++
+ func (g *fakeGit) OtherWorktrees(string) ([]string, error) { return g.others, nil }
+ 
+ func (g *fakeGit) AddedPaths(_, base, head string) ([]string, error) {
+diff --git a/internal/websterengine/gitwrap.go b/internal/websterengine/gitwrap.go
+index 163a9ea03..6adee9f0c 100644
+--- a/internal/websterengine/gitwrap.go
++++ b/internal/websterengine/gitwrap.go
+@@ -110,37 +110,44 @@ func reportHeadRefusal(batch int) headRefusal {
+ 
+ // reconcileHead cross-checks reportHead against worktree's HEAD, tolerating only clean parent merges between them.
+ // refusal sets the wording of the way forward in each refusal it returns.
++// A refusal is a headMismatchError; any other error is a failed git read.
+ func reconcileHead(git Git, worktree, reportHead, subject string, parentBranch ParentBranchFunc, refusal headRefusal) (warning string, err error) {
+ 	head, err := git.HeadSHA(worktree)
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	if head == reportHead {
+-		return "", nil
++	merges, err := walkParentMerges(git, worktree, reportHead, head, subject, parentBranch, refusal)
++	if err != nil || len(merges) == 0 {
++		return "", err
+ 	}
++	return fmt.Sprintf("webster: %s: head_sha %q differs from the worktree's HEAD %q; only merge commits (%s) sit between them, so the batch is recorded at the report's head_sha %q",
++		subject, reportHead, head, strings.Join(merges, ", "), reportHead), nil
++}
+ 
+-	var merges []string
+-	for cur := head; ; {
+-		if cur == reportHead {
+-			return fmt.Sprintf("webster: %s: head_sha %q differs from the worktree's HEAD %q; only merge commits (%s) sit between them, so the batch is recorded at the report's head_sha %q",
+-				subject, reportHead, head, strings.Join(merges, ", "), reportHead), nil
+-		}
++// headMismatchError is a head cross-check's refusal, as opposed to a failure to read the commits.
++type headMismatchError struct{ error }
++
++// walkParentMerges walks tip's first-parent chain down to reportHead and returns the clean parent merges it passed.
++// Any other commit on the way is a headMismatchError refusal worded by refusal.
++func walkParentMerges(git Git, worktree, reportHead, tip, subject string, parentBranch ParentBranchFunc, refusal headRefusal) (merges []string, err error) {
++	for cur := tip; cur != reportHead; {
+ 		parents, err := git.CommitParents(worktree, cur)
+ 		if err != nil {
+-			return "", fmt.Errorf("websterengine: walk first-parent chain from %s in %s: %w", head, worktree, err)
++			return nil, fmt.Errorf("websterengine: walk first-parent chain from %s in %s: %w", tip, worktree, err)
+ 		}
+ 		if len(parents) < 2 {
+-			return "", fmt.Errorf("webster: %s: head_sha %q does not match the worktree's actual HEAD %q; "+
++			return nil, headMismatchError{fmt.Errorf("webster: %s: head_sha %q does not match the worktree's actual HEAD %q; "+
+ 				"only merge commits, such as a parent merge-in, may sit between a fork's reported head and HEAD; "+
+ 				"%s",
+-				subject, reportHead, head, wayForwardSteps(refusal.resetStep, refusal.rerun))
++				subject, reportHead, tip, wayForwardSteps(refusal.resetStep, refusal.rerun))}
+ 		}
+ 		if reason := git.MergeRejection(worktree, cur, parents, parentBranch); reason != "" {
+-			return "", parentMergeRefusal(subject, reportHead, head, cur, reason, refusal)
++			return nil, headMismatchError{parentMergeRefusal(subject, reportHead, tip, cur, reason, refusal)}
+ 		}
+ 		merges = append(merges, cur)
+ 		cur = parents[0]
+ 	}
++	return merges, nil
+ }
+ 
+ // resolveParentTips returns every tip a parent merge-in may merge from:
+@@ -424,6 +431,20 @@ func commitBlob(worktree, commit, path string) (string, error) {
+ 	return strings.TrimSpace(stdout), nil
+ }
+ 
++// enclosingCommit returns the commit rev names in the repository holding dir, or "" when git rejects the question:
++// dir lies in no repository, or rev names no commit there.
++// A git that could not be run is an error.
++func enclosingCommit(dir, rev string) (string, error) {
++	stdout, err := gitexec.Run([]string{"rev-parse", "--verify", "--quiet", rev + "^{commit}"}, dir)
++	if _, rejected := gitExitCode(err); rejected {
++		return "", nil
++	}
++	if err != nil {
++		return "", fmt.Errorf("websterengine: git rev-parse %s in %s: %w", rev, dir, err)
++	}
++	return strings.TrimSpace(stdout), nil
++}
++
+ // treePathsWithBlob returns, sorted, every path in commit's whole tree whose object id is blob.
+ func treePathsWithBlob(worktree, commit, blob string) ([]string, error) {
+ 	stdout, err := gitexec.Run([]string{"ls-tree", "-r", commit}, worktree)
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 886b4376d..e813fe19a 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -380,7 +380,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	for _, f := range audit.Forks {
+ 		if slices.Contains(bs.BracketTranscripts, f.TranscriptPath) {
+ 			bracketForks = append(bracketForks, f)
+-			if slices.ContainsFunc(f.WritePaths, func(w string) bool { return isOwnReportWrite(deps.Geom.PaneCwd, w, ownReport) }) {
++			if slices.ContainsFunc(f.WritePaths, func(w string) bool { return isWriteOf(deps.Geom.PaneCwd, w, ownReport) }) {
+ 				counted = append(counted, f)
+ 			}
+ 		}
+@@ -410,7 +410,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		return nil, err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.State.MasterNotePath, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range append(slices.Clone(newReports), bracketForks...) {
+ 		candidates = append(candidates, CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, ownReport, deps.RefMatcher)...)
+ 		forkWarnings = append(forkWarnings, ForkWarnings(f)...)
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 7b8553607..9f48fb44a 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -581,6 +581,22 @@ func TestRecordBatch_AuditOutcomes(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:   "a Master write to the saved friction note path is no finding",
++			audits: oneFork,
++			prepare: func(t *testing.T, fx *recordFixture) {
++				note := filepath.Join(t.TempDir(), "webster-master.md")
++				fx.Deps.State.MasterNotePath = note
++				fx.Audit.scripted[0].ParentWrites = []string{note}
++			},
++			report: okReport,
++			check: func(t *testing.T, fx *recordFixture, result *websterengine.RecordResult, err error) {
++				requireDone(t, result)
++				if len(result.Warnings) != 0 {
++					t.Errorf("RecordResult.Warnings = %v; want none", result.Warnings)
++				}
++			},
++		},
+ 		{
+ 			name:   "a done report over an unrendered amendment fails the batch with card_amended",
+ 			audits: oneFork,
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index 9628e1575..e4a946154 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -719,7 +719,7 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	}
+ 
+ 	// The fixer fork's prompt is rendered and written by Go up front:
+-	// Merriam may write nothing but its two contract files.
++	// Merriam may write nothing but its two contract files and its friction note.
+ 	verifyFixNotePath := friction.NotePath(deps.FrictionDir, "webster-verify-fix")
+ 	choice, ok := deps.Roles[RoleMaster]
+ 	if !ok {
+@@ -750,6 +750,11 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 		return RunResult{}, fmt.Errorf("%w %s", err, deps.reentryStep())
+ 	}
+ 	masterNotePath := friction.NotePath(deps.FrictionDir, "webster-master")
++	// Read before the spawn, so nothing Master writes can be in it.
++	masterRecordsBase, err := recordsBaseline(deps.Geom)
++	if err != nil {
++		return RunResult{}, fmt.Errorf("webster: read the records side's HEAD: %w; way forward: transient, %s", err, deps.reentryStep())
++	}
+ 	prompt, err := RenderMasterPrompt(batches, st, outcomePath, summaryPath, verifyFixPromptPath, deps.Geom.PlanDir, deps.Config.SelfFixCap, deps.Geom.PaneCwd, deps.Geom.WorktreeRoot, deps.Geom.StencilsDir, engine, patternChanges, parentDecisions, masterNotePath, deps.Geom.ParentName)
+ 	if err != nil {
+ 		return RunResult{}, err
+@@ -802,6 +807,8 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	// that pane would be invisible to every future reclaim.
+ 	// Two saves, not one, keep the reclaimable record ahead of the fallible resolve.
+ 	st.MasterStrand = handle.StrandGUID()
++	st.MasterNotePath = masterNotePath
++	st.MasterRecordsBase = masterRecordsBase
+ 	if err := SaveState(deps.Geom.WebsterDir, deps.Geom.ScratchDir, st); err != nil {
+ 		return RunResult{}, err
+ 	}
+@@ -1081,7 +1088,7 @@ func runExitAuditCrossCheck(deps RunDeps, outcomePath, summaryPath string, resul
+ 		return nil, "", err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, deps.Geom.PaneCwd, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, st.MasterNotePath, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range result.ForkAudit.Forks {
+ 		candidates = append(candidates, CheckFork(f, outcomePath, summaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, forkOwnReport(st, deps.Geom, f.TranscriptPath), deps.RefMatcher)...)
+ 	}
+@@ -1257,12 +1264,15 @@ func pendingFindingsText(engines AuditEngines, st *State, geom Geometry, items [
+ // pendingPathsWayForward returns the ordered steps that clear pending findings naming paths.
+ // It also returns each path's note for the findings clause.
+ // A finding with no path clears only through the reset route.
+-// So does a finding with a path that nothing the run recorded can check, unless the path is a cleared contract file.
++// So does a finding with a path that nothing the run recorded can check.
++// A cleared contract file is exempt from that.
++// So is a path on the run's records side while st.MasterRecordsBase names a commit its repository holds.
+ // The steps are then the reset to start, then reentry;
+ // accept-audit refuses every finding while any one of them cannot be checked.
+ // Otherwise the steps are the restores, then accept-audit, then reentry.
+ // The restores are: git checkout of the differing tracked paths to the last batch head;
+ // restore-plan for plan paths that differ;
++// a restore to st.MasterRecordsBase for a records-side path changed since that commit;
+ // rm for a contract path that a fork, recovery or verify-fixer session wrote last.
+ // The error is a link-resolution or git probe failure.
+ func pendingPathsWayForward(geom Geometry, st *State, writes RunWrites, paths []string, pathless bool, reentry string) (steps []string, notes map[string]string, err error) {
+@@ -1283,6 +1293,23 @@ func pendingPathsWayForward(geom Geometry, st *State, writes RunWrites, paths []
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
++	var tracked, recordsChanged []string
++	for _, p := range rest {
++		onRecords, clean, err := recordsSideStatus(geom, st.MasterRecordsBase, p)
++		if err != nil {
++			return nil, nil, err
++		}
++		switch {
++		case !onRecords:
++			tracked = append(tracked, p)
++		case clean:
++			notes[p] = noteClearedRecords
++		default:
++			notes[p] = noteChangedRecords
++			recordsChanged = append(recordsChanged, p)
++		}
++	}
++	rest = tracked
+ 	unchecked := pathless
+ 	for _, p := range slices.Concat(plan, rest) {
+ 		reason, uncheckable, err := uncheckableReason(geom, st, p)
+@@ -1319,6 +1346,9 @@ func pendingPathsWayForward(geom Geometry, st *State, writes RunWrites, paths []
+ 	if len(plan) > 0 {
+ 		steps = append(steps, stepRestorePlan)
+ 	}
++	if len(recordsChanged) > 0 {
++		steps = append(steps, recordsRestoreStep(st.MasterRecordsBase, recordsChanged))
++	}
+ 	if len(unclearedPaths) > 0 {
+ 		steps = append(steps, "rm "+strings.Join(unclearedPaths, " "))
+ 	}
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 4eb640beb..abbd6e566 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -1661,6 +1661,25 @@ func TestRun_MasterSpawn(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			// The parent audit and accept-audit read both after the spawn.
++			name:  "the friction note path and the records side's base are persisted",
++			cards: 1,
++			prepare: func(t *testing.T, fx *runFixture) {
++				fx.Deps.FrictionDir = t.TempDir()
++				writeWorktreeFile(t, fx.Worktree, "_lym/kept.txt", "records")
++			},
++			check: func(t *testing.T, fx *runFixture) {
++				st := loadRunState(t, fx)
++				note := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
++				if st.MasterNotePath != note || !strings.Contains(fx.Starter.startCalls[0].Prompt, note) {
++					t.Errorf("State.MasterNotePath = %q; want %q, the note the prompt names", st.MasterNotePath, note)
++				}
++				if st.MasterRecordsBase != fx.Git.head {
++					t.Errorf("State.MasterRecordsBase = %q; want the records side's HEAD %q", st.MasterRecordsBase, fx.Git.head)
++				}
++			},
++		},
+ 		{
+ 			// The partition is formed once by the active batchifier and recorded before the spawn.
+ 			name:  "a first init under a grouping batcher records the partition with each batch's profile and estimate",
+@@ -1993,6 +2012,25 @@ func TestRun_DoneOutcome(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name:    "Master's write to the friction note its prompt names leaves the run done",
++			cards:   1,
++			session: "master-session-note",
++			prepare: func(t *testing.T, fx *runFixture) { fx.Deps.FrictionDir = t.TempDir() },
++			state: &websterengine.State{State: runplan.State{Batches: map[int]*websterengine.BatchState{
++				1: {Slug: "batch1", Kind: "fork", Terminal: true, Status: "done"},
++			}}},
++			audit: func(fx *runFixture) shuttleengine.ForkAudit {
++				note := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
++				return shuttleengine.ForkAudit{ParentWrites: []string{note}, Forks: forkReports(1)}
++			},
++			batchesDone: 1,
++			check: func(t *testing.T, fx *runFixture, result websterengine.RunResult) {
++				if result.Outcome != "done" || warningsContain(result.Warnings, "parent-write") {
++					t.Errorf("RunResult = outcome %q, warnings %v; want done with no parent-write finding", result.Outcome, result.Warnings)
++				}
++			},
++		},
+ 		{
+ 			name:    "a finding an earlier record-batch warned on is not warned again",
+ 			cards:   3,
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index 79834acac..c3bc4aeea 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -93,6 +93,14 @@ type State struct {
+ 	// Webster reads the session through it, since a shuttle run record does not outlive its run.
+ 	// Empty for a state written before the field existed.
+ 	MasterEngine string `json:"masterEngine,omitempty"`
++	// MasterNotePath is the friction note path the most recent Master's prompt names, captured at spawn.
++	// The parent audit lets Master write it, since the prompt asks Master to.
++	// Empty when friction notes are off, and for a state written before the field existed.
++	MasterNotePath string `json:"masterNotePath,omitempty"`
++	// MasterRecordsBase is the records side's HEAD commit from before the most recent Master spawned.
++	// accept-audit compares a suspect records-side path against it.
++	// Empty when the records side held no commit, and for a state written before the field existed.
++	MasterRecordsBase string `json:"masterRecordsBase,omitempty"`
+ 	// SeenForkTranscripts holds every subagent transcript path already attributed to a batch.
+ 	// The set spans all batches in this run.
+ 	// record-batch's incremental audit consults it to parse only what is new.
+@@ -110,7 +118,18 @@ type State struct {
+ 	PendingAuditFindings []PendingAuditFinding `json:"pendingAuditFindings,omitempty"`
+ 	// PreFixHead is the HEAD the latest verify-gate run started its fixes from.
+ 	// The gate records it at its first failed evaluation and clears it on a pass, so a later verb can reset to it.
++	// A later run's gate takes it over, recording none of its own, while it still bounds the fixes made since it.
+ 	PreFixHead string `json:"preFixHead,omitempty"`
++	// FixedHead is the HEAD the latest verify gate passed at after its fixers committed above the pre-fix head.
++	// The gate's commit check vetted the commits between FixedBase and it as fix commits.
++	// So accept-audit accepts them as it accepts a clean parent merge.
++	// A pass with no fix commits leaves it unchanged, and a reset clears it.
++	FixedHead string `json:"fixedHead,omitempty"`
++	// FixedBase is the commit FixedHead's vetted commits start above: the pre-fix head of the gate that passed.
++	// A pass keeps the earlier base when its pre-fix head is the earlier FixedHead or only clean parent merges above it.
++	// The two ranges then join.
++	// It is written and cleared with FixedHead.
++	FixedBase string `json:"fixedBase,omitempty"`
+ 	// VerifyFixers records every cold verify-gate fixer strand fix-verify spawned, in spawn order.
+ 	// Only the last can be running.
+ 	// A state written before this field existed loads it as nil.
+diff --git a/internal/websterengine/suspect_test.go b/internal/websterengine/suspect_test.go
+index ae16e9a95..bfbe2aac1 100644
+--- a/internal/websterengine/suspect_test.go
++++ b/internal/websterengine/suspect_test.go
+@@ -4,12 +4,14 @@ package websterengine
+ 
+ import (
+ 	"errors"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/fslink"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -374,6 +376,77 @@ func TestAcceptPendingAudit_AcceptsAfterHeadReset(t *testing.T) {
+ 	}
+ }
+ 
++// TestAcceptPendingAudit_AcceptsVerifyFixCommits proves which commits above the last batch head are accepted.
++// The verify-gate fix commits between the recorded fixed base and fixed head are, and no other commit is.
++func TestAcceptPendingAudit_AcceptsVerifyFixCommits(t *testing.T) {
++	tiergate.Require(t, 1)
++	commit := func(t *testing.T, fx *suspectFixture, name string) string {
++		t.Helper()
++		return gitkit.CommitFile(t, fx.geom.WorktreeRoot, name, name, name)
++	}
++	tests := []struct {
++		name string
++		// history adds commits above the last batch head and returns the fixed base and head the state records.
++		history func(t *testing.T, fx *suspectFixture) (base, head string)
++		accept  bool
++	}{
++		{name: "FixCommit", accept: true, history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			return fx.head, commit(t, fx, "fix.txt")
++		}},
++		{name: "CommitPastTheFixedHead", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			fixed := commit(t, fx, "fix.txt")
++			commit(t, fx, "later.txt")
++			return fx.head, fixed
++		}},
++		{name: "UnvettedCommitBelowTheFixedBase", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			base := commit(t, fx, "unvetted.txt")
++			return base, commit(t, fx, "fix.txt")
++		}},
++		{name: "NoFixedBase", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			return "", commit(t, fx, "fix.txt")
++		}},
++		{name: "FixedHeadOnASideBranch", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			root := fx.geom.WorktreeRoot
++			_, sideTip := gitwrapMergeSide(t, root, "side")
++			return fx.head, sideTip
++		}},
++		{name: "FixedHeadBelowTheLastBatchHead", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			commit(t, fx, "above.txt")
++			return fx.head, fx.start
++		}},
++		{name: "FixedHeadIsTheLastBatchHead", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			commit(t, fx, "above.txt")
++			return fx.head, fx.head
++		}},
++		{name: "FixedHeadNotInTheRepository", history: func(t *testing.T, fx *suspectFixture) (string, string) {
++			commit(t, fx, "above.txt")
++			return fx.head, "0123456789abcdef0123456789abcdef01234567"
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			fx := newSuspectFixture(t)
++			fx.st.FixedBase, fx.st.FixedHead = tt.history(t, fx)
++			fx.st.PendingAuditFindings = []PendingAuditFinding{{ID: "f1", Class: "parent-write", Detail: "d", Paths: []string{"tracked.txt"}}}
++
++			got, _, err := AcceptPendingAudit(nil, fx.st, fx.geom, nil)
++
++			if tt.accept {
++				if err != nil || len(got) != 1 || len(fx.st.PendingAuditFindings) != 0 {
++					t.Errorf("AcceptPendingAudit() = %v, %v, pending %v; want the one finding cleared", got, err, fx.st.PendingAuditFindings)
++				}
++				return
++			}
++			if !errors.Is(err, ErrAuditNotAcceptable) || !strings.Contains(err.Error(), "lym webster reset --to last-batch-head") {
++				t.Errorf("AcceptPendingAudit() error = %v; want ErrAuditNotAcceptable naming reset --to last-batch-head", err)
++			}
++			if len(fx.st.PendingAuditFindings) != 1 {
++				t.Errorf("PendingAuditFindings = %v; want unchanged", fx.st.PendingAuditFindings)
++			}
++		})
++	}
++}
++
+ func TestAcceptPendingAudit_RefusesUnverifiablePath(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	fx := newSuspectFixture(t)
+@@ -390,6 +463,107 @@ func TestAcceptPendingAudit_RefusesUnverifiablePath(t *testing.T) {
+ 	}
+ }
+ 
++// TestAcceptPendingAudit_RecordsSidePath proves how a path on the run's records side is judged.
++// It clears when unchanged since the recorded base commit, absence included.
++// A changed one refuses toward restoring it.
++// The records side is a subdirectory of a second repository, which the worktree's `_lym` links to.
++func TestAcceptPendingAudit_RecordsSidePath(t *testing.T) {
++	tiergate.Require(t, 1)
++	const restore = "1) restore %s to records-side commit %s"
++	const reset = "1) lym webster reset --to start"
++	tests := []struct {
++		name string
++		path string
++		// write is the content written to path before the call; empty writes nothing.
++		write string
++		// after changes the records side once the base commit is recorded.
++		after func(t *testing.T, repo string)
++		// noBase leaves the state without a base commit.
++		noBase bool
++		// wantRefusal is a fragment the refusal and the pending way forward hold; empty means accepted.
++		// A restore fragment takes the path and the base commit.
++		wantRefusal string
++	}{
++		{name: "AbsentNote", path: "_lym/loom/friction/webster-master.md"},
++		{name: "CommittedNote", path: "_lym/loom/friction/committed.md"},
++		{name: "EditedNote", path: "_lym/loom/friction/committed.md", write: "edited", wantRefusal: restore},
++		{name: "UncommittedNote", path: "_lym/loom/friction/new.md", write: "new", wantRefusal: restore},
++		{name: "CommittedAfterTheBase", path: "_lym/loom/friction/late.md", wantRefusal: restore, after: func(t *testing.T, repo string) {
++			gitkit.CommitFile(t, repo, "anchor/_lym/loom/friction/late.md", "late", "sync")
++		}},
++		{name: "DeletedAfterTheBase", path: "_lym/loom/friction/committed.md", wantRefusal: restore, after: func(t *testing.T, repo string) {
++			if err := os.Remove(filepath.Join(repo, "anchor", "_lym", "loom", "friction", "committed.md")); err != nil {
++				t.Fatal(err)
++			}
++		}},
++		{name: "Ignored", path: "_lym/loom/friction/note.tmp", write: "x", wantRefusal: restore},
++		{name: "NoBase", path: "_lym/loom/friction/committed.md", noBase: true, wantRefusal: reset},
++		{name: "RunState", path: "_lym/webster/state.json", wantRefusal: reset},
++		{name: "ReportsDir", path: "_lym/reports/01.yaml", wantRefusal: reset},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			fx := newSuspectFixture(t)
++			repo := gitwrapNewScratchRepo(t)
++			gitkit.CommitFile(t, repo, ".gitignore", "*.tmp\n", "ignore")
++			base := gitkit.CommitFile(t, repo, "anchor/_lym/loom/friction/committed.md", "note", "add note")
++			records := filepath.Join(repo, "anchor", "_lym")
++			if !tt.noBase {
++				fx.st.MasterRecordsBase = base
++			}
++			fx.geom.ReportsDir = filepath.Join(fx.geom.WorktreeRoot, "_lym", "reports")
++			// The fixture's run state moves to the records side, so the link can take the directory's place.
++			lym := filepath.Join(fx.geom.WorktreeRoot, "_lym")
++			if err := os.Rename(filepath.Join(lym, "webster"), filepath.Join(records, "webster")); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.Remove(lym); err != nil {
++				t.Fatal(err)
++			}
++			if err := fslink.CreateDirLink(lym, records); err != nil {
++				t.Fatal(err)
++			}
++			if tt.write != "" {
++				if err := os.WriteFile(filepath.Join(fx.geom.WorktreeRoot, tt.path), []byte(tt.write), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if tt.after != nil {
++				tt.after(t, repo)
++			}
++			fx.st.PendingAuditFindings = []PendingAuditFinding{{ID: "f1", Class: "parent-write", Detail: "d", Paths: []string{tt.path}}}
++			wantRefusal := tt.wantRefusal
++			if wantRefusal == restore {
++				wantRefusal = fmt.Sprintf(restore, tt.path, base)
++			}
++
++			wayForward := pendingAuditFindingsError(nil, fx.st, fx.geom, stepRun).Error()
++			got, _, err := AcceptPendingAudit(nil, fx.st, fx.geom, nil)
++			if tt.wantRefusal == "" {
++				if err != nil {
++					t.Fatalf("AcceptPendingAudit() error = %v; want accepted", err)
++				}
++				if len(got) != 1 || len(fx.st.PendingAuditFindings) != 0 {
++					t.Errorf("returned %v, pending %v; want one cleared finding", got, fx.st.PendingAuditFindings)
++				}
++				if want := "1) lym webster accept-audit"; !strings.Contains(wayForward, want) {
++					t.Errorf("pending way forward = %q; want it to contain %q", wayForward, want)
++				}
++				return
++			}
++			if !errors.Is(err, ErrAuditNotAcceptable) || !strings.Contains(err.Error(), wantRefusal) {
++				t.Errorf("AcceptPendingAudit() error = %v; want ErrAuditNotAcceptable containing %q", err, wantRefusal)
++			}
++			if !strings.Contains(wayForward, wantRefusal) {
++				t.Errorf("pending way forward = %q; want it to contain %q", wayForward, wantRefusal)
++			}
++			if len(fx.st.PendingAuditFindings) != 1 {
++				t.Errorf("PendingAuditFindings = %v; want unchanged", fx.st.PendingAuditFindings)
++			}
++		})
++	}
++}
++
+ func TestAcceptPendingAudit_PlanPathNamesRestorePlan(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	fx := newSuspectFixture(t)
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 8ab7ae6f8..93aa6e6d4 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -7,6 +7,7 @@ package websterengine
+ import (
+ 	"bufio"
+ 	"context"
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -190,10 +191,12 @@ type verifyGateSeams struct {
+ 	changedPaths func(sha string) ([]string, error)
+ 	// modulePath returns go.mod's module path, empty when the worktree has none.
+ 	modulePath func() string
++	// earlierPreFix returns the pre-fix head an earlier run left that this run's fixes still start from, or "".
++	earlierPreFix func() (string, error)
+ 	// recordPreFix persists head as state.json's PreFixHead.
+ 	recordPreFix func(head string) error
+-	// clearPreFix clears state.json's PreFixHead.
+-	clearPreFix func() error
++	// recordPass clears state.json's PreFixHead and, when fixedHead is set, records it with its fixedBase.
++	recordPass func(fixedBase, fixedHead string) error
+ }
+ 
+ // NewVerifyGate returns the must-pass shuttleengine.Gate for Master's spec, and the notes to apply after the wait.
+@@ -218,16 +221,20 @@ type verifyGateSeams struct {
+ // A run whose every failed tier run crashed its test runner with no failing test judged no code:
+ // it fails `Terminal` at once, on the first run or the rerun, naming the crashed runs,
+ // and no fixer gets it, no attempt is spent and no report is written.
+-// A failure that survives returns findings, and the first failure of any kind records HEAD as the pre-fix head.
++// A failure that survives returns findings.
++// The first failure of any kind records HEAD as the pre-fix head, unless the gate took over an earlier run's.
+ // Each failure goes to a fixer, which the report, the findings and the re-prompt line name.
+ // A failure that reaches attempts goes to the cold fixer.
+ // So does one that follows a fixer which added no commit above the pre-fix head.
+ // Once a failure goes cold, every later failure does.
+ // Every other failure goes to the fixer fork.
+ // Every failed evaluation writes the verify-gate report.
+-// Attempt and failure counts, the routing and the pre-fix head live in the closure for one shuttle run.
+-// The pre-fix head is also persisted as state.json's PreFixHead when recorded, overwriting an earlier run's value.
+-// A passing evaluation clears it.
++// Attempt and failure counts and the routing live in the closure for one shuttle run.
++// The pre-fix head is persisted as state.json's PreFixHead when recorded.
++// A later run's gate takes over the persisted one while it is on HEAD's history, no batch has landed above it,
++// and every commit above it passes the commit check; otherwise it starts with none.
++// A passing evaluation clears it;
++// when HEAD has moved above the pre-fix head, the pass also records the two as state.json's FixedBase and FixedHead.
+ func NewVerifyGate(geom Geometry, attempts int, batches []batcher.Batch, parentBranch ParentBranchFunc, frictionDir, fixPromptPath string) (shuttleengine.Gate, *VerifyGateNotes) {
+ 	paths := verifytree.NewPaths(geom.PaneCwd, geom.VerifyDir)
+ 	seams := verifyGateSeams{
+@@ -274,19 +281,98 @@ func NewVerifyGate(geom Geometry, attempts int, batches []batcher.Batch, parentB
+ 			shas, labels := accumulatedCardSHAs(batches, st)
+ 			return shas, labels, nil
+ 		},
+-		changedPaths: func(sha string) ([]string, error) { return commitChangedPaths(geom.WorktreeRoot, sha) },
+-		modulePath:   func() string { return readModulePath(geom.WorktreeRoot) },
+-		recordPreFix: func(head string) error { return setPreFixHead(geom, head) },
+-		clearPreFix:  func() error { return setPreFixHead(geom, "") },
++		changedPaths:  func(sha string) ([]string, error) { return commitChangedPaths(geom.WorktreeRoot, sha) },
++		modulePath:    func() string { return readModulePath(geom.WorktreeRoot) },
++		earlierPreFix: func() (string, error) { return earlierPreFixHead(geom, parentBranch) },
++		recordPreFix:  func(head string) error { return setPreFixHead(geom, head) },
++		recordPass: func(fixedBase, fixedHead string) error {
++			return recordGatePass(geom, parentBranch, fixedBase, fixedHead)
++		},
+ 	}
+ 	notes := &VerifyGateNotes{frictionDir: frictionDir}
+ 	return newVerifyGate(geom.ReportsDir, attempts, notes, fixPromptPath, seams), notes
+ }
+ 
+-// setPreFixHead loads state.json under the state-mutation lease, sets PreFixHead and saves.
++// setPreFixHead sets state.json's PreFixHead to head.
++func setPreFixHead(geom Geometry, head string) error {
++	return mutateGateState(geom, func(st *State) bool {
++		if st.PreFixHead == head {
++			return false
++		}
++		st.PreFixHead = head
++		return true
++	})
++}
++
++// earlierPreFixHead returns state.json's PreFixHead while it still bounds the fixes made since it, and "" otherwise.
++// It does while it is an ancestor of HEAD, the last recorded batch head is an ancestor of it,
++// and every commit above it is a non-merge commit or a clean parent merge.
++// A head with another merge above it would fail every later run's gate on that merge.
++func earlierPreFixHead(geom Geometry, parentBranch ParentBranchFunc) (string, error) {
++	st, err := LoadState(geom.WebsterDir, geom.ScratchDir)
++	if err != nil || st == nil || st.PreFixHead == "" {
++		return "", err
++	}
++	git := geom.git()
++	if !git.SHAExists(geom.WorktreeRoot, st.PreFixHead) {
++		return "", nil
++	}
++	head, err := git.HeadSHA(geom.WorktreeRoot)
++	if err != nil {
++		return "", err
++	}
++	onHead, err := git.IsAncestor(geom.WorktreeRoot, st.PreFixHead, head)
++	if err != nil || !onHead {
++		return "", err
++	}
++	bases, err := runplan.RunEvidenceBases(geom.runPlan(), &st.State)
++	if err != nil || len(bases.Missing) > 0 {
++		return "", err
++	}
++	if bases.Last != "" {
++		aboveBatches, err := git.IsAncestor(geom.WorktreeRoot, bases.Last, st.PreFixHead)
++		if err != nil || !aboveBatches {
++			return "", err
++		}
++	}
++	rejected, _, err := fixCommitRejection(geom.WorktreeRoot, st.PreFixHead, parentBranch)
++	if err != nil || rejected != "" {
++		return "", err
++	}
++	return st.PreFixHead, nil
++}
++
++// recordGatePass clears state.json's PreFixHead.
++// When fixedHead is set, it records it as FixedHead and fixedBase as FixedBase.
++// It keeps the earlier FixedBase when only clean parent merges, or nothing, lie from the earlier FixedHead to fixedBase.
++func recordGatePass(geom Geometry, parentBranch ParentBranchFunc, fixedBase, fixedHead string) error {
++	var walkErr error
++	err := mutateGateState(geom, func(st *State) bool {
++		changed := st.PreFixHead != ""
++		st.PreFixHead = ""
++		if fixedHead != "" && st.FixedHead != fixedHead {
++			_, err := walkParentMerges(geom.git(), geom.WorktreeRoot, st.FixedHead, fixedBase, "verify gate: earlier fixed head", parentBranch, headRefusal{})
++			var mismatch headMismatchError
++			switch {
++			case errors.As(err, &mismatch):
++				st.FixedBase = fixedBase
++			case err != nil:
++				walkErr = err
++				return false
++			}
++			st.FixedHead = fixedHead
++			changed = true
++		}
++		return changed
++	})
++	return errors.Join(walkErr, err)
++}
++
++// mutateGateState loads state.json under the state-mutation lease and applies change,
++// and it saves when change reports a change.
+ // Master is idle at a gate evaluation, so no bracket verb holds the lease then.
+ // A run with no state.json has nothing to record into and is left alone.
+-func setPreFixHead(geom Geometry, head string) error {
++func mutateGateState(geom Geometry, change func(st *State) bool) error {
+ 	lease, err := AcquireStateMutation(geom.ScratchDir)
+ 	if err != nil {
+ 		return err
+@@ -296,10 +382,9 @@ func setPreFixHead(geom Geometry, head string) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	if st == nil || st.PreFixHead == head {
++	if st == nil || !change(st) {
+ 		return nil
+ 	}
+-	st.PreFixHead = head
+ 	return SaveState(geom.WebsterDir, geom.ScratchDir, st)
+ }
+ 
+@@ -307,6 +392,8 @@ func setPreFixHead(geom Geometry, head string) error {
+ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixPromptPath string, s verifyGateSeams) shuttleengine.Gate {
+ 	attempt := 0
+ 	preFix := ""
++	// readEarlier is set once the first done arrival has taken over an earlier run's pre-fix head.
++	readEarlier := false
+ 	reportPath := VerifyGateReportPath(reportsDir)
+ 	failures := 0
+ 	cold := false
+@@ -314,7 +401,7 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 	// command is the current arrival's verify command, empty until the arrival renders it.
+ 	command := ""
+ 
+-	// fail records the pre-fix head on the first failure.
++	// fail records the pre-fix head on the first failure that finds none.
+ 	// It routes the failure to a fixer, writes the report naming the arrival's verify command, and returns its findings.
+ 	fail := func(report VerifyGateReport) (shuttleengine.GateResult, error) {
+ 		failures++
+@@ -364,8 +451,19 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 	}
+ 
+ 	// pass clears the persisted pre-fix head and returns a passing result.
++	// When fixes moved HEAD above the pre-fix head, it also records both as the fixed range.
+ 	pass := func() (shuttleengine.GateResult, error) {
+-		if err := s.clearPreFix(); err != nil {
++		fixedHead := ""
++		if preFix != "" {
++			head, err := s.head()
++			if err != nil {
++				return shuttleengine.GateResult{}, err
++			}
++			if head != preFix {
++				fixedHead = head
++			}
++		}
++		if err := s.recordPass(preFix, fixedHead); err != nil {
+ 			return shuttleengine.GateResult{}, err
+ 		}
+ 		return shuttleengine.GateResult{Passed: true}, nil
+@@ -425,6 +523,14 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 			return shuttleengine.GateResult{Passed: true}, nil
+ 		}
+ 
++		if !readEarlier {
++			earlier, err := s.earlierPreFix()
++			if err != nil {
++				return shuttleengine.GateResult{}, err
++			}
++			preFix, readEarlier = earlier, true
++		}
++
+ 		dirty, err := s.dirty()
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, err
+diff --git a/internal/websterengine/verifygate_integration_test.go b/internal/websterengine/verifygate_integration_test.go
+index c69f07dec..ada1099fc 100644
+--- a/internal/websterengine/verifygate_integration_test.go
++++ b/internal/websterengine/verifygate_integration_test.go
+@@ -198,6 +198,59 @@ func TestVerifyGate_CleanParentMergeAboveTheFixBasePasses(t *testing.T) {
+ 	}
+ }
+ 
++// TestVerifyGate_TakesOverAnEarlierRunsPreFixHead pins the fixed base a restarted run's gate records.
++// It is the earlier failure's pre-fix head.
++// It ignores one that a batch has since landed above, or that a merge it would reject lies above.
++func TestVerifyGate_TakesOverAnEarlierRunsPreFixHead(t *testing.T) {
++	tiergate.Require(t, 1)
++	tests := []struct {
++		name string
++		// batchAbove records a batch head above the persisted pre-fix head.
++		batchAbove bool
++		// rejectedMergeAbove merges a branch that is not the parent above the persisted pre-fix head.
++		rejectedMergeAbove bool
++	}{
++		{name: "KeptAcrossTheRestart"},
++		{name: "StaleBelowABatchHead", batchAbove: true},
++		{name: "DroppedBelowARejectedMerge", rejectedMergeAbove: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			r := newVerifyGateRepo(t)
++			root := r.geom.WorktreeRoot
++			preFix := gitkit.RevParse(t, root, "HEAD")
++			head := gitkit.CommitFile(t, root, "fix.txt", "fix", "fix")
++			if tt.rejectedMergeAbove {
++				gitwrapMergeSide(t, root, "unrelated")
++			}
++			st := &State{PreFixHead: preFix}
++			if tt.batchAbove {
++				st.Batches = map[int]*BatchState{1: {Slug: "one", StartSHA: preFix, Terminal: true, Status: DigestStatusDone, Digest: &Digest{HeadSHA: head}}}
++			}
++			if err := SaveState(r.geom.WebsterDir, r.geom.ScratchDir, st); err != nil {
++				t.Fatalf("SaveState: %v", err)
++			}
++			gate, _ := NewVerifyGate(r.geom, 3, nil, nil, "", testFixPromptPath)
++
++			if res, err := gate(); err != nil || !res.Passed {
++				t.Fatalf("gate() = %+v, %v; want a pass", res, err)
++			}
++
++			wantBase, wantHead := preFix, head
++			if tt.batchAbove || tt.rejectedMergeAbove {
++				wantBase, wantHead = "", ""
++			}
++			got, err := LoadState(r.geom.WebsterDir, r.geom.ScratchDir)
++			if err != nil {
++				t.Fatalf("LoadState: %v", err)
++			}
++			if got.FixedBase != wantBase || got.FixedHead != wantHead {
++				t.Errorf("FixedBase, FixedHead = %q, %q; want %q, %q", got.FixedBase, got.FixedHead, wantBase, wantHead)
++			}
++		})
++	}
++}
++
+ // TestVerifyGate_TellsTheGeometryHoldOnTheFirstRunAndTheRerun pins the gate's calls to geom.VerifyHold:
+ // a verify that fails on its first run and passes on the rerun waits out the pause once before each.
+ func TestVerifyGate_TellsTheGeometryHoldOnTheFirstRunAndTheRerun(t *testing.T) {
+diff --git a/internal/websterengine/verifygate_test.go b/internal/websterengine/verifygate_test.go
+index 234bda6c6..bd506d19d 100644
+--- a/internal/websterengine/verifygate_test.go
++++ b/internal/websterengine/verifygate_test.go
+@@ -48,6 +48,11 @@ type gateFake struct {
+ 	// recorded holds the heads recordPreFix was called with, in order.
+ 	recorded []string
+ 	cleared  int
++	// fixedBases and fixedHeads hold what recordPass was called with, in order.
++	fixedBases []string
++	fixedHeads []string
++	// earlier is the pre-fix head the earlierPreFix seam returns.
++	earlier string
+ 	// recordErr is returned by recordPreFix.
+ 	recordErr error
+ }
+@@ -94,13 +99,16 @@ func (f *gateFake) seams() verifyGateSeams {
+ 			}
+ 			return []string{"internal/b/b.go"}, nil
+ 		},
+-		modulePath: func() string { return testModulePath },
++		modulePath:    func() string { return testModulePath },
++		earlierPreFix: func() (string, error) { return f.earlier, nil },
+ 		recordPreFix: func(head string) error {
+ 			f.recorded = append(f.recorded, head)
+ 			return f.recordErr
+ 		},
+-		clearPreFix: func() error {
++		recordPass: func(fixedBase, fixedHead string) error {
+ 			f.cleared++
++			f.fixedBases = append(f.fixedBases, fixedBase)
++			f.fixedHeads = append(f.fixedHeads, fixedHead)
+ 			return nil
+ 		},
+ 	}
+@@ -561,6 +569,9 @@ func TestVerifyGate_NotesFixCommitsOnce(t *testing.T) {
+ 	if got, want := notes.FixCommits(), []CommitLogEntry{fix}; !reflect.DeepEqual(got, want) {
+ 		t.Errorf("notes.FixCommits() = %+v; want %+v once", got, want)
+ 	}
++	if want := []string{"", ""}; !reflect.DeepEqual(f.fixedHeads, want) {
++		t.Errorf("fixed heads recorded with HEAD at the pre-fix head = %q; want %q", f.fixedHeads, want)
++	}
+ 
+ 	failing := &gateFake{
+ 		outcome:      outcomeDone,
+@@ -581,10 +592,10 @@ func TestVerifyGate_NotesFixCommitsOnce(t *testing.T) {
+ 
+ // TestVerifyGate_DirtyTreeRecordsPreFixHead walks one fake through dirty-tree failures:
+ // a dirty tree fails without verifying or checking fix commits, and reports the dirty paths.
+-// The pre-fix head is recorded once per closure and overwritten by a new closure.
+-// The first clean pass checks fix commits from the recorded head and clears the record.
++// The pre-fix head is recorded once, and a new closure given the earlier one keeps it.
++// Its first clean pass checks fix commits from that head, records the range up to HEAD and clears the record.
+ //
+-//testtiming:keep pins the pre-fix head recorded once per closure, overwritten by a new closure and cleared only on a pass, and the dirty report; the covering parent-merge gate test only passes a clean tree
++//testtiming:keep pins the pre-fix head recorded once, kept by a later closure and cleared only on a pass, and the dirty report; the covering parent-merge gate test only passes a clean tree
+ func TestVerifyGate_DirtyTreeRecordsPreFixHead(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -621,27 +632,25 @@ func TestVerifyGate_DirtyTreeRecordsPreFixHead(t *testing.T) {
+ 		t.Errorf("recorded heads after two failures = %v; want %v once", f.recorded, want)
+ 	}
+ 
+-	f.head = "head1"
+-	second := newVerifyGate(t.TempDir(), 5, &VerifyGateNotes{}, testFixPromptPath, f.seams())
+-	if res, err := second(); err != nil || res.Passed {
+-		t.Fatalf("second closure's gate() = %+v, %v; want a failure", res, err)
+-	}
+-	if want := []string{"head0", "head1"}; !reflect.DeepEqual(f.recorded, want) {
+-		t.Errorf("recorded heads = %v; want the new closure to overwrite with %v", f.recorded, want)
+-	}
+ 	if f.cleared != 0 {
+-		t.Errorf("clearPreFix ran %d time(s) before any pass; want none", f.cleared)
++		t.Errorf("recordPass ran %d time(s) before any pass; want none", f.cleared)
+ 	}
+ 
++	f.earlier = "head0"
+ 	f.dirty = nil
++	f.head = "head2"
++	second := newVerifyGate(t.TempDir(), 5, &VerifyGateNotes{}, testFixPromptPath, f.seams())
+ 	if res, err := second(); err != nil || !res.Passed {
+-		t.Fatalf("gate() after the tree was cleaned = %+v, %v; want a pass", res, err)
++		t.Fatalf("second closure's gate() on a clean tree = %+v, %v; want a pass", res, err)
+ 	}
+-	if want := []string{"head1"}; !reflect.DeepEqual(f.rejectionBases, want) {
+-		t.Errorf("commit check bases = %v; want the recorded pre-fix head %v", f.rejectionBases, want)
++	if want := []string{"head0"}; !reflect.DeepEqual(f.rejectionBases, want) {
++		t.Errorf("commit check bases = %v; want the earlier pre-fix head %v", f.rejectionBases, want)
+ 	}
+ 	if f.cleared != 1 {
+-		t.Errorf("clearPreFix ran %d time(s) on a pass; want 1", f.cleared)
++		t.Errorf("recordPass ran %d time(s) on a pass; want 1", f.cleared)
++	}
++	if !slices.Equal(f.fixedBases, []string{"head0"}) || !slices.Equal(f.fixedHeads, []string{"head2"}) {
++		t.Errorf("fixed range recorded on the pass = %v to %v; want head0 to head2", f.fixedBases, f.fixedHeads)
+ 	}
+ }
+ 
+@@ -992,3 +1001,72 @@ func TestReadModulePath(t *testing.T) {
+ 		t.Errorf("readModulePath() = %q; want %q", got, testModulePath)
+ 	}
+ }
++
++// mergeOnlyGit answers the first-parent walk: each commit has one parent unless merges lists its parents,
++// and every merge is a clean parent merge.
++type mergeOnlyGit struct {
++	Git
++	merges map[string][]string
++}
++
++func (g mergeOnlyGit) CommitParents(_, commit string) ([]string, error) {
++	if parents, ok := g.merges[commit]; ok {
++		return parents, nil
++	}
++	return []string{"parent"}, nil
++}
++
++func (mergeOnlyGit) MergeRejection(string, string, []string, ParentBranchFunc) string { return "" }
++
++// TestGateStateWrites proves the gate's writes to state.json.
++// A failure records the pre-fix head, and a pass clears it.
++// A pass records the fixed range it is given, and a pass given no head keeps the earlier one.
++// A range starting at the earlier fixed head, or a clean parent merge above it, keeps the earlier base.
++// A run with no state.json is left without one.
++func TestGateStateWrites(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	root := t.TempDir()
++	git := mergeOnlyGit{merges: map[string][]string{"merge": {"fixed3", "side"}}}
++	geom := Geometry{WebsterDir: filepath.Join(root, "webster"), ScratchDir: filepath.Join(root, "scratch"), Git: git}
++	pass := func(fixedBase, fixedHead string) error { return recordGatePass(geom, nil, fixedBase, fixedHead) }
++	if err := SaveState(geom.WebsterDir, geom.ScratchDir, &State{RunGUID: "g1", FixedBase: "oldbase", FixedHead: "old"}); err != nil {
++		t.Fatalf("SaveState: %v", err)
++	}
++
++	steps := []struct {
++		name          string
++		apply         func() error
++		wantPreFix    string
++		wantFixedBase string
++		wantFixedHead string
++	}{
++		{"FailureRecordsPreFix", func() error { return setPreFixHead(geom, "pre") }, "pre", "oldbase", "old"},
++		{"PassWithoutFixesKeepsFixedHead", func() error { return pass("pre", "") }, "", "oldbase", "old"},
++		{"SecondFailure", func() error { return setPreFixHead(geom, "pre2") }, "pre2", "oldbase", "old"},
++		{"PassAfterFixesRecordsTheRange", func() error { return pass("pre2", "fixed") }, "", "pre2", "fixed"},
++		{"NewFixedHeadAloneIsSaved", func() error { return pass("pre3", "fixed2") }, "", "pre3", "fixed2"},
++		{"RangeFromTheEarlierFixedHeadKeepsItsBase", func() error { return pass("fixed2", "fixed3") }, "", "pre3", "fixed3"},
++		{"RangeFromAMergeAboveItKeepsItsBase", func() error { return pass("merge", "fixed4") }, "", "pre3", "fixed4"},
++	}
++	for _, step := range steps {
++		if err := step.apply(); err != nil {
++			t.Fatalf("%s: error = %v", step.name, err)
++		}
++		st, err := LoadState(geom.WebsterDir, geom.ScratchDir)
++		if err != nil {
++			t.Fatalf("%s: LoadState: %v", step.name, err)
++		}
++		if st.PreFixHead != step.wantPreFix || st.FixedBase != step.wantFixedBase || st.FixedHead != step.wantFixedHead {
++			t.Errorf("%s: PreFixHead, FixedBase, FixedHead = %q, %q, %q; want %q, %q, %q", step.name, st.PreFixHead, st.FixedBase, st.FixedHead, step.wantPreFix, step.wantFixedBase, step.wantFixedHead)
++		}
++	}
++
++	empty := Geometry{WebsterDir: filepath.Join(root, "none", "webster"), ScratchDir: filepath.Join(root, "none", "scratch")}
++	if err := recordGatePass(empty, nil, "pre", "fixed"); err != nil {
++		t.Fatalf("recordGatePass() with no state.json error = %v; want nil", err)
++	}
++	if st, err := LoadState(empty.WebsterDir, empty.ScratchDir); err != nil || st != nil {
++		t.Errorf("LoadState() after recordGatePass with no state.json = %+v, %v; want nil, nil", st, err)
++	}
++}
