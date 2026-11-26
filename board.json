@@ -813,6 +813,27 @@
       "body": "Imported from [issue #258](https://github.com/Knatte18/loomyard/issues/258).\n\n## Seen\n\nGates and tiers run several times slower on one machine than on another, and it is not clear why.\nMeasured on a work laptop with Cortex XDR against a bare-metal Linux machine without endpoint security:\n\n- The tiers of this repository took 118 s, 522 s and 112 s for tier0, tier1 and tier2 on the laptop, against 18.8 s, 58.8 s and 50.0 s in `docs/benchmarks/test-suite-timing.md`.\n  The suites differ in age, so the two are indications only.\n- A new test binary is held about 3 s on its first run in a folder with no exception, and 0.02 to 0.05 s in one with an exception.\n- Tier1's wall time is bound by one package, `internal/fabricengine`, at about 400 s, whose tests start thousands of `git` processes.\n  One test, `TestTakeOverRun`, starts about 2460 processes in 15 s.\n- `git --version` took 5.2 ms on the laptop and 1.9 ms on the other machine, while `/bin/true` took 1.3 ms and 1.6 ms.\n- Synced writes, file writes and fsync do not explain it: a profile of that test shows 22 000 `write` calls in 0.3 s, and a git commit loop is as fast with `core.fsync=none`.\n\nThe measurements so far were done by hand, with different commands on each machine, so the two machines cannot be compared on one footing.\n\n## Idea\n\nAdd a small program under `tools/` that measures what a test run is made of, prints one comparable report, and runs the same way on every machine.\n\n- Process starts, from Go with `os/exec`: `/bin/true`, `git --version` and the lym binary, with the median per start in microseconds, and the user and system time of the children.\n- The first run of a binary with a new hash: build a tiny program with `-ldflags=-B=0x\u003crandom\u003e` into each folder named by a `--dir` flag, and time its first and second run.\n  Give it one folder with an exception and one without, so the hold and the effect of an exception show as two numbers.\n- File operations in each `--dir`: create, write, close and delete a small file, `stat`, `mkdir` and `rmdir`, and a 4 KiB write with and without fsync.\n- A git workload shaped like `internal/fabricengine`'s tests: init a bare repository, clone it, commit, and push, repeated, with wall, user and system time per step and the number of processes started.\n- A machine descriptor in the report: the machine name, CPU model and core count, kernel, governor and mean frequency, the throttle count, the load average and CPU pressure before and after, the Go and git versions, and whether `/opt/traps` is present.\n- One machine-readable report per run, and a compare mode that prints the ratio between two reports.\n- It deletes every folder it makes, and it makes none outside the `--dir` folders and its own temp folder.\n\nNotes:\n\n- Build it as a binary an operator can run; `go run ./cmd/testtiming` is refused to an agent session, so a plain `go build -o` is the safer shape.\n- Record the load, since neither machine is ever calm; a result without the load is not comparable.\n- The result goes into a measurement report under `docs/benchmarks/`, for each machine, beside `gate-test-xdr.md`.\n- Run it with `--dir` set to a folder under `/tmp/lym-*` and one under `/tmp/zz-*` on the laptop, and with the same two on the other machine, so one run tells whether a folder exception works.\n",
       "created": "2026-11-26T12:30:23Z",
       "revised": "2026-11-26T12:30:23Z"
+    },
+    {
+      "id": 1686,
+      "handle": "E2",
+      "slug": "settings-golden-update-flag",
+      "title": "Claude settings golden has no update flag",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "claude",
+        "gate"
+      ],
+      "issues": [
+        257
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #257](https://github.com/Knatte18/loomyard/issues/257).\n\n## What happened\n\nThe Claude settings golden, `internal/shuttleengine/claudeengine/testdata/settings-golden.json`, has no update flag.\n`TestBuildSettings_MatchesGolden` only compares against it.\nEach change to a shellguard steer or pattern needed a temporary test file to render the new golden.\n\n## Why it is abnormal\n\nEvery guard-row change rewrites this golden, and each agent making one has to write and then remove its own renderer.\nThat costs turns, and a leftover or wrong renderer is a risk to the commit.\n\n## What to do\n\nAdd an update mode to the golden test that rewrites the file from the rendered settings and deny notice, reachable through `lym gate test`.\n\nProvenance: task `reed-client-and-bus-guard`, note `burler-code-r1.md`.\n",
+      "created": "2026-11-26T12:30:26Z",
+      "revised": "2026-11-26T12:30:26Z"
     }
   ],
   "prime_owner": "neve",

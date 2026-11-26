@@ -30,8 +30,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 1h<br>1h | fabric, cleanup, batten |
 | B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 41m<br>41m | parsers, loom |
 
-## Enhancements (1)
+## Enhancements (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | T3 | 1h<br>1h | burler, stencil |
+| E2 |  | **Claude settings golden has no update flag** | [`settings-golden-update-flag`](design-settings-golden-update-flag.md) |  | 0m<br>0m | claude, gate |
