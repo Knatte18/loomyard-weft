@@ -901,6 +901,26 @@
       "body": "Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).\n\n## What happened\n\nDuring a code review fix round, the reach note listed `hubCancelDeps`, `Topology.SettleGonePairTeardown` and `Topology.RemoveLocal` as reached by no mapped test.\nEach is called directly by a tier1 test.\nThe maps of both packages belonged to the worktree itself and were minutes old.\n`lym gate reach` gave the same answer.\nThe note carried the caveat \"may run it unseen\".\n\n## Why it is abnormal\n\nA function that a tier1 test calls directly should be mapped to that test, above all with a fresh map of the worktree's own.\nThe false \"unreached\" answer could only be ruled out by reading the tests and running them.\nThe caveat does not say why the map missed these tests, so the reader cannot tell a map defect from a real coverage gap.\n\n## What to do\n\n- Find why the reach map misses direct calls from tier1 tests, and fix the mapping.\n- Where the map cannot see a call, have the caveat name the reason for that function.\n\nProvenance: task `remove-record-rerun-pair-gone`, note `burler-code-r2.md`.\n",
       "created": "2026-11-26T12:30:52Z",
       "revised": "2026-11-26T12:30:52Z"
+    },
+    {
+      "id": 1690,
+      "handle": "B5",
+      "slug": "drift-stale-loosened-ruling",
+      "title": "Drift-Verify reuses a stale loosened ruling after the moved checks land",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "drift"
+      ],
+      "issues": [
+        249
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).\n\n## What was seen\n\nA darn run deleted a test harness file (`Program.cs`) whose checks moved into a test class.\nThe drift judge ruled the deletion `loosened`, with three check groups `uncaused`, and Drift-Verify halted.\nThe parent recorded a decision to add the three missing checks and sent the run back to the writer, which committed them in a new commit.\nDrift-Verify then halted again with the same three `uncaused` checks.\n`_lym/drift/judged.json` still held the ruling from the first judge spawn, keyed on the diff hash of the deleted file, which had not changed.\nNo new judge spawn and no drift-judge parent ask came for the new commit.\n\n## Workaround\n\nA decision told the writer to commit an empty commit with one `Loosened-Check` trailer per check group, naming the commit that added the checks as the cause, then a goto to the writer row and a resume.\n\n## Expected\n\nWhen a later commit in the range touches the test files the stored ruling compares against, such as the class a deleted check moved to, Drift-Verify re-judges the loosened file instead of reusing the cached ruling.\nAt least, the halt's way forward should name the parent's ways out of a ruling that the code has since answered.\n",
+      "created": "2026-11-26T12:30:56Z",
+      "revised": "2026-11-26T12:30:56Z"
     }
   ],
   "prime_owner": "neve",
