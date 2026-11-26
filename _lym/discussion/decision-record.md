@@ -467,6 +467,12 @@ Decision: D2's list of area-file keys gains `deploy`, the deploy command D13 run
 
 Rationale: D2's rationale makes the area file the only host-written input, since agents write every hub layer. Taken from hub records, an agent would choose both the URL and the branch, and the on-branch check would prove nothing. The board entry's stage 3 fetches `origin/main`, and the operator already writes `repository` into the area file (D8). The round 3 review held this back and rated it BLOCKING in weight.
 
+### Added after Discussion (parent, 2026-11-26): Pseudo-terminals are a stated bound; TIOCGPTPEER panes are an open risk
+
+Decision: D6's Bound and D16 state that an area process can open, read and write any pseudo-terminal of the user under /dev/pts, host shells and other hubs' panes included, and the Goal's claim about secrets outside the area names this exception. Panes whose terminal tmux opens from the master descriptor (TIOCGPTPEER) with only /dev/tty granted are recorded under Open risks as the way to close it, to be probed on Neve before it is designed further.
+
+Rationale: Option (a) of the hard-cap question, as the arbiter recommends: the record must not claim what Landlock cannot hold, and the mechanism is unmeasured.
+
 ## Constraints
 
 - Kernel facts, from `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md` and its man-page sources:
