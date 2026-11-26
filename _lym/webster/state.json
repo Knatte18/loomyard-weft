@@ -857,8 +857,22 @@
       "spawnedAt": "2026-11-26T12:02:42Z",
       "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-template-comments",
+        "status": "done",
+        "head_sha": "deb1ccabff38bad6c358aaefd40b559ea595d560"
+      },
+      "cardShas": [
+        "deb1ccabff38bad6c358aaefd40b559ea595d560"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl"
+      ]
     },
     "4": {
       "slug": "nest-loom-tapestry",
@@ -980,7 +994,7 @@
       ]
     }
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
@@ -990,6 +1004,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a78b54d595435a8d3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a48bdda8d223fd1dc.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7f4fa893973401ca.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl"
   ]
 }
