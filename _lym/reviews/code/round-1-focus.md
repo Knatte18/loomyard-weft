@@ -1,0 +1,14 @@
+---
+round: 1
+focus:
+  - "internal/websterengine/recoverbatch.go awaitTerminal and the recover-batch resume path: when a recovery's closing message becomes a waiting digest, follow the strand's cleanup, the persisted record and the next recover-batch. Settle whether the parent's answer reaches whatever works the batch next, whether repeated questions are bounded, and whether every turn that ends on a message with no report belongs on this route."
+  - "internal/websterengine rebaseline.go and recoverbatch.go (recoveryRetryRead, rendersNewAmendment): recording AmendedCards on terminal failed, dead and stuck batches. Check every reader of AmendedCards, Recoveries and Terminal (recover-batch cap refusal, begin-batch, record-batch, run's dead-end refusal, reset, status) for each of the three terminal statuses. Settle whether the amended entry's re-arm works end to end and whether any path now forces a failed report or grants recoveries it should not."
+  - "internal/planglyph: every path that judges a pending card's glyph targets against the tree, not only resolvePass (DetectDrift passes nil for created and members; also ResolveGlyphs, done checks and begin/record-batch gates). Settle whether a plan that the plan gate accepts because an earlier card creates a member can still be refused or blocked later in the run."
+  - "internal/planglyph createdHandleGlyphs, createdBy and siblingMembers: match a Create handle against targets across handle canonicalization, C# signatures with generic and nullable parameter types, draft-form handles, forthcoming and done cards, a card citing the member it creates itself, and an owner type that is itself only created by the plan. Check that the sibling listing cannot turn an ordinary glyph-not-found into a hard error."
+  - "internal/loomshed/gates.go overview-frame-edited against internal/websterengine/rebaseline.go: compare when each refuses an overview edit, including the run directory the gate derives, a record with no overview hash, no begun batch, and a missing or unparseable baseline copy. Check that each refusal names a way forward that works."
+  - "Contracts and claims: read the changed Master template rungs, plan review rubric, plan-checks spec, package docs, recover-batch help and _lym/landing/summary.md against what the code does, including the Merge danger door given the changed meaning of persisted AmendedCards entries."
+  - "Tests: check the two mutation survivors (internal/gatefixer/strand.go:43, internal/planparser/targetdirs.go:307), the Loosened-Check trailer for the status enforcement allowlist, and the changed expectations in the existing websterengine tests."
+---
+
+Seed focus for round 1, drawn from the amended board entry, the change description and the non-test diff of the review range.
+The entries are questions to settle, not verdicts.
