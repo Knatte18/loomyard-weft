@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | landing · Finalize | neve | 8h<br>54m | burler, stencil |
+| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | landing · Finalize | neve | 8h<br>55m | burler, stencil |
 | T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md) | motif | Discussion-Burler-Review | neve | 21m<br>15m | fabric, testkit |
 | T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | Darn-Write | neve | 7h<br>7h | gate, testmap |
 
@@ -34,12 +34,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
-## Bugs (2)
+## Bugs (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then** | [`enter-session-test-cleanup-race`](design-enter-session-test-cleanup-race.md) | 48m<br>0m | reed |
 | B2 |  | **TestLoomPreBootstrap fixture leaves a lym board process running and fails the batch gate** | [`prebootstrap-board-proc-leak`](design-prebootstrap-board-proc-leak.md) | 0m<br>0m | loom, testkit |
+| B3 |  | **Card gate runs only the card's listed packages, so a wider intent breaks tests unseen** | [`card-gate-scope-gaps`](design-card-gate-scope-gaps.md) | 0m<br>0m | webster, gate, loom |
 
 ## Enhancements (2)
 
