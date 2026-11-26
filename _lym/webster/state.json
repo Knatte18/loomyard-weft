@@ -778,9 +778,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a085a93b8a89fd2e7.jsonl"
       ]
+    },
+    "5": {
+      "slug": "moved-key-tables",
+      "cards": [
+        "05-moved-key-tables",
+        "06-reconcile-moves",
+        "07-profiles-moves",
+        "08-board-run-settings-carry"
+      ],
+      "cardHashes": {
+        "05-moved-key-tables": "db3522e00b8c3450d2223e68e8c719a4f85464bad520942bff08a5d5f277a4ce",
+        "06-reconcile-moves": "9954ddcd864881ac813d4ce046279469fc4ce9f94d323b07b5f073d97c2b541a",
+        "07-profiles-moves": "916d37bd9c95cb583acb34c412ff041d46e3e55fc3272abbc3497a5a0ddc989c",
+        "08-board-run-settings-carry": "3d82ffadf79ab5700c418f37fcdb636a1a471a7bb953109f920a22c080078636"
+      },
+      "startSha": "ce6608bc8e4e1cebbe1a9b4c1a7dfa9f4f3ea7c3",
+      "kind": "fork",
+      "spawnedAt": "2026-11-26T10:49:57Z",
+      "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
