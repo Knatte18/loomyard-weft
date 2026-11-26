@@ -7,5 +7,6 @@
       "title": "Item 8 is a per-campaign setting, not a code change",
       "digest": "4845175f97fce42f245acb3f0319f735ab3c0baebf3eb7acbc3a224ef8d0da07"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
