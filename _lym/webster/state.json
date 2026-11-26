@@ -820,9 +820,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a78b54d595435a8d3.jsonl"
       ]
+    },
+    "9": {
+      "slug": "reconcile-before-load",
+      "cards": [
+        "09-reconcile-before-load"
+      ],
+      "cardHashes": {
+        "09-reconcile-before-load": "224c858fc66e64ee886aa32a7d0235ec2960bb0ae687214c62caae1aba9f5b8b"
+      },
+      "startSha": "1693b3b9a8c6afe0061a41b827e92644ce49c002",
+      "kind": "fork",
+      "spawnedAt": "2026-11-26T11:07:53Z",
+      "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
