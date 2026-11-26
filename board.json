@@ -653,6 +653,27 @@
       "body": "Imported from [issue #234](https://github.com/Knatte18/loomyard/issues/234).\n\nThe tier3 command of `lym gate test` already carries a `--filter`. Passing a test filter in `{args}` adds a second `--filter`, and `dotnet test` refuses the call. An agent found that `-p:VSTestTestCaseFilter=...` works as an override, but nothing in the verb's help says so.\n\nThis is abnormal because selecting one test class is the common use of the verb. The gate should merge a caller filter into the tier's filter (or replace it) and document the way to do it.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
       "created": "2026-11-26T07:33:49Z",
       "revised": "2026-11-26T07:33:49Z"
+    },
+    {
+      "id": 1641,
+      "handle": "B17",
+      "slug": "darn-gate-key-tier0-only",
+      "title": "gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "darn"
+      ],
+      "issues": [
+        233
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #233](https://github.com/Knatte18/loomyard/issues/233).\n\nA prompt told an agent to run a measurement test through `lym gate test --gate darn-write`. That gate key runs tier0 only, while the test lived in tier3 (a slow-test project, category `ModelsLong`). The first call ran no test, and the orch had to allow `--tier 3` by hand.\n\nThis is abnormal because the prompt and the gate key disagree on the tier. Either the prompt generator should pass `--tier` when the named test is not tier0, or the gate should say, when it runs no test, that the filter matches nothing at this tier and name the tiers that would match.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
+      "created": "2026-11-26T07:33:52Z",
+      "revised": "2026-11-26T07:33:52Z"
     }
   ],
   "prime_owner": "neve",
