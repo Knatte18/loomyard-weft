@@ -176,7 +176,6 @@
       "revised": "2026-11-26T08:20:40Z",
       "order": [
         "pr-modes-no-agent",
-        "webster-plan-recovery",
         "dotnet-gate-fixes"
       ]
     },
@@ -267,32 +266,6 @@
       "created": "2026-11-23T18:56:36Z",
       "revised": "2026-11-26T09:23:51Z",
       "profile": "solid",
-      "project": "intake-wave-1"
-    },
-    {
-      "id": 1664,
-      "handle": "T2",
-      "slug": "webster-plan-recovery",
-      "title": "Webster: plan fixes after begun batches, and recovery that ends asking",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "quarry"
-      ],
-      "issues": [
-        221,
-        220
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Plan fixes after begun batches block Webster; glyph-not-found on members a card creates\n\nImported from [issue #221](https://github.com/Knatte18/loomyard/issues/221).\n\n## What happened\n\nTwo Webster halts after the plan was edited by a plan review/fix round while batches were already begun.\n\n1. `blocked` / `escalation-to-human`:\n\n```\nwebster: the auto-rebaseline of the changed plan blocks this run: webster: the edited plan changes the cards of a batch this run already begun: 00-overview.md changed outside its Card Index; it carries the plan's integration verify and only its Card Index is rebaselined; way forward: restore 00-overview.md, or fix the plan: move a done card's edit to a follow-up card after the last begun batch that carries the decision, with its Card Index line in 00-overview.md, then re-step the Webster row\n```\n\n2. After the plan was fixed and the run re-stepped, `failed` / `producer-hard-failure`, plan validation refused with four `glyph-not-found` findings, all of the form:\n\n```\nglyph-not-found/\u003ccard\u003e[blocking]: target \"\u003cUnit\u003e#\u003cMember\u003e\"'s unit exists but the member is missing — check for a misspelled member\n```\n\nThe members named were ones the plan's cards (5 and 6) introduce or modify, and the targets include a method signature with a generic parameter type (`IReadOnlyList\u003cdouble\u003e`) and a nullable (`TimeSpan?`).\nCard 5 and card 6 cite the same new member as a target.\n\n## Why abnormal\n\n- The plan review loop (`Plan-Burler-Fix`) edited `00-overview.md` outside its Card Index and the run then blocked on it; the plan-fix stage gives no warning that such an edit is unrecoverable once a batch has begun, so each such fix costs an operator escalation.\n- If the glyph targets name members that an earlier card of the same plan creates, validation cannot find them at plan time and refuses a valid plan. If they are misspelled, the finding text does not say which member of the unit is closest. Either way the finding should say whether the member is expected to be created by a card.\n  I could not tell from the notes which case applies.\n\n## What to do\n\n- Have the plan-fix stage refuse or warn on edits to `00-overview.md` outside the Card Index once any batch has begun.\n- Let glyph validation accept a target that an earlier card of the plan declares as created, and print the unit's actual member names beside a `glyph-not-found` finding.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-4.md`, `loom-halt-6.md`.\n\n\n# Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset\n\nImported from [issue #220](https://github.com/Knatte18/loomyard/issues/220).\n\n## What happened\n\nA Webster batch's verify failed on a test the plan could not satisfy.\nThe batch recovery session ended `dead` with `dead_reason: asking`, i.e. the recovery agent stopped to ask a question instead of finishing, and `recoveries: 1`, `recovery_retry: false`.\nThen:\n\n```\nlym webster recover-batch 3 refused:\nwebster: batch 03-torque-drag-stage recovery (session ...) ended dead and the batch has no recovery left; way forward: end the run stuck, naming batch 03-torque-drag-stage\n```\n\nThe run halted `blocked` (anomaly `escalation-to-human`).\nAfter the plan was edited and rebaselined, Webster halted `blocked` again:\n\n```\nwebster: a batch of this run is at a dead end: batch 03-torque-drag-stage is dead and its recovery earns no retry, so a Master would only end the run stuck on it; way forward: 1) lym webster reset --to batch-start --batch 03; 2) re-step the Webster row; or 1) lym webster reset --to start; 2) re-step the Webster row\n```\n\n## Why abnormal\n\nA recovery agent that asks a question has no channel that answers it, so the question becomes a dead recovery with no retry.\nThe agent's question, which would tell the operator what is wrong, is not carried into the halt text: the halt note only restates \"dead_reason: asking\".\nPlan edits made to fix the cause did not clear the dead state either; a manual `webster reset` was needed.\n\n## What to do\n\n- When a recovery ends with `dead_reason: asking`, put the agent's last message in the halt/refusal note.\n- Either route the question to the parent (`lym creel post --parent --expect-reply`) or let a plan rebaseline that touches the dead batch's cards re-arm one recovery, so the operator does not need a reset.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt.md`, `loom-halt-5.md`, `webster-refusal-recover-batch.md`.\n\n\n",
-      "status": "done",
-      "created": "2026-11-26T07:34:29Z",
-      "revised": "2026-11-26T11:08:07Z",
-      "profile": "light",
       "project": "intake-wave-1"
     },
     {
