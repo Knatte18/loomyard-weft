@@ -370,6 +370,12 @@ Decision: In D13, 'the way fabricengine.OriginSeams does today' means a seam is 
 
 Rationale: D13 already says each seam is installed in the process at start, and it already gives the sequential rule for process-global seams. This entry only removes the reading that the comparison with OriginSeams makes these seams per-call. It names the one parallel test that the round 3 review found installing a process-global seam.
 
+### Added after Discussion (parent, 2026-11-26): The restructure cuts fabric's test code, it does not only move it
+
+Decision: Every part shrinks the fabric test code it touches, with no fixed target: the operator holds that much of it is not needed. A kept test must guard a rule no other test guards, at the lowest tier that can check it; duplicates, near-duplicates and the same rule tested at several tiers are deleted rather than moved. A deletion needs no proof that the test is useless; a kept or moved test needs a reason. 'Every test is needed' is no answer: each part's change description lists the tests it deleted and, for each test it kept or moved, the rule it alone guards, and review raises a part whose test code grows or barely shrinks.
+
+Rationale: The operator has asked several times to cut fabric's test suite, and agents have always answered that every test is needed. Fabric's tests are 1.6 times its production code, and their size is what makes the gates slow.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
