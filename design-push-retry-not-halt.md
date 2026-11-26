@@ -4,6 +4,14 @@
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`pr-modes-no-agent`](design-pr-modes-no-agent.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`infra-stops-not-failures`](design-infra-stops-not-failures.md)
 
+## Decisions (operator, 2026-11-26)
+
+- No mail per failed push. lym retries quietly with backoff.
+  One summary notice goes to the orch when owed work has stayed unpushed past a threshold (30 minutes proposed), listing every branch still owed, and one notice when all is pushed again.
+  The status bar shows the count of unpushed branches.
+- A transient network failure never fails a run: a landing push or GitHub read waits and retries.
+  A refusal that retrying cannot fix (rejected push, expired login, moved branch) stops at once with one notice.
+
 ## Operator intent (2026-11-26)
 
 LoomYard stops too often because a push to origin fails, above all on VPN at work.
