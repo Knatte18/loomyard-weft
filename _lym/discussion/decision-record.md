@@ -432,7 +432,8 @@ None: the two added arbiter entries answered every risk this section held.
 - A test per moved verb shows its printed `mutations` array unchanged from before the move (D4, D5).
 - Each flow shape has one tier1 seam test that asserts the snapshot its phases read on a real hub, runs core and executor, and asserts the end state;
   one tier1 test covers the fallback to git, for the worktree list and the refs, for non-`files` ref storage (D2, D6).
-- Review: each part deletes a test only in the change that adds the test holding its assertion, and its change description names which test holds it (D5, D6).
+- Review: a test whose assertion is kept is deleted only in the change that adds the test holding that assertion, and the change description names which test holds it (D5, D6); a test cut as a duplicate or as guarding no rule of its own needs no successor.
+- Review: each part's fabric test code shrinks, and its change description lists the tests it deleted and, for each test it kept or moved, the rule that test alone guards; "every test is needed" is no reason (the added entry "The restructure cuts fabric's test code").
 - The tests that pin interleaving, TOCTOU and killed pushes keep passing after their concern moves (D4, D5).
 - `internal/testkit/fabrickit` (new) builds snapshots for both packages' tests and imports no `gitexec`, `gitkit` or `internal/hubforge` (D8).
 - Review: each part's diff changes in `internal/fabricengine` only its own concern's files besides the executor and shared types, in D9's order (D9).
