@@ -782,8 +782,67 @@
       "spawnedAt": "2026-11-26T11:34:29Z",
       "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-module-key-messages",
+        "status": "done",
+        "head_sha": "917635f470e241c82f667ff023328b5449620b4a",
+        "deviations": [
+          "internal/battenshed/config.go",
+          "internal/battenshed/config_test.go",
+          "internal/boardengine/config.go",
+          "internal/boardengine/config_test.go",
+          "internal/burlercli/wiring_test.go",
+          "internal/configcli/configcli_test.go",
+          "internal/configengine/edit_test.go",
+          "internal/configengine/layers_test.go",
+          "internal/configengine/set_test.go",
+          "internal/desktophook/config.go",
+          "internal/desktophook/config_test.go",
+          "internal/envconfig/config.go",
+          "internal/envconfig/config_test.go",
+          "internal/fabricengine/warpexclude.go",
+          "internal/heddleengine/shipped.go",
+          "internal/ideconfig/config.go",
+          "internal/ideconfig/config_test.go",
+          "internal/lenses/fankeys.go",
+          "internal/loggerconfig/config.go",
+          "internal/loomengine/config_test.go",
+          "internal/reedengine/config.go",
+          "internal/reedengine/config_test.go",
+          "internal/reedengine/keynames.go",
+          "internal/reedengine/lifecycle_test.go",
+          "internal/reedengine/segmentcolor.go",
+          "internal/reedengine/serverlog.go",
+          "internal/reedengine/serverlog_test.go",
+          "internal/reedengine/tmuxconf.go",
+          "internal/reedengine/windowsize.go",
+          "internal/reportconfig/config.go",
+          "internal/reportconfig/config_test.go",
+          "internal/samplerengine/config.go",
+          "internal/samplerengine/config_test.go",
+          "internal/seatengine/engine_test.go",
+          "internal/sheddriver/config.go",
+          "internal/sheddriver/config_test.go",
+          "internal/shellguard/rows.go",
+          "internal/shuttleengine/claudeengine/testdata/settings-golden.json",
+          "internal/shuttleengines/shuttleengines.go",
+          "internal/shuttleengines/shuttleengines_test.go",
+          "internal/slackengine/config.go",
+          "internal/slackengine/config_test.go",
+          "internal/weaverengine/config.go"
+        ]
+      },
+      "cardShas": [
+        "917635f470e241c82f667ff023328b5449620b4a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl"
+      ]
     },
     "4": {
       "slug": "nest-loom-tapestry",
@@ -905,7 +964,7 @@
       ]
     }
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
@@ -914,6 +973,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a085a93b8a89fd2e7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a78b54d595435a8d3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a48bdda8d223fd1dc.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7f4fa893973401ca.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7f4fa893973401ca.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl"
   ]
 }
