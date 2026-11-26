@@ -1,6 +1,6 @@
 # Drift-Verify reuses a stale loosened ruling after the moved checks land
 
-`drift-stale-loosened-ruling` · Task · bug, drift · landing · Finalize
+`drift-stale-loosened-ruling` · Task · bug, drift · done
 
 Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).
 
