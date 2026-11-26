@@ -2,8 +2,6 @@
 
 `reed-client-and-bus-guard` · Task · bug, reed, process
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # reed switch and a button's {strand} read the most recent client's session, not the clicker's
