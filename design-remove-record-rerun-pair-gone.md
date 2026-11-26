@@ -1,6 +1,6 @@
 # A killed batten cancel leaves a remove record whose way forward fails once the pair is gone
 
-`remove-record-rerun-pair-gone` · Task · bug · running · Code-Bouncer
+`remove-record-rerun-pair-gone` · Task · bug · running · Code-Burler-Review
 
 ## Seen
 
