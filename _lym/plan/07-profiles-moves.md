@@ -29,7 +29,7 @@ It keeps comments and every key it does not move; a document with no old key com
 `ReconcileHubWideAt`, for a seed-only module with the flag and a present file, moves every `<top>.<second>` mapping of the file and of its template base through `MoveSettings` before `yamlengine.FollowTemplate`;
 the follow then compares file, base and template at the new paths, so a shipped block the operator never changed takes the new template, and a shipped value the operator changed stays theirs.
 The lines join the result's `Moved`, prefixed with `profiles.yaml` and the block's `<profile>.<recipe>`, so card 6's walk mails them with D5's lines.
-A move in the file alone does not count as a change on its own when the follow then writes the template's bytes; the write happens when the follow or the move changed the file.
+The file is written when its bytes after the move and the follow differ from the bytes read, so an untouched flat file is rewritten nested even when the follow reports no unit change.
 A `defaults` entry's scalar values hold no mapping, so `MoveKeys` passes them over.
 It is idempotent and needs no marker, and `lym config reconcile --layer default --apply` runs it too, since that command reaches `ReconcileHubWideAt`.
 

@@ -60,6 +60,9 @@ Reaching tests, tier0, each a row of an existing table on a test spec whose temp
 
 `pattern/PATTERN-config-layers.md` takes the new rule text in its opening line, and its "Keys the template lacks" section gains the move table, per the record's note to the plan writer:
 a key its module's move table names is moved by every reconcile, refused at load with that layer's reconcile command, `lym config reconcile --apply` or `lym config reconcile --layer default --apply`, as the way forward, and removable by `--unset`.
+The "Layers" rule on line 7, that no step removes an unknown base-layer key but the operator's `lym config reconcile` or `--unset`, gains an exception:
+a key the module's move table names is moved, or dropped when null or when its new path is set, by every reconcile, the hub walk included.
+The sentence at line 73, that only the operator removes a key the running template lacks from a hub base or worktree file, and the sentence at lines 77-78, that every other reconcile keeps such a key, the binary-change walk included, gain the same exception.
 Its "Config reinterpretation" rule adds that a key move ships a move table on the module's `ConfigSpec`, which `configsync` applies on every reconcile and `hubreconcile`'s walk carries to the board's `run_settings`.
 
 **ImpactSummary:** Adds one Spec field and one check reached from configengine's local validation, strict load and set; no module fills the table yet, so no current load changes, and the PATTERN line and background change in prose only.

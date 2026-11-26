@@ -19,6 +19,7 @@
 - `internal/configcli#TestDispatchSet`
 - `internal/boardcli_test#stepRunSettings`
 - `internal/battenshed#TestSeedChild_RunSettings`
+- `internal/battencli#TestPrepareRunSettings`
 - `internal/shedbuild#TestBuild_Errors`
 
 **Extends:**
@@ -47,7 +48,9 @@ Reaching tests, all rows of existing tests:
 - `TestPrepareRunSettings` (tier0): `{"loom": {"code_max_bounces": 2}}` is refused naming both full names and holding no `way forward:`; `{"loom": {"discussion": {"timeout_min": 60}}}` is admitted.
 - `TestProfilesCheckLoad` (tier0): a profile block `{"loom": {"code_max_bounces": 2}}` is refused naming the profile, the recipe and both full names.
 - `stepRunSettings` (`lym board upsert`'s run-settings step, at its file's existing tier): an upsert whose `run_settings` hold `{"loom": {"code_max_bounces": 2}}` is refused naming both full names and writes nothing.
-- `TestSeedChild_RunSettings` (tier0): a row whose fake `PrepareRunSettings` returns an `ErrInvalidRunSettings` carrying the moved-key text stands Stuck with a reason holding exactly one `way forward:`.
+- `battencli`'s `TestPrepareRunSettings` (tier0), which drives Seed-Child's production adapter `prepareRunSettings` over the real `configreg.PrepareRunSettings`: settings `{"loom": {"code_max_bounces": 2}}` return an error wrapping `battenshed.ErrInvalidRunSettings` whose text holds `key loom.code_max_bounces was moved to loom.code.max_bounces` and no `way forward:`.
+- `TestSeedChild_RunSettings` (tier0): a row whose fake `PrepareRunSettings` returns an `ErrInvalidRunSettings` carrying that same text stands Stuck with a reason holding both full names and exactly one `way forward:`.
+  The fake cannot call `configreg.PrepareRunSettings`, since the test is in package `battenshed` and `configreg` imports `battenshed`; the `battencli` row pins the real text the fake carries.
 - `TestBuild_Errors` (tier0): a recipe whose entry gate reads `tapestry.plan_split` fails its build naming `tapestry.plan.split`.
 - `TestSettingLookup` (tier0): `CheckSettingKey("loom", "discussion_reviewer_fan")` is refused naming `loom.discussion.reviewer_fan`.
 - `TestDispatchSet` (tier0): `lym config loom --set code_max_bounces=2` is refused naming `--set code.max_bounces=2` and writes nothing; `lym config loom --unset code_max_bounces` removes the old key from a file that holds it.

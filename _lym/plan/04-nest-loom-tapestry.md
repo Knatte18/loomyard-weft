@@ -118,7 +118,7 @@ The acceptance rows this card adds, as rows of existing tests:
   Rows loading `code: {max_bounces: 2}` and, separately, only `review: {max_bounces: 4}` assert `Config.Caps` for the discussion, code and split perches: the perch's own value when set, else `review.max_bounces` (D8).
 - `TestLoadTapestryConfig` (tier0): the loaded tapestry template defaults sit at the `plan.*` and `parts.*` paths, and a row setting `plan: {max_bounces: 2}` beside a loom `review: {max_bounces: 4}` gives `Caps(PerchPlan)` 2 through `WithTapestry`, and without the plan value 4 (D8).
 - `TestLoadConfig_Refuses` (tier0): a local file setting `discussion: {advisors: []}` is refused by its new path as before; a hub base with `code: {reviewer_model: {x: 1}}` is refused naming `code.reviewer_model`, the deepest key `KeyAtLine` now returns.
-- `TestModules_EveryTemplateKeyClassified` and `TestModules_LocalLayerRefusals` run over the nested paths unchanged.
+- `TestModules_EveryTemplateKeyClassified`'s `wantLocalDenied` loom and tapestry rows move to the nested paths, such as `code.auto_accept` and `plan.lenses`, and `TestModules_LocalLayerRefusals` runs over the nested paths.
 - `reviewbudget`'s `TestCheckResolved` and `TestCheckLocal` (tier0): the budget, hard-cap and fallback keys they name and read are the dotted paths, `code.max_bounces` falling back to `review.max_bounces`.
 - `loomengine`'s `TestResolveReview` (tier0): a segment with an empty `code.reviewer_model` takes `review.reviewer_model`.
 - `TestSettingLookup` (tier0): `loom`, `split.reviewer_fan` resolves the nested value and `CheckSettingKey` admits it; `CheckSettingKey("loom", "subagent_model.x")`, a path through a scalar, is refused as no key of the module.
