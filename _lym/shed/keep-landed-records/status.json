@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -157,6 +157,30 @@
       "started_at": "2026-11-26T09:54:58Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/keep-landed-records/_lym/reviews/discussion/round-3-review.md",
+      "at": "2026-11-26T09:59:04Z",
+      "started_at": "2026-11-26T09:55:29Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-26T09:59:02.884323382Z",
+          "end": "2026-11-26T09:59:02.884839907Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-26T09:59:02.974926966Z",
+          "end": "2026-11-26T09:59:02.975418815Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
