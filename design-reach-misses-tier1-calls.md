@@ -1,6 +1,6 @@
 # gate reach: functions called directly by tier1 tests are reported as reached by no mapped test
 
-`reach-misses-tier1-calls` · Task · bug, gate, testmap · starting · Seed-IDE
+`reach-misses-tier1-calls` · Task · bug, gate, testmap · starting · Open-IDE
 
 Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
