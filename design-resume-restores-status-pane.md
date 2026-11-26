@@ -1,6 +1,6 @@
 # Loom status pane not restored after a reboot and a resumed run
 
-`resume-restores-status-pane` · Task · bug, loom, reed, tender · running · Darn-Write
+`resume-restores-status-pane` · Task · bug, loom, reed, tender · running · Drift-Verify
 
 Imported from [issue #253](https://github.com/Knatte18/loomyard/issues/253).
 
