@@ -1,6 +1,6 @@
 # The board README shows each beam's autonomy and PR mode, and the root's
 
-`readme-beam-modes` · Task · enhancement, board · landing · Finalize
+`readme-beam-modes` · Task · enhancement, board · done
 
 ## Seen (operator, 2026-11-26)
 
