@@ -632,6 +632,27 @@
       "body": "Imported from [issue #235](https://github.com/Knatte18/loomyard/issues/235).\n\nWith `--logger \"console;verbosity=detailed\"` passed to `lym gate test`, the gate reported that it ran no test, although the test log shows `Total tests: 1, Passed: 1`. The gate's test counter appears to misread the detailed logger's summary format.\n\nThis is abnormal because a passing run is reported as a run of nothing, which an agent may read as a failure or retry needlessly. The counter should parse the summary lines of every console logger verbosity, or read the result from a structured logger (trx) instead.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
       "created": "2026-11-26T07:33:45Z",
       "revised": "2026-11-26T07:33:45Z"
+    },
+    {
+      "id": 1640,
+      "handle": "B16",
+      "slug": "gate-tier3-double-filter",
+      "title": "gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "dotnet"
+      ],
+      "issues": [
+        234
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #234](https://github.com/Knatte18/loomyard/issues/234).\n\nThe tier3 command of `lym gate test` already carries a `--filter`. Passing a test filter in `{args}` adds a second `--filter`, and `dotnet test` refuses the call. An agent found that `-p:VSTestTestCaseFilter=...` works as an override, but nothing in the verb's help says so.\n\nThis is abnormal because selecting one test class is the common use of the verb. The gate should merge a caller filter into the tier's filter (or replace it) and document the way to do it.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.",
+      "created": "2026-11-26T07:33:49Z",
+      "revised": "2026-11-26T07:33:49Z"
     }
   ],
   "prime_owner": "neve",
