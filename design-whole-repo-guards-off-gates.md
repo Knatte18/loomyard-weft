@@ -1,4 +1,4 @@
-# Whole-repo guard tests run once at landing, and the dead-code check seldom, not in every task gate
+# Whole-repo guards run at landing, and the dead-code check with the board tidy, not in every task gate
 
 `whole-repo-guards-off-gates` · Note · enhancement, gate, testkit
 
@@ -12,6 +12,9 @@ it loads every package with `packages.LoadAllSyntax` and builds an SSA call grap
 
 ## Idea (operator, 2026-11-26)
 
-- Whole-repo guards, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.
-- The dead-code check, the call-graph test above, runs seldom, not on every landing: dead code breaks nothing, so finding it a while later costs little.
-- Find every whole-repo guard in `cmd/lym` and name for each where it runs.
+- Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.
+- The dead-code check, the call-graph test above, leaves the gates altogether and runs with the periodic upkeep:
+  dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`).
+  At that point the check runs on the main branch, and each dead function it finds becomes a note on the board.
+  Dead code breaks nothing, so finding it a few landings late costs little.
+- Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or with the tidy.

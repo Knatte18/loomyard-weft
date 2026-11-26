@@ -820,7 +820,7 @@
       "id": 1703,
       "handle": "E1",
       "slug": "whole-repo-guards-off-gates",
-      "title": "Whole-repo guard tests run once at landing, and the dead-code check seldom, not in every task gate",
+      "title": "Whole-repo guards run at landing, and the dead-code check with the board tidy, not in every task gate",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -831,9 +831,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (2026-11-26)\n\n`cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.\nIts tests build few hubs (7 `CopyHub` calls); most are guard tests that read the whole repository's source.\nThe heaviest is the tier1 test `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym/testonlycode_linux_test.go`:\nit loads every package with `packages.LoadAllSyntax` and builds an SSA call graph of the whole program to find code only tests reach.\n`cmd/lym` imports nearly every package, so nearly every change puts it in the gate's impacted set, and the whole-repo guards run in every task gate.\n\n## Idea (operator, 2026-11-26)\n\n- Whole-repo guards, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.\n- The dead-code check, the call-graph test above, runs seldom, not on every landing: dead code breaks nothing, so finding it a while later costs little.\n- Find every whole-repo guard in `cmd/lym` and name for each where it runs.\n",
+      "body": "## Seen (2026-11-26)\n\n`cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.\nIts tests build few hubs (7 `CopyHub` calls); most are guard tests that read the whole repository's source.\nThe heaviest is the tier1 test `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym/testonlycode_linux_test.go`:\nit loads every package with `packages.LoadAllSyntax` and builds an SSA call graph of the whole program to find code only tests reach.\n`cmd/lym` imports nearly every package, so nearly every change puts it in the gate's impacted set, and the whole-repo guards run in every task gate.\n\n## Idea (operator, 2026-11-26)\n\n- Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.\n- The dead-code check, the call-graph test above, leaves the gates altogether and runs with the periodic upkeep:\n  dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`).\n  At that point the check runs on the main branch, and each dead function it finds becomes a note on the board.\n  Dead code breaks nothing, so finding it a few landings late costs little.\n- Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or with the tidy.\n",
       "created": "2026-11-26T21:11:57Z",
-      "revised": "2026-11-26T21:11:57Z"
+      "revised": "2026-11-26T21:13:22Z"
     }
   ],
   "prime_owner": "neve",
