@@ -129,6 +129,6 @@ D9 lands each PATTERN edit where it first holds; D10 measures before and after i
 - Q11 (auto-pick): "action list" over "plan" (D11). Reason: glossary line for "plan".
 - Q13 (operator, via `ly:orch`): fabric's tests test fabric alone (D12); real config through configengine (correction); no stand-in data for another module. Placement of each kind of moved test is an auto-pick within it.
 - Q14 (operator, via `ly:orch`): inverted dependencies cut (D13); configengine kept and where each adapter lives are auto-picks within it.
-- Q12 (open, for the parent): `push-retry-not-halt`'s dependency on this slug once it is a Sketch; under Open risks.
-- Q15 (open, for the parent): whether D12 also asks for a slimmer `internal/hubforge`, and whether `internal/testkit/boardkit` and `internal/testkit/envkit` split off their name-only uses; under Open risks.
+- Q12 (answered by the arbiter's added entry "push-retry-not-halt waits for the whole chain"): `push-retry-not-halt`'s dependency on this slug once it is a Sketch.
+- Q15 (answered by the arbiter's added entry "hubforge, boardkit and envkit keep their import sets in this task"): whether D12 also asks for a slimmer `internal/hubforge`, and whether `internal/testkit/boardkit` and `internal/testkit/envkit` split off their name-only uses.
 - Q16 (auto-pick, review round 1): `internal/fabriccli` outside the cut, seams installed at process start; shed records as bytes with shed's codec; a workspace builder seam; required and optional seams; outcome classes and a wait action; inverse actions with ownership tokens; core rows set config values as snapshot inputs while engine tests load real config (D3, D4, D12, D13).
