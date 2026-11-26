@@ -1,0 +1,194 @@
+diff --git a/internal/orchcli/remotecontrol_test.go b/internal/orchcli/remotecontrol_test.go
+index b1427d73a..dd6aebbf5 100644
+--- a/internal/orchcli/remotecontrol_test.go
++++ b/internal/orchcli/remotecontrol_test.go
+@@ -148,7 +148,7 @@ func TestRemoteControlOnVerb_QueuesForTheClientsPaneWithoutMarkingIt(t *testing.
+ 	}
+ 	tests := []struct {
+ 		name string
+-		// paneReadFails makes the fake tmux fail the display-message that reads the active pane.
++		// paneReadFails makes the fake tmux fail the list-clients that reads the active pane.
+ 		paneReadFails bool
+ 		wantCode      int
+ 		wantError     string
+@@ -162,11 +162,11 @@ func TestRemoteControlOnVerb_QueuesForTheClientsPaneWithoutMarkingIt(t *testing.
+ 			t.Parallel()
+ 			dir := t.TempDir()
+ 			log := filepath.Join(dir, "calls.log")
+-			paneRead := "printf '%s\\t%s\\t\\n' '%7' 'tst:orch'"
++			paneRead := "printf '%s\\t%s\\t%s\\t\\n' '/dev/pts/3' '%7' 'tst:orch'"
+ 			if tt.paneReadFails {
+-				paneRead = "echo no such client >&2; exit 1"
++				paneRead = "echo no server >&2; exit 1"
+ 			}
+-			script := "#!/bin/sh\necho \"$*\" >> '" + log + "'\ncase \"$*\" in\n*' display-message -p '*) " + paneRead + " ;;\nesac\n"
++			script := "#!/bin/sh\necho \"$*\" >> '" + log + "'\ncase \"$*\" in\n*'list-clients -F '*) " + paneRead + " ;;\nesac\n"
+ 			tmuxPath := filepath.Join(dir, "tmux")
+ 			if err := os.WriteFile(tmuxPath, []byte(script), 0o755); err != nil {
+ 				t.Fatalf("write the fake tmux: %v", err)
+diff --git a/internal/reedengine/remotecontrol.go b/internal/reedengine/remotecontrol.go
+index 9c7a48542..539f424f4 100644
+--- a/internal/reedengine/remotecontrol.go
++++ b/internal/reedengine/remotecontrol.go
+@@ -35,17 +35,29 @@ func ClientAgentPane(tmuxPath, socketPath, client string) (AgentPane, error) {
+ }
+ 
+ // clientAgentPaneVia reads the active pane of client over cmd, so a test can replace the tmux command.
++// It reads the pane through list-clients, which expands each row's format against that client's own session.
++// A display-message call run from outside tmux expands its format against the most recently active client's session.
++// On a server with clients in several sessions it can therefore name another session's pane.
+ func clientAgentPaneVia(cmd TmuxCmd, client string) (AgentPane, error) {
+-	format := "#{pane_id}\t#{" + strandNamePaneOption + "}\t#{" + remoteControlPaneOption + "}"
+-	out, err := cmd.output("display-message", "-p", "-c", client, format)
++	format := "#{client_name}\t#{pane_id}\t#{" + strandNamePaneOption + "}\t#{" + remoteControlPaneOption + "}"
++	out, err := cmd.output("list-clients", "-F", format)
+ 	if err != nil {
+ 		return AgentPane{}, fmt.Errorf("reed: read the active pane of client %q: %w", client, err)
+ 	}
+-	fields := strings.Split(strings.TrimRight(out, "\r\n"), "\t")
+-	if len(fields) != 3 || fields[0] == "" {
+-		return AgentPane{}, fmt.Errorf("reed: client %q shows no active pane", client)
++	for _, line := range strings.Split(out, "\n") {
++		fields := strings.Split(strings.TrimRight(line, "\r"), "\t")
++		if line == "" || fields[0] != client {
++			continue
++		}
++		if len(fields) != 4 {
++			return AgentPane{}, fmt.Errorf("reed: client %q has an unreadable list-clients row", client)
++		}
++		if fields[1] == "" {
++			return AgentPane{}, fmt.Errorf("reed: client %q shows no active pane", client)
++		}
++		return AgentPane{PaneID: fields[1], StrandName: fields[2], RemoteControlOn: fields[3] != ""}, nil
+ 	}
+-	return AgentPane{PaneID: fields[0], StrandName: fields[1], RemoteControlOn: fields[2] != ""}, nil
++	return AgentPane{}, fmt.Errorf("reed: no client %q is attached", client)
+ }
+ 
+ // markPaneRemoteControlOnVia sets the RC mark on paneID over cmd, so a test can replace the tmux command.
+diff --git a/internal/reedengine/remotecontrol_integration_test.go b/internal/reedengine/remotecontrol_integration_test.go
+new file mode 100644
+index 000000000..0184072dd
+--- /dev/null
++++ b/internal/reedengine/remotecontrol_integration_test.go
+@@ -0,0 +1,65 @@
++//go:build linux
++
++// remotecontrol_integration_test.go drives ClientAgentPane against a real tmux server.
++// Two clients are attached to two sessions.
++// The clients are attached through the pty harness that attachgeometry_integration_test.go defines.
++
++package reedengine
++
++import (
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestClientAgentPane_ReadsEachClientsOwnSession pins that each client's read names the active pane of its own session.
++// The result does not depend on which client was active last.
++func TestClientAgentPane_ReadsEachClientsOwnSession(t *testing.T) {
++	tiergate.Require(t, 2)
++	t.Parallel()
++	e := newIntegrationEngine(t, "off")
++	if _, err := e.Up(); err != nil {
++		t.Fatalf("Up: %v", err)
++	}
++	const otherSession = "other"
++	if err := e.tmux.run("new-session", "-d", "-s", otherSession); err != nil {
++		t.Fatalf("new-session %s: %v", otherSession, err)
++	}
++	socketPath := strings.TrimSpace(mustTmuxOutput(t, e, "display-message", "-p", "#{socket_path}"))
++
++	sessions := []struct {
++		name       string
++		strandName string
++		paneID     string
++		client     string
++	}{
++		{name: e.SessionName(), strandName: "tc:orch"},
++		{name: otherSession, strandName: "tc:a-task:agent"},
++	}
++	for i := range sessions {
++		s := &sessions[i]
++		s.paneID = strings.TrimSpace(mustTmuxOutput(t, e, "display-message", "-p", "-t", exactSessionWindowTarget(s.name), "#{pane_id}"))
++		if err := e.tmux.run("set-option", "-p", "-t", s.paneID, strandNamePaneOption, s.strandName); err != nil {
++			t.Fatalf("set the strand name on %s: %v", s.paneID, err)
++		}
++		startInPTY(t, []string{e.cfg.Tmux, "-L", e.Socket(), "attach-session", "-t", exactSessionTarget(s.name)}, 100, 30)
++		waitUntil(t, 15*time.Second, "no client ever attached to session "+s.name, func() bool {
++			out, err := e.tmux.output("list-clients", "-t", exactSessionTarget(s.name), "-F", "#{client_name}")
++			s.client = strings.TrimSpace(out)
++			return err == nil && s.client != ""
++		})
++	}
++
++	for _, s := range sessions {
++		got, err := ClientAgentPane(e.cfg.Tmux, socketPath, s.client)
++		if err != nil {
++			t.Errorf("ClientAgentPane(%q): %v", s.client, err)
++			continue
++		}
++		if want := (AgentPane{PaneID: s.paneID, StrandName: s.strandName}); got != want {
++			t.Errorf("ClientAgentPane(%q) in session %s = %+v; want %+v", s.client, s.name, got, want)
++		}
++	}
++}
+diff --git a/internal/reedengine/remotecontrol_test.go b/internal/reedengine/remotecontrol_test.go
+index fb1e9fc2e..5e4b75109 100644
+--- a/internal/reedengine/remotecontrol_test.go
++++ b/internal/reedengine/remotecontrol_test.go
+@@ -15,12 +15,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestClientAgentPaneVia pins the format asked of tmux and how its three tab-separated fields become an AgentPane.
++// TestClientAgentPaneVia pins the format asked of tmux.
++// It also pins how the clicking client's row of four tab-separated fields becomes an AgentPane.
+ func TestClientAgentPaneVia(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	wantArgv := []string{"display-message", "-p", "-c", "/dev/pts/3", "#{pane_id}\t#{@lym_strand_name}\t#{@lym_rc}"}
++	wantArgv := []string{"list-clients", "-F", "#{client_name}\t#{pane_id}\t#{@lym_strand_name}\t#{@lym_rc}"}
+ 	tests := []struct {
+ 		name    string
+ 		out     string
+@@ -28,20 +29,26 @@ func TestClientAgentPaneVia(t *testing.T) {
+ 		want    AgentPane
+ 		wantErr string
+ 	}{
+-		{name: "AgentPaneWithTheMark", out: "%7\tscout\t1\n", want: AgentPane{PaneID: "%7", StrandName: "scout", RemoteControlOn: true}},
+-		{name: "AgentPaneWithoutTheMark", out: "%7\tscout\t\n", want: AgentPane{PaneID: "%7", StrandName: "scout"}},
+-		{name: "PaneWithNoStrandName", out: "%2\t\t\n", want: AgentPane{PaneID: "%2"}},
+-		{name: "TmuxError", tmuxErr: errors.New("no such client"), wantErr: `read the active pane of client "/dev/pts/3"`},
+-		{name: "TooFewFields", out: "%7\tscout\n", wantErr: "shows no active pane"},
+-		{name: "EmptyPaneID", out: "\tscout\t1\n", wantErr: "shows no active pane"},
+-		{name: "EmptyOutput", out: "", wantErr: "shows no active pane"},
++		{name: "AgentPaneWithTheMark", out: "/dev/pts/3\t%7\tscout\t1\n", want: AgentPane{PaneID: "%7", StrandName: "scout", RemoteControlOn: true}},
++		{name: "AgentPaneWithoutTheMark", out: "/dev/pts/3\t%7\tscout\t\r\n", want: AgentPane{PaneID: "%7", StrandName: "scout"}},
++		{name: "PaneWithNoStrandName", out: "/dev/pts/3\t%2\t\t\n", want: AgentPane{PaneID: "%2"}},
++		{
++			name: "OtherClientsRowsAreSkipped",
++			out:  "/dev/pts/1\t%1\torch\t1\n/dev/pts/30\t%9\tother\t1\n/dev/pts/3\t%7\tscout\t\n",
++			want: AgentPane{PaneID: "%7", StrandName: "scout"},
++		},
++		{name: "TmuxError", tmuxErr: errors.New("no server"), wantErr: `read the active pane of client "/dev/pts/3"`},
++		{name: "ClientNotListed", out: "/dev/pts/1\t%1\torch\t1\n", wantErr: `no client "/dev/pts/3" is attached`},
++		{name: "TooFewFields", out: "/dev/pts/3\t%7\tscout\n", wantErr: `client "/dev/pts/3" has an unreadable list-clients row`},
++		{name: "EmptyPaneID", out: "/dev/pts/3\t\tscout\t1\n", wantErr: "shows no active pane"},
++		{name: "EmptyOutput", out: "", wantErr: `no client "/dev/pts/3" is attached`},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			cmd := newTmuxCmdForSocketPath("tmux", "/tmp/sock")
+ 			fake := installFakeTmuxOn(t, &cmd)
+-			fake.answer("display-message", tt.out, tt.tmuxErr)
++			fake.answer("list-clients", tt.out, tt.tmuxErr)
+ 
+ 			got, err := clientAgentPaneVia(cmd, "/dev/pts/3")
+ 
