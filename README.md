@@ -8,7 +8,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits](project-intake-wave-1.md) (6)
 
-`intake-wave-1` · Age 33m · Owner `neve`
+`intake-wave-1` · Age 34m · Owner `neve`
 
 ### Draft (6)
 
@@ -33,14 +33,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P3 Intake wave 2: Describe text, infra stops, push retries](project-intake-wave-2.md) (3)
 
-`intake-wave-2` · Age 33m · Owner `neve`
+`intake-wave-2` · Age 34m · Owner `neve`
 
 ### Draft (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | `draft` **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | T3<br>T1 | 1h<br>32m | landing, stencil, burler, shuttle |
-| T10 | `draft` **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | T3<br>T4<br>T5 | 1h<br>32m | shuttle, claude, tender, gate, burler, shed, reed |
+| T9 | `draft` **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | T3<br>T1 | 1h<br>33m | landing, stencil, burler, shuttle |
+| T10 | `draft` **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | T3<br>T4<br>T5 | 1h<br>33m | shuttle, claude, tender, gate, burler, shed, reed |
 | T11 | `draft` **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | darn · solid | T3<br>T1<br>T9<br>T10 | 1h<br>0m | fabric, shed, landing, batten, dobby |
 
 ## [P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric](project-single-repo-hub.md) (1)
@@ -55,18 +55,18 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (2)
 
-`intake-wave-3` · Age 33m · Owner `neve`
+`intake-wave-3` · Age 34m · Owner `neve`
 
 ### Draft (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T3<br>T9<br>T11<br>T7 | 1h<br>32m | batten, landing, orch, stencil, shed, loom, pawl |
-| T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T3<br>T9<br>T10 | 1h<br>32m | loom, burler |
+| T12 | `draft` **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T3<br>T9<br>T11<br>T7 | 1h<br>33m | batten, landing, orch, stencil, shed, loom, pawl |
+| T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T3<br>T9<br>T10 | 1h<br>33m | loom, burler |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (3)
 
-`intake-motifs` · Age 33m · Owner `neve`
+`intake-motifs` · Age 34m · Owner `neve`
 
 ### Draft (3)
 
@@ -84,7 +84,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | Code-Bouncer | neve | 2d<br>2d |  |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | Drift-Recheck | neve | 2d<br>2d |  |
 
 ### Layer A (1)
 
