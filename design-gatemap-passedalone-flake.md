@@ -1,6 +1,6 @@
 # Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load
 
-`gatemap-passedalone-flake` · Task · bug, gate · starting · Seed-Child
+`gatemap-passedalone-flake` · Task · bug, gate · starting · Open-IDE
 
 Imported from [issue #260](https://github.com/Knatte18/loomyard/issues/260).
 
