@@ -1,0 +1,14 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "62926101b69df615a99134d832ad8cde34bed26518651ff23cd6b594388c663f",
+  "added_decisions": [
+    {
+      "title": "The shellguard bus and hub-tmux rows are built",
+      "digest": "bc4bc9c834435a5521c346794a0eed2302624e66a4e0e9220f6ad1a6c5647b57"
+    }
+  ]
+}
