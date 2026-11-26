@@ -218,9 +218,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl"
       ]
+    },
+    "4": {
+      "slug": "run-watch-wiring",
+      "cards": [
+        "04-run-watch-wiring",
+        "05-gate-holder-marker",
+        "06-gate-hold-engine",
+        "07-gate-hold-wiring"
+      ],
+      "cardHashes": {
+        "04-run-watch-wiring": "83fec3b74a0b5d084c31c30057f59310ad205e4116236204af7bbc4133e5441c",
+        "05-gate-holder-marker": "800a883b6f32a242fc05ae0b3f153ddfa069c7097de136a383c4e45e5b27ce35",
+        "06-gate-hold-engine": "f06b313fca77af92c10bfc9a2eab83d0c75e0a03db427b50a3d1708f17108608",
+        "07-gate-hold-wiring": "6b6826fcbf25435d2e584e0ae00978c876ef8547f37c118d908216daf6b450bf"
+      },
+      "startSha": "a5c38f5330a17af9d460423e6de029c714ac9949",
+      "kind": "fork",
+      "spawnedAt": "2026-11-26T21:27:52Z",
+      "sessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "9445140350e51be1b6ffd1f1ee99a315",
   "masterSessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
   "masterEngine": "claude",
