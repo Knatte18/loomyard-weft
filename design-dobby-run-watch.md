@@ -1,6 +1,6 @@
 # Built-in run watch: mail the parent on every non-running state and on a gate slot held too long
 
-`dobby-run-watch` · Task · sketch, dobby, gate
+`dobby-run-watch` · Task · sketch, dobby, gate · starting · Worktree-Create
 
 Decision record: [Sketch](decision-dobby-run-watch.md)
 

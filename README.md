@@ -18,12 +18,17 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-wave-1` · Age 2h · Owner `neve`
 
-### Ready (2)
+### Running (1)
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light | starting · Worktree-Create | neve | 3h<br>0m | stencil, darn |
+
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light |  | 3h<br>0m | webster, quarry |
-| T7 | **Iterative agents should commit often** | [`writers-commit-each-step`](design-writers-commit-each-step.md) | darn · light |  | 3h<br>0m | stencil, darn |
 
 ### Layer A (2)
 
@@ -58,11 +63,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`single-repo-hub`](design-single-repo-hub.md) · Age 7d · Owner `neve`
 
-### Draft (1)
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | darn · docs |  | 3d<br>0m | burler, fabric |
+| T6 | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | darn · docs |  | 3d<br>0m | burler, fabric |
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (2)
 
@@ -79,11 +84,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-motifs` · Age 2h · Owner `neve`
 
-### Ready (1)
+### Running (1)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md)<br>[Sketch](decision-dobby-run-watch.md) | raddle |  | 3h<br>0m | dobby, gate |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md)<br>[Sketch](decision-dobby-run-watch.md) | raddle | starting · Worktree-Create | neve | 3h<br>0m | dobby, gate |
 
 ### Sketches (2)
 
