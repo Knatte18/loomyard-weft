@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -180,6 +180,30 @@
       "started_at": "2026-11-26T09:54:22Z",
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/reviews/plan/round-3-review.md",
+      "at": "2026-11-26T10:03:29Z",
+      "started_at": "2026-11-26T09:54:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-26T10:03:28.992724608Z",
+          "end": "2026-11-26T10:03:28.993047521Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-26T10:03:29.05177044Z",
+          "end": "2026-11-26T10:03:29.051907195Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
