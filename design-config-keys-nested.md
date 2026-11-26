@@ -1,6 +1,6 @@
 # Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full
 
-`config-keys-nested` · Task · enhancement, config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs · running · Webster
+`config-keys-nested` · Task · enhancement, config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs · running · Parent-Align
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
