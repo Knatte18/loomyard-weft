@@ -683,10 +683,10 @@
     },
     {
       "id": 1696,
-      "handle": "B1",
+      "handle": "T4",
       "slug": "enter-session-test-cleanup-race",
       "title": "TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
@@ -698,6 +698,7 @@
       "isolated": false,
       "brief": "",
       "body": "`TestEnterSession_DrivesTheToldTmux` in `internal/reedcli` failed once in a tier1 gate run of `dotnet-gate-fixes` (2026-11-26, run `20261126T191602Z-tier1-1241782`), then passed 30 of 30 runs with `-count=30`.\nThe failure is in cleanup, not in an assertion:\n`TempDir RemoveAll cleanup: unlinkat .../TestEnterSession_DrivesTheToldTmux.../001/container/warp-bare-LYMHUB/warp-bare: directory not empty`.\nSomething the test starts most likely still writes into its temp dir when the test returns, such as a background process or a goroutine that outlives it.\n\nIdea: make the test wait for whatever it started to stop before it returns, so cleanup finds the directory quiet.\nEach flaky failure costs a run a full red verify round, about 5 minutes, and a gate-fixer turn.\n\n\n## From issue #266\n\nImported from [issue #266](https://github.com/Knatte18/loomyard/issues/266).\n\n**What happened.**\n`TestEnterSession_DrivesTheToldTmux` in `internal/reedcli` failed once in a tier1 gate run with:\n\n```\nTempDir RemoveAll cleanup: ... directory not empty\n```\n\nIt passed in the gate runs before and after, and in 30 repeats.\n\n**Why it is abnormal.**\nThe test is flaky, and the one failure cost an extra full gate run.\n\n**What to do.**\nThe likely cause comes from reading the code and has not been reproduced:\nthe test's cleanup cancels the context of `watchPaneOOMKills` (`internal/reedcli/oomnotice.go`, started in `internal/reedcli/watchdog.go`) without waiting for the goroutine to return.\nThe goroutine's first strand read can then still be writing under the hub while the temp directory is removed.\nConfirm this, then make the goroutine's exit awaitable and have the cleanup wait for it before the temp directory is removed.\n\nProvenance: task `dotnet-gate-fixes`, note `gate-fixer-darn-write.md`.\n",
+      "status": "draft",
       "created": "2026-11-26T19:29:57Z",
       "revised": "2026-11-26T20:18:16Z"
     },
