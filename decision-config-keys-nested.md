@@ -197,6 +197,12 @@ Decision: Card 11's fork reported bare key names left outside its packages: gate
 
 Rationale: Master's friction note recorded the list; the note is removed to clear a false parent-write audit finding, so the list lives here.
 
+### Added after Discussion (parent, 2026-11-26): Defer the bare config-key Go comment sweep
+
+Decision: The finding config-keys-named-bare-or-without-module is accepted as partly deferred: every message, flag help, doc, contract and named comment site was fixed in round 1; the remaining Go comments and package docs that name a key bare stay as they are in this run. The sweep is the board note config-key-comment-sweep.
+
+Rationale: About 525 comment lines in about 199 files, nearly all older than this run; comment-only, no behaviour or user-visible text, and it reviews better on its own. The operator wants this run finished quickly.
+
 ## Constraints
 
 - `PATTERN-config-layers`: layers are read only through `configengine`, a reconcile on a binary change only through `hubreconcile.Ensure`, and no reconcile touches the machine layer.
