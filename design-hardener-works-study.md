@@ -1,6 +1,6 @@
 # Study whether the hardener finds and fixes real faults
 
-`hardener-works-study` · Task · research, burler, fabric · starting · Worktree-Create
+`hardener-works-study` · Task · research, burler, fabric · starting · Seed-Child
 
 ## Goal
 

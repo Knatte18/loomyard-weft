@@ -1,6 +1,6 @@
 # Iterative agents should commit often
 
-`writers-commit-each-step` · Task · enhancement, stencil, darn · starting · Seed-Child
+`writers-commit-each-step` · Task · enhancement, stencil, darn · starting · Open-Window
 
 Bundled from the notes below; each part keeps its note's text.
 
