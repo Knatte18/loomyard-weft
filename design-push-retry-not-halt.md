@@ -177,3 +177,12 @@ Failing that, the stop names a lym verb the parent can run to clear it, instead 
 
 With several tasks released at once, dobby's catch-up for `sandbox-closed-area-build` and `keep-landed-records` failed with `fabricengine: push lock busy: .../loomyard-weft/.weft/fabric.push.lock still held after 30s ... neither side was pushed`, and each needed a manual `lym batten run`.
 A held push lock is contention, not a failure: the catch-up should hand the owed push to the pusher and start the run.
+
+# Review findings carried over from `async-run-pusher` (`b4236816a`)
+
+Code-Review left these MEDIUM findings open; check each and close what is still open:
+
+- tests of the pusher's lock and start conditions (`internal/runpusher`);
+- tests of the pusher restart calls from the dobby tick and the batten and loom resumes (`internal/beamcli`, `internal/battencli`, `internal/loomcli`);
+- tests of the teardown's push and level wiring (`teardownPushSeams` in `internal/battencli/wire.go`);
+- Worktree-Teardown looping with pushes off (`internal/battenshed/teardown.go`).
