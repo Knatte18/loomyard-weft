@@ -1,6 +1,6 @@
 # creel post refusal after a persisted cd does not say why
 
-`creel-refusal-after-cd` · Task · bug, creel, cwd · landing · Finalize
+`creel-refusal-after-cd` · Task · bug, creel, cwd · done
 
 Bundled from the notes below; each part keeps its note's text.
 
