@@ -59,3 +59,4 @@ labels:
     slack: Slack relay, login and presence (internal/slack*)
     weaver: the weaver, a planned role or program (see entry weaver)
     testmap: 'per-test coverage maps and their readers: internal/testcover, lym gate test --map, lym gate redundant'
+    desktop: the desktop launchers and desktop hooks (internal/desktoplauncher, internal/desktophook)
