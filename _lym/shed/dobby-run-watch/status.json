@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -88,6 +88,30 @@
       "at": "2026-11-26T09:39:56Z",
       "started_at": "2026-11-26T09:39:19Z",
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-run-watch/_lym/reviews/discussion/round-2-review.md",
+      "at": "2026-11-26T09:46:00Z",
+      "started_at": "2026-11-26T09:39:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-26T09:45:59.697786772Z",
+          "end": "2026-11-26T09:45:59.698155611Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-26T09:45:59.758541813Z",
+          "end": "2026-11-26T09:45:59.758826455Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
