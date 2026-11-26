@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "4a8548b649786f8806c88542466d72ed1500d690",
+  "added_decisions": [
+    {
+      "title": "F4: dotted names are rendered, input forms stay",
+      "digest": "121a36c194a290389bec791cb65b18241ff59464e4ece3b79c61943fa70e0a70"
+    },
+    {
+      "title": "Fix the plan defects round 3 listed but did not raise",
+      "digest": "4cfce2c81968cb448ef0dd37442ce690971e6435b477713c5cd4f3d4f88c8935"
+    },
+    {
+      "title": "Bound the loop integration tests' wait on shed step",
+      "digest": "bfdb7bc6c460808783ca8eb5e5531122ad7a4b3678ad474c008604788b43c917"
+    },
+    {
+      "title": "Name in full the bare keys card 11 left",
+      "digest": "77f663cb78e015667109c054e2edfbe678deacd03b462893f3d14b866a8334ad"
+    }
+  ]
+}
