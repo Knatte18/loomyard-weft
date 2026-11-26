@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=f39eeff32ae002f009d85580c8e78f802009f2e3430d4915521db737fd6ea15b build=52d132a2c8e4e3b68e3e797e30d3e9ceb200ec50 time=2026-11-23T08:56:21Z -->
+<!-- lym-stencil: sha256=0ac8124b17df1afa905c72c524e1394a8a635c2e2b9015b65acef96c2cd0a3e8 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Raddle proposal-spec — how a Sketch splits into filed entries
 
@@ -70,7 +70,7 @@ The one exception is a perch-mode run's project, whose slug is the run's own ent
 ## Perch mode
 
 A run whose recipe rows hold a split perch, a Bouncer row over the proposal, records perch mode in its raddle state at Raddle-Write's first call.
-The perch's approval files the proposal in place of the operator's, so `raddle_auto_approve` is never read.
+The perch's approval files the proposal in place of the operator's, so `loom.raddle.auto_approve` is never read.
 In perch mode the checks allow two outcomes:
 
 - One task: shape `tapestry`, or shape `tasks` with one part.

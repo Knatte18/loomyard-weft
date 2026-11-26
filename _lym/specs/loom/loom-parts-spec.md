@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=a8b124d2f3dce0fb8cf1032fdefafa9d3052488bf2509307d0c292efea358ff1 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=af6632e2d74de7bf854e82f5d31d00738230b2d656b45d7e0162e3cbac6ecce2 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Loom parts-spec — the task split into parts
 
@@ -89,7 +89,7 @@ Each finding names the part, or the shared spot's path, and ends in its way forw
 | `parts-missing` | the parts file does not exist | write it |
 | `parts-malformed` | `Parse` refuses the file | correct the line the error names |
 | `parts-none` | the file holds no part | write at least one part, a single part covering the whole task when it does not split |
-| `parts-over-max` | more parts than `tapestry.parts_max` | merge parts until at most the maximum remain |
+| `parts-over-max` | more parts than `tapestry.parts.max` | merge parts until at most the maximum remain |
 | `part-name-invalid` | a name `seatengine.ValidateSeatName` refuses | rename the part to a lower-case name that starts with a letter |
 | `part-name-repeated` | a name an earlier part holds | rename one of them |
 | `part-name-archive` | a name beginning with `archive-`, whose directory the preparations would skip as an earlier archive | rename the part |

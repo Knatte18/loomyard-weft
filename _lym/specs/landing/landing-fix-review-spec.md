@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=c408f51f5702acd8c70066bea33dd954cb1d9a5f77ea3a6afcab69464d33bea3 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=c01e3c389b4d4e035be26f4e7dc2d823ab6173963dae8adf4789854297c774a1 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Landing fix review spec — what the fix review writes
 
@@ -11,7 +11,7 @@ It reads only the fixer's commits and ends by writing one report, a markdown fil
 An approval lets Finalize land;
 a rejection hands the report's findings to the merge fixer, which fixes them in place,
 and the fix review then judges the fixed change again.
-After `finalize_fix_review_rounds` reviews without an approval, Finalize halts for the operator with the findings open.
+After `landing.finalize_fix_review_rounds` reviews without an approval, Finalize halts for the operator with the findings open.
 
 ## Format
 

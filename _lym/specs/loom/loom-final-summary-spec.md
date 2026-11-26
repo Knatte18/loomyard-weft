@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=c36515bf6d1b7d17ce751064a4889a2cd835d6327391a092e20615ea7cf8ebd6 build=1181fcca04eac3a9f24ae361e1e87136b73df7a2 time=2026-11-21T13:58:36Z -->
+<!-- lym-stencil: sha256=4c90df394b61b2f1384a5a0b0a8d9d55d0dfc0674afa86c7d076ec63d418d995 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -66,7 +66,7 @@ The artifact's consumers are both in `internal/landingshed`:
 - **`Publish`** uses the parsed title and body as the pull request's own title and body fields.
 - **`Finalize`** uses `LandingMessage` as the landing merge commit's message.
   `LandingMessage` is the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the credit block.
-  Go composes the credit block from `landing.yaml`'s `credit_*` keys and the engines that ran a session in the task.
+  Go composes the credit block from the `landing.credit_*` keys and the engines that ran a session in the task.
   The pull request's body carries the same body and credit block.
 
 Both consumers append the task's regression check, when the task has one, after the body and before the credit block.

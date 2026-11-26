@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=d4887dfd04350bbe63a05c80a4f38f5efe0cf485c4e39b4b0d7e0139fb346208 build=f7465bd86b31478590683d0377771fca4647c425 time=2026-11-07T11:35:39Z -->
+<!-- lym-stencil: sha256=0821a8ce5fe8ad4f578e1ab0e1cb0cb7f82b7864bf8f9976d715fa3d7fe4dfc0 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
 
 # Loom plan-spec — flat card list
 
@@ -144,7 +144,7 @@ an `Extends` against any other label, and a `Uses` against an `Extends` target, 
 | Edit | existing symbol(s) | impact on the symbol changed; `caller-uncovered` for a re-signed member | required |
 | Extends | existing symbol(s) or file(s) the card only adds to | `extends-overlap`, `extends-resign` | required |
 | Delete | existing symbol(s) or whole file(s) | assert-no-callers, mechanically `caller-uncovered` for a member | required |
-| Rename | existing symbol(s), `old -> new` pairs | the hub's structure-aware rename tool (`language.yaml` `rename_tools`) + grep verify, never text or regex replace | not required |
+| Rename | existing symbol(s), `old -> new` pairs | the hub's structure-aware rename tool (`language.rename_tools`) + grep verify, never text or regex replace | not required |
 | Move | existing symbol or whole file relocated | `git mv` + import fixup; destination stated in `Intent`, not the target list | not required |
 | Prosa | file(s), no symbol target | none | not required |
 | Custom | either | none — explicit escape hatch | as applicable |
@@ -243,10 +243,10 @@ The section is reproduced verbatim:
    into the `Rename` pair.
 4. Never write the relocated file from scratch and delete the original — that loses
    git history exactly as an unstructured create+delete pair would.
-5. For a symbol pair, run the hub's structure-aware rename tool the implementer prompt names (`language.yaml` `rename_tools`), never a text or regex replace, then grep for zero remaining old-name references and confirm the symbol's doc comment opening names the new name.
+5. For a symbol pair, run the hub's structure-aware rename tool the implementer prompt names (`language.rename_tools`), never a text or regex replace, then grep for zero remaining old-name references and confirm the symbol's doc comment opening names the new name.
 ```
 
-A hub with an empty `rename_tools` list cannot run a symbol pair (`rename-tool-missing`).
+A hub with an empty `language.rename_tools` list cannot run a symbol pair (`rename-tool-missing`).
 
 ## Plan: handles
 
