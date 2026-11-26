@@ -1,0 +1,45 @@
+# Settings golden update mode; document guard row exceptions
+
+## Settings golden update mode
+
+`TestBuildSettings_MatchesGolden` now renders the settings document and deny notice for every deny-input combination before it compares anything.
+Under its new `-update` flag it writes them to `internal/shuttleengine/claudeengine/testdata/settings-golden.json` instead of comparing,
+so a shell guard row change regenerates the golden with:
+
+```
+lym gate test ./internal/shuttleengine/claudeengine -- -run TestBuildSettings_MatchesGolden -update
+```
+
+The file is written with two-space indentation and a trailing newline.
+Run against the current code, update mode leaves the committed golden unchanged byte for byte.
+Without the flag the test checks the same things as before: a missing label, a differing settings document or notice, and a label in the golden that the test does not render.
+
+## Exceptions in shell guard rows
+
+Rows stay AND-only; `Row` gains no field for patterns that must not match.
+Such a pattern would match anywhere in the payload.
+In `dbus-send / x.y; dbus-send --system / a.b`, the second command's `--system` would then let the first, refused, command through.
+That is the fail-open shape the issue warns about.
+An exception is spelled inside the pattern that matches the command itself, with `unquotedWordOtherThan` scanning that command's unquoted words.
+The scan matches at a separator, a quote or the payload's end, so a command it cannot read is refused.
+
+The package doc of `internal/shellguard`, the `Row.Patterns` field comment and the `unquotedWordOtherThan` doc now state this as the way to write an exception.
+They point to the session-bus row's dbus-send form as the example.
+The package doc also names the golden's `-update` command, since every row change rewrites that golden.
+
+A new session-bus row in `TestRows_PatternsDenyAndAllow` pins the fail-closed property:
+in `dbus-send / x.y; dbus-send --system / a.b`, the first dbus-send is still denied.
+
+## Design decisions
+
+- AND-only rows plus a documented helper, rather than a negative-pattern field.
+  Both engines render a row as one grep per pattern against the whole payload.
+  A negative pattern could not be scoped to the command occurrence the positive pattern matched, and the guard would fail open.
+- The update flag is a test-binary flag reached through the words after `--` of `lym gate test`.
+  It is named `-update` and is defined only in the claudeengine test package,
+  so the call names that one package.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** shellguard
