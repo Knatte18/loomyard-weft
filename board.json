@@ -288,27 +288,6 @@
       "revised": "2026-11-26T07:33:02Z"
     },
     {
-      "id": 1630,
-      "handle": "B6",
-      "slug": "describe-timeout-no-detail",
-      "title": "Describe halts failed on an uninformative shuttle run outcome timeout",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "landing",
-        "shuttle"
-      ],
-      "issues": [
-        244
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #244](https://github.com/Knatte18/loomyard/issues/244).\n\nThe Describe step halted the run as `failed` with anomaly `producer-hard-failure` and the message `shedadapters: Describe (seats): shuttle run outcome timeout`.\n\nWhy it is abnormal:\n- The note carries no detail on which timeout elapsed, how long the shuttle run had been going, or whether the agent was still working.\n- A timeout on a seated shuttle run is classed as a hard failure, so the run stopped as `failed` rather than being resumed or escalated.\n- The next attempt of the same step completed (`Describe / done`) about 34 minutes later, which suggests the timeout was not a defect in the producer's work.\n\nWhat to do:\n- Include the elapsed time, the timeout limit and the shuttle run's last known state in the halt reason.\n- Decide whether a shuttle outcome timeout should be a retryable or `blocked` stop instead of `failed`.\n\nProvenance: task `retire-d9`; note loom-halt.md.\n",
-      "created": "2026-11-26T07:33:13Z",
-      "revised": "2026-11-26T07:33:13Z"
-    },
-    {
       "id": 1631,
       "handle": "B7",
       "slug": "unreachable-origin-halts-failed",
@@ -349,27 +328,6 @@
       "body": "Imported from [issue #242](https://github.com/Knatte18/loomyard/issues/242).\n\n## Seen\n\nA darn run's Finalize merged its parent beam into the task worktree after its pull request had merged on GitHub.\nThe beam had just taken in a main commit that deleted a whole C# project.\nThe task worktree still held that project's directory with only untracked, gitignored content: `bin/`, `obj/` and generated fixtures.\nOnce git removed the tracked files, the directory was no longer ignored by the deleted `.gitignore`, so it showed as untracked.\nFinalize then blocked: \"the task worktree has uncommitted changes after the merge-in: …/NORCE.Import.CommonLibHarness/; commit or remove them on the task branch, then resume\".\n\nThe run had no live agent left to remove it.\nThe orch may not edit a task worktree, and the Go driver only asked the parent a question and stopped again on resume.\nThe only ways forward were a goto back to the writer, which would re-run review and PR rows for a merged pull request, or the operator removing the directory by hand.\n\n## Workaround\n\nThe operator removes the leftover directory by hand, then the orch runs `lym loom resume` in the task worktree.\n\n## Expected\n\nFinalize's merge-in treats a directory that holds only files the merge's base ignored, under a path the merge deleted, as leftover output:\nit removes it, or ignores it in the clean-tree check, and goes on.\nFailing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.\n",
       "created": "2026-11-26T07:33:20Z",
       "revised": "2026-11-26T07:33:20Z"
-    },
-    {
-      "id": 1633,
-      "handle": "B9",
-      "slug": "describe-held-turn-waits-timeout",
-      "title": "Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "landing",
-        "shuttle"
-      ],
-      "issues": [
-        241
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #241](https://github.com/Knatte18/loomyard/issues/241).\n\nThe Describe producer (seats engine) halted the run as `failed` with `shuttle run outcome timeout`, after its agent session sat held for about 28 minutes with no output.\n\nSequence from the trace:\n\n```\n22:15:05 shuttle: run started role=describe\n22:16:51 shuttle: session state state=idle-stalled cause=interrupt\n22:16:53 shuttle: session state state=busy cause=turn\n22:16:57 shuttle: turn end held, output files missing\n22:16:57 shuttle: held turn end of a turn the operator started; no hold notice\n22:16:57 shuttle: session state state=idle-stalled cause=no-output loop=held\n22:45:06 shuttle: run finished outcome=timeout cleanedUp=false\n22:45:29 shed: step refused kind=producer transient=\"\" error=\"shedadapters: Describe (seats): shuttle run outcome timeout\"\n```\n\nThe halt note reads `loom halted failed at Describe`, `anomaly: producer-hard-failure`, 12 history entries.\n\nWhy this is abnormal:\n- The operator interrupted the agent once and typed into the pane, which made the turn \"operator-started\".\n  lym then held the turn end without a hold notice and waited silently until the run timeout.\n- The session was `idle-stalled` for the whole wait, and nothing re-prompted the agent for its missing output files or surfaced the state to the operator.\n- The timeout was then recorded as a hard failure with `transient=\"\"`, although the cause was an interrupted session and not a producer defect.\n- `cleanedUp=false` on the finished run, and the strand was stopped with `live=true` afterwards.\n\nSuggested fix: when a turn end is held for missing output files after an operator-started turn, send the agent a reminder or hand the pane back to the operator with a visible notice instead of waiting out the whole timeout.\nClassify a timeout that follows an operator interrupt as resumable, not as `producer-hard-failure`.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt.md`.\n",
-      "created": "2026-11-26T07:33:24Z",
-      "revised": "2026-11-26T07:33:24Z"
     },
     {
       "id": 1634,
@@ -521,47 +479,6 @@
       "revised": "2026-11-26T07:34:04Z"
     },
     {
-      "id": 1646,
-      "handle": "B21",
-      "slug": "pr-body-not-synced",
-      "title": "The GitHub PR body is not updated when the description file changes",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "landing"
-      ],
-      "issues": [
-        228
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #228](https://github.com/Knatte18/loomyard/issues/228).\n\n## Seen\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that the same findings were sent again in about five rounds.\nThe agent fixed the description file but the pull request's body on GitHub was not updated, so the parent read the old text again.\nSeen in five separate rounds across several runs.\n\n## Why it makes no sense\n\nThe description file is the one source of the PR title and body.\nA PR whose body differs from the file the run holds is wrong from the first push, and a review round is spent on text that has already been fixed.\n\n## Idea\n\nMake the PR body follow the description file on every push, and refuse to end a round while the two differ.\n\n- Read first where `pr update` runs for a task's pull request, and which path writes the description file without calling it (`lym beam describe` runs the `pr update` sequence for a beam; check the task path).\n- After each push, compare the GitHub PR body with the file, and update it or halt with a way forward naming the difference.\n- Add a test that edits the description file after the PR exists and expects the body to follow on the next push.\n",
-      "created": "2026-11-26T07:34:08Z",
-      "revised": "2026-11-26T07:34:08Z"
-    },
-    {
-      "id": 1647,
-      "handle": "E4",
-      "slug": "describe-no-loomyard-terms",
-      "title": "The Describe text names no LoomYard terms, except the Created using block",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "landing",
-        "stencil"
-      ],
-      "issues": [
-        227
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #227](https://github.com/Knatte18/loomyard/issues/227).\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that about 12 findings were internal process or tool names in the PR text: \"item 3 of the task\", \"the test scoper cannot run C# tests there\", \"the task's branch point\", \"The board entry proposed\", \"The parent recorded...\".\nThe stencil that writes the description (`landing-template-describe`) does not forbid them, so the parent had to tell the Describe session so in each hub.\nIn one run the parent noted its own earlier instruction had caused it.\n\nThe operator's rule: LoomYard, and anything from it, does not belong in the Describe text.\nThe one exception is the \"Created using\" block at the bottom.\n\n## Idea\n\nKeep LoomYard's vocabulary out of the description the Describe row writes, and let lym hold it.\n\n- Add the rule to the Describe stencil: the description names no board, task, Sketch, decision record, parent, orch, scoper, gate, tier, perch or lym term, and no \"item N of the task\".\n- Let the Describe row's mechanical gate (`NewDescriptionGate`, which runs `summaryparser.ValidateDescription`) refuse such a term outside the credit block, with the refusal naming the term and the line.\n- Leave the credit block as it is: the `credit` keys in `landing.yaml` append it, and the term check skips it.\n- Read first how the credit block is appended to the description, and which words the check can match without refusing a repository's own legitimate names.\n- The issue on reviewing the Describe text covers claims and missing content; this issue covers the vocabulary.\n",
-      "created": "2026-11-26T07:34:11Z",
-      "revised": "2026-11-26T07:34:11Z"
-    },
-    {
       "id": 1648,
       "handle": "E5",
       "slug": "scope-closes-at-code-review",
@@ -581,27 +498,6 @@
       "body": "Imported from [issue #226](https://github.com/Knatte18/loomyard/issues/226).\n\n## Seen (operator, 2026-11-24)\n\nA task's scope can still change late.\nIn the C# hubs a parent orch recorded decisions that widened a task while the run was at PR-Review, after Code-Review had finished, and the reviewers never judged the diff against the widened record.\nIn one run Code-Review stopped at its round cap because a decision finding spawns no fixer, so the widening was in the record but never built.\n\nThe operator's rule: decisions go in as early as possible, and once the Code-Review perch has begun it is too late.\nThe last Code-Review round is the last link that can change anything.\nWhat comes up after that becomes a note for a new task, not a change to this one.\n\n## Idea\n\nClose a task's scope when its first Code-Review round starts, and have lym hold the line, so it is not only a rule for the parent orch.\n\n- Before the line, a decision enters the record as an `Added after Discussion` entry, and `code-scope` and the plan lenses read it.\n- After the line, no decision enters the record.\n  `lym loom decision add` (and `replace`) refuse once the run stands at or past the first Code-Review round, and the refusal names the way forward: file the call as a note for a new task.\n  The refusal reaches the parent and the agent the way the other `decision add` refusals do.\n- Two things stay outside the line: feedback from a person through the PR agent, and the mechanical fixes Finalize makes to a merge or test failure.\n- The orch procedure and the parent's prompt say the same, so the parent files a note instead of trying.\n- Read first how `lym loom decision add` decides where a run stands (`internal/loomcli/decision.go` already refuses at some stages), where the Drift rows sit against the Code-Review perch, whether a Drift verdict can send a run back past the line, and how darn, tapestry and arras recipes place their Code-Review perch.\n- Related issues: taking the parent out of PR-Review, and reviewing the Describe text and catching the rest of the parent's findings earlier.\n",
       "created": "2026-11-26T07:34:14Z",
       "revised": "2026-11-26T07:34:14Z"
-    },
-    {
-      "id": 1649,
-      "handle": "E6",
-      "slug": "review-describe-text",
-      "title": "Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "landing",
-        "burler"
-      ],
-      "issues": [
-        225
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #225](https://github.com/Knatte18/loomyard/issues/225).\n\n## Seen (operator, 2026-11-24)\n\nIn the C# repos on one machine, a parent asked to review a PR always finds something.\nThat points to a design flaw: if the parent finds something, an earlier quality check missed it.\n\nThe operator's guess was that the delivered code often does not cover everything the Discussion's decision record asked for.\nThe operator judges the finding below, that most of it is the PR text, as not very important, and that it is solved by reviewing the Describe text too.\n\n## What the parent finds (analysis, 2026-11-24)\n\nAn analysis read 25 PR-Review rounds with findings, across four hubs; one more hub had no PR-Review records.\nAbout 65 findings are itemised in readable text; about 29 more were in scratchpad files that no longer exist.\nThe task worktrees and the Sketches of the landed tasks are gone, so the only full source is each hub's creel mail journal, and the gate attributions are mostly inferred.\nThe full report is a local file and is not committed.\n\n- About half of the findings (32 of 65) are about the PR description, not the code:\n  internal process or tool names in the text (12), wrong or overreaching claims (12), and content the task asked for that the text omits (8).\n- The rest are tests missing or too costly (10), wrong behaviour (8), doc or comment drift (7) and scope the Sketch did not hold (8).\n- The operator's guess holds only in part: 4 of 25 rounds cite a Sketch or task requirement that was missed, and all four concern the PR text or scope, not code behaviour.\n- A finding is often sent twice because the agent edits the summary file but not the GitHub PR body (about 5 rounds).\n\n## Idea\n\nThe Describe row writes the change description, which becomes the PR title, the PR body and the landing commit message.\nIt is a seat table (`DescribeTable` in `internal/landingshed/describe.go`) whose session already reads the decision record, and its only gate is mechanical (`ValidateDescription`); no agent reviews what the text says.\n\n1. Review the Describe text inside the Describe row with a second agent, an assistant seat, and send its findings back to the writer; Describe is the last step that uses an LLM, so no review runs after it.\n   The reviewer checks that the text names no internal process or tool (board, task, scoper, Sketch, decision record, \"item N of\"), that every claim holds against the diff and the task's report or measurements, and that every deliverable the Sketch says to state in the description is there.\n   The mechanical gate stays in front of it.\n   This covers the 32 findings about the text.\n2. Sync the GitHub PR body from the description on every push, and verify the two match (about 5 re-sent rounds).\n3. Run the mutation or redundancy tier on every C# task, and give the Plan a tier0 cost budget (10 test findings).\n4. Have Discussion record what the parent will check: measured figures, doc statements and test intent.\n5. Let a Code-Review finding the parent already ruled in scope reach a fixer; today a decision finding spawns none.\n6. Re-check a constant quoted in a doc when the case it was measured on changes.\n\nThe issue on taking the parent out of PR-Review leaves these checks to the cold-start reviewers, so they must run before PR-Review, and a task's scope closes at its first Code-Review round (see the issue on closing a task's scope).\n",
-      "created": "2026-11-26T07:34:17Z",
-      "revised": "2026-11-26T07:34:17Z"
     },
     {
       "id": 1652,
@@ -902,6 +798,40 @@
       "created": "2026-11-26T07:33:06Z",
       "profile": "light",
       "project": "intake-wave-1"
+    },
+    {
+      "id": 1669,
+      "handle": "T9",
+      "slug": "describe-review-and-sync",
+      "title": "Review the Describe text in its row, keep LoomYard terms out, sync the PR body",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "landing",
+        "stencil",
+        "burler",
+        "shuttle"
+      ],
+      "issues": [
+        227,
+        225,
+        228,
+        244,
+        241
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "config-keys-nested",
+        "pr-modes-no-agent"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "This task builds items 1 and 2 of the Describe-text note's Idea; items 3 to 6 belong to the task that closes scope at Code-Review.\nNo agent reviews the pull request any more (task `pr-modes-no-agent`), so the Describe text is the last text an LLM checks.\n\nBundled from the notes below; each part keeps its note's text.\n\n# The Describe text names no LoomYard terms, except the Created using block\n\nImported from [issue #227](https://github.com/Knatte18/loomyard/issues/227).\n\n## Seen (operator, 2026-11-24)\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that about 12 findings were internal process or tool names in the PR text: \"item 3 of the task\", \"the test scoper cannot run C# tests there\", \"the task's branch point\", \"The board entry proposed\", \"The parent recorded...\".\nThe stencil that writes the description (`landing-template-describe`) does not forbid them, so the parent had to tell the Describe session so in each hub.\nIn one run the parent noted its own earlier instruction had caused it.\n\nThe operator's rule: LoomYard, and anything from it, does not belong in the Describe text.\nThe one exception is the \"Created using\" block at the bottom.\n\n## Idea\n\nKeep LoomYard's vocabulary out of the description the Describe row writes, and let lym hold it.\n\n- Add the rule to the Describe stencil: the description names no board, task, Sketch, decision record, parent, orch, scoper, gate, tier, perch or lym term, and no \"item N of the task\".\n- Let the Describe row's mechanical gate (`NewDescriptionGate`, which runs `summaryparser.ValidateDescription`) refuse such a term outside the credit block, with the refusal naming the term and the line.\n- Leave the credit block as it is: the `credit` keys in `landing.yaml` append it, and the term check skips it.\n- Read first how the credit block is appended to the description, and which words the check can match without refusing a repository's own legitimate names.\n- The issue on reviewing the Describe text covers claims and missing content; this issue covers the vocabulary.\n\n\n# Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier\n\nImported from [issue #225](https://github.com/Knatte18/loomyard/issues/225).\n\n## Seen (operator, 2026-11-24)\n\nIn the C# repos on one machine, a parent asked to review a PR always finds something.\nThat points to a design flaw: if the parent finds something, an earlier quality check missed it.\n\nThe operator's guess was that the delivered code often does not cover everything the Discussion's decision record asked for.\nThe operator judges the finding below, that most of it is the PR text, as not very important, and that it is solved by reviewing the Describe text too.\n\n## What the parent finds (analysis, 2026-11-24)\n\nAn analysis read 25 PR-Review rounds with findings, across four hubs; one more hub had no PR-Review records.\nAbout 65 findings are itemised in readable text; about 29 more were in scratchpad files that no longer exist.\nThe task worktrees and the Sketches of the landed tasks are gone, so the only full source is each hub's creel mail journal, and the gate attributions are mostly inferred.\nThe full report is a local file and is not committed.\n\n- About half of the findings (32 of 65) are about the PR description, not the code:\n  internal process or tool names in the text (12), wrong or overreaching claims (12), and content the task asked for that the text omits (8).\n- The rest are tests missing or too costly (10), wrong behaviour (8), doc or comment drift (7) and scope the Sketch did not hold (8).\n- The operator's guess holds only in part: 4 of 25 rounds cite a Sketch or task requirement that was missed, and all four concern the PR text or scope, not code behaviour.\n- A finding is often sent twice because the agent edits the summary file but not the GitHub PR body (about 5 rounds).\n\n## Idea\n\nThe Describe row writes the change description, which becomes the PR title, the PR body and the landing commit message.\nIt is a seat table (`DescribeTable` in `internal/landingshed/describe.go`) whose session already reads the decision record, and its only gate is mechanical (`ValidateDescription`); no agent reviews what the text says.\n\n1. Review the Describe text inside the Describe row with a second agent, an assistant seat, and send its findings back to the writer; Describe is the last step that uses an LLM, so no review runs after it.\n   The reviewer checks that the text names no internal process or tool (board, task, scoper, Sketch, decision record, \"item N of\"), that every claim holds against the diff and the task's report or measurements, and that every deliverable the Sketch says to state in the description is there.\n   The mechanical gate stays in front of it.\n   This covers the 32 findings about the text.\n2. Sync the GitHub PR body from the description on every push, and verify the two match (about 5 re-sent rounds).\n3. Run the mutation or redundancy tier on every C# task, and give the Plan a tier0 cost budget (10 test findings).\n4. Have Discussion record what the parent will check: measured figures, doc statements and test intent.\n5. Let a Code-Review finding the parent already ruled in scope reach a fixer; today a decision finding spawns none.\n6. Re-check a constant quoted in a doc when the case it was measured on changes.\n\nThe issue on taking the parent out of PR-Review leaves these checks to the cold-start reviewers, so they must run before PR-Review, and a task's scope closes at its first Code-Review round (see the issue on closing a task's scope).\n\n\n# The GitHub PR body is not updated when the description file changes\n\nImported from [issue #228](https://github.com/Knatte18/loomyard/issues/228).\n\n## Seen\n\nAn analysis of the parent's PR-Review findings in the C# hubs found that the same findings were sent again in about five rounds.\nThe agent fixed the description file but the pull request's body on GitHub was not updated, so the parent read the old text again.\nSeen in five separate rounds across several runs.\n\n## Why it makes no sense\n\nThe description file is the one source of the PR title and body.\nA PR whose body differs from the file the run holds is wrong from the first push, and a review round is spent on text that has already been fixed.\n\n## Idea\n\nMake the PR body follow the description file on every push, and refuse to end a round while the two differ.\n\n- Read first where `pr update` runs for a task's pull request, and which path writes the description file without calling it (`lym beam describe` runs the `pr update` sequence for a beam; check the task path).\n- After each push, compare the GitHub PR body with the file, and update it or halt with a way forward naming the difference.\n- Add a test that edits the description file after the PR exists and expects the body to follow on the next push.\n\n\n# Describe halts failed on an uninformative shuttle run outcome timeout\n\nImported from [issue #244](https://github.com/Knatte18/loomyard/issues/244).\n\nThe Describe step halted the run as `failed` with anomaly `producer-hard-failure` and the message `shedadapters: Describe (seats): shuttle run outcome timeout`.\n\nWhy it is abnormal:\n- The note carries no detail on which timeout elapsed, how long the shuttle run had been going, or whether the agent was still working.\n- A timeout on a seated shuttle run is classed as a hard failure, so the run stopped as `failed` rather than being resumed or escalated.\n- The next attempt of the same step completed (`Describe / done`) about 34 minutes later, which suggests the timeout was not a defect in the producer's work.\n\nWhat to do:\n- Include the elapsed time, the timeout limit and the shuttle run's last known state in the halt reason.\n- Decide whether a shuttle outcome timeout should be a retryable or `blocked` stop instead of `failed`.\n\nProvenance: task `retire-d9`; note loom-halt.md.\n\n\n# Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure\n\nImported from [issue #241](https://github.com/Knatte18/loomyard/issues/241).\n\nThe Describe producer (seats engine) halted the run as `failed` with `shuttle run outcome timeout`, after its agent session sat held for about 28 minutes with no output.\n\nSequence from the trace:\n\n```\n22:15:05 shuttle: run started role=describe\n22:16:51 shuttle: session state state=idle-stalled cause=interrupt\n22:16:53 shuttle: session state state=busy cause=turn\n22:16:57 shuttle: turn end held, output files missing\n22:16:57 shuttle: held turn end of a turn the operator started; no hold notice\n22:16:57 shuttle: session state state=idle-stalled cause=no-output loop=held\n22:45:06 shuttle: run finished outcome=timeout cleanedUp=false\n22:45:29 shed: step refused kind=producer transient=\"\" error=\"shedadapters: Describe (seats): shuttle run outcome timeout\"\n```\n\nThe halt note reads `loom halted failed at Describe`, `anomaly: producer-hard-failure`, 12 history entries.\n\nWhy this is abnormal:\n- The operator interrupted the agent once and typed into the pane, which made the turn \"operator-started\".\n  lym then held the turn end without a hold notice and waited silently until the run timeout.\n- The session was `idle-stalled` for the whole wait, and nothing re-prompted the agent for its missing output files or surfaced the state to the operator.\n- The timeout was then recorded as a hard failure with `transient=\"\"`, although the cause was an interrupted session and not a producer defect.\n- `cleanedUp=false` on the finished run, and the strand was stopped with `live=true` afterwards.\n\nSuggested fix: when a turn end is held for missing output files after an operator-started turn, send the agent a reminder or hand the pane back to the operator with a visible notice instead of waiting out the whole timeout.\nClassify a timeout that follows an operator interrupt as resumable, not as `producer-hard-failure`.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt.md`.\n\n\n",
+      "status": "draft",
+      "created": "2026-11-26T07:33:13Z",
+      "revised": "2026-11-26T08:20:21Z",
+      "profile": "solid",
+      "project": "intake-wave-2"
     }
   ],
   "prime_owner": "neve",
