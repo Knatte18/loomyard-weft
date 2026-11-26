@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -184,6 +184,22 @@
       "output": "",
       "at": "2026-11-26T21:11:21Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/enter-session-test-cleanup-race/_lym/landing/summary.md",
+      "at": "2026-11-26T21:11:51Z",
+      "started_at": "2026-11-26T21:11:21Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-26T21:11:49.32824Z",
+          "end": "2026-11-26T21:11:49.328277169Z"
+        }
+      ]
     }
   ],
   "product": {
