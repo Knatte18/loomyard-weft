@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "The round-1 escalation has cause decision, with one decision finding, F3: the per-machine docs/benchmarks/ reports are missing and no deferral is recorded. The brief names no refusal. The board entry settles F3. Its title names the tools/ program as the deliverable. Its Notes make the reports the result of the operator running that program on the laptop and on the other machine, and no run agent can do that. I recorded that ruling as an arbiter decision: this change ships tools/machinecost only, the reports follow the operator's runs after landing, and F3 is not raised again. The ruling needs no fix. The judge's verdict is still CONTINUE, though. The round-1 fixer committed fixes for F1, F2 and F4 to F12, but only F1 was verified. F2 (cleanup on interrupt) and F9 (-dir parsing) are tagged design-wrong, and their new code needs a fresh review. Round 1 is below the hard cap and round-2-focus.md already points at those areas. So I recorded continue rather than accept, which lets round 2 re-review the fixes before the run goes on.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add machine-cost-probe --by arbiter --title \"The docs/benchmarks/ measurement reports follow the operator's runs, outside this change\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling continue machine-cost-probe"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/machine-cost-probe/_lym/shed/machine-cost-probe/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/machine-cost-probe/_lym/shed/machine-cost-probe/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step machine-cost-probe --until-stop --arbiter-attempt 1"
+}
