@@ -1,0 +1,11 @@
+verdict: resume
+reason: |-
+  Round 1 of the Discussion review escalated with cause decision on two findings, F18 and F19, and no refusal. The record and the board code settle both.
+  F18: push-retry-not-halt already depends on the whole entry. When raddle files the parts, internal/boardengine/raddlefile.go's repointDependents moves that edge onto the chain's sink part, part 7. Because D9 chains every part through internal/fabricengine, an edge on part 2 would put push-retry-not-halt's fabric changes beside parts 3 to 7. The edge stays, and Open risks 1 and 2 and Q12 are dropped.
+  F19: Scope Out already keeps internal/hubforge's import set out of the task. D12 counts hubforge as the mandated fixture path, and a split would widen the scope. boardkit and envkit get only D7's retarget. Open risk 3 and Q15 are dropped.
+  Both answers are recorded as arbiter decisions. The round's three BLOCKING design findings (F1 to F3) and the MEDIUM ones were fixed in the record but not yet reviewed, and the writer still has to drop the open risks. The round is below the hard cap, so the segment continues to round 2.
+verbs:
+  - |-
+    lym loom decision add fabric-git-free-core --by arbiter --from .scratch/arbiter-decisions.json
+  - |-
+    lym loom circling continue fabric-git-free-core

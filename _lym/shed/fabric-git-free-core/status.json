@@ -1,14 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add fabric-git-free-core`, then decide with `lym loom circling accept fabric-git-free-core` or `lym loom circling continue fabric-git-free-core`, then run `lym loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `fabric-git-free-core` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add fabric-git-free-core --by parent\", one entry per answered finding, then decide with \"lym loom circling accept fabric-git-free-core\" or \"lym loom circling continue fabric-git-free-core\".",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
     "last": "Discussion-Bouncer → awaiting",
-    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add fabric-git-free-core`, then decide with `lym loom circling accept fabric-git-free-core` or `lym loom circling continue fabric-git-free-core`, then run `lym loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {

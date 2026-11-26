@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Round 1 of the Discussion review escalated with cause decision on two findings, F18 and F19, and no refusal. The record and the board code settle both.\nF18: push-retry-not-halt already depends on the whole entry. When raddle files the parts, internal/boardengine/raddlefile.go's repointDependents moves that edge onto the chain's sink part, part 7. Because D9 chains every part through internal/fabricengine, an edge on part 2 would put push-retry-not-halt's fabric changes beside parts 3 to 7. The edge stays, and Open risks 1 and 2 and Q12 are dropped.\nF19: Scope Out already keeps internal/hubforge's import set out of the task. D12 counts hubforge as the mandated fixture path, and a split would widen the scope. boardkit and envkit get only D7's retarget. Open risk 3 and Q15 are dropped.\nBoth answers are recorded as arbiter decisions. The round's three BLOCKING design findings (F1 to F3) and the MEDIUM ones were fixed in the record but not yet reviewed, and the writer still has to drop the open risks. The round is below the hard cap, so the segment continues to round 2.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add fabric-git-free-core --by arbiter --from .scratch/arbiter-decisions.json",
+    "lym loom circling continue fabric-git-free-core"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/shed/fabric-git-free-core/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/shed/fabric-git-free-core/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step fabric-git-free-core --until-stop --arbiter-attempt 1"
+}
