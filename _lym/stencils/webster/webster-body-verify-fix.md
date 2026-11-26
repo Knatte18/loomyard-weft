@@ -3,7 +3,7 @@
      both fill it via internal/stencil.
      Its markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}}), and stencil.FillOptional requires each non-empty.
      It holds no {{if}} or {{range}} conditional.
-lym-stencil: sha256=bb5f19eaa31dc7757f688b95deabc865c73849e1aad2acefb2f3d335bb4ed0cd build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=a01b4593e18c4b152307bde93ab76c222b687a34a1a8647b8a8aa92b9214c47d build=b7706e5c41e167fec995a8a35cc6e81ab1083f2c time=2026-11-26T18:33:15Z -->
 
 ## The findings — read them first
 
@@ -18,7 +18,7 @@ A report that names an entry and its findings records the failure of a run-level
 You never edit `_lym/drift/expected.yaml`.
 A value the task's decision record or the plan shows the change meant to move is intended: leave it as it is and say so in your reply, so the entry stays failing, Webster stops, and the run's parent amends the expectation with `lym drift amend` at that Stuck.
 Fix any other value in code, as you fix a failing test.
-A report that lists fix commits names the commits earlier fixers made above the pre-fix head: they did not clear the failure, so check them before you build on them.
+A report that lists fix commits names the commits made above the pre-fix head, by fixers or by hand: the failure stands with them in place, so check them before you build on them.
 
 ## The rules
 
