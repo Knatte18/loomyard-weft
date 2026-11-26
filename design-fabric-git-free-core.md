@@ -1,6 +1,6 @@
 # Restructure fabricengine into a git-free core so its tests need few repositories
 
-`fabric-git-free-core` · Note · sketch, fabric, testkit
+`fabric-git-free-core` · Task · sketch, fabric, testkit
 
 Decision record: [Sketch](decision-fabric-git-free-core.md)
 
