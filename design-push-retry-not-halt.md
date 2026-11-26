@@ -186,3 +186,41 @@ Code-Review left these MEDIUM findings open; check each and close what is still 
 - tests of the pusher restart calls from the dobby tick and the batten and loom resumes (`internal/beamcli`, `internal/battencli`, `internal/loomcli`);
 - tests of the teardown's push and level wiring (`teardownPushSeams` in `internal/battencli/wire.go`);
 - Worktree-Teardown looping with pushes off (`internal/battenshed/teardown.go`).
+
+
+## From issue #254
+
+Imported from [issue #254](https://github.com/Knatte18/loomyard/issues/254).
+
+## What happened
+
+A `lym shed` run halted `failed` with anomaly `interrupted-stop` at producer `Webster`.
+The note says a machine stop likely ended the loop, which is not itself a defect.
+The stderr it carries shows two things that are:
+
+1. The step wrote `status push is owed; retrying until it lands` for `producer=Drift-Expect` while origin was unreachable (`ls-remote` failed with `Connection reset by peer`).
+   It then logged `origin is unreachable before a push; pushing unchecked, so the push's own failure is recorded` twice, about 10 s apart.
+   The loop never produced an envelope, and the halt note was written only about 20 hours after the loop started, after the machine rebooted.
+   Nothing in the notes shows a bound on the retry, or any record of the push's own failure after the "pushing unchecked" lines.
+2. The note says step `Drift-Await` was in flight, while the stderr's producer is `Drift-Expect` and the history shows both `Drift-Await` and `Drift-Expect` as `skipped`.
+   The in-flight step name and the producer that owed the push disagree.
+
+Quoted lines (paths removed):
+
+```
+level=WARN msg="loomcli: status push is owed; retrying until it lands" producer=Drift-Expect state=running error="fabricengine: push code side ...: ls-remote of <branch> ...: exit 128: fatal: unable to access '<origin>': Recv failure: Connection reset by peer; way forward: run `lym fabric push` ... to retry the push"
+level=WARN msg="loomcli: origin is unreachable before a push; pushing unchecked, so the push's own failure is recorded"
+level=WARN msg="loomcli: origin is unreachable before a push; pushing unchecked, so the push's own failure is recorded"
+```
+
+## Why it is abnormal
+
+A transient network failure on a status push should either land after a bounded retry or fail the step with a recorded push error.
+An unbounded wait with no outcome stalls the whole run until something external kills it, and the halt then reads as a machine stop instead of a push problem.
+
+## What to do
+
+- Bound the "push is owed" retry, and record the push's final failure in the step's status and trace when it gives up.
+- Make the halt note's in-flight step and the producer owing the push name the same step, or say why they differ.
+
+Provenance: task `models-bit-rock-formation`, from `loom-halt-2.md`.
