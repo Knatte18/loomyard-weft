@@ -1,9 +1,9 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-26 11:18 UTC; every age below is as of then.
+Rendered 2026-11-26 11:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-wave-2` · Age 2h · Owner `neve`
+`intake-wave-2` · Age 3h · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.

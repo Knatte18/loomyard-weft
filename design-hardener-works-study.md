@@ -1,6 +1,6 @@
 # Study whether the hardener finds and fixes real faults
 
-`hardener-works-study` · Task · research, burler, fabric · running · Darn-Write
+`hardener-works-study` · Task · research, burler, fabric · running · Drift-Verify
 
 ## Goal
 
