@@ -1,6 +1,6 @@
 # Iterative agents should commit often
 
-`writers-commit-each-step` · Task · enhancement, stencil, darn · running · Darn-Write
+`writers-commit-each-step` · Task · enhancement, stencil, darn · running · Drift-Verify
 
 Bundled from the notes below; each part keeps its note's text.
 
