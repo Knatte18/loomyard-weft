@@ -741,7 +741,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #264](https://github.com/Knatte18/loomyard/issues/264).\n\n## What happened\n\nThe first gate run of a batch failed only on a `lym board` process that a `TestLoomPreBootstrap` fixture left running in `internal/loomcli`.\nThe rerun passed with no change.\n\n## Why it is abnormal\n\nA test leaves a process behind, and the gate fails on it intermittently, unrelated to the change under test.\n\n## What to do\n\nHave the fixture stop, or wait for, every `lym board` process it starts before the test returns.\nThe relevant fixture is around `internal/loomcli/smoke_prebootstrap_integration_test.go`.\n\nProvenance: task `config-keys-nested`, note `10-loom-key-messages.md`.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-26T20:18:22Z",
       "revised": "2026-11-26T20:18:55Z",
       "profile": "light"
