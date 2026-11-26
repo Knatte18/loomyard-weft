@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 20:06 UTC; every age below is as of then.
+Rendered 2026-11-26 20:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -100,8 +100,8 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Code-Bouncer | neve | 8h<br>43m | burler, stencil |
-| T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md) | motif | Discussion-Write | neve | 10m<br>3m | fabric, testkit |
+| T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Drift-Recheck | neve | 8h<br>43m | burler, stencil |
+| T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md) | motif | Discussion-Write | neve | 10m<br>4m | fabric, testkit |
 
 ### Layer A (1)
 
