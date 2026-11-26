@@ -14,8 +14,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | Darn-Write | neve | 2d<br>21m | reed, process |
-| T6 | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | darn · light | Code-Burler-Fix | neve | 2h<br>21m | creel, cwd |
+| T5 | **Reed reads each client's own session, and shellguard refuses the session bus** | [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md) | darn · light | Darn-Write | neve | 2d<br>22m | reed, process |
+| T6 | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | darn · light | Code-Burler-Fix | neve | 2h<br>22m | creel, cwd |
 
 ### Layer A (4)
 
@@ -77,9 +77,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T14 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | motif | Discussion-Burler-Fix | neve | 2h<br>21m | dobby, gate |
-| T15 | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | motif | Discussion-Bouncer | neve | 3w<br>21m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
-| T16 | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md) | motif | Discussion-Burler-Fix | neve | 2h<br>21m | landing, fabric, report |
+| T14 | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | motif | Discussion-Burler-Fix | neve | 2h<br>22m | dobby, gate |
+| T15 | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | motif | Discussion-Burler-Review | neve | 3w<br>22m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| T16 | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md) | motif | Discussion-Burler-Fix | neve | 2h<br>22m | landing, fabric, report |
 
 ## [P0 Root: entries under no project](project-root.md) (4)
 
