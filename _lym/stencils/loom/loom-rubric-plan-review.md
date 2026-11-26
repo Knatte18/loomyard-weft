@@ -4,7 +4,7 @@
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills.
      ReadRubric fills gate_tiers from the hub's gate.yaml tiers and gate lists, or with none.
      internal/stencil's StripLeadingComment removes this leading comment before either consumer sees it.
-lym-stencil: sha256=1ede858ef6c5f77ec335657469f83e799fc62701033771972bc01c10ce7678f9 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=48041caab118143ca5bf0d2492f5dbe54df32f5b164d50971722a6214e3cfb35 build=90819df40ce18f2430e040088255add21dd44c74 time=2026-11-26T12:07:25Z -->
 
 # Plan-Review rubric
 
@@ -29,6 +29,8 @@ It appears in neither the artifact list nor the answer key, and it must not be r
 
 `none` means webster has begun no batch, and no card is frozen.
 Otherwise a done card is frozen: a fix never edits its file.
+`00-overview.md` outside its Card Index is frozen too, since it carries the plan's integration verify: a fix edits only its Card Index, and the gate refuses any other edit to it.
+On a run with no recorded overview frame and no baseline copy to take it from, the gate refuses every edit to `00-overview.md`, so a card-set change there needs a fresh run.
 A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
 A fix inserts or removes a card only with `lym loom insert-card` or `lym loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
 

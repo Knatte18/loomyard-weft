@@ -1,11 +1,15 @@
-<!-- This is the cold-start recovery prefix, composed with webster-body-implementer.md
-     by RenderRecoveryPrompt (render.go) via internal/stencil, then written to a prompt file under _lym/webster/prompts/ and handed to the SEPARATE, cold recovery-strand process recover-batch spawns when a fork reports stuck or writes no report — see the fork-context-hygiene Shared Decision.
-     Unlike a fork prefix, this strand inherits NOTHING from Master's session: no plan framing, no constraints, and no code, which no fork inherits either.
-     It must earn its own orientation before the shared implementer body runs.
-     Its markers are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}} and {{.uncommitted_paths}}, all optional (filled via stencil.FillOptional); the first two render as nothing when their own tier is inactive, failure_digest renders as `none` when the batch was not failed, and uncommitted_paths renders as `none` on a clean worktree.
-     parent_directive is a fourth optional marker, rendered by internal/parentdirective.
+<!-- This is the cold-start recovery prefix.
+     RenderRecoveryPrompt (render.go) composes it with webster-body-implementer.md via internal/stencil and writes the result to a prompt file under _lym/webster/prompts/.
+     recover-batch hands that file to the separate, cold recovery-strand process it spawns when a fork reports stuck or writes no report (see the fork-context-hygiene Shared Decision).
+     The strand inherits nothing from Master's session: no plan framing, no constraints, and no code.
+     It must orient itself before the shared implementer body runs.
+     Its optional markers (filled via stencil.FillOptional) are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}}, {{.uncommitted_paths}}, {{.parent_answers}} and parent_directive.
+     The pattern and friction directives render as nothing when their own tier is inactive;
+     failure_digest renders as `none` when the batch was not failed, and uncommitted_paths renders as `none` on a clean worktree;
+     parent_answers renders as `none` when the parent has answered this batch nothing;
+     internal/parentdirective renders parent_directive.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lym-stencil: sha256=926fcf66e8d80eaeade464d6756861a45556b979d8aeab3a3b535db5fa670c81 build=ef912d4155479098331ad98253e9a38250450e09 time=2026-10-27T07:47:27Z -->
+lym-stencil: sha256=f491a6e0335f6495ce045b32c9ed9c60cafc9e726ebee0f94756302cfa0d2a4a build=90819df40ce18f2430e040088255add21dd44c74 time=2026-11-26T12:07:25Z -->
 
 # Webster cold recovery implementer — starting COLD, inheriting nothing
 
@@ -33,6 +37,22 @@ Do this BEFORE the card instructions below: it gives you what an in-session fork
 You implement ONLY your card(s) below and write your report as your final action.
 **NEVER run any `lym webster` command** — not `await-batch`, not anything;
 those are Master's own verbs, driven by a session you are not part of.
+
+## A question only your parent can answer
+
+A turn you end without a report ends this recovery, and nothing you wait for reaches it.
+This holds over "Your parent" above: never post a question and end your turn to wait for the reply.
+When you cannot go on without your parent's answer, write the report with `status: NEEDS_PARENT` and the question as its one-line `need`, with every card you finished committed.
+Such a question counts as a step only your parent can take.
+Your parent's answer reaches the attempt that resumes the batch.
+
+## What your parent answered
+
+{{.parent_answers}}
+
+If the text above is not `none`, an earlier attempt of this batch stopped on each need listed, and your parent answered it.
+Act on the answer.
+Report the need again only when it is still unmet, saying in the new `need` what is still missing.
 
 ## Why this batch is being recovered
 
