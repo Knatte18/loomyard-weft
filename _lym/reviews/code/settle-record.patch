@@ -1,0 +1,1052 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index cab367f93..c55b65211 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -413,10 +413,16 @@
+ // The reach step diffs from the merge base with the parent branch.
+ // The prime diffs the working tree from HEAD and records `prime`.
+ // A task worktree first refreshes its own coverage maps for the packages holding a changed function.
++// It rebuilds a map that is absent, of an older format than `testcover.MapFormatVersion` or no longer fresh.
+ // It does so under `reach_budget_min` and never into the hub's shared maps; the prime refreshes nothing.
+ // A package left unrefreshed is a line of the report with its reason and way forward.
+ // It then records each changed function and the tests that reach it, from the shared maps and the worktree's own.
+-// A function no mapped test reaches carries its caveats.
++// A function no mapped test reaches carries its caveats, one per cause, each naming the tests or packages it holds.
++// One cause is tests of its package in a tier no map holds, or in no tier.
++// Another is tests that may run code in another process.
++// A third is tests whose run alone recorded no coverage.
++// The last two name the tests of its package's map, and apart from them those of the maps of packages linking it.
++// For a new function, a further caveat names the packages whose maps recorded its package's files before they changed.
+ // A hub with no coverage map gets a report that judges nothing, whose note names `lym gate test --map`.
+ // `ReachReport.NoteLines` renders the note, cut at a line cap.
+ // `ReadReachReport` and `ReachReportMatches` read and match a report.
+@@ -463,6 +469,7 @@
+ // A hub whose scoper is not `go` judges nothing: the verb prints a note naming the scoper, with exit 0.
+ //
+ // A package is judged only with a fresh map: one the refresh wrote, or a map whose file hashes match the worktree.
++// In a task worktree a package the refresh left unrefreshed is not judged, even when its map's file hashes match.
+ // Every other changed package is listed as not judged, with its reason and way forward, and gets no mutant.
+ // The check holds one gate slot after the refresh.
+ // It plans mutants over the blocks the map's tests cover, excluding tests whose check reads source files,
+@@ -797,7 +804,8 @@
+ // A test that fails, times out or is ended by the memory guard or its cap beside other tests runs once more alone,
+ // and that run's outcome stands; a test that passed only alone is listed under `passed_alone`.
+ // The call builds no `lym` and sets no `gateslot.PrebuiltLymEnv`.
+-// The spawn scan marks every test that reaches `internal/testkit/lymbin`, and such a test is never run.
++// The spawn scan marks every test that reaches `internal/testkit/lymbin` out of process, and such a test is never run.
++// A test the scan marks unresolved alone runs, and enters with its coverage beside its verdict.
+ // Each build is bounded by `redundancy_build_timeout_min`.
+ // Each test is bounded by `redundancy_test_timeout_sec` and `redundancy_test_memory_mb`.
+ // A run the cap ends is recorded as failed.
+diff --git a/internal/gatecli/mutate.go b/internal/gatecli/mutate.go
+index 03457a778..a448e7ad4 100644
+--- a/internal/gatecli/mutate.go
++++ b/internal/gatecli/mutate.go
+@@ -80,6 +80,7 @@ func mutateCmd(goBinary string, minuteUnit, grace time.Duration) *cobra.Command
+ The diff is from --base, else the merge base with the parent branch; a worktree with neither, the prime's case, is refused.
+ It refreshes the worktree's own coverage maps of the packages holding a changed function under ` + keyName(reachBudgetMinKey) + `; the prime refreshes nothing.
+ A package is judged only with a fresh map: one the refresh wrote, or a map whose file hashes match the worktree, the hub's shared one in the prime.
++In a task worktree a package the refresh left unrefreshed is not judged, even when its map's file hashes match.
+ Any other changed package is listed as not judged, with its reason and way forward.
+ It places at most one mutant on each changed line of a block a test covers, leaving out lines that only log or test another platform.
+ It takes up to ` + keyName(mutationMaxMutantsKey) + ` over the changed functions in turn, spread evenly over them when the cap is short of one each.
+diff --git a/internal/gatecli/reach.go b/internal/gatecli/reach.go
+index 2fee9773c..c5d899352 100644
+--- a/internal/gatecli/reach.go
++++ b/internal/gatecli/reach.go
+@@ -252,7 +252,7 @@ func changedPackages(module goModule, funcs []testreach.ChangedFunc) []string {
+ 
+ // refreshMaps refreshes the worktree's own map of each package of funcs that needs one.
+ // It lists the packages it does not refresh as unrefreshed.
+-// A package needs one when it has no map or its map is not fresh against the worktree's files.
++// A package needs one when it has no map, or its map is of an older format or not fresh against the worktree's files.
+ // It is refreshed only when no file it or a linked package owns is uncommitted, and only inside reach_budget_min.
+ // The prime refreshes nothing: it keeps no worktree maps, and its shared maps are the map run's to build.
+ func (s reachStep) refreshMaps(report *ReachReport, module goModule, funcs []testreach.ChangedFunc, prime bool) {
+@@ -347,7 +347,7 @@ func (s reachStep) mapRequest() testMapRequest {
+ 	}
+ }
+ 
+-// staleLinked reports whether the worktree's own map of the package pkg is absent or no longer fresh.
++// staleLinked reports whether the worktree's own map of the package pkg is absent, of an older format or no longer fresh.
+ // It returns the import paths of the in-module packages linked by the package's test binary:
+ // those its map records, or for a package with no map those the go command lists.
+ func (s reachStep) staleLinked(run *testMapRun, module goModule, pkg string) (linked []string, stale bool, err error) {
+@@ -356,9 +356,11 @@ func (s reachStep) staleLinked(run *testMapRun, module goModule, pkg string) (li
+ 		return nil, false, err
+ 	}
+ 	if found {
+-		fresh, err := testreach.Fresh(reachModuleOf(module), pkg, m)
+-		if err != nil || fresh {
+-			return nil, false, err
++		if m.HasCurrentFormat() {
++			fresh, err := testreach.Fresh(reachModuleOf(module), pkg, m)
++			if err != nil || fresh {
++				return nil, false, err
++			}
+ 		}
+ 		return slices.Sorted(maps.Keys(m.Linked)), true, nil
+ 	}
+@@ -440,18 +442,34 @@ func (s reachStep) describe(report *ReachReport, module goModule, reader *testre
+ }
+ 
+ // caveats returns the reasons a test may run fn, which no mapped test reaches, without the maps showing it.
+-// One is a test of its package above tier1, or an entry its map marks as running code in another process.
+-// The other, for a function new since the base, is a package linking its package whose map is older than its files.
++// Each caveat names its cause and the tests or packages it holds.
++// One names the tiers of its package's tests that no map holds, the tests with no tier among them.
++// One per cause names the tests of its package's map that may run it unseen:
++// in another process, or in a run that recorded no coverage.
++// One per cause names such tests of the maps of the packages linking its package.
++// The last is for a function new since the base.
++// It names the packages linking its package whose maps are older than its files.
+ func (s reachStep) caveats(report *ReachReport, module goModule, reader *testreach.Reader, pkg string, fn testreach.ChangedFunc) []string {
+ 	var caveats []string
+ 	tests, err := testcover.ScanTestFuncs(filepath.Join(module.dir, filepath.FromSlash(pkg)))
+ 	if err != nil {
+ 		report.Errors = append(report.Errors, fmt.Sprintf("scan the tests of %s: %v", pkg, err))
+ 	}
+-	aboveMapped := slices.ContainsFunc(tests, func(test testcover.TestFunc) bool { return !slices.Contains(mappedTiers, test.Tier) })
+-	if aboveMapped || reader.SpawnMarked(pkg) {
+-		caveats = append(caveats, fmt.Sprintf("a test of %s that no map holds, or that may run code in another process, may run it unseen", pkg))
++	if tiers := unmappedTierNames(tests, mappedTierConfigs(s.cfg)); len(tiers) > 0 {
++		caveats = append(caveats, fmt.Sprintf("tests of %s in %s, which no map holds, may run it unseen", pkg, strings.Join(tiers, " and ")))
++	}
++	caveats = append(caveats, unseenTestCaveats(pkg, reader.UnseenTests(pkg))...)
++	// The tests of all linking packages share one caveat per cause:
++	// a widely linked package would otherwise fill the capped note with the caveats of one function.
++	linkers := reader.UnseenLinkerTests(fn.Key.Package)
++	var linkerTests []testreach.UnseenTest
++	for _, linker := range slices.Sorted(maps.Keys(linkers)) {
++		for _, test := range linkers[linker] {
++			test.Test = linker + "." + test.Test
++			linkerTests = append(linkerTests, test)
++		}
+ 	}
++	caveats = append(caveats, unseenTestCaveats("packages linking "+pkg, linkerTests)...)
+ 	if !fn.New {
+ 		return caveats
+ 	}
+@@ -465,3 +483,71 @@ func (s reachStep) caveats(report *ReachReport, module goModule, reader *testrea
+ 	}
+ 	return caveats
+ }
++
++// Causes of an unseen test that a reach caveat names.
++const (
++	causeOutOfProcess = "they run code in another process, so the map run never ran them"
++	causeUnresolved   = "they call what the spawn scan cannot resolve, which may run code in another process"
++	// causeOutcome takes the outcome the map run recorded for the tests' runs alone.
++	causeOutcome = "the map run recorded their runs alone as %s, with no coverage"
++)
++
++// unmappedTierNames returns the names of the groups of tests that no map holds.
++// mapped holds the tiers a map run measures.
++// The groups are each tier outside mapped that a test names, ascending, then "no tier" when a test names none.
++func unmappedTierNames(tests []testcover.TestFunc, mapped map[int]gateslot.Tier) []string {
++	var tiers []int
++	untiered := false
++	for _, test := range tests {
++		if !test.Tiered {
++			untiered = true
++		} else if _, held := mapped[test.Tier]; !held {
++			tiers = append(tiers, test.Tier)
++		}
++	}
++	slices.Sort(tiers)
++	var names []string
++	for _, tier := range slices.Compact(tiers) {
++		names = append(names, fmt.Sprintf("tier%d", tier))
++	}
++	if untiered {
++		names = append(names, "no tier")
++	}
++	return names
++}
++
++// unseenTestCaveats returns one caveat per cause that leaves a test of the package pkg unseen, naming its tests.
++// The caveats are sorted by cause.
++func unseenTestCaveats(pkg string, unseen []testreach.UnseenTest) []string {
++	testsByCause := map[string][]string{}
++	for _, test := range unseen {
++		cause := unseenCause(test)
++		testsByCause[cause] = append(testsByCause[cause], test.Test)
++	}
++	var caveats []string
++	for _, cause := range slices.Sorted(maps.Keys(testsByCause)) {
++		caveats = append(caveats, fmt.Sprintf("%s of %s may run it unseen: %s", namedTests(testsByCause[cause]), pkg, cause))
++	}
++	return caveats
++}
++
++// unseenCause returns why the map may not show test reaching a function.
++// A test that never ran gives its spawn mark, and one whose run failed, timed out or was skipped its outcome.
++// Any other gives its unresolved mark, one whose run passed and covered nothing included.
++func unseenCause(test testreach.UnseenTest) string {
++	switch {
++	case test.Spawn.OutOfProcess:
++		return causeOutOfProcess
++	case test.Outcome != "" && test.Outcome != testcover.OutcomeNoCoverage:
++		return fmt.Sprintf(causeOutcome, test.Outcome)
++	}
++	return causeUnresolved
++}
++
++// namedTests names the first maxReachTestsPerFunction of tests and counts the rest.
++func namedTests(tests []string) string {
++	if len(tests) <= maxReachTestsPerFunction {
++		return strings.Join(tests, ", ")
++	}
++	return fmt.Sprintf("%s and %d more", strings.Join(tests[:maxReachTestsPerFunction], ", "), len(tests)-maxReachTestsPerFunction)
++}
+diff --git a/internal/gatecli/reach_integration_test.go b/internal/gatecli/reach_integration_test.go
+index 5b45faa22..c3d2b91d2 100644
+--- a/internal/gatecli/reach_integration_test.go
++++ b/internal/gatecli/reach_integration_test.go
+@@ -33,11 +33,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// reachFunctionLine is the part of a ReachFunction the rows compare: the function, its tests and whether it has a caveat.
++// reachFunctionLine is the part of a ReachFunction the rows compare: the function, its tests and its caveats.
+ type reachFunctionLine struct {
+ 	Package, Func string
+ 	Tests         []string
+-	Caveated      bool
++	Caveats       []string
+ }
+ 
+ // TestGateTestReachStep runs the reach report step in order over one hub.
+@@ -64,7 +64,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 
+ 	// Each package holds the two one-line functions One and Two and a tier0 test that covers One.
+ 	// nomap's test binary links lib, and tiered holds a tier2 test file beside its tier0 test.
+-	packages := []string{"alpha", "dirty", "dirtylink", "fresh", "lib", "lib2", "nomap", "stale", "tiered"}
++	packages := []string{"alpha", "dirty", "dirtylink", "fresh", "lib", "lib2", "nomap", "oldformat", "stale", "tiered"}
+ 	title := func(pkg string) string { return strings.ToUpper(pkg[:1]) + pkg[1:] }
+ 	seeded := map[string]string{"go.mod": "module " + module + "\n\ngo 1.21\n"}
+ 	for _, pkg := range packages {
+@@ -90,7 +90,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 			t.Fatal(err)
+ 		}
+ 	}
+-	for _, pkg := range []string{"dirty", "dirtylink", "fresh", "nomap", "stale"} {
++	for _, pkg := range []string{"dirty", "dirtylink", "fresh", "nomap", "oldformat", "stale"} {
+ 		edit(t, pair, pkg, "return 1 }", "return 9 }")
+ 	}
+ 	edit(t, pair, "tiered", "return 2 }", "return 8 }")
+@@ -145,7 +145,10 @@ func TestGateTestReachStep(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatal(err)
+ 		}
+-		m := testcover.Map{Commit: "c0ffee", BuiltAt: time.Now().Add(-time.Hour), Files: diskHashes(t, filepath.Join(root, pkg)), Blocks: keys}
++		m := testcover.Map{
++			Commit: "c0ffee", BuiltAt: time.Now().Add(-time.Hour), Files: diskHashes(t, filepath.Join(root, pkg)), Blocks: keys,
++			Format: &testcover.MapFormat{Version: testcover.MapFormatVersion},
++		}
+ 		if test != "" {
+ 			m.Tests = []testcover.MapTest{{Name: test, FuncHash: "x", Seconds: 0.01, Blocks: []int{0}}}
+ 		}
+@@ -206,7 +209,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 	functionLines := func(report ReachReport) []reachFunctionLine {
+ 		var lines []reachFunctionLine
+ 		for _, fn := range report.Functions {
+-			line := reachFunctionLine{Package: fn.Package, Func: fn.Func, Caveated: len(fn.Caveats) > 0}
++			line := reachFunctionLine{Package: fn.Package, Func: fn.Func, Caveats: fn.Caveats}
+ 			for _, test := range fn.Tests {
+ 				line.Tests = append(line.Tests, test.Package+"."+test.Test)
+ 			}
+@@ -240,11 +243,21 @@ func TestGateTestReachStep(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 	// fresh's own map matches the worktree; stale's does not; dirtylink's does not and records lib2 as linked.
++	// oldformat's matches the worktree but has an older format.
++	// lib2's map records dirtylink as linked, and it and dirtylink's each hold a test whose run failed.
+ 	writeMap(t, anchorDir, "fresh", mapOf(t, pair, "fresh", "TestFreshOne"))
++	oldFormat := mapOf(t, pair, "oldformat", "TestOldformatOne")
++	oldFormat.Format.Version = 2
++	writeMap(t, anchorDir, "oldformat", oldFormat)
++	linker := mapOf(t, pair, "lib2", "")
++	linker.Linked = map[string]map[string]string{module + "/dirtylink": diskHashes(t, filepath.Join(pair, "dirtylink"))}
++	linker.Tests = []testcover.MapTest{{Name: "TestLib2Fails", Outcome: testcover.OutcomeFailed}}
++	writeMap(t, anchorDir, "lib2", linker)
+ 	writeMap(t, anchorDir, "stale", staleMapOf(t))
+ 	dirtyLinked := mapOf(t, pair, "dirtylink", "")
+ 	dirtyLinked.Files["dirtylink.go"] = "an earlier dirtylink.go"
+ 	dirtyLinked.Linked = map[string]map[string]string{module + "/lib2": diskHashes(t, filepath.Join(pair, "lib2"))}
++	dirtyLinked.Tests = []testcover.MapTest{{Name: "TestDirtylinkFails", Outcome: testcover.OutcomeFailed}}
+ 	writeMap(t, anchorDir, "dirtylink", dirtyLinked)
+ 
+ 	t.Run("RefreshesTheStaleAndMissingMapsOfTheChangedPackagesAndAnswersFromThem", func(t *testing.T) {
+@@ -253,9 +266,9 @@ func TestGateTestReachStep(t *testing.T) {
+ 		step.writeReport(step.judgeReport(false, true))
+ 		report := readReport(t, pairLocation)
+ 
+-		// nomap and tiered have no map and stale's is stale, so each is built.
++		// nomap and tiered have no map, stale's is stale and oldformat's has an older format, so each is built.
+ 		// fresh's matches, and dirty's and dirtylink's hold an uncommitted file.
+-		if got, want := builds(t, builtFile), []string{"nomap", "stale", "tiered"}; !slices.Equal(got, want) {
++		if got, want := builds(t, builtFile), []string{"nomap", "oldformat", "stale", "tiered"}; !slices.Equal(got, want) {
+ 			t.Errorf("coverage builds = %v; want %v", got, want)
+ 		}
+ 		wantUnrefreshed := []string{
+@@ -267,11 +280,15 @@ func TestGateTestReachStep(t *testing.T) {
+ 		}
+ 		wantFunctions := []reachFunctionLine{
+ 			{Package: "dirty", Func: "One"},
+-			{Package: "dirtylink", Func: "One"},
++			{Package: "dirtylink", Func: "One", Caveats: []string{
++				"TestDirtylinkFails of dirtylink may run it unseen: the map run recorded their runs alone as failed, with no coverage",
++				"lib2.TestLib2Fails of packages linking dirtylink may run it unseen: the map run recorded their runs alone as failed, with no coverage",
++			}},
+ 			{Package: "fresh", Func: "One", Tests: []string{"fresh.TestFreshOne"}},
+ 			{Package: "nomap", Func: "One", Tests: []string{"nomap.TestNomapOne"}},
++			{Package: "oldformat", Func: "One", Tests: []string{"oldformat.TestOldformatOne"}},
+ 			{Package: "stale", Func: "One", Tests: []string{"stale.TestStaleOne"}},
+-			{Package: "tiered", Func: "Two", Caveated: true},
++			{Package: "tiered", Func: "Two", Caveats: []string{"tests of tiered in tier2, which no map holds, may run it unseen"}},
+ 		}
+ 		if diff := cmp.Diff(wantFunctions, functionLines(report), cmpopts.EquateEmpty()); diff != "" {
+ 			t.Errorf("report functions mismatch (-want +got):\n%s", diff)
+@@ -280,7 +297,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 			t.Errorf("report = prime %v, note %q, errors %q, gate key %q, module dir %q; want a task report with no note and no error",
+ 				report.Prime, report.Note, report.Errors, report.GateKey, report.ModuleDir)
+ 		}
+-		for _, pkg := range []string{"nomap", "stale", "tiered"} {
++		for _, pkg := range []string{"nomap", "oldformat", "stale", "tiered"} {
+ 			m, found, err := testcover.ReadMap(anchorDir, pkg)
+ 			if err != nil || !found || m.Commit != gitkit.RevParse(t, pair, "HEAD") || !maps.Equal(m.Files, diskHashes(t, filepath.Join(pair, pkg))) {
+ 				t.Errorf("anchor map of %s = found %v, err %v, commit %q, files %v; want one built at the worktree's HEAD over its files", pkg, found, err, m.Commit, m.Files)
+@@ -400,7 +417,7 @@ func TestGateTestReachStep(t *testing.T) {
+ 		if err != nil || !bytes.Equal(got, sharedBytes) {
+ 			t.Errorf("shared map of alpha = %d bytes, err %v; want the %d bytes written before the steps ran", len(got), err, len(sharedBytes))
+ 		}
+-		for _, pkg := range []string{"fresh", "nomap", "stale", "tiered"} {
++		for _, pkg := range []string{"fresh", "nomap", "oldformat", "stale", "tiered"} {
+ 			if _, found, err := testcover.ReadMap(sharedDir, pkg); err != nil || found {
+ 				t.Errorf("ReadMap(%s) in the shared maps = found %v, err %v; want no map", pkg, found, err)
+ 			}
+diff --git a/internal/gatecli/reach_test.go b/internal/gatecli/reach_test.go
+new file mode 100644
+index 000000000..7fef129b4
+--- /dev/null
++++ b/internal/gatecli/reach_test.go
+@@ -0,0 +1,96 @@
++// reach_test.go covers the caveats the reach report step writes for a function no mapped test reaches.
++
++package gatecli
++
++import (
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/testcover"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testreach"
++)
++
++func TestUnseenTestCaveats(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	unresolved := testcover.SpawnVerdict{Unresolved: true}
++	tests := []struct {
++		name   string
++		unseen []testreach.UnseenTest
++		want   []string
++	}{
++		{name: "NoUnseenTest"},
++		{
++			name: "OneCaveatPerCauseSortedByCause",
++			unseen: []testreach.UnseenTest{
++				{Test: "TestA", Spawn: testcover.SpawnVerdict{OutOfProcess: true, Unresolved: true}},
++				{Test: "TestB", Spawn: unresolved},
++				{Test: "TestC", Spawn: unresolved},
++				{Test: "TestD", Spawn: unresolved, Outcome: testcover.OutcomeFailed},
++				{Test: "TestE", Outcome: testcover.OutcomeSkipped},
++			},
++			want: []string{
++				"TestD of p may run it unseen: the map run recorded their runs alone as failed, with no coverage",
++				"TestE of p may run it unseen: the map run recorded their runs alone as skipped, with no coverage",
++				"TestB, TestC of p may run it unseen: they call what the spawn scan cannot resolve, which may run code in another process",
++				"TestA of p may run it unseen: they run code in another process, so the map run never ran them",
++			},
++		},
++		{
++			name:   "AnUnresolvedTestThatCoveredNothingCountsAsUnresolved",
++			unseen: []testreach.UnseenTest{{Test: "TestA", Spawn: unresolved, Outcome: testcover.OutcomeNoCoverage}},
++			want: []string{
++				"TestA of p may run it unseen: they call what the spawn scan cannot resolve, which may run code in another process",
++			},
++		},
++		{
++			name: "TestsUpToTheCapAreAllNamed",
++			unseen: []testreach.UnseenTest{
++				{Test: "T1", Spawn: unresolved}, {Test: "T2", Spawn: unresolved}, {Test: "T3", Spawn: unresolved},
++				{Test: "T4", Spawn: unresolved}, {Test: "T5", Spawn: unresolved},
++			},
++			want: []string{
++				"T1, T2, T3, T4, T5 of p may run it unseen: they call what the spawn scan cannot resolve, which may run code in another process",
++			},
++		},
++		{
++			name: "TestsPastTheCapAreCounted",
++			unseen: []testreach.UnseenTest{
++				{Test: "T1", Spawn: unresolved}, {Test: "T2", Spawn: unresolved}, {Test: "T3", Spawn: unresolved},
++				{Test: "T4", Spawn: unresolved}, {Test: "T5", Spawn: unresolved}, {Test: "T6", Spawn: unresolved},
++				{Test: "T7", Spawn: unresolved},
++			},
++			want: []string{
++				"T1, T2, T3, T4, T5 and 2 more of p may run it unseen: they call what the spawn scan cannot resolve, which may run code in another process",
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if diff := cmp.Diff(tt.want, unseenTestCaveats("p", tt.unseen)); diff != "" {
++				t.Errorf("unseenTestCaveats() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++func TestUnmappedTierNames(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []testcover.TestFunc{
++		{Name: "TestPlain"},
++		{Name: "TestSlow", Tier: 2, Tiered: true},
++		{Name: "TestUndeclared", Tier: 1, Tiered: true},
++		{Name: "TestMapped", Tier: 0, Tiered: true},
++	}
++	want := []string{"tier1", "tier2", "no tier"}
++	if diff := cmp.Diff(want, unmappedTierNames(tests, map[int]gateslot.Tier{0: {}})); diff != "" {
++		t.Errorf("unmappedTierNames() mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/gatecli/reachverb.go b/internal/gatecli/reachverb.go
+index 16aea33bf..78db0c0de 100644
+--- a/internal/gatecli/reachverb.go
++++ b/internal/gatecli/reachverb.go
+@@ -161,7 +161,7 @@ func runReach(ctx context.Context, out io.Writer, request reachRequest) int {
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("gate reach: %v; way forward: re-run the same command", err))
+ 	}
+-	step := reachStep{location: location, root: location.WorktreePath()}
++	step := reachStep{cfg: cfg, location: location, root: location.WorktreePath()}
+ 	reader, err := testreach.Open(reachModuleOf(module), testcover.Dir(fabricengine.BoltDir(location.HubPath)), step.worktreeMapsDir(prime))
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("gate reach: %v; way forward: re-run the same command", err))
+diff --git a/internal/gatecli/reachverb_integration_test.go b/internal/gatecli/reachverb_integration_test.go
+index faf32e209..1bb6363f1 100644
+--- a/internal/gatecli/reachverb_integration_test.go
++++ b/internal/gatecli/reachverb_integration_test.go
+@@ -223,7 +223,7 @@ func TestGateReach(t *testing.T) {
+ 			name: "AFunctionNoMappedTestReachesNamesItsPackagesMap", cwd: prime,
+ 			args:      []string{"alpha/alpha.go#Two"},
+ 			wantLines: []string{"no mapped test reaches alpha.Two", "map of alpha from commit alphamap"},
+-			notLines:  []string{"no coverage map holds"},
++			notLines:  []string{"no coverage map holds", "which no map holds"},
+ 		},
+ 		{
+ 			name: "AFunctionOfAPackageWithNoMapSaysNoMapHoldsIt", cwd: prime,
+diff --git a/internal/gatecli/redundancy.go b/internal/gatecli/redundancy.go
+index 119cede00..bc139de03 100644
+--- a/internal/gatecli/redundancy.go
++++ b/internal/gatecli/redundancy.go
+@@ -584,7 +584,7 @@ func (r *redundancyRun) runTest(pkg, pkgDir, importPath, bin string, test redund
+ // judgeRuns gives each of runs, the runs of the tests ran of p, its verdict against the tests of p's map that still hold.
+ // A map test holds when its entry records a passing measurement.
+ // The package must still declare a test of its name with the same function hash, and no run may bear its name.
+-// An outcome entry and a spawn-marked one record no coverage, so they cover nothing.
++// An outcome entry and a spawn-marked one are not measured, so they cover nothing.
+ // The greedy pass keeps every map test that holds, and a run it drops is contained.
+ func (r *redundancyRun) judgeRuns(p judgedPackage, ran []redundancyCandidate, runs []testcover.Run) {
+ 	if len(runs) == 0 {
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index 0af9b9fa6..94d88e85d 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -1742,12 +1742,13 @@ func TestGateTestMapLinkedPackages(t *testing.T) {
+ 		if diff := cmp.Diff(wantFuncs, caller.Funcs); diff != "" {
+ 			t.Errorf("caller map funcs mismatch (-want +got):\n%s", diff)
+ 		}
+-		// The spawn-marked tests are recorded with their verdict and never run.
++		// The out-of-process test is recorded with its verdict and never run.
++		// The unresolved test runs, and its entry holds its coverage beside its verdict.
+ 		wantTests := []testcover.MapTest{
+ 			{Name: "TestCallerCalls", Blocks: []int{0}, Funcs: []int{0}, Commit: head},
+ 			{Name: "TestCallerElsewhere", Funcs: []int{0}, Commit: head},
+ 			{Name: "TestCallerSpawns", Tier: 1, Spawn: testcover.SpawnVerdict{OutOfProcess: true}, Commit: head},
+-			{Name: "TestCallerUnresolved", Tier: 1, Spawn: testcover.SpawnVerdict{Unresolved: true}, Commit: head},
++			{Name: "TestCallerUnresolved", Tier: 1, Blocks: []int{0}, Spawn: testcover.SpawnVerdict{Unresolved: true}, Commit: head},
+ 		}
+ 		if diff := cmp.Diff(wantTests, caller.Tests, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(testcover.MapTest{}, "FuncHash", "Seconds", "MeasuredAt")); diff != "" {
+ 			t.Errorf("caller map tests mismatch (-want +got):\n%s", diff)
+diff --git a/internal/gatecli/testmappackage.go b/internal/gatecli/testmappackage.go
+index 4060793f9..1cd498248 100644
+--- a/internal/gatecli/testmappackage.go
++++ b/internal/gatecli/testmappackage.go
+@@ -42,6 +42,8 @@ type mappedRun struct {
+ 	covered testcover.BlockSet
+ 	// funcs are the functions of the linked packages a passing run covered.
+ 	funcs []testcover.FuncKey
++	// spawn is the spawn scan's verdict on the test, which its entry carries beside its coverage.
++	spawn testcover.SpawnVerdict
+ }
+ 
+ // blockTable is what a fresh coverage build holds of a package, read from the first profile one of its runs wrote.
+@@ -61,8 +63,10 @@ type packageRun struct {
+ 	trees                   map[string]packageTree
+ 	// indexes name the functions of each linked package but the job's own, by import path.
+ 	indexes map[string]*testcover.FuncIndex
+-	// m is the package's new map as the job started: its file hashes and the entries of its spawn-marked tests.
++	// m is the package's new map as the job started: its file hashes and the entries of its out-of-process tests.
+ 	m testcover.Map
++	// spawns holds the spawn scan's verdict on each test of the package, by name.
++	spawns map[string]testcover.SpawnVerdict
+ 	// table is read from the first profile a run of the job wrote, nil until then.
+ 	table *blockTable
+ 	// measure holds the job's build and run time.
+@@ -89,7 +93,9 @@ type coverageBuild struct {
+ 
+ // mapPackage measures the job's package at the call's HEAD and writes its map once its tests ran.
+ // The job starts from an empty map at HEAD, so the new map replaces any map the package had.
+-// It runs every mapped test but those the spawn scan marks, which enter with their verdict, unrun.
++// It runs every mapped test but those the spawn scan marks out of process, which enter with their verdict, unrun.
++// A test marked unresolved alone runs, and enters with its verdict beside its run's coverage,
++// so a function it calls in its own process reads as reached.
+ // A package with no mapped test gets a map of its file hashes and no tests, with no build.
+ // A failed build is recorded through writeFailed.
+ // Every write is checked first, and a package that fails the check is listed unmeasured with no map written.
+@@ -120,7 +126,7 @@ func (r *testMapRun) mapPackage(job testMapJob) error {
+ 	}
+ 	var toRun []testcover.TestFunc
+ 	for _, fn := range mapped {
+-		if verdict := spawns[fn.Name]; verdict.OutOfProcess || verdict.Unresolved {
++		if verdict := spawns[fn.Name]; verdict.OutOfProcess {
+ 			m.Tests = append(m.Tests, testcover.MapTest{Name: fn.Name, Tier: fn.Tier, FuncHash: fn.Hash, Spawn: verdict, Commit: head, MeasuredAt: time.Now()})
+ 			continue
+ 		}
+@@ -165,7 +171,7 @@ func (r *testMapRun) mapPackage(job testMapJob) error {
+ 		r.ahead = r.startBuild(r.next.pkg)
+ 	}
+ 	p := &packageRun{
+-		job: job, pkgDir: pkgDir, importPath: importPath, bin: build.bin, mapped: mapped, trees: trees, m: m,
++		job: job, pkgDir: pkgDir, importPath: importPath, bin: build.bin, mapped: mapped, trees: trees, m: m, spawns: spawns,
+ 		indexes: map[string]*testcover.FuncIndex{}, measure: testMapMeasure{Package: pkg, BuildSeconds: build.seconds},
+ 	}
+ 	for _, other := range build.linked {
+@@ -559,7 +565,7 @@ func (r *testMapRun) runTest(p *packageRun, fn testcover.TestFunc, profile strin
+ 		Env: env, Ctx: r.ctx, TestTimeout: r.testTimeout, MemoryLimit: r.testMemory, GuardKilled: r.guardKilled, Grace: r.request.grace,
+ 	}
+ 	result, err := runner.RunAlone(p.bin, p.pkgDir, profile, fn.Name)
+-	run := mappedRun{fn: fn, result: result}
++	run := mappedRun{fn: fn, result: result, spawn: p.spawns[fn.Name]}
+ 	switch {
+ 	case err != nil:
+ 		logger.Warn("gate test --map: a test that could not run is recorded as failed", "package", p.job.pkg, "test", fn.Name, "cause", err)
+@@ -587,13 +593,13 @@ func ranNames(runs []mappedRun) map[string]bool {
+ }
+ 
+ // fillMapTests merges runs, the job's reduced runs, into m and sets its block key and function tables.
+-// An entry of m that a run names is replaced by the run's; every other entry, a spawn-marked test's, is kept.
++// An entry of m that a run names is replaced by the run's; every other entry, an out-of-process test's, is kept.
+ // The block table is table's keys, the fresh build's blocks of the package's own files;
+ // m's own table stands when table is nil, since no run wrote a profile.
+ // The function table holds the kept entries' functions and those the passing runs cover.
+ // A passing run that covers a block of the package or a function of a linked package enters with that coverage;
+ // one that covers neither enters as OutcomeNoCoverage, and any other run with its outcome.
+-// Every entry a run gives carries commit and at.
++// Every entry a run gives carries commit, at and the run's spawn verdict.
+ func fillMapTests(m *testcover.Map, table *blockTable, runs []mappedRun, commit string, at time.Time) {
+ 	ran := ranNames(runs)
+ 	var kept []testcover.MapTest
+@@ -636,7 +642,7 @@ func fillMapTests(m *testcover.Map, table *blockTable, runs []mappedRun, commit
+ 	for _, run := range runs {
+ 		entry := testcover.MapTest{
+ 			Name: run.fn.Name, Tier: run.fn.Tier, FuncHash: run.fn.Hash, Seconds: run.result.Elapsed,
+-			Outcome: run.outcome, Commit: commit, MeasuredAt: at,
++			Spawn: run.spawn, Outcome: run.outcome, Commit: commit, MeasuredAt: at,
+ 		}
+ 		if run.outcome == "" {
+ 			for position := range run.covered {
+diff --git a/internal/testcover/coveragemap.go b/internal/testcover/coveragemap.go
+index 7b6a7bb0d..227500718 100644
+--- a/internal/testcover/coveragemap.go
++++ b/internal/testcover/coveragemap.go
+@@ -18,8 +18,8 @@ const mapFileName = "map.json"
+ // MapFormatVersion is the map shape a MapFormat marker names:
+ // The shape holds the own package's blocks and other files.
+ // It holds each linked package's covered functions and file hashes.
+-// It also holds each test's spawn verdict.
+-const MapFormatVersion = 2
++// It also holds each test's spawn verdict, and the coverage of a test the verdict marks unresolved alone.
++const MapFormatVersion = 3
+ 
+ // Dir returns the coverage map directory under the `.lym` of the directory root.
+ // Under the hub's board directory it holds the maps every worktree of the hub on the machine shares;
+@@ -59,11 +59,18 @@ type Map struct {
+ 	// Failure records a coverage build that failed at a later commit than Commit, beside the entries the map keeps;
+ 	// nil when no build failed since.
+ 	Failure *MapFailure `json:"failure,omitempty"`
+-	// Format marks a map of the MapFormatVersion shape; it is nil in a map no writer of that shape wrote.
++	// Format is the writer's marker of the map's shape.
++	// A map of the MapFormatVersion shape holds that Version; an older map holds a lower one, or no marker.
+ 	// Its Commit and BuiltAt equal the map's own unless a writer that does not know it rewrote the map since.
+ 	Format *MapFormat `json:"format,omitempty"`
+ }
+ 
++// HasCurrentFormat reports whether the map's marker names the MapFormatVersion shape or a later one.
++// A map of an older shape can hold less than a run now records, however well its file hashes match.
++func (m Map) HasCurrentFormat() bool {
++	return m.Format != nil && m.Format.Version >= MapFormatVersion
++}
++
+ // MapTest is one judged top-level test of a coverage map.
+ type MapTest struct {
+ 	Name string `json:"name"`
+@@ -78,7 +85,8 @@ type MapTest struct {
+ 	// Funcs are indexes into Map.Funcs of the linked packages' functions the test covers.
+ 	Funcs []int `json:"funcs,omitempty"`
+ 	// Spawn is the static spawn scan's verdict on the test.
+-	// An entry whose verdict marks the test out of process or unresolved records no passing measurement.
++	// An entry whose verdict marks the test out of process holds no coverage, since the map run never runs it.
++	// One marked unresolved alone holds the coverage of its run alone, which no judge uses.
+ 	Spawn SpawnVerdict `json:"spawn"`
+ 	// Outcome is why the test's run alone recorded no coverage, empty for a passing measurement.
+ 	Outcome TestOutcome `json:"outcome,omitempty"`
+@@ -90,11 +98,18 @@ type MapTest struct {
+ 
+ // Measured reports whether the entry records a passing measurement:
+ // no outcome, and no spawn verdict that marks the test out of process or unresolved.
+-// Only such an entry counts as the test's coverage.
++// Only such an entry is judged, since a marked test may run module code its coverage does not see.
+ func (t MapTest) Measured() bool {
+ 	return t.Outcome == "" && !t.Spawn.OutOfProcess && !t.Spawn.Unresolved
+ }
+ 
++// HoldsCoverage reports whether the entry holds the in-process coverage of a passing run alone.
++// An entry marked unresolved alone holds one beside its verdict; an entry marked out of process was never run.
++// The coverage shows what the test runs in its own process, so it answers which tests reach a function.
++func (t MapTest) HoldsCoverage() bool {
++	return t.Outcome == "" && !t.Spawn.OutOfProcess
++}
++
+ // MapFailure is a coverage build that failed at a commit later than the map's own.
+ type MapFailure struct {
+ 	// Commit is the commit the build failed at.
+diff --git a/internal/testcover/doc.go b/internal/testcover/doc.go
+index bb7a77006..bc019d67e 100644
+--- a/internal/testcover/doc.go
++++ b/internal/testcover/doc.go
+@@ -65,8 +65,10 @@
+ // LinkedPackages lists the main module's packages a package's test binary links, the coverpkg of a cross-package build.
+ //
+ // The coverage map is one JSON record per package, read and written through internal/state.
+-// An entry records a passing measurement, or instead a TestOutcome for a run alone that recorded no coverage,
+-// or a spawn verdict for a test the spawn scan marks; MapTest.Measured tells the first.
++// An entry records a passing measurement, or instead a TestOutcome for a run alone that recorded no coverage.
++// The entry of a test the spawn scan marks carries the verdict too.
++// A test marked out of process is never run, so its entry holds neither coverage nor outcome.
++// MapTest.HoldsCoverage tells an entry that holds coverage, and MapTest.Measured one a judge may use.
+ // A map whose coverage build failed with no entry to keep holds the failure as its BuildFailure;
+ // a map that keeps entries holds a later failure and its commit as its Failure instead.
+ // Its MapFormat marker holds the writer's commit, build time and EnvironmentStamp.
+diff --git a/internal/testreach/doc.go b/internal/testreach/doc.go
+index 433920ea3..0b6b8ce21 100644
+--- a/internal/testreach/doc.go
++++ b/internal/testreach/doc.go
+@@ -20,16 +20,20 @@
+ // Open reads the coverage maps of the module from two directories, each a testcover.Dir:
+ // the hub's shared maps and the worktree's own maps, which the prime keeps none of.
+ // An absent directory reads as one with no maps.
+-// For a package both hold, the worktree's map wins when Fresh holds for it; otherwise the map built later wins.
++// For a package both hold, the worktree's map wins when it has the current format and Fresh holds for it;
++// otherwise the map built later wins.
+ // A map that holds only a build failure, names a block or function outside its tables or does not parse is passed over,
+ // and a map that does not parse is logged, so one corrupt map never stops the other packages from answering.
+ // ReadPackageMap reads one package's map with the same pass-over rules.
+ // In its own package a test reaches a function when its blocks hold a block of the function;
+ // in another package, when the function is among the functions its map lists.
+-// An entry with an outcome or a spawn mark reaches nothing.
+-// SpawnMarked and StaleLinkers name the two caveats of an answer:
+-// a package whose map holds a test that may run code in another process,
+-// and the packages whose maps recorded a linked package's files before they changed.
++// An entry with an outcome, or one marked out of process, reaches nothing.
++// An entry marked unresolved alone reaches what its run alone covered.
++// UnseenTests, UnseenLinkerTests and StaleLinkers name the caveats of an answer.
++// UnseenTests gives the tests of a package whose entries may leave out a function they run.
++// Each comes with its spawn verdict and outcome.
++// UnseenLinkerTests gives such tests of the packages whose maps record a package as linked.
++// StaleLinkers gives the packages whose maps recorded a linked package's files before they changed.
+ //
+ // The reverse table of the shared maps, from function to reaching tests, is a cache file beside them, the index.
+ // Open uses the index when its stamp equals the directory's current stamp.
+diff --git a/internal/testreach/index.go b/internal/testreach/index.go
+index 011db78da..3d6be4e9b 100644
+--- a/internal/testreach/index.go
++++ b/internal/testreach/index.go
+@@ -23,7 +23,7 @@ import (
+ const indexFileName = "index.json"
+ 
+ // indexVersion is the shape of the index file; an index of another shape is read as absent.
+-const indexVersion = 1
++const indexVersion = 2
+ 
+ // indexFile is the reverse table of the shared maps, from each function to the tests that reach it, as a cache file.
+ type indexFile struct {
+@@ -45,8 +45,8 @@ type funcReaches struct {
+ type packageInfo struct {
+ 	Commit  string    `json:"commit"`
+ 	BuiltAt time.Time `json:"built_at"`
+-	// SpawnMarked is set when an entry of the map has a spawn verdict that marks it out of process or unresolved.
+-	SpawnMarked bool `json:"spawn_marked,omitempty"`
++	// Unseen holds the tests of the map that may run a function the map does not show them reaching, sorted by name.
++	Unseen []UnseenTest `json:"unseen,omitempty"`
+ 	// LinkedDigests maps each linked package's import path to the digestHashes of the file hashes the map recorded for it.
+ 	LinkedDigests map[string]string `json:"linked_digests,omitempty"`
+ 	// Worktree is set for a map read from the worktree's own maps; it is never stored.
+diff --git a/internal/testreach/reader.go b/internal/testreach/reader.go
+index 8f59fb635..137f27a19 100644
+--- a/internal/testreach/reader.go
++++ b/internal/testreach/reader.go
+@@ -36,6 +36,15 @@ type Reach struct {
+ 	MapCommit string
+ }
+ 
++// UnseenTest is a test of a package's map that may run a function the map does not show it reaching.
++type UnseenTest struct {
++	Test string `json:"test"`
++	// Spawn is the spawn scan's verdict on the test.
++	Spawn testcover.SpawnVerdict `json:"spawn"`
++	// Outcome is why the test's run alone recorded no coverage, empty when it recorded some.
++	Outcome testcover.TestOutcome `json:"outcome,omitempty"`
++}
++
+ // MapSource describes one map a Reader read.
+ type MapSource struct {
+ 	// Package is the module-relative slash path of the map's package.
+@@ -49,7 +58,8 @@ type MapSource struct {
+ // Open reads the coverage maps of module from the hub's shared maps directory sharedDir.
+ // It also reads the worktree's own maps directory worktreeDir, which is "" where the worktree keeps none.
+ // An absent directory reads as one with no maps.
+-// For a package both hold, the worktree's map wins when Fresh holds for it; otherwise the map built later wins.
++// For a package both hold, the worktree's map wins when it has the current format and Fresh holds for it;
++// otherwise the map built later wins.
+ // A map that holds only a build failure, names a block or function outside its tables or does not parse is passed over.
+ // The reverse table of the shared maps comes from the index beside them when the index's stamp is current.
+ // Otherwise it is built in memory; Open never writes the index.
+@@ -89,7 +99,7 @@ func worktreeMapWins(module Module, pkg string, m testcover.Map, shared packageI
+ 	if err != nil {
+ 		return false, err
+ 	}
+-	return fresh || !shared.BuiltAt.After(m.BuiltAt), nil
++	return fresh && m.HasCurrentFormat() || !shared.BuiltAt.After(m.BuiltAt), nil
+ }
+ 
+ // readSharedTable returns the reverse table of the shared maps in dir, from a current index or else from the maps.
+@@ -129,10 +139,10 @@ func buildTable(module Module, maps map[string]testcover.Map, worktree bool) map
+ 			info.LinkedDigests[linked] = digestHashes(hashes)
+ 		}
+ 		for _, test := range m.Tests {
+-			if test.Spawn.OutOfProcess || test.Spawn.Unresolved {
+-				info.SpawnMarked = true
++			if mayRunUnseen(test) {
++				info.Unseen = append(info.Unseen, UnseenTest{Test: test.Name, Spawn: test.Spawn, Outcome: test.Outcome})
+ 			}
+-			if !test.Measured() {
++			if !test.HoldsCoverage() {
+ 				continue
+ 			}
+ 			reached := map[testcover.FuncKey]struct{}{}
+@@ -146,11 +156,18 @@ func buildTable(module Module, maps map[string]testcover.Map, worktree bool) map
+ 				table.Reaches[fn] = append(table.Reaches[fn], reachEntry{MapPackage: pkg, Package: importPath, Test: test.Name, Funcs: len(reached)})
+ 			}
+ 		}
++		slices.SortFunc(info.Unseen, func(a, b UnseenTest) int { return strings.Compare(a.Test, b.Test) })
+ 		table.Packages[pkg] = info
+ 	}
+ 	return table
+ }
+ 
++// mayRunUnseen reports whether the test of entry may run a function its map does not show it reaching.
++// A spawn-marked test may run one in another process; a run alone that failed, timed out or was skipped recorded none.
++func mayRunUnseen(entry testcover.MapTest) bool {
++	return entry.Spawn.OutOfProcess || entry.Spawn.Unresolved || (entry.Outcome != "" && entry.Outcome != testcover.OutcomeNoCoverage)
++}
++
+ // TestsReaching returns every test that reaches fn.
+ // A test of fn's own package reaches it through a block of the function;
+ // a test of another package reaches it through the functions its map lists.
+@@ -237,11 +254,26 @@ func (r *Reader) Maps() []MapSource {
+ 	return sources
+ }
+ 
+-// SpawnMarked reports whether the map of the module-relative package pkg holds an entry.
+-// The entry's spawn verdict must mark the test out of process or unresolved.
+-// Such a test may run the function in a process the map's coverage cannot see.
+-func (r *Reader) SpawnMarked(pkg string) bool {
+-	return r.packages[pkg].SpawnMarked
++// UnseenTests returns, sorted by name, the tests that may run a function unseen.
++// They are tests of the map of the module-relative package pkg.
++// One kind is a test the spawn scan marks, which may run module code in another process.
++// The other is a test whose run alone failed, timed out or was skipped and so recorded no coverage.
++func (r *Reader) UnseenTests(pkg string) []UnseenTest {
++	return r.packages[pkg].Unseen
++}
++
++// UnseenLinkerTests returns the tests that may run a function unseen from the maps recording a package as linked.
++// pkg is the linked package's import path.
++// The result is keyed by the module-relative package of each such map, its tests sorted by name;
++// a map holding no such test has no key.
++func (r *Reader) UnseenLinkerTests(pkg string) map[string][]UnseenTest {
++	unseen := map[string][]UnseenTest{}
++	for mapPkg, info := range r.packages {
++		if _, linked := info.LinkedDigests[pkg]; linked && len(info.Unseen) > 0 {
++			unseen[mapPkg] = info.Unseen
++		}
++	}
++	return unseen
+ }
+ 
+ // StaleLinkers names, sorted, the module-relative packages whose maps record the package at import path pkg as linked.
+diff --git a/internal/testreach/reader_test.go b/internal/testreach/reader_test.go
+index af422b7fd..8f6516242 100644
+--- a/internal/testreach/reader_test.go
++++ b/internal/testreach/reader_test.go
+@@ -4,6 +4,7 @@ package testreach_test
+ 
+ import (
+ 	"bytes"
++	"encoding/json"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -115,8 +116,8 @@ func TestReader(t *testing.T) {
+ 		}
+ 	}
+ 	// worktreeCase writes a shared map of a built at sharedBuilt and a worktree map of a built at worktreeBuilt.
+-	// The worktree map records the hash of its file as fileHash.
+-	worktreeCase := func(fileHash string, sharedBuilt, worktreeBuilt time.Time) func(*testing.T, reachFixture) {
++	// The worktree map records the hash of its file as fileHash and has the format version.
++	worktreeCase := func(version int, fileHash string, sharedBuilt, worktreeBuilt time.Time) func(*testing.T, reachFixture) {
+ 		return func(t *testing.T, f reachFixture) {
+ 			f.writeFile(t, "a/a.go", pkgFile)
+ 			writeCoverageMap(t, f.shared, "a", testcover.Map{
+@@ -126,6 +127,7 @@ func TestReader(t *testing.T) {
+ 			})
+ 			writeCoverageMap(t, f.worktree, "a", testcover.Map{
+ 				Commit: "worktree", BuiltAt: worktreeBuilt, Files: map[string]string{"a.go": fileHash},
++				Format: &testcover.MapFormat{Version: version},
+ 				Blocks: []testcover.BlockKey{block("a.go", "F")},
+ 				Tests:  []testcover.MapTest{{Name: "TestWorktree", Blocks: []int{0}}},
+ 			})
+@@ -157,42 +159,61 @@ func TestReader(t *testing.T) {
+ 			skipMaps: true,
+ 		},
+ 		{
+-			name: "OutcomeAndSpawnEntriesReachNothing",
++			name: "OutcomeAndOutOfProcessEntriesReachNothingAndAnUnresolvedEntryReachesItsBlocks",
+ 			setup: func(t *testing.T, f reachFixture) {
+ 				writeCoverageMap(t, f.shared, "c", testcover.Map{
+ 					Commit: "c1", BuiltAt: builtEarly,
+ 					Blocks: []testcover.BlockKey{block("c.go", "F")},
+ 					Tests: []testcover.MapTest{
+-						{Name: "TestFailed", Outcome: testcover.OutcomeFailed, Blocks: []int{0}},
+-						{Name: "TestOutOfProcess", Spawn: testcover.SpawnVerdict{OutOfProcess: true}, Blocks: []int{0}},
+ 						{Name: "TestUnresolved", Spawn: testcover.SpawnVerdict{Unresolved: true}, Blocks: []int{0}},
++						{Name: "TestOutOfProcess", Spawn: testcover.SpawnVerdict{OutOfProcess: true}, Blocks: []int{0}},
++						{Name: "TestFailed", Outcome: testcover.OutcomeFailed, Blocks: []int{0}},
++						{Name: "TestSkipped", Outcome: testcover.OutcomeSkipped},
+ 					},
+ 				})
+-				writeCoverageMap(t, f.shared, "a", testcover.Map{Commit: "c1", BuiltAt: builtEarly, Tests: []testcover.MapTest{{Name: "TestPlain"}}})
++				writeCoverageMap(t, f.shared, "a", testcover.Map{Commit: "c1", BuiltAt: builtEarly, Tests: []testcover.MapTest{
++					{Name: "TestPlain"}, {Name: "TestEmpty", Outcome: testcover.OutcomeNoCoverage},
++				}})
+ 			},
+ 			fn:       testcover.FuncKey{Package: modulePath + "/c", File: "c.go", Func: "F"},
++			want:     []testreach.Reach{{Package: modulePath + "/c", Test: "TestUnresolved", Own: true, Funcs: 1, MapCommit: "c1"}},
+ 			skipMaps: true,
+ 			check: func(t *testing.T, _ reachFixture, r *testreach.Reader) {
+-				if !r.SpawnMarked("c") {
+-					t.Error("SpawnMarked(c) = false; want true")
++				wantUnseen := []testreach.UnseenTest{
++					{Test: "TestFailed", Outcome: testcover.OutcomeFailed},
++					{Test: "TestOutOfProcess", Spawn: testcover.SpawnVerdict{OutOfProcess: true}},
++					{Test: "TestSkipped", Outcome: testcover.OutcomeSkipped},
++					{Test: "TestUnresolved", Spawn: testcover.SpawnVerdict{Unresolved: true}},
++				}
++				if diff := cmp.Diff(wantUnseen, r.UnseenTests("c")); diff != "" {
++					t.Errorf("UnseenTests(c) mismatch (-want +got):\n%s", diff)
+ 				}
+-				if r.SpawnMarked("a") {
+-					t.Error("SpawnMarked(a) = true; want false")
++				if got := r.UnseenTests("a"); len(got) != 0 {
++					t.Errorf("UnseenTests(a) = %+v; want none, since a test that covered nothing runs nothing", got)
+ 				}
+ 			},
+ 		},
+ 		{
+ 			name:  "WorktreeMapWithMatchingHashesOverridesALaterSharedMap",
+-			setup: worktreeCase(hashOf(pkgFile), builtLate, builtEarly),
++			setup: worktreeCase(testcover.MapFormatVersion, hashOf(pkgFile), builtLate, builtEarly),
+ 			fn:    reachedF,
+ 			want:  []testreach.Reach{aReach("TestWorktree", "worktree")},
+ 			wantMaps: []testreach.MapSource{
+ 				{Package: "a", Commit: "worktree", BuiltAt: builtEarly, Worktree: true},
+ 			},
+ 		},
++		{
++			name:  "WorktreeMapOfAnOlderFormatWithMatchingHashesLosesToALaterSharedMap",
++			setup: worktreeCase(2, hashOf(pkgFile), builtLate, builtEarly),
++			fn:    reachedF,
++			want:  []testreach.Reach{aReach("TestShared", "shared")},
++			wantMaps: []testreach.MapSource{
++				{Package: "a", Commit: "shared", BuiltAt: builtLate},
++			},
++		},
+ 		{
+ 			name:  "StaleWorktreeMapLosesToALaterSharedMap",
+-			setup: worktreeCase(hashOf("changed"), builtLate, builtEarly),
++			setup: worktreeCase(testcover.MapFormatVersion, hashOf("changed"), builtLate, builtEarly),
+ 			fn:    reachedF,
+ 			want:  []testreach.Reach{aReach("TestShared", "shared")},
+ 			wantMaps: []testreach.MapSource{
+@@ -201,7 +222,7 @@ func TestReader(t *testing.T) {
+ 		},
+ 		{
+ 			name:  "StaleWorktreeMapWinsWhenBuiltLater",
+-			setup: worktreeCase(hashOf("changed"), builtEarly, builtLate),
++			setup: worktreeCase(testcover.MapFormatVersion, hashOf("changed"), builtEarly, builtLate),
+ 			fn:    reachedF,
+ 			want:  []testreach.Reach{aReach("TestWorktree", "worktree")},
+ 			wantMaps: []testreach.MapSource{
+@@ -289,6 +310,28 @@ func TestReader(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "UnseenLinkerTestsReturnsTheUnseenTestsOfThePackagesLinkingThePackage",
++			setup: func(t *testing.T, f reachFixture) {
++				linked := map[string]map[string]string{modulePath + "/a": {"a.go": hashOf(pkgFile)}}
++				failed := testcover.MapTest{Name: "TestFails", Outcome: testcover.OutcomeFailed}
++				writeCoverageMap(t, f.shared, "linker", testcover.Map{
++					Commit: "c1", BuiltAt: builtEarly, Linked: linked, Tests: []testcover.MapTest{failed, {Name: "TestPasses"}},
++				})
++				writeCoverageMap(t, f.shared, "seen", testcover.Map{
++					Commit: "c1", BuiltAt: builtEarly, Linked: linked, Tests: []testcover.MapTest{{Name: "TestPasses"}},
++				})
++				writeCoverageMap(t, f.shared, "unrelated", testcover.Map{Commit: "c1", BuiltAt: builtEarly, Tests: []testcover.MapTest{failed}})
++			},
++			fn:       reachedF,
++			skipMaps: true,
++			check: func(t *testing.T, _ reachFixture, r *testreach.Reader) {
++				want := map[string][]testreach.UnseenTest{"linker": {{Test: "TestFails", Outcome: testcover.OutcomeFailed}}}
++				if diff := cmp.Diff(want, r.UnseenLinkerTests(modulePath+"/a")); diff != "" {
++					t.Errorf("UnseenLinkerTests() mismatch (-want +got):\n%s", diff)
++				}
++			},
++		},
+ 		{
+ 			name:  "UnusableMapsArePassedOverAndTheOthersStillAnswer",
+ 			setup: unusableMaps,
+@@ -389,7 +432,7 @@ func TestReaderIndex(t *testing.T) {
+ 	baseMap := testcover.Map{
+ 		Commit: "c1", BuiltAt: builtEarly,
+ 		Blocks: []testcover.BlockKey{block("a.go", "F")},
+-		Tests:  []testcover.MapTest{{Name: "TestF", Blocks: []int{0}}},
++		Tests:  []testcover.MapTest{{Name: "TestF", Blocks: []int{0}}, {Name: "TestG", Outcome: testcover.OutcomeTimedOut}},
+ 	}
+ 	// writeIndex writes the index of f's shared maps and requires that it holds the test named holds.
+ 	writeIndex := func(t *testing.T, f reachFixture, holds string) {
+@@ -412,6 +455,29 @@ func TestReaderIndex(t *testing.T) {
+ 		{name: "NoIndex"},
+ 		{name: "IndexThatDoesNotParse", indexBytes: []byte("{not json")},
+ 		{name: "ACurrentIndex", prepare: func(t *testing.T, f reachFixture) { writeIndex(t, f, "TestF") }},
++		{name: "AnIndexOfAnotherVersionWithTheCurrentStamp", prepare: func(t *testing.T, f reachFixture) {
++			writeIndex(t, f, "TestF")
++			path := filepath.Join(f.shared, testreach.IndexFileName)
++			data, err := os.ReadFile(path)
++			if err != nil {
++				t.Fatal(err)
++			}
++			var index map[string]any
++			if err := json.Unmarshal(data, &index); err != nil {
++				t.Fatal(err)
++			}
++			// A version 1 index holds no unseen list, so a reader that took it would answer none.
++			index["version"] = 1
++			for _, info := range index["packages"].(map[string]any) {
++				delete(info.(map[string]any), "unseen")
++			}
++			if data, err = json.Marshal(index); err != nil {
++				t.Fatal(err)
++			}
++			if err := os.WriteFile(path, data, 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}},
+ 		{name: "AnIndexWhoseStampDiffersAfterAMapWasRewritten", prepare: func(t *testing.T, f reachFixture) {
+ 			old := baseMap
+ 			old.Tests = []testcover.MapTest{{Name: "TestOld", Blocks: []int{0}}}
+@@ -449,7 +515,9 @@ func TestReaderIndex(t *testing.T) {
+ 				tt.prepare(t, f)
+ 			}
+ 			indexBytes, readErr := os.ReadFile(indexPath)
+-			// want is what the maps alone answer: the index is set aside while a reader answers from them, then put back.
++			// want and wantUnseen are what the maps alone answer:
++			// the index is set aside while a reader answers from them, then put back.
++			var wantUnseen []testreach.UnseenTest
+ 			want := func() []testreach.Reach {
+ 				if indexBytes != nil {
+ 					if err := os.Remove(indexPath); err != nil {
+@@ -465,6 +533,7 @@ func TestReaderIndex(t *testing.T) {
+ 				if err != nil {
+ 					t.Fatalf("Open() without the index error = %v", err)
+ 				}
++				wantUnseen = r.UnseenTests("a")
+ 				return r.TestsReaching(reachedF)
+ 			}()
+ 			if len(want) == 0 || want[0].Test != "TestF" || !want[0].Own {
+@@ -477,6 +546,12 @@ func TestReaderIndex(t *testing.T) {
+ 			if diff := cmp.Diff(want, r.TestsReaching(reachedF)); diff != "" {
+ 				t.Errorf("TestsReaching() mismatch (-want +got):\n%s", diff)
+ 			}
++			if wantG := []testreach.UnseenTest{{Test: "TestG", Outcome: testcover.OutcomeTimedOut}}; !cmp.Equal(wantUnseen, wantG) {
++				t.Fatalf("UnseenTests(a) from the maps alone = %+v; want %+v", wantUnseen, wantG)
++			}
++			if diff := cmp.Diff(wantUnseen, r.UnseenTests("a")); diff != "" {
++				t.Errorf("UnseenTests(a) mismatch (-want +got):\n%s", diff)
++			}
+ 			got, readErr := os.ReadFile(indexPath)
+ 			if indexBytes == nil {
+ 				if !os.IsNotExist(readErr) {
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 9ae0a3c5e..3e84b3bfa 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -295,6 +295,8 @@ this section keeps only what is project-specific or stricter here.
+ - `lym gate test --map` keeps one coverage map per package under `internal/testcover`.
+   A map records, for each tier0 and tier1 test, its function hash, the blocks it covers of its own package's files,
+   the functions it covers of each other in-module package its test binary links, and its spawn scan verdict.
++  A test the scan marks out of process is never run and holds no coverage;
++  one marked unresolved alone runs, and its coverage answers reach though no judge uses it.
+   It also records the hashes of the package's files and of each linked package's files at the commit it was built from.
+   The hub's shared maps are built only on command: no dobby, landing or gate builds them, and the gate selects no test from them.
+   The `reach` step refreshes a task worktree's own anchor maps of the packages holding changed functions,
+@@ -331,7 +333,8 @@ this section keeps only what is project-specific or stricter here.
+   It finds the functions the diff changes against the merge base with the parent branch, or against HEAD in the prime,
+   and writes `reach.json` in the worktree's gate directory with the tests of the maps that reach each one.
+   It prints a note of the report.
+-  A task worktree first refreshes its own anchor maps of the packages holding a changed function whose map is absent or stale,
++  A task worktree first refreshes its own anchor maps of the packages holding a changed function
++  whose map is absent, of an older format or stale,
+   within `gate.reach_budget_min`; a package with an uncommitted file of its own or of a linked package keeps its map and is listed.
+   The prime refreshes nothing and answers from the shared maps.
+   The step is advisory: it never changes the gate's result.
