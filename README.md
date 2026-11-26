@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 19:25 UTC; every age below is as of then.
+Rendered 2026-11-26 19:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -102,7 +102,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | darn · light | Darn-Write | neve | 8h<br>2m | burler, stencil |
 | T6 | **Loom status pane not restored after a reboot and a resumed run** | [`resume-restores-status-pane`](design-resume-restores-status-pane.md) | darn · light | Code-Burler-Fix | neve | 6h<br>6h | loom, reed, tender |
-| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | halted · Code-Bouncer | neve | 6h<br>6h | drift |
+| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | Code-Bouncer | neve | 6h<br>6h | drift |
 
 ### Layer A (1)
 

@@ -714,7 +714,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).\n\n## What was seen\n\nA darn run deleted a test harness file (`Program.cs`) whose checks moved into a test class.\nThe drift judge ruled the deletion `loosened`, with three check groups `uncaused`, and Drift-Verify halted.\nThe parent recorded a decision to add the three missing checks and sent the run back to the writer, which committed them in a new commit.\nDrift-Verify then halted again with the same three `uncaused` checks.\n`_lym/drift/judged.json` still held the ruling from the first judge spawn, keyed on the diff hash of the deleted file, which had not changed.\nNo new judge spawn and no drift-judge parent ask came for the new commit.\n\n## Workaround\n\nA decision told the writer to commit an empty commit with one `Loosened-Check` trailer per check group, naming the commit that added the checks as the cause, then a goto to the writer row and a resume.\n\n## Expected\n\nWhen a later commit in the range touches the test files the stored ruling compares against, such as the class a deleted check moved to, Drift-Verify re-judges the loosened file instead of reusing the cached ruling.\nAt least, the halt's way forward should name the parent's ways out of a ruling that the code has since answered.\n",
-      "status": "halted · Code-Bouncer",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-26T12:30:56Z",
       "revised": "2026-11-26T12:31:36Z",
       "profile": "light"
