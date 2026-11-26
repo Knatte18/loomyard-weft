@@ -1,6 +1,6 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-26 11:24 UTC; every age below is as of then.
+Rendered 2026-11-26 11:25 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-motifs` · Age 3h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 2m<br>2m | dobby, gate, batten, orch, pattern |
+| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 3m<br>3m | dobby, gate, batten, orch, pattern |
 
 ## Sketches (2)
 

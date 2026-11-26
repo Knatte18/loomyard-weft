@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 11:24 UTC; every age below is as of then.
+Rendered 2026-11-26 11:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -22,7 +22,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>16m | webster, quarry |
+| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>17m | webster, quarry |
 
 ### Layer A (2)
 
@@ -50,7 +50,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | `draft` **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | T3<br>T1 | 3h<br>3h | landing, stencil, burler, shuttle |
-| T10 | `draft` **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | T3<br>T4 | 3h<br>3h | shuttle, claude, tender, gate, burler, shed, reed |
+| T10 | `draft` **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | T3<br>T4 | 4h<br>3h | shuttle, claude, tender, gate, burler, shed, reed |
 | T11 | `draft` **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | darn · solid | T3<br>T1<br>T9<br>T10 | 3h<br>1h | fabric, shed, landing, batten, dobby |
 
 ## [P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric](project-single-repo-hub.md) (0)
@@ -76,7 +76,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 2m<br>2m | dobby, gate, batten, orch, pattern |
+| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 3m<br>3m | dobby, gate, batten, orch, pattern |
 
 ### Sketches (2)
 
@@ -85,7 +85,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | S2 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md)<br>[Sketch](decision-keep-landed-records.md) | 3h<br>1h | landing, fabric, report |
 | S3 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md)<br>[Sketch](decision-sandbox-closed-area-build.md) | 3w<br>0m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
-## [P0 Root: entries under no project](project-root.md) (3)
+## [P0 Root: entries under no project](project-root.md) (4)
 
 Owner `neve`
 
@@ -101,3 +101,9 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- |
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
+
+### Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E1 |  | **Hardener rounds raise what they drive and converge on one rule** | [`hardener-recipe-changes`](design-hardener-recipe-changes.md) | 0m<br>0m | burler, stencil |

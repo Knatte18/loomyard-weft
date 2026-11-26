@@ -589,6 +589,25 @@
       "project": "intake-motifs",
       "discussed": true,
       "record_body_sha256": "6d078ee1a5e47988c9fbbe1d46d7591600adeb7b9b957631bc2af051c53eb252"
+    },
+    {
+      "id": 1675,
+      "handle": "E1",
+      "slug": "hardener-recipe-changes",
+      "title": "Hardener rounds raise what they drive and converge on one rule",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:\nboth campaigns ended on rounds that could not raise what they saw or had not driven what they claimed, and several fixes brought new faults no round caught.\n\n## Idea\n\nThe study's \"Changes to consider\":\n\n1. Exempt a hardener round's findings from the changed-file and changed-hunk rules in `burler-review-format.md` and `burlerengine.CheckReviewRound`, not only `origin: focus` ones.\n2. Name FAIL beside WARN in `harden-rubric-review.md`, so a failed focus entry always blocks.\n3. Make the rubric and the Bouncer state one convergence rule for a MEDIUM first raised in the closing round.\n4. Add a kill rule to the rubric: kill each job from each caller, once with origin applying the in-flight push and once refusing it, then type the printed command in the state left.\n5. A prior finding with an undriven half stays `open`; `resolved` needs a whole repro.\n6. The fix half drives the neighbours of its fix: the other failure kinds a new classifier receives, and every role that reads a new way forward.\n7. The verdict lists what no sandbox can drive (owner takeover, the pull-request sweep, a lost lease) as filed follow-ups.\n8. Run the next campaign with one opus round and compare it with the `sonnet[high]` rounds before keeping the default.\n",
+      "created": "2026-11-26T11:25:43Z",
+      "revised": "2026-11-26T11:25:43Z"
     }
   ],
   "prime_owner": "neve",
