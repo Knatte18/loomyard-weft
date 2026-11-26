@@ -1,6 +1,8 @@
 # Built-in run watch: mail the parent on every non-running state and on a gate slot held too long
 
-`dobby-run-watch` · Task · feature, dobby, gate · running · Discussion-Bouncer
+`dobby-run-watch` · Note · sketch, dobby, gate
+
+Decision record: [Sketch](decision-dobby-run-watch.md)
 
 Imported from [issue #222](https://github.com/Knatte18/loomyard/issues/222).
 
