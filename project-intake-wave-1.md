@@ -1,6 +1,6 @@
 # P1 Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits
 
-Rendered 2026-11-26 11:22 UTC; every age below is as of then.
+Rendered 2026-11-26 11:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-1` · Age 3h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>14m | webster, quarry |
+| T2 | **Webster: plan fixes after begun batches, and recovery that ends asking** | [`webster-plan-recovery`](design-webster-plan-recovery.md) | darn · light | Darn-Write | neve | 3h<br>15m | webster, quarry |
 
 ## Layer A (2)
 

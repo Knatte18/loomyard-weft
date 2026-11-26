@@ -1,6 +1,6 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-26 11:22 UTC; every age below is as of then.
+Rendered 2026-11-26 11:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-motifs` · Age 3h · Owner `neve`
@@ -12,11 +12,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 0m<br>0m | dobby, gate, batten, orch, pattern |
+| T8 | `draft` **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | T3<br>T4 | 1m<br>1m | dobby, gate, batten, orch, pattern |
 
 ## Sketches (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | S2 |  | **Keep the decision record and review findings of each landed task in the weft** | [`keep-landed-records`](design-keep-landed-records.md)<br>[Sketch](decision-keep-landed-records.md) | 3h<br>1h | landing, fabric, report |
-| S3 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md)<br>[Sketch](decision-sandbox-closed-area-build.md) | 3w<br>33m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| S3 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md)<br>[Sketch](decision-sandbox-closed-area-build.md) | 3w<br>34m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
