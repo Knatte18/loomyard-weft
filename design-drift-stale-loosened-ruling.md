@@ -1,6 +1,6 @@
 # Drift-Verify reuses a stale loosened ruling after the moved checks land
 
-`drift-stale-loosened-ruling` · Task · bug, drift
+`drift-stale-loosened-ruling` · Task · bug, drift · starting · Worktree-Create
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
