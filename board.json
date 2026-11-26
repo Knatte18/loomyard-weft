@@ -343,6 +343,25 @@
       "body": "`switchClientVia` (`internal/reedengine/switch.go`) reads the clicking client's `#{session_id}` and `runButtonVia`'s strand lookup (`internal/reedengine/buttonclick.go`) reads `#{@lym_strand_name}`, each with `display-message -p -c \u003cclient\u003e` and no `-t`.\nRun from outside tmux, tmux expands that format against the most recently active client's session, so on a server with clients in several sessions `reed switch` can step from another client's session and a `{strand}` button can name another session's agent.\nThe RC click had the same defect and now reads its row of `list-clients -F`, which tmux expands per client; `TestClientAgentPane_ReadsEachClientsOwnSession` shows the two-client setup a test of these needs.",
       "created": "2026-11-23T20:51:38Z",
       "revised": "2026-11-23T20:51:38Z"
+    },
+    {
+      "id": 1625,
+      "handle": "B3",
+      "slug": "revive-reads-placeholder-draft",
+      "title": "tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "tender",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-26 two Claude sessions stalled on `API Error: Connection refused (ECONNREFUSED)`: `ly:rc-click-wrong-client-session:darn` and `ly:async-run-pusher:code-burler-fix`.\n`lym tender revive` skipped both with reason `the input box holds a draft: \"Resend your message to try again\"`.\nThat text is Claude Code's own prompt after an API error, not text anyone typed, so revive never reaches the case it exists for.\nNo code on `origin/main` names the string.\n\n## Workaround\n\nThe orch paused each run with `lym batten pause \u003cslug\u003e` and resumed it with `lym batten run \u003cslug\u003e`, which relaunches the row's agent on its own session.\n\n## Expected\n\nThe input-box reader in `internal/shuttleengine/claudeengine` treats Claude Code's post-error prompt as an empty box, and `tender revive` gives the session its carry-on line.\n",
+      "created": "2026-11-26T07:25:04Z",
+      "revised": "2026-11-26T07:25:04Z"
     }
   ],
   "prime_owner": "neve",
