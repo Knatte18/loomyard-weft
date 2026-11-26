@@ -1,0 +1,14 @@
+internal/battencli/cancel.go
+internal/battencli/cancel_integration_test.go
+internal/battencli/cancel_test.go
+internal/battencli/cancelcmd.go
+internal/dobbyengine/landnotice_creel_test.go
+internal/fabricengine/doc.go
+internal/fabricengine/pendingteardown.go
+internal/fabricengine/remoteteardown.go
+internal/fabricengine/remoteteardown_rerun_integration_test.go
+internal/fabricengine/remove.go
+internal/fabricengine/teardownlock_integration_test.go
+internal/pairteardown/removethrough_test.go
+internal/pairteardown/teardown.go
+pattern/PATTERN-pair-remote.md
