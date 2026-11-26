@@ -91,3 +91,11 @@ The same misclassification of the beam orch shows in parent-review: `lym loom pa
 Imported from [issue #252](https://github.com/Knatte18/loomyard/issues/252).
 
 A beam orch received a PR-Review pause notice for a task of its beam, naming 'lym tender resume <slug>' as the way forward. Run from the beam orch's session, 'lym tender resume <slug>' was refused: 'pause: an agent may pause, resume or revive only its own pair; way forward: ask your parent session'. The beam orch is the task's parent. Workaround: the prime orch ran the resume. Expected: the parent orch of a task, beam orch included, may resume its tasks' tender pauses, or the notice names a way forward open to it.
+
+## From issue #251
+
+Imported from [issue #251](https://github.com/Knatte18/loomyard/issues/251).
+
+A task's PR-Review agent paused its own pair with lym tender pause before a push. The beam orch, which parents that task, then could not lift the pause: lym tender resume <task-slug> from the beam orch's session is refused with 'an agent may pause, resume or revive only its own pair'. Mail from the beam orch to the paused agent is not delivered while the pause holds, so the run stays stuck until the prime orch runs the resume.
+
+Expected: the orch that parents a run may resume that run's pair, as it is the session that settles the run's halts.
