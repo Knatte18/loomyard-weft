@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-26 13:06 UTC; every age below is as of then.
+Rendered 2026-11-26 13:07 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -97,15 +97,15 @@ Owner `neve`
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | halted · Webster | neve | 2d<br>2d | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
-| T5 | **A tools/ program that measures process, file and new-binary costs, so machines and XDR exceptions can be compared** | [`machine-cost-probe`](design-machine-cost-probe.md) | darn · light | Code-Bouncer | neve | 2w<br> | tools, gate |
+| T5 | **A tools/ program that measures process, file and new-binary costs, so machines and XDR exceptions can be compared** | [`machine-cost-probe`](design-machine-cost-probe.md) | darn · light | Drift-Recheck | neve | 2w<br> | tools, gate |
 
 ### Layer A (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Loom status pane not restored after a reboot and a resumed run** | [`resume-restores-status-pane`](design-resume-restores-status-pane.md) | darn · light | T3 | 36m<br>35m | loom, reed, tender |
-| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | T3 | 35m<br>35m | drift |
-| T20 | **Guard rows: an update mode for the settings golden, and a row that can state an exception** | [`guard-row-tooling`](design-guard-row-tooling.md) | darn · light | T3 | 36m<br>28m | process, claude, gate |
+| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | T3 | 36m<br>35m | drift |
+| T20 | **Guard rows: an update mode for the settings golden, and a row that can state an exception** | [`guard-row-tooling`](design-guard-row-tooling.md) | darn · light | T3 | 36m<br>29m | process, claude, gate |
 
 ### Layer B (1)
 
@@ -125,7 +125,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | T3<br>T11 | 1h<br>1h | fabric, cleanup, batten |
 | B2 |  | **A decision record criterion with an unindented continuation line is cut at its first line** | [`record-criterion-line-cut`](design-record-criterion-line-cut.md) |  | 1h<br>1h | parsers, loom |
-| B3 |  | **Webster run-exit audit flags Master friction note as a parent write, and accept-audit cannot clear it** | [`audit-flags-master-friction`](design-audit-flags-master-friction.md) |  | 2m<br>2m | webster |
+| B3 |  | **Webster run-exit audit flags Master friction note as a parent write, and accept-audit cannot clear it** | [`audit-flags-master-friction`](design-audit-flags-master-friction.md) |  | 3m<br>3m | webster |
 
 ### Enhancements (1)
 
