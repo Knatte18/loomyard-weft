@@ -103,3 +103,7 @@ That is the path that failed twice on 2026-11-23 in the mo hub (creel refused th
 A tmux-tier test: a built lym binary in a reed strand pane, a hub with a pull request record under autonomy, and a live orch strand that receives the post; assert the ask is delivered and the parent's answer lets `pr-continue` end the review.
 
 
+
+# README display
+
+The board README shows each beam's pull-request setting (task `readme-beam-modes`); show the three modes there.
