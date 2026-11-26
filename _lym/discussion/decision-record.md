@@ -24,4 +24,12 @@ or the parser reads it as part of the bullet, as markdown does.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - continuesitem-excludes-too-many-hash-and-angle-lines (class design, severity MEDIUM, open in rounds 1)
+  - html-and-blockquote-exclusions-unpinned (class design, severity MEDIUM, open in rounds 1)
+  - merge-danger-blast-radius-too-narrow (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
