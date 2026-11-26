@@ -1,0 +1,1 @@
+Review segment of task `config-keys-nested` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept config-keys-nested" or "lym loom circling continue config-keys-nested".
