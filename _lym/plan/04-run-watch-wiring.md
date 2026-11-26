@@ -5,6 +5,7 @@
 - `internal/beamcli#TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy`
 - `internal/beamcli#TestHubDobbyDeps_LandNoticeReadsTheRunsWorktreeLayer`
 - `contracts/orchrole/orch-role.md`
+- `docs/overview.md`
 
 **Uses:**
 - `internal/dobbyengine#RunWatchDeps`
@@ -21,6 +22,8 @@ It does not go through `requirePosted`, since the watch tells a missing orch str
 
 `contracts/orchrole/orch-role.md`'s Notices section opens with the rule that a mail whose text starts with `[batten notice]` or `[dobby notice]` is a notice; that rule names `[run watch]` beside the two prefixes.
 The section also names `[run watch]` lines, from `<shortname>:DOBBY` or `<shortname>:<slug>:DOBBY`, among the notices: a stop line is a stop and is handled under Investigating a stop; a later `[batten notice]` or driver line for the same stop adds its detail and opens no second fork; a `rows` progress line asks for nothing.
+
+`docs/overview.md`'s dobby paragraph names the `[run watch]` lines among what dobby sends the nearest live orch.
 
 Tests:
 `TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy` also posts one line through `deps.RunWatch.Post` for `task1` from each dobby and wants it among the posted mails with the same sender and autonomy stamp, after the row's run notice; it asserts `posted` is true.

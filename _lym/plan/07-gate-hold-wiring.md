@@ -11,6 +11,7 @@
 - `internal/beamcli#TestRunNoticeTags`
 - `internal/beamcli#TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy`
 - `contracts/orchrole/orch-role.md`
+- `docs/overview.md`
 
 **Uses:**
 - `internal/beamcli#runNoticeTags`
@@ -33,6 +34,8 @@ Wire the gate-hold notice of card 6 into the hub's dobby, and name it to the orc
 `gateHoldTags` returns `creelengine.PostTags{Topic: gateHoldTopicPrefix + slug, Run: slug}`, a topic of its own, so a gate-hold notice and a later run notice of the same run never replace each other.
 
 `contracts/orchrole/orch-role.md`'s Notices section names the gate-hold condition among the `[dobby notice]` conditions: a gate slot a run holds past its bound, naming the holder's process tree and any process outside it that carries its marker; the watch only reports, so the orch decides what to end.
+
+`docs/overview.md`'s dobby paragraph names the gate-hold `[dobby notice]`, a gate slot a run holds past its bound, among what dobby sends the nearest live orch.
 
 Tests:
 `TestRunNoticeTags` also asserts `gateHoldTags("pay")` is `{Topic: "dobby-gate-hold/pay", Run: "pay"}`.

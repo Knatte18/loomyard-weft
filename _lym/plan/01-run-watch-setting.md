@@ -11,7 +11,6 @@
 - `plan:internal/dobbyengine#RunWatchRows` -> `const RunWatchRows = beamsetting.RunWatchRows`
 - `plan:internal/dobbyengine#RunWatchOff` -> `const RunWatchOff = beamsetting.RunWatchOff`
 - `plan:internal/dobbyengine#LookupRunWatch` -> `func LookupRunWatch(chain TaskSettingChain) (string, error)`
-- `plan:internal/dobbyengine#TestCheckLocalValues` -> `func TestCheckLocalValues(t *testing.T)`
 
 **Edit:**
 - `internal/beamsetting/beamsetting.go`
@@ -28,10 +27,14 @@
 - `internal/dobbyengine#TestLookupTaskSettings`
 - `internal/dobbyengine#TestLookupTaskSettings_RefusesAValueTheKeyDoesNotTake`
 - `pattern/PATTERN-config-layers.md`
+- `internal/configreg#TestPrepareRunSettings`
+- `internal/boardcli#storeVerbs`
+- `internal/boardcli_test#TestHelpSchema_LeafCommands`
 
 **Uses:**
 - `internal/dobbyengine#writeBeamLayer`
 - `internal/dobbyengine#keyName`
+- `internal/boardcli/doc.go`
 
 **Intent:**
 Add the per-task key `beam.run_watch` (D2) and the two hub keys `beam.gate_hold_factor` and `beam.gate_hold_min` (D6), so later cards read them.
@@ -43,9 +46,11 @@ Add the per-task key `beam.run_watch` (D2) and the two hub keys `beam.gate_hold_
 `LoadConfig` and `CheckLocalValues` add `RunWatchKey` to the per-task keys they check, so a bad value is refused where a bad `land_notice` is; their doc comments name the key.
 `LookupRunWatch` returns `lookupTaskSetting(chain, RunWatchKey)`, the text value; its doc says it is the only reader of the key.
 `tasksetting.go`'s file comment and `Config`'s doc comment name `run_watch` among the per-task keys, and so does the file comment of `tasksetting_test.go`, which holds the lookup tests below.
+The `run_settings` help line of `storeVerbs`, the board upsert help, names beam.run_watch beside beam.pull_request, beam.land_notice and beam.autonomy as a per-task beam setting.
 
 `Config` gains `GateHoldFactor float64` (`yaml:"gate_hold_factor"`) and `GateHoldMin int` (`yaml:"gate_hold_min"`).
 `LoadConfig` refuses a negative `gate_hold_factor` and a `gate_hold_min` below 1, each marked `configengine.MarkInvalid`, naming the full key, the value, the range ("must not be negative", "must be at least 1") and the way forward `lym config beam --set <key>=<value>`, as the negative-int refusal does.
+`LoadConfig`'s doc comment names the refusal of a negative `gate_hold_factor` and of a `gate_hold_min` below 1 beside the negative-value refusal.
 The input that reaches each refusal is a worktree layer setting `gate_hold_factor: -0.5` or `gate_hold_min: 0`; no upstream check rejects either, since the template validation checks only key presence.
 
 `template.yaml` gains, each with a trailing comment:
@@ -60,7 +65,8 @@ Tests:
 - `TestLoadConfig` gains rows: a worktree layer's `run_watch: rows` loads; a local layer's `run_watch: "off"` loads; a `run_watch: all` is refused naming `run_watch`, `all`, the values `[stops rows off]` and `lym config beam --set run_watch=`; a `gate_hold_factor: 0` resolves as set; a `gate_hold_min: 30` resolves as set; a `gate_hold_factor: -0.5` is refused naming `gate_hold_factor`, `must not be negative` and `lym config beam --set`; a `gate_hold_min: 0` is refused naming `gate_hold_min`, `at least 1` and `lym config beam --set`.
 - `TestLookupTaskSettings` gains a subtest for `run_watch` over the same chain shapes, since its on/off rows do not fit the key's values: the task's local `rows` over its worktree `off`; a task that sets nothing taking the parent's `off` over the prime's `rows`; the hub default `rows` when no anchor sets the key; and nothing set anywhere taking the template's `stops`.
 - `TestLookupTaskSettings_RefusesAValueTheKeyDoesNotTake` gains the row `run_watch all in a worktree file`, whose error names the path, `run_watch`, `all`, the values `[stops rows off]` and `lym config beam --set run_watch=`.
-- `TestCheckLocalValues`, a new table test, since no test calls `CheckLocalValues`, the check `internal/configreg/configreg.go` runs over a task's `run_settings`: a document with `run_watch: rows` passes; one with `run_watch: all` is refused, marked `configengine.ErrInvalid`, naming `run_watch`, `all`, `[stops rows off]` and `the task's run_settings`; one with `land_notice: all` is refused the same way, so the table pins the existing keys beside the new one.
+- `TestHelpSchema_LeafCommands`'s board upsert row, which wants `beam.land_notice` in the help, also wants `beam.run_watch`.
+- `TestPrepareRunSettings`, which reaches `CheckLocalValues` through the beam module's `CheckValues`, gains two rows: a beam `run_watch` of `rows` is admitted into a beam local document (`wantDocs` beam `run_watch: rows\n`), and a beam `run_watch` of `all` is refused at the run settings (`wantRefusal` `run_watch`, `wantModule` beam, `wantInvalid`).
 
 **ImpactSummary:** Adds keys only; the per-task checks gain one key and `LoadConfig` two range refusals, and `Config`'s only struct-literal readers are `defaultsWith` and the dobby's loads, so no caller changes.
 

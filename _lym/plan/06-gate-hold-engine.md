@@ -53,7 +53,7 @@ The bound is `GateHoldFactor` times the hold's largest `TierTimeout`, or `GateHo
 A hold is past its bound when `pauserecord.AwakeSince(start, now, State.Sleeps)` reaches it.
 A hold past its bound whose key the run's `Watches` entry's `GateHolds` lacks is noticed once: `Tree(pid)` gives the holder's tree; when its `Marker` is set, `MarkedPIDs(Marker)` gives the marked PIDs, and each one outside the tree is sampled through `Tree(pid)`'s own entry; a failed `Tree` or `MarkedPIDs` still posts, naming the tree as unreadable.
 `gateHoldLine` renders `[dobby notice] <slug>: a gate slot is held past its bound: slots <n,...>; tier <tier or none>; site <site>; started <UTC RFC 3339>; bound <bound>; holder pid <pid> <executable> cpu <cpu>`, then `; child pid <pid> <executable> cpu <cpu>` per descendant and `; outside the tree, carrying <marker>: pid <pid> <executable> cpu <cpu>` per marked process outside it.
-A holder that runs a tier in process, as a Go-side gate caller does, can have a wide tree, so the line names at most `gateHoldProcessMax`, 20, descendants and 20 marked processes, each list ordered by CPU time, most first, and ends a cut list with `; and <n> more`.
+A holder that runs a tier in process, as a Go-side gate caller does, can have a wide tree, so the line names at most `gateHoldProcessMax`, 20, descendants and 20 marked processes, each list ordered by CPU time, most first, and ends a cut list with `; and <n> more`, per the Added after Discussion entry "Gate-hold line caps listed processes".
 A post that succeeds appends the key to `GateHolds`; one that fails logs through `gateHoldPosts` and is tried at the next probe tick.
 Keys of holds no longer held are dropped from the entry, so a new hold of the run, with another PID or start, is noticed again.
 The entry is created when absent, whatever the run's watch level, and a dobby restart keeps the keys in the state record.
@@ -72,7 +72,7 @@ The fake `Tree` answers by PID: the holder's PID gives its tree, and each marked
 - a holder with no tier takes `GateHoldMin`;
 - factor 0 posts nothing;
 - a failing `Holders` posts nothing, and the check posts once it reads again;
-- a failing `LoadConfig` posts nothing and the check posts once it loads again; since `startReady` fails the tick on a failed `LoadConfig`, this row calls `d.gateHolds` directly on a probe-due daemon rather than through `tick`;
+- a failing `LoadConfig` posts nothing and the check posts once it loads again; `startReady` makes `tick` return an error on a failed `LoadConfig` and `passHarness.tick` fails the test on any tick error, so this row calls `d.gateHolds` directly on a probe-due daemon rather than through `tick`;
 - a non-probe tick calls no `Holders` and posts nothing;
 - a failing `Tree` or `MarkedPIDs` still posts one notice that names the tree as unreadable;
 - a failing `TaskWorktree` posts nothing for the run;

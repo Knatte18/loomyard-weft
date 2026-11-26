@@ -28,6 +28,7 @@ The record is decoded without `KnownFields`, so an older record reads with no ma
 `runMarkerEntry` returns `enclosingGateEnv + "=" + strconv.Itoa(pid)`.
 `runTest` forms the entry it appends to `exe.env` through it, and `acquireSlot` sets `Marker: runMarkerEntry(os.Getpid())` in the `gateslot.Holder` it acquires with, so the record and the environment carry the same entry.
 The other holders (redundancy, mutants, test map) keep no marker.
+Bound: a nested `lym gate test` inside the holder's slot takes no slot and records no holder, and it replaces the entry with its own PID for every process it starts, so a process a nested run started carries the nested run's marker, and the gate-hold notice does not name it as a marked process outside the tree.
 
 Tests:
 `TestHolders_NamesLiveHoldersAndDropsRecordsOfFreeLocks` acquires with a `Marker` and asserts `Holders()` returns it; its stale record, which has no `marker` key, is the older-record shape, and a second live record written without the key reads with an empty marker.
