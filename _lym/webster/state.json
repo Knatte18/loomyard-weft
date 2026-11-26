@@ -1061,8 +1061,8 @@
     }
   },
   "currentBatch": 0,
-  "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
-  "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
+  "masterStrand": "e50a33a789dc4a87355492fc9ba15c02",
+  "masterSessionId": "d3bbd74e-fae1-40fe-9294-3d57a11d034e",
   "masterEngine": "claude",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl",
@@ -1073,15 +1073,5 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a010f823d9ccc1013.jsonl"
-  ],
-  "pendingAuditFindings": [
-    {
-      "id": "a9e46a11-6922-43bf-aafb-14f1d83f0701/parent:parent-write:0",
-      "class": "parent-write",
-      "detail": "Master wrote \"/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report",
-      "paths": [
-        "/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md"
-      ]
-    }
   ]
 }
