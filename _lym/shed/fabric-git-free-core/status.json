@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -100,6 +99,15 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-11-26T20:40:49Z",
       "started_at": "2026-11-26T20:40:13Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-26T20:42:52Z",
+      "started_at": "2026-11-26T20:42:52Z",
+      "routed_to": "Discussion-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
