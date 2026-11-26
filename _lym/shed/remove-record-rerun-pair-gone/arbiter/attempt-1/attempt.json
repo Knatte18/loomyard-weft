@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-26T09:45:44.860824606+01:00",
+  "deadline": "2026-11-26T10:15:44.860824606+01:00",
+  "strand_guid": "8e791c46c411538186ae4b199bed0e77",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/remove-record-rerun-pair-gone/_lym/shed/remove-record-rerun-pair-gone/drive-reports/drive-envelope-20261126-094544-7a7e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/remove-record-rerun-pair-gone/_lym/shed/remove-record-rerun-pair-gone/drive-reports/drive-report-20261126-094544-54f5.md",
+  "snapshot": {
+    "head": "4d1216528beba9a9b41bc96451a9d515f9407878",
+    "branch": "remove-record-rerun-pair-gone",
+    "dirty": {}
+  }
+}

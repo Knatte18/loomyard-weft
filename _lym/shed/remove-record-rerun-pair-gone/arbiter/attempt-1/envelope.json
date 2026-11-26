@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "The review stopped at round 1 with cause decision, and its one decision finding is F4.\nF4 asks whether the change may name `lym batten cancel \u003cslug\u003e --remove` only on records a cancel wrote, and not on every record whose pair is gone, as the board entry's Idea also suggested.\nThe board entry answers it. Its title, brief and Seen section scope the bug to a record left by a killed batten cancel. The change now marks such a record directly through its Rerun field.\nNaming the cancel on a record that no cancel wrote would name a re-run that refuses. The cancel's refuseNothingLeft counts only a pending record whose Rerun is its own command (hubCancelDeps.TeardownPending in internal/battencli/cancelcmd.go). Building that case would also go beyond the task's scope.\nI recorded this narrowing as an arbiter decision.\nBoth BLOCKING findings, F1 and F2, were confirmed fixed in round-1-verification.md.\nThe judge's verdict is still CONTINUE: the MEDIUM design findings F3, F5 and F7 are open in the ledger. The fixer answered them in commit a5bb4acd5 and the commits after it, but no review has checked that work yet, and round-2-focus.md already covers it.\nRound 1 is below the hard cap, so I recorded continue to run another round.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add remove-record-rerun-pair-gone --by arbiter --title \"A removal record names the cancel only when a cancel wrote it\" --decision \"...\" --rationale \"...\"",
+    "lym loom circling continue remove-record-rerun-pair-gone"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/remove-record-rerun-pair-gone/_lym/shed/remove-record-rerun-pair-gone/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/remove-record-rerun-pair-gone/_lym/shed/remove-record-rerun-pair-gone/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step remove-record-rerun-pair-gone --until-stop --arbiter-attempt 1"
+}

@@ -1,0 +1,14 @@
+{
+  "session_id": "d599e407-c7fc-489c-91c8-9e4218bf0e01",
+  "row": "Code-Bouncer",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 22,
+  "cache_write_tokens": 54835,
+  "cache_read_tokens": 388190,
+  "output_tokens": 7200,
+  "cost_usd": 0.495901,
+  "started": "2026-11-26T08:45:44Z",
+  "ended": "2026-11-26T08:47:28Z"
+}
