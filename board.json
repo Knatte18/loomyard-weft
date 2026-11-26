@@ -885,6 +885,27 @@
       "body": "Imported from [issue #223](https://github.com/Knatte18/loomyard/issues/223).\n\n## Seen (operator, 2026-11-24)\n\nToday the parent orch can be asked to review at PR-Review, and the operator has used that a lot.\nThe operator now judges it a bad idea, for two reasons.\n\nPR-Review is the very last gate, and it belongs to the human.\nWhen a run reaches it, everything the LLMs and LoomYard can do should already be done.\n\nA parent is also the wrong reviewer.\nAsking the parent, which is the orchestrator, to review a Discussion or code is work for the orchestrator, and it costs more than a cold-start agent.\nThe reviewers a run already has should catch what the parent catches.\n\n## Idea\n\nTake the parent out of PR-Review and add no parent seat in its place.\n\n- Remove the parent's ask and re-ask from PR-Review in `internal/landingshed` and `internal/loomcli`, leaving the human's review there.\n- Rely on the cold-start reviewers.\n  The `review-code` fan already holds `code-scope`, which traces every decision of the record to a change in the diff and flags a decision no change builds, besides `code-correctness`, `code-affected-set` and `code-tests`.\n  Read first which lenses the C# hubs run in `review-code` today, since the hub's own `lenses.yaml` and the C# layer can change the fan.\n- What the parent found at PR-Review that the lenses do not cover is in the issue on reviewing the Describe text and catching the rest earlier: the PR text, numeric claims that need the report open, bugs that need a measurement, and scope the Sketch never held.\n- Decide what a run does with a parent ruling that arrives late: it never sends the run back from the human's gate.\n",
       "created": "2026-11-26T07:34:23Z",
       "revised": "2026-11-26T07:34:23Z"
+    },
+    {
+      "id": 1652,
+      "handle": "F2",
+      "slug": "dobby-run-watch",
+      "title": "Built-in run watch: mail the parent on every non-running state and on a gate slot held too long",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "dobby",
+        "gate"
+      ],
+      "issues": [
+        222
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #222](https://github.com/Knatte18/loomyard/issues/222).\n\n## What the orch does by hand today\n\nIn hub `dop`, the operator requires the orch to hear of every stop of every run it parents.\nlym notifies some halts, but not all: a Webster block sends no notice (#207), and a gate whose testhost hangs past `timeout_min` holds its slot with no notice at all (#216).\n\nSo the orch keeps a Claude Code Monitor per run in flight: a shell loop that polls `lym loom status` in the task worktree every 30 s, prints on every change of state or producer, and prints a warning when `lym gate status` shows the run holding a gate slot past 45 minutes.\nThe Monitor expires after 30 minutes, so the orch re-arms it by hand, and a missed re-arm left a hung tier3 gate unseen for 21 hours.\n\n## Wanted\n\nlym itself watches every run in flight and mails its parent (creel) on:\n\n- every state other than running: blocked, failed, paused, done, whatever the cause;\n- a gate slot held by the run past a bound, such as 1.5 × the tier's `timeout_min`, naming the gate's PID and its child processes;\n- optionally, every row change, for parents that want progress.\n\nThe watch lives in the dobby, not in the orch's session, so it needs no re-arming and survives the orch's context cycles.\n",
+      "created": "2026-11-26T07:34:26Z",
+      "revised": "2026-11-26T07:34:26Z"
     }
   ],
   "prime_owner": "neve",
