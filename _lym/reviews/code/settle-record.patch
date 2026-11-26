@@ -1,0 +1,679 @@
+diff --git a/contracts/recipes/hardener-recipe.yaml b/contracts/recipes/hardener-recipe.yaml
+index 3fe93df0c..c3ad68491 100644
+--- a/contracts/recipes/hardener-recipe.yaml
++++ b/contracts/recipes/hardener-recipe.yaml
+@@ -146,6 +146,9 @@ producers:
+             its first statement requires tier 2, or tier 3 when it spawns a real LLM,
+             and it waits on the state change with a deadline, never a fixed sleep.
+             Prove such a test's determinism by running it many times in parallel under load, never once.
++            Drive the neighbours of each fix on a sandbox hub as well as its finding's scenario:
++            every other failure kind that a classifier the fix adds or changes receives,
++            and every role and verb that reads a way forward the fix adds or changes, typing that way forward where it is printed.
+             When `tools/sandbox/` holds a `SANDBOX-<MODULE>-SUITE.md` for the module,
+             extend it with the behaviour the review surfaced and keep the sandbox coverage test green in the same change;
+             with no such file, creating one is not required.
+diff --git a/contracts/stencils/bouncer/bouncer-template-judge.md b/contracts/stencils/bouncer/bouncer-template-judge.md
+index 17b5e96d0..f85c3c43f 100644
+--- a/contracts/stencils/bouncer/bouncer-template-judge.md
++++ b/contracts/stencils/bouncer/bouncer-template-judge.md
+@@ -10,7 +10,9 @@
+      a required marker inside a conditional branch would render silently blank when present-but-empty (see internal/stencil/stencil.go).
+      The focus-schema markers ({{.focus_example_lists}}, {{.focus_list_rules}}, {{.approved_focus_lists}}) have two variants, rendered by focusSchemaMarkers in internal/shedadapters/bouncerprompt.go:
+      Go holds the variant so this stencil stays conditional-free.
+-     {{.decision_rule}} is the same kind of Go-held variant, rendered by decisionRuleMarker in the same file: it renders round 1's rule in round 1 and the lighter rule from round 2 on, and offers CIRCLING only from the configured checkpoint round on.
++     {{.decision_rule}} is the same kind of Go-held variant, rendered by decisionRuleMarker in the same file: it renders round 1's rule in round 1 and the lighter rule from round 2 on,
++     unless the Bouncer sets FirstRaisedGates, which renders round 1's rule in every round.
++     It offers CIRCLING only from the configured checkpoint round on.
+      {{.round}} and {{.next_round}} are different markers on purpose.
+      The ledger file (`{{.ledger_path}}`) records the round being judged.
+      The focus file (`{{.focus_path}}`) is named for the round the directive is for, so its own frontmatter must record that round plus one;
+diff --git a/contracts/stencils/burler/burler-review-format.md b/contracts/stencils/burler/burler-review-format.md
+index 2dc011c47..7931b11b3 100644
+--- a/contracts/stencils/burler/burler-review-format.md
++++ b/contracts/stencils/burler/burler-review-format.md
+@@ -75,8 +75,8 @@ Frontmatter rules, all strict:
+   A carried finding keeps its `class`, keeps or lowers its `severity`, and keeps its location path or moves to a file the changes file lists.
+ - In an incremental round a new finding is `BLOCKING` and sits on a changed hunk, in a file the changes file lists.
+   A card a listed added entry marked as amending the plan names is exempt from the file rule, and so is a new `origin: webster` finding.
+-  In a hardener round, a new `origin: focus` finding of class `decision` is exempt from the file rule too,
+-  and from the changed-hunk rule.
++- A hardener round's findings are exempt from the incremental round's rule above and from a carried finding's file rule:
++  a new finding takes the severity it has and sits where the fault lives, and a carried finding may move to any file.
+ 
+ Below the closing `---`, write prose: exactly one `### [SEVERITY] <title>` block per finding, each carrying `**Location:**` and `**Issue:**` lines.
+ The change lives in the finding's `fix` key; no prose `**Fix:**` line restates it.
+diff --git a/contracts/stencils/burler/burler-step-review.md b/contracts/stencils/burler/burler-step-review.md
+index 949176309..813f0cea5 100644
+--- a/contracts/stencils/burler/burler-step-review.md
++++ b/contracts/stencils/burler/burler-step-review.md
+@@ -54,4 +54,5 @@ a section without that heading has none of them.
+   Locate a regression a fix caused in an untouched file at the changed line that causes it, and name the broken site in its `summary`.
+   A card that an added entry marked as amending the plan names may be located whether or not the changes file lists it.
+   A finding raising the plan executor's halt reason, when the section above quotes one, carries `origin: webster` and may sit outside the changed files.
+-  In a hardener round, a new `origin: focus` finding of class `decision` may sit outside the changed hunks and files.
++- In a hardener round, raise each fault you drove at the severity it has and at the site that fixes it, whether or not the changes file lists it,
++  and move a carried finding to any file.
+diff --git a/contracts/stencils/harden/harden-rubric-review.md b/contracts/stencils/harden/harden-rubric-review.md
+index 0661b91e2..78eba0845 100644
+--- a/contracts/stencils/harden/harden-rubric-review.md
++++ b/contracts/stencils/harden/harden-rubric-review.md
+@@ -56,6 +56,8 @@ and the paths of the round's focus file, the charter, and of the decision record
+   Such a finding goes to the arbiter or the run's parent, which orders another round over the entry or accepts it with a stated reason,
+   so no round settles while a focus entry is undriven.
+   A held focus finding that this round drove OK is resolved, its answer quoting the title of the decision record entry that ordered the drive.
++  A focus entry you recorded FAIL is a finding of the fault the drive showed:
++  severity BLOCKING, located at the site that fixes it, so the fix half fixes it and no round settles past it.
+   Then improvise many more adversarial scenarios of your own:
+   crash and rebirth, scope across hubs and worktrees, dead-but-present state, orphans of an operation that failed midway, rapid churn,
+   and verbs combined in orders nothing has tried.
+@@ -73,8 +75,14 @@ and the paths of the round's focus file, the charter, and of the decision record
+   A drive that stays green under sabotage leaves the scenario unproven, not the code proven.
+ - **Re-drive earlier fixes.**
+   Re-drive each prior round's fixes against the sandbox, so an earlier fix that a later change undid is found.
++  Mark a prior finding `resolved` only once this round has driven its whole reproduction on the fixed build.
++  While any half of it is undriven, it stays `open`, carried with the undriven half named in its `fix`.
+ - **Prove a concurrency claim twice.**
+   A claim about concurrent behaviour needs a sequential control, and a second hub that runs the same drive beside the first.
++- **Kill every job both ways.**
++  Kill each job from each caller that starts it, twice:
++  once while origin applies the push in flight, as a hook that sleeps after it receives the push allows, and once while origin refuses it.
++  In the state each kill left, type the command the verb printed as its way forward, with every placeholder filled, and record what it did.
+ - **Hold the merge bar.**
+   Correctness in the normal single-instance flow is the gate.
+   A timeout under the concurrent copies' CPU peg is a diagnostic, never a defect.
+@@ -94,6 +102,9 @@ and the paths of the round's focus file, the charter, and of the decision record
+ - **Judge each finding.**
+   Give each finding its file and line, a concrete failure scenario, a severity of BLOCKING, MEDIUM, LOW or NIT, and a suggested fix.
+   Mark it CONFIRMED when reproduced, or PLAUSIBLE when it looks wrong but is unverified.
++  Class each fault in the modules' behaviour `design`, a fault a fix's missed call site causes included,
++  since behaviour is this rubric's subject.
++  `decision` is for a focus entry left undriven or WARN, and `consistency` for a doc or message that disagrees with what a verb does.
+ - **Record every finding, large or small.**
+   Severity decides how a finding is reported, never whether it is fixed.
+   A finding whose fix is large, such as a feature, a subsystem or a refactor outside the modules, is recorded like any other.
+@@ -101,8 +112,10 @@ and the paths of the round's focus file, the charter, and of the decision record
+ ## The judge
+ 
+ - **Converged.**
+-  The judge rules CONVERGED only on a round whose review records no BLOCKING or MEDIUM finding and whose live gate is green.
+-  A review that left a focus entry undriven or WARN holds an `origin: focus` finding, so it never converges.
++  The judge rules CONVERGED only on a round whose review records no BLOCKING finding and no `design` finding at MEDIUM,
++  and whose live gate is green.
++  A finding first raised in that round counts like any other: the fix it got is behaviour no round has driven, so another round drives it.
++  A review that left a focus entry undriven, WARN or FAIL holds a BLOCKING finding for it, so it never converges.
+   It reads both from the round's facts.
+ - **Re-seed from the residue.**
+   The focus file derives the next round's assignment from what this round left standing, never "review it again":
+@@ -123,3 +136,5 @@ and the paths of the round's focus file, the charter, and of the decision record
+   the focus file asks the next round for the missing proof.
+ - **Coverage.**
+   A convergence verdict states what the campaign did not drive, and what its method failed to show about itself.
++  Its prose lists each scenario no sandbox can drive, such as an owner takeover, the pull-request sweep or a lost lease,
++  as a follow-up for the run's parent to file, naming the code it concerns and what a drive of it would need.
+diff --git a/internal/burlercli/validate.go b/internal/burlercli/validate.go
+index 0bc3082b9..30b9c3da1 100644
+--- a/internal/burlercli/validate.go
++++ b/internal/burlercli/validate.go
+@@ -129,12 +129,12 @@ func checkRoundInRunDirectory(cwd, reviewFile string) (refusal error, builderNot
+ 		}
+ 		paths.ConflictDir = runplan.ConflictDir(location.AnchorPath())
+ 	}
+-	// Only the hardener's review raises a focus finding outside the changed files.
++	// Only the hardener's review raises a new finding below BLOCKING or outside the changed files.
+ 	hardenSubdir, found, err := loomrecipe.BouncerRunSubdir(loomshed.NameHardenBouncer)
+ 	if err != nil {
+ 		return nil, fmt.Sprintf("the hardener review run directory could not be read from the recipe, so the parse alone decided: %s", err)
+ 	}
+-	paths.FocusFindings = found && filepath.Clean(runDir) == filepath.Join(loomengine.LoomReviewsDir(location), hardenSubdir)
++	paths.HardenerRound = found && filepath.Clean(runDir) == filepath.Join(loomengine.LoomReviewsDir(location), hardenSubdir)
+ 	roundContext, err := shedadapters.BuildRoundContext(runDir, round, paths)
+ 	if err != nil {
+ 		return nil, fmt.Sprintf("the round context could not be built, so the parse alone decided: %s", err)
+diff --git a/internal/burlercli/validate_integration_test.go b/internal/burlercli/validate_integration_test.go
+index 34d1617b7..272a2edb6 100644
+--- a/internal/burlercli/validate_integration_test.go
++++ b/internal/burlercli/validate_integration_test.go
+@@ -77,10 +77,10 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 		runDir       string
+ 		bare         bool
+ 		brokenRecord bool
+-		// focusReview writes a review with a complete prior list.
++		// offChangesReview writes a review with a complete prior list.
+ 		// Its one new finding is BLOCKING, class decision and origin focus, and sits outside the changed files.
+ 		// The changes file lists only a.go.
+-		focusReview bool
++		offChangesReview bool
+ 		// cwd is the seam cwd the verb runs from; empty is the worktree.
+ 		cwd string
+ 		// wantRefusal is the substring of the refusal an exit 1 carries, empty for exit 0.
+@@ -93,8 +93,8 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 		{name: "SeamCwdOutsideAGitRepository", runDir: filepath.Join(reviews, "run-no-repo"), cwd: t.TempDir()},
+ 		{name: "RunDirectoryOutsideTheReviewRunRoot", runDir: filepath.Join(worktree, "elsewhere")},
+ 		{name: "BuilderErrorFallsBackToTheParse", runDir: filepath.Join(reviews, "run-broken"), brokenRecord: true, wantNote: "round context could not be built"},
+-		{name: "FocusFindingAdmittedInTheHardenerRunDirectory", runDir: filepath.Join(reviews, hardenSubdir), focusReview: true},
+-		{name: "FocusFindingRefusedInTheCodeRunDirectory", runDir: filepath.Join(reviews, codeSubdir), focusReview: true, wantRefusal: "does not list"},
++		{name: "OffChangesFindingAdmittedInTheHardenerRunDirectory", runDir: filepath.Join(reviews, hardenSubdir), offChangesReview: true},
++		{name: "OffChangesFindingRefusedInTheCodeRunDirectory", runDir: filepath.Join(reviews, codeSubdir), offChangesReview: true, wantRefusal: "does not list"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -106,7 +106,7 @@ func TestValidateReviewVerb_RoundChecks(t *testing.T) {
+ 			}
+ 			review := filepath.Join(tt.runDir, "round-2-review.md")
+ 			content := "---\nverdict: APPROVED\n---\nnothing found\n"
+-			if tt.focusReview {
++			if tt.offChangesReview {
+ 				content = "---\nverdict: BLOCKING\nfindings:\n" +
+ 					"  - id: F2\n    severity: BLOCKING\n    class: decision\n    origin: focus\n    location: z.go:1\n    summary: s2\n    fix: f2\n" +
+ 					"prior:\n  - id: F1\n    status: resolved\n---\n\n### [BLOCKING] s2\n\n**Location:** z.go:1\n\n**Issue:** an undriven focus entry.\n"
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index c78210f6c..b70f79248 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -308,7 +308,6 @@
+ // Profile.HaltReason adds a halt-reason block to the review prompt.
+ // RoundContext.HaltReason lets the finding it asks for sit outside the changed files.
+ // That finding is tagged `origin: webster` (WebsterOrigin), and it must still be BLOCKING in an incremental round.
+-// A `decision`-class finding tagged `origin: focus` (FocusOrigin) records an undriven or WARN focus entry.
+-// RoundContext.FocusFindings, set for a hardener round, lets it sit outside the changed files,
+-// and it must still be BLOCKING in an incremental round.
++// RoundContext.HardenerRound, set for a hardener round, holds none of its findings to the BLOCKING or changed-file rules:
++// the round drives behaviour, and a fault it drives sits where it lives, whatever the fixes changed.
+ package burlerengine
+diff --git a/internal/burlerengine/roundcheck.go b/internal/burlerengine/roundcheck.go
+index 21ea9a433..0cb6df315 100644
+--- a/internal/burlerengine/roundcheck.go
++++ b/internal/burlerengine/roundcheck.go
+@@ -69,10 +69,9 @@ type RoundContext struct {
+ 	// HaltReason is the stuck reason of the plan executor call that sent the run back to review, empty when none.
+ 	// A new BLOCKING `origin: webster` finding is exempt from the changed-file rule while it is set.
+ 	HaltReason string
+-	// FocusFindings marks a hardener round.
+-	// Its review raises a `decision`-class finding for each focus entry it left undriven.
+-	// A new BLOCKING `origin: focus` finding of that class is exempt from the changed-file rule while it is set.
+-	FocusFindings bool
++	// HardenerRound marks a hardener round, which drives behaviour that the round's changed hunks do not bound.
++	// None of its findings, new or carried, is held to the BLOCKING or changed-file rules of an incremental round.
++	HardenerRound bool
+ 	// ParentReportPath is the report of the round's parent-review ask, empty when the round holds none.
+ 	ParentReportPath string
+ 	// PriorReviewPath, PriorFixerReportPath and ChangesPath name the files the prior-findings block points at.
+@@ -84,11 +83,6 @@ type RoundContext struct {
+ 	WorktreeRoot string
+ }
+ 
+-// FocusOrigin is the origin of a `decision`-class review finding that records an undriven or WARN focus entry.
+-// The run's arbiter or parent rules on such a finding.
+-// Driving the entry later or accepting it is a call, not a fix.
+-const FocusOrigin = "focus"
+-
+ // roundCheckGateName labels the round-check entry in a gate outcome.
+ const roundCheckGateName = "round"
+ 
+@@ -116,7 +110,8 @@ func roundRefusal(problem, rewrite string) error {
+ // It is exempt only when its parent_ids are all ids of the round's parent report.
+ // A carried or new finding located in a file that an entry of ctx.AmendingTexts names passes the changed-file rule.
+ // A new BLOCKING finding with `origin: webster` passes it too when ctx.HaltReason is set.
+-// So does a new BLOCKING `decision`-class finding with `origin: focus` when ctx.FocusFindings is set.
++// With ctx.HardenerRound set, a new finding passes at any severity and in any file,
++// and a carried one may move to any file.
+ func CheckReviewRound(content []byte, ctx *RoundContext) error {
+ 	_, findings, err := ParseReview(content)
+ 	if err != nil {
+@@ -280,7 +275,7 @@ func (c *roundCheck) carriedFinding(f, earlier Finding) error {
+ 	if path == locationPath(earlier.Location, c.ctx.WorktreeRoot) {
+ 		return nil
+ 	}
+-	if c.namedByAmendment(path) {
++	if c.ctx.HardenerRound || c.namedByAmendment(path) {
+ 		return nil
+ 	}
+ 	if !c.ctx.HasChanges {
+@@ -311,6 +306,10 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q with `origin: parent`, but its `parent_ids` are not all ids of this round's parent report", f.ID),
+ 				fmt.Sprintf("with `parent_ids` on %q listing ids of the parent report, or without the finding", f.ID))
+ 		}
++		// A fault a hardener round drives sits where it lives, on a changed hunk or not, at the severity it has.
++		if c.ctx.HardenerRound {
++			continue
++		}
+ 		if f.Severity != SeverityBlocking {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q at %s, but an incremental round raises a new finding only at BLOCKING", f.ID, f.Severity),
+ 				fmt.Sprintf("without %q, or with it at BLOCKING on a changed hunk", f.ID))
+@@ -325,11 +324,6 @@ func (c *roundCheck) newFindings(findings []Finding) error {
+ 			return roundRefusal(fmt.Sprintf("has a second new finding %q with `origin: webster` at %q, which the changes file does not list, but the plan executor's halt reason admits one", f.ID, path),
+ 				fmt.Sprintf("with %q located at a file the changes file lists, or without it", f.ID))
+ 		}
+-		// A focus entry left undriven has no changed hunk to sit on, and the parent's call on it needs no fix of the round.
+-		// Only a hardener round raises one, and it sets ctx.FocusFindings.
+-		if outsideChanges && c.ctx.FocusFindings && f.Origin == FocusOrigin && f.Class == ClassDecision {
+-			continue
+-		}
+ 		if outsideChanges {
+ 			return roundRefusal(fmt.Sprintf("has the new finding %q at %q, which the changes file does not list", f.ID, path),
+ 				fmt.Sprintf("with %q located at the changed line that causes it, or without it", f.ID))
+diff --git a/internal/burlerengine/roundcheck_test.go b/internal/burlerengine/roundcheck_test.go
+index 9e25bf437..c59b1c1f9 100644
+--- a/internal/burlerengine/roundcheck_test.go
++++ b/internal/burlerengine/roundcheck_test.go
+@@ -97,11 +97,7 @@ func TestCheckReviewRound(t *testing.T) {
+ 		f.Origin = WebsterOrigin
+ 		return f
+ 	}
+-	focusing := func(ctx *RoundContext) { ctx.FocusFindings = true }
+-	fromFocus := func(f Finding, class Class) Finding {
+-		f.Origin, f.Class = FocusOrigin, class
+-		return f
+-	}
++	hardening := func(ctx *RoundContext) { ctx.HardenerRound = true }
+ 	const planCard = "_lym/plan/14-card-slug.md"
+ 	const amendingEntry = "### Rework the slug card\n\nAmend plan card 14-card-slug to name the retry."
+ 	held := func(titles ...string) func(*RoundContext) {
+@@ -195,10 +191,11 @@ func TestCheckReviewRound(t *testing.T) {
+ 		{name: "NewWebsterFindingWithNoHaltReasonIsRefused", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}, wantErr: "does not list"},
+ 		{name: "NewWebsterFindingWithAHaltReasonPasses", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityBlocking, planCard+":3"))}},
+ 		{name: "NewWebsterFindingBelowBlockingIsRefused", ctx: round(changedWith(halted("card 14 misses the retry"))), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromWebster(finding("F1", SeverityMedium, planCard+":3"))}, wantErr: "only at BLOCKING"},
+-		{name: "NewFocusDecisionOnAnUntouchedFilePasses", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassDecision), fromFocus(finding("F2", SeverityBlocking, "y.go:1"), ClassDecision)}},
+-		{name: "NewFocusDecisionOnAnUntouchedFileOutsideAHardenerRoundIsRefused", ctx: round(changed("c.go")), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassDecision)}, wantErr: "does not list"},
+-		{name: "NewFocusFindingOfAnotherClassOnAnUntouchedFileIsRefused", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityBlocking, "z.go:1"), ClassScope)}, wantErr: "does not list"},
+-		{name: "NewFocusDecisionBelowBlockingIsRefused", ctx: round(changedWith(focusing)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromFocus(finding("F1", SeverityMedium, "z.go:1"), ClassDecision)}, wantErr: "only at BLOCKING"},
++		{name: "NewFindingsBelowBlockingOnUntouchedFilesInAHardenerRoundPass", ctx: round(changedWith(hardening)), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{finding("F1", SeverityMedium, "z.go:1"), finding("F2", SeverityLow, "y.go:1")}},
++		{name: "CarriedMovedToAnUntouchedFileInAHardenerRoundPasses", ctx: round(changedWith(hardening)), prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityMedium, "b.go:3"), "E1")}},
++		{name: "CarriedMovedWithNoChangesFileInAHardenerRoundPasses", ctx: round(hardening), prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityMedium, "b.go:3"), "E1")}},
++		{name: "CarriedSeverityRaisedInAHardenerRoundIsRefused", ctx: round(hardening), prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityBlocking, "a.go:10"), "E1")}, wantErr: "above its earlier"},
++		{name: "NewParentFindingWithNoAskInAHardenerRoundIsRefused", ctx: round(hardening), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{fromParent(finding("F1", SeverityBlocking, "a.go:3"), "P1")}, wantErr: "origin: parent"},
+ 		{
+ 			name: "HeldPairOneResolvedAndOneCarried",
+ 			ctx: round(func(ctx *RoundContext) {
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 3cf7758fb..aa246b5cc 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -187,6 +187,11 @@ type BouncerConfig struct {
+ 	// and an earlier CIRCLING is read as CONTINUE.
+ 	// It must be positive.
+ 	CirclingCheckpoint int
++	// FirstRaisedGates makes a gating finding hold convergence in every round.
++	// That includes a key first raised in the latest round.
++	// False lets such a key converge from round 2 on, carried into the decision record's `## Open risks`.
++	// A hardener campaign sets it, since a fix its closing round made is behaviour no round has driven.
++	FirstRaisedGates bool
+ 	// StalemateRounds is how many unchanged-target rounds in a row escalate with cause stalemate.
+ 	// 0, which is also the zero value, turns the check off.
+ 	StalemateRounds int
+@@ -2075,7 +2080,7 @@ func (b *Bouncer) RenderJudgePrompt(engine string, round int) (string, error) {
+ 		"facts_path":      factsPath(b.cfg.RunDir, round),
+ 		"round":           strconv.Itoa(round),
+ 		"next_round":      strconv.Itoa(round + 1),
+-		"decision_rule":   decisionRuleMarker(round, b.cfg.CirclingCheckpoint),
++		"decision_rule":   decisionRuleMarker(round, b.cfg.CirclingCheckpoint, b.cfg.FirstRaisedGates),
+ 		"report_path":     reportPath,
+ 		"previous_ledger": previousLedger,
+ 		"verdict_path":    outputs[0],
+diff --git a/internal/shedadapters/bouncer_seed_test.go b/internal/shedadapters/bouncer_seed_test.go
+index bcaff27d6..a2e6c9b6f 100644
+--- a/internal/shedadapters/bouncer_seed_test.go
++++ b/internal/shedadapters/bouncer_seed_test.go
+@@ -485,7 +485,7 @@ func TestBouncer_MarkerCompleteness_BothTemplates(t *testing.T) {
+ 			"facts_path":      "/abs/round-1-facts.md",
+ 			"round":           "1",
+ 			"next_round":      "2",
+-			"decision_rule":   decisionRuleMarker(1, 3),
++			"decision_rule":   decisionRuleMarker(1, 3, false),
+ 			"report_path":     "/abs/round-1-report.md",
+ 			"previous_ledger": "(none)",
+ 			"verdict_path":    "/abs/round-1-bouncer-verdict.md",
+diff --git a/internal/shedadapters/bouncerprompt.go b/internal/shedadapters/bouncerprompt.go
+index 25b366f1e..81e516a77 100644
+--- a/internal/shedadapters/bouncerprompt.go
++++ b/internal/shedadapters/bouncerprompt.go
+@@ -13,6 +13,7 @@ package shedadapters
+ // A gating finding on a key first raised in the latest round does not block it.
+ // It goes into the decision record's `## Open risks` for a later check.
+ // A parse-error line in the facts' earlier-open list means the judge rules by round 1's rule.
++// With firstRaisedGates set, every round rules by round 1's rule, so a key first raised in the latest round blocks too.
+ //
+ // Below the checkpoint the rule offers CONVERGED and CONTINUE only and names no CIRCLING,
+ // so a judge cannot rule on no-progress evidence before the run has had rounds to show progress.
+@@ -20,11 +21,11 @@ package shedadapters
+ // CIRCLING is earned only by a gating finding on a key the facts list as open in an earlier round.
+ // The key must still be open in this round.
+ // The variant lives here so the stencil stays conditional-free.
+-func decisionRuleMarker(round, checkpoint int) string {
++func decisionRuleMarker(round, checkpoint int, firstRaisedGates bool) string {
+ 	const roundOneContinue = "`CONTINUE` while the latest round carries a gating-class finding at MEDIUM or worse, or any BLOCKING finding.\n"
+ 	rule := "A finding is gating when its class is `design`.\n" +
+ 		"\n"
+-	if round < 2 {
++	if round < 2 || firstRaisedGates {
+ 		rule += "- " + roundOneContinue +
+ 			"- `CONVERGED` when the latest round carries neither.\n"
+ 	} else {
+diff --git a/internal/shedadapters/bouncerprompt_test.go b/internal/shedadapters/bouncerprompt_test.go
+index caf4fe8cc..332dd14ce 100644
+--- a/internal/shedadapters/bouncerprompt_test.go
++++ b/internal/shedadapters/bouncerprompt_test.go
+@@ -60,43 +60,87 @@ func decisionRuleSection(t *testing.T, prompt string) string {
+ 	return section
+ }
+ 
+-//testtiming:keep pins the decision rule's text: both non-circling verdicts are always offered, the rising-count caveat comes with CIRCLING, and round 2 on renders the lighter rule with its earlier-open list and round-1 fallback
++//testtiming:keep pins the decision rule's text: both non-circling verdicts are always offered, the rising-count caveat comes with CIRCLING, and round 2 on renders the lighter rule with its earlier-open list and round-1 fallback unless first-raised keys gate
+ func TestDecisionRuleMarker_CirclingOnlyFromTheCheckpoint(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	for _, tt := range []struct {
+-		name         string
+-		round        int
+-		checkpoint   int
+-		wantCircling bool
+-		wantLighter  bool
++		name             string
++		round            int
++		checkpoint       int
++		firstRaisedGates bool
++		wantCircling     bool
++		wantLighter      bool
+ 	}{
+-		{"round 1 below the checkpoint", 1, 2, false, false},
+-		{"round 2 below the checkpoint", 2, 3, false, true},
+-		{"at the checkpoint", 2, 2, true, true},
+-		{"above the checkpoint", 5, 2, true, true},
+-		{"round 1 at the checkpoint", 1, 1, true, false},
++		{"round 1 below the checkpoint", 1, 2, false, false, false},
++		{"round 2 below the checkpoint", 2, 3, false, false, true},
++		{"at the checkpoint", 2, 2, false, true, true},
++		{"above the checkpoint", 5, 2, false, true, true},
++		{"round 1 at the checkpoint", 1, 1, false, true, false},
++		{"round 2 with first-raised keys gating", 2, 3, true, false, false},
++		{"above the checkpoint with first-raised keys gating", 5, 2, true, true, false},
+ 	} {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			got := decisionRuleMarker(tt.round, tt.checkpoint)
++			got := decisionRuleMarker(tt.round, tt.checkpoint, tt.firstRaisedGates)
++			call := fmt.Sprintf("decisionRuleMarker(%d, %d, %t)", tt.round, tt.checkpoint, tt.firstRaisedGates)
+ 			lighterPhrases := []string{"keys open in an earlier round", "`## Open risks`", "rule by round 1's rule instead: `CONTINUE` while the latest round carries a gating-class finding at MEDIUM or worse, or any BLOCKING finding"}
+ 			for _, phrase := range lighterPhrases {
+ 				if has := strings.Contains(got, phrase); has != tt.wantLighter {
+-					t.Errorf("decisionRuleMarker(%d, %d) contains %q = %v; want %v", tt.round, tt.checkpoint, phrase, has, tt.wantLighter)
++					t.Errorf("%s contains %q = %v; want %v", call, phrase, has, tt.wantLighter)
+ 				}
+ 			}
+ 			if !tt.wantLighter && !strings.Contains(got, "- `CONTINUE` while the latest round carries a gating-class finding at MEDIUM or worse, or any BLOCKING finding.\n") {
+-				t.Errorf("decisionRuleMarker(%d, %d) lacks round 1's CONTINUE bullet", tt.round, tt.checkpoint)
++				t.Errorf("%s lacks round 1's CONTINUE bullet", call)
+ 			}
+ 			if has := strings.Contains(got, "CIRCLING"); has != tt.wantCircling {
+-				t.Errorf("decisionRuleMarker(%d, %d) names CIRCLING = %v; want %v", tt.round, tt.checkpoint, has, tt.wantCircling)
++				t.Errorf("%s names CIRCLING = %v; want %v", call, has, tt.wantCircling)
+ 			}
+ 			for _, verdict := range []string{"`CONVERGED`", "`CONTINUE`"} {
+ 				if !strings.Contains(got, verdict) {
+-					t.Errorf("decisionRuleMarker(%d, %d) lacks %s; want both non-circling verdicts always offered", tt.round, tt.checkpoint, verdict)
++					t.Errorf("%s lacks %s; want both non-circling verdicts always offered", call, verdict)
+ 				}
+ 			}
+ 			if tt.wantCircling && !strings.Contains(got, "never circling") {
+-				t.Errorf("decisionRuleMarker(%d, %d) lacks the rising-count caveat", tt.round, tt.checkpoint)
++				t.Errorf("%s lacks the rising-count caveat", call)
++			}
++		})
++	}
++}
++
++//testtiming:keep pins that FirstRaisedGates on the Bouncer reaches round 2's judge prompt, which then rules by round 1's rule
++func TestBouncer_JudgePromptGatesAFirstRaisedKeyWithFirstRaisedGates(t *testing.T) {
++	tiergate.Require(t, 0)
++	const lighterClause = "on a key first raised in the latest round does not block it"
++	for _, tt := range []struct {
++		name             string
++		firstRaisedGates bool
++		wantLighter      bool
++	}{
++		{"unset renders the lighter rule", false, true},
++		{"set renders round 1's rule", true, false},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			cfg := newBouncerFixture(t).Config
++			cfg.FirstRaisedGates = tt.firstRaisedGates
++			cfg.Shuttle = judgeFakeShuttle(1, bouncerVerdictContent("CONTINUE"), bouncerLedgerContent(1), true)
++			b, err := NewBouncer(cfg)
++			if err != nil {
++				t.Fatalf("NewBouncer(...) error = %v; want nil", err)
++			}
++			for round := 1; round <= 2; round++ {
++				report := cfg.RunDir + "/" + cfg.ReportName(round)
++				if err := os.WriteFile(report, []byte(bouncerReport(round)), 0o644); err != nil {
++					t.Fatalf("WriteFile(%q) = %v; want nil", report, err)
++				}
++				if round == 2 {
++					b.cfg.Shuttle = &shedfake.Shuttle{Result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}}
++				}
++				shedfake.CallOK(t, b)
++			}
++
++			judge := b.cfg.Shuttle.(*shedfake.Shuttle)
++			section := decisionRuleSection(t, judge.GotSpec.Prompt)
++			if has := strings.Contains(section, lighterClause); has != tt.wantLighter {
++				t.Errorf("round 2 decision rule contains %q = %v; want %v\n%s", lighterClause, has, tt.wantLighter, section)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index d8712992d..1c45bc767 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -85,8 +85,9 @@ type BurlerHalfDeps struct {
+ 	// The review producer reads it on every call and puts the reason in the review prompt.
+ 	// Empty for a segment that reads none.
+ 	HaltConflictDir string
+-	// FocusFindings marks a hardener segment's review, whose round check admits a focus finding outside the changed files.
+-	FocusFindings bool
++	// HardenerRound marks a hardener segment's review.
++	// Its round check holds no finding to the BLOCKING or changed-file rules.
++	HardenerRound bool
+ 	// Diff reads the unified diff a spawned reviewer is given in pieces, read by the review producer once per spawning call.
+ 	// Nil gives no diff, and so does a failed read, which is logged.
+ 	Diff func() (string, error)
+@@ -168,8 +169,9 @@ type BurlerReviewProducer struct {
+ 	amendmentTitles func() ([]string, error)
+ 	// haltConflictDir, when non-empty, is the conflict directory whose halt-reason file each call reads.
+ 	haltConflictDir string
+-	// focusFindings marks a hardener segment's review, whose round context admits a focus finding outside the changed files.
+-	focusFindings bool
++	// hardenerRound marks a hardener segment's review.
++	// Its round context holds no finding to the BLOCKING or changed-file rules.
++	hardenerRound bool
+ 	// diff, when non-nil, reads the diff a spawned reviewer is given.
+ 	diff func() (string, error)
+ 	// rubric, when non-nil, reads each round's rubric.
+@@ -200,7 +202,7 @@ func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlereng
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, amendmentTitles: deps.AmendmentTitles, haltConflictDir: deps.HaltConflictDir, focusFindings: deps.FocusFindings, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, assist: deps.Assist, parent: deps.Parent, snapshot: deps.Snapshot, decisionRecordPath: deps.DecisionRecordPath, amendmentTitles: deps.AmendmentTitles, haltConflictDir: deps.HaltConflictDir, hardenerRound: deps.HardenerRound, diff: deps.Diff, rubric: deps.Rubric, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // recordRoundStart writes round's snapshot record when none exists yet.
+@@ -273,7 +275,7 @@ func (p *BurlerReviewProducer) roundProfile(round int, fan, rubric string) burle
+ 	profile.PriorFixerReports = append(append([]string{}, p.profile.PriorFixerReports...), priorFixerReports...)
+ 	profile.ClusterExclude = nil
+ 	profile.ClusterExcludeHeld = nil
+-	roundContext, err := BuildRoundContext(p.runDir, round, RoundContextSources{DecisionRecordPath: p.decisionRecordPath, AmendmentTitles: p.amendmentTitles, ConflictDir: p.haltConflictDir, FocusFindings: p.focusFindings})
++	roundContext, err := BuildRoundContext(p.runDir, round, RoundContextSources{DecisionRecordPath: p.decisionRecordPath, AmendmentTitles: p.amendmentTitles, ConflictDir: p.haltConflictDir, HardenerRound: p.hardenerRound})
+ 	if err != nil {
+ 		logger.Warn("shedadapters: burler review could not build the round context; the round is reviewed in full", "producer", p.name, "engine", burlerReviewEngineLabel, "round", round, "error", err)
+ 	}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 6a208a412..67c175af4 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -157,6 +157,10 @@
+ // Call acts on a judgment that provably happened: a verdict and ledger that both exist and parse.
+ // It acts regardless of what the shuttle run itself reported.
+ //
++// From round 2 on, the judge's decision rule lets a gating key first raised in the latest round converge.
++// Such a key is carried into the decision record's `## Open risks`.
++// A Bouncer with FirstRaisedGates set, as a hardener campaign's is, rules every round by round 1's rule instead.
++//
+ // A CONTINUE or CIRCLING round escalates to the run's parent instead of halting for a human.
+ // The causes are budget, circling, hard-cap, decision and stalemate; BouncerConfig names the seams that enable each.
+ // An escalation writes round-<N>-escalation.md and round-<N>-parent-notice.md and returns Awaiting with the ledger path.
+diff --git a/internal/shedadapters/roundcontext.go b/internal/shedadapters/roundcontext.go
+index a3cc5c97e..222d3760e 100644
+--- a/internal/shedadapters/roundcontext.go
++++ b/internal/shedadapters/roundcontext.go
+@@ -95,8 +95,8 @@ type RoundContextSources struct {
+ 	AmendmentTitles func() ([]string, error)
+ 	// ConflictDir is the directory holding the plan executor's halt-reason file.
+ 	ConflictDir string
+-	// FocusFindings marks a hardener segment's round, which may raise a focus finding outside the changed files.
+-	FocusFindings bool
++	// HardenerRound marks a hardener segment's round, whose findings the BLOCKING and changed-file rules do not bind.
++	HardenerRound bool
+ }
+ 
+ // amendingEntryTexts returns the full text of every added entry of the decision record whose title amendmentTitles lists.
+@@ -221,7 +221,7 @@ func BuildRoundContext(runDir string, round int, paths RoundContextSources) (*bu
+ 		AddedTexts:           texts,
+ 		AmendingTexts:        amendingTexts,
+ 		HaltReason:           haltReason,
+-		FocusFindings:        paths.FocusFindings,
++		HardenerRound:        paths.HardenerRound,
+ 		HasChanges:           hasChanges,
+ 		Changed:              changed,
+ 		PriorReviewPath:      reviewPath,
+diff --git a/internal/shedadapters/roundcontext_test.go b/internal/shedadapters/roundcontext_test.go
+index fcb012b0f..942c2bf52 100644
+--- a/internal/shedadapters/roundcontext_test.go
++++ b/internal/shedadapters/roundcontext_test.go
+@@ -123,8 +123,8 @@ func TestBuildRoundContext(t *testing.T) {
+ 		withAnchor bool
+ 		// withPlanPaths passes the amendment record and the conflict directory to the builder.
+ 		withPlanPaths bool
+-		// withFocusFindings marks the round as a hardener round to the builder.
+-		withFocusFindings bool
++		// withHardenerRound marks the round as a hardener round to the builder.
++		withHardenerRound bool
+ 		wantNil           bool
+ 		wantErr           bool
+ 		check             func(t *testing.T, got *burlerengine.RoundContext, e env)
+@@ -361,10 +361,10 @@ func TestBuildRoundContext(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "FocusFindingsComesFromTheSources", withFocusFindings: true, setup: complete,
++			name: "HardenerRoundComesFromTheSources", withHardenerRound: true, setup: complete,
+ 			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
+-				if !got.FocusFindings {
+-					t.Error("FocusFindings = false; want true")
++				if !got.HardenerRound {
++					t.Error("HardenerRound = false; want true")
+ 				}
+ 			},
+ 		},
+@@ -409,7 +409,7 @@ func TestBuildRoundContext(t *testing.T) {
+ 			if tt.withPlanPaths {
+ 				paths.AmendmentTitles, paths.ConflictDir = amendmentTitlesFile(e.amendment), e.conflictDir
+ 			}
+-			paths.FocusFindings = tt.withFocusFindings
++			paths.HardenerRound = tt.withHardenerRound
+ 
+ 			got, err := BuildRoundContext(e.runDir, round, paths)
+ 
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index 0e817222f..ac21278a8 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -369,6 +369,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 		bouncerCfg.RoundFacts = func(round int) (string, error) { return env.Harden.RoundFacts(runDir, round) }
+ 		bouncerCfg.LiveRed = func(round int) (bool, error) { return env.Harden.LiveRed(runDir, round) }
+ 		bouncerCfg.OnHalt = func() error { return env.Harden.Halt(row.Name) }
++		bouncerCfg.FirstRaisedGates = true
+ 	}
+ 
+ 	// NewBouncer probes the rubric stencil eagerly, at construction.
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index 44e04513c..e876de482 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -180,7 +180,7 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	snapshot := reviewTargetSnapshot(env, runSubdir)
+ 	snapshot.Scope, snapshot.Paths = profile.FixScope, profile.Target.Paths
+ 	opts := burlerengine.RunOpts{Timeout: burlerRowTimeout(timeoutS, env), ReviewKey: segment.ReviewKey}
+-	halfDeps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, FocusFindings: hardenRound, Diff: diff, Rubric: rubric}
++	halfDeps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, Assist: segment.Assist, Parent: segment.Parent, GateFindingsPath: env.gateFindingsPath(row.Name), Snapshot: &snapshot, DecisionRecordPath: env.DecisionRecordPath, HardenerRound: hardenRound, Diff: diff, Rubric: rubric}
+ 	// Only the plan segment's review answers to the plan amendment record and the plan executor's halt reason.
+ 	if row.Name == loomshed.NamePlanBurlerReview {
+ 		halfDeps.AmendmentTitles, halfDeps.HaltConflictDir = amendmentTitlesAt(env.AmendmentPath), env.HaltConflictDir
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index 149634ab7..b76a7ed43 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -325,8 +325,8 @@ func TestBurlerReviewEntry_ProfileMapping(t *testing.T) {
+ 		}
+ 	})
+ 
+-	// Only a harden_round row's round check admits a new focus finding outside the changed files.
+-	t.Run("HardenRoundSetsTheFocusFindingsPermission", func(t *testing.T) {
++	// Only a harden_round row's round check admits a new finding outside the changed files.
++	t.Run("HardenRoundMarksTheRoundContext", func(t *testing.T) {
+ 		const review = "---\nverdict: BLOCKING\nfindings:\n" +
+ 			"  - id: F2\n    severity: BLOCKING\n    class: decision\n    origin: focus\n    location: z.go:1\n    summary: s2\n    fix: f2\n" +
+ 			"prior:\n  - id: F1\n    status: resolved\n---\n\n### [BLOCKING] s2\n\n**Location:** z.go:1\n\n**Issue:** an undriven focus entry.\n"
+@@ -356,7 +356,7 @@ func TestBurlerReviewEntry_ProfileMapping(t *testing.T) {
+ 				ctx.HasChanges, ctx.Changed = true, []string{"c.go"}
+ 				err := burlerengine.CheckReviewRound([]byte(review), &ctx)
+ 				if tt.wantErr == "" && err != nil {
+-					t.Errorf("CheckReviewRound() = %v; want the focus finding admitted", err)
++					t.Errorf("CheckReviewRound() = %v; want the off-changes finding admitted", err)
+ 				}
+ 				if tt.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tt.wantErr)) {
+ 					t.Errorf("CheckReviewRound() = %v; want a refusal containing %q", err, tt.wantErr)
+diff --git a/internal/shedrecipe/entries_harden_test.go b/internal/shedrecipe/entries_harden_test.go
+index fbd324538..809a3be68 100644
+--- a/internal/shedrecipe/entries_harden_test.go
++++ b/internal/shedrecipe/entries_harden_test.go
+@@ -286,6 +286,42 @@ func TestHardenRoundKey(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("BouncerRowGatesAFirstRaisedKeyOnlyWithHardenRound", func(t *testing.T) {
++		const lighterClause = "on a key first raised in the latest round does not block it"
++		tests := []struct {
++			name        string
++			hardenRound bool
++			wantLighter bool
++		}{
++			{name: "HardenRoundRendersRoundOnesRule", hardenRound: true},
++			{name: "OtherRowRendersTheLighterRule", wantLighter: true},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				env := hardenTestEnv(t)
++				shuttle := continueSeamShuttle()
++				env.Shuttle = shuttle
++				writeStencil(t, env.StencilsDir, "bouncer-template-judge", "{{.decision_rule}}\n")
++				cfg := minimalBouncerConfig(t, env)
++				if tt.hardenRound {
++					cfg["harden_round"] = true
++				}
++				layoutBouncerCirclingRounds(t, env)
++
++				producer, err := bouncerEntry(reviewRow("review-bounce"), cfg, env)
++				if err != nil {
++					t.Fatalf("bouncerEntry() error = %v; want nil", err)
++				}
++				if _, _, err := producer.Call(context.Background()); err != nil {
++					t.Fatalf("Call() error = %v; want nil", err)
++				}
++				if has := strings.Contains(shuttle.GotSpec.Prompt, lighterClause); has != tt.wantLighter {
++					t.Errorf("round 2 judge prompt contains %q = %v; want %v\n%s", lighterClause, has, tt.wantLighter, shuttle.GotSpec.Prompt)
++				}
++			})
++		}
++	})
++
+ 	t.Run("BouncerRowReapsTheSandboxAtTheHaltPointWhenTheRunHalts", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		var recorder *campaignRecorder
