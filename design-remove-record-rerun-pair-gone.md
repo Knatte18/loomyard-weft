@@ -2,8 +2,6 @@
 
 `remove-record-rerun-pair-gone` · Task · bug · running · Darn-Write
 
-Depends on: [`async-run-pusher`](design-async-run-pusher.md)
-
 ## Seen
 
 Live drive of the one-repository sandbox (`docs/research/single-repo-undriven-cases.md`).
