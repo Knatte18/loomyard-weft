@@ -568,8 +568,7 @@
       "brief": "",
       "body": "Groups the entries filed from the Sketch `sandbox-closed-area-build`: area-creel-identity, area-seccomp-core, area-apparmor-barrier, area-host-exits.\n\n## Parked\n\nNot to be released or worked yet (operator, 2026-11-26): there is far too little data to build it, and the right kernel is missing.\nIts tasks stay draft until the operator takes it up again.\n",
       "created": "2026-11-26T11:58:18Z",
-      "revised": "2026-11-26T13:48:11Z",
-      "project": "intake-motifs",
+      "revised": "2026-11-26T13:49:12Z",
       "discussed": true,
       "record_body_sha256": "a9c7e3efe6ce82b2d006033829227db8da08080c5dc3c0edcf7ddc9ddd638c9a"
     },
