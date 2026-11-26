@@ -1,6 +1,6 @@
 # Machine stops, dead judges and idle seats are not producer failures
 
-`infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · starting · Open-IDE
+`infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · running · Drift-Baseline
 
 Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
