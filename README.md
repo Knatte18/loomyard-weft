@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 3d<br>2d | burler, fabric |
 
-## [P0 Root: entries under no project](project-root.md) (42)
+## [P0 Root: entries under no project](project-root.md) (43)
 
 Owner `neve`
 
@@ -56,7 +56,7 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-### Bugs (25)
+### Bugs (26)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -74,7 +74,7 @@ Owner `neve`
 | B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 1m<br>1m | fabric |
 | B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 1m<br>1m | gate, burler |
 | B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 1m<br>1m | loom, orch, pawl |
-| B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 0m<br>0m | gate, dotnet |
+| B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 1m<br>1m | gate, dotnet |
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 0m<br>0m | gate, dotnet |
 | B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 0m<br>0m | gate, darn |
 | B18 |  | **A beam member's run records the prime orch as its parent orch** | [`beam-member-parent-is-prime`](design-beam-member-parent-is-prime.md) | 0m<br>0m | batten, landing, orch |
@@ -85,6 +85,7 @@ Owner `neve`
 | B23 |  | **Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset** | [`webster-recovery-asking-dead`](design-webster-recovery-asking-dead.md) | 0m<br>0m | webster |
 | B24 |  | **Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review** | [`seat-idle-no-input-box`](design-seat-idle-no-input-box.md) | 0m<br>0m | shuttle, claude |
 | B25 |  | **Seed-IDE fails the run when the task branch's detached push has not landed yet** | [`seed-ide-push-not-landed`](design-seed-ide-push-not-landed.md) | 0m<br>0m | batten, fabric |
+| B26 |  | **Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours** | [`gate-timeout-hung-testhost`](design-gate-timeout-hung-testhost.md) | 0m<br>0m | gate, dotnet |
 
 ### Enhancements (8)
 

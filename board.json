@@ -1010,6 +1010,27 @@
       "body": "Imported from [issue #217](https://github.com/Knatte18/loomyard/issues/217).\n\n`beam.yaml: autonomy` is one switch for both halts and PR-Review requests. A hub wants the orch to settle halts on the prime autonomously while pull requests into the prime's branch (main) still wait for the operator's approval. Today that needs autonomy off, which also sends every halt to the operator, or autonomy on with the orch holding PR-Review by hand. Proposal: a separate key, such as `autonomy_pr_review: false`, so PR-Review requests on that beam or the prime go to the operator while halts stay autonomous.\n\n## Issue comment, 2026-11-24\n\nSeen again, with a merge into the prime's branch:\n\n- The prime runs with `autonomy: true`, and the hub wants pull requests into main to wait for a human approval.\n- The task `import-project-names` reached PR-Review; the parent answered the parent-review ask `--satisfied` and told the PR-Review agent by creel that landing waits on the operator's approval.\n- `lym loom pr-continue` ran anyway about a minute later, and Finalize squash-merged the pull request into main once its gate passed, with no human approval on GitHub.\n\nA message to the PR-Review agent is no way to hold a landing under autonomy: the satisfied answer alone ends the review.\n\nExpected: a setting, per beam and for the prime, that keeps autonomy for halts but makes PR-Review wait for a human approval of the pull request (for example a GitHub approving review) before `pr-continue` or Finalize may merge.",
       "created": "2026-11-26T07:34:42Z",
       "revised": "2026-11-26T07:34:42Z"
+    },
+    {
+      "id": 1658,
+      "handle": "B26",
+      "slug": "gate-timeout-hung-testhost",
+      "title": "Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "dotnet"
+      ],
+      "issues": [
+        216
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #216](https://github.com/Knatte18/loomyard/issues/216).\n\n## What happened\n\nIn hub `dop`, run `models-torque-drag-adapter`, a Webster batch fork ran `lym gate test --tier tier3` at 2026-11-23 15:36.\nTier3 has `timeout_min: 35` in the gate config.\nThe tier's `dotnet test` testhost hung (about 4.5 min CPU in 21 h), and the gate slot stayed held for nearly 21 hours: `lym gate status` showed the slot held since 15:36 the next day.\nThe 35-minute bound never fired, so the fork, Webster and the run waited without any stop or notice to the parent orch.\nAnother hub's orch noticed the idle process; the parent orch killed the testhost by hand, and the gate then released its slot.\n\n## Expected\n\nAt `timeout_min` the gate kills the tier's whole process tree (`sh -c dotnet test` → `dotnet` → `vstest` → testhost) and reports a timeout failure to its caller.\n\n## Likely area\n\nThe timeout may kill only the direct child (`sh`), or wait on output pipes that the orphaned testhost still holds open, so the wait never returns.\n",
+      "created": "2026-11-26T07:34:45Z",
+      "revised": "2026-11-26T07:34:45Z"
     }
   ],
   "prime_owner": "neve",
