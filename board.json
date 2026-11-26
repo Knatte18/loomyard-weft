@@ -479,7 +479,7 @@
       "isolated": false,
       "brief": "",
       "body": "Bundled from the notes below; each part keeps its note's text.\n\n# creel post refusal after a persisted cd does not say why\n\nImported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).\n\nAn agent's survey commands used `cd` into subdirectories, and the shell kept that directory for later calls.\nThe next `lym creel post` was refused because the working directory was no longer the anchored worktree root, which cost a retry.\n\nWhy it is abnormal:\n- The shell's directory persisting across calls is easy to trip over, and the refusal surfaced only on the later creel call, away from the `cd` that caused it.\n\nWhat to do:\n- Have the refusal name the anchored root and say that a previous `cd` likely moved the shell, or accept calls from any directory inside the worktree.\n- Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.\n\nProvenance: task `retire-d9`; note Darn-Write.md.\n\n\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-26T07:33:09Z",
       "revised": "2026-11-26T09:15:05Z",
       "profile": "light",
