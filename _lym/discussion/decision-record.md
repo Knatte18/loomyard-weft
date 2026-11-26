@@ -6,7 +6,7 @@ The parent orch hears of every stop of every run it parents, and of a gate slot 
 The dobby of the run's parent worktree does the watching, so it needs no re-arming and survives the orch's context cycles.
 It mails the parent on:
 
-- every change of a run into a state other than running: halted (blocked, failed, awaiting), paused, the child's shed done, landed, cancelled;
+- every change of a run into a state other than running: halted (blocked, failed, awaiting), paused, the child's shed done, landed, and cancelled by a cancel that keeps its records;
 - a gate slot held by the run past a bound derived from the tier's `timeout_min`, naming the holder's PID and its child processes;
 - every row change, when the task's setting asks for progress.
 
@@ -35,26 +35,36 @@ On every tick that runs its steps, the dobby reads, for each run it drives, a wa
 - the run's derived state, `RunView.Run`, which `battencli.DobbyRuns` already fills through `runfsm.Derive`;
 - batten's own state and row;
 - the child's state and row, from the run notices' existing child reader, read only when batten's or the child's status file changed since the last reading;
-  an absent child status, as after Worktree-Teardown, keeps the child part last read;
+  a child status never read, as before Run-Shed, leaves the child part absent;
+  a child status that vanishes after a reading, as after Worktree-Teardown, keeps the child part last read;
 - an episode stamp: the history length of the layer that stands at a stop, batten's when batten's state is not running, else the child's.
 
-The watch step runs before the done-run clear in the tick.
+The runs the watch reads are the tick's full list, `d.listedRuns`, not `d.runs`, which drops a done run with no pass in flight.
+The watch step runs among the run steps, after the landing notice step and before the done-run clear,
+so its last copy of the land_notice reading ahead of Land (D3) is the reading the landing notice decides with.
+It runs only on ticks whose scheduling steps run (`internal/dobbyengine/loop.go:708-729`);
+an anchor move, an adopt hold or an owed catch-up delays every watch line until it ends.
 A change of the reading is what D2's level judges and D3's line reports.
 
 Rationale: the orch's Monitor printed every change of state or row, and the reading holds every input that Monitor read through `lym loom status`.
-Batten's own state is part of it because a batten halt outside Run-Shed, such as a pause seen during the Land lock wait, derives as running or landing, not halted, and today sends no notice.
+Batten's own state is part of it because a batten block outside Run-Shed, such as a blocked Land row, derives as running or landing, not halted, since halted reads only the child's state;
+today it sends no notice.
 The episode stamp tells a second stop at the same row from the first when the brief running reading between them fell between two ticks, as batten's notice keys tell episodes apart.
 
 ### D2 — `beam.run_watch` sets the level per task: `stops`, `rows` or `off`
 
 `beam.yaml` gains `run_watch`, default `stops`, `CategoryNone`, read per task only through a new `dobbyengine.LookupRunWatch` (new) over `hubgeom.TaskSettingChain`, as `land_notice` is.
 
-- `stops`: a line goes for each change into a stop (D3) of the derived state, batten's state, the child's state or the episode stamp; a row move alone, and a change back to running, send none.
+- `stops`: a line goes when the new reading is a stop (D3) and differs from the memory in the derived state, batten's state, the child's state or the episode stamp;
+  a row move alone sends none, and a new reading that is no stop sends none.
 - `rows`: a line goes for every change of the reading, including a row move and a resume.
 - `off`: no watch line goes; the gate-hold notice of D6 is not governed by this setting.
 
 `run_watch` joins the per-task keys `internal/beamsetting/beamsetting.go` declares and the per-task check in `internal/dobbyengine/config.go`, so a value outside the three is refused where a bad `land_notice` is, with the key's full name and its three values as the way forward.
 A failed per-task read keeps the run's last level, as the landing notice keeps its last reading.
+A run whose `run_watch` has never read is not judged: its reading neither posts nor becomes the memory until a read succeeds,
+as the landing notice keeps a run undecided until its first read.
+A failed read logs one Warn per failure episode, as a failed land_notice read does.
 
 Bound: the setting only adds mail to the parent; it changes no gate, row or act rule.
 `pattern/PATTERN-config-layers.md`'s per-task beam setting rule names `beam.run_watch` beside the three keys it lists.
@@ -65,25 +75,44 @@ Rationale: the entry asks that lym watch every run unasked, so the default is on
 
 A reading is a stop when any of these holds: the derived state is paused, halted, cancelling, cancelled or landed;
 batten's state is not running;
-the child's state is not running.
+the child's state, when read, is not running.
+An absent child part (D1) is no stop.
 The child's shed done, before batten lands, is a stop.
-A landed or cancelled reading of a run whose landing-notice memory in the dobby's state record holds it as requested sends no watch line, since the landing notice reports it.
+
+While a run is ahead of its Land row, the watch copies the land_notice reading the landing notice holds for it into its own memory (D4), once that reading exists.
+A landed reading of a run whose copied reading is on sends no watch line, since the landing notice reports it.
+The derived state reads landed once batten reads done, which covers both outcomes the landing notice sends: landed and ended without landing.
+A run with no copied reading is never skipped, so one whose land_notice first reads after its Land row can get both lines.
+A cancelled reading is never skipped, since the landing notice sends nothing for a cancel.
+
+A cancel that removes the run's records, a `--remove` cancel or one whose finish finds no record, removes batten's status inside the cancel command,
+so the run leaves the dobby's list before any tick reads it cancelled.
+The cancel's own notice reports that cancel, and the watch posts no line for it.
+That notice is tried once: a failed post is only a Warn in the cancel's output, and the orch then hears of that cancel from no lym line.
 
 The line reads `[run watch] <slug>: <derived state>; batten <state> at <row>; child <state> at <row>`, then the child's or batten's reason when one is set, cut to one line, and `since <RFC 3339>`.
 Paths under the task worktree render relative to it, as the run notices render them.
 
 Rationale: the entry names blocked, failed, paused and done "whatever the cause"; reading every layer covers a halt whatever layer records it.
-The skip reads the landing notice's own memory, so the two never disagree on whether that line goes.
+The skip rests on the watch's own copy of the land_notice reading,
+since the landing notice decides and drops its memory once the run is past Land, at the latest on the tick the run first derives as landed and often a tick before.
 
 ### D4 — The dobby's state record keeps the watch memory and the owed lines per run
 
-Each run's entry in the dobby's state record gains the last reading the watch handled and the run's owed watch lines, in order.
+The dobby's state record gains a watch map of its own, keyed by slug, as `LandNotices` is.
+Each run's entry holds the last reading the watch handled, the copied land_notice reading (D3), the run's owed watch lines in order,
+and the keys of the gate holds already noticed (D6).
+A run has an entry whatever its level, so a run whose level is `off` or never read still keeps its gate-hold keys.
+The pass step's drop of the entries of runs it no longer drives never touches this map.
+Only the done-run clear, when it clears the run, and the watch, for a run whose batten status no longer exists and that owes no line, drop a run's entry;
+a run left out of one tick's list because its status is unreadable keeps its entry.
 A reading the level or D3's skip sends no line for still becomes the memory.
 A reading equal to the memory sends nothing, so a dobby re-exec or restart repeats no line.
 A run with no memory, such as one first seen after an upgrade, takes its current reading as the change: a run standing at a stop then sends one line, so an upgrade sends one line per such run at once.
-The done-run clear keeps a run's entry while it owes a watch line, as it keeps one that owes a landing notice.
+The done-run clear keeps a run while its watch entry owes a line, as it keeps one that owes a landing notice.
 
-Rationale: the run notices keep their memory the same way, and a stop told before a restart must not be told again, while a landed line must outlive its run's clear.
+Rationale: the landing notice keeps its memory the same way, in a map of its own that outlives the run's entry,
+and a stop told before a restart must not be told again, while a landed line must outlive its run's clear.
 
 ### D5 — Watch lines go untagged and in order to the nearest live orch, stamped with the run's autonomy
 
@@ -104,13 +133,21 @@ A holder belongs to a run the dobby drives when the holder's worktree is that ru
 Each run's task worktree is resolved from its slug as the dobby's file watch resolves it, independent of D1's child read.
 Its bound is `gate_hold_factor` times its tier's `timeout_min`; a holder with no tier, or a tier with no positive timeout, takes `gate_hold_min` minutes.
 `beam.yaml` gains both hub keys: `gate_hold_factor: 1.5` and `gate_hold_min: 90`; `gate_hold_factor: 0` sends no gate-hold notice.
-A holder is past its bound when the awake time since its `Started`, through `pauserecord.AwakeSince` over the dobby's recorded sleeps, reaches the bound.
-A failed load of the gate config skips the check for that tick with one Warn per failure episode.
+The dobby's config load refuses a negative `gate_hold_factor` and a `gate_hold_min` below one, naming the key and its range as the way forward.
+A hold is one holder PID with every slot it holds, and it starts at the earliest `Started` among them,
+since a multi-slot acquire stamps each slot's record as it takes that slot (`internal/gateslot/pool.go:322`).
+A hold is past its bound when the awake time since its start, through `pauserecord.AwakeSince` over the dobby's recorded sleeps, reaches the bound.
+A failed load of the gate config, or a failed `Pool.Holders` read such as one on an unreadable or unparsable held record or a failed lock probe,
+skips the check for that tick with one Warn per failure episode.
 
 A tier run records its environment marker, the entry every process it starts carries, in its slot holder record as a new field.
+The holder record is YAML decoded without `KnownFields` (`internal/gateslot/pool.go:360-361`), so an older record reads as no marker.
 The notice is one `[dobby notice]` line about the run, under its own topic, gate-hold plus the slug, and the run tag.
-It names the slot, tier, site, start and bound, the holder's process tree from `proc.TreeSample`, and every other process carrying the holder's marker through `proc.PIDsWithEnv`, each PID with its executable and CPU time.
-It goes once per hold, keyed by slot, PID and start, and the key is kept in the run's entry of the state record; a new hold of the same run is noticed again.
+It names every slot the holder holds, the tier, site, start and bound, the holder's process tree from `proc.TreeSample`,
+and every other process carrying the holder's marker through `proc.PIDsWithEnv`, each PID with its executable and CPU time.
+It goes once per hold, keyed by PID and the hold's start, and the key is kept in the run's watch entry of the state record (D4);
+a new hold of the same run is noticed again.
+The key bounds any flood, such as one from a small factor, to one notice per hold.
 
 Bound: the watch reads `/proc` and the slot records; it kills nothing, frees no slot and spawns nothing.
 `Pool.Holders` is the reader `lym gate status` already uses; each dobby calls it at most once per probe tick.
@@ -121,6 +158,7 @@ Both keys are `CategoryNone`: they bound only a notice.
 Rationale: the hung tier3 gate of #216 held its slot 21 hours while the run read running, and the quiet notice stays silent while a verify wait is live.
 #216's likely cause is a timeout that killed only `sh`, leaving an orphaned testhost outside the holder's tree; the marker names it.
 The tier timeout's own clock stops while the machine is suspended: Go's runtime timers run on Linux's `CLOCK_MONOTONIC`, which clock_gettime(2) states excludes suspended time.
+The Go half is pinned in the runtime source: `nanotime1` in `src/runtime/sys_linux_amd64.s` calls clock_gettime with clock id 1, `CLOCK_MONOTONIC`.
 Measuring awake time keeps the bound on the same clock.
 
 ### D7 — The orch role and the dobby's docs name the new lines and keys
@@ -143,7 +181,7 @@ Rationale: batten's notice waits for the stop report and for an arbiter or tackl
 - `PATTERN-daemon-wakeups`: the watch adds no loop and no timer; it runs inside the dobby's existing tick, and the gate check only on probe ticks.
 - `PATTERN-owner-machine`: the dobby runs on the owner machine, where the run's slots and processes are.
 - `PATTERN-agent-addressing`: every line goes through creel as the dobby's program name.
-- `PATTERN-tolerant-records`: the state record's and the slot holder record's new fields rewrite through their existing writers, and an older record without them reads as no memory and no marker.
+- `PATTERN-tolerant-records`: the state record's new watch map rewrites through its existing writer, and an older record without it reads as no memory.
 
 ## Auto-mode assumptions
 
@@ -161,15 +199,21 @@ Rationale: batten's notice waits for the stop report and for an arbiter or tackl
 - A driven run whose child goes from running to blocked at a row posts one `[run watch]` line naming the derived state, batten's and the child's state and row and the reason; a later tick with the same reading posts nothing (D1, D3).
 - A child that blocks at a row, resumes and blocks at the same row again with no tick between posts a second line, through the episode stamp (D1, D4).
 - A batten blocked outside Run-Shed while its child reads done posts a stop line (D1, D3).
+- A run started before Run-Shed with no child status posts no line under `stops` (D1, D3).
 - Under `stops`, a row move while running, a resume to running and batten's row moves after the child's done post nothing; under `rows` each posts one line; under `off` no reading posts and a gate-hold notice still goes (D2, D6).
+- Under `stops`, a child going from blocked to failed posts one line, and a batten pause lifting over a blocked child posts one line (D2).
+- A run whose `run_watch` has never read posts nothing and keeps no memory until a read succeeds (D2).
 - `run_watch` resolves through the per-task chain: the task's own worktree value, else a parent worktree's, else the hub default, else `stops`; a value outside the three is refused by the per-task check with the key and its values (D2).
 - A dobby restarted with the state record's memory posts no line for a reading already told; one with no memory posts one line for a run standing at a stop (D4).
-- A landed run posts one watch line when its landing-notice memory reads not requested and none when it reads requested; the child status vanishing at teardown posts no extra line (D1, D3).
+- A landed run posts one watch line when its copied land_notice reading is off or absent and none when it is on; the child status vanishing at teardown posts no extra line (D1, D3).
+- A cancelled run with land_notice on posts its watch line (D3).
+- A landed run whose batten reads done posts its landed line once across several ticks before the clear (D4).
 - A landed run whose watch line has not posted is not cleared until the line posts or is dropped (D4, D5).
 - Owed lines post oldest first; with no orch strand recorded they wait without counting attempts and post once one is; a failing post is retried no sooner than a probe interval and dropped after three failures; a line owed an hour of awake time is dropped (D5).
 - A posted watch line carries no topic or run tag and the run's autonomy stamp (D5).
-- A slot held under a driven run's task worktree by a tier with `timeout_min: 35` and factor 1.5 posts no notice at 52 minutes of awake time and one at 53, naming the slot, tier, PID, each child PID and a process outside the tree that carries the holder's marker; a sleep interval inside the hold delays it (D6).
-- The same hold posts once, also across a dobby restart; a new hold with another PID or start posts again; a holder in a sibling worktree whose path only shares a prefix posts nothing; a holder with no tier takes `gate_hold_min`; factor 0 posts nothing; a failed gate config load posts nothing and warns (D6).
+- A slot held under a driven run's task worktree by a tier with `timeout_min: 35` and factor 1.5 posts no notice at 52 minutes of awake time and one at 53, naming every slot the holder holds, the tier, PID, each child PID and a process outside the tree that carries the holder's marker; a sleep interval inside the hold delays it (D6).
+- The same hold posts once, also across a dobby restart; a multi-slot hold posts one notice; a new hold with another PID or start posts again; a holder in a sibling worktree whose path only shares a prefix posts nothing; a holder with no tier takes `gate_hold_min`; factor 0 posts nothing; a failed gate config load or a failed holder read posts nothing and warns (D6).
+- The config load refuses a negative `gate_hold_factor` and a `gate_hold_min` of 0, naming the key and its range (D6).
 - A gate-hold notice and a later run notice of the same run both reach the orch unread, neither replacing the other (D6).
 - Existing notice tests in `internal/battenshed`, `internal/dobbyengine` and `internal/loomcli` pass unchanged (D8).
 - Review: `contracts/orchrole/orch-role.md`'s Notices section names `[run watch]` lines and the gate-hold condition as D7 says (D7).
