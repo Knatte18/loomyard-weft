@@ -1,0 +1,9 @@
+---
+round: 3
+focus:
+  - "D3 of _lym/discussion/decision-record.md, the seed of the live ask record from its tracked copy after an adopt or takeover: does every file a seeded record names exist and resolve on the new anchor? Check each done ask's Report field (set in internal/burlerengine/parentreview.go from ParentReviewFilesOf) against its readers: ReadPRReviewStanding in internal/landingshed/prreviewask.go, the parent seat's coverage gate in internal/burlerengine/parentseat.go, SettleParentAsk in internal/burlerengine/parentreview.go and the parent judge in internal/driftengine/judgeparent.go. Check also that an acceptance criterion covers reading after the move."
+  - "D5 of _lym/discussion/decision-record.md, the source of the landing commit and landing time: on every path, including a merge that reports already up to date with no landing record (a hand merge, or an adopter that landed first) and the archive of a held parent merge, can another run's commit on the parent be taken as this task's landing commit? Compare internal/landingshed/finalize.go where it reads the parent's head after the merge, in syncParent and in the archive of a held parent merge. If the record names a new way to find the commit, is the fact it rests on pinned, and does an acceptance criterion cover another commit landed on top before Finalize runs?"
+  - "D6 of _lym/discussion/decision-record.md, the write bound of the extract into <dir>: with a sibling of <dir> left by a killed extract or planted as a symlink, and with <dir> existing and empty, can the extract write outside <dir> and the sibling it created itself, or mix stale files into the result? Is any behavior of renaming onto an existing directory that the design rests on pinned for the platforms the repository handles (see the drive-letter handling in internal/fsx/fsx.go)?"
+---
+
+The entries follow the open ledger keys.
