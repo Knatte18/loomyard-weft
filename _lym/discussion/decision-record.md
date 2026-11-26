@@ -232,6 +232,15 @@ Rationale: About 525 comment lines in about 199 files, nearly all older than thi
   It also prunes the new nested keys from its own machine's local files and still accepts old names in `run_settings` and profiles, until it upgrades.
 - Any run that lands a new loom or tapestry key before this run merges lands it flat; the D1 template criterion fails at this run's merge until the key is nested.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - config-keys-named-bare-or-without-module (class design, severity BLOCKING, open in rounds 1)
+  - moved-keys-mail-after-failed-walk-untested (class design, severity MEDIUM, open in rounds 1)
+  - reconcile-before-load-sites-untested (class design, severity MEDIUM, open in rounds 1)
+  - reconcile-help-and-docs-describe-old-behaviour (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: the loom and tapestry templates hold every key of D1's table at its new path, with no top-level key starting with an area prefix the table moves, and the loaded config holds the template's defaults at those paths.
