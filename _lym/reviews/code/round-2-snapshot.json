@@ -7,5 +7,6 @@
       "title": "A removal record names the cancel only when a cancel wrote it",
       "digest": "ab72a4356b78e5616eb55f029de3fef79a4617f83ee6d04af7879561b19ed600"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
