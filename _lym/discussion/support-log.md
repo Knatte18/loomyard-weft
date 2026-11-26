@@ -90,6 +90,8 @@ Each finding, merged across lenses where they overlap:
 - **Dropping cross-hub creel inside an area.** Receiving needs an outbound `confirm` too, so the hub would lose both directions.
 - **Stage 2's egress proxy.** Landlock ABI 8 has no UDP control and the filter sees no `sendmsg`, so DNS and datagrams leave anyway; data leaving through an allowed host is not claimed either way.
 - **Granting the Slack tokens inside the area.** They are a secret outside the area.
+- **Ancestry to a recorded supervisor or attach client as the inside test.** It fails open for an orphan of the attach client's command, for survivors of a dead supervisor and for a hub started after the judging one; cgroup scope names survive all three.
+- **A window title chosen by the area.** Konsole's `-p` parses `;`-separated property assignments, so the supervisor builds the title itself.
 - **`RLIMIT_DATA` alone for the pane cap.** Loses the per-pane scope and its OOM-kill notice the operator requires.
 - **Refusing an in-area sender that is in no pane.** dobby, the watchdog and the pusher post from no pane, and any forgeable program claim inside one domain gains nothing over today.
 - **A `deploy` verb that runs on request.** An agent with the area's token can push any commit to the parent branch and ask for it.
@@ -115,6 +117,26 @@ Two facts were measured on Neve for it with a throwaway cgo-built probe (`CGO_EN
 
 Two facts were read from Neve's files: the `hosts:` line of `/etc/nsswitch.conf` and the `/etc/resolv.conf` link,
 and the `.in_use/<pid>` files Claude Code writes under each plugin version in `~/.claude/plugins/cache`.
+
+### Round 2
+
+The review raised four BLOCKING and two MEDIUM findings; the fixer report records each disposition.
+Two facts were read from the code for it: `reedengine.ServerName` derives the hub key from the hub path alone,
+and termwindow's attach line shell-quotes the worktree path, so the title was the only open Konsole argument.
+
+### Round 3
+
+The review raised ten BLOCKING findings and one MEDIUM; the fixer report records each disposition.
+Facts read for it, none measured:
+
+- On Neve, `app.slice/cgroup.procs` under `user@1000.service` is owned by the user with mode `-rw-r--r--`.
+- Go's `syscall/exec_linux.go` takes `clone3` only for `UseCgroupFD`, `CLONE_NEWTIME` or a test's forced flag.
+- The machine record `hubs.json` and `hubs.lock` sit in the per-user lym state directory beside every hub's state,
+  and `machine.json` sits in lym's credential directory beside `credentials.json` and the Slack token files,
+  so neither directory can be granted; `fsx` replaces a record by `os.Rename`, and `state.ReadJSON` takes the record's lock.
+- The relay's outbox is its own record of handled mail, the socket holder writes the inbox hints,
+  and the relay opens its log with `O_APPEND|O_CREATE` (`internal/slackengine/start.go`).
+- `~/.claude/plugins/known_marketplaces.json` names the loomyard marketplace as a `directory` source at the loomyard hub's prime.
 
 ## Question ledger
 
