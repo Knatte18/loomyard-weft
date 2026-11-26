@@ -1,0 +1,21 @@
+# Relevant files
+
+- `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md` — the ranking this design follows, the supervisor's measured behaviour and the task list
+- `docs/research/platform/landlock-area-2026-11-23.md` — the Landlock allow list, where reed's spawn would be wrapped, and what breaks inside a domain
+- `docs/research/platform/sandboxing-options-2026-10-30.md` — the threat model, the bwrap stages and the exits a broker serves
+- `docs/research/platform/seccomp-connect-probe/main.go` — the probe supervisor D4 builds on
+- `internal/reedengine/panememory.go` — makes the strand pane's memory-capped scope over `busctl`, which D9 routes to the supervisor
+- `internal/proc/processscope.go` `CapProcessMemory` — the scope primitive both the pane cap and D9's verb use
+- `internal/proc/memorycap.go` `RunMemoryCapped` — the gate's capped run through `systemd-run --scope`, with its `RLIMIT_DATA` fallback
+- `internal/reedengine/server.go` `ServerName` — the hub key the area file and area root derive from
+- `internal/reedengine/socketfile.go` — the tmux socket path from `TMUX_TMPDIR`, which D6 moves under the area root
+- `internal/reedengine/lifecycle.go` — reed's server spawn, which D3 routes through `lym area start`
+- `internal/lymtemp/doc.go` — lym's per-user temp root, which D6 moves under the area root
+- `internal/creelengine/peer_linux.go` — creel's `SO_PEERCRED` read, which D8 changes to `SCM_CREDENTIALS`
+- `internal/creelengine/doc.go` — the `EXTERNAL` sender's rights that D8 bounds
+- `internal/hubregistry/hubregistry.go` `Record` — the machine's hub record the in-area daemon can no longer write
+- `internal/slackengine/start.go` `EnsureRelay`, `EnsureRelayWhileAway` — the relay start D12 routes to the supervisor
+- `internal/shellguard/rows.go` — the guard table, which gains no row here
+- `internal/hibernateconfig/config.go` — the smallest config module, the shape the area file does not take
+- `internal/configreg/configreg.go` — the module registry, which the area file stays out of
+- `internal/planparser/patternentry.go` — the PATTERN rule-text cap the PATTERN changes keep under
