@@ -113,7 +113,7 @@ Owner `neve`
 | T5 | **Restructure fabricengine into a git-free core so its tests need few repositories** | [`fabric-git-free-core`](design-fabric-git-free-core.md)<br>[Sketch](decision-fabric-git-free-core.md) | raddle | Raddle-Write | neve | 1h<br>9m | fabric, testkit |
 | T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | Code-Burler-Fix | neve | 8h<br>8h | gate, testmap |
 | T19 | **Card gate runs only the card's listed packages, so a wider intent breaks tests unseen** | [`card-gate-scope-gaps`](design-card-gate-scope-gaps.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | webster, gate, loom |
-| T20 | **Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load** | [`gatemap-passedalone-flake`](design-gatemap-passedalone-flake.md) | darn · light | starting · Worktree-Create | neve | 1h<br>1h | gate |
+| T20 | **Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load** | [`gatemap-passedalone-flake`](design-gatemap-passedalone-flake.md) | darn · light | starting · Seed-Child | neve | 1h<br>1h | gate |
 
 ### Ready (1)
 
