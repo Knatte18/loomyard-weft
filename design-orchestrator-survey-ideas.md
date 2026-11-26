@@ -30,6 +30,8 @@ Each bullet names its source project and the lym module it would touch.
 - **Cross-run quarantine** (Bernstein): a task that fails three times across runs is held, unless the failures were the host's.
 - **Fork a run from a step with a tree snapshot** (Bernstein): `shed goto` moves the cursor but does not restore the warp tree.
 - **Warm retry guarded by a workspace hash** (Bernstein): resume the native session only when the tree is unchanged.
+  Partly met since `dfade5f9a`: a run agent whose session a crash, reboot or killed pane ended resumes it (engines with a `SessionResumer`, so not Codex);
+  no tree hash guards that resume, and a retry after a timeout or a finished run still starts fresh.
 - **Evidence reuse by input identity** (yylo): verify is skipped on the same tree; a changed review prompt could rerun only the review.
 - **Guidance at the next step boundary** (Conductor): a queue of operator guidance for the next producer's prompt.
   Partly met since 2026-11-19: `notify_parent_on` in `loom.yaml` mails the run's parent when a named row is reached,
