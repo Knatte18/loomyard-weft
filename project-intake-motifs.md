@@ -1,6 +1,6 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-26 20:10 UTC; every age below is as of then.
+Rendered 2026-11-26 20:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-motifs` · Age 11h · Owner `neve`
@@ -8,11 +8,11 @@ Under: [Board](README.md).
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (1)
+## Running (1)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid |  | 8h<br>8h | dobby, gate, batten, orch, pattern |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T8 | **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | starting · Worktree-Create | neve | 8h<br>8h | dobby, gate, batten, orch, pattern |
 
 ## Layer C (1)
 

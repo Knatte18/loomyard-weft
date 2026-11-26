@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 20:10 UTC; every age below is as of then.
+Rendered 2026-11-26 20:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -43,7 +43,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then** | [`enter-session-test-cleanup-race`](design-enter-session-test-cleanup-race.md) | 40m<br>40m | reed |
+| B1 |  | **TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then** | [`enter-session-test-cleanup-race`](design-enter-session-test-cleanup-race.md) | 41m<br>41m | reed |
 
 ## Enhancements (1)
 
