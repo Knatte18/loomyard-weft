@@ -1,58 +1,46 @@
 # Hardener rounds raise what they drive and converge on one rule
 
-The hardener study (`docs/research/hardener-works-study.md`) found that the hardener finds real faults but does not converge on a sound basis.
-A round could not raise faults it drove off the changed hunks.
-The rubric and the Bouncer stated different convergence rules.
-Several fixes brought new faults that no round caught.
-This change applies the study's "Changes to consider" 1 to 7.
+`docs/research/hardener-works-study.md` found that the hardener finds real faults but does not converge on a sound basis.
+Closing rounds could not raise what they saw or had not driven what they claimed, and some fixes brought faults no round caught.
+This change applies the study's "Changes to consider" to the hardener's round check, Bouncer, stencils and recipe.
 
-## What changes
+**What a hardener round may raise**
 
-- **A hardener round raises every fault it drives** (`internal/burlerengine/roundcheck.go`).
-  An incremental round refuses a new finding below BLOCKING or outside the changed files.
-  Until now only an `origin: focus` decision finding was exempt in a hardener round.
-  `RoundContext.HardenerRound`, renamed from `FocusFindings`, now exempts every finding of a hardener round:
-  a new finding passes at any severity and in any file, and a carried finding may move to any file.
-  The parent-report rule and a carried finding's class and severity rules still hold.
-  `burler-review-format.md` and `burler-step-review.md` state the same rule.
-  The unused `FocusOrigin` constant is removed.
-- **One convergence rule** (`internal/shedadapters/bouncerprompt.go`, `bouncer.go`, `internal/shedrecipe/entries_bouncer.go`).
-  From round 2 on, the judge's decision rule lets a gating key first raised in the latest round converge, carried into `## Open risks`.
-  The hardener rubric said instead that CONVERGED needs no MEDIUM finding.
-  The new `BouncerConfig.FirstRaisedGates`, set for every `harden_round` Bouncer, renders round 1's rule in every round.
-  The rubric's Converged bullet now states that rule:
-  no BLOCKING finding, no `design` finding at MEDIUM, a key first raised in the closing round included, and a green live gate.
-  The rubric classes every behaviour fault `design`, so the Bouncer's gating class covers it.
-- **Rubric rules** (`contracts/stencils/harden/harden-rubric-review.md`):
-  - a focus entry recorded FAIL is a BLOCKING finding of the fault, located where the fix goes, so the fix half fixes it;
-  - kill each job from each caller twice, once with origin applying the in-flight push and once with origin refusing it,
-    then type the printed way forward, placeholders filled, in the state left;
-  - a prior finding stays `open` until this round has driven its whole reproduction;
-  - a convergence verdict lists each scenario no sandbox can drive, such as an owner takeover, the pull-request sweep or a lost lease,
-    as a follow-up for the run's parent to file.
-- **The fix half drives the neighbours of its fix** (`contracts/recipes/hardener-recipe.yaml`):
-  every other failure kind that a classifier the fix adds or changes receives,
-  and every role and verb that reads a way forward the fix adds or changes.
+- `burlerengine.CheckReviewRound` no longer holds a hardener round to the BLOCKING-only or changed-file rules.
+  A new finding takes the severity it has and sits where the fault lives, and a carried finding may move to any file.
+  `burler-review-format.md` and `burler-step-review.md` say the same.
+- `RoundContext.FocusFindings` is renamed `HardenerRound`, along with the matching fields in `shedadapters`.
+  The narrower `origin: focus` exemption and the `FocusOrigin` constant are removed.
+
+**Convergence**
+
+- New `BouncerConfig.FirstRaisedGates`, set by `shedrecipe` on `harden_round` rows, makes the judge rule every round by round 1's rule.
+  A gating finding first raised in the closing round then holds convergence, because its fix is behaviour no round has driven.
+  Other Bouncers keep the lighter rule from round 2 on.
+- `harden-rubric-review.md` states the same rule: no BLOCKING finding, no `design` finding at MEDIUM, and a green live gate.
+
+**What the rubric and recipe now require**
+
+- A focus entry recorded FAIL is a BLOCKING finding.
+- Faults in module behaviour are classed `design`, which is the gating class.
+- A prior finding is `resolved` only when its whole reproduction was driven on the fixed build.
+- Each job is killed from each caller, once with origin applying the in-flight push and once refusing it, and the printed way forward is then typed.
+- The fix half also drives the neighbours of each fix: other failure kinds a changed classifier receives, and every role and verb that reads a changed way forward.
+- A convergence verdict lists the scenarios no sandbox can drive as follow-ups for the run's parent to file.
 
 ## Design decisions
 
-- The rubric's rule moves to the Bouncer's gating class rather than the Bouncer counting every class as gating.
-  Go's facts count, circling evidence and carry-over all read gating as `design`.
-  So a MEDIUM `consistency` finding, a doc or message that disagrees with a verb, no longer holds a hardener campaign from converging.
-  It is carried into `## Open risks` instead.
-- Item 8, running the next campaign with one opus round, needs no code change, as the parent recorded.
-  `hardener.reviewer` is already settable per run in `run_settings`, and the template default stays `sonnet[high]`.
-- The judge files no follow-ups itself.
-  The verdict names them, and the run's parent files them.
+- The study's item 8, comparing an opus round with the `sonnet[high]` rounds, makes no code change.
+  The default reviewer in `internal/hardenshed/template.yaml` stays, since changing it would put opus into every campaign.
+  The next hardener campaign sets an opus round through `hardener.reviewer` in its `run_settings`.
+- The exemption covers every finding of a hardener round, not only focus ones, because the round drives behaviour that the changed hunks do not bound.
+  The other round checks still apply, such as the refusal of a carried finding raised above its earlier severity.
 
-## Tests
+## To check by hand
 
-- `TestCheckReviewRound` gains hardener rows:
-  new MEDIUM and LOW findings on untouched files pass, a carried finding moves to an untouched file with and without a changes file,
-  a raised carried severity is still refused, and an uncovered `origin: parent` finding is still refused.
-- `TestDecisionRuleMarker_CirclingOnlyFromTheCheckpoint` gains rows where first-raised keys gate.
-- `TestBouncer_JudgePromptGatesAFirstRaisedKeyWithFirstRaisedGates` drives a Bouncer through two judge rounds.
-  It checks that round 2's prompt carries the lighter rule only when the setting is unset.
+- `harden-bouncer-first-raised-gates-untested`: nothing tested that only a `harden_round` Bouncer row sets `FirstRaisedGates` (`internal/shedrecipe/entries_bouncer.go`).
+  `BouncerRowGatesAFirstRaisedKeyOnlyWithHardenRound` in `internal/shedrecipe/entries_harden_test.go` now covers it; check that it pins the wiring.
+- The rubric and recipe instructions steer agents, so their effect shows first in the next hardener campaign.
 
 ## Merge danger
 
