@@ -1,6 +1,6 @@
 # P5 Intake wave 3: beam orch parent, scope and earlier checks
 
-Rendered 2026-11-26 10:19 UTC; every age below is as of then.
+Rendered 2026-11-26 10:33 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-3` · Age 2h · Owner `neve`
@@ -12,5 +12,5 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T3<br>T9<br>T11<br>T7 | 2h<br>1h | batten, landing, orch, stencil, shed, loom, pawl |
-| T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T3<br>T9<br>T10 | 2h<br>1h | loom, burler |
+| T12 | `draft` **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T3<br>T9<br>T11<br>T7 | 2h<br>2h | batten, landing, orch, stencil, shed, loom, pawl |
+| T13 | `draft` **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T3<br>T9<br>T10 | 2h<br>2h | loom, burler |
