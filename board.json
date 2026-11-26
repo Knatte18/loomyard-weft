@@ -947,6 +947,27 @@
       "body": "Imported from [issue #220](https://github.com/Knatte18/loomyard/issues/220).\n\n## What happened\n\nA Webster batch's verify failed on a test the plan could not satisfy.\nThe batch recovery session ended `dead` with `dead_reason: asking`, i.e. the recovery agent stopped to ask a question instead of finishing, and `recoveries: 1`, `recovery_retry: false`.\nThen:\n\n```\nlym webster recover-batch 3 refused:\nwebster: batch 03-torque-drag-stage recovery (session ...) ended dead and the batch has no recovery left; way forward: end the run stuck, naming batch 03-torque-drag-stage\n```\n\nThe run halted `blocked` (anomaly `escalation-to-human`).\nAfter the plan was edited and rebaselined, Webster halted `blocked` again:\n\n```\nwebster: a batch of this run is at a dead end: batch 03-torque-drag-stage is dead and its recovery earns no retry, so a Master would only end the run stuck on it; way forward: 1) lym webster reset --to batch-start --batch 03; 2) re-step the Webster row; or 1) lym webster reset --to start; 2) re-step the Webster row\n```\n\n## Why abnormal\n\nA recovery agent that asks a question has no channel that answers it, so the question becomes a dead recovery with no retry.\nThe agent's question, which would tell the operator what is wrong, is not carried into the halt text: the halt note only restates \"dead_reason: asking\".\nPlan edits made to fix the cause did not clear the dead state either; a manual `webster reset` was needed.\n\n## What to do\n\n- When a recovery ends with `dead_reason: asking`, put the agent's last message in the halt/refusal note.\n- Either route the question to the parent (`lym creel post --parent --expect-reply`) or let a plan rebaseline that touches the dead batch's cards re-arm one recovery, so the operator does not need a reset.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt.md`, `loom-halt-5.md`, `webster-refusal-recover-batch.md`.\n",
       "created": "2026-11-26T07:34:32Z",
       "revised": "2026-11-26T07:34:32Z"
+    },
+    {
+      "id": 1655,
+      "handle": "B24",
+      "slug": "seat-idle-no-input-box",
+      "title": "Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shuttle",
+        "claude"
+      ],
+      "issues": [
+        219
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #219](https://github.com/Knatte18/loomyard/issues/219).\n\n## What happened\n\nThe `Plan-Burler-Review` row (`burler-review`) halted `failed` (anomaly `producer-hard-failure`) after round 3: two consecutive `died` outcomes, both \"review never started\".\nEach attempt's seat start ended with:\n\n```\nshuttle: deliver the prompt after loading skills: shuttle: the session is not idle: strand \"\u003cid\u003e\": no input box is on screen; a menu or picker may be open; retry once the session is idle.\n```\n\nThe pane lines quoted in the same error show the opposite: the skill-load reply `ok scribe:prose, scribe:code-quality, scribe:testing` had finished, a `done` status line was printed, and the `❯` input prompt plus the `bypass permissions on` footer were on screen.\nThe session was idle with an input box; the idle check reported none.\nIt happened on attempts 3 and 3b, in two separate halts, with the same pane text each time (`Sautéed for 3s`, `Cogitated for 3s`, `Cooked for 2s` status lines).\n\n## Why abnormal\n\nThe seat was healthy.\nA false \"no input box\" reading kills a seat that never got its prompt, burns the review rounds, and halts the whole run as `failed`.\nThe error text itself says \"retry once the session is idle\", yet the shuttle did not retry after the capture showed an idle pane.\n\n## What to do\n\nCheck the input-box detection in the shuttle's deliver-after-skills step against a pane whose last lines are a completed skill-load reply, a `✻ \u003cverb\u003e for Ns · done` line, the `❯` prompt and the permissions footer.\nRetry the idle check for a short window before declaring `died`, so a repaint race right after the skill-load reply does not kill the seat.\n\nProvenance: task `models-torque-drag-adapter`; notes `loom-halt-2.md`, `loom-halt-3.md`.\n",
+      "created": "2026-11-26T07:34:35Z",
+      "revised": "2026-11-26T07:34:35Z"
     }
   ],
   "prime_owner": "neve",
