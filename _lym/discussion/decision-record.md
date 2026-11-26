@@ -43,6 +43,12 @@ Provenance: task `audit-flags-master-friction`, note `burler-code-r1.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-26): No reproduction run on the base
+
+Decision: The parent runs no test on the base. Fix the flake from the code: find why NamedPackageIsRebuiltWhenFresh sees an unexpected PassedAlone entry under load, and make the test or the code deterministic.
+
+Rationale: The failure is a load flake, so a pass on a quiet machine shows nothing; the orch does not run tests.
+
 ## Constraints
 
 ## Auto-mode assumptions
