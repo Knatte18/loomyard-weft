@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-26 18:50 UTC; every age below is as of then.
+Rendered 2026-11-26 18:51 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -12,8 +12,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | starting · Worktree-Create | neve | 6h<br>6h | drift |
-| T20 | **Guard rows: an update mode for the settings golden, and a row that can state an exception** | [`guard-row-tooling`](design-guard-row-tooling.md) | darn · light | starting · Worktree-Create | neve | 6h<br>6h | process, claude, gate |
+| T19 | **Drift-Verify reuses a stale loosened ruling after the moved checks land** | [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md) | darn · light | Preflight | neve | 6h<br>6h | drift |
+| T20 | **Guard rows: an update mode for the settings golden, and a row that can state an exception** | [`guard-row-tooling`](design-guard-row-tooling.md) | darn · light | Darn-Write | neve | 6h<br>6h | process, claude, gate |
 
 ## Ready (1)
 
