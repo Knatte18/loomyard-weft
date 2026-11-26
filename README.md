@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 3d<br>2d | burler, fabric |
 
-## [P0 Root: entries under no project](project-root.md) (35)
+## [P0 Root: entries under no project](project-root.md) (36)
 
 Owner `neve`
 
@@ -82,7 +82,7 @@ Owner `neve`
 | B20 |  | **fabric clone leaves the prime without rendered heddle** | [`clone-prime-no-heddle`](design-clone-prime-no-heddle.md) | 0m<br>0m | fabric, heddle |
 | B21 |  | **The GitHub PR body is not updated when the description file changes** | [`pr-body-not-synced`](design-pr-body-not-synced.md) | 0m<br>0m | landing |
 
-### Enhancements (6)
+### Enhancements (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -92,6 +92,7 @@ Owner `neve`
 | E4 |  | **The Describe text names no LoomYard terms, except the Created using block** | [`describe-no-loomyard-terms`](design-describe-no-loomyard-terms.md) | 0m<br>0m | landing, stencil |
 | E5 |  | **Close the scope of a task when its first Code-Review round starts, and have lym hold the line** | [`scope-closes-at-code-review`](design-scope-closes-at-code-review.md) | 0m<br>0m | loom, burler |
 | E6 |  | **Review the Describe text inside the Describe row, and catch the rest of what the parent finds at PR-Review earlier** | [`review-describe-text`](design-review-describe-text.md) | 0m<br>0m | landing, burler |
+| E7 |  | **Take the parent out of PR-Review; the earlier reviewers must catch what it finds** | [`parent-out-of-pr-review`](design-parent-out-of-pr-review.md) | 0m<br>0m | landing, loom |
 
 ### Features (2)
 

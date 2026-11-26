@@ -864,6 +864,27 @@
       "body": "Imported from [issue #224](https://github.com/Knatte18/loomyard/issues/224).\n\n## Seen (operator, 2026-11-24)\n\nThe operator often wants a pull request registered on GitHub without looking at it.\nWith a beam, say P1, and several tasks under it, the operator wants each task to land as a PR that is approved at once and merged into the beam.\nWhen all of P1 is done, one PR goes from P1 into its parent (P0 or root), and it lists every member PR.\nThat lets the operator backtrack and see how the work got where it is.\n\nToday the PR block has one setting: whether there is a PR or not.\n\n## Idea\n\nAdd a third mode to that setting: PR on, auto-approved at once.\n\n- The PR is made and shows up on GitHub, no agent is spawned under the PR-Review block, and the human need not look.\n- The run goes on to Finalize as if the human had approved.\n- A beam's own PR lists its member PRs.\n  `Rewrite a beam's pull request description after each member landing` (`1cd11ee5e`) may already do part of this; read what it writes before adding more.\n- This relies on the loops before the block having done every quality check they can, so the issue on taking the parent out of PR-Review belongs with it.\n- Read first where the PR setting is read (`internal/landingshed`, `internal/pullrequest`) and how a run reaches Finalize today when a PR is approved.\n",
       "created": "2026-11-26T07:34:20Z",
       "revised": "2026-11-26T07:34:20Z"
+    },
+    {
+      "id": 1651,
+      "handle": "E7",
+      "slug": "parent-out-of-pr-review",
+      "title": "Take the parent out of PR-Review; the earlier reviewers must catch what it finds",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "landing",
+        "loom"
+      ],
+      "issues": [
+        223
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #223](https://github.com/Knatte18/loomyard/issues/223).\n\n## Seen (operator, 2026-11-24)\n\nToday the parent orch can be asked to review at PR-Review, and the operator has used that a lot.\nThe operator now judges it a bad idea, for two reasons.\n\nPR-Review is the very last gate, and it belongs to the human.\nWhen a run reaches it, everything the LLMs and LoomYard can do should already be done.\n\nA parent is also the wrong reviewer.\nAsking the parent, which is the orchestrator, to review a Discussion or code is work for the orchestrator, and it costs more than a cold-start agent.\nThe reviewers a run already has should catch what the parent catches.\n\n## Idea\n\nTake the parent out of PR-Review and add no parent seat in its place.\n\n- Remove the parent's ask and re-ask from PR-Review in `internal/landingshed` and `internal/loomcli`, leaving the human's review there.\n- Rely on the cold-start reviewers.\n  The `review-code` fan already holds `code-scope`, which traces every decision of the record to a change in the diff and flags a decision no change builds, besides `code-correctness`, `code-affected-set` and `code-tests`.\n  Read first which lenses the C# hubs run in `review-code` today, since the hub's own `lenses.yaml` and the C# layer can change the fan.\n- What the parent found at PR-Review that the lenses do not cover is in the issue on reviewing the Describe text and catching the rest earlier: the PR text, numeric claims that need the report open, bugs that need a measurement, and scope the Sketch never held.\n- Decide what a run does with a parent ruling that arrives late: it never sends the run back from the human's gate.\n",
+      "created": "2026-11-26T07:34:23Z",
+      "revised": "2026-11-26T07:34:23Z"
     }
   ],
   "prime_owner": "neve",
