@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-config-keys-nested.md)
 
-Depends on: [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md), [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md), [`async-run-pusher`](design-async-run-pusher.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md), [`resume-every-agent-after-crash`](design-resume-every-agent-after-crash.md)
+Depends on: [`rc-click-wrong-client-session`](design-rc-click-wrong-client-session.md), [`sandbox-without-new-kernel`](design-sandbox-without-new-kernel.md), [`async-run-pusher`](design-async-run-pusher.md), [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md)
 
 Filed from the Sketch `config-keys-nested-by-area`.
 
