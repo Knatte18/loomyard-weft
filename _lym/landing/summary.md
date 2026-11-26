@@ -1,65 +1,75 @@
 # Map unresolved tier1 tests for reach, and name each caveat's cause
 
-## What was wrong
+The reach report and `lym gate reach` listed functions as reached by no mapped test
+although a tier1 test called them directly, with a fresh worktree map.
 
-The reach report and `lym gate reach` listed functions as reached by no mapped test even when a tier1 test called them directly, with a fresh worktree map.
-The cause was in the map run, not the reader.
-The spawn scan marks a test `unresolved` when it calls something the scan cannot follow to source: a function field, a func value or an interface method.
-A tier1 test that wires a deps struct of function fields always gets that mark.
-`mapPackage` entered every spawn-marked test with its verdict alone and never ran it, so the entry held no blocks and no functions.
-The reader then reached nothing through it.
-In the hub's shared maps this covers most tier1 tests:
-`internal/fabricengine` has 301 of its 574 entries marked unresolved, every one with no blocks,
-among them `TestRemoveLocal` and the tests that call `Topology.SettleGonePairTeardown`.
-`internal/battencli` has 11 tier1 entries marked unresolved and 7 marked out of process, and only 3 tier1 entries with coverage.
+The cause was in the map run.
+The spawn scan marks a test `unresolved` when it makes a call the scan cannot follow, such as through a func value.
+`mapPackage` entered every spawn-marked test with its verdict alone and never ran it,
+so the reader reached nothing through it.
 
-The one caveat line, "a test of X that no map holds, or that may run code in another process, may run it unseen",
-folded every cause together, so a reader could not tell a map gap from a real coverage gap.
+The single caveat line also folded every cause together,
+so a reader could not tell a map defect from a real coverage gap.
+
+Closes #250
 
 ## What changes
 
-- **Map run** (`internal/gatecli/testmappackage.go`): only a test marked out of process is entered unrun.
-  A test marked unresolved alone runs like any other, and its entry holds its coverage beside its verdict.
-- **testcover** (`internal/testcover/coveragemap.go`): `MapTest.HoldsCoverage` reports an entry with in-process coverage from a passing run alone, unresolved entries included.
-  `MapTest.Measured` is unchanged, so the redundancy step, `lym gate redundant` and the mutation check still never judge a spawn-marked test.
-  `MapFormatVersion` goes to 3.
-- **Reader** (`internal/testreach`): reach entries come from `HoldsCoverage`.
-  `SpawnMarked` is replaced by `UnseenTests`, which lists each test of a package's map that may run a function the map does not show.
-  That is a spawn-marked test, or one whose run alone failed, timed out or was skipped, each with its verdict and outcome.
-  A test that covered nothing is not listed.
-  The index holds the list and goes to version 2, so an index written before this change reads as absent and is rebuilt in memory.
-- **Caveats** (`internal/gatecli/reach.go`): one caveat per cause, each naming up to five tests and counting the rest:
-  tests in a tier no map holds, with the tier named;
-  tests that run code in another process and were never run;
-  tests whose calls the spawn scan cannot resolve;
-  tests the map run recorded as failed, timed out or skipped.
-  The stale-linker caveat is unchanged.
-- Docs: the package docs of `testcover`, `testreach` and `gatecli`, and the coverage-map passage of `pattern/PATTERN-test-speed.md`.
+- **Map run:** only a test marked out of process stays unrun.
+  A test marked unresolved alone runs, and its entry holds its coverage beside its verdict.
+- **Which entries answer reach:** the new `MapTest.HoldsCoverage` includes unresolved entries.
+  `lym gate reach`, the reach report and the mutation report's possible killers now count them.
+- **Format versions:** `MapFormatVersion` goes to 3.
+  The shared index goes to version 2, since it now holds each package's unseen tests.
+- **Older maps:** the reach refresh remaps a changed package whose worktree map has an older format.
+  Such a map also no longer overrides a later shared map merely because its file hashes match.
+- **Caveats:** there is one per cause, naming up to five tests and counting the rest.
+  The causes are tests that run code in another process, tests with calls the spawn scan cannot resolve,
+  and tests whose run alone failed, timed out or was skipped.
+  Tests of the function's own package and of the packages linking it are listed apart.
+  Another caveat names the tiers that no map holds, tests with no tier included.
 
 ## Design decisions
 
-- Tests marked out of process stay unrun.
-  They reach `internal/testkit/lymbin` or `os.Executable`, and the map run builds no `lym`, so running them would mean a `lym` build per test process or false failures.
-  Their caveat says so.
-- An unresolved test's coverage answers reach but no judge uses it.
-  Its in-process blocks are what it ran, but it may also run module code in another process.
-  So it can show a function as reached, but it is never judged redundant, and it still yields a caveat when it reaches nothing.
-- The map run now runs every unresolved tier0 and tier1 test, so a full `lym gate test --map` takes longer, roughly by those tests' tier1 runtime.
-  Existing maps keep their empty unresolved entries until the package is mapped again.
-  The prime's map run re-measures every package whole.
-  A worktree's own map is refreshed only when its files change.
+- Tests marked out of process stay unrun: the map run builds no `lym` for them to spawn.
+- `MapTest.Measured` is unchanged, so no judge uses an unresolved test's coverage.
+  Such a test may also run module code in another process.
+  Its coverage can show that a function is reached, and it still yields a caveat for a function nothing reaches.
+- All linking packages share one caveat per cause, with each test named `<package>.<Test>`.
+  One set per linking package would let a widely linked function fill the capped note.
+- A full `lym gate test --map` now also runs the unresolved tier0 and tier1 tests, so it takes longer.
+- Existing shared maps keep their empty unresolved entries until the prime's next map run.
+  The reach refresh rebuilds an older worktree map only for a package holding a changed function.
+  Elsewhere an older worktree map is still read unless the shared map was built later.
 
-## Tests
+## Check by hand
 
-- `TestGateTestMapLinkedPackages` (`internal/gatecli/testmap_integration_test.go`): the caller fixture's `TestCallerUnresolved` entry now holds its covered block beside its `unresolved` verdict.
-  `TestCallerSpawns`, marked out of process, still enters unrun.
-- `TestReader` (`internal/testreach/reader_test.go`): an unresolved entry with blocks now reaches its function, and failed, skipped and out-of-process entries reach nothing.
-  `UnseenTests` lists those four sorted by name, and none for a package whose only tests passed or covered nothing.
-- `TestReaderIndex`: `UnseenTests` answers the same from a current index as from the maps alone.
-- `TestUnseenTestCaveats` (`internal/gatecli/reach_test.go`, tier0): one caveat per cause, sorted by cause.
-  An unresolved test with an outcome counts under its outcome, and tests past the five-name cap are counted.
+None of these was run:
+
+- A real `lym gate test --map` over `internal/battencli` and `internal/fabricengine`, followed by `lym gate reach`
+  on `hubCancelDeps`, `Topology.SettleGonePairTeardown` and `Topology.RemoveLocal`.
+  Each should name its tier1 callers.
+- How much longer a full map run takes with the unresolved tests included.
+- The new tests against the unfixed code.
+
+Confirm these findings against the diff:
+
+- No text assertion on the reach step's assembly of caveats,
+  in `internal/gatecli/reach_integration_test.go`.
+  `TestGateTestReachStep` now compares exact caveat lists.
+- `MapFormatVersion` written but never read, so an older worktree map with matching file hashes kept the miss,
+  at `reachStep.staleLinked` in `internal/gatecli/reach.go`.
+  `Map.HasCurrentFormat` now reads it there and in `worktreeMapWins`.
+- No caveat for an unseen test of another package that calls the function,
+  at `reachStep.caveats` in `internal/gatecli/reach.go`.
+  `Reader.UnseenLinkerTests` now supplies those caveats.
 
 ## Merge danger
 
 **Door:** two-way
 **Blast radius:** gate
+
+The `lym` binaries of the hub's other worktrees read the shared maps and index, which this change writes in a new shape.
+An older binary's judges skip unresolved entries through `MapTest.Measured`.
+It reads a version 2 index as absent and builds the table in memory.
+The affected surfaces are the reach and mutation report steps and `lym gate reach`, all under `lym gate`.
