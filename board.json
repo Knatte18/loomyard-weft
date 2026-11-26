@@ -465,6 +465,26 @@
       "body": "Imported from [issue #243](https://github.com/Knatte18/loomyard/issues/243).\n\nAn unreachable origin halted the run as `failed` with anomaly `producer-hard-failure` seven times in a row, across PR-Review and Finalize, instead of waiting or blocking once.\n\nWhat happened:\n- PR-Review and Finalize halted with `landingshed: ... push the task branch ... fabricengine: ls-remote of \u003ctask\u003e-weft ... Recv failure: Connection reset by peer`.\n- Finalize then halted three more times with `landingshed: Finalize: read who owns the run: board: origin is unreachable, so the owner write was not pushed: fetching origin for the board ... failed (gitrepo: ... git exited 128 ...)`.\n- One halt in between was `blocked` with anomaly `escalation-to-human`: `owner check: origin was unreachable, so who owns this run could not be judged; re-run \"lym loom resume\" in the task worktree once origin answers`.\n- Each halt wrote a note and a history entry; the history shows `Finalize / stuck` then `Finalize / goto` before each re-failure.\n\nWhy it is abnormal:\n- A transient network failure is classed as a hard failure, the same class as a producer defect, and the run state becomes `failed`.\n- The same condition surfaced under three different halt shapes (`failed`, `blocked`, `failed`), so the operator cannot tell one outage from three problems.\n- Each re-step re-ran immediately and failed again within about a minute, so the retries consumed attempts without waiting for the remote.\n\nWhat to do:\n- Classify unreachable-origin errors (ls-remote, fetch exit 128, connection reset) as one retryable or `blocked` kind with a single note, and have the driver wait or back off before re-stepping.\n- Keep `failed` for errors that retrying cannot fix.\n\nProvenance: task `retire-d9`; notes loom-halt-3.md, loom-halt-4.md, loom-halt-5.md, loom-halt-6.md, loom-halt-7.md, loom-halt-8.md, loom-halt-9.md.\n",
       "created": "2026-11-26T07:33:16Z",
       "revised": "2026-11-26T07:33:16Z"
+    },
+    {
+      "id": 1632,
+      "handle": "B8",
+      "slug": "finalize-ignored-leftover-dir",
+      "title": "Finalize blocks on untracked leftovers of a project the merge-in deleted",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing"
+      ],
+      "issues": [
+        242
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #242](https://github.com/Knatte18/loomyard/issues/242).\n\n## Seen\n\nA darn run's Finalize merged its parent beam into the task worktree after its pull request had merged on GitHub.\nThe beam had just taken in a main commit that deleted a whole C# project.\nThe task worktree still held that project's directory with only untracked, gitignored content: `bin/`, `obj/` and generated fixtures.\nOnce git removed the tracked files, the directory was no longer ignored by the deleted `.gitignore`, so it showed as untracked.\nFinalize then blocked: \"the task worktree has uncommitted changes after the merge-in: …/NORCE.Import.CommonLibHarness/; commit or remove them on the task branch, then resume\".\n\nThe run had no live agent left to remove it.\nThe orch may not edit a task worktree, and the Go driver only asked the parent a question and stopped again on resume.\nThe only ways forward were a goto back to the writer, which would re-run review and PR rows for a merged pull request, or the operator removing the directory by hand.\n\n## Workaround\n\nThe operator removes the leftover directory by hand, then the orch runs `lym loom resume` in the task worktree.\n\n## Expected\n\nFinalize's merge-in treats a directory that holds only files the merge's base ignored, under a path the merge deleted, as leftover output:\nit removes it, or ignores it in the clean-tree check, and goes on.\nFailing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.\n",
+      "created": "2026-11-26T07:33:20Z",
+      "revised": "2026-11-26T07:33:20Z"
     }
   ],
   "prime_owner": "neve",
