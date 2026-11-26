@@ -1,6 +1,6 @@
 # P7 A closed area per hub: Landlock and a seccomp connect supervisor
 
-Rendered 2026-11-26 13:07 UTC; every age below is as of then.
+Rendered 2026-11-26 13:08 UTC; every age below is as of then.
 Under: [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md).
 
 [`closed-area`](design-closed-area.md) · Age 1h · Owner `neve`
