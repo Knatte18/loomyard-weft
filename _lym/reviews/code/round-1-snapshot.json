@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "5487f78f163cd155b019047dec6e9a38b5b8b609",
+  "added_decisions": [
+    {
+      "title": "Use the nested config key names",
+      "digest": "5350253c5753f2b3dd80bd911fd36b22359960ea3ad98610601b4e0f493253e8"
+    }
+  ]
+}
