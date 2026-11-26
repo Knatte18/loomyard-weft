@@ -5,8 +5,8 @@
      It then hands the result to shuttle as the agent's whole prompt.
      Every marker below is a top-level substitution, and the file has no conditionals.
      The engine fills the parent and edit directives, and `driftengine.JudgeTable` fills the rest;
-     mode_rules holds the autonomous or the operator text, chosen by drift.yaml's judge_interactive.
-lym-stencil: sha256=a066d7cec81f548a46855eeade650b191ac6a1c85dac92f5b656c5db5e8bb6f3 build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+     mode_rules holds the autonomous or the operator text, chosen by drift.judge_interactive.
+lym-stencil: sha256=7d5ffa47d74cc7d152633293993a77fcdad82298f2a26dd6366ef50be1b9ab7a build=18e0a52b5a5f254b4eedd48dcc2752ec378095de time=2026-11-26T20:00:08Z -->
 
 # Drift judge — rule on each change the task made
 
@@ -50,9 +50,16 @@ Read the log, the expectation and the capture files the failing cases name, and 
 - `unexpected` when the failure is of a case the expectation does not explain.
 
 Under either mode, rule on every file of the request's `files` once.
-Decide from the file's diff what is a test and what is loosened; no language or path tells you.
+Decide from the diffs and the tests you read what is a test and what is loosened; no language or path tells you.
 
-- `none` when the diff widens or removes no assertion, tolerance or limit in a test.
+An assertion the diff removes from one file is not loosened when a test in another file holds the same check on the same behaviour, no looser.
+That file may be one of the request's `files` whose diff adds the check, or one `files` does not list,
+so search the repository's tests for a removed check before you rule on it.
+Leave a check carried this way out of the file's checks, name the file that carries it in the file's `reason`,
+and list that file's repository-relative path under the file's `carried_by`: lym judges the file again when the range changes.
+A widened check, and a removed one that no test carries, is loosened.
+
+- `none` when the diff widens no assertion, tolerance or limit in a test, and removes none that no other test carries.
 - `loosened` otherwise, with one check per loosened assertion, naming the test and what was loosened.
 
 Rule each check:
@@ -85,6 +92,8 @@ files:
   - id: <the file's id>
     ruling: loosened  # or: none
     reason: <what you read in the diff>
+    carried_by:       # under either ruling, only when another file holds a removed check
+      - <that file's path>
     checks:           # only under loosened, one per loosened assertion
       - test: <the test holding the check>
         loosened: <what was loosened>

@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=eb5fb5bc8ca7a8a62dec09785b882b8029071aa1c88146db37d4f6e4cf876976 build=d35c62607899f0eb9c19c7d906ddc5746ad36ee3 time=2026-11-19T19:13:36Z -->
+lym-stencil: sha256=34ab5b7fb81748eb7ef30ccba1a0d0d10c291acf75562729de60081aeff8a8a1 build=18e0a52b5a5f254b4eedd48dcc2752ec378095de time=2026-11-26T20:00:08Z -->
 
 # Code-Review rubric
 
@@ -85,6 +85,7 @@ Do not flag any of the following as a finding:
 - **Loosened checks.**
   An assertion, tolerance or limit the diff widens or removes in a test that exists at the review base is a finding, unless a `Loosened-Check:` trailer on any commit of the review range names it and a measured cause.
   A cause that is no measurement, such as "flaky" or "to make it pass", is a finding too.
+  A removed assertion that a test in another file still holds, on the same behaviour and no looser, is not removed.
 - **Root cause of a bug fix.**
   A `Root-Cause:` trailer on a commit of the review range names the defect the diff's fix removes.
   A trailer that names a symptom, or a defect the diff does not touch, is a finding.
