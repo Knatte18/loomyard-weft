@@ -2,6 +2,8 @@
 
 `config-key-comment-sweep` · Task · enhancement, docs · draft
 
+Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md), [`dobby-run-watch-build`](design-dobby-run-watch-build.md), [`hardener-recipe-changes`](design-hardener-recipe-changes.md), [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md), [`hardener-study-faults`](design-hardener-study-faults.md), [`drift-stale-loosened-ruling`](design-drift-stale-loosened-ruling.md), [`guard-row-tooling`](design-guard-row-tooling.md), [`resume-restores-status-pane`](design-resume-restores-status-pane.md)
+
 After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.
 PATTERN-config-key-names asks that such a comment say `<module>.<path>`.
 
