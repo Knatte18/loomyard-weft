@@ -1,6 +1,6 @@
 # Loom status pane not restored after a reboot and a resumed run
 
-`resume-restores-status-pane` · Task · bug, loom, reed, tender
+`resume-restores-status-pane` · Task · bug, loom, reed, tender · starting · Worktree-Create
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
