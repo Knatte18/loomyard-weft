@@ -49,6 +49,12 @@ Decision: The parent runs no test on the base. Fix the flake from the code: find
 
 Rationale: The failure is a load flake, so a pass on a quiet machine shows nothing; the orch does not run tests.
 
+### Added after Discussion (parent, 2026-11-26): No test seam: the flake is in the test's own time limit
+
+Decision: The red-first gate cannot judge this fix: TestGateTestMap ran its healthy fixture tests under the same 3 s limit its hanging fixture test must exceed, and the fix (00c434749) changes only internal/gatecli/testmap_integration_test.go. On the base the test passes on a quiet machine, so no test can fail there.
+
+Rationale: The defect is a load-dependent timing in test code alone; production code has no bug for a test to catch.
+
 ## Constraints
 
 ## Auto-mode assumptions
