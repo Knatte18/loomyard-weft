@@ -533,6 +533,22 @@ Rationale: It holds the Goal's 'with the area off, everything works as it does t
 - The supervisor probe has not run on OSL-1046; whether Cortex XDR interferes with a seccomp listener or `pidfd_getfd` is unknown.
   D14 makes that run the first step, and its result picks the barrier.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - apparmor-barrier-departs-from-closed-area-pattern (class consistency, severity BLOCKING, open in rounds 3)
+  - area-read-grants-cannot-serve-cross-hub-mail (class design, severity BLOCKING, open in rounds 3)
+  - attach-client-carries-host-env-and-terminal (class design, severity BLOCKING, open in rounds 3)
+  - boot-builds-sibling-landlock-domain (class design, severity BLOCKING, open in rounds 3)
+  - host-hub-selection-bypasses-area-check (class design, severity BLOCKING, open in rounds 3)
+  - host-processes-follow-area-made-links (class design, severity BLOCKING, open in rounds 3)
+  - inside-test-fails-open-without-ancestry (class design, severity BLOCKING, open in rounds 2, 3)
+  - local-marketplace-inside-area-hub (class design, severity BLOCKING, open in rounds 3)
+  - pattern-backgrounds-contradicted-without-declaration (class consistency, severity BLOCKING, open in rounds 3)
+  - relay-acts-on-area-written-state (class design, severity MEDIUM, open in rounds 1, 2, 3)
+  - slack-records-on-wrong-side-of-boundary (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1, D3: on a kernel with Landlock ABI 8, `lym area start` boots the hub's tmux server so that a pane process carries both the Landlock domain and the seccomp filter, and every thread of it shows `NoNewPrivs: 1`; `lym area exec` run alone refuses without a supervisor's socket pair.
