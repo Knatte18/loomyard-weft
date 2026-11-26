@@ -1,0 +1,12 @@
+verdict: resume
+reason: |-
+  Round 3 escalated at cause hard-cap with two open design-wrong findings, F22 and F23. I read both against the decision record and the code, and the round 3 fixer's text already answers each one.
+  F22: the installer's test-only clear is gone. The unset-seam refusal is now a fabriccore rule over a snapshot fact, covered by a tier0 core row. The engine-level test unsets a seam through the seam's own setter in fabricengine. The installer calls that setter, so main reaches it and PATTERN-test-only-code holds. The test needs no fabriccli import (D12). D5 and the acceptance criterion name that row and that test. The sequential rule covers any test that sets a process-global seam.
+  F23: the stencil ordering judge is gone from the record; a grep finds no mention of it. StencilSource and StencilBaseByStamp move to internal/stencilsource (new), with their tests. The code shows that fabricengine's only stencilstore imports are warpforward.go and stencilhistory.go. No other dependency of fabricengine imports stencilstore (shedengine imports only lock and state), so the closure guard can hold. The moved code's git reads are HeadContains, SHAExists, IsAncestor, PathRevisions and FileAtRevision, which match the general reads the record names. stencilstore does not import fabricengine, so the move creates no import cycle.
+  Two notes the review left unfiled were real inconsistencies that the record already settles. I recorded them as arbiter decisions so the plan writer meets no contradiction. First, the secret-path matcher's answer reaches fabriccore as a snapshot fact, which keeps D1's closed import set. Second, the comparison with OriginSeams does not make the process-installed seams per-call; they follow D13's sequential rule, and dobbyleftover_integration_test.go drops its t.Parallel call.
+  The round is at the hard cap and no open finding still needs a fix, so the segment is accepted.
+verbs:
+  - |-
+    lym loom decision add fabric-git-free-core --by arbiter --from .scratch/arbiter-decisions-2.json
+  - |-
+    lym loom circling accept fabric-git-free-core

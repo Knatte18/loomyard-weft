@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 12,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-26T22:12:20.876374317+01:00",
+  "deadline": "2026-11-26T22:42:20.876374317+01:00",
+  "strand_guid": "41ee1f119fb969445da8cc02cac4a107",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/shed/fabric-git-free-core/drive-reports/drive-envelope-20261126-221220-e963.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/fabric-git-free-core/_lym/shed/fabric-git-free-core/drive-reports/drive-report-20261126-221220-e51c.md",
+  "snapshot": {
+    "head": "18e0a52b5a5f254b4eedd48dcc2752ec378095de",
+    "branch": "fabric-git-free-core",
+    "dirty": {}
+  }
+}
