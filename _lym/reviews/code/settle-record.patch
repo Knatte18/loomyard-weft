@@ -1,0 +1,1034 @@
+diff --git a/cmd/lym/main.go b/cmd/lym/main.go
+index 482c9ff10..0e42e8dfe 100644
+--- a/cmd/lym/main.go
++++ b/cmd/lym/main.go
+@@ -33,6 +33,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/heddleengine"
+ 	"github.com/Knatte18/loomyard/internal/helpcli"
+ 	"github.com/Knatte18/loomyard/internal/hibernatecli"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/idecli"
+ 	"github.com/Knatte18/loomyard/internal/ideengine"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -170,6 +171,8 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 				orchcli.InstallRunMailDropper()
+ 				// A records replay merges the board by entry through boardengine's Bolt replayer, in the detached push child and in a pull-first Bolt write.
+ 				fabricengine.RegisterBoltReplayer(boardengine.FabricReplay{})
++				// Every board render shows each beam's and the root's autonomy and pull-request setting as the runs read them.
++				boardengine.InstallBeamModeReader(hubgeom.BeamModes)
+ 				// A worktree that fabric makes or moves reaches heddle through the worktree seam, to render its files.
+ 				fabricengine.InstallWorktreeSeam(heddleengine.Seam{})
+ 				// The hub workspace file leads a pair's folder name with its project's handle, read from the board.
+diff --git a/internal/boardengine/beammodes.go b/internal/boardengine/beammodes.go
+new file mode 100644
+index 000000000..de587a2d4
+--- /dev/null
++++ b/internal/boardengine/beammodes.go
+@@ -0,0 +1,190 @@
++// beammodes.go holds the beam modes the board files show:
++// the types a reader answers in, the process-wide reader the lym root installs, and the mode lines a render writes.
++
++package boardengine
++
++import (
++	"fmt"
++	"strings"
++	"sync/atomic"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// BeamModes is how the root and each open beam run their members, as their runs resolve it on this machine.
++type BeamModes struct {
++	// HubWide holds the hub's default of each per-task setting, which applies where no worktree sets one.
++	// Its landing facts stay empty.
++	HubWide BeamMode
++	// Root holds the root's settings, read from the prime's worktree up; its landing facts stay empty.
++	Root BeamMode
++	// Beams holds each beam's settings and landing facts by slug.
++	// A beam whose read failed, or whose worktree is not on this machine, is absent.
++	// The sections of an absent beam show no mode line.
++	Beams map[string]BeamMode
++}
++
++// BeamMode is how one beam, or the root, runs its members.
++type BeamMode struct {
++	// Autonomy is on when the orch settles every halt of the members' runs, and off otherwise.
++	Autonomy SettingValue
++	// PullRequest is beam.yaml's pull_request as it resolves for the members.
++	PullRequest SettingValue
++	// ParentBranch is the branch the beam lands on, empty when its origin record is not on this machine.
++	ParentBranch string
++	// PullRequestNumber and PullRequestURL name the beam's own recorded pull request.
++	// The number is 0 when none is recorded.
++	PullRequestNumber int
++	PullRequestURL    string
++}
++
++// SettingValue is one resolved per-task setting and the place whose own files set it.
++type SettingValue struct {
++	Value string
++	// SetBy is the slug of the worktree whose own files set Value, and RootSubject stands for the prime.
++	// It is empty when no worktree sets it, so the hub-wide default decides.
++	SetBy string
++}
++
++// BeamModeReader reads the BeamModes of the root and of the beams named, for the hub whose board directory is boardDir.
++type BeamModeReader func(boardDir string, beams []string) (BeamModes, error)
++
++// installedBeamModeReader holds the reader Config.Outputs hands every render, nil while none is installed.
++var installedBeamModeReader atomic.Pointer[BeamModeReader]
++
++// InstallBeamModeReader makes reader the one every board render of this process reads the beam modes through.
++// With none installed, a render shows no mode line.
++func InstallBeamModeReader(reader BeamModeReader) {
++	installedBeamModeReader.Store(&reader)
++}
++
++// installedReader returns the installed reader, or nil when none is.
++func installedReader() BeamModeReader {
++	if reader := installedBeamModeReader.Load(); reader != nil {
++		return *reader
++	}
++	return nil
++}
++
++// readBeamModes reads the modes of the root and of the open beams among tasks through out's reader.
++// It returns nil when out has no reader or the read fails, which it logs, so the render shows no mode line.
++func readBeamModes(boardPath string, tasks []Task, out Outputs) *BeamModes {
++	if out.BeamModes == nil {
++		return nil
++	}
++	var beams []string
++	for _, t := range tasks {
++		if t.Kind == KindProject && t.Beam && !isDone(t) {
++			beams = append(beams, t.Slug)
++		}
++	}
++	modes, err := out.BeamModes(boardPath, beams)
++	if err != nil {
++		logger.Warn("boardengine: the beam modes did not read, rendering the board without them", "path", boardPath, "error", err)
++		return nil
++	}
++	return &modes
++}
++
++// The labels of a mode line's parts.
++const (
++	autonomyLabel     = "Autonomy"
++	pullRequestLabel  = "PR setting"
++	parentBranchLabel = "Parent branch"
++	beamPRLabel       = "Beam PR"
++)
++
++// hubWideSourceText names the hub-wide default as the place an inherited value comes from.
++const hubWideSourceText = "hub-wide"
++
++// modeHeader is the README's statement of the hub-wide defaults and the legend of the mode lines.
++// It is empty when the render has no modes.
++func (b boardView) modeHeader() []string {
++	if b.modes == nil {
++		return nil
++	}
++	hubWide := b.modes.HubWide
++	return []string{
++		fmt.Sprintf("Hub-wide default: %s %s · %s %s.",
++			strings.ToLower(autonomyLabel), codeSpan(hubWide.Autonomy.Value), pullRequestLabel, codeSpan(hubWide.PullRequest.Value)),
++		"On the mode line of a beam or the root, a **bold** value is that project's own setting,",
++		"and an _italic_ value is inherited from the place in brackets.",
++		"A setting that the root and every beam read by this render take from the hub-wide default is stated here alone.",
++		"A beam the render could not read, such as one whose worktree is on another machine, has no mode line,",
++		"and its settings may differ.",
++		beamPRLabel + " links the pull request the beam's landing record names; it may already be closed or merged on GitHub.",
++		"",
++	}
++}
++
++// modeLines are project's mode line and the blank line after it.
++// They are empty for a project that is neither the root nor a beam the modes hold, and for a line with no part.
++func (b boardView) modeLines(project Task) []string {
++	if b.modes == nil {
++		return nil
++	}
++	mode, own := b.modes.Root, RootSubject
++	if project.Slug != "" {
++		beamMode, found := b.modes.Beams[project.Slug]
++		if !project.Beam || !found {
++			return nil
++		}
++		mode, own = beamMode, project.Slug
++	}
++	var parts []string
++	if !b.everyPlaceHubWide(func(m BeamMode) SettingValue { return m.Autonomy }) {
++		parts = append(parts, autonomyLabel+" "+b.settingText(mode.Autonomy, own))
++	}
++	if !b.everyPlaceHubWide(func(m BeamMode) SettingValue { return m.PullRequest }) {
++		parts = append(parts, pullRequestLabel+" "+b.settingText(mode.PullRequest, own))
++	}
++	if mode.ParentBranch != "" {
++		parts = append(parts, parentBranchLabel+" "+codeSpan(mode.ParentBranch))
++	}
++	if mode.PullRequestNumber > 0 {
++		parts = append(parts, fmt.Sprintf("%s [#%d](%s)", beamPRLabel, mode.PullRequestNumber, mode.PullRequestURL))
++	}
++	if len(parts) == 0 {
++		return nil
++	}
++	return []string{strings.Join(parts, " · "), ""}
++}
++
++// everyPlaceHubWide reports whether the hub-wide default decides the setting pick selects in every place.
++// The places are the root and every beam the modes hold.
++func (b boardView) everyPlaceHubWide(pick func(BeamMode) SettingValue) bool {
++	if pick(b.modes.Root).SetBy != "" {
++		return false
++	}
++	for _, mode := range b.modes.Beams {
++		if pick(mode).SetBy != "" {
++			return false
++		}
++	}
++	return true
++}
++
++// settingText is setting's value as a mode line shows it:
++// bold when own set it, else italic with the place it is inherited from in brackets.
++func (b boardView) settingText(setting SettingValue, own string) string {
++	if setting.SetBy == own {
++		return "**" + cellText(setting.Value) + "**"
++	}
++	return "_" + cellText(setting.Value) + "_ (" + b.sourceText(setting.SetBy) + ")"
++}
++
++// sourceText names the place setBy as an inherited value's source.
++// That is a project's handle, the root's P0, or the slug of a worktree with no handle on the board.
++// An empty setBy names the hub-wide default.
++func (b boardView) sourceText(setBy string) string {
++	switch setBy {
++	case "":
++		return hubWideSourceText
++	case RootSubject:
++		return rootProject.Handle
++	}
++	if entry, found := b.bySlug[setBy]; found && entry.Handle != "" {
++		return cellText(entry.Handle)
++	}
++	return codeSpan(setBy)
++}
+diff --git a/internal/boardengine/beammodes_test.go b/internal/boardengine/beammodes_test.go
+new file mode 100644
+index 000000000..c42145125
+--- /dev/null
++++ b/internal/boardengine/beammodes_test.go
+@@ -0,0 +1,171 @@
++// beammodes_test.go pins the beam modes a render reads through the installed reader.
++// A mode line marks each value as the project's own or as inherited, and names where an inherited one comes from.
++// A setting every place takes from the hub-wide default stands in the README header alone.
++
++package boardengine_test
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRenderToDisk_ShowsTheInstalledBeamModes renders two open beams through Config.Outputs with a fixed-mode reader.
++// It pins the mode line of the root and of each beam, in the README and in the project files.
++// It pins how an inherited value names its source.
++// It pins that a setting every place takes from the hub-wide default stands in the README header alone.
++// It pins that the reader is asked for the open beams alone, and that a failed read renders no mode line.
++// It installs the process-wide reader, so it does not run in parallel.
++func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
++	tiergate.Require(t, 0)
++	const pullRequestURL = "https://github.com/example/repo/pull/12"
++	done := boardengine.StatusDone
++	tasks := []boardengine.Task{
++		{ID: 0, Handle: "P1", Slug: "beam-a", Title: "Beam A", Kind: boardengine.KindProject, Beam: true},
++		{ID: 1, Handle: "P2", Slug: "beam-b", Title: "Beam B", Kind: boardengine.KindProject, Beam: true},
++		{ID: 2, Handle: "P3", Slug: "beam-done", Title: "Beam done", Kind: boardengine.KindProject, Beam: true, Status: &done},
++		{ID: 3, Handle: "P4", Slug: "grouping", Title: "Grouping", Kind: boardengine.KindProject},
++	}
++	hubWide := boardengine.BeamMode{
++		Autonomy:    boardengine.SettingValue{Value: "off"},
++		PullRequest: boardengine.SettingValue{Value: "on"},
++	}
++	tests := []struct {
++		name string
++		// rootPR, beamAPR and beamBPR are each place's resolved pull_request.
++		rootPR, beamAPR, beamBPR boardengine.SettingValue
++		// wantLines are lines the README must hold, each whole.
++		wantLines []string
++		// wantAbsent are lines the README must not hold.
++		wantAbsent []string
++		// wantProjectLines maps a project file to a line it must hold, whole.
++		wantProjectLines map[string]string
++		// readErr is the reader's error, nil for a read that answers.
++		readErr error
++		// wantAbsentPrefixes are openings no README line may have.
++		wantAbsentPrefixes []string
++	}{
++		{
++			name:    "own values are bold and inherited ones name their source",
++			rootPR:  boardengine.SettingValue{Value: "on"},
++			beamAPR: boardengine.SettingValue{Value: "merge", SetBy: "beam-a"},
++			beamBPR: boardengine.SettingValue{Value: "on"},
++			wantLines: []string{
++				"Hub-wide default: autonomy `off` · PR setting `on`.",
++				"Autonomy **on** · PR setting _on_ (hub-wide)",
++				"Autonomy _on_ (P0) · PR setting **merge** · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++				"Autonomy **off** · PR setting _on_ (hub-wide) · Parent branch `beam-a`",
++			},
++			wantProjectLines: map[string]string{
++				"project-root.md":   "Autonomy **on** · PR setting _on_ (hub-wide)",
++				"project-beam-a.md": "Autonomy _on_ (P0) · PR setting **merge** · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++			},
++		},
++		{
++			name:    "a setting every place takes from the hub-wide default is left off the mode lines",
++			rootPR:  boardengine.SettingValue{Value: "on"},
++			beamAPR: boardengine.SettingValue{Value: "on"},
++			beamBPR: boardengine.SettingValue{Value: "on"},
++			wantLines: []string{
++				"Hub-wide default: autonomy `off` · PR setting `on`.",
++				"Autonomy **on**",
++				"Autonomy _on_ (P0) · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++				"Autonomy **off** · Parent branch `beam-a`",
++			},
++			wantAbsent: []string{"Autonomy **on** · PR setting _on_ (hub-wide)"},
++		},
++		{
++			name:      "a value inherited from a beam names the beam's handle",
++			rootPR:    boardengine.SettingValue{Value: "on"},
++			beamAPR:   boardengine.SettingValue{Value: "merge", SetBy: "beam-a"},
++			beamBPR:   boardengine.SettingValue{Value: "merge", SetBy: "beam-a"},
++			wantLines: []string{"Autonomy **off** · PR setting _merge_ (P1) · Parent branch `beam-a`"},
++		},
++		{
++			name:      "a value inherited from a worktree with no board entry names its slug",
++			rootPR:    boardengine.SettingValue{Value: "on"},
++			beamAPR:   boardengine.SettingValue{Value: "on"},
++			beamBPR:   boardengine.SettingValue{Value: "merge", SetBy: "side-pair"},
++			wantLines: []string{"Autonomy **off** · PR setting _merge_ (`side-pair`) · Parent branch `beam-a`"},
++		},
++		{
++			name:               "a failed read renders no mode line",
++			readErr:            errors.New("no prime"),
++			wantAbsentPrefixes: []string{"Hub-wide default:", "Autonomy "},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			var gotBeams []string
++			boardengine.InstallBeamModeReader(func(boardDir string, beams []string) (boardengine.BeamModes, error) {
++				gotBeams = beams
++				return boardengine.BeamModes{
++					HubWide: hubWide,
++					Root: boardengine.BeamMode{
++						Autonomy:    boardengine.SettingValue{Value: "on", SetBy: boardengine.RootSubject},
++						PullRequest: tt.rootPR,
++					},
++					Beams: map[string]boardengine.BeamMode{
++						"beam-a": {
++							Autonomy:          boardengine.SettingValue{Value: "on", SetBy: boardengine.RootSubject},
++							PullRequest:       tt.beamAPR,
++							ParentBranch:      "main",
++							PullRequestNumber: 12,
++							PullRequestURL:    pullRequestURL,
++						},
++						"beam-b": {
++							Autonomy:     boardengine.SettingValue{Value: "off", SetBy: "beam-b"},
++							PullRequest:  tt.beamBPR,
++							ParentBranch: "beam-a",
++						},
++					},
++				}, tt.readErr
++			})
++			t.Cleanup(func() { boardengine.InstallBeamModeReader(nil) })
++
++			dir := t.TempDir()
++			out := boardengine.Config{Readme: "README.md", DesignPrefix: "proposal-"}.Outputs()
++			if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
++				t.Fatalf("RenderToDisk() = %v; want nil", err)
++			}
++			if want := []string{"beam-a", "beam-b"}; !slices.Equal(gotBeams, want) {
++				t.Errorf("reader beams = %v; want %v", gotBeams, want)
++			}
++			readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
++			if err != nil {
++				t.Fatalf("read README.md: %v", err)
++			}
++			lines := strings.Split(string(readme), "\n")
++			for _, want := range tt.wantLines {
++				if !slices.Contains(lines, want) {
++					t.Errorf("README.md lacks the line %q; got:\n%s", want, readme)
++				}
++			}
++			for _, absent := range tt.wantAbsent {
++				if slices.Contains(lines, absent) {
++					t.Errorf("README.md holds the line %q; want it absent", absent)
++				}
++			}
++			for _, prefix := range tt.wantAbsentPrefixes {
++				if slices.ContainsFunc(lines, func(line string) bool { return strings.HasPrefix(line, prefix) }) {
++					t.Errorf("README.md holds a line opening %q; want none; got:\n%s", prefix, readme)
++				}
++			}
++			for file, want := range tt.wantProjectLines {
++				content, err := os.ReadFile(filepath.Join(dir, file))
++				if err != nil {
++					t.Fatalf("read %s: %v", file, err)
++				}
++				if !slices.Contains(strings.Split(string(content), "\n"), want) {
++					t.Errorf("%s lacks the line %q; got:\n%s", file, want, content)
++				}
++			}
++		})
++	}
++}
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index a5e567664..dda0ea683 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -90,9 +90,11 @@ type Outputs struct {
+ 	Types []string
+ 	// Labels is the configured area-label order, which the view projection lists as the board's areas.
+ 	Labels []string
++	// BeamModes reads the beam modes a render writes to disk; nil writes no mode line.
++	BeamModes BeamModeReader
+ }
+ 
+-// Outputs returns the values a board's rendering reads from c.
++// Outputs returns the values a board's rendering reads from c, with the beam mode reader this process installed.
+ func (c Config) Outputs() Outputs {
+ 	return Outputs{
+ 		Readme:        c.Readme,
+@@ -100,6 +102,7 @@ func (c Config) Outputs() Outputs {
+ 		DefaultRecipe: c.DefaultRecipe,
+ 		Types:         labelNames(c.Types),
+ 		Labels:        labelNames(c.Labels),
++		BeamModes:     installedReader(),
+ 	}
+ }
+ 
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 4b5a3cf77..ba06c7f5e 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -144,6 +144,21 @@
+ // Every project, open or done, renders to project-<slug>.md beside it, and the root to project-root.md.
+ // The split is rendering only: every entry stays in the one store, and handles stay numbered across the hub.
+ // A render rewrites each board file in place, so an open VS Code markdown preview shows the new content.
++//
++// RenderToDisk reads the beam modes through the BeamModeReader its Outputs carry.
++// Config.Outputs takes that reader from InstallBeamModeReader;
++// the lym root installs it, and a test binary installs none.
++// With modes, the README's header states the hub-wide default of autonomy and of the pull-request setting,
++// and the legend of the mode lines.
++// The section and file header of the root and of each open beam carry a mode line.
++// A beam the reader leaves out of its answer, such as one whose worktree is not on this machine, carries none,
++// and the legend says its settings may differ.
++// It shows autonomy and the pull-request setting, then a beam's parent branch and its recorded pull request as a link.
++// The link is the one the landing record names, so GitHub may already have closed or merged that pull request,
++// and the legend says so.
++// A setting is bold when the project sets it itself, and it is italic with the place it inherits from otherwise.
++// A setting that the root and every beam read take from the hub-wide default stands in the README's header alone.
++// A failed read renders the board with no mode line and logs a warning.
+ // board-data.js is the board's view projection as `window.BOARD = <JSON>;`.
+ // Each entry in it carries a revision, the SHA-256 of its stored encoding, which Board.View and the render both take.
+ // BoardRevision is the SHA-256 of board.json, and "" while the file is absent.
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 7ac47df57..30ddec625 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -28,8 +28,10 @@ const renderManifestFile = ".board-rendered.json"
+ // It removes the files the previous render recorded in the manifest that this render does not produce.
+ // An entry flagged discussed whose decision record file is missing from boardPath renders as undiscussed,
+ // so no board file links a missing record.
++// The board files carry the beam modes out's reader reads for the hub of boardPath, and none when it has no reader.
+ func RenderToDisk(boardPath string, tasks []Task, primeOwner string, out Outputs, now time.Time) error {
+-	files, err := renderFiles(tasks, withMissingRecordsUndiscussed(boardPath, tasks), primeOwner, out, now)
++	modes := readBeamModes(boardPath, tasks, out)
++	files, err := renderFiles(tasks, withMissingRecordsUndiscussed(boardPath, tasks), primeOwner, out, now, modes)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -106,20 +108,23 @@ func writeRenderManifest(boardPath string, files map[string]string) {
+ // Every project, open or done, gets a file named by projectFileName, and the root project gets rootProjectFile.
+ // Every entry flagged discussed is linked to its decision record, which Render takes to exist.
+ // BoardDataFile holds the board's view projection beside the README, and BoardPageFile the viewer page.
++// The files carry no beam mode line, since Render reads no hub.
+ func Render(tasks []Task, primeOwner string, out Outputs, now time.Time) (map[string]string, error) {
+-	return renderFiles(tasks, tasks, primeOwner, out, now)
++	return renderFiles(tasks, tasks, primeOwner, out, now, nil)
+ }
+ 
+ // renderFiles renders every board file from rendered, and the view projection's revisions from stored.
+ // The two differ only where RenderToDisk clears the discussed flag of an entry whose decision record is missing,
+ // so an entry's revision covers its stored copy while its files follow the copy rendered.
+-func renderFiles(stored, rendered []Task, primeOwner string, out Outputs, now time.Time) (map[string]string, error) {
++// modes are the beam modes the files show, nil for none.
++func renderFiles(stored, rendered []Task, primeOwner string, out Outputs, now time.Time, modes *BeamModes) (map[string]string, error) {
+ 	ordered, err := RenderOrder(rendered)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+ 	board := newBoardView(ordered, primeOwner, out, now)
++	board.modes = modes
+ 	result := map[string]string{
+ 		out.Readme:      board.renderReadme(),
+ 		rootProjectFile: board.renderProjectFile(rootProject),
+@@ -358,6 +363,8 @@ type boardView struct {
+ 	ownerOf      func(slug string) string
+ 	out          Outputs
+ 	now          time.Time
++	// modes are the beam modes the board files show, nil for none.
++	modes *BeamModes
+ }
+ 
+ // newBoardView indexes ordered for rendering the board files with the given prime owner and outputs, every age as of now.
+@@ -408,10 +415,12 @@ func (b boardView) renderedLine() string {
+ }
+ 
+ // fileHeader is the opening of project's board file.
+-// It holds the heading, the render time, a link up to the file above, the facts line, the brief and the body.
++// It holds the heading, the render time and a link up to the file above.
++// The facts line, the mode line, the brief and the body follow.
+ func (b boardView) fileHeader(project Task) []string {
+ 	title := "# " + cellText(project.Handle+" "+project.Title) + beamSuffix(project)
+ 	lines := []string{title, "", b.renderedLine(), "Under: " + b.upLink(project) + ".", "", b.projectFacts(project), ""}
++	lines = append(lines, b.modeLines(project)...)
+ 	if project.Brief != "" {
+ 		lines = append(lines, project.Brief, "")
+ 	}
+@@ -518,10 +527,11 @@ func (b boardView) projectFacts(project Task) string {
+ }
+ 
+ // renderReadme builds README.md, the overview of every project.
+-// Its header names the render time and the prime owner, then comes the intro.
++// Its header names the render time, the prime owner and, with beam modes, the hub-wide defaults; then comes the intro.
+ // Each open project directly under the root gets a section, and the root's own section comes last.
+ func (b boardView) renderReadme() string {
+ 	lines := []string{"# " + rootTitle, "", b.renderedLine(), "Prime owner: " + primeOwnerText(b.primeOwner) + ".", ""}
++	lines = append(lines, b.modeHeader()...)
+ 	lines = append(lines, boardIntro...)
+ 	for _, child := range b.childProjects(rootProject) {
+ 		lines = append(lines, b.projectSection(child.Task, readmeSectionLevel)...)
+@@ -562,9 +572,10 @@ func (b boardView) openMembers(project Task) int {
+ }
+ 
+ // projectSectionContent is what a section of project at heading level level holds under its heading:
+-// its facts line, its brief when it has one, and its body.
++// its facts line, its mode line for the root or a beam, its brief when it has one, and its body.
+ func (b boardView) projectSectionContent(project Task, level int) []string {
+ 	lines := []string{b.projectFacts(project), ""}
++	lines = append(lines, b.modeLines(project)...)
+ 	if project.Brief != "" {
+ 		lines = append(lines, project.Brief, "")
+ 	}
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index 07758edb4..616b8ae85 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -55,7 +55,7 @@ const (
+ 
+ // Config is the resolved beam.yaml's worktree-wide keys.
+ // The per-task keys are pull_request, land_notice and autonomy.
+-// They are read through LookupPullRequest, LookupLandNotice and LookupAutonomy alone.
++// They are read through LookupPullRequest, LookupLandNotice, LookupAutonomy and LookupWithSource alone.
+ type Config struct {
+ 	// MaxRuns is the most runs dobby drives at once; 0 starts none.
+ 	MaxRuns int `yaml:"max_runs"`
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 789d0be51..c76cd166b 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -136,7 +136,8 @@
+ // The landing notice:
+ //
+ //   - `pull_request`, `land_notice` and `autonomy` are per-task settings,
+-//     read only through LookupPullRequest, LookupLandNotice and LookupAutonomy.
++//     read only through LookupPullRequest, LookupLandNotice, LookupAutonomy and LookupWithSource.
++//     LookupWithSource also names the worktree of the chain whose own files set the value, or the hub-wide default.
+ //     A task's value is the one its own worktree's files set, else each parent worktree's own value up to the prime,
+ //     else the hub's default layer's, else the template's.
+ //   - Each tick reads Deps.LandNotice for each listed run ahead of its Land row and remembers the reading.
+diff --git a/internal/dobbyengine/tasksetting.go b/internal/dobbyengine/tasksetting.go
+index 15dc5deac..f9e9c8520 100644
+--- a/internal/dobbyengine/tasksetting.go
++++ b/internal/dobbyengine/tasksetting.go
+@@ -22,6 +22,9 @@ type TaskSettingChain struct {
+ 	// The last is the prime's.
+ 	// A worktree absent on this machine is left out, so its parent's value applies.
+ 	Anchors []string
++	// Names are the worktree names of Anchors in the same order, "" for the prime's.
++	// Only a caller that reads where a value was set needs them.
++	Names []string
+ 	// Board is the hub's board directory, whose default layer applies when no worktree of Anchors sets the key.
+ 	// Empty means no default layer.
+ 	Board string
+@@ -60,37 +63,55 @@ func ownTaskSetting(dirs configengine.Dirs, key string) (value any, path string,
+ }
+ 
+ // lookupTaskSetting returns the value of the per-task key for the task at the chain's head.
++func lookupTaskSetting(chain TaskSettingChain, key string) (string, error) {
++	value, _, err := LookupWithSource(chain, key)
++	return value, err
++}
++
++// HubWideSource is the anchor index LookupWithSource answers when no worktree of the chain sets the key.
++// The hub's default layer, else the template, then decides.
++const HubWideSource = -1
++
++// LookupWithSource returns the value of the per-task key for the task at the chain's head, as its run reads it.
++// It also returns the index into the chain's Anchors of the worktree whose own files set the value, or HubWideSource.
+ // Each anchor's own files, its worktree file and its local file, are read in chain order,
+ // and the first that sets the key decides.
+ // With none set, the board's default layer decides, and then the template.
+ // An envsource marker in the winning value is expanded the way a load of beam.yaml expands it.
+-func lookupTaskSetting(chain TaskSettingChain, key string) (string, error) {
++// autonomy answers "true" or "false".
++// A value the key does not take is refused, naming the file that set it.
++func LookupWithSource(chain TaskSettingChain, key string) (value string, anchor int, err error) {
+ 	places := make([]configengine.Dirs, 0, len(chain.Anchors)+1)
+-	for _, anchor := range chain.Anchors {
+-		places = append(places, configengine.Dirs{Anchor: anchor})
++	for _, dir := range chain.Anchors {
++		places = append(places, configengine.Dirs{Anchor: dir})
+ 	}
+ 	if chain.Board != "" {
+ 		places = append(places, configengine.Dirs{Board: chain.Board})
+ 	}
+-	for _, dirs := range places {
+-		value, path, set, err := ownTaskSetting(dirs, key)
++	for index, dirs := range places {
++		raw, path, set, err := ownTaskSetting(dirs, key)
+ 		if err != nil {
+-			return "", fmt.Errorf("look up beam.yaml's %s: %w", key, err)
++			return "", 0, fmt.Errorf("look up beam.yaml's %s: %w", key, err)
+ 		}
+ 		if !set {
+ 			continue
+ 		}
+-		expanded, err := expandEnvMarkers(dirs, key, value)
++		expanded, err := expandEnvMarkers(dirs, key, raw)
+ 		if err != nil {
+-			return "", fmt.Errorf("expand beam.yaml's %s in %s: %w", key, path, err)
++			return "", 0, fmt.Errorf("expand beam.yaml's %s in %s: %w", key, path, err)
++		}
++		if index >= len(chain.Anchors) {
++			index = HubWideSource
+ 		}
+-		return checkTaskSetting(key, expanded, path)
++		value, err = checkTaskSetting(key, expanded, path)
++		return value, index, err
+ 	}
+ 	var template map[string]any
+ 	if err := yaml.Unmarshal([]byte(ConfigTemplate()), &template); err != nil {
+-		return "", fmt.Errorf("decode beam.yaml's template: %w", err)
++		return "", 0, fmt.Errorf("decode beam.yaml's template: %w", err)
+ 	}
+-	return checkTaskSetting(key, template[key], "beam.yaml's template")
++	value, err = checkTaskSetting(key, template[key], "beam.yaml's template")
++	return value, HubWideSource, err
+ }
+ 
+ // expandEnvMarkers expands the envsource markers of a text value, with the environment of the place dirs names.
+diff --git a/internal/dobbyengine/tasksetting_test.go b/internal/dobbyengine/tasksetting_test.go
+index adb683dd5..1970f3fb0 100644
+--- a/internal/dobbyengine/tasksetting_test.go
++++ b/internal/dobbyengine/tasksetting_test.go
+@@ -77,17 +77,19 @@ func TestLookupTaskSettings(t *testing.T) {
+ 		// hub is the board's default layer.
+ 		hub  string
+ 		want string
++		// wantSource is the anchor index LookupWithSource names as the place that set the value.
++		wantSource int
+ 	}{
+-		{name: "the task's local file wins over its worktree file and over the parent", task: "off", taskLocal: "on", parent: "off", want: "on"},
+-		{name: "the task's local file turns a worktree on off", task: "on", taskLocal: "off", parent: "on", want: "off"},
+-		{name: "a task that sets nothing takes the parent's value over the prime's", parent: "off", prime: "on", want: "off"},
+-		{name: "a task that sets nothing takes the parent's on over the hub default", parent: "on", hub: "off", want: "on"},
+-		{name: "a lower value overrides a parent's on", task: "off", parent: "on", want: "off"},
+-		{name: "a lower value overrides a parent's off", task: "on", parent: "off", want: "on"},
+-		{name: "the prime's own file applies when nothing nearer sets the key", prime: "off", hub: "on", want: "off"},
+-		{name: "a hub default that is on applies when no anchor sets the key", hub: "on", want: "on"},
+-		{name: "a hub default that is off applies when no anchor sets the key", hub: "off", want: "off"},
+-		{name: "a hub default never counts as the prime's own setting", prime: "on", hub: "off", want: "on"},
++		{name: "the task's local file wins over its worktree file and over the parent", task: "off", taskLocal: "on", parent: "off", want: "on", wantSource: 0},
++		{name: "the task's local file turns a worktree on off", task: "on", taskLocal: "off", parent: "on", want: "off", wantSource: 0},
++		{name: "a task that sets nothing takes the parent's value over the prime's", parent: "off", prime: "on", want: "off", wantSource: 1},
++		{name: "a task that sets nothing takes the parent's on over the hub default", parent: "on", hub: "off", want: "on", wantSource: 1},
++		{name: "a lower value overrides a parent's on", task: "off", parent: "on", want: "off", wantSource: 0},
++		{name: "a lower value overrides a parent's off", task: "on", parent: "off", want: "on", wantSource: 0},
++		{name: "the prime's own file applies when nothing nearer sets the key", prime: "off", hub: "on", want: "off", wantSource: 2},
++		{name: "a hub default that is on applies when no anchor sets the key", hub: "on", want: "on", wantSource: HubWideSource},
++		{name: "a hub default that is off applies when no anchor sets the key", hub: "off", want: "off", wantSource: HubWideSource},
++		{name: "a hub default never counts as the prime's own setting", prime: "on", hub: "off", want: "on", wantSource: 2},
+ 	}
+ 	for _, key := range []string{PullRequestKey, LandNoticeKey, AutonomyKey} {
+ 		for _, tt := range tests {
+@@ -106,10 +108,14 @@ func TestLookupTaskSettings(t *testing.T) {
+ 					writeBeamLayer(t, board, settingDocument(key, tt.hub))
+ 				}
+ 
+-				got, err := lookupAsText(key, TaskSettingChain{Anchors: []string{taskDir, parentDir, primeDir}, Board: board})
++				chain := TaskSettingChain{Anchors: []string{taskDir, parentDir, primeDir}, Board: board}
++				got, err := lookupAsText(key, chain)
+ 				if err != nil || got != tt.want {
+ 					t.Errorf("lookup of %s = %q, %v; want %q", key, got, err, tt.want)
+ 				}
++				if _, source, err := LookupWithSource(chain, key); err != nil || source != tt.wantSource {
++					t.Errorf("LookupWithSource(%s) source = %d, %v; want %d", key, source, err, tt.wantSource)
++				}
+ 			})
+ 		}
+ 	}
+@@ -138,6 +144,9 @@ func TestLookupTaskSettings(t *testing.T) {
+ 		if got, err := LookupAutonomy(chain); err != nil || got {
+ 			t.Errorf("LookupAutonomy() = %v, %v; want false", got, err)
+ 		}
++		if got, source, err := LookupWithSource(chain, PullRequestKey); err != nil || got != "on" || source != HubWideSource {
++			t.Errorf("LookupWithSource(pull_request) = %q, %d, %v; want on, %d", got, source, err, HubWideSource)
++		}
+ 	})
+ 
+ 	t.Run("a chain with no board dir skips the hub default", func(t *testing.T) {
+diff --git a/internal/hubgeom/beammodes.go b/internal/hubgeom/beammodes.go
+new file mode 100644
+index 000000000..ab507f466
+--- /dev/null
++++ b/internal/hubgeom/beammodes.go
+@@ -0,0 +1,166 @@
++// beammodes.go reads the beam modes the board files show.
++// They are the per-task settings of the root and each beam, with the place that set each.
++// Each beam also has its parent branch and pull request.
++
++package hubgeom
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strconv"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pawlengine"
++)
++
++// The autonomy values the board files show, for beam.yaml's true and false.
++const (
++	autonomyOnText  = "on"
++	autonomyOffText = "off"
++)
++
++// errBeamWorktreeAbsent marks a beam whose worktree is not on this machine, which a hub that spans machines expects.
++var errBeamWorktreeAbsent = errors.New("the beam's worktree is not on this machine")
++
++// BeamModes reads how the root and each beam named run their members, for the hub whose board directory is boardDir.
++// Each setting is read as the runs read it, through TaskSettingChain and the per-task lookup from the beam's worktree up.
++// A beam whose worktree is absent on this machine is left out, and a beam whose read fails is left out with a warning.
++// A prime that does not resolve, or a failed read of the root's or the hub-wide settings, is an error.
++func BeamModes(boardDir string, beams []string) (boardengine.BeamModes, error) {
++	prime, err := primeOfBoard(boardDir)
++	if err != nil {
++		return boardengine.BeamModes{}, err
++	}
++	hubWide, err := readBeamSettings(dobbyengine.TaskSettingChain{Board: fabricengine.BoltDir(prime.HubPath)})
++	if err != nil {
++		return boardengine.BeamModes{}, fmt.Errorf("hubgeom: read the hub-wide beam settings: %w", err)
++	}
++	rootChain, err := TaskSettingChain(prime, "")
++	if err != nil {
++		return boardengine.BeamModes{}, err
++	}
++	root, err := readBeamSettings(rootChain)
++	if err != nil {
++		return boardengine.BeamModes{}, fmt.Errorf("hubgeom: read the root's beam settings: %w", err)
++	}
++	modes := boardengine.BeamModes{HubWide: hubWide, Root: root, Beams: make(map[string]boardengine.BeamMode, len(beams))}
++	for _, slug := range beams {
++		mode, err := readBeamMode(prime, slug)
++		if errors.Is(err, errBeamWorktreeAbsent) {
++			logger.Info("hubgeom: leaving a beam out of the board files' modes", "beam", slug, "reason", err)
++			continue
++		}
++		if err != nil {
++			logger.Warn("hubgeom: the beam's modes did not read, leaving them out of the board files", "beam", slug, "error", err)
++			continue
++		}
++		modes.Beams[slug] = mode
++	}
++	return modes, nil
++}
++
++// primeOfBoard returns the Location of the prime of the hub whose board directory is boardDir.
++// The Bolt checkout is a worktree of the records repository, whose main worktree is the prime's records sibling,
++// so the prime is the worktree that sibling belongs to.
++// It spawns git only for a records repository whose refs are not files.
++func primeOfBoard(boardDir string) (*lymcwd.Location, error) {
++	worktrees, err := fabricengine.List(boardDir)
++	if err != nil {
++		return nil, fmt.Errorf("hubgeom: list the records worktrees from the board at %s: %w", boardDir, err)
++	}
++	// The main worktree comes first; the porcelain listing spells its path with forward slashes.
++	recordsMain := filepath.FromSlash(worktrees[0].Path)
++	prime, err := lymcwd.ResolveWithin(recordsMain)
++	if err != nil {
++		return nil, fmt.Errorf("hubgeom: resolve the prime from its records worktree %s: %w", recordsMain, err)
++	}
++	if filepath.Clean(prime.WorktreePath()) == filepath.Clean(recordsMain) {
++		return nil, fmt.Errorf("hubgeom: the records worktree %s belongs to no worktree beside it, so the prime does not resolve", recordsMain)
++	}
++	return prime, nil
++}
++
++// readBeamMode reads the beam slug's settings from its worktree up.
++// It also reads the parent branch its origin record names and the pull request its landing record names.
++// A beam whose worktree is not on this machine is errBeamWorktreeAbsent.
++// The settings such a beam's runs read are not here to read.
++func readBeamMode(prime *lymcwd.Location, slug string) (boardengine.BeamMode, error) {
++	if _, err := os.Stat(fabricengine.WorktreePath(prime, slug)); errors.Is(err, fs.ErrNotExist) {
++		return boardengine.BeamMode{}, errBeamWorktreeAbsent
++	} else if err != nil {
++		return boardengine.BeamMode{}, fmt.Errorf("hubgeom: stat the worktree of the beam %q: %w", slug, err)
++	}
++	chain, err := TaskSettingChain(prime, slug)
++	if err != nil {
++		return boardengine.BeamMode{}, err
++	}
++	mode, err := readBeamSettings(chain)
++	if err != nil {
++		return boardengine.BeamMode{}, err
++	}
++	origin, found, err := fabricengine.ReadOriginFor(prime, slug)
++	if err != nil {
++		return boardengine.BeamMode{}, fmt.Errorf("hubgeom: read the origin record of the beam %q: %w", slug, err)
++	}
++	if found {
++		mode.ParentBranch = origin.ParentBranch
++	}
++	beam, err := lymcwd.NamedWorktree(prime.HubPath, slug)
++	if err != nil {
++		return boardengine.BeamMode{}, fmt.Errorf("hubgeom: resolve the worktree of the beam %q: %w", slug, err)
++	}
++	record, found, err := pawlengine.ReadLanding(loomengine.BeamLandingPath(beam), loomengine.BeamLandingLockPath(beam), slug)
++	if err != nil {
++		return boardengine.BeamMode{}, fmt.Errorf("hubgeom: read the landing record of the beam %q: %w", slug, err)
++	}
++	if found && record.PullRequest != nil {
++		mode.PullRequestNumber = record.PullRequest.Number
++		mode.PullRequestURL = record.PullRequest.URL
++	}
++	return mode, nil
++}
++
++// readBeamSettings reads autonomy and pull_request over chain, each with the worktree whose own files set it.
++// Autonomy reads as on or off.
++func readBeamSettings(chain dobbyengine.TaskSettingChain) (boardengine.BeamMode, error) {
++	autonomy, err := readBeamSetting(chain, dobbyengine.AutonomyKey)
++	if err != nil {
++		return boardengine.BeamMode{}, err
++	}
++	text := autonomyOffText
++	if autonomy.Value == strconv.FormatBool(true) {
++		text = autonomyOnText
++	}
++	autonomy.Value = text
++	pullRequest, err := readBeamSetting(chain, dobbyengine.PullRequestKey)
++	if err != nil {
++		return boardengine.BeamMode{}, err
++	}
++	return boardengine.BeamMode{Autonomy: autonomy, PullRequest: pullRequest}, nil
++}
++
++// readBeamSetting reads the per-task key over chain.
++// The value's SetBy is the slug of the worktree that set it, and the root's subject stands for the prime.
++// SetBy is empty when the hub-wide default decides.
++func readBeamSetting(chain dobbyengine.TaskSettingChain, key string) (boardengine.SettingValue, error) {
++	value, anchor, err := dobbyengine.LookupWithSource(chain, key)
++	if err != nil {
++		return boardengine.SettingValue{}, err
++	}
++	setting := boardengine.SettingValue{Value: value}
++	if anchor != dobbyengine.HubWideSource {
++		setting.SetBy = chain.Names[anchor]
++		if setting.SetBy == "" {
++			setting.SetBy = boardengine.RootSubject
++		}
++	}
++	return setting, nil
++}
+diff --git a/internal/hubgeom/beammodes_integration_test.go b/internal/hubgeom/beammodes_integration_test.go
+new file mode 100644
+index 000000000..fb3a9737d
+--- /dev/null
++++ b/internal/hubgeom/beammodes_integration_test.go
+@@ -0,0 +1,91 @@
++// beammodes_integration_test.go drives BeamModes over one real hub from hubforge:
++// the worktree each setting is read from, the beam's parent branch and its recorded pull request.
++
++package hubgeom_test
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/pawlengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// writeBeamFile writes document as the beam.yaml under dir, replacing any file there.
++func writeBeamFile(t *testing.T, dir, document string) {
++	t.Helper()
++	path := configengine.ConfigFile(dir, "beam")
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(path), err)
++	}
++	if err := os.WriteFile(path, []byte(document), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++	}
++}
++
++// TestBeamModes pins what the board's reader answers for the root and a beam.
++// Each value comes with the worktree whose own files set it: root for the prime, empty for the hub-wide default.
++// The beam also gets its parent branch from its origin record and its pull request from its landing record.
++// A beam named with no worktree on this machine is left out.
++func TestBeamModes(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	l := h.Location
++	const beam = "bm-beam"
++	hubforge.AddPairWith(t, h, beam, fabricengine.AddOptions{SkipPush: true})
++	beamLocation, err := lymcwd.Resolve(fabricengine.WorktreePath(l, beam))
++	if err != nil {
++		t.Fatalf("lymcwd.Resolve(beam pair): %v", err)
++	}
++	writeBeamFile(t, h.BoardDir(), "autonomy: false\npull_request: \"off\"\n")
++	writeBeamFile(t, l.AnchorPath(), "autonomy: true\n")
++	writeBeamFile(t, beamLocation.AnchorPath(), "pull_request: \"merge\"\n")
++	const pullRequestURL = "https://github.com/example/repo/pull/12"
++	setPullRequest := func(rec *pawlengine.LandingRecord) error {
++		rec.PullRequest = &pawlengine.LandingPullRequest{Number: 12, URL: pullRequestURL}
++		return nil
++	}
++	if err := pawlengine.UpdateLanding(loomengine.BeamLandingPath(beamLocation), loomengine.BeamLandingLockPath(beamLocation), beam, setPullRequest); err != nil {
++		t.Fatalf("UpdateLanding(%q): %v", beam, err)
++	}
++	primeBranch := strings.TrimSpace(gitkit.Git(t, l.WorktreePath(), "branch", "--show-current"))
++
++	got, err := hubgeom.BeamModes(h.BoardDir(), []string{beam, "bm-elsewhere"})
++	if err != nil {
++		t.Fatalf("BeamModes() error = %v; want nil", err)
++	}
++	want := boardengine.BeamModes{
++		HubWide: boardengine.BeamMode{
++			Autonomy:    boardengine.SettingValue{Value: "off"},
++			PullRequest: boardengine.SettingValue{Value: "off"},
++		},
++		Root: boardengine.BeamMode{
++			Autonomy:    boardengine.SettingValue{Value: "on", SetBy: boardengine.RootSubject},
++			PullRequest: boardengine.SettingValue{Value: "off"},
++		},
++		Beams: map[string]boardengine.BeamMode{beam: {
++			Autonomy:          boardengine.SettingValue{Value: "on", SetBy: boardengine.RootSubject},
++			PullRequest:       boardengine.SettingValue{Value: "merge", SetBy: beam},
++			ParentBranch:      primeBranch,
++			PullRequestNumber: 12,
++			PullRequestURL:    pullRequestURL,
++		}},
++	}
++	if diff := cmp.Diff(want, got); diff != "" {
++		t.Errorf("BeamModes() mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/hubgeom/doc.go b/internal/hubgeom/doc.go
+index 464e37d80..0201f5e03 100644
+--- a/internal/hubgeom/doc.go
++++ b/internal/hubgeom/doc.go
+@@ -56,6 +56,15 @@
+ // It answers for the worktree it is named, through TaskSettingChain and the per-task lookup, at the moment of the call.
+ // A failed read answers false and warns once per episode.
+ //
++// BeamModes is the board's beam mode reader.
++// It reads autonomy and pull_request for the root and each beam the way their runs read them.
++// The read goes through TaskSettingChain and the per-task lookup, and each value carries the worktree that set it.
++// It adds a beam's parent branch from its origin record and its pull request from its landing record.
++// A beam whose worktree is not on this machine is left out,
++// so the board files never show its parent's values as its own runs' values.
++// It finds the prime from the board directory alone:
++// the Bolt checkout is a worktree of the records repository, whose main worktree is the prime's records sibling.
++//
+ // A pair reads as a beam when its origin record carries the beam mark or its board entry is a project with the beam flag.
+ // So a beam reads as one before its pawl run marks the pair.
+ // A failed prime read is taken as the prime and a failed beam read as a task, each logged at Warn.
+diff --git a/internal/hubgeom/tasksetting.go b/internal/hubgeom/tasksetting.go
+index 6707035d4..752fac0a9 100644
+--- a/internal/hubgeom/tasksetting.go
++++ b/internal/hubgeom/tasksetting.go
+@@ -16,6 +16,7 @@ import (
+ // TaskSettingChain returns the chain the per-task beam settings of the worktree slug are looked up through.
+ // It lists the anchor of slug's worktree, then each parent's that ParentOf names, ending with the prime's;
+ // an empty slug names the prime alone.
++// Each anchor's worktree name stands beside it, "" for the prime.
+ // A worktree with no directory in the hub on this machine is left out, so its parent's value applies.
+ // A cycle among the parents ends the walk at the prime.
+ // The board is the hub's Bolt checkout, whose default layer applies when no worktree sets a key.
+@@ -34,6 +35,7 @@ func TaskSettingChain(prime *lymcwd.Location, slug string) (dobbyengine.TaskSett
+ 				return dobbyengine.TaskSettingChain{}, fmt.Errorf("hubgeom: resolve the worktree of %q for its beam settings: %w", slug, err)
+ 			}
+ 			chain.Anchors = append(chain.Anchors, worktree.AnchorPath())
++			chain.Names = append(chain.Names, slug)
+ 		case !errors.Is(err, fs.ErrNotExist):
+ 			return dobbyengine.TaskSettingChain{}, fmt.Errorf("hubgeom: stat the worktree of %q for its beam settings: %w", slug, err)
+ 		}
+@@ -42,6 +44,7 @@ func TaskSettingChain(prime *lymcwd.Location, slug string) (dobbyengine.TaskSett
+ 		}
+ 	}
+ 	chain.Anchors = append(chain.Anchors, prime.AnchorPath())
++	chain.Names = append(chain.Names, "")
+ 	chain.Board = fabricengine.BoltDir(prime.HubPath)
+ 	return chain, nil
+ }
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 70c99cf53..85030e703 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -126,6 +126,9 @@ Rule: Reading a per-task beam setting, `beam.pull_request`, `beam.land_notice` o
+   A merged value never counts, so a hub default is never a worktree's own setting.
+ - A value set lower down overrides the one above in both directions; absence means the parent's value.
+ - No board field carries a per-task beam setting.
++- The board files show the root's and each beam's value, and the worktree that set it, through the same lookup:
++  `hubgeom.BeamModes` reads them with `LookupWithSource`.
++  A beam whose worktree is not on the rendering machine shows no value.
+ 
+ ## Sparse hub base
+ 
