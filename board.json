@@ -832,6 +832,25 @@
       "body": "## Why (operator, 2026-11-26)\n\nMuch effort went into the per-test coverage maps, and little use has been found for them.\nThe measurement in `docs/research/speed/testmap-use-measure-2026-11-21/report.md` found, over 10 darn runs:\nthe reach turn added tests in 2 runs; the mutation step raised 6 LOW findings from 27 survivors; the \"reaches none\" triage line was wrong every time and is removed;\nreach and mutation together cost about 2 minutes of gate wall time per run.\n\n## Done meanwhile (operator, 2026-11-26)\n\nThe mutation report step is off in every gate key of the loomyard hub's `gate.yaml` (`reports` without `mutation`; `webster-fix` and `pr-review` with `reports: []`).\nReach and redundancy stay on.\n\n## What to find out\n\n- Every user of the coverage maps in lym: the reach, redundancy and mutation report steps, `lym gate mutate`, `lym gate test --map`, and any other reader.\n- For each: what it has given in landed runs (tests added, findings raised and fixed) against what it costs in gate time, memory and upkeep.\n- The effect of turning the mutation step off: whether review findings, or the defects that land, change in the runs after it.\n- A recommendation per user: keep, tune or remove; and whether the maps themselves, `internal/testcover` and their upkeep, go when no user is kept.\n",
       "created": "2026-11-26T21:16:20Z",
       "revised": "2026-11-26T21:16:20Z"
+    },
+    {
+      "id": 1705,
+      "handle": "F1",
+      "slug": "kde-window-placement",
+      "title": "Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "termwindow",
+        "desktop"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Wish (operator, 2026-11-26)\n\nThe operator runs KDE Plasma with ten virtual desktops and tiles the windows lym opens across them.\n\n- lym remembers, for each window it opens, the virtual desktop it sits on and its place in the tiling.\n  When the window is opened again, after a restart or a `lym machine start`, it lands straight back in that place.\n- A new window knows where it belongs: windows of one kind share a place the operator chose.\n  For example, every run window of the loomyard hub lands on the virtual desktop named \"Board B2\".\n- The \"start every hub\" desktop launcher is of no use until this works: it opens every hub's windows with no control over where they land.\n\n## To settle\n\n- Through what lym reads and sets a window's virtual desktop and tile on KDE Plasma (KWin scripting, D-Bus), and what it does on other desktops.\n- What \"kind\" a placement rule keys on: hub, role (orch, run strand, board session), or run.\n- Where the remembered places and the rules live: machine state, or hub config per machine.\n",
+      "created": "2026-11-26T21:21:13Z",
+      "revised": "2026-11-26T21:21:13Z"
     }
   ],
   "prime_owner": "neve",
