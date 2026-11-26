@@ -1,6 +1,6 @@
 # PATTERN: tests never fake another module with made-up data
 
-`no-fake-other-modules` · Task · enhancement, pattern, testkit · running · Describe
+`no-fake-other-modules` · Task · enhancement, pattern, testkit · landing · Finalize
 
 ## Operator decision (2026-11-26)
 
