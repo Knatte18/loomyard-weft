@@ -739,7 +739,7 @@
       "id": 1697,
       "handle": "T5",
       "slug": "fabric-git-free-core",
-      "title": "Cut fabricengine tier1 test time at least in half",
+      "title": "Restructure fabricengine into a git-free core so its tests need few repositories",
       "kind": "task",
       "labels": [
         "enhancement",
@@ -747,15 +747,13 @@
         "testkit"
       ],
       "issues": [],
-      "recipe": "darn",
+      "recipe": "motif",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Why\n\n`internal/fabricengine` sets the length of most tier1 gate runs.\nIn `dotnet-gate-fixes`' verify on 2026-11-26 the tier1 run took 250 s, and the package alone took 211 s of it; the next package took 64 s.\nThe package holds about 240 test files and 630 top-level tests, 400 of them in integration files.\nIt also enters the diff scope of changes far from fabric, because its tests import many other engines (webster, weaver, drift, landing, hardener, claude and more), so a change to `gateslot` ran it.\n\n## What to do\n\n- Cut the package's tier1 cost by at least half, measured the same way before and after: the package's tier1 wall and serial time, and its git process count.\n- Start from `docs/research/speed/fabric-test-speed-survey-2026-11-03.md`.\n  Its levers 1, 3 to 6 have landed since; take what remains, chiefly lever 2 (`worktree list` read through `dotgit`, about 15 percent of git processes) and lever 7 (go-git for the code side's reference reads).\n- Delete or fold tests that pin nothing another test does not, by the test-economy rules; a test that only pins plumbing becomes a cheap unit test or goes.\n  Each removal states what it pinned and which test still pins it.\n- Cut the test imports that pull `fabricengine` into the scope of changes to other engines, so a change elsewhere stops running it.\n\n## Constraints\n\n- No production behaviour change beyond the cheaper reads of levers 2 and 7.\n- Report the before and after numbers in the change description.\n",
-      "status": "draft",
+      "body": "## Why\n\n`internal/fabricengine` sets the length of most tier1 gate runs: 211 s of a 250 s tier1 run on 2026-11-26, the next package 64 s.\nIts tests make about 340 hub copies, about 230 pairs with a push, 35 one-repository hubs and 16 second clones per run.\nTrimming and folding tests has been tried several times (`docs/research/speed/fabric-test-speed-survey-2026-11-03.md` and the landings after it); it does not solve it.\nThe cause is the structure: nearly every rule can only be tested against real git repositories.\n\n## Operator decision (2026-11-26)\n\nRestructure `fabricengine` wholesale so its tests need few real repositories; do not trim the test suite again.\n\n## Direction to discuss\n\n- A git-free core: it reads a state snapshot (refs, worktrees, records, origins) as plain data and decides what to do, returning a plan.\n  Its rules are tested in memory over made-up states, with no clone.\n- A thin git side: it reads the snapshot from git and carries out the core's plan; only it needs real repositories.\n- A few end-to-end tests that pin the seam between the two, in place of hundreds of integration tests.\n- How the existing tests move over: which become core tests over states, which stay as git-side tests, which go.\n- The test imports that pull `fabricengine` into the gate scope of other engines' changes, and how the split cuts them.\n\nDiscussion settles the boundary, the order of the move and the split into tasks for raddle.\n",
       "created": "2026-11-26T19:56:47Z",
-      "revised": "2026-11-26T19:56:47Z",
-      "profile": "solid"
+      "revised": "2026-11-26T20:03:18Z"
     }
   ],
   "prime_owner": "neve",

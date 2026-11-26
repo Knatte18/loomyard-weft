@@ -1,24 +1,25 @@
-# Cut fabricengine tier1 test time at least in half
+# Restructure fabricengine into a git-free core so its tests need few repositories
 
-`fabric-git-free-core` · Task · enhancement, fabric, testkit · draft
+`fabric-git-free-core` · Task · enhancement, fabric, testkit
 
 ## Why
 
-`internal/fabricengine` sets the length of most tier1 gate runs.
-In `dotnet-gate-fixes`' verify on 2026-11-26 the tier1 run took 250 s, and the package alone took 211 s of it; the next package took 64 s.
-The package holds about 240 test files and 630 top-level tests, 400 of them in integration files.
-It also enters the diff scope of changes far from fabric, because its tests import many other engines (webster, weaver, drift, landing, hardener, claude and more), so a change to `gateslot` ran it.
+`internal/fabricengine` sets the length of most tier1 gate runs: 211 s of a 250 s tier1 run on 2026-11-26, the next package 64 s.
+Its tests make about 340 hub copies, about 230 pairs with a push, 35 one-repository hubs and 16 second clones per run.
+Trimming and folding tests has been tried several times (`docs/research/speed/fabric-test-speed-survey-2026-11-03.md` and the landings after it); it does not solve it.
+The cause is the structure: nearly every rule can only be tested against real git repositories.
 
-## What to do
+## Operator decision (2026-11-26)
 
-- Cut the package's tier1 cost by at least half, measured the same way before and after: the package's tier1 wall and serial time, and its git process count.
-- Start from `docs/research/speed/fabric-test-speed-survey-2026-11-03.md`.
-  Its levers 1, 3 to 6 have landed since; take what remains, chiefly lever 2 (`worktree list` read through `dotgit`, about 15 percent of git processes) and lever 7 (go-git for the code side's reference reads).
-- Delete or fold tests that pin nothing another test does not, by the test-economy rules; a test that only pins plumbing becomes a cheap unit test or goes.
-  Each removal states what it pinned and which test still pins it.
-- Cut the test imports that pull `fabricengine` into the scope of changes to other engines, so a change elsewhere stops running it.
+Restructure `fabricengine` wholesale so its tests need few real repositories; do not trim the test suite again.
 
-## Constraints
+## Direction to discuss
 
-- No production behaviour change beyond the cheaper reads of levers 2 and 7.
-- Report the before and after numbers in the change description.
+- A git-free core: it reads a state snapshot (refs, worktrees, records, origins) as plain data and decides what to do, returning a plan.
+  Its rules are tested in memory over made-up states, with no clone.
+- A thin git side: it reads the snapshot from git and carries out the core's plan; only it needs real repositories.
+- A few end-to-end tests that pin the seam between the two, in place of hundreds of integration tests.
+- How the existing tests move over: which become core tests over states, which stay as git-side tests, which go.
+- The test imports that pull `fabricengine` into the gate scope of other engines' changes, and how the split cuts them.
+
+Discussion settles the boundary, the order of the move and the split into tasks for raddle.
