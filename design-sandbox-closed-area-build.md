@@ -7,8 +7,11 @@
 Every agent lym starts runs with `--dangerously-skip-permissions`, which many people do not accept, and a repository that states it supports safe sandboxing is worth more than one that does not.
 The area matters most on the work machine OSL-1046 (operator, 2026-11-22).
 On OSL-1046 sudo is tightly limited and does not cover AppArmor, so the profile `bwrap` needs on Ubuntu 24.04 cannot be loaded there; a `bwrap` area, and podman or Claude Code's `/sandbox`, which need the same user namespaces, are blocked on that machine until IT loads it.
-Landlock needs no privilege, but the study `docs/research/platform/landlock-area-2026-11-23.md` (landed) found it does not close the two exposures below on kernel ABI 8 (Neve's measured; OSL-1046's by kernel version): a restricted child still reached the user bus and another hub's tmux socket, and `systemd-run --user` escapes the domain. On ABI 8 a Landlock area is a guardrail, not a barrier, and the study recommends building none on ABI 8.
+Landlock needs no privilege, but the study `docs/research/platform/landlock-area-2026-11-23.md` (landed) found it does not close the two exposures below on kernel ABI 8 (Neve's measured; OSL-1046's by kernel version): a restricted child still reached the user bus and another hub's tmux socket, and `systemd-run --user` escapes the domain. On ABI 8 a Landlock area alone is a guardrail, not a barrier.
 It recommends PreToolUse rows in `internal/shellguard` for the bus commands and other hubs' tmux servers, and re-running its probe on each new kernel.
+The later study `docs/research/platform/sandbox-without-new-kernel-2026-11-23.md` (landed) finds that a seccomp filter handing every `connect()` to a supervisor in lym, stacked over Landlock ABI 8, closes both exposures with no root and no user namespace (measured on Neve; unmeasured on OSL-1046).
+It recommends the shellguard rows now, that area when a barrier is wanted, after its probe has run on OSL-1046, and an AppArmor profile per hub as the fallback.
+Of the shellguard rows, one is partly built: run sessions are refused raw `tmux` and `script`, the sampler excepted (`33cbce982`), which a script file or `eval` gets past; no row for the bus commands came with it.
 The operator uses lym alone, on Linux (OSL-1046: Ubuntu 24.04; Neve: Kubuntu on Ubuntu 26.04, Plasma 6), and has no interest in other users or in Windows.
 The research is `docs/research/platform/sandboxing-options-2026-10-30.md`: it weighs `bwrap`, Landlock, a dedicated Linux user, systemd sandboxing, podman and Claude Code's own `/sandbox`, and the packages and cards each would change.
 
@@ -57,7 +60,7 @@ A host-side process serving a fixed set of verbs and never a command line from t
 ## What is not claimed
 
 Isolation from a kernel exploit, which needs a virtual machine; that data in the area cannot leave through an allowed host; and that a landed change of lym itself cannot run on the host once deployed, which matters on this hub because it develops lym.
-Landlock stays a possible inner layer only once the kernel controls pathname sockets (the landed study lists the five tasks that then takes), and Claude Code deny rules in shuttle's settings are a cheap second line inside the area; the dedicated user, podman, systemd sandboxing and Claude Code's `/sandbox` inside lym runs are left out.
+Landlock alone controls no pathname socket until the kernel does (the Landlock study lists the five tasks that area takes; the later study puts Landlock ABI 8 under its seccomp supervisor instead), and Claude Code deny rules in shuttle's settings are a cheap second line inside the area; the dedicated user, podman, systemd sandboxing and Claude Code's `/sandbox` inside lym runs are left out.
 The report estimates the whole at five tasks and eighteen cards.
 
 ## Related
