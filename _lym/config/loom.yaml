@@ -1,1 +1,2 @@
-discussion_reviewer_fan: ["review-discussion", "review-discussion", ""]
+discussion:
+    reviewer_fan: ["review-discussion", "review-discussion", ""]
