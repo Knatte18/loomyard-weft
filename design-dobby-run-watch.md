@@ -1,8 +1,6 @@
 # Built-in run watch: mail the parent on every non-running state and on a gate slot held too long
 
-`dobby-run-watch` · Task · feature, dobby, gate · draft
-
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
+`dobby-run-watch` · Task · feature, dobby, gate
 
 Imported from [issue #222](https://github.com/Knatte18/loomyard/issues/222).
 

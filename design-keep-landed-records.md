@@ -2,8 +2,6 @@
 
 `keep-landed-records` · Task · enhancement, landing, fabric, report · draft
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Imported from [issue #229](https://github.com/Knatte18/loomyard/issues/229).
 
 Import note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `_bolt/.lym/creel/journal`.
