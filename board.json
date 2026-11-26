@@ -401,6 +401,27 @@
       "body": "Imported from [issue #246](https://github.com/Knatte18/loomyard/issues/246).\n\n## Seen\n\nA darn writer worked through a multi-step change, editing seven files over a long stretch, without committing until its parent asked.\nAn earlier writer in the same hub stalled on an API error and then died in a machine reboot with its work uncommitted, so only the untracked files survived in the worktree.\n\n## Expected\n\nAgents that work iteratively, darn writers above all, commit after each coherent step instead of holding the whole change uncommitted until the end.\nThe writer stencils and skills say so, so that a stall, a dead strand or a reboot loses at most one step, and the parent can see progress in the branch's history.\n",
       "created": "2026-11-26T07:33:06Z",
       "revised": "2026-11-26T07:33:06Z"
+    },
+    {
+      "id": 1629,
+      "handle": "B5",
+      "slug": "creel-refusal-after-cd",
+      "title": "creel post refusal after a persisted cd does not say why",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "cwd"
+      ],
+      "issues": [
+        245
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #245](https://github.com/Knatte18/loomyard/issues/245).\n\nAn agent's survey commands used `cd` into subdirectories, and the shell kept that directory for later calls.\nThe next `lym creel post` was refused because the working directory was no longer the anchored worktree root, which cost a retry.\n\nWhy it is abnormal:\n- The shell's directory persisting across calls is easy to trip over, and the refusal surfaced only on the later creel call, away from the `cd` that caused it.\n\nWhat to do:\n- Have the refusal name the anchored root and say that a previous `cd` likely moved the shell, or accept calls from any directory inside the worktree.\n- Mention in the agent guidance that `cd` persists and absolute paths or `git -C` avoid it.\n\nProvenance: task `retire-d9`; note Darn-Write.md.\n",
+      "created": "2026-11-26T07:33:09Z",
+      "revised": "2026-11-26T07:33:09Z"
     }
   ],
   "prime_owner": "neve",
