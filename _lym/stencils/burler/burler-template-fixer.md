@@ -14,7 +14,7 @@
      the fix half is spawned only once the review is accepted on disk, and never waits on or messages the review half.
      It never repeats the review-file format, which lives in the file review_format_path names,
      nor the fix-everything body, which lives in the fix step.
-lym-stencil: sha256=f0525b93d29275b9e8ddafaa6eb293b07709e3b2e9dd8595b93875d0bcbd1414 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=045b2e812d0223532e5be973c2e81ab3cc18a04a72869087fc9038ba8dce2210 build=8641cd5042d72bf0b060ec1d3635da01859814ff time=2026-11-26T20:10:44Z -->
 
 # Burler — fix
 
@@ -42,6 +42,15 @@ Read the fix step only when its step is reached, never early.
 Learn how an external tool such as tmux behaves from a test in the repository, in the tier the hub runs that tool's tests in, never from processes you start in the shell.
 Run that one test through `lym gate test --tier <that tier>` with its package and, after `--`, a filter that selects it, and check that the gate's report shows the test ran, not skipped.
 Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
+
+When `lym gate test` refuses to run any tier, no change to your own call clears the refusal,
+and its way forward is a change to the hub's gate config, as on a hub that declares no tier0, the round has no gate.
+Run no raw test command in its place:
+check that each package or project you changed still compiles, with the build or vet command its language uses on that one package,
+and name the refusal in the fixer-report's deferred section, so your parent takes the step the refusal names.
+A refusal that a change to your own call clears, such as dropping a word after `--`, is no such case,
+even when its way forward names the config:
+change the call and run the gate again.
 
 ## What you may write (BLOCKING)
 
