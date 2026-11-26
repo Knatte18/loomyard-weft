@@ -1,6 +1,6 @@
 # TestEnterSession_DrivesTheToldTmux fails at temp dir cleanup now and then
 
-`enter-session-test-cleanup-race` · Task · bug, reed · running · Darn-Write
+`enter-session-test-cleanup-race` · Task · bug, reed · running · Drift-Verify
 
 `TestEnterSession_DrivesTheToldTmux` in `internal/reedcli` failed once in a tier1 gate run of `dotnet-gate-fixes` (2026-11-26, run `20261126T191602Z-tier1-1241782`), then passed 30 of 30 runs with `-count=30`.
 The failure is in cleanup, not in an assertion:
