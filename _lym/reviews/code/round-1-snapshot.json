@@ -7,5 +7,6 @@
       "title": "Use the nested config key names",
       "digest": "5350253c5753f2b3dd80bd911fd36b22359960ea3ad98610601b4e0f493253e8"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
