@@ -1,8 +1,9 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_reason": "pause requested",
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
