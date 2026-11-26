@@ -606,7 +606,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).\n\n## What happened\n\nDuring a code review fix round, the reach note listed `hubCancelDeps`, `Topology.SettleGonePairTeardown` and `Topology.RemoveLocal` as reached by no mapped test.\nEach is called directly by a tier1 test.\nThe maps of both packages belonged to the worktree itself and were minutes old.\n`lym gate reach` gave the same answer.\nThe note carried the caveat \"may run it unseen\".\n\n## Why it is abnormal\n\nA function that a tier1 test calls directly should be mapped to that test, above all with a fresh map of the worktree's own.\nThe false \"unreached\" answer could only be ruled out by reading the tests and running them.\nThe caveat does not say why the map missed these tests, so the reader cannot tell a map defect from a real coverage gap.\n\n## What to do\n\n- Find why the reach map misses direct calls from tier1 tests, and fix the mapping.\n- Where the map cannot see a call, have the caveat name the reason for that function.\n\nProvenance: task `remove-record-rerun-pair-gone`, note `burler-code-r2.md`.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-26T12:30:52Z",
       "revised": "2026-11-26T12:31:37Z",
       "profile": "light"
