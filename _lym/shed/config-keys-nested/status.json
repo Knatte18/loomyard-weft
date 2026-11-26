@@ -1,13 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
-  "pending_by": "shed",
+  "state": "blocked",
+  "error": "webster: correctness findings from an earlier run exit are pending: 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report (/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md: cannot be checked: outside the task worktree); way forward: 1) lym webster reset --to start; 2) re-step the Webster row",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "webster: correctness findings from an earlier run exit are pending: 1 correctness finding(s): 1) parent-write: Master wrote \"/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md\" — Master may write only its two contract files (outcome.yaml and summary.md); any other write means Master implemented a batch itself or hand-wrote a batch report (/home/knatte/Code/loomyard-LYMHUB/config-keys-nested/_lym/loom/friction/webster-master.md: cannot be checked: outside the task worktree); way forward: 1) lym webster reset --to start; 2) re-step the Webster row"
   },
   "history": [
     {
@@ -276,6 +275,15 @@
         }
       ],
       "budget_exempt": true
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-26T13:02:26Z",
+      "started_at": "2026-11-26T13:02:26Z",
+      "budget_exempt": true,
+      "by": "shed"
     }
   ],
   "product": {
