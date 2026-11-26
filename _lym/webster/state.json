@@ -889,8 +889,56 @@
       "spawnedAt": "2026-11-26T12:12:46Z",
       "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-contracts-key-names",
+        "status": "done",
+        "head_sha": "fea915351951e0dd58b5903c19a733f681985d7f",
+        "deviations": [
+          "contracts/recipes/darn-recipe.yaml",
+          "contracts/recipes/motif-recipe.yaml",
+          "contracts/recipes/sampler-recipe.yaml",
+          "contracts/recipes/tapestry-recipe.yaml",
+          "contracts/specs/implementer-spec.md",
+          "contracts/specs/landing-fix-review-spec.md",
+          "contracts/specs/loom-final-summary-spec.md",
+          "contracts/specs/loom-plan-checks-spec.md",
+          "contracts/specs/loom-plan-spec.md",
+          "contracts/specs/webster-spec.md",
+          "contracts/stencils/darn/darn-fragment-make-change-gated.md",
+          "contracts/stencils/darn/darn-fragment-make-change.md",
+          "contracts/stencils/darn/darn-fragment-report.md",
+          "contracts/stencils/darn/darn-template-write.md",
+          "contracts/stencils/drift/drift-template-judge.md",
+          "contracts/stencils/loom/loom-block-plan-cards.md",
+          "contracts/stencils/loom/loom-template-discussion.md",
+          "contracts/stencils/raddle/raddle-template-agent.md",
+          "contracts/stencils/webster/webster-body-implementer.md",
+          "docs/dotnet-hub.md",
+          "docs/reference/claude-accounts.md",
+          "docs/shared-libs/lymcwd.md",
+          "pattern/PATTERN-agent-addressing.md",
+          "pattern/PATTERN-fabric-boundary.md",
+          "pattern/PATTERN-gate-slot.md",
+          "pattern/PATTERN-heddle-instructions.md",
+          "pattern/PATTERN-lym-files.md",
+          "pattern/PATTERN-reed-panes.md",
+          "pattern/PATTERN-shuttle-provider-seam.md",
+          "pattern/PATTERN-stencil-ownership.md",
+          "pattern/PATTERN-test-isolation.md",
+          "pattern/PATTERN-test-speed.md"
+        ]
+      },
+      "cardShas": [
+        "fea915351951e0dd58b5903c19a733f681985d7f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a010f823d9ccc1013.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a010f823d9ccc1013.jsonl"
+      ]
     },
     "4": {
       "slug": "nest-loom-tapestry",
@@ -1012,7 +1060,7 @@
       ]
     }
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
   "masterEngine": "claude",
@@ -1023,6 +1071,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a48bdda8d223fd1dc.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7f4fa893973401ca.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a7c587b88bb8161e8.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a8a2c11d0a731d324.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a010f823d9ccc1013.jsonl"
   ]
 }
