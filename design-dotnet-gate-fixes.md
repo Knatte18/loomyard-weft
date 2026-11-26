@@ -1,6 +1,6 @@
 # Gate test fixes for dotnet hubs: hung testhost, loggers, filters, tiers
 
-`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · starting · Open-Window
+`dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Drift-Baseline
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
