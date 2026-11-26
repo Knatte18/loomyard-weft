@@ -1,0 +1,146 @@
+diff --git a/internal/reedcli/entersession_integration_test.go b/internal/reedcli/entersession_integration_test.go
+index 17bb39e46..6eca2ed53 100644
+--- a/internal/reedcli/entersession_integration_test.go
++++ b/internal/reedcli/entersession_integration_test.go
+@@ -1,23 +1,30 @@
+-// entersession_integration_test.go pins that the watchdog's per-session engine drives the configured tmux binary.
++// entersession_integration_test.go pins which tmux binary the watchdog's per-session engine drives,
++// and that a test can wait for an entered session's goroutines to stop.
+ // It runs against a hub fixture with no tmux server.
+ 
+ package reedcli
+ 
+ import (
++	"errors"
++	"io/fs"
++	"os"
+ 	"path/filepath"
+ 	"testing"
++	"time"
+ 
+ 	"gopkg.in/yaml.v3"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+ // TestEnterSession_DrivesTheToldTmux seeds a worktree config that names one tmux path and sets watchdog to off.
+-// It then asserts that enterSession's engine drives a different told path and starts no name-repair loop.
++// It then asserts that enterSession's engine drives a different told path and starts no name-repair loop,
++// and that the OOM watch's first read is done once the wait for the session's goroutines returns.
+ func TestEnterSession_DrivesTheToldTmux(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -40,16 +47,44 @@ func TestEnterSession_DrivesTheToldTmux(t *testing.T) {
+ 	}
+ 	hubforge.SeedConfig(t, h, map[string]string{"reed": string(seeded)})
+ 
++	// The OOM watch's first strand read creates this file under the worktree.
++	opLock := filepath.Join(location.AnchorPath(), lymdirs.DotLymDirName, "reed.lock")
++	if _, err := os.Stat(opLock); !errors.Is(err, fs.ErrNotExist) {
++		t.Fatalf("os.Stat(%q) before enterSession = %v; want fs.ErrNotExist", opLock, err)
++	}
++
+ 	told := filepath.Join(scratch, "told-tmux")
+ 	ws, err := enterSession(h.Path, told, reedengine.SessionName(prime), watchdogDefaultTiming())
+ 	if err != nil {
+ 		t.Fatalf("enterSession: %v", err)
+ 	}
+-	t.Cleanup(ws.cancel)
++	t.Cleanup(func() { stopWatchedSession(t, ws) })
+ 	if got := ws.eng.TmuxPath(); got != told {
+ 		t.Errorf("engine TmuxPath() = %q, want the told path %q", got, told)
+ 	}
+ 	if ws.repairsNames {
+ 		t.Error("enterSession with watchdog: off started the name-repair loop; want none")
+ 	}
++	stopWatchedSession(t, ws)
++	if _, err := os.Stat(opLock); err != nil {
++		t.Errorf("os.Stat(%q) after the wait = %v; want the file the OOM watch's first read creates", opLock, err)
++	}
++}
++
++// stopWatchedSession cancels ws and waits for every goroutine it started to return.
++// A goroutine still reading the session writes under the worktree,
++// so a test that returns without this wait can race its temp directory's removal.
++func stopWatchedSession(t *testing.T, ws watchedSession) {
++	t.Helper()
++	ws.cancel()
++	stopped := make(chan struct{})
++	go func() {
++		ws.running.Wait()
++		close(stopped)
++	}()
++	select {
++	case <-stopped:
++	case <-time.After(30 * time.Second):
++		t.Error("the watched session's goroutines did not return within 30s of its cancel")
++	}
+ }
+diff --git a/internal/reedcli/watchdog.go b/internal/reedcli/watchdog.go
+index af0946a04..21b6c435c 100644
+--- a/internal/reedcli/watchdog.go
++++ b/internal/reedcli/watchdog.go
+@@ -197,11 +197,14 @@ func sessionsAreIdle(names []string, err error) bool {
+ // watchedSession is one worktree session the daemon has entered.
+ // It holds the *reedengine.Engine built for the session.
+ // Its cancel stops every goroutine running on its behalf: the OOM watch, and the name-repair loop when there is one.
++// cancel returns at once, while a goroutine may still be inside a read that writes under the worktree;
++// running counts those goroutines down to zero as each returns.
+ //
+ // repairsNames is false for a `watchdog: off` worktree, which runs no name-repair loop but still has its OOM watch.
+ type watchedSession struct {
+ 	eng          *reedengine.Engine
+ 	cancel       context.CancelFunc
++	running      *sync.WaitGroup
+ 	repairsNames bool
+ }
+ 
+@@ -348,22 +351,25 @@ func enterSession(hub, tmuxPath, sessionName string, timing watchdogTiming) (wat
+ 	eng := reedengine.New(cfg, geom, shuttleengines.EnvScrub())
+ 
+ 	ctx, cancel := context.WithCancel(context.Background())
+-	go watchPaneOOMKills(ctx, hub, sessionName, engineOOMBoundaries(eng, location), timing)
++	running := &sync.WaitGroup{}
++	running.Go(func() {
++		watchPaneOOMKills(ctx, hub, sessionName, engineOOMBoundaries(eng, location), timing)
++	})
+ 
+ 	// A worktree reaches the daemon's discovery loop only after "lym reed up" already booted it,
+ 	// and that boot already validated cfg.Watchdog loudly (ensureServerAndSessionLocked), so the
+ 	// only value this needs to recognize here is the "off" spelling itself — every other value,
+ 	// valid or not, behaves as enabled, failing safe toward watching for a value it cannot parse.
+ 	if strings.EqualFold(strings.TrimSpace(cfg.Watchdog), "off") {
+-		return watchedSession{eng: eng, cancel: cancel}, nil
++		return watchedSession{eng: eng, cancel: cancel, running: running}, nil
+ 	}
+ 
+-	go func() {
++	running.Go(func() {
+ 		if err := eng.WatchNames(ctx, shuttleengines.SessionNamers(dirs)); err != nil {
+ 			logger.Debug("reed: watchdog's name repair loop returned", "session", sessionName, "err", err)
+ 		}
+-	}()
+-	return watchedSession{eng: eng, cancel: cancel, repairsNames: true}, nil
++	})
++	return watchedSession{eng: eng, cancel: cancel, running: running, repairsNames: true}, nil
+ }
+ 
+ // dispatchReap starts the one off-loop goroutine that reaps sessionName, registering it with wg and
+diff --git a/internal/reedcli/watchdog_integration_test.go b/internal/reedcli/watchdog_integration_test.go
+index ae2efb7e4..68fe87576 100644
+--- a/internal/reedcli/watchdog_integration_test.go
++++ b/internal/reedcli/watchdog_integration_test.go
+@@ -512,7 +512,7 @@ func TestWatchdogDaemon(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("enterSession (after down + flip-to-off + up): %v", err)
+ 		}
+-		t.Cleanup(ws.cancel)
++		t.Cleanup(func() { stopWatchedSession(t, ws) })
+ 		if ws.repairsNames {
+ 			t.Error("enterSession() after down + flip-to-off + up started the name-repair loop; want none — re-entry must re-read the flipped config rather than the value it held before the down/up")
+ 		}
