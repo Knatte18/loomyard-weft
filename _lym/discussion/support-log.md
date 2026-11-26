@@ -100,7 +100,21 @@ Each finding, merged across lenses where they overlap:
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised six BLOCKING, seventeen MEDIUM and three LOW findings; the fixer report records each disposition.
+Two facts were measured on Neve for it with a throwaway cgo-built probe (`CGO_ENABLED=1`, Go 1.26.8, kernel 7.0.0-31), kept outside the repository:
+
+- Yama: a parent starts a target and a tracer as siblings.
+  With no declaration the tracer's `pidfd_getfd` fails with `EPERM` and its open of `/proc/<target>/mem` with permission denied;
+  after the target's `prctl(PR_SET_PTRACER, <tracer pid>)` both succeed, also once the target has `exec`ed `/bin/sleep`.
+- Landlock `TSYNC`: six goroutines locked to their threads, then `prctl(PR_SET_NO_NEW_PRIVS)` on the calling thread
+  (only that thread's status shows `NoNewPrivs: 1`), then `landlock_restrict_self` with `TSYNC` handling `WRITE_FILE`:
+  the call returns 0, all eleven threads show `NoNewPrivs: 1`, and each locked thread's write fails with permission denied.
+  With Landlock first the call fails with `EPERM`, no thread changes, and every write succeeds.
+
+Two facts were read from Neve's files: the `hosts:` line of `/etc/nsswitch.conf` and the `/etc/resolv.conf` link,
+and the `.in_use/<pid>` files Claude Code writes under each plugin version in `~/.claude/plugins/cache`.
 
 ## Question ledger
 
