@@ -68,4 +68,10 @@ Rationale: The board entry's title names the deliverable as the tools/ program. 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - interrupt-leaves-dir-folders (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
