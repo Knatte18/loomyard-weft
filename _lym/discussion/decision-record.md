@@ -209,6 +209,15 @@ Bound: a machine cut off from origin goes on locally, and an adopt elsewhere re-
 
 None.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - pusher-lock-and-conditions-untested (class design, severity MEDIUM, open in rounds 1)
+  - pusher-restart-calls-untested (class design, severity MEDIUM, open in rounds 1)
+  - teardown-push-level-wiring-untested (class design, severity MEDIUM, open in rounds 1)
+  - teardown-spins-when-pushes-off (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: a transition of a batten run and of a loom run commits with its trailers and returns without a push, a fetch, an origin reconcile or a network-gate admission, for a running row, a skipped row, a start row and the seeded Worktree-Create commit.
