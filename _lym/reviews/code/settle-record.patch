@@ -1,0 +1,2173 @@
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 8253fb4d6..6ad7ba8bf 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -97,6 +97,9 @@ Under `language: none` the glyph checks are skipped:
+ - `glyph-not-found`, `glyph-ambiguous`, `glyph-rejected` *(planglyph)* — a glyph target that fails to resolve:
+   it matches nothing, matches several declarations, or is rejected by quarry's grammar.
+   A `Create` target and a `Rename` `New` side are not resolved.
++  A target spelling the member a `Create` handle names passes on the creating card and every card after it;
++  on an earlier card its finding names the creating card.
++  A missing member of a unit that exists says no card creates it and lists the members declared beside it.
+   A member declared once per mutually exclusive build-constraint set resolves as one member.
+ - `create-already-exists` *(planglyph)* — a `Create` target whose name a declaration already holds.
+   `create-new-unit` is its informational partner for a target in a unit that does not exist yet.
+@@ -289,9 +292,11 @@ The overview is read at the task branch's merge base with its parent, or at `HEA
+   Way forward: restore the card file.
+   A fix to its work is a follow-up card after the last begun batch, with its Card Index line.
+ - `overview-frame-edited` *(loomshed)* — an edited overview frame:
+-  webster's run record holds a begun batch and a recorded overview frame,
++  the implementer's run record holds a begun batch and a recorded overview frame,
+   and `00-overview.md` outside its Card Index no longer hashes to that frame.
+-  A record with no recorded frame, or with no begun batch, raises nothing.
++  A record without the frame takes it from the stored baseline copy of its recorded overview, as the rebaseline does.
++  With no frame either way, any change to a recorded overview is the finding, since the rebaseline refuses it.
++  A record with no begun batch, or with no recorded overview hash, raises nothing.
+   Way forward: restore the overview.
+   Carry the change in a follow-up card after the last begun batch, with its Card Index line.
+ - `part-spot-target` — under a part scope: a card's target is a shared spot's path.
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 7b0b57ea1..48987f666 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -28,6 +28,8 @@ It appears in neither the artifact list nor the answer key, and it must not be r
+ 
+ `none` means webster has begun no batch, and no card is frozen.
+ Otherwise a done card is frozen: a fix never edits its file.
++`00-overview.md` outside its Card Index is frozen too, since it carries the plan's integration verify: a fix edits only its Card Index, and the gate refuses any other edit to it.
++On a run with no recorded overview frame and no baseline copy to take it from, the gate refuses every edit to `00-overview.md`, so a card-set change there needs a fresh run.
+ A fix to its work is a follow-up card placed after the last begun batch, with its Card Index line in `00-overview.md`, in the format `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
+ A fix inserts or removes a card only with `lym loom insert-card` or `lym loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
+ 
+diff --git a/contracts/stencils/webster/webster-prefix-recovery.md b/contracts/stencils/webster/webster-prefix-recovery.md
+index eb1fda4b7..4d0993d4e 100644
+--- a/contracts/stencils/webster/webster-prefix-recovery.md
++++ b/contracts/stencils/webster/webster-prefix-recovery.md
+@@ -3,9 +3,10 @@
+      recover-batch hands that file to the separate, cold recovery-strand process it spawns when a fork reports stuck or writes no report (see the fork-context-hygiene Shared Decision).
+      The strand inherits nothing from Master's session: no plan framing, no constraints, and no code.
+      It must orient itself before the shared implementer body runs.
+-     Its optional markers (filled via stencil.FillOptional) are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}}, {{.uncommitted_paths}} and parent_directive.
++     Its optional markers (filled via stencil.FillOptional) are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}}, {{.uncommitted_paths}}, {{.parent_answers}} and parent_directive.
+      The pattern and friction directives render as nothing when their own tier is inactive;
+      failure_digest renders as `none` when the batch was not failed, and uncommitted_paths renders as `none` on a clean worktree;
++     parent_answers renders as `none` when the parent has answered this batch nothing;
+      internal/parentdirective renders parent_directive.
+      edit_directive is a required marker, rendered unconditionally by internal/editdirective. -->
+ 
+@@ -36,6 +37,22 @@ You implement ONLY your card(s) below and write your report as your final action
+ **NEVER run any `lym webster` command** — not `await-batch`, not anything;
+ those are Master's own verbs, driven by a session you are not part of.
+ 
++## A question only your parent can answer
++
++A turn you end without a report ends this recovery, and nothing you wait for reaches it.
++This holds over "Your parent" above: never post a question and end your turn to wait for the reply.
++When you cannot go on without your parent's answer, write the report with `status: NEEDS_PARENT` and the question as its one-line `need`, with every card you finished committed.
++Such a question counts as a step only your parent can take.
++Your parent's answer reaches the attempt that resumes the batch.
++
++## What your parent answered
++
++{{.parent_answers}}
++
++If the text above is not `none`, an earlier attempt of this batch stopped on each need listed, and your parent answered it.
++Act on the answer.
++Report the need again only when it is still unmet, saying in the new `need` what is still missing.
++
+ ## Why this batch is being recovered
+ 
+ {{.failure_digest}}
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index adfba9053..e7fafd398 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -77,9 +77,11 @@ Read the trail by status — a resumed session thus picks up exactly where the l
+   With `recovery_retry: true`, run `lym webster recover-batch <NN>` once more, as the failure ladder below describes.
+   With `recovery_retry: false`, the run is exhausted for that batch: write `outcome: stuck` naming it (per the dead rungs of the failure ladder) and stop.
+   Do NOT skip it and do NOT begin any later batch.
+-- `waiting` → the batch stopped on a step only your parent can take, named after `need:`.
+-  The run was re-entered, so treat the step as taken: resume the batch with the verb named after `resume:`, a `begin-batch` followed by its fork exactly as the loop below runs it, or a `recover-batch`, before touching any later batch.
++- `waiting` → the batch stopped on a step only your parent can take or a question only your parent can answer, named after `need:`.
++  Resume it before touching any later batch, as the verb named after `resume:` says.
++  For a `begin-batch`, the run was re-entered, so treat the step as taken: run it and fork its implementer exactly as the loop below runs it.
+   A strand that still finds the step untaken reports it again, and the waiting rung of the failure ladder below handles that.
++  For a `recover-batch --answer`, you hold no answer, so never run it as printed and never write one yourself: follow the waiting rung of the failure ladder below, which messages your parent with the `need` and resumes with its reply.
+ 
+ ## The loop: begin-batch, fork, wait for its notification, record-batch — verbatim sequence
+ 
+@@ -117,6 +119,7 @@ and you read ONLY these fields:
+ - `departures`
+ - `renames`
+ - `dead_reason`
++- `last_message`
+ - `need`
+ - `elapsed_s`
+ 
+@@ -135,10 +138,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
+ - Report present, `status: done` → `record-batch` already ran above;
+   move on to the next batch.
+ - Report present, `status: stuck` → run `lym webster recover-batch <NN>` (below).
+-- `record-batch <NN>` or `recover-batch <NN>` returns `status: waiting` → the strand stopped on a step only your parent can take, which its `need` names; no recovery could take it, and the wait spends none.
++- `record-batch <NN>` or `recover-batch <NN>` returns `status: waiting` → the strand stopped on a step only your parent can take or a question only your parent can answer, which its `need` names; no recovery could take it, and the wait spends none.
+   Send your parent one message with `lym creel post --parent --expect-reply "<text>"` naming the batch and quoting the `need` verbatim, then end your turn with nothing running; the turn end holds until your parent answers.
+-  When your parent's message says the step is taken, resume the batch where it stood: for a batch `record-batch` returned, run `lym webster begin-batch <NN>` and fork its implementer exactly as the loop runs it;
+-  for a batch `recover-batch` returned, run `lym webster recover-batch <NN>` again, as the `recover-batch` rungs below run it.
++  When your parent's message says the step is taken or answers the question, resume the batch where it stood: for a batch `record-batch` returned, run `lym webster begin-batch <NN>` and fork its implementer exactly as the loop runs it;
++  for a batch `recover-batch` returned, run `lym webster recover-batch <NN> --answer '<your parent's message, verbatim>'`, quoted for the shell, as the `recover-batch` rungs below run it.
+   When your parent's message says the step will not be taken, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and quoting the `need`, and stop.
+   Do NOT begin a later batch while one waits, and do NOT call `record-batch` for a waiting batch: it refuses, since nothing is left to record.
+ - Fork finished but wrote **no report** (`record-batch` classifies this `no_report`) → re-fork the same batch once, with the SAME prompt file and no new `begin-batch` call (the bracket is still open), end your turn again, and call `record-batch` again on its completion notification;
+@@ -152,10 +155,10 @@ You message your parent only on the `waiting` rung below and under "A parent dec
+ - `recover-batch <NN>` completes with a terminal `status: stuck` → the recovery itself failed.
+   You have exhausted this batch's recovery: stop the run here — write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
+   Do NOT re-fork it, do NOT begin the next batch (batch N+1 assumes N is committed).
+-- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the batch earns another recovery: the dead recovery committed work of its own and the batch has a recovery left, or a `reset --to batch-start` cleared the batch's recovery count.
++- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the batch earns another recovery: the dead recovery committed work of its own and the batch has a recovery left, a `reset --to batch-start` cleared the batch's recovery count, or a rebaseline amended one of the batch's cards.
+   Run `lym webster recover-batch <NN>` once more {{template "engine-background-command"}}; its result goes through these rungs again.
+ - `recover-batch <NN>` completes with a terminal `status: dead` and `recovery_retry: false` → the recovery itself failed and earns no retry.
+-  Stop exactly as for a terminal `stuck` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
++  Stop exactly as for a terminal `stuck` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and quoting the digest's `last_message` when it has one, and stop.
+   Do NOT re-fork it, do NOT begin the next batch.
+ - `recover-batch <NN>` refuses with `{"batch_failed": true, "card_amended": true}` → a card of the batch was amended after the attempt began, so webster failed the attempt to re-run the batch on the amended card.
+   Run `lym webster recover-batch <NN>` again, as the rung above runs it, even though the failed attempt was a recovery; each amendment forces at most one such re-run.
+diff --git a/internal/gatefixer/strand.go b/internal/gatefixer/strand.go
+index 3bb7d6d97..091562043 100644
+--- a/internal/gatefixer/strand.go
++++ b/internal/gatefixer/strand.go
+@@ -1,11 +1,12 @@
+ // strand.go reads a fixer strand's state from outside:
+-// whether reed still tracks it as live, and whether its newest turn has ended.
++// whether reed still tracks it as live, whether its newest turn has ended, and the message it ended on.
+ 
+ package gatefixer
+ 
+ import (
+ 	"fmt"
+ 	"os"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -27,6 +28,33 @@ func StrandLive(reed shuttleengine.ReedOps, guid string) (bool, error) {
+ 	return false, nil
+ }
+ 
++// LastTurnMessage returns the trimmed final message of a strand's newest stop event.
++// It reads the events file from byte offset on.
++// It is "" when no stop event follows offset or the newest carries no message, and when the events file is missing.
++// ParseEvents errors propagate.
++func LastTurnMessage(eventsPath string, offset int64, engine shuttleengine.Engine) (string, error) {
++	data, err := os.ReadFile(eventsPath)
++	if err != nil {
++		if os.IsNotExist(err) {
++			return "", nil
++		}
++		return "", fmt.Errorf("gatefixer: read events file %s: %w", eventsPath, err)
++	}
++	if offset > int64(len(data)) {
++		offset = int64(len(data))
++	}
++	events, err := engine.ParseEvents(data[offset:])
++	if err != nil {
++		return "", fmt.Errorf("gatefixer: parse events %s: %w", eventsPath, err)
++	}
++	for i := len(events) - 1; i >= 0; i-- {
++		if events[i].Kind == shuttleengine.EventStop {
++			return strings.TrimSpace(events[i].Message), nil
++		}
++	}
++	return "", nil
++}
++
+ // turnEndSettle is how long a strand's newest turn end must stand before it counts:
+ // a background shell that finishes just before a turn ends queues a completion notification,
+ // and that notification starts the strand's next turn an instant after the turn end.
+diff --git a/internal/gatefixer/strand_test.go b/internal/gatefixer/strand_test.go
+index 58a7f0d70..8a2a5f348 100644
+--- a/internal/gatefixer/strand_test.go
++++ b/internal/gatefixer/strand_test.go
+@@ -1,5 +1,5 @@
+-// strand_test.go covers StrandLive and TurnEndedAfter, each against its shuttlefake fake.
+-// It pins StrandLive's live, not-live and absent results, and TurnEndedAfter's results over an events file.
++// strand_test.go covers StrandLive, TurnEndedAfter and LastTurnMessage, each against its shuttlefake fake.
++// It pins StrandLive's live, not-live and absent results, and the results of the other two over an events file.
+ 
+ package gatefixer
+ 
+@@ -73,6 +73,106 @@ func TestStrandLive(t *testing.T) {
+ 	})
+ }
+ 
++// TestLastTurnMessage pins LastTurnMessage's trimmed message of the newest stop after the offset.
++// An offset past the file's end parses no bytes.
++// A missing file, no stop and a message-less newest stop all give "".
++func TestLastTurnMessage(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const earlier = "earlier-stop\n"
++	tests := []struct {
++		name string
++		// content is the events file's bytes; nil leaves the file missing.
++		content []byte
++		offset  int64
++		events  func(data []byte) ([]shuttleengine.Event, error)
++		want    string
++	}{
++		{
++			name:    "the newest stop's message is trimmed",
++			content: []byte("bytes"),
++			events: func([]byte) ([]shuttleengine.Event, error) {
++				return []shuttleengine.Event{
++					{Kind: shuttleengine.EventStop, Message: "older message"},
++					{Kind: shuttleengine.EventAsk, Message: "a probe"},
++					{Kind: shuttleengine.EventStop, Message: "  newest message \n"},
++				}, nil
++			},
++			want: "newest message",
++		},
++		{
++			name:    "only the bytes from the offset on are parsed",
++			content: []byte(earlier + "later-stop\n"),
++			offset:  int64(len(earlier)),
++			events: func(data []byte) ([]shuttleengine.Event, error) {
++				if strings.Contains(string(data), "earlier-stop") {
++					return []shuttleengine.Event{{Kind: shuttleengine.EventStop, Message: "from the earlier turn"}}, nil
++				}
++				if strings.Contains(string(data), "later-stop") {
++					return []shuttleengine.Event{{Kind: shuttleengine.EventStop, Message: "later"}}, nil
++				}
++				return nil, nil
++			},
++			want: "later",
++		},
++		{
++			name:    "an offset past the file's end parses no bytes",
++			content: []byte("bytes"),
++			offset:  100,
++			events: func(data []byte) ([]shuttleengine.Event, error) {
++				if len(data) == 0 {
++					return []shuttleengine.Event{{Kind: shuttleengine.EventStop, Message: "from no bytes"}}, nil
++				}
++				return nil, nil
++			},
++			want: "from no bytes",
++		},
++		{
++			name:    "no stop event gives an empty message",
++			content: []byte("bytes"),
++			events: func([]byte) ([]shuttleengine.Event, error) {
++				return []shuttleengine.Event{{Kind: shuttleengine.EventAsk, Message: "still working"}}, nil
++			},
++			want: "",
++		},
++		{
++			name:    "a newest stop with no message gives an empty message",
++			content: []byte("bytes"),
++			events: func([]byte) ([]shuttleengine.Event, error) {
++				return []shuttleengine.Event{
++					{Kind: shuttleengine.EventStop, Message: "older message"},
++					{Kind: shuttleengine.EventStop, Message: " \n"},
++				}, nil
++			},
++			want: "",
++		},
++		{
++			name:   "a missing events file gives an empty message",
++			events: func([]byte) ([]shuttleengine.Event, error) { return nil, errors.New("must not parse") },
++			want:   "",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := filepath.Join(t.TempDir(), "events.jsonl")
++			if tt.content != nil {
++				if err := os.WriteFile(path, tt.content, 0o644); err != nil {
++					t.Fatalf("write events file %s: %v", path, err)
++				}
++			}
++			got, err := LastTurnMessage(path, tt.offset, &shuttlefake.Engine{ParseEventsFn: tt.events})
++			if err != nil {
++				t.Fatalf("LastTurnMessage() error = %v; want nil", err)
++			}
++			if got != tt.want {
++				t.Errorf("LastTurnMessage() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ // TestTurnEndedAfter pins TurnEndedAfter over an engine without the SessionSignalParser capability:
+ // the newest ParseEvents event decides, and the offset skips the load turns.
+ func TestTurnEndedAfter(t *testing.T) {
+diff --git a/internal/loomshed/gates.go b/internal/loomshed/gates.go
+index d44693abf..4101510af 100644
+--- a/internal/loomshed/gates.go
++++ b/internal/loomshed/gates.go
+@@ -13,6 +13,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"regexp"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+@@ -257,11 +258,13 @@ func NewPlanGate(anchorPath, worktreeRoot, scratchDir string, index planindex.In
+ // That part carries the plan's integration verify.
+ // An overview whose frame no longer hashes to the frame the record holds is one blocking overview-frame-edited finding,
+ // so the plan gate refuses what the implementer's rebaseline would refuse later.
++// A record without the frame takes it from the run directory's baseline copy, as the rebaseline does;
++// with no frame either way, any edit to the recorded overview is the finding.
+ //
+ // The findings of the plan context checks over pc follow.
+ // They cover only the cards not recorded done, since a done card's rename already ran.
+ func ValidatePlan(plan *planparser.Plan, anchorPath, worktreeRoot string, index planindex.Index, pc PlanContext) ([]planindex.Finding, error) {
+-	_, st, err := weaverengine.Active(weaverengine.ActiveDeps{AnchorRoot: anchorPath})
++	impl, st, err := weaverengine.Active(weaverengine.ActiveDeps{AnchorRoot: anchorPath})
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -281,7 +284,8 @@ func ValidatePlan(plan *planparser.Plan, anchorPath, worktreeRoot string, index
+ 			Severity: planindex.SeverityBlocking,
+ 		})
+ 	}
+-	frameFindings, err := overviewFrameEditedFindings(plan.Dir, st)
++	runDir, _ := weaverengine.RunDirs(impl, anchorPath)
++	frameFindings, err := overviewFrameEditedFindings(plan.Dir, runDir, st)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -311,21 +315,29 @@ const doneCardEditedCheck = "done-card-edited"
+ const overviewFrameEditedCheck = "overview-frame-edited"
+ 
+ // overviewFrameEditedFindings returns one blocking overview-frame-edited finding, or none.
+-// The finding comes when st holds a begun batch and a recorded overview frame.
+-// It also needs planDir's 00-overview.md to no longer have that frame.
+-// It returns none otherwise, a nil st and a record with no recorded frame included.
+-// A record with no recorded frame is left to the rebaseline.
+-// The rebaseline falls back to the frame of the run's baseline overview copy, or refuses the overview change.
+-// An unreadable overview is a returned error.
+-func overviewFrameEditedFindings(planDir string, st *runplan.State) ([]planindex.Finding, error) {
+-	if st == nil || len(st.Batches) == 0 || st.PlanOverviewFrameHash == "" {
++// It looks only at a st holding a begun batch.
++// It reads that state's recorded overview frame with runplan.RecordedOverviewFrame from runDir.
++// With a frame, the finding comes when planDir's 00-overview.md no longer has it.
++// With none, it comes when the overview differs from the one st recorded.
++// The rebaseline then refuses any overview change.
++// A nil st, a record with no begun batch and a record with no overview hash give none.
++// An unreadable overview or baseline copy is a returned error.
++func overviewFrameEditedFindings(planDir, runDir string, st *runplan.State) ([]planindex.Finding, error) {
++	if st == nil || len(st.Batches) == 0 {
+ 		return nil, nil
+ 	}
++	recorded, cause, _, err := runplan.RecordedOverviewFrame(st, runDir)
++	if err != nil {
++		return nil, err
++	}
++	if recorded == "" {
++		return unframedOverviewFindings(planDir, cause, st)
++	}
+ 	frame, err := runplan.OverviewFrameHash(planDir)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if frame == st.PlanOverviewFrameHash {
++	if frame == recorded {
+ 		return nil, nil
+ 	}
+ 	return []planindex.Finding{{
+@@ -335,6 +347,28 @@ func overviewFrameEditedFindings(planDir string, st *runplan.State) ([]planindex
+ 	}}, nil
+ }
+ 
++// unframedOverviewFindings returns the overview-frame-edited finding for a run that recorded no overview frame.
++// The finding states cause, the reason no frame was recorded.
++// The finding comes when planDir's 00-overview.md differs from the overview st recorded.
++// A record with no overview hash gives none, since it holds nothing to compare against.
++func unframedOverviewFindings(planDir, cause string, st *runplan.State) ([]planindex.Finding, error) {
++	if cause == runplan.OverviewFrameCauseNoHash {
++		return nil, nil
++	}
++	changed, err := runplan.ChangedPlanFiles(st, planDir)
++	if err != nil {
++		return nil, err
++	}
++	if !slices.Contains(changed, runplan.PlanOverviewFile) {
++		return nil, nil
++	}
++	return []planindex.Finding{{
++		Check:    overviewFrameEditedCheck,
++		Detail:   fmt.Sprintf("%s changed after a batch began, and the run recorded no overview frame (%s), so no change to it can be confined to its Card Index: restore it; a change to it needs a fresh run from the start", runplan.PlanOverviewFile, cause),
++		Severity: planindex.SeverityBlocking,
++	}}, nil
++}
++
+ // NewLensReviewPlanGate returns the plan gate closure for a twill-spawned Plan-Write run.
+ // Shuttle chooses it from the run's recorded fork authorization.
+ // It parses the plan under anchorPath and checks it with ValidatePlanLensReview over index.
+diff --git a/internal/loomshed/gates_test.go b/internal/loomshed/gates_test.go
+index 2402cc65b..fb919f49a 100644
+--- a/internal/loomshed/gates_test.go
++++ b/internal/loomshed/gates_test.go
+@@ -732,19 +732,32 @@ func TestNewPlanGate(t *testing.T) {
+ 	})
+ 
+ 	// Once a batch has begun, the overview outside its Card Index is frozen: an edit there fails the gate.
++	// The frame comes from the record or, without it, from the run directory's baseline copy of the recorded overview.
++	const (
++		recordFrame       = "frame"
++		recordHashAndCopy = "hash and baseline copy, no frame"
++		recordHashNoCopy  = "hash without a baseline copy"
++		recordNoOverview  = "no overview hash"
++	)
+ 	for _, tt := range []struct {
+ 		name string
+-		// batches is whether the record holds a begun batch; frame is whether it holds the overview frame.
+-		batches, frame bool
++		// batches is whether the record holds a begun batch; record is what the record and run directory hold of the overview.
++		batches bool
++		record  string
+ 		// edit rewrites the framing; editCardIndex rewrites a Card Index line only.
+ 		edit, editCardIndex bool
+ 		wantPassing         bool
+ 	}{
+-		{"OverviewEditedOutsideTheCardIndexAfterABegunBatchFails", true, true, true, false, false},
+-		{"UneditedOverviewAfterABegunBatchReportsNothing", true, true, false, false, true},
+-		{"CardIndexEditedAfterABegunBatchReportsNothing", true, true, false, true, true},
+-		{"OverviewEditedBeforeAnyBatchBeganReportsNothing", false, true, true, false, true},
+-		{"RecordWithoutAFrameReportsNothing", true, false, true, false, true},
++		{"OverviewEditedOutsideTheCardIndexAfterABegunBatchFails", true, recordFrame, true, false, false},
++		{"UneditedOverviewAfterABegunBatchReportsNothing", true, recordFrame, false, false, true},
++		{"CardIndexEditedAfterABegunBatchReportsNothing", true, recordFrame, false, true, true},
++		{"OverviewEditedBeforeAnyBatchBeganReportsNothing", false, recordFrame, true, false, true},
++		{"RecordWithoutAnOverviewHashReportsNothing", true, recordNoOverview, true, false, true},
++		{"FrameFromTheBaselineCopyFailsOnAnEditOutsideTheCardIndex", true, recordHashAndCopy, true, false, false},
++		{"FrameFromTheBaselineCopyAllowsACardIndexEdit", true, recordHashAndCopy, false, true, true},
++		{"MissingBaselineCopyFailsOnAnyOverviewEdit", true, recordHashNoCopy, true, false, false},
++		{"MissingBaselineCopyFailsOnACardIndexEdit", true, recordHashNoCopy, false, true, false},
++		{"MissingBaselineCopyWithAnUneditedOverviewReportsNothing", true, recordHashNoCopy, false, false, true},
+ 	} {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+@@ -755,13 +768,25 @@ func TestNewPlanGate(t *testing.T) {
+ 			if tt.batches {
+ 				st = batchOne(false, "", nil)
+ 			}
+-			if tt.frame {
++			if tt.record == recordFrame {
+ 				frame, err := runplan.OverviewFrameHash(planDir)
+ 				if err != nil {
+ 					t.Fatalf("OverviewFrameHash: %v", err)
+ 				}
+ 				st.PlanOverviewFrameHash = frame
+ 			}
++			if tt.record == recordHashAndCopy || tt.record == recordHashNoCopy {
++				hashes, err := runplan.PlanFileHashes(planDir)
++				if err != nil {
++					t.Fatalf("PlanFileHashes: %v", err)
++				}
++				st.PlanFileHashes = hashes
++				if tt.record == recordHashAndCopy {
++					if err := runplan.StorePlanBaseline(websterengine.Dir(anchorPath), planDir, hashes); err != nil {
++						t.Fatalf("StorePlanBaseline: %v", err)
++					}
++				}
++			}
+ 			saveState(t, anchorPath, st)
+ 			for _, edit := range []struct {
+ 				wanted        bool
+@@ -808,7 +833,7 @@ func TestNewPlanGate(t *testing.T) {
+ 		}
+ 		st := &runplan.State{Batches: map[int]*runplan.BatchState{1: {Slug: "first-card"}}, PlanOverviewFrameHash: "recorded"}
+ 
+-		if findings, err := overviewFrameEditedFindings(planDir, st); err == nil {
++		if findings, err := overviewFrameEditedFindings(planDir, t.TempDir(), st); err == nil {
+ 			t.Errorf("overviewFrameEditedFindings() = %+v, nil; want a returned error", findings)
+ 		}
+ 	})
+diff --git a/internal/planglyph/create.go b/internal/planglyph/create.go
+index 16be2c4b6..2b6b4dbd6 100644
+--- a/internal/planglyph/create.go
++++ b/internal/planglyph/create.go
+@@ -34,6 +34,37 @@ func createTargetSet(plan *planparser.Plan) map[string]bool {
+ 	return set
+ }
+ 
++// createdHandleGlyphs maps the glyph each Create handle names to the number of the earliest card that creates it.
++// A card of forthcoming creates before every card of current, so it maps to 0.
++// The glyph is the handle's body, which is the member's glyph once canonicalization has rewritten the handle;
++// a handle still in draft form maps under its draft body.
++func createdHandleGlyphs(current, forthcoming *planparser.Plan) map[string]int {
++	created := make(map[string]int)
++	add := func(c planparser.Card, number int) {
++		for _, g := range c.TargetGroups {
++			if g.Type != planparser.CardTypeCreate {
++				continue
++			}
++			for _, ref := range g.Refs {
++				body, ok := planparser.HandleBody(ref)
++				if !ok {
++					continue
++				}
++				if earliest, seen := created[body]; !seen || number < earliest {
++					created[body] = number
++				}
++			}
++		}
++	}
++	for _, c := range forthcoming.Cards {
++		add(c, 0)
++	}
++	for _, c := range current.Cards {
++		add(c, c.Number)
++	}
++	return created
++}
++
+ // resultByTarget indexes results by their own Target, for a group-scoped lookup by both
+ // createFindings and CanonicalizeHandles (handle.go).
+ func resultByTarget(results []quarry.ResolveResult) map[string]quarry.ResolveResult {
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index 246e9fbcd..fcdb972f5 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -30,6 +30,8 @@
+ //   - glyph-not-found, glyph-ambiguous, glyph-rejected: the resolve status policy, blocking,
+ //     over every glyph target that neither a Create group owns nor a Rename pair names as its New side.
+ //     glyph-rejected is also the fail-closed arm for an answer no policy understands.
++//     A target spelling the member an earlier card's Create handle names resolves for every card from that one on.
++//     A glyph-not-found member of a unit that exists lists the members declared beside it.
+ //     A member whose declarations sit in files no single build environment selects together is one member,
+ //     so a partitioned ambiguous answer resolves.
+ //     A self glyph that two alphabets both match is ambiguous, and its detail names the way forward.
+diff --git a/internal/planglyph/drift.go b/internal/planglyph/drift.go
+index d21f901f8..4cebb51d4 100644
+--- a/internal/planglyph/drift.go
++++ b/internal/planglyph/drift.go
+@@ -268,7 +268,7 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 		// the caller blocks on the finding rather than on a missing amendment. Only an infrastructure
+ 		// error — the resolve failing outright, or failing this coverage guard — skips the amendment
+ 		// loop, exactly as the resolveTargets error path above already does.
+-		findings = append(findings, statusFindings(reloaded, worktreeRoot, postRepairResults)...)
++		findings = append(findings, statusFindings(reloaded, worktreeRoot, postRepairResults, nil, nil)...)
+ 	}
+ 
+ 	for _, r := range repairs {
+diff --git a/internal/planglyph/planglyph.go b/internal/planglyph/planglyph.go
+index 70ae316f7..08446d98b 100644
+--- a/internal/planglyph/planglyph.go
++++ b/internal/planglyph/planglyph.go
+@@ -294,6 +294,11 @@ func convertAll(errs []planparser.ValidationError) []Finding {
+ // but after canonicalization they are selected by ID, from the reloaded plan when it was rewritten and from plan otherwise, so a respelled handle matches under its new spelling.
+ // Their Create targets and Rename New sides join the exclusion sets below, so a pending ref to something a forthcoming card will create is not reported as missing.
+ // They are never selected from current, which holds pending cards only.
++//
++// A glyph target can spell the member a Create handle names.
++// Such a target passes for every card at or after the earliest card creating that member,
++// and a forthcoming card creates before every pending card.
++// A missing member of a unit that exists costs one more quarry query, which lists the members beside it in its finding.
+ func resolvePass(plan *planparser.Plan, worktreeRoot string, done, forthcoming map[string]bool) ([]Finding, error) {
+ 	if !plan.GlyphLanguage() {
+ 		return nil, nil
+@@ -394,7 +399,12 @@ func resolvePass(plan *planparser.Plan, worktreeRoot string, done, forthcoming m
+ 		createIndex[handle] = r
+ 	}
+ 
+-	findings = append(findings, statusFindings(current, worktreeRoot, nonCreateResults)...)
++	created := createdHandleGlyphs(current, forthcomingCards)
++	members, err := missingMemberSiblings(repo, plan, nonCreateResults, created)
++	if err != nil {
++		return findings, err
++	}
++	findings = append(findings, statusFindings(current, worktreeRoot, nonCreateResults, created, members)...)
+ 	findings = append(findings, createFindings(current, worktreeRoot, createIndex)...)
+ 	if plan.GoToolchain() && len(done) == 0 {
+ 		findings = append(findings, languageMismatchFindings(current, results)...)
+@@ -403,6 +413,32 @@ func resolvePass(plan *planparser.Plan, worktreeRoot string, done, forthcoming m
+ 	return findings, nil
+ }
+ 
++// missingMemberSiblings lists the sibling members of the missing targets in results.
++// It maps each target whose member is missing from a unit that exists to the members declared beside it.
++// A target that created names a card creating is left out, since its finding lists no members.
++// It queries quarry once per such target, so a plan that resolves cleanly costs no query.
++func missingMemberSiblings(repo *quarry.Repo, plan *planparser.Plan, results []quarry.ResolveResult, created map[string]int) (map[string][]string, error) {
++	members := make(map[string][]string)
++	for _, r := range results {
++		if r.Status != quarry.StatusNotFound || r.Unit != quarry.StatusFound {
++			continue
++		}
++		if _, isCreated := createdBy(created, r); isCreated {
++			continue
++		}
++		g, err := planparser.ParseRef(plan, r.Target)
++		if err != nil {
++			return nil, fmt.Errorf("planglyph: parse missing target %q: %w", r.Target, err)
++		}
++		names, err := siblingMembers(repo, g)
++		if err != nil {
++			return nil, err
++		}
++		members[r.Target] = names
++	}
++	return members, nil
++}
++
+ // renameNewTargetSet returns the set of every Rename pair's New-side ref across plan, matching the
+ // spelling the card carries. resolvePass excludes these from statusFindings, mirroring the pure
+ // layer's own rule that a Rename's New side is never existence-checked (planparser's path-missing
+diff --git a/internal/planglyph/planglyph_test.go b/internal/planglyph/planglyph_test.go
+index 85199434d..d79f25ac0 100644
+--- a/internal/planglyph/planglyph_test.go
++++ b/internal/planglyph/planglyph_test.go
+@@ -415,6 +415,97 @@ func TestResolvePass_ForthcomingCreateTargetExcludedFromStatus(t *testing.T) {
+ 	}
+ }
+ 
++// TestValidateFormat_MissingMemberFindings asserts the glyph-not-found detail over a real Go fixture tree.
++// A member a card's Create handle names resolves for that card and every later one,
++// and a card before its creator is told to move the use.
++// A member no card creates lists the members declared beside it.
++// A forthcoming creator counts as preceding every pending card, which the dispatch gate rows pin.
++func TestValidateFormat_MissingMemberFindings(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const source = "package sub\n\nfunc Foo() {}\n\nfunc Bar() {}\n\ntype Thing struct{}\n\n" +
++		"func (t Thing) Method() {}\n\nfunc (t Thing) Other() {}\n"
++	const create = "**Create:**\n- `plan:sub#Thing.Fresh`\n\n**Intent:** add the method\n"
++	const useFresh = "**Edit:**\n- `sub#Foo`\n\n**Uses:**\n- `sub#Thing.Fresh`\n\n**Intent:** use the method\n"
++	const useMissingMember = "**Edit:**\n- `sub#Foo`\n\n**Uses:**\n- `sub#Thing.Missing`\n\n**Intent:** use it\n"
++	const useMissingFunc = "**Edit:**\n- `sub#Foo`\n\n**Uses:**\n- `sub#Missing`\n\n**Intent:** use it\n"
++	const noCreator = "**Edit:**\n- `sub#Bar`\n\n**Intent:** unrelated\n"
++	const createAndEdit = "**Create:**\n- `plan:sub#Thing.Fresh`\n\n**Edit:**\n- `sub#Thing.Fresh`\n\n**Intent:** add and wire the method\n"
++	const useExternalMissing = "**Edit:**\n- `sub#Foo`\n\n**Uses:**\n- `sub_test#Missing`\n\n**Intent:** use it\n"
++	const useMemberOfFunc = "**Edit:**\n- `sub#Foo`\n\n**Uses:**\n- `sub#Foo.X`\n\n**Intent:** use it\n"
++	const externalSource = "package sub_test\n\nfunc One() {}\n\nfunc Two() {}\n"
++
++	tests := []struct {
++		name  string
++		cards map[int]string
++		// forthcoming is the number of a begun card whose work has not landed; 0 runs the whole-plan gate.
++		forthcoming int
++		want        []string
++	}{
++		{name: "UseAfterCreateResolves", cards: map[int]string{1: create, 2: useFresh}},
++		{name: "CardCitingTheMemberItCreatesResolves", cards: map[int]string{1: createAndEdit}},
++		{name: "ForthcomingCreatorPrecedesEveryPendingCard", cards: map[int]string{1: useFresh, 2: create}, forthcoming: 2},
++		{
++			name:  "UseBeforeCreateNamesCreator",
++			cards: map[int]string{1: useFresh, 2: create},
++			want:  []string{`target "sub#Thing.Fresh" is created by card 2, which comes after this card — move the use to card 2 or later`},
++		},
++		{
++			name:  "MissingMemberOfTypeListsItsMembers",
++			cards: map[int]string{1: useMissingMember, 2: noCreator},
++			want: []string{`target "sub#Thing.Missing"'s unit exists but the member is missing — check for a misspelled member; ` +
++				`no card of the plan creates it; members beside it: Thing.Method, Thing.Other`},
++		},
++		{
++			name:  "MissingFuncOfPackageListsOwnerlessMembers",
++			cards: map[int]string{1: useMissingFunc, 2: noCreator},
++			want: []string{`target "sub#Missing"'s unit exists but the member is missing — check for a misspelled member; ` +
++				`no card of the plan creates it; members beside it: Bar, Foo, Thing`},
++		},
++		{
++			name:  "MissingMemberOfExternalTestUnitListsFromThePackageDirectory",
++			cards: map[int]string{1: useExternalMissing, 2: noCreator},
++			want: []string{`target "sub_test#Missing"'s unit exists but the member is missing — check for a misspelled member; ` +
++				`no card of the plan creates it; members beside it: One, Two`},
++		},
++		{
++			name:  "OwnerThatIsNoTypeListsNoMembers",
++			cards: map[int]string{1: useMemberOfFunc, 2: noCreator},
++			want: []string{`target "sub#Foo.X"'s unit exists but the member is missing — check for a misspelled member; ` +
++				`no card of the plan creates it`},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			root := writeFixtureRepo(t, map[string]string{"sub/a.go": source, "sub/a_test.go": externalSource})
++			_, plan := writePlanFixture(t, tt.cards)
++
++			var findings []Finding
++			var err error
++			if tt.forthcoming == 0 {
++				findings, err = ValidateFormat(plan, root)
++			} else {
++				begun := []planparser.Card{plan.Cards[tt.forthcoming-1]}
++				findings, err = ValidateDispatch(plan, root, begun, begun)
++			}
++			if err != nil {
++				t.Fatalf("validating the plan returned error: %v", err)
++			}
++			var got []string
++			for _, f := range findings {
++				if f.Check == "glyph-not-found" {
++					got = append(got, f.Detail)
++				}
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("glyph-not-found details = %q; want %q (all findings: %+v)", got, tt.want, findings)
++			}
++		})
++	}
++}
++
+ // TestValidateFormat_PartScope asserts the plan-gate form keeps a file self glyph out of the status policy.
+ // The exclusion applies to a glyph the part scope's Paths hold;
+ // without the scope, it is reported as glyph-not-found.
+diff --git a/internal/planglyph/repo.go b/internal/planglyph/repo.go
+index 173ffca03..1a33cad12 100644
+--- a/internal/planglyph/repo.go
++++ b/internal/planglyph/repo.go
+@@ -6,10 +6,14 @@
+ package planglyph
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"slices"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/quarry/glyph"
+ 	"github.com/Knatte18/quarry/quarry"
+ )
+ 
+@@ -98,6 +102,52 @@ func Glyphs(worktreeRoot, target string) (quarry.GlyphsAnswer, error) {
+ 	return repo.Glyphs(target)
+ }
+ 
++// siblingMembers returns the members declared beside g's member, each spelled as a glyph's member half, sorted.
++// They are the members of g's owner type, or the unit's members with no owner when g has none.
++// An owner that is no type lists none, and so does a unit whose alphabet does not spell it as a path.
++// A Go external test unit has no directory of its own, so it lists from its package's directory.
++// A failed query is wrapped in ErrQuarryUnavailable.
++func siblingMembers(repo *quarry.Repo, g glyph.Glyph) ([]string, error) {
++	var symbols []quarry.Symbol
++	if n := len(g.Owner); n > 0 {
++		owner := glyph.Glyph{Lang: g.Lang, Unit: g.Unit, Owner: g.Owner[:n-1], Name: g.Owner[n-1]}
++		answer, err := repo.Expand(owner.String())
++		var notType *quarry.NotATypeError
++		if errors.As(err, &notType) {
++			return nil, nil
++		}
++		if err != nil {
++			return nil, fmt.Errorf("%w: expand %s: %v", ErrQuarryUnavailable, owner, err)
++		}
++		symbols = answer.Members
++	} else {
++		path, ok := glyph.Glyph{Lang: g.Lang, Unit: g.Unit}.UnitPath()
++		if !ok {
++			return nil, nil
++		}
++		answer, err := repo.Glyphs(path)
++		// The path is tried as spelled first, so a real directory named with the _test suffix still lists.
++		if dir := planparser.GoPackageDir(path); err != nil && g.Lang == glyph.Go && dir != path {
++			path = dir
++			answer, err = repo.Glyphs(path)
++		}
++		if err != nil {
++			return nil, fmt.Errorf("%w: glyphs %s: %v", ErrQuarryUnavailable, path, err)
++		}
++		symbols = answer.Symbols
++	}
++	var names []string
++	for _, s := range symbols {
++		if s.Glyph.Unit != g.Unit || !slices.Equal(s.Glyph.Owner, g.Owner) || s.Glyph.Name == "" {
++			continue
++		}
++		_, member, _ := strings.Cut(s.ID, "#")
++		names = append(names, member)
++	}
++	slices.Sort(names)
++	return slices.Compact(names), nil
++}
++
+ // Resolve opens a quarry.Repo rooted at worktreeRoot and resolves every entry of targets,
+ // positionally, via resolveTargets. It returns quarry's own result slice and error unchanged.
+ func Resolve(worktreeRoot string, targets []string) ([]quarry.ResolveResult, error) {
+diff --git a/internal/planglyph/resolve.go b/internal/planglyph/resolve.go
+index 8e0c845d0..dc5d6a6ab 100644
+--- a/internal/planglyph/resolve.go
++++ b/internal/planglyph/resolve.go
+@@ -75,7 +75,13 @@ func sortedCards(cards []planparser.Card) []planparser.Card {
+ // This function does not special-case a Create group's targets: resolvePass excludes those before
+ // calling statusFindings, and create.go's createFindings handles them instead, so this policy
+ // stays readable on its own.
+-func statusFindings(plan *planparser.Plan, worktreeRoot string, results []quarry.ResolveResult) []Finding {
++//
++// created maps the glyph of each member a Create handle names to the number of the earliest card that creates it.
++// A not_found target that created holds is no finding for a card numbered at or after its creator.
++// The member exists for such a card once its creator runs.
++// A card before its creator gets a finding naming the creator.
++// members maps a not_found target whose unit exists to the members declared beside it, which its finding lists.
++func statusFindings(plan *planparser.Plan, worktreeRoot string, results []quarry.ResolveResult, created map[string]int, members map[string][]string) []Finding {
+ 	var findings []Finding
+ 	index := targetCards(plan)
+ 
+@@ -113,17 +119,15 @@ func statusFindings(plan *planparser.Plan, worktreeRoot string, results []quarry
+ 				})
+ 			}
+ 		case verdict == planindex.GlyphMissing:
+-			var detail string
+-			if r.Unit == quarry.StatusFound {
+-				detail = fmt.Sprintf("target %q's unit exists but the member is missing — check for a misspelled member", r.Target)
+-			} else {
+-				detail = fmt.Sprintf("target %q's unit does not exist — check for a misspelled unit", r.Target)
+-			}
++			creator, isCreated := createdBy(created, r)
+ 			for _, c := range cards {
++				if isCreated && creator <= c.Number {
++					continue
++				}
+ 				findings = append(findings, Finding{
+ 					Check:    "glyph-not-found",
+ 					Card:     c.ID(),
+-					Detail:   detail,
++					Detail:   missingDetail(r, creator, isCreated, members[r.Target]),
+ 					Severity: SeverityBlocking,
+ 					Ref:      r.Target,
+ 				})
+@@ -134,6 +138,35 @@ func statusFindings(plan *planparser.Plan, worktreeRoot string, results []quarry
+ 	return findings
+ }
+ 
++// createdBy returns the number of the earliest card that created names as creating r's target.
++// The target matches by r's spelling or its parsed ID.
++// It reports false when no card creates it.
++func createdBy(created map[string]int, r quarry.ResolveResult) (int, bool) {
++	if n, ok := created[r.Target]; ok {
++		return n, true
++	}
++	n, ok := created[r.ID]
++	return n, ok
++}
++
++// missingDetail renders the glyph-not-found detail for r, a not_found answer.
++// A target a card creates names that card, which comes after the card the finding is for.
++// Otherwise the detail tells a missing member from a missing unit;
++// a missing member's detail says no card creates it and lists members, the members declared beside it.
++func missingDetail(r quarry.ResolveResult, creator int, created bool, members []string) string {
++	if created {
++		return fmt.Sprintf("target %q is created by card %d, which comes after this card — move the use to card %d or later", r.Target, creator, creator)
++	}
++	if r.Unit != quarry.StatusFound {
++		return fmt.Sprintf("target %q's unit does not exist — check for a misspelled unit", r.Target)
++	}
++	detail := fmt.Sprintf("target %q's unit exists but the member is missing — check for a misspelled member; no card of the plan creates it", r.Target)
++	if len(members) > 0 {
++		detail += "; members beside it: " + strings.Join(members, ", ")
++	}
++	return detail
++}
++
+ // resolveVerdict is the glyph-not-found status policy both statusFindings and ResolveGlyphs apply, so the two can never disagree about what resolves.
+ // Found and multipart are GlyphFound; ambiguous is GlyphFound when classifyAmbiguity reports the candidates partitioned by build constraint, else GlyphAmbiguous; not_found is GlyphMissing.
+ // readable is false for a pre-resolution rejection and for a status outside quarry's vocabulary, which are GlyphMissing, so the policy fails closed.
+diff --git a/internal/planglyph/resolve_test.go b/internal/planglyph/resolve_test.go
+index 6d76ba5f3..08644c6f6 100644
+--- a/internal/planglyph/resolve_test.go
++++ b/internal/planglyph/resolve_test.go
+@@ -31,12 +31,22 @@ func TestStatusFindings(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("resolveTargets(...) returned error: %v", err)
+ 		}
+-		got := statusFindings(plan, root, results)
++		got := statusFindings(plan, root, results, nil, nil)
+ 		if len(got) != 0 {
+ 			t.Errorf("statusFindings(found) = %+v; want no findings", got)
+ 		}
+ 	})
+ 
++	// Quarry's alphabets reject a non-canonical spelling, so no fixture draws an ID that differs from its target;
++	// the answer is built by hand.
++	t.Run("CreatedMemberMatchedByParsedID", func(t *testing.T) {
++		results := []quarry.ResolveResult{{Target: "sub#Foo", ID: "sub#Spelled", Status: quarry.StatusNotFound, Unit: quarry.StatusFound}}
++		got := statusFindings(plan, root, results, map[string]int{"sub#Spelled": 1}, nil)
++		if len(got) != 0 {
++			t.Errorf("statusFindings(created by ID) = %+v; want no findings", got)
++		}
++	})
++
+ 	t.Run("Multipart", func(t *testing.T) {
+ 		multiFixture := map[string]string{
+ 			"sub/a.go": "package sub\n\nfunc init() {}\n",
+@@ -55,7 +65,7 @@ func TestStatusFindings(t *testing.T) {
+ 			t.Fatalf("Status = %q; want %q (fixture assumption broken)", results[0].Status, quarry.StatusMultipart)
+ 		}
+ 		multiPlan := &planparser.Plan{Cards: []planparser.Card{{Number: 1, Slug: "one", Targets: []string{"sub#init"}}}}
+-		got := statusFindings(multiPlan, multiRoot, results)
++		got := statusFindings(multiPlan, multiRoot, results, nil, nil)
+ 		if len(got) != 0 {
+ 			t.Errorf("statusFindings(multipart) = %+v; want no findings", got)
+ 		}
+@@ -78,7 +88,7 @@ func TestStatusFindings(t *testing.T) {
+ 			t.Fatalf("Status = %q; want %q (fixture assumption broken)", results[0].Status, quarry.StatusAmbiguous)
+ 		}
+ 		ambPlan := &planparser.Plan{Cards: []planparser.Card{{Number: 1, Slug: "one", Targets: []string{"amb#Foo"}}}}
+-		got := statusFindings(ambPlan, ambRoot, results)
++		got := statusFindings(ambPlan, ambRoot, results, nil, nil)
+ 		if len(got) != 1 || got[0].Check != "glyph-ambiguous" {
+ 			t.Fatalf("statusFindings(ambiguous) = %+v; want one glyph-ambiguous finding", got)
+ 		}
+@@ -134,7 +144,7 @@ func TestStatusFindings(t *testing.T) {
+ 				t.Fatalf("%s: Status = %q; want %q (fixture assumption broken)", fixture.name, results[0].Status, quarry.StatusAmbiguous)
+ 			}
+ 			for _, c := range cards {
+-				got := statusFindings(&planparser.Plan{Cards: []planparser.Card{c.card}}, ambRoot, results)
++				got := statusFindings(&planparser.Plan{Cards: []planparser.Card{c.card}}, ambRoot, results, nil, nil)
+ 				if !fixture.wantAmbiguous {
+ 					if len(got) != 0 {
+ 						t.Errorf("statusFindings(%s, %s) = %+v; want no findings for a partitioned member", fixture.name, c.name, got)
+@@ -162,7 +172,7 @@ func TestStatusFindings(t *testing.T) {
+ 			t.Fatalf("results[0] = %+v; want not_found with unit: found", results[0])
+ 		}
+ 		nfPlan := &planparser.Plan{Cards: []planparser.Card{{Number: 1, Slug: "one", Targets: []string{"sub#DoesNotExist"}}}}
+-		got := statusFindings(nfPlan, root, results)
++		got := statusFindings(nfPlan, root, results, nil, nil)
+ 		if len(got) != 1 || got[0].Check != "glyph-not-found" {
+ 			t.Fatalf("statusFindings(not_found, unit: found) = %+v; want one glyph-not-found finding", got)
+ 		}
+@@ -180,7 +190,7 @@ func TestStatusFindings(t *testing.T) {
+ 			t.Fatalf("results[0] = %+v; want not_found with unit: not_found", results[0])
+ 		}
+ 		nfPlan := &planparser.Plan{Cards: []planparser.Card{{Number: 1, Slug: "one", Targets: []string{"missing#Foo"}}}}
+-		got := statusFindings(nfPlan, root, results)
++		got := statusFindings(nfPlan, root, results, nil, nil)
+ 		if len(got) != 1 || got[0].Check != "glyph-not-found" {
+ 			t.Fatalf("statusFindings(not_found, unit: not_found) = %+v; want one glyph-not-found finding", got)
+ 		}
+@@ -198,7 +208,7 @@ func TestStatusFindings(t *testing.T) {
+ 			t.Fatalf("results[0] = %+v; want a pre-resolution rejection", results[0])
+ 		}
+ 		rejPlan := &planparser.Plan{Cards: []planparser.Card{{Number: 1, Slug: "one", Targets: []string{"/absolute#Foo"}}}}
+-		got := statusFindings(rejPlan, root, results)
++		got := statusFindings(rejPlan, root, results, nil, nil)
+ 		if len(got) != 1 || got[0].Check != "glyph-rejected" {
+ 			t.Fatalf("statusFindings(rejected) = %+v; want one glyph-rejected finding", got)
+ 		}
+@@ -241,7 +251,7 @@ func TestStatusFindings_UnrecognizedStatusFailsClosed(t *testing.T) {
+ 		Targets: []string{"sub#Bar"},
+ 	}}}
+ 
+-	got := statusFindings(plan, "", []quarry.ResolveResult{{Target: "sub#Bar", Status: "partially_found"}})
++	got := statusFindings(plan, "", []quarry.ResolveResult{{Target: "sub#Bar", Status: "partially_found"}}, nil, nil)
+ 	if len(got) != 1 || got[0].Check != "glyph-rejected" || got[0].Severity != SeverityBlocking {
+ 		t.Fatalf("statusFindings(unrecognized status) = %+v; want one blocking glyph-rejected finding", got)
+ 	}
+diff --git a/internal/planglyph/status_enforcement_test.go b/internal/planglyph/status_enforcement_test.go
+index a0a40da6f..6c7632d91 100644
+--- a/internal/planglyph/status_enforcement_test.go
++++ b/internal/planglyph/status_enforcement_test.go
+@@ -61,7 +61,9 @@ func statusConsumerKey(rel, fn string) string {
+ // Every other value, the zero value included, goes through a default or else arm.
+ // A new vocabulary read must fail closed, then be added here; until it is, the tripwire fails.
+ var allowedStatusConsumers = []scankit.Entry{
+-	{Key: "internal/planglyph/resolve.go:statusFindings", Why: "fail-closed status reader"},
++	{Key: "internal/planglyph/resolve.go:missingDetail", Why: "words a finding already decided as missing, never a verdict; any unit answer but found reads as a missing unit"},
++	{Key: "internal/planglyph/planglyph.go:missingMemberSiblings", Why: "decides only whether to list members for a finding's detail, never a verdict; any answer but not_found in a found unit lists nothing"},
++	{Key: "internal/planglyph/repo.go:siblingMembers", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
+ 	{Key: "internal/planglyph/resolve.go:resolveVerdict", Why: "fail-closed status reader: an unreadable answer is missing"},
+ 	{Key: "internal/planglyph/resolve.go:unreadableStatusDetail", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/create.go:createFindings", Why: "fail-closed status reader"},
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index 59501903d..2a8646884 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -13,7 +13,7 @@
+ // None may read Glyph.Unit as a disk path or run a local regex over a glyph string.
+ // cmd/lym/constraintchokepoint_test.go guards this mechanically.
+ // The one exception is the external-test pseudo-unit `<dir>_test`, which Glyph.UnitPath returns unchanged;
+-// goPackageDir and GoPackageCounterpart (targetdirs.go) map it to its package directory and back.
++// GoPackageDir and GoPackageCounterpart (targetdirs.go) map it to its package directory and back.
+ // ParseRef is the one alphabet choice for a plan ref and for a `plan:` handle's body;
+ // it reads the alphabet from the plan's `language:`.
+ // Quarry's Enclose is a location-to-glyph conversion, and internal/planglyph's EncloseAt is its one sanctioned call.
+diff --git a/internal/planparser/targetdirs.go b/internal/planparser/targetdirs.go
+index d0714c943..1277f2625 100644
+--- a/internal/planparser/targetdirs.go
++++ b/internal/planparser/targetdirs.go
+@@ -169,7 +169,7 @@ func RefFile(plan *Plan, ref string) (string, bool) {
+ // RefScope returns the worktree scope a card ref covers, and false when the ref names no unit.
+ // A unit or path with a file extension is that cleaned file, and isFile is true.
+ // Any other unit is its directory, with isFile false.
+-// Under a Go plan, a unit taken from a glyph or `plan:` handle first goes through goPackageDir,
++// Under a Go plan, a unit taken from a glyph or `plan:` handle first goes through GoPackageDir,
+ // so an external test package's pseudo-unit names its package directory.
+ // A nil plan reads as the default language.
+ func RefScope(plan *Plan, ref string) (scope string, isFile bool, ok bool) {
+@@ -184,7 +184,7 @@ func RefScope(plan *Plan, ref string) (scope string, isFile bool, ok bool) {
+ 		return path.Clean(unit), true, true
+ 	}
+ 	if fromGlyph && plan.GoToolchain() {
+-		unit = goPackageDir(unit)
++		unit = GoPackageDir(unit)
+ 	}
+ 	return path.Clean(unit), false, true
+ }
+@@ -304,7 +304,7 @@ func TargetHolds(plan *Plan, target, member, file string) bool {
+ 		return false
+ 	}
+ 	if targetGlyph.IsSelf() {
+-		return targetGlyph.Unit == memberGlyph.Unit || (plan.GoToolchain() && targetGlyph.Unit == goPackageDir(memberGlyph.Unit))
++		return targetGlyph.Unit == memberGlyph.Unit || (plan.GoToolchain() && targetGlyph.Unit == GoPackageDir(memberGlyph.Unit))
+ 	}
+ 	if targetGlyph.Unit != memberGlyph.Unit {
+ 		return false
+@@ -331,18 +331,18 @@ func targetDir(plan *Plan, raw string) (dir string, namesGo, ok bool) {
+ 		return "", false, false
+ 	}
+ 	if fromGlyph && plan.GoToolchain() {
+-		unit = goPackageDir(unit)
++		unit = GoPackageDir(unit)
+ 	}
+ 	return unitDir(unit, fromGlyph)
+ }
+ 
+-// goPackageDir maps a Go unit string to the directory its package lives in.
++// GoPackageDir maps a Go unit string to the directory its package lives in.
+ // The string may come from a glyph's `UnitPath` result or from a handle's package half.
+ // quarry names an external test package's unit `<dir>_test`, which has no directory of its own,
+ // so a last path segment ending in `_test` with no file extension loses that suffix.
+ // Any other unit is returned unchanged.
+ // It reads no disk, so a real package directory whose own name ends in `_test` maps to its sibling.
+-func goPackageDir(unit string) string {
++func GoPackageDir(unit string) string {
+ 	if hasFileExtension(unit) {
+ 		return unit
+ 	}
+@@ -362,7 +362,7 @@ func GoPackageCounterpart(plan *Plan, ref string) (string, bool) {
+ 	if err != nil || parsed.IsSelf() || hasFileExtension(parsed.Unit) {
+ 		return "", false
+ 	}
+-	if dir := goPackageDir(parsed.Unit); dir != parsed.Unit {
++	if dir := GoPackageDir(parsed.Unit); dir != parsed.Unit {
+ 		parsed.Unit = dir
+ 	} else {
+ 		parsed.Unit += "_test"
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 6b2f3ff0b..362f1c1c9 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -911,7 +911,7 @@ func checkRenameLeavesTest(plan *Plan) []ValidationError {
+ 							continue
+ 						}
+ 						test, err := ParseRef(plan, ref)
+-						if err != nil || goPackageDir(test.Unit) != goPackageDir(old.Unit) || len(test.Owner) != 0 || !namesTestOf(test.Name, base) {
++						if err != nil || GoPackageDir(test.Unit) != GoPackageDir(old.Unit) || len(test.Owner) != 0 || !namesTestOf(test.Name, base) {
+ 							continue
+ 						}
+ 						findings = append(findings, ValidationError{
+diff --git a/internal/planparser/vocabname.go b/internal/planparser/vocabname.go
+index 09b2f9e7e..092a84991 100644
+--- a/internal/planparser/vocabname.go
++++ b/internal/planparser/vocabname.go
+@@ -67,7 +67,7 @@ func brokenFabricVocabularyRule(unit, member, last string, goToolchain bool) str
+ 	dir := unit
+ 	if goToolchain {
+ 		// An external test package sits in its package's directory, the directory the owner set is keyed by.
+-		dir = goPackageDir(unit)
++		dir = GoPackageDir(unit)
+ 	}
+ 	isTestName := hasTestPrefix(last)
+ 
+diff --git a/internal/runplan/digest.go b/internal/runplan/digest.go
+index 571c9f4a9..27b53d977 100644
+--- a/internal/runplan/digest.go
++++ b/internal/runplan/digest.go
+@@ -8,7 +8,8 @@ import "fmt"
+ 
+ // The six legal Digest.Status values.
+ // DigestStatusFailed marks a batch whose report the implementer rejected on its merits.
+-// DigestStatusWaiting marks a batch stopped on a step only the run's parent can take; it is in flight, never terminal.
++// DigestStatusWaiting marks a batch stopped on a step or an answer only the run's parent can give;
++// it is in flight, never terminal.
+ const (
+ 	DigestStatusRunning = "running"
+ 	DigestStatusDone    = "done"
+@@ -42,9 +43,12 @@ type Digest struct {
+ 	Renames []ReportRename `json:"renames,omitempty"`
+ 	// DeadReason is set only when Status is Dead.
+ 	DeadReason string `json:"dead_reason,omitempty"`
++	// LastMessage is the final message, on one line, of a strand that ended its turn without a report.
++	// It is set only when DeadReason is DeadReasonAsking and the turn end carried a message.
++	LastMessage string `json:"last_message,omitempty"`
+ 	// Reasons is set only when Status is Failed.
+ 	Reasons []string `json:"reasons,omitempty"`
+-	// Need is the step only the parent can take; set only when Status is Waiting.
++	// Need is the step only the parent can take or the question only it can answer; set only when Status is Waiting.
+ 	Need string `json:"need,omitempty"`
+ 	// ElapsedS is the seconds since spawn, for running snapshots only.
+ 	ElapsedS int `json:"elapsed_s,omitempty"`
+diff --git a/internal/runplan/fingerprint.go b/internal/runplan/fingerprint.go
+index 504a41225..10424e2ed 100644
+--- a/internal/runplan/fingerprint.go
++++ b/internal/runplan/fingerprint.go
+@@ -127,6 +127,46 @@ func OverviewFrameHashOf(overview []byte) (string, error) {
+ 	return hex.EncodeToString(sum[:]), nil
+ }
+ 
++// The three causes RecordedOverviewFrame names for a run with no recorded overview frame.
++const (
++	OverviewFrameCauseNoHash         = "no overview hash was recorded"
++	OverviewFrameCauseBaselineAbsent = "the baseline copy of the recorded overview is absent"
++	OverviewFrameCauseNoCardIndex    = "the baseline copy of the recorded overview has no parseable Card Index"
++)
++
++// RecordedOverviewFrame returns the overview frame hash st records.
++// A state without State.PlanOverviewFrameHash takes the frame of the baseline copy of its recorded 00-overview.md.
++// That copy lies under runDir.
++// The frame is "" when the run has no recorded frame:
++// no overview hash recorded, the copy absent, or a copy without a parseable Card Index.
++// For an empty frame, cause is one of the three OverviewFrameCause values, and path is the baseline copy's path.
++// Path is empty when no hash was recorded; both are empty beside a frame.
++// A read failure other than an absent copy is returned.
++// A rebaseline and the plan gate both judge an overview edit against this frame,
++// so the gate refuses what the rebaseline would.
++func RecordedOverviewFrame(st *State, runDir string) (frame, cause, path string, err error) {
++	if st.PlanOverviewFrameHash != "" {
++		return st.PlanOverviewFrameHash, "", "", nil
++	}
++	hash := st.PlanFileHashes[PlanOverviewFile]
++	if hash == "" {
++		return "", OverviewFrameCauseNoHash, "", nil
++	}
++	path = PlanBaselinePath(runDir, hash)
++	data, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return "", OverviewFrameCauseBaselineAbsent, path, nil
++	}
++	if err != nil {
++		return "", "", "", fmt.Errorf("runplan: recorded overview frame: read plan baseline copy %s: %w", hash, err)
++	}
++	frame, err = OverviewFrameHashOf(data)
++	if err != nil {
++		return "", OverviewFrameCauseNoCardIndex, path, nil
++	}
++	return frame, "", "", nil
++}
++
+ // ChangedPlanFiles returns the plan file names whose current hash differs from st.PlanFileHashes.
+ // It also returns files added or removed since, all sorted.
+ func ChangedPlanFiles(st *State, planDir string) ([]string, error) {
+diff --git a/internal/runplan/state.go b/internal/runplan/state.go
+index 4fe28a6a2..8f3c45fc3 100644
+--- a/internal/runplan/state.go
++++ b/internal/runplan/state.go
+@@ -98,7 +98,13 @@ type SuspectPath struct {
+ 	Blob string `json:"blob,omitempty"`
+ }
+ 
+-// AmendedCard is one card of an in-flight batch that an operator edited mid-run and a rebaseline accepted.
++// ParentAnswer is one need a batch waited on and what the run's parent answered.
++type ParentAnswer struct {
++	Need   string `json:"need"`
++	Answer string `json:"answer"`
++}
++
++// AmendedCard is one card edit that a rebaseline accepted on a begun batch for its next recovery to render.
+ type AmendedCard struct {
+ 	// Card is the amended card's NN-<slug> id.
+ 	Card string `json:"card"`
+@@ -120,10 +126,15 @@ type BatchState struct {
+ 	// A rebaseline compares it so a begun card whose body changed while its file name stayed is refused.
+ 	// A record written before the field existed has none, and a rebaseline compares only its ids.
+ 	CardHashes map[string]string `json:"cardHashes,omitempty"`
+-	// AmendedCards lists the cards of this batch that a rebaseline accepted an edit to while the batch was in flight.
++	// AmendedCards lists the cards of this batch that a rebaseline accepted an edit to.
++	// An edit is recorded while the batch is in flight or terminal dead.
++	// A batch already holding an entry takes later edits too.
+ 	// It holds one entry per card.
+-	// The attempt running then keeps the old text; a recovery re-runs the batch on the edited cards.
++	// An attempt running then keeps the old text; the next recovery renders the edited cards.
+ 	AmendedCards []AmendedCard `json:"amendedCards,omitempty"`
++	// ParentAnswers is every answer the run's parent gave this batch's recovery resumes, oldest first.
++	// A recovery carries it forward and renders it into its prompt.
++	ParentAnswers []ParentAnswer `json:"parentAnswers,omitempty"`
+ 	// StartSHA is the repo HEAD immediately before this batch's first attempt started.
+ 	// It is the durable base-commit record that a resume, an operator diagnosis and the post-batch delta read.
+ 	// A recovery inherits the stuck attempt's value instead of capturing the head at recovery spawn,
+@@ -147,7 +158,8 @@ type BatchState struct {
+ 	// Terminal reports whether this batch has reached a terminal classification (done, stuck, dead, or failed).
+ 	Terminal bool `json:"terminal"`
+ 	// Status is the batch's terminal status once Terminal is true (done, stuck, dead, or failed).
+-	// It is empty while the batch is in flight, or "waiting" while it waits on a step only the run's parent can take.
++	// It is empty while the batch is in flight.
++	// It is "waiting" while the batch waits on a step or an answer only the run's parent can give.
+ 	Status string `json:"status"`
+ 	// Digest is the distilled digest persisted at terminal classification.
+ 	// It is the carry-forward home: the next batch's prompt renders it,
+diff --git a/internal/shuttleparity/producers_test.go b/internal/shuttleparity/producers_test.go
+index a90e0313f..2613b54b6 100644
+--- a/internal/shuttleparity/producers_test.go
++++ b/internal/shuttleparity/producers_test.go
+@@ -197,7 +197,7 @@ func buildRecovery(fx parityFixture, engine string) (shuttleengine.Spec, error)
+ 		return shuttleengine.Spec{}, err
+ 	}
+ 	worktree := env.Location.WorktreePath()
+-	prompt, err := websterengine.RenderRecoveryPrompt(batcher.Batch{Cards: []planparser.Card{standInCard}}, "the card gates", "the batch gate", "", "", "",
++	prompt, err := websterengine.RenderRecoveryPrompt(batcher.Batch{Cards: []planparser.Card{standInCard}}, "the card gates", "the batch gate", "", "", "", "",
+ 		standInPath(env, "report.yaml"), worktree, standInPath(env, "plan"), worktree, env.StencilsDir, engine, env.SpecsDir, "", nil, nil, 2, "", env.ParentName, false)
+ 	if err != nil {
+ 		return shuttleengine.Spec{}, err
+diff --git a/internal/webstercli/recoverbatch.go b/internal/webstercli/recoverbatch.go
+index 7edeca30e..e6251c0ba 100644
+--- a/internal/webstercli/recoverbatch.go
++++ b/internal/webstercli/recoverbatch.go
+@@ -51,11 +51,30 @@ func batchSlugFor(batches []batcher.Batch, batchNumber int) string {
+ // The recovery in session did not recover the batch.
+ // The way forward is one more recovery when the batch has one left, else ending the run stuck.
+ // Naming the session tells two consecutive refusals over different strands apart.
+-func recoveryNotDoneMessage(batchName string, batchNumber int, status, session string, retry bool) string {
++// A non-empty lastMessage, the strand's final message, is quoted after the status.
++func recoveryNotDoneMessage(batchName string, batchNumber int, status, session, lastMessage string, retry bool) string {
++	ended := status + lastMessageClause(lastMessage)
+ 	if retry {
+-		return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s; way forward: run `lym webster recover-batch %d` once more", batchName, session, status, batchNumber)
++		return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s; way forward: run `lym webster recover-batch %d` once more", batchName, session, ended, batchNumber)
+ 	}
+-	return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s and the batch has no recovery left; way forward: end the run stuck, naming batch %s", batchName, session, status, batchName)
++	return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s and the batch has no recovery left; way forward: end the run stuck, naming batch %s", batchName, session, ended, batchName)
++}
++
++// batchFailedMessage returns the refusal of a recovery the post-batch checks failed.
++// A non-empty lastMessage is quoted ahead of errText, so it never reads as part of the way forward errText ends in.
++func batchFailedMessage(errText, lastMessage string) string {
++	if lastMessage == "" {
++		return errText
++	}
++	return fmt.Sprintf("webster: the recovery's last message was %q; %s", lastMessage, errText)
++}
++
++// lastMessageClause renders a recovery strand's final message as a clause of a refusal, empty when it has none.
++func lastMessageClause(lastMessage string) string {
++	if lastMessage == "" {
++		return ""
++	}
++	return fmt.Sprintf(" (its last message: %s)", lastMessage)
+ }
+ 
+ // lastRecoverySession returns the session of the newest recovery strand st records for batch number, empty when it records none.
+@@ -100,13 +119,14 @@ func (c *websterCLI) recoverDeps(plan *planparser.Plan, batches []batcher.Batch,
+ // recoverBatchCmd builds the `recover-batch <nn>` subcommand.
+ func (c *websterCLI) recoverBatchCmd() *cobra.Command {
+ 	var wait time.Duration
++	var answer string
+ 
+ 	cmd := &cobra.Command{
+ 		Use:         "recover-batch <nn>",
+ 		Short:       "escalate one batch to a cold recovery strand and long-poll it for a terminal digest",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+-		Long: `recover-batch <nn> spawns a cold, fresh recovery strand for a batch a fork
+-reported stuck (or never reported at all) -- or, re-entrant, attaches to
++		Long: `recover-batch <nn> spawns a cold recovery strand for a batch a fork
++reported stuck or never reported -- or, re-entrant, attaches to
+ the strand a prior call spawned. A call that
+ spawns the recovery strand first waits for its provider to come up,
+ and every call then blocks for up to --wait watching it for a terminal
+@@ -118,7 +138,8 @@ work of its own. A stuck or dead digest exits non-zero with the same fields
+ and "recovery_session", the strand's session, its message naming the way
+ forward: "lym webster recover-batch NN" once more when recovery_retry is
+ true, else ending the run stuck. A NEEDS_PARENT report leaves the batch
+-waiting, exiting 0 with its "need"; the next call resumes it uncounted.
++waiting, exiting 0 with its "need"; the next call, which needs the
++parent's reply in --answer, resumes it uncounted.
+ A call that would spawn a third counted recovery refuses with
+ {"recovery_exhausted": true}. A recovery the post-batch checks reject takes
+ the batch terminal failed, saved and committed, and exits non-zero with
+@@ -213,7 +234,7 @@ Example:
+ 			// Booting the session under it therefore adds no new hold.
+ 			if c.reedUp != nil {
+ 				if err := c.reedUp(); err != nil {
+-					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: bring up the standalone reed session: %v; way forward: transient, re-run `lym webster recover-batch %02d`", err, batchNumber)))
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: bring up the standalone reed session: %v; way forward: transient, re-run `lym webster recover-batch %02d` with the same flags", err, batchNumber)))
+ 					return nil
+ 				}
+ 			}
+@@ -223,6 +244,7 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
++			deps.Answer = answer
+ 
+ 			bs, spawned, err := websterengine.RecoverSpawnOrAttach(deps, batchNumber, recoverRealClock{})
+ 			if err != nil {
+@@ -328,7 +350,8 @@ Example:
+ 				_ = terminalLock.Release()
+ 				terminalHeld = false
+ 				if batchFailed {
+-					msg := err.Error()
++					// The failed record's digest replaces the strand's, so the message is quoted here.
++					msg := batchFailedMessage(err.Error(), result.Digest.LastMessage)
+ 					if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("recover-batch %s failed", batchName)); syncErr != nil {
+ 						msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
+ 					}
+@@ -358,7 +381,7 @@ Example:
+ 				default:
+ 					session := lastRecoverySession(fresh, batchNumber)
+ 					fields["recovery_session"] = session
+-					clihelp.SetExit(cmd.Context(), output.ErrFields(out, recoveryNotDoneMessage(batchName, batchNumber, result.Digest.Status, session, retry), fields))
++					clihelp.SetExit(cmd.Context(), output.ErrFields(out, recoveryNotDoneMessage(batchName, batchNumber, result.Digest.Status, session, result.Digest.LastMessage, retry), fields))
+ 					return nil
+ 				}
+ 				clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
+@@ -377,5 +400,7 @@ Example:
+ 
+ 	cmd.Flags().DurationVar(&wait, "wait", 0, "operator override of the wait budget; a shorter wait can return a running snapshot; 0 blocks until a terminal digest or recovery_timeout_min")
+ 
++	cmd.Flags().StringVar(&answer, "answer", "", "the parent's reply to a waiting batch's need, rendered into the resumed recovery's prompt")
++
+ 	return cmd
+ }
+diff --git a/internal/webstercli/recoverbatch_test.go b/internal/webstercli/recoverbatch_test.go
+new file mode 100644
+index 000000000..e5dd20507
+--- /dev/null
++++ b/internal/webstercli/recoverbatch_test.go
+@@ -0,0 +1,53 @@
++// recoverbatch_test.go covers the recover-batch verb's refusal texts over an unfinished or failed recovery.
++
++package webstercli
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestBatchFailedMessage pins that the strand's final message precedes the failure and its way forward.
++func TestBatchFailedMessage(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	for _, tt := range []struct {
++		name        string
++		lastMessage string
++		want        string
++	}{
++		{"WithMessage", "Keep the old flag?", `webster: the recovery's last message was "Keep the old flag?"; failed; way forward: x`},
++		{"WithoutMessage", "", "failed; way forward: x"},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := batchFailedMessage("failed; way forward: x", tt.lastMessage); got != tt.want {
++				t.Errorf("batchFailedMessage() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestRecoveryNotDoneMessage pins that a refusal over an unfinished recovery quotes the strand's final message.
++func TestRecoveryNotDoneMessage(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	for _, tt := range []struct {
++		name        string
++		lastMessage string
++		want        string
++	}{
++		{"WithMessage", "Keep the old flag?", "webster: batch 01-only recovery (session s1) ended dead (its last message: Keep the old flag?); way forward: run `lym webster recover-batch 1` once more"},
++		{"WithoutMessage", "", "webster: batch 01-only recovery (session s1) ended dead; way forward: run `lym webster recover-batch 1` once more"},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := recoveryNotDoneMessage("01-only", 1, "dead", "s1", tt.lastMessage, true); got != tt.want {
++				t.Errorf("recoveryNotDoneMessage() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 0a83776fb..32ed5bea0 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -1392,7 +1392,7 @@ func TestRecoverBatchCmd_RunningThenTerminal(t *testing.T) {
+ 		t.Errorf("stat of the waiting report = %v; want it archived", err)
+ 	}
+ 	var outResume strings.Builder
+-	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outResume, []string{"1", "--wait", "1ns"}); code != 0 || !strings.Contains(outResume.String(), `"status":"running"`) {
++	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outResume, []string{"1", "--wait", "1ns", "--answer", "the timeout is raised"}); code != 0 || !strings.Contains(outResume.String(), `"status":"running"`) {
+ 		t.Fatalf("recover-batch 1 over a waiting batch at two recoveries = %d, output: %s; want a running respawn", code, outResume.String())
+ 	}
+ 	loaded, err = websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
+diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
+index 9483d5b52..5a9ad53e2 100644
+--- a/internal/websterengine/beginbatch.go
++++ b/internal/websterengine/beginbatch.go
+@@ -45,7 +45,7 @@ func fingerprintMismatchWayForward(st *State, planDir, websterDir, reentry strin
+ 	indexChanged := false
+ 	for _, name := range changed {
+ 		if name == runplan.PlanOverviewFile {
+-			recorded, _, _, err := recordedOverviewFrame(st, websterDir)
++			recorded, _, _, err := runplan.RecordedOverviewFrame(&st.State, websterDir)
+ 			indexOnly := false
+ 			if err == nil {
+ 				indexOnly, err = overviewIndexOnly(recorded, planDir)
+@@ -215,6 +215,9 @@ func predecessorDigestLine(batches []batcher.Batch, st *State, batchNumber int)
+ // Then come a dead recovery with a retry, any other dead recovery, and a stuck or failed record.
+ func existingReportRemedy(number int, recorded *BatchState, retry bool) (string, bool) {
+ 	if !recorded.Terminal {
++		if waitsOnParent(recorded) && recorded.Kind == "recovery" {
++			return fmt.Sprintf("`%s`, once the parent has answered", resumeStep(recorded, number)), false
++		}
+ 		if recorded.Kind == "recovery" {
+ 			return fmt.Sprintf("`lym webster recover-batch %d`", number), false
+ 		}
+@@ -399,13 +402,16 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 	// so the run-exit audit still knows which report each of those forks owns.
+ 	// The recovery count and its start commit carry over as well,
+ 	// so a re-begin does not hand a batch a fresh pair of recoveries.
++	// The parent's answers carry over, so a later recovery still renders them.
+ 	var priorWarnings []AuditWarning
+ 	var priorTranscripts []string
+ 	var priorRecoveries int
+ 	var priorRecoveryStart string
+ 	var priorRecoverySessions []string
+ 	var priorRecoveryEngines map[string]string
++	var priorAnswers []ParentAnswer
+ 	if prior != nil {
++		priorAnswers = prior.ParentAnswers
+ 		priorRecoverySessions = prior.RecoverySessions
+ 		priorRecoveryEngines = prior.RecoveryEngines
+ 		priorWarnings = prior.AuditWarnings
+@@ -426,6 +432,7 @@ func BeginBatch(deps BeginDeps, batchNumber int) (*BeginResult, error) {
+ 		RecoverySessions: priorRecoverySessions,
+ 		RecoveryEngines:  priorRecoveryEngines,
+ 		RecoveryStartSHA: priorRecoveryStart,
++		ParentAnswers:    priorAnswers,
+ 		SpawnedAt:        time.Now().UTC().Format(time.RFC3339),
+ 		// Stamp the opening Master session.
+ 		// The run-exit audit cross-check scopes its begun-batch count to that session;
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index 60512e9a6..92e299c88 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -212,15 +212,15 @@ func TestBeginBatch_Refusals(t *testing.T) {
+ 			wantNotText: []string{"exhausted", "record-batch"},
+ 		},
+ 		{
+-			name: "a report over a dead recovery at the cap with an unrendered amendment ends the run stuck without exhausted",
++			name: "a report over a dead recovery at the cap with an unrendered amendment names recover-batch once more",
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+ 				seedReport(t, fx)
+ 				fx.Deps.State.Batches = map[int]*websterengine.BatchState{
+ 					1: {Slug: "json-flag", Kind: "recovery", Terminal: true, Status: "dead", Recoveries: 2, AmendedCards: []websterengine.AmendedCard{{Card: "01-json-flag"}}},
+ 				}
+ 			},
+-			wantText:    []string{"terminal with status dead", "end the run stuck naming the batch"},
+-			wantNotText: []string{"exhausted", "record-batch", "recover-batch"},
++			wantText:    []string{"terminal with status dead", "`lym webster recover-batch 1`, once more"},
++			wantNotText: []string{"exhausted", "record-batch", "end the run stuck"},
+ 		},
+ 		{
+ 			name: "a report over a stuck fork record at the cap names the exhausted routes",
+@@ -582,10 +582,14 @@ func TestBeginBatch_Record(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:      "a re-begin carries the recovery count, its sessions and its start commit",
+-			prior:     &websterengine.BatchState{Slug: "json-flag", Kind: "recovery", Recoveries: 2, RecoverySessions: []string{"r1", "r2"}, RecoveryEngines: map[string]string{"r1": "claude", "r2": "fake"}, RecoveryStartSHA: recordedStart},
++			name: "a re-begin carries the recovery count, its sessions, its start commit and the parent's answers",
++			prior: &websterengine.BatchState{Slug: "json-flag", Kind: "recovery", Recoveries: 2, RecoverySessions: []string{"r1", "r2"}, RecoveryEngines: map[string]string{"r1": "claude", "r2": "fake"}, RecoveryStartSHA: recordedStart,
++				ParentAnswers: []websterengine.ParentAnswer{{Need: "which flag?", Answer: "the old one"}}},
+ 			wantStart: func(fx *beginFixture) string { return fx.Git.head },
+ 			check: func(t *testing.T, fx *beginFixture, bs *websterengine.BatchState) {
++				if want := []websterengine.ParentAnswer{{Need: "which flag?", Answer: "the old one"}}; !slices.Equal(bs.ParentAnswers, want) {
++					t.Errorf("Batches[1].ParentAnswers = %v; want %v", bs.ParentAnswers, want)
++				}
+ 				if want := map[string]string{"r1": "claude", "r2": "fake"}; !maps.Equal(bs.RecoveryEngines, want) {
+ 					t.Errorf("Batches[1].RecoveryEngines = %v; want %v", bs.RecoveryEngines, want)
+ 				}
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 5aeacf352..36ad95954 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -103,8 +103,10 @@
+ // It regroups the cards after it with the active batchifier, and replaces State.Partition.
+ // The operator names every changed card; a changed card file not named is refused.
+ // A named card of a failed, dead or stuck batch has its CardHashes entry restamped.
+-// A named card of an in-flight batch is also recorded in AmendedCards with Rendered false.
+-// This forces that batch's next report failed, so a recovery re-runs it on the edited cards.
++// A named card of a dead batch or of an in-flight one is also recorded in AmendedCards with Rendered false.
++// So is one of a failed or stuck batch that already holds an entry.
++// This forces an in-flight batch's next report failed, so a recovery re-runs it on the edited cards.
++// A dead batch's amendment earns it one uncounted recovery, so an edit to its cards clears its dead end.
+ // An edit to a done batch's card is refused, with a follow-up card as the way forward.
+ // Only the Card Index of 00-overview.md may change, held to the card-set rule:
+ // cards before the last begun batch keep their number and slug.
+@@ -184,7 +186,11 @@
+ // A step only the run's parent can take, such as a hub setting or a board write, is no card failure.
+ // The implementer reports `status: NEEDS_PARENT` with a one-line `need`,
+ // and the batch is recorded as `waiting` (not `Terminal`), spending no recovery.
++// A recovery strand with a question only the parent can answer reports the same way, with the question as its need.
+ // Merriam messages its parent and resumes through begin-batch's re-begin or recover-batch once the step is taken.
++// Resuming a recovery takes the parent's reply in `--answer`, which the resumed strand's prompt holds beside the need.
++// A recovery strand that ends its turn with no report stays dead/asking.
++// Its final message is kept on the digest and quoted by the refusals that halt on it.
+ // A waiting batch and a decision with no batch left are the only times Merriam messages its parent;
+ // every other dead end is an `outcome: stuck` with no message.
+ //
+diff --git a/internal/websterengine/rebaseline.go b/internal/websterengine/rebaseline.go
+index 54022908c..6e035af00 100644
+--- a/internal/websterengine/rebaseline.go
++++ b/internal/websterengine/rebaseline.go
+@@ -6,8 +6,6 @@ package websterengine
+ import (
+ 	"errors"
+ 	"fmt"
+-	"io/fs"
+-	"os"
+ 	"slices"
+ 	"sort"
+ 	"strconv"
+@@ -28,13 +26,6 @@ var ErrRebaselineCardSetChanged = errors.New("webster: the edited plan changes t
+ // It carries no "way forward: " prefix.
+ const followUpCardLanding = "add a follow-up card after the last begun batch that carries the decision, with its Card Index line in " + runplan.PlanOverviewFile + ", then run `lym webster rebaseline --card NN` naming it"
+ 
+-// The three causes of an empty recorded overview frame.
+-const (
+-	causeNoOverviewHash     = "no overview hash was recorded"
+-	causeBaselineCopyAbsent = "the baseline copy of the recorded overview is absent"
+-	causeNoCardIndex        = "the baseline copy of the recorded overview has no parseable Card Index"
+-)
+-
+ // followUpLanding renders the landing for a decision that reaches a done batch's card.
+ // The decision can also reach an overview outside its Card Index.
+ // An empty step is the manual landing, followUpCardLanding;
+@@ -58,38 +49,6 @@ func transientWayForward(step, manual string) string {
+ 	return "transient, " + step
+ }
+ 
+-// recordedOverviewFrame returns the overview frame hash the run recorded.
+-// A state without State.PlanOverviewFrameHash takes the frame of the baseline copy of its recorded 00-overview.md.
+-// That copy lies under websterDir.
+-// The function returns "" when the run has no recorded frame:
+-// no overview hash recorded, the copy absent, or a copy without a parseable Card Index.
+-// For an empty frame, cause is one of the three causes of an empty frame, and path is the baseline copy's path.
+-// Path is empty when no hash was recorded; both are empty beside a frame.
+-// It logs nothing.
+-// A read failure other than an absent copy is returned.
+-func recordedOverviewFrame(st *State, websterDir string) (frame, cause, path string, err error) {
+-	if st.PlanOverviewFrameHash != "" {
+-		return st.PlanOverviewFrameHash, "", "", nil
+-	}
+-	hash := st.PlanFileHashes[runplan.PlanOverviewFile]
+-	if hash == "" {
+-		return "", causeNoOverviewHash, "", nil
+-	}
+-	path = runplan.PlanBaselinePath(websterDir, hash)
+-	data, err := os.ReadFile(path)
+-	if errors.Is(err, fs.ErrNotExist) {
+-		return "", causeBaselineCopyAbsent, path, nil
+-	}
+-	if err != nil {
+-		return "", "", "", fmt.Errorf("websterengine: recorded overview frame: read plan baseline copy %s: %w", hash, err)
+-	}
+-	frame, err = runplan.OverviewFrameHashOf(data)
+-	if err != nil {
+-		return "", causeNoCardIndex, path, nil
+-	}
+-	return frame, "", "", nil
+-}
+-
+ // logEmptyOverviewFrame logs at Info why the run has no recorded overview frame.
+ // It names the baseline copy's path where there is one.
+ func logEmptyOverviewFrame(cause, path string) {
+@@ -258,8 +217,12 @@ func rebaselineBatches(deps RebaselineDeps) ([]batcher.Batch, bool, error) {
+ // The start commit a refusal names is picked by git ancestry.
+ // A begun card's reworded one-line intent in the Card Index passes.
+ // Its card file stays pinned by the recorded hash.
+-// A card accepted in an in-flight batch is also recorded in the batch's AmendedCards with Rendered false.
++// An accepted card of an in-flight or terminal dead batch is also recorded in its AmendedCards with Rendered false.
++// So is one of a failed or stuck batch that already holds an entry, so its next recovery re-reads every edited card.
+ // An entry already there is reset.
++// The next recovery renders it and counts no recovery for it,
++// so an accepted edit re-arms a dead batch whose recoveries are spent.
++// Only an in-flight batch's cards are listed as amended in the result.
+ // A dead batch's strand, kept alive when classified dead, may still work on the old card.
+ // So may the fork or recovery strand of an in-flight batch.
+ // The restamp stops no strand.
+@@ -291,7 +254,7 @@ func Rebaseline(deps RebaselineDeps) (*RebaselineResult, error) {
+ 		var unnamed []string
+ 		for _, name := range changedFiles {
+ 			if name == runplan.PlanOverviewFile {
+-				recorded, cause, path, overviewErr := recordedOverviewFrame(deps.State, deps.Geom.WebsterDir)
++				recorded, cause, path, overviewErr := runplan.RecordedOverviewFrame(&deps.State.State, deps.Geom.WebsterDir)
+ 				indexOnly := false
+ 				if overviewErr == nil {
+ 					if cause != "" {
+@@ -405,10 +368,11 @@ func Rebaseline(deps RebaselineDeps) (*RebaselineResult, error) {
+ 		sort.Strings(ids)
+ 		for _, id := range ids {
+ 			bs.CardHashes[id] = restamps[n][id]
+-			if bs.Terminal {
++			if !bs.Terminal {
++				cardsAmended = append(cardsAmended, id)
++			} else if bs.Status != DigestStatusDead && len(bs.AmendedCards) == 0 {
+ 				continue
+ 			}
+-			cardsAmended = append(cardsAmended, id)
+ 			if i := slices.IndexFunc(bs.AmendedCards, func(a AmendedCard) bool { return a.Card == id }); i >= 0 {
+ 				bs.AmendedCards[i].Rendered = false
+ 			} else {
+diff --git a/internal/websterengine/rebaseline_test.go b/internal/websterengine/rebaseline_test.go
+index 0bab21117..b94bfffd7 100644
+--- a/internal/websterengine/rebaseline_test.go
++++ b/internal/websterengine/rebaseline_test.go
+@@ -590,34 +590,45 @@ func TestRebaseline_EditedPlan(t *testing.T) {
+ 			wantText: []string{"batch 1 card 01-json-flag changed since it was begun", "batch is done", followUpWayForward},
+ 		},
+ 		{
+-			name: "a named card of a failed batch is accepted and restamped",
++			name: "a named card of a failed batch is accepted and restamped, with no amendment",
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+ 				beginAndFinishBatchOne(t, fx)
+ 				setBatchOneState(fx, true, "failed", nil)
+ 				editBegunCardOne(t, fx)
+ 			},
+ 			cards: []int{1},
+-			check: checkBegunCardRestamped,
++			check: checkTerminalCardNotAmended,
+ 		},
+ 		{
+-			name: "a named card of a dead batch is accepted and restamped",
++			name: "a named card of a dead batch is accepted, restamped and recorded as amended",
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+ 				beginAndFinishBatchOne(t, fx)
+ 				setBatchOneState(fx, true, websterengine.DigestStatusDead, nil)
+ 				editBegunCardOne(t, fx)
+ 			},
+ 			cards: []int{1},
+-			check: checkBegunCardRestamped,
++			check: checkTerminalCardAmended,
+ 		},
+ 		{
+-			name: "a named card of a stuck batch is accepted and restamped",
++			name: "a named card of a stuck batch is accepted and restamped, with no amendment",
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+ 				beginAndFinishBatchOne(t, fx)
+ 				setBatchOneState(fx, true, websterengine.DigestStatusStuck, nil)
+ 				editBegunCardOne(t, fx)
+ 			},
+ 			cards: []int{1},
+-			check: checkBegunCardRestamped,
++			check: checkTerminalCardNotAmended,
++		},
++		{
++			name: "a re-edit over a failed batch already holding an entry resets its rendered mark",
++			prepare: func(t *testing.T, fx *beginFixture) {
++				beginAndFinishBatchOne(t, fx)
++				setBatchOneState(fx, true, websterengine.DigestStatusFailed, nil)
++				fx.Deps.State.Batches[1].AmendedCards = []websterengine.AmendedCard{{Card: "01-json-flag", Rendered: true}}
++				editBegunCardOne(t, fx)
++			},
++			cards: []int{1},
++			check: checkTerminalCardAmended,
+ 		},
+ 		{
+ 			name: "a named card of an in-flight batch is accepted, restamped and recorded as amended",
+@@ -1010,6 +1021,33 @@ func checkInFlightCardAmended(t *testing.T, fx *beginFixture, before websterengi
+ 	}
+ }
+ 
++// checkTerminalCardNotAmended asserts that an accepted edit of a failed or stuck batch holding no entry only restamps it.
++func checkTerminalCardNotAmended(t *testing.T, fx *beginFixture, before websterengine.BatchState, res *websterengine.RebaselineResult) {
++	t.Helper()
++	checkBegunCardRestamped(t, fx, before, res)
++	if got := fx.Deps.State.Batches[1].AmendedCards; len(got) != 0 {
++		t.Errorf("AmendedCards = %v; want none", got)
++	}
++	if len(res.CardsAmended) != 0 {
++		t.Errorf("CardsAmended = %v; want none for a terminal batch", res.CardsAmended)
++	}
++}
++
++// checkTerminalCardAmended asserts that an accepted edit of a terminal batch's card restamps it.
++// The edit also records exactly one unrendered AmendedCards entry for the card, which earns a recovery.
++// The result lists no amended card, since only an in-flight batch's cards are listed.
++func checkTerminalCardAmended(t *testing.T, fx *beginFixture, before websterengine.BatchState, res *websterengine.RebaselineResult) {
++	t.Helper()
++	checkBegunCardRestamped(t, fx, before, res)
++	want := []websterengine.AmendedCard{{Card: "01-json-flag", Rendered: false}}
++	if got := fx.Deps.State.Batches[1].AmendedCards; !slices.Equal(got, want) {
++		t.Errorf("AmendedCards = %v; want %v", got, want)
++	}
++	if len(res.CardsAmended) != 0 {
++		t.Errorf("CardsAmended = %v; want none for a terminal batch", res.CardsAmended)
++	}
++}
++
+ // handlePlan returns a three-card plan whose card 2 declares a handle.
+ // When cardOneUsesHandle is set, card 1 Uses the handle in the given spelling,
+ // so canonicalizing card 2's draft handle rewrites card 1 as well.
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 503815843..e9aa0a5dd 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -95,6 +95,11 @@ type RecoverDeps struct {
+ 	// CardFixer sends a failed card gate call through a cold fixer first.
+ 	// The recovery prompt states this.
+ 	CardFixer bool
++
++	// Answer is what the run's parent answered a waiting batch's need.
++	// Only a spawn resuming a waiting batch records it; every other spawn and every attach ignores it.
++	// Resuming a waiting recovery refuses when it is blank.
++	Answer string
+ }
+ 
+ // RecoverResult is what one RecoverAwait call returns.
+@@ -181,6 +186,17 @@ func failureDigestBlock(prior *BatchState) string {
+ 	return strings.Join(lines, "\n")
+ }
+ 
++// parentAnswersBlock renders each need a batch waited on beside the parent's answer, for the recovery prompt.
++// A further line of a multi-line answer is indented under its entry.
++// It returns "" when there is none.
++func parentAnswersBlock(answers []ParentAnswer) string {
++	lines := make([]string, 0, len(answers))
++	for _, a := range answers {
++		lines = append(lines, fmt.Sprintf("- need: %s\n  answer: %s", a.Need, strings.ReplaceAll(a.Answer, "\n", "\n  ")))
++	}
++	return strings.Join(lines, "\n")
++}
++
+ // uncommittedPathsBlock renders the uncommitted worktree paths for the recovery prompt.
+ // It groups them by whether this run wrote them.
+ // A path the run's write evidence cannot attribute counts as not written by this run;
+@@ -233,6 +249,15 @@ func writtenUnder(written []string, uncommitted string) bool {
+ 	return slices.Contains(written, uncommitted)
+ }
+ 
++// keepAnswerOnRerun adds to a failed spawn's error that its re-run needs the answer again.
++// That holds while prior is a waiting recovery, since the failed spawn recorded nothing.
++func keepAnswerOnRerun(prior *BatchState, err error) error {
++	if !waitsOnParent(prior) || prior.Kind != "recovery" {
++		return err
++	}
++	return fmt.Errorf("%w; the batch still waits on its parent, so pass the same --answer on the re-run", err)
++}
++
+ // rendersNewAmendment reports whether prior holds an amendment no earlier recovery spawn rendered into its prompt.
+ func rendersNewAmendment(prior *BatchState) bool {
+ 	return prior != nil && slices.ContainsFunc(prior.AmendedCards, func(a AmendedCard) bool { return !a.Rendered })
+@@ -314,7 +339,14 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 		return nil, fmt.Errorf("webster: no resolved model-spec for role %q", RoleRecovery)
+ 	}
+ 	engine := deps.Engines.EngineName(choice)
+-	prompt, err := RenderRecoveryPrompt(batch, cardGates, batchGate, prevDigest, failureDigestBlock(prior), uncommittedPaths, reportPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.PaneCwd, deps.Geom.StencilsDir, engine, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, patternChanges, deps.Config.SelfFixCap, notePath, deps.Geom.ParentName, deps.CardFixer)
++	var answers []ParentAnswer
++	if prior != nil {
++		answers = slices.Clone(prior.ParentAnswers)
++	}
++	if answer := strings.TrimSpace(deps.Answer); answer != "" && waitsOnParent(prior) {
++		answers = append(answers, ParentAnswer{Need: waitingNeed(prior), Answer: answer})
++	}
++	prompt, err := RenderRecoveryPrompt(batch, cardGates, batchGate, prevDigest, failureDigestBlock(prior), parentAnswersBlock(answers), uncommittedPaths, reportPath, deps.Geom.WorktreeRoot, deps.Geom.PlanDir, deps.Geom.PaneCwd, deps.Geom.StencilsDir, engine, deps.Geom.SpecsDir, deps.GateTiers, deps.RenameTools, patternChanges, deps.Config.SelfFixCap, notePath, deps.Geom.ParentName, deps.CardFixer)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -393,6 +425,7 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 		Cards:            runplan.BatchCardIDs(batch),
+ 		CardHashes:       cardHashes,
+ 		AmendedCards:     amended,
++		ParentAnswers:    answers,
+ 		StartSHA:         start,
+ 		AuditWarnings:    priorWarnings,
+ 		SuspectPaths:     priorSuspects,
+@@ -414,6 +447,8 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ // It also reports how many counted recoveries the batch has.
+ // It is true for a terminal dead recovery record with no counted recovery, the state a `reset --to batch-start` leaves.
+ // That record still owes the batch its first counted recovery.
++// It is true at any count for a record holding an amendment no spawn rendered.
++// The spawn that renders such an amendment counts no recovery.
+ // Below the cap it is otherwise true only when the recovery committed work of its own:
+ // HEAD descends from the record's non-empty RecoveryStartSHA,
+ // and the first-parent range from it to HEAD holds a commit that is not a merge.
+@@ -440,7 +475,13 @@ func recoveryRetryRead(geom Geometry, st *State, n int) (retry bool, recoveries
+ 		return false, 0, nil
+ 	}
+ 	recoveries = bs.Recoveries
+-	if bs.Kind != "recovery" || !bs.Terminal || bs.Status != DigestStatusDead || recoveries >= maxRecoveries {
++	if bs.Kind != "recovery" || !bs.Terminal || bs.Status != DigestStatusDead {
++		return false, recoveries, nil
++	}
++	if rendersNewAmendment(bs) {
++		return true, recoveries, nil
++	}
++	if recoveries >= maxRecoveries {
+ 		return false, recoveries, nil
+ 	}
+ 	if recoveries == 0 {
+@@ -493,6 +534,8 @@ func committedSince(geom Geometry, start string) (bool, error) {
+ // The bound: it refuses only while that check fires for the batch's own cards against the current plan and tree;
+ // moving the delete and rebaselining clears it.
+ // A record waiting on its parent is never attached to and never refused as exhausted: the spawn resumes it uncounted.
++// Resuming a waiting recovery record refuses while deps.Answer is blank,
++// so no resumed strand starts without what it waited for.
+ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *BatchState, spawned bool, err error) {
+ 	batch, err := findBatch(deps.Batches, batchNumber)
+ 	if err != nil {
+@@ -503,6 +546,9 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 	if prior != nil && prior.Kind == "recovery" && !prior.Terminal && prior.StrandGUID != "" && !waitsOnParent(prior) {
+ 		return prior, false, nil
+ 	}
++	if waitsOnParent(prior) && prior.Kind == "recovery" && strings.TrimSpace(deps.Answer) == "" {
++		return nil, false, fmt.Errorf("webster: batch %02d waits on its parent (%s), so its resume needs the parent's answer; way forward: once the parent has answered, `%s`", batchNumber, waitingNeed(prior), resumeStep(prior, batchNumber))
++	}
+ 	// The recovery key can change mid-run, so the spawn re-checks it ahead of anything that archives or stops.
+ 	if choice, ok := deps.Roles[RoleRecovery]; ok {
+ 		if err := roleAuditEngine(deps.Engines, RoleRecovery, choice); err != nil {
+@@ -557,7 +603,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 
+ 	referenced, err := runplan.LaterDeleteReferenceReasons(deps.Plan, deps.Batches, &deps.State.State, batch.Cards, deps.Geom.runPlan())
+ 	if err != nil {
+-		return nil, false, fmt.Errorf("%w; way forward: transient, re-run `lym webster recover-batch %d`", err, batchNumber)
++		return nil, false, keepAnswerOnRerun(prior, fmt.Errorf("%w; way forward: transient, re-run `lym webster recover-batch %d`", err, batchNumber))
+ 	}
+ 	if len(referenced) > 0 {
+ 		return nil, false, fmt.Errorf("%w: batch %02d: %s; way forward: %s", ErrRecoveryDeleteReferenced, batchNumber, strings.Join(referenced, "; "), deleteReferencedWayForward(batchNumber, prior != nil && len(prior.Uncheckable) > 0, false))
+@@ -567,7 +613,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 
+ 	fresh, err := recoverSpawn(deps, batch, prior, prevDigest, clk)
+ 	if err != nil {
+-		return nil, false, err
++		return nil, false, keepAnswerOnRerun(prior, err)
+ 	}
+ 	if deps.State.Batches == nil {
+ 		deps.State.Batches = map[int]*BatchState{}
+@@ -793,6 +839,8 @@ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, diges
+ 
+ // awaitTerminal drives one bounded long-poll wait for bs's recovery strand.
+ // Each poll classifies the batch report, the turn ends and the strand's liveness into a digest.
++// A dead asking digest carries the strand's final message when it has one;
++// a failed read of it is a warning.
+ // Every terminal digest removes the recovery strand if still live, even when the call then refuses;
+ // only a done digest also removes the run dir.
+ // Cleanup failures are warnings, not fatal errors.
+@@ -872,6 +920,14 @@ func awaitTerminal(deps RecoverDeps, batch batcher.Batch, bs *BatchState, wait t
+ 		warnings = append(warnings, fmt.Sprintf("recover-batch: stop strand %s: %v", bs.StrandGUID, err))
+ 	}
+ 
++	if digest.Status == DigestStatusDead && digest.DeadReason == DeadReasonAsking {
++		message, err := gatefixer.LastTurnMessage(bs.EventsPath, bs.EventsOffset, engine)
++		if err != nil {
++			warnings = append(warnings, fmt.Sprintf("recover-batch: read the strand's last message: %v", err))
++		}
++		digest.LastMessage = strings.Join(strings.Fields(message), " ")
++	}
++
+ 	// A merge in progress leaves the batch non-terminal and retryable.
+ 	if err := refuseMidMerge(deps.Geom.git(), deps.Geom.WorktreeRoot); err != nil {
+ 		return nil, err
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index 87a6b1fb8..7fa6c1386 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -563,6 +563,26 @@ func TestRecoverBatch_SecondCall(t *testing.T) {
+ 			},
+ 			check: checkRecoveryAsking,
+ 		},
++		{
++			// A closing message is no request to the parent: the strand stays dead, and the message is kept for the halt note.
++			name: "a turn end carrying a message stays dead asking and records the message",
++			afterFirst: func(t *testing.T, fx *recoverFixture, clk *recoverFakeClock) secondCall {
++				fx.Deps.Engines = namedEngines(shuttlefake.EngineName, claudeengine.New())
++				appendClaudeHook(t, fx, "Stop", clk.now.Add(-10*time.Second), map[string]any{
++					"background_tasks":       []any{},
++					"last_assistant_message": "  All cards are\ncommitted,   I think.\n",
++				})
++				return secondCall{}
++			},
++			check: func(t *testing.T, fx *recoverFixture, a attempt) {
++				checkRecoveryAsking(t, fx, a)
++				const wantMessage = "All cards are committed, I think."
++				bs := fx.Deps.State.Batches[1]
++				if !bs.Terminal || bs.Digest == nil || bs.Digest.LastMessage != wantMessage {
++					t.Errorf("Batches[1] Terminal, Digest = %v, %+v; want true and LastMessage %q", bs.Terminal, bs.Digest, wantMessage)
++				}
++			},
++		},
+ 		{
+ 			name: "a recorded session whose engine key is absent reads its turn end through the default",
+ 			afterFirst: func(t *testing.T, fx *recoverFixture, clk *recoverFakeClock) secondCall {
+@@ -939,6 +959,71 @@ func TestRecoverBatch_AmendedCards(t *testing.T) {
+ 	}
+ }
+ 
++// TestRecoverBatch_WaitingResume walks a waiting recovery through two resumes.
++// A resume with no answer is refused before any strand starts, so a repeated wait never loops unanswered.
++// A resume whose strand fails to start says the re-run needs the answer again.
++// A resumed strand's prompt holds every need the batch waited on beside the parent's answer, and spends no recovery.
++func TestRecoverBatch_WaitingResume(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	fx := newRecoverFixture(t)
++	clk := &recoverFakeClock{now: time.Unix(0, 0)}
++	fx.Deps.State.Batches[1] = &websterengine.BatchState{
++		Slug: "json-flag", Kind: "recovery", Status: websterengine.DigestStatusWaiting, Recoveries: 1,
++		Digest: &websterengine.Digest{Batch: "01-json-flag", Status: websterengine.DigestStatusWaiting, Need: "keep the old flag?"},
++	}
++
++	resume := func(answer string) (*recoverDriveResult, error) {
++		deps := fx.Deps
++		deps.Answer = answer
++		return driveRecoverBatch(deps, 1, time.Second, clk)
++	}
++	requireRefused := func(need string) {
++		t.Helper()
++		prompts := fx.Engine.PrepareCalls
++		_, err := resume(" \n")
++		if err == nil || !strings.Contains(err.Error(), need) || !strings.Contains(err.Error(), "lym webster recover-batch 1 --answer") {
++			t.Fatalf("resume with no answer: err = %v; want a refusal naming %q and --answer", err, need)
++		}
++		if fx.Engine.PrepareCalls != prompts {
++			t.Fatalf("resume with no answer started a strand; want none")
++		}
++	}
++	requireResumed := func(answer string, wantEntries ...string) {
++		t.Helper()
++		res, err := resume(answer)
++		if err != nil || !res.Spawned || !res.Running {
++			t.Fatalf("resume(%q) = %+v, %v; want a running spawned recovery", answer, res, err)
++		}
++		for _, want := range wantEntries {
++			if !strings.Contains(fx.Engine.LastPrompt, want) {
++				t.Errorf("resumed prompt lacks %q", want)
++			}
++		}
++		if got := fx.Deps.State.Batches[1].Recoveries; got != 1 {
++			t.Errorf("Recoveries = %d; want 1, since a resume is not counted", got)
++		}
++	}
++
++	const first = "- need: keep the old flag?\n  answer: keep it\n  for one release"
++	const second = "- need: which default?\n  answer: false"
++	requireRefused("keep the old flag?")
++	failing := fx.Deps
++	failing.Answer, failing.Starter = "keep it", erroringStarter{}
++	if _, err := driveRecoverBatch(failing, 1, time.Second, clk); !errors.Is(err, shuttleengine.ErrNotStarted) || !strings.Contains(err.Error(), "pass the same --answer") {
++		t.Fatalf("resume with a failing start: err = %v; want the start error naming the same --answer", err)
++	}
++	requireResumed("keep it\nfor one release\n", first)
++
++	writeRecoverReport(t, fx.ReportsDir, "status: NEEDS_PARENT\nhead_sha: "+fx.Git.head+"\nneed: which default?\n")
++	if res, err := resume(""); err != nil || res.Digest == nil || res.Digest.Status != websterengine.DigestStatusWaiting {
++		t.Fatalf("attach to the asking recovery = %+v, %v; want a waiting digest", res, err)
++	}
++	requireRefused("which default?")
++	requireResumed("false", first, second)
++}
++
+ // failedRecord builds the record a batch leaves behind when it failed on its merits:
+ // terminal, status failed, reasons ending with the suspect paths.
+ func failedRecord(reasons ...string) *websterengine.BatchState {
+@@ -1903,6 +1988,24 @@ func TestRecoveryRetry(t *testing.T) {
+ 			},
+ 			wantRecoveries: 2,
+ 		},
++		{
++			name: "a dead recovery at two recoveries holding an unrendered amendment retries",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				rec := deadRecovery(2, g.head)
++				rec.AmendedCards = []websterengine.AmendedCard{{Card: "01-json-flag", Rendered: false}}
++				return rec
++			},
++			wantRetry: true, wantRecoveries: 2,
++		},
++		{
++			name: "a dead recovery at two recoveries holding only a rendered amendment does not retry",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				rec := deadRecovery(2, g.head)
++				rec.AmendedCards = []websterengine.AmendedCard{{Card: "01-json-flag", Rendered: true}}
++				return rec
++			},
++			wantRecoveries: 2,
++		},
+ 		{
+ 			name: "a stuck recovery holding commits does not retry",
+ 			setup: func(g *fakeGit) *websterengine.BatchState {
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index 23da9a8a5..b92449651 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -206,11 +206,13 @@ func RenderForkPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, rep
+ // it fills the optional failure_digest marker, rendered as "none" when empty.
+ // uncommittedPaths is the caller-rendered block of the worktree's uncommitted paths grouped by who wrote them;
+ // it fills the optional uncommitted_paths marker, rendered as "none" when empty.
++// parentAnswers is the caller-rendered block of what the batch waited on and the parent's answers;
++// it fills the optional parent_answers marker, rendered as "none" when empty.
+ // cardFixer says a failed card gate call goes through a cold fixer first;
+ // it renders the card-gate fixer paragraph after the card gates, and false leaves the text unchanged.
+ // engine names the engine the strand launches on.
+ // The prompt is worded for it, and the edit directive is that engine's copy.
+-func RenderRecoveryPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, failureDigest, uncommittedPaths, reportPath, repoRoot, planDir, promptWorktreeRoot, stencilsDir, engine, specsDir, gateTiers string, renameTools, patternChanges []string, selfFixCap int, notePath, parentName string, cardFixer bool) ([]byte, error) {
++func RenderRecoveryPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest, failureDigest, parentAnswers, uncommittedPaths, reportPath, repoRoot, planDir, promptWorktreeRoot, stencilsDir, engine, specsDir, gateTiers string, renameTools, patternChanges []string, selfFixCap int, notePath, parentName string, cardFixer bool) ([]byte, error) {
+ 	digestLine := prevDigest
+ 	if strings.TrimSpace(digestLine) == "" {
+ 		digestLine = noPrecedingBatchDigest
+@@ -223,6 +225,10 @@ func RenderRecoveryPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest,
+ 	if strings.TrimSpace(uncommittedLine) == "" {
+ 		uncommittedLine = "none"
+ 	}
++	answersBlock := parentAnswers
++	if strings.TrimSpace(answersBlock) == "" {
++		answersBlock = "none"
++	}
+ 
+ 	directive, err := pattern.Directive(repoRoot, stencilsDir, pattern.RoleImplementer, patternChanges)
+ 	if err != nil {
+@@ -261,6 +267,7 @@ func RenderRecoveryPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest,
+ 		cardGateFixerMarker: cardFixerText,
+ 		"failure_digest":    failureLine,
+ 		"uncommitted_paths": uncommittedLine,
++		"parent_answers":    answersBlock,
+ 		"pattern_directive": directive,
+ 		"specs_dir":         specsDir,
+ 		"gate_tiers":        gateTiersOrNone(gateTiers),
+@@ -275,7 +282,7 @@ func RenderRecoveryPrompt(batch batcher.Batch, cardGates, batchGate, prevDigest,
+ 		return nil, fmt.Errorf("webster: read recovery template: %w", err)
+ 	}
+ 	friction.WarnIfMarkerAbsent(template, "webster-prefix-recovery", frictionDirective)
+-	prompt, err := stencil.FillOptional(template, values, []string{"pattern_directive", "failure_digest", "uncommitted_paths", cardGateFixerMarker, friction.MarkerName, parentdirective.MarkerName})
++	prompt, err := stencil.FillOptional(template, values, []string{"pattern_directive", "failure_digest", "uncommitted_paths", "parent_answers", cardGateFixerMarker, friction.MarkerName, parentdirective.MarkerName})
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: fill recovery template: %w", err)
+ 	}
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index 367e3bf77..9628e1575 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -1202,6 +1202,9 @@ func deadEndBatchError(geom Geometry, st *State, batches []batcher.Batch, reentr
+ 		if why == "" {
+ 			continue
+ 		}
++		if bs.Digest != nil && bs.Digest.LastMessage != "" {
++			why += fmt.Sprintf(" (its last message: %s)", bs.Digest.LastMessage)
++		}
+ 		return fmt.Errorf("%w: batch %02d-%s %s, so a Master would only end the run stuck on it; %s; or %s",
+ 			ErrBatchDeadEnd, number, slug, why, wayForwardSteps(resetVerb(ResetToBatchStart, number), reentry), freshRestartSteps(reentry))
+ 	}
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index e78724f95..4eb640beb 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -533,6 +533,9 @@ func TestRun_RefusesBeforeSpawn(t *testing.T) {
+ 		},
+ 		deadEndRefusalCase("a dead recovery that earns no retry", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead, Recoveries: 1},
+ 			"batch 01-batch1 is dead and its recovery earns no retry"),
++		deadEndRefusalCase("a dead recovery quotes its strand's last message", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead, Recoveries: 1,
++			Digest: &websterengine.Digest{Status: websterengine.DigestStatusDead, DeadReason: websterengine.DeadReasonAsking, LastMessage: "Keep the old flag?"}},
++			"batch 01-batch1 is dead and its recovery earns no retry (its last message: Keep the old flag?)"),
+ 		deadEndRefusalCase("a stuck batch whose recoveries are spent", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusStuck, Recoveries: 2},
+ 			"batch 01-batch1 is stuck and has had its 2 recoveries"),
+ 		{
+diff --git a/internal/websterengine/runplan.go b/internal/websterengine/runplan.go
+index bfc57d996..f435d9608 100644
+--- a/internal/websterengine/runplan.go
++++ b/internal/websterengine/runplan.go
+@@ -23,6 +23,7 @@ type (
+ 	AuditWarning              = runplan.AuditWarning
+ 	SuspectPath               = runplan.SuspectPath
+ 	AmendedCard               = runplan.AmendedCard
++	ParentAnswer              = runplan.ParentAnswer
+ 	PartitionBatch            = runplan.PartitionBatch
+ 	Report                    = runplan.Report
+ 	ReportRename              = runplan.ReportRename
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index 4bcd1e459..2f2b34207 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -349,14 +349,14 @@ func renderRecovery(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, spec
+ // renderRecoveryWithUncommitted renders the recovery prompt for batch.
+ // It takes the caller-rendered uncommitted-paths block, the hub's verify tiers and the declared PATTERN changes.
+ func renderRecoveryWithUncommitted(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, specsDir, failureDigest, uncommittedPaths, notePath, parent, gateTiers string, renameTools, patternChanges []string) (string, error) {
+-	got, err := websterengine.RenderRecoveryPrompt(batch, testCardGates, testBatchGate, "", failureDigest, uncommittedPaths, "/reports/01-alpha.yaml", repoRoot, filepath.Join(anchorRoot, "_lym", "plan"), anchorRoot, stencilsDir, "claude", specsDir, gateTiers, renameTools, patternChanges, 2, notePath, parent, false)
++	got, err := websterengine.RenderRecoveryPrompt(batch, testCardGates, testBatchGate, "", failureDigest, "", uncommittedPaths, "/reports/01-alpha.yaml", repoRoot, filepath.Join(anchorRoot, "_lym", "plan"), anchorRoot, stencilsDir, "claude", specsDir, gateTiers, renameTools, patternChanges, 2, notePath, parent, false)
+ 	return string(got), err
+ }
+ 
+ // renderRecoveryWithCardFixer renders the recovery prompt for batch.
+ // Its card gate goes through a cold fixer.
+ func renderRecoveryWithCardFixer(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, specsDir string) (string, error) {
+-	got, err := websterengine.RenderRecoveryPrompt(batch, testCardGates, testBatchGate, "", "", "", "/reports/01-alpha.yaml", repoRoot, filepath.Join(anchorRoot, "_lym", "plan"), anchorRoot, stencilsDir, "claude", specsDir, "none", nil, nil, 2, "", "", true)
++	got, err := websterengine.RenderRecoveryPrompt(batch, testCardGates, testBatchGate, "", "", "", "", "/reports/01-alpha.yaml", repoRoot, filepath.Join(anchorRoot, "_lym", "plan"), anchorRoot, stencilsDir, "claude", specsDir, "none", nil, nil, 2, "", "", true)
+ 	return string(got), err
+ }
+ 
+@@ -466,7 +466,7 @@ func TestMasterTemplate_QuotesBulletLists(t *testing.T) {
+ 		heading string
+ 		want    []string
+ 	}{
+-		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "renames", "dead_reason", "need", "elapsed_s"}},
++		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "renames", "dead_reason", "last_message", "need", "elapsed_s"}},
+ 		{"outcome schema keys", outcomeKeysHeadingSub, []string{"outcome", "stuck_reason", "batches_done"}},
+ 	}
+ 	for _, tc := range cases {
+@@ -529,7 +529,7 @@ func TestTemplates_FillRequiresEveryRequiredMarker(t *testing.T) {
+ 			name:     "recovery",
+ 			template: mustRecoveryTemplate,
+ 			values:   recoveryTemplateMarkerValues,
+-			optional: []string{"pattern_directive", "failure_digest", "uncommitted_paths", "card_gate_fixer", "friction_directive", "parent_directive"},
++			optional: []string{"pattern_directive", "failure_digest", "uncommitted_paths", "parent_answers", "card_gate_fixer", "friction_directive", "parent_directive"},
+ 			required: []string{"card_pointers", "card_gates", "batch_gate", "report_path", "self_fix_cap", "worktree_root", "prev_digest", "specs_dir", "gate_tiers", "rename_tools", "edit_directive"},
+ 		},
+ 	}
+@@ -919,7 +919,7 @@ func TestRenderPrompts(t *testing.T) {
+ 				return promptCheck{err: err}
+ 			}
+ 			stencilkit.RequireEditDirectiveOf(t, stencilsDir, string(master), "codex", "claude")
+-			recovery, err := websterengine.RenderRecoveryPrompt(alpha, testCardGates, testBatchGate, "", "", "", "/reports/01-alpha.yaml", root, planDir, root, stencilsDir, "codex", newTestSpecsDir(t), "none", nil, nil, 2, "", "", false)
++			recovery, err := websterengine.RenderRecoveryPrompt(alpha, testCardGates, testBatchGate, "", "", "", "", "/reports/01-alpha.yaml", root, planDir, root, stencilsDir, "codex", newTestSpecsDir(t), "none", nil, nil, 2, "", "", false)
+ 			if err != nil {
+ 				return promptCheck{err: err}
+ 			}
+@@ -1189,7 +1189,7 @@ func TestRenderBatchLists(t *testing.T) {
+ 			1: {Slug: "seam-extensions", Terminal: true, Status: "done"},
+ 			2: {Slug: "webster-foundation", Kind: "fork", Status: websterengine.DigestStatusWaiting, Digest: &websterengine.Digest{Status: websterengine.DigestStatusWaiting, Need: "set the tier commands"}},
+ 			3: {Slug: "webster-audit-policy", Kind: "recovery", Status: websterengine.DigestStatusWaiting, Digest: &websterengine.Digest{Status: websterengine.DigestStatusWaiting, Need: "run lym fabric reconcile"}},
+-		}}}), "01-seam-extensions: done\n02-webster-foundation: waiting (need: set the tier commands; resume: lym webster begin-batch 2)\n03-webster-audit-policy: waiting (need: run lym fabric reconcile; resume: lym webster recover-batch 3)"},
++		}}}), "01-seam-extensions: done\n02-webster-foundation: waiting (need: set the tier commands; resume: lym webster begin-batch 2)\n03-webster-audit-policy: waiting (need: run lym fabric reconcile; resume: lym webster recover-batch 3 --answer \"<the parent's answer>\")"},
+ 		// A state.json carrying an explicit null for a batch key parses to a present-but-nil entry.
+ 		{"progress skips a nil batch record", websterengine.RenderProgress(inOrder, &websterengine.State{State: runplan.State{Batches: map[int]*websterengine.BatchState{
+ 			1: nil,
+diff --git a/internal/websterengine/waiting.go b/internal/websterengine/waiting.go
+index 5cfe87a1c..c3df54da6 100644
+--- a/internal/websterengine/waiting.go
++++ b/internal/websterengine/waiting.go
+@@ -1,5 +1,6 @@
+ // waiting.go implements the batch that waits on its parent.
+ // A fork or recovery strand that stops on a step only the run's parent can take reports NEEDS_PARENT.
++// A recovery strand with a question only the parent can answer reports the same way.
+ // record-batch or recover-batch then records the batch in flight with status waiting, spending no recovery.
+ 
+ package websterengine
+@@ -9,7 +10,7 @@ import (
+ 	"time"
+ )
+ 
+-// waitsOnParent reports whether bs is an in-flight batch waiting on a step only the run's parent can take.
++// waitsOnParent reports whether bs is an in-flight batch waiting on a step or an answer only the run's parent can give.
+ func waitsOnParent(bs *BatchState) bool {
+ 	return bs != nil && !bs.Terminal && bs.Status == DigestStatusWaiting
+ }
+@@ -28,10 +29,10 @@ func recordWaiting(bs *BatchState, digest *Digest, reportsDir string, number int
+ }
+ 
+ // resumeStep is the verb that resumes waiting batch number once the parent has acted:
+-// begin-batch for a fork batch, recover-batch for a recovery batch.
++// begin-batch for a fork batch, recover-batch with the parent's answer for a recovery batch.
+ func resumeStep(bs *BatchState, number int) string {
+ 	if bs.Kind == "recovery" {
+-		return fmt.Sprintf("lym webster recover-batch %d", number)
++		return fmt.Sprintf(`lym webster recover-batch %d --answer "<the parent's answer>"`, number)
+ 	}
+ 	return fmt.Sprintf("lym webster begin-batch %d", number)
+ }
