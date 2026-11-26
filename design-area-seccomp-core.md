@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-area-seccomp-core.md)
 
-Depends on: [`area-creel-identity`](design-area-creel-identity.md), [`config-keys-nested`](design-config-keys-nested.md)
+Depends on: [`area-creel-identity`](design-area-creel-identity.md), [`config-keys-nested`](design-config-keys-nested.md), [`infra-stops-not-failures`](design-infra-stops-not-failures.md), [`dobby-run-watch-build`](design-dobby-run-watch-build.md)
 
 Filed from the Sketch `sandbox-closed-area-build`.
 

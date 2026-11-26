@@ -685,14 +685,16 @@
       "recipe": "tapestry",
       "depends_on": [
         "area-creel-identity",
-        "config-keys-nested"
+        "config-keys-nested",
+        "infra-stops-not-failures",
+        "dobby-run-watch-build"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `sandbox-closed-area-build`.\n\nTakes: the creel identity part's exports (inside test, scope names, area registry writer, hub directory, area-aware level); config-keys-nested's rewritten PATTERN-config-layers line; docs/research/platform/seccomp-connect-probe/main.go as D4's starting point; reedengine's server spawn and scrub (lifecycle.go), reedcli's attach (EnsureSession, Status, the watchdog spawn), proc.CapProcessMemory and RunMemoryCapped, lymtemp's root and run directories, runproc's end verbs, claudeengine's account resolution, TranscriptReader and user-setup source, codexengine's homes and links, githubclient's token chain, slackengine's EnsureRelay, StopRelay and file geometry, creelcli's SendReady\nDelivers: lym area init, start, stop, show, supervise, exec, git-credential and slack-setup; the area file outside the hub and its write-grant refusals; the supervisor in its own scope with its record, socket, SO_PEERCRED check, subreaping and verbs boot, attach-scope, cap-memory, kill-scope and slack-relay (start, stop, presence, status); the one launcher setting no_new_privs, Landlock ABI 8 with TSYNC and the filter with TSYNC, TSYNC_ESRCH and NEW_LISTENER; the connect decision on the checked inode and the derived allow list; the per-hub area root under lymtemp; the host-side attach client under the area; lym area start writing the machine record and the registry entry for an area hub; the host-side refusal of D7 as the first root pre-run step and at every hub selection, with machine walks skipping area hubs; dobby and creel spawn sites refusing from outside; the memory caps through the supervisor; the area's own engine config directories, GitHub token and relay records; README.md, docs/overview.md and the glossary per D16, the pseudo-terminal bound included (Added after Discussion); PATTERN-closed-area added, PATTERN-child-processes changed, and the backgrounds of PATTERN-child-processes, PATTERN-lym-files and PATTERN-config-layers per the notes for the plan writer; the seccomp half of the under-each-barrier criteria, whose apparmor half the fallback part carries; and the D6 attach criterion's second clause, which the record's unindented continuation line cuts from the parsed bullet: a `detach-client -E` sent to the attach client runs its command under the area's filter and in the attach scope\nExports: the supervisor's verb protocol and its client in internal/areaengine (one request per connection, the verbs named above), the launcher's start-request protocol, the area file type and its loader, the barrier enum seccomp and apparmor, and the start check's hook for a barrier-specific refusal, on which the fallback and host-exit parts add verbs and a barrier\n\nThe part changes these packages:\n\n- internal/areaengine (about 3000 changed lines)\n- internal/areacli (about 500 changed lines)\n- cmd/lym (about 150 changed lines)\n- internal/reedengine (about 250 changed lines)\n- internal/reedcli (about 400 changed lines)\n- internal/proc (about 250 changed lines)\n- internal/lymtemp (about 120 changed lines)\n- internal/runproc (about 40 changed lines)\n- internal/dobbyengine (about 40 changed lines)\n- internal/creelcli (about 80 changed lines)\n- internal/machinecli (about 80 changed lines)\n- internal/hubregistry (about 120 changed lines)\n- internal/shuttleengine/claudeengine (about 250 changed lines)\n- internal/shuttleengine/codexengine (about 200 changed lines)\n- internal/githubclient (about 120 changed lines)\n- internal/slackengine (about 350 changed lines)\n- internal/slackcli (about 120 changed lines)\n- internal/hubgeom (about 80 changed lines)\n- README.md (about 80 changed lines)\n- docs (about 80 changed lines)\n- pattern (about 40 changed lines)\n",
       "status": "draft",
       "created": "2026-11-26T11:58:18Z",
-      "revised": "2026-11-26T11:58:18Z",
+      "revised": "2026-11-26T12:03:14Z",
       "profile": "solid",
       "project": "closed-area",
       "discussed": true,
@@ -779,14 +781,17 @@
       "depends_on": [
         "config-keys-nested",
         "pr-modes-no-agent",
-        "describe-review-and-sync"
+        "describe-review-and-sync",
+        "push-retry-not-halt",
+        "beam-member-parent",
+        "scope-and-earlier-checks"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `keep-landed-records`.\n\nTakes: the Sketch's decision record whole: the archive tags teardown pushes, the loom status commit and run-records set, the parent-review ask record's locked updates in internal/burlerengine, the landing fixer and fix review scratch reports, and Finalize's merge-in, merge and push steps\nDelivers: one kept directory under each run's _lym/ that the status commit stages and the archive tag carries, holding PR findings copies, ask record and report copies seeded back after an adopt, landing fixer and fix review report copies, the landing record and the index row; and a read-only lym report landed verb that lists and extracts every archived run's kept records\nExports: the kept directory's name in internal/lymdirs; the landing record and index row types with their writers and one reader in internal/shedrun; the first-parent landing searches in internal/fabricengine; pullrequest.API.Merge returning the merge commit SHA; the cobra verb lym report landed\n\nThe part changes these packages:\n\n- internal/lymdirs (about 10 changed lines)\n- internal/loomengine (about 20 changed lines)\n- internal/loomcli (about 250 changed lines)\n- internal/fabricengine (about 200 changed lines)\n- internal/burlerengine (about 250 changed lines)\n- internal/landingshed (about 450 changed lines)\n- internal/pullrequest (about 30 changed lines)\n- internal/pairteardown (about 5 changed lines)\n- internal/testkit/prkit (about 5 changed lines)\n- internal/shedrun (about 140 changed lines)\n- internal/gitrepo (about 120 changed lines)\n- internal/reportengine (about 430 changed lines)\n- internal/reportcli (about 170 changed lines)\n- PATTERN.md (about 4 changed lines)\n- pattern (about 20 changed lines)\n",
       "status": "draft",
       "created": "2026-11-26T11:58:21Z",
-      "revised": "2026-11-26T11:58:21Z",
+      "revised": "2026-11-26T12:03:14Z",
       "profile": "solid",
       "project": "intake-motifs",
       "discussed": true,
