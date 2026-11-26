@@ -696,6 +696,27 @@
       "body": "Imported from [issue #232](https://github.com/Knatte18/loomyard/issues/232).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-24, the run `models-stick-slip-map`, a member of the beam `models-torque-drag` and spawned from the beam's worktree, records the prime's orch `dop:orch` as its parent orch.\nIts PR-Review sent the `[pr-review request]` for PR #52 (into the beam branch `hanf/models-torque-drag`) to `dop:orch`, as ask 1 from the PR-Review session and as ask 2 from `dop:LOOM`.\nThe beam's orch `dop:models-torque-drag:orch`, which owns and released the run, reviewed the PR, and its answer was refused:\n\n```\ncaller dop:models-torque-drag:orch is neither the run's parent orch nor the strand the ask went to\n```\n\nThe beam's dobby sends its notices for the same run to `dop:orch` too.\nKnatte18/loomyard#231 shows the same gap in the tackler and driver prompts of a beam member.\n\n## Expected\n\nA beam member's run records the beam's orch as its parent orch, so its parent-review asks, notices and escalations go to the beam's orch and that orch's answer is accepted.\n\n## Workaround\n\nThe prime orch forwards each ask and notice to the beam's orch, and runs `lym loom parent-review answer \u003cslug\u003e --ask \u003cn\u003e --satisfied` in the task worktree on the beam orch's verdict.\n",
       "created": "2026-11-26T07:33:55Z",
       "revised": "2026-11-26T07:33:55Z"
+    },
+    {
+      "id": 1643,
+      "handle": "B19",
+      "slug": "beam-member-prompt-no-parent",
+      "title": "Tackler and driver prompts of a beam member say no parent is recorded",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "shed"
+      ],
+      "issues": [
+        231
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #231](https://github.com/Knatte18/loomyard/issues/231).\n\n## Seen\n\nIn the DrillOpPlan hub on 2026-11-10, the shed tackler of run `models-backend`, a member of the beam `adopt-models-sim`, got a prompt whose section \"Your parent\" read:\n\n```\nNo parent is recorded for this run.\nWhen you are blocked, write your report and stop.\n```\n\nThe run had a parent: the beam's orch `dop:adopt-models-sim:orch`, which owned and released it.\nOther tackler and driver prompts in the hub carried the same text, in the form \"No parent is recorded for the run, so the question is written for whoever owns it.\"\nThe tackler escalated on a merge conflict and stopped; the prime orch saw the stop and passed it to the beam orch by hand.\n\n## Expected\n\nThe tackler and driver prompts of a beam member name the beam's orch as the parent, so a blocked tackler or driver reaches it directly.\n\n## Workaround\n\nThe prime orch forwards a beam member's stop to the beam's orch by creel.\n",
+      "created": "2026-11-26T07:33:58Z",
+      "revised": "2026-11-26T07:33:58Z"
     }
   ],
   "prime_owner": "neve",

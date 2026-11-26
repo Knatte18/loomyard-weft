@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R1 |  | **Study whether the hardener finds and fixes real faults**<br>• Judge the two fabric hardener campaigns from their records: real findings, sound fixes, focus kept, cost | [`hardener-works-study`](design-hardener-works-study.md) | 3d<br>2d | burler, fabric |
 
-## [P0 Root: entries under no project](project-root.md) (27)
+## [P0 Root: entries under no project](project-root.md) (28)
 
 Owner `neve`
 
@@ -56,14 +56,14 @@ Owner `neve`
 | R3 |  | **Measure what Cortex XDR costs the test suites on OSL-1046**<br>• The 242 s fabricengine tier 1 against 37 to 41 s elsewhere is a machine difference no report has split | [`cortex-cost-measure`](design-cortex-cost-measure.md) | 2w<br>2w | gate, fabric |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 8d<br>8d | shuttle |
 
-### Bugs (18)
+### Bugs (19)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **No tmux-tier test sends parent-review ask from a live non-orch pane** | [`pr-ask-live-pane-test`](design-pr-ask-live-pane-test.md) | 2d<br>2d | landing, creel |
 | B2 |  | **reed switch and a button's {strand} read the most recent client's session, not the clicker's**<br>• Same display-message -c with no -t defect the RC click had, in switch.go and buttonclick.go | [`reed-switch-wrong-client`](design-reed-switch-wrong-client.md) | 2d<br>2d |  |
 | B3 |  | **tender revive reads Claude Code placeholder after an API error as a typed draft and skips the session** | [`revive-reads-placeholder-draft`](design-revive-reads-placeholder-draft.md) | 8m<br>8m | tender, claude |
-| B4 |  | **Gate fixer interrupted by a machine stop is reported as dead (timeout)** | [`gate-fixer-reboot-reads-timeout`](design-gate-fixer-reboot-reads-timeout.md) | 0m<br>0m | gate, shuttle |
+| B4 |  | **Gate fixer interrupted by a machine stop is reported as dead (timeout)** | [`gate-fixer-reboot-reads-timeout`](design-gate-fixer-reboot-reads-timeout.md) | 1m<br>1m | gate, shuttle |
 | B5 |  | **creel post refusal after a persisted cd does not say why** | [`creel-refusal-after-cd`](design-creel-refusal-after-cd.md) | 0m<br>0m | creel, cwd |
 | B6 |  | **Describe halts failed on an uninformative shuttle run outcome timeout** | [`describe-timeout-no-detail`](design-describe-timeout-no-detail.md) | 0m<br>0m | landing, shuttle |
 | B7 |  | **Unreachable origin halts the run as failed repeatedly instead of one retryable stop** | [`unreachable-origin-halts-failed`](design-unreachable-origin-halts-failed.md) | 0m<br>0m | shed, landing, fabric |
@@ -78,6 +78,7 @@ Owner `neve`
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 0m<br>0m | gate, dotnet |
 | B17 |  | **gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing** | [`darn-gate-key-tier0-only`](design-darn-gate-key-tier0-only.md) | 0m<br>0m | gate, darn |
 | B18 |  | **A beam member's run records the prime orch as its parent orch** | [`beam-member-parent-is-prime`](design-beam-member-parent-is-prime.md) | 0m<br>0m | batten, landing, orch |
+| B19 |  | **Tackler and driver prompts of a beam member say no parent is recorded** | [`beam-member-prompt-no-parent`](design-beam-member-prompt-no-parent.md) | 0m<br>0m | stencil, shed |
 
 ### Enhancements (2)
 
