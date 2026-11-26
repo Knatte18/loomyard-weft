@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Slack relay: skip its own bridge posts, and give relay commands a prefix** | [`slack-relay-fixes`](design-slack-relay-fixes.md) | darn · solid | Drift-Recheck | neve | 27m<br>20m | slack |
+| T2 | **Slack relay: skip its own bridge posts, and give relay commands a prefix** | [`slack-relay-fixes`](design-slack-relay-fixes.md) | darn · solid | Describe | neve | 27m<br>20m | slack |
 | T3 | **Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full** | [`config-keys-nested`](design-config-keys-nested.md)<br>[Sketch](decision-config-keys-nested.md) | tapestry · solid | Webster | neve | 2d<br>2d | config, loom, reconcile, profiles, shed, batten, fabric, drift, landing, gate, webster, shuttle, dobby, claude, codex, stencil, pattern, docs |
 | T5 | **A tools/ program that measures process, file and new-binary costs, so machines and XDR exceptions can be compared** | [`machine-cost-probe`](design-machine-cost-probe.md) | darn · light | Code-Burler-Review | neve | 2w<br> | tools, gate |
 
