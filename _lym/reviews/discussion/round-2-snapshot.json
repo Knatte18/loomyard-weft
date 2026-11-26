@@ -1,0 +1,18 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "6581e10361696aee978e43adfd211bcf4718e96cb8d91dd48937157ea18122a2",
+  "added_decisions": [
+    {
+      "title": "push-retry-not-halt waits for the whole chain",
+      "digest": "9cde3159c035cebeed5a4a81eda687bcf575082840c34db2ac06f9ef76b7fb4c"
+    },
+    {
+      "title": "hubforge, boardkit and envkit keep their import sets in this task",
+      "digest": "efb424cc7b8a2dbecbaddcc4235c0bd2823da464534e829a42545527542dc07e"
+    }
+  ]
+}
