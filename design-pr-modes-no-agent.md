@@ -1,6 +1,6 @@
 # PR block in three modes, review, trail and off, with no agent under it
 
-`pr-modes-no-agent` · Task · enhancement, landing, loom, config · starting · Worktree-Create
+`pr-modes-no-agent` · Task · enhancement, landing, loom, config · starting · Seed-Child
 
 Depends on: [`config-keys-nested`](design-config-keys-nested.md)
 
