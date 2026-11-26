@@ -485,6 +485,27 @@
       "body": "Imported from [issue #242](https://github.com/Knatte18/loomyard/issues/242).\n\n## Seen\n\nA darn run's Finalize merged its parent beam into the task worktree after its pull request had merged on GitHub.\nThe beam had just taken in a main commit that deleted a whole C# project.\nThe task worktree still held that project's directory with only untracked, gitignored content: `bin/`, `obj/` and generated fixtures.\nOnce git removed the tracked files, the directory was no longer ignored by the deleted `.gitignore`, so it showed as untracked.\nFinalize then blocked: \"the task worktree has uncommitted changes after the merge-in: …/NORCE.Import.CommonLibHarness/; commit or remove them on the task branch, then resume\".\n\nThe run had no live agent left to remove it.\nThe orch may not edit a task worktree, and the Go driver only asked the parent a question and stopped again on resume.\nThe only ways forward were a goto back to the writer, which would re-run review and PR rows for a merged pull request, or the operator removing the directory by hand.\n\n## Workaround\n\nThe operator removes the leftover directory by hand, then the orch runs `lym loom resume` in the task worktree.\n\n## Expected\n\nFinalize's merge-in treats a directory that holds only files the merge's base ignored, under a path the merge deleted, as leftover output:\nit removes it, or ignores it in the clean-tree check, and goes on.\nFailing that, the stop names a lym verb the parent can run to clear it, instead of needing a hand edit in the task worktree.\n",
       "created": "2026-11-26T07:33:20Z",
       "revised": "2026-11-26T07:33:20Z"
+    },
+    {
+      "id": 1633,
+      "handle": "B9",
+      "slug": "describe-held-turn-waits-timeout",
+      "title": "Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing",
+        "shuttle"
+      ],
+      "issues": [
+        241
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #241](https://github.com/Knatte18/loomyard/issues/241).\n\nThe Describe producer (seats engine) halted the run as `failed` with `shuttle run outcome timeout`, after its agent session sat held for about 28 minutes with no output.\n\nSequence from the trace:\n\n```\n22:15:05 shuttle: run started role=describe\n22:16:51 shuttle: session state state=idle-stalled cause=interrupt\n22:16:53 shuttle: session state state=busy cause=turn\n22:16:57 shuttle: turn end held, output files missing\n22:16:57 shuttle: held turn end of a turn the operator started; no hold notice\n22:16:57 shuttle: session state state=idle-stalled cause=no-output loop=held\n22:45:06 shuttle: run finished outcome=timeout cleanedUp=false\n22:45:29 shed: step refused kind=producer transient=\"\" error=\"shedadapters: Describe (seats): shuttle run outcome timeout\"\n```\n\nThe halt note reads `loom halted failed at Describe`, `anomaly: producer-hard-failure`, 12 history entries.\n\nWhy this is abnormal:\n- The operator interrupted the agent once and typed into the pane, which made the turn \"operator-started\".\n  lym then held the turn end without a hold notice and waited silently until the run timeout.\n- The session was `idle-stalled` for the whole wait, and nothing re-prompted the agent for its missing output files or surfaced the state to the operator.\n- The timeout was then recorded as a hard failure with `transient=\"\"`, although the cause was an interrupted session and not a producer defect.\n- `cleanedUp=false` on the finished run, and the strand was stopped with `live=true` afterwards.\n\nSuggested fix: when a turn end is held for missing output files after an operator-started turn, send the agent a reminder or hand the pane back to the operator with a visible notice instead of waiting out the whole timeout.\nClassify a timeout that follows an operator interrupt as resumable, not as `producer-hard-failure`.\n\nProvenance: task `transient-tripout-overpull`, from `loom-halt.md`.\n",
+      "created": "2026-11-26T07:33:24Z",
+      "revised": "2026-11-26T07:33:24Z"
     }
   ],
   "prime_owner": "neve",
