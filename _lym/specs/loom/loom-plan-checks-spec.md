@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=543c469ac9ebe551595cd63a6753ddb6841b6555ba385d34dfa94d720c9e9ebe build=77630a4f1239c5d9df08269c7a49dd17261bed5a time=2026-11-23T14:30:12Z -->
+<!-- lym-stencil: sha256=8b92ce647ffec02b1b5bf2d0dd0312dca711254acc4e673fa2704ec3357e116f build=90819df40ce18f2430e040088255add21dd44c74 time=2026-11-26T12:07:25Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -99,6 +99,9 @@ Under `language: none` the glyph checks are skipped:
 - `glyph-not-found`, `glyph-ambiguous`, `glyph-rejected` *(planglyph)* — a glyph target that fails to resolve:
   it matches nothing, matches several declarations, or is rejected by quarry's grammar.
   A `Create` target and a `Rename` `New` side are not resolved.
+  A target spelling the member a `Create` handle names passes on the creating card and every card after it;
+  on an earlier card its finding names the creating card.
+  A missing member of a unit that exists says no card creates it and lists the members declared beside it.
   A member declared once per mutually exclusive build-constraint set resolves as one member.
 - `create-already-exists` *(planglyph)* — a `Create` target whose name a declaration already holds.
   `create-new-unit` is its informational partner for a target in a unit that does not exist yet.
@@ -291,9 +294,11 @@ The overview is read at the task branch's merge base with its parent, or at `HEA
   Way forward: restore the card file.
   A fix to its work is a follow-up card after the last begun batch, with its Card Index line.
 - `overview-frame-edited` *(loomshed)* — an edited overview frame:
-  webster's run record holds a begun batch and a recorded overview frame,
+  the implementer's run record holds a begun batch and a recorded overview frame,
   and `00-overview.md` outside its Card Index no longer hashes to that frame.
-  A record with no recorded frame, or with no begun batch, raises nothing.
+  A record without the frame takes it from the stored baseline copy of its recorded overview, as the rebaseline does.
+  With no frame either way, any change to a recorded overview is the finding, since the rebaseline refuses it.
+  A record with no begun batch, or with no recorded overview hash, raises nothing.
   Way forward: restore the overview.
   Carry the change in a follow-up card after the last begun batch, with its Card Index line.
 - `part-spot-target` — under a part scope: a card's target is a shared spot's path.
