@@ -1,6 +1,6 @@
 # Card gate runs only the card's listed packages, so a wider intent breaks tests unseen
 
-`card-gate-scope-gaps` · Task · bug, webster, gate, loom · starting · Seed-Child
+`card-gate-scope-gaps` · Task · bug, webster, gate, loom · starting · Open-IDE
 
 Imported from [issue #263](https://github.com/Knatte18/loomyard/issues/263).
 
