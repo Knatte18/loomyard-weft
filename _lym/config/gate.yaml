@@ -42,16 +42,19 @@ tiers:
         manual: true
 gates:
     batch: {tiers: [0, 1], scope: card}
-    webster-fix: {tiers: [0, 1], scope: diff}
+    webster-fix: {tiers: [0, 1], scope: diff, reports: []}
     webster: {tiers: [0, 1, 2], scope: all}
     parent-align: {tiers: [0, 1, 2], scope: all}
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
-    darn-write: {tiers: [0, 1, 2], scope: diff}
-    code-burler-fix: {tiers: [0, 1, 2], scope: diff}
+    darn-write: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
+    code-burler-fix: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
     harden-live:
         tiers: [1]
         scope: diff
     harden-burler-fix:
         tiers: [0, 1]
         scope: diff
+        reports: [reach, redundancy]
+    pr-review:
+        reports: []
