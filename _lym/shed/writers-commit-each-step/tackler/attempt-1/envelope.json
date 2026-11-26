@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "The blocked stop at Worktree-Create came from a board push refused by the remote: two pushes of the _bolt commit c375aa8fdfeaa428f62ee57d67fc0f0016d8364a to refs/heads/main were rejected as \"cannot lock ref\" because the remote tip had moved (0eff530b..., then 8a81fdc1...). The stop's own way forward was \"run lym board sync, then re-run the verb\". That race has cleared: git ls-remote origin refs/heads/main now returns e0a8156c814d38d65f5223c9c4a45b762b54cdbf, which equals the local main tip, and c375aa8 is an ancestor of that tip by git merge-base --is-ancestor, so the commit is present on the remote and the push is not missing. A plain re-launch from Worktree-Create (goto) settles it. Caveat for the re-launch: at 12:09:12 battencli logged that the task worktree /home/knatte/Code/loomyard-LYMHUB/writers-commit-each-step is not present, while the run's durable status says it was already created. The re-launch should confirm the pair is re-adopted or re-created by Worktree-Create; if it stops again naming a missing worktree or branch, that is a hand-back, not a second resume.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/writers-commit-each-step/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/writers-commit-each-step/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
