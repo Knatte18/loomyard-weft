@@ -1,6 +1,6 @@
 # Reed reads each client's own session, and shellguard refuses the session bus
 
-`reed-client-and-bus-guard` · Task · bug, reed, process · landing · Finalize
+`reed-client-and-bus-guard` · Task · bug, reed, process · done
 
 Bundled from the notes below; each part keeps its note's text.
 
