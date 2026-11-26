@@ -2,7 +2,7 @@
 
 `infra-stops-not-failures` · Task · bug, shuttle, claude, tender, gate, burler, shed, reed · draft
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md), [`reed-client-and-bus-guard`](design-reed-client-and-bus-guard.md)
+Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
 Bundled from the notes below; each part keeps its note's text.
 
