@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>4m | burler, shed, orch, quarry, report |
+| F17 |  | **Remaining leads from the survey of comparable agent orchestrators (Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5w<br>5m | burler, shed, orch, quarry, report |
 
 ## [P4 Single-repository hubs: records and board under refs/lym/, the layout known only to fabric](project-single-repo-hub.md) (1)
 
@@ -34,7 +34,7 @@ Owner `neve`
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | Drift-Baseline | neve | 2d<br>2d |  |
+| T8 | **A killed batten cancel leaves a remove record whose way forward fails once the pair is gone**<br>• The record names lym fabric remove --remote, which answers pair not found; batten cancel --remove is the re-run that works | [`remove-record-rerun-pair-gone`](design-remove-record-rerun-pair-gone.md) | darn · light | Drift-Await | neve | 2d<br>2d |  |
 
 ### Layer A (1)
 
@@ -64,8 +64,8 @@ Owner `neve`
 | B9 |  | **Describe seat waits out the full timeout after an operator interrupt, then halts as hard failure** | [`describe-held-turn-waits-timeout`](design-describe-held-turn-waits-timeout.md) | 33m<br>33m | landing, shuttle |
 | B10 |  | **Finalize halts as hard failure on a GitHub API EOF that lym marks transient** | [`finalize-transient-eof-fails`](design-finalize-transient-eof-fails.md) | 33m<br>33m | landing, shed |
 | B11 |  | **A died bouncer judge session spends Code-Bouncer's bounce budget** | [`died-judge-spends-bounce-budget`](design-died-judge-spends-bounce-budget.md) | 33m<br>33m | burler, shed |
-| B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 32m<br>32m | fabric |
-| B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 32m<br>32m | gate, burler |
+| B12 |  | **Transient push failures are mailed to the orch one by one instead of retried** | [`push-failures-mailed-one-by-one`](design-push-failures-mailed-one-by-one.md) | 33m<br>33m | fabric |
+| B13 |  | **lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate** | [`gate-no-tier0-fix-round`](design-gate-no-tier0-fix-round.md) | 33m<br>33m | gate, burler |
 | B14 |  | **Beam orch cannot amend its own beam's decision record** | [`beam-orch-cannot-amend-record`](design-beam-orch-cannot-amend-record.md) | 32m<br>32m | loom, orch, pawl |
 | B15 |  | **gate test: reports 'ran no test' when the detailed console logger's summary is used** | [`gate-detailed-logger-no-test`](design-gate-detailed-logger-no-test.md) | 32m<br>32m | gate, dotnet |
 | B16 |  | **gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse** | [`gate-tier3-double-filter`](design-gate-tier3-double-filter.md) | 32m<br>32m | gate, dotnet |
@@ -75,9 +75,9 @@ Owner `neve`
 | B20 |  | **fabric clone leaves the prime without rendered heddle** | [`clone-prime-no-heddle`](design-clone-prime-no-heddle.md) | 32m<br>32m | fabric, heddle |
 | B21 |  | **The GitHub PR body is not updated when the description file changes** | [`pr-body-not-synced`](design-pr-body-not-synced.md) | 32m<br>32m | landing |
 | B22 |  | **Plan fixes after begun batches block Webster; glyph-not-found on members a card creates** | [`webster-plan-fix-begun-batch`](design-webster-plan-fix-begun-batch.md) | 32m<br>32m | webster, quarry |
-| B23 |  | **Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset** | [`webster-recovery-asking-dead`](design-webster-recovery-asking-dead.md) | 31m<br>31m | webster |
-| B24 |  | **Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review** | [`seat-idle-no-input-box`](design-seat-idle-no-input-box.md) | 31m<br>31m | shuttle, claude |
-| B25 |  | **Seed-IDE fails the run when the task branch's detached push has not landed yet** | [`seed-ide-push-not-landed`](design-seed-ide-push-not-landed.md) | 31m<br>31m | batten, fabric |
+| B23 |  | **Webster recovery ending dead with dead_reason asking drops the question and needs a manual reset** | [`webster-recovery-asking-dead`](design-webster-recovery-asking-dead.md) | 32m<br>32m | webster |
+| B24 |  | **Shuttle idle check reports no input box on an idle seat, killing Plan-Burler-Review** | [`seat-idle-no-input-box`](design-seat-idle-no-input-box.md) | 32m<br>32m | shuttle, claude |
+| B25 |  | **Seed-IDE fails the run when the task branch's detached push has not landed yet** | [`seed-ide-push-not-landed`](design-seed-ide-push-not-landed.md) | 32m<br>32m | batten, fabric |
 | B26 |  | **Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours** | [`gate-timeout-hung-testhost`](design-gate-timeout-hung-testhost.md) | 31m<br>31m | gate, dotnet |
 
 ### Enhancements (8)
@@ -99,7 +99,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **A PR mode that registers the PR and approves it at once, with no agent under the block** | [`pr-auto-approve-mode`](design-pr-auto-approve-mode.md) | 32m<br>0m | landing, config |
 | F2 |  | **Built-in run watch: mail the parent on every non-running state and on a gate slot held too long** | [`dobby-run-watch`](design-dobby-run-watch.md) | 32m<br>32m | dobby, gate |
-| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>4m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
+| F9 |  | **A closed area for lym: bwrap sandbox in stages, off by default**<br>• Run the lym process tree in a bwrap area with a host proxy and broker, built in three stages with a stop; to be split if it goes ahead | [`sandbox-closed-area-build`](design-sandbox-closed-area-build.md) | 3w<br>5m | reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide |
 
 ### Done (1)
 
