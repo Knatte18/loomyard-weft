@@ -1,8 +1,8 @@
 # Card 1 — config-key-name
 
 **Create:**
-- `plan:internal/configengine#KeyName` -> `func KeyName(module, path string) string`
-- `plan:internal/configengine_test#TestKeyName` -> `func TestKeyName(t *testing.T)`
+- `internal/configengine#KeyName`
+- `internal/configengine_test#TestKeyName`
 
 **Extends:**
 - `internal/configengine/doc.go`

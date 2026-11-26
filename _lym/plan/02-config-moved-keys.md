@@ -1,7 +1,7 @@
 # Card 2 — config-moved-keys
 
 **Create:**
-- `plan:internal/configengine#MovedKeyIn` -> `func MovedKeyIn(spec Spec, doc []byte) (oldKey, newPath string, found bool, err error)`
+- `internal/configengine#MovedKeyIn`
 
 **Edit:**
 - `internal/configengine#Spec`
@@ -17,7 +17,7 @@
 - `pattern/PATTERN-config-layers.md`
 
 **Uses:**
-- `plan:internal/configengine#KeyName`
+- `internal/configengine#KeyName`
 - `internal/configengine#nodeAt`
 - `internal/configengine#boardDirWayForwardClause`
 

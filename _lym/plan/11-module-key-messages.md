@@ -23,7 +23,7 @@
 - `contracts/stencils#`
 
 **Uses:**
-- `plan:internal/configengine#KeyName`
+- `internal/configengine#KeyName`
 - `internal/configengine/doc.go`
 - `internal/battencli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`

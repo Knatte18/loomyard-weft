@@ -1,9 +1,9 @@
 # Card 3 — yaml-move-keys
 
 **Create:**
-- `plan:internal/yamlengine#Move` -> `type Move struct`
-- `plan:internal/yamlengine#MoveKeys` -> `func MoveKeys(existing []byte, prefix string, moves map[string]string) ([]byte, []Move, error)`
-- `plan:internal/yamlengine#TestMoveKeys` -> `func TestMoveKeys(t *testing.T)`
+- `internal/yamlengine#Move`
+- `internal/yamlengine#MoveKeys`
+- `internal/yamlengine_test#TestMoveKeys`
 
 **Extends:**
 - `internal/yamlengine/doc.go`

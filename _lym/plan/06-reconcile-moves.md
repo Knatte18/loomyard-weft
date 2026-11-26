@@ -27,8 +27,8 @@
 - `internal/hubreconcile/doc.go`
 
 **Uses:**
-- `plan:internal/yamlengine#MoveKeys`
-- `plan:internal/configengine#KeyName`
+- `internal/yamlengine#MoveKeys`
+- `internal/configengine#KeyName`
 - `internal/configcli/doc.go`
 
 **Intent:** Every reconcile moves the old keys of the files it reconciles (D5).

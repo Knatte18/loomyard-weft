@@ -1,19 +1,19 @@
 {
   "runGuid": "9d4a5615497663a2eb2697f8dfe5f9a9",
-  "planFingerprint": "41eaa29f6e3642695d1433e26eecc3785a33c5e8b97de2daf4bb4a903b726250",
+  "planFingerprint": "702709fb363123bf756ab38521f47e6919bc76af5a472ed475ba16ac7bc4d701",
   "planFileHashes": {
     "00-overview.md": "610cb40763b90c1096177f6029c0cf5e6613247a683b5ace4c9d5f5ff71d848a",
-    "01-config-key-name.md": "5d45de458bb99d30373dec131d4b6435090b8d59471142d3e7b19a4892b3131a",
-    "02-config-moved-keys.md": "f6919b29804c0337a9bd02257d4931bf984c6d8177e298d9658786a3c035425c",
-    "03-yaml-move-keys.md": "485d9d853a47a550b46eefa4b2176f2ec10d2815e7ad0bda6935aefc004d69f6",
+    "01-config-key-name.md": "fcbed441aabc6ba26a3cecb7262e0ccc9b2a4574e9c4ff87c3d908d699f48f7d",
+    "02-config-moved-keys.md": "35016dfdd613237aeed75a62d3fe14eb2dfd87e455ac636a9e833b702d38fb34",
+    "03-yaml-move-keys.md": "64e9a7e406a917f699b7d7312bf001e65ff492d24f1237528a8afaf1b0219773",
     "04-nest-loom-tapestry.md": "32554f98d56a4dc3878d767d5451af37d6dac54a921923d428a0f3160314863b",
     "05-moved-key-tables.md": "db3522e00b8c3450d2223e68e8c719a4f85464bad520942bff08a5d5f277a4ce",
-    "06-reconcile-moves.md": "fe406f480f74232ce7ae7bd4b7101f6450c1f3eebfe96ada0bf8f7d9e0b15fda",
-    "07-profiles-moves.md": "6509458a951972ed875fc36c7b972af4ee4414926f8c1ea786672dafee438e49",
+    "06-reconcile-moves.md": "9954ddcd864881ac813d4ce046279469fc4ce9f94d323b07b5f073d97c2b541a",
+    "07-profiles-moves.md": "916d37bd9c95cb583acb34c412ff041d46e3e55fc3272abbc3497a5a0ddc989c",
     "08-board-run-settings-carry.md": "3d82ffadf79ab5700c418f37fcdb636a1a471a7bb953109f920a22c080078636",
     "09-reconcile-before-load.md": "224c858fc66e64ee886aa32a7d0235ec2960bb0ae687214c62caae1aba9f5b8b",
-    "10-loom-key-messages.md": "83adc0b060f15ddffbfc3705c9ab5b00ad724a11ae1101aad80836e04750cea7",
-    "11-module-key-messages.md": "eca40ae0752dc67e5ed3856a835cb43f57daa71ae698c1370ac7580ee3cfbe66",
+    "10-loom-key-messages.md": "b0ed8b8f2e093a0d69e4c06b2e554b4c0f64588be08c1e1be12a9abab35abb5f",
+    "11-module-key-messages.md": "4cfdeb89c811e7aff34f68e96fc356b81a8ab7fc4f369509f04a4643472b06fe",
     "12-template-comments.md": "3b4e0a246db334fdb9bf122f54ef0c3f03f2abb7771ea000e3b6d189810257ce",
     "13-contracts-key-names.md": "d31ae1ed78d4c762158bff285a1db865e58dd3d668de558a103ec9671c5dc857",
     "14-pattern-docs-key-names.md": "b8e0ee3a4f0befb1870a7bb2a1867a0a2cb2e020f2b98bac9ea137f2d134d2f5"
@@ -701,21 +701,46 @@
         "03-yaml-move-keys"
       ],
       "cardHashes": {
-        "01-config-key-name": "5d45de458bb99d30373dec131d4b6435090b8d59471142d3e7b19a4892b3131a",
-        "02-config-moved-keys": "f6919b29804c0337a9bd02257d4931bf984c6d8177e298d9658786a3c035425c",
-        "03-yaml-move-keys": "485d9d853a47a550b46eefa4b2176f2ec10d2815e7ad0bda6935aefc004d69f6"
+        "01-config-key-name": "fcbed441aabc6ba26a3cecb7262e0ccc9b2a4574e9c4ff87c3d908d699f48f7d",
+        "02-config-moved-keys": "35016dfdd613237aeed75a62d3fe14eb2dfd87e455ac636a9e833b702d38fb34",
+        "03-yaml-move-keys": "64e9a7e406a917f699b7d7312bf001e65ff492d24f1237528a8afaf1b0219773"
       },
       "startSha": "cd80907332bf7a5d4c6c8f29d32fa757884d06d4",
       "kind": "fork",
       "spawnedAt": "2026-11-26T10:04:49Z",
       "sessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-config-key-name",
+        "status": "done",
+        "head_sha": "efa897fc6d576881c50be58698c5282adfad5a44",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/configengine/config.go",
+          "internal/configengine/layers.go",
+          "internal/configengine/layers_test.go",
+          "internal/yamlengine/move.go",
+          "internal/yamlengine/move_test.go"
+        ]
+      },
+      "cardShas": [
+        "efa897fc6d576881c50be58698c5282adfad5a44"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b3f99dc72b022b13d8a95b1962f42e4b",
   "masterSessionId": "a9e46a11-6922-43bf-aafb-14f1d83f0701",
-  "masterEngine": "claude"
+  "masterEngine": "claude",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-config-keys-nested/a9e46a11-6922-43bf-aafb-14f1d83f0701/subagents/agent-a3d1348647afe6f3c.jsonl"
+  ]
 }

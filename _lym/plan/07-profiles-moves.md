@@ -16,8 +16,8 @@
 - `internal/configreg/doc.go`
 
 **Uses:**
-- `plan:internal/yamlengine#MoveKeys`
-- `plan:internal/configengine#KeyName`
+- `internal/yamlengine#MoveKeys`
+- `internal/configengine#KeyName`
 
 **Intent:** Reconciling `profiles.yaml` moves the loom and tapestry keys of every recipe block before the template follow (D6), through the configreg helper D7 also uses.
 

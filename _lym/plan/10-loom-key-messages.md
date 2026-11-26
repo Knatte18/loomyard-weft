@@ -24,7 +24,7 @@
 - `internal/gateslot#TestLoadConfig`
 
 **Uses:**
-- `plan:internal/configengine#KeyName`
+- `internal/configengine#KeyName`
 - `internal/configengine/doc.go`
 - `internal/configreg/doc.go`
 - `internal/reviewbudget/doc.go`
