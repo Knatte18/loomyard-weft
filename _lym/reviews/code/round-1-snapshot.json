@@ -7,5 +7,6 @@
       "title": "No test seam: the bug is in test-only fixture code",
       "digest": "b9fc701ac73dbe3b8fc5d1e0f5e49ede171a4fc514a09732c3be165fab109603"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
