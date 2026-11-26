@@ -589,6 +589,28 @@
       "body": "Imported from [issue #237](https://github.com/Knatte18/loomyard/issues/237).\n\nA Burler code fix round ran `lym gate test ./\u003cmodule path\u003e` on a Go module and the verb answered that the hub declares no tier0.\nThe round therefore had no gate, and the agent ran `go vet` and `go test` on the module directly.\n\nThis is abnormal because the fix-round instructions end each round with the gate; a hub without a declared tier0 leaves the round with nothing to run, and the agent improvised a substitute.\n\nWhat to do: either have `lym gate test` fall back to a default tier when tier0 is undeclared, or make the refusal name the config key to add, and have the Burler code prompt say what to run when no gate exists.\n\nProvenance: task slug timesheet-suggest-tool; notes burler-code-r1.md.",
       "created": "2026-11-26T07:33:38Z",
       "revised": "2026-11-26T07:33:38Z"
+    },
+    {
+      "id": 1638,
+      "handle": "B14",
+      "slug": "beam-orch-cannot-amend-record",
+      "title": "Beam orch cannot amend its own beam's decision record",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom",
+        "orch",
+        "pawl"
+      ],
+      "issues": [
+        236
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #236](https://github.com/Knatte18/loomyard/issues/236).\n\n## What happened\n\nIn hub `dop`, beam `models-torque-drag` (P1) holds a stored decision record.\nOn 2026-11-24 the operator made a decision that supersedes two of its decisions: a new member task maps the well's formation strength into the Models bit-rock law, where the beam record's D1 and D2 keep Models' bit-rock defaults.\nThe member's Discussion saw the conflict and asked the beam orch, which owns the beam record, to settle it.\n\nThe beam orch could not amend its own beam's record:\n\n- `lym loom decision add models-torque-drag --by parent ...` from the beam orch refused: `the caller \"dop:models-torque-drag:orch\" is a task session; way forward: a design call after the Discussion is the parent's to record; ask dop:orch to run the verb`.\n  The beam orch is an orch, not a task session, and it is the record's owner.\n- `lym board upsert --record-file` refuses an entry a run holds, and a beam's project is always held by its pawl run (`running · Beam-Await`), so that way is closed for the beam's whole life.\n\n## Expected\n\nThe beam's own orch can append a decision to, or replace, its beam's decision record while the beam lives, as a run's parent can for a task's record.\nThe caller check counts a beam orch (`\u003chub\u003e:\u003cbeam\u003e:orch`) as an orch, not as a task session.\n\n## Related\n\nThe same misclassification of the beam orch shows in parent-review: `lym loom parent-review answer` refuses the beam orch for its member's pull request (`neither the run's parent orch nor the strand the ask went to`), filed by the hub orch as Knatte18/loomyard#232.\n",
+      "created": "2026-11-26T07:33:42Z",
+      "revised": "2026-11-26T07:33:42Z"
     }
   ],
   "prime_owner": "neve",
