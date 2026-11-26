@@ -1,38 +1,47 @@
 # Restore the status pane when `lym loom resume` puts a driver to work
 
-After a reboot, a run resumed with `lym loom resume` carried on with its `loom-status` strand dead.
+After a reboot, a run resumed with `lym loom resume` drove on with its `loom-status` strand dead.
 The operator saw no overview pane and took the run for stuck.
-`start` brings reed up and keeps, replaces or adds the status strand on every call.
-`resume` did neither, so nothing recreated a strand the reboot had killed.
+`start` brings reed up and keeps, replaces or adds the status strand, but `resume` did neither.
+
+Closes #253
 
 ## What changes
 
-- `resumeFromRunState` in `internal/loomcli/resume.go` restores the status pane before it puts a driver to work:
-  before it spawns a Go driver for a halted go-seeded run, and before it types the resume line into a parked driver.
-  It does this under the bootstrap lock it already holds, the same window `start` uses.
-- The restore is a new `loomCLI.restoreStatusPane` seam.
-  `wire` sets it to `reed.Up()` followed by the existing `ensureStatusStrand`, which keeps a current live strand, replaces a stale one and adds a missing one.
-- A failed restore never fails the resume, because losing the pane costs the operator the view, not the run.
-  The failure is logged at Warn, and the success envelope gains a `status_pane` field that names the error and `lym loom start`.
-  `start` restores the pane over a live driver and leaves that driver working.
-- Refusals and no-op outcomes, such as a done run or a running run with a live driver, still touch neither reed nor the strand.
-  `TestLoomResumeReconcilesThenRefusesWithoutLiveDriver` still holds for the refusal path; only its wording changes.
+- `resume` now brings reed up and restores the status strand before it spawns a Go driver for a halted go-seeded run,
+  and before it types the resume line into a parked driver.
+  It does so under the bootstrap lock it already holds.
+- A failed restore never fails the resume, since it costs the operator the view and not the run.
+  It is logged at Warn, and the success envelope gains a `status_pane` field that names the error and `lym loom start`.
+- A resume that is a no-op, and one refused before it reaches a wake or spawn, touch neither reed nor the strand.
+  A wake that is refused after the restore, such as for a busy parked driver, leaves the pane restored.
 
 ## Design decisions
 
-- The restore happens on both wake paths, not just the Go-driver spawn named in the report.
-  A parked live driver keeps its tmux session, but its status strand can still be dead, and `reed.Up` plus `ensureStatusStrand` is idempotent over a live pane.
-- `resume` still never calls `FollowRun`, so it still never switches a viewer's window.
+- The restore is a new `loomCLI.restoreStatusPane` seam, which `wire` sets to `reed.Up()` followed by `ensureStatusStrand`.
+- It runs on both wake paths, not only the Go-driver spawn the issue reports:
+  a parked live driver can also have a dead status strand, and a current live strand is kept.
+- `ensureStatusStrand` now returns an error wrapping `errStatusStrandNotReplaced` on a failed replace,
+  where it used to log and return nil.
+  `start` logs that error and carries on as before, and `resume` reports it in `status_pane`.
+- A refused wake carries no `status_pane`, so a restore failure on that path is only logged.
+- `resume` never calls `FollowRun`.
+  It moves a viewer only when the viewer sits on the status strand window the restore replaces:
+  that window closes, and a successful replace moves the view to the replacement's window.
 
-## Tests
+Help text, the `internal/loomcli` package doc and `docs/overview.md` describe the new behaviour.
 
-`TestResumeVerb` installs a counting `restoreStatusPane` fake.
-Every row asserts that the restore runs exactly once when a driver is spawned or a resume line is attempted, and never otherwise.
-The ordered rows now expect `pusher`, `pane`, `wake`.
-A new row makes the restore fail and asserts the Go driver is still spawned, the envelope is a success, and `status_pane` names the error and `lym loom start`.
-On the merge base the test fails, since the base has no restore seam.
+## To check
 
-Docs updated: the `resume` verb's help text and file header, the `# Resume` section of `internal/loomcli/doc.go`, and the loom passage of `docs/overview.md`.
+- A failed status-strand replace on resume must not be silent (`ensureStatusStrand` in `internal/loomcli/sharedbootstrap.go`).
+  After a reboot the restore takes the replace branch, so check that its error reaches `status_pane`,
+  and that `start` (`internal/loomcli/start.go`) still treats it as non-fatal.
+- The real restore seam must be tested, not only the fake in `TestResumeVerb`
+  (`restoreStatusPane` in `internal/loomcli/wiring.go`, `internal/loomcli/smoke_drivingsurface_test.go`).
+  Check that `TestSmokeStatusStrandAcrossDriverSeeds` asserts a live replacement strand after a real resume,
+  and a `status_pane` warning when reed refuses the replace.
+- The reported scenario has not been run by hand: reboot with a run in flight, run `lym loom resume`,
+  and confirm the `loom-status` pane is back.
 
 ## Merge danger
 
