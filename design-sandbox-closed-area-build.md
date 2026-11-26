@@ -1,6 +1,6 @@
 # A closed area for lym: bwrap sandbox in stages, off by default
 
-`sandbox-closed-area-build` · Task · sketch, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide · starting · Open-Window
+`sandbox-closed-area-build` · Task · sketch, reed, shuttle, claude, fabric, creel, dobby, batten, deploy, config, ide · running · Raddle-Write
 
 Decision record: [Sketch](decision-sandbox-closed-area-build.md)
 
