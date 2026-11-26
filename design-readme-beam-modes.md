@@ -1,6 +1,6 @@
 # The board README shows each beam's autonomy and PR mode, and the root's
 
-`readme-beam-modes` · Task · enhancement, board · running · Drift-Recheck
+`readme-beam-modes` · Task · enhancement, board · running · Describe
 
 ## Seen (operator, 2026-11-26)
 
