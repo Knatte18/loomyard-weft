@@ -1,0 +1,12 @@
+{
+  "subject": {
+    "kind": "document",
+    "hash": "e09691ac6897f2034eb9fc1ba7fad15b50b2138e5d28bc4dbeb0963babd746e2"
+  },
+  "base": "d681fdb9822a1e8179f0e0a0b392d3f0aa471fab",
+  "generation": 1,
+  "round": 3,
+  "settled_at": "2026-11-26T10:04:15Z",
+  "round_started_at": "2026-11-26T09:54:57Z",
+  "settled": true
+}
