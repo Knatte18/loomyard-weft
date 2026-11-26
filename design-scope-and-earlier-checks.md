@@ -2,7 +2,7 @@
 
 `scope-and-earlier-checks` · Task · enhancement, loom, burler · draft
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`infra-stops-not-failures`](design-infra-stops-not-failures.md)
+Depends on: [`describe-review-and-sync`](design-describe-review-and-sync.md), [`infra-stops-not-failures`](design-infra-stops-not-failures.md)
 
 This task builds the scope note and items 3 to 6 of the Describe-text note's Idea; items 1 and 2 landed with `describe-review-and-sync`.
 

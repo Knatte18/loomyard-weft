@@ -2,8 +2,6 @@
 
 `dotnet-gate-fixes` · Task · bug, gate, dotnet, darn, burler · running · Darn-Write
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours

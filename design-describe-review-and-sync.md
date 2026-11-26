@@ -2,7 +2,7 @@
 
 `describe-review-and-sync` · Task · enhancement, landing, stencil, burler, shuttle · draft
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`pr-modes-no-agent`](design-pr-modes-no-agent.md)
+Depends on: [`pr-modes-no-agent`](design-pr-modes-no-agent.md)
 
 This task builds items 1 and 2 of the Describe-text note's Idea; items 3 to 6 belong to the task that closes scope at Code-Review.
 No agent reviews the pull request any more (task `pr-modes-no-agent`), so the Describe text is the last text an LLM checks.

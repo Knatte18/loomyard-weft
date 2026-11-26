@@ -2,8 +2,6 @@
 
 `drift-stale-loosened-ruling` · Task · bug, drift · running · Darn-Write
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).
 
 ## What was seen

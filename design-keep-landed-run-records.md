@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-keep-landed-run-records.md)
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`pr-modes-no-agent`](design-pr-modes-no-agent.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`push-retry-not-halt`](design-push-retry-not-halt.md), [`beam-member-parent`](design-beam-member-parent.md), [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md)
+Depends on: [`pr-modes-no-agent`](design-pr-modes-no-agent.md), [`describe-review-and-sync`](design-describe-review-and-sync.md), [`push-retry-not-halt`](design-push-retry-not-halt.md), [`beam-member-parent`](design-beam-member-parent.md), [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md)
 
 Filed from the Sketch `keep-landed-records`.
 

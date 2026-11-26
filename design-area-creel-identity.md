@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-area-creel-identity.md)
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Filed from the Sketch `sandbox-closed-area-build`.
 
 Takes: the Sketch's decision record, D8 whole and the pieces of D3 and D6 that D8 rests on; peerPID (internal/creelengine/peer_linux.go), daemon.resolve and resolveSender, serveHubCall (receive.go), the outbound worker's spawn closure (outbound.go attempt), hubregistry's Entry, Lookup, Live and RepositoryName, creelcli's hubdirectory and its one machine-record write

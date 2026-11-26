@@ -2,8 +2,6 @@
 
 `pr-modes-no-agent` · Task · enhancement, landing, loom, config · running · Darn-Write
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 Note `pr-ask-live-pane-test` is folded in only to be closed: it asks for a test of the parent-review ask this task removes.
 
 Bundled from the notes below; each part keeps its note's text.

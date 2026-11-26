@@ -2,8 +2,6 @@
 
 `guard-row-tooling` · Task · enhancement, process, claude, gate · running · Darn-Write
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 ## Part 1: an update mode for the Claude settings golden
 
 Imported from [issue #257](https://github.com/Knatte18/loomyard/issues/257).

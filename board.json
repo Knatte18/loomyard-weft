@@ -65,46 +65,6 @@
       "revised": "2026-11-17T18:54:35Z"
     },
     {
-      "id": 1613,
-      "handle": "T3",
-      "slug": "config-keys-nested",
-      "title": "Nest loom and tapestry config keys by area, move old names on reconcile, and name every key in full",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "config",
-        "loom",
-        "reconcile",
-        "profiles",
-        "shed",
-        "batten",
-        "fabric",
-        "drift",
-        "landing",
-        "gate",
-        "webster",
-        "shuttle",
-        "dobby",
-        "claude",
-        "codex",
-        "stencil",
-        "pattern",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "tapestry",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `config-keys-nested-by-area`.\n\nTakes: the Sketch's decision record; the flat loom and tapestry templates and their readers; configengine's dotted-path layering, configsync's reconcile, hubreconcile's walk and EnsureOrWarn, configreg.PrepareRunSettings and boardengine's upsert path\nDelivers: loom.yaml and tapestry.yaml nested one map per area with every reader on the nested paths, pr_review_parent_timeout_min (read by autonomy mode) included as pr.review_parent_timeout_min; a move table that every reconcile, the profiles follow and each hub-wide walk apply to file layers, profiles.yaml blocks and board run_settings; refusal of an old name at every site with that site's way forward; EnsureOrWarn before every non-config verb that loads loom or tapestry config; every key named in full in Go messages, template comments, contracts, pattern and docs outside docs/research; PATTERN-config-layers changed and PATTERN-config-key-names added\nExports: configengine.KeyName, configengine.Spec.MovedKeys, the configreg helper that moves a module-keyed settings object, the helper that nests a dotted path into a run_settings or profile object\n\nThe part changes these packages:\n\n- internal/loomengine (about 450 changed lines)\n- internal/reviewbudget (about 120 changed lines)\n- internal/configengine (about 300 changed lines)\n- internal/configsync (about 350 changed lines)\n- internal/hubreconcile (about 300 changed lines)\n- internal/configreg (about 250 changed lines)\n- internal/configcli (about 40 changed lines)\n- internal/runprofile (about 120 changed lines)\n- internal/beamcli (about 50 changed lines)\n- internal/shedrecipe (about 100 changed lines)\n- internal/loomrecipe (about 80 changed lines)\n- internal/loomcli (about 300 changed lines)\n- internal/loomshed (about 20 changed lines)\n- internal/shedadapters (about 60 changed lines)\n- internal/battencli (about 80 changed lines)\n- internal/hardenshed (about 20 changed lines)\n- internal/fabricengine (about 40 changed lines)\n- internal/fabriccli (about 40 changed lines)\n- internal/driftengine (about 40 changed lines)\n- internal/landingshed (about 30 changed lines)\n- internal/gateslot (about 30 changed lines)\n- internal/webstercli (about 20 changed lines)\n- internal/shuttleparity (about 20 changed lines)\n- internal/preflightshed (about 10 changed lines)\n- internal/dobbyengine (about 20 changed lines)\n- internal/claudeengine (about 10 changed lines)\n- internal/codexengine (about 10 changed lines)\n- contracts (about 200 changed lines)\n- docs (about 80 changed lines)\n- pattern (about 60 changed lines)\n",
-      "status": "done",
-      "created": "2026-11-23T13:25:15Z",
-      "revised": "2026-11-23T19:58:05Z",
-      "profile": "solid",
-      "discussed": true,
-      "record_body_sha256": "c76b8326a8e42a0d9442f9dba3780bcf6ee40224bf1d886699a23df2ca3412eb"
-    },
-    {
       "id": 1659,
       "handle": "P1",
       "slug": "intake-wave-1",
@@ -203,9 +163,7 @@
         217
       ],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Note `pr-ask-live-pane-test` is folded in only to be closed: it asks for a test of the parent-review ask this task removes.\n\nBundled from the notes below; each part keeps its note's text.\n\n# Take the parent out of PR-Review; the earlier reviewers must catch what it finds\n\nImported from [issue #223](https://github.com/Knatte18/loomyard/issues/223).\n\n## Seen (operator, 2026-11-24)\n\nToday the parent orch can be asked to review at PR-Review, and the operator has used that a lot.\nThe operator now judges it a bad idea, for two reasons.\n\nPR-Review is the very last gate, and it belongs to the human.\nWhen a run reaches it, everything the LLMs and LoomYard can do should already be done.\n\nA parent is also the wrong reviewer.\nAsking the parent, which is the orchestrator, to review a Discussion or code is work for the orchestrator, and it costs more than a cold-start agent.\nThe reviewers a run already has should catch what the parent catches.\n\n## Decision (operator, 2026-11-26)\n\nNo agent reviews the pull request any more: when the PR is made, the agents are done.\nWhat a parent finds when asked to review a PR must be found and fixed before the PR;\nthe checks that catch it are in the notes on reviewing the Describe text and on closing a task's scope at Code-Review.\n\n## Idea\n\nTake every agent out of PR-Review and add no seat in its place.\n\n- Remove the parent's ask and re-ask from PR-Review in `internal/landingshed` and `internal/loomcli`.\n- Remove PR-Review's own interactive session and its findings path: `pr_reviewer`, `lym loom pr-findings`, `pr_review_small_max`, `pr_review_ask_parent` and `pr_review_parent_timeout_min`.\n- The row keeps only the mechanics the PR mode needs (see the note on the PR mode's three settings).\n- Rely on the cold-start reviewers.\n  The `review-code` fan already holds `code-scope`, which traces every decision of the record to a change in the diff and flags a decision no change builds, besides `code-correctness`, `code-affected-set` and `code-tests`.\n  Read first which lenses the C# hubs run in `review-code` today, since the hub's own `lenses.yaml` and the C# layer can change the fan.\n- Decide what a run does with a commit pushed to the PR branch by hand while it waits.\n\n\n# A PR mode that registers the PR and approves it at once, with no agent under the block\n\nImported from [issue #224](https://github.com/Knatte18/loomyard/issues/224).\n\n## Seen (operator, 2026-11-24)\n\nThe operator often wants a pull request registered on GitHub without looking at it.\nWith a beam, say P1, and several tasks under it, the operator wants each task to land as a PR that is approved at once and merged into the beam.\nWhen all of P1 is done, one PR goes from P1 into its parent (P0 or root), and it lists every member PR.\nThat lets the operator backtrack and see how the work got where it is.\n\n## Decision (operator, 2026-11-26)\n\nThe PR block has three modes, and no LLM takes part in any of them:\n\n- Manual: the PR is made and waits for the operator's own review and approval, as PR-Review is meant today.\n- None: no PR; the row passes, as `pull_request` off does today.\n- Trail (`pull_request: trail`, operator 2026-11-26): the PR is made and merged at once, with no agent and no human, so the beam's PR history can be backtracked.\n\nHow the three modes are configured is not decided yet.\n\n## Idea\n\n- Trail: the PR is made, no agent is spawned, and Finalize merges it at once, as it does today after the operator's `lym loom pr-continue`; merging a PR without an approval has long worked in lym.\n- A beam's own PR lists its member PRs.\n  `Rewrite a beam's pull request description after each member landing` (`1cd11ee5e`) may already do part of this; read what it writes before adding more.\n- Manual waits for a human approval whatever the autonomy, which covers the note on autonomy and PR-Review.\n- Read first where `beam.yaml` `pull_request` is read (`internal/landingshed`, `internal/pullrequest`) and how a run reaches Finalize today when a PR is approved.\n\n\n# Autonomy: let PR review stay with the operator for one beam\n\nImported from [issue #217](https://github.com/Knatte18/loomyard/issues/217).\n\n`beam.yaml: autonomy` is one switch for both halts and PR-Review requests. A hub wants the orch to settle halts on the prime autonomously while pull requests into the prime's branch (main) still wait for the operator's approval. Today that needs autonomy off, which also sends every halt to the operator, or autonomy on with the orch holding PR-Review by hand. Proposal: a separate key, such as `autonomy_pr_review: false`, so PR-Review requests on that beam or the prime go to the operator while halts stay autonomous.\n\n## Issue comment, 2026-11-24\n\nSeen again, with a merge into the prime's branch:\n\n- The prime runs with `autonomy: true`, and the hub wants pull requests into main to wait for a human approval.\n- The task `import-project-names` reached PR-Review; the parent answered the parent-review ask `--satisfied` and told the PR-Review agent by creel that landing waits on the operator's approval.\n- `lym loom pr-continue` ran anyway about a minute later, and Finalize squash-merged the pull request into main once its gate passed, with no human approval on GitHub.\n\nA message to the PR-Review agent is no way to hold a landing under autonomy: the satisfied answer alone ends the review.\n\nExpected: a setting, per beam and for the prime, that keeps autonomy for halts but makes PR-Review wait for a human approval of the pull request (for example a GitHub approving review) before `pr-continue` or Finalize may merge.\n\n# No tmux-tier test sends parent-review ask from a live non-orch pane\n\n## Seen\n\n`failed-ask-hides-satisfied` (issue 213) left out its item 3: no test runs `lym loom parent-review ask` from a live non-orch reed strand pane.\nThat is the path that failed twice on 2026-11-23 in the mo hub (creel refused the LOOM signature), and the fix (708cdadc5) is pinned only below the tmux tier.\n\n## Idea\n\nA tmux-tier test: a built lym binary in a reed strand pane, a hub with a pull request record under autonomy, and a live orch strand that receives the post; assert the ask is delivered and the parent's answer lets `pr-continue` end the review.\n\n\n\n# README display\n\nThe board README shows each beam's pull-request setting (task `readme-beam-modes`); show the three modes there.\n",
@@ -237,9 +195,7 @@
         237
       ],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Bundled from the notes below; each part keeps its note's text.\n\n# Gate tier timeout_min does not stop a hung dotnet testhost; the slot stayed held 21 hours\n\nImported from [issue #216](https://github.com/Knatte18/loomyard/issues/216).\n\n## What happened\n\nIn hub `dop`, run `models-torque-drag-adapter`, a Webster batch fork ran `lym gate test --tier tier3` at 2026-11-23 15:36.\nTier3 has `timeout_min: 35` in the gate config.\nThe tier's `dotnet test` testhost hung (about 4.5 min CPU in 21 h), and the gate slot stayed held for nearly 21 hours: `lym gate status` showed the slot held since 15:36 the next day.\nThe 35-minute bound never fired, so the fork, Webster and the run waited without any stop or notice to the parent orch.\nAnother hub's orch noticed the idle process; the parent orch killed the testhost by hand, and the gate then released its slot.\n\n## Expected\n\nAt `timeout_min` the gate kills the tier's whole process tree (`sh -c dotnet test` → `dotnet` → `vstest` → testhost) and reports a timeout failure to its caller.\n\n## Likely area\n\nThe timeout may kill only the direct child (`sh`), or wait on output pipes that the orphaned testhost still holds open, so the wait never returns.\n\n\n## From issue #215\n\nImported from [issue #215](https://github.com/Knatte18/loomyard/issues/215).\n\nOn a Models hub, `lym gate test --wait --gate finalize` (PID 3536339) ran tier1, `dotnet test NORCE.Models.SlowTests -p:RunSlowTests=true` with `timeout_min: 30`, from 2026-11-23 15:36 to the next day, over 20 h. The test host had used about 7 min CPU; it was hung. The gate slot stayed held the whole time and the run sat at Finalize. On the same machine a DrillOpPlan hub's tier3 gate, started the same minute with a 35-minute bound, hung the same way and its bound never fired either. The machine may have been suspended overnight, but the bound did not fire before that either (15:36 + 30 min). Expected: the gate kills the tier's process tree at timeout_min and reports a timeout.\n\n# gate test: reports 'ran no test' when the detailed console logger's summary is used\n\nImported from [issue #235](https://github.com/Knatte18/loomyard/issues/235).\n\nWith `--logger \"console;verbosity=detailed\"` passed to `lym gate test`, the gate reported that it ran no test, although the test log shows `Total tests: 1, Passed: 1`. The gate's test counter appears to misread the detailed logger's summary format.\n\nThis is abnormal because a passing run is reported as a run of nothing, which an agent may read as a failure or retry needlessly. The counter should parse the summary lines of every console logger verbosity, or read the result from a structured logger (trx) instead.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# gate test: tier3 command already carries --filter, so a second --filter in args makes dotnet test refuse\n\nImported from [issue #234](https://github.com/Knatte18/loomyard/issues/234).\n\nThe tier3 command of `lym gate test` already carries a `--filter`. Passing a test filter in `{args}` adds a second `--filter`, and `dotnet test` refuses the call. An agent found that `-p:VSTestTestCaseFilter=...` works as an override, but nothing in the verb's help says so.\n\nThis is abnormal because selecting one test class is the common use of the verb. The gate should merge a caller filter into the tier's filter (or replace it) and document the way to do it.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# gate test: darn-write gate key runs tier0 only, so a tier3 measurement test runs nothing\n\nImported from [issue #233](https://github.com/Knatte18/loomyard/issues/233).\n\nA prompt told an agent to run a measurement test through `lym gate test --gate darn-write`. That gate key runs tier0 only, while the test lived in tier3 (a slow-test project, category `ModelsLong`). The first call ran no test, and the orch had to allow `--tier 3` by hand.\n\nThis is abnormal because the prompt and the gate key disagree on the tier. Either the prompt generator should pass `--tier` when the named test is not tier0, or the gate should say, when it runs no test, that the filter matches nothing at this tier and name the tiers that would match.\n\nProvenance: task models-stick-slip-floor-tune, note Darn-Write.md.\n\n# lym gate test answers that the hub declares no tier0, leaving a Burler fix round without a gate\n\nImported from [issue #237](https://github.com/Knatte18/loomyard/issues/237).\n\nA Burler code fix round ran `lym gate test ./\u003cmodule path\u003e` on a Go module and the verb answered that the hub declares no tier0.\nThe round therefore had no gate, and the agent ran `go vet` and `go test` on the module directly.\n\nThis is abnormal because the fix-round instructions end each round with the gate; a hub without a declared tier0 leaves the round with nothing to run, and the agent improvised a substitute.\n\nWhat to do: either have `lym gate test` fall back to a default tier when tier0 is undeclared, or make the refusal name the config key to add, and have the Burler code prompt say what to run when no gate exists.\n\nProvenance: task slug timesheet-suggest-tool; notes burler-code-r1.md.\n\n",
@@ -272,7 +228,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "pr-modes-no-agent"
       ],
       "isolated": false,
@@ -307,7 +262,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "dotnet-gate-fixes"
       ],
       "isolated": false,
@@ -344,7 +298,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "pr-modes-no-agent",
         "describe-review-and-sync",
         "infra-stops-not-failures"
@@ -383,7 +336,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "describe-review-and-sync",
         "push-retry-not-halt"
       ],
@@ -412,7 +364,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "describe-review-and-sync",
         "infra-stops-not-failures"
       ],
@@ -442,7 +393,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "config-keys-nested",
         "dotnet-gate-fixes"
       ],
       "isolated": false,
@@ -468,9 +418,7 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`) finds that the hardener finds real faults and fixes them with tests that hold, but does not converge on a sound basis:\nboth campaigns ended on rounds that could not raise what they saw or had not driven what they claimed, and several fixes brought new faults no round caught.\n\n## Idea\n\nThe study's \"Changes to consider\":\n\n1. Exempt a hardener round's findings from the changed-file and changed-hunk rules in `burler-review-format.md` and `burlerengine.CheckReviewRound`, not only `origin: focus` ones.\n2. Name FAIL beside WARN in `harden-rubric-review.md`, so a failed focus entry always blocks.\n3. Make the rubric and the Bouncer state one convergence rule for a MEDIUM first raised in the closing round.\n4. Add a kill rule to the rubric: kill each job from each caller, once with origin applying the in-flight push and once refusing it, then type the printed command in the state left.\n5. A prior finding with an undriven half stays `open`; `resolved` needs a whole repro.\n6. The fix half drives the neighbours of its fix: the other failure kinds a new classifier receives, and every role that reads a new way forward.\n7. The verdict lists what no sandbox can drive (owner takeover, the pull-request sweep, a lost lease) as filed follow-ups.\n8. Run the next campaign with one opus round and compare it with the `sonnet[high]` rounds before keeping the default.\n",
@@ -492,7 +440,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "push-retry-not-halt"
       ],
       "isolated": false,
@@ -552,9 +499,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `sandbox-closed-area-build`.\n\nTakes: the Sketch's decision record, D8 whole and the pieces of D3 and D6 that D8 rests on; peerPID (internal/creelengine/peer_linux.go), daemon.resolve and resolveSender, serveHubCall (receive.go), the outbound worker's spawn closure (outbound.go attempt), hubregistry's Entry, Lookup, Live and RepositoryName, creelcli's hubdirectory and its one machine-record write\nDelivers: every creel daemon sets SO_PASSCRED and SO_PASSPIDFD and takes the sender from SCM_CREDENTIALS and SCM_PIDFD with the pidfd liveness check; D3's inside test (barrier in /proc/\u003cpid\u003e/status or attr/current, plus a cgroup naming a scope of the hub's area by the whole-name forms lym-area-\u003chub key\u003e.scope and lym-area-\u003chub key\u003e-\u003cpane|run|attach\u003e-\u003cpid\u003e.scope), with which a daemon serves only deliver and confirm to a peer inside another hub's area or a peer gone or unreadable; the machine record moved to the hub directory \u003cper-user lym state dir\u003e/hubs/ with its lock, read under a shared lock on a read-only descriptor, with the old hubs.json read for entries the new record lacks; each daemon writing its shortname, creel socket path, repository name and the area-aware creel level into its entry, bar an in-area daemon; the area registry area-hubs.json and its lock in the hub directory, its reader, and a writer the core part's lym area start calls; hubregistry.Lookup, the confirm's geometry and RepositoryName reading an area hub's registry entry and, inside an area, every other hub's host-written record, never a Bolt shortname file or a prime's .git/config; every registry reader and writer dropping an entry whose area file ~/.config/lym/area-\u003chub key\u003e.yaml is gone (Added after Discussion); the outbound worker starting no other hub's daemon inside an area, and a hub without an area starting no area hub's daemon; PATTERN-agent-addressing's Across hubs background gaining the area-registry repository rule\nExports: areaengine.HubKey (reedengine.ServerName of the canonical hub path), areaengine.FilePath(hubKey), areaengine.ScopeName and the scope-name parser, areaengine.Inside(pid, hubKey, barrier); hubregistry.AreaEntry {hub_path, shortname, creel_socket, repository}, hubregistry.ReadAreaRegistry and hubregistry.WriteAreaEntry, the hub-directory path helper; the area-aware creel level constant D5 admits\n\nThe part changes these packages:\n\n- internal/creelengine (about 450 changed lines)\n- internal/hubregistry (about 350 changed lines)\n- internal/creelcli (about 150 changed lines)\n- internal/areaengine (about 250 changed lines)\n- internal/lymdirs (about 20 changed lines)\n- internal/machinecli (about 30 changed lines)\n- internal/slackcli (about 20 changed lines)\n",
@@ -592,7 +537,6 @@
       "recipe": "tapestry",
       "depends_on": [
         "area-creel-identity",
-        "config-keys-nested",
         "infra-stops-not-failures",
         "dobby-run-watch-build",
         "push-retry-not-halt"
@@ -687,7 +631,6 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "config-keys-nested",
         "pr-modes-no-agent",
         "describe-review-and-sync",
         "push-retry-not-halt",
@@ -721,9 +664,7 @@
         253
       ],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #253](https://github.com/Knatte18/loomyard/issues/253).\n\nAfter the machine rebooted, a task run was resumed with 'lym loom resume' (a Go driver was spawned) and drove on through Drift-Verify, Code-Review, PR-Review and into Finalize. Its loom-status strand stayed dead the whole time ('lym reed list' shows it not live, and the task's tmux session holds only its shell window), so the operator saw no overview pane and took the run for stuck while Finalize ran the slow test tier. Another task resumed by its batten driver after the same reboot got its loom-status pane back. Expected: a resumed run brings its loom-status strand back, or 'lym reed list' or the run's status says the pane is gone and how to restore it.",
@@ -748,7 +689,6 @@
       ],
       "recipe": "darn",
       "depends_on": [
-        "config-keys-nested",
         "dotnet-gate-fixes"
       ],
       "isolated": false,
@@ -772,9 +712,7 @@
         249
       ],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #249](https://github.com/Knatte18/loomyard/issues/249).\n\n## What was seen\n\nA darn run deleted a test harness file (`Program.cs`) whose checks moved into a test class.\nThe drift judge ruled the deletion `loosened`, with three check groups `uncaused`, and Drift-Verify halted.\nThe parent recorded a decision to add the three missing checks and sent the run back to the writer, which committed them in a new commit.\nDrift-Verify then halted again with the same three `uncaused` checks.\n`_lym/drift/judged.json` still held the ruling from the first judge spawn, keyed on the diff hash of the deleted file, which had not changed.\nNo new judge spawn and no drift-judge parent ask came for the new commit.\n\n## Workaround\n\nA decision told the writer to commit an empty commit with one `Loosened-Check` trailer per check group, naming the commit that added the checks as the cause, then a goto to the writer row and a resume.\n\n## Expected\n\nWhen a later commit in the range touches the test files the stored ruling compares against, such as the class a deleted check moved to, Drift-Verify re-judges the loosened file instead of reusing the cached ruling.\nAt least, the halt's way forward should name the parent's ways out of a ruling that the code has since answered.\n",
@@ -800,9 +738,7 @@
         256
       ],
       "recipe": "darn",
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Part 1: an update mode for the Claude settings golden\n\nImported from [issue #257](https://github.com/Knatte18/loomyard/issues/257).\n\n### What happened\n\nThe Claude settings golden, `internal/shuttleengine/claudeengine/testdata/settings-golden.json`, has no update flag.\n`TestBuildSettings_MatchesGolden` only compares against it.\nEach change to a shellguard steer or pattern needed a temporary test file to render the new golden.\n\n### Why it is abnormal\n\nEvery guard-row change rewrites this golden, and each agent making one has to write and then remove its own renderer.\nThat costs turns, and a leftover or wrong renderer is a risk to the commit.\n\n### What to do\n\nAdd an update mode to the golden test that rewrites the file from the rendered settings and deny notice, reachable through `lym gate test`.\n\nProvenance: task `reed-client-and-bus-guard`, note `burler-code-r1.md`.\n\n## Part 2: a shellguard row can state an exception\n\nImported from [issue #256](https://github.com/Knatte18/loomyard/issues/256).\n\n### What happened\n\nA review finding asked for an exception in a shellguard row: refuse a command unless it carries a given flag.\nA `Row` in `internal/shellguard/rows.go` denies only when every one of its `Patterns` matches, and `grep -E` has no negation, so the row has no way to state the exception.\nThe first fix spelled \"any word but `--system`\" as one regex with quote and escape parsing.\nIt failed open on input it could not parse.\nThe fixer's self-check caught it, and a second version replaced it.\n\n### Why it is abnormal\n\nA guard row with an exception has to encode negation by hand in a regex, which is hard to read and review.\nA mistake in it can let a refused command through.\n\n### What to do\n\nGive `Row` a way to state an exception, such as patterns that must not match, rendered by each engine's guard builder.\nThe design has to keep the guard failing closed: an exception matched anywhere in the payload would let a second, refused command in the same call through.\nIf rows are to stay AND-only, make the hand-built helper (`unquotedWordOtherThan`) the documented way to write an exception.\n\nProvenance: task `reed-client-and-bus-guard`, note `burler-code-r1.md`.\n",
@@ -841,9 +777,7 @@
         "docs"
       ],
       "issues": [],
-      "depends_on": [
-        "config-keys-nested"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.\nPATTERN-config-key-names asks that such a comment say `\u003cmodule\u003e.\u003cpath\u003e`.\n\nSweep every Go comment and package doc that names a config key to its nested `\u003cmodule\u003e.\u003cpath\u003e` form.\nA comment-only change, no behaviour or user-visible text.\nDeferred from T3 code review round 1, finding F1, to keep that run short.\n",

@@ -2,8 +2,6 @@
 
 `config-key-comment-sweep` · Note · enhancement, docs
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md)
-
 After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.
 PATTERN-config-key-names asks that such a comment say `<module>.<path>`.
 

@@ -2,7 +2,7 @@
 
 `reach-misses-tier1-calls` · Task · bug, gate, testmap
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
+Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
 Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).
 

@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-dobby-run-watch-build.md)
 
-Depends on: [`config-keys-nested`](design-config-keys-nested.md), [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
+Depends on: [`dotnet-gate-fixes`](design-dotnet-gate-fixes.md)
 
 Filed from the Sketch `dobby-run-watch`.
 
