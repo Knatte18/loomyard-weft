@@ -1,0 +1,12 @@
+{
+  "created": "2026-10-30T09:39:39Z",
+  "hash": "d50fe3cec0e8e2229abc07feb47c267753eaadc0071f905c0ff6761985424a68",
+  "filed": [
+    "closed-area",
+    "area-creel-identity",
+    "area-seccomp-core",
+    "area-apparmor-barrier",
+    "area-host-exits"
+  ],
+  "project": "closed-area"
+}

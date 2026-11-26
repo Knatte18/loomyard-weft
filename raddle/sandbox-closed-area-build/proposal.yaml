@@ -1,0 +1,218 @@
+{
+  "sketch": "sandbox-closed-area-build",
+  "shape": "project",
+  "project": {
+    "slug": "closed-area",
+    "title": "A closed area per hub: Landlock and a seccomp connect supervisor",
+    "type": "feature"
+  },
+  "board_checked": [
+    {"slug": "config-keys-nested", "revised": "2026-11-23T19:58:05Z"},
+    {"slug": "keep-landed-records", "revised": "2026-11-26T11:37:51Z"},
+    {"slug": "pr-modes-no-agent", "revised": "2026-11-26T09:23:51Z"},
+    {"slug": "dobby-run-watch-build", "revised": "2026-11-26T11:22:01Z"},
+    {"slug": "describe-review-and-sync", "revised": "2026-11-26T08:20:21Z"},
+    {"slug": "infra-stops-not-failures", "revised": "2026-11-26T08:20:22Z"},
+    {"slug": "push-retry-not-halt", "revised": "2026-11-26T10:03:29Z"},
+    {"slug": "beam-member-parent", "revised": "2026-11-26T08:20:23Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "single-repo-hub", "revised": "2026-11-19T18:30:11Z"},
+    {"slug": "intake-motifs", "revised": "2026-11-26T08:20:40Z"},
+    {"slug": "hardener-study-faults", "revised": "2026-11-26T11:25:44Z"},
+    {"slug": "cortex-cost-measure", "revised": "2026-11-09T12:09:36Z"},
+    {"slug": "antigravity-engine-spike", "revised": "2026-11-17T18:54:35Z"}
+  ],
+  "parts": [
+    {
+      "slug": "area-creel-identity",
+      "title": "creel across an area: kernel-attached sender identity, the area registry and the hub directory",
+      "type": "feature",
+      "labels": ["creel", "cwd"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D8", "D14"],
+      "packages": [
+        {"path": "internal/creelengine", "size": 450},
+        {"path": "internal/hubregistry", "size": 350},
+        {"path": "internal/creelcli", "size": 150},
+        {"path": "internal/areaengine", "size": 250},
+        {"path": "internal/lymdirs", "size": 20},
+        {"path": "internal/machinecli", "size": 30},
+        {"path": "internal/slackcli", "size": 20}
+      ],
+      "contract": {
+        "takes": "the Sketch's decision record, D8 whole and the pieces of D3 and D6 that D8 rests on; peerPID (internal/creelengine/peer_linux.go), daemon.resolve and resolveSender, serveHubCall (receive.go), the outbound worker's spawn closure (outbound.go attempt), hubregistry's Entry, Lookup, Live and RepositoryName, creelcli's hubdirectory and its one machine-record write",
+        "delivers": "every creel daemon sets SO_PASSCRED and SO_PASSPIDFD and takes the sender from SCM_CREDENTIALS and SCM_PIDFD with the pidfd liveness check; D3's inside test (barrier in /proc/<pid>/status or attr/current, plus a cgroup naming a scope of the hub's area by the whole-name forms lym-area-<hub key>.scope and lym-area-<hub key>-<pane|run|attach>-<pid>.scope), with which a daemon serves only deliver and confirm to a peer inside another hub's area or a peer gone or unreadable; the machine record moved to the hub directory <per-user lym state dir>/hubs/ with its lock, read under a shared lock on a read-only descriptor, with the old hubs.json read for entries the new record lacks; each daemon writing its shortname, creel socket path, repository name and the area-aware creel level into its entry, bar an in-area daemon; the area registry area-hubs.json and its lock in the hub directory, its reader, and a writer the core part's lym area start calls; hubregistry.Lookup, the confirm's geometry and RepositoryName reading an area hub's registry entry and, inside an area, every other hub's host-written record, never a Bolt shortname file or a prime's .git/config; every registry reader and writer dropping an entry whose area file ~/.config/lym/area-<hub key>.yaml is gone (Added after Discussion); the outbound worker starting no other hub's daemon inside an area, and a hub without an area starting no area hub's daemon; PATTERN-agent-addressing's Across hubs background gaining the area-registry repository rule",
+        "exports": "areaengine.HubKey (reedengine.ServerName of the canonical hub path), areaengine.FilePath(hubKey), areaengine.ScopeName and the scope-name parser, areaengine.Inside(pid, hubKey, barrier); hubregistry.AreaEntry {hub_path, shortname, creel_socket, repository}, hubregistry.ReadAreaRegistry and hubregistry.WriteAreaEntry, the hub-directory path helper; the area-aware creel level constant D5 admits"
+      },
+      "depends_on": ["config-keys-nested"],
+      "open_risks": [],
+      "criteria": [
+        "D8: inside an area the outbound worker does not start another hub's daemon, and a hub without an area does not start an area hub's daemon.",
+        "D8: an area hub whose prime's origin is rewritten to a repository the receiving hub trusts has its orch's mail stamped under the area file's `repository`,\nuntrusted unless that repository is listed.",
+        "Review: D14 — the note's split into tasks follows D14's order, with D8's creel identity ahead of the boot."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (1); the record-less darn solid cell, 10 runs, would put it near $22"
+    },
+    {
+      "slug": "area-seccomp-core",
+      "title": "Stage 1 of the closed area: supervisor, Landlock ruleset, connect filter, attach client and the in-area engines, token and relay",
+      "type": "feature",
+      "labels": ["reed", "shuttle", "claude", "codex", "creel", "dobby", "slack", "process", "cwd", "git", "cli", "docs", "pattern"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D9", "D10", "D11", "D12", "D16"],
+      "packages": [
+        {"path": "internal/areaengine", "size": 3000},
+        {"path": "internal/areacli", "size": 500},
+        {"path": "cmd/lym", "size": 150},
+        {"path": "internal/reedengine", "size": 250},
+        {"path": "internal/reedcli", "size": 400},
+        {"path": "internal/proc", "size": 250},
+        {"path": "internal/lymtemp", "size": 120},
+        {"path": "internal/runproc", "size": 40},
+        {"path": "internal/dobbyengine", "size": 40},
+        {"path": "internal/creelcli", "size": 80},
+        {"path": "internal/machinecli", "size": 80},
+        {"path": "internal/hubregistry", "size": 120},
+        {"path": "internal/shuttleengine/claudeengine", "size": 250},
+        {"path": "internal/shuttleengine/codexengine", "size": 200},
+        {"path": "internal/githubclient", "size": 120},
+        {"path": "internal/slackengine", "size": 350},
+        {"path": "internal/slackcli", "size": 120},
+        {"path": "internal/hubgeom", "size": 80},
+        {"path": "README.md", "size": 80},
+        {"path": "docs", "size": 80},
+        {"path": "pattern", "size": 40}
+      ],
+      "contract": {
+        "takes": "the creel identity part's exports (inside test, scope names, area registry writer, hub directory, area-aware level); config-keys-nested's rewritten PATTERN-config-layers line; docs/research/platform/seccomp-connect-probe/main.go as D4's starting point; reedengine's server spawn and scrub (lifecycle.go), reedcli's attach (EnsureSession, Status, the watchdog spawn), proc.CapProcessMemory and RunMemoryCapped, lymtemp's root and run directories, runproc's end verbs, claudeengine's account resolution, TranscriptReader and user-setup source, codexengine's homes and links, githubclient's token chain, slackengine's EnsureRelay, StopRelay and file geometry, creelcli's SendReady",
+        "delivers": "lym area init, start, stop, show, supervise, exec, git-credential and slack-setup; the area file outside the hub and its write-grant refusals; the supervisor in its own scope with its record, socket, SO_PEERCRED check, subreaping and verbs boot, attach-scope, cap-memory, kill-scope and slack-relay (start, stop, presence, status); the one launcher setting no_new_privs, Landlock ABI 8 with TSYNC and the filter with TSYNC, TSYNC_ESRCH and NEW_LISTENER; the connect decision on the checked inode and the derived allow list; the per-hub area root under lymtemp; the host-side attach client under the area; lym area start writing the machine record and the registry entry for an area hub; the host-side refusal of D7 as the first root pre-run step and at every hub selection, with machine walks skipping area hubs; dobby and creel spawn sites refusing from outside; the memory caps through the supervisor; the area's own engine config directories, GitHub token and relay records; README.md, docs/overview.md and the glossary per D16, the pseudo-terminal bound included (Added after Discussion); PATTERN-closed-area added, PATTERN-child-processes changed, and the backgrounds of PATTERN-child-processes, PATTERN-lym-files and PATTERN-config-layers per the notes for the plan writer; the seccomp half of the under-each-barrier criteria, whose apparmor half the fallback part carries; and the D6 attach criterion's second clause, which the record's unindented continuation line cuts from the parsed bullet: a `detach-client -E` sent to the attach client runs its command under the area's filter and in the attach scope",
+        "exports": "the supervisor's verb protocol and its client in internal/areaengine (one request per connection, the verbs named above), the launcher's start-request protocol, the area file type and its loader, the barrier enum seccomp and apparmor, and the start check's hook for a barrier-specific refusal, on which the fallback and host-exit parts add verbs and a barrier"
+      },
+      "depends_on": ["area-creel-identity", "config-keys-nested"],
+      "open_risks": [
+        "The supervisor probe has not run on OSL-1046; whether Cortex XDR interferes with a seccomp listener or `pidfd_getfd` is unknown.\nD14 makes that run the first step, and its result picks the barrier."
+      ],
+      "criteria": [
+        "D1, D3: on a kernel with Landlock ABI 8, `lym area start` boots the hub's tmux server so that a pane process carries both the Landlock domain and the seccomp filter, and every thread of it shows `NoNewPrivs: 1`; `lym area exec` run alone refuses without a supervisor's socket pair.",
+        "D3: `lym area start` refuses, naming the missing feature, when the kernel lacks Landlock ABI 8, seccomp user notification or `pidfd_getfd`; with a live supervisor and no server it boots a new server under that supervisor.",
+        "D3: a pane's environment holds none of `GH_TOKEN`, `GITHUB_TOKEN`, `DBUS_SESSION_BUS_ADDRESS` and `SSH_AUTH_SOCK`, and holds `TMPDIR`, `GOTMPDIR`, `TMUX_TMPDIR`, `GOCACHE` and `GOMODCACHE` as D6 sets them.",
+        "D3: an area process cannot unlink the supervisor's socket or bind one at its path, and a host-side caller of a supervisor verb refuses to send when the socket's peer pid is not the record's.",
+        "D3: reed boots an area hub's server through `lym area start` from outside and through `boot` from inside; dobby and creel spawn sites refuse from outside with their way forward.",
+        "D3: an orphan of a pane, double-forked, still gets its connects decided after reparenting; `lym area stop` leaves no process of the area's scopes alive, and signals no pid a run record names outside them.",
+        "D3: after the supervisor is killed, `lym area stop` then `lym area start` leaves one dobby and one creel daemon of the hub, both answering.",
+        "D3: a pane process can signal a watchdog started by `boot`, and still can signal a surviving dobby after the server is booted again.",
+        "D3, D8: a daemon refuses every verb but `deliver` and `confirm` from an orphan of another area hub's attach-client command posting on an inherited creel socket,\nfrom a survivor of another area hub's killed supervisor, and from a pane of an area hub started after the judging hub.",
+        "D4: under the filter, a connect to the session bus, to a symlink to it, to another hub's tmux socket and to an abstract address fails with `EACCES`, and the hub's own tmux and creel sockets connect.",
+        "D4: 200 connects from a buffer another thread swaps between an allowed socket and the bus never reach the bus.",
+        "D4: a foreign-ABI system call and `clone3` fail with `ENOSYS`, `io_uring_setup` with `EPERM`, and every connect fails with `ENOSYS` once the supervisor's listener is closed.",
+        "D2, D5: with no area file the hub boots as today; `lym area show` lists every derived and file entry with its source; a file whose `write` list covers `~`, `~/.config` or the installed `lym` is refused at start, and so is a hub whose root lies above `~/.config`.",
+        "D2: `lym area init` writes no `/tmp`, Go-cache or `~/.claude` row.",
+        "D2: a hub holding a local marketplace of the operator's is refused at start, naming the way forward.",
+        "D5: a socket the area file adds to `connect` is reachable from a pane; the session bus and the system bus are not; another hub's creel socket is reachable only while its machine-record entry carries the area-aware level, and an entry naming `/run/user/<uid>/bus` with that level is not admitted.",
+        "D6: inside the area, a write under `$HOME`, `/tmp` outside the area root, another hub's lym temp root, `~/.config/lym` and the host's Go build and module caches fails, and the hub, the area's own Go caches and the area root are writable.",
+        "D6: the start refuses an area root that is a link or that another user owns.",
+        "D6: a host-side `lym reed attach` of an area hub finds its server, boots a cold worktree's session and watchdog under the area through `boot`, has its client's connects decided under Yama `ptrace_scope` 1, runs its client in `lym-area-<hub key>-attach-<pid>.scope`,",
+        "D6: with the hub's `reed` config naming as its tmux a script under the hub, a host-side attach of an area hub never runs it.",
+        "D6: a `detach-client -E` command sees none of `GH_TOKEN` and `SSH_AUTH_SOCK` set in the attaching shell;\nafter it exits, no process of the attach scope holds the terminal, also when the supervisor was killed first.",
+        "D6, D8: a cross-hub post between an area hub and a hub without one is delivered and confirmed in both directions,\nthe area side finding the other's socket from the machine record and the other side the area hub's from its area-registry entry.",
+        "D6, D8: a pane reads the machine record after a host daemon rewrote it.",
+        "D7: a lym verb run outside an area hub's area refuses with the way forward before any other root step runs, and `lym area show` and `lym reed attach` run.",
+        "D7: `lym machine start` run from another hub runs no git over an area hub and names it in a notice.",
+        "D7: with the area hub's `desktop.machine.yaml` naming a script, `lym reed window` on its worktree run from outside the hub refuses and never runs it;\na refused verb run in an area hub creates no file under the hub.",
+        "D8: a post from a pane of an area hub is attributed to the pane's strand; a daemon refuses every verb but `deliver` and `confirm` from a peer inside another hub's area, a command run by that hub's attach client included, and from a sender that exits before the daemon reads it.",
+        "D9: a strand pane launched in an area lands in its pane scope with its `MemoryMax`; a `RunMemoryCapped` child's own children land in the run scope, and after a kill of its command `kill-scope` leaves none of them alive; the verb refuses a pid outside the supervisor's tree and the relay's pid.",
+        "D10: an agent session in an area, under a listed account and under the default one, writes its transcript under `<hub>/.lym/area/`, and `TranscriptReader` reads it there; the host's `~/.claude` is unwritable inside.",
+        "D10: inside an area, Claude Code installs a plugin from a local-directory marketplace into the area's config directory.",
+        "D10: a codex session in an area writes its `auth.json` and sessions under `<hub>/.lym/area/`, and nothing under the operator's Codex home.",
+        "D11: inside an area, `githubclient` resolves the area's token file and never `gh auth token`, and a `git push` over HTTPS authenticates through `lym area git-credential`.",
+        "D12: the relay started through `slack-relay start` from inside runs as the supervisor's child outside the area with no `runproc` record, and `slack-relay stop` ends it.",
+        "D12: with `relay.log` and the hub's slack directory replaced by links to a file outside the hub, starting the relay leaves that file unchanged.",
+        "D12: a cross-machine post and `lym slack away` work from a pane of an area hub,\nand an operator message reaches an area hub's orch while another hub's relay holds the socket.",
+        "Review: D16 — `README.md` states bypass permissions, the Konsole advice, the area's claim, each non-claim and the operator's host-side rules; `docs/overview.md` and the glossary carry `area`."
+      ],
+      "pattern_changes": ["PATTERN-closed-area", "PATTERN-child-processes"],
+      "expected_cost_usd": 53.3,
+      "cost_line": "tapestry solid with a stored record, 7 runs: fit $37.09 fixed plus $0.2537 per 100 lines over about 6,400 changed lines, extrapolated past the cell's runs"
+    },
+    {
+      "slug": "area-apparmor-barrier",
+      "title": "The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails",
+      "type": "feature",
+      "labels": ["process"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D15"],
+      "packages": [
+        {"path": "internal/areaengine", "size": 350},
+        {"path": "internal/areacli", "size": 100}
+      ],
+      "contract": {
+        "takes": "the core part's supervisor, launcher, attach client, area file with its barrier key, and the start check's barrier hook; the OSL-1046 probe result of D14 step 1",
+        "delivers": "lym area profile rendering the hub's profile from the area file's lists and the Landlock paths, with other hubs' creel sockets as one creel-*.sock pattern and the name a hash of the text, and naming the root load command; the launcher and attach client entering it through aa-exec, each still installing a filter with D4's foreign-ABI, io_uring_setup and clone3 rules, no connect rule, no listener, and TSYNC with TSYNC_ESRCH (Added after Discussion); the start refusing while no loaded profile carries the rendered name; the inside test's apparmor label branch exercised end to end",
+        "exports": "areaengine's apparmor barrier and its profile renderer"
+      },
+      "depends_on": ["area-seccomp-core"],
+      "open_risks": [],
+      "criteria": [
+        "D3, D4, D15: under each barrier, a pane process that calls `clone3` with `CLONE_INTO_CGROUP` into a cgroup outside the area's scopes fails,\nand no process of it leaves those scopes.",
+        "D3, D15: the inside test holds for a pane process under each barrier, and fails for a host process and for the supervisor's host-side children.",
+        "D15: with `barrier: apparmor`, `lym area profile` renders a profile denying the session bus and other hubs' tmux sockets, whose text is unchanged when another hub records itself or another area hub starts, and `lym area start` refuses while no loaded profile carries its rendered name."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (1)"
+    },
+    {
+      "slug": "area-host-exits",
+      "title": "Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside",
+      "type": "feature",
+      "labels": ["termwindow", "hibernate", "batten", "ide", "deploy", "reed"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D13"],
+      "packages": [
+        {"path": "internal/areaengine", "size": 300},
+        {"path": "internal/areacli", "size": 200},
+        {"path": "internal/termwindow", "size": 50},
+        {"path": "internal/reedcli", "size": 40},
+        {"path": "internal/hibernatecli", "size": 40},
+        {"path": "internal/battenshed", "size": 60},
+        {"path": "internal/battencli", "size": 40},
+        {"path": "internal/idecli", "size": 20}
+      ],
+      "contract": {
+        "takes": "the core part's supervisor verb protocol and attach client; termwindow's Launcher.OpenAttach, hibernatecli's request and its systemctl spawn, battenshed's LandDeps.RunDeploy and its wiring, idecli; the operator's stop of D14 step 3",
+        "delivers": "the supervisor's window verb (direct child of the hub root, title built from the directory name, Konsole running the host's lym reed attach with no shell after it) with lym reed window routed to it inside an area; the hibernate verb running systemctl hibernate alone; the deploy verb recording a pending deploy from Batten's Land row with a notice; lym area deploy cloning https://github.com/<repository>.git into the area state directory, fetching the area file's deploy_branch, checking the commit is on it and running the area file's deploy command with the host's toolchain and caches, refusing with the way forward when repository, deploy or deploy_branch is missing, and lym area init writing deploy_branch as main (Added after Discussion, with its acceptance criterion that a rewritten origin and a hub record naming another branch change neither); lym ide refusing inside an area",
+        "exports": "the window, hibernate and deploy verbs and their clients"
+      },
+      "depends_on": ["area-apparmor-barrier"],
+      "open_risks": [],
+      "criteria": [
+        "D3, D7, D13: with `<hub>/x/wt` holding a `.git` file and `<hub>/x` holding a `_bolt/_lym` and a reed config whose tmux names a script,\n`window` and `boot` refuse `<hub>/x/wt`, and a host lym verb run in it refuses with the way forward, never running the script or any git.",
+        "D13: a `window` request for a worktree whose name holds `;` or `=` opens a window whose Konsole arguments carry neither character in the title.",
+        "D13: the `window` verb refuses a worktree that is no direct child of the hub root; the Land row's deploy inside an area records a pending deploy and runs nothing on the host; `lym area deploy` refuses a commit not on origin's parent branch; `lym ide` inside an area refuses with its reason.",
+        "D13: `lym hibernate request` inside an area reaches `systemctl hibernate` only through the `hibernate` verb."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn solid with a stored record reads too few runs (1)"
+    }
+  ],
+  "cost": {
+    "expected_usd": null,
+    "line": "one tapestry solid part at about $53 by the 7-run stored-record fit, plus three darn solid parts whose stored-record cell reads too few runs",
+    "next_best": {
+      "split": "stage 1 as two tapestries, the core (D1 to D7, D16) and then the in-area consumers (D9 to D12), beside the same three darn parts",
+      "expected_usd": null,
+      "line": "the two tapestries come to about $91 by the same fit, two fixed costs of $37.09 over the same lines, and the three darn solid parts' stored-record cell reads too few runs"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
