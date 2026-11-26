@@ -7,5 +7,6 @@
       "title": "The docs/benchmarks/ measurement reports follow the operator's runs, outside this change",
       "digest": "9a48569d18e4a4ce79296d9201ed3754366bbdab08f42c39e47ce386368bc49e"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
