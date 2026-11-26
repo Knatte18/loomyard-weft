@@ -1,0 +1,1781 @@
+diff --git a/internal/battencli/cancel.go b/internal/battencli/cancel.go
+index 6cee50993..0d985424f 100644
+--- a/internal/battencli/cancel.go
++++ b/internal/battencli/cancel.go
+@@ -83,6 +83,10 @@ type cancelDeps struct {
+ 	TaskBranchOnOrigin func() (bool, error)
+ 	// DiscardTaskBranch archives and deletes the task branch, locally and on origin.
+ 	DiscardTaskBranch func() (fabricengine.DiscardResult, error)
++	// TeardownPending reports whether an unfinished teardown of the slug names this cancel, with --remove, as its re-run.
++	TeardownPending func() (bool, error)
++	// SettleTeardown drops the record of an unfinished teardown of the slug once nothing of its pair remains.
++	SettleTeardown func() error
+ 	// Verdict returns the act rule's verdict for the slug, with the cancel, pause, hold, shed pause and owed push set aside.
+ 	// A paused, held or offline run is still cancelled, so only a landed run or one another machine owns is refused.
+ 	Verdict func() (runfsm.Verdict, error)
+@@ -222,6 +226,7 @@ func cancelCommand(slug string, remove bool) string {
+ 
+ // ErrNothingLeft is the sentinel that a cancel refusal matches through errors.Is.
+ // The refusal applies when no record, claim, pair part, session, process or cancel of the slug is left.
++// A cancel that removes refuses only when no unfinished teardown naming it is left either.
+ var ErrNothingLeft = errors.New("nothing of the slug is left to cancel")
+ 
+ // nothingLeftError is the refusal that nothing of a slug is left to cancel, carrying the message to show.
+@@ -719,6 +724,8 @@ func cancelOwnedElsewhere(slug, owner, subject string) error {
+ // Without remove, it also refuses when only a task branch or a stray directory is left.
+ // A stray directory is one that is no worktree at the task worktree's path.
+ // With remove, neither a local task branch nor a stray directory refuses.
++// With remove, an unfinished teardown that names this cancel counts as left too,
++// so the re-run its record names finishes it whatever of the pair is still on origin.
+ // A task branch on origin counts as left, and it is read only when nothing else is left and origin was reached.
+ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading cancelMarkerReading, parts fabricengine.PairParts, deps cancelDeps) error {
+ 	recordsHere, err := deps.RecordsPresent()
+@@ -755,6 +762,13 @@ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading
+ 	if parts.TaskBranch || parts.StrayPath {
+ 		return nil
+ 	}
++	pending, err := deps.TeardownPending()
++	if err != nil {
++		return probeRefusal("the unfinished teardowns", slug, rerun, err)
++	}
++	if pending {
++		return nil
++	}
+ 	if endOnly {
+ 		return fmt.Errorf("origin was unreachable, so the task branch of %s on origin could not be read; way forward: run %s again once origin answers", slug, rerun)
+ 	}
+@@ -775,18 +789,23 @@ func nothingLeft(slug string) error {
+ 
+ // removePairAndBranch removes the pair, snapshotting its uncommitted paths first.
+ // It then archives and deletes the task branch while one is left.
+-// A pair with nothing left reads as removed.
++// A pair with nothing left reads as removed, and an unfinished teardown of it is settled.
+ // A directory that is no worktree at the pair's task worktree path is deleted with the pair.
+ // Left behind, it would block the slug's next run.
+ // A failed delete refuses and names the cancel to run again.
+ func removePairAndBranch(slug, rerun string, report *cancelReport, deps cancelDeps) error {
+-	result, err := deps.RemovePair(pairteardown.Request{Slug: slug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true})
++	result, err := deps.RemovePair(pairteardown.Request{Slug: slug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true, Rerun: cancelCommand(slug, true)})
+ 	report.SnapshotTag = result.SnapshotTag
+ 	report.StrayDirectoryDeleted = result.StrayPathDeleted
+ 	if err != nil && !errors.Is(err, fabricengine.ErrPairNotFound) {
+ 		return fmt.Errorf("battencli: removing the pair of %s refused: %w; way forward: fix the cause it names, then run \"lym batten cancel %s --remove\" again", slug, err, slug)
+ 	}
+ 	report.PairRemoved = true
++	if errors.Is(err, fabricengine.ErrPairNotFound) {
++		if err := deps.SettleTeardown(); err != nil {
++			return fmt.Errorf("battencli: settling the unfinished teardown of %s failed: %w; way forward: fix the cause it names, then run %s again", slug, err, rerun)
++		}
++	}
+ 
+ 	parts, err := deps.PairParts()
+ 	if err != nil {
+diff --git a/internal/battencli/cancel_integration_test.go b/internal/battencli/cancel_integration_test.go
+index dd020f523..0e1e25d84 100644
+--- a/internal/battencli/cancel_integration_test.go
++++ b/internal/battencli/cancel_integration_test.go
+@@ -1,5 +1,6 @@
+ // cancel_integration_test.go drives "lym batten cancel" through clihelp.ExecuteIn over hubforge hubs.
+-// It covers a blocked run with no pair, a kept pair whose reconcile only judges, and a removed pair.
++// It covers a blocked run with no pair, a kept pair whose reconcile only judges, a removed pair,
++// and the re-run that finishes an unfinished removal.
+ 
+ package battencli
+ 
+@@ -366,6 +367,49 @@ func TestCancelIntegration_RemoveTearsDownPairAndBranch(t *testing.T) {
+ 	}
+ }
+ 
++// TestCancelIntegration_FinishesAnUnfinishedRemoval re-runs the cancel that a pending removal record names.
++// The slug has no run record, claim or local pair part, and only its records branch is left on origin.
++// The first re-run deletes that branch.
++// The record then still stands, as one of a pair gone everywhere, and the second re-run drops it.
++// A third finds nothing left to cancel.
++func TestCancelIntegration_FinishesAnUnfinishedRemoval(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	slug := hubforge.TemplatePairSlug
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{slug}})
++	recordsBranch := fabricengine.RecordsBranchName(slug)
++	if _, err := h.Topology.Remove(h.Location, slug, true, false, ""); err != nil {
++		t.Fatalf("Remove(%s): %v", slug, err)
++	}
++	if gitkit.BranchExists(t, h.CodeBare, slug) {
++		gitkit.MustRun(t, h.CodeBare, "git", "update-ref", "-d", "refs/heads/"+slug)
++	}
++	if !gitkit.BranchExists(t, h.RecordsBare, recordsBranch) {
++		t.Fatalf("origin holds no %q after the local removal; the fixture needs it", recordsBranch)
++	}
++	// The record a removal's teardown child leaves behind when it ends before its job does.
++	recordPath := filepath.Join(filepath.Dir(fabricengine.TeardownLockPath(h.Path, slug)), slug+".pending.json")
++	record := fabricengine.PendingTeardown{Slug: slug, Kind: "remove", HandedAt: time.Now(), Worktree: h.PrimeWorktree(), Rerun: "lym batten cancel " + slug + " --remove"}
++	if err := state.WriteJSON(recordPath, recordPath+".lock", record); err != nil {
++		t.Fatalf("write the pending teardown record: %v", err)
++	}
++
++	envelope.RequireOK(t, runCancel(t, h.PrimeWorktree(), slug, "--remove"))
++
++	if gitkit.BranchExists(t, h.RecordsBare, recordsBranch) {
++		t.Errorf("origin still holds %q after the cancel; want it deleted", recordsBranch)
++	}
++
++	envelope.RequireOK(t, runCancel(t, h.PrimeWorktree(), slug, "--remove"))
++
++	if pending, err := fabricengine.PendingTeardowns(h.Path); err != nil || len(pending) != 0 {
++		t.Errorf("PendingTeardowns() after the cancel of a gone pair = (%+v, %v); want none", pending, err)
++	}
++	envelope.RequireErr(t, runCancel(t, h.PrimeWorktree(), slug, "--remove"), "nothing of "+slug+" is left to cancel")
++}
++
+ // mustRunGit runs git with args in dir and returns its output, failing the test on an error.
+ func mustRunGit(t *testing.T, dir string, args ...string) string {
+ 	t.Helper()
+diff --git a/internal/battencli/cancel_test.go b/internal/battencli/cancel_test.go
+index c22895720..5c2b507a2 100644
+--- a/internal/battencli/cancel_test.go
++++ b/internal/battencli/cancel_test.go
+@@ -25,7 +25,7 @@ import (
+ const cancelSlug = "some-slug"
+ 
+ // destructiveCancelCalls are the seams whose call means the cancel ended, removed, cleared or lifted something.
+-var destructiveCancelCalls = []string{"WriteIntent", "CommitRecord", "EndForCancel", "StopTackler", "RemovePair", "DiscardTaskBranch", "FinishCancel", "RemoveRecords", "ClearClaim", "LiftPauses"}
++var destructiveCancelCalls = []string{"WriteIntent", "CommitRecord", "EndForCancel", "StopTackler", "RemovePair", "DiscardTaskBranch", "FinishCancel", "RemoveRecords", "ClearClaim", "LiftPauses", "SettleTeardown"}
+ 
+ // cancelFake is a set of fake substrates for cancelRun that records every call and answers from its knobs.
+ // Its zero value has no status, no board entry and no records, and nothing alive.
+@@ -62,6 +62,8 @@ type cancelFake struct {
+ 	onOrigin        bool
+ 	discardResult   fabricengine.DiscardResult
+ 	discardErr      error
++	teardownPending bool
++	settleErr       error
+ 	recordsErr      error
+ 	recordsCommit   bool
+ 	claimCleared    bool
+@@ -219,7 +221,9 @@ func (f *cancelFake) deps() cancelDeps {
+ 			f.call("DiscardTaskBranch")
+ 			return f.discardResult, f.discardErr
+ 		},
+-		Verdict: func() (runfsm.Verdict, error) { f.call("Verdict"); return f.verdict, f.verdictErr },
++		TeardownPending: func() (bool, error) { f.call("TeardownPending"); return f.teardownPending, nil },
++		SettleTeardown:  func() error { f.call("SettleTeardown"); return f.settleErr },
++		Verdict:         func() (runfsm.Verdict, error) { f.call("Verdict"); return f.verdict, f.verdictErr },
+ 		WriteIntent: func(remove bool) (bool, error) {
+ 			f.call("WriteIntent")
+ 			f.intentRemove = remove
+@@ -489,8 +493,8 @@ func TestCancelRun(t *testing.T) {
+ 			noCalls:   []string{"FinishCancel"},
+ 			marker:    "removed",
+ 			check: func(t *testing.T, r cancelReport, f *cancelFake) {
+-				want := pairteardown.Request{Slug: cancelSlug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true}
+-				if f.removeRequest.Slug != want.Slug || !f.removeRequest.Force || !f.removeRequest.Snapshot || !f.removeRequest.Remote || !f.removeRequest.LeaveClaim || !f.removeRequest.ClearStray {
++				want := pairteardown.Request{Slug: cancelSlug, Force: true, Snapshot: true, Remote: true, LeaveClaim: true, ClearStray: true, Rerun: "lym batten cancel " + cancelSlug + " --remove"}
++				if f.removeRequest.Slug != want.Slug || !f.removeRequest.Force || !f.removeRequest.Snapshot || !f.removeRequest.Remote || !f.removeRequest.LeaveClaim || !f.removeRequest.ClearStray || f.removeRequest.Rerun != want.Rerun {
+ 					t.Errorf("RemovePair request = %+v; want %+v", f.removeRequest, want)
+ 				}
+ 				if f.endRequest.Keep {
+@@ -781,6 +785,28 @@ func TestCancelRun(t *testing.T) {
+ 			wantCalls: []string{"RemovePair", "DiscardTaskBranch", "RemoveRecords"},
+ 			marker:    "removed",
+ 		},
++		{
++			name:   "UnfinishedTeardownAloneIsLeftToFinishWithRemove",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.recordsPresent, f.boardStatus, f.boardFound, f.statusFound = false, nil, false, false
++				f.teardownPending = true
++			},
++			wantCalls: []string{"TeardownPending", "RemovePair"},
++			noCalls:   []string{"SettleTeardown"},
++			marker:    "removed",
++		},
++		{
++			name:   "FailedSettleOfAGonePairNamesTheRerun",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.removeErr = fmt.Errorf("remove: %w", fabricengine.ErrPairNotFound)
++				f.settleErr = errors.New("archive tag push refused")
++			},
++			wantErr: `settling the unfinished teardown of some-slug failed: archive tag push refused; way forward: fix the cause it names, then run "lym batten cancel some-slug --remove" again`,
++			noCalls: []string{"RemoveRecords", "ClearClaim", "LiftPauses"},
++			marker:  "left",
++		},
+ 		{
+ 			name: "LiveCancelRefuses",
+ 			setup: func(f *cancelFake) {
+@@ -859,7 +885,7 @@ func TestCancelRun(t *testing.T) {
+ 			setup: func(f *cancelFake) {
+ 				f.removeErr = fmt.Errorf("remove: %w", fabricengine.ErrPairNotFound)
+ 			},
+-			wantCalls: []string{"RemovePair", "RemoveRecords", "ClearClaim"},
++			wantCalls: []string{"RemovePair", "SettleTeardown", "RemoveRecords", "ClearClaim"},
+ 			noCalls:   []string{"DiscardTaskBranch"},
+ 			marker:    "removed",
+ 			check: func(t *testing.T, r cancelReport, _ *cancelFake) {
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index d39137ab2..0d9000d2f 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -64,7 +64,8 @@ and deletes its task branch locally and on origin, and deletes batten's record w
+ It refuses, before it ends or removes anything, while a hub pause covers the prime, when the run's
+ work already reached its parent (finish the landing with "lym batten run"), when the slug already
+ landed, when another machine owns it, when origin stopped the entry, when the cancel already finished
+-with its pair kept (run it with --remove), when another cancel is under way, and when nothing is left.
++with its pair kept (run it with --remove), when another cancel is under way, and when nothing is left
++(--remove counts an unfinished teardown).
+ It skips every wait a teardown makes for a working driver.
+ With origin unreachable it only ends the run's processes and strands and posts a notice;
+ running it again finishes the cancel.
+@@ -287,8 +288,15 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 		RemovePair:         teardown.RemovePair,
+ 		TaskBranchOnOrigin: func() (bool, error) { return topology.TaskBranchOnOrigin(location, slug) },
+ 		DiscardTaskBranch: func() (fabricengine.DiscardResult, error) {
+-			return topology.DiscardTaskBranch(location, slug, "lym batten cancel "+slug+" --remove")
++			return topology.DiscardTaskBranch(location, slug, cancelCommand(slug, true))
+ 		},
++		TeardownPending: func() (bool, error) {
++			pending, err := fabricengine.PendingTeardowns(location.HubPath)
++			return slices.ContainsFunc(pending, func(record fabricengine.PendingTeardown) bool {
++				return record.Slug == slug && record.Rerun == cancelCommand(slug, true)
++			}), err
++		},
++		SettleTeardown: func() error { return topology.SettleGonePairTeardown(location, slug, cancelCommand(slug, true)) },
+ 		Verdict: func() (runfsm.Verdict, error) {
+ 			records, inputs, err := pairteardown.ReadRun(location, slug)
+ 			if err != nil {
+diff --git a/internal/battencli/lifecycle_integration_test.go b/internal/battencli/lifecycle_integration_test.go
+index b6a184de3..d528c80c2 100644
+--- a/internal/battencli/lifecycle_integration_test.go
++++ b/internal/battencli/lifecycle_integration_test.go
+@@ -705,7 +705,7 @@ func stepTeardown_AlreadyGonePairFinishesItsBranchDeletion(t *testing.T, h *hubf
+ 				t.Fatalf("precondition: %q not on the remote after the create", recordsBranch)
+ 			}
+ 			// Both worktrees are removed and the remote copy kept: the state a kill between the local and remote deletions leaves.
+-			if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++			if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 				t.Fatalf("remove the pair without its remote copy: %v", err)
+ 			}
+ 			recordsRepoRoot, err := fabricengine.RecordsRepoRoot(h.Location)
+@@ -765,7 +765,7 @@ func remoteArchiveTagExists(bareDir, slug string) bool {
+ func stepTeardown_ResumedRowWhosePairIsGoneFinishesDone(t *testing.T, h *hubforge.Hub) {
+ 	slug := "batten-teardown-resumed-gone"
+ 	hubforge.AddPair(t, h, slug)
+-	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 		t.Fatalf("remove the pair: %v", err)
+ 	}
+ 	c := wireForHub(t, h, slug, func(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
+@@ -868,7 +868,7 @@ func stepTeardown_UnreachableRemoteHaltsBeforeRemovalResumably(t *testing.T, h *
+ func stepTeardown_AlreadyGonePairWithNoBranchIsDone(t *testing.T, h *hubforge.Hub) {
+ 	slug := "batten-teardown-finished"
+ 	hubforge.AddPair(t, h, slug)
+-	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 		t.Fatalf("remove the pair: %v", err)
+ 	}
+ 	c := wireForHub(t, h, slug, func(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
+@@ -1208,7 +1208,7 @@ func TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixe
+ 	if err != nil {
+ 		t.Fatalf("load fabric config: %v", err)
+ 	}
+-	if _, err := fabricengine.NewTopology(cfg).Remove(h.Location, slug, true, false); err != nil {
++	if _, err := fabricengine.NewTopology(cfg).Remove(h.Location, slug, true, false, ""); err != nil {
+ 		t.Fatalf("%s: %v", removeCommand, err)
+ 	}
+ 	if exec.Command("git", "-C", h.PrimeWorktree(), "rev-parse", "--verify", "--quiet", "refs/heads/"+branch).Run() == nil {
+diff --git a/internal/battencli/readopt_integration_test.go b/internal/battencli/readopt_integration_test.go
+index e44a79836..0ad09e2aa 100644
+--- a/internal/battencli/readopt_integration_test.go
++++ b/internal/battencli/readopt_integration_test.go
+@@ -176,7 +176,7 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		const slug = "removed-pair"
+ 		hubforge.AddPair(t, h, slug)
+-		if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 		c, _ := readoptReceiver(h, slug)
+@@ -229,7 +229,7 @@ func TestBattenIntegration_GoneTaskWorktree(t *testing.T) {
+ 		gitkit.Git(t, prime, "merge", "--squash", taskBranch)
+ 		gitkit.Git(t, prime, "commit", "-m", "land "+slug)
+ 		gitkit.Git(t, prime, "push", "--quiet", "origin", "HEAD")
+-		if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 
+diff --git a/internal/dobbyengine/landnotice_creel_test.go b/internal/dobbyengine/landnotice_creel_test.go
+index 12c22eab9..4da4398e2 100644
+--- a/internal/dobbyengine/landnotice_creel_test.go
++++ b/internal/dobbyengine/landnotice_creel_test.go
+@@ -79,6 +79,9 @@ func TestLandNotice_ReachesAnOrchStrandListedAfterTheLanding(t *testing.T) {
+ 		sweepWaits(len(waits) + 1)
+ 	}
+ 
++	// Stopping waits for the delivery workers the last advance woke.
++	// One still probing once the orch is listed would type the notice into its pane ahead of the read.
++	scheduler.Stop()
+ 	delivery.SetStrands(creelfake.LiveStrand(driver), creelfake.LiveStrand(peer), creelfake.LiveStrand(orchName))
+ 	reading, err := store.Read(creelengine.StrandSender(orchName), "")
+ 	if err != nil {
+diff --git a/internal/fabricengine/add_remoteleftover_integration_test.go b/internal/fabricengine/add_remoteleftover_integration_test.go
+index 9d2d6574d..0f84981c5 100644
+--- a/internal/fabricengine/add_remoteleftover_integration_test.go
++++ b/internal/fabricengine/add_remoteleftover_integration_test.go
+@@ -82,7 +82,7 @@ func removedPair(t *testing.T, slug string) *hubforge.Hub {
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	topology := h.Topology
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+-	if _, err := topology.Remove(h.Location, slug, false, false); err != nil {
++	if _, err := topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 		t.Fatalf("setup Remove(%q): %v", slug, err)
+ 	}
+ 	return h
+@@ -113,7 +113,7 @@ func TestAdd_LiveLocalWeftAgainstOrigin(t *testing.T) {
+ 			topology := h.Topology
+ 			hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 			oldTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+-			if _, err := topology.Remove(h.Location, slug, false, false); err != nil {
++			if _, err := topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 				t.Fatalf("setup Remove: %v", err)
+ 			}
+ 			mustGit(h.PrimeRecords(), "branch", weftBranch, oldTip)
+@@ -182,7 +182,7 @@ func TestAdd_LiveLocalWeftAdoptsDivergedWarpFromOrigin(t *testing.T) {
+ 	warpTip := gitkit.CommitFile(t, wt, "work.txt", "work\n", "warp work")
+ 	mustGit(wt, "push", "--quiet", "origin", slug)
+ 	weftTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+-	if _, err := topology.Remove(h.Location, slug, false, false); err != nil {
++	if _, err := topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 		t.Fatalf("setup Remove: %v", err)
+ 	}
+ 	requireArchiveCovers(t, h.RecordsBare, slug, weftTip)
+@@ -220,7 +220,7 @@ func TestAdd_WarpLeftoverRefusedAtPreflight(t *testing.T) {
+ 	mustGit(wt, "push", "--quiet", "origin", slug)
+ 	mustGit(h.PrimeWorktree(), "merge", "--squash", slug)
+ 	gitkit.Git(t, h.PrimeWorktree(), "commit", "-m", "land "+slug)
+-	if _, err := topology.Remove(h.Location, slug, false, false); err != nil {
++	if _, err := topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 		t.Fatalf("setup Remove: %v", err)
+ 	}
+ 
+@@ -300,7 +300,7 @@ func TestAdd_DivergedArchivedWeftLeftoverReplaced(t *testing.T) {
+ 	gitkit.CommitFile(t, fabricengine.RecordsWorktreePath(h.Location, slug), "extra.txt", "extra.txt\n", "extra weft work")
+ 	mustGit(fabricengine.RecordsWorktreePath(h.Location, slug), "push", "--quiet", "origin", weftBranch)
+ 	oldTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+-	if _, err := topology.Remove(h.Location, slug, false, false); err != nil {
++	if _, err := topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 		t.Fatalf("setup Remove: %v", err)
+ 	}
+ 
+diff --git a/internal/fabricengine/destructivegaps_integration_test.go b/internal/fabricengine/destructivegaps_integration_test.go
+index 4f2dbb99f..386290a4c 100644
+--- a/internal/fabricengine/destructivegaps_integration_test.go
++++ b/internal/fabricengine/destructivegaps_integration_test.go
+@@ -403,7 +403,7 @@ func TestRemoveWarpWorktreeDir_LeftoverRetry(t *testing.T) {
+ 			o := outcome{target: target}
+ 			remove, sleep := tt.setup(lockedDir, &o)
+ 			fabricengine.SetLeftoverSeamForTest(h.Topology, remove, sleep)
+-			o.res, o.err = h.Topology.Remove(l, slug, false, false)
++			o.res, o.err = h.Topology.Remove(l, slug, false, false, "")
+ 
+ 			tt.check(t, slug, o)
+ 		})
+@@ -430,7 +430,7 @@ func TestRemoveWarpWorktreeDir_LeftoverRetry(t *testing.T) {
+ 				sleepCalls++
+ 				_ = held.Close()
+ 			})
+-			res, err := h.Topology.Remove(l, slug, false, false)
++			res, err := h.Topology.Remove(l, slug, false, false, "")
+ 
+ 			if err != nil {
+ 				t.Fatalf("Remove error = %v; want the leftover finished once the writer closed the file", err)
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 7a67f0bcd..42bb9bb28 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -238,7 +238,9 @@
+ // So does a child whose remote step failed, and its record holds that step's way forward.
+ // `PendingTeardowns` lists each with what finishes it, for `lym fabric status` and `lym fabric prune` to print:
+ // the hand push of the archive tag of a tip the record carries, then the re-run.
+-// A discard's job and record carry the command its caller names for that re-run.
++// A discard's or a removal's job and record carry the command its caller names for that re-run.
++// A removal whose caller names none is re-run by `lym fabric remove <slug> --remote`.
++// `SettleGonePairTeardown` drops the record of a pair of which nothing remains.
+ // A remote branch delete is leased and a branch origin moved since is kept, never a failure.
+ // A pair already half removed is finished rather than refused, and `ErrPairNotFound` means nothing is left.
+ // `RemoveLocal` is the same removal with no origin step and no waiting.
+diff --git a/internal/fabricengine/housekeeping_integration_test.go b/internal/fabricengine/housekeeping_integration_test.go
+index 3b171cc29..a2f6ac414 100644
+--- a/internal/fabricengine/housekeeping_integration_test.go
++++ b/internal/fabricengine/housekeeping_integration_test.go
+@@ -140,7 +140,7 @@ func TestStoreHousekeeping(t *testing.T) {
+ 		unsetHousekeepingKeys(t, code)
+ 		unsetHousekeepingKeys(t, records)
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 
+@@ -160,7 +160,7 @@ func TestStoreHousekeeping(t *testing.T) {
+ 		unsetHousekeepingKeys(t, records)
+ 		fillSampledLooseObjects(t, code)
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 
+@@ -186,7 +186,7 @@ func TestStoreHousekeeping(t *testing.T) {
+ 			t.Fatalf("backdate %s: %v", oldObject, err)
+ 		}
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 
+@@ -240,7 +240,7 @@ func TestStoreHousekeeping_Warnings(t *testing.T) {
+ 			unsetHousekeepingKeys(t, records)
+ 			fillSampledLooseObjects(t, code)
+ 
+-			if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++			if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 				t.Fatalf("Remove: %v", err)
+ 			}
+ 
+@@ -262,7 +262,7 @@ func TestStoreHousekeeping_Warnings(t *testing.T) {
+ 		// An unparsable size makes `gc --auto` exit 128 on its config parse, whatever the threshold.
+ 		gitkit.Git(t, records, "config", "gc.bigPackThreshold", "bogus")
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v; a failing gc must not fail it", err)
+ 		}
+ 
+diff --git a/internal/fabricengine/livestate_verbs_test.go b/internal/fabricengine/livestate_verbs_test.go
+index 403798b67..1da821faa 100644
+--- a/internal/fabricengine/livestate_verbs_test.go
++++ b/internal/fabricengine/livestate_verbs_test.go
+@@ -470,7 +470,7 @@ func removeCase() VerbCase {
+ 		},
+ 		Run: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) (fabricengine.Mutations, error) {
+ 			tb.Helper()
+-			res, err := h.Topology.Remove(h.Location, f.Slug, false, false)
++			res, err := h.Topology.Remove(h.Location, f.Slug, false, false, "")
+ 			return res.Mutated(), err
+ 		},
+ 		Expect: func(state string) Expectation {
+@@ -1114,7 +1114,7 @@ func removeHostileCases() []VerbCase {
+ 			},
+ 			Run: func(tb testing.TB, h *hubforge.Hub, f VerbFixture) (fabricengine.Mutations, error) {
+ 				tb.Helper()
+-				res, err := h.Topology.Remove(h.Location, f.Slug, false, false)
++				res, err := h.Topology.Remove(h.Location, f.Slug, false, false, "")
+ 				return res.Mutated(), err
+ 			},
+ 			Expect: func(state string) Expectation {
+diff --git a/internal/fabricengine/mergecrucible_integration_test.go b/internal/fabricengine/mergecrucible_integration_test.go
+index 083c1dd9a..0ac58a772 100644
+--- a/internal/fabricengine/mergecrucible_integration_test.go
++++ b/internal/fabricengine/mergecrucible_integration_test.go
+@@ -194,7 +194,7 @@ func TestMergeCrucible_RemoveRefusesAPairSomeOtherMergeIsConsuming(t *testing.T)
+ 		t.Fatalf("MergeIn(%s).Conflicts is empty; the fixture must leave a live merge record", sourceBranch)
+ 	}
+ 
+-	_, err = h.Topology.Remove(primeLocation, slug, false, false)
++	_, err = h.Topology.Remove(primeLocation, slug, false, false, "")
+ 	var refused *fabricengine.ErrMergeInProgress
+ 	if !errors.As(err, &refused) {
+ 		t.Fatalf("Remove(%s) while the prime pair is mid-merge on its branches: error = %v (%T); want *ErrMergeInProgress", slug, err, err)
+@@ -207,7 +207,7 @@ func TestMergeCrucible_RemoveRefusesAPairSomeOtherMergeIsConsuming(t *testing.T)
+ 	}
+ 
+ 	// force answers dirtiness only, never a live merge record.
+-	if _, err := h.Topology.Remove(primeLocation, slug, true, false); !errors.As(err, &refused) {
++	if _, err := h.Topology.Remove(primeLocation, slug, true, false, ""); !errors.As(err, &refused) {
+ 		t.Fatalf("Remove(%s, force=true): error = %v (%T); want *ErrMergeInProgress even with force", slug, err, err)
+ 	}
+ 
+@@ -215,7 +215,7 @@ func TestMergeCrucible_RemoveRefusesAPairSomeOtherMergeIsConsuming(t *testing.T)
+ 	if _, err := prime.MergeAbort(); err != nil {
+ 		t.Fatalf("MergeAbort: %v", err)
+ 	}
+-	if _, err := h.Topology.Remove(primeLocation, slug, true, false); err != nil {
++	if _, err := h.Topology.Remove(primeLocation, slug, true, false, ""); err != nil {
+ 		t.Fatalf("Remove(%s) after MergeAbort: %v; want success — the guard must close a window, not block the pair forever", slug, err)
+ 	}
+ }
+diff --git a/internal/fabricengine/mergesiblings_integration_test.go b/internal/fabricengine/mergesiblings_integration_test.go
+index 21eb37b91..83f4c3007 100644
+--- a/internal/fabricengine/mergesiblings_integration_test.go
++++ b/internal/fabricengine/mergesiblings_integration_test.go
+@@ -136,7 +136,7 @@ func TestMergeSiblings_Dispositions(t *testing.T) {
+ 	})
+ 
+ 	t.Run("RemoveWithoutForce", func(t *testing.T) {
+-		_, err := h.Topology.Remove(l, slug, false, false)
++		_, err := h.Topology.Remove(l, slug, false, false, "")
+ 		var refused *fabricengine.ErrMergeInProgress
+ 		if !errors.As(err, &refused) {
+ 			t.Fatalf("Remove(force=false) error = %v (%T); want *ErrMergeInProgress", err, err)
+@@ -151,7 +151,7 @@ func TestMergeSiblings_Dispositions(t *testing.T) {
+ 
+ 	t.Run("RemoveWithForce", func(t *testing.T) {
+ 		// force answers dirtiness only, never a live merge record.
+-		_, err := h.Topology.Remove(l, slug, true, false)
++		_, err := h.Topology.Remove(l, slug, true, false, "")
+ 		var refused *fabricengine.ErrMergeInProgress
+ 		if !errors.As(err, &refused) {
+ 			t.Fatalf("Remove(force=true) error = %v (%T); want *ErrMergeInProgress even with --force", err, err)
+diff --git a/internal/fabricengine/onerepository_lifecycle_integration_test.go b/internal/fabricengine/onerepository_lifecycle_integration_test.go
+index da7f8b309..4b924b7cf 100644
+--- a/internal/fabricengine/onerepository_lifecycle_integration_test.go
++++ b/internal/fabricengine/onerepository_lifecycle_integration_test.go
+@@ -216,7 +216,7 @@ func TestOneRepositoryPair_RecordsLiveInTheNamespace(t *testing.T) {
+ 			t.Errorf("refs the pair added outside %s = %v; want %v", fabricengine.RecordsNamespaceRoot, outside, want)
+ 		}
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove(%s): %v", slug, err)
+ 		}
+@@ -245,7 +245,7 @@ func TestOneRepositoryPair_RecordsLiveInTheNamespace(t *testing.T) {
+ 		gitkit.CommitFile(t, h.PairRecordsSibling(slug), "extra.txt", "extra\n", "extra records work")
+ 		oneRepoPushRecords(t, h, slug)
+ 		oldTip := oneRepoRecordsTip(t, bare, recordsBranch)
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("setup Remove(%s): %v", slug, err)
+ 		}
+ 
+@@ -571,7 +571,7 @@ func TestOneRepositorySecondMachine_AdoptPullAndReplay(t *testing.T) {
+ 		const slug = "ns-live-local"
+ 		first, second, recordsBranch := pairOnBoth(t, slug)
+ 		removedTip := gitkit.RevParse(t, second.PairRecordsSibling(slug), "HEAD")
+-		if _, err := second.Topology.Remove(second.Location, slug, false, false); err != nil {
++		if _, err := second.Topology.Remove(second.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove on the second machine: %v", err)
+ 		}
+ 		gitkit.Git(t, second.PrimeRecords(), "branch", recordsBranch, removedTip)
+diff --git a/internal/fabricengine/origin_integration_test.go b/internal/fabricengine/origin_integration_test.go
+index 7c570794f..08800daf3 100644
+--- a/internal/fabricengine/origin_integration_test.go
++++ b/internal/fabricengine/origin_integration_test.go
+@@ -77,7 +77,7 @@ func TestAdd_AdoptedWeftKeepsItsOriginRecord(t *testing.T) {
+ 
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 	recordedTip := gitkit.RevParse(t, mustRecordsRepoRoot(t, l), "refs/remotes/origin/"+weftBranch)
+-	if _, err := h.Topology.Remove(l, slug, false, false); err != nil {
++	if _, err := h.Topology.Remove(l, slug, false, false, ""); err != nil {
+ 		t.Fatalf("setup Remove(%q): %v", slug, err)
+ 	}
+ 	gitkit.MustRun(t, mustRecordsRepoRoot(t, l), "git", "branch", weftBranch, recordedTip)
+diff --git a/internal/fabricengine/originreads_integration_test.go b/internal/fabricengine/originreads_integration_test.go
+index cd841af6f..f8ea33674 100644
+--- a/internal/fabricengine/originreads_integration_test.go
++++ b/internal/fabricengine/originreads_integration_test.go
+@@ -58,7 +58,7 @@ func TestOriginRunReads(t *testing.T) {
+ 		weft := h.PairRecordsSibling(slug)
+ 		gitkit.CommitFile(t, weft, "_lym/shed/"+slug+"/status.json", `{"state":"paused","future_key":1}`, "child run status")
+ 		gitkit.MustRun(t, weft, "git", "push", "origin", gitkit.CurrentBranch(t, weft))
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove(%q): %v", slug, err)
+ 		}
+ 
+diff --git a/internal/fabricengine/pairbranch_integration_test.go b/internal/fabricengine/pairbranch_integration_test.go
+index 72513a65b..9342de04e 100644
+--- a/internal/fabricengine/pairbranch_integration_test.go
++++ b/internal/fabricengine/pairbranch_integration_test.go
+@@ -48,7 +48,7 @@ func pairOnOriginOnly(t *testing.T, slug string) (*hubforge.Hub, *fabricengine.T
+ 	recordsBranch := fabricengine.RecordsBranchName(slug)
+ 	gitkit.MustRun(t, h.PairCodeWorktree(slug), "git", "push", "origin", slug)
+ 	gitkit.MustRun(t, h.PrimeRecords(), "git", "push", "origin", recordsBranch)
+-	if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 		t.Fatalf("Remove(%q) under the empty prefix: %v", slug, err)
+ 	}
+ 	if parts, err := h.Topology.PairParts(h.Location, slug); err != nil || parts.Any() {
+@@ -82,7 +82,7 @@ func TestBranchPrefixChange_PairWithNothingLeftLocally(t *testing.T) {
+ 				h, top := pairOnOriginOnly(t, tt.slug)
+ 				recordsBranch := fabricengine.RecordsBranchName(tt.slug)
+ 
+-				res, err := top.Remove(h.Location, tt.slug, false, true)
++				res, err := top.Remove(h.Location, tt.slug, false, true, "")
+ 				if err != nil {
+ 					t.Fatalf("Remove(%q, remote) error = %v", tt.slug, err)
+ 				}
+diff --git a/internal/fabricengine/pairparts_integration_test.go b/internal/fabricengine/pairparts_integration_test.go
+index 14d2f11f8..b309bb266 100644
+--- a/internal/fabricengine/pairparts_integration_test.go
++++ b/internal/fabricengine/pairparts_integration_test.go
+@@ -46,7 +46,7 @@ func TestPairParts(t *testing.T) {
+ 		h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 		hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 		warpBranchCommit(t, h.Location, slug, "work.txt")
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove(%q): %v", slug, err)
+ 		}
+ 		gitkit.MustRun(t, h.PrimeWorktree(), "git", "push", "origin", slug)
+diff --git a/internal/fabricengine/pendingteardown.go b/internal/fabricengine/pendingteardown.go
+index e7fa9be53..8c05e144b 100644
+--- a/internal/fabricengine/pendingteardown.go
++++ b/internal/fabricengine/pendingteardown.go
+@@ -2,6 +2,7 @@
+ // The command writes the record before it hands a remote teardown job to its detached child.
+ // The child removes it once the job has run with no failed step, and keeps it with the way forward of a step that failed.
+ // PendingTeardowns lists the records no running teardown holds, for `lym fabric status` and `lym fabric prune`.
++// SettleGonePairTeardown drops the record of a pair of which nothing remains.
+ 
+ package fabricengine
+ 
+@@ -27,7 +28,8 @@ const pendingTeardownSuffix = ".pending.json"
+ // The command writes it before the handover, and the child removes it once the job has run with no failed step.
+ // A record whose slug's teardown lock no process holds therefore names a teardown that did not finish:
+ // its child ended before the job did, killed outright for instance, or a remote step of the job failed.
+-// Either leaves the pair's branches on origin.
++// Either can leave the pair's branches on origin.
++// A record whose pair is gone everywhere stays until it is settled.
+ type PendingTeardown struct {
+ 	Slug     string    `json:"slug"`
+ 	Kind     string    `json:"kind"`
+@@ -38,7 +40,7 @@ type PendingTeardown struct {
+ 	WeftTip string `json:"weft_tip,omitempty"`
+ 	// TaskTip is the local task tip a discard tagged before it deleted the branch, empty when it found none.
+ 	TaskTip string `json:"task_tip,omitempty"`
+-	// Rerun is the command whose re-run retries a discard, empty when its caller named none.
++	// Rerun is the command whose re-run retries a discard or a removal, empty when its caller named none.
+ 	Rerun string `json:"rerun,omitempty"`
+ 	// WayForward is what finishes the teardown.
+ 	// A record on disk holds one only once a remote step failed; a listed record always holds one.
+@@ -96,6 +98,40 @@ func clearPendingTeardown(hubPath, slug string) {
+ 	}
+ }
+ 
++// SettleGonePairTeardown drops the pending-teardown record of slug once its pair is gone, locally and on origin.
++// It first pushes the slug's archive tags that origin lacks.
++// The unfinished teardown may hold such a tag on this machine alone.
++// A failed push returns an error wrapping ErrArchiveFailed and keeps the record.
++// A slug with no record, or with any part of its pair left, is left as it is.
++// It holds the slug's teardown lock exclusive, and the refusal of a held lock names rerun as the command to run again.
++func (t *Topology) SettleGonePairTeardown(l *lymcwd.Location, slug, rerun string) error {
++	if !pathPresent(pendingTeardownPath(l.HubPath, slug)) {
++		return nil
++	}
++	rec := NewMutations(l.HubPath)
++	release, err := t.lockPairTeardown(rec, l, slug, false, "re-run `"+rerun+"`")
++	if err != nil {
++		return err
++	}
++	defer release()
++
++	pair, err := t.inspectPair(l, slug)
++	if err != nil {
++		return err
++	}
++	// A nil error means a part of the pair is left.
++	if _, err := t.refuseWhenNothingRemains(l, slug, pair); !errors.Is(err, ErrPairNotFound) {
++		return err
++	}
++	// The job reads both stores, since the record does not say which tags its teardown pushed.
++	job := remoteTeardownJob{Kind: remoteTeardownRemove, Slug: slug, DeleteTaskOnOrigin: true}
++	if err := pushOwedArchiveTags(rec, l, job, t.archiveSleep); err != nil {
++		return err
++	}
++	clearPendingTeardown(l.HubPath, slug)
++	return nil
++}
++
+ // PendingTeardowns lists the hub's remote teardowns that did not finish, in slug order:
+ // those whose detached child ended before its job did, and those whose remote step failed.
+ // A record whose slug's teardown lock a process holds exclusive is a teardown still running and is not listed.
+diff --git a/internal/fabricengine/pendingteardown_test.go b/internal/fabricengine/pendingteardown_test.go
+index 9bd3a785a..3e002fd28 100644
+--- a/internal/fabricengine/pendingteardown_test.go
++++ b/internal/fabricengine/pendingteardown_test.go
+@@ -14,6 +14,7 @@ import (
+ 
+ // TestPendingTeardowns covers the list of remote teardowns whose child ended before its job did.
+ // A record whose teardown lock no process holds is listed with the re-run that finishes it.
++// A removal's record that carries its caller's command names that command, not `lym fabric remove`, as the re-run.
+ // A record that carries the task tip a discard tagged names the hand push of that tip's archive tag first.
+ // A record whose lock a process holds exclusive is a teardown still running and is not listed.
+ func TestPendingTeardowns(t *testing.T) {
+@@ -36,6 +37,7 @@ func TestPendingTeardowns(t *testing.T) {
+ 		taskTag := ArchiveTagName("tipped", taskTip)
+ 		for _, job := range []remoteTeardownJob{
+ 			{Kind: remoteTeardownRemove, Slug: "ended"},
++			{Kind: remoteTeardownRemove, Slug: "cancelled", Rerun: "lym batten cancel cancelled --remove"},
+ 			{Kind: remoteTeardownDiscard, Slug: "discarded"},
+ 			{Kind: remoteTeardownDiscard, Slug: "tipped", Worktree: "/code", TaskTip: taskTip},
+ 			{Kind: remoteTeardownRemove, Slug: "running"},
+@@ -56,6 +58,7 @@ func TestPendingTeardowns(t *testing.T) {
+ 			t.Fatalf("PendingTeardowns() error = %v; want nil", err)
+ 		}
+ 		want := []PendingTeardown{
++			{Slug: "cancelled", Kind: remoteTeardownRemove, HandedAt: handedAt, WayForward: "run `lym batten cancel cancelled --remove` again"},
+ 			{Slug: "discarded", Kind: remoteTeardownDiscard, HandedAt: handedAt, WayForward: "run the command that discarded the task branch again"},
+ 			{Slug: "ended", Kind: remoteTeardownRemove, HandedAt: handedAt, WayForward: "run `lym fabric remove ended --remote` again"},
+ 			{Slug: "tipped", Kind: remoteTeardownDiscard, HandedAt: handedAt, WayForward: "push the archive tag with `git -C /code push origin refs/tags/" + taskTag + ":refs/tags/" + taskTag +
+diff --git a/internal/fabricengine/reconcile_stale_registration_test.go b/internal/fabricengine/reconcile_stale_registration_test.go
+index 07d3ce49a..08dfdccec 100644
+--- a/internal/fabricengine/reconcile_stale_registration_test.go
++++ b/internal/fabricengine/reconcile_stale_registration_test.go
+@@ -407,7 +407,7 @@ func TestCleanup_VerdictIsIndependentOfDryRunAndForce(t *testing.T) {
+ 	l := h.Location
+ 	topology := h.Topology
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+-	if _, err := topology.Remove(l, slug, true, false); err != nil {
++	if _, err := topology.Remove(l, slug, true, false, ""); err != nil {
+ 		t.Fatalf("Remove: %v", err)
+ 	}
+ 
+diff --git a/internal/fabricengine/recordsreads_integration_test.go b/internal/fabricengine/recordsreads_integration_test.go
+index c46fac0ac..bea661ce4 100644
+--- a/internal/fabricengine/recordsreads_integration_test.go
++++ b/internal/fabricengine/recordsreads_integration_test.go
+@@ -157,7 +157,7 @@ func TestSlugRecordsTags(t *testing.T) {
+ 			t.Errorf("RecordsBranchFile(local) = %q, %v, %v; want %q", content, found, err, want)
+ 		}
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 		if gitkit.BranchExists(t, root, weftBranch) {
+diff --git a/internal/fabricengine/remoteteardown.go b/internal/fabricengine/remoteteardown.go
+index 2091ae6b5..b8a87a555 100644
+--- a/internal/fabricengine/remoteteardown.go
++++ b/internal/fabricengine/remoteteardown.go
+@@ -80,7 +80,7 @@ type remoteTeardownJob struct {
+ 	DeleteTaskOnOrigin bool   `json:"delete_task_on_origin,omitempty"`
+ 	// TaskTip is the local task tip a discard tagged and deleted, empty when no local task branch existed.
+ 	TaskTip string `json:"task_tip,omitempty"`
+-	// Rerun is the command whose re-run retries a discard, empty when its caller named none.
++	// Rerun is the command whose re-run retries a discard or a removal, empty when its caller named none.
+ 	Rerun string `json:"rerun,omitempty"`
+ 	// ExemptPause is set when the command that wrote the job runs exempt from every pause;
+ 	// so the child's remote steps pass under a pause as the command's own did.
+@@ -201,11 +201,14 @@ func unknownKindWayForward(slug string) string {
+ }
+ 
+ // rerunWayForward returns the re-run that retries the remote steps of job:
+-// the cleanup sweep for a cleanup job, else the removal of its slug.
++// the cleanup sweep for a cleanup job, the command a removal job names, else the removal of its slug.
+ // It serves a step that leaves its branch on origin, which is what lets the re-run find the pair.
+ func rerunWayForward(job remoteTeardownJob) string {
+-	if job.Kind == remoteTeardownCleanup {
++	switch {
++	case job.Kind == remoteTeardownCleanup:
+ 		return "run `lym fabric cleanup --apply --remote` again"
++	case job.Rerun != "":
++		return fmt.Sprintf("run `%s` again", job.Rerun)
+ 	}
+ 	return fmt.Sprintf("run `lym fabric remove %s --remote` again", job.Slug)
+ }
+@@ -240,8 +243,9 @@ func recordsArchiveWayForward(job remoteTeardownJob, weftRoot string) string {
+ 	if job.WeftTip == "" {
+ 		return wayForward
+ 	}
+-	if job.Kind == remoteTeardownRemove {
+-		// A removal whose branches never reached origin leaves its re-run nothing to find.
++	if job.Kind == remoteTeardownRemove && job.Rerun == "" {
++		// A removal whose branches never reached origin leaves `lym fabric remove` nothing to find.
++		// A command the caller names finishes the teardown in that state too, so it gets no condition.
+ 		wayForward = "when origin still holds a branch of the pair, " + wayForward
+ 	}
+ 	if weftRoot == "" {
+diff --git a/internal/fabricengine/remoteteardown_rerun_integration_test.go b/internal/fabricengine/remoteteardown_rerun_integration_test.go
+index 813b5f791..94977438b 100644
+--- a/internal/fabricengine/remoteteardown_rerun_integration_test.go
++++ b/internal/fabricengine/remoteteardown_rerun_integration_test.go
+@@ -45,7 +45,7 @@ func TestRemove_RerunAfterItsTeardownChildEndedArchivesTheLocalRecordsTip(t *tes
+ 	gitkit.CommitFile(t, h.PairRecordsSibling(slug), "unpushed.txt", "unpushed\n", "unpushed records")
+ 
+ 	fabricengine.SetTeardownChildEndsForTest(h.Topology, true)
+-	ended, err := h.Topology.Remove(h.Location, slug, false, true)
++	ended, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%s) with its teardown child ended: %v", slug, err)
+ 	}
+@@ -58,7 +58,7 @@ func TestRemove_RerunAfterItsTeardownChildEndedArchivesTheLocalRecordsTip(t *tes
+ 		"`, then when origin still holds a branch of the pair, run `lym fabric remove "+slug+" --remote` again")
+ 
+ 	fabricengine.SetTeardownChildEndsForTest(h.Topology, false)
+-	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 		t.Fatalf("re-run Remove(%s): %v", slug, err)
+ 	}
+ 
+@@ -70,6 +70,53 @@ func TestRemove_RerunAfterItsTeardownChildEndedArchivesTheLocalRecordsTip(t *tes
+ 	}
+ }
+ 
++// TestRemove_PendingRecordNamesTheRerunItsCallerGave covers a removal whose caller names the command that retries it.
++// The first run's child ended before its first push, with a records commit origin lacks tagged locally.
++// The pending record names the hand push of that tag and then the caller's command, with no condition on origin.
++// Settling the teardown keeps the record while origin holds the pair's branches.
++// Once origin holds none, it pushes the local tag and drops the record.
++func TestRemove_PendingRecordNamesTheRerunItsCallerGave(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const slug = "cancelled-remove"
++	const rerun = "lym batten cancel " + slug + " --remove"
++	h := hubforge.NewOneRepoHub(t, hubforge.OneRepoOptions{})
++	bare := h.CodeBare
++	branch := hubforge.AddPair(t, h, slug).Branch
++	gitkit.CommitFile(t, h.PairRecordsSibling(slug), "unpushed.txt", "unpushed\n", "unpushed records")
++
++	fabricengine.SetTeardownChildEndsForTest(h.Topology, true)
++	ended, err := h.Topology.Remove(h.Location, slug, false, true, rerun)
++	if err != nil {
++		t.Fatalf("Remove(%s) with its teardown child ended: %v", slug, err)
++	}
++	localTip := gitkit.RevParse(t, h.PrimeRecords(), "refs/tags/"+ended.ArchiveTag)
++	wayForward := "push the archive tag with `git -C " + h.PrimeRecords() + " push origin refs/tags/" + ended.ArchiveTag + ":" + namespaceTagsPrefix + ended.ArchiveTag +
++		"`, then run `" + rerun + "` again"
++
++	requireOnePendingTeardown(t, h, slug, wayForward)
++
++	if err := h.Topology.SettleGonePairTeardown(h.Location, slug, rerun); err != nil {
++		t.Fatalf("SettleGonePairTeardown(%s) with the pair on origin: %v", slug, err)
++	}
++	requireOnePendingTeardown(t, h, slug, wayForward)
++
++	for _, ref := range []string{namespaceHeadsPrefix + fabricengine.RecordsBranchName(branch), "refs/heads/" + branch} {
++		gitkit.MustRun(t, bare, "git", "update-ref", "-d", ref)
++	}
++	if err := h.Topology.SettleGonePairTeardown(h.Location, slug, rerun); err != nil {
++		t.Fatalf("SettleGonePairTeardown(%s) with the pair gone: %v", slug, err)
++	}
++
++	if got := refLines(t, bare, "%(objectname)", namespaceTagsPrefix+ended.ArchiveTag); !slices.Equal(got, []string{localTip}) {
++		t.Errorf("origin's archive tag of the local records tip = %v; want one at %s", got, localTip)
++	}
++	if pending, err := fabricengine.PendingTeardowns(h.Path); err != nil || len(pending) != 0 {
++		t.Errorf("PendingTeardowns() after settling a gone pair = (%+v, %v); want none", pending, err)
++	}
++}
++
+ // TestDiscardTaskBranch_RerunAfterItsTeardownChildEndedArchivesTheTaskTip covers a discard's re-run.
+ // The first run's child ended before its first push.
+ // The task branch held a commit origin lacks, which the discard tagged locally before it deleted the branch.
+@@ -92,7 +139,7 @@ func TestDiscardTaskBranch_RerunAfterItsTeardownChildEndedArchivesTheTaskTip(t *
+ 	localTip := gitkit.CommitFile(t, h.PairCodeWorktree(slug), "unpushed.txt", "unpushed\n", "unlanded work origin lacks")
+ 	localTag := fabricengine.ArchiveTagName(slug, localTip)
+ 	// The removal keeps the unlanded task branch, locally and on origin, for the discard that follows it.
+-	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 		t.Fatalf("Remove(%s): %v", slug, err)
+ 	}
+ 
+@@ -104,7 +151,7 @@ func TestDiscardTaskBranch_RerunAfterItsTeardownChildEndedArchivesTheTaskTip(t *
+ 		"`, then run `"+rerun+"` again")
+ 
+ 	fabricengine.SetTeardownChildEndsForTest(h.Topology, false)
+-	if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 		t.Fatalf("re-run Remove(%s): %v", slug, err)
+ 	}
+ 	if _, err := h.Topology.DiscardTaskBranch(h.Location, slug, rerun); err != nil {
+diff --git a/internal/fabricengine/remove.go b/internal/fabricengine/remove.go
+index e3b85705b..ace9d584a 100644
+--- a/internal/fabricengine/remove.go
++++ b/internal/fabricengine/remove.go
+@@ -209,8 +209,13 @@ type RemoveResult struct {
+ // After a successful teardown, and before it returns, Remove disables auto gc in both hub stores.
+ // It then runs a best-effort foreground `git gc --auto` in each.
+ // A failure there is logged and never fails Remove, and a refused or failed Remove runs none of it.
+-func (t *Topology) Remove(l *lymcwd.Location, slug string, force, remote bool) (res RemoveResult, err error) {
+-	return t.removePair(l, slug, force, remote, false)
++// The rerun argument is the command that retries the removal, such as a cancel that removes the pair;
++// a held teardown lock's refusal and the pending-teardown record name it.
++// The record names it with no condition on origin,
++// so that command must also finish the teardown once nothing of the pair remains.
++// An empty rerun names `lym fabric remove <slug>`.
++func (t *Topology) Remove(l *lymcwd.Location, slug string, force, remote bool, rerun string) (res RemoveResult, err error) {
++	return t.removePair(l, slug, force, remote, false, rerun)
+ }
+ 
+ // RemoveLocal removes a paired warp and weft worktree without any origin step and without waiting on another writer.
+@@ -225,11 +230,12 @@ func (t *Topology) Remove(l *lymcwd.Location, slug string, force, remote bool) (
+ // The commits the pushed archive tag would have carried stay under the local tag.
+ // The branch deletions keep their gates.
+ func (t *Topology) RemoveLocal(l *lymcwd.Location, slug string, force bool) (res RemoveResult, err error) {
+-	return t.removePair(l, slug, force, false, true)
++	return t.removePair(l, slug, force, false, true, "")
+ }
+ 
+ // removePair removes a worktree pair. In localMode it skips every origin step and every wait on another writer.
+-func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, localMode bool) (res RemoveResult, err error) {
++// A non-empty rerun is the command that retries the removal; empty, the retry is `lym fabric remove <slug>`.
++func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, localMode bool, rerun string) (res RemoveResult, err error) {
+ 	rec := NewMutations(l.HubPath)
+ 	defer func() { res.Mutations = rec.Snapshot() }()
+ 
+@@ -268,7 +274,11 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 	// The pair's detached pushes hold this lock shared, so no push runs against a worktree this call deletes.
+ 	// A push child that exited on the held lock leaves its commits to the pair's next synchronous push.
+ 	// That push carries them when a failure after this point leaves a worktree behind.
+-	hold, err := t.holdTeardown(rec, rec, l, slug, localMode, fmt.Sprintf("re-run `lym fabric remove %s`", slug), !localMode)
++	lockRerun := fmt.Sprintf("re-run `lym fabric remove %s`", slug)
++	if rerun != "" {
++		lockRerun = "re-run `" + rerun + "`"
++	}
++	hold, err := t.holdTeardown(rec, rec, l, slug, localMode, lockRerun, !localMode)
+ 	if err != nil {
+ 		return RemoveResult{}, err
+ 	}
+@@ -440,6 +450,7 @@ func (t *Topology) removePair(l *lymcwd.Location, slug string, force, remote, lo
+ 		WarpBranch:         warpBranch,
+ 		ParentBranch:       parentBranch,
+ 		DeleteTaskOnOrigin: remote,
++		Rerun:              rerun,
+ 	})
+ 	res.RemoteHandedOff = out.handedOff
+ 	if !out.ran {
+diff --git a/internal/fabricengine/remove_archive_integration_test.go b/internal/fabricengine/remove_archive_integration_test.go
+index aa7e8feed..43b11735b 100644
+--- a/internal/fabricengine/remove_archive_integration_test.go
++++ b/internal/fabricengine/remove_archive_integration_test.go
+@@ -58,7 +58,7 @@ func TestRemove_ArchivesWeftTipBeforeTeardown(t *testing.T) {
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 	tip := gitkit.CommitFile(t, fabricengine.RecordsWorktreePath(l, slug), "_lym/record.txt", "run record\n", "record")
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q) error = %v", slug, err)
+ 	}
+@@ -97,7 +97,7 @@ func TestRemove_ReusesSameTipArchiveTag(t *testing.T) {
+ 	gitkit.MustRun(t, weftRoot, "git", "tag", wantTag, tip)
+ 	gitkit.MustRun(t, weftRoot, "git", "push", "origin", "refs/tags/"+wantTag)
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove error = %v", err)
+ 	}
+@@ -135,7 +135,7 @@ func TestRemove_LeavesAnOwnerArchiveTagOutOfTheTeardownArchive(t *testing.T) {
+ 		t.Fatalf("ArchiveOwnerTips() = %v, %v; want the weft tip tagged %s", ownerTags, err, ownerTag)
+ 	}
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q) error = %v", slug, err)
+ 	}
+@@ -178,7 +178,7 @@ func TestRemove_PendingRecordsAreCommittedAndArchivedOnce(t *testing.T) {
+ 	}
+ 	tipBefore := gitkit.RevParse(t, weftWorktree, "HEAD")
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove on a weft worktree holding an uncommitted record error = %v; want it committed and archived", err)
+ 	}
+@@ -219,7 +219,7 @@ func TestRemove_UnreachableOriginFailsClosed(t *testing.T) {
+ 	weftTip := gitkit.RevParse(t, weftRoot, fabricengine.RecordsBranchName(slug))
+ 	mustBreakOrigin(t, weftRoot)
+ 
+-	_, err := topology.Remove(l, slug, false, false)
++	_, err := topology.Remove(l, slug, false, false, "")
+ 	if !errors.Is(err, fabricengine.ErrArchiveFailed) {
+ 		t.Fatalf("Remove with an unreachable origin error = %v; want one wrapping ErrArchiveFailed", err)
+ 	}
+@@ -251,7 +251,7 @@ func TestRemove_ForceStillArchives(t *testing.T) {
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 	tip := gitkit.CommitFile(t, fabricengine.RecordsWorktreePath(l, slug), "_lym/record.txt", "run record\n", "record")
+ 
+-	res, err := topology.Remove(l, slug, true, false)
++	res, err := topology.Remove(l, slug, true, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(force) error = %v", err)
+ 	}
+@@ -279,7 +279,7 @@ func TestRemove_NoOriginSkipsArchiveAndCompletes(t *testing.T) {
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
+ 	mustRemoveOrigin(t, weftRoot)
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove without an origin error = %v; want completion", err)
+ 	}
+@@ -330,7 +330,7 @@ func TestRemove_ArchiveOrder(t *testing.T) {
+ 		tip := gitkit.CommitFile(t, h.PairRecordsSibling(slug), "_lym/record.txt", "run record\n", "record")
+ 		installUpdateHook(t, h.RecordsBare, "case \"$1\" in\nrefs/tags/archive/*)\n  git merge-base --is-ancestor \"$3\" refs/heads/"+weftBranch+" || { echo \"archive tag target is not on the weft branch\" >&2; exit 1; }\n  ;;\nesac")
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, false)
++		res, err := h.Topology.Remove(h.Location, slug, false, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v; want the tag accepted after the branch push", err)
+ 		}
+@@ -354,7 +354,7 @@ func TestRemove_ArchiveOrder(t *testing.T) {
+ 		pushCommitToOrigin(t, h.RecordsBare, weftBranch)
+ 		originTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, false)
++		res, err := h.Topology.Remove(h.Location, slug, false, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -386,7 +386,7 @@ func TestRemove_ArchiveOrder(t *testing.T) {
+ 		pushCommitToOrigin(t, h.RecordsBare, weftBranch)
+ 		originTip := gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, false)
++		res, err := h.Topology.Remove(h.Location, slug, false, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -412,7 +412,7 @@ func TestRemove_ArchiveOrder(t *testing.T) {
+ 			return &gitexec.GitError{Args: []string{"push"}, ExitCode: 1, Stderr: " ! [remote rejected] " + tagRef + " -> " + tagRef + " (missing necessary objects)\n"}
+ 		})
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove error = %v; want the refused attempt retried", err)
+ 		}
+ 		wantTag := wantArchiveTag(slug, tip)
+@@ -431,7 +431,7 @@ func TestRemove_ArchiveOrder(t *testing.T) {
+ 		tip := gitkit.CommitFile(t, h.PairRecordsSibling(slug), "_lym/record.txt", "run record\n", "record")
+ 		installUpdateHook(t, h.RecordsBare, "case \"$1\" in\nrefs/heads/"+weftBranch+")\n  echo \"weft branch updates refused\" >&2\n  exit 1\n  ;;\nesac")
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove error = %v; want a refused branch push only logged", err)
+ 		}
+ 		wantTag := wantArchiveTag(slug, tip)
+diff --git a/internal/fabricengine/remove_finish_integration_test.go b/internal/fabricengine/remove_finish_integration_test.go
+index aa73aee69..3a379e2eb 100644
+--- a/internal/fabricengine/remove_finish_integration_test.go
++++ b/internal/fabricengine/remove_finish_integration_test.go
+@@ -61,7 +61,7 @@ func TestRemove_FinishesPairWhoseTaskWorktreeWasRemovedByHand(t *testing.T) {
+ 	warpTip := gitkit.RevParse(t, l.WorktreePath(), slug)
+ 	removeByHand(t, fabricengine.WorktreePath(l, slug))
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove error = %v; want the half-removed pair finished", err)
+ 	}
+@@ -116,7 +116,7 @@ func TestRemove_FinishesPairWithBothWorktreesGone(t *testing.T) {
+ 	removeByHand(t, fabricengine.WorktreePath(l, slug))
+ 	removeByHand(t, fabricengine.RecordsWorktreePath(l, slug))
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove error = %v", err)
+ 	}
+@@ -168,7 +168,7 @@ func TestRemove_ArchivesAndDeletesSiblingBranchOnlyOnOrigin(t *testing.T) {
+ 	siblingTip := gitkit.RevParse(t, h.RecordsBare, fabricengine.RecordsBranchName(slug))
+ 	leaveSiblingBranchOnlyOnOrigin(t, h, slug)
+ 
+-	res, err := h.Topology.Remove(l, slug, false, true)
++	res, err := h.Topology.Remove(l, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(remote=true) error = %v", err)
+ 	}
+@@ -199,7 +199,7 @@ func TestRemove_KeepsOriginOnlySiblingBranchWithoutRemote(t *testing.T) {
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 	leaveSiblingBranchOnlyOnOrigin(t, h, slug)
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(remote=false) error = %v", err)
+ 	}
+@@ -235,7 +235,7 @@ func TestRemove_ReportsStrayPathAndFinishesBranchTeardown(t *testing.T) {
+ 	marker := filepath.Join(target, "keep-me.txt")
+ 	writeFile(t, marker, "not a worktree\n")
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove error = %v", err)
+ 	}
+@@ -266,11 +266,11 @@ func TestRemove_ReturnsPairNotFoundWhenNothingRemains(t *testing.T) {
+ 	l := h.Location
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 
+-	if _, err := h.Topology.Remove(l, slug, false, true); err != nil {
++	if _, err := h.Topology.Remove(l, slug, false, true, ""); err != nil {
+ 		t.Fatalf("first Remove error = %v", err)
+ 	}
+ 
+-	_, err := h.Topology.Remove(l, slug, false, true)
++	_, err := h.Topology.Remove(l, slug, false, true, "")
+ 	if !errors.Is(err, fabricengine.ErrPairNotFound) {
+ 		t.Fatalf("second Remove error = %v; want it to wrap ErrPairNotFound", err)
+ 	}
+@@ -283,14 +283,14 @@ func TestRemove_ReturnsPairNotFoundWhenNothingRemains(t *testing.T) {
+ 	if err := fslink.CreateDirLink(retiredPortal, t.TempDir()); err != nil {
+ 		t.Fatalf("plant retired portal link: %v", err)
+ 	}
+-	_, err = h.Topology.Remove(l, slug, false, true)
++	_, err = h.Topology.Remove(l, slug, false, true, "")
+ 	if !errors.Is(err, fabricengine.ErrPairNotFound) {
+ 		t.Fatalf("Remove with only a retired portal link left: error = %v; want it to wrap ErrPairNotFound", err)
+ 	}
+ 
+ 	stray := fabricengine.WorktreePath(l, slug)
+ 	writeFile(t, filepath.Join(stray, "keep-me.txt"), "not a worktree\n")
+-	_, err = h.Topology.Remove(l, slug, false, true)
++	_, err = h.Topology.Remove(l, slug, false, true, "")
+ 	if !errors.Is(err, fabricengine.ErrPairNotFound) {
+ 		t.Fatalf("Remove with only a stray directory left: error = %v; want it to wrap ErrPairNotFound", err)
+ 	}
+diff --git a/internal/fabricengine/remove_guard_integration_test.go b/internal/fabricengine/remove_guard_integration_test.go
+index e40f5a933..9119b5759 100644
+--- a/internal/fabricengine/remove_guard_integration_test.go
++++ b/internal/fabricengine/remove_guard_integration_test.go
+@@ -48,7 +48,7 @@ func TestRemove_RefusesForeignWorktreeWithoutDeletingIt(t *testing.T) {
+ 			return false, false, nil
+ 		},
+ 		func(time.Duration) { sleepCalls++ })
+-	_, err := topology.Remove(l, slug, false, false)
++	_, err := topology.Remove(l, slug, false, false, "")
+ 	if err == nil {
+ 		t.Fatalf("Remove(%q) = nil error; want a refusal naming git's own reason", slug)
+ 	}
+diff --git a/internal/fabricengine/remove_junctions_integration_test.go b/internal/fabricengine/remove_junctions_integration_test.go
+index 56db7993a..82a994071 100644
+--- a/internal/fabricengine/remove_junctions_integration_test.go
++++ b/internal/fabricengine/remove_junctions_integration_test.go
+@@ -74,7 +74,7 @@ func TestRemove_TearsDownNestedJunction(t *testing.T) {
+ 	// Remove loads the repo-wide config, best-effort, to find the nested junctions to tear down.
+ 	// The hub fixture seeds that config, so the name-load finds the configured junctions for any RelPath,
+ 	// and this test exercises the nested teardown rather than the path that removes nothing.
+-	if _, err := topology.Remove(nestedLayout, slug, true, false); err != nil {
++	if _, err := topology.Remove(nestedLayout, slug, true, false, ""); err != nil {
+ 		t.Fatalf("Remove: %v", err)
+ 	}
+ 
+@@ -93,7 +93,7 @@ func TestRemove_TearsDownNestedJunction(t *testing.T) {
+ 		hubforge.AddPairWith(t, h, reanchored, fabricengine.AddOptions{SkipPush: true})
+ 		hubforge.ReanchorPair(t, h, reanchored, "sub")
+ 
+-		result, err := h.Topology.Remove(h.Location, reanchored, true, false)
++		result, err := h.Topology.Remove(h.Location, reanchored, true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+@@ -119,7 +119,7 @@ func TestRemove_TearsDownNestedJunction(t *testing.T) {
+ 		if _, found, err := fabricengine.ReadOriginFor(h.Location, reanchored); found || err != nil {
+ 			t.Errorf("ReadOriginFor() = found %v, err %v; want not found with no error", found, err)
+ 		}
+-		result, err := h.Topology.Remove(h.Location, reanchored, true, false)
++		result, err := h.Topology.Remove(h.Location, reanchored, true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+@@ -172,7 +172,7 @@ func TestRemove_SweepsAnchoredLinksOnSubpathHub(t *testing.T) {
+ 		t.Fatalf("setup: %s is not a junction (isLink=%v err=%v)", lymLink, isLink, linkErr)
+ 	}
+ 
+-	result, err := topology.Remove(l, slug, true, false)
++	result, err := topology.Remove(l, slug, true, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove: %v", err)
+ 	}
+diff --git a/internal/fabricengine/remove_leftoverdir_integration_test.go b/internal/fabricengine/remove_leftoverdir_integration_test.go
+index 5c30624ee..49429eba3 100644
+--- a/internal/fabricengine/remove_leftoverdir_integration_test.go
++++ b/internal/fabricengine/remove_leftoverdir_integration_test.go
+@@ -115,7 +115,7 @@ func TestRemove_FinishesWorktreeDirGitLeftOnDisk(t *testing.T) {
+ 			}
+ 			fabricengine.SetLeftoverSeamForTest(h.Topology, remove, nil)
+ 
+-			res, err := h.Topology.Remove(l, tt.slug, false, false)
++			res, err := h.Topology.Remove(l, tt.slug, false, false, "")
+ 
+ 			rel, relErr := filepath.Rel(l.HubPath, dir)
+ 			if relErr != nil {
+@@ -185,7 +185,7 @@ func TestRemove_FailsOnTaskWorktreeDirRefilledAfterItsRemovalThatCannotBeDeleted
+ 		},
+ 		func(time.Duration) {})
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if !errors.Is(err, fabricengine.ErrStrayPathKept) || !errors.Is(err, fs.ErrPermission) {
+ 		t.Fatalf("Remove error = %v; want it to wrap ErrStrayPathKept and the delete's failure", err)
+ 	}
+diff --git a/internal/fabricengine/remove_localmode_integration_test.go b/internal/fabricengine/remove_localmode_integration_test.go
+index 073c76ac6..ccbd0b1d1 100644
+--- a/internal/fabricengine/remove_localmode_integration_test.go
++++ b/internal/fabricengine/remove_localmode_integration_test.go
+@@ -214,7 +214,7 @@ func TestRemoveLocal(t *testing.T) {
+ 		var housekept []string
+ 		defer fabricengine.SetHousekeepHookForTest(func(s string) { housekept = append(housekept, s) })()
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 		if !reflect.DeepEqual(housekept, []string{slug}) {
+@@ -232,7 +232,7 @@ func TestRemoveLocal(t *testing.T) {
+ 				return err
+ 			}},
+ 			{"Remove", func(h *hubforge.Hub) error {
+-				_, err := h.Topology.Remove(h.Location, slug, false, false)
++				_, err := h.Topology.Remove(h.Location, slug, false, false, "")
+ 				return err
+ 			}},
+ 		}
+diff --git a/internal/fabricengine/remove_records_integration_test.go b/internal/fabricengine/remove_records_integration_test.go
+index 2a694cf50..e702ba930 100644
+--- a/internal/fabricengine/remove_records_integration_test.go
++++ b/internal/fabricengine/remove_records_integration_test.go
+@@ -63,7 +63,7 @@ func TestRemove_CommitsPendingRecordsIntoArchiveTag(t *testing.T) {
+ 	writeFile(t, filepath.Join(weftWorktree, filepath.FromSlash(rel)), "stopped\n")
+ 	warpTip := gitkit.RevParse(t, fabricengine.WorktreePath(l, slug), "HEAD")
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove error = %v", err)
+ 	}
+@@ -107,7 +107,7 @@ func TestRemove_OutOfPathspecSiblingDirtRefusesBeforeAnyMutation(t *testing.T) {
+ 	writeFile(t, filepath.Join(weftWorktree, "_lym", "record.txt"), "a record\n")
+ 	tipBefore := gitkit.RevParse(t, weftWorktree, "HEAD")
+ 
+-	res, err := h.Topology.Remove(l, slug, false, false)
++	res, err := h.Topology.Remove(l, slug, false, false, "")
+ 	if err == nil {
+ 		t.Fatalf("Remove(force=false) with out-of-pathspec sibling dirt = nil error; want the refusal")
+ 	}
+@@ -130,7 +130,7 @@ func TestRemove_OutOfPathspecSiblingDirtRefusesBeforeAnyMutation(t *testing.T) {
+ 		t.Errorf("sibling branch tip = %s after a refused Remove; want unchanged %s", tipAfter, tipBefore)
+ 	}
+ 
+-	forced, err := h.Topology.Remove(l, slug, true, false)
++	forced, err := h.Topology.Remove(l, slug, true, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(force=true) error = %v", err)
+ 	}
+diff --git a/internal/fabricengine/remove_refusal_remedy_integration_test.go b/internal/fabricengine/remove_refusal_remedy_integration_test.go
+index 0892c6679..569a4b518 100644
+--- a/internal/fabricengine/remove_refusal_remedy_integration_test.go
++++ b/internal/fabricengine/remove_refusal_remedy_integration_test.go
+@@ -49,7 +49,7 @@ func TestRemove_DirtyRefusalLeavesPairIntact(t *testing.T) {
+ 		t.Fatalf("dirty %s: %v", tracked, err)
+ 	}
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err == nil {
+ 		t.Fatalf("Remove(force=false) on a dirty pair returned nil error; want a refusal")
+ 	}
+@@ -88,7 +88,7 @@ func TestRemove_WarpStatusProbeFailurePushesNoTag(t *testing.T) {
+ 		t.Fatalf("overwrite %s: %v", gitFile, err)
+ 	}
+ 
+-	_, err := topology.Remove(l, slug, false, false)
++	_, err := topology.Remove(l, slug, false, false, "")
+ 	if err == nil {
+ 		t.Fatalf("Remove with a failing status probe returned nil error; want a refusal")
+ 	}
+@@ -157,7 +157,7 @@ func TestRemove_StatusFailureNamesPathAndCommandOnce(t *testing.T) {
+ 		t.Fatalf("create %s: %v", notACheckout, err)
+ 	}
+ 
+-	_, err := topology.Remove(l, slug, false, false)
++	_, err := topology.Remove(l, slug, false, false, "")
+ 	if err == nil {
+ 		t.Fatalf("Remove on a non-checkout directory returned nil error; want a failure from the dirtiness probe")
+ 	}
+diff --git a/internal/fabricengine/remove_remotetask_integration_test.go b/internal/fabricengine/remove_remotetask_integration_test.go
+index 92a44ef3b..45a209ccf 100644
+--- a/internal/fabricengine/remove_remotetask_integration_test.go
++++ b/internal/fabricengine/remove_remotetask_integration_test.go
+@@ -60,7 +60,7 @@ func TestRemove_RemoteDeletesSquashLandedTaskBranchOnOrigin(t *testing.T) {
+ 	h := pushedPair(t, slug)
+ 	squashLand(t, h, slug)
+ 
+-	res, err := h.Topology.Remove(h.Location, slug, false, true)
++	res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q) error = %v", slug, err)
+ 	}
+@@ -86,7 +86,7 @@ func TestRemove_RemoteKeepsUnlandedTaskBranchOnOrigin(t *testing.T) {
+ 	const slug = "rt-unlanded"
+ 	h := pushedPair(t, slug)
+ 
+-	res, err := h.Topology.Remove(h.Location, slug, false, true)
++	res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q) error = %v; a kept branch is not a failure", slug, err)
+ 	}
+@@ -115,7 +115,7 @@ func TestRemove_WithoutRemoteLeavesTaskBranchOnOrigin(t *testing.T) {
+ 	h := pushedPair(t, slug)
+ 	squashLand(t, h, slug)
+ 
+-	res, err := h.Topology.Remove(h.Location, slug, false, false)
++	res, err := h.Topology.Remove(h.Location, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q) error = %v", slug, err)
+ 	}
+diff --git a/internal/fabricengine/remove_reserved_integration_test.go b/internal/fabricengine/remove_reserved_integration_test.go
+index bca581228..a8c7669b9 100644
+--- a/internal/fabricengine/remove_reserved_integration_test.go
++++ b/internal/fabricengine/remove_reserved_integration_test.go
+@@ -45,7 +45,7 @@ func TestRemove_RefusesReservedSlugsAndLeavesThemOnDisk(t *testing.T) {
+ 			t.Fatalf("seed %s: %v", marker, err)
+ 		}
+ 
+-		_, err := topology.Remove(l, slug, true, false)
++		_, err := topology.Remove(l, slug, true, false, "")
+ 		if err == nil {
+ 			t.Errorf("Remove(%q) = nil error; want an invalid-slug refusal", slug)
+ 		} else if !errors.Is(err, fabricengine.ErrInvalidSlug) {
+diff --git a/internal/fabricengine/remove_siblingdirty_integration_test.go b/internal/fabricengine/remove_siblingdirty_integration_test.go
+index 89de171f7..1bddc41ff 100644
+--- a/internal/fabricengine/remove_siblingdirty_integration_test.go
++++ b/internal/fabricengine/remove_siblingdirty_integration_test.go
+@@ -40,7 +40,7 @@ func TestRemove_UntrackedDriveReportIsCommittedAndArchived(t *testing.T) {
+ 		t.Fatalf("write stop report: %v", err)
+ 	}
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(force=false) on a pair with an uncommitted drive report error = %v; want it committed and archived", err)
+ 	}
+diff --git a/internal/fabricengine/remove_warpbranch_integration_test.go b/internal/fabricengine/remove_warpbranch_integration_test.go
+index 820edc70a..938b705cf 100644
+--- a/internal/fabricengine/remove_warpbranch_integration_test.go
++++ b/internal/fabricengine/remove_warpbranch_integration_test.go
+@@ -48,7 +48,7 @@ func TestRemove_UnlandedWarpBranchIsKept(t *testing.T) {
+ 			}
+ 			warpBranchCommit(t, l, slug, "work.txt")
+ 
+-			res, err := topology.Remove(l, slug, force, false)
++			res, err := topology.Remove(l, slug, force, false, "")
+ 			if err != nil {
+ 				t.Fatalf("Remove(%q, force=%v) error = %v; a kept branch is not a failure", slug, force, err)
+ 			}
+diff --git a/internal/fabricengine/removeremote_integration_test.go b/internal/fabricengine/removeremote_integration_test.go
+index 634411a86..8c4a228f2 100644
+--- a/internal/fabricengine/removeremote_integration_test.go
++++ b/internal/fabricengine/removeremote_integration_test.go
+@@ -38,7 +38,7 @@ func TestRemove_RemoteTrueDeletesWeftBranchOnRemote(t *testing.T) {
+ 	topology := h.Topology
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 
+-	res, err := topology.Remove(l, slug, false, true)
++	res, err := topology.Remove(l, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q, remote=true) error = %v", slug, err)
+ 	}
+@@ -88,7 +88,7 @@ func TestRemove_LeasedWeftDelete(t *testing.T) {
+ 			movedTip = gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 		})
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v; want a kept branch to leave the removal successful", err)
+ 		}
+@@ -109,7 +109,7 @@ func TestRemove_LeasedWeftDelete(t *testing.T) {
+ 		deletes := 0
+ 		fabricengine.SetRemoveBeforeWeftDeleteHookForTest(t, func() { deletes++ })
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -128,7 +128,7 @@ func TestRemove_LeasedWeftDelete(t *testing.T) {
+ 			originAtDelete = gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 		})
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -154,7 +154,7 @@ func TestRemove_LeasedWeftDelete(t *testing.T) {
+ 			originAtDelete = gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 		})
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -177,7 +177,7 @@ func TestRemove_LeasedWeftDelete(t *testing.T) {
+ 			movedTip = gitkit.RevParse(t, h.RecordsBare, weftBranch)
+ 		})
+ 
+-		res, err := h.Topology.Remove(h.Location, slug, false, true)
++		res, err := h.Topology.Remove(h.Location, slug, false, true, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove error = %v", err)
+ 		}
+@@ -206,7 +206,7 @@ func TestRemove_RemoteFalseLeavesRemoteBranchIntact(t *testing.T) {
+ 	topology := h.Topology
+ 	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{})
+ 
+-	res, err := topology.Remove(l, slug, false, false)
++	res, err := topology.Remove(l, slug, false, false, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q, remote=false) error = %v", slug, err)
+ 	}
+@@ -235,7 +235,7 @@ func TestRemove_NoOriginUnderRemoteReportsSkipReasonAndCompletesTeardown(t *test
+ 
+ 	mustRemoveOrigin(t, weftRoot)
+ 
+-	res, err := topology.Remove(l, slug, false, true)
++	res, err := topology.Remove(l, slug, false, true, "")
+ 	if err != nil {
+ 		t.Fatalf("Remove(%q, remote=true) error = %v", slug, err)
+ 	}
+diff --git a/internal/fabricengine/scratchlink_integration_test.go b/internal/fabricengine/scratchlink_integration_test.go
+index a1361182e..85db67dc9 100644
+--- a/internal/fabricengine/scratchlink_integration_test.go
++++ b/internal/fabricengine/scratchlink_integration_test.go
+@@ -721,7 +721,7 @@ func TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval(t *testing.T) {
+ 			t.Fatalf("write through the link: %v", err)
+ 		}
+ 
+-		result, err := h.Topology.Remove(l, slug, true, false)
++		result, err := h.Topology.Remove(l, slug, true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove = %v; want nil", err)
+ 		}
+@@ -754,7 +754,7 @@ func TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval(t *testing.T) {
+ 		root, _ := scratchPaths(l, slug)
+ 		replaceLinkWithRealDirectory(t, root)
+ 
+-		result, err := h.Topology.Remove(l, slug, true, false)
++		result, err := h.Topology.Remove(l, slug, true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove = %v; want nil", err)
+ 		}
+@@ -784,7 +784,7 @@ func TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval(t *testing.T) {
+ 			t.Fatalf("link %s: %v", root, err)
+ 		}
+ 
+-		result, err := h.Topology.Remove(l, slug, true, false)
++		result, err := h.Topology.Remove(l, slug, true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove = %v; want nil", err)
+ 		}
+diff --git a/internal/fabricengine/teardownlock_integration_test.go b/internal/fabricengine/teardownlock_integration_test.go
+index 030a93b49..e427c8429 100644
+--- a/internal/fabricengine/teardownlock_integration_test.go
++++ b/internal/fabricengine/teardownlock_integration_test.go
+@@ -102,7 +102,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		}
+ 		defer held.Release()
+ 
+-		_, err = h.Topology.Remove(h.Location, slug, false, false)
++		_, err = h.Topology.Remove(h.Location, slug, false, false, "")
+ 		if !errors.Is(err, fabricengine.ErrPairPushRunning) {
+ 			t.Fatalf("Remove with a shared holder = %v; want an error wrapping ErrPairPushRunning", err)
+ 		}
+@@ -119,6 +119,23 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("RemoveWhoseWaitRunsOutNamesTheGivenRerun", func(t *testing.T) {
++		const rerun = "lym batten cancel " + slug + " --remove"
++		h := newPairHub(t)
++		holdTeardownLock(t, h, slug)
++
++		_, err := h.Topology.Remove(h.Location, slug, false, false, rerun)
++		if !errors.Is(err, fabricengine.ErrPairPushRunning) {
++			t.Fatalf("Remove beside an exclusive holder = %v; want an error wrapping ErrPairPushRunning", err)
++		}
++		if want := "re-run `" + rerun + "`"; !strings.Contains(err.Error(), want) {
++			t.Errorf("Remove error = %q; want it to name %q", err.Error(), want)
++		}
++		if strings.Contains(err.Error(), "lym fabric remove") {
++			t.Errorf("Remove error = %q; want it not to name `lym fabric remove`", err.Error())
++		}
++	})
++
+ 	t.Run("PushChildHoldsTheLockSharedForItsWholeRun", func(t *testing.T) {
+ 		h := newPairHub(t)
+ 		parked, release, done := make(chan struct{}), make(chan struct{}), make(chan error, 1)
+@@ -133,7 +150,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		}()
+ 		<-parked
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); !errors.Is(err, fabricengine.ErrPairPushRunning) {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); !errors.Is(err, fabricengine.ErrPairPushRunning) {
+ 			t.Fatalf("Remove beside a parked push child = %v; want an error wrapping ErrPairPushRunning", err)
+ 		}
+ 
+@@ -141,7 +158,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		if err := <-done; err != nil {
+ 			t.Fatalf("DetachedPush error = %v; want nil", err)
+ 		}
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove after the push child returned error = %v; want nil", err)
+ 		}
+ 	})
+@@ -155,7 +172,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 			childErr, childMutations = err, res.Mutated().Len()
+ 		})
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove error = %v; want nil", err)
+ 		}
+ 		if childErr != nil {
+@@ -168,7 +185,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 
+ 	t.Run("PushChildAfterRemoveRecreatesNothing", func(t *testing.T) {
+ 		h := newPairHub(t)
+-		if _, err := h.Topology.Remove(h.Location, slug, false, true); err != nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, true, ""); err != nil {
+ 			t.Fatalf("Remove(remote) error = %v; want nil", err)
+ 		}
+ 
+@@ -189,7 +206,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		t.Cleanup(fabricengine.SetRemoveAfterLockHookForTest(func() error { return errors.New("injected failure after the teardown lock") }))
+ 		recorder := fabricengine.SwapPushRecorderForTest(t)
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err == nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err == nil {
+ 			t.Fatalf("Remove with a failure after the lock = nil error; want the injected failure")
+ 		}
+ 
+@@ -208,7 +225,7 @@ func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T) {
+ 		gitkit.MustRun(t, mustRecordsRepoRoot(t, h.Location), "git", "worktree", "lock", h.PairRecordsSibling(slug))
+ 		recorder := fabricengine.SwapPushRecorderForTest(t)
+ 
+-		if _, err := h.Topology.Remove(h.Location, slug, false, false); err == nil {
++		if _, err := h.Topology.Remove(h.Location, slug, false, false, ""); err == nil {
+ 			t.Fatalf("Remove with a locked records worktree = nil error; want the weft teardown failure")
+ 		}
+ 
+diff --git a/internal/fabricengine/verbs_regenerate_integration_test.go b/internal/fabricengine/verbs_regenerate_integration_test.go
+index 6a350a048..d5235362f 100644
+--- a/internal/fabricengine/verbs_regenerate_integration_test.go
++++ b/internal/fabricengine/verbs_regenerate_integration_test.go
+@@ -54,7 +54,7 @@ func TestVerbsRegenerateHubWorkspace(t *testing.T) {
+ 		hubforge.AddPairWith(t, h, "locked-pair", fabricengine.AddOptions{SkipPush: true})
+ 		gitkit.MustRun(t, h.PrimeRecords(), "git", "worktree", "lock", fabricengine.RecordsWorktreePath(h.Location, "locked-pair"))
+ 
+-		if _, err := h.Topology.Remove(h.Location, "locked-pair", true, false); err == nil {
++		if _, err := h.Topology.Remove(h.Location, "locked-pair", true, false, ""); err == nil {
+ 			t.Fatal("Remove error = nil; want the failed weft teardown")
+ 		}
+ 
+@@ -113,7 +113,7 @@ func TestVerbsRegenerateHubWorkspace(t *testing.T) {
+ 		hubforge.AddPairWith(t, h, "b-task", fabricengine.AddOptions{SkipPush: true})
+ 		assertFoldersAndNoPortals(t, h, path, prime, "Bolt", "a-task", "b-task")
+ 
+-		removed, err := h.Topology.Remove(h.Location, "a-task", true, false)
++		removed, err := h.Topology.Remove(h.Location, "a-task", true, false, "")
+ 		if err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+@@ -209,7 +209,7 @@ func TestVerbsRegenerateHubWorkspace(t *testing.T) {
+ 		plantTrackedDirt(t, h.PairCodeWorktree("dirty-pair"), "dirtyWarpTracked")
+ 		removeWorkspaceFile(t, h)
+ 
+-		if _, err := h.Topology.Remove(h.Location, "dirty-pair", false, false); err == nil {
++		if _, err := h.Topology.Remove(h.Location, "dirty-pair", false, false, ""); err == nil {
+ 			t.Fatal("Remove error = nil; want the dirty worktree refusal")
+ 		}
+ 		assertNoWorkspaceFile(t, h)
+diff --git a/internal/fabricengine/warpexclude_integration_test.go b/internal/fabricengine/warpexclude_integration_test.go
+index 9fb4bba0b..c43418193 100644
+--- a/internal/fabricengine/warpexclude_integration_test.go
++++ b/internal/fabricengine/warpexclude_integration_test.go
+@@ -93,7 +93,7 @@ func TestSeedWarpExclude_SeedsWarpOnlyOnce(t *testing.T) {
+ 			}
+ 		}
+ 
+-		if _, err := h.Topology.Remove(l, slug, false, false); err != nil {
++		if _, err := h.Topology.Remove(l, slug, false, false, ""); err != nil {
+ 			t.Fatalf("Remove: %v", err)
+ 		}
+ 		requireWarpExcludeOnce(t, h.PrimeWorktree())
+diff --git a/internal/ideengine/spawn_hub_integration_test.go b/internal/ideengine/spawn_hub_integration_test.go
+index de7d7b465..f920a0997 100644
+--- a/internal/ideengine/spawn_hub_integration_test.go
++++ b/internal/ideengine/spawn_hub_integration_test.go
+@@ -421,7 +421,7 @@ func checkBeamOpensBeamWorkspace(t *testing.T, h *hubforge.Hub, slug string) {
+ 	hubforge.AddPairWith(t, h, child, fabricengine.AddOptions{Parent: slug})
+ 	// The forked task is removed on cleanup, since the hub workspace check of a later step lists every pair of the hub.
+ 	t.Cleanup(func() {
+-		if _, err := h.Topology.Remove(l, child, true, false); err != nil {
++		if _, err := h.Topology.Remove(l, child, true, false, ""); err != nil {
+ 			t.Errorf("remove the task forked from the beam: %v", err)
+ 		}
+ 	})
+diff --git a/internal/pairteardown/removethrough_test.go b/internal/pairteardown/removethrough_test.go
+new file mode 100644
+index 000000000..1edeed00d
+--- /dev/null
++++ b/internal/pairteardown/removethrough_test.go
+@@ -0,0 +1,44 @@
++// removethrough_test.go pins what a teardown request hands the pair's removal.
++
++package pairteardown
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// recordingRemover is a pairRemover that records the arguments of its origin removal.
++type recordingRemover struct {
++	slug          string
++	force, remote bool
++	rerun         string
++}
++
++func (r *recordingRemover) Remove(_ *lymcwd.Location, slug string, force, remote bool, rerun string) (fabricengine.RemoveResult, error) {
++	r.slug, r.force, r.remote, r.rerun = slug, force, remote, rerun
++	return fabricengine.RemoveResult{}, nil
++}
++
++func (r *recordingRemover) RemoveLocal(*lymcwd.Location, string, bool) (fabricengine.RemoveResult, error) {
++	return fabricengine.RemoveResult{}, nil
++}
++
++func TestRemoveThrough_HandsTheRequestToTheOriginRemoval(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	got := &recordingRemover{}
++	req := Request{Slug: "slug", Force: true, Remote: true, Rerun: "lym batten cancel slug --remove"}
++
++	if _, err := removeThrough(got, nil, req); err != nil {
++		t.Fatalf("removeThrough() error = %v; want nil", err)
++	}
++
++	want := recordingRemover{slug: "slug", force: true, remote: true, rerun: "lym batten cancel slug --remove"}
++	if *got != want {
++		t.Errorf("removeThrough() asked for %+v; want %+v", *got, want)
++	}
++}
+diff --git a/internal/pairteardown/teardown.go b/internal/pairteardown/teardown.go
+index 51ba31f96..aa8291c1a 100644
+--- a/internal/pairteardown/teardown.go
++++ b/internal/pairteardown/teardown.go
+@@ -70,6 +70,9 @@ type Request struct {
+ 	// Verdict is the caller's origin reconcile verdict for the slug, empty when it ran none.
+ 	// An ended or owned_elsewhere verdict skips the driver checks.
+ 	Verdict fabricengine.EntryState
++	// Rerun is the caller's command that retries the removal.
++	// A held teardown lock's refusal and the pending-teardown record name it; empty names `lym fabric remove <slug>`.
++	Rerun string
+ }
+ 
+ // SessionResult reports EndSession's outcome.
+@@ -238,10 +241,7 @@ func New(prime *lymcwd.Location) (*Teardown, error) {
+ 		if err != nil {
+ 			return fabricengine.RemoveResult{}, err
+ 		}
+-		if req.Local {
+-			return top.RemoveLocal(prime, req.Slug, req.Force)
+-		}
+-		return top.Remove(prime, req.Slug, req.Force, req.Remote)
++		return removeThrough(top, prime, req)
+ 	}
+ 	t.removeStray = func(slug string) (bool, error) {
+ 		top, err := t.topology()
+@@ -260,6 +260,20 @@ func New(prime *lymcwd.Location) (*Teardown, error) {
+ 	return t, nil
+ }
+ 
++// pairRemover removes a pair, with its origin steps or locally.
++type pairRemover interface {
++	Remove(l *lymcwd.Location, slug string, force, remote bool, rerun string) (fabricengine.RemoveResult, error)
++	RemoveLocal(l *lymcwd.Location, slug string, force bool) (fabricengine.RemoveResult, error)
++}
++
++// removeThrough asks remover for the removal req names.
++func removeThrough(remover pairRemover, prime *lymcwd.Location, req Request) (fabricengine.RemoveResult, error) {
++	if req.Local {
++		return remover.RemoveLocal(prime, req.Slug, req.Force)
++	}
++	return remover.Remove(prime, req.Slug, req.Force, req.Remote, req.Rerun)
++}
++
+ // EndSession ends a pair's work and session ahead of its removal.
+ // It runs in order: it waits for the driver to go quiet, probes for removal refusals, and ends the registered processes;
+ // then it ends the loop and step tree, waits for the run lock, and ends the session.
+diff --git a/internal/pairteardown/teardown_enforcement_test.go b/internal/pairteardown/teardown_enforcement_test.go
+index 50aa19fee..ea9c515d4 100644
+--- a/internal/pairteardown/teardown_enforcement_test.go
++++ b/internal/pairteardown/teardown_enforcement_test.go
+@@ -14,12 +14,14 @@ import (
+ const (
+ 	fabricEnginePath = "internal/fabricengine"
+ 	retiredHelper    = "RemovePairBranch"
+-	removeArgCount   = 4
++	removeArgCount   = 5
+ 	minScannedFiles  = 100
+ )
+ 
+-// TestEnforcement_PairTeardownChokepoint is the Pair Teardown Invariant's tripwire, not a completeness proof:
+-// it fails on a four-argument Remove call in a production file importing internal/fabricengine outside the two owning packages, and on any remaining reference to the retired RemovePairBranch helper.
++// TestEnforcement_PairTeardownChokepoint is the Pair Teardown Invariant's tripwire, not a completeness proof.
++// It fails on a five-argument Remove call in a production file importing internal/fabricengine;
++// the two owning packages are exempt.
++// It also fails on any remaining reference to the retired RemovePairBranch helper.
+ //
+ //lym:guard
+ func TestEnforcement_PairTeardownChokepoint(t *testing.T) {
+@@ -46,12 +48,12 @@ func scanSource(t *testing.T, f *scankit.File) []string {
+ 		return findings
+ 	}
+ 	for range removeCalls(file) {
+-		findings = append(findings, f.Rel+": calls Remove with four arguments outside internal/pairteardown and internal/fabricengine")
++		findings = append(findings, f.Rel+": calls Remove with five arguments outside internal/pairteardown and internal/fabricengine")
+ 	}
+ 	return findings
+ }
+ 
+-// removeCalls returns every call of a method named Remove with four arguments.
++// removeCalls returns every call of a method named Remove with five arguments.
+ func removeCalls(file *ast.File) []*ast.CallExpr {
+ 	var calls []*ast.CallExpr
+ 	ast.Inspect(file, func(n ast.Node) bool {
+@@ -82,12 +84,12 @@ func importsFabricEngine(file *ast.File) bool {
+ 
+ // TestEnforcement_PairTeardownScanIsNotVacuous feeds the scan one offending and one clean snippet.
+ //
+-//testtiming:keep guard self-check: pins that the chokepoint scan fires on an offending four-argument Remove call, which no other test of the package exercises
++//testtiming:keep guard self-check: pins that the chokepoint scan fires on an offending five-argument Remove call, which no other test of the package exercises
+ func TestEnforcement_PairTeardownScanIsNotVacuous(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const offending = `package x
+ import "github.com/Knatte18/loomyard/internal/fabricengine"
+-func f(top *fabricengine.Topology) { top.Remove(nil, "s", false, false) }
++func f(top *fabricengine.Topology) { top.Remove(nil, "s", false, false, "") }
+ `
+ 	const clean = `package x
+ import "github.com/Knatte18/loomyard/internal/fabricengine"
+diff --git a/pattern/PATTERN-pair-remote.md b/pattern/PATTERN-pair-remote.md
+index a70b3df14..cbefe9230 100644
+--- a/pattern/PATTERN-pair-remote.md
++++ b/pattern/PATTERN-pair-remote.md
+@@ -97,7 +97,7 @@ and its removal leaves the board claim to the cancel, which clears it.
+ - `internal/pairteardown` stays inside the fabric-boundary entry:
+   it names no side and passes `fabricengine.RemoveResult` through whole.
+ - Enforced by `internal/pairteardown/teardown_enforcement_test.go`, a tripwire and not a completeness proof.
+-  It flags a four-argument `Remove` call in a file importing `internal/fabricengine`.
++  It flags a five-argument `Remove` call in a file importing `internal/fabricengine`.
+   It also flags any reference to `RemovePairBranch`, a name that stays retired.
+ 
+ ### Batten bookend
