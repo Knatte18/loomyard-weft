@@ -1,0 +1,17 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "5f0e38043c3673ee0ed15790edb95fa2a235dfa8dbb7c1b657b73fee3ecb6ddc",
+  "added_decisions": [
+    {
+      "title": "Episode stamp counts folded repeats",
+      "digest": "07c6b97dfc9f62e21f194fa5de76256870106277d17cbbb8d9ffa0c2cf770d90"
+    },
+    {
+      "title": "Gate-hold line caps listed processes",
+      "digest": "0742997cadcc0ca3074c61a91b11d96458ce1a5f9c0b82623295cc1a12efa324"
+    }
+  ]
+}
