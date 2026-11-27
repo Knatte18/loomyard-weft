@@ -1,6 +1,6 @@
 # Close a task's scope at Code-Review, and catch earlier what a PR review found
 
-`scope-and-earlier-checks` · Task · enhancement, loom, burler · running · Code-Bouncer
+`scope-and-earlier-checks` · Task · enhancement, loom, burler · running · Drift-Recheck
 
 This task builds the scope note and items 3 to 6 of the Describe-text note's Idea; items 1 and 2 landed with `describe-review-and-sync`.
 
