@@ -6,3 +6,9 @@
 - Card 4: remove the "Bound: ... written with no such check" lines in internal/gatecli/doc.go's Coverage maps section.
 - `testMapRun.takeSlot` still takes the `acquire` func that only `holdSlot` now passes.
 - Hub test fixtures: append to `info/exclude`, never overwrite it, or the prime reads dirty (no green record, whole diff scope).
+
+## Batch 02-testcover-planning-delete, attempt 1
+
+The testcover selector, upkeep planning, declaration compare, Map.FailedAt and Toolchain.GoRoot are gone,
+and cmd/lym's test-only-code allowlist holds no map planning entry.
+`Map.Failure` and `Map.BuildFailure` stay as record fields; no method reads them together any more.

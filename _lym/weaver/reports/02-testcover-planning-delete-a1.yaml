@@ -1,0 +1,6 @@
+status: OK
+head_sha: 090d0f6d2b2b9d479907fa82662a5911f08d62bc
+journal: |
+  The testcover selector, upkeep planning, declaration compare, Map.FailedAt and Toolchain.GoRoot are gone,
+  and cmd/lym's test-only-code allowlist holds no map planning entry.
+  `Map.Failure` and `Map.BuildFailure` stay as record fields; no method reads them together any more.

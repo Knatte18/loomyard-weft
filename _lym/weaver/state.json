@@ -75,11 +75,10 @@
     },
     {
       "cards": [
-        "02-testcover-planning-delete",
-        "03-map-run-tier-bounds"
+        "02-testcover-planning-delete"
       ],
       "profile": "wide",
-      "estimate": 251322,
+      "estimate": 106634,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -95,7 +94,7 @@
         },
         "position": 2,
         "startup": 39600,
-        "read_union": 103140,
+        "read_union": 33824,
         "cards": [
           {
             "card": 2,
@@ -115,39 +114,18 @@
             },
             "messages": 109.5,
             "written": 33210
-          },
-          {
-            "card": 3,
-            "card_text": 1572,
-            "reads": {
-              "file:docs/overview.md": 24744,
-              "file:internal/gatecli/doc.go": 14988,
-              "file:internal/gatecli/prebuild.go": 2640,
-              "file:internal/gateslot/doc.go": 3684,
-              "file:pattern/PATTERN-gate-slot.md": 1788,
-              "file:pattern/PATTERN-test-speed.md": 3900,
-              "package:docs": 2000,
-              "package:internal/gatecli": 2000,
-              "package:internal/gateslot": 2000,
-              "package:pattern": 2000,
-              "tests:docs": 2000,
-              "tests:internal/gatecli": 2000,
-              "tests:internal/gateslot": 2000,
-              "tests:pattern": 2000
-            },
-            "messages": 246,
-            "written": 75372
           }
         ]
       }
     },
     {
       "cards": [
+        "03-map-run-tier-bounds",
         "04-map-run-clean-checks",
         "05-redundant-map-way-forward"
       ],
       "profile": "wide",
-      "estimate": 159364,
+      "estimate": 247586,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -163,15 +141,37 @@
         },
         "position": 3,
         "startup": 46600,
-        "read_union": 56748,
+        "read_union": 70048,
         "cards": [
+          {
+            "card": 3,
+            "card_text": 1572,
+            "reads": {
+              "file:docs/overview.md": 24732,
+              "file:internal/gatecli/doc.go": 14688,
+              "file:internal/gatecli/prebuild.go": 2640,
+              "file:internal/gateslot/doc.go": 3648,
+              "file:pattern/PATTERN-gate-slot.md": 1788,
+              "file:pattern/PATTERN-test-speed.md": 3864,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 245.5,
+            "written": 75222
+          },
           {
             "card": 4,
             "card_text": 888,
             "reads": {
-              "file:docs/overview.md": 24744,
-              "file:internal/gatecli/doc.go": 14988,
-              "file:pattern/PATTERN-test-speed.md": 3900,
+              "file:docs/overview.md": 24732,
+              "file:internal/gatecli/doc.go": 14688,
+              "file:pattern/PATTERN-test-speed.md": 3864,
               "package:docs": 2000,
               "package:internal/gatecli": 2000,
               "package:pattern": 2000,
@@ -179,19 +179,19 @@
               "tests:internal/gatecli": 2000,
               "tests:pattern": 2000
             },
-            "messages": 144.5,
-            "written": 44238
+            "messages": 144,
+            "written": 44088
           },
           {
             "card": 5,
             "card_text": 228,
             "reads": {
-              "file:internal/gatecli/doc.go": 14988,
+              "file:internal/gatecli/doc.go": 14688,
               "package:internal/gatecli": 2000,
               "tests:internal/gatecli": 2000
             },
-            "messages": 38.5,
-            "written": 11778
+            "messages": 38,
+            "written": 11628
           }
         ]
       }
@@ -226,6 +226,31 @@
       "cardShas": [
         "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
       ]
+    },
+    "2": {
+      "slug": "testcover-planning-delete",
+      "cards": [
+        "02-testcover-planning-delete"
+      ],
+      "cardHashes": {
+        "02-testcover-planning-delete": "21feb3981bbbd2dccfc3a1b7d27158431f457b5cd171abe128ae862ab022fd1c"
+      },
+      "startSha": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:51:44Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-testcover-planning-delete",
+        "status": "done",
+        "head_sha": "090d0f6d2b2b9d479907fa82662a5911f08d62bc",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go"
+        ]
+      },
+      "cardShas": [
+        "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
+      ]
     }
   },
   "attempts": [
@@ -238,10 +263,21 @@
       "strandName": "ly:weaver-bench-b4:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T13:30:17Z"
+    },
+    {
+      "batch": 2,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b4/_lym/weaver/reports/02-testcover-planning-delete-a1.yaml",
+      "strandGuid": "33bb78bbcbe4904356db2f0c28acb235",
+      "strandName": "ly:weaver-bench-b4:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:51:44Z"
     }
   ],
   "batchEnds": {
-    "1": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
+    "1": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f",
+    "2": "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
   },
-  "lastEnd": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
+  "lastEnd": "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
 }
