@@ -1,6 +1,6 @@
 # Background pushes retry quietly; landing pushes and reads retry instead of failing
 
-`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby · landing · Finalize
+`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby · done
 
 Decision record: [Sketch](decision-push-retry-not-halt.md)
 
