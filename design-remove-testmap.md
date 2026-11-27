@@ -1,6 +1,6 @@
 # Remove the coverage maps and every user of them, keeping the redundancy sweep and red-first
 
-`remove-testmap` · Task · enhancement, testmap, gate, darn, loom, stencil, cleanup · running · PR-Review
+`remove-testmap` · Task · enhancement, testmap, gate, darn, loom, stencil, cleanup · landing · Finalize
 
 ## Decision (operator, 2026-11-27)
 
