@@ -1,6 +1,6 @@
 # Finalize blames the fixer session for a push of origin/<task branch> it did not make
 
-`finalize-fixer-halt-blame` · Task · bug, landing · draft
+`finalize-fixer-halt-blame` · Task · bug, landing
 
 Depends on: [`describe-review-and-sync`](design-describe-review-and-sync.md)
 
