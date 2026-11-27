@@ -2,6 +2,8 @@
 
 `finalize-fixer-halt-blame` · Task · bug, landing · draft
 
+Depends on: [`describe-review-and-sync`](design-describe-review-and-sync.md)
+
 Imported from [issue #271](https://github.com/Knatte18/loomyard/issues/271).
 
 ## What happened
