@@ -1,6 +1,6 @@
 # Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core
 
-`fabric-core-merge-landing` · Task · enhancement, fabric, testkit, shed, batten, landing · draft
+`fabric-core-merge-landing` · Task · enhancement, fabric, testkit, shed, batten, landing
 
 Decision record: [Sketch](decision-fabric-core-merge-landing.md)
 

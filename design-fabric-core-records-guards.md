@@ -1,6 +1,6 @@
 # Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure
 
-`fabric-core-records-guards` · Task · enhancement, fabric, testkit, pattern, docs · draft
+`fabric-core-records-guards` · Task · enhancement, fabric, testkit, pattern, docs
 
 Decision record: [Sketch](decision-fabric-core-records-guards.md)
 

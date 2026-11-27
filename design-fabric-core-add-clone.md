@@ -1,6 +1,6 @@
 # Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut
 
-`fabric-core-add-clone` · Task · enhancement, fabric, testkit, ide, batten, heddle, reconcile, shed · draft
+`fabric-core-add-clone` · Task · enhancement, fabric, testkit, ide, batten, heddle, reconcile, shed
 
 Decision record: [Sketch](decision-fabric-core-add-clone.md)
 

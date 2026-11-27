@@ -1,6 +1,6 @@
 # Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric
 
-`fabric-core-pull-replay` · Task · enhancement, fabric, testkit, shed, stencil, board, heddle · draft
+`fabric-core-pull-replay` · Task · enhancement, fabric, testkit, shed, stencil, board, heddle
 
 Decision record: [Sketch](decision-fabric-core-pull-replay.md)
 

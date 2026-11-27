@@ -1,6 +1,6 @@
 # Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core
 
-`fabric-core-teardown` · Task · enhancement, fabric, testkit, shed, landing · draft
+`fabric-core-teardown` · Task · enhancement, fabric, testkit, shed, landing
 
 Decision record: [Sketch](decision-fabric-core-teardown.md)
 
