@@ -1,15 +1,15 @@
 {
   "runGuid": "dde026a91b8266221c038c16bc327bd7",
-  "planFingerprint": "bc01b2c0b294b5896dc6b548ddd2efd319f659bf9044d82b4f3cc2af5dc8832f",
+  "planFingerprint": "7ef190b9ac620b954c7de2cf6e773e0bac64c417ea4bfb1243d18904319d29f0",
   "planFileHashes": {
     "00-overview.md": "47787b29afc8aae5ab6cb16198764bf2a6f6536d7b0bb7af0b113a1f7b663d28",
     "01-run-watch-setting.md": "cf96ad995a71383bea9e8c4132de9f3d8ee5628c756574a67277b683097dd484",
     "02-run-view-history.md": "b6adc4af7d0d27d1ad58382e5069da38c15e0f5df0a3ff1aaf0b0505d7ff6300",
     "03-run-watch-engine.md": "a497bf72807bb42da1e5da4fd24e8e648f9e86af6fb9293e53e9c0e2e884fad9",
     "04-run-watch-wiring.md": "83fec3b74a0b5d084c31c30057f59310ad205e4116236204af7bbc4133e5441c",
-    "05-gate-holder-marker.md": "800a883b6f32a242fc05ae0b3f153ddfa069c7097de136a383c4e45e5b27ce35",
-    "06-gate-hold-engine.md": "f06b313fca77af92c10bfc9a2eab83d0c75e0a03db427b50a3d1708f17108608",
-    "07-gate-hold-wiring.md": "6b6826fcbf25435d2e584e0ae00978c876ef8547f37c118d908216daf6b450bf"
+    "05-gate-holder-marker.md": "a884cb9e9a0bd6b2b7118a031275a8a1c035bd9f375968b87e0b27e32ad28d27",
+    "06-gate-hold-engine.md": "d57e0699e137874b95da6bfe345a57cfbf664707fe325c84cb5b42620c29d087",
+    "07-gate-hold-wiring.md": "59ff96c1640ee945598d5ce50704c09ad5d808cc7a49b9a94a465f5121744f4b"
   },
   "planOverviewFrameHash": "746c071943dbee36de05d86c34a66cb1d622eb54a7172ffa1e228c72979ee50a",
   "partition": [
@@ -229,26 +229,47 @@
       ],
       "cardHashes": {
         "04-run-watch-wiring": "83fec3b74a0b5d084c31c30057f59310ad205e4116236204af7bbc4133e5441c",
-        "05-gate-holder-marker": "800a883b6f32a242fc05ae0b3f153ddfa069c7097de136a383c4e45e5b27ce35",
-        "06-gate-hold-engine": "f06b313fca77af92c10bfc9a2eab83d0c75e0a03db427b50a3d1708f17108608",
-        "07-gate-hold-wiring": "6b6826fcbf25435d2e584e0ae00978c876ef8547f37c118d908216daf6b450bf"
+        "05-gate-holder-marker": "a884cb9e9a0bd6b2b7118a031275a8a1c035bd9f375968b87e0b27e32ad28d27",
+        "06-gate-hold-engine": "d57e0699e137874b95da6bfe345a57cfbf664707fe325c84cb5b42620c29d087",
+        "07-gate-hold-wiring": "59ff96c1640ee945598d5ce50704c09ad5d808cc7a49b9a94a465f5121744f4b"
       },
       "startSha": "a5c38f5330a17af9d460423e6de029c714ac9949",
       "kind": "fork",
       "spawnedAt": "2026-11-26T21:27:52Z",
       "sessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-run-watch-wiring",
+        "status": "done",
+        "head_sha": "f2b886f116d727145af681f3f952837a5d3d92e8",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardcli/cli.go",
+          "internal/dobbyengine/gatehold.go",
+          "internal/dobbyengine/gatehold_test.go"
+        ]
+      },
+      "cardShas": [
+        "f2b886f116d727145af681f3f952837a5d3d92e8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-ab2bcfc62ec52c4f8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-ab2bcfc62ec52c4f8.jsonl"
+      ]
     }
   },
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "9445140350e51be1b6ffd1f1ee99a315",
   "masterSessionId": "b8c5300b-dbc4-44ce-8033-79146b7c7655",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/dobby-run-watch-build/_lym/loom/friction/webster-master.md",
   "masterRecordsBase": "3c794e3e17453e387840d4dc28ed81febb00d7af",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-a2b38762ea270b25c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-dobby-run-watch-build/b8c5300b-dbc4-44ce-8033-79146b7c7655/subagents/agent-ab2bcfc62ec52c4f8.jsonl"
   ]
 }

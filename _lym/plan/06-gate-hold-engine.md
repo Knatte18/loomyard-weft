@@ -1,13 +1,13 @@
 # Card 6 — gate-hold-engine
 
 **Create:**
-- `plan:internal/dobbyengine#GateHolder` -> `type GateHolder struct`
-- `plan:internal/dobbyengine#GateHoldDeps` -> `type GateHoldDeps struct`
-- `plan:internal/dobbyengine#daemon.gateHolds` -> `func (d *daemon) gateHolds(ctx context.Context, now time.Time)`
-- `plan:internal/dobbyengine#gateHoldLine` -> `func gateHoldLine(slug string, hold []GateHolder, bound time.Duration, tree []proc.ProcessSample, marked []proc.ProcessSample) string`
-- `plan:internal/dobbyengine#underWorktree` -> `func underWorktree(path, worktree string) bool`
-- `plan:internal/dobbyengine#gateHoldProcessMax` -> `const gateHoldProcessMax = 20`
-- `plan:internal/dobbyengine#TestGateHolds` -> `func TestGateHolds(t *testing.T)`
+- `internal/dobbyengine#GateHolder`
+- `internal/dobbyengine#GateHoldDeps`
+- `internal/dobbyengine#daemon.gateHolds`
+- `internal/dobbyengine#gateHoldLine`
+- `internal/dobbyengine#underWorktree`
+- `internal/dobbyengine#gateHoldProcessMax`
+- `internal/dobbyengine#TestGateHolds`
 
 **Edit:**
 - `internal/dobbyengine#Deps`

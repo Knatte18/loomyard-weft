@@ -1,7 +1,7 @@
 # Card 5 — gate-holder-marker
 
 **Create:**
-- `plan:internal/gatecli#runMarkerEntry` -> `func runMarkerEntry(pid int) string`
+- `internal/gatecli#runMarkerEntry`
 
 **Edit:**
 - `internal/gateslot#Holder`

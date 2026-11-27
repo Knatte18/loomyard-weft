@@ -1,10 +1,10 @@
 # Card 7 — gate-hold-wiring
 
 **Create:**
-- `plan:internal/beamcli#gateHoldTopicPrefix` -> `const gateHoldTopicPrefix = "dobby-gate-hold/"`
-- `plan:internal/beamcli#gateHoldTags` -> `func gateHoldTags(slug string) creelengine.PostTags`
-- `plan:internal/beamcli#dobbyGateHolders` -> `func dobbyGateHolders(prime *lymcwd.Location) func() ([]dobbyengine.GateHolder, error)`
-- `plan:internal/beamcli#TestDobbyGateHolders` -> `func TestDobbyGateHolders(t *testing.T)`
+- `internal/beamcli#gateHoldTopicPrefix`
+- `internal/beamcli#gateHoldTags`
+- `internal/beamcli#dobbyGateHolders`
+- `internal/beamcli#TestDobbyGateHolders`
 
 **Edit:**
 - `internal/beamcli#hubDobbyDepsStarting`
