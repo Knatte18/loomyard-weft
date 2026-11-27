@@ -1,0 +1,3 @@
+status: NEEDS_PARENT
+head_sha: f619351fc5be217c5dea75f34ecabfc8364219c9
+need: "Ask the operator to run /home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/.scratch/kwin-probes/run-probes.sh (sessions may not use the session bus, so none of the probes has run) in Neve's Plasma session: `read-only` (with at least two lym Konsole windows open on two desktops, and no window titles they do not want committed), then `apply` and `apply-one-row` (each moves two throwaway windows and replaces one non-current desktop's tiling grid), then `laptop-off` with eDP-1 disabled; send back each run's printed output and what they saw, and the implementer then copies .scratch/kwin-probes/recordings/ into internal/kwinplace/testdata/recordings/"
