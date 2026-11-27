@@ -1,6 +1,6 @@
 # Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence
 
-`worktree-create-transient-net` · Task · bug, batten, fabric · starting · Open-IDE
+`worktree-create-transient-net` · Task · bug, batten, fabric · running · Darn-Write
 
 Imported from [issue #279](https://github.com/Knatte18/loomyard/issues/279).
 
