@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "fb7c40b0d146021745bde52f7635e81c2333e1bc",
+  "added_decisions": [
+    {
+      "title": "Close as overtaken by a69580709, no code",
+      "digest": "ef0f8ae5f598b992885ae5bf1d40ae40236de0d40137554b5143df646a8f8868"
+    },
+    {
+      "title": "No test seam: the fix a69580709 is already on the merge base",
+      "digest": "93f8ede6e003edb649de20fd8a243c33d9ca397f39d401f93d5e000acad07ab3"
+    }
+  ]
+}
