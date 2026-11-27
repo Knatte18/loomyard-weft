@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 09:05 UTC; every age below is as of then.
+Rendered 2026-11-27 09:06 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | Code-Bouncer | neve | 1d<br>20h | landing, stencil, burler, shuttle |
+| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | Drift-Recheck | neve | 1d<br>20h | landing, stencil, burler, shuttle |
 
 ### Layer G (1)
 
