@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 18:43 UTC; every age below is as of then.
+Rendered 2026-11-27 18:45 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -16,20 +16,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Darn-Write | neve | 24m<br>19m | gate |
-| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | Describe | neve | 45m<br>45m | webster, loom, testkit |
+| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Drift-Verify | neve | 26m<br>21m | gate |
+| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | Describe | neve | 47m<br>47m | webster, loom, testkit |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 45m<br>45m | batten, testkit |
+| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 47m<br>47m | batten, testkit |
 
 ### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E6 |  | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | 1m<br>1m | gate |
+| E6 |  | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | 3m<br>3m | gate |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -53,43 +53,43 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (6)
 
-[`fabric-core`](design-fabric-core.md) · Age 20h · Owner `neve`
+[`fabric-core`](design-fabric-core.md) · Age 21h · Owner `neve`
 
 ### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 20h<br>19m | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 21h<br>21m | fabric, testkit, shed, board, pattern |
 
 ### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T24 | **Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core** | [`fabric-core-teardown`](design-fabric-core-teardown.md)<br>[Sketch](decision-fabric-core-teardown.md) | tapestry · solid | T23 | 20h<br>20h | fabric, testkit, shed, landing |
+| T24 | **Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core** | [`fabric-core-teardown`](design-fabric-core-teardown.md)<br>[Sketch](decision-fabric-core-teardown.md) | tapestry · solid | T23 | 21h<br>21h | fabric, testkit, shed, landing |
 
 ### Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T25 | **Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core** | [`fabric-core-merge-landing`](design-fabric-core-merge-landing.md)<br>[Sketch](decision-fabric-core-merge-landing.md) | tapestry · solid | T24 | 20h<br>20h | fabric, testkit, shed, batten, landing |
+| T25 | **Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core** | [`fabric-core-merge-landing`](design-fabric-core-merge-landing.md)<br>[Sketch](decision-fabric-core-merge-landing.md) | tapestry · solid | T24 | 21h<br>21h | fabric, testkit, shed, batten, landing |
 
 ### Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T26 | **Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric** | [`fabric-core-pull-replay`](design-fabric-core-pull-replay.md)<br>[Sketch](decision-fabric-core-pull-replay.md) | tapestry · solid | T25 | 20h<br>20h | fabric, testkit, shed, stencil, board, heddle |
+| T26 | **Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric** | [`fabric-core-pull-replay`](design-fabric-core-pull-replay.md)<br>[Sketch](decision-fabric-core-pull-replay.md) | tapestry · solid | T25 | 21h<br>21h | fabric, testkit, shed, stencil, board, heddle |
 
 ### Layer F (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T27 | **Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut** | [`fabric-core-add-clone`](design-fabric-core-add-clone.md)<br>[Sketch](decision-fabric-core-add-clone.md) | tapestry · solid | T26 | 20h<br>20h | fabric, testkit, ide, batten, heddle, reconcile, shed |
+| T27 | **Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut** | [`fabric-core-add-clone`](design-fabric-core-add-clone.md)<br>[Sketch](decision-fabric-core-add-clone.md) | tapestry · solid | T26 | 21h<br>21h | fabric, testkit, ide, batten, heddle, reconcile, shed |
 
 ### Layer G (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 20h<br>6h | fabric, testkit, pattern, docs |
+| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 21h<br>6h | fabric, testkit, pattern, docs |
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (1)
 
@@ -135,14 +135,14 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Code-Burler-Fix | neve | 2h<br>44m | reed, stencil |
+| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Code-Burler-Fix | neve | 2h<br>47m | reed, stencil |
 
 ### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 3h<br>3h | batten, fabric |
-| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>19m | fabric, cleanup, batten |
+| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>21m | fabric, cleanup, batten |
 
 ### Layer B (1)
 
@@ -161,13 +161,13 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 2h<br>2h | testkit, landing |
-| E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 37m<br>37m | stencil, orch, board |
-| E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 37m<br>37m | orch, board, stencil |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>16m | landing, gate, batten |
-| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 19m<br>18m | stencil, loom |
+| E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 39m<br>39m | stencil, orch, board |
+| E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 39m<br>39m | orch, board, stencil |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>18m | landing, gate, batten |
+| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 21m<br>21m | stencil, loom |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 44m<br>44m | dobby, batten, orch |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 46m<br>46m | dobby, batten, orch |
