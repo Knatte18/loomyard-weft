@@ -9,7 +9,7 @@
      {{.lens_list}} is the fixer fan's lenses as one bullet per lens in fan order;
      {{.lens_report_path}} is the path each fork's report is saved at;
      and {{.lens_report_spec_path}} is the deployed spec of that report's format.
-lym-stencil: sha256=3b0fa95efd6e6ef1f7bddb1b8a7f8268af04d679e80088eadef8de75a57de950 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=6be239463ddae0aa84fa6b9144b6eca1ea64d65c8ffc776741918716706ae282 build=ab62124456014059969959a5d1eb7f89d9ef6a56 time=2026-11-27T16:25:09Z -->
 ## Self-check of your fix by forks (BLOCKING — after every fix, before the fixer-report)
 
 Once every finding has its disposition and every change is made, and before you write the fixer-report, run this procedure once.
@@ -46,5 +46,5 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
 - You are read-only: never write, edit or delete a file, run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree, and spawn no fork or subagent of your own.
 - Return your findings only as your final message, each with a severity (`BLOCKING`, `MEDIUM` or `LOW`, as the rubric defines them), the changed text it concerns, a one-line summary and the evidence, and start it with the list your lens asks for, if it asks for one; return "no findings" when you have none.
 
-A fork spawns nothing, so the fixer is the only session that spawns.
+A fork spawns nothing; only the fixer and the subagents it starts to make its fixes spawn.
 
