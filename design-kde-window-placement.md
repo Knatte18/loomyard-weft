@@ -49,3 +49,15 @@ The operator runs KDE Plasma with ten virtual desktops and tiles the windows lym
 - What lym does with the windows already placed when the screen setup changes.
 - Where the remembered places live: machine state, or hub config per machine.
 - Where the operator's existing auto-snap script lives: it is not on Neve under `~/.local/bin`, KWin scripts or `kwinrulesrc`.
+
+## Left open by Discussion (review round 3, accepted at the hard cap, 2026-11-27)
+
+The record was accepted with four BLOCKING design findings open, each read from KWin Plasma 6.6 source and not observed on Neve.
+Settle them, and probe them on Neve, before this Sketch is split:
+
+- D2's resource class: on Wayland KWin reports the app_id, `org.kde.konsole` for Konsole, not `konsole`, so D2's match finds no window.
+- Script ids: KWin gives a loaded script the id `scripts.size()`, so after an unload the next load can reuse a live script's id and `run` reaches that other script.
+  D3 and D10 must decide how a run reaches its own script (a machine-wide script lock, a plugin name unique per run, -1 as a failed load), and D3's bound on a killed child's script is false.
+- D3's query lacks what D6 needs: each window's `internalId`, `workspace.currentDesktop`, and per desktop the leaf tiles of `rootTile(output, desktop)` with `absoluteGeometry`, `padding` and `windows`;
+  a window's zone is the leaf whose `windows` lists it, never `window.tile`.
+- D9's renumber must count only settled entries, so a reopened window not yet placed keeps its home and order key.
