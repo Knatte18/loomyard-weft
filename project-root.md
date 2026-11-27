@@ -31,13 +31,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>18h | docs |
 
-## Draft (2)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid |  | 5m<br>5m | shuttle, claude, codex, testkit |
-| T5 | `draft` **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid |  | 5m<br>5m | orch, testkit |
-
 ## Research (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
