@@ -28,7 +28,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
-## Bugs (5)
+## Bugs (6)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -37,6 +37,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B3 |  | **Memory guard fails a gate by killing cmd/lym tier1 when the user slice is full from elsewhere** | [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md) |  | 0m<br>0m | gate |
 | B4 |  | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) |  | 0m<br>0m | landing |
 | B5 |  | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) |  | 0m<br>0m | shed, loom |
+| B6 |  | **Test-only-code guard fails a card whose function gets its first caller in a later card** | [`plan-later-caller-guard`](design-plan-later-caller-guard.md) |  | 0m<br>0m | webster, loom |
 
 ## Enhancements (4)
 
