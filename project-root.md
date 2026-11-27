@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 14:57 UTC; every age below is as of then.
+Rendered 2026-11-27 14:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -10,22 +10,22 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (5)
+## Running (6)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Write | neve | 24m<br>24m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid | starting · Open-IDE | neve | 0m<br>0m | shuttle, claude, codex, testkit |
-| T5 | **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid | Darn-Write | neve | 0m<br>0m | orch, testkit |
-| T8 | **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid | halted · Worktree-Create | neve | 0m<br>0m | parsers, burler, testkit |
+| T4 | **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid | Darn-Write | neve | 1m<br>1m | shuttle, claude, codex, testkit |
+| T5 | **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid | Darn-Write | neve | 1m<br>1m | orch, testkit |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | starting · Worktree-Create | neve | 1m<br>1m | config, reconcile, testkit |
+| T8 | **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid | halted · Worktree-Create | neve | 1m<br>1m | parsers, burler, testkit |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 4h<br>4h | weaver, webster |
 
-## Ready (2)
+## Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 0m<br>0m | loom, testkit |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid |  | 0m<br>0m | config, reconcile, testkit |
+| T1 | **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 1m<br>1m | loom, testkit |
 
 ## Layer G (1)
 
@@ -56,4 +56,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 7h<br>22m | landing, gate, batten |
+| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 7h<br>23m | landing, gate, batten |
