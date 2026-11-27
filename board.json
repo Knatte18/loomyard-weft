@@ -954,7 +954,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nThe split a raddle run proposes for a Sketch is too often absurd, and the operator has to revise it before approving.\nThis is also why arras, which lets a review approve the split, is not trusted.\nThe operator believes raddle can be tuned so its proposals hold.\n\n## Work\n\n- Find every raddle run made in this hub. Their records are in the weft repository's `archive/\u003cslug\u003e` tags\n  (`git -C \u003cweft\u003e tag -l 'archive/*'`, then read the tagged trees' `_lym` records); the board's done history and Bolt's git log name which tasks had recipe `raddle`.\n- For each run, put side by side: the Sketch's decision record, the split Raddle-Write first proposed (parts, cut lines, order, dependencies, recipes, profiles),\n  every revision the operator asked for in the session, and the split finally filed.\n- Class each revision: wrong cut lines, too many or too few parts, parts that overlap a package, wrong recipe or profile, wrong order or dependencies, missing or invented parts, wording, other.\n- Count the classes, and quote the operator's own words for each.\n- Read the Raddle-Write stencil and recipe, and name for each class the passage that led to it or the rule that is missing.\n\n## Output\n\nA report under `docs/research/raddle/` with the table of runs, the classes and counts, and for each class a concrete stencil change, written as the new text.\nMake no stencil or code change in this task; the stencil change becomes its own task from the report.\n",
-      "status": "starting · Open-IDE",
+      "status": "running · Preflight",
       "created": "2026-11-27T18:05:19Z",
       "revised": "2026-11-27T18:07:33Z",
       "profile": "docs"
