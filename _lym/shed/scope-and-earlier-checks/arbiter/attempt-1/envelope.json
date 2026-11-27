@@ -1,0 +1,16 @@
+{
+  "verdict": "resume",
+  "reason": "The round escalated with cause decision for one finding, F3, with no refusal named.\nThe board entry settles F3.\nAfter the line no decision enters the record, and PR-Review has no agent (internal/landingshed/prreview.go, since commit 34e64ac2e).\nSo the PR-feedback exemption is moot, and decision add or replace takes no caller at PR-Review.\nWhile this attempt ran, the run's parent recorded the same ruling (\"No operator exemption at PR-Review\").\nIt also recorded a continue in round-1-circling-decision.md, so this attempt's own continue was refused as already decided.\nThe arbiter's first entry said to keep the description's PR-feedback sentence, against the parent's entry.\nA second arbiter entry withdraws that clause and defers to the parent's wording.\nThe continue is right in any case.\nRound 1 is below the hard cap, the judge's verdict is CONTINUE, and BLOCKING findings F1 and F12 stay open on the ledger.\nThe fixer's large round-1 changes need the round-2 review its focus file already lists.\nNo commit was made, so the run resumes at its current row with no goto.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add scope-and-earlier-checks --by arbiter --title \"PR feedback stays outside the line with no record entry, F3 ruled moot\" --decision \"…\" --rationale \"…\"",
+    "lym loom circling continue scope-and-earlier-checks",
+    "lym loom decision add scope-and-earlier-checks --by arbiter --title \"The parent's PR-Review ruling governs the description's wording\" --decision \"…\" --rationale \"…\""
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/scope-and-earlier-checks/_lym/shed/scope-and-earlier-checks/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/scope-and-earlier-checks/_lym/shed/scope-and-earlier-checks/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step scope-and-earlier-checks --until-stop --arbiter-attempt 1"
+}
