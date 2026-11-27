@@ -1,0 +1,935 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index d3c743c79..738565b4c 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -43,8 +43,9 @@ Files beside this one hold what a rarer event needs; read the one that fits befo
+    so you never start, stop or clean up a batten run on your own.
+    The run opens the operator's terminal window on its worktree, so never open one yourself.
+    The batten run creates the task pair and drives the run inside it.
+-   That inner run is a tapestry, arras, motif, darn, sampler or hardener, as the entry's `recipe` says.
+-   An arras run is the recipe for a tapestry-sized note; `motif` alone serves a design decided now and split later.
++   That inner run is a tapestry, motif, raddle, darn, sampler or hardener, as the entry's `recipe` says.
++   `motif` is the recipe for a tapestry-sized note: it stores the decision record and leaves a Sketch,
++   which its raddle run splits into board entries once the Sketch is promoted.
+    A project's release is one release of its draft members.
+    The batten run tears the pair down after the inner run ends.
+    A darn run has no Discussion review.
+@@ -92,9 +93,13 @@ Only these reach you:
+ - Dobby's own lines, from the same senders:
+   a refused start, a pass that keeps failing, landings into a beam, and the board tidy's report path.
+   You put the report's removals and scope changes to the operator.
++  A motif run's landing line says its entry is now a Sketch: follow it up under After landing.
+ - `[run watch]` lines, from `<shortname>:DOBBY` or `<shortname>:<slug>:DOBBY`:
+   a stop line is a stop, and a later `[batten notice]` or driver line for the same stop adds its detail and opens no second fork;
+   a `rows` progress line asks for nothing.
++- A line opening `raddle: the proposal for the Sketch <slug> passes its checks and waits for the operator's approval`.
++  It is no stop: put it to the operator with the run's attach command.
++  Under autonomy, `role-autonomy.md` says how.
+ 
+ ## Investigating a stop
+ 
+@@ -356,6 +361,11 @@ Batten's Land row pulls the prime, runs the hub's `landing.deploy` command and p
+ Worktree-Teardown then removes the pair.
+ 
+ - After a run lands, amend the board entries it superseded.
++- A motif run's landing line, sent whatever `beam.land_notice` reads, says its entry is now a Sketch, which runs only once promoted.
++  Put it to the operator: promote it to its raddle run now, or say what it waits for.
++  Promote it on their word with `lym board promote '{"slug":"<slug>","depends_on":[...]}'`, naming each open entry it waits for;
++  set those with `lym board set-deps` on the Sketch when it waits.
++  Under autonomy, `role-autonomy.md` says how you promote it yourself.
+ - At every wake, a task whose board entry is `done` or gone from the board is no longer running,
+   and a pair that is gone alone never reads as landed.
+ - Dobby starts each task that became ready, so you start none.
+@@ -382,7 +392,6 @@ An operator decision made in chat is recorded in the same turn:
+ - On a task a run holds, record it with `lym loom decision add <slug> --by parent`;
+   the board's run lock means a held task's entry is never edited.
+   Once that task's scope is closed, it is a board note for a new task instead.
+-  An operator decision on a running arras entry goes the same way, with `--by operator`, never into the entry body.
+   - Several decisions taken together go in one call with `--from <file>`, a JSON array of entries,
+     so they land in one commit and one notice.
+   - Once the plan is approved, also pass `--amends-plan`.
+diff --git a/contracts/orchrole/role-autonomy.md b/contracts/orchrole/role-autonomy.md
+index 7683d4fc0..4b6e0b2b8 100644
+--- a/contracts/orchrole/role-autonomy.md
++++ b/contracts/orchrole/role-autonomy.md
+@@ -3,7 +3,8 @@
+ # Autonomy
+ 
+ Read this file while your own autonomy is on, and when a halt notice carries `autonomy: true`.
+-Under autonomy you settle every halt and run-level call yourself and reach the operator only for a severe halt or a merge-ready beam.
++Under autonomy you settle every halt and run-level call yourself,
++and reach the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
+ Where the role waits for the operator's word, this file is the exception for the runs and beams it covers.
+ 
+ ## Whose value applies
+@@ -50,6 +51,25 @@ A relay opens `[operator] severe halt <slug>:`, then the halt, what you tried an
+ Autonomy leaves a run's pull request to the operator: a run waiting at PR-Review waits for the operator, who works it with the run's PR-Review session.
+ Never approve, merge, close or comment on the pull request on GitHub, and never end its review without the operator's word.
+ 
++## A Sketch a motif run left
++
++On a motif run's landing line, follow up the Sketch it left yourself:
++
++1. Read the Sketch with `lym board get <slug>` and its record with `--record`,
++   then `lym board list` and `lym loom peers` for what it waits for:
++   a running or released task that changes a package its record names, and any entry its record or body says must land first.
++2. Promote it to its raddle run with `lym board promote '{"slug":"<slug>","depends_on":[...]}'`,
++   naming in `depends_on` each of those entries still open, so the board shows why it waits;
++   the raddle run starts only once none of them is open.
++   A wait on something no board entry holds goes in a note of its own, which `depends_on` names.
++
++A raddle run's split approval stays the operator's, whatever your autonomy, as a merge-ready beam does:
++it is no halt you settle.
++The run waits for that approval when you receive a line opening
++`raddle: the proposal for the Sketch <slug> passes its checks and waits for the operator's approval`.
++Then notify `[operator] split ready <slug>:` with the run's attach command,
++and never approve, change or file the split yourself.
++
+ ## A drained beam
+ 
+ On `[beam drained] <slug>`, take these steps from the first not done, for the beam the line names:
+@@ -64,6 +84,6 @@ On `[beam drained] <slug>`, take these steps from the first not done, for the be
+ 
+ ## Reaching Slack
+ 
+-Post each severe-halt relay and merge-ready notice to `<shortname>:SLACK` with `lym creel post` as well,
++Post each severe-halt relay, merge-ready and split-ready notice to `<shortname>:SLACK` with `lym creel post` as well,
+ so the hook's filter on turn replies never loses one.
+ Send one relay per turn, and open that turn's reply with it.
+diff --git a/contracts/stencils/loom/loom-rubric-raddle-review.md b/contracts/stencils/loom/loom-rubric-raddle-review.md
+index 557d2caea..9598ab1e5 100644
+--- a/contracts/stencils/loom/loom-rubric-raddle-review.md
++++ b/contracts/stencils/loom/loom-rubric-raddle-review.md
+@@ -45,8 +45,20 @@ Judge the split's judgement, not its format:
+ - **Each part's labels name its modules.**
+   A part's `labels` name the module of each package its body names, and no module the part does not change.
+   A label for a module the part never touches is a finding, and so is a named package whose module no label names.
++- **Each part is bounded.**
++  A `darn` part past about 1,500 changed lines, deleted lines left out, or past about eight packages,
++  with a seam that holds, is a finding.
++  So is a `tapestry` part with no shared interface or data shape that needs one plan.
+ - **Each part's recipe and profile fit it.**
+-  A part's recipe and profile fit its size and risk, and each cost line rests on the cells it cites.
++  `darn` is the default and `light` its profile; `solid` needs a data risk, a wide change or a bundle.
++  Each cost line rests on the cells it cites and states the sum of its part's package sizes.
++- **Running work is ordered.**
++  A part with no `depends_on` on a run in flight or a released task that changes the same package
++  or behaviour the part reads, where the overlap is more than a few lines, is a finding.
++- **Every part lands whole.**
++  Code whose only production caller a later part builds, or a criterion a later part's work makes true, is a finding.
++- **The later decision wins.**
++  A part that builds what the Sketch's board entry or a later decision has replaced is a finding.
+ - **The outcome fits the record's scope.**
+   One task or a family of parts fits the scope the record states.
+ 
+@@ -72,6 +84,8 @@ a decision no part can build, a seam that does not hold,
+ a part added only so parts run at once,
+ a cut that runs fewer parts at once than another cut with the same part count,
+ labels that do not match the packages a part changes,
++a part past its bound, an overlap with running work left unordered, a part that does not land whole,
++a part that builds a replaced decision,
+ or a recipe or profile that does not fit its part.
+ In this segment, `decision` means a question only the run's parent can settle:
+ two record entries that contradict each other on what the split must build,
+diff --git a/contracts/stencils/raddle/raddle-template-agent.md b/contracts/stencils/raddle/raddle-template-agent.md
+index ed583120e..63a902b74 100644
+--- a/contracts/stencils/raddle/raddle-template-agent.md
++++ b/contracts/stencils/raddle/raddle-template-agent.md
+@@ -29,6 +29,9 @@ Read these before you design anything:
+ - The board: `lym board list`, then `lym board get '{"slug":"<slug>"}'` for every entry that touches the Sketch's packages or carries one of the Sketch's module labels.
+ - The runs in flight: `lym loom peers`.
+ - The measured costs: `lym report cost` prints them as JSON, and `lym report timing` prints the timings.
++- The Sketch's own board entry: `lym board get '{"slug":"{{.slug}}"}'`.
++  A decision its body states that the record does not hold, or that changes the record, is later than the record and wins.
++  Build the later decision, and ask your parent to put it in the record before approval.
+ 
+ ## Step 2 — Read only the code that places each part
+ 
+@@ -45,14 +48,41 @@ A fork does not serve here: it inherits this session's whole context.
+ 
+ Put no design question to the operator before the proposal passes the spec's checks: settle the split yourself from the Sketch, the board and the code, so the proposal you bring stands.
+ 
+-- A tapestry's large fixed start cost often makes fewer, larger parts, or one tapestry, cheaper than many small tasks. Weigh that against what the cost report shows for each recipe and profile.
++- Size each part so one review covers a bounded change.
++  Cut a `darn` part past about 1,500 changed lines, deleted lines left out, or past about eight packages,
++  into chained darns wherever a seam holds.
++  A saving in fixed cost is no reason to merge parts:
++  the operator takes smaller darns and more reviews over one large part.
++- Keep work in one `tapestry` only when it shares one interface or data shape that a single plan must fix,
++  and name that interface in the part's `cost_line`.
++- A split with more than two `tapestry` parts is expensive.
++  For each, say why it needs its own plan and cannot run as darns,
++  and put the cheaper split and its price in `next_best`.
++- `darn` is the default recipe.
++  Give a darn part the profile `light`, and `solid` only when it risks data, changes widely
++  or bundles unrelated changes; say which in the text around the table.
++  A part that only writes docs or measures takes `docs`.
+ - Order the parts by what each takes from the others, and keep two parts with no order between them off the same package.
++- Compare each part's packages with the changed paths of every run in flight and with every released task.
++  Give the part `depends_on` on each one that changes a package the part changes,
++  changes behaviour the part reads, or builds what an open risk of the record names.
++  A part that renames or moves names across the repository depends on every released task that is not done.
++  Leave an edge out only when the overlap is a few lines that merge by hand,
++  or when the other task removes what the part builds on, and tell the operator which and why.
+ - Never add a part to gain concurrency: the part count stays what the work gives.
+ - Of the cuts with that part count, take the one that lets the most parts run at once:
+   a short `depends_on` chain, and parts with no dependency between them touching different packages.
+ - Never let a part guess at the interface of a part that runs beside it.
+   When one part builds what another uses, either chain them with `depends_on`,
+   or fix the interface in both parts' bodies.
++- Every part lands whole.
++  It holds no code whose only production caller a later part builds,
++  and every criterion and open risk it carries can be observed once it lands.
++  Move the code or the criterion to the part that completes it.
++- Map each step and clause of every decision to a part, not only each decision id.
++  For a decision that more than one part builds, say in each part's contract which steps it builds.
++- Add no part for work no decision of the record holds,
++  and none for what the record says is filed as a note: tell the operator what to file by hand.
+ - When parts that share a package must be chained, order the chain by the Sketch's own order first: a part the record says waits for nothing goes first in its chain.
+   Where the record states no order, put first the part with the largest stated saving, or the one the others gain from earliest.
+ - List every place your order departs from an order the decision record states in the proposal's `order_departures`, with what the departure costs.
+@@ -62,12 +92,23 @@ Put no design question to the operator before the proposal passes the spec's che
+ - When a live `PATTERN.md` entry absorbs a PATTERN change the Sketch declares, map the change with the part's `pattern_clusters`, so the part's record declares the live entry; a contract line that folds it in is not enough.
+ - Weigh the next-best split too, since the proposal states its cost beside the chosen one.
+ - Write each cost line so it says when a cell it rests on reads "too few runs", and never guess a figure for such a cell.
++- The line count a `cost_line` states is the sum of that part's package sizes.
++  Count deleted lines apart from changed lines, and moved tests that will be deleted as deleted.
+ 
+ ## Step 4 — Write the proposal
+ 
+ Write `{{.proposal_path}}` in the format `{{.specs_dir}}/raddle/raddle-proposal-spec.md` defines.
+ That spec is authoritative, and this prompt restates none of it.
+ 
++A part carries a criterion or an open risk only as the record's whole bullet.
++When a bullet is cut short by the record's layout, or a later decision supersedes it,
++ask your parent to replace it in the record before you ask for approval.
++Until then, state the full or later rule in the part's `contract.takes`, and say so to the operator.
++
++In the text around the table, say which project, or the top level, the filed entries land under.
++When no operator is present, write each note that Step 3 or Step 4 gives the operator or the text around the table
++into the proposal instead: in the part's `cost_line`, or in `next_best.line`.
++
+ {{.return_note}}
+ 
+ {{.mode_rules}}
+diff --git a/docs/overview.md b/docs/overview.md
+index bb9323fae..060c48853 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1703,11 +1703,11 @@ User-facing modules each get one `lym <module>` namespace:
+ - **batten** — drives one task worktree's whole lifecycle as a single Shed run from the hub's prime worktree.
+   The lifecycle is to create the worktree, seed the child's own inner run from the Board task's own `recipe`,
+   run it to a terminal state, land it into the prime, and tear down.
+-  The `recipe` is one of `tapestry`, `motif`, `raddle`, `arras`, `darn` and `sampler`.
++  The `recipe` is one of `tapestry`, `motif`, `raddle`, `darn` and `sampler`.
+   An empty `recipe` means `board.default_recipe`.
+   `motif` is for a Discussion-only child that lands no code.
+   `raddle` is for a child that files a Sketch's split on the board.
+-  `arras` is for a child that discusses a task and splits its decision record into board entries.
++  `arras` is no longer offered on the board: a tapestry-sized note runs `motif`.
+   `darn` is for a darn child, and `sampler` for a sampler child.
+   The code is `internal/battenshed`, `internal/battenrecipe` and `internal/battencli`.
+   Its verbs are `lym batten run|step|status|pause|goto|cancel <run-id>` and `lym batten cleanup [--apply]`.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index 039f0562b..8eab8bbef 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -130,7 +130,7 @@ Agent nouns name the one who does the work.
+ | pile | flor †, polvarp (pile warp) | sv lugg; fr velours; de Flor | raised loops or cut ends on the surface | state | – |
+ | terry | frotté | fr éponge; de Frottee | pile of uncut loops | state | – |
+ | tapestry | billedvev, gobelenger (pl.) | sv gobelängvävnad; fr tapisserie; de Gobelin | weft-faced pictorial weave | recipe, artifact | Taken: `tapestry`, the full task recipe: Discussion, Plan, Webster, Code review, Describe and Finalize, each review step followed by its own fix step. |
+-| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, the recipe a board task names for a tapestry-sized note. It discusses the task and splits its decision record into board entries under the split perch's review, and the entry becomes the family's project. |
++| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, a recipe that is kept, but no board entry may be given it; `motif` serves a tapestry-sized note. It discusses the task and splits its decision record into board entries under the split perch's review, and the entry becomes the family's project. |
+ | overshot | – † | sv opphämta †; de Überschuss | pattern from long weft floats on a plain ground | state | – |
+ | rep, ribbed weave | rips † | fr reps; de Rips | weave with fine crosswise ribs | state | – |
+ | double cloth | dobbeltvev | fr double étoffe; de Doppelgewebe | two layers woven at once | state, recipe | – |
+diff --git a/internal/battencli/childrecipe_test.go b/internal/battencli/childrecipe_test.go
+index 0353603bc..8bfc7a1a2 100644
+--- a/internal/battencli/childrecipe_test.go
++++ b/internal/battencli/childrecipe_test.go
+@@ -45,9 +45,12 @@ func TestChildRecipeSupported(t *testing.T) {
+ 	if !errors.Is(err, battenshed.ErrUnsupportedChildRecipe) {
+ 		t.Fatalf("unsupportedChildRecipeRefusal() error = %v; want it to wrap ErrUnsupportedChildRecipe", err)
+ 	}
+-	for _, want := range []string{shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener, "no-such-recipe"} {
++	for _, want := range []string{shedrun.RecipeRaddle, shedrun.RecipeHardener, "no-such-recipe"} {
+ 		if !strings.Contains(err.Error(), want) {
+ 			t.Errorf("unsupportedChildRecipeRefusal() error = %q; want it to contain %q", err, want)
+ 		}
+ 	}
++	if strings.Contains(err.Error(), shedrun.RecipeArras) {
++		t.Errorf("unsupportedChildRecipeRefusal() error = %q; want it not to offer %q", err, shedrun.RecipeArras)
++	}
+ }
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index 9267fb313..3c92a3118 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -153,6 +153,7 @@ var unsettledCodeTip logger.EpisodeSet
+ // A run whose code tip does not settle is left out of the call, with one Warn per episode.
+ // A run's place against its Land row is read from its status,
+ // and a landed run carries the landing commit its landing recorded, empty when none is readable.
++// Whether its child ran the motif recipe is read from the run's child-recipe record.
+ // Whether the run takes no slot is judged from its board entry on the local board at geom.BoardDir.
+ // Whether that entry ended, done or gone from the board, is judged from the same board.
+ // Whether its pair is present is read from its task worktree's path.
+@@ -226,6 +227,11 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 				return err
+ 			},
+ 			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
++			func() error {
++				recipe, err := shedrun.ReadChildRecipe(prime, slug)
++				view.Motif = recipe == shedrun.RecipeMotif
++				return err
++			},
+ 			func() (err error) { view.PairPresent, err = markerExists(pair.WorktreePath()); return },
+ 			func() (err error) {
+ 				_, view.HandOverMarked, err = fabricengine.ReadHandOverMark(prime.HubPath, slug)
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 19e015d89..d6e41df3f 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -611,9 +611,9 @@ func childRecipeSupported(recipe string) bool {
+ }
+ 
+ // unsupportedChildRecipeRefusal returns the refusal for a recipe that a task worktree's bootstrap verb cannot run.
+-// It wraps battenshed.ErrUnsupportedChildRecipe and names the admitted recipes.
++// It wraps battenshed.ErrUnsupportedChildRecipe and names the offered recipes among the admitted ones.
+ func unsupportedChildRecipeRefusal(recipe string) error {
+-	return fmt.Errorf("%w: only %q, %q, %q, %q, %q, %q, %q and %q have a bootstrap verb Run-Shed can start in the task worktree, so a Board task's type must be %q, %q, %q, %q, %q, %q, %q or empty, and a project entry seeds %q; got %q", battenshed.ErrUnsupportedChildRecipe, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener, shedrun.RecipePawl, recipe)
++	return fmt.Errorf("%w: only %q, %q, %q, %q, %q, %q and %q have a bootstrap verb Run-Shed can start in the task worktree, so a Board task's type must be %q, %q, %q, %q, %q, %q or empty, and a project entry seeds %q; got %q", battenshed.ErrUnsupportedChildRecipe, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeHardener, shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeRaddle, shedrun.RecipeHardener, shedrun.RecipePawl, recipe)
+ }
+ 
+ // childSeedParams returns the params of a child's seed.
+diff --git a/internal/battencli/wire_test.go b/internal/battencli/wire_test.go
+index 329c02bd9..9442fb1d1 100644
+--- a/internal/battencli/wire_test.go
++++ b/internal/battencli/wire_test.go
+@@ -469,13 +469,16 @@ func TestWire_WriteSeedRefusesANonLoomChildBeforeTouchingTheWorktree(t *testing.
+ 	if !errors.Is(err, battenshed.ErrUnsupportedChildRecipe) {
+ 		t.Fatalf("WriteSeed(batten) error = %v; want it to wrap ErrUnsupportedChildRecipe", err)
+ 	}
+-	for _, admitted := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeArras} {
+-		if !strings.Contains(err.Error(), admitted) {
+-			t.Errorf("WriteSeed(batten) error = %q; want it to name the admitted recipe %q", err, admitted)
++	for _, offered := range []string{shedrun.RecipeTapestry, shedrun.RecipeMotif, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler} {
++		if !strings.Contains(err.Error(), offered) {
++			t.Errorf("WriteSeed(batten) error = %q; want it to name the offered recipe %q", err, offered)
+ 		}
+ 	}
++	if strings.Contains(err.Error(), shedrun.RecipeArras) {
++		t.Errorf("WriteSeed(batten) error = %q; want it not to offer %q", err, shedrun.RecipeArras)
++	}
+ 
+-	err = c.env.SeedChild.WriteSeed(context.Background(), "no-such-recipe", shedrun.DriverGo)
++	err =c.env.SeedChild.WriteSeed(context.Background(), "no-such-recipe", shedrun.DriverGo)
+ 	if !errors.Is(err, battenshed.ErrUnknownRecipe) {
+ 		t.Errorf("WriteSeed(unknown) error = %v; want it to wrap ErrUnknownRecipe", err)
+ 	}
+diff --git a/internal/beamcli/dobbypairanchor_test.go b/internal/beamcli/dobbypairanchor_test.go
+index 9db6a8905..e67a77d21 100644
+--- a/internal/beamcli/dobbypairanchor_test.go
++++ b/internal/beamcli/dobbypairanchor_test.go
+@@ -240,7 +240,7 @@ func TestDobbyRuns_ReadsWhetherAPausedRunsWorkReachedItsParent(t *testing.T) {
+ 	}
+ }
+ 
+-func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t *testing.T) {
++func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitTheEndedEntryThePairAndTheMotifRecipe(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+@@ -284,6 +284,12 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	if err := shedrun.WriteLandedCommit(prime, "landed", shedrun.LandedCommit{Commit: "abc123", EmptyDiff: true}); err != nil {
+ 		t.Fatalf("WriteLandedCommit() = %v; want nil", err)
+ 	}
++	// "landed" ran the motif recipe, and "unlanded" another one.
++	for slug, recipe := range map[string]string{"landed": shedrun.RecipeMotif, "unlanded": shedrun.RecipeTapestry} {
++		if err := shedrun.WriteChildRecipe(prime, slug, recipe); err != nil {
++			t.Fatalf("WriteChildRecipe(%s) = %v; want nil", slug, err)
++		}
++	}
+ 
+ 	// A directory where the landed-commit file belongs makes the read fail for a reason other than a missing file.
+ 	if err := os.MkdirAll(shedrun.LandedCommitFile(prime, "unreadable"), 0o755); err != nil {
+@@ -301,6 +307,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 		emptyLanding            bool
+ 		entryEnded, pairPresent bool
+ 		cancelMarker            bool
++		motif                   bool
+ 	}
+ 	type judged struct {
+ 		run    runfsm.State
+@@ -310,7 +317,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	got := map[string]landing{}
+ 	gotJudged := map[string]judged{}
+ 	for _, view := range views {
+-		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit, view.EmptyLanding, view.EntryEnded, view.PairPresent, view.CancelMarker}
++		got[view.Slug] = landing{view.PastLand, view.Landed, view.LandingCommit, view.EmptyLanding, view.EntryEnded, view.PairPresent, view.CancelMarker, view.Motif}
+ 		gotJudged[view.Slug] = judged{view.Run, view.Verdict.Answer, view.Verdict.Reason}
+ 	}
+ 	wantJudged := map[string]judged{
+@@ -327,7 +334,7 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 		"ahead":      {pairPresent: true},
+ 		"paused":     {pairPresent: true},
+ 		"cancelling": {pairPresent: true, cancelMarker: true},
+-		"landed":     {pastLand: true, landed: true, commit: "abc123", emptyLanding: true, entryEnded: true, pairPresent: true},
++		"landed":     {pastLand: true, landed: true, commit: "abc123", emptyLanding: true, entryEnded: true, pairPresent: true, motif: true},
+ 		"unlanded":   {pastLand: true, entryEnded: true, pairPresent: true},
+ 		"unreadable": {pastLand: true, landed: true, pairPresent: true},
+ 		"pairless":   {pastLand: true, entryEnded: true},
+@@ -335,4 +342,13 @@ func TestDobbyRuns_ReadsTheLandOutcomeTheLandingCommitAndTheEndedEntryAndPair(t
+ 	if !reflect.DeepEqual(got, want) {
+ 		t.Errorf("DobbyRuns() land readings = %+v; want %+v", got, want)
+ 	}
++
++	// A directory where the child-recipe record belongs makes the read fail, which fails the whole listing.
++	if err := os.MkdirAll(shedrun.ChildRecipeFile(prime, "ahead"), 0o755); err != nil {
++		t.Fatalf("make the child-recipe path a directory: %v", err)
++	}
++	views, err = battencli.DobbyRuns(prime, geom, battencli.NewDobbyParents(prime), filepath.Join(t.TempDir(), "pause.json"), runpusher.StartIfAhead)
++	if err == nil || !strings.Contains(err.Error(), "read the run ahead") {
++		t.Errorf("DobbyRuns() with an unreadable child recipe = %v, %v; want an error naming the run ahead", views, err)
++	}
+ }
+diff --git a/internal/beamsetting/beamsetting.go b/internal/beamsetting/beamsetting.go
+index 3eaf2fe88..c82435d33 100644
+--- a/internal/beamsetting/beamsetting.go
++++ b/internal/beamsetting/beamsetting.go
+@@ -11,9 +11,10 @@ const (
+ 	// PullRequestKey decides whether a task's landing goes through a GitHub pull request.
+ 	PullRequestKey = "pull_request"
+ 	// LandNoticeKey decides whether dobby posts a line to the orch once a task's run lands or ends without landing.
++	// A landed motif run's line goes whatever it reads.
+ 	LandNoticeKey = "land_notice"
+ 	// AutonomyKey decides whether the orch settles every halt of a task's runs.
+-	// Under it the orch reaches the operator only for a severe halt or a merge-ready beam.
++	// Under it the orch reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
+ 	AutonomyKey = "autonomy"
+ 	// RunWatchKey decides which changes of a task's run dobby mails the orch as a watch line.
+ 	RunWatchKey = "run_watch"
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index a4462605f..f593c3e9c 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -578,7 +578,7 @@ Optional fields:
+   "status"     string — lifecycle status
+   "kind"       string — "task", "note" or "project", default "note"
+   "labels"     array  — replaces the list; a task needs a type label, a note exactly one
+-  "recipe"    string — "darn", "tapestry", "arras", "hardener" or "motif", or ` + boardKeyName("default_recipe") + `
++  "recipe"    string — "darn", "tapestry", "hardener" or "motif", or ` + boardKeyName("default_recipe") + `
+   "priority"   string — a note's "high", "normal" or "low"; "normal" clears it
+   "short_name" string — display label; falls back to the slug
+   "issues"     array  — hub issue numbers
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index f1669e4ed..9664f67a5 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -299,6 +299,10 @@
+ // That refusal applies only to a write that adds the label, makes the entry a task or project, or changes its recipe.
+ // The Bolt replayer admits an entry through the run lock and the kind and label checks only, never the promotion rule.
+ //
++// A write that gives an entry the arras recipe is refused, naming motif as the way forward:
++// motif and the Sketch's raddle run are the one design-first route.
++// An entry that already holds the arras recipe keeps taking writes, so a run started under it goes on to its end.
++//
+ // # Raddle store
+ //
+ // A raddle run that files a Sketch's entries keeps a store on the Bolt beside board.json.
+diff --git a/internal/boardengine/raddlefile_test.go b/internal/boardengine/raddlefile_test.go
+index 16bedccf8..54573b692 100644
+--- a/internal/boardengine/raddlefile_test.go
++++ b/internal/boardengine/raddlefile_test.go
+@@ -73,7 +73,21 @@ func raddleProject(slug string) *RaddleEntry {
+ // a task with a run status, a body and a stored decision record.
+ func startArrasRun(t *testing.T, b *Board, slug string) Task {
+ 	t.Helper()
+-	upsertForRaddle(t, b, map[string]any{"slug": slug, "title": "Arras", "kind": "task", "labels": []string{"bug", "board"}, "body": "former body", "recipe": shedrun.RecipeArras, "status": RunStatus("running", RaddleFileProducer)})
++	upsertForRaddle(t, b, map[string]any{"slug": slug, "title": "Arras", "kind": "task", "labels": []string{"bug", "board"}, "body": "former body"})
++	// No write gives an entry the arras recipe, so the recipe of a run started under it is set in the store.
++	// It is set before the run status that locks the entry.
++	_, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, _ := store.index(slug)
++		store.tasks[i].Recipe = shedrun.RecipeArras
++		return nil, nil
++	}, nil)
++	if err != nil {
++		t.Fatalf("set the arras recipe: %v", err)
++	}
++	status := RunStatus("running", RaddleFileProducer)
++	if err := b.SetStatus(slug, &status); err != nil {
++		t.Fatalf("SetStatus(%q) = %v; want nil", slug, err)
++	}
+ 	if err := b.StoreDecisionRecord(slug, []byte("arras record\n")); err != nil {
+ 		t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
+ 	}
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 13db8283f..4bebc5b55 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -2,7 +2,7 @@
+ //
+ // Load reads board.json, and Save writes board.json only.
+ // The store applies the CRUD and validation rules:
+-// dangling-dependency, isolated, kind and label rules, and cycle detection.
++// dangling-dependency, isolated, kind, label and offered-recipe rules, and cycle detection.
+ // Batch and merge apply atomically.
+ // Save and Load take the fine-grained swap lock so a concurrent read never sees a half-written file.
+ 
+@@ -481,6 +481,10 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 		snapshotIndex[snapshot[i].Slug] = &snapshot[i]
+ 	}
+ 
++	if err := checkOfferedRecipe(incoming, snapshotIndex[incoming.Slug]); err != nil {
++		return err
++	}
++
+ 	seenIssues := make(map[int]bool, len(incoming.Issues))
+ 	for _, n := range incoming.Issues {
+ 		if n <= 0 {
+@@ -546,6 +550,18 @@ func (s *Store) validateWrite(snapshot []Task, incoming Task) error {
+ 	return nil
+ }
+ 
++// checkOfferedRecipe refuses a write that gives an entry the arras recipe, which is no longer offered.
++// The refusal names motif, the design-first route, as the way forward.
++// prior is the entry of the same slug as it stood before the write, nil for a new entry:
++// an entry that already holds the recipe keeps taking writes, so a run started under it goes on to its end.
++func checkOfferedRecipe(incoming Task, prior *Task) error {
++	if incoming.Recipe != shedrun.RecipeArras || (prior != nil && prior.Recipe == shedrun.RecipeArras) {
++		return nil
++	}
++	return fmt.Errorf("entry %q names recipe %q, which is not offered: a design-first entry runs %q, whose Discussion stores the decision record and leaves a Sketch its raddle run splits; "+
++		"way forward: write the entry again with \"recipe\":%q", incoming.Slug, shedrun.RecipeArras, shedrun.RecipeMotif, shedrun.RecipeMotif)
++}
++
+ // findCycle walks adjacency depth-first from start and reports the first slug it meets again on its own path.
+ func findCycle(adjacency map[string][]string, start string) (string, bool) {
+ 	const (
+@@ -1113,6 +1129,14 @@ func (s *Store) UpsertTasksBatch(tasks []map[string]any) error {
+ 				break
+ 			}
+ 		}
++		// The snapshot already holds the incoming entry, so what the entry held before the batch is read from the store.
++		var prior *Task
++		if i, found := s.index(slugStr); found {
++			prior = &s.tasks[i]
++		}
++		if err := checkOfferedRecipe(incoming, prior); err != nil {
++			return err
++		}
+ 		if err := s.validateWrite(snapshot, incoming); err != nil {
+ 			return err
+ 		}
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index dc74ed68e..6df548de0 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -322,6 +322,58 @@ func TestUpsertTaskGroupKeyError(t *testing.T) {
+ 	}
+ }
+ 
++// TestUpsertRefusesTheArrasRecipe pins that a write giving an entry the arras recipe is refused with nothing written,
++// and that the motif recipe its refusal names as the way forward is taken.
++func TestUpsertRefusesTheArrasRecipe(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		// prior is the entry upserted before the arras write, nil for none.
++		prior      map[string]any
++		wantRecipe string
++	}{
++		{name: "ANewEntry", prior: nil, wantRecipe: ""},
++		{name: "AnEntryOfAnotherRecipe", prior: map[string]any{"slug": "design", "title": "Design", "kind": "task", "recipe": "darn"}, wantRecipe: "darn"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			s := boardengine.NewStore("")
++			if tt.prior != nil {
++				if _, err := s.UpsertTask(tt.prior); err != nil {
++					t.Fatalf("UpsertTask(prior) = %v; want nil", err)
++				}
++			}
++
++			_, err := s.UpsertTask(map[string]any{"slug": "design", "title": "Design", "kind": "task", "recipe": "arras"})
++			if err == nil || !strings.Contains(err.Error(), `"recipe":"motif"`) {
++				t.Fatalf("UpsertTask(recipe arras) = %v; want a refusal naming \"recipe\":\"motif\"", err)
++			}
++			task, _ := s.GetTask("design")
++			if task.Recipe != tt.wantRecipe {
++				t.Errorf("recipe after the refused write = %q; want %q", task.Recipe, tt.wantRecipe)
++			}
++
++			err = s.UpsertTasksBatch([]map[string]any{{"slug": "design", "title": "Design", "kind": "task", "recipe": "arras"}})
++			if err == nil || !strings.Contains(err.Error(), `"recipe":"motif"`) {
++				t.Fatalf("UpsertTasksBatch(recipe arras) = %v; want a refusal naming \"recipe\":\"motif\"", err)
++			}
++			task, _ = s.GetTask("design")
++			if task.Recipe != tt.wantRecipe {
++				t.Errorf("recipe after the refused batch = %q; want %q", task.Recipe, tt.wantRecipe)
++			}
++
++			if _, err := s.UpsertTask(map[string]any{"slug": "design", "title": "Design", "kind": "task", "recipe": "motif"}); err != nil {
++				t.Fatalf("UpsertTask(recipe motif) = %v; want nil", err)
++			}
++			if task, _ := s.GetTask("design"); task.Recipe != "motif" {
++				t.Errorf("recipe after the way forward = %q; want %q", task.Recipe, "motif")
++			}
++		})
++	}
++}
++
+ // TestUpsertFieldAllowlist verifies that the store rejects unknown upsert fields on all three entry points:
+ // UpsertTask, UpsertTasksBatch, and MergeTasks.
+ // It also verifies that `status` is in the allowed set and is persisted correctly.
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index 44a6be791..2677a3926 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -28,9 +28,10 @@ const (
+ 	// PullRequestKey decides whether a task's landing goes through a GitHub pull request.
+ 	PullRequestKey = beamsetting.PullRequestKey
+ 	// LandNoticeKey decides whether dobby posts a line to the orch once a task's run lands or ends without landing.
++	// A landed motif run's line goes whatever it reads.
+ 	LandNoticeKey = beamsetting.LandNoticeKey
+ 	// AutonomyKey decides whether the orch settles every halt of a task's runs.
+-	// Under it the orch reaches the operator only for a severe halt or a merge-ready beam.
++	// Under it the orch reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
+ 	AutonomyKey = beamsetting.AutonomyKey
+ )
+ 
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 5606b0f8b..be2f96d4c 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -145,6 +145,8 @@
+ //   - A run seen past its Land row that dobby remembered ahead of it with `land_notice` on owes one line
+ //     through Deps.Notice to the nearest live orch.
+ //     A run whose `land_notice` read off owes none.
++//   - A remembered motif run that landed owes one line saying its entry is now a Sketch, whatever `land_notice` reads,
++//     since a Sketch runs only once it is promoted; its line replaces the landed line.
+ //   - A landed line asks the orch for nothing:
+ //     a member landing under a recorded pull request gets the description rewrite.
+ //   - An owed line stays in the state record and is posted every tick until a post succeeds.
+diff --git a/internal/dobbyengine/landnotice.go b/internal/dobbyengine/landnotice.go
+index ed74d4a2a..c66ddc735 100644
+--- a/internal/dobbyengine/landnotice.go
++++ b/internal/dobbyengine/landnotice.go
+@@ -1,6 +1,7 @@
+ // landnotice.go implements the landing notice: one creel line to the nearest live orch.
+ // It goes out once a run seen ahead of its Land row lands or ends without landing.
+ // It goes only when the run's land_notice setting read on, as read ahead of Land or, when that never read, after it.
++// A landed motif run's line goes whatever land_notice reads, since nothing else follows up the Sketch it leaves.
+ 
+ package dobbyengine
+ 
+@@ -110,7 +111,8 @@ func (d *daemon) unreadLandNoticeRuns(runs []RunView) map[string]bool {
+ 
+ // rememberRuns refreshes memory from the runs listed this tick.
+ // A run is remembered with the land_notice reading in requests, when it has one.
+-// A remembered run past its Land row that was read at least once gets its notice decided:
++// A remembered motif run that landed owes the Sketch line, whatever its reading.
++// Any other remembered run past its Land row that was read at least once gets its notice decided:
+ // a line when its remembered reading is on, and none when it is off.
+ // A remembered run past Land that was never read stays undecided until a read succeeds.
+ // A run that owes nothing after this is forgotten, and so is one whose line an older binary had already posted.
+@@ -136,10 +138,12 @@ func rememberRuns(memory map[string]LandNoticeState, runs []RunView, requests ma
+ 			continue
+ 		}
+ 		memory[run.Slug] = note
+-		if !note.read() {
++		switch {
++		case run.Motif && run.Landed:
++			note.Line = sketchNoticeLine(run)
++		case !note.read():
+ 			continue
+-		}
+-		if note.Requested {
++		case note.Requested:
+ 			note.Line = landNoticeLine(run)
+ 		}
+ 		if !note.owed() {
+@@ -206,6 +210,12 @@ func landNoticeLine(run RunView) string {
+ 	return fmt.Sprintf("%s %s: landed as %s", runNoticePrefix, run.Slug, commit)
+ }
+ 
++// sketchNoticeLine is the line a landed motif run's notice posts.
++// It says the run's entry is now a Sketch, which runs only once it is promoted, so the orch follows it up.
++func sketchNoticeLine(run RunView) string {
++	return fmt.Sprintf("%s %s: the motif run landed and left its entry a Sketch, which runs only once promoted; lym board get %s shows it", runNoticePrefix, run.Slug, run.Slug)
++}
++
+ // landNoticeOutcome names how a run past its Land row ended.
+ func landNoticeOutcome(run RunView) string {
+ 	if run.Landed {
+diff --git a/internal/dobbyengine/landnotice_test.go b/internal/dobbyengine/landnotice_test.go
+index d3fe6ffdb..fe11ade23 100644
+--- a/internal/dobbyengine/landnotice_test.go
++++ b/internal/dobbyengine/landnotice_test.go
+@@ -1,5 +1,6 @@
+ // landnotice_test.go pins the landing notice over a pass harness.
+ // It covers which runs get a line under each reading of land_notice and the line's text.
++// It covers a landed motif run, whose Sketch line goes whatever land_notice reads.
+ // It covers a member landing under a recorded pull request, whose line carries no follow-up.
+ // It covers the owed line's posts until one succeeds, and the memory's upkeep.
+ 
+@@ -29,6 +30,10 @@ func TestLandNotices(t *testing.T) {
+ 	const emptyLandingLine = "[dobby notice] task: landed with an empty diff: no file of its parent branch changed, which stays at 0123456789ab"
+ 	const unknownCommitLine = "[dobby notice] task: landed, commit unknown"
+ 	const unlandedLine = "[dobby notice] task: ended without landing; lym batten status task shows the run"
++	runningMotif := RunView{Slug: "task", State: runStateRunning, Producer: producerRunShed, Motif: true}
++	landedMotif := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Landed: true, Motif: true}
++	unlandedMotif := RunView{Slug: "task", State: runStateDone, Producer: "Worktree-Teardown", PastLand: true, Motif: true}
++	const sketchLine = "[dobby notice] task: the motif run landed and left its entry a Sketch, which runs only once promoted; lym board get task shows it"
+ 
+ 	tests := []struct {
+ 		name string
+@@ -75,6 +80,11 @@ func TestLandNotices(t *testing.T) {
+ 		{name: "ARunNeverReadAheadOfLandWaitsPastLandForARead", requested: true, failLookupThroughTick: 3, ticks: [][]RunView{{running}, {running}, {landed}, {landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AnOlderMemoryHoldingARequestIsNotReadAgainPastLand", seed: &LandNoticeState{Requested: true}, ticks: [][]RunView{{landed}, {landed}}, want: []string{landedLine}},
+ 		{name: "AClearOnlyMemoryOfAnOlderBinaryGetsNoSecondNotice", requested: true, seed: &LandNoticeState{Requested: true, ClearOwed: true}, ticks: [][]RunView{{landed}, {landed}}},
++		{name: "ALandedMotifRunTellsOfItsSketchWithTheNoticeOff", ticks: [][]RunView{{runningMotif}, {landedMotif}, {landedMotif}}, want: []string{sketchLine}},
++		{name: "ALandedMotifRunSendsOnlyTheSketchLineWithTheNoticeOn", requested: true, ticks: [][]RunView{{runningMotif}, {landedMotif}}, want: []string{sketchLine}},
++		{name: "ALandedMotifRunNeverReadAheadOfLandTellsOfItsSketch", failLookupThroughTick: 3, ticks: [][]RunView{{runningMotif}, {landedMotif}}, want: []string{sketchLine}},
++		{name: "AMotifRunEndingWithoutLandingFollowsTheSetting", ticks: [][]RunView{{runningMotif}, {unlandedMotif}}},
++		{name: "AMotifRunFirstSeenPastLandSendsNothing", ticks: [][]RunView{{landedMotif}, {landedMotif}}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index 047e4333b..ac9b1f870 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -81,6 +81,8 @@ type RunView struct {
+ 	LandingCommit string
+ 	// EmptyLanding reports that the run's landing changed no code path on its parent branch, so none of its work reached it.
+ 	EmptyLanding bool
++	// Motif reports whether the run's child ran the motif recipe, whose landing leaves its entry a Sketch.
++	Motif bool
+ 	// ReachedParent reports whether the run's work already reached its parent branch.
+ 	// Then only its Land and Worktree-Teardown rows are left.
+ 	// It is read for a paused run only.
+diff --git a/internal/dobbyengine/tasksetting.go b/internal/dobbyengine/tasksetting.go
+index b60e9d639..d58c2bf6e 100644
+--- a/internal/dobbyengine/tasksetting.go
++++ b/internal/dobbyengine/tasksetting.go
+@@ -47,7 +47,7 @@ func LookupLandNotice(chain TaskSettingChain) (bool, error) {
+ 
+ // LookupAutonomy reports whether autonomy is on for the task at the chain's head.
+ // Under it the orch settles every halt of the task's runs.
+-// It reaches the operator only for a severe halt or a merge-ready beam.
++// It reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
+ // A value the key does not take is refused, naming the file that set it.
+ func LookupAutonomy(chain TaskSettingChain) (bool, error) {
+ 	value, err := lookupTaskSetting(chain, AutonomyKey)
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index b892c39ce..07abe9c4c 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -3,8 +3,8 @@ board_tidy_every: 5  # dobby starts the board-tidy agent after this many landing
+ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before dobby gives up on it
+ task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+ pull_request: "review"  # per task: whether a task's landing goes through a GitHub pull request: review (one that waits, whatever beam.autonomy says, with a PR-Review agent session in the task's window, until the operator approves or merges it on GitHub or lym loom pr-continue ends the review on the operator's word), off (none, unless GitHub's rules for the parent branch require one), trail (always, squash-merged on GitHub at once with no agent and no review, so the parent keeps a trail of pull requests to backtrack through) or merge-in (none, a true merge keeping the merged commit); the task's run_settings, else the nearest worktree up to the prime that sets it, else the hub's default decides
+-land_notice: "off"  # per task: whether dobby posts a line to the orch once a task's run lands or ends without landing: on or off; decided like beam.pull_request
+-autonomy: false  # per task: whether the orch settles every halt of the task's runs and reaches the operator only for a severe halt or a merge-ready beam: true or false; decided like beam.pull_request
++land_notice: "off"  # per task: whether dobby posts a line to the orch once a task's run lands or ends without landing: on or off; a landed motif run's line, saying its entry is now a Sketch, goes whatever this reads; decided like beam.pull_request
++autonomy: false  # per task: whether the orch settles every halt of the task's runs and reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval: true or false; decided like beam.pull_request
+ adopt_fix_tries: 3  # the most adopt fix tasks a failed adopt check files for this worktree's subject between two hand adopts; 0 files none
+ run_watch: "stops"  # per task: which changes of a task's run dobby mails the orch as a `[run watch]` line: stops, rows or off; decided like beam.pull_request
+ gate_hold_factor: 1.5  # dobby notices a gate slot a run holds past this many times its tier's gate.tiers.<tier>.timeout_min, in awake time; 0 sends no gate-hold notice
+diff --git a/internal/heddleengine/glossary.md b/internal/heddleengine/glossary.md
+index 535285688..905a40ea6 100644
+--- a/internal/heddleengine/glossary.md
++++ b/internal/heddleengine/glossary.md
+@@ -24,7 +24,7 @@ A term settled that this list lacks is added here, in lym's repository at `inter
+ - **hub**: one repository's worktrees, Bolt checkout, board and agents on a machine.
+ - **orch**: the operator's delegate session, which talks with the operator, writes the board and parents runs.
+ - **parent**: the session a run's agents ask and report to, the orch or a run above them.
+-- **autonomy**: a worktree's or a task's mode in which the orch settles every halt of the runs it covers and reaches the operator only for a severe halt or a merge-ready beam. Never: autopilot, full auto.
++- **autonomy**: a worktree's or a task's mode in which the orch settles every halt of the runs it covers and reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval. Never: autopilot, full auto.
+ - **severe halt**: a halt in one of autonomy's closed classes, which the orch relays to the operator. Never: critical halt, blocker.
+ - **strand**: one agent's pane, holding one session. Never: tab, window.
+ - **beam**: a long-lived branch that groups board work; its tasks fork from it and land back into it.
+diff --git a/internal/loomengine/template.yaml b/internal/loomengine/template.yaml
+index d00daccb7..b7cfce0c1 100644
+--- a/internal/loomengine/template.yaml
++++ b/internal/loomengine/template.yaml
+@@ -49,7 +49,7 @@ code:
+   review_ask_parent: false  # true has every Code-Review round ask the parent orch to review the task's code change once the round's fixer report exists and before its Bouncer judges the round, naming the round's own review and fixer report, so the parent sees each ruling; the Bouncer's judge waits for the answer and keeps every finding the parent returns; false, the default, asks no parent; settable per run through run_settings
+   review_parent_timeout_min: 30  # minutes from a Code-Review round's ask to the parent orch to its deadline, capped so the Bouncer's judge, which waits for the answer, keeps room to finish before its own timeout, run_timeout_min; a cap that leaves no room sends no ask; a positive integer, 30 by default; settable per run through run_settings
+ split:
+-  reviewer_model: ""  # model-spec for the reviewer of the split perch, the arras recipe's Raddle-Review perch over the raddle proposal; empty, the default, takes loom.review.reviewer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
++  reviewer_model: ""  # model-spec for the reviewer of the split perch, the Raddle-Review perch over the raddle proposal; empty, the default, takes loom.review.reviewer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
+   fixer_model: ""  # model-spec for the split perch's cold fixer; empty, the default, takes the model of loom.raddle.model, so the split is fixed by a model of the raddle agent's strength; a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it
+   reviewer_fan: ""  # fan name from lenses.yaml that turns the lens fan on for the split perch's reviewer; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo
+   fixer_fan: ""  # fan name from lenses.yaml that has the split perch's fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
+diff --git a/internal/orchengine/prompt.go b/internal/orchengine/prompt.go
+index de7486299..b4c3e8e46 100644
+--- a/internal/orchengine/prompt.go
++++ b/internal/orchengine/prompt.go
+@@ -51,7 +51,7 @@ func WithPresence(p Paths, pointer string) string {
+ 
+ const (
+ 	// autonomyOnLine is appended to a pointer's own line while the orch's autonomy is on.
+-	autonomyOnLine = " Autonomy is on: settle every halt yourself and reach the operator only for a severe halt or a merge-ready beam, as role-autonomy.md beside your role says."
++	autonomyOnLine = " Autonomy is on: settle every halt yourself and reach the operator only for a severe halt, a merge-ready beam or a raddle split's approval, as role-autonomy.md beside your role says."
+ 	// autonomyOffLine is appended to a pointer's own line while the orch's autonomy is off.
+ 	autonomyOffLine = " Autonomy is off."
+ )
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index ebfd65d33..0501d7a17 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -1,7 +1,6 @@
+ # profiles.yaml — the hub's named run profiles, and the profile each recipe takes by default.
+-# Each top-level key but defaults is a profile name, and its value holds one block per recipe, tapestry, motif, darn, pawl, sampler, raddle or arras;
++# Each top-level key but defaults is a profile name, and its value holds one block per recipe it configures;
+ # a raddle block sets loom.raddle.auto_approve, which tells a raddle run to file its proposal without waiting for the operator's approval, and which a run whose recipe rows hold a split perch never reads;
+-# an arras block sets the rounds of the Discussion perch and of the split perch, whose approval files the arras run's proposal;
+ # a block has the shape of a board task's run_settings: module name to that module's config keys;
+ # a tapestry block sets the plan perch's keys under the tapestry module and the other perches' keys under loom.
+ # A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
+diff --git a/internal/shedcli/cli_test.go b/internal/shedcli/cli_test.go
+index 6769429cf..563e6fabb 100644
+--- a/internal/shedcli/cli_test.go
++++ b/internal/shedcli/cli_test.go
+@@ -354,7 +354,7 @@ func TestArmFromSeed_RefusalPrecedence(t *testing.T) {
+ 			},
+ 			verb:  "status",
+ 			args:  []string{"some-run"},
+-			wants: names(),
++			wants: shedrun.OfferedRecipeNames(),
+ 		},
+ 		{
+ 			// Both shipped recipes support every generic verb, so the row shrinks loom's Verbs to have an excluded verb to drive against.
+diff --git a/internal/shedcli/seed_test.go b/internal/shedcli/seed_test.go
+index 38a5d497d..dde205034 100644
+--- a/internal/shedcli/seed_test.go
++++ b/internal/shedcli/seed_test.go
+@@ -101,11 +101,14 @@ func TestWriteSeed_UnknownRecipeRefusesWithTheAvailableNames(t *testing.T) {
+ 			if !strings.Contains(err.Error(), "unknown recipe") {
+ 				t.Errorf("writeSeed(%q) error = %q; want it to say unknown recipe", recipe, err.Error())
+ 			}
+-			for _, name := range names() {
++			for _, name := range shedrun.OfferedRecipeNames() {
+ 				if !strings.Contains(err.Error(), name) {
+ 					t.Errorf("writeSeed(%q) error = %q; want it to name recipe %q", recipe, err.Error(), name)
+ 				}
+ 			}
++			if strings.Contains(err.Error(), shedrun.RecipeArras) {
++				t.Errorf("writeSeed(%q) error = %q; want it not to offer %q", recipe, err.Error(), shedrun.RecipeArras)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/shedcli/table.go b/internal/shedcli/table.go
+index a57d0a2bb..7899e8674 100644
+--- a/internal/shedcli/table.go
++++ b/internal/shedcli/table.go
+@@ -97,11 +97,11 @@ var recipes = map[string]entry{
+ 
+ // lookup returns the entry for the recipe name, or an error for an unknown name.
+ //
+-// The error lists the available recipes from names(), so the message cannot drift from recipes.
++// The error lists the offered recipe names, which leave out a recipe that is armed but no longer offered.
+ func lookup(name string) (entry, error) {
+ 	e, ok := recipes[name]
+ 	if !ok {
+-		return entry{}, fmt.Errorf("shedcli: unknown recipe %q; available recipes: %v", name, names())
++		return entry{}, fmt.Errorf("shedcli: unknown recipe %q; available recipes: %v", name, shedrun.OfferedRecipeNames())
+ 	}
+ 	return e, nil
+ }
+diff --git a/internal/shedrun/seed.go b/internal/shedrun/seed.go
+index c4afb9b61..8b86f0dce 100644
+--- a/internal/shedrun/seed.go
++++ b/internal/shedrun/seed.go
+@@ -12,6 +12,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"sort"
+ 	"time"
+ 
+@@ -98,15 +99,21 @@ func RecipeNames() []string {
+ 	return []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeHardener, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
+ }
+ 
++// OfferedRecipeNames returns the recipe names a message may list to a user, sorted and freshly allocated.
++// It leaves out the arras recipe, which is still legal in a seed but no longer offered.
++func OfferedRecipeNames() []string {
++	return slices.DeleteFunc(RecipeNames(), func(name string) bool { return name == RecipeArras })
++}
++
+ // ValidateRecipe reports whether name is a legal Seed.Recipe value.
+-// On refusal, the error names the available recipes from RecipeNames().
++// On refusal, the error names the offered recipes.
+ func ValidateRecipe(name string) error {
+ 	for _, candidate := range RecipeNames() {
+ 		if name == candidate {
+ 			return nil
+ 		}
+ 	}
+-	return fmt.Errorf("shedrun: unknown recipe %q; available recipes: %v", name, RecipeNames())
++	return fmt.Errorf("shedrun: unknown recipe %q; available recipes: %v", name, OfferedRecipeNames())
+ }
+ 
+ // ReadSeed reads the seed for runID under l, returning (Seed{}, false, nil) when no seed has been written yet.
+diff --git a/internal/shedrun/seed_test.go b/internal/shedrun/seed_test.go
+index e5148f859..f39f29107 100644
+--- a/internal/shedrun/seed_test.go
++++ b/internal/shedrun/seed_test.go
+@@ -196,6 +196,9 @@ func TestValidateRecipe(t *testing.T) {
+ 					t.Errorf("ValidateRecipe(%q) error = %q; want it to contain %q", tt.recipe, err.Error(), want)
+ 				}
+ 			}
++			if strings.Contains(err.Error(), RecipeArras) {
++				t.Errorf("ValidateRecipe(%q) error = %q; want it not to offer %q", tt.recipe, err.Error(), RecipeArras)
++			}
+ 		})
+ 	}
+ }
+diff --git a/plugins/ly/skills/board-policy/SKILL.md b/plugins/ly/skills/board-policy/SKILL.md
+index 9bb646f79..0374a92de 100644
+--- a/plugins/ly/skills/board-policy/SKILL.md
++++ b/plugins/ly/skills/board-policy/SKILL.md
+@@ -43,15 +43,13 @@ The commands that read and write the board are in the `ly:board` skill.
+ - Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size.
+   Fold related notes into one loom task, or propose darn for a small change and let the operator name darn.
+   A part of a darn task that looks large raises the darn's profile; it never becomes a loom run of its own.
+-- A note or bundle weighed for a tapestry run is proposed as an `arras` task, never as a tapestry task straight from the board.
+-  Its run discusses the entry, stores the approved decision record and splits it into tasks under a review of the split,
+-  and the entry becomes the project that holds them.
++- A note or bundle weighed for a tapestry run is proposed as a `motif` task, never as a tapestry task straight from the board.
++  Its Motif stores the approved decision record and makes the entry a Sketch;
++  promoting the Sketch runs raddle, which splits it into tasks or a project.
++  The Sketch waits until it is promoted, so a design decided now can be split later, on code that is still changing.
+   A project's release is one release: it releases its draft members at once, and the project keeps the whole record.
+   Raddle chooses each part's recipe, tapestry included, and that choice stands:
+   never change, on your own judgment, the recipe of a task raddle filed; the operator may still name darn for it.
+-- A design decided now but split later, on code that is still changing, is proposed as a `motif` task instead.
+-  Its Motif stores the approved decision record and makes the entry a Sketch;
+-  promoting the Sketch runs raddle, which splits it into tasks.
+ - Every task runs through loom, bug fixes included.
+   Never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
+ - A rename is a task of its own: mechanical, done by script, with nothing else in it.
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index f75ef5cff..3ce266049 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -63,11 +63,8 @@ Beside its type label, every entry carries a label for each lym module it touche
+ an entry that spans the whole tool takes the modules its work would change first.
+ A label in neither map is refused.
+ Add it with `lym config board --set labels.<name>=<description>`, or edit the maps in the `lym config board` editor.
+-A recipe name goes in `recipe`, never in a label: `tapestry`, `darn`, `arras` or `motif`.
++A recipe name goes in `recipe`, never in a label: `tapestry`, `darn` or `motif`.
+ An empty `recipe` means the hub's `default_recipe` in `board.yaml`, which is `darn` unless the hub changed it.
+-An `arras` task discusses the entry and splits its decision record into board entries in one run, and lands no code.
+-A review of the split, the split perch, approves the proposal in place of the operator.
+-The family filing turns the entry into the family's project and re-points the entries that depended on it to the new tasks.
+ A `motif` task runs Discussion alone:
+ it stores the approved decision record on the entry, flags it `discussed`, lands no code and makes the entry a Sketch.
+ A Sketch is a note of the built-in type `sketch` (handle `S`) that keeps its module labels and never runs;
