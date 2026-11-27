@@ -2,7 +2,7 @@
 
 `hardener-study-faults` · Task · bug, fabric, cleanup, batten
 
-Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
+Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md), [`fabric-core-records-guards`](design-fabric-core-records-guards.md)
 
 ## Seen
 
