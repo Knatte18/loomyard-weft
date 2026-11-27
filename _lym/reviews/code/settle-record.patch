@@ -1,0 +1,119 @@
+diff --git a/internal/desktoplauncher/desktoplauncher.go b/internal/desktoplauncher/desktoplauncher.go
+index 172c2e590..0c751b74a 100644
+--- a/internal/desktoplauncher/desktoplauncher.go
++++ b/internal/desktoplauncher/desktoplauncher.go
+@@ -49,7 +49,7 @@ type Desktop struct {
+ // A lym path a `.cmd` launcher under WSL cannot quote is an error, and nothing is written.
+ // Both writes happen under the desktop's lock, so a concurrent Remove never sees one without the other.
+ func (d Desktop) Add(lymPath, shortname string) error {
+-	hub, err := d.content(lymPath, "start the hub "+shortname, shortname)
++	hub, err := d.content(lymPath, shortname, shortname)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -135,8 +135,8 @@ func (d Desktop) fileMode() os.FileMode {
+ }
+ 
+ // content returns the text of a launcher that runs `<lymPath> machine start`, with shortname as its argument when set.
+-// purpose says what the launcher does, for its name and comment.
+-func (d Desktop) content(lymPath, purpose, shortname string) (string, error) {
++// title follows "lym: " in a `.desktop` launcher's `Name=` key and in a `.cmd` launcher's `rem` line.
++func (d Desktop) content(lymPath, title, shortname string) (string, error) {
+ 	verb := strings.TrimSpace("machine start " + shortname)
+ 	sh := shell.Posix()
+ 	posixRun := sh.Invoke(lymPath) + " " + verb
+@@ -146,7 +146,7 @@ func (d Desktop) content(lymPath, purpose, shortname string) (string, error) {
+ 		return strings.Join([]string{
+ 			"[Desktop Entry]",
+ 			"Type=Application",
+-			"Name=lym: " + purpose,
++			"Name=lym: " + title,
+ 			"Comment=Runs lym " + verb + " on this machine",
+ 			"Exec=bash -lc " + execArgument(line),
+ 			"Terminal=true",
+@@ -161,16 +161,17 @@ func (d Desktop) content(lymPath, purpose, shortname string) (string, error) {
+ 		if d.Distro != "" {
+ 			run += ` -d "` + d.Distro + `"`
+ 		}
+-		return cmdFile(purpose, run+` -- bash -lc "`+posixRun+`"`), nil
++		return cmdFile(title, run+` -- bash -lc "`+posixRun+`"`), nil
+ 	default:
+-		return cmdFile(purpose, `"`+lymPath+`" `+verb), nil
++		return cmdFile(title, `"`+lymPath+`" `+verb), nil
+ 	}
+ }
+ 
+-// cmdFile returns a `.cmd` launcher that runs run and pauses, so its window shows the outcome until a key is pressed.
++// cmdFile returns a `.cmd` launcher titled "lym: <title>" that runs run and pauses,
++// so its window shows the outcome until a key is pressed.
+ // Each "%" is doubled, since a batch file reads "%" as a variable reference.
+-func cmdFile(purpose, run string) string {
+-	lines := []string{"@echo off", "rem lym: " + purpose, run, "pause", ""}
++func cmdFile(title, run string) string {
++	lines := []string{"@echo off", "rem lym: " + title, run, "pause", ""}
+ 	return strings.ReplaceAll(strings.Join(lines, "\r\n"), "%", "%%")
+ }
+ 
+diff --git a/internal/desktoplauncher/desktoplauncher_test.go b/internal/desktoplauncher/desktoplauncher_test.go
+index a64883e20..9c3f282e1 100644
+--- a/internal/desktoplauncher/desktoplauncher_test.go
++++ b/internal/desktoplauncher/desktoplauncher_test.go
+@@ -102,7 +102,7 @@ func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
+ 			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormFreedesktop},
+ 			lymPath: "/opt/lym dev/lym",
+ 			file:    "lym-hub-ly.desktop",
+-			want: "[Desktop Entry]\nType=Application\nName=lym: start the hub ly\nComment=Runs lym machine start ly on this machine\n" +
++			want: "[Desktop Entry]\nType=Application\nName=lym: ly\nComment=Runs lym machine start ly on this machine\n" +
+ 				`Exec=bash -lc "'/opt/lym dev/lym' machine start ly; echo; read -r -p 'Press Enter to close this window' _"` +
+ 				"\nTerminal=true\nIcon=utilities-terminal\n",
+ 			allFile: "lym-hubs.desktop",
+@@ -115,7 +115,7 @@ func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
+ 			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormFreedesktop},
+ 			lymPath: `/opt/100%$x\lym`,
+ 			file:    "lym-hub-ly.desktop",
+-			want: "[Desktop Entry]\nType=Application\nName=lym: start the hub ly\nComment=Runs lym machine start ly on this machine\n" +
++			want: "[Desktop Entry]\nType=Application\nName=lym: ly\nComment=Runs lym machine start ly on this machine\n" +
+ 				`Exec=bash -lc "'/opt/100%%\\$x\\\\lym' machine start ly; echo; read -r -p 'Press Enter to close this window' _"` +
+ 				"\nTerminal=true\nIcon=utilities-terminal\n",
+ 		},
+@@ -124,7 +124,7 @@ func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
+ 			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL, Distro: "Ubuntu-24.04"},
+ 			lymPath: "/home/u/go/bin/lym",
+ 			file:    "lym-hub-ly.cmd",
+-			want:    "@echo off\r\nrem lym: start the hub ly\r\nwsl.exe -d \"Ubuntu-24.04\" -- bash -lc \"'/home/u/go/bin/lym' machine start ly\"\r\npause\r\n",
++			want:    "@echo off\r\nrem lym: ly\r\nwsl.exe -d \"Ubuntu-24.04\" -- bash -lc \"'/home/u/go/bin/lym' machine start ly\"\r\npause\r\n",
+ 			allFile: "lym-hubs.cmd",
+ 			wantAll: "@echo off\r\nrem lym: start every hub\r\nwsl.exe -d \"Ubuntu-24.04\" -- bash -lc \"'/home/u/go/bin/lym' machine start\"\r\npause\r\n",
+ 		},
+@@ -133,7 +133,7 @@ func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
+ 			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindowsWSL},
+ 			lymPath: "/opt/50%/lym",
+ 			file:    "lym-hub-ly.cmd",
+-			want:    "@echo off\r\nrem lym: start the hub ly\r\nwsl.exe -- bash -lc \"'/opt/50%%/lym' machine start ly\"\r\npause\r\n",
++			want:    "@echo off\r\nrem lym: ly\r\nwsl.exe -- bash -lc \"'/opt/50%%/lym' machine start ly\"\r\npause\r\n",
+ 		},
+ 		{
+ 			name:    "WindowsWSLRefusesADoubleQuote",
+@@ -164,7 +164,7 @@ func TestAdd_WritesLaunchersRunningMachineStart(t *testing.T) {
+ 			desktop: desktoplauncher.Desktop{Form: desktoplauncher.FormWindows},
+ 			lymPath: `C:\Program Files\lym\lym.exe`,
+ 			file:    "lym-hub-ly.cmd",
+-			want:    "@echo off\r\nrem lym: start the hub ly\r\n\"C:\\Program Files\\lym\\lym.exe\" machine start ly\r\npause\r\n",
++			want:    "@echo off\r\nrem lym: ly\r\n\"C:\\Program Files\\lym\\lym.exe\" machine start ly\r\npause\r\n",
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/desktoplauncher/doc.go b/internal/desktoplauncher/doc.go
+index 675c75b9b..eb6a67958 100644
+--- a/internal/desktoplauncher/doc.go
++++ b/internal/desktoplauncher/doc.go
+@@ -16,6 +16,9 @@
+ //
+ // A hub's launcher is named by the hub's shortname, `lym-hub-<shortname>` with the form's extension,
+ // and the all-hubs launcher is `lym-hubs`.
++// A `.desktop` launcher shows its `Name=` key.
++// That key is `lym: <shortname>` for a hub and `lym: start every hub` for the all-hubs launcher.
++// A `.cmd` launcher shows its file name and carries the same title on its `rem` line.
+ // Remove removes the all-hubs launcher once no hub's launcher stands.
+ // Add and Remove hold one lock per desktop, kept in the per-user state directory,
+ // so concurrent processes never leave a hub launcher standing without the all-hubs one.
