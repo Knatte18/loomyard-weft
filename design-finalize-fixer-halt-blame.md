@@ -48,3 +48,38 @@ Here the run stopped on a fix whose landing gate had passed, and escalated to a 
 - Make every push of a task code branch leave a trace line, so the writer can be found.
 
 Provenance: task `pr-modes-no-agent`, note `loom-halt.md`.
+
+
+## From issue #272
+
+Imported from [issue #272](https://github.com/Knatte18/loomyard/issues/272).
+
+Import note: the issue names files under `.lym/`, which is deleted with its worktree, so only what the issue quotes of them reached the board: `.lym/shuttle/`, `/.lym/shuttle/55336935c2b090f90010928604d00408`.
+
+## What happened
+
+A `Finalize` halt reason pointed the reader at the fixer session's log, as a run directory under `.lym/shuttle/<run id>`:
+
+```
+landing stop: the fixer session of Finalize pushed origin/pr-modes-no-agent at b6eb9ac69a8d5e12c863dd0a5a27587e1ff0446a; session log: <worktree>/.lym/shuttle/55336935c2b090f90010928604d00408; way forward: check the pushed commits are the task's, then `lym loom resume`
+```
+
+The same step removed that directory just before writing the reason:
+
+```
+2026-11-27T07:33:53.776 shuttle: run finished runDir=<worktree>/.lym/shuttle/55336935c2b090f90010928604d00408 outcome=done cleanedUp=true
+2026-11-27T07:33:53.778 landingshed: producer stuck producer=Finalize reason="landing stop: ... session log: <worktree>/.lym/shuttle/55336935c2b090f90010928604d00408; ..."
+```
+
+Listing the directory afterwards answers "No such file or directory".
+
+## Why it is abnormal
+
+The halt asks a human or orch to judge what the session did, and names evidence that no longer exists.
+The other fixer halts that print a session log (`timeout`, `no-report`, `dirty`) are built from the same value, so they are likely affected when the seat run finishes `done`; only the `pushed` case was observed.
+
+## What to do
+
+Either keep the run directory when the fixer run does not end `fixed`, or name something that survives cleanup in the halt reason, such as the engine's session id and transcript.
+
+Provenance: task `pr-modes-no-agent`, note `loom-halt.md`.
