@@ -1,0 +1,1 @@
+Review segment of task `transient-stop-not-failed` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/transient-stop-not-failed/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept transient-stop-not-failed" or "lym loom circling continue transient-stop-not-failed".
