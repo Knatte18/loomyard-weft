@@ -130,7 +130,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 3h<br>3h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Record-Write | neve | 1h<br>2m | reed, stencil |
+| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Darn-Write | neve | 1h<br>2m | reed, stencil |
 
 ### Layer A (1)
 
