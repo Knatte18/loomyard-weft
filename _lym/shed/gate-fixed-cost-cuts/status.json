@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T18:24:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-fixed-cost-cuts/_lym/landing/summary.md",
+      "at": "2026-11-27T18:45:16Z",
+      "started_at": "2026-11-27T18:24:14Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T18:30:20.493058944Z",
+          "end": "2026-11-27T18:30:20.508843494Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T18:30:20.597267515Z",
+          "end": "2026-11-27T18:44:14.685394313Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-27T18:44:14.781373296Z",
+          "end": "2026-11-27T18:44:14.787176069Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-27T18:44:14.85320252Z",
+          "end": "2026-11-27T18:44:15.208870366Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T18:44:15.302852674Z",
+          "end": "2026-11-27T18:44:15.303048911Z"
+        }
+      ]
     }
   ],
   "product": {
