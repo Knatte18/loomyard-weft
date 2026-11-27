@@ -26,8 +26,8 @@
 - `internal/fabricengine#PushResult`
 
 **Create:**
-- `plan:internal/fabriclayout#FailedPush.PairSlug` -> `func (f FailedPush) PairSlug() string`
-- `plan:internal/fabriclayout#MachineNames.IsZero` -> `func (n MachineNames) IsZero() bool`
+- `internal/fabriclayout#FailedPush.PairSlug`
+- `internal/fabriclayout#MachineNames.IsZero`
 
 **Delete:**
 - `internal/fabricengine#FailedPush.pairSlug`

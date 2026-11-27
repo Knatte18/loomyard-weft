@@ -1,6 +1,6 @@
 {
   "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
-  "planFingerprint": "0e4ddae1b37e0df8505f63de7f822331d5ad52cf3ed05b46f9193a9728cd059b",
+  "planFingerprint": "2b10c9de512cacb851d2be9d56c36c6b4d4339e4768b8f7635530b6081acf01e",
   "planFileHashes": {
     "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
     "01-scankit-banned-imports.md": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
@@ -10,7 +10,7 @@
     "05-layout-mutation-kinds.md": "640a33382fc59b03276b8faa07ba81fa46dd04942f086c5e859673178dbf3cde",
     "06-layout-mutation-record.md": "a48f6b885a9cdd88d1537885f60981a41afb1f6399e68d3991a288569f07cbb8",
     "07-layout-origin-types.md": "11c4ccd0e36404b6c88197337d106cd19846211c97723e6564dc4f76aa6ccbc6",
-    "08-layout-push-types.md": "76a3fd2152dc17fb609c3263fa9ed494ac278ccdcc0c5caf30edebb767d6b0af",
+    "08-layout-push-types.md": "d6ed85839f58d21e5839744a52c001286af91033cb93baf92bdda05638d79959",
     "09-engine-repo-side-names.md": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a",
     "10-layout-verb-results.md": "e76ca54ff35058308753f8d226ccb85d32340f1c6b2b680608db18d1394449b9",
     "11-layout-read-types.md": "c76574a0c8e38ab6f351567788d84eca4365228654f1ea80c90e4c9089dc9a2a",
@@ -1445,7 +1445,7 @@
         "09-engine-repo-side-names"
       ],
       "cardHashes": {
-        "08-layout-push-types": "76a3fd2152dc17fb609c3263fa9ed494ac278ccdcc0c5caf30edebb767d6b0af",
+        "08-layout-push-types": "d6ed85839f58d21e5839744a52c001286af91033cb93baf92bdda05638d79959",
         "09-engine-repo-side-names": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a"
       },
       "startSha": "b3ca5d67f5005e28e1b1f9810215057a7683ebf1",
@@ -1453,11 +1453,67 @@
       "spawnedAt": "2026-11-27T09:54:06Z",
       "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-layout-push-types",
+        "status": "done",
+        "head_sha": "9e89d7afe5a95c2c7482e5b3a82f9ce8c1ebb669",
+        "deviations": [
+          "docs/research/loom/adopt-build-revision-2026-11-16/record-push-before-act-takeover.md",
+          "internal/adoptcli/adopt_integration_test.go",
+          "internal/battencli/cancel_test.go",
+          "internal/battencli/cancelcmd.go",
+          "internal/battencli/catchup.go",
+          "internal/battencli/cleanup_integration_test.go",
+          "internal/battencli/codetipsettle.go",
+          "internal/battencli/commitstatus.go",
+          "internal/battencli/commitstatus_test.go",
+          "internal/battencli/testmain_integration_test.go",
+          "internal/battencli/wire.go",
+          "internal/beamcli/deps.go",
+          "internal/boardengine/ownerset.go",
+          "internal/cleanupcli/cleanup_integration_test.go",
+          "internal/fabriccli/failedpushstatus_integration_test.go",
+          "internal/fabriccli/spawn.go",
+          "internal/fabriccli/teardownchild.go",
+          "internal/fabriccli/testmain_test.go",
+          "internal/fabriccli/weft_verbs.go",
+          "internal/fabriclayout/pushtypes.go",
+          "internal/landingshed/finalize.go",
+          "internal/landingshed/finalize_test.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomcli/prepush.go",
+          "internal/loomcli/prepush_test.go",
+          "internal/loomcli/pusher.go",
+          "internal/loomcli/pusher_test.go",
+          "internal/orchcli/pushnotifier.go",
+          "internal/orchcli/pushnotifier_integration_test.go",
+          "internal/orchcli/start_test.go",
+          "internal/pairteardown/handover.go",
+          "internal/pairteardown/handover_integration_test.go",
+          "internal/pairteardown/leftoverhandedover_integration_test.go",
+          "internal/pairteardown/machinenames_test.go",
+          "internal/pairteardown/runread.go",
+          "internal/pairteardown/runread_test.go",
+          "internal/runpusher/newdeps_integration_test.go",
+          "internal/tendercli/cli_test.go",
+          "internal/tendercli/runintents.go",
+          "internal/tendercli/runintents_test.go"
+        ]
+      },
+      "cardShas": [
+        "9e89d7afe5a95c2c7482e5b3a82f9ce8c1ebb669"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a8c24f89e44bab578.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a8c24f89e44bab578.jsonl"
+      ]
     }
   },
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
@@ -1468,6 +1524,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a7d2cb290e14ea8d8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ac24087785ba2b35a.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af004d91b603f85f5.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a3d7e74b49ad10a93.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a3d7e74b49ad10a93.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a8c24f89e44bab578.jsonl"
   ]
 }
