@@ -1,6 +1,6 @@
 # Measure the fixed steps of a gate call one by one
 
-`gate-fixed-cost-measure` · Task · research, gate · starting · Worktree-Create
+`gate-fixed-cost-measure` · Task · research, gate · starting · Open-Window
 
 ## Aim
 
