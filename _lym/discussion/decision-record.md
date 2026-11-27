@@ -98,6 +98,12 @@ Decision: Code-Review finding F3 (pr-agent-operator-exemption-not-built) needs n
 
 Rationale: The board entry says no decision enters the record after the line, and it names no record entry for PR feedback. PR-Review has no agent (internal/landingshed/prreview.go: no agent takes part, since commit 34e64ac2e). There the operator acts on the pull request itself, by committing in the task worktree or approving on GitHub, and the scope line refuses none of that. Admitting a --by operator label at PR-Review would let any caller through, because --by is unverified, and would break the entry's rule that no decision enters the record past the line.
 
+### Added after Discussion (arbiter, 2026-11-27): The parent's PR-Review ruling governs the description's wording
+
+Decision: Where the entry 'PR feedback stays outside the line with no record entry, F3 ruled moot' differs from the parent's 'No operator exemption at PR-Review', follow the parent's entry. Its clause 'Keep the summary's "Feedback the operator gives on the pull request needs no entry in the record" and orch-role.md's "the operator's own feedback on the pull request" wording as they are' is withdrawn. Drop that sentence from the change description, and word any operator feedback found after the scope closes as a board note, like any other late call. Both entries agree on the code: admit no caller to decision add or replace at PR-Review.
+
+Rationale: The parent recorded its ruling on F3 before the arbiter's entry. The two agree that no exemption is built, and differ only on the description's sentence. The parent's call on that wording comes first.
+
 ## Constraints
 
 ## Auto-mode assumptions
