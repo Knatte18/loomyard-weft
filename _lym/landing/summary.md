@@ -1,35 +1,40 @@
-# Webster's parent audit allows every friction note the run's Masters got
+# webster: keep earlier Masters' friction notes allowed after a resume
 
-A resumed Webster run spawns a fresh Master, and because the earlier Master's friction note already exists, the new prompt names the next free path, such as `webster-master-2.md` beside `webster-master.md`.
-The run state kept only the latest prompt's note path, so the run-exit audit and record-batch's parent audit treated the earlier Master's note as an unauthorised parent write.
-The run then stopped on a correctness finding over a file Master had been told to write, and someone had to accept the finding by hand.
+A resumed webster run could be blocked by its own run-exit audit.
+The first Master's prompt named `webster-master.md` as its friction note, and Master wrote it.
+After a resume, the new Master's prompt named `webster-master-2.md`,
+and the audit, which allowed only the latest prompt's note, flagged the earlier write as `parent-write`.
+Clearing it took a manual `webster accept-audit`.
 
-## Changes
-
-- `State.MasterNotePath` (`masterNotePath`) becomes `State.MasterNotePaths` (`masterNotePaths`): every friction note path a Master prompt of the run named, in spawn order, each once.
-  `Run` appends the new prompt's path at each Master spawn and skips a path already listed, which happens when an earlier Master never wrote its note.
-- `CheckParent` takes the list and allows a parent write to any listed note, each compared in its told and link-resolved spellings.
-  An empty list allows no note, as an empty path did before.
-- Both callers, the run-exit audit in `runlevel.go` and record-batch's incremental audit, pass the list.
-- The package doc and `audit.go`'s file header now describe the allowance as covering every note the run's Master prompts named.
+The parent audit now lets Master write every friction note that any Master prompt of the run named,
+both at `record-batch` and at the run-exit cross-check.
 
 ## Design decisions
 
-- A `--fresh` run starts a new state, so its list starts empty; notes from an archived run are not carried over.
-- The old `masterNotePath` key is not read back.
-  A run whose state was written before this change and that resumes after it starts its list with the new prompt's path alone.
-  Its earlier note can still raise the old finding once, and the existing accept route clears it.
+- `State.MasterNotePaths` (`masterNotePaths` in `state.json`) lists the note paths in spawn order, each once.
+  A spawn appends its path, and a spawn with friction notes off adds nothing and keeps the earlier entries.
+- The old `masterNotePath` key is still read, so a run started by an older binary keeps its note when resumed.
+  `LoadState` appends that path to the end of the list, if it is not already there,
+  and clears the field, so the next save drops the key.
+- `CheckParent` takes a slice of note paths in place of one path.
+  The `parent-write` finding's detail text now names the notes of all the run's Master prompts.
 
-## Tests
+## To check by hand
 
-- `TestRun_DoneOutcome` gains a row in which an earlier Master's note exists and is recorded in the state.
-  The resumed Master's prompt names `webster-master-2.md`, and the audit shows writes to both notes.
-  The run ends done with no parent-write finding, and the state lists both paths in order.
-- The record-batch row on Master's friction note now records two note paths and writes both, with no finding.
-- `TestCheckParent` gains a row allowing a write to an earlier prompt's note and a row refusing a note write when no note was named.
-- The persisted-identities row in the run tests now checks the list holds exactly the prompt's note.
+- The failing sequence (Master writes its note, the run is resumed, the run exits) has not been replayed on a live run.
+  It is covered by `TestRun_DoneOutcome` rows with a scripted audit.
+- Check the door call under `## Merge danger` against the `state.json` key rename from `masterNotePath`
+  to `masterNotePaths`.
+  It is called one-way because an older binary reading a newly saved `state.json` does not see the note paths;
+  decide whether that case matters.
 
 ## Merge danger
 
-**Door:** two-way
+**Door:** one-way
 **Blast radius:** webster
+
+A revert does not rewrite a `state.json` already saved with `masterNotePaths`.
+An older binary ignores that key and drops the whole list when it saves the file.
+Its audit of such a run can therefore flag even the current Master's note as `parent-write`.
+Spawning a new Master records that Master's note under the old key,
+and `webster accept-audit` clears a finding already raised.
