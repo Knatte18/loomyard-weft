@@ -936,6 +936,24 @@
       "created": "2026-11-27T18:05:19Z",
       "revised": "2026-11-27T18:07:33Z",
       "profile": "docs"
+    },
+    {
+      "id": 1754,
+      "handle": "E5",
+      "slug": "gate-fixed-cost-cuts",
+      "title": "Cut the fixed steps of a tier1 gate call from about 6 s to about 2 s",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop go build ./... for go vet ./... in tier1, and build lym only for packages whose tests use it",
+      "body": "## Seen\n\nThe study `docs/research/speed/gate-fixed-cost-2026-11-27/report.md` timed a tier1 call on one small package at about 6 s, of which:\n\n- `go build ./...` takes 3.0 to 3.9 s on an unchanged tree, since it links every `package main` and discards the binaries;\n- the `lym` build in `prebuildLym` (`internal/gatecli/prebuild.go`) takes 2.4 to 2.8 s on every call, whether or not a test uses the binary;\n- `go vet`, the test link and the gate's own work cost well under a second together.\n\n## Idea\n\n1. In hub config, replace `go build ./... \u0026\u0026 go vet {targets}` in `gate.tiers.tier1.command` with `go vet ./...`.\n   Cost: a link error in a command without tests is no longer caught by tier1.\n2. In `prebuildLym`, build `lym` only when a test file of a targeted package imports `internal/testkit/lymbin`,\n   after checking that no test reaches the prebuilt binary another way.\n\nTogether, a small call's fixed steps go from about 6 s to about 2 s, by the report's estimate.\n",
+      "created": "2026-11-27T18:18:50Z",
+      "revised": "2026-11-27T18:18:50Z"
     }
   ],
   "prime_owner": "neve",
