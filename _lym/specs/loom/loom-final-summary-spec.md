@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=46c6c451a83d3f9bf7f21fe4207743dfa6ea1e30691acbc395bd148872ca627a build=34e64ac2eb24ade3497b7db898483a9fcc907938 time=2026-11-27T07:21:35Z -->
+<!-- lym-stencil: sha256=8e02b99f6b829c8bbe1c7479d568aeeae629972b2a55f2273a1a128a43282f5d build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -50,6 +50,14 @@ Lines inside a fenced code block are not read: a fenced example is neither the s
 a door other than those two words, and a blast radius other than one word.
 `Publish` and `Finalize` do not check it: they carry the body as it stands.
 
+## Forbidden terms
+
+The same checks refuse each line of the artifact that a `landing.describe_forbidden_terms` pattern matches, naming the line's number and the matched text.
+The patterns name the tooling that wrote the change, which a reader of the repository never sees.
+The credit block and the regression check are appended after the artifact, so the check never reads them.
+A hub whose repository owns those names sets the key to `[]`.
+Neither `Publish` nor `Finalize` runs this check.
+
 ## Sole declarer, sole parser
 
 `internal/summaryparser` is the sole declarer of the artifact's filename and the sole parser of its format.
@@ -81,7 +89,9 @@ It lists each failure of its landing gate that passed when run once more on the 
 it opens one from the artifact, or refreshes an open one's title and body,
 so a re-run Publish carries a rewritten description onto the pull request.
 While its review runs, PR-Review reads the artifact at each status poll of an open pull request.
-It sets the title and body again when the artifact yields other text, so a rewrite of the artifact while the review waits reaches the pull request.
+It sets the title and body again when GitHub holds other text than the artifact yields, up to line endings and trailing whitespace,
+so a rewrite of the artifact, or an edit of the body on GitHub, is set right at the next poll.
+`Finalize` does the same before it merges a recorded pull request that is not a beam's.
 A read that fails there is logged and retried at the next poll, never an error.
 
 ## Producer-appended sections
