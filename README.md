@@ -120,8 +120,8 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 7h<br>7h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light | Darn-Write | neve | 2m<br>1m | webster, fabric, pattern |
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | Darn-Write | neve | 2m<br>1m | board |
-| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Code-Bouncer | neve | 6h<br>6h | batten, fabric |
-| T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | halted · Worktree-Create | neve | 2m<br>0m | gate |
+| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Code-Burler-Review | neve | 6h<br>6h | batten, fabric |
+| T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | halted · Worktree-Create | neve | 2m<br>1m | gate |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Darn-Write | neve | 1d<br>3h | fabric, cleanup, batten |
 
 ### Layer A (7)
@@ -169,4 +169,4 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | 0m<br>0m | board, orch, dobby |
+| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | 1m<br>1m | board, orch, dobby |
