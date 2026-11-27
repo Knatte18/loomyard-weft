@@ -18,6 +18,12 @@ Give testkit a recorded reed and creel session stand-in usable at tier0, and mov
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Scope: recorded tmux stand-in under reedengine; creel and envkit later
+
+Decision: Build option B: export a tmux-exec and pane-age seam on reedengine.New, add internal/testkit/tmuxrec with recorded tmux transcripts and their source lines, a tier0 replay test and a tier2 recorder and contract test, move sessionLiveness and sessionRegistrar from loomcli into reedengine, and run the PR-Review session tests over real reed and the real runner at tier0. Leave the MailAgent closures and envkit unchanged; they are filed as a board note for after push-retry-not-halt.
+
+Rationale: It delivers the kit the entry asks for within PATTERN-test-stand-ins, which forbids a stand-in for reed or creel themselves. envkit.go is changed by the running push-retry-not-halt, and a real creel path needs a daemon, so both wait for a follow-up.
+
 ## Constraints
 
 ## Auto-mode assumptions
