@@ -1,0 +1,1543 @@
+diff --git a/internal/gatefixer/await.go b/internal/gatefixer/await.go
+index 42f1fac30..96da54f5a 100644
+--- a/internal/gatefixer/await.go
++++ b/internal/gatefixer/await.go
+@@ -1,6 +1,6 @@
+ // await.go implements the bounded wait on a fixer strand.
+ // The wait ends done once the reply file exists.
+-// It ends dead when the turn ends without one, when the timeout passes, or when the strand is gone.
++// It ends dead when the turn ends without one, when the strand is gone, or when the timeout passes.
+ 
+ package gatefixer
+ 
+@@ -9,6 +9,8 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+ // pollTick is how often Await re-reads the fixer's state.
+@@ -32,8 +34,13 @@ type Result struct {
+ // The fixer is done once rec.ReplyPath exists.
+ // It is dead in three cases, checked in this order.
+ // Its newest turn ended without a reply (DeadReasonAsking).
++// Its strand is gone.
++// The reason is then DeadReasonInterrupted when lym recorded its shuttle run as interrupted.
++// A machine stop leaves a run recorded that way.
++// Any other gone strand is DeadReasonDied.
+ // The timeout has passed since the spawn (DeadReasonTimeout).
+-// Its strand is gone (DeadReasonDied).
++// The strand is read before the timeout.
++// A fixer a stop ended is therefore never reported as slow, however long the stop lasted.
+ // A wait that elapses first returns StatusRunning.
+ // Every terminal result stops the strand; only done also reads the reply and removes the run directory.
+ // A failed stop, reply read or removal is a warning.
+@@ -62,15 +69,15 @@ func Await(deps Deps, rec *Record, timeout, wait time.Duration) (*Result, error)
+ 		if turnEnded {
+ 			return StatusDead, DeadReasonAsking, true, nil
+ 		}
+-		if clock.Now().Sub(spawnedAt) > timeout {
+-			return StatusDead, DeadReasonTimeout, true, nil
+-		}
+ 		live, err := StrandLive(deps.Reed, rec.StrandGUID)
+ 		if err != nil {
+ 			return "", "", false, err
+ 		}
+ 		if !live {
+-			return StatusDead, DeadReasonDied, true, nil
++			return StatusDead, goneStrandReason(deps, rec.StrandGUID), true, nil
++		}
++		if clock.Now().Sub(spawnedAt) > timeout {
++			return StatusDead, DeadReasonTimeout, true, nil
+ 		}
+ 		return StatusRunning, "", false, nil
+ 	}
+@@ -111,3 +118,15 @@ func Await(deps Deps, rec *Record, timeout, wait time.Duration) (*Result, error)
+ 	}
+ 	return result, nil
+ }
++
++// goneStrandReason is the dead reason of the fixer whose strand guid is gone.
++// It is DeadReasonInterrupted when the fixer's shuttle run record marks the run interrupted.
++// It is DeadReasonDied otherwise.
++// A run record that cannot be found or read also leaves the fixer died.
++func goneStrandReason(deps Deps, guid string) string {
++	run, _, err := shuttleengine.FindRun(deps.ShuttleCfg, deps.AnchorRoot, guid)
++	if err == nil && run.Interrupted {
++		return DeadReasonInterrupted
++	}
++	return DeadReasonDied
++}
+diff --git a/internal/gatefixer/await_test.go b/internal/gatefixer/await_test.go
+index 1f911cb00..9217e53a7 100644
+--- a/internal/gatefixer/await_test.go
++++ b/internal/gatefixer/await_test.go
+@@ -4,7 +4,9 @@
+ package gatefixer
+ 
+ import (
++	"encoding/json"
+ 	"os"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -28,7 +30,30 @@ func appendTurnEnd(t *testing.T, fx *fixture, rec *Record) {
+ 	}
+ }
+ 
+-// TestAwait pins the order done, asking, timeout and died are decided in.
++// markRunInterrupted rewrites rec's shuttle run record as lym's reconcile leaves a run a machine stop ended:
++// stopped and interrupted.
++func markRunInterrupted(t *testing.T, rec *Record) {
++	t.Helper()
++	path := filepath.Join(rec.ShuttleRunDir, "run.json")
++	data, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatalf("read run record: %v", err)
++	}
++	var run map[string]any
++	if err := json.Unmarshal(data, &run); err != nil {
++		t.Fatalf("decode run record: %v", err)
++	}
++	run["outcome"], run["interrupted"] = "stopped", true
++	data, err = json.Marshal(run)
++	if err != nil {
++		t.Fatalf("encode run record: %v", err)
++	}
++	if err := os.WriteFile(path, data, 0o644); err != nil {
++		t.Fatalf("write run record: %v", err)
++	}
++}
++
++// TestAwait pins the order done, asking, a gone strand and timeout are decided in.
+ // It also pins that every terminal result stops the strand once.
+ func TestAwait(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -76,13 +101,13 @@ func TestAwait(t *testing.T) {
+ 			wantReason: DeadReasonAsking,
+ 		},
+ 		{
+-			name: "TimeoutIsDecidedBeforeDied",
++			name: "DiedIsDecidedBeforeTimeout",
+ 			arrange: func(_ *testing.T, fx *fixture, _ *Record) {
+ 				pastTimeout(fx)
+ 				goneStrand(fx)
+ 			},
+ 			wantStatus: StatusDead,
+-			wantReason: DeadReasonTimeout,
++			wantReason: DeadReasonDied,
+ 		},
+ 		{
+ 			name:       "GoneStrandIsDied",
+@@ -90,6 +115,36 @@ func TestAwait(t *testing.T) {
+ 			wantStatus: StatusDead,
+ 			wantReason: DeadReasonDied,
+ 		},
++		{
++			name: "GoneStrandWithNoRunRecordIsDied",
++			arrange: func(t *testing.T, fx *fixture, rec *Record) {
++				if err := os.Remove(filepath.Join(rec.ShuttleRunDir, "run.json")); err != nil {
++					t.Fatalf("remove run record: %v", err)
++				}
++				goneStrand(fx)
++			},
++			wantStatus: StatusDead,
++			wantReason: DeadReasonDied,
++		},
++		{
++			name: "GoneStrandOfAnInterruptedRunIsInterrupted",
++			arrange: func(t *testing.T, fx *fixture, rec *Record) {
++				markRunInterrupted(t, rec)
++				goneStrand(fx)
++			},
++			wantStatus: StatusDead,
++			wantReason: DeadReasonInterrupted,
++		},
++		{
++			name: "InterruptedRunAStopOutlastingTheTimeoutEndedIsInterrupted",
++			arrange: func(t *testing.T, fx *fixture, rec *Record) {
++				markRunInterrupted(t, rec)
++				pastTimeout(fx)
++				goneStrand(fx)
++			},
++			wantStatus: StatusDead,
++			wantReason: DeadReasonInterrupted,
++		},
+ 		{
+ 			name:       "LiveFixerOutlastingTheTimeoutIsDeadOnIt",
+ 			arrange:    func(*testing.T, *fixture, *Record) {},
+diff --git a/internal/gatefixer/doc.go b/internal/gatefixer/doc.go
+index 445f07197..3b0512032 100644
+--- a/internal/gatefixer/doc.go
++++ b/internal/gatefixer/doc.go
+@@ -20,7 +20,9 @@
+ // A spawn that cannot be recorded or registered stops the strand again, so no fixer outlives its call unrecorded.
+ // Await polls the strand until it is done or dead.
+ // The strand is done on its reply file.
+-// It is dead when its newest turn ended without one, its timeout passed or its strand is gone.
++// It is dead when its newest turn ended without one, its strand is gone or its timeout passed.
++// A gone strand whose shuttle run lym recorded as interrupted is dead as interrupted, never as timed out.
++// A machine stop leaves a run recorded that way.
+ // Every terminal result stops the strand.
+ // Await never marks a record terminal; the caller does.
+ // Registrar builds the Deps.Register seam that registers a fixer's pane process with runproc,
+@@ -33,9 +35,10 @@
+ // A failure of one named entry at the writer's idle boundary then goes to a fixer,
+ // and the entry is judged again over the fixer's finished tree.
+ // At most one fixer runs per failed evaluation, and at most the entry's attempts plus one per row visit.
++// An interrupted fixer is replaced on the same files and counts toward neither bound.
+ // A failing result its gate marks WriterOnly is meant for the writer alone, so it spawns no fixer.
+ // The judging run after a fixer goes through the entry's RerunMark, so a gate can tell that run from the first.
+-// The entry's final closure and every other entry only wait for a live fixer,
++// Every other entry only waits for a live fixer, and the entry's final closure spawns none but a replacement,
+ // so every entry is judged over the fixer's finished tree.
+ //
+ // # Judging
+diff --git a/internal/gatefixer/record.go b/internal/gatefixer/record.go
+index 60feb4a71..33e787922 100644
+--- a/internal/gatefixer/record.go
++++ b/internal/gatefixer/record.go
+@@ -20,6 +20,9 @@ const (
+ 	DeadReasonTimeout = "timeout"
+ 	// DeadReasonDied is a fixer whose strand is gone.
+ 	DeadReasonDied = "died"
++	// DeadReasonInterrupted is a fixer whose strand is gone and whose shuttle run lym recorded as interrupted.
++	// A machine stop or a killed pane leaves a run recorded that way.
++	DeadReasonInterrupted = "interrupted"
+ )
+ 
+ // Record is what a caller keeps of one spawned fixer strand.
+diff --git a/internal/gatefixer/rowgate.go b/internal/gatefixer/rowgate.go
+index 87f04ef81..828e3667e 100644
+--- a/internal/gatefixer/rowgate.go
++++ b/internal/gatefixer/rowgate.go
+@@ -11,6 +11,7 @@ import (
+ 	"sync"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+@@ -38,17 +39,26 @@ type fixerOutcome struct {
+ 	status     string
+ 	deadReason string
+ 	reply      string
++	// replaceErr is why the replacement of an interrupted fixer could not be started.
++	replaceErr error
+ }
+ 
+ // note is the text a failing gate's findings carry for this outcome: the fixer's reply, or why it ended without one.
+ func (o fixerOutcome) note() string {
+-	if o.status == StatusDone {
++	switch {
++	case o.status == StatusDone:
+ 		return o.reply
++	case o.deadReason == DeadReasonInterrupted:
++		cause := "The cold fixer was interrupted, by a machine stop or a killed pane, before it replied"
++		if o.replaceErr != nil {
++			cause += fmt.Sprintf(", and its replacement could not be started (%v)", o.replaceErr)
++		}
++		return cause + "; any change it left uncommitted is in the worktree."
+ 	}
+ 	return fmt.Sprintf("The cold fixer ended without a reply (%s); any change it left uncommitted is in the worktree.", o.deadReason)
+ }
+ 
+-// rowWrap is the state of one wrapped gate: the entry that spawns fixers, its re-prompt budget and the strands this wrap spawned.
++// rowWrap is the state of one wrapped gate: the entry that spawns fixers, its re-prompt budget and the strands it knows.
+ type rowWrap struct {
+ 	rf       RowFixer
+ 	entry    string
+@@ -56,8 +66,9 @@ type rowWrap struct {
+ 	// rerun is the fixer entry's own mark, set while the gate runs again after a fixer; nil when the entry has none.
+ 	rerun *shuttleengine.RerunMark
+ 
+-	mu      sync.Mutex
+-	spawned map[string]bool
++	mu sync.Mutex
++	// known holds the strands this wrap spawned and those it left live after they ended interrupted.
++	known map[string]bool
+ }
+ 
+ // WrapRowGate returns a copy of spec whose entry named entry hands a failure to a cold fixer.
+@@ -72,21 +83,28 @@ type rowWrap struct {
+ // The run after the fixer goes through the entry's re-run mark,
+ // and a writer-only verdict of it carries the fixer's reply.
+ // It is not spawned for a forked failure SkipForked reports, or once the entry's set holds attempts plus one records.
++// A record of an interrupted fixer does not count toward that bound.
+ // A fixer that cannot be started leaves the inner failure standing with a line saying no fixer ran.
+ // A live record in the set is waited on instead of spawning, so a restarted driver finds the fixer it left running.
++// The named entry, its final closure included, may wait on a fixer that ends interrupted.
++// It then spawns a replacement on the same report and reply files, and judges once the replacement ends.
++// The replacement resumes the interrupted session where shuttle can.
++// The set may come to hold more than attempts plus one interrupted records.
++// A further interruption then stands as the fixer's outcome.
+ // The record turns terminal when the spawning entry returns a result judged over the fixer's finished tree.
+-// It also turns terminal when any other entry fails over it;
+-// an entry that passes over a live record leaves it live;
++// It also turns terminal when any other entry fails over it, unless the fixer ended interrupted:
++// that record stays live for the named entry to replace, and Expired no longer reports it.
++// An entry that passes over a live record leaves it live;
+ // a later entry still folds the fixer's reply into its findings.
+-// The entry's final closure never spawns; it only waits for a live record, then judges once.
+-// That run goes through the entry's re-run mark.
++// The entry's final closure spawns no fixer for a failure of its own.
++// It waits for a live record, then judges once, and that run goes through the entry's re-run mark.
+ // An entry naming no entry of spec is refused.
+ func WrapRowGate(spec shuttleengine.GateSpec, entry string, rf RowFixer) (shuttleengine.GateSpec, error) {
+ 	at := slices.IndexFunc(spec, func(candidate shuttleengine.GateEntry) bool { return candidate.Name == entry })
+ 	if at < 0 {
+ 		return nil, fmt.Errorf("gatefixer: the gate has no entry %q to hand a fixer; way forward: name the entry that carries the fixer element", entry)
+ 	}
+-	wrap := &rowWrap{rf: rf, entry: entry, attempts: spec[at].Attempts, spawned: map[string]bool{}}
++	wrap := &rowWrap{rf: rf, entry: entry, attempts: spec[at].Attempts, known: map[string]bool{}}
+ 
+ 	wrapped := make(shuttleengine.GateSpec, len(spec))
+ 	for i, candidate := range spec {
+@@ -129,8 +147,10 @@ func (w *rowWrap) openStore() (rowStore, error) {
+ 
+ // waitOnly returns inner behind a wait on the set's live fixer, and nil for a nil inner.
+ // With no live record it runs inner at once.
+-// markOnPass says whether a passing or pending inner marks the live record terminal; a failing one always does.
+-// afterFixer says whether the run over a live fixer's finished tree goes through the entry's re-run mark.
++// markOnPass says whether a passing or pending inner marks the live record terminal.
++// A failing one does, except on an entry that does not carry the fixer, over a fixer that ended interrupted.
++// afterFixer says whether the entry is the one that carries the fixer:
++// its run over a live fixer's finished tree goes through the re-run mark, and it replaces an interrupted fixer.
+ func (w *rowWrap) waitOnly(inner shuttleengine.Gate, markOnPass, afterFixer bool) shuttleengine.Gate {
+ 	if inner == nil {
+ 		return nil
+@@ -147,7 +167,7 @@ func (w *rowWrap) waitOnly(inner shuttleengine.Gate, markOnPass, afterFixer bool
+ 		if afterFixer {
+ 			judge = func() (shuttleengine.GateResult, error) { return w.rerun.Run(inner) }
+ 		}
+-		return w.waitThenRun(store, live, judge, markOnPass)
++		return w.waitThenRun(store, live, judge, markOnPass, afterFixer)
+ 	}
+ }
+ 
+@@ -160,20 +180,20 @@ func (w *rowWrap) spawning(inner shuttleengine.Gate, forked bool) shuttleengine.
+ 			return shuttleengine.GateResult{}, err
+ 		}
+ 		if live != nil {
+-			return w.waitThenRun(store, live, func() (shuttleengine.GateResult, error) { return w.rerun.Run(inner) }, true)
++			return w.waitThenRun(store, live, func() (shuttleengine.GateResult, error) { return w.rerun.Run(inner) }, true, true)
+ 		}
+ 		failed, err := inner()
+ 		if err != nil || failed.Passed || failed.Pending || failed.Terminal || failed.WriterOnly {
+ 			return failed, err
+ 		}
+-		held, err := store.count()
++		spent, _, err := store.budget()
+ 		if err != nil {
+ 			return shuttleengine.GateResult{}, err
+ 		}
+-		if held >= w.attempts+1 || (forked && w.rf.SkipForked != nil && w.rf.SkipForked(failed.Findings)) {
++		if spent >= w.attempts+1 || (forked && w.rf.SkipForked != nil && w.rf.SkipForked(failed.Findings)) {
+ 			return failed, nil
+ 		}
+-		return w.spawnAndJudgeAgain(store, held+1, inner, failed)
++		return w.spawnAndJudgeAgain(store, spent+1, inner, failed)
+ 	}
+ }
+ 
+@@ -209,11 +229,15 @@ func (w *rowWrap) spawnAndJudgeAgain(store rowStore, n int, inner shuttleengine.
+ 		return failed, nil
+ 	}
+ 	if spawned {
+-		w.mu.Lock()
+-		w.spawned[rec.StrandGUID] = true
+-		w.mu.Unlock()
++		w.markKnown(rec.StrandGUID)
+ 	}
+-	return w.waitThenRun(store, rec, func() (shuttleengine.GateResult, error) { return w.rerun.Run(inner) }, true)
++	return w.waitThenRun(store, rec, func() (shuttleengine.GateResult, error) { return w.rerun.Run(inner) }, true, true)
++}
++
++func (w *rowWrap) markKnown(guid string) {
++	w.mu.Lock()
++	defer w.mu.Unlock()
++	w.known[guid] = true
+ }
+ 
+ // waitThenRun waits for rec's fixer and runs inner once.
+@@ -221,9 +245,11 @@ func (w *rowWrap) spawnAndJudgeAgain(store rowStore, n int, inner shuttleengine.
+ // so a driver restarted during the run, or after an inner error, still finds the fixer live.
+ // A passing or pending result judges nothing over the finished tree;
+ // when markOnPass is false, it leaves the record live.
++// replace says whether an interrupted fixer is replaced before inner runs.
++// Without it, the record of a fixer that ended interrupted is never marked terminal here.
+ // A failing verdict carries the fixer's reply or dead note.
+-func (w *rowWrap) waitThenRun(store rowStore, rec *Record, inner shuttleengine.Gate, markOnPass bool) (shuttleengine.GateResult, error) {
+-	outcome, err := w.wait(store, rec)
++func (w *rowWrap) waitThenRun(store rowStore, rec *Record, inner shuttleengine.Gate, markOnPass, replace bool) (shuttleengine.GateResult, error) {
++	outcome, rec, err := w.waitReplacingInterrupted(store, rec, replace)
+ 	if err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
+@@ -234,7 +260,11 @@ func (w *rowWrap) waitThenRun(store rowStore, rec *Record, inner shuttleengine.G
+ 	if (result.Passed || result.Pending) && !markOnPass {
+ 		return result, nil
+ 	}
+-	if err := store.markTerminal(rec.StrandGUID, outcome.status, outcome.deadReason); err != nil {
++	if outcome.deadReason == DeadReasonInterrupted && !replace {
++		// The record stays live while the writer reworks this failure,
++		// so it must not read as expired and finalize the writer mid-turn.
++		w.markKnown(rec.StrandGUID)
++	} else if err := store.markTerminal(rec.StrandGUID, outcome.status, outcome.deadReason); err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
+ 	if result.Passed || result.Pending || result.Terminal {
+@@ -244,6 +274,46 @@ func (w *rowWrap) waitThenRun(store rowStore, rec *Record, inner shuttleengine.G
+ 	return result, nil
+ }
+ 
++// waitReplacingInterrupted waits for rec's fixer and returns its outcome and the record the wait ended on.
++// With replace set, a fixer that ends interrupted is marked terminal,
++// and a replacement is spawned on its report and reply files and waited on in turn.
++// The replacement's output file is the interrupted run's own, so shuttle resumes the interrupted session where it can.
++// The interruption stands as the outcome when a replacement cannot be started.
++// It also stands once the set holds more than attempts plus one interrupted records.
++func (w *rowWrap) waitReplacingInterrupted(store rowStore, rec *Record, replace bool) (fixerOutcome, *Record, error) {
++	for {
++		outcome, err := w.wait(store, rec)
++		if err != nil || !replace || outcome.deadReason != DeadReasonInterrupted {
++			return outcome, rec, err
++		}
++		if err := store.markTerminal(rec.StrandGUID, outcome.status, outcome.deadReason); err != nil {
++			return fixerOutcome{}, nil, err
++		}
++		_, interrupted, err := store.budget()
++		if err != nil {
++			return fixerOutcome{}, nil, err
++		}
++		if interrupted > w.attempts+1 {
++			return outcome, rec, nil
++		}
++		spec, err := w.rf.Spec(rec.ReportPath, rec.ReplyPath)
++		if err != nil {
++			return fixerOutcome{}, nil, fmt.Errorf("gatefixer: build the interrupted fixer's replacement launch: %w", err)
++		}
++		next, spawned, err := w.rf.Fixer.SpawnOrAttach(store, spec)
++		if err != nil {
++			// Logged here, since a passing judgment carries no findings to say it in.
++			logger.Warn("gatefixer: the interrupted fixer's replacement could not be started", "strandGUID", rec.StrandGUID, "error", err)
++			outcome.replaceErr = err
++			return outcome, rec, nil
++		}
++		if spawned {
++			w.markKnown(next.StrandGUID)
++		}
++		rec = next
++	}
++}
++
+ // wait asks the fixer to wait until its answer is terminal.
+ // A wait that fails stops the strand and marks the record dead,
+ // so a fixer whose engine or events can no longer be read never blocks the visit;
+@@ -266,7 +336,7 @@ func (w *rowWrap) wait(store rowStore, rec *Record) (fixerOutcome, error) {
+ 	}
+ }
+ 
+-// expired reports whether the set holds a live record whose strand this wrap did not spawn;
++// expired reports whether the set holds a live record whose strand this wrap does not know;
+ // only a driver restarted onto the visit sees such a record.
+ func (w *rowWrap) expired() (bool, error) {
+ 	_, live, err := w.liveRecord()
+@@ -275,5 +345,5 @@ func (w *rowWrap) expired() (bool, error) {
+ 	}
+ 	w.mu.Lock()
+ 	defer w.mu.Unlock()
+-	return !w.spawned[live.StrandGUID], nil
++	return !w.known[live.StrandGUID], nil
+ }
+diff --git a/internal/gatefixer/rowgate_test.go b/internal/gatefixer/rowgate_test.go
+index 3e629485b..0f3c1096e 100644
+--- a/internal/gatefixer/rowgate_test.go
++++ b/internal/gatefixer/rowgate_test.go
+@@ -29,9 +29,13 @@ type fakeFixer struct {
+ 	// reply is the reply of a fixer that ends done; a non-empty deadReason makes it end dead instead.
+ 	reply      string
+ 	deadReason string
+-	spawnErr   error
+-	awaitErr   error
+-	stopErr    error
++	// interruptedFirst is how many terminal answers end interrupted before the scripted one.
++	interruptedFirst int
++	spawnErr         error
++	// spawnErrAfter is how many spawns succeed before spawnErr applies.
++	spawnErrAfter int
++	awaitErr      error
++	stopErr       error
+ 
+ 	// onAwait, when set, runs at the start of every wait, outside the fixer's lock.
+ 	onAwait func()
+@@ -45,7 +49,7 @@ type fakeFixer struct {
+ func (f *fakeFixer) SpawnOrAttach(store Store, spec Spec) (*Record, bool, error) {
+ 	f.mu.Lock()
+ 	defer f.mu.Unlock()
+-	if f.spawnErr != nil {
++	if f.spawnErr != nil && len(f.specs) >= f.spawnErrAfter {
+ 		return nil, false, f.spawnErr
+ 	}
+ 	f.specs = append(f.specs, spec)
+@@ -68,6 +72,10 @@ func (f *fakeFixer) Await(rec *Record, timeout, wait time.Duration) (*Result, er
+ 		return &Result{Status: StatusRunning}, nil
+ 	}
+ 	f.polls = 0
++	if f.interruptedFirst > 0 {
++		f.interruptedFirst--
++		return &Result{Status: StatusDead, DeadReason: DeadReasonInterrupted}, nil
++	}
+ 	if f.deadReason != "" {
+ 		return &Result{Status: StatusDead, DeadReason: f.deadReason}, nil
+ 	}
+@@ -498,8 +506,8 @@ func TestWrapRowGate(t *testing.T) {
+ 		if !strings.HasPrefix(got.Findings, "lint broke") || !strings.Contains(got.Findings, "no provider") || !strings.Contains(got.Findings, "no fixer ran") {
+ 			t.Errorf("Gate().Findings = %q; want the inner findings and a line naming the spawn error and that no fixer ran", got.Findings)
+ 		}
+-		if count, _ := h.store().count(); count != 0 || gate.calls != 1 {
+-			t.Errorf("records = %d, inner calls = %d; want none and 1", count, gate.calls)
++		if spent, interrupted, _ := h.store().budget(); spent+interrupted != 0 || gate.calls != 1 {
++			t.Errorf("records = %d, inner calls = %d; want none and 1", spent+interrupted, gate.calls)
+ 		}
+ 	})
+ 
+@@ -516,6 +524,145 @@ func TestWrapRowGate(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("InterruptedRecordsSpendNoBudget", func(t *testing.T) {
++		t.Parallel()
++		h := newRowHarness(t)
++		h.seed(t, Record{StrandGUID: "a", Status: StatusDone}, Record{StrandGUID: "b", Status: StatusDead, DeadReason: DeadReasonInterrupted}, Record{StrandGUID: "c", Status: StatusDone})
++		gate := &scriptedGate{results: []shuttleengine.GateResult{failing("lint broke"), passing()}}
++		entry := h.wrap(t, verifyEntry(gate, 2))
++
++		got, err := entry.Gate()
++		if err != nil || !got.Passed {
++			t.Errorf("Gate() = %+v, %v; want the pass judged over the fixer's tree", got, err)
++		}
++		if len(h.fixer.specs) != 1 || h.fixer.specs[0].ReportPath != h.store().reportPath(3) {
++			t.Errorf("spawned specs = %+v; want one fixer on report 3", h.fixer.specs)
++		}
++	})
++
++	t.Run("AnInterruptedFixerIsReplacedOnItsOwnFiles", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			// seedLive leaves a live record of fixer 1 in the set, as a driver a machine stop ended leaves it.
++			seedLive bool
++			// final drives the entry's final closure in place of its gate.
++			final   bool
++			results []shuttleengine.GateResult
++		}{
++			{"SpawnedByThisWrap", false, false, []shuttleengine.GateResult{failing("lint broke"), passing()}},
++			{"LeftLiveByARestartedDriver", true, false, []shuttleengine.GateResult{passing()}},
++			{"FinalOverALeftLiveRecord", true, true, []shuttleengine.GateResult{passing()}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newRowHarness(t)
++				h.fixer.interruptedFirst = 1
++				store := h.store()
++				if tt.seedLive {
++					h.seed(t, Record{StrandGUID: "left-live", SpawnedAt: "1970-01-01T00:00:00Z", ReportPath: store.reportPath(1), ReplyPath: store.replyPath(1)})
++				}
++				gate := &scriptedGate{results: tt.results}
++				entry := h.wrap(t, verifyEntry(gate, 0))
++				run := entry.Gate
++				if tt.final {
++					run = entry.Final
++				}
++				var expiredOnReplacement []bool
++				h.fixer.onAwait = func() {
++					// The second wait is the one on the replacement.
++					if h.fixer.awaits != 1 {
++						return
++					}
++					expired, err := entry.Expired()
++					if err != nil {
++						t.Errorf("Expired() error = %v; want none", err)
++					}
++					expiredOnReplacement = append(expiredOnReplacement, expired)
++				}
++
++				got, err := run()
++				if err != nil || !got.Passed {
++					t.Fatalf("gate() = %+v, %v; want the pass judged over the replacement's tree", got, err)
++				}
++				if want := []bool{false}; !slices.Equal(expiredOnReplacement, want) {
++					t.Errorf("Expired() while waiting on the replacement = %v; want %v", expiredOnReplacement, want)
++				}
++				replacement := h.fixer.specs[len(h.fixer.specs)-1]
++				if replacement.ReportPath != store.reportPath(1) || replacement.ReplyPath != store.replyPath(1) {
++					t.Errorf("replacement spec = %+v; want fixer 1's report and reply files", replacement)
++				}
++				records, err := store.load()
++				if err != nil {
++					t.Fatalf("load records: %v", err)
++				}
++				if len(records) != 2 || records[0].DeadReason != DeadReasonInterrupted || records[1].Status != StatusDone {
++					t.Errorf("records = %+v; want the interrupted fixer and its replacement marked done", records)
++				}
++				if spent, interrupted, _ := store.budget(); spent != 1 || interrupted != 1 {
++					t.Errorf("budget() = %d spent, %d interrupted; want 1 and 1", spent, interrupted)
++				}
++			})
++		}
++	})
++
++	t.Run("AnInterruptionPastTheCapStandsWithItsNote", func(t *testing.T) {
++		t.Parallel()
++		h := newRowHarness(t)
++		h.fixer.interruptedFirst = 5
++		gate := &scriptedGate{results: []shuttleengine.GateResult{failing("lint broke")}}
++		entry := h.wrap(t, verifyEntry(gate, 0))
++
++		got, err := entry.Gate()
++		if err != nil || got.Passed || !strings.Contains(got.Findings, "The cold fixer was interrupted") {
++			t.Errorf("Gate() = %+v, %v; want the failure carrying the interrupted note", got, err)
++		}
++		if len(h.fixer.specs) != 2 {
++			t.Errorf("spawns = %d; want the first fixer and one replacement", len(h.fixer.specs))
++		}
++	})
++
++	t.Run("AFailedReplacementSpawnLeavesTheInterruptionStandingWithItsError", func(t *testing.T) {
++		t.Parallel()
++		h := newRowHarness(t)
++		h.fixer.interruptedFirst = 1
++		h.fixer.spawnErr, h.fixer.spawnErrAfter = errors.New("no provider"), 1
++		gate := &scriptedGate{results: []shuttleengine.GateResult{failing("lint broke")}}
++		entry := h.wrap(t, verifyEntry(gate, 0))
++
++		got, err := entry.Gate()
++		if err != nil || got.Passed || !strings.Contains(got.Findings, "The cold fixer was interrupted") || !strings.Contains(got.Findings, "its replacement could not be started (no provider)") {
++			t.Errorf("Gate() = %+v, %v; want the interrupted note naming the replacement's spawn error", got, err)
++		}
++	})
++
++	t.Run("AnotherEntryFailingOverAnInterruptedFixerLeavesItLive", func(t *testing.T) {
++		t.Parallel()
++		h := newRowHarness(t)
++		h.fixer.interruptedFirst = 1
++		h.seed(t, Record{StrandGUID: "left-live"})
++		spec := shuttleengine.GateSpec{
++			{Name: "other", Gate: (&scriptedGate{results: []shuttleengine.GateResult{failing("other broke")}}).Gate, Attempts: 1},
++			verifyEntry(&scriptedGate{results: []shuttleengine.GateResult{passing()}}, 2),
++		}
++		wrapped, err := WrapRowGate(spec, rowEntry, h.rf)
++		if err != nil {
++			t.Fatalf("WrapRowGate() error = %v; want none", err)
++		}
++
++		got, err := wrapped[0].Gate()
++		if err != nil || got.Passed || !strings.HasPrefix(got.Findings, "other broke") || !strings.Contains(got.Findings, "The cold fixer was interrupted") {
++			t.Errorf("other Gate() = %+v, %v; want the failure carrying the interrupted note", got, err)
++		}
++		if got := h.statuses(t); len(got) != 1 || got[0] != "" || len(h.fixer.specs) != 0 {
++			t.Errorf("record statuses = %v with %d spawns; want the record still live and no spawn", got, len(h.fixer.specs))
++		}
++		if expired, err := wrapped[1].Expired(); err != nil || expired {
++			t.Errorf("Expired() = %v, %v while the writer reworks; want false", expired, err)
++		}
++	})
++
+ 	t.Run("ALiveRecordIsWaitedOnAndTheEntryJudgesOnce", func(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+@@ -661,7 +808,7 @@ func TestWrapRowGate(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("FinalNeverSpawnsAndWaitsOnlyForALiveRecord", func(t *testing.T) {
++	t.Run("FinalSpawnsNoFixerForItsOwnFailureAndWaitsOnlyForALiveRecord", func(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+ 			name       string
+diff --git a/internal/gatefixer/rowstore.go b/internal/gatefixer/rowstore.go
+index 1475da807..34be0a45b 100644
+--- a/internal/gatefixer/rowstore.go
++++ b/internal/gatefixer/rowstore.go
+@@ -69,13 +69,23 @@ func (s rowStore) Save(rec *Record) error {
+ 	})
+ }
+ 
+-// count returns how many records the set holds, terminal ones included.
+-func (s rowStore) count() (int, error) {
++// budget returns two counts over the set's records, live and terminal ones alike.
++// spent counts the records that spend the visit's fixer budget.
++// interrupted counts the records of an interrupted fixer.
++// An interrupted fixer spends none, so a machine stop never uses up the visit's fixers.
++func (s rowStore) budget() (spent, interrupted int, err error) {
+ 	records, err := s.load()
+ 	if err != nil {
+-		return 0, err
++		return 0, 0, err
+ 	}
+-	return len(records), nil
++	for _, rec := range records {
++		if rec.Status == StatusDead && rec.DeadReason == DeadReasonInterrupted {
++			interrupted++
++			continue
++		}
++		spent++
++	}
++	return spent, interrupted, nil
+ }
+ 
+ // markTerminal gives the record of guid the status and dead reason, leaving every other record unchanged.
+diff --git a/internal/gatefixer/rowstore_test.go b/internal/gatefixer/rowstore_test.go
+index 332f3da76..0575c2d08 100644
+--- a/internal/gatefixer/rowstore_test.go
++++ b/internal/gatefixer/rowstore_test.go
+@@ -35,8 +35,8 @@ func TestRowStore(t *testing.T) {
+ 		if err != nil || len(records) != 2 || records[0] != first || records[1].StrandGUID != "b" {
+ 			t.Errorf("load() = %+v, %v; want a rewritten in place, then b", records, err)
+ 		}
+-		if count, err := store.count(); err != nil || count != 2 {
+-			t.Errorf("count() = %d, %v; want 2", count, err)
++		if spent, interrupted, err := store.budget(); err != nil || spent != 2 || interrupted != 0 {
++			t.Errorf("budget() = %d spent, %d interrupted, %v; want 2 and 0", spent, interrupted, err)
+ 		}
+ 		if report, reply := store.reportPath(3), store.replyPath(3); !strings.HasSuffix(report, "verify/report-3.md") || !strings.HasSuffix(reply, "verify/reply-3.md") {
+ 			t.Errorf("reportPath(3) = %q, replyPath(3) = %q; want report-3.md and reply-3.md in the entry directory", report, reply)
+diff --git a/internal/reedcli/oomnotice.go b/internal/reedcli/oomnotice.go
+index 5a604569b..56e4e9000 100644
+--- a/internal/reedcli/oomnotice.go
++++ b/internal/reedcli/oomnotice.go
+@@ -70,6 +70,8 @@ func engineOOMBoundaries(eng *reedengine.Engine, location *lymcwd.Location) pane
+ // that cgroup may hold other panes or the tmux server, and its kills are none of this strand's.
+ // seen is not advanced; it loses each cgroup no live pane is in any more.
+ // A cgroup first seen counts from 0, so a kill before the daemon first looked is still told.
++// A cgroup gets at most one notice, under the first strand in it.
++// Strands sharing a pane scope therefore never tell one kill twice.
+ func planPaneOOMNotices(strands []reedengine.StrandStatus, readKills func(pid int) (string, int, error), seen paneOOMKills) []paneOOMNotice {
+ 	var notices []paneOOMNotice
+ 	current := make(map[string]bool, len(strands))
+@@ -79,6 +81,9 @@ func planPaneOOMNotices(strands []reedengine.StrandStatus, readKills func(pid in
+ 		}
+ 		cgroup, kills, err := readKills(s.PanePID)
+ 		if cgroup != "" {
++			if current[cgroup] {
++				continue
++			}
+ 			current[cgroup] = true
+ 		}
+ 		if err != nil || !strings.HasPrefix(path.Base(cgroup), reedengine.PaneScopeUnitPrefix) {
+diff --git a/internal/reedcli/oomnotice_integration_test.go b/internal/reedcli/oomnotice_integration_test.go
+new file mode 100644
+index 000000000..3cc0260e0
+--- /dev/null
++++ b/internal/reedcli/oomnotice_integration_test.go
+@@ -0,0 +1,127 @@
++// oomnotice_integration_test.go proves over a real hub that the watchdog's pane OOM notice reaches the parent orch.
++// The strand, kill count and journal reads are faked.
++// The post is the one engineOOMBoundaries builds.
++// Creel's daemon runs in process on a fake delivery.
++
++package reedcli
++
++import (
++	"context"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/creelcli"
++	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/lymtemp"
++	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// startHubOrchDaemon records a prime orch strand for the hub and runs creel's daemon in process with that strand live.
++// It returns the strand's name.
++func startHubOrchDaemon(t *testing.T, h *hubforge.Hub) string {
++	t.Helper()
++	root, err := lymtemp.ProcessRoot()
++	if err != nil {
++		t.Fatalf("ProcessRoot() = %v", err)
++	}
++	geometry, err := hubgeom.CreelGeometry(h.Path, root.Path())
++	if err != nil {
++		t.Fatalf("CreelGeometry() = %v", err)
++	}
++	receiver := geometry.Shortname + ":orch-held"
++	if err := orchengine.SaveState(orchcli.PrimePaths(h.Location), orchengine.State{Phase: orchengine.PhaseIdle, Strand: "g1"}); err != nil {
++		t.Fatalf("SaveState: %v", err)
++	}
++	reedState := &reedengine.ReedState{Strands: []reedengine.Strand{{GUID: "g1", Name: receiver}}}
++	if err := reedengine.SaveState(filepath.Join(h.Location.AnchorPath(), lymdirs.DotLymDirName), reedState); err != nil {
++		t.Fatalf("reedengine.SaveState: %v", err)
++	}
++
++	delivery := creelfake.NewDelivery()
++	delivery.SetStrands(creelfake.LiveStrand(receiver))
++	// Busy, so a posted mail is not carried into the pane and marked read before the test reads the log.
++	delivery.SetIdle(receiver, false)
++	epoch := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
++	ready := make(chan struct{})
++	ctx, cancel := context.WithCancel(context.Background())
++	done := make(chan error, 1)
++	go func() {
++		done <- creelengine.Run(ctx, creelengine.Options{
++			Geometry: geometry, Delivery: delivery, Clock: creelfake.NewClock(epoch), PollClock: creelfake.NewClock(epoch),
++			ParentPID: proc.ParentPID, Ready: func() { close(ready) },
++		})
++	}()
++	t.Cleanup(func() {
++		cancel()
++		<-done
++	})
++	select {
++	case <-ready:
++	case err := <-done:
++		t.Fatalf("the creel daemon ended before it listened: %v", err)
++	case <-time.After(10 * time.Second):
++		t.Fatal("the creel daemon did not listen")
++	}
++	return receiver
++}
++
++// TestReportPaneOOMKills_DeliversTheNoticeToTheParentOrchsCreelMailbox pins where a pane's OOM notice arrives.
++// The notice goes through the post engineOOMBoundaries builds.
++// It reaches the parent orch's creel mailbox as one mail with the notice line.
++// It runs without t.Parallel: the strand environment variable is process-global.
++func TestReportPaneOOMKills_DeliversTheNoticeToTheParentOrchsCreelMailbox(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv(agentname.StrandNameEnv, "")
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPair(t, h, "oom-task")
++	receiver := startHubOrchDaemon(t, h)
++	task, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("oom-task"))
++	if err != nil {
++		t.Fatalf("ResolveWorktree: %v", err)
++	}
++	// engineOOMBoundaries reads its engine only in strands, which this test replaces.
++	boundaries := engineOOMBoundaries(nil, task)
++	boundaries.strands = func() ([]reedengine.StrandStatus, error) {
++		return []reedengine.StrandStatus{{Name: "ly:darn", PaneID: "%7", PanePID: 7}}, nil
++	}
++	boundaries.paneKills = func(int) (string, int, error) { return "/app.slice/lym-pane-7.scope", 1, nil }
++	boundaries.journalKills = func(string) ([]proc.OOMKill, error) { return []proc.OOMKill{{PID: 11, Name: "script"}}, nil }
++
++	if !reportPaneOOMKills(h.Path, "oom-task", boundaries, paneOOMKills{}) {
++		t.Fatal("reportPaneOOMKills() = false; want the notice posted")
++	}
++
++	reader, err := creelcli.NewProgramClient(h.Location, "CHECK")
++	if err != nil {
++		t.Fatalf("NewProgramClient: %v", err)
++	}
++	entries, err := reader.Log(creelengine.LogFilter{})
++	if err != nil {
++		t.Fatalf("Log: %v", err)
++	}
++	var posted []creelengine.LogEntry
++	for _, entry := range entries {
++		if entry.Event == "posted" {
++			posted = append(posted, entry)
++		}
++	}
++	const wantLine = "reed: the kernel's OOM killer ended script (pid 11) at the memory cap of strand ly:darn, pane %7, in worktree oom-task; the pane lives on"
++	if len(posted) != 1 {
++		t.Fatalf("posted mails = %+v; want exactly one", posted)
++	}
++	if posted[0].To != receiver || posted[0].Subject != wantLine {
++		t.Errorf("posted mail = to %q subject %q; want to %q subject %q", posted[0].To, posted[0].Subject, receiver, wantLine)
++	}
++}
+diff --git a/internal/reedcli/oomnotice_test.go b/internal/reedcli/oomnotice_test.go
+index ddb7a0767..40bc69e5c 100644
+--- a/internal/reedcli/oomnotice_test.go
++++ b/internal/reedcli/oomnotice_test.go
+@@ -22,6 +22,7 @@ func TestPlanPaneOOMNotices(t *testing.T) {
+ 
+ 	// Each pane shell's pid reads as the cgroup and kill count below; pid 4 cannot be read.
+ 	// Pid 6 shares a tmux scope the memory cap never reached.
++	// Pid 7 is in pid 3's pane scope, so its kills are the ones pid 3's notice tells.
+ 	kills := map[int]struct {
+ 		cgroup string
+ 		count  int
+@@ -30,6 +31,7 @@ func TestPlanPaneOOMNotices(t *testing.T) {
+ 		2: {"/app.slice/lym-pane-2.scope", 2},
+ 		3: {"/app.slice/lym-pane-3.scope", 3},
+ 		6: {"/app.slice/tmux-spawn-0a1b.scope", 3},
++		7: {"/app.slice/lym-pane-3.scope", 3},
+ 	}
+ 	readKills := func(pid int) (string, int, error) {
+ 		k, ok := kills[pid]
+@@ -45,6 +47,7 @@ func TestPlanPaneOOMNotices(t *testing.T) {
+ 		{Name: "unreadable", PaneID: "%4", PanePID: 4},
+ 		{Name: "dead", PaneID: "%5"},
+ 		{Name: "uncapped", PaneID: "%6", PanePID: 6},
++		{Name: "shares-a-pane-scope", PaneID: "%7", PanePID: 7},
+ 	}
+ 	tests := []struct {
+ 		name     string
+diff --git a/internal/reedengine/panememory_test.go b/internal/reedengine/panememory_test.go
+index a4de41760..bf890cbd2 100644
+--- a/internal/reedengine/panememory_test.go
++++ b/internal/reedengine/panememory_test.go
+@@ -4,9 +4,12 @@ package reedengine
+ 
+ import (
+ 	"errors"
++	"os"
++	"strconv"
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -34,21 +37,29 @@ func TestPaneMemoryMax(t *testing.T) {
+ }
+ 
+ // TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning pins the degraded path.
+-// It captures the process-global logger, so it does not run in parallel.
++// It captures the process-global logger and empties PATH in one row, so it does not run in parallel.
++// With PATH empty the cap's busctl lookup fails on Linux, and Windows has no cap at all;
++// either way the cap returns an error wrapping proc.ErrMemoryCap.
+ func TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+-		name    string
+-		answer  string
+-		err     error
+-		wantLog string
++		name      string
++		answer    string
++		err       error
++		emptyPath bool
++		wantLog   string
++		wantCause string
+ 	}{
+-		{"TheShellPidCannotBeRead", "", errors.New("no such pane"), "its shell's pid could not be read"},
+-		{"TheShellPidIsNotANumber", "not-a-pid\n", nil, "named no shell pid"},
+-		{"TheShellPidIsZero", "0\n", nil, "named no shell pid"},
++		{"TheShellPidCannotBeRead", "", errors.New("no such pane"), false, "its shell's pid could not be read", ""},
++		{"TheShellPidIsNotANumber", "not-a-pid\n", nil, false, "named no shell pid", ""},
++		{"TheShellPidIsZero", "0\n", nil, false, "named no shell pid", ""},
++		{"TheUserManagerCannotCapThePane", strconv.Itoa(os.Getpid()) + "\n", nil, true, "cause=", proc.ErrMemoryCap.Error()},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			if tt.emptyPath {
++				t.Setenv("PATH", "")
++			}
+ 			e := newTestEngine(t)
+ 			fake := launchFake(t, e, nil)
+ 			fake.answerFormat("#{pane_pid}", tt.answer, tt.err)
+@@ -65,6 +76,9 @@ func TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning(t *
+ 			if tt.err != nil && !strings.Contains(log, tt.err.Error()) {
+ 				t.Errorf("log %q; want it to name the cause %q", log, tt.err)
+ 			}
++			if !strings.Contains(log, tt.wantCause) {
++				t.Errorf("log %q; want it to name the cap's cause %q", log, tt.wantCause)
++			}
+ 			sends := fake.ArgvFor("send-keys")
+ 			if len(sends) == 0 || sends[len(sends)-1][len(sends[len(sends)-1])-1] != "Enter" {
+ 				t.Errorf("send-keys calls %v; want the launch to still submit its command", sends)
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 3cf7758fb..f75fad959 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -1028,7 +1028,21 @@ func (b *Bouncer) recordPass(round int, seed bool, result shuttleengine.Result)
+ 	}
+ }
+ 
+-// degrade is the single exit for every judge-call infrastructure failure.
++// judgeDiedError is the error of producer's judge run result, which died with no verdict written.
++// It wraps shuttleengine.ErrNotStarted for a judge that never came up.
++// The driver re-steps that error as a transient agent start.
++// It wraps shuttleengine.ErrAgentDied for a judge that died after it started.
++func judgeDiedError(producer string, result shuttleengine.Result) error {
++	switch {
++	case result.NotStarted && result.StartError != "":
++		return fmt.Errorf("shedadapters: %s (%s): judge run outcome %s: %w: %s", producer, bouncerEngineLabel, result.Outcome, shuttleengine.ErrNotStarted, result.StartError)
++	case result.NotStarted:
++		return fmt.Errorf("shedadapters: %s (%s): judge run outcome %s: %w", producer, bouncerEngineLabel, result.Outcome, shuttleengine.ErrNotStarted)
++	}
++	return fmt.Errorf("shedadapters: %s (%s): judge run outcome %s: %w", producer, bouncerEngineLabel, result.Outcome, shuttleengine.ErrAgentDied)
++}
++
++// degrade is the single exit for every judge-call failure that degrades the round rather than failing the call.
+ // It first returns a cancellation error for ctx, if there is one, with an empty outcome and pointer.
+ // Otherwise it logs args via logger.Warn and returns shedengine.Stuck with the Reason set to msg and a nil error.
+ // It never returns shedengine.Done.
+@@ -2121,7 +2135,10 @@ func (b *Bouncer) renderParentReviewBlock() (string, error) {
+ // The judge's prompt then tells the judge to wait for the answer.
+ // It then runs the judge spawn and harvests whatever the spawn produced.
+ // A judgment that provably happened after the run returns is acted on whatever the run reported.
+-// Without such a judgment, the call degrades on a run error or a non-done outcome.
++// Without such a judgment, a judge run that died fails the call with the error judgeDiedError builds,
++// so a judge that never gave a verdict spends no bounce budget.
++// A run error without such a judgment fails the call the same way, with an error wrapping it.
++// The call degrades on any other non-done outcome.
+ // It also degrades on an unreadable or unparseable verdict or ledger.
+ func (b *Bouncer) judgeCall(ctx context.Context, n int) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	reportPath := filepath.Join(b.cfg.RunDir, b.cfg.ReportName(n))
+@@ -2178,11 +2195,12 @@ func (b *Bouncer) judgeCall(ctx context.Context, n int) (shedengine.Outcome, she
+ 	// Respawning over it would start two judges racing to write one verdict.
+ 	// Archiving first would rename those files out from under the surviving one.
+ 	result, attached, attachErr := b.cfg.Shuttle.Attach(spec)
+-	if attachErr != nil {
++	if attachErr != nil && !attached {
+ 		return b.degrade(ctx, "shedadapters: bouncer judge attach probe failed", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "cause", attachErr)
+ 	}
+ 
+-	var runErr error
++	// An error beside an attached run is that run's own, from the wait on it.
++	runErr := attachErr
+ 	if attached {
+ 		logger.Info("shedadapters: attached to a live bouncer judge run instead of respawning", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "sessionID", result.SessionID, "strandGUID", result.StrandGUID)
+ 	} else {
+@@ -2197,7 +2215,7 @@ func (b *Bouncer) judgeCall(ctx context.Context, n int) (shedengine.Outcome, she
+ 
+ 	// A pass whose Run errored has no result to record.
+ 	// Recording precedes the harvest, so a judgment the guard refuses still shows.
+-	if attached || runErr == nil {
++	if runErr == nil {
+ 		b.recordPass(n, false, result)
+ 	}
+ 
+@@ -2208,7 +2226,21 @@ func (b *Bouncer) judgeCall(ctx context.Context, n int) (shedengine.Outcome, she
+ 	}
+ 
+ 	if runErr != nil {
+-		return b.degrade(ctx, "shedadapters: bouncer judge shuttle run failed", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "cause", runErr)
++		if cerr := cancelErr(ctx, b.cfg.Name, bouncerEngineLabel); cerr != nil {
++			return "", shedengine.OutputPointer{}, cerr
++		}
++		logger.Warn("shedadapters: bouncer judge shuttle run failed", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "cause", runErr)
++		// Wrapped so the driver can still class the start failure, such as a spawn the host refused for now.
++		return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): judge run: %w", b.cfg.Name, bouncerEngineLabel, runErr)
++	}
++	if result.Outcome == shuttleengine.OutcomeDied {
++		// A judge that died before its verdict judged nothing, so its round is no bounce:
++		// the call fails as an infrastructure failure, which spends none of the row's bounce budget.
++		if cerr := cancelErr(ctx, b.cfg.Name, bouncerEngineLabel); cerr != nil {
++			return "", shedengine.OutputPointer{}, cerr
++		}
++		logger.Warn("shedadapters: bouncer judge run died before giving a verdict", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "notStarted", result.NotStarted)
++		return "", shedengine.OutputPointer{}, judgeDiedError(b.cfg.Name, result)
+ 	}
+ 	if result.Outcome != shuttleengine.OutcomeDone {
+ 		return b.degrade(ctx, "shedadapters: bouncer judge run did not complete", "producer", b.cfg.Name, "engine", bouncerEngineLabel, "round", n, "outcome", result.Outcome)
+diff --git a/internal/shedadapters/bouncer_judge_test.go b/internal/shedadapters/bouncer_judge_test.go
+index 669b74e0a..0bb681812 100644
+--- a/internal/shedadapters/bouncer_judge_test.go
++++ b/internal/shedadapters/bouncer_judge_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -762,14 +763,6 @@ func TestBouncer_JudgeCall_Degradations(t *testing.T) {
+ 				return b, cfg
+ 			},
+ 		},
+-		{
+-			name: "RunError",
+-			buildBouncer: func(t *testing.T) (*Bouncer, BouncerConfig) {
+-				b, cfg := newBouncerFixture(t, withShuttle(&shedfake.Shuttle{Err: errors.New("judge run exploded")})).Build()
+-				layoutBouncerRun(t, cfg, []bouncerJudgeFixture{{round: 1, report: bouncerReport(1)}})
+-				return b, cfg
+-			},
+-		},
+ 		{
+ 			name: "UnreadableVerdictFile",
+ 			buildBouncer: func(t *testing.T) (*Bouncer, BouncerConfig) {
+@@ -807,7 +800,7 @@ func TestBouncer_JudgeCall_Degradations(t *testing.T) {
+ 	}
+ 
+ 	// A non-completion outcome that wrote nothing is one the harvest cannot rescue.
+-	for _, oc := range []shuttleengine.Outcome{shuttleengine.OutcomeDied, shuttleengine.OutcomeTimeout} {
++	for _, oc := range []shuttleengine.Outcome{shuttleengine.OutcomeTimeout} {
+ 		tests = append(tests, struct {
+ 			name         string
+ 			buildBouncer func(t *testing.T) (*Bouncer, BouncerConfig)
+@@ -877,7 +870,7 @@ func TestBouncer_JudgeCall_Harvest(t *testing.T) {
+ 	})
+ 
+ 	t.Run("Contrast_NothingWrittenDegrades", func(t *testing.T) {
+-		shuttle := &shedfake.Shuttle{Result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}}
++		shuttle := &shedfake.Shuttle{Result: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout}}
+ 		b, cfg := newBouncerFixture(t, withShuttle(shuttle)).Build()
+ 		layoutBouncerRun(t, cfg, []bouncerJudgeFixture{{round: 1, report: bouncerReport(1)}})
+ 
+@@ -886,6 +879,50 @@ func TestBouncer_JudgeCall_Harvest(t *testing.T) {
+ 	})
+ }
+ 
++// TestBouncer_JudgeCall_ADiedJudgeIsAnInfrastructureFailure pins that a judge with no verdict fails the call.
++// It covers a judge that died, and one whose run errored, whether the call spawned that run or attached to it.
++// The call returns no outcome, so the round spends no bounce budget,
++// and the error names a judge that never came up apart from one that died after it started.
++func TestBouncer_JudgeCall_ADiedJudgeIsAnInfrastructureFailure(t *testing.T) {
++	tiergate.Require(t, 0)
++	startRefused := errors.New("spawn refused: resource temporarily unavailable")
++	tests := []struct {
++		name      string
++		result    shuttleengine.Result
++		runErr    error
++		wantIs    error
++		wantNotIs error
++		wantText  string
++		// attached makes runErr the error of a live judge the call attached to.
++		attached bool
++	}{
++		{"NeverStarted", shuttleengine.Result{Outcome: shuttleengine.OutcomeDied, NotStarted: true, StartError: "provider never became ready"}, nil, shuttleengine.ErrNotStarted, shuttleengine.ErrAgentDied, "provider never became ready", false},
++		{"NeverStartedWithNoStartError", shuttleengine.Result{Outcome: shuttleengine.OutcomeDied, NotStarted: true}, nil, shuttleengine.ErrNotStarted, shuttleengine.ErrAgentDied, "", false},
++		{"DiedAfterStarting", shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}, nil, shuttleengine.ErrAgentDied, shuttleengine.ErrNotStarted, "", false},
++		{"RunErrored", shuttleengine.Result{}, startRefused, startRefused, shuttleengine.ErrAgentDied, "resource temporarily unavailable", false},
++		{"AttachedRunErrored", shuttleengine.Result{}, startRefused, startRefused, shuttleengine.ErrAgentDied, "resource temporarily unavailable", true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			logcapture.Capture(t)
++			shuttle := &shedfake.Shuttle{Result: tt.result, Err: tt.runErr}
++			if tt.attached {
++				shuttle = &shedfake.Shuttle{AttachFound: true, AttachErr: tt.runErr}
++			}
++			b, cfg := newBouncerFixture(t, withShuttle(shuttle)).Build()
++			layoutBouncerRun(t, cfg, []bouncerJudgeFixture{{round: 1, report: bouncerReport(1)}})
++
++			outcome, ptr, err := b.Call(context.Background())
++			if outcome != "" || !reflect.DeepEqual(ptr, shedengine.OutputPointer{}) {
++				t.Errorf("Call() = %q, %+v; want no outcome and an empty pointer", outcome, ptr)
++			}
++			if !errors.Is(err, tt.wantIs) || errors.Is(err, tt.wantNotIs) || !strings.Contains(err.Error(), tt.wantText) {
++				t.Errorf("Call() error = %v; want one wrapping %v, not %v, containing %q", err, tt.wantIs, tt.wantNotIs, tt.wantText)
++			}
++		})
++	}
++}
++
+ // TestBouncer_JudgeCall_DebrisIsNotJudged covers stale or half-written judge outputs in the run dir before the spawn.
+ // They are never mistaken for judged(N), and they are archived byte-identical beside the original on the way in,
+ // and the spawn recreates each path.
+diff --git a/internal/shuttleengine/claudeengine/session.go b/internal/shuttleengine/claudeengine/session.go
+index ebf227b01..45d80e52b 100644
+--- a/internal/shuttleengine/claudeengine/session.go
++++ b/internal/shuttleengine/claudeengine/session.go
+@@ -88,6 +88,7 @@ func (c *Claude) PaneTooShort(capture string) bool {
+ // The running-turn hint is matched over the whole capture.
+ //
+ // A box holding only a lone `%` reads idle: that is the shell's end-of-line mark left on screen, never input.
++// A box holding only the prompt Claude Code leaves there after an API error reads idle too.
+ // Bound: an operator draft of exactly `%` typed outside reed's quiet window reads as empty,
+ // so a paste can merge with it.
+ // The operator-activity hold runs before every write behind the pre-write guard,
+@@ -100,7 +101,7 @@ func (c *Claude) IdleSession(capture string) bool {
+ 	if !ok {
+ 		return false
+ 	}
+-	if holdsOnlyEOLMark(interior) {
++	if holdsOnlyEOLMark(interior) || holdsOnlyAPIErrorPrompt(interior) {
+ 		return true
+ 	}
+ 	for _, line := range interior {
+@@ -117,14 +118,16 @@ func (c *Claude) IdleSession(capture string) bool {
+ // The box is located from the last caret line to the rules on either side of it;
+ // a running turn over an empty box answers ok true with empty text.
+ // A box holding only a lone `%`, the shell's end-of-line mark left on screen, answers empty text too.
+-// Bound: an operator draft of exactly `%` typed outside reed's quiet window reads as empty, so a paste can merge with it;
++// So does a box holding only the prompt Claude Code puts there after an API error, which nobody typed.
++// Bound: an operator draft of exactly `%`, or of exactly that prompt, typed outside reed's quiet window reads as empty,
++// so a paste can merge with it;
+ // the pre-write guard's operator-activity hold still runs before every write.
+ func (c *Claude) InputBoxText(capture string) (text string, ok bool) {
+ 	interior, ok := inputBoxInterior(capture)
+ 	if !ok {
+ 		return "", false
+ 	}
+-	if holdsOnlyEOLMark(interior) {
++	if holdsOnlyEOLMark(interior) || holdsOnlyAPIErrorPrompt(interior) {
+ 		return "", true
+ 	}
+ 	var parts []string
+@@ -367,6 +370,22 @@ func isBoxRule(line string) bool {
+ 	return true
+ }
+ 
++// apiErrorRetryPrompt is the text Claude Code leaves in its input box after an API error ends a turn.
++// It is Claude Code's own prompt, never input anyone typed.
++const apiErrorRetryPrompt = "Resend your message to try again"
++
++// holdsOnlyAPIErrorPrompt reports whether interior holds nothing but apiErrorRetryPrompt.
++// The caret and side bars are stripped, and the words of every line are joined by single spaces,
++// so the prompt wrapped over lines still matches.
++func holdsOnlyAPIErrorPrompt(interior []string) bool {
++	stripper := strings.NewReplacer(gateCaretMarker, "", "│", "")
++	var words []string
++	for _, line := range interior {
++		words = append(words, strings.Fields(stripper.Replace(line))...)
++	}
++	return strings.Join(words, " ") == apiErrorRetryPrompt
++}
++
+ // holdsOnlyEOLMark reports whether interior holds nothing but the shell's end-of-line mark.
+ // The caret, side bars and whitespace are stripped from each line, and the lines are then joined.
+ func holdsOnlyEOLMark(interior []string) bool {
+diff --git a/internal/shuttleengine/claudeengine/session_test.go b/internal/shuttleengine/claudeengine/session_test.go
+index 46ceb9b2a..25749ec64 100644
+--- a/internal/shuttleengine/claudeengine/session_test.go
++++ b/internal/shuttleengine/claudeengine/session_test.go
+@@ -58,6 +58,11 @@ func TestIdleSession(t *testing.T) {
+ 			capture: rule + " tst:orch ─\n❯ \n" + rule + "\n  ? for shortcuts\n",
+ 			want:    true,
+ 		},
++		{
++			name:    "the prompt Claude Code leaves after an API error",
++			capture: "● API Error: Connection refused (ECONNREFUSED)\n\n" + rule + "\n❯ Resend your message to try again\n" + rule + "\n  ? for shortcuts\n",
++			want:    true,
++		},
+ 		{
+ 			name:    "draft line shaped like a labelled rule below the caret",
+ 			capture: rule + "\n❯ \n  ─── note ─\n  more text\n" + rule + "\n  ? for shortcuts\n",
+@@ -190,6 +195,9 @@ func TestInputBoxText(t *testing.T) {
+ 		{"empty box under a done reply and the bypass-permissions footer", doneReplyLayout, "", true},
+ 		{"styled empty box under a done reply and the bypass-permissions footer", plainBox(styledDoneReplyLayout), "", true},
+ 		{"draft in box", readPaneFixture(t, "pane-idle-draft.txt"), "please also run the linter", true},
++		{"the prompt Claude Code leaves after an API error", rule + "\n❯ Resend your message to try again\n" + rule + "\n  ? for shortcuts\n", "", true},
++		{"the API error prompt wrapped over two box lines", rule + "\n❯ Resend your message\n  to try again\n" + rule + "\n  ? for shortcuts\n", "", true},
++		{"a draft that only opens with the API error prompt", rule + "\n❯ Resend your message to try again later\n" + rule + "\n  ? for shortcuts\n", "Resend your message to try again later", true},
+ 		{"wrapped two-line draft", rule + "\n❯ first half of the draft\n  second half of the draft\n" + rule + "\n  ? for shortcuts\n", "first half of the draft second half of the draft", true},
+ 		{"collapsed paste placeholder", rule + "\n❯ [Pasted text #1 +42 lines]\n" + rule + "\n  ? for shortcuts\n", "[Pasted text #1 +42 lines]", true},
+ 		{"turn running over an empty box", readPaneFixture(t, "pane-turn-running.txt"), "", true},
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 40ad20466..ab53953f0 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -1376,6 +1376,16 @@ func (e *styledReadinessEngine) PlainBoxCapture(styled string) string {
+ 	return blankMarkedSpans(styled)
+ }
+ 
++// boxLosingStyledEngine is a test engine whose styled box read loses the input box the plain capture shows.
++// A styled capture whose parse drops a rule line loses the box the same way.
++type boxLosingStyledEngine struct {
++	*readinessEngine
++}
++
++func (e *boxLosingStyledEngine) PlainBoxCapture(string) string {
++	return "no box here"
++}
++
+ // guardedReadinessEngine is a test engine with the InterruptGuard capability:
+ // a capture shows a running turn when it contains "RUNNING".
+ // The capture has both the input box and the running-turn check that Claude's pane probe uses.
+diff --git a/internal/shuttleengine/readiness.go b/internal/shuttleengine/readiness.go
+index 5018fda79..327493c40 100644
+--- a/internal/shuttleengine/readiness.go
++++ b/internal/shuttleengine/readiness.go
+@@ -7,9 +7,20 @@ package shuttleengine
+ import (
+ 	"fmt"
+ 	"strings"
++	"sync"
+ 	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
++// warnedBoxDisagreements holds the guid of every strand whose box disagreement this process has warned of.
++// The disagreement lasts across polls, so every later sighting of it logs at Debug.
++var warnedBoxDisagreements sync.Map
++
++// styledTailLines is how many of a styled capture's last lines the log quotes.
++// The log quotes them when the styled box reading disagrees with the plain capture's.
++const styledTailLines = 12
++
+ // Reasons a readiness reading is held that callers tell apart or pin.
+ const (
+ 	// readinessReasonPaneTooShort is the held reason of a pane too short to draw the input box.
+@@ -54,7 +65,12 @@ type boxReading struct {
+ 
+ // boxCapture takes the one pane capture a box reading decides on.
+ // An engine with StyledBoxReader gets a styled capture turned plain with its placeholder blanked, and any other engine gets the plain capture.
+-// An error is the capture's, unchanged.
++// When the styled capture turned plain shows no input box, the plain capture is taken too,
++// and it is read instead when it shows a box:
++// a styled capture whose parse loses a rule line would otherwise read a session as having no box for as long as it lasts.
++// The plain capture blanks no placeholder, so a placeholder then reads as a draft and holds the send.
++// The disagreement is logged with the styled capture's last lines, as a warning the first time for each strand.
++// An error is the styled capture's, unchanged; a failed plain capture keeps the styled reading.
+ func boxCapture(reed ReedOps, engine Engine, guid string) (string, error) {
+ 	styledReader, ok := engine.(StyledBoxReader)
+ 	if !ok {
+@@ -64,7 +80,29 @@ func boxCapture(reed ReedOps, engine Engine, guid string) (string, error) {
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	return styledReader.PlainBoxCapture(styled), nil
++	capture := styledReader.PlainBoxCapture(styled)
++	boxReader, reads := engine.(InputBoxReader)
++	if !reads {
++		return capture, nil
++	}
++	if _, found := boxReader.InputBoxText(capture); found {
++		return capture, nil
++	}
++	plain, err := reed.CapturePane(guid)
++	if err != nil {
++		return capture, nil
++	}
++	if _, found := boxReader.InputBoxText(plain); !found {
++		return capture, nil
++	}
++	lines := strings.Split(styled, "\n")
++	tail := strings.Join(lines[max(0, len(lines)-styledTailLines):], "\n")
++	logDisagreement := logger.Warn
++	if _, warned := warnedBoxDisagreements.LoadOrStore(guid, true); warned {
++		logDisagreement = logger.Debug
++	}
++	logDisagreement("shuttle: the styled capture showed no input box where the plain capture shows one, so the box is read from the plain capture", "strandGUID", guid, "styledTail", fmt.Sprintf("%q", tail))
++	return plain, nil
+ }
+ 
+ // readBox reads the input box out of capture.
+diff --git a/internal/shuttleengine/rundir.go b/internal/shuttleengine/rundir.go
+index 5e55c5e5f..f00c5e6ee 100644
+--- a/internal/shuttleengine/rundir.go
++++ b/internal/shuttleengine/rundir.go
+@@ -373,6 +373,8 @@ func FindRun(cfg Config, anchorPath, guid string) (RunState, string, error) {
+ // A directory whose record's relaunching mark is within bound of now is kept whatever its strand.
+ // A relaunch holds its strand down for a moment.
+ // Past its bound the rule above applies.
++// A stopped run that a later start of its role may resume is kept too:
++// its record is the only one saying the run was interrupted.
+ // now is the clock the caller supplies, so tests can control aging deterministically.
+ // It returns the removed directory paths and a joined error naming every directory that could not be removed.
+ // The sweep visits every entry, so one undeletable directory costs only that directory.
+@@ -410,6 +412,9 @@ func sweepOrphans(root string, strandGUIDs map[string]bool, minAge time.Duration
+ 			if within, _ := rs.relaunching(now, bound); within {
+ 				continue
+ 			}
++			if rs.Outcome == runOutcomeStopped && resumableAfterInterruption(rs, now, bound) {
++				continue
++			}
+ 		}
+ 		if err != nil || !found || !strandGUIDs[rs.StrandGUID] {
+ 			if rerr := os.RemoveAll(runDir); rerr != nil {
+diff --git a/internal/shuttleengine/rundir_test.go b/internal/shuttleengine/rundir_test.go
+index 5d91b3abe..e6275f186 100644
+--- a/internal/shuttleengine/rundir_test.go
++++ b/internal/shuttleengine/rundir_test.go
+@@ -319,6 +319,18 @@ func TestSweepOrphans_AgeGuardAndLiveGuid(t *testing.T) {
+ 	relaunchingWithin := seedRelaunching("relaunching-within", now.Add(-time.Minute))
+ 	relaunchingPast := seedRelaunching("relaunching-past", now.Add(-time.Hour))
+ 
++	// Of the old strandless runs that ended unfinished, the sweep keeps the one a stop recorded as interrupted.
++	seedEnded := func(id, outcome string, interrupted bool) string {
++		runDir := seedRun(t, root, id, "strand-gone")
++		if err := saveRunState(runDir, RunState{RunID: id, StrandGUID: "strand-gone", SessionID: "session-1", Outcome: outcome, Interrupted: interrupted}); err != nil {
++			t.Fatalf("saveRunState: %v", err)
++		}
++		setDirMTime(t, runDir, now, 10*time.Minute)
++		return runDir
++	}
++	interrupted := seedEnded("interrupted-run", runOutcomeStopped, true)
++	died := seedEnded("died-run", string(OutcomeDied), false)
++
+ 	strandGUIDs := map[string]bool{"strand-live": true}
+ 	removed, err := sweepOrphans(root, strandGUIDs, minAge, now, bound)
+ 	if err != nil {
+@@ -326,9 +338,12 @@ func TestSweepOrphans_AgeGuardAndLiveGuid(t *testing.T) {
+ 	}
+ 
+ 	// os.ReadDir hands the dirs back sorted by name, so the removed ones come back in that order.
+-	if want := []string{oldNoState, oldOrphan, relaunchingPast}; !reflect.DeepEqual(removed, want) {
++	if want := []string{died, oldNoState, oldOrphan, relaunchingPast}; !reflect.DeepEqual(removed, want) {
+ 		t.Errorf("removed = %v, want %v", removed, want)
+ 	}
++	if _, err := os.Stat(interrupted); err != nil {
++		t.Errorf("interrupted run dir was removed, want kept: %v", err)
++	}
+ 	if _, err := os.Stat(relaunchingWithin); err != nil {
+ 		t.Errorf("relaunching dir within its bound was removed, want kept: %v", err)
+ 	}
+diff --git a/internal/shuttleengine/session_test.go b/internal/shuttleengine/session_test.go
+index a43d12aa1..a91aad759 100644
+--- a/internal/shuttleengine/session_test.go
++++ b/internal/shuttleengine/session_test.go
+@@ -305,6 +305,10 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 		seeded string
+ 		// styled gives the engine the styled box read, which blanks a capture's ~…~ spans.
+ 		styled bool
++		// styledLosesBox gives the engine a styled box read that loses the box the plain capture shows.
++		styledLosesBox bool
++		// plainFails fails every capture after the first, which for a box-losing styled read is the plain one.
++		plainFails bool
+ 		// guarded runs the row on guardedReadinessEngine, which adds the running-turn check Claude's pane probe uses.
+ 		guarded     bool
+ 		outstanding []BackgroundTask
+@@ -353,6 +357,14 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			probes: []probe{{capture: idleFrame, want: IdleProbe{Idle: true, NoTurn: true}}},
+ 		},
+ 		{name: "a pane with no readable box is held for an engine that reads one", probes: []probe{{events: turnEnded, capture: "no box here", want: atEnd(IdleProbe{Reason: readinessReasonNoInputBox, NoInputBox: true}), wantReason: "no input box"}}},
++		{
++			name:           "a styled capture that loses the box reads the plain capture's box",
++			styledLosesBox: true,
++			probes:         []probe{{events: turnEnded, capture: idleFrame, want: idleAtEnd}},
++			wantLog:        "the styled capture showed no input box where the plain capture shows one",
++		},
++		{name: "a styled capture and a plain one that both show no box are held", styledLosesBox: true, probes: []probe{{events: turnEnded, capture: "no box here", want: atEnd(IdleProbe{Reason: readinessReasonNoInputBox, NoInputBox: true}), wantReason: "no input box"}}},
++		{name: "a failed plain capture keeps the styled reading", styledLosesBox: true, plainFails: true, probes: []probe{{events: turnEnded, capture: idleFrame, want: atEnd(IdleProbe{Reason: readinessReasonNoInputBox, NoInputBox: true}), wantReason: "no input box"}}},
+ 		{name: "an active operator is held with the activity reason", probes: []probe{{events: turnEnded, capture: idleFrame, active: true, want: atEnd(IdleProbe{Reason: "the operator typed in this pane within the last 5 s"}), wantReason: "operator typed"}}},
+ 		{
+ 			name: "a turn start with no turn end is held, then released by a later turn end",
+@@ -390,6 +402,9 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			logger.SetVerbosity(2)
+ 			clock := newFakeClock(time.Date(2026, 10, 8, 8, 0, 0, 0, time.UTC))
+ 			reed := &fakeReed{StatusQueue: liveStrandStatus(true)}
++			if tt.plainFails {
++				reed.CaptureErrQueue = []error{nil, errors.New("pane gone")}
++			}
+ 			engine := &readinessEngine{tooShort: tt.tooShort}
+ 			engine.StartupScript = []StartupState{StartupReady}
+ 			engine.liveness = LivenessAlive
+@@ -407,6 +422,9 @@ func TestRunner_SessionIdle_ReturnsScriptedClassification(t *testing.T) {
+ 			if tt.styled {
+ 				probed = &styledReadinessEngine{readinessEngine: engine}
+ 			}
++			if tt.styledLosesBox {
++				probed = &boxLosingStyledEngine{readinessEngine: engine}
++			}
+ 			fx := newFixture(t, reed, probed, withStrand("strand-1"), withClock(clock))
+ 			runDir := filepath.Dir(fx.EventsPath)
+ 			state := RunState{RunID: "run-1", StrandGUID: "strand-1", EventsPath: fx.EventsPath, Interactive: tt.interactive, PromptOffset: int64(len(tt.seeded))}
+diff --git a/internal/websterengine/planfixer.go b/internal/websterengine/planfixer.go
+index ac2b5bcd2..03fc58d27 100644
+--- a/internal/websterengine/planfixer.go
++++ b/internal/websterengine/planfixer.go
+@@ -214,7 +214,14 @@ func FixPlanAwait(deps FixPlanDeps, rec *PlanFixerState, wait time.Duration, clk
+ 		EventsOffset:  rec.EventsOffset,
+ 		ReplyPath:     PlanFixReplyPath(deps.Geom.ScratchDir),
+ 	}
+-	waited, err := awaitFixerStrand(deps.Engines, deps.Reed, deps.Stopper, strand, "fix-plan", time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait, clk)
++	waited, err := awaitFixerStrand(gatefixer.Deps{
++		Stopper:    deps.Stopper,
++		Reed:       deps.Reed,
++		Engines:    deps.Engines,
++		ShuttleCfg: deps.ShuttleCfg,
++		AnchorRoot: deps.Geom.AnchorRoot,
++		Clock:      clk,
++	}, strand, "fix-plan", time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/verifyfixer.go b/internal/websterengine/verifyfixer.go
+index 410590f04..91e620aa8 100644
+--- a/internal/websterengine/verifyfixer.go
++++ b/internal/websterengine/verifyfixer.go
+@@ -121,10 +121,10 @@ func fixerRecord(rec *VerifyFixerState) *gatefixer.Record {
+ 	}
+ }
+ 
+-// awaitFixerStrand waits on rec's strand through gatefixer.Await, using timeout, wait and clk.
++// awaitFixerStrand waits on rec's strand through gatefixer.Await over deps, using timeout and wait.
+ // It prefixes each warning with label, the verb the fixer runs under.
+-func awaitFixerStrand(engines AuditEngines, reed shuttleengine.ReedOps, stopper StrandStopper, rec *gatefixer.Record, label string, timeout, wait time.Duration, clk Clock) (*gatefixer.Result, error) {
+-	result, err := gatefixer.Await(gatefixer.Deps{Stopper: stopper, Reed: reed, Engines: engines, Clock: clk}, rec, timeout, wait)
++func awaitFixerStrand(deps gatefixer.Deps, rec *gatefixer.Record, label string, timeout, wait time.Duration) (*gatefixer.Result, error) {
++	result, err := gatefixer.Await(deps, rec, timeout, wait)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("webster: %s: %w", label, err)
+ 	}
+@@ -244,15 +244,22 @@ func FixVerifySpawnOrAttach(deps FixVerifyDeps, st *State, clk Clock) (*VerifyFi
+ // FixVerifyAwait blocks up to wait for rec's cold fixer to reach a terminal classification, polling on the shared tick.
+ // The fixer is done once its reply file exists.
+ // It is dead, checked in this order, when its newest turn ended without one (DeadReasonAsking);
+-// when recovery_timeout_min has passed since the spawn (DeadReasonTimeout);
+-// or when its strand is gone (DeadReasonDied).
++// when its strand is gone (DeadReasonDied, or gatefixer.DeadReasonInterrupted for a run recorded as interrupted);
++// or when recovery_timeout_min has passed since the spawn (DeadReasonTimeout).
+ // Every terminal result stops the strand; only done also reads the reply and removes the run dir.
+ // A failed stop, reply read or removal is a warning.
+ // The caller holds no state-mutation lease across it.
+ func FixVerifyAwait(deps FixVerifyDeps, rec *VerifyFixerState, wait time.Duration, clk Clock) (*FixVerifyResult, error) {
+ 	strand := fixerRecord(rec)
+ 	strand.ReplyPath = VerifyFixReplyPath(deps.Geom.ScratchDir)
+-	waited, err := awaitFixerStrand(deps.Engines, deps.Reed, deps.Stopper, strand, "fix-verify", time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait, clk)
++	waited, err := awaitFixerStrand(gatefixer.Deps{
++		Stopper:    deps.Stopper,
++		Reed:       deps.Reed,
++		Engines:    deps.Engines,
++		ShuttleCfg: deps.ShuttleCfg,
++		AnchorRoot: deps.Geom.AnchorRoot,
++		Clock:      clk,
++	}, strand, "fix-verify", time.Duration(deps.Config.RecoveryTimeoutMin)*time.Minute, wait)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/websterengine/verifyfixer_test.go b/internal/websterengine/verifyfixer_test.go
+index b8da3fd26..b8a0e276c 100644
+--- a/internal/websterengine/verifyfixer_test.go
++++ b/internal/websterengine/verifyfixer_test.go
+@@ -5,8 +5,10 @@
+ package websterengine_test
+ 
+ import (
++	"encoding/json"
+ 	"errors"
+ 	"os"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -302,6 +304,32 @@ func TestFixVerifyAwait(t *testing.T) {
+ 			wantStatus: websterengine.DigestStatusDead,
+ 			wantReason: websterengine.DeadReasonDied,
+ 		},
++		{
++			name: "a gone strand of an interrupted run is dead interrupted",
++			arrange: func(t *testing.T, fx *recoverFixture, _ websterengine.FixVerifyDeps, rec *websterengine.VerifyFixerState) {
++				path := filepath.Join(rec.ShuttleRunDir, "run.json")
++				data, err := os.ReadFile(path)
++				if err != nil {
++					t.Fatalf("read run record: %v", err)
++				}
++				var run map[string]any
++				if err := json.Unmarshal(data, &run); err != nil {
++					t.Fatalf("decode run record: %v", err)
++				}
++				run["outcome"], run["interrupted"] = "stopped", true
++				data, err = json.Marshal(run)
++				if err != nil {
++					t.Fatalf("encode run record: %v", err)
++				}
++				if err := os.WriteFile(path, data, 0o644); err != nil {
++					t.Fatalf("write run record: %v", err)
++				}
++				fx.Reed.Strands = nil
++			},
++			wait:       websterengine.RecoveryWaitBudget,
++			wantStatus: websterengine.DigestStatusDead,
++			wantReason: gatefixer.DeadReasonInterrupted,
++		},
+ 		{
+ 			name:       "a shorter wait returns running and stops nothing",
+ 			arrange:    func(*testing.T, *recoverFixture, websterengine.FixVerifyDeps, *websterengine.VerifyFixerState) {},
