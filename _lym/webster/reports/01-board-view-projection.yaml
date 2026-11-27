@@ -1,0 +1,4 @@
+# The temporary testOnlyCodeAllowed entries in cmd/lym/testonlycode_linux_test.go
+# (BoardRevision, Board.View, Board.Expecting, ViewerPage) are removed by the batch that wires boardserve (card 6).
+status: OK
+head_sha: ea3ed33332a63c5172c9c045e76dd0b7abd6b115

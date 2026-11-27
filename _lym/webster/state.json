@@ -246,20 +246,47 @@
       "spawnedAt": "2026-11-27T12:07:00Z",
       "sessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
       "engine": "claude",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-view-projection",
+        "status": "done",
+        "head_sha": "ea3ed33332a63c5172c9c045e76dd0b7abd6b115",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardengine/expected.go",
+          "internal/boardengine/expected_test.go",
+          "internal/boardengine/view.go",
+          "internal/boardengine/view_test.go",
+          "internal/boardserve/server.go",
+          "internal/boardserve/write.go"
+        ],
+        "departures": [
+          "1: board: render board-data.js, the board's view projection (fix): PATTERN-test-only-code — two production functions are admitted before a main package reaches them, because their caller lands in a later commit",
+          "2: board: refuse a write whose entry revision is stale: PATTERN-test-only-code — Board.Expecting is admitted before a main package reaches it, because its caller lands in a later commit",
+          "3: board: embed the viewer page and claim its files in the replay: PATTERN-test-only-code — ViewerPage is admitted before a main package reaches it, because its caller lands in a later commit"
+        ]
+      },
+      "cardShas": [
+        "ea3ed33332a63c5172c9c045e76dd0b7abd6b115"
+      ],
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl"
       ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "eb4e363928392664bad82975b499603f",
   "masterSessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b2/_lym/loom/friction/webster-master.md",
   "masterRecordsBase": "1cde0e838961bc28d2dc2b392403906e995993d4",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl"
   ]
 }
