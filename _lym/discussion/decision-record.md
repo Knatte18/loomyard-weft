@@ -42,6 +42,12 @@ Decision: Operator decision in chat (2026-11-27): PR-Review in review mode works
 
 Rationale: The operator said the old behaviour worked well; in today's review mode nothing showed on screen and no agent took the operator's feedback.
 
+### Added after Discussion (parent, 2026-11-27): PR-Review session answers to the writer's questions
+
+Decision: A) Restore the session: the operator asked for the agent in the window, not only a visible wait notice. B) Orch strands may run lym loom pr-continue on the operator's word; every other agent stays refused. C) Un-retire the old names, the pr-reviewer role and landing.pr_reviewer, and drop their retirement reinterpretations, rather than adding new names, since this restores what was there. The session ends the review with lym loom pr-continue on the operator's word and never approves, merges or pushes; Finalize lands as today. This replaces the earlier entry's clause that the session merges the pull request itself.
+
+Rationale: Writer's design questions on #2949; the operator's point was that the old flow, an agent taking feedback and ending the review on the operator's word, worked, and the run then went past the approval wait.
+
 ## Constraints
 
 ## Auto-mode assumptions
