@@ -1,66 +1,87 @@
-# PR-Review keeps an agent session in the task's window in review mode
+# Bring back the PR-Review agent session under beam.pull_request review
 
-Under `beam.pull_request: review` the PR-Review row opened the pull request and then waited with no agent session in the task's window.
-Nothing on screen showed that the run waited on the operator, and no agent was there to take the operator's feedback on the pull request.
-`lym loom pr-continue` also refused every agent session, the orch's included, so the review could only be ended from a shell outside every session, by an approval or a merge on GitHub, or by editing the record by hand.
+Under `beam.pull_request: review` the PR-Review row opened the pull request and waited with no agent in the task's window.
+Nothing on screen showed the wait, no agent took the operator's feedback,
+and `lym loom pr-continue` refused every agent session.
+The row now keeps one interactive session in that window again, as it did before the `pr-reviewer` role was retired.
+The operator works the pull request with its agent, which answers comments, commits fixes
+and ends the review on the operator's word.
+`trail` is unchanged.
+An `off` landing with no pull request is unchanged too.
+Where GitHub's rules for the parent branch require a pull request, an `off` landing that is no beam's
+waits on it as before, and now gets the session as well.
 
-The row now keeps one interactive session in the task's window again, as it did before the session was removed.
-The operator works the pull request with that session's agent, which answers comments, fixes findings and ends the review only on the operator's word.
-`trail` and `off` are unchanged: `trail` still opens and squash-merges the pull request at once in Finalize, and `off` opens none.
-
-## What changes
-
-### The PR-Review session
-
-- Once the pull request is recorded, the row starts the session, reuses a live one, or resumes a recorded one by its session id.
-  It records the session's strand and session id in `pull-request.json`, so a re-entry after an interrupt attaches to the same session.
-- A recorded pull request that GitHub reports closed gets a session too, so a continue flag can still end it.
-  A merged one and an already ended review get none.
-- The session is stopped on every verdict, Stuck or error of the row, and left running when the row's context is cancelled.
-  It is stopped before each read that may end the review, so the tree cannot change between the read and the verdict, and resumed when the review goes on.
-- A pause stops the session and the end of the pause resumes it.
-- A session that ends while the review is open halts the row; `lym loom resume` resumes it.
-- A commit made in the task worktree while the review waits is still gated and pushed.
-  A gate failure is now mailed to the session once per head and recorded as `mailed_head`, instead of halting the row.
-  A runner crash or memory pressure stop still halts.
-- The session's prompt, `contracts/stencils/landing/landing-template-pr-review.md`, has the agent read the change, the description and the regression check.
-  It may comment on the pull request and change its title and body through the change description.
-  It runs under the publish shell guard, so it never pushes, approves, merges, closes or reopens the pull request.
-  The parent-review asks and the send-back of findings to Code-Review that the old session had are not restored.
-
-### Ending the review
-
-- `lym loom pr-continue` admits the operator's shell, the run's `pr-reviewer` session and an orch session.
-  It refuses every other agent session, with a way forward that names the session in the task's window.
-- It also clears `mailed_head`, so the row gates that head again after a failure from outside the change.
-- Its help audience is the role audience again, since agents run it.
-
-### Config
-
-- The agents role `pr-reviewer` is listed again, with the prose, conversation, code-quality and testing skills.
-- `landing.pr_reviewer` is a live key again, `opus[high]` by default, open to the local layer and checked as a model-spec at load.
-- The reinterpretation `agents-pr-reviewer-role-retired` is dropped, so a hub's own `pr-reviewer` entries stay.
-
-### Docs and rules
-
-- `PATTERN-landing` now says a pull request's review ends only on the operator's word, whatever the run's autonomy.
-  The operator gives that word directly, or the PR-Review session or an orch acts on it through `pr-continue`.
-- The orch role files, `docs/overview.md`, the `landingshed` and `loomcli` package docs, the beam template's `pull_request` comment and the recipe comments follow.
+Closes #282
 
 ## Design decisions
 
-- **Old names, not new ones.** The role and the config key come back as `pr-reviewer` and `landing.pr_reviewer`, the names the removed session used.
-  The reinterpretation that stripped the role from a hub's `agents.yaml` is dropped rather than kept.
-  A hub that already ran it has lost only entries the template now supplies again.
-- **The orch may end a review on the operator's word.** This gives the orch a sanctioned way to act on an operator's instruction instead of editing `pull-request.json` by hand.
-  The check reads the strand name in the session's environment, so it guards against a mistaken call and is no barrier.
-- **The session ends the review; Finalize merges.** The session runs `pr-continue` and never merges, and Finalize merges the pull request on GitHub under its own gate.
-  GitHub refuses an author's approval of their own pull request, so `pr-continue` is what ends the review.
-- **Gate failures mail, not halt.** With an agent in the window, a halt would stop the session the operator is working with.
-  The failure is mailed once per head instead, and the operator's agent fixes it or retries with `pr-continue`.
-- **Interactive whatever the autonomy.** `review` is the operator's review, so the session is interactive even when the run's autonomy is on.
+- The session ends a review with `lym loom pr-continue`, and `Finalize` merges as before.
+  The session runs under the publish shell guard and its prompt, `landing-template-pr-review`,
+  forbids it to push, approve, merge, close or reopen the pull request.
+- `lym loom pr-continue` now admits the operator's shell, an orch,
+  and the PR-Review session whose strand name the run's pull request record holds.
+  It refuses every other agent session.
+  The orch role contracts and `PATTERN-landing` now say a review ends only on the operator's word.
+- The row reuses a live session or resumes the recorded one, and keeps its identity in the pull request record.
+  A pause stops the session and the end of the pause resumes it.
+  A session that ends while the review is open halts the row.
+- The session is stopped before a read that may end the review, and resumed if the review stays open.
+  It is stopped on a verdict, a halt or a non-transient error,
+  and left running on a cancelled context or a transient error.
+- A gate failure of a commit made during the wait is mailed to the session once per head, instead of halting the row.
+  The row still halts when the mail cannot be posted, the review has already ended or the pull request is closed
+  with no continue flag.
+  A gate that judged no code, after a runner crash or a memory pressure stop, also halts the row and mails nothing.
+- A re-entry past an ended review's gated head runs the gate before it pushes anything.
+- `lym loom pr-continue` is also the retry for a gate failure that lies outside the change:
+  it clears the mailed head so that the row gates it again.
+  The same call sets the continue flag, so the review ends once a head passes.
+- The `pr-reviewer` role in `agents.yaml` and the `landing.pr_reviewer` key (default `opus[high]`) are live again
+  under their old names.
+  The `agents-pr-reviewer-role-retired` reinterpretation is removed, so a hub keeps its own `pr-reviewer` entries.
+
+## To check by hand
+
+No live run of the session against real tmux, a real agent and a GitHub pull request is recorded.
+Try one under `review`: the session appears in the task's window, answers a comment, commits a fix,
+and ends the review with `lym loom pr-continue` when told to.
+
+Review of this change found the problems below in the code it adds.
+None of them describes the target branch, which has no PR-Review session.
+Check each against the code:
+
+- A task head the gate refused could pass an ended review as done, unpushed
+  (`gateHead` and `gateBeforeRestart` in `internal/landingshed/prreview.go`).
+  The row now halts there.
+- A gate failure whose mail failed was recorded as delivered, so the wait went on silently (`gateHead`, same file).
+  The row now halts and records no mailed head.
+- Retrying a gate failure with `lym loom pr-continue` also ends the review
+  (`gateRetryHint` in `prreview.go`, `internal/loomcli/prcontinue.go`, the session's prompt).
+  This behaviour remains; the mail, the prompt, the command help and `docs/overview.md` state it.
+- `lym loom pr-continue` admitted any `pr-reviewer` strand, including another run's
+  (`prContinueAdmitsStrand` and `prContinueVerb` in `prcontinue.go`).
+  It now admits such a strand only when its name is the recorded one.
+- The session was stopped and resumed at polls where the wait could only go on
+  (`sessionStopWanted` in `prreview.go`).
+  It is now stopped only for a read that may end the review or act on its ending.
+- The PR-Review session tests use module stand-ins, which `PATTERN-test-stand-ins` forbids a change to add.
+  They run the real `shuttleengine.Runner`, but over `shuttlefake` with its new `ResumeEngine`,
+  and with hand-written `SessionLive`, `RegisterSession` and `MailAgent` closures
+  (`prreview_session_test.go`, `prreview_wait_test.go` and `prreview_test.go` in `internal/landingshed`,
+  `internal/testkit/envkit`, `internal/testkit/shuttlefake`).
+  This remains open.
+- The stop before an ending read and the resume after it had no test.
+  Check that the rows now in `internal/landingshed/prreview_session_test.go` pin both.
+- No test pinned that `wireLanding` fills `SessionLive` and `RegisterSession`
+  (`internal/loomcli/wiring_publish_integration_test.go`).
+  Check the assertions added there.
 
 ## Merge danger
+
+A revert does not undo all of it.
+The pull request record, which reaches other machines, gains `mailed_head` and the session's identity fields.
+A hub's `agents.yaml` may also come to hold a `pr-reviewer` entry, which the binary before this change refuses to load,
+and a retirement reinterpretation already applied is not expected to run again and remove it.
 
 **Door:** one-way
 **Blast radius:** landing
