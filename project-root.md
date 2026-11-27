@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 11:02 UTC; every age below is as of then.
+Rendered 2026-11-27 11:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,18 +14,18 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | Discussion-Bouncer | neve | 13h<br>52m | termwindow, desktop |
-| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | Darn-Write | neve | 3h<br>3h | shed, loom |
-| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Darn-Write | neve | 30m<br>28m | fabric, darn, batten |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | Discussion-Bouncer | neve | 13h<br>53m | termwindow, desktop |
+| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | Drift-Verify | neve | 3h<br>3h | shed, loom |
+| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Darn-Write | neve | 31m<br>29m | fabric, darn, batten |
 | T19 | **Remove the coverage maps and every user of them, keeping the redundancy sweep and red-first** | [`remove-testmap`](design-remove-testmap.md) | darn · solid | landing · Finalize | neve | 3h<br>3h | testmap, gate, darn, loom, stencil, cleanup |
 
 ## Layer A (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | T19 | 13h<br>36m | gate, testkit |
-| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | T4 | 3h<br>47m | landing, gate |
-| T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | T10 | 34m<br>28m | weaver, webster |
+| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | T19 | 13h<br>37m | gate, testkit |
+| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | T4 | 4h<br>48m | landing, gate |
+| T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | T10 | 34m<br>29m | weaver, webster |
 
 ## Layer I (1)
 
@@ -49,4 +49,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | T8 | 3h<br>3h | landing, gate, batten |
+| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | T8 | 4h<br>4h | landing, gate, batten |
