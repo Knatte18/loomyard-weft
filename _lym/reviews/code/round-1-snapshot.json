@@ -31,5 +31,6 @@
       "title": "This part's fabric test code shrinks in net",
       "digest": "226755b6565170527c783d4be33f8d4c98f6c29bb1e7c204516cff1714348b00"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
