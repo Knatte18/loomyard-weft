@@ -1,6 +1,6 @@
 # P4 Fabric split into a git-free core, a layout package and a thin git engine
 
-Rendered 2026-11-27 06:56 UTC; every age below is as of then.
+Rendered 2026-11-27 06:58 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-core`](design-fabric-core.md) · Age 9h · Owner `neve`
@@ -16,11 +16,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget** | [`fabric-core-foundation`](design-fabric-core-foundation.md)<br>[Sketch](decision-fabric-core-foundation.md) | tapestry · solid | Plan-Write | neve | 9h<br>9h | fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report |
 
-## Draft (6)
+## Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | `draft` **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T6 | 9h<br>9h | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T6 | 9h<br>9h | fabric, testkit, shed, board, pattern |
+
+## Draft (5)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
 | T24 | `draft` **Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core** | [`fabric-core-teardown`](design-fabric-core-teardown.md)<br>[Sketch](decision-fabric-core-teardown.md) | tapestry · solid | T23 | 9h<br>9h | fabric, testkit, shed, landing |
 | T25 | `draft` **Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core** | [`fabric-core-merge-landing`](design-fabric-core-merge-landing.md)<br>[Sketch](decision-fabric-core-merge-landing.md) | tapestry · solid | T24 | 9h<br>9h | fabric, testkit, shed, batten, landing |
 | T26 | `draft` **Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric** | [`fabric-core-pull-replay`](design-fabric-core-pull-replay.md)<br>[Sketch](decision-fabric-core-pull-replay.md) | tapestry · solid | T25 | 9h<br>9h | fabric, testkit, shed, stencil, board, heddle |

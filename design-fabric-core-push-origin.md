@@ -1,6 +1,6 @@
 # Fabric core: push classification, retries, origin reconcile and failed-push records move to the core
 
-`fabric-core-push-origin` · Task · enhancement, fabric, testkit, shed, board, pattern · draft
+`fabric-core-push-origin` · Task · enhancement, fabric, testkit, shed, board, pattern
 
 Decision record: [Sketch](decision-fabric-core-push-origin.md)
 
