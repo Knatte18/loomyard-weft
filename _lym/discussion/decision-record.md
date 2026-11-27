@@ -100,4 +100,15 @@ Provenance: task `infra-stops-not-failures`, note `gate-fixer-darn-write.md`.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - merge-copies-slice-pressure-untested (class design, severity MEDIUM, open in rounds 1)
+  - mixed-stops-and-failing-test-condition-untested (class design, severity MEDIUM, open in rounds 1)
+  - named-test-memory-use-not-measured (class scope, severity MEDIUM, open in rounds 1)
+  - package-level-failure-ignored-by-slice-pressure (class design, severity MEDIUM, open in rounds 1)
+  - pressure-closing-line-and-stops-call-untested (class design, severity MEDIUM, open in rounds 1)
+  - verify-sites-ignore-memory-pressure-stop (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
