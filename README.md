@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 21:25 UTC; every age below is as of then.
+Rendered 2026-11-27 21:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -140,7 +140,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack** | [`self-healing-runs`](design-self-healing-runs.md)<br>[Sketch](decision-self-healing-runs.md) | 3h<br>1m | dobby, batten, orch |
+| S1 |  | **Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack** | [`self-healing-runs`](design-self-healing-runs.md)<br>[Sketch](decision-self-healing-runs.md) | 3h<br>2m | dobby, batten, orch |
 
 ### Research (1)
 
