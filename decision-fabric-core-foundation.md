@@ -223,6 +223,12 @@ Decision: Every part shrinks the fabric test code it touches, with no fixed targ
 
 Rationale: The operator has asked several times to cut fabric's test suite, and agents have always answered that every test is needed. Fabric's tests are 1.6 times its production code, and their size is what makes the gates slow.
 
+### Added after Discussion (parent, 2026-11-27): A chain part may leave production code that only a named later part first calls
+
+Decision: Within project fabric-core, a part may add production functions that only tests reach yet, when a named later part of the chain is the first production caller. Each such function gets a testOnlyCodeAllowed entry whose comment names that later part's slug; the later part that adds the caller removes the entry in the same change. card 14 updates testOnlyCodeAllowed's doc comment to name this second, temporary kind of entry, and cards 14 and 15 cite this decision instead of a self-declared departure. No other kind of entry is added.
+
+Rationale: The operator chose seven parts that each land a working fabric over weeks; D9 delivers the executor loop before its callers move in. A bounded, named allowance keeps PATTERN-test-only-code checkable and makes each leftover entry visible until its caller lands.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
