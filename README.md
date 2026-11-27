@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 11:35 UTC; every age below is as of then.
+Rendered 2026-11-27 11:37 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T6<br>T8 | 1d<br>18m | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T6<br>T8 | 1d<br>20m | fabric, shed, landing, batten, dobby |
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (7)
 
@@ -119,7 +119,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Darn-Write | neve | 14h<br>1h | gate, testkit |
 | T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | Darn-Write | neve | 4h<br>1h | landing, gate |
-| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Describe | neve | 1h<br>1h | fabric, darn, batten |
+| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | PR-Review | neve | 1h<br>1h | fabric, darn, batten |
 
 ### Layer A (1)
 
@@ -143,7 +143,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| S1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | 14h<br>6m | termwindow, desktop |
+| S1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | 14h<br>8m | termwindow, desktop |
 
 ### Research (1)
 
