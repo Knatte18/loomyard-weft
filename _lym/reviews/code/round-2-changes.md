@@ -1,0 +1,12 @@
+internal/battencli/teardownpush_integration_test.go
+internal/battencli/wire.go
+internal/battenshed/deps.go
+internal/battenshed/doc.go
+internal/battenshed/teardown.go
+internal/fabriccli/doc.go
+internal/fabriccli/roleguard.go
+internal/fabriccli/roleguard_test.go
+internal/hubgeom/autonomy.go
+internal/pairteardown/leftover.go
+internal/pairteardown/leftover_integration_test.go
+pattern/PATTERN-pair-remote.md
