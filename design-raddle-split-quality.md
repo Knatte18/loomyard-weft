@@ -1,6 +1,6 @@
 # Study every raddle run and tune the split it proposes
 
-`raddle-split-quality` · Task · research, stencil, board · running · Darn-Write
+`raddle-split-quality` · Task · research, stencil, board · running · Drift-Verify
 
 ## Seen (operator, 2026-11-27)
 
