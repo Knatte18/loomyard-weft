@@ -54,4 +54,17 @@ Rationale: Writer's design questions on #2949; the operator's point was that the
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - ended-review-failed-head-ends-done (class design, severity MEDIUM, open in rounds 1)
+  - failed-gate-mail-recorded-delivered (class design, severity MEDIUM, open in rounds 1)
+  - gate-retry-via-pr-continue-ends-review (class design, severity MEDIUM, open in rounds 1)
+  - pr-continue-admits-any-pr-reviewer (class scope, severity MEDIUM, open in rounds 1)
+  - pr-session-tests-module-stand-ins (class design, severity BLOCKING, open in rounds 1)
+  - session-stop-and-resume-untested (class design, severity MEDIUM, open in rounds 1)
+  - session-stopped-while-wait-continues (class design, severity MEDIUM, open in rounds 1)
+  - wirelanding-pr-review-seams-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
