@@ -1,0 +1,2931 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 67e7fe761..f8d1fed5c 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -55,7 +55,7 @@
+ 
+ ## Testing
+ 
+-- `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers; skips, clocks, `t.Parallel`, `//lym:seam` and `//lym:watch` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
++- `PATTERN-test-speed` — Writing or running a test: via `lym gate test` by key; one `tiergate.Require` tier, lowest that fits; it pins behavior no other test covers; skips, clocks, `t.Parallel`, `//lym:seam`, `//lym:watch` and `//lym:only` per the background. (test) — [background](pattern/PATTERN-test-speed.md)
+ - `PATTERN-test-stand-ins` — A test's stand-in: never for a repository module's state, records, config or output; drive the real module or move the test there. For something outside: below the one module reaching it, one per boundary, answering only recordings, held to it by a contract test. — [background](pattern/PATTERN-test-stand-ins.md)
+ - `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; a read-only or unreadable directory via `permkit.Chmod`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
+ - `PATTERN-test-only-code` — Writing a function only tests call: it lives in a `_test.go` file or a test-support package (`internal/testkit`, `gitkit`, `hubforge`), never a production file; every other function is reachable from a `main` package. (test) — [background](pattern/PATTERN-test-only-code.md)
+diff --git a/cmd/lym/agentfiledissues_test.go b/cmd/lym/agentfiledissues_test.go
+index 0b1483d02..1c876d3a2 100644
+--- a/cmd/lym/agentfiledissues_test.go
++++ b/cmd/lym/agentfiledissues_test.go
+@@ -28,6 +28,7 @@ const createIssueCall = "selfreportengine.CreateIssue"
+ // It fails on a file outside the allowlisted selfreport directories that contains selfreportengine.CreateIssue.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestAgentFiledIssues_NoCreateIssueOutsideSelfreport(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(agentFiledIssuesAllowlist)
+diff --git a/cmd/lym/agentmessaging_test.go b/cmd/lym/agentmessaging_test.go
+index 8d9be9d3c..36b64117e 100644
+--- a/cmd/lym/agentmessaging_test.go
++++ b/cmd/lym/agentmessaging_test.go
+@@ -92,6 +92,8 @@ func testdataPromptRoots(t *testing.T, root string) []string {
+ 	return roots
+ }
+ 
++//lym:guard
++//lym:only parent-align finalize
+ func TestAgentMessaging_NoEngineTool(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/baretemp_test.go b/cmd/lym/baretemp_test.go
+index ff454accb..254d3d097 100644
+--- a/cmd/lym/baretemp_test.go
++++ b/cmd/lym/baretemp_test.go
+@@ -107,6 +107,7 @@ func bareTempFailures(t *testing.T, opts scankit.Options, allow *scankit.Allowli
+ // A creation is bare when its directory is "" or os.TempDir(); the allowlist admits the exceptions.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestBareTemp_NoCreationInTheBareSystemTempDirectory(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(allowedBareTemp)
+diff --git a/cmd/lym/checkedcall_test.go b/cmd/lym/checkedcall_test.go
+index 0706e116e..32d515321 100644
+--- a/cmd/lym/checkedcall_test.go
++++ b/cmd/lym/checkedcall_test.go
+@@ -62,6 +62,7 @@ const checkedCallMinScannedFiles = 200
+ // and a package not listed there counts as pinned zero.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestCheckedCallInvariant_RawSitesMarkedAndPinned(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	var markerFailures []string
+diff --git a/cmd/lym/configstrictness_test.go b/cmd/lym/configstrictness_test.go
+index b50a8e6f1..6e9a4cb73 100644
+--- a/cmd/lym/configstrictness_test.go
++++ b/cmd/lym/configstrictness_test.go
+@@ -100,6 +100,7 @@ const configStrictnessMinScannedFiles = 50
+ // so a pinned member with no matching call fails as loudly as an unpinned package that gained a call.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestConfigStrictness_PinnedCallSiteSets(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	collectedDegrading := map[string]bool{}
+diff --git a/cmd/lym/constraintchokepoint_test.go b/cmd/lym/constraintchokepoint_test.go
+index f58714a77..9130c04f0 100644
+--- a/cmd/lym/constraintchokepoint_test.go
++++ b/cmd/lym/constraintchokepoint_test.go
+@@ -79,6 +79,7 @@ func glyphChokepointViolation(data []byte) (line int, reason string) {
+ // It fails on each file carrying a chokepoint violation.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestGlyphConversionChokepoint_NoLocalConversion(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	var failures []string
+diff --git a/cmd/lym/crosscompile_test.go b/cmd/lym/crosscompile_test.go
+index a2b828da4..09531ac08 100644
+--- a/cmd/lym/crosscompile_test.go
++++ b/cmd/lym/crosscompile_test.go
+@@ -24,9 +24,11 @@ import (
+ // TestCrossCompileLinux cross-compiles the entire module for GOOS=linux.
+ // It fails on any non-zero exit and surfaces the compiler's combined output.
+ // It builds every package together, so a Linux-tagged file in any package fails it.
+-// A narrowed gate runs it only when a file a native Windows build leaves out changes; a whole gate always runs it.
++// Only the parent-align and finalize gate keys run it, each over the whole tree.
++// A narrowed call that names one of them runs it only when a file a native Windows build leaves out changes.
+ //
+ //lym:watch *_linux.go *_unix.go
++//lym:only parent-align finalize
+ func TestCrossCompileLinux(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	// Skip when the go toolchain is not on PATH, so a minimal CI image without it does not fail the gate.
+diff --git a/cmd/lym/csharpfixtures_integration_test.go b/cmd/lym/csharpfixtures_integration_test.go
+index 8379773b4..a8bf51377 100644
+--- a/cmd/lym/csharpfixtures_integration_test.go
++++ b/cmd/lym/csharpfixtures_integration_test.go
+@@ -47,10 +47,11 @@ const csharpFixtureProject = `<Project Sdk="Microsoft.NET.Sdk">
+ // TestCSharpFixtures_CompileWithDotnet builds each `testdata/` directory of `.cs` files as one C# project.
+ // It fails on a compiler error.
+ // It skips when `dotnet` is not on PATH or has no SDK installed, so a machine without .NET stays green.
+-// A narrowed gate runs it only when a C# file changes; a whole gate always runs it.
++// Only the upkeep gate key runs it.
+ //
+ //lym:watch *.cs
+ //lym:guard
++//lym:only upkeep
+ func TestCSharpFixtures_CompileWithDotnet(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/cmd/lym/daemonwakeups_test.go b/cmd/lym/daemonwakeups_test.go
+index 8571db4f9..26eb61571 100644
+--- a/cmd/lym/daemonwakeups_test.go
++++ b/cmd/lym/daemonwakeups_test.go
+@@ -165,6 +165,7 @@ func tickerCallPositions(fset *token.FileSet, file *ast.File) []string {
+ // TestDaemonWakeups_UnboundedWaitsStayAboveTheFloor enforces `PATTERN-daemon-wakeups`.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestDaemonWakeups_UnboundedWaitsStayAboveTheFloor(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("detector", func(t *testing.T) {
+diff --git a/cmd/lym/fslinkonly_test.go b/cmd/lym/fslinkonly_test.go
+index 992ee73f3..a7a300378 100644
+--- a/cmd/lym/fslinkonly_test.go
++++ b/cmd/lym/fslinkonly_test.go
+@@ -77,6 +77,7 @@ func linkCallFailures(t *testing.T, opts scankit.Options, allow *scankit.Allowli
+ // Calls named in allowedLinkCalls are exempt.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestFslinkOnly_NoRawLinkCalls(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/ghguard_test.go b/cmd/lym/ghguard_test.go
+index 826f5da48..06efe1c3e 100644
+--- a/cmd/lym/ghguard_test.go
++++ b/cmd/lym/ghguard_test.go
+@@ -37,6 +37,7 @@ const ghLookPathLiteral = `LookPath("gh")`
+ // Both banned forms therefore carry the quoted binary name, so no English word can match.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestGHGuard_NoShellOutOutsideGithubclient(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(ghGuardAllowlist)
+@@ -128,6 +129,7 @@ const pullRequestImportLine = `"github.com/Knatte18/loomyard/internal/pullreques
+ // The read-only `.PullRequests.List(` calls open, merge and close nothing and stay allowed.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestPullRequestGuard_OnlyLandingAndTeardown(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	calls := scankit.NewAllowlist(pullRequestCallAllowlist)
+diff --git a/cmd/lym/gofmt_test.go b/cmd/lym/gofmt_test.go
+index 188b9f83e..030aecd31 100644
+--- a/cmd/lym/gofmt_test.go
++++ b/cmd/lym/gofmt_test.go
+@@ -47,6 +47,7 @@ func gofmtFinding(file string, src []byte) (string, bool) {
+ // TestGofmt_ModuleFilesAreFormatted fails for every Go file in the module that differs from its gofmt form.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestGofmt_ModuleFilesAreFormatted(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/hermeticenv_test.go b/cmd/lym/hermeticenv_test.go
+index 3af4df5e4..d50a3ffbd 100644
+--- a/cmd/lym/hermeticenv_test.go
++++ b/cmd/lym/hermeticenv_test.go
+@@ -74,6 +74,7 @@ type pkgHermeticStatus struct {
+ // So skipping the tiered files would make this guard vacuous.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestHermeticGitEnv_GitSpawningPackagesHaveTestMain(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	var fileEntries, dirEntries []scankit.Entry
+diff --git a/cmd/lym/interactivespawn_test.go b/cmd/lym/interactivespawn_test.go
+index 0f43b8a15..eb151da6d 100644
+--- a/cmd/lym/interactivespawn_test.go
++++ b/cmd/lym/interactivespawn_test.go
+@@ -153,6 +153,7 @@ func headlessSpawnFailures(t *testing.T, opts scankit.Options, allow *scankit.Al
+ // A file in allowedHeadlessSpawn is exempt.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestInteractiveSpawn_NoHeadlessClaude(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/llmtier_test.go b/cmd/lym/llmtier_test.go
+index 611a27937..253a4ef1e 100644
+--- a/cmd/lym/llmtier_test.go
++++ b/cmd/lym/llmtier_test.go
+@@ -175,6 +175,7 @@ func llmTierFailures(t *testing.T, opts scankit.Options, allow *scankit.Allowlis
+ // A kit file that uses `os/exec` beyond LookPath also fails.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestLLMTier_OnlyLLMFilesReachAnLLM(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(allowedLLMTierScanData)
+diff --git a/cmd/lym/nocgo_test.go b/cmd/lym/nocgo_test.go
+index ee5fa03ba..112257de0 100644
+--- a/cmd/lym/nocgo_test.go
++++ b/cmd/lym/nocgo_test.go
+@@ -41,6 +41,7 @@ func cgoImportFailures(t *testing.T, opts scankit.Options) (failures []string, s
+ // TestNoCgo_NoFileOfTheModuleImportsC fails for every Go file of the module that imports "C".
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestNoCgo_NoFileOfTheModuleImportsC(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/registration_test.go b/cmd/lym/registration_test.go
+index 9bed55344..70187fb7b 100644
+--- a/cmd/lym/registration_test.go
++++ b/cmd/lym/registration_test.go
+@@ -48,6 +48,7 @@ func isCommandFunc(fd *ast.FuncDecl) bool {
+ // TestRegistration_AllModulesRegistered asserts every Command() package is registered in newRoot().
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestRegistration_AllModulesRegistered(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	repoRoot := scankit.Root(t)
+diff --git a/cmd/lym/removedverbs_test.go b/cmd/lym/removedverbs_test.go
+index 2b33e0837..290400712 100644
+--- a/cmd/lym/removedverbs_test.go
++++ b/cmd/lym/removedverbs_test.go
+@@ -37,6 +37,8 @@ func removedVerbHits(content string) []string {
+ 	return hits
+ }
+ 
++//lym:guard
++//lym:only parent-align finalize
+ func TestRemovedVerbs_NamedNowhere(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/removestrand_test.go b/cmd/lym/removestrand_test.go
+index c17a3c28c..a3d2f1ddb 100644
+--- a/cmd/lym/removestrand_test.go
++++ b/cmd/lym/removestrand_test.go
+@@ -52,6 +52,7 @@ func removeStrandSelectors(t *testing.T, base string, allow *scankit.Allowlist)
+ // The scan sees the selector, not whose strand it removes.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestShuttleStop_RemoveStrandOnlyInAllowedPackages(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/cmd/lym/spawnobservability_test.go b/cmd/lym/spawnobservability_test.go
+index c7f83362f..e32c6ecda 100644
+--- a/cmd/lym/spawnobservability_test.go
++++ b/cmd/lym/spawnobservability_test.go
+@@ -107,6 +107,7 @@ const spawnObservabilityMinScannedFiles = 200
+ // A file listed in spawnObservabilityAllowedSpawners is exempt.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestSpawnObservability_ProductionSpawnsAreLogged(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(spawnObservabilityAllowedSpawners)
+diff --git a/cmd/lym/spawnrole_test.go b/cmd/lym/spawnrole_test.go
+index 2ecfa900d..9f58eba9a 100644
+--- a/cmd/lym/spawnrole_test.go
++++ b/cmd/lym/spawnrole_test.go
+@@ -62,6 +62,7 @@ func isSpawnSpecType(expr ast.Expr) bool {
+ // TestSpawnRole_NoInlineRoleLiteral fails when a production spawn spec names its role with a string literal.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestSpawnRole_NoInlineRoleLiteral(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	scanned := scankit.Walk(t, scankit.Options{}, func(f *scankit.File) {
+diff --git a/cmd/lym/testonlycode_linux_test.go b/cmd/lym/testonlycode_linux_test.go
+index e52386e28..a23aa8c13 100644
+--- a/cmd/lym/testonlycode_linux_test.go
++++ b/cmd/lym/testonlycode_linux_test.go
+@@ -79,6 +79,7 @@ type unreachableFunction struct {
+ // It also fails for an allowlist entry that matches no unreachable function, so the list tracks the tree.
+ //
+ //lym:guard
++//lym:only upkeep
+ func TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/cmd/lym/testsupportdirs_linux_test.go b/cmd/lym/testsupportdirs_linux_test.go
+deleted file mode 100644
+index 10cdb15a1..000000000
+--- a/cmd/lym/testsupportdirs_linux_test.go
++++ /dev/null
+@@ -1,27 +0,0 @@
+-// testsupportdirs_linux_test.go holds the plan check's test-support directories equal to the test-only code guard's list.
+-// The guard's list compiles on Linux only, so this file does too.
+-
+-package main
+-
+-import (
+-	"slices"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/planparser"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// TestTestSupportDirectories_MatchTheTestOnlyCodeGuard fails when the two lists differ.
+-// A difference makes the plan check refuse a function the guard counts as reached, or pass one it does not.
+-func TestTestSupportDirectories_MatchTheTestOnlyCodeGuard(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	var guarded []string
+-	for _, entry := range testSupportPackages {
+-		guarded = append(guarded, entry.Key)
+-	}
+-	if !slices.Equal(planparser.TestSupportDirectories, guarded) {
+-		t.Errorf("planparser.TestSupportDirectories = %q; want testSupportPackages' keys %q", planparser.TestSupportDirectories, guarded)
+-	}
+-}
+diff --git a/cmd/lym/tierpurity_test.go b/cmd/lym/tierpurity_test.go
+index 60eb0fce1..120269636 100644
+--- a/cmd/lym/tierpurity_test.go
++++ b/cmd/lym/tierpurity_test.go
+@@ -85,6 +85,7 @@ var bannedTokens = []string{
+ // A support file holding no test function is skipped.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestTierPurity_UntaggedTestsSpawnNothing(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	spawners := scankit.NewAllowlist(allowedSpawners)
+diff --git a/cmd/lym/tiertags_test.go b/cmd/lym/tiertags_test.go
+index 60d988eff..3d199a4fc 100644
+--- a/cmd/lym/tiertags_test.go
++++ b/cmd/lym/tiertags_test.go
+@@ -122,6 +122,7 @@ func tierFailure(rel string, data []byte) string {
+ // It also fails for a test file whose constraint names a tier tag or a retired tier spelling.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestTierTags_OneTierPerTestFile(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	var failures []string
+diff --git a/cmd/lym/tmuxisolation_test.go b/cmd/lym/tmuxisolation_test.go
+index 1b7af554b..43bf0a639 100644
+--- a/cmd/lym/tmuxisolation_test.go
++++ b/cmd/lym/tmuxisolation_test.go
+@@ -263,6 +263,7 @@ func tmuxIsolationFailures(t *testing.T, opts scankit.Options, allow *scankit.Al
+ // and every TestMain in it calls tmuxkit.Main.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestTmuxIsolation_EveryTestPackageRunsThroughTmuxkitMain(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allow := scankit.NewAllowlist(allowedNoTmuxMain)
+diff --git a/cmd/lym/tolerantrecords_test.go b/cmd/lym/tolerantrecords_test.go
+index f991e44fd..06d938420 100644
+--- a/cmd/lym/tolerantrecords_test.go
++++ b/cmd/lym/tolerantrecords_test.go
+@@ -48,6 +48,7 @@ func strictDecodeFindings(filename string, data []byte) ([]string, error) {
+ // TestTolerantRecords_NoStrictJSONDecode enforces `PATTERN-tolerant-records`.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestTolerantRecords_NoStrictJSONDecode(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Run("detector", func(t *testing.T) {
+diff --git a/cmd/lym/treesitterlink_integration_test.go b/cmd/lym/treesitterlink_integration_test.go
+index c36676c9a..b208921c2 100644
+--- a/cmd/lym/treesitterlink_integration_test.go
++++ b/cmd/lym/treesitterlink_integration_test.go
+@@ -37,6 +37,7 @@ const treeSitterLinkMinTestBinaries = 100
+ // A binary that links tree-sitter only through a tier test file counts.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestTreeSitterLink_OnlyAllowedTestBinariesLinkIt(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/cmd/lym/verifiedtree_test.go b/cmd/lym/verifiedtree_test.go
+index 5c75d6fc7..bf649109e 100644
+--- a/cmd/lym/verifiedtree_test.go
++++ b/cmd/lym/verifiedtree_test.go
+@@ -91,6 +91,7 @@ func TestVerifiedTree_PlanVerifySitesCallVerify(t *testing.T) {
+ // TestVerifiedTree_NoOtherVerifyRunCaller fails when a production file outside internal/verifytree calls verifyrun.Run.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestVerifiedTree_NoOtherVerifyRunCaller(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	allowedSeen := map[string]bool{}
+@@ -115,6 +116,7 @@ func TestVerifiedTree_NoOtherVerifyRunCaller(t *testing.T) {
+ // TestVerifiedTree_NoRetiredMarker fails when a production file names the retired verify-pending marker.
+ //
+ //lym:guard
++//lym:only parent-align finalize
+ func TestVerifiedTree_NoRetiredMarker(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	scanned := scankit.Walk(t, scankit.Options{Roots: []string{"internal", "cmd"}}, func(f *scankit.File) {
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 434047735..5f70a179d 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -174,26 +174,6 @@ Under `language: none` the glyph checks are skipped:
+   a pending card's `Delete` target is already gone, in place of its `path-missing` or `glyph-not-found`.
+ - `uses-later-target` — a card's `Uses:` entry that a later card targets, matched as exact trimmed strings;
+   one finding per consumer, producer and entry, on the consumer.
+-- `create-caller-later` — under `go`, a card creates a production function that no ref of its own can call,
+-  and a later card that can call it names the handle among its targets or `Uses`.
+-  The card then fails its gate on the guard that every production function is reachable from a `main`.
+-  A function is production code unless its unit is `<dir>_test`, its name opens `Test`, `Benchmark`, `Fuzz` or `Example`,
+-  its head names a `testing.` type, or it is `main` or `init`.
+-  A function of `internal/testkit`, `internal/gitkit`, `internal/hubforge` or a directory below one is skipped too,
+-  since the guard counts it as reached.
+-  A helper of a package-internal `_test.go` file is declared on its package directory and so reads as production code.
+-  A later card that names it and changes production code, or creates another such helper, raises the finding,
+-  and moving the `Create` to that card clears it.
+-  A card can call the function through a ref of its `Create`, `Edit`, `Extends` or `Custom` groups
+-  that names production Go code other than the function itself.
+-  A handle the card creates as a `type` or `const` is no such ref.
+-  A handle it creates as a `func` in one of the test-support directories above is one.
+-  Any other `func` handle it creates is none for the creating card.
+-  For a later card it is one, unless its unit is `<dir>_test`, its name opens a test prefix above or its head names a `testing.` type.
+-  A non-Go file, a `_test.go` file and a test member are no such ref either;
+-  a package self glyph or a bare symbol is one.
+-  One finding per function, on the creating card, naming the first such later card.
+-  Way forward: move the `Create` to the card that adds its first production caller, or list that caller on the creating card.
+ 
+ ## Verify lines
+ 
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index a7c301a71..8868b7b38 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -41,7 +41,7 @@ How webster groups cards into batches is no card property; `internal/batcher`'s
+ A valid plan is executable strictly in card-number order: a card never depends on anything a later card does.
+ Webster runs the cards in that order and never sorts them,
+ so a card that needs a symbol, file or fixture a later card creates is a defect of the plan.
+-`uses-later-target`, `delete-before-reference` and `create-caller-later` refuse the cases a card's own refs show;
++`uses-later-target` and `delete-before-reference` refuse the cases a card's own refs show;
+ every other dependency on a later card is the writer's to avoid and the plan reviewer's to flag.
+ 
+ ## On-disk layout
+@@ -363,9 +363,6 @@ One card per independently reviewable unit, never one card per symbol.
+ A private supporting type or a constructor inseparable from its type goes on the card of the symbol it serves,
+ and so does a helper serving one surface.
+ A symbol of a module's public surface, or one reused across packages, gets its own card.
+-A new function is the exception: it goes on the card that adds its first production caller,
+-since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`
+-(`create-caller-later`).
+ 
+ A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
+ Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+diff --git a/contracts/stencils/beam/beam-fragment-board-tidy-no-upkeep.md b/contracts/stencils/beam/beam-fragment-board-tidy-no-upkeep.md
+new file mode 100644
+index 000000000..a32213500
+--- /dev/null
++++ b/contracts/stencils/beam/beam-fragment-board-tidy-no-upkeep.md
+@@ -0,0 +1,5 @@
++<!-- This is the board-tidy prompt's upkeep step for an agent that runs no upkeep checks:
++     a beam's, since they run on the main branch alone, or the prime's in a hub whose gate config cannot find the marked tests.
++     internal/dobbyengine's TidyPrompt puts it in the board-tidy stencil's upkeep marker. -->
++
++3. Run no upkeep checks on this worktree.
+diff --git a/contracts/stencils/beam/beam-fragment-board-tidy-upkeep.md b/contracts/stencils/beam/beam-fragment-board-tidy-upkeep.md
+new file mode 100644
+index 000000000..c6c4b78b4
+--- /dev/null
++++ b/contracts/stencils/beam/beam-fragment-board-tidy-upkeep.md
+@@ -0,0 +1,15 @@
++<!-- This is the board-tidy prompt's upkeep step for the prime's agent, whose worktree is on the main branch.
++     internal/dobbyengine's TidyPrompt fills upkeep_call, the agent's call of the upkeep gate key rendered from the hub's gate config,
++     and puts the step in the board-tidy stencil's upkeep marker. -->
++
++3. Run the upkeep checks, the tests that need not stop a task, on this worktree:
++   `{{.upkeep_call}}`.
++   When the call answers `done: false`, run the same command again in a turn that does nothing else.
++   File a board note for each failure it reports, through `lym board upsert` with `kind` `note`, after you search the board with `lym board find`:
++   a failure that an open note already names gets no second note.
++   - A test that names dead code, such as a production function no `main` reaches, gets one note per function it names.
++     The note names the function, its file and the test, and asks for the function's removal or its first caller.
++   - Any other failing test gets one `bug` note naming the test and the first lines of its failure.
++   - A call refused because no test is marked for it has nothing to check and gets no note.
++     Any other refused call ran no check, and gets one `bug` note holding the refusal.
++   Pick each note's labels with `lym board labels`.
+diff --git a/contracts/stencils/beam/beam-template-board-tidy.md b/contracts/stencils/beam/beam-template-board-tidy.md
+index a82753057..42c9ec468 100644
+--- a/contracts/stencils/beam/beam-template-board-tidy.md
++++ b/contracts/stencils/beam/beam-template-board-tidy.md
+@@ -3,7 +3,8 @@
+      Every marker below is a top-level {{.X}} substitution and every one is required non-empty:
+      {{.landed}} is the bulleted list of task slugs landed since the last tidy, {{.report_path}} the one file the agent writes,
+      {{.parent_directive}} the parent directive rendered by internal/parentdirective, naming the nearest live orch when there is one,
+-     and {{.edit_directive}} the edit directive of the engine the prompt launches on, rendered by internal/editdirective. -->
++     {{.edit_directive}} the edit directive of the engine the prompt launches on, rendered by internal/editdirective,
++     and {{.upkeep}} step 3, the upkeep fragment when there is an upkeep call and the no-upkeep fragment when there is none. -->
+ 
+ # Board tidy
+ 
+@@ -11,6 +12,7 @@
+ {{.edit_directive}}
+ 
+ You tidy the board's notes after landings, so a note never describes work that a landing has since built or changed.
++Where step 3 asks for it, you also run the upkeep checks, the tests no task gate runs, and file a note for what they find.
+ You start cold: everything you know comes from the board and the landed commits below.
+ 
+ ## The landings
+@@ -25,8 +27,9 @@ These tasks landed since the last tidy:
+    Read the board through `lym board` only, and never touch its files by hand.
+ 2. Make each obvious amendment yourself through `lym board`: drop a sentence a landing made stale, or note that part of a note is now built.
+    Draft a body in `.scratch/` first, and amend from the draft.
+-3. Write the report to `{{.report_path}}`, then end your turn.
+-   The report lists what you changed, and each note a landing superseded whole or changed in scope or design, with why.
++{{.upkeep}}
++4. Write the report to `{{.report_path}}`, then end your turn.
++   The report lists what you changed, each note you filed, and each note a landing superseded whole or changed in scope or design, with why.
+ 
+ ## What you never do
+ 
+diff --git a/contracts/stencils/loom/loom-block-plan-cards.md b/contracts/stencils/loom/loom-block-plan-cards.md
+index f63dbe0af..7c507f3b0 100644
+--- a/contracts/stencils/loom/loom-block-plan-cards.md
++++ b/contracts/stencils/loom/loom-block-plan-cards.md
+@@ -53,9 +53,6 @@ A test that calls only the refusal's error constructor does not reach it.
+ A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
+ Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+ 
+-A new function goes on the card that adds its first production caller, even when it is part of a module's public surface:
+-a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
+-
+ A field with no content is omitted entirely — never write a `none` sentinel on any field.
+ 
+ **`Uses:` names what the card reads but does not change — never a target.**
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 4597b242e..ca33eaa75 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -55,9 +55,6 @@ Do not flag any of the following as a finding:
+   One card per independently reviewable unit, not one card per literal symbol.
+   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
+   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
+-  A new function is the exception: it goes on the card that adds its first production caller.
+-  A card that adds it alone fails its gate on the guard that every production function is reachable from a `main`;
+-  the finding names the function and the card that adds its caller.
+ - **A repository-wide intent.**
+   A card whose `**Intent:**` covers every instance of one kind across the repository needs a search that proves its targets complete.
+   It is a finding when its Intent names no repository search that found its targets.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index 5e8556359..cc520461e 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -630,6 +630,17 @@ var TwillJudgePlain []byte
+ //go:embed beam/beam-template-board-tidy.md
+ var BeamTemplateBoardTidy []byte
+ 
++// BeamFragmentBoardTidyUpkeep is the board-tidy prompt's upkeep step for the prime's agent, on the main branch.
++// It has the agent run the upkeep gate call and file a board note for each failure.
++//
++//go:embed beam/beam-fragment-board-tidy-upkeep.md
++var BeamFragmentBoardTidyUpkeep []byte
++
++// BeamFragmentBoardTidyNoUpkeep is the board-tidy prompt's upkeep step for an agent that runs no upkeep checks.
++//
++//go:embed beam/beam-fragment-board-tidy-no-upkeep.md
++var BeamFragmentBoardTidyNoUpkeep []byte
++
+ // BeamTemplateDescribe is the beam describer agent's shipped-default opening prompt.
+ // It opens the cold session a beam's dobby spawns after a member landing under a recorded pull request.
+ // The session rewrites the beam's change description as it now stands.
+@@ -1065,6 +1076,8 @@ var entries = []registryEntry{
+ 	{"engine/claude/question-tool", &EngineClaudeQuestionTool},
+ 	{"engine/codex/question-tool", &EngineCodexQuestionTool},
+ 	{"beam-template-board-tidy", &BeamTemplateBoardTidy},
++	{"beam-fragment-board-tidy-upkeep", &BeamFragmentBoardTidyUpkeep},
++	{"beam-fragment-board-tidy-no-upkeep", &BeamFragmentBoardTidyNoUpkeep},
+ 	{"beam-template-describe", &BeamTemplateDescribe},
+ 	{"retro-template-task", &RetroTemplateTask},
+ 	{"gatefix-frame-cold", &GatefixFrameCold},
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index d4e718520..efc66daeb 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -406,6 +406,19 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 		deps.TidyModel = choice
+ 		deps.TidyShuttle = &runnerAgentShuttle{worktree: worktree}
+ 	}
++	if geom.Slug == "" {
++		deps.UpkeepCall = func() (string, error) {
++			cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(prime))
++			if err != nil {
++				return "", fmt.Errorf("load the gate config: %w", err)
++			}
++			// Only the go scoper finds the marked tests, so under any other the call would always be refused.
++			if cfg.Scoper != "go" {
++				return "", nil
++			}
++			return cfg.AgentGateCall(gateslot.UpkeepGateKey)
++		}
++	}
+ 	return deps, nil
+ }
+ 
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 6f6b86936..ed5a4f563 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -104,6 +104,24 @@ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+ 		t.Errorf("prime BeamDescribe.Record is set; want the prime's dobby to rewrite no description")
+ 	}
+ 
++	// Only the prime's dobby runs the upkeep checks, and only under the scoper that finds the marked tests.
++	if beamDeps.UpkeepCall != nil {
++		t.Errorf("beam UpkeepCall is set; want nil, since the upkeep checks run on the main branch alone")
++	}
++	if primeDeps.UpkeepCall == nil {
++		t.Fatal("prime UpkeepCall = nil; want the upkeep call's renderer")
++	}
++	if call, err := primeDeps.UpkeepCall(); call != "" || err != nil {
++		t.Errorf("prime UpkeepCall() under the template's none scoper = %q, %v; want no call and nil", call, err)
++	}
++	scoper := []yamlengine.KV{{Key: "scoper", Value: "go"}}
++	if _, err := configengine.Set(fabricengine.ConfigDirs(prime), gateslot.ConfigSpec(), configengine.LayerDefault, scoper); err != nil {
++		t.Fatalf("set the gate scoper: %v", err)
++	}
++	if call, err := primeDeps.UpkeepCall(); call != "lym gate test --gate upkeep" || err != nil {
++		t.Errorf("prime UpkeepCall() under the go scoper = %q, %v; want %q and nil", call, err, "lym gate test --gate upkeep")
++	}
++
+ 	// The watch opens only a directory that exists, and a tick creates it as a side effect.
+ 	// So the check comes before any tick.
+ 	if info, err := os.Stat(filepath.Dir(hibernatecli.RequestPath(prime))); err != nil || !info.IsDir() {
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 35304882f..5606b0f8b 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -202,6 +202,10 @@
+ //   - At every `board_tidy_every` landings, 0 meaning never, dobby spawns the board-tidy agent unless one is in flight.
+ //     The agent's one output is the report `.lym/beam/tidy/<UTC timestamp>.md`, which dobby posts to the nearest live orch.
+ //     Past `board_tidy_timeout_min` dobby ends the agent and posts a no-report line.
++//   - On the prime's dobby, whose worktree is on the main branch, the agent also runs the upkeep checks before its report.
++//     Deps.UpkeepCall renders their gate call, and the agent files a board note for each failure they report.
++//     With no call the agent runs no upkeep checks: the hub's wiring renders none under a scoper other than go,
++//     and a call that does not render is logged.
+ //   - A landing whose run records `lym batten cleanup --apply` removed before dobby read them is not counted.
+ //
+ // The description rewrite:
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 67395fe78..a6e30de81 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -145,6 +145,10 @@ type Deps struct {
+ 	TidyShuttle AgentShuttle
+ 	// TidyModel is the model the board-tidy agent runs on, resolved by the hub wiring.
+ 	TidyModel shuttleengine.ModelChoice
++	// UpkeepCall renders the gate call of the upkeep checks the board-tidy agent runs before its report.
++	// The hub wiring sets it on the prime's dobby alone, whose worktree is on the main branch.
++	// Nil, and an empty call with no error, run no upkeep.
++	UpkeepCall func() (string, error)
+ 	// StencilsDir is the hub's stencils directory, where the board-tidy stencil is read at call time.
+ 	StencilsDir string
+ 	// NearestOrch returns the name of the nearest live orch the tidy agent's parent directive names; empty means none.
+diff --git a/internal/dobbyengine/tidy.go b/internal/dobbyengine/tidy.go
+index 98b25a785..4213f8478 100644
+--- a/internal/dobbyengine/tidy.go
++++ b/internal/dobbyengine/tidy.go
+@@ -28,6 +28,10 @@ const (
+ 	BoardTidyRole = "board-tidy"
+ 	// tidyStencilName is the registered name of the board-tidy agent's opening stencil.
+ 	tidyStencilName = "beam-template-board-tidy"
++	// tidyUpkeepStencilName is the registered name of the board-tidy prompt's step that runs the upkeep checks.
++	tidyUpkeepStencilName = "beam-fragment-board-tidy-upkeep"
++	// tidyNoUpkeepStencilName is the registered name of the board-tidy prompt's step that runs no upkeep checks.
++	tidyNoUpkeepStencilName = "beam-fragment-board-tidy-no-upkeep"
+ )
+ 
+ // AgentShuttle is the part of shuttle the agents dobby spawns run through: the board-tidy agent and the describer agent.
+@@ -49,13 +53,20 @@ type TidyPromptInput struct {
+ 	ReportPath string
+ 	// Parent is the name of the nearest live orch, empty when there is none.
+ 	Parent string
++	// UpkeepCall is the gate call of the upkeep checks the agent runs and files notes from; empty runs none.
++	UpkeepCall string
+ }
+ 
+ // TidyPrompt composes the board-tidy agent's launch prompt for the engine named engine.
+ // It reads the board-tidy stencil from stencilsDir at call time and fills its markers from in.
+ // The parent directive names in.Parent, and the edit directive is the one of engine.
++// The upkeep step runs in.UpkeepCall, and a prompt with no call gets the step that runs no upkeep.
+ // A stencil read or fill error is returned wrapped with the stencil's name.
+ func TidyPrompt(stencilsDir, engine string, in TidyPromptInput) (string, error) {
++	upkeep, err := tidyUpkeepStep(stencilsDir, in.UpkeepCall)
++	if err != nil {
++		return "", err
++	}
+ 	directive, err := parentdirective.Directive(stencilsDir, in.Parent, false)
+ 	if err != nil {
+ 		return "", err
+@@ -75,6 +86,7 @@ func TidyPrompt(stencilsDir, engine string, in TidyPromptInput) (string, error)
+ 	filled, err := stencil.Fill(template, map[string]string{
+ 		"landed":                   strings.TrimSuffix(landed.String(), "\n"),
+ 		"report_path":              in.ReportPath,
++		"upkeep":                   upkeep,
+ 		parentdirective.MarkerName: directive,
+ 		editdirective.MarkerName:   editDirective,
+ 	})
+@@ -84,6 +96,29 @@ func TidyPrompt(stencilsDir, engine string, in TidyPromptInput) (string, error)
+ 	return string(filled), nil
+ }
+ 
++// tidyUpkeepStep returns the board-tidy prompt's upkeep step.
++// The step is the upkeep fragment filled with call, or the no-upkeep fragment when call is empty.
++// A stencil read or fill error is returned wrapped with the fragment's name.
++func tidyUpkeepStep(stencilsDir, call string) (string, error) {
++	name := tidyNoUpkeepStencilName
++	if call != "" {
++		name = tidyUpkeepStencilName
++	}
++	template, err := stencilstore.Read(stencilsDir, name)
++	if err != nil {
++		return "", fmt.Errorf("dobby: board-tidy prompt: read stencil %q: %w", name, err)
++	}
++	values := map[string]string{}
++	if call != "" {
++		values["upkeep_call"] = call
++	}
++	filled, err := stencil.Fill(template, values)
++	if err != nil {
++		return "", fmt.Errorf("dobby: board-tidy prompt: fill stencil %q: %w", name, err)
++	}
++	return strings.TrimSpace(string(filled)), nil
++}
++
+ // TidySpec composes the shuttle spec the board-tidy agent launches from.
+ // PromptEngine is engine, the engine the prompt was rendered for, which must be the one model resolves to.
+ // OutputFiles holds reportPath alone.
+@@ -196,7 +231,7 @@ func (d *daemon) spawnTidy(now time.Time, cfg Config, landed []string) error {
+ 	if err != nil {
+ 		return fmt.Errorf("resolve the board-tidy agent's engine: %w", err)
+ 	}
+-	prompt, err := TidyPrompt(d.deps.StencilsDir, engine, TidyPromptInput{Landed: landed, ReportPath: reportPath, Parent: orch})
++	prompt, err := TidyPrompt(d.deps.StencilsDir, engine, TidyPromptInput{Landed: landed, ReportPath: reportPath, Parent: orch, UpkeepCall: d.upkeepCall()})
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -218,6 +253,20 @@ func (d *daemon) spawnTidy(now time.Time, cfg Config, landed []string) error {
+ 	return nil
+ }
+ 
++// upkeepCall returns the upkeep checks' gate call for the board-tidy agent, empty when the dobby runs none.
++// A call that does not render is logged, and the tidy runs without the upkeep checks.
++func (d *daemon) upkeepCall() string {
++	if d.deps.UpkeepCall == nil {
++		return ""
++	}
++	call, err := d.deps.UpkeepCall()
++	if err != nil {
++		logger.Warn("dobbyengine: the upkeep gate call does not render; the board tidy runs no upkeep checks", "worktree", d.geom.WorktreeName, "error", err)
++		return ""
++	}
++	return call
++}
++
+ // settleTidy ends the agent in flight once its report exists or its deadline has passed.
+ // It reports whether the agent is still running.
+ // The notice goes out before the state record is cleared, so a notice that fails is retried on the next tick.
+diff --git a/internal/dobbyengine/tidy_test.go b/internal/dobbyengine/tidy_test.go
+index b1eb51a80..e3ed7aa18 100644
+--- a/internal/dobbyengine/tidy_test.go
++++ b/internal/dobbyengine/tidy_test.go
+@@ -182,6 +182,35 @@ func TestCountLandingsAndTidy(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the agent runs the upkeep call the seam renders, and none when the seam is unset or fails", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name   string
++			render func() (string, error)
++			want   string
++		}{
++			{"Unset", nil, "Run no upkeep checks"},
++			{"RenderError", func() (string, error) { return "", errors.New("no gate config") }, "Run no upkeep checks"},
++			{"Rendered", func() (string, error) { return "lym gate test --gate upkeep", nil }, "`lym gate test --gate upkeep`"},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newTidyHarness(t, 5)
++				h.d.deps.UpkeepCall = tt.render
++				h.step()
++				h.landed = five
++				h.step()
++				if len(h.shuttle.started) != 1 {
++					t.Fatalf("agents started = %d; want 1", len(h.shuttle.started))
++				}
++				if prompt := h.shuttle.started[0].Prompt; !strings.Contains(prompt, tt.want) {
++					t.Errorf("prompt = %q; want it to hold %q", prompt, tt.want)
++				}
++			})
++		}
++	})
++
+ 	t.Run("an engine that cannot be resolved starts no agent and reports its error", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newTidyHarness(t, 5)
+@@ -395,6 +424,20 @@ func TestTidyPrompt(t *testing.T) {
+ 		t.Errorf("TidyPrompt() holds an unfilled marker")
+ 	}
+ 
++	const upkeepCall = "lym gate test --gate upkeep"
++	if strings.Contains(prompt, upkeepCall) {
++		t.Errorf("TidyPrompt() with no upkeep call names %q", upkeepCall)
++	}
++	upkeepInput := input
++	upkeepInput.UpkeepCall = upkeepCall
++	upkeepPrompt, err := TidyPrompt(stencils, "claude", upkeepInput)
++	if err != nil {
++		t.Fatalf("TidyPrompt(upkeep) = _, %v; want nil", err)
++	}
++	if !strings.Contains(upkeepPrompt, "`"+upkeepCall+"`") || strings.Contains(upkeepPrompt, "{{") {
++		t.Errorf("TidyPrompt(upkeep) = %q; want the upkeep call %q and no unfilled marker", upkeepPrompt, upkeepCall)
++	}
++
+ 	spec := TidySpec(prompt, "/report.md", "claude", shuttleengine.ModelChoice{Engine: "b", Model: "sonnet"}, 30*time.Minute)
+ 	if spec.PromptEngine != "claude" {
+ 		t.Errorf("TidySpec().PromptEngine = %q; want %q", spec.PromptEngine, "claude")
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index b587506fc..f8502aead 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -72,6 +72,8 @@ func newCommand(goBinary string, samplePeriod, preTierCeiling, timeoutUnit, reru
+ 		Long: `test runs the tiers of gate.tiers, in ascending tier number, going on past a failed one unless --stop-on-fail ends the call there.
+ --gate K runs the tiers and the scope that key K of ` + keyName(gatesKey) + ` names, and goes with none of --tier, --upto, --all and --base.
+ A key of scope card needs --card <id> per card, scope all runs every tier whole, and scope diff takes the default diff scope.
++Scope marked runs only the key's //lym:only tests.
++While ` + keyName(scoperKey) + ` is go, a --gate call skips other keys' //lym:only tests.
+ Explicit <targets> beside --gate replace the key's scope.
+ --tier N names a tier and may repeat; the default is tier0 without --upto or --gate.
+ --upto N adds every declared tier from 0 through N, bar a manual one, which --tier alone runs.
+@@ -218,6 +220,13 @@ type testRequest struct {
+ 	memoryQuit int64
+ 	// memoryGuarding is whether the memory guard applies to this run.
+ 	memoryGuarding bool
++	// held are the sorted names of the `//lym:only` tests whose marker does not name the call's --gate key.
++	// Every listed tier run skips them and the guard step leaves them out; empty without --gate or under another scoper.
++	held []string
++	// marked holds the `//lym:only` tests whose marker names the call's --gate key.
++	// It groups them by their file's tier, then by package directory relative to the scanned module;
++	// a key of scope marked runs them in its guard step.
++	marked map[int]map[string][]string
+ 	// observer hears each tier start and end; its zero value observes nothing.
+ 	observer TierObserver
+ 	// phase, when set, hears where the call stands as each tier waits for slots and runs; only a detached runner sets it.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index ce8962dec..8f7aa77f4 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -36,6 +36,7 @@
+ // In a hub that declares no tier at all, a `--gate` call runs the key's lints and no tier.
+ // A key of scope `card` takes the `--card` ids and is refused without one.
+ // A key of scope `all` is the `--all` form, and `diff` is the computed form.
++// A key of scope `marked` runs only the tests marked for it, as Held tests below says.
+ // Explicit `<targets>` beside `--gate` replace the key's scope.
+ // Each run record carries the key as `gate_key`.
+ // `--gate` opens no flag combination the manual flags lack, except the key's lint steps.
+@@ -224,10 +225,8 @@
+ // The verb runs the guard step after the listed tiers when given `--guards`.
+ // Under the `go` scoper it also runs after any computed, `--base` or `--card` scope.
+ // It covers the module's `//lym:guard` tests outside the scope, so a narrower gate keeps full guard coverage.
+-// Under `--card` it also covers a scope package's guard test whose tier no listed tier is or covers.
+-// The listed runs skip that test.
+-// Bound: a computed or `--base` scope leaves every guard test of an impacted package to the listed runs,
+-// so one of a tier they do not run is not run there.
++// It also covers a scope package's guard test whose tier no listed tier is or covers, which the listed runs skip:
++// under `--card` for the cards' scope, and under a computed or `--base` scope for each base's impacted set and tiers.
+ // A guard test's tier comes from its file's `tierN` build tag, a file naming none counting as `tier0`.
+ // The step plans one run per tier holding guard tests, ascending.
+ // Each run is the tier's command with the group's packages as `{targets}`;
+@@ -254,6 +253,28 @@
+ // A misplaced or malformed watch marker refuses the call, as a guard scan error does.
+ // Bound: `-skip` matches by name in every package of the run, so a test of the same name elsewhere is skipped too.
+ //
++// # Held tests
++//
++// A top-level test marked `//lym:only <key>...` runs only in a `--gate` call whose key the marker names,
++// so a slow whole-repository check runs at the gate key that needs it and leaves the others.
++// Under the `go` scoper every `--gate` call scans the module of its guard step for the markers.
++// A call holds back each marked test whose marker does not name its key, under every scope form.
++// Each listed tier's run gets it in its `-skip` after the words from `--`, beside the watched tests.
++// A line names it, and the guard step leaves it out.
++// A call whose words after `--` carry a filter flag, and a tier whose command holds no `{args}`, hold nothing back.
++// A call without `--gate` holds nothing back, so a hand run reaches every test.
++// A marker that names a key `gate.gates` does not hold refuses the call, naming the test and the key.
++// A directory with no `go.mod` holds nothing back.
++// A module whose packages `go list` cannot list holds nothing back and says so on stderr, so its tiers report the break.
++//
++// A key of scope `marked` runs no package in its listed tiers, under any flag or tier setting.
++// Its guard step runs every test marked for the key under its file's tier, the guard step's way.
++// A marked test whose tier no listed tier is or covers refuses the call, naming the tests and the key to set.
++// In a hub that declares tiers, so does a call that would run no test:
++// no test is marked for the key, or the scanned directory holds no `go.mod`.
++// The scope needs the `go` scoper, and a listing failure refuses the call, since the scope would run nothing.
++// The template's `gateslot.UpkeepGateKey` is such a key.
++//
+ // # Hub resolution
+ //
+ // The directory is resolved with lymcwd.ResolveWorktree from any directory inside a worktree, a nested module included.
+@@ -305,6 +326,8 @@
+ // Under the `none` and `dotnet` scopers only a whole entry carries.
+ // An entry with empty args covers a request with empty args, the guard step's own `-run` filter and the watch skip;
+ // any other args need an exact match, so `-- -count=1` reruns.
++// An entry records the held tests apart from its args.
++// It covers a request, or serves as its base, only when that request holds back each test the entry held back.
+ // A tier with nothing left is carried: it takes no slot, runs no command and writes a run record with `carried` set.
+ // A tier with `carry: false` is never carried and writes no entry.
+ //
+diff --git a/internal/gatecli/dotnetfixture_integration_test.go b/internal/gatecli/dotnetfixture_integration_test.go
+index 806489c50..379981d07 100644
+--- a/internal/gatecli/dotnetfixture_integration_test.go
++++ b/internal/gatecli/dotnetfixture_integration_test.go
+@@ -37,6 +37,8 @@ const dotnetPackageReferences = `    <PackageReference Include="Microsoft.NET.Te
+ // That is process-global state that outlives the test.
+ // `dotnet build-server shutdown` would also end the nodes of other gate runs.
+ // So the test leaves them to the idle timeout.
++//
++//lym:only upkeep
+ func TestGateTest_DotnetFixture(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/gatecli/green.go b/internal/gatecli/green.go
+index f1a1bd82a..a10c966f0 100644
+--- a/internal/gatecli/green.go
++++ b/internal/gatecli/green.go
+@@ -52,8 +52,11 @@ type greenEntry struct {
+ 	Commit string `json:"commit"`
+ 	// ModuleDir is the run directory relative to the worktree root, "." for the root.
+ 	ModuleDir string `json:"module_dir"`
+-	// Args are the words after `--` the tier ran with.
++	// Args are the words after `--` the tier ran with, the held tests' skip left out.
+ 	Args []string `json:"args"`
++	// Held names the `//lym:only` tests the run skipped because its gate key did not name them, sorted.
++	// The entry covers only a request that holds back each of them too.
++	Held []string `json:"held,omitempty"`
+ 	// Whole means the tier passed over every target it can run.
+ 	Whole bool `json:"whole"`
+ 	// Packages are the module-relative package arguments that passed, when Whole is not set.
+@@ -137,7 +140,7 @@ func recordGreen(path string, entry greenEntry, now time.Time) error {
+ func (r greenRecord) with(entry greenEntry, now time.Time) greenRecord {
+ 	entry.Written = now
+ 	sameKey := func(other greenEntry) bool {
+-		return other.Fingerprint == entry.Fingerprint && other.Tree == entry.Tree && other.ModuleDir == entry.ModuleDir && slices.Equal(other.Args, entry.Args)
++		return other.Fingerprint == entry.Fingerprint && other.Tree == entry.Tree && other.ModuleDir == entry.ModuleDir && slices.Equal(other.Args, entry.Args) && slices.Equal(other.Held, entry.Held)
+ 	}
+ 
+ 	var entries []greenEntry
+@@ -180,9 +183,10 @@ func (r greenRecord) with(entry greenEntry, now time.Time) greenRecord {
+ // whole when an entry passed over every target, else the union of the packages the matching entries passed.
+ // An entry with empty args matches a request with empty args, the guard step's own -run filter and the watch skip;
+ // an entry with any other args matches only exactly.
+-func (r greenRecord) covered(fingerprint, tree, moduleDir string, args []string) (whole bool, packages []string) {
++// An entry matches only when the request's held tests, heldTests, include every test the entry held back.
++func (r greenRecord) covered(fingerprint, tree, moduleDir string, args, heldTests []string) (whole bool, packages []string) {
+ 	for _, held := range r.Entries {
+-		if held.Fingerprint != fingerprint || held.Tree != tree || held.ModuleDir != moduleDir || !argsMatch(held.Args, args) {
++		if held.Fingerprint != fingerprint || held.Tree != tree || held.ModuleDir != moduleDir || !argsMatch(held.Args, args) || !heldWithin(held.Held, heldTests) {
+ 			continue
+ 		}
+ 		if held.Whole {
+@@ -200,11 +204,12 @@ func (r greenRecord) covered(fingerprint, tree, moduleDir string, args []string)
+ // Only commits unrelated by history compare by write time.
+ // Only an entry that ran with empty args counts:
+ // a whole pass under `-- -run X` covers less than the tier, and a package entry covers only part of it.
+-func (r greenRecord) newestWholeAncestor(fingerprint, moduleDir string, isAncestor func(commit, of string) bool) (string, bool) {
++// Nor does an entry that held back a test heldTests does not hold back, which the request runs.
++func (r greenRecord) newestWholeAncestor(fingerprint, moduleDir string, heldTests []string, isAncestor func(commit, of string) bool) (string, bool) {
+ 	var newest greenEntry
+ 	found := false
+ 	for _, held := range r.Entries {
+-		if !held.Whole || held.Fingerprint != fingerprint || held.ModuleDir != moduleDir || len(held.Args) > 0 {
++		if !held.Whole || held.Fingerprint != fingerprint || held.ModuleDir != moduleDir || len(held.Args) > 0 || !heldWithin(held.Held, heldTests) {
+ 			continue
+ 		}
+ 		if !isAncestor(held.Commit, "HEAD") {
+@@ -229,6 +234,11 @@ func argsMatch(entryArgs, requestArgs []string) bool {
+ 	return slices.Equal(entryArgs, requestArgs)
+ }
+ 
++// heldWithin reports whether every test of entryHeld is in requestHeld, so the entry skipped no test the request runs.
++func heldWithin(entryHeld, requestHeld []string) bool {
++	return !slices.ContainsFunc(entryHeld, func(name string) bool { return !slices.Contains(requestHeld, name) })
++}
++
+ // isGuardRunFilter reports whether args are exactly the -run filter the guard step builds over its guard test names.
+ func isGuardRunFilter(args []string) bool {
+ 	return len(args) == 2 && args[0] == "-run" && strings.HasPrefix(args[1], "^(") && strings.HasSuffix(args[1], ")$")
+@@ -341,7 +351,7 @@ func (g *greenRun) subtract(ctx context.Context, run tierRun, env []string) gree
+ 	hasTargets := gateslot.HoldsTargets(run.tier.Command)
+ 	for _, inv := range run.invocations {
+ 		key := moduleKey(g.root, inv.dir)
+-		whole, packages := g.record.covered(fingerprint, g.tree, key, run.args)
++		whole, packages := g.record.covered(fingerprint, g.tree, key, run.greenArgs(), run.held)
+ 		if whole {
+ 			continue
+ 		}
+@@ -382,7 +392,7 @@ func (g *greenRun) subtract(ctx context.Context, run tierRun, env []string) gree
+ // not the guard or vet step, not a run with args, not a partial invocation.
+ // A hub with no inert_paths carries nothing this way.
+ func (g *greenRun) carriesOverInert(ctx context.Context, run tierRun, inv invocation, key, fingerprint string) bool {
+-	if len(g.cfg.InertPaths) == 0 || len(run.args) > 0 || run.guardStep || run.vetStep || inv.partial {
++	if len(g.cfg.InertPaths) == 0 || len(run.greenArgs()) > 0 || run.guardStep || run.vetStep || inv.partial {
+ 		return false
+ 	}
+ 	if gateslot.HoldsTargets(run.tier.Command) && (key != moduleKey(g.root, run.tier.Dir) || !slices.Equal(inv.targets, strings.Fields(run.tier.AllTargets))) {
+@@ -392,7 +402,7 @@ func (g *greenRun) carriesOverInert(ctx context.Context, run tierRun, inv invoca
+ 		held, err := gitrepo.New(g.root).IsAncestor(commit, of)
+ 		return err == nil && held
+ 	}
+-	base, found := g.record.newestWholeAncestor(fingerprint, key, isAncestor)
++	base, found := g.record.newestWholeAncestor(fingerprint, key, run.held, isAncestor)
+ 	return found && allInertSince(ctx, g.cfg, g.root, base)
+ }
+ 
+@@ -402,7 +412,7 @@ func (g *greenRun) carriesOverInert(ctx context.Context, run tierRun, inv invoca
+ func (g *greenRun) recordInertCarried(run tierRun, plan greenPlan, now time.Time) {
+ 	fingerprint := g.fingerprint(run.tier)
+ 	for _, key := range plan.inertCarried {
+-		entry := greenEntry{Fingerprint: fingerprint, Tree: g.tree, Commit: g.commit, ModuleDir: key, Whole: true}
++		entry := greenEntry{Fingerprint: fingerprint, Tree: g.tree, Commit: g.commit, ModuleDir: key, Held: run.held, Whole: true}
+ 		if err := recordGreen(g.path, entry, now); err != nil {
+ 			logger.Warn("gate test: could not write the green record", "tier", tierName(run.number), "cause", err)
+ 		}
+@@ -445,7 +455,7 @@ func (g *greenRun) recordPass(ctx context.Context, run tierRun, ran []invocation
+ 	fingerprint := g.fingerprint(run.tier)
+ 	for _, inv := range ran {
+ 		key := moduleKey(g.root, inv.dir)
+-		entry := greenEntry{Fingerprint: fingerprint, Tree: g.tree, Commit: g.commit, ModuleDir: key, Args: run.args}
++		entry := greenEntry{Fingerprint: fingerprint, Tree: g.tree, Commit: g.commit, ModuleDir: key, Args: run.greenArgs(), Held: run.held}
+ 		switch {
+ 		case inv.partial:
+ 			continue
+diff --git a/internal/gatecli/green_test.go b/internal/gatecli/green_test.go
+index 8ab3c21f3..100650ad3 100644
+--- a/internal/gatecli/green_test.go
++++ b/internal/gatecli/green_test.go
+@@ -90,6 +90,7 @@ func TestGreenRecord(t *testing.T) {
+ 			{Fingerprint: "s", Tree: "t", ModuleDir: ".", Args: watchSkip, Packages: []string{"./y"}},
+ 			{Fingerprint: "h", Tree: "t", ModuleDir: ".", Packages: []string{"./b"}},
+ 			{Fingerprint: "h", Tree: "t", ModuleDir: ".", Packages: []string{"./a", "./b"}},
++			{Fingerprint: "k", Tree: "t", ModuleDir: ".", Held: []string{"TestH"}, Whole: true},
+ 		}}
+ 		tests := []struct {
+ 			name         string
+@@ -97,9 +98,13 @@ func TestGreenRecord(t *testing.T) {
+ 			tree         string
+ 			moduleDir    string
+ 			args         []string
++			held         []string
+ 			wantWhole    bool
+ 			wantPackages []string
+ 		}{
++			{name: "an entry that held a test back covers a request that holds it back too", fingerprint: "k", tree: "t", moduleDir: ".", held: []string{"TestH", "TestI"}, wantWhole: true},
++			{name: "an entry that held a test back never covers a request that runs it", fingerprint: "k", tree: "t", moduleDir: ".", held: []string{"TestI"}},
++			{name: "an entry that held nothing back covers a request that holds tests back", fingerprint: "f", tree: "t", moduleDir: ".", held: []string{"TestH"}, wantWhole: true},
+ 			{name: "a whole entry covers an empty-args request", fingerprint: "f", tree: "t", moduleDir: ".", wantWhole: true},
+ 			{name: "an empty-args entry covers the guard step's own -run filter", fingerprint: "f", tree: "t", moduleDir: ".", args: guardFilter, wantWhole: true},
+ 			{name: "an empty-args entry covers a request under the watch skip", fingerprint: "f", tree: "t", moduleDir: ".", args: watchSkip, wantWhole: true},
+@@ -116,9 +121,9 @@ func TestGreenRecord(t *testing.T) {
+ 		for _, tt := range tests {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				t.Parallel()
+-				whole, packages := record.covered(tt.fingerprint, tt.tree, tt.moduleDir, tt.args)
++				whole, packages := record.covered(tt.fingerprint, tt.tree, tt.moduleDir, tt.args, tt.held)
+ 				if whole != tt.wantWhole || !slices.Equal(packages, tt.wantPackages) {
+-					t.Errorf("covered(%q, %q, %q, %q) = %v, %q; want %v, %q", tt.fingerprint, tt.tree, tt.moduleDir, tt.args, whole, packages, tt.wantWhole, tt.wantPackages)
++					t.Errorf("covered(%q, %q, %q, %q, %q) = %v, %q; want %v, %q", tt.fingerprint, tt.tree, tt.moduleDir, tt.args, tt.held, whole, packages, tt.wantWhole, tt.wantPackages)
+ 				}
+ 			})
+ 		}
+@@ -249,6 +254,17 @@ func TestGreenRecord(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("entries that held different tests back are kept apart", func(t *testing.T) {
++		t.Parallel()
++		now := time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC)
++		held := greenEntry{Fingerprint: "f", Tree: "t", Commit: "c", ModuleDir: ".", Held: []string{"TestH"}, Packages: []string{"./a"}}
++		unheld := greenEntry{Fingerprint: "f", Tree: "t", Commit: "c", ModuleDir: ".", Packages: []string{"./b"}}
++		entries := greenRecord{}.with(held, now).with(unheld, now).Entries
++		if len(entries) != 2 || !slices.Equal(entries[0].Packages, []string{"./a"}) || !slices.Equal(entries[1].Packages, []string{"./b"}) {
++			t.Errorf("entries = %+v; want the two entries, neither joined into the other", entries)
++		}
++	})
++
+ 	t.Run("a malformed file reads as empty and a write replaces it", func(t *testing.T) {
+ 		t.Parallel()
+ 		path := filepath.Join(t.TempDir(), greenFileName)
+@@ -300,26 +316,30 @@ func TestGreenRecord_NewestWholeAncestor(t *testing.T) {
+ 		}
+ 	}
+ 
++	heldBack := func(e *greenEntry) { e.Held = []string{"TestH"} }
+ 	tests := []struct {
+ 		name       string
+ 		entries    []greenEntry
++		held       []string
+ 		isAncestor func(commit, of string) bool
+ 		want       string
+ 	}{
+-		{"the newest whole-green ancestor by write time among unrelated commits", []greenEntry{whole("old", 0), whole("new", time.Hour), whole("mid", time.Minute)}, everyCommit, "new"},
+-		{"a commit that is not an ancestor is skipped", []greenEntry{whole("old", 0), whole("new", time.Hour)}, func(commit, of string) bool { return of == "HEAD" && commit == "old" }, "old"},
+-		{"the newest by history wins over a later write of an older commit", []greenEntry{whole("new", 0), whole("old", time.Hour)}, linear("old", "new"), "new"},
+-		{"the newest by history wins when the older commit was written first", []greenEntry{whole("old", 0), whole("new", time.Hour)}, linear("old", "new"), "new"},
+-		{"a narrowed entry is never a base", []greenEntry{with(whole("narrow", time.Hour), func(e *greenEntry) { e.Whole, e.Packages = false, []string{"./a"} })}, everyCommit, ""},
+-		{"a whole entry under args is never a base", []greenEntry{with(whole("run", time.Hour), func(e *greenEntry) { e.Args = []string{"-run", "X"} })}, everyCommit, ""},
+-		{"a whole entry under another fingerprint is never a base", []greenEntry{with(whole("changed", time.Hour), func(e *greenEntry) { e.Fingerprint = "other" })}, everyCommit, ""},
+-		{"a whole entry in another module directory is never a base", []greenEntry{with(whole("nested", time.Hour), func(e *greenEntry) { e.ModuleDir = "nested" })}, everyCommit, ""},
+-		{"an empty record holds no base", nil, everyCommit, ""},
++		{"the newest whole-green ancestor by write time among unrelated commits", []greenEntry{whole("old", 0), whole("new", time.Hour), whole("mid", time.Minute)}, nil, everyCommit, "new"},
++		{"a commit that is not an ancestor is skipped", []greenEntry{whole("old", 0), whole("new", time.Hour)}, nil, func(commit, of string) bool { return of == "HEAD" && commit == "old" }, "old"},
++		{"the newest by history wins over a later write of an older commit", []greenEntry{whole("new", 0), whole("old", time.Hour)}, nil, linear("old", "new"), "new"},
++		{"the newest by history wins when the older commit was written first", []greenEntry{whole("old", 0), whole("new", time.Hour)}, nil, linear("old", "new"), "new"},
++		{"a narrowed entry is never a base", []greenEntry{with(whole("narrow", time.Hour), func(e *greenEntry) { e.Whole, e.Packages = false, []string{"./a"} })}, nil, everyCommit, ""},
++		{"a whole entry under args is never a base", []greenEntry{with(whole("run", time.Hour), func(e *greenEntry) { e.Args = []string{"-run", "X"} })}, nil, everyCommit, ""},
++		{"a whole entry under another fingerprint is never a base", []greenEntry{with(whole("changed", time.Hour), func(e *greenEntry) { e.Fingerprint = "other" })}, nil, everyCommit, ""},
++		{"a whole entry in another module directory is never a base", []greenEntry{with(whole("nested", time.Hour), func(e *greenEntry) { e.ModuleDir = "nested" })}, nil, everyCommit, ""},
++		{"a whole entry that held a test back is a base for a request that holds it back too", []greenEntry{with(whole("held", time.Hour), heldBack)}, []string{"TestH"}, everyCommit, "held"},
++		{"a whole entry that held a test back is never a base for a request that runs it", []greenEntry{whole("old", 0), with(whole("held", time.Hour), heldBack)}, nil, everyCommit, "old"},
++		{"an empty record holds no base", nil, nil, everyCommit, ""},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got, found := greenRecord{Entries: tt.entries}.newestWholeAncestor(fingerprint, ".", tt.isAncestor)
++			got, found := greenRecord{Entries: tt.entries}.newestWholeAncestor(fingerprint, ".", tt.held, tt.isAncestor)
+ 			if got != tt.want || found != (tt.want != "") {
+ 				t.Errorf("newestWholeAncestor() = (%q, %v); want (%q, %v)", got, found, tt.want, tt.want != "")
+ 			}
+diff --git a/internal/gatecli/keynames.go b/internal/gatecli/keynames.go
+index ae00a4f54..d91a5d28d 100644
+--- a/internal/gatecli/keynames.go
++++ b/internal/gatecli/keynames.go
+@@ -16,7 +16,8 @@ const (
+ 	scoperKey       = "scoper"
+ 	gatesKey        = "gates"
+ 	tiersKey        = "tiers"
+-	// tierMemoryMBLeaf, tierTimeoutMinLeaf and tierFilterLeaf are keys of one tier's mapping.
++	// tierDirLeaf, tierMemoryMBLeaf, tierTimeoutMinLeaf and tierFilterLeaf are keys of one tier's mapping.
++	tierDirLeaf        = "dir"
+ 	tierMemoryMBLeaf   = "memory_mb"
+ 	tierTimeoutMinLeaf = "timeout_min"
+ 	tierFilterLeaf     = "filter"
+diff --git a/internal/gatecli/only.go b/internal/gatecli/only.go
+new file mode 100644
+index 000000000..01f3f012e
+--- /dev/null
++++ b/internal/gatecli/only.go
+@@ -0,0 +1,155 @@
++// only.go reads the `//lym:only` tests of a `--gate` call.
++// These are the tests the call's key holds back, and the tests a marked scope runs.
++
++package gatecli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"io"
++	"maps"
++	"os"
++	"path/filepath"
++	"slices"
++	"sort"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// scopeMarked labels the scope of a key whose scope is gateslot.ScopeMarked.
++const scopeMarked = "marked"
++
++// withOnlyTests returns request with held and marked filled from the `//lym:only` tests of the module the call scans.
++// That module is the -C directory of explicit targets, else tier0's dir.
++// A call without --gate, a call under another scoper than go and a directory with no go.mod hold nothing back.
++// Neither does a call whose words after `--` carry a filter flag.
++// A marker naming a key the config does not hold refuses the call, as does a marker the scan rejects.
++// A module whose packages cannot be listed holds nothing back, naming why on stderr, so the tiers report the break;
++// a key of scope marked, which would then run nothing, is refused instead.
++// ctx bounds the package listing.
++func withOnlyTests(ctx context.Context, cfg gateslot.Config, request testRequest) (testRequest, error) {
++	if request.gate == "" || cfg.Scoper != "go" {
++		return request, nil
++	}
++	dir, err := guardScanDir(cfg, request, scope{})
++	if err != nil {
++		return request, err
++	}
++	moduleDir := resolveRunDir(request.root, dir)
++	if _, err := os.Stat(filepath.Join(moduleDir, "go.mod")); err != nil {
++		return request, nil
++	}
++	only, err := impactset.ModuleOnlyTests(ctx, moduleDir)
++	if err != nil {
++		if impactset.IsGuardScanError(err) || isMarkedCall(cfg, request) {
++			return request, errors.New(guardScanRefusal(moduleDir, err))
++		}
++		logger.Warn("gate test: could not list the //lym:only tests; no test is held back", "module", moduleDir, "cause", err)
++		printLine(request.stderr, fmt.Sprintf("gate test: cannot list the //lym:only tests of %s, so --gate %q holds no test back: %v", moduleDir, request.gate, err))
++		return request, nil
++	}
++	request.marked = map[int]map[string][]string{}
++	for _, packageDir := range slices.Sorted(maps.Keys(only)) {
++		for _, test := range only[packageDir] {
++			for _, key := range test.Keys {
++				if _, held := cfg.Gates[key]; !held {
++					return request, fmt.Errorf("gate test: the //lym:only marker of %s in %s names the gate key %q, which %s does not hold; way forward: name a key %s holds in the marker, then re-run the same command", test.Name, packageDir, key, keyName(gatesKey), keyName(gatesKey))
++				}
++			}
++			if !slices.Contains(test.Keys, request.gate) {
++				request.held = append(request.held, test.Name)
++				continue
++			}
++			if request.marked[test.Tier] == nil {
++				request.marked[test.Tier] = map[string][]string{}
++			}
++			request.marked[test.Tier][packageDir] = append(request.marked[test.Tier][packageDir], test.Name)
++		}
++	}
++	sort.Strings(request.held)
++	request.held = slices.Compact(request.held)
++	// The caller's own filter decides what runs, in the listed runs and the guard step alike.
++	if slices.ContainsFunc(request.args, isFilterFlag) {
++		request.held = nil
++	}
++	return request, nil
++}
++
++// markedScope returns the scope of a key whose scope is gateslot.ScopeMarked: no listed tier runs a package,
++// and the guard step runs the tests marked for the key, each under its file's tier.
++// It refuses a marked test of a tier no listed tier is or covers, and a module with no test marked for the key,
++// so the key's tiers never leave a marked test out silently.
++// Any scoper but go is refused, since the scan is Go's.
++func markedScope(cfg gateslot.Config, request testRequest) (scope, error) {
++	if cfg.Scoper != "go" {
++		return scope{}, configRefusal("--gate %q has scope %s, which needs the go scoper to find the //lym:only tests, but %s is %q; set the key's scope to diff or all, or set the scoper to go", request.gate, gateslot.ScopeMarked, keyName(scoperKey), cfg.Scoper)
++	}
++	dir, err := guardScanDir(cfg, request, scope{})
++	if err != nil {
++		return scope{}, err
++	}
++	listed := coveredTiers(cfg, request)
++	var unlisted []int
++	var unrun []string
++	for _, number := range slices.Sorted(maps.Keys(request.marked)) {
++		if !slices.Contains(listed, number) {
++			unlisted = append(unlisted, number)
++			unrun = append(unrun, markedNames(request.marked[number])...)
++		}
++	}
++	if len(unlisted) > 0 {
++		return scope{}, configRefusal("--gate %q lists no tier that is or covers %s, so its marked tests there cannot run: %s; set %s to list %s",
++			request.gate, tierNames(unlisted), strings.Join(unrun, ", "), keyName(gatesKey+"."+request.gate), tierNames(unlisted))
++	}
++	if len(request.marked) == 0 {
++		moduleDir := resolveRunDir(request.root, dir)
++		if _, err := os.Stat(filepath.Join(moduleDir, "go.mod")); err != nil {
++			return scope{}, configRefusal("--gate %q has scope %s and would run no test, since %s holds no go.mod to scan for marked tests; set %s to the module that holds them",
++				request.gate, gateslot.ScopeMarked, moduleDir, tierKeyName(tierName(0), tierDirLeaf))
++		}
++		return scope{}, fmt.Errorf("gate test: --gate %q has scope %s and would run no test: no test of the module at %s is marked //lym:only %s; way forward: mark a test of the module `//lym:only %s`, then re-run the same command",
++			request.gate, gateslot.ScopeMarked, moduleDir, request.gate, request.gate)
++	}
++	return scope{form: scopeMarked, guardStep: true, guardDir: dir, guards: request.marked}, nil
++}
++
++// markedNames returns the sorted test names of a tier's marked tests, keyed by package directory.
++func markedNames(byDir map[string][]string) []string {
++	var names []string
++	for _, dirNames := range byDir {
++		names = append(names, dirNames...)
++	}
++	sort.Strings(names)
++	return slices.Compact(names)
++}
++
++// withoutHeld returns guards with the held test names removed, dropping a directory or tier left with none.
++// A nil guards stays nil, so a scope that has not scanned still reads as unscanned.
++func withoutHeld(guards map[int]map[string][]string, held []string) map[int]map[string][]string {
++	if guards == nil || len(held) == 0 {
++		return guards
++	}
++	kept := map[int]map[string][]string{}
++	for number, byDir := range guards {
++		for dir, names := range byDir {
++			rest := slices.DeleteFunc(slices.Clone(names), func(name string) bool { return slices.Contains(held, name) })
++			if len(rest) == 0 {
++				continue
++			}
++			if kept[number] == nil {
++				kept[number] = map[string][]string{}
++			}
++			kept[number][dir] = rest
++		}
++	}
++	return kept
++}
++
++// printHeldLine names on stderr the held tests a tier run skips, since the //lym:only markers do not name the call's key.
++func printHeldLine(stderr io.Writer, number int, gate string, held []string) {
++	printLine(stderr, fmt.Sprintf("gate test: %s skips %s, since their //lym:only markers do not name --gate %q", tierName(number), strings.Join(held, ", "), gate))
++}
+diff --git a/internal/gatecli/redfirstdotnet_integration_test.go b/internal/gatecli/redfirstdotnet_integration_test.go
+index 0504dfca6..4d4d78a84 100644
+--- a/internal/gatecli/redfirstdotnet_integration_test.go
++++ b/internal/gatecli/redfirstdotnet_integration_test.go
+@@ -28,6 +28,8 @@ import (
+ // It skips when `dotnet` is not on PATH, has no SDK, or the global-packages folder lacks the test packages.
+ //
+ // The build leaves an MSBuild node running until the SDK's idle timeout, as TestGateTest_DotnetFixture says.
++//
++//lym:only upkeep
+ func TestGateRedFirst_Dotnet(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	// The rows run one after another: each rewrites the one working tree that the next row's diff starts from.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 77841fb17..0d710ac92 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -101,6 +101,13 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	if request.checkoutRoot != "" {
+ 		request.root = request.checkoutRoot
+ 	}
++	request, err = withOnlyTests(preCtx, cfg, request)
++	if refusal := preTierExpiry(preCtx, runCtx, request, "scanning the //lym:only tests"); refusal != "" {
++		return output.Err(out, refusal)
++	}
++	if err != nil {
++		return output.Err(out, err.Error())
++	}
+ 	sc, err := computeScope(preCtx, cfg, location, request.root, request, green)
+ 	if refusal := preTierExpiry(preCtx, runCtx, request, "computing the scope"); refusal != "" {
+ 		return output.Err(out, refusal)
+@@ -121,6 +128,11 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			return output.Err(out, refusal)
+ 		}
+ 	}
++	// A marked scope's guards are already the call's own tests per directory.
++	// Dropping by bare name would lose one that shares its name with a held test elsewhere.
++	if sc.form != scopeMarked {
++		sc.guards = withoutHeld(sc.guards, request.held)
++	}
+ 	plan, err := planTierRuns(cfg, request, sc)
+ 	if err != nil {
+ 		return output.Err(out, err.Error())
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index 215661e4a..fe5ab3f9e 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -116,12 +116,37 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ 	case "all":
+ 		request.all = true
+ 		request.cards = nil
+-	case "diff":
++	case "diff", gateslot.ScopeMarked:
+ 		request.cards = nil
+ 	}
+ 	return request
+ }
+ 
++// isMarkedCall reports whether request runs a --gate key of scope marked, with no explicit targets to replace it.
++func isMarkedCall(cfg gateslot.Config, request testRequest) bool {
++	return request.gate != "" && len(request.targets) == 0 && cfg.Gates[request.gate].Scope == gateslot.ScopeMarked
++}
++
++// skippedInside returns the guard tests of inside whose tier is none of numbers, nor a tier one of them covers.
++// The runs of numbers leave such a test out although its package is in their set, so the guard step takes it.
++func skippedInside(cfg gateslot.Config, numbers []int, inside map[string][]impactset.GuardTest) map[string][]impactset.GuardTest {
++	run := slices.Clone(numbers)
++	for _, number := range numbers {
++		if tier, err := cfg.Tier(number); err == nil {
++			run = append(run, tier.Covers...)
++		}
++	}
++	left := map[string][]impactset.GuardTest{}
++	for dir, tests := range inside {
++		for _, test := range tests {
++			if !slices.Contains(run, test.Tier) {
++				left[dir] = append(left[dir], test)
++			}
++		}
++	}
++	return left
++}
++
+ // computeScope returns the scope of request over the worktree at root, for the config cfg.
+ // Explicit targets take no computation, and --all takes only allScope's inert check.
+ // Otherwise the form is --card when a card is named, --base when a base is given, and the computed form otherwise.
+@@ -149,10 +174,15 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ // A narrowed share, and a --card scope, skip the `//lym:watch` tests of their packages that no changed file concerns.
+ // A --card scope reads its changed files as the diff from the merge base with the parent branch.
+ // With no parent branch or an unreadable diff it skips none.
++// A narrowed share's guard step also takes each guard test inside its set whose tier no tier of its base is or covers.
++// A --gate key of scope marked takes markedScope instead, whatever the scoper.
+ // A guard or watch scan error refuses with its file, line and way forward.
+ // ctx bounds the derivation, so a stalled `go list` is killed when it ends.
+ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Location, root string, request testRequest, green *greenRun) (scope, error) {
+ 	request = withGateScope(cfg, request)
++	if isMarkedCall(cfg, request) {
++		return markedScope(cfg, request)
++	}
+ 	switch {
+ 	case len(request.targets) > 0:
+ 		return scope{form: scopeTargets}, nil
+@@ -265,7 +295,7 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 			for i, module := range targets.Modules {
+ 				share.modules[i] = moduleTargets{dir: module.Dir, targets: module.Packages}
+ 			}
+-			guards = mergeGuards(guards, targets.Guards)
++			guards = mergeGuards(mergeGuards(guards, targets.Guards), skippedInside(cfg, group.tiers, targets.InsideGuards))
+ 		}
+ 		for _, number := range group.tiers {
+ 			shares[number] = share
+@@ -392,7 +422,8 @@ type baseGroup struct {
+ // The second result holds the tiers with no base, which run whole.
+ // A --base call gives every tier its one base.
+ // Under the computed form, a tier's base is the newest ancestor of HEAD that the green record holds whole-green for it.
+-// Otherwise it is the merge base with the parent branch.
++// Only an entry that held back no test the request runs counts for this.
++// With no such ancestor, the base is the merge base with the parent branch.
+ // A dirty worktree holds no green record, so every tier takes the merge base.
+ func diffBaseGroups(cfg gateslot.Config, location *lymcwd.Location, root string, request testRequest, form string, green *greenRun) (groups []baseGroup, wholeTiers []int) {
+ 	numbers := keptTiers(cfg, request)
+@@ -433,7 +464,7 @@ func diffBaseGroups(cfg gateslot.Config, location *lymcwd.Location, root string,
+ 		var base string
+ 		ok := false
+ 		if tier, err := cfg.Tier(number); err == nil && green != nil {
+-			base, ok = green.record.newestWholeAncestor(green.fingerprint(tier), moduleKey(root, tier.Dir), isAncestor)
++			base, ok = green.record.newestWholeAncestor(green.fingerprint(tier), moduleKey(root, tier.Dir), request.held, isAncestor)
+ 		}
+ 		if !ok {
+ 			base, ok = parentMerge()
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 28f54e542..6861edbb1 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -434,6 +434,88 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		wantArgs(t, gate(t, pair, nil, "--card", "1", "--tier", "1"), scoped, []string{"."}, guardInvocation)
+ 	})
+ 
++	t.Run("a computed scope runs an impacted package's guard in the guard step unless a listed tier is or covers its tier", func(t *testing.T) {
++		plankit.WriteTree(t, pair, map[string]string{
++			"consumer/c.go":      "package consumer\n\nimport \"example.com/scopes/lib\"\n\nvar One = lib.One\n",
++			"consumer/c_test.go": "//go:build tier1\n\npackage consumer\n\nimport \"testing\"\n\n//lym:guard\nfunc TestConsumerGuard(t *testing.T) {}\n",
++		})
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "consumer")) })
++		edit(t, "lib/lib.go", "package lib\n\nfunc One() int { return 3 }\n")
++		scoped := []string{"./consumer", "./lib", "./user"}
++
++		wantArgs(t, gate(t, pair, nil), scoped, guardInvocation, []string{"./consumer", "-run", "^(TestConsumerGuard)$"})
++		wantArgs(t, gate(t, pair, nil, "--tier", "1"), scoped, guardInvocation)
++	})
++
++	t.Run("a --gate call skips a //lym:only test its marker does not name, a marked key runs only its marked tests or is refused, and a marker naming no gate key is refused", func(t *testing.T) {
++		plankit.WriteTree(t, pair, map[string]string{
++			"heldpkg/h.go": "package heldpkg\n",
++			"heldpkg/h_test.go": "package heldpkg\n\nimport \"testing\"\n\n//lym:only upkeep\nfunc TestHeld(t *testing.T) {}\n\n" +
++				"//lym:guard\n//lym:only finalize\nfunc TestLandingGuard(t *testing.T) {}\n",
++			"nested/n_test.go": "package nested\n\nimport \"testing\"\n\n//lym:only upkeep\nfunc TestNestedHeld(t *testing.T) {}\n",
++		})
++		t.Cleanup(func() {
++			_ = os.RemoveAll(filepath.Join(pair, "heldpkg"))
++			_ = os.Remove(filepath.Join(pair, "nested", "n_test.go"))
++		})
++
++		finalize := gate(t, pair, nil, "--gate", "finalize")
++		wantArgs(t, finalize, []string{"./...", "-skip", "^(TestHeld)$"})
++		if want := `tier0 skips TestHeld, since their //lym:only markers do not name --gate "finalize"`; !strings.Contains(finalize.stdout.String(), want) {
++			t.Errorf("stdout = %q; want the held line %q", finalize.stdout.String(), want)
++		}
++		wantArgs(t, gate(t, pair, nil, "--gate", "upkeep"), []string{"./heldpkg", "-run", "^(TestHeld)$"})
++		// A test of the same name that another package holds back leaves the marked one running.
++		plankit.WriteTree(t, pair, map[string]string{
++			"samename/s_test.go": "package samename\n\nimport \"testing\"\n\n//lym:only finalize\nfunc TestHeld(t *testing.T) {}\n",
++		})
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "samename")) })
++		wantArgs(t, gate(t, pair, nil, "--gate", "upkeep"), []string{"./heldpkg", "-run", "^(TestHeld)$"})
++		if err := os.RemoveAll(filepath.Join(pair, "samename")); err != nil {
++			t.Fatal(err)
++		}
++		wantArgs(t, gate(t, pair, nil, "--all"), []string{"./..."})
++
++		// The card scope leaves heldpkg out, so only the guard step could run its held guard.
++		skip := "^(TestHeld|TestLandingGuard)$"
++		wantArgs(t, gate(t, pair, nil, "--gate", "card", "--card", "1"),
++			[]string{"./lib", "./user", "-skip", skip}, []string{".", "-skip", skip}, guardInvocation)
++
++		wantArgs(t, gate(t, pair, nil, "--gate", "upkeep", "./heldpkg"), []string{"./heldpkg", "-skip", "^(TestLandingGuard)$"})
++		wantArgs(t, gate(t, pair, nil, "--gate", "finalize", "-C", "nested", "."), []string{".", "-skip", "^(TestNestedHeld)$"})
++
++		writeScoper(t, "none")
++		defer writeScoper(t, "go")
++		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "needs the go scoper", `"none"`)
++		writeScoper(t, "go")
++
++		unlisted := filepath.Join(pair, "heldpkg", "h1_test.go")
++		plankit.WriteTree(t, pair, map[string]string{
++			"heldpkg/h1_test.go": "//go:build tier1\n\npackage heldpkg\n\nimport \"testing\"\n\n//lym:only upkeep\nfunc TestHeldTierOne(t *testing.T) {}\n",
++		})
++		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "lists no tier that is or covers tier1", "TestHeldTierOne", "gate.gates.upkeep", "way forward")
++		if err := os.Remove(unlisted); err != nil {
++			t.Fatal(err)
++		}
++
++		if err := os.Remove(filepath.Join(pair, "nested", "n_test.go")); err != nil {
++			t.Fatal(err)
++		}
++		edit(t, "heldpkg/h_test.go", "package heldpkg\n\nimport \"testing\"\n\n//lym:only finalize\nfunc TestHeld(t *testing.T) {}\n")
++		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "is marked //lym:only upkeep", "way forward")
++
++		edit(t, "heldpkg/h_test.go", "package heldpkg\n\nimport \"testing\"\n\n//lym:only nosuch\nfunc TestHeld(t *testing.T) {}\n")
++		wantRefusal(t, gate(t, pair, nil, "--gate", "finalize"), `TestHeld in heldpkg names the gate key "nosuch"`, "way forward")
++
++		edit(t, "go.mod", "this is not a go.mod\n")
++		unlistable := gate(t, pair, nil, "--gate", "finalize")
++		wantArgs(t, unlistable, []string{"./..."})
++		if want := "cannot list the //lym:only tests of"; !strings.Contains(unlistable.stdout.String(), want) {
++			t.Errorf("stdout = %q; want it to hold %q", unlistable.stdout.String(), want)
++		}
++		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "cannot list the packages of", "way forward")
++	})
++
+ 	t.Run("--card under dotnet runs the project of the test class naming a card's member glyph target", func(t *testing.T) {
+ 		writeDotnet(t, nil)
+ 		defer writeScoper(t, "go")
+@@ -897,6 +979,36 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		}
+ 	}
+ 
++	t.Run("the green entry of a run that held tests back, and the one an inert carry writes, name them", func(t *testing.T) {
++		writeInert(t, "go", nil)
++		defer writeScoper(t, "go")
++		before := gitkit.RevParse(t, pair, "HEAD")
++		t.Cleanup(func() { gitkit.Git(t, pair, "reset", "-q", "--hard", before) })
++		commitChange(t, "heldpkg/h.go", "package heldpkg\n")
++		held := commitChange(t, "heldpkg/h_test.go", "package heldpkg\n\nimport \"testing\"\n\n//lym:only upkeep\nfunc TestHeld(t *testing.T) {}\n")
++		removeGreen(t)
++		// wantHeld checks the one entry written for commit.
++		wantHeld := func(commit string) {
++			t.Helper()
++			var got [][]string
++			for _, entry := range readGreen(greenPath).Entries {
++				if entry.Commit == commit {
++					got = append(got, entry.Held)
++				}
++			}
++			if want := [][]string{{"TestHeld"}}; !reflect.DeepEqual(got, want) {
++				t.Errorf("held tests of the entries for %s = %q; want %q", commit, got, want)
++			}
++		}
++
++		wantArgs(t, real(t, "--gate", "finalize"), []string{"./...", "-skip", "^(TestHeld)$"})
++		wantHeld(held)
++
++		carried := commitChange(t, "docs/note.md", "an inert commit over held tests\n")
++		wantCarried(t, real(t, "--gate", "finalize"))
++		wantHeld(carried)
++	})
++
+ 	t.Run("a diff run diffs from the newest whole-green ancestor, else from the parent merge base", func(t *testing.T) {
+ 		removeGreen(t)
+ 		commitChange(t, "other/other.go", "package other\n\nvar Seen = 1\n")
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index c24bcbe03..159cf8e54 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -56,13 +56,26 @@ type tierRun struct {
+ 	vetStep bool
+ 	// buildOnly marks a shared_build tier whose share selected no test class: it runs only the build step.
+ 	buildOnly bool
+-	// skip names the `//lym:watch` tests whose `-skip` filter args carries, so the empty-tier check discounts them.
++	// skip names the `//lym:watch` and held tests whose `-skip` filter args carries, so the empty-tier check discounts them.
+ 	skip []string
++	// held names the `//lym:only` tests of skip that the call's key holds back, sorted; empty when none is skipped so.
++	// A green entry of the run records them apart from its args.
++	held []string
++	// unheldArgs are args without the held tests in the skip filter, which a green entry records; read only when held is set.
++	unheldArgs []string
+ 	// otherTiers are the declared tiers no listed run of the call's plan is or covers, ascending.
+ 	// A run that reports no test under a filter of the call's own names them.
+ 	otherTiers []int
+ }
+ 
++// greenArgs returns the args a green entry of run records and matches on: args without the held tests' skip.
++func (run tierRun) greenArgs() []string {
++	if len(run.held) == 0 {
++		return run.args
++	}
++	return run.unheldArgs
++}
++
+ // tierName returns the gate.yaml key and the label of tier number.
+ func tierName(number int) string {
+ 	return "tier" + strconv.Itoa(number)
+@@ -76,8 +89,9 @@ func tierName(number int) string {
+ // one guard run per tier that sc.guards holds guard tests for, ascending.
+ // It leaves out a tier the listed tiers already ran whole.
+ // A narrowed tier whose share names watched tests to skip gets `-skip '^(<names>)$'` after the call's own words.
++// The skip also names every test request.held holds, under every scope form.
+ // It gets none when those words carry a filter flag or the command holds no {args}.
+-// A line on request.stderr names the tests.
++// A line on request.stderr names the watched tests, and another the held ones.
+ // A guard run is a placeholder whose packages and names the run fills from sc.guards.
+ // A covered tier is named on request.stderr when it has one.
+ // A tier a no-test-class scope runs whole is named on request.stderr when it has one.
+@@ -149,11 +163,25 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 			args:        request.args,
+ 			buildOnly:   tier.SharedBuild && share.noTests && len(invocations) == 0,
+ 		}
+-		// A caller's own filter decides what runs, so the watch skip stays out of it.
+-		if !share.whole && len(share.skip) > 0 && len(invocations) > 0 && strings.Contains(tier.Command, "{args}") && !slices.ContainsFunc(request.args, isFilterFlag) {
+-			run.args = append(slices.Clone(request.args), watchSkipArgs(share.skip)...)
+-			run.skip = share.skip
+-			printLine(request.stderr, fmt.Sprintf("gate test: %s skips %s, since no changed file matches their //lym:watch patterns", tierName(number), strings.Join(share.skip, ", ")))
++		var watched []string
++		if !share.whole {
++			watched = share.skip
++		}
++		// A caller's own filter decides what runs, so neither skip goes into it.
++		if names := unionSorted(watched, request.held); len(names) > 0 && len(invocations) > 0 && strings.Contains(tier.Command, "{args}") && !slices.ContainsFunc(request.args, isFilterFlag) {
++			run.args = append(slices.Clone(request.args), watchSkipArgs(names)...)
++			run.skip = names
++			if len(watched) > 0 {
++				printLine(request.stderr, fmt.Sprintf("gate test: %s skips %s, since no changed file matches their //lym:watch patterns", tierName(number), strings.Join(watched, ", ")))
++			}
++			if len(request.held) > 0 {
++				run.held = request.held
++				run.unheldArgs = slices.Clone(request.args)
++				if len(watched) > 0 {
++					run.unheldArgs = append(run.unheldArgs, watchSkipArgs(watched)...)
++				}
++				printHeldLine(request.stderr, number, request.gate, request.held)
++			}
+ 		}
+ 		runs = append(runs, run)
+ 	}
+@@ -256,9 +284,12 @@ func watchSkipArgs(names []string) []string {
+ // A tier with carry: false runs whole under every scope form but explicit targets, the empty scope included.
+ // A command holding neither {targets} nor {test_targets} runs once, whole.
+ // It does so under explicit targets and under a non-empty narrower scope.
++// A marked scope makes none, whatever the tier's settings, since only its guard step runs tests.
+ func scopeInvocations(tier gateslot.Tier, request testRequest, sc scope) (invocations []invocation, ignoresTargets bool) {
+ 	runsWhole := []invocation{{dir: tier.Dir, targets: strings.Fields(tier.AllTargets)}}
+ 	switch {
++	case sc.form == scopeMarked:
++		return nil, false
+ 	case sc.form == scopeTargets:
+ 		dir := tier.Dir
+ 		if request.dir != "" {
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index ce0a5ef29..ecf91cf9f 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -5,11 +5,13 @@ package gatecli
+ import (
+ 	"bytes"
+ 	"fmt"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/verifyrun"
+ )
+@@ -65,6 +67,9 @@ func describe(run tierRun) string {
+ 	if len(run.skip) > 0 {
+ 		line += " skip=" + strings.Join(run.skip, ",")
+ 	}
++	if len(run.held) > 0 {
++		line += " held=" + strings.Join(run.held, ",") + " recorded=" + strings.Join(run.greenArgs(), " ")
++	}
+ 	return line
+ }
+ 
+@@ -117,6 +122,10 @@ func TestPlanTierRuns(t *testing.T) {
+ 		t0.Command = "make test {args}"
+ 		cfg.Tiers["tier0"] = t0
+ 	}
++	finalizeKey := func(cfg *gateslot.Config) {
++		cfg.Gates = map[string]gateslot.GateKey{"finalize": {Tiers: []int{0}, Scope: "all"}}
++	}
++	heldLine := `gate test: tier0 skips TestH, since their //lym:only markers do not name --gate "finalize"`
+ 	tests := []struct {
+ 		name    string
+ 		mutate  func(*gateslot.Config)
+@@ -398,6 +407,12 @@ func TestPlanTierRuns(t *testing.T) {
+ 			scope:   scope{form: scopeComputed, tiers: map[int]tierScope{0: {noTests: true}, 1: {noTests: true}}},
+ 			want:    []string{"tier0 computed none buildonly", "tier1 computed dir=sub ./... ./x/..."},
+ 		},
++		{
++			name:    "a marked scope's listed tier runs no command under --no-carry",
++			request: testRequest{noCarry: true},
++			scope:   scope{form: scopeMarked, guardStep: true, guardDir: ".", guards: tier1Guards},
++			want:    []string{"tier0 marked none", "tier1 guard dir=. guard"},
++		},
+ 		{
+ 			name:    "a --no-carry call runs a carrying tier whole under a narrowed computed scope",
+ 			request: testRequest{noCarry: true},
+@@ -456,8 +471,30 @@ func TestPlanTierRuns(t *testing.T) {
+ 			want:  []string{"tier0 computed dir=. ./..."},
+ 		},
+ 		{
+-			name:    "a call whose args carry -run gets no -skip",
+-			request: testRequest{args: []string{"-run", "X"}},
++			name:       "a held test joins a narrowed share's watch skip, and the recorded args keep the watch skip alone",
++			mutate:     finalizeKey,
++			request:    testRequest{gate: "finalize", args: []string{"-v"}, held: []string{"TestH"}},
++			scope:      scope{form: scopeComputed, modules: narrower.modules, skip: []string{"TestA"}},
++			want:       []string{"tier0 computed dir=. ./a ./b | dir=nested . args=-v -skip ^(TestA|TestH)$ skip=TestA,TestH held=TestH recorded=-v -skip ^(TestA)$"},
++			wantStderr: heldLine,
++		},
++		{
++			name:       "a whole run skips a held test, recording no args",
++			mutate:     finalizeKey,
++			request:    testRequest{gate: "finalize", held: []string{"TestH"}},
++			want:       []string{"tier0 all dir=. ./... args=-skip ^(TestH)$ skip=TestH held=TestH recorded="},
++			wantStderr: heldLine,
++		},
++		{
++			name:       "explicit targets beside --gate skip a held test",
++			mutate:     finalizeKey,
++			request:    testRequest{gate: "finalize", targets: []string{"./a"}, held: []string{"TestH"}},
++			want:       []string{"tier0 targets dir=. ./a args=-skip ^(TestH)$ skip=TestH held=TestH recorded="},
++			wantStderr: heldLine,
++		},
++		{
++			name:    "a call whose args carry -run gets no -skip, for a watched or a held test",
++			request: testRequest{args: []string{"-run", "X"}, held: []string{"TestH"}},
+ 			scope:   scope{form: scopeComputed, modules: narrower.modules, skip: []string{"TestA"}},
+ 			want:    []string{"tier0 computed dir=. ./a ./b | dir=nested . args=-run X"},
+ 		},
+@@ -647,6 +684,18 @@ func TestPlanTierRuns(t *testing.T) {
+ 	}
+ }
+ 
++func TestSkippedInside_LeavesOutATierAListedTierCovers(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	inside := map[string][]impactset.GuardTest{"d": {{Name: "TestCovered", Tier: 0}, {Name: "TestListed", Tier: 1}, {Name: "TestSkipped", Tier: 2}}}
++	got := skippedInside(planConfig(), []int{1}, inside)
++	want := map[string][]impactset.GuardTest{"d": {{Name: "TestSkipped", Tier: 2}}}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("skippedInside() = %v; want %v", got, want)
++	}
++}
++
+ func TestTierNumbers(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 02216fb88..e9061faf1 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -521,11 +521,11 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 			if name != cardGateKey && name != "batch" {
+ 				return nil, guidedError{fmt.Errorf("config key %q: scope card is only for the card and batch keys; fix it with \"lym config gate\" from the prime%s", path, roleClause)}
+ 			}
+-		case scopeDiff, scopeAll:
++		case scopeDiff, scopeAll, ScopeMarked:
+ 		case retiredScopeCoverage:
+ 			return nil, guidedError{fmt.Errorf("config key %q: scope coverage is retired, since the gate no longer selects tests from the coverage maps; set %s to diff with \"lym config gate\" from the prime%s", path, path+".scope", roleClause)}
+ 		default:
+-			return nil, guidedError{fmt.Errorf("config key %q: scope %q; want card, diff or all; fix it with \"lym config gate\" from the prime%s", path, key.Scope, roleClause)}
++			return nil, guidedError{fmt.Errorf("config key %q: scope %q; want card, diff, all or marked; fix it with \"lym config gate\" from the prime%s", path, key.Scope, roleClause)}
+ 		}
+ 		for _, lint := range key.Lints {
+ 			if lint != LintComments && lint != LintPattern {
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index ef388e6f4..9b11d62be 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -80,6 +80,7 @@ var templateDefaults = Config{
+ 		"darn-write":      {Tiers: []int{0}, Scope: "diff"},
+ 		"code-burler-fix": {Tiers: []int{0}, Scope: "diff"},
+ 		"pr-review":       {Tiers: []int{0}, Scope: "diff"},
++		"upkeep":          {Tiers: []int{0}, Scope: "marked"},
+ 
+ 		"harden-live":       {Tiers: []int{0}, Scope: "diff"},
+ 		"harden-burler-fix": {Tiers: []int{0}, Scope: "diff"},
+@@ -325,7 +326,7 @@ func TestLoadConfig(t *testing.T) {
+ 			}), "",
+ 		},
+ 		{"scope card on a key but card and batch", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: card}\n", Config{}, `config key "gate.gates.parent-align": scope card is only for the card and batch keys` + fixIt},
+-		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `config key "gate.gates.parent-align": scope "some"; want card, diff or all` + fixIt},
++		{"an unknown scope", baseKeys + "gates:\n  parent-align: {tiers: [0], scope: some}\n", Config{}, `config key "gate.gates.parent-align": scope "some"; want card, diff, all or marked` + fixIt},
+ 		{
+ 			"the retired scope coverage names the migrating way forward", baseKeys + "gates:\n  webster-fix: {tiers: [0], scope: coverage}\n", Config{},
+ 			`config key "gate.gates.webster-fix": scope coverage is retired, since the gate no longer selects tests from the coverage maps; set gate.gates.webster-fix.scope to diff with "lym config gate" from the prime` + roleClause,
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 44051fb4f..cb5f91e05 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -72,6 +72,8 @@
+ // `tiers` is an open map keyed `tier0`, `tier1`, and so on, each a Tier.
+ // `gates` is a per-name map from a gate key to a GateKey,
+ // so a hub file that sets one key keeps the template's value for every other.
++// A GateKey's scope is `card`, `diff`, `all` or ScopeMarked, and only the `card` and `batch` keys take `card`.
++// UpkeepGateKey names the key of the upkeep run, whose template scope is ScopeMarked.
+ // A GateKey may hold `lints`, which run after its tiers.
+ // It may also hold a `fixer` on the `card` key only.
+ // Config load fills a template key a tuned `gates` entry lacks into that entry.
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 0bb4230e2..cdf584629 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -14,8 +14,10 @@ plan_tier0_budget_sec: 60  # seconds a plan's new and changed tier0 tests may ad
+ # One key of a declared tier is set alone with its dotted path: lym config gate --set tiers.tier0.env.LYM_TEST_TIER=0
+ tiers: {}
+ 
+-# gate.gates maps a gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+-# The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base).
++# gate.gates maps a gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all|marked}.
++# The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base), and upkeep (scope marked, run under the go scoper by the board-tidy agent on the main branch).
++# Under the go scoper a Go test marked //lym:only <key>... runs only in a --gate call whose key the marker names, and a call without --gate; every other key's call skips it.
++# Scope marked runs only the tests marked for the key, each under its file's tier; a marked test of a tier that no listed tier is or covers, and a key no test is marked for, refuse the call, so a hub whose marked tests sit in tier1 sets gate.gates.upkeep to {tiers: [0, 1], scope: marked}.
+ # The two harden keys name tier 0, the tier a key may name before the hub declares more, so a hardener run needs no gate write; a hub whose live tests sit in a higher tier may point harden-live at one tier below tier3, since the run's concurrent copies call runs that same key.
+ # The scope card is only for the card and batch keys.
+ # The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+@@ -36,6 +38,7 @@ gates:
+   harden-live: {tiers: [0], scope: diff}
+   harden-burler-fix: {tiers: [0], scope: diff}
+   pr-review: {tiers: [0], scope: diff}
++  upkeep: {tiers: [0], scope: marked}
+ 
+ # How a computed, base or card scope maps to {targets}: go derives the impacted Go packages per module, dotnet derives the impacted C# test projects and classes from the type-name closure over test classes, none runs every tier whole.
+ scoper: none
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index d3848a72c..03d62a925 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -111,7 +111,7 @@ const DefaultTestTimeoutMin = 20
+ type GateKey struct {
+ 	// Tiers are the tier numbers the key runs, in order.
+ 	Tiers []int `yaml:"tiers"`
+-	// Scope is card, diff or all.
++	// Scope is card, diff, all or ScopeMarked.
+ 	Scope string `yaml:"scope"`
+ 	// Lints are the lint steps the key's call runs after its tiers, in order, each LintComments or LintPattern; empty runs none.
+ 	Lints []string `yaml:"lints"`
+@@ -128,8 +128,14 @@ const (
+ 	scopeCard = "card"
+ 	scopeDiff = "diff"
+ 	scopeAll  = "all"
++	// ScopeMarked runs only the tests whose `//lym:only` marker names the key, each under its file's tier.
++	ScopeMarked = "marked"
+ )
+ 
++// UpkeepGateKey is the gate key of the upkeep run: the checks that need not stop a task, run on the main branch.
++// Its template scope is ScopeMarked, so it runs the tests marked `//lym:only` for it and nothing else.
++const UpkeepGateKey = "upkeep"
++
+ // retiredScopeCoverage is the gate key scope that once narrowed importing packages to the tests a coverage map selected.
+ // The load refuses it, naming scopeDiff.
+ const retiredScopeCoverage = "coverage"
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index 8a98361c0..982c7e12e 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -35,6 +35,7 @@
+ // Every top-level test marked `//lym:guard` runs by name in its own package, even outside the set.
+ // A repository-scanning test can fail on a change far from its package.
+ // Guards holds, per directory, the `//lym:guard` tests of the packages outside the set, sorted by name.
++// InsideGuards holds those of the packages inside it, which a run of another tier than theirs leaves out.
+ // Each GuardTest carries the tier of its file.
+ // FileTier reads it from the `tiergate.Require` call opening the file's test functions.
+ // For a file making no such call, the tier is the N of the `tierN` tag in its `//go:build` line.
+@@ -58,6 +59,11 @@
+ // A watch line outside the comment block of a top-level `func Test…` is a GuardMisplaced error.
+ // A watch line naming no pattern, or a pattern `path.Match` rejects, is a WatchMalformed error.
+ //
++// A top-level test marked `//lym:only <key>...` runs only at the gate keys the marker names.
++// FindOnlyTests and ModuleOnlyTests find such tests with their tier and keys; the caller decides what a key runs.
++// An only line outside the comment block of a top-level `func Test…` is a GuardMisplaced error.
++// An only line naming no key is an OnlyMalformed error.
++//
+ // FindSeamTests is the same static parse for `//lym:seam <unit>#<Type>`.
+ // That marker belongs to a test that reflects over a struct's fields.
+ // A seam line outside the comment block of a top-level `func Test…` is a GuardMisplaced error.
+diff --git a/internal/impactset/guards.go b/internal/impactset/guards.go
+index e2db73fa5..93315a220 100644
+--- a/internal/impactset/guards.go
++++ b/internal/impactset/guards.go
+@@ -3,6 +3,7 @@
+ package impactset
+ 
+ import (
++	"context"
+ 	"errors"
+ 	"fmt"
+ 	"go/ast"
+@@ -117,11 +118,22 @@ const moduleDirsFormat = `{{.Dir}}{{"\t"}}{{with .Error}}{{.Err}}{{end}}{{"\x00"
+ // So are an entry with no directory, such as an unreadable package directory, and a listed directory outside moduleDir.
+ // A marker the scan rejects is a *GuardScanError.
+ func ModuleGuardTests(moduleDir string) (map[string][]GuardTest, error) {
++	absolute, dirs, err := modulePackageDirs(context.Background(), moduleDir)
++	if err != nil {
++		return nil, err
++	}
++	return FindGuardTests(absolute, dirs)
++}
++
++// modulePackageDirs returns the absolute module directory and its packages' module-relative, slash-separated directories.
++// It lists the packages under the tier tags `tier0` through `tier3` with `go list -e`.
++// A failed run, an entry with no directory and a listed directory outside moduleDir are plain errors naming moduleDir.
++func modulePackageDirs(ctx context.Context, moduleDir string) (string, []string, error) {
+ 	absolute, err := filepath.Abs(moduleDir)
+ 	if err != nil {
+-		return nil, fmt.Errorf("impactset: resolve %s: %w", moduleDir, err)
++		return "", nil, fmt.Errorf("impactset: resolve %s: %w", moduleDir, err)
+ 	}
+-	cmd := exec.Command("go", "list", "-e", "-tags", "tier0,tier1,tier2,tier3", "-f", moduleDirsFormat, "./...")
++	cmd := exec.CommandContext(ctx, "go", "list", "-e", "-tags", "tier0,tier1,tier2,tier3", "-f", moduleDirsFormat, "./...")
+ 	cmd.Dir = moduleDir
+ 	logger.Info("impactset: spawning go list", "dir", moduleDir)
+ 	output, err := cmd.Output()
+@@ -129,9 +141,9 @@ func ModuleGuardTests(moduleDir string) (map[string][]GuardTest, error) {
+ 	if err != nil {
+ 		var exitErr *exec.ExitError
+ 		if errors.As(err, &exitErr) {
+-			return nil, fmt.Errorf("impactset: list the packages of %s: %w: %s", moduleDir, err, strings.TrimSpace(string(exitErr.Stderr)))
++			return "", nil, fmt.Errorf("impactset: list the packages of %s: %w: %s", moduleDir, err, strings.TrimSpace(string(exitErr.Stderr)))
+ 		}
+-		return nil, fmt.Errorf("impactset: list the packages of %s: %w", moduleDir, err)
++		return "", nil, fmt.Errorf("impactset: list the packages of %s: %w", moduleDir, err)
+ 	}
+ 
+ 	var dirs []string
+@@ -142,15 +154,15 @@ func ModuleGuardTests(moduleDir string) (map[string][]GuardTest, error) {
+ 		}
+ 		dir, listError, _ := strings.Cut(record, "\t")
+ 		if dir == "" {
+-			return nil, fmt.Errorf("impactset: list the packages of %s: %s", moduleDir, strings.TrimSpace(listError))
++			return "", nil, fmt.Errorf("impactset: list the packages of %s: %s", moduleDir, strings.TrimSpace(listError))
+ 		}
+ 		relative, err := filepath.Rel(absolute, dir)
+ 		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+-			return nil, fmt.Errorf("impactset: list the packages of %s: package directory %s lies outside the module directory", absolute, dir)
++			return "", nil, fmt.Errorf("impactset: list the packages of %s: package directory %s lies outside the module directory", absolute, dir)
+ 		}
+ 		dirs = append(dirs, filepath.ToSlash(relative))
+ 	}
+-	return FindGuardTests(absolute, dirs)
++	return absolute, dirs, nil
+ }
+ 
+ // guardNamesInFile returns the tests marked in one file, each with the file's tier; rel names the file in an error.
+diff --git a/internal/impactset/guardscan_integration_test.go b/internal/impactset/guardscan_integration_test.go
+index 5d0c8fb1d..8348c6bbc 100644
+--- a/internal/impactset/guardscan_integration_test.go
++++ b/internal/impactset/guardscan_integration_test.go
+@@ -1,11 +1,14 @@
+-// guardscan_integration_test.go drives ModuleGuardTests over a real module, whose package listing spawns `go list`.
++// guardscan_integration_test.go drives ModuleGuardTests and ModuleOnlyTests over a real module.
++// Listing that module's packages spawns `go list`.
+ 
+ package impactset
+ 
+ import (
++	"context"
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"runtime"
+ 	"slices"
+ 	"strings"
+@@ -26,7 +29,7 @@ func TestModuleGuardTests_OverAModule(t *testing.T) {
+ 	writeRepoFile(t, moduleDir, "g/g.go", "package g\n")
+ 	writeRepoFile(t, moduleDir, "g/g_test.go", "package g\n\nimport \"testing\"\n\n//lym:guard\nfunc TestGuard(t *testing.T) {}\n")
+ 	writeRepoFile(t, moduleDir, "p/p.go", "package p\n")
+-	writeRepoFile(t, moduleDir, "p/p_test.go", "package p\n\nimport \"testing\"\n\nfunc TestPlain(t *testing.T) {}\n")
++	writeRepoFile(t, moduleDir, "p/p_test.go", "package p\n\nimport \"testing\"\n\nfunc TestPlain(t *testing.T) {}\n\n//lym:only upkeep\nfunc TestHeld(t *testing.T) {}\n")
+ 
+ 	t.Run("the guards of every package are keyed by directory", func(t *testing.T) {
+ 		got, err := ModuleGuardTests(moduleDir)
+@@ -38,6 +41,17 @@ func TestModuleGuardTests_OverAModule(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the only-marked tests of every package are keyed by directory", func(t *testing.T) {
++		got, err := ModuleOnlyTests(context.Background(), moduleDir)
++		if err != nil {
++			t.Fatalf("ModuleOnlyTests() error = %v; want nil", err)
++		}
++		want := map[string][]OnlyTest{"p": {{Name: "TestHeld", Tier: 0, Keys: []string{"upkeep"}}}}
++		if !reflect.DeepEqual(got, want) {
++			t.Errorf("ModuleOnlyTests() = %v; want %v", got, want)
++		}
++	})
++
+ 	// chmod never makes a file unreadable on Windows, so Windows generates no subtest for it.
+ 	if runtime.GOOS != "windows" {
+ 		t.Run("an unreadable test file is a parse error naming it with no line", func(t *testing.T) {
+diff --git a/internal/impactset/only.go b/internal/impactset/only.go
+new file mode 100644
+index 000000000..1d0f2ba73
+--- /dev/null
++++ b/internal/impactset/only.go
+@@ -0,0 +1,141 @@
++// only.go finds the top-level tests marked `//lym:only <key>...` by a static parse of `_test.go` files.
++
++package impactset
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"go/ast"
++	"go/parser"
++	"go/scanner"
++	"go/token"
++	"os"
++	"path/filepath"
++	"slices"
++	"sort"
++	"strings"
++)
++
++const onlyMarker = "//lym:only"
++
++// OnlyMalformed is a `//lym:only` line that names no gate key.
++const OnlyMalformed GuardScanKind = "only-malformed"
++
++// OnlyTest is a test marked `//lym:only`: the gate keys whose calls run it, and the tier of the file declaring it.
++type OnlyTest struct {
++	// Name is the top-level test function's name.
++	Name string
++	// Tier is the tier of the file declaring the test, from its `tiergate.Require` calls or else its build constraint.
++	Tier int
++	// Keys are the gate keys the marker names, sorted and without repeats.
++	Keys []string
++}
++
++// FindOnlyTests returns, per package directory, the tests with a `//lym:only <key>...` line in their doc comment.
++// Each directory's tests are sorted by name, and each test carries the tier of its file.
++// The caller passes the package directories, worktree-relative and slash-separated.
++// A marker not in the comment block directly above a top-level `func Test…` line is a GuardMisplaced error.
++// A marker naming no key is an OnlyMalformed error.
++// Each error names the file and line.
++func FindOnlyTests(worktree string, dirs []string) (map[string][]OnlyTest, error) {
++	only := map[string][]OnlyTest{}
++	for _, dir := range dirs {
++		entries, err := os.ReadDir(filepath.Join(worktree, filepath.FromSlash(dir)))
++		if err != nil {
++			return nil, fmt.Errorf("impactset: read %s: %w", dir, err)
++		}
++		for _, entry := range entries {
++			if entry.IsDir() || !strings.HasSuffix(entry.Name(), "_test.go") {
++				continue
++			}
++			rel := dir + "/" + entry.Name()
++			if dir == "." {
++				rel = entry.Name()
++			}
++			found, err := onlyTestsInFile(filepath.Join(worktree, filepath.FromSlash(rel)), rel)
++			if err != nil {
++				return nil, err
++			}
++			if len(found) > 0 {
++				only[dir] = append(only[dir], found...)
++			}
++		}
++		sort.Slice(only[dir], func(i, j int) bool { return only[dir][i].Name < only[dir][j].Name })
++	}
++	return only, nil
++}
++
++// ModuleOnlyTests returns, per package directory of the module at moduleDir, the tests marked `//lym:only`.
++// The map is keyed by the module-relative, slash-separated directory.
++// It lists the packages as ModuleGuardTests does and fails the same ways;
++// a marker the scan rejects is a *GuardScanError.
++// ctx bounds the listing, so a stalled `go list` is killed when it ends.
++func ModuleOnlyTests(ctx context.Context, moduleDir string) (map[string][]OnlyTest, error) {
++	absolute, dirs, err := modulePackageDirs(ctx, moduleDir)
++	if err != nil {
++		return nil, err
++	}
++	return FindOnlyTests(absolute, dirs)
++}
++
++// onlyTestsInFile returns the tests marked in one file, each with the file's tier; rel names the file in an error.
++func onlyTestsInFile(filePath, rel string) ([]OnlyTest, error) {
++	fset := token.NewFileSet()
++	file, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
++	if err != nil {
++		parseLine := 0
++		var positions scanner.ErrorList
++		if errors.As(err, &positions) && len(positions) > 0 {
++			parseLine = positions[0].Pos.Line
++		}
++		return nil, &GuardScanError{File: rel, Kind: GuardParse, Line: parseLine, message: fmt.Sprintf("impactset: parse %s: %v", rel, err)}
++	}
++
++	tier := FileTier(file)
++	var tests []OnlyTest
++	placed := map[*ast.Comment]bool{}
++	for _, decl := range file.Decls {
++		fn, ok := decl.(*ast.FuncDecl)
++		if !ok || fn.Doc == nil {
++			continue
++		}
++		var keys []string
++		for i, comment := range fn.Doc.List {
++			if !isOnlyLine(comment.Text) {
++				continue
++			}
++			if fn.Recv != nil || !strings.HasPrefix(fn.Name.Name, "Test") || !onlyDirectiveLinesAfter(fn.Doc.List[i+1:]) {
++				continue
++			}
++			placed[comment] = true
++			fields := strings.Fields(strings.TrimPrefix(comment.Text, onlyMarker))
++			if len(fields) == 0 {
++				line := fset.Position(comment.Pos()).Line
++				return nil, &GuardScanError{File: rel, Kind: OnlyMalformed, Line: line, message: fmt.Sprintf("impactset: %s:%d: %s names no gate key; way forward: write the marker as `%s <key>...` with the gate keys that run the test", rel, line, onlyMarker, onlyMarker)}
++			}
++			keys = append(keys, fields...)
++		}
++		if len(keys) > 0 {
++			slices.Sort(keys)
++			tests = append(tests, OnlyTest{Name: fn.Name.Name, Tier: tier, Keys: slices.Compact(keys)})
++		}
++	}
++
++	for _, group := range file.Comments {
++		for _, comment := range group.List {
++			if !isOnlyLine(comment.Text) || placed[comment] {
++				continue
++			}
++			line := fset.Position(comment.Pos()).Line
++			return nil, &GuardScanError{File: rel, Kind: GuardMisplaced, Line: line, message: fmt.Sprintf("impactset: %s:%d: %s is not in the comment block directly above a top-level func Test line; way forward: move the `%s` line into the comment block directly above the `func Test…` line of the test it holds back", rel, line, onlyMarker, onlyMarker)}
++		}
++	}
++	return tests, nil
++}
++
++// isOnlyLine reports whether a comment is a `//lym:only` marker line, with or without keys.
++func isOnlyLine(text string) bool {
++	rest, found := strings.CutPrefix(text, onlyMarker)
++	return found && (rest == "" || rest[0] == ' ' || rest[0] == '\t')
++}
+diff --git a/internal/impactset/only_test.go b/internal/impactset/only_test.go
+new file mode 100644
+index 000000000..6b20b09dd
+--- /dev/null
++++ b/internal/impactset/only_test.go
+@@ -0,0 +1,98 @@
++// only_test.go parses fixture test files written under t.TempDir for their `//lym:only` markers.
++
++package impactset
++
++import (
++	"errors"
++	"fmt"
++	"strings"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestFindOnlyTests(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const file = "dir/p/p_test.go"
++	const tierImport = "import \"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n\n"
++	tests := []struct {
++		name     string
++		pkg      string
++		want     []OnlyTest
++		wantKind GuardScanKind
++		wantLine int
++	}{
++		{
++			name: "a marker's keys are found sorted with the test's name and its file's tier",
++			pkg:  "package p\n\n" + tierImport + "//lym:only upkeep finalize\nfunc TestA(t *testing.T) {\n\ttiergate.Require(t, 1)\n}\n\nfunc TestUnmarked(t *testing.T) {\n\ttiergate.Require(t, 1)\n}\n",
++			want: []OnlyTest{{Name: "TestA", Tier: 1, Keys: []string{"finalize", "upkeep"}}},
++		},
++		{
++			name: "two only lines on one test join their keys without repeats",
++			pkg:  "package p\n\n// TestA runs at two keys.\n//\n//lym:only finalize\n//lym:only parent-align finalize\nfunc TestA(t *testing.T) {}\n",
++			want: []OnlyTest{{Name: "TestA", Tier: 0, Keys: []string{"finalize", "parent-align"}}},
++		},
++		{
++			name: "an only line stacked with guard, watch and keep lines is found",
++			pkg:  "package p\n\n//lym:guard\n//lym:only upkeep\n//testtiming:keep x\n//lym:watch *.go\nfunc TestA(t *testing.T) {}\n",
++			want: []OnlyTest{{Name: "TestA", Tier: 0, Keys: []string{"upkeep"}}},
++		},
++		{
++			name:     "a marker followed by prose before the func line is misplaced at its line",
++			pkg:      "package p\n\n//lym:only upkeep\n// a stray line\nfunc TestA(t *testing.T) {}\n",
++			wantKind: GuardMisplaced,
++			wantLine: 3,
++		},
++		{
++			name:     "a marker above a func that is not a test is misplaced at its line",
++			pkg:      "package p\n\n//lym:only upkeep\nfunc helper() {}\n",
++			wantKind: GuardMisplaced,
++			wantLine: 3,
++		},
++		{
++			name:     "a marker naming no key is malformed at its line",
++			pkg:      "package p\n\n//lym:only\nfunc TestA(t *testing.T) {}\n",
++			wantKind: OnlyMalformed,
++			wantLine: 3,
++		},
++		{
++			name:     "a file that does not parse is a parse error",
++			pkg:      "package p\n\nfunc TestA(t *testing.T) {\n",
++			wantKind: GuardParse,
++			wantLine: 3,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			root := t.TempDir()
++			writeTestFile(t, root, "dir/p", "p_test.go", tt.pkg)
++
++			got, err := FindOnlyTests(root, []string{"dir/p"})
++			if tt.wantKind != "" {
++				var scanErr *GuardScanError
++				if !errors.As(err, &scanErr) {
++					t.Fatalf("FindOnlyTests() error = %#v; want a *GuardScanError", err)
++				}
++				if scanErr.File != file || scanErr.Kind != tt.wantKind || scanErr.Line != tt.wantLine {
++					t.Errorf("FindOnlyTests() error file, kind, line = %q, %q, %d; want %q, %q, %d", scanErr.File, scanErr.Kind, scanErr.Line, file, tt.wantKind, tt.wantLine)
++				}
++				if tt.wantKind != GuardParse && !strings.Contains(err.Error(), fmt.Sprintf("p_test.go:%d", tt.wantLine)) {
++					t.Errorf("FindOnlyTests() error = %v; want the file and line", err)
++				}
++				return
++			}
++			if err != nil {
++				t.Fatalf("FindOnlyTests() error = %v; want nil", err)
++			}
++			if diff := cmp.Diff(tt.want, got["dir/p"]); diff != "" {
++				t.Errorf("FindOnlyTests()[dir/p] mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
+diff --git a/internal/impactset/targets.go b/internal/impactset/targets.go
+index cc19f8879..0b93c3430 100644
+--- a/internal/impactset/targets.go
++++ b/internal/impactset/targets.go
+@@ -26,6 +26,10 @@ type Targets struct {
+ 	// Guards maps the directory of each package outside the set to its `//lym:guard` tests, sorted by name.
+ 	// Each test carries its file's tier.
+ 	Guards map[string][]GuardTest
++	// InsideGuards maps the directory of each package inside the set to its `//lym:guard` tests, sorted by name.
++	// Each test carries its file's tier, and a watched test the diff leaves alone is left out.
++	// A run whose tiers skip a test's tier leaves it to the guard step; the map is nil when there is none.
++	InsideGuards map[string][]GuardTest
+ 	// BinaryTests are the sorted worktree-relative directories of each package whose tests import `internal/testkit/lymbin`.
+ 	// It includes packages inside the set and outside it,
+ 	// and it is empty with Whole.
+@@ -142,12 +146,17 @@ func targetsFor(graph moduleGraph, changedPaths []string, guards map[string][]Gu
+ 	}
+ 	unwatched := UnwatchedTests(watched, changedPaths)
+ 	for dir, tests := range guards {
+-		if len(tests) == 0 || set[graph.byDir[dir].ImportPath] {
++		kept := slices.DeleteFunc(slices.Clone(tests), func(test GuardTest) bool { return slices.Contains(unwatched[dir], test.Name) })
++		if len(kept) == 0 {
+ 			continue
+ 		}
+-		kept := slices.DeleteFunc(slices.Clone(tests), func(test GuardTest) bool { return slices.Contains(unwatched[dir], test.Name) })
+-		if len(kept) > 0 {
+-			sort.Slice(kept, func(i, j int) bool { return kept[i].Name < kept[j].Name })
++		sort.Slice(kept, func(i, j int) bool { return kept[i].Name < kept[j].Name })
++		if set[graph.byDir[dir].ImportPath] {
++			if targets.InsideGuards == nil {
++				targets.InsideGuards = map[string][]GuardTest{}
++			}
++			targets.InsideGuards[dir] = slices.Compact(kept)
++		} else {
+ 			targets.Guards[dir] = slices.Compact(kept)
+ 		}
+ 	}
+diff --git a/internal/impactset/targets_test.go b/internal/impactset/targets_test.go
+index 7680689f7..4045194dc 100644
+--- a/internal/impactset/targets_test.go
++++ b/internal/impactset/targets_test.go
+@@ -51,13 +51,14 @@ func TestTargetsFor(t *testing.T) {
+ 		want    Targets
+ 	}{
+ 		{
+-			name:    "one changed package yields it and its reverse dependencies, tmux and llm test imports included",
++			name:    "one changed package yields it and its reverse dependencies, tmux and llm test imports included, and splits the guards at the set",
+ 			changed: []string{"internal/a/a.go"},
+ 			guards:  guards,
+ 			want: Targets{
+-				Modules:     fromA(),
+-				Guards:      map[string][]GuardTest{"internal/d": guardsD},
+-				BinaryTests: binaryTests,
++				Modules:      fromA(),
++				Guards:       map[string][]GuardTest{"internal/d": guardsD},
++				InsideGuards: map[string][]GuardTest{"internal/a": {{Name: "TestGuardA", Tier: 1}}},
++				BinaryTests:  binaryTests,
+ 			},
+ 		},
+ 		{
+@@ -178,14 +179,18 @@ func TestTargetsFor(t *testing.T) {
+ 			want:    Targets{Modules: root("./internal/d"), Guards: map[string][]GuardTest{}, BinaryTests: binaryTests},
+ 		},
+ 		{
+-			name:    "an unwatched guard outside the set is dropped from the guards and a sibling guard stays",
++			name:    "an unwatched guard is dropped from the guards on either side of the set and a sibling guard stays",
+ 			changed: []string{"internal/a/a.go"},
+ 			guards:  guards,
+-			watched: map[string][]WatchedTest{"internal/d": {{Name: "TestGuardD2", File: "internal/d/d_test.go", Patterns: []string{"*.sql"}}}},
++			watched: map[string][]WatchedTest{
++				"internal/d": {{Name: "TestGuardD2", File: "internal/d/d_test.go", Patterns: []string{"*.sql"}}},
++				"internal/a": {{Name: "TestGuardA", File: "internal/a/a_test.go", Patterns: []string{"*.sql"}}},
++			},
+ 			want: Targets{
+ 				Modules:     fromA(),
+ 				Guards:      map[string][]GuardTest{"internal/d": {{Name: "TestGuardD", Tier: 0}}},
+ 				BinaryTests: binaryTests,
++				Unwatched:   map[string][]string{"internal/a": {"TestGuardA"}},
+ 			},
+ 		},
+ 		{
+diff --git a/internal/planparser/latercaller.go b/internal/planparser/latercaller.go
+deleted file mode 100644
+index 9161f3f68..000000000
+--- a/internal/planparser/latercaller.go
++++ /dev/null
+@@ -1,184 +0,0 @@
+-// latercaller.go implements the create-caller-later check.
+-// It finds a new production function that only a later card can give a caller.
+-// The check reads plan text alone, so it runs at every gate that runs ValidateFormat.
+-
+-package planparser
+-
+-import (
+-	"fmt"
+-	"path"
+-	"slices"
+-	"strings"
+-)
+-
+-// goEntryFunctions are the function names a Go program enters through, which no caller needs.
+-var goEntryFunctions = []string{"main", "init"}
+-
+-// TestSupportDirectories are the package directories whose functions the reachability guard counts as reached.
+-// A function created in one needs no caller, and can be the caller of another.
+-// Each matches its own directory and every directory below it.
+-// It is exported so that the guard's own list is held equal to it.
+-var TestSupportDirectories = []string{"internal/testkit", "internal/gitkit", "internal/hubforge"}
+-
+-// checkCreateCallerLater implements create-caller-later under go.
+-// Every production function has to be reachable from a main.
+-// A card that creates one and changes no production code that could call it fails its own gate on that guard.
+-// The finding fires when a later card names the function and can call it.
+-// That card can write the call in production code it changes or in a function it creates.
+-// That later card is where the first caller goes.
+-// A function the creating card itself can call stays silent, and so does one no later card names.
+-// One finding per function, attributed to the creating card, naming the first such later card.
+-func checkCreateCallerLater(plan *Plan) []ValidationError {
+-	var findings []ValidationError
+-	if !plan.GoToolchain() {
+-		return findings
+-	}
+-
+-	for _, creator := range plan.Cards {
+-		for _, declaration := range creator.Declarations {
+-			if !isProductionFunctionDeclaration(declaration) || cardCanHoldProductionCaller(plan, creator, declaration.Handle, false) {
+-				continue
+-			}
+-			for _, caller := range plan.Cards {
+-				if caller.Number <= creator.Number || !cardNamesRef(caller, declaration.Handle) {
+-					continue
+-				}
+-				if !cardCanHoldProductionCaller(plan, caller, declaration.Handle, true) {
+-					continue
+-				}
+-				findings = append(findings, ValidationError{
+-					Check: "create-caller-later",
+-					Card:  cardID(creator),
+-					Ref:   declaration.Handle,
+-					Detail: fmt.Sprintf(
+-						"card %d creates %q, but no target of card %d can call it from production code, and card %d names it; "+
+-							"a function no production code calls fails card %d's gate on the guard that every production function is reachable from a main, "+
+-							"so move the Create to card %d, the card that adds its first production caller, or list that caller on card %d",
+-						creator.Number, declaration.Handle, creator.Number, caller.Number,
+-						creator.Number, caller.Number, creator.Number,
+-					),
+-				})
+-				break
+-			}
+-		}
+-	}
+-
+-	return findings
+-}
+-
+-// isProductionFunctionDeclaration reports whether declaration creates a function or method of production code.
+-// A declaration in an external test package or a test-support directory, one named as a test, one taking a testing type,
+-// and a program entry point are not.
+-func isProductionFunctionDeclaration(declaration CardDeclaration) bool {
+-	if declarationKeyword(declaration.Decl) != "func" {
+-		return false
+-	}
+-	unit, ok := handleUnit(declaration.Handle)
+-	if !ok || strings.HasSuffix(unit, "_test") || isTestSupportUnit(unit) {
+-		return false
+-	}
+-	identifier, ok := HandleIdentifier(declaration.Handle)
+-	if !ok || hasTestPrefix(identifier) || slices.Contains(goEntryFunctions, identifier) {
+-		return false
+-	}
+-	return !strings.Contains(declaration.Decl, "testing.")
+-}
+-
+-// isTestSupportUnit reports whether unit is a test-support directory or lies below one.
+-func isTestSupportUnit(unit string) bool {
+-	return slices.ContainsFunc(TestSupportDirectories, func(directory string) bool {
+-		return unit == directory || strings.HasPrefix(unit, directory+"/")
+-	})
+-}
+-
+-// cardCanHoldProductionCaller reports whether card can write a call to callee into production Go code.
+-// A ref to callee itself does not count.
+-// Only the Create, Edit, Extends and Custom groups add code; a Delete, Rename, Move or Prosa group adds none.
+-// A ref whose shape says nothing certain, such as a package self glyph or a bare symbol, counts as able to hold one.
+-// A function card creates in a test-support directory counts, since the guard reaches it without a caller.
+-// With ownFunctionsCall, any other function card creates counts too.
+-// The exceptions are a function whose head names a testing type and one that is a test by name or package.
+-// Set it to ask whether card can write the call, and leave it unset to ask whether card satisfies the guard alone.
+-// A new function outside test support is reached only through a caller of its own.
+-func cardCanHoldProductionCaller(plan *Plan, card Card, callee string, ownFunctionsCall bool) bool {
+-	declared := make(map[string]string, len(card.Declarations))
+-	for _, declaration := range card.Declarations {
+-		unit, _ := handleUnit(declaration.Handle)
+-		counts := isTestSupportUnit(unit) || ownFunctionsCall && !strings.Contains(declaration.Decl, "testing.")
+-		if declarationKeyword(declaration.Decl) == "func" && counts {
+-			continue
+-		}
+-		declared[declaration.Handle] = declaration.Decl
+-	}
+-	for _, group := range card.TargetGroups {
+-		switch group.Type {
+-		case CardTypeCreate, CardTypeEdit, CardTypeExtends, CardTypeCustom:
+-		default:
+-			continue
+-		}
+-		for _, ref := range group.Refs {
+-			if ref != callee && refCanHoldProductionCaller(plan, ref, declared) {
+-				return true
+-			}
+-		}
+-	}
+-	return false
+-}
+-
+-// refCanHoldProductionCaller reports whether ref names production Go code that a call could be written into.
+-// declared maps handles the ref's card creates to their declaration heads.
+-// A handle declared there as a function, type or constant is not such code.
+-func refCanHoldProductionCaller(plan *Plan, ref string, declared map[string]string) bool {
+-	if IsHandleRef(ref) {
+-		if isTestHandle(ref) {
+-			return false
+-		}
+-		decl, createdHere := declared[ref]
+-		if !createdHere {
+-			return true
+-		}
+-		switch declarationKeyword(decl) {
+-		case "func", "type", "const":
+-			return false
+-		}
+-		return true
+-	}
+-	if diskPath, ok := diskPathForRef(plan, ref); ok {
+-		switch path.Ext(diskPath) {
+-		case "":
+-			return !strings.HasSuffix(diskPath, "_test")
+-		case ".go":
+-			return !strings.HasSuffix(diskPath, "_test.go")
+-		}
+-		return false
+-	}
+-	parsed, err := ParseRef(plan, ref)
+-	if err != nil {
+-		return true
+-	}
+-	return !strings.HasSuffix(parsed.Unit, "_test") && !strings.HasSuffix(parsed.Unit, "_test.go") && !hasTestPrefix(parsed.Name)
+-}
+-
+-// isTestHandle reports whether handle declares test code: a member of an external test package, or one named as a test.
+-func isTestHandle(handle string) bool {
+-	unit, ok := handleUnit(handle)
+-	if ok && strings.HasSuffix(unit, "_test") {
+-		return true
+-	}
+-	identifier, ok := HandleIdentifier(handle)
+-	return ok && hasTestPrefix(identifier)
+-}
+-
+-// declarationKeyword returns the Go keyword a declaration head opens with, such as "func" or "type".
+-func declarationKeyword(decl string) string {
+-	head := strings.TrimSpace(decl)
+-	if end := strings.IndexAny(head, " (\t"); end != -1 {
+-		return head[:end]
+-	}
+-	return head
+-}
+-
+-// cardNamesRef reports whether ref is one of card's targets or Uses entries.
+-func cardNamesRef(card Card, ref string) bool {
+-	return slices.Contains(card.Targets, ref) || slices.Contains(card.Uses, ref)
+-}
+diff --git a/internal/planparser/latercaller_test.go b/internal/planparser/latercaller_test.go
+deleted file mode 100644
+index 7b270750b..000000000
+--- a/internal/planparser/latercaller_test.go
++++ /dev/null
+@@ -1,296 +0,0 @@
+-// latercaller_test.go covers create-caller-later over plans parsed from card files.
+-
+-package planparser_test
+-
+-import (
+-	"path/filepath"
+-	"slices"
+-	"testing"
+-
+-	"github.com/Knatte18/loomyard/internal/planparser"
+-	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+-	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+-)
+-
+-// TestValidateFormat_CreateCallerLater covers create-caller-later:
+-// a card creating a production function it cannot call, which a later card that can call it names.
+-// Every finding sits on card 1 and carries the row's wantRef.
+-func TestValidateFormat_CreateCallerLater(t *testing.T) {
+-	tiergate.Require(t, 0)
+-	t.Parallel()
+-
+-	const (
+-		level        = "plan:internal/watch#Level"
+-		levelDecl    = level + "` -> `func Level(name string) string"
+-		method       = "plan:internal/watch#Watcher.Level"
+-		methodDecl   = method + "` -> `func (w *Watcher) Level() string"
+-		levelFinding = `card 1 creates "plan:internal/watch#Level", but no target of card 1 can call it from production code, and card 2 names it; ` +
+-			`a function no production code calls fails card 1's gate on the guard that every production function is reachable from a main, ` +
+-			`so move the Create to card 2, the card that adds its first production caller, or list that caller on card 1`
+-	)
+-	creator := func(groups ...plankit.Group) plankit.Card {
+-		return plankit.Card{Number: 1, Slug: "create", Groups: groups, ImpactSummary: "one package"}
+-	}
+-	caller := func(uses []string, groups ...plankit.Group) plankit.Card {
+-		return plankit.Card{Number: 2, Slug: "wire", Groups: groups, Uses: uses, ImpactSummary: "one package"}
+-	}
+-	create := func(targets ...string) plankit.Group { return plankit.Group{Label: "Create", Targets: targets} }
+-	edit := func(targets ...string) plankit.Group { return plankit.Group{Label: "Edit", Targets: targets} }
+-	extends := func(targets ...string) plankit.Group { return plankit.Group{Label: "Extends", Targets: targets} }
+-	custom := func(targets ...string) plankit.Group { return plankit.Group{Label: "Custom", Targets: targets} }
+-	remove := func(targets ...string) plankit.Group { return plankit.Group{Label: "Delete", Targets: targets} }
+-	// wired is the plan of a creating card and a later card that uses level and edits a production member.
+-	wired := func(groups ...plankit.Group) []plankit.Card {
+-		return []plankit.Card{creator(groups...), caller([]string{level}, edit("internal/dobby#Tick"))}
+-	}
+-
+-	tests := []struct {
+-		name     string
+-		language string
+-		cards    []plankit.Card
+-		want     []string
+-		wantRef  string
+-	}{
+-		{
+-			name: "a function whose only caller is on a later card",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl, "internal/watch/level_test.go"), edit("internal/watch/template.yaml")),
+-				caller([]string{level}, edit("internal/dobby#Tick")),
+-			},
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name: "a later card that names the function among its targets",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller(nil, edit(level, "internal/dobby/tick.go")),
+-			},
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name: "a method whose only caller is on a later card",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/watch#Watcher` -> `type Watcher struct", methodDecl)),
+-				caller([]string{method}, edit("internal/dobby#")),
+-			},
+-			want: []string{
+-				`card 1 creates "plan:internal/watch#Watcher.Level", but no target of card 1 can call it from production code, and card 2 names it; ` +
+-					`a function no production code calls fails card 1's gate on the guard that every production function is reachable from a main, ` +
+-					`so move the Create to card 2, the card that adds its first production caller, or list that caller on card 1`,
+-			},
+-			wantRef: method,
+-		},
+-		{
+-			name:  "the creating card extends a production member that can call it",
+-			cards: wired(create(levelDecl), extends("internal/dobby#Tick")),
+-		},
+-		{
+-			name:  "the creating card has a custom change to a production file",
+-			cards: wired(create(levelDecl), custom("internal/dobby/tick.go")),
+-		},
+-		{
+-			name:    "the creating card otherwise only deletes",
+-			cards:   wired(create(levelDecl), remove("internal/dobby#Old")),
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name:    "the creating card creates a second function",
+-			cards:   wired(create(levelDecl, "plan:internal/watch#format` -> `func format() string")),
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name:    "the creating card creates a constant",
+-			cards:   wired(create(levelDecl, "plan:internal/watch#Limit` -> `const Limit = 3")),
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name:    "the creating card edits a test handle it does not create",
+-			cards:   wired(create(levelDecl), edit("plan:internal/watch_test#helper")),
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name:  "the creating card edits a production handle it does not create",
+-			cards: wired(create(levelDecl), edit("plan:internal/other#Thing")),
+-		},
+-		{
+-			name:  "the creating card creates a function of a test-support directory",
+-			cards: wired(create(levelDecl, "plan:internal/testkit/watchkit#Probe` -> `func Probe() string")),
+-		},
+-		{
+-			name: "a later card whose refs are a test by name in a production package",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, edit("internal/dobby#TestTick", "plan:internal/watch#TestHelper")),
+-			},
+-		},
+-		{
+-			name: "two later cards that can call the function",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, edit("internal/dobby#Tick")),
+-				{Number: 3, Slug: "report", Groups: []plankit.Group{edit("internal/dobby#Report")}, Uses: []string{level}, ImpactSummary: "one package"},
+-			},
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name: "a later card whose production ref is a bare symbol",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, edit("dobby.Tick")),
+-			},
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name: "a later card that creates the caller as a new function",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, create("plan:internal/watch#Run` -> `func Run()")),
+-			},
+-			want:    []string{levelFinding},
+-			wantRef: level,
+-		},
+-		{
+-			name: "a later card that creates only a test helper taking a testing type",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, create("plan:internal/watch#newFixture` -> `func newFixture(t testing.TB)")),
+-			},
+-		},
+-		{
+-			name: "a later card whose refs are an external test package and its member",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, edit("internal/dobby_test#", "internal/watch_test#helper")),
+-			},
+-		},
+-		{
+-			name: "a function of a test-support directory",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/gitkit#NewRepo` -> `func NewRepo() string")),
+-				caller([]string{"plan:internal/gitkit#NewRepo"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a function below a test-support directory",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/testkit/watchkit#New` -> `func New() string")),
+-				caller([]string{"plan:internal/testkit/watchkit#New"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a function named as a test without a testing type",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/watch#ExampleLevel` -> `func ExampleLevel()")),
+-				caller([]string{"plan:internal/watch#ExampleLevel"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "the creating card edits a production member that can call it",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl), edit("internal/dobby#Tick")),
+-				caller([]string{level}, edit("internal/dobby#Report")),
+-			},
+-		},
+-		{
+-			name: "the creating card creates a production file that can call it",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl, "internal/watch/wire.go")),
+-				caller([]string{level}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "the creating card creates a variable that can call it",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl, "plan:internal/watch#levels` -> `var levels = map[string]func(string) string")),
+-				caller([]string{level}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "the later card only changes the function and tests",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller(nil, edit(level, "internal/watch_test#TestLevel", "internal/watch/level_test.go")),
+-			},
+-		},
+-		{
+-			name: "no later card names the function",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller(nil, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a test helper taking a testing type",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/watch#newFixture` -> `func newFixture(t testing.TB) string")),
+-				caller([]string{"plan:internal/watch#newFixture"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a function of an external test package",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/watch_test#helper` -> `func helper() string")),
+-				caller([]string{"plan:internal/watch_test#helper"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a program entry point",
+-			cards: []plankit.Card{
+-				creator(create("plan:cmd/watch#main` -> `func main()")),
+-				caller([]string{"plan:cmd/watch#main"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name: "a type, which holds no code to reach",
+-			cards: []plankit.Card{
+-				creator(create("plan:internal/watch#Watcher` -> `type Watcher struct")),
+-				caller([]string{"plan:internal/watch#Watcher"}, edit("internal/dobby#Tick")),
+-			},
+-		},
+-		{
+-			name:     "a plan with no glyph language",
+-			language: "none",
+-			cards: []plankit.Card{
+-				creator(create(levelDecl)),
+-				caller([]string{level}, edit("internal/dobby/tick.go")),
+-			},
+-		},
+-	}
+-
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			t.Parallel()
+-			dir := filepath.Join(t.TempDir(), "plan")
+-			plankit.Write(t, dir, plankit.Plan{Language: tt.language, Cards: tt.cards})
+-			plan, err := planparser.ParsePlan(dir)
+-			if err != nil {
+-				t.Fatalf("ParsePlan() failed: %v", err)
+-			}
+-
+-			var got []string
+-			for _, finding := range planparser.ValidateFormat(plan, t.TempDir()) {
+-				if finding.Check != "create-caller-later" {
+-					continue
+-				}
+-				if finding.Card != "1-create" {
+-					t.Errorf("create-caller-later finding attributed to %q; want %q", finding.Card, "1-create")
+-				}
+-				if finding.Ref != tt.wantRef {
+-					t.Errorf("create-caller-later finding Ref = %q; want %q", finding.Ref, tt.wantRef)
+-				}
+-				got = append(got, finding.Detail)
+-			}
+-			if !slices.Equal(got, tt.want) {
+-				t.Errorf("ValidateFormat() create-caller-later details = %q; want %q", got, tt.want)
+-			}
+-		})
+-	}
+-}
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 4fb932209..362f1c1c9 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -91,7 +91,6 @@ func validate(plan *Plan, worktreeRoot string, requireApproved bool) []Validatio
+ 	findings = append(findings, checkExtendsOverlap(plan)...)
+ 	findings = append(findings, checkExtendsResign(plan)...)
+ 	findings = append(findings, checkUsesLaterTarget(plan)...)
+-	findings = append(findings, checkCreateCallerLater(plan)...)
+ 	findings = append(findings, checkRedundantPackageTarget(plan)...)
+ 	findings = append(findings, checkImpactSummaryMultiline(plan)...)
+ 	findings = append(findings, checkProsaSymbolTarget(plan)...)
+diff --git a/pattern/PATTERN-test-only-code.md b/pattern/PATTERN-test-only-code.md
+index aee7b1881..152ba6f16 100644
+--- a/pattern/PATTERN-test-only-code.md
++++ b/pattern/PATTERN-test-only-code.md
+@@ -27,6 +27,9 @@ Every function of a test-support package is a root too, so a function such a pac
+ It fails naming each function of a production file that no root reaches, outside the test-support packages.
+ An entry of its allowlist admits a function, with the reason naming the tests it serves or what reaches it that the analysis cannot see.
+ An entry that matches no unreachable function fails the guard.
++The guard carries `//lym:only upkeep`, so no task's gate runs it:
++the upkeep run on the main branch does, and each function it names becomes a board note.
++A card may therefore add a function that only a later card calls.
+ 
+ - Bound: the analysis reads the Linux build alone, so the guard compiles on Linux only.
+   A function that only a Windows file calls fails the guard until it moves into a Windows-only file.
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 84e46b733..7dfa1ec9d 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -57,6 +57,7 @@ No site spells a tier list, a scope or a test command.
+ | `harden-burler-fix` | Harden-Burler-Fix's `verify` gate | `diff` |
+ | `harden-live` | Harden-Burler-Fix's `live` gate: its merge-bar run and its concurrent copies | `diff` |
+ | `pr-review` | PR-Review's gate over the agent's commits | `diff` |
++| `upkeep` | the board-tidy agent of the prime's dobby, on the main branch | `marked` |
+ | By hand | the `tier3` tier | |
+ 
+ ### No gate runs `tier3`
+@@ -119,8 +120,9 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+   The marker sits directly above the test's `func Test…` line, the way `//testtiming:keep` sits above a kept test.
+ - A narrowed gate's guard step runs every marked test by name under its file's tier, whatever the impacted set.
+   A guard's result depends on files no import edge names.
+-  The one exception is a guard test that also carries `//lym:watch`:
+-  the step leaves it out when no changed file concerns it.
++  It runs a marked test inside the impacted set too when no listed tier is or covers that test's tier.
++  The exceptions are a guard test that also carries `//lym:watch`, left out when no changed file concerns it,
++  and one that carries `//lym:only` without the call's key.
+ - A test carrying both markers stacks them as contiguous directive lines directly above its `func Test…` line.
+   Either order works.
+   `//lym:guard` counts as directly above when only `//testtiming:keep` and other `//lym:` lines lie between.
+@@ -136,6 +138,29 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+   so such a violation can reach the parent.
+   What the hub lists as non-production in `darn.tree_scope` bounds that.
+ 
++## Slow whole-repository checks carry `//lym:only`
++
++- A test carrying `//lym:only <key>...` runs only in a `--gate` call whose key the marker names.
++  Every other key's call skips it in its listed runs and leaves it out of its guard step.
++  A call without `--gate` runs it, so a hand run reaches every test.
++- A whole-repository guard of `cmd/lym`, one that carries no `//lym:watch`, names `parent-align finalize`.
++  So do the tree-sitter link check and the Linux cross-compile.
++  Each catches a break, runs once at landing over the whole tree, and leaves the task gates,
++  where `cmd/lym`'s test binary would otherwise run it on nearly every change.
++  Naming both landing keys lets Finalize carry Parent-Align's pass over an unchanged tree.
++- A check that need not stop a task names `upkeep`:
++  the dead-code guard of [PATTERN-test-only-code](PATTERN-test-only-code.md),
++  and every test that builds a real .NET project, whatever its package and whether or not it is watched.
++  The `upkeep` key's scope `marked` runs only the tests marked for it,
++  and refuses a call that would leave a marked test out or run none.
++  The prime's board-tidy agent runs it on the main branch every `beam.board_tidy_every` landings
++  and files a board note per failure: one per dead function, and a bug note for any other test.
++- A watched guard that reads a bounded set of files, and a guard of any package but `cmd/lym`, stays at the task gates.
++- A marker naming a key `gate.gates` does not hold refuses the gate, naming the test.
++- The marker stacks with the other directive lines in any order.
++- Bound: a break only a landing check sees fails a task first at Parent-Align, which costs a landing round.
++- Bound: dead code lands on `main` and waits for the next upkeep run to become a note.
++
+ ## Reflective tests carry `//lym:seam`
+ 
+ - A test whose body reflects over a struct's field set carries a `//lym:seam <unit>#<Type>` line.
+@@ -163,7 +188,7 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+   So does one whose inputs no pattern set bounds, such as a link check whose targets come from the link text.
+ - A narrowed gate runs the test only when a changed file matches a pattern or the test's own file changed.
+   A diff-scoped key narrows over its diff, and a `card` key over the diff from the merge base with the parent branch.
+-- A whole gate always runs it.
++- A whole gate always runs it, unless its `//lym:only` marker does not name the gate's key.
+ - The marker stacks with `//lym:guard`, `//lym:seam` and `//testtiming:keep` lines in any order.
+ - A misplaced marker, or one with no pattern or a malformed one, refuses the gate.
+ - Bound: the skip matches by test name, so a test of the same name in another package of the run is skipped too.
