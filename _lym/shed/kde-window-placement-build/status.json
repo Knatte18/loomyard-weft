@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -67,6 +67,30 @@
       "at": "2026-11-27T14:59:17Z",
       "started_at": "2026-11-27T14:58:34Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/reviews/plan/round-1-review.md",
+      "at": "2026-11-27T15:11:51Z",
+      "started_at": "2026-11-27T14:59:18Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-27T15:11:51.151690025Z",
+          "end": "2026-11-27T15:11:51.154320375Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-27T15:11:51.219730023Z",
+          "end": "2026-11-27T15:11:51.220415295Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
