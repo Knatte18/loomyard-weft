@@ -1,0 +1,16 @@
+status: OK
+head_sha: a136dd0dbd9dcd11415585bf2dd8d8c8133751d6
+journal: |
+  Cards 4-6 are committed; the batch gate passed (tier2 and tier3 not run).
+  - Card 8: testOnlyCodeAllowed holds no burlerengine.Engine.SeatTables entry, since the guard reads the method as reachable.
+    The entries for MissingItems, NewWithSeams, seatengine.Specs and landingshed.FixReviewSeatTable are there to delete.
+  - heddleFileKeyPrefix moved to shuttleengine.HeddleFileKeyPrefix.
+  - shuttleparity: PrepareEach(set, cfg, stencilsDir, dir, specsByEngine), Compare(set, manifests), seatsOf(env, seatTables);
+    its tests are in package shuttleparity.
+  - A SeatEnv needs Location, Dirs, Registry, StencilsDir, SpecsDir, Dir (stand-ins, caller removes), Shortname, Slug and ParentName.
+    darn, landing, drift, loom and tapestry load strictly, so a hub fixture needs their base files (configengine.SparseBaseHeader).
+  - A Location outside lymcwd comes from lymcwd.NamedWorktree; a literal fails TestEnforcement_LocationLiterals.
+  - The default claude.yaml session_scope turns off plugins whose skills a spec does not preload, so a fixture that needs
+    every plugin's hook sets session_scope.enabled: false.
+  - Seen once on card 4's gate, unrelated and passing on rerun: internal/shedverbs
+    TestUntilStop_EnvelopeCurrency/an_envelope_the_run_has_moved_past_is_retired_and_a_fresh_loop_spawned.

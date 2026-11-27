@@ -267,6 +267,47 @@
       "cardShas": [
         "fba24bbbb26d9528302a58052d8645dfa702aa8d"
       ]
+    },
+    "4": {
+      "slug": "codex-manifest",
+      "cards": [
+        "04-codex-manifest",
+        "05-engines-with-seams",
+        "06-seat-parity"
+      ],
+      "cardHashes": {
+        "04-codex-manifest": "12ed0794d2008380e793d4924c9a7c46a7f221711501db17f7d127263979053a",
+        "05-engines-with-seams": "b1e3b8b9baa2add27485f7276804b19b8c81c3917a01ecdbd75b4242c35baa65",
+        "06-seat-parity": "3c4ec35d21a92fb1e8b9161763ba2406764aa0947ef554753cab6ca9e6e7d40f"
+      },
+      "startSha": "fba24bbbb26d9528302a58052d8645dfa702aa8d",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:52:49Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-codex-manifest",
+        "status": "done",
+        "head_sha": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/manifest.go",
+          "internal/shuttleengine/codexengine/manifest.go",
+          "internal/shuttleengine/manifest.go",
+          "internal/shuttleengines/shuttleengines.go",
+          "internal/shuttleparity/parity.go",
+          "internal/shuttleparity/parity_test.go",
+          "internal/shuttleparity/seats.go",
+          "internal/shuttleparity/seats_test.go",
+          "internal/shuttleparity/tables.go"
+        ],
+        "departures": [
+          "6: Compare each seat's Codex manifest against Claude's: PATTERN-code-conventions — internal/shuttleparity names its two engines as the exported constants ReferenceEngine and ComparedEngine, because the parity comparison is between two named engines by definition",
+          "6: Compare each seat's Codex manifest against Claude's: PATTERN-test-only-code — testOnlyCodeAllowed gains no burlerengine.Engine.SeatTables entry, since the guard reads the method as reachable and fails on an entry that matches no unreachable function"
+        ]
+      },
+      "cardShas": [
+        "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
+      ]
     }
   },
   "attempts": [
@@ -279,10 +320,21 @@
       "strandName": "ly:weaver-bench-b3:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T13:30:15Z"
+    },
+    {
+      "batch": 4,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b3/_lym/weaver/reports/04-codex-manifest-a1.yaml",
+      "strandGuid": "17c17eb8c3016cf863c8244c1ac23f16",
+      "strandName": "ly:weaver-bench-b3:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:52:49Z"
     }
   ],
   "batchEnds": {
-    "1": "fba24bbbb26d9528302a58052d8645dfa702aa8d"
+    "1": "fba24bbbb26d9528302a58052d8645dfa702aa8d",
+    "4": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
   },
-  "lastEnd": "fba24bbbb26d9528302a58052d8645dfa702aa8d"
+  "lastEnd": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
 }
