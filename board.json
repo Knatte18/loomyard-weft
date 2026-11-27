@@ -830,46 +830,6 @@
       "revised": "2026-11-27T17:58:36Z"
     },
     {
-      "id": 1751,
-      "handle": "E2",
-      "slug": "hide-arras-recipe",
-      "title": "Hide the arras recipe from orchs and skills; motif is the design-first route",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "orch",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, 2026-11-27)\n\nOrchs still propose `arras`, though it is never used.\nThe operator does not trust raddle's split enough to let a run split an entry on its own approval.\n\n## Operator decision (2026-11-27)\n\nArras is no longer an option anyone is offered.\nIts code stays, but nothing visible names it: the shipped orch role, the `ly:board` and `ly:board-policy` skills, help text and recipe listings.\nMotif is the route for a design-first entry: it stores the decision record as a Sketch, and the Sketch's raddle run splits it on the operator's approval.\n\n## Idea\n\n- Rewrite the board-policy passage that proposes an arras task for a tapestry-sized note to propose motif.\n- Drop arras from the recipe lists in the board skill, the orch role and `lym board` help.\n- Decide whether a board write naming `recipe: arras` is refused or only warned.\n",
-      "created": "2026-11-27T18:05:18Z",
-      "revised": "2026-11-27T18:05:18Z"
-    },
-    {
-      "id": 1752,
-      "handle": "E3",
-      "slug": "motif-sketch-follow-up",
-      "title": "A Sketch a motif run leaves is followed up, not left lying on the board",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "orch",
-        "board",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, 2026-11-27)\n\nA motif run ends by leaving its entry on the board as a Sketch, a note that never runs.\nNothing then follows it up: it waits until someone remembers it.\n\n## Idea\n\nWhen a motif run lands, the orch is told and puts the Sketch to the operator: promote it to its raddle run now, or say what it waits for.\nA Sketch left waiting carries its `depends_on`, so the board shows why.\n",
-      "created": "2026-11-27T18:05:18Z",
-      "revised": "2026-11-27T18:05:18Z"
-    },
-    {
       "id": 1754,
       "handle": "T1",
       "slug": "gate-fixed-cost-cuts",
@@ -892,25 +852,6 @@
       "project": "test-speed"
     },
     {
-      "id": 1755,
-      "handle": "E5",
-      "slug": "raddle-stencil-tune",
-      "title": "Tune the raddle stencil and split rubric from the study of every raddle run",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts",
-      "body": "## Seen\n\nThe study `docs/research/raddle/raddle-split-quality.md` read every raddle run of this hub up to 2026-11-27.\nThe most common revision is a missing dependency on work already running or released.\nCorrections to part count and recipe are about size and cost: too many solid tapestries, or one part too large for one review.\nThe stencil has no size rule and no recipe or profile rule, and its one cost sentence pushes toward larger parts.\n\n## Change\n\nApply the report's section \"Proposed stencil changes\" to `contracts/stencils/raddle/raddle-template-agent.md`\nand `contracts/stencils/loom/loom-rubric-raddle-review.md`:\norder and dependencies, part count and size, recipe and profile, cut lines, missing or invented parts, wording,\nsuperseded decisions, size estimates, where the entries are filed, and the split perch's rubric.\nThe report's change that would let the operator choose the filed project's level needs code and spec, and stays out of this task.\n",
-      "created": "2026-11-27T18:24:08Z",
-      "revised": "2026-11-27T18:24:15Z"
-    },
-    {
       "id": 1756,
       "handle": "E6",
       "slug": "gatecli-dotnet-redfirst-time",
@@ -928,6 +869,30 @@
       "created": "2026-11-27T18:42:04Z",
       "revised": "2026-11-27T18:42:04Z",
       "project": "test-speed"
+    },
+    {
+      "id": 1757,
+      "handle": "T4",
+      "slug": "design-first-route",
+      "title": "Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "orch",
+        "board",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy",
+      "body": "## Aim\n\nMotif, then the Sketch's raddle run, is the one design-first route, and it works under autonomy:\nno step of it waits on the operator except raddle's split approval, which stays the operator's.\n\n## 1. Hide arras (operator, 2026-11-27)\n\nOrchs still propose `arras`, though it is never used; the operator does not trust raddle's split enough to let a run split an entry on its own approval.\nArras is no longer an option anyone is offered. Its code stays, but nothing visible names it:\nthe shipped orch role, the `ly:board` and `ly:board-policy` skills, help text and recipe listings.\n\n- Rewrite the board-policy passage that proposes an arras task for a tapestry-sized note to propose motif.\n- Drop arras from the recipe lists in the board skill, the orch role and `lym board` help.\n- A board write naming `recipe: arras` is refused, with a hint naming motif (operator, 2026-11-27).\n\n## 2. Follow up every Sketch (operator, 2026-11-27)\n\nA motif run ends by leaving its entry as a Sketch, a note that never runs, and nothing follows it up.\n\n- When a motif run lands, the orch is told.\n- Outside autonomy, the orch puts the Sketch to the operator: promote it to its raddle run now, or say what it waits for.\n- Under autonomy, the orch promotes the Sketch to its raddle run itself once nothing it waits for is open,\n  and gives it `depends_on` for what it waits for, so the board shows why.\n  The raddle run's split approval still goes to the operator, as a merge-ready beam does, and is not a halt the orch settles.\n\n## 3. Tune the raddle split\n\n`docs/research/raddle/raddle-split-quality.md` read every raddle run of this hub up to 2026-11-27.\nThe most common revision is a missing dependency on work already running or released;\ncorrections to part count and recipe are about size and cost.\nApply its section \"Proposed stencil changes\" to `contracts/stencils/raddle/raddle-template-agent.md`\nand `contracts/stencils/loom/loom-rubric-raddle-review.md`:\norder and dependencies, part count and size, recipe and profile, cut lines, missing or invented parts, wording,\nsuperseded decisions, size estimates, where the entries are filed (visibility only), and the split perch's rubric.\nLetting the operator choose the filed project's level needs code and spec, and stays out of this task.\n",
+      "status": "draft",
+      "created": "2026-11-27T18:05:18Z",
+      "revised": "2026-11-27T18:58:59Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
