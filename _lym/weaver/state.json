@@ -1,0 +1,288 @@
+{
+  "runGuid": "0b6edb31d3c9476e814894bc8952e1ed",
+  "planRecordsCommit": "ea1e526f965b78dbd3f8bb611c46f1654ceb1ec4",
+  "planFingerprint": "fef61ca9e4695b295a223cbfaa28623668cd7818208e8edb027e4ff5629c3d36",
+  "planFileHashes": {
+    "00-overview.md": "b3b3f00300aa44c443c2c654438c1d346913e8012a434dfd66c87cc6bd205a77",
+    "01-heddle-standing-keys.md": "e7aebc0288ac953b170ac130a331e69bfb534f0d2a78b1c432112ce9eebce3d0",
+    "02-manifest-record.md": "aa23a855834cbf8d8700f4770d797d5d5912157533f470594308f8a9e0ff878a",
+    "03-claude-manifest.md": "2455e5bfe138629ff395a339d207a0236c76093a1a7b8b72831fba0a7cd78d9f",
+    "04-codex-manifest.md": "12ed0794d2008380e793d4924c9a7c46a7f221711501db17f7d127263979053a",
+    "05-engines-with-seams.md": "b1e3b8b9baa2add27485f7276804b19b8c81c3917a01ecdbd75b4242c35baa65",
+    "06-seat-parity.md": "3c4ec35d21a92fb1e8b9161763ba2406764aa0947ef554753cab6ca9e6e7d40f",
+    "07-producer-table.md": "295d2a25ef35b675625bfe2954d374996e11d86d17299b65649e97e369110fb1",
+    "08-shuttle-manifest-verb.md": "a42c2533ee13fd9cd480be8138920c208fa85d6ee2abdd05ad01f28151fa8315",
+    "09-pattern-engine-parity.md": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
+  },
+  "planOverviewFrameHash": "44bd305a72397156f8bec6059a650d1f9f98b412d56fa8b24050739c11c9aa77",
+  "partition": [
+    {
+      "cards": [
+        "01-heddle-standing-keys",
+        "02-manifest-record",
+        "03-claude-manifest"
+      ],
+      "profile": "wide",
+      "estimate": 244336,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 32600,
+        "read_union": 43580,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 804,
+            "reads": {
+              "file:internal/heddleengine/doc.go": 732,
+              "file:internal/shuttleengine/doc.go": 11256,
+              "package:cmd/lym": 2000,
+              "package:internal/heddleengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/heddleengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 232,
+            "written": 70404
+          },
+          {
+            "card": 2,
+            "card_text": 1116,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 11256,
+              "package:cmd/lym": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 214,
+            "written": 65316
+          },
+          {
+            "card": 3,
+            "card_text": 936,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 8736,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 105,
+            "written": 32436
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-codex-manifest",
+        "05-engines-with-seams",
+        "06-seat-parity"
+      ],
+      "profile": "wide",
+      "estimate": 250994,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 39600,
+        "read_union": 57668,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 792,
+            "reads": {
+              "file:internal/shuttleengine/codexengine/doc.go": 2580,
+              "package:internal/shuttleengine/codexengine": 2000,
+              "tests:internal/shuttleengine/codexengine": 2000
+            },
+            "messages": 71.5,
+            "written": 22242
+          },
+          {
+            "card": 5,
+            "card_text": 672,
+            "reads": {
+              "file:internal/shuttleengines/doc.go": 552,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 1560,
+              "package:cmd/lym": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 157,
+            "written": 47772
+          },
+          {
+            "card": 6,
+            "card_text": 1812,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 6744,
+              "file:internal/landingshed/doc.go": 7872,
+              "file:internal/seatengine/doc.go": 3084,
+              "package:cmd/lym": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttleparity": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttleparity": 2000
+            },
+            "messages": 273,
+            "written": 83712
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-producer-table",
+        "08-shuttle-manifest-verb",
+        "09-pattern-engine-parity"
+      ],
+      "profile": "wide",
+      "estimate": 170398,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 46600,
+        "read_union": 51648,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 852,
+            "reads": {
+              "package:internal/shuttleparity": 2000,
+              "tests:internal/shuttleparity": 2000
+            },
+            "messages": 86,
+            "written": 26652
+          },
+          {
+            "card": 8,
+            "card_text": 948,
+            "reads": {
+              "file:docs/overview.md": 24876,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleparity": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleparity": 2000
+            },
+            "messages": 135.5,
+            "written": 41598
+          },
+          {
+            "card": 9,
+            "card_text": 300,
+            "reads": {
+              "file:PATTERN.md": 672,
+              "package:.": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 12,
+            "written": 3900
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "heddle-standing-keys",
+      "cards": [
+        "01-heddle-standing-keys",
+        "02-manifest-record",
+        "03-claude-manifest"
+      ],
+      "cardHashes": {
+        "01-heddle-standing-keys": "e7aebc0288ac953b170ac130a331e69bfb534f0d2a78b1c432112ce9eebce3d0",
+        "02-manifest-record": "aa23a855834cbf8d8700f4770d797d5d5912157533f470594308f8a9e0ff878a",
+        "03-claude-manifest": "2455e5bfe138629ff395a339d207a0236c76093a1a7b8b72831fba0a7cd78d9f"
+      },
+      "startSha": "e38187457e25cbff17b9954a7c7c33edaf9b4bd1",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:30:15Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-heddle-standing-keys",
+        "status": "done",
+        "head_sha": "fba24bbbb26d9528302a58052d8645dfa702aa8d",
+        "deviations": [
+          "internal/heddleengine/render_test.go",
+          "internal/heddleengine/target.go",
+          "internal/shuttleengine/claudeengine/manifest.go",
+          "internal/shuttleengine/claudeengine/prepare_test.go",
+          "internal/shuttleengine/claudeengine/settings.go",
+          "internal/shuttleengine/manifest.go"
+        ]
+      },
+      "cardShas": [
+        "fba24bbbb26d9528302a58052d8645dfa702aa8d"
+      ]
+    }
+  },
+  "attempts": [
+    {
+      "batch": 1,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b3/_lym/weaver/reports/01-heddle-standing-keys-a1.yaml",
+      "strandGuid": "4d46627ceee16cd419c4d8ae91b66143",
+      "strandName": "ly:weaver-bench-b3:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:30:15Z"
+    }
+  ],
+  "batchEnds": {
+    "1": "fba24bbbb26d9528302a58052d8645dfa702aa8d"
+  },
+  "lastEnd": "fba24bbbb26d9528302a58052d8645dfa702aa8d"
+}

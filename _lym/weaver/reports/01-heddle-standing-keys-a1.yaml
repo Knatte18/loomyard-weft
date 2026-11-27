@@ -1,0 +1,14 @@
+status: OK
+head_sha: fba24bbbb26d9528302a58052d8645dfa702aa8d
+journal: |
+  Cards 1-3 are committed; the batch gate passed (tier2 and tier3 not run).
+  - Shared manifest keys are exported constants in internal/shuttleengine/manifest.go (PromptEngineKey, HandWrittenPromptKey,
+    QuestionDenyKey, WebsterForkDenyKey, BatchingNudgeKey, DenyNoticeKey, CreelTrustKey, SubagentPassageKey). Codex should use them.
+  - Claude's other keys, which Codex must match: instruction-source is the absolute path for user files above the repo,
+    the root-relative slash path inside it, and "heddle-file/<slug>" (the prefix is claudeengine's heddleFileKeyPrefix,
+    so move it to shuttleengine rather than repeating it); plugin-context is "<plugin id>/<hook command>";
+    standing-passage is the slug; skill-load and skill-listing are the skill name.
+  - InstructionItem and OmittedHook now carry Plugin and Hook; UserSetup carries ListedSkills.
+  - testOnlyCodeAllowed holds only the planned MissingItems entry. Card 2 needed a second, interim WriteManifest entry,
+    which card 3 removed. A card that creates a function before its caller will fail the same tier1 guard.
+  - A fake repository in a tier0 test needs .git/HEAD, .git/objects and .git/refs, or dotgit.FindRoot skips it.
