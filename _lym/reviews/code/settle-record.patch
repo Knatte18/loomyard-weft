@@ -1,0 +1,559 @@
+diff --git a/docs/research/README.md b/docs/research/README.md
+index d8a054c30..be6215024 100644
+--- a/docs/research/README.md
++++ b/docs/research/README.md
+@@ -167,6 +167,7 @@ A study's script finds the repository root with `git rev-parse --show-toplevel`,
+ - [redundant-candidates-check-2026-11-17](speed/redundant-candidates-check-2026-11-17/report.md) — `lym gate redundant internal/boardengine` after the kill-count fix: its lists against the trial's 14 candidates, and five candidates read by hand against their covering tests.
+ - [testmap-use-cases-2026-11-18](speed/testmap-use-cases-2026-11-18/report.md) — what the per-test coverage maps can do for lym and its agents: every use found in research and practice, ranked, with the top three argued and the rest ruled out.
+ - [mutation-trial-2026-11-19](speed/mutation-trial-2026-11-19/report.md) — `lym gate mutate` replayed on 20 landed diffs: mutants run, killed, survived and unjudged, the survivors judged by hand, and the decision to build the `mutation` report step.
++- [testmap-worth-evaluation](testmap-worth-evaluation.md) — every user of the coverage maps, what each has given against its cost, and which to remove.
+ 
+ ## survey — ideas from outside projects
+ 
+diff --git a/docs/research/testmap-worth-evaluation.md b/docs/research/testmap-worth-evaluation.md
+new file mode 100644
+index 000000000..241c0d75c
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation.md
+@@ -0,0 +1,219 @@
++# What the coverage maps and their users give, 2026-11-27
++
++Board task `testmap-worth-evaluation` asked what every user of the per-test coverage maps gives, what it costs, and whether to remove them.
++This report records one reading of the hub's records on 2026-11-27 and is not rewritten when the code changes.
++No test and no map build ran for it.
++
++## Recommendation
++
++Remove every user of the stored maps, and the maps with them.
++Keep `go run ./cmd/testtiming -redundancy` for an occasional redundancy sweep: it reads no stored map.
++
++| User | Recommendation | Main reason |
++|---|---|---|
++| `reach` report step, the reach turn and the `reach_report` review marker | Remove | 18 review findings and some tests, no production defect; it is the main reason for the map refresh |
++| `mutation` report step and the `mutation_report` marker | Remove, the closest call | 46 review findings, all test strength except where code reading had already found the bug |
++| `redundancy` report step and the `redundancy_report` marker | Remove | 22 of its 24 findings kept the test and added a keep marker |
++| `lym gate mutate` | Remove | Never run outside its own trial |
++| `lym gate reach`, both forms | Remove | 5 runs outside build tasks, none of which confirmed an answer; `--test --since` never run |
++| `lym gate redundant` | Remove | No test cut on its word; 27 of 30 confirmed candidates read by hand were false |
++| `lym gate test --map` | Remove | Feeds only the users above |
++| `cmd/testtiming -redundancy` | Keep | The one redundancy tool that led to a large cut (188 test functions, 2026-11-08) |
++| The red-first gate | Keep, not a map user | It reads `testreach.ChangedTests`, which needs no map |
++
++`internal/testcover` does not go whole.
++`cmd/testtiming` runs on its runner, verdict, spawn scan and keep scan.
++Its map record, mutant code and source scan go, as do the map reader and index of `internal/testreach`.
++By file, that is about 8,800 non-test and 8,500 test lines removed, and 2,600 and 1,800 kept.
++The red-first gate also shares helpers with the redundancy step's files, which a removal has to move first.
++A removal also retires `PATTERN-coverage-map-reader`, the `redundancy_*`, `reach_budget_min` and `mutation_*` keys of `gate.yaml`,
++and the map parts of `PATTERN-test-speed` and `docs/overview.md`.
++
++Where the call could go the other way:
++
++- **Mutation step.**
++  It gave the most findings, 18 of them MEDIUM and 2 BLOCKING.
++  If review without them lets weak tests through, this is the step to turn back on.
++  It cannot run without the map refresh, which is most of the cost.
++- **`lym gate redundant`.**
++  Its mutation check refutes candidates that coverage alone accepts: 542 of 972 in the last full survey.
++  Keeping it keeps `--map`, the map record and the mutant code, for a sweep that was planned once and dropped before it ran.
++
++## Users of the maps
++
++| Reader or writer | Reads or writes | Who starts it |
++|---|---|---|
++| `lym gate test --map` | writes the shared maps from the prime, a worktree's own elsewhere | by hand only |
++| `reach` report step | refreshes the worktree's maps, writes `reach.json` | a gate key listing `reach` |
++| Reach turn (`verifytree.WithReachTurn`, also in Weaver) | `reach.json` | the verify gate of a writer or fixer |
++| `redundancy` report step | one package's map | a gate key listing `redundancy` |
++| `mutation` report step | refreshes the maps, writes `mutation.json` | a gate key listing `mutation` |
++| Code-Review's three report markers | the three reports | the review |
++| `lym gate reach`, `lym gate mutate`, `lym gate redundant` | the maps | by hand only |
++
++`internal/testreach` and `internal/testcover` have no importer outside `internal/gatecli` and `cmd/testtiming`.
++No dobby, loom row, gate key or stencil starts a map run.
++Dobby did start the predecessor verb `gate testmap` from 2026-11-09 until `72b26d1af` removed that on 2026-11-15.
++The one message that tells anyone to run a verb is the rebuild hint in `internal/testreach/mapread.go`.
++
++## What the report steps gave
++
++The window is 2026-11-19 12:17, when all three steps existed, to the archive's newest tag on 2026-11-27.
++It holds 145 archive tags of 134 slugs; 106 slugs had a code review.
++The steps were on for the window up to 2026-11-26 22:15.
++
++### Code review findings
++
++Findings that used a report as evidence, over all recipes ([citations.tsv](testmap-worth-evaluation/citations.tsv)):
++
++| Report | Findings | BLOCKING | MEDIUM | LOW | NIT |
++|---|---|---|---|---|---|
++| Mutation survivor | 41 | 2 | 16 | 21 | 2 |
++| Mutation uncovered block | 5 | 0 | 2 | 3 | 0 |
++| Reach | 18 | 1 | 8 | 9 | 0 |
++| Redundancy | 24 | 4 | 0 | 15 | 5 |
++| All | 88 | 7 | 26 | 48 | 7 |
++
++- They come from 55 runs.
++  Reviews explicitly dismissed about 40 more report items, 31 of them survivors.
++- Over the 95 reviewed darn runs of the window, 80 of 814 findings used a report (10%), and 33 of 294 findings of MEDIUM or higher (11%).
++- **No report found a production defect on its own.**
++  Three findings led to a bug fix (`agents-exit-before-reply` F2, `parent-review-code-and-drift` F17, `webster-amend-stop-no-notice` F3).
++  In each, code reading had argued the bug and a survivor backed it up; the first rests on an unverified premise.
++- Five reach findings changed production code only so that a test could reach it, and one survivor finding removed a dead input.
++- The rest added or tightened tests.
++- Redundancy: 22 findings added `//testtiming:keep`, one deleted a test (`config-keys-nested` F12),
++  and one deleted a test row the report had called unique (`card-gate-scope-gaps` F6).
++
++### Reach turns
++
++- 66 reach turns in 43 runs.
++- 30 turns edited a test file (26 runs), and 23 of them added test functions: 38 functions in 19 runs.
++- One cost showed in review: in `gate-dotnet-fixes`, tests added for functions the report called unreached
++  were then raised as duplicates of an out-of-process test the map could not see (F16, BLOCKING).
++
++### Report counts
++
++Each run is counted by its largest report.
++
++| Step | Runs with a summary line | Judged | Flagged |
++|---|---|---|---|
++| Mutation | 106 | - | 208 survivors in 56 runs, 2,210 uncovered changed blocks |
++| Redundancy | 103 | 674 new or changed tests | 39 contained, in 25 runs |
++
++## What the manual verbs gave
++
++Runs by hand or from an agent session, found in transcripts and trace logs since the verbs landed.
++Logs undercount, so an unlogged operator run would not show.
++
++| Verb | Runs | Outside build and study tasks | What those gave |
++|---|---|---|---|
++| `gate test --map` | 10 | 1 | `seed-killed-way-forward-loops`: the "unreached" functions came from a stale map; no test added |
++| `gate redundant` | 147 logged, up to 212 more in one loop | 0 | - |
++| `gate reach <file>#<Func>` | 5 | 5 | Two sessions found tests the maps did not see; one filed issue #250, on direct tier-1 calls, which `e13faedc2` addresses |
++| `gate reach --test --since` | 0 | 0 | - |
++| `gate mutate` | 20 | 0 | The trial: 430 mutants, 374 killed, 44 survived, 12 unjudged |
++| `testtiming -redundancy` | 3, none since 2026-11-09 | - | Fed the tier-1 study and the `fabricengine` cuts |
++
++The shared maps in the prime were last written on 2026-11-16.
++`lym gate reach` run from the prime answers from them.
++
++### Redundancy sweeps
++
++| Date | Tool | Candidates | Outcome | Source under `speed/` |
++|---|---|---|---|---|
++| 11-06 | testtiming | 106 in 12 packages | 5 removable tier-1 tests worth 1.4 s | `tier1-test-revision-2026-11-06` |
++| 11-08 | testtiming method | 370 contained of 590 | 188 test functions removed, 64 marked; 4.3 s off the package, 4.5 s off a tier-1 pass (`cbdfc33db`) | `fabric-test-redundancy-2026-11-08`, `fabric-test-cuts-remeasure-2026-11-08.md` |
++| 11-12 | maps | 2 | both false | `coverage-map-pilot-2026-11-12` |
++| 11-16 | maps | 1,026 in 118 packages | 11.75 s of test time, none removed | `redundancy-candidates-survey-2026-11-16` |
++| 11-17 | `gate redundant` | 972 | 430 confirmed, 3.45 s; 27 of 30 read were false | `redundancy-confirmed-survey-2026-11-16` |
++| 11-17 | `gate redundant`, after a fix | 6 in `boardengine` | 5 read, 5 false | `redundant-candidates-check-2026-11-17` |
++
++No test was removed since 2026-11-09 on the word of `gate redundant`.
++The planned sweep, board entry `redundancy-sweep-existing`, was removed unrun on 2026-11-18.
++
++## What they cost
++
++### Gate time and slots
++
++From the archived traces of `lym gate test` calls with a gate key, 2026-11-19 12:17 to 2026-11-26 22:15.
++Six calls longer than an hour, which span hub pauses, are left out.
++110 slugs made such calls, and 100 of them ran a report step.
++
++| Part | Calls | Work, sum | Work, median | Slot wait, sum | Waits over 60 s | Test processes |
++|---|---|---|---|---|---|---|
++| Map refresh, for reach and mutation | 202 | 17,951 s | 57 s | 5,685 s | 37 | 103,783 |
++| Mutation | 198 | 4,977 s | 10 s | 2,012 s | 10 | 14,374 |
++| Redundancy | 151 | 2,138 s | 10 s | 2,548 s | 10 | 1,327 |
++
++- In all, 7.0 hours of step work and 2.8 hours of slot waiting: about 250 s of work and 100 s of waiting per run that ran a step.
++- Work is the span from a step's first to its last log line.
++  Steps run beside the tiers and each other, so these are not added wall time and the spans are approximate.
++- Each step holds its own gate slots, which other runs' tests wait for.
++- Added wall time has an upper bound: the `darn-write` and `code-burler-fix` calls spent 18,832 s after their last tier ended,
++  about 170 s per run, lints included.
++  The 2026-11-21 study measured 122 s per run before `42be7bcf7` moved the reports beside the tests.
++
++### Memory and disk
++
++- Each map or mutant test process is capped at `gate.redundancy_test_memory_mb`, 2,048 MB, with up to a tier's `parallel` side by side.
++- 12 coverage test runs ended at that cap in the traces of 2026-11-20 to 2026-11-26.
++- The one measured full build peaked at a 2.1 GB process and at most 2.4 GB over the test processes (`coverage-map-measurement-2026-11-18`).
++- The shared maps take 56 MB; a worktree's own take up to 11 MB.
++
++### Map run time
++
++A full `lym gate test --map --all` took 12 min 50 s on 2026-11-18.
++`e13faedc2` added the unresolved tests to the map run after the window, and no full build has been timed since.
++
++### Test time
++
++In one whole tier-1 pass on 2026-11-27, the top-level tests of the map, reach, mutation and redundancy tools in `internal/gatecli`
++summed to about 150 s, with the package at 55 s wall.
++The note `whole-repo-guards-off-gates` measured 194 s for them in a loaded landing gate.
++`internal/testcover` added 3 s.
++Turning the report steps off saves none of this: the tests run whenever the diff reaches those packages.
++
++### Upkeep
++
++- 11,363 non-test and 10,280 test lines belong to the maps and their users, `cmd/testtiming`'s redundancy mode included:
++  2.7% and 1.7% of the module's Go.
++- 38 commits since 2026-11-01 touched those files.
++  Among them are repairs of the tools themselves: `007de1547`, `bd707e161`, `b904a1f80`, `cac2f1789`, `e13faedc2` and `65d516486`.
++- Reach has answered wrongly where a map was stale or a test unseen, in the manual runs above and in the 2026-11-21 study.
++
++## The effect of turning the report steps off
++
++**It cannot be measured yet.**
++The mutation step went off on 2026-11-26 22:15, and reach and redundancy on 2026-11-27 08:14, minutes before this reading.
++No reviewed darn run has landed with reach and redundancy off.
++One reviewed darn run started after the mutation step went off.
++Defects that land were not measured: the records link no later defect to the run that introduced it.
++
++The baseline to compare with, per reviewed darn run, with findings from the merged review rounds:
++
++| Period, by run start | Runs | Review rounds | Findings | HIGH or BLOCKING | MEDIUM | From the test lens |
++|---|---|---|---|---|---|---|
++| 11-12 to 11-19, before reach and mutation | 80 | 1.29 | 8.35 | 0.70 | 2.05 | 2.25 |
++| 11-19 to 11-26, all three on | 95 | 1.16 | 8.57 | 0.88 | 2.21 | 1.95 |
++
++Adding the reports showed no clear change in these figures.
++The comparison is weak: lenses, rubrics, models and tasks changed in the same weeks, and the redundancy step already ran in part of the first period.
++Expect at most the 10% of findings that cited a report to be lost, and likely fewer,
++since a reviewer can raise a missing test without a report.
++After about 20 darn runs land with the steps off, `findings.sh` below gives the third row.
++
++## Method
++
++- Archive tags of the records repository dated from 2026-11-19 12:17; `seed.json` gives the recipe and the start.
++- Review citations: the review, lens and fixer files of each tag, searched by wording and read where they matched.
++  A reviewer who used a report without naming it is missed.
++  Whether a fix touched only tests rests on fixer reports, not on every diff.
++- The scripts in [testmap-worth-evaluation/](testmap-worth-evaluation/) print the figures; each says its usage at its top.
++  - `cost.sh 2026-11-19T12:17 2026-11-26T22:15 > cost.tsv`, then `awk -F'\t' '$4<=3600' cost.tsv > kept.tsv` and `cost-summary.sh kept.tsv`.
++  - `outcomes.sh <slug>...` for reach turns and the report summary lines.
++  - `findings.sh <tag>...` for the review findings per darn run.
++- Test times come from the hub's tier-1 gate log `20261127T072001Z-tier1-4017911`.
++- Line counts are of the files at `a69580709`.
++
++Earlier study of the same steps over 10 runs: [testmap-use-measure-2026-11-21](speed/testmap-use-measure-2026-11-21/report.md).
+diff --git a/docs/research/testmap-worth-evaluation/citations.tsv b/docs/research/testmap-worth-evaluation/citations.tsv
+new file mode 100644
+index 000000000..2bc6e4619
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation/citations.tsv
+@@ -0,0 +1,99 @@
++slug	round	finding	severity	report	fixed	fix_summary
++agent-pane-memory-cap	1	F5	MEDIUM	mutation-survivor	yes	added test rows (uncapped-pane warning)
++agent-pane-memory-cap	1	F10	LOW	mutation-survivor	yes	added test assertion (memory.swap.max)
++agent-pane-memory-cap	1	F12	NIT	mutation-survivor	yes	tightened test assertion (refusal cause)
++agent-questions-to-parent	1	F2	MEDIUM	reach	yes	added a test table for newShed wiring
++agent-questions-to-parent	1	F5	LOW	reach	yes	added a path-table test row
++agents-exit-before-reply	1	F2	BLOCKING	mutation-survivor	other (fixed-differently)	CODE FIX of a plausible bug (hold released mid-turn) + test rows; report only corroborated, found by code reading
++agents-exit-before-reply	1	F5	LOW	mutation-survivor	yes	added a test
++audit-flags-master-friction	1	F5	MEDIUM	mutation-survivor	yes	added test rows (MasterNotePath saved)
++audit-flags-master-friction	1	F8	LOW	mutation-survivor	yes	added test rows
++beam-pr-describes-itself	1	F11	LOW	mutation-survivor	yes	tightened a test (busy flag)
++board-viewer-server	1	F11	LOW	redundancy	yes	added testtiming:keep marker
++board-viewer-server	1	F12	LOW	redundancy	yes	added testtiming:keep marker
++bug-red-first-gate	1	F9	MEDIUM	reach	yes	added an integration test for entryLabels
++bug-red-first-gate	1	F10	LOW	mutation-survivor	yes	added a test case
++burler-fix-round-defects	1	F7	MEDIUM	mutation-survivor	yes	added test rows
++burler-fix-round-defects	1	F10	LOW	mutation-survivor	yes	added test assertion
++card-gate-scope-gaps	1	F6	NIT	redundancy	yes	removed a test row (borderline: report called the test unique, reviewer overrode)
++code-bouncer-asks-parent	1	F7	LOW	mutation-uncovered	other (fixed-differently)	test coverage for unreadable-ledger branch (fixed differently)
++code-bouncer-asks-parent	1	F10	NIT	redundancy	yes	added testtiming:keep marker
++code-bouncer-asks-parent	2	F12	BLOCKING	mutation-survivor	yes	added test assertion
++config-keys-nested	1	F10	LOW	redundancy	yes	added testtiming:keep marker
++config-keys-nested	1	F11	LOW	redundancy	yes	added testtiming:keep marker
++config-keys-nested	1	F12	NIT	redundancy	yes	removed a test (TestKeyName)
++convergence-report-memory	1	F2	BLOCKING	redundancy	yes	added testtiming:keep marker
++convergence-report-memory	1	F6	MEDIUM	mutation-survivor	yes	tightened test assertion (exact walk list)
++dotnet-gate-fixes	1	F6	LOW	mutation-survivor	yes	tightened test assertions (full refusal text)
++dotnet-gate-fixes	1	F9	LOW	redundancy	yes	added testtiming:keep marker
++drift-stale-loosened-ruling	1	F7	NIT	mutation-survivor	yes	production change: removed a dead input from rangeRulingKey (equivalent mutant; cleanup, no behaviour defect)
++drop-compat-migration-code	1	F1	BLOCKING	redundancy	yes	added testtiming:keep markers on seven tests
++drop-compat-migration-code	1	F6	MEDIUM	mutation-survivor	other (fixed-differently)	added tests
++drop-compat-migration-code	1	F11	LOW	mutation-survivor	other (deferred)	added test rows for some lines; configsync.go:482 deferred to round 2
++drop-compat-migration-code	2	F11	LOW	mutation-survivor	yes	(carry of r1 F11, not counted twice) added a test row
++enter-session-test-cleanup-race	1	F1	LOW	mutation-uncovered	other (fixed-differently)	added test assertion
++finalize-mergeable-unknown	1	F2	MEDIUM	mutation-uncovered	yes	added a test row
++gate-dotnet-fixes	1	F7	MEDIUM	mutation-survivor	yes	added test rows
++godocreflow-worsens-findings	1	F3	MEDIUM	reach	yes	added a test
++halt-escalation-messages	1	F7	LOW	reach	other (fixed-differently)	testability change in production (PreflightStencils through seam) + test
++hardener-campaign	1	F10	LOW	redundancy	yes	added testtiming:keep markers
++hardener-self-charter	1	F2	BLOCKING	reach	yes	testability refactor (readBoardEntry) + tests
++hardener-self-charter	1	F7	MEDIUM	mutation-survivor	yes	added a test row
++harden-fabric-undriven-cases	1	F3	MEDIUM	reach	other (fixed-differently)	added a test for part; fastForwardWeft row left out
++harden-fabric-undriven-cases	1	F7	LOW	reach	other (fixed-differently)	some rows added; cancel/fastForwardWeft rows left out
++hardenshed-test-stray-lock	1	F4	LOW	mutation-survivor	yes	added a test
++infra-stops-not-failures	1	F8	LOW	mutation-survivor	yes	added test assertions
++loop-ends-without-envelope	1	F3	LOW	mutation-survivor	yes	added exit-code assertion
++loop-ends-without-envelope	1	F4	LOW	reach	other (fixed-differently)	testability field LoopSpec.LockGrace in production + test
++machine-cost-probe	1	F4	MEDIUM	mutation-survivor	yes	tightened test (stderr check, new row)
++merge-danger-tautology-glossary	1	F4	LOW	mutation-survivor	yes	added a test row
++merge-danger-tautology-glossary	1	F5	LOW	mutation-survivor	yes	added a test row
++merge-danger-tautology-glossary	1	F6	LOW	mutation-survivor	yes	added a test row
++orch-autonomy-mode	1	F9	LOW	redundancy	yes	added testtiming:keep marker
++orch-autonomy-mode	1	F10	LOW	redundancy	yes	added testtiming:keep marker
++orch-launch-refused-by-gate-key	1	F10	LOW	mutation-survivor	other (fixed-differently)	fixed differently: test update plus rewrite-rule change in reinterpret.go shared with F7 (that change came from F7)
++orch-launch-refused-by-gate-key	1	F11	LOW	redundancy	yes	added testtiming:keep marker
++orch-rc-off-by-default	1	F3	LOW	reach	yes	added a test
++parent-review-code-and-drift	1	F6	MEDIUM	mutation-survivor	yes	added tests for production seat wiring
++parent-review-code-and-drift	1	F7	MEDIUM	reach	yes	added test
++parent-review-code-and-drift	1	F8	LOW	redundancy	yes	added testtiming:keep markers
++parent-review-code-and-drift	1	F9	LOW	mutation-survivor	yes	added test rows
++parent-review-code-and-drift	2	F17	MEDIUM	mutation-survivor	yes	CODE FIX of a real bug (command-mode parent wait uncapped) + test; found by assistant code reading, survivor corroborated
++parent-review-stale-window	1	F3	LOW	redundancy	yes	added testtiming:keep marker
++per-task-settings-one-lookup	1	F21	LOW	redundancy	yes	added testtiming:keep markers
++per-task-settings-one-lookup	2	F27	BLOCKING	redundancy	yes	added testtiming:keep marker
++prebootstrap-board-proc-leak	1	F3	LOW	redundancy	yes	added testtiming:keep marker
++prompt-not-typed-after-skills	1	F3	LOW	mutation-uncovered	yes	added a test row (reach report also cited)
++pr-review-dead-session-unseen	1	F3	MEDIUM	mutation-survivor	yes	added a test row
++pr-review-reask-not-delivered	1	F1	MEDIUM	reach	other (fixed-differently)	testability change in production (ask seam takes the claim) + tests
++raddle-slug-length-check	1	F1	BLOCKING	redundancy	yes	added testtiming:keep marker
++rc-button-ignores-org-policy	1	F7	LOW	reach	yes	added a test
++rc-button-ignores-org-policy	1	F11	NIT	redundancy	yes	added testtiming:keep marker
++reach-misses-tier1-calls	1	F3	MEDIUM	reach	yes	tightened test (exact caveat lists)
++readme-beam-modes	1	F6	LOW	mutation-survivor	yes	added test rows
++red-first-csharp	1	F6	LOW	reach	yes	added a test
++red-first-csharp	1	F7	LOW	mutation-survivor	yes	added test rows
++red-first-csharp	1	F10	LOW	redundancy	yes	added testtiming:keep marker
++remove-record-rerun-pair-gone	1	F8	LOW	reach	other (fixed-differently)	testability refactor (removeThrough) + test
++resume-every-agent-after-crash	1	F3	MEDIUM	mutation-survivor	yes	added a test
++resume-restores-status-pane	1	F2	MEDIUM	mutation-survivor	yes	added smoke subtest assertion
++slack-click-silent-fail	1	F5	LOW	reach	yes	added a subtest
++slack-relay-fixes	1	F2	LOW	mutation-survivor	yes	added a test row
++stale-records-ref-blocks-rerun	1	F5	LOW	mutation-survivor	yes	added a test row
++transient-fetch-no-retry	1	F4	MEDIUM	mutation-uncovered	yes	added test rows
++two-repo-merge-probe-regression	1	F1	MEDIUM	mutation-survivor	yes	added a test table
++verify-tail-alongside-tests	1	F4	MEDIUM	reach	yes	added a test
++webster-amend-stop-no-notice	1	F3	MEDIUM	mutation-survivor	yes	CODE FIX of a real bug (stale judged flag sends wrong notice); found by correctness lens, survivor corroborated
++webster-amend-stop-no-notice	1	F12	NIT	redundancy	yes	added testtiming:keep marker
++webster-parent-calls-flow	1	F9	MEDIUM	mutation-survivor	yes	added tests
++webster-parent-calls-flow	1	F14	LOW	redundancy	yes	added testtiming:keep marker
++webster-plan-recovery	1	F5	LOW	mutation-survivor	yes	added a test
++agent-questions-to-parent	1	dropped (code-tests: newStrandRig)	LOW	reach	no	dropped by synthesis: moot after F1
++verify-flaky-triage	1	dropped (code-tests 2: addFlaky dedup)	LOW	mutation-uncovered	no	dropped: base behaviour, unreachable
++note-depends-on	1	dropped (code-tests F2: README After column)	LOW	mutation-survivor	no	dropped: human-read output
++raddle-slug-length-check	1	dropped (code-tests F2: LoadConfig error return)	NIT	mutation-uncovered	no	dropped: plain pass-through
++slack-relay-fixes	1	dropped (code-tests: keeper.go:604 cache)	LOW	mutation-survivor	no	dropped: pure cache
++single-repo-code-records-removal	1	dropped (assistant F4: clone hook install)	MEDIUM	mutation-survivor	no	dropped: line unchanged from base
++stale-records-ref-blocks-rerun	1	dropped (code-tests 1: hubRunVerdict wiring)	MEDIUM	reach	no	dropped: plumbing
++hardenshed-test-stray-lock	1	dropped (code-tests NIT: strayfiles survivors)	NIT	mutation-survivor	no	dropped: killed by tier1 test outside the run
++parent-review-code-and-drift	1	dropped (code-tests 7: Attempts budget)	NIT	mutation-survivor	no	dropped: tests a constant
+diff --git a/docs/research/testmap-worth-evaluation/cost-summary.sh b/docs/research/testmap-worth-evaluation/cost-summary.sh
+new file mode 100755
+index 000000000..411875d1d
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation/cost-summary.sh
+@@ -0,0 +1,44 @@
++#!/usr/bin/env bash
++# Usage: cost-summary.sh <cost.tsv>
++# Sums the output of cost.sh over the calls that named a gate key:
++# per key the calls, their seconds, how many ran a report step, the seconds past the last tier,
++# and the work and slot-wait seconds of the report steps;
++# per step the sum, median and maximum of its work and slot waits and the test processes it started.
++# Needs bash and awk; reads only.
++awk -F'\t' '
++  function add(k, v) { n[k]++; s[k] += v; a[k, n[k]] = v }
++  function med(k,   i, j, t, m, b) {
++    m = n[k]
++    for (i = 1; i <= m; i++) b[i] = a[k, i] + 0
++    for (i = 2; i <= m; i++) { t = b[i]; for (j = i - 1; j > 0 && b[j] > t; j--) b[j + 1] = b[j]; b[j + 1] = t }
++    return m ? b[int((m + 1) / 2)] : 0
++  }
++  function top(k,   i, x) { for (i = 1; i <= n[k]; i++) if (a[k, i] + 0 > x) x = a[k, i] + 0; return x + 0 }
++  function over(k, lim,   i, c) { for (i = 1; i <= n[k]; i++) if (a[k, i] + 0 > lim) c++; return c + 0 }
++  BEGIN { split("map red mut", step, " ") }
++  $3 != "-" {
++    key = $3; calls[key]++; call[key] += $4
++    if ($5 != "-") add("tail_" key, $5)
++    any = 0
++    for (i = 1; i <= 3; i++) {
++      c = 6 + (i - 1) * 3
++      if ($c == "-") continue
++      add("wait_" step[i], $c); add("work_" step[i], $(c + 1)); procs[step[i]] += $(c + 2)
++      work[key] += $(c + 1); wait[key] += $c; any = 1
++    }
++    if (any) { withstep[key]++; runs[$1] = 1 }
++    allruns[$1] = 1
++  }
++  END {
++    for (k in calls)
++      printf "key %s calls=%d call_s=%d with_step=%d tail_sum=%d tail_med=%d step_work_s=%d step_wait_s=%d\n",
++        k, calls[k], call[k], withstep[k], s["tail_" k], med("tail_" k), work[k], wait[k]
++    for (i = 1; i <= 3; i++) {
++      x = step[i]
++      printf "step %s n=%d work_sum=%d work_med=%d work_max=%d wait_sum=%d wait_med=%d wait_over_60s=%d procs=%d\n",
++        x, n["work_" x], s["work_" x], med("work_" x), top("work_" x), s["wait_" x], med("wait_" x), over("wait_" x, 60), procs[x]
++    }
++    for (r in allruns) na++
++    for (r in runs) nr++
++    printf "slugs with a keyed call=%d with a report step=%d\n", na, nr
++  }' "$1" | sort
+diff --git a/docs/research/testmap-worth-evaluation/cost.sh b/docs/research/testmap-worth-evaluation/cost.sh
+new file mode 100755
+index 000000000..2f2fad89d
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation/cost.sh
+@@ -0,0 +1,63 @@
++#!/usr/bin/env bash
++# Usage: cost.sh <from> <to> [archive-dir]
++# Prints one line per archived `lym gate test` trace that started in [from, to), both as 2026-11-19T12:17 local time:
++# slug, trace file, gate key, call seconds, seconds from the last tier command's end to the call's end,
++# then for each of the map refresh, the redundancy step and the mutation step
++# its slot wait seconds, the seconds from its first to its last line, and the test processes it started.
++# A step that built or ran nothing prints "- - 0".
++# archive-dir defaults to the hub's per-run log archive.
++# Needs bash and an awk with mktime; reads only.
++from=$1 to=$2
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++prime=${PRIME:-$(git -C "$here" worktree list --porcelain | awk 'NR == 1 { print $2 }')}
++archive=${3:-$(dirname "$prime")/_bolt/.lym/log-archive}
++
++# A run archived twice holds the same trace twice, so one file name is read once.
++grep -rl 'argv=gate test ' "$archive" --include='trace-*.log' |
++  awk -F/ '!seen[$NF]++' |
++  while read -r f; do
++    slug=${f#"$archive"/}
++    awk -v from="$from" -v to="$to" -v slug="${slug%%/*}" -v file="${f##*/}" '
++      function ep(s,   t) { t = substr(s, 1, 19); gsub(/[-T:]/, " ", t); return mktime(t) + ("0" substr(s, 20, 4)) }
++      function dur(s,   v, n, u) {
++        v = 0
++        while (match(s, /^[0-9.]+(ms|h|m|s|µs)/)) {
++          u = substr(s, RSTART, RLENGTH); n = u + 0; sub(/^[0-9.]+/, "", u)
++          v += n * (u == "h" ? 3600 : u == "m" ? 60 : u == "s" ? 1 : u == "ms" ? 0.001 : 0.000001)
++          s = substr(s, RLENGTH + 1)
++        }
++        return v
++      }
++      NR == 1 { key = "-"; if (match($0, /--gate [a-z-]+/)) key = substr($0, RSTART + 7, RLENGTH - 7) }
++      !/^time=/ { next }
++      {
++        stamp = substr($1, 6); now = ep(stamp)
++        if (first == "") { first = now; if (substr(stamp, 1, 16) < from || substr(stamp, 1, 16) >= to) { skip = 1; exit } }
++        last = now
++      }
++      /tier command ended/ { tierend = now }
++      # A slot wait is logged only when the step had to wait.
++      /msg="gate slot wait end"/ {
++        step = /site="lym gate test --map"/ ? "map" : /site="lym gate test redundancy"/ ? "red" : /site="lym gate test mutation"/ ? "mut" : ""
++        if (step != "") { match($0, /waited=[^ ]+/); wait[step] += dur(substr($0, RSTART + 7, RLENGTH - 7)) }
++      }
++      # A test binary names its step by the temporary directory it was built in:
++      # testmap- for the map refresh, redundancy- for the redundancy step, redundant- for the mutation step.
++      # A line naming no directory, such as the end of a binary, belongs to the step named last.
++      /testmap-/ { s = "map" } /redundancy-/ { s = "red" } /redundant-|gate test mutation/ { s = "mut" }
++      /testmap-|redundancy-|redundant-|gate test mutation|testcover: / {
++        if (s != "") { if (!(s in begin)) begin[s] = now; end[s] = now }
++        if (/spawning a coverage binary for one test/) procs[s]++
++      }
++      END {
++        if (skip || first == "") exit
++        printf "%s\t%s\t%s\t%.0f\t%s", slug, file, key, last - first, (tierend == "" ? "-" : sprintf("%.0f", last - tierend))
++        split("map red mut", steps, " ")
++        for (i = 1; i <= 3; i++) {
++          s = steps[i]
++          if (s in begin) printf "\t%.0f\t%.0f\t%d", wait[s], end[s] - begin[s], procs[s]
++          else printf "\t-\t-\t0"
++        }
++        print ""
++      }' "$f"
++  done
+diff --git a/docs/research/testmap-worth-evaluation/findings.sh b/docs/research/testmap-worth-evaluation/findings.sh
+new file mode 100755
+index 000000000..f520e61d8
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation/findings.sh
+@@ -0,0 +1,25 @@
++#!/usr/bin/env bash
++# Usage: findings.sh <tag>...
++# Prints one line per darn run's archive tag, tab-separated: slug, when the run started, code review rounds,
++# findings of the merged code reviews, those of severity HIGH or BLOCKING, those of MEDIUM,
++# and those whose origin is the test lens.
++# A tag of another recipe prints nothing.
++# Needs bash, git, jq and an awk; reads only.
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++prime=${PRIME:-$(git -C "$here" worktree list --porcelain | awk 'NR == 1 { print $2 }')}
++records=${WEFT:-$prime-weft}
++for tag in "$@"; do
++  slug=$(printf '%s' "$tag" | cut -d/ -f2)
++  seed=$(git -C "$records" show "$tag:_lym/shed/$slug/seed.json" 2>/dev/null) || continue
++  [ "$(printf '%s' "$seed" | jq -r .recipe)" = darn ] || continue
++  reviews=$(git -C "$records" ls-tree -r --name-only "$tag" -- _lym/reviews/code | grep -E '/round-[0-9]+-review\.md$')
++  for review in $reviews; do
++    # Only the frontmatter lists findings.
++    git -C "$records" show "$tag:$review" | awk 'NR == 1 && /^---$/ { on = 1; next } on && /^---$/ { exit } on'
++  done | awk -v slug="$slug" -v started="$(printf '%s' "$seed" | jq -r .started_at)" -v rounds="$(printf '%s' "$reviews" | grep -c .)" '
++    /^ *- id:/ { n++ }
++    /^ *severity: *(HIGH|BLOCKING)/ { high++ }
++    /^ *severity: *MEDIUM/ { medium++ }
++    /^ *origin: *.*code-tests/ { tests++ }
++    END { printf "%s\t%s\t%d\t%d\t%d\t%d\t%d\n", slug, started, rounds, n, high, medium, tests }'
++done
+diff --git a/docs/research/testmap-worth-evaluation/outcomes.sh b/docs/research/testmap-worth-evaluation/outcomes.sh
+new file mode 100755
+index 000000000..c1861cc7f
+--- /dev/null
++++ b/docs/research/testmap-worth-evaluation/outcomes.sh
+@@ -0,0 +1,61 @@
++#!/usr/bin/env bash
++# Usage: outcomes.sh <slug>...
++# Prints per run, tab-separated:
++#   turn  <slug> <session> <time> <test files edited before the next typed message> <test functions those edits add>
++#   mut   <slug> <mutants run> <killed> <survived> <uncovered blocks>   one per distinct mutation summary line
++#   red   <slug> <contained> <unique> <not judged>                     one per distinct redundancy summary line
++#   run   <slug> <reach turns> <verify logs>
++# A reach turn is the reach note closed by "Add the missing tests and commit them".
++# Report lines count only when they name the run's own worktree, since a verify log also holds the output of tests.
++# A new test function is one a Write or Edit puts in that the text it replaced did not hold.
++# Needs bash, jq and an awk; reads only.
++here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++prime=${PRIME:-$(git -C "$here" worktree list --porcelain | awk 'NR == 1 { print $2 }')}
++hub=${HUB:-$(dirname "$prime")}
++archive=${ARCHIVE:-$hub/_bolt/.lym/log-archive}
++projects=${PROJECTS:-$HOME/.claude/projects}
++for slug in "$@"; do
++  sessions="$projects/$(printf '%s' "$hub" | tr -c 'A-Za-z0-9' '-')-$slug"
++  turns=0
++  for f in "$sessions"/*.jsonl; do
++    [ -e "$f" ] || continue
++    grep -q 'Add the missing tests and commit them' "$f" || continue
++    id=$(basename "$f" .jsonl | cut -c1-8)
++    out=$(jq -rc '
++      def typed: .type == "user" and (.message.content | type == "string");
++      def results: .message.content | arrays | .[] | select(.type == "tool_result") | .content
++        | if type == "string" then . else ([.[]? | .text // ""] | join("\n")) end;
++      def funcs: [scan("(?m)^func (Test[A-Za-z0-9_]*)") | .[0]];
++      # The turn reaches a session as a read of the gate findings file, or as a typed message.
++      def reachturn: .type == "user" and ([(if typed then .message.content else results end)
++        | select(test("^(1\\t)?(## Gate verify\\n(2\\t)?\\n(3\\t)?)?gate test: reach: ") and test("Add the missing tests and commit them"))]
++        | length > 0);
++      if reachturn then "TURN\t\(.timestamp)"
++      elif typed then "END"
++      elif .type == "assistant" then (.message.content[]? | select(.type == "tool_use" and (.name == "Edit" or .name == "Write"))
++        | select(.input.file_path | test("_test\\.go$"))
++        | "EDIT\t\(.input.file_path)\t\(((.input.new_string // .input.content // "") | funcs) - ((.input.old_string // "") | funcs) | length)")
++      else empty end' "$f" 2>/dev/null |
++      awk -F'\t' -v slug="$slug" -v id="$id" '
++        function flush() { if (on) { n = 0; for (k in files) n++; print "turn\t" slug "\t" id "\t" at "\t" n "\t" added; split("", files); added = 0; on = 0 } }
++        $1 == "TURN" { flush(); on = 1; at = $2 }
++        $1 == "END" { flush() }
++        $1 == "EDIT" && on { files[$2] = 1; added += $3 }
++        END { flush() }')
++    [ -n "$out" ] && printf '%s\n' "$out" && turns=$((turns + $(printf '%s\n' "$out" | wc -l)))
++  done
++  logs=$(ls "$archive/$slug"/*/verify/verify-*.log 2>/dev/null | wc -l)
++  if [ "$logs" -gt 0 ]; then
++    cat "$archive/$slug"/*/verify/verify-*.log |
++      grep -E "^gate test: (mutation|redundancy) report: .*$hub/$slug/" |
++      awk -v slug="$slug" '
++        /mutation report: [0-9]+ mutants run/ {
++          match($0, /[0-9]+ mutants run/); m = $0; sub(/.*mutation report: /, "", m)
++          split(m, w, /[ ,]+/); line = "mut\t" slug "\t" w[1] "\t" w[4] "\t" w[6] "\t" w[10] }
++        /redundancy report: [0-9]+ contained/ {
++          m = $0; sub(/.*redundancy report: /, "", m); split(m, w, /[ ,]+/); line = "red\t" slug "\t" w[1] "\t" w[3] "\t" w[5] }
++        line != "" && !seen[line]++ { print line }
++        { line = "" }'
++  fi
++  printf 'run\t%s\t%s\t%s\n' "$slug" "$turns" "$logs"
++done
