@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 11:20 UTC; every age below is as of then.
+Rendered 2026-11-27 11:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,10 +14,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | halted · Discussion-Bouncer | neve | 13h<br>1h | termwindow, desktop |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | Discussion-Bouncer | neve | 13h<br>1h | termwindow, desktop |
 | T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | landing · Finalize | neve | 3h<br>3h | shed, loom |
-| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Darn-Write | neve | 14h<br>54m | gate, testkit |
-| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Code-Burler-Fix | neve | 48m<br>46m | fabric, darn, batten |
+| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Darn-Write | neve | 14h<br>55m | gate, testkit |
+| T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Code-Burler-Fix | neve | 49m<br>46m | fabric, darn, batten |
 
 ## Layer A (2)
 
