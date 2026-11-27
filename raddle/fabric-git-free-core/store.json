@@ -1,0 +1,15 @@
+{
+  "created": "2026-11-26T19:56:47Z",
+  "hash": "3ef0902c5f8bd202689607896205292dcae10ec17e03e2c645114c620538b586",
+  "filed": [
+    "fabric-core",
+    "fabric-core-foundation",
+    "fabric-core-push-origin",
+    "fabric-core-teardown",
+    "fabric-core-merge-landing",
+    "fabric-core-pull-replay",
+    "fabric-core-add-clone",
+    "fabric-core-records-guards"
+  ],
+  "project": "fabric-core"
+}
