@@ -1,14 +1,22 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "",
+    "now": "Raddle-Write",
+    "last": "Record-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement/_lym/discussion/decision-record.md",
+      "at": "2026-11-27T12:16:02Z",
+      "started_at": "2026-11-27T12:16:02Z"
+    }
+  ],
   "product": {
     "slug": "kde-window-placement",
     "parent": "main",
