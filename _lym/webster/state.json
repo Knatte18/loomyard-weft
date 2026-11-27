@@ -842,9 +842,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-a2ca5e9c8f9f2fd82.jsonl"
       ]
+    },
+    "6": {
+      "slug": "pusher-target-kinds",
+      "cards": [
+        "06-pusher-target-kinds",
+        "07-spawns-start-the-pusher"
+      ],
+      "cardHashes": {
+        "06-pusher-target-kinds": "885009be93ecde159abc7a73be5b2cd2e0918c6fecc5214f58cc2cf284c3a1de",
+        "07-spawns-start-the-pusher": "9e93cf8a1cb3ca56ec97a47d2bbda2a3c216d841d54c381065203e1d1cb3f6ad"
+      },
+      "startSha": "1d8cf89354ffa1467760cc946036a4c0bc38024f",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T17:10:48Z",
+      "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
