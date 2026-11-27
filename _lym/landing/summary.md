@@ -1,66 +1,82 @@
-# Agent button: state the name rule and start the agent with hub context
+# Start the status-bar agent with its context and state the name rule
 
-The agent button in the reed status bar had two faults.
+The `agent` status-bar button had two problems.
+It refused a name with spaces without saying what a valid name is,
+and the session it opened knew nothing of its hub, worktree, purpose or skills.
 
-1. It asked for `Agent name:` and passed the answer to `lym shuttle open --role` unchanged.
-   A name with a space failed reed's role check, and the client showed the head of a JSON error line,
-   so the rule, which came at the end of that line, never showed.
-2. `lym shuttle open` launched a bare session: no prompt, no shell guard, no standing passages.
-   The agent knew nothing of lym, its hub, its worktree or what it was for.
+## What changes
 
-## Changes
+**Names.**
+The `agent` and `board` buttons ask for lowercase letters, digits and dashes, and say that spaces become dashes.
+The question leaves out that a name must start with a letter; the refusal message states it.
+`lym shuttle open --role` and the new `lym shuttle agent --name` lower a typed name and join its words with dashes,
+so `My Agent` becomes `my-agent`.
+A name still outside the role grammar is refused with a message that states the rule.
+The button does not ask again after a refusal.
 
-- `internal/agentname`: `RoleFromText` lowers a typed role and joins its words with dashes, so `My Agent` becomes `my-agent`.
-  `RoleRule` states the role grammar in words.
-- `internal/shuttlecli`: `lym shuttle open --role` runs its value through `RoleFromText`.
-  A value still outside the grammar is refused with the rule at the front of the message:
-  `--role "my_agent" is no valid agent name: use lowercase letters, digits and dashes, starting with a letter, as in my-agent`.
-- `internal/shuttlecli/agent.go`: a new verb, `lym shuttle agent --name <name> [--model <spec>]`, defaulting to `agent`.
-  It normalizes the name the same way and builds its spec through `internal/operatoragent`.
-  It starts the session through `Runner.StartSession`, the unawaited interactive path the PR-Review and sampler sessions use,
-  so the session gets the settings, shell guards, standing passages and skills every run session of its engine gets.
-- `internal/operatoragent`: a new package that builds the spec and renders the opening prompt.
-  The prompt, the new `operatoragent-template-start` stencil, tells the agent it was started from the agent button,
-  what lym is, its hub's shortname and directory, its worktree,
-  and whether the worktree serves a board entry, which it names, or is the prime.
-  It renders the parent and edit directives, and the implementer PATTERN directive when the worktree has a PATTERN overview.
-- `internal/agentconfig`: a new `agent` role, whose shipped skill list is `scribe:prose`, `scribe:conversation`, `ly:cli` and `ly:board`.
-  The session loads it, followed by the hub's language skills.
-- `internal/reedengine` templates: the agent buttons of the task, beam and prime groups run `lym shuttle agent --name {answer}`.
-  Their ask text, and the board button's, now names the rule:
-  `Agent name (lowercase letters/digits/dashes; spaces become dashes):`.
-  An ask text may hold no comma, which is why the rule uses slashes.
-- `internal/shuttleparity`: the new spec producer has a row, so its Codex manifest is held to Claude's.
-- `docs/overview.md`: a module row for `internal/operatoragent` and the new verb in the shuttle entry.
+**A new verb, `lym shuttle agent`.**
+The `agent` button now runs `lym shuttle agent --name {answer} --model 'opus[high]'` instead of `lym shuttle open`.
+It starts an interactive session whose opening prompt says what the agent is, which hub and worktree it sits in,
+and which board entry the worktree serves or that it is the prime.
+It also says what the agent is for: explaining lym, running its verbs, reading the code,
+and changing or committing it on the operator's word.
+Its limits keep the agent in that worktree unless the operator names another directory, and forbid pushing.
+The session gets the settings, shell guards, standing passages and skills of a run session:
+the `agent` role's list in `agents.yaml` (`scribe:prose`, `scribe:conversation`, `ly:cli`, `ly:board`),
+then the hub's language skills.
+The `board` button still uses `lym shuttle open`.
+
+The prompt is the new `operatoragent-template-start` stencil, filled by the new `internal/operatoragent` package.
 
 ## Design decisions
 
-- The fix lowers the name and turns its spaces into dashes; it does not raise the prompt again after a refusal.
-  A name that still fails, such as `my_agent`, is refused with the rule shown first.
-- The agent runs as an unawaited run session, not an opened one.
-  `Runner.Open` gives a session creel delivery alone.
-  `StartSession` is the existing path that gives a session everything a run session gets, on either engine.
-- The skills reach the session through the spec's config role and language skills, never through prompt text,
-  since no stencil may tell an agent to load a skill.
-- The parent directive uses the worktree's recorded parent.
-  In the prime that is empty, so the no-parent variant renders, as it does for any session with no recorded parent.
-- The board button keeps `lym shuttle open` with its own skill list.
-  Only its ask text changes, and it gets the same name normalization through `--role`.
-- A hub whose layered `reed.buttons` groups replace the shipped defaults keeps its own button texts.
-  Such a hub changes its `run` lines to `lym shuttle agent` itself to get the new session.
+- **A run session, not an opened one.**
+  `lym shuttle open` sends no prompt, so the verb goes through `Runner.StartSession` with an unawaited spec.
+- **Skills come from the launch spec.**
+  The stencil does not ask the agent to load any.
+- **`Spec.EndsWithSession`.**
+  Nobody waits on this session to stop it, so its pane line touches an exit marker, removes its own strand and exits the shell.
+  The marker is the strand's done-when list, so a resume drops a closed agent.
+  The run record reads running until the orphan sweep removes the run directory.
+  `pattern/PATTERN-shuttle-provider-seam.md` records this exception for strand removal and the done-when list.
+- **`Spec.NoCarryOver`.**
+  The start command exits at once, so an earlier agent that is still live would read as an unfinished predecessor,
+  and a second agent of the same name would inherit what the operator typed into the first.
+  The spec has an empty role key, so it neither takes operator instructions over nor leaves them to a later run.
+- **Refused under a pause.**
+  A start normally waits a pause out, which a button click would show as nothing happening.
+  The check `Runner.Open` already made is now `Runner.RefuseCovered`, shared by both.
+- **The operator's rules override the parent section.**
+  The prompt keeps the standard parent directive, followed by rules that send questions to the operator in the pane,
+  ask for no report, and keep only the section's creel mail rules.
 
-## Tests
+Two changes reach beyond the new verb:
 
-- `TestRoleFromText` (`internal/agentname`): spaces, upper case and repeated space normalize to a valid role,
-  and a refused character or a leading digit stays refused.
-- `TestSessionSpec` (`internal/operatoragent`): the task worktree's and the prime's spec are interactive, unawaited and focused in a window of their own,
-  carry the `agent` config role, the chosen name, the model choice and the language skills,
-  and their prompt names the hub, the worktree and the board entry or the prime.
-  Each required input is refused by name when empty.
-- `TestLoadConfig_TemplateDefaultsResolve` (`internal/reedengine`) pins the new button rows.
-- The parity row for `internal/operatoragent#SessionSpec` prepares the spec on both engines.
+- A strand reed no longer knows now counts as removed in the startup teardown of every run.
+- A resume line that only exits the shell is left out of the pane line, for opened sessions too,
+  so the strand is still removed.
+
+## To check by hand
+
+The button and the new verb were not tried in a live session.
+
+- Click `agent` in the prime and in a task worktree.
+  Check the prompt, the loaded skills, and that the window closes when the session exits and stays closed after a reed resume.
+- `paneRules` in `internal/operatoragent/spec.go` overrides the parent directive that
+  `contracts/stencils/operatoragent/operatoragent-template-start.md` renders.
+  Check that the rendered prompt reads consistently both with and without a recorded parent.
+- `EndsWithSession` ends the agent's session (`internal/shuttleengine`).
+  Its tests inspect the pane lines against a fake reed without running them, so check the end of a real session.
+  A provider that dies during startup takes its pane with it,
+  so the saved capture holds only what an earlier startup probe took.
+- `TestAgentCmd_StartsSessionFromGeometry` covers the spec `lym shuttle agent` builds
+  and its `--name` and `--model` refusals (`internal/shuttlecli/agent.go`).
+  It stops at the engine's prepare step, and no test drives the verb under a pause.
+- Rows in `internal/shuttlecli/cli_test.go` cover a normalized and a refused `lym shuttle open --role`
+  (`internal/shuttlecli/open.go`).
+  Check that they are enough.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** reed
+**Blast radius:** shuttle
