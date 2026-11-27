@@ -1,6 +1,6 @@
 # Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam
 
-`readme-header-and-mode-lines` · Task · enhancement, board · landing · Finalize
+`readme-header-and-mode-lines` · Task · enhancement, board · done
 
 ## Seen (operator, 2026-11-26)
 
