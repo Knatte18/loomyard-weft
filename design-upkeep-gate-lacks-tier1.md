@@ -1,6 +1,6 @@
 # Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1
 
-`upkeep-gate-lacks-tier1` · Task · bug, gate, config · running · Code-Bouncer
+`upkeep-gate-lacks-tier1` · Task · bug, gate, config · running · Drift-Recheck
 
 ## Seen (board tidy, 2026-11-27, main at `2326ef4da`)
 
