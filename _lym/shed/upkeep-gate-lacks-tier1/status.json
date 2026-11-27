@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -166,6 +166,52 @@
       "output": "",
       "at": "2026-11-27T17:04:15Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/upkeep-gate-lacks-tier1/_lym/landing/summary.md",
+      "at": "2026-11-27T17:05:48Z",
+      "started_at": "2026-11-27T17:04:15Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T17:04:47.673899573Z",
+          "end": "2026-11-27T17:04:47.673950048Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T17:05:46.663506732Z",
+          "end": "2026-11-27T17:05:46.663567165Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-27T17:04:47.749919622Z",
+          "end": "2026-11-27T17:04:47.750092425Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "held",
+          "start": "2026-11-27T17:04:47.772957492Z",
+          "end": "2026-11-27T17:05:35.739741611Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "rework",
+          "start": "2026-11-27T17:05:36.286802769Z",
+          "end": "2026-11-27T17:05:46.376686596Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-27T17:05:46.764613764Z",
+          "end": "2026-11-27T17:05:46.764642558Z"
+        }
+      ]
     }
   ],
   "product": {
