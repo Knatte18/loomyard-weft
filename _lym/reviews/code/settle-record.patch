@@ -1,0 +1,68 @@
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 232cfd5ad..446d1c724 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -31,7 +31,9 @@
+ //   - MultiLLMProducer: the chair's done outcome is Done with the chair's first output as the path.
+ //     A done chair whose gate failed is Stuck.
+ //     A chair that started and timed out is Stuck with an empty path, because its outputs may not exist.
+-//     Its reason names the elapsed time, the limit and the last session state.
++//     The seat engine has already stopped that chair,
++//     so its reason says the session was stopped and that a resume starts the row over;
++//     it also names the elapsed time, the limit and the last session state.
+ //     A chair that never started, or that started and died, is an engine-level error
+ //     wrapping shuttleengine.ErrNotStarted or ErrAgentDied.
+ //     A writer seat that ended the step decides it instead of the chair.
+diff --git a/internal/shedadapters/multillm.go b/internal/shedadapters/multillm.go
+index a124c36f9..60f0f8302 100644
+--- a/internal/shedadapters/multillm.go
++++ b/internal/shedadapters/multillm.go
+@@ -207,7 +207,7 @@ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, table seatengine.Tabl
+ 		if chair.Outcome == shuttleengine.OutcomeDied {
+ 			return "", shedengine.OutputPointer{}, fmt.Errorf("shedadapters: %s (%s): shuttle run outcome %s: %w", p.name, multiLLMEngineLabel, chair.Outcome, shuttleengine.ErrAgentDied)
+ 		}
+-		reason := fmt.Sprintf("%s (%s): the chair's session timed out; %s; %s", p.name, multiLLMEngineLabel, timeoutDetail(chair, table.Chair().Timeout, table.Timeout), timeoutWayForward)
++		reason := fmt.Sprintf("%s (%s): the chair's session timed out and was stopped; %s; %s", p.name, multiLLMEngineLabel, timeoutDetail(chair, table.Chair().Timeout, table.Timeout), timeoutWayForward)
+ 		return shedengine.Stuck, shedengine.OutputPointer{GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate), Reason: reason}, nil
+ 
+ 	default:
+@@ -223,7 +223,8 @@ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, table seatengine.Tabl
+ const writerResumeWayForward = "way forward: re-run the row with lym loom resume, which starts every part over unless the chair is still live"
+ 
+ // timeoutWayForward is the way forward a chair timeout's Stuck reason ends with.
+-const timeoutWayForward = "way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over"
++// The seat engine stops a timed-out chair before the step ends, so a resume never finds it live.
++const timeoutWayForward = "way forward: run lym loom resume, which starts the row over in a fresh session"
+ 
+ // timeoutDetail describes how a timed-out run went: the elapsed time, the limit it had and its last session state.
+ // The limit is seatTimeout when non-zero, else tableTimeout.
+diff --git a/internal/shedadapters/multillm_test.go b/internal/shedadapters/multillm_test.go
+index dfd0442be..7522194ac 100644
+--- a/internal/shedadapters/multillm_test.go
++++ b/internal/shedadapters/multillm_test.go
+@@ -357,14 +357,14 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 			wantAttempts:  &two,
+ 			wantOutcome:   shedengine.Stuck,
+ 			wantEmptyPath: true,
+-			wantReason:    "multi (seats): the chair's session timed out; elapsed 30m0s, limit 30m0s, last session state idle-stalled (cause interrupted); way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over",
++			wantReason:    "multi (seats): the chair's session timed out and was stopped; elapsed 30m0s, limit 30m0s, last session state idle-stalled (cause interrupted); way forward: run lym loom resume, which starts the row over in a fresh session",
+ 		},
+ 		{
+ 			name:          "a timeout with no times, no states and no limit reads unknown and none recorded",
+ 			result:        shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout},
+ 			wantOutcome:   shedengine.Stuck,
+ 			wantEmptyPath: true,
+-			wantReason:    "multi (seats): the chair's session timed out; elapsed unknown, limit unknown, last session state none recorded; way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over",
++			wantReason:    "multi (seats): the chair's session timed out and was stopped; elapsed unknown, limit unknown, last session state none recorded; way forward: run lym loom resume, which starts the row over in a fresh session",
+ 		},
+ 		{
+ 			name:          "a timeout names the chair seat's own limit over the table's",
+@@ -373,7 +373,7 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 			chairTimeout:  45 * time.Minute,
+ 			wantOutcome:   shedengine.Stuck,
+ 			wantEmptyPath: true,
+-			wantReason:    "multi (seats): the chair's session timed out; elapsed 45m0s, limit 45m0s, last session state busy; way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over",
++			wantReason:    "multi (seats): the chair's session timed out and was stopped; elapsed 45m0s, limit 45m0s, last session state busy; way forward: run lym loom resume, which starts the row over in a fresh session",
+ 		},
+ 		{name: "a timeout of a chair that never started", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout, NotStarted: true}, wantErr: "shuttle run outcome timeout", wantNotStarted: true},
+ 		{
