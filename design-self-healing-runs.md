@@ -33,3 +33,4 @@ Everything that is not truly severe is settled without the operator: by lym, or 
 A stop truly severe enough that the operator must see it waits until the operator answers,
 and reaches the operator on Slack as an imperative message, so it can be answered from the phone.
 Other work goes on meanwhile.
+This belongs in autonomy itself, possibly as a second, stricter level of it beside today's, in which the orch never asks the operator and only severe halts go to Slack (operator, 2026-11-27). Its name is open; the glossary rules out "full auto".
