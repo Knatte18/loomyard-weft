@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-area-seccomp-core.md)
 
-Depends on: [`area-creel-identity`](design-area-creel-identity.md), [`dobby-run-watch-build`](design-dobby-run-watch-build.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
+Depends on: [`area-creel-identity`](design-area-creel-identity.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
 Filed from the Sketch `sandbox-closed-area-build`.
 
