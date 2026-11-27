@@ -1,6 +1,6 @@
 # Finalize blames the fixer session for a push of origin/<task branch> it did not make
 
-`finalize-fixer-halt-blame` · Task · bug, landing · starting · Worktree-Create
+`finalize-fixer-halt-blame` · Task · bug, landing · starting · Seed-Child
 
 Imported from [issue #271](https://github.com/Knatte18/loomyard/issues/271).
 
