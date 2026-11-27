@@ -1,0 +1,29 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "4eca1913e9152a153d085bd9b1fd6c05c99fbb12247315953aff9a2a929c7e90",
+  "added_decisions": [
+    {
+      "title": "Prime code branch way forward is git push",
+      "digest": "df3b853dab8508f26180062f91b35233d9046452936c64458805ce6877ef28c9"
+    },
+    {
+      "title": "Pusher checks each carried run's owner",
+      "digest": "67db3ce689be6a71058a589254dc391248fb4fd28d170232e94d38cf5c2c87e4"
+    },
+    {
+      "title": "No teardown while a landing entry stands",
+      "digest": "13b5f95d557047b983a3abd02eb1c5b09f10e1b0fffac1a838b00d5932ccecbf"
+    },
+    {
+      "title": "Merge-in base persisted before the merge",
+      "digest": "d4d62b8cc7e7bb57efcace5e54f6a523cbaca91fe139eb5aa93f30e1a7dff74d"
+    },
+    {
+      "title": "Discussion review accepted at the hard cap; round 3 findings answered in the record",
+      "digest": "c76deaa173e49b279f3f59f6707037645cf8d6d8b9047cb53c46b2e0702d933d"
+    }
+  ]
+}
