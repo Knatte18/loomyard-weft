@@ -1,4 +1,4 @@
-# Slow whole-repo guards, .NET builds and testmap tests leave the task gates for landing or periodic upkeep
+# Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep
 
 `whole-repo-guards-off-gates` · Note · enhancement, gate, testkit
 
@@ -16,7 +16,7 @@ In a tier1 landing gate of `pr-modes-no-agent`, `internal/gatecli` spent about 4
 
 - Tests that build a real .NET project: `TestGateRedFirst_Dotnet` (56 s) and `TestGateTest_DotnetFixture` (29 s).
 - Tests of the coverage-map tools: `TestGateTestMap` (65 s), `TestGateMutate` (42 s), `TestGateReach` (31 s), `TestGateRedundant` (28 s), `TestRedundancyStep` (28 s).
-  The report steps those tools feed are now off in every gate key of the loomyard hub (operator, 2026-11-27); the tools stay for manual use.
+  Task `remove-testmap` removes these tools and their tests, so they leave the gates with it.
 
 ## Changed since (`a69580709`, `card-gate-scope-gaps`)
 
@@ -32,5 +32,5 @@ Moving guards off the task gates now has the widened card scope to deal with too
   dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`), and the upkeep run goes with it, on the main branch.
   - The dead-code check, the call-graph test above; each dead function it finds becomes a note on the board.
     Dead code breaks nothing, so finding it a few landings late costs little.
-  - The .NET tests and the coverage-map tool tests above; a failure becomes a bug note.
+  - The .NET tests above; a failure becomes a bug note.
 - Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or in the upkeep run.
