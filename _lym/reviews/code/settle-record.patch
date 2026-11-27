@@ -1,0 +1,3142 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 7745ea1f4..44b869ee8 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -78,7 +78,7 @@ Files beside this one hold what a rarer event needs; read the one that fits befo
+ 
+ ## Notices
+ 
+-Each mail body or line whose text starts with `[batten notice]` or `[dobby notice]` is a notice.
++Each mail body or line whose text starts with `[batten notice]`, `[dobby notice]` or `[run watch]` is a notice.
+ Handle each under Investigating a stop.
+ Only these reach you:
+ 
+@@ -87,9 +87,14 @@ Only these reach you:
+   and a Land or Worktree-Teardown failure the stop chain handed back.
+ - `[dobby notice]`, from `<shortname>:DOBBY` or `<shortname>:<slug>:DOBBY`, for a running child:
+   a dead driver, an API-error stall, a usage limit, and a quiet notice (informational).
++  Also for a run, a gate slot it holds past its bound, naming the holder's process tree
++  and any process outside it that carries its marker: dobby only reports, so you decide what to end.
+ - Dobby's own lines, from the same senders:
+   a refused start, a pass that keeps failing, landings into a beam, and the board tidy's report path.
+   You put the report's removals and scope changes to the operator.
++- `[run watch]` lines, from `<shortname>:DOBBY` or `<shortname>:<slug>:DOBBY`:
++  a stop line is a stop, and a later `[batten notice]` or driver line for the same stop adds its detail and opens no second fork;
++  a `rows` progress line asks for nothing.
+ 
+ ## Investigating a stop
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index d89eae435..c75823975 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -832,7 +832,8 @@ User-facing modules each get one `lym <module>` namespace:
+ - **beam** — the making, landing, starting and stopping of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lym beam create <slug>`, `lym beam ready <slug>`, which flags the beam ready to merge so its dobby writes the land request once nothing works under it, and is final: no verb takes the flag back, `lym beam land <slug>`, which writes the land request the beam's pawl run consumes at Beam-Await and refuses a beam not flagged ready, `lym beam merge-parent <slug>`, which files a darn task in the beam, its Code-Review perch on, whose run merges the beam's parent branch into the beam, `lym beam start [slug] [--all]`, `lym beam stop [slug] [--all]`, whose `--all` takes the whole hub down on this machine from a detached process, and `lym beam status`, from the prime and from any beam, and the hidden `lym beam dobby`).
+   Create runs from the beam's parent worktree, claims the root when none is recorded, records this machine as a board project's owner with the beam flag and the pawl recipe, and starts the beam's pawl run as a detached first pass, whose Worktree-Create makes the pair, forked from the parent beam of a nested beam, whose Record-Write writes the project record from the project entry's body under `_lym/project/<slug>/`, and whose Beam-Up marks it.
+   Before it starts that run, create removes a done batten run under the same slug whose pair is gone and whose child ran motif, reporting `motif_run_cleared`;
+-  any other done run is refused, naming `lym batten cleanup --apply`, until the parent's dobby removes it once its landing is counted and its notice decided.
++  any other done run is refused, naming `lym batten cleanup --apply`, until the parent's dobby removes it.
++  The dobby does so once its landing is counted, its notice decided, no `[run watch]` line of it is owed and its `beam.run_watch` has been read.
+   The project record binds every member:
+   a member's Discussion-Write lead and darn writer read each enclosing beam's record from that beam's worktree, the board refuses an edit of the project's body once the record exists,
+   and `lym loom decision add <beam-slug>` or `lym loom decision replace <beam-slug>`, run by the beam's orch, are the only ways its scope changes, its notice reaching every live member run under the beam.
+@@ -847,7 +848,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Stop takes a beam's orch and dobby down.
+   Status prints, once, the dobby section a beam's window draws, for the prime and for each local beam:
+   alive or not, the runs it drives with their state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, and the beam's orch: strand live, watcher live and the recorded session, then one adopt check item per subject, shown only when the hub holds a record of it: the subject, its state, the tier in flight, the tiers done and the paths of its log and output.
+-  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices and the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents), spawns the board-tidy agent every few landings, and, while a beam's pull request is recorded, spawns a describer agent after each member landing to rewrite the beam's change description.
++  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices, the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents) and the `[run watch]` lines of every run it drives, one per stop or, under `beam.run_watch: rows`, one per change, and a `[dobby notice]` for a gate slot a driven run holds past its bound, spawns the board-tidy agent every few landings, and, while a beam's pull request is recorded, spawns a describer agent after each member landing to rewrite the beam's change description.
+   No dobby builds the shared coverage maps: the operator builds them on command with `lym gate test --map`, and the gate's `reach` and `mutation` steps refresh only a task worktree's own.
+   It logs to its `dobby.log` the changes it sees, such as a task start, a run changing state and a failing pass episode, plus a heartbeat line every ten minutes.
+   A front task, filed through `internal/fronttask`, is the one open task of its worktree that dobby starts first, past `beam.max_runs`, while no other task of that worktree starts.
+@@ -1752,7 +1753,8 @@ User-facing modules each get one `lym <module>` namespace:
+   It removes each done run's records run directory with a records commit and a spawned push.
+   It also empties that run's scratch beside its lock files, and any orphan scratch older than a day.
+   A done motif run is also cleared by `lym beam create` and by the start of a raddle run under its slug.
+-  The parent worktree's dobby removes any done run itself, with its task branch, once its landing is counted and its notice decided.
++  The parent worktree's dobby removes any done run itself, with its task branch.
++  It does so once its landing is counted, its notice decided, no `[run watch]` line of it is owed and its `beam.run_watch` has been read.
+   A run is one pass after another.
+   `lym batten run <slug>` runs one pass and exits, started by the run's parent worktree's dobby or by hand.
+   A hand pass makes sure that dobby is live once it is over.
+diff --git a/internal/battencli/cleanup.go b/internal/battencli/cleanup.go
+index b5d827fbc..1320d9698 100644
+--- a/internal/battencli/cleanup.go
++++ b/internal/battencli/cleanup.go
+@@ -680,9 +680,9 @@ here and on origin; while its pair stands it is skipped, naming the step that re
+ A run that is running, paused, blocked, awaiting or failed, or whose run
+ lock is held, is skipped and reported with its reason. It never touches a pair, a branch, a
+ lock file or another run. The dobby of a run's parent worktree removes a done run
+-itself once it has counted its landing and decided its landing notice; a done
+-motif run is also cleared by "lym beam create" and by the start of a raddle run
+-under its slug.
++itself once it has counted its landing and decided its landing notice, owes no run
++watch line for it and has read the run's beam.run_watch; a done motif run is also
++cleared by "lym beam create" and by the start of a raddle run under its slug.
+ 
+ Output: {"applied", "removed", "emptied", "skipped", "push_spawned", "push_error"}.
+ push_spawned says the push was started, not that origin took it; "lym fabric status" lists a push origin refused under failed_pushes.
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index a785ae34c..05308de94 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -336,8 +336,8 @@ already in progress, it resumes
+ silently from the persisted current producer -- there is no re-seed flag,
+ because every operator-fixable refusal this task raises lands as blocked,
+ which is the everyday resume path. The dobby of the run's parent worktree
+-removes a done run's record once it has counted its landing and decided its
+-landing notice. Before it drives anything it asks whether the run may act:
++removes a done run's record once its landing and run watch are settled.
++Before it drives anything it asks whether the run may act:
+ a covering pause, a paused run, a cancel under way and another machine's
+ ownership each refuse it, naming the way forward. A slug whose done record still stands refuses,
+ naming "lym batten cleanup --apply" and the leftover branches to delete,
+diff --git a/internal/battencli/dobbynotice.go b/internal/battencli/dobbynotice.go
+index f5e7aea94..d0b0fbb38 100644
+--- a/internal/battencli/dobbynotice.go
++++ b/internal/battencli/dobbynotice.go
+@@ -71,6 +71,7 @@ func DobbyRunNotices(prime *lymcwd.Location, pauseRecordPath string, quiet time.
+ // readNoticeChild reads the child of slug for the run notices: its status and the status file's modification time.
+ // It also reports the task worktree's directory and whether batten's Run-Shed row has reached its respawn cap.
+ // An absent task worktree or child status reads as not found.
++// A present worktree with no child status still reports its directory.
+ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*lymcwd.Location, error)) (dobbyengine.ChildReading, bool, error) {
+ 	present, err := taskWorktreePresent(prime, slug)
+ 	if err != nil || !present {
+@@ -80,10 +81,11 @@ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*ly
+ 	if err != nil {
+ 		return dobbyengine.ChildReading{}, false, err
+ 	}
++	noStatus := dobbyengine.ChildReading{PairDir: taskLocation.WorktreePath()}
+ 	statusPath := shedrun.StatusFile(taskLocation, shedrun.SelfRunID)
+ 	info, err := os.Stat(statusPath)
+ 	if os.IsNotExist(err) {
+-		return dobbyengine.ChildReading{}, false, nil
++		return noStatus, false, nil
+ 	}
+ 	if err != nil {
+ 		return dobbyengine.ChildReading{}, false, err
+@@ -93,9 +95,12 @@ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*ly
+ 		return dobbyengine.ChildReading{}, false, err
+ 	}
+ 	status, found, err := state.ReadJSON[shedengine.Status](statusPath, statusLockPath)
+-	if err != nil || !found {
++	if err != nil {
+ 		return dobbyengine.ChildReading{}, false, err
+ 	}
++	if !found {
++		return noStatus, false, nil
++	}
+ 	// An unreadable respawn memory reads as not capped.
+ 	// The cap only words a driver-dead notice, so it must not hide the run's conditions.
+ 	capped, err := battenshed.RespawnCapReached(shedrun.ScratchDir(prime, slug), battenrecipe.NameRunShed, info.ModTime())
+@@ -108,6 +113,7 @@ func readNoticeChild(prime *lymcwd.Location, slug string, locateTask func() (*ly
+ 		CurrentProducer: status.CurrentProducer,
+ 		Error:           status.Error,
+ 		HistoryLen:      len(status.History),
++		LastRepeats:     lastRepeats(status.History),
+ 		Modified:        info.ModTime(),
+ 		PairDir:         taskLocation.WorktreePath(),
+ 	}
+diff --git a/internal/battencli/dobbynotice_test.go b/internal/battencli/dobbynotice_test.go
+index 8c8866b45..37a1f0f3a 100644
+--- a/internal/battencli/dobbynotice_test.go
++++ b/internal/battencli/dobbynotice_test.go
+@@ -122,7 +122,10 @@ func TestReadNoticeChild(t *testing.T) {
+ 		// memory writes the memory record into the scratch directory, none when nil.
+ 		memory     func(t *testing.T, scratchDir string)
+ 		wantCapped bool
++		// repeats is the folded repeats of the child status's newest history entry.
++		repeats int
+ 	}{
++		{name: "ARepeatedNewestHistoryEntryCarriesItsRepeats", repeats: 2},
+ 		{name: "ACappedChildCarriesTheRespawnCap", memory: writeMemory(statusWritten), wantCapped: true},
+ 		{name: "AStatusWriteSinceTheLastRespawnIsNotCapped", memory: writeMemory(statusWritten.Add(-time.Minute))},
+ 		{name: "AMissingMemoryRecordIsNotCapped"},
+@@ -151,13 +154,17 @@ func TestReadNoticeChild(t *testing.T) {
+ 					t.Fatal(err)
+ 				}
+ 			}
++			absent, found, err := readNoticeChild(prime, slug, locateTask)
++			if err != nil || found || absent.PairDir != taskLocation.WorktreePath() {
++				t.Fatalf("readNoticeChild() with no status = %+v, %v, %v; want not found with the task worktree root %q", absent, found, err, taskLocation.WorktreePath())
++			}
+ 			status := shedengine.Status{
+ 				State:           shedengine.StateRunning,
+ 				CurrentProducer: "Plan-Write",
+ 				Error:           "waits on the plan",
+ 				History: []shedengine.HistoryEntry{
+ 					{Producer: "Worktree-Create", At: newestHistory.Add(-time.Hour).Format(time.RFC3339)},
+-					{Producer: "Seed-Child", At: newestHistory.Format(time.RFC3339)},
++					{Producer: "Seed-Child", At: newestHistory.Format(time.RFC3339), Repeats: tt.repeats},
+ 				},
+ 			}
+ 			if err := state.WriteJSON(statusPath, statusLockPath, status); err != nil {
+@@ -181,6 +188,9 @@ func TestReadNoticeChild(t *testing.T) {
+ 			if child.State != "running" || child.CurrentProducer != "Plan-Write" || child.Error != "waits on the plan" || child.HistoryLen != 2 {
+ 				t.Errorf("readNoticeChild() = %+v; want the status file's state, producer, error and history length", child)
+ 			}
++			if child.LastRepeats != tt.repeats {
++				t.Errorf("readNoticeChild() LastRepeats = %d; want %d", child.LastRepeats, tt.repeats)
++			}
+ 			if !child.NewestHistory.Equal(newestHistory) || !child.Modified.Equal(statusWritten) {
+ 				t.Errorf("readNoticeChild() newest history %v, modified %v; want %v and %v", child.NewestHistory, child.Modified, newestHistory, statusWritten)
+ 			}
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+index aff2ebfb1..9267fb313 100644
+--- a/internal/battencli/dobbyreads.go
++++ b/internal/battencli/dobbyreads.go
+@@ -187,13 +187,16 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 		coverage := record.CoverageOf(slug, now)
+ 		entry, onBoard := entryOf[slug]
+ 		view := dobbyengine.RunView{
+-			Slug:       slug,
+-			State:      string(run.status.State),
+-			Producer:   run.status.CurrentProducer,
+-			Covered:    coverage.Covered,
+-			Held:       coverage.Held,
+-			NoSlot:     runTakesNoSlot(entry),
+-			EntryEnded: entryEnded(entry, onBoard),
++			Slug:        slug,
++			State:       string(run.status.State),
++			Producer:    run.status.CurrentProducer,
++			HistoryLen:  len(run.status.History),
++			LastRepeats: lastRepeats(run.status.History),
++			Error:       run.status.Error,
++			Covered:     coverage.Covered,
++			Held:        coverage.Held,
++			NoSlot:      runTakesNoSlot(entry),
++			EntryEnded:  entryEnded(entry, onBoard),
+ 		}
+ 		outcome := battenrecipe.LandOutcomeOf(run.status)
+ 		view.PastLand, view.Landed = outcome != battenrecipe.LandOutcomeAhead, outcome == battenrecipe.LandOutcomeLanded
+@@ -273,6 +276,14 @@ func DobbyRuns(prime *lymcwd.Location, geom dobbyengine.Geometry, parents *Dobby
+ 	return views, nil
+ }
+ 
++// lastRepeats returns the folded repeats of the newest entry of history, zero for an empty history.
++func lastRepeats(history []shedengine.HistoryEntry) int {
++	if len(history) == 0 {
++		return 0
++	}
++	return history[len(history)-1].Repeats
++}
++
+ // keptSince returns when the cancel that kept a run's pair finished, read from the batten record's cancel intent.
+ // It is zero for a run whose pair no cancel kept, and for a finish time that does not parse.
+ func keptSince(reading runfsm.Reading, batten shedengine.Status) time.Time {
+diff --git a/internal/battencli/dobbyruns_integration_test.go b/internal/battencli/dobbyruns_integration_test.go
+index 969158cac..43922f64b 100644
+--- a/internal/battencli/dobbyruns_integration_test.go
++++ b/internal/battencli/dobbyruns_integration_test.go
+@@ -1,4 +1,5 @@
+-// dobbyruns_integration_test.go pins what DobbyRuns reads of a run's kept cancel, hand-over mark, owner and Bolt hold.
++// dobbyruns_integration_test.go pins what DobbyRuns reads of a run:
++// its history, reason, kept cancel, hand-over mark, owner and Bolt hold.
+ // Each row runs one status and one board over its own hubforge hub.
+ 
+ package battencli
+@@ -22,8 +23,9 @@ func TestDobbyRuns_ReadsTheKeptCancelTheHandOverMarkTheOwnerAndTheBoltHold(t *te
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	const running = `{"state":"running","current_producer":"Run-Shed"}`
+-	const keptCancel = `{"state":"cancelled","current_producer":"Run-Shed","cancel":{"started_at":"2026-11-15T09:00:00Z",` +
++	const history = `"error":"waits on the child","history":[{"producer":"Seed-Child","outcome":"done"},{"producer":"Run-Shed","outcome":"stuck","repeats":2}]`
++	const running = `{"state":"running","current_producer":"Run-Shed",` + history + `}`
++	const keptCancel = `{"state":"cancelled","current_producer":"Run-Shed",` + history + `,"cancel":{"started_at":"2026-11-15T09:00:00Z",` +
+ 		`"machine":"other-machine","remove":false,"finish":{"ended_at":"2026-11-15T09:30:00Z","remove":false}}}`
+ 	const entry = `{"id":0,"slug":"subject","title":"S","kind":"task","labels":["bug"],"status":"draft"}`
+ 	const ownedByRegisteredMachine = `"prime_owner":"other-machine","machines":{"0123456789abcdef0123456789abcdef":{"name":"other-machine"}},`
+@@ -35,6 +37,14 @@ func TestDobbyRuns_ReadsTheKeptCancelTheHandOverMarkTheOwnerAndTheBoltHold(t *te
+ 		handOverMarked bool
+ 		ownedElsewhere bool
+ 		boltHeld       bool
++		historyLen     int
++		lastRepeats    int
++		reason         string
++	}
++	// told is the history and reason every status carries, with change applied.
++	told := func(change reading) reading {
++		change.historyLen, change.lastRepeats, change.reason = 2, 2, "waits on the child"
++		return change
+ 	}
+ 	tests := []struct {
+ 		name     string
+@@ -43,13 +53,13 @@ func TestDobbyRuns_ReadsTheKeptCancelTheHandOverMarkTheOwnerAndTheBoltHold(t *te
+ 		markMade bool
+ 		want     reading
+ 	}{
+-		{name: "RunningRunWithNoneOfThemReadsNone", status: running},
++		{name: "RunningRunWithNoneOfThemReadsNone", status: running, want: told(reading{})},
+ 		{name: "CancelledWithKeepAndFinishReadsKeptSinceTheFinish", status: keptCancel,
+-			want: reading{pairKept: true, keptSince: "2026-11-15T09:30:00Z"}},
++			want: told(reading{pairKept: true, keptSince: "2026-11-15T09:30:00Z"})},
+ 		{name: "HandedOverRunOwnedByAnotherRegisteredMachineReadsMarkedAndElsewhere", status: running, members: ownedByRegisteredMachine, markMade: true,
+-			want: reading{handOverMarked: true, ownedElsewhere: true}},
++			want: told(reading{handOverMarked: true, ownedElsewhere: true})},
+ 		{name: "RunUnderABoltHoldReadsHeld", status: running, members: adoptHold,
+-			want: reading{boltHeld: true}},
++			want: told(reading{boltHeld: true})},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -80,12 +90,13 @@ func TestDobbyRuns_ReadsTheKeptCancelTheHandOverMarkTheOwnerAndTheBoltHold(t *te
+ 			if len(views) != 1 || views[0].Slug != "subject" {
+ 				t.Fatalf("DobbyRuns() = %+v; want the run subject alone", views)
+ 			}
+-			got := reading{pairKept: views[0].PairKept, handOverMarked: views[0].HandOverMarked, ownedElsewhere: views[0].OwnedElsewhere, boltHeld: views[0].BoltHeld}
++			got := reading{pairKept: views[0].PairKept, handOverMarked: views[0].HandOverMarked, ownedElsewhere: views[0].OwnedElsewhere, boltHeld: views[0].BoltHeld,
++				historyLen: views[0].HistoryLen, lastRepeats: views[0].LastRepeats, reason: views[0].Error}
+ 			if !views[0].KeptSince.IsZero() {
+ 				got.keptSince = views[0].KeptSince.UTC().Format(time.RFC3339)
+ 			}
+ 			if got != tt.want {
+-				t.Errorf("DobbyRuns() PairKept, KeptSince, HandOverMarked, OwnedElsewhere, BoltHeld = %+v; want %+v", got, tt.want)
++				t.Errorf("DobbyRuns() reading = %+v; want %+v", got, tt.want)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index c05f6054c..64326cffc 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -852,7 +852,7 @@ finishes a stopped create:
+ Before step 3 it removes a done batten run under the same slug whose pair is gone and
+ whose child ran motif, and the envelope reports it as "motif_run_cleared". Any other done
+ run is refused, naming "lym batten cleanup --apply", until the parent's dobby removes it
+-once its landing is counted and its notice decided.
++once its landing and run watch are settled.
+ 
+ A pawl run in flight is reported live and starts nothing. A first pass a covering
+ pause refused leaves no run, and the same "lym beam create <slug> [--anchor <dir>]"
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 61dd5ce73..271331a65 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -31,6 +31,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fronttask"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hibernatecli"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+@@ -63,6 +64,8 @@ const (
+ 	dobbyProgram = orchcli.DobbyProgram
+ 	// runNoticeTopicPrefix leads the creel topic of a run notice, followed by the run's slug.
+ 	runNoticeTopicPrefix = "dobby-run-notice/"
++	// gateHoldTopicPrefix leads the creel topic of a gate-hold notice, followed by the run's slug.
++	gateHoldTopicPrefix = "dobby-gate-hold/"
+ 	// defaultNoticeProbe is the probe interval when the batten recipe's Run-Shed row names none.
+ 	defaultNoticeProbe = 30 * time.Second
+ 	// defaultNoticeQuiet is the run notices' quiet window when the batten recipe's Run-Shed row names none.
+@@ -85,6 +88,38 @@ func runNoticeTags(slug string) creelengine.PostTags {
+ 	return creelengine.PostTags{Topic: runNoticeTopicPrefix + slug, Run: slug}
+ }
+ 
++// gateHoldTags returns the creel tags of dobby's gate-hold notice about the run slug.
++// The topic is its own, so the notice and a notice about the run's child never replace each other,
++// and the run lets the run's teardown drop it.
++func gateHoldTags(slug string) creelengine.PostTags {
++	return creelengine.PostTags{Topic: gateHoldTopicPrefix + slug, Run: slug}
++}
++
++// dobbyGateHolders returns a read of the live gate slot holders of prime's hub, each with its tier's timeout.
++// The timeout is zero for a holder with no tier or with a tier the gate config does not declare.
++// A gate config that does not load and a holder record that does not read each fail the call.
++func dobbyGateHolders(prime *lymcwd.Location) func() ([]dobbyengine.GateHolder, error) {
++	return func() ([]dobbyengine.GateHolder, error) {
++		cfg, err := gateslot.LoadConfig(fabricengine.ConfigDirs(prime))
++		if err != nil {
++			return nil, fmt.Errorf("load the gate config: %w", err)
++		}
++		held, err := hubgeom.GateSlots(prime).Holders()
++		if err != nil {
++			return nil, fmt.Errorf("read the gate slot holders: %w", err)
++		}
++		holders := make([]dobbyengine.GateHolder, len(held))
++		for i, holder := range held {
++			holders[i] = dobbyengine.GateHolder{
++				Slot: holder.Slot, Worktree: holder.Worktree, Site: holder.Site, Tier: holder.Tier, Marker: holder.Marker,
++				PID: holder.PID, Started: holder.Started,
++				TierTimeout: time.Duration(cfg.Tiers[holder.Tier].TimeoutMin) * time.Minute,
++			}
++		}
++		return holders, nil
++	}
++}
++
+ // requirePosted turns a notice that no orch strand was recorded to receive into an error, so dobby tries it again.
+ func requirePosted(posted bool, err error) error {
+ 	if err != nil {
+@@ -277,6 +312,36 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 			}
+ 			return dobbyengine.LookupLandNotice(chain)
+ 		},
++		RunWatch: dobbyengine.RunWatchDeps{
++			Level: func(slug string) (string, error) {
++				chain, err := hubgeom.TaskSettingChain(prime, slug)
++				if err != nil {
++					return "", err
++				}
++				return dobbyengine.LookupRunWatch(chain)
++			},
++			// Untagged, so no watch line replaces another unread one and a run's teardown drops none.
++			Post: func(_ context.Context, slug, line string) (bool, error) {
++				stamped := orchcli.WithRunAutonomy(worktree, slug, line)
++				return orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, creelengine.PostTags{}, stamped)
++			},
++		},
++		GateHolds: dobbyengine.GateHoldDeps{
++			Holders: dobbyGateHolders(prime),
++			TaskWorktree: func(slug string) (string, error) {
++				pair, err := pairLocation(prime, slug)
++				if err != nil {
++					return "", err
++				}
++				return pair.WorktreePath(), nil
++			},
++			Tree:       proc.TreeSample,
++			MarkedPIDs: proc.PIDsWithEnv,
++			Post: func(_ context.Context, slug, line string) error {
++				stamped := orchcli.WithRunAutonomy(worktree, slug, line)
++				return requirePosted(orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, gateHoldTags(slug), stamped))
++			},
++		},
+ 		SettleFronts: func() error { return fronttask.Settle(settleFronts) },
+ 		Landings: machineLandings(func() (string, []string, error) {
+ 			here, err := pairteardown.ThisMachine(prime.HubPath)
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index f8b5aea2c..6f6b86936 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hibernatecli"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -44,6 +45,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
+ )
+ 
+ func TestHubDobbyDeps_PrimeTidyShuttle(t *testing.T) {
+@@ -764,6 +766,73 @@ func TestHubDobbyDeps_PullRequestRecordedReadsTheBeamLandingRecord(t *testing.T)
+ 	}
+ }
+ 
++func TestDobbyGateHolders(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	declared := []yamlengine.KV{
++		{Key: "slots", Value: "3"},
++		{Key: "tiers.tier1", Value: `{command: "true", all_targets: ./pkg, timeout_min: 35, counter: go-json}`},
++	}
++	if _, err := configengine.Set(fabricengine.ConfigDirs(h.Location), gateslot.ConfigSpec(), configengine.LayerDefault, declared); err != nil {
++		t.Fatalf("declare the gate tier: %v", err)
++	}
++	acquired := []gateslot.Holder{
++		{Worktree: "wt-tier", Site: "site-tier", Tier: "tier1", Marker: "LYM_GATE_TEST_PID=1"},
++		{Worktree: "wt-plain", Site: "site-plain"},
++		{Worktree: "wt-undeclared", Site: "site-undeclared", Tier: "tier9", Marker: "LYM_GATE_TEST_PID=9"},
++	}
++	pool := hubgeom.GateSlots(h.Location)
++	for _, holder := range acquired {
++		lease, err := pool.Acquire(t.Context(), holder)
++		if err != nil {
++			t.Fatalf("Acquire(%q) = %v; want nil", holder.Site, err)
++		}
++		t.Cleanup(func() { _ = lease.Release() })
++	}
++	// The pool picks each slot and its start time, so those two are read from its records.
++	records, err := pool.Holders()
++	if err != nil {
++		t.Fatalf("Holders() = %v; want nil", err)
++	}
++
++	holders, err := dobbyGateHolders(h.Location)()
++	if err != nil {
++		t.Fatalf("dobbyGateHolders() = %v; want nil", err)
++	}
++	if len(holders) != len(acquired) {
++		t.Fatalf("dobbyGateHolders() = %+v; want %d holders", holders, len(acquired))
++	}
++	timeouts := map[string]time.Duration{"tier1": 35 * time.Minute}
++	for _, want := range acquired {
++		recorded := slices.IndexFunc(records, func(r gateslot.Holder) bool { return r.Site == want.Site })
++		mapped := slices.IndexFunc(holders, func(m dobbyengine.GateHolder) bool { return m.Site == want.Site })
++		if recorded < 0 || mapped < 0 {
++			t.Fatalf("no holder at site %q in records %+v and holders %+v", want.Site, records, holders)
++		}
++		got := holders[mapped]
++		if got.Started.IsZero() || !got.Started.Equal(records[recorded].Started) {
++			t.Errorf("holder at %q Started = %v; want %v", want.Site, got.Started, records[recorded].Started)
++		}
++		got.Started = time.Time{}
++		expected := dobbyengine.GateHolder{
++			Slot: records[recorded].Slot, Worktree: want.Worktree, Site: want.Site, Tier: want.Tier, Marker: want.Marker,
++			PID: os.Getpid(), TierTimeout: timeouts[want.Tier],
++		}
++		if got != expected {
++			t.Errorf("holder at %q = %+v; want %+v", want.Site, got, expected)
++		}
++	}
++
++	if err := os.Remove(configengine.ConfigFile(h.BoardDir(), "gate")); err != nil {
++		t.Fatalf("remove the gate config: %v", err)
++	}
++	if _, err := dobbyGateHolders(h.Location)(); err == nil || !strings.Contains(err.Error(), "load the gate config") {
++		t.Errorf("dobbyGateHolders() with no gate config = %v; want an error naming the gate config load", err)
++	}
++}
++
+ func TestHubDobbyDeps_LandNoticeReadsTheRunsWorktreeLayer(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -777,15 +846,22 @@ func TestHubDobbyDeps_LandNoticeReadsTheRunsWorktreeLayer(t *testing.T) {
+ 	if on, err := deps.LandNotice("b"); on || err != nil {
+ 		t.Fatalf("LandNotice(b) with no layer setting it = %v, %v; want false, nil", on, err)
+ 	}
++	if level, err := deps.RunWatch.Level("b"); level != "stops" || err != nil {
++		t.Fatalf("RunWatch.Level(b) with no layer setting it = %q, %v; want stops, nil", level, err)
++	}
+ 
+-	beamYAML := filepath.Join(beam.AnchorPath(), lymdirs.LymDirName, "config", "beam.yaml")
+-	if err := os.MkdirAll(filepath.Dir(beamYAML), 0o755); err != nil {
+-		t.Fatalf("create the worktree config directory: %v", err)
++	if got, err := deps.GateHolds.TaskWorktree("b"); got != beam.WorktreePath() || err != nil {
++		t.Errorf("GateHolds.TaskWorktree(b) = %q, %v; want %q, nil", got, err, beam.WorktreePath())
+ 	}
+-	if err := os.WriteFile(beamYAML, []byte("land_notice: \"on\"\n"), 0o644); err != nil {
+-		t.Fatalf("write the worktree beam.yaml: %v", err)
++
++	set := []yamlengine.KV{{Key: dobbyengine.LandNoticeKey, Value: "on"}, {Key: dobbyengine.RunWatchKey, Value: "rows"}}
++	if _, err := configengine.Set(fabricengine.ConfigDirs(beam), dobbyengine.ConfigSpec(), configengine.LayerWorktree, set); err != nil {
++		t.Fatalf("set the beam worktree's settings: %v", err)
+ 	}
+ 	if on, err := deps.LandNotice("b"); !on || err != nil {
+ 		t.Errorf("LandNotice(b) with its worktree's beam.yaml setting on = %v, %v; want true, nil", on, err)
+ 	}
++	if level, err := deps.RunWatch.Level("b"); level != "rows" || err != nil {
++		t.Errorf("RunWatch.Level(b) with its worktree's beam.yaml setting rows = %q, %v; want rows, nil", level, err)
++	}
+ }
+diff --git a/internal/beamcli/dobbydeps_test.go b/internal/beamcli/dobbydeps_test.go
+index 5a135ea75..ffcc2c43c 100644
+--- a/internal/beamcli/dobbydeps_test.go
++++ b/internal/beamcli/dobbydeps_test.go
+@@ -104,6 +104,11 @@ func TestRunNoticeTags(t *testing.T) {
+ 	if got != want {
+ 		t.Errorf("runNoticeTags(pay) = %+v; want %+v", got, want)
+ 	}
++	gotHold := gateHoldTags("pay")
++	wantHold := creelengine.PostTags{Topic: "dobby-gate-hold/pay", Run: "pay"}
++	if gotHold != wantHold {
++		t.Errorf("gateHoldTags(pay) = %+v; want %+v", gotHold, wantHold)
++	}
+ }
+ 
+ func TestEndedTeardownResults(t *testing.T) {
+diff --git a/internal/beamcli/dobbynoticestamp_integration_test.go b/internal/beamcli/dobbynoticestamp_integration_test.go
+index 919a75eaf..7a6819ad1 100644
+--- a/internal/beamcli/dobbynoticestamp_integration_test.go
++++ b/internal/beamcli/dobbynoticestamp_integration_test.go
+@@ -1,12 +1,14 @@
+-// dobbynoticestamp_integration_test.go proves a dobby's run notices carry the run's autonomy, over a real hub.
+-// Creel's daemon runs in process on a fake delivery.
++// dobbynoticestamp_integration_test.go proves gate-hold notices, run notices and watch lines carry the run's autonomy.
++// The proof runs over a real hub, with creel's daemon in process on a fake delivery.
+ 
+ package beamcli
+ 
+ import (
++	"encoding/json"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+@@ -23,9 +25,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy pins that each dobby stamps a run notice with the run's autonomy.
++// TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy pins the autonomy stamp on a dobby's mails about a run:
++// the gate-hold notice, the run notice and the watch line.
+ // The prime's dobby signs unscoped and a beam's dobby signs in its own scope, and both stamp the run "task1".
+-// The value is read from the run's beam.yaml when each notice is built.
++// The value is read from the run's beam.yaml when each mail is built.
++// A watch line carries no tags, so no mail here replaces another unread one.
+ // It runs without t.Parallel: the strand environment variable is process-global.
+ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 	tiergate.Require(t, 1)
+@@ -79,11 +83,23 @@ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 		if err := os.WriteFile(path, []byte("autonomy: "+tt.autonomy+"\n"), 0o644); err != nil {
+ 			t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
+ 		}
++		holdLine := tt.name + ": a gate slot is held"
++		if err := deps.GateHolds.Post(t.Context(), "task1", holdLine); err != nil {
++			t.Fatalf("%s: GateHolds.Post = %v; want nil", tt.name, err)
++		}
++		want = append(want, mail{tt.wantFrom, holdLine + "; autonomy: " + tt.autonomy})
++
+ 		line := tt.name + ": the driver died"
+ 		if err := deps.RunNotices.Post(t.Context(), "task1", line); err != nil {
+ 			t.Fatalf("%s: RunNotices.Post = %v; want nil", tt.name, err)
+ 		}
+ 		want = append(want, mail{tt.wantFrom, line + "; autonomy: " + tt.autonomy})
++
++		watchLine := tt.name + ": the run halted"
++		if posted, err := deps.RunWatch.Post(t.Context(), "task1", watchLine); !posted || err != nil {
++			t.Fatalf("%s: RunWatch.Post = %v, %v; want true, nil", tt.name, posted, err)
++		}
++		want = append(want, mail{tt.wantFrom, watchLine + "; autonomy: " + tt.autonomy})
+ 	}
+ 
+ 	reader, err := creelcli.NewProgramClient(prime, "CHECK")
+@@ -99,8 +115,44 @@ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 		if entry.Event == "posted" {
+ 			got = append(got, mail{entry.From, entry.Subject})
+ 		}
++		if entry.Event == "undelivered" && entry.Reason == creelengine.SupersededReason {
++			t.Errorf("message %d was superseded; want every mail standing unread", entry.ID)
++		}
+ 	}
+ 	if !slices.Equal(got, want) {
+ 		t.Errorf("the posted mails = %q; want %q", got, want)
+ 	}
++
++	// The log shows no tags, so they are read from the journal's posted records.
++	creel, err := hubgeom.CreelGeometry(prime.HubPath, t.TempDir())
++	if err != nil {
++		t.Fatalf("CreelGeometry() = %v; want nil", err)
++	}
++	days, err := filepath.Glob(filepath.Join(creel.JournalDir, "*"))
++	if err != nil {
++		t.Fatalf("Glob(%q) = %v; want nil", creel.JournalDir, err)
++	}
++	watchRecords := 0
++	for _, day := range days {
++		data, err := os.ReadFile(day)
++		if err != nil {
++			t.Fatalf("ReadFile(%q) = %v; want nil", day, err)
++		}
++		for line := range strings.Lines(string(data)) {
++			var record struct{ Event, Body, Topic, Run string }
++			if err := json.Unmarshal([]byte(line), &record); err != nil {
++				t.Fatalf("Unmarshal(%q) = %v; want nil", line, err)
++			}
++			if record.Event != "posted" || !strings.Contains(record.Body, "the run halted") {
++				continue
++			}
++			watchRecords++
++			if record.Topic != "" || record.Run != "" {
++				t.Errorf("watch line %q has topic %q and run %q; want neither", record.Body, record.Topic, record.Run)
++			}
++		}
++	}
++	if watchRecords != len(tests) {
++		t.Errorf("the journal holds %d posted watch lines; want %d", watchRecords, len(tests))
++	}
+ }
+diff --git a/internal/beamsetting/beamsetting.go b/internal/beamsetting/beamsetting.go
+index f3968577a..53cf41e3f 100644
+--- a/internal/beamsetting/beamsetting.go
++++ b/internal/beamsetting/beamsetting.go
+@@ -1,5 +1,5 @@
+ // Package beamsetting names the module, keys and values of beam.yaml's per-task settings.
+-// Those settings are pull_request, land_notice and autonomy.
++// Those settings are beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch.
+ // Every package that reads, writes or refuses one of them takes its name from here, so each is declared once.
+ package beamsetting
+ 
+@@ -15,6 +15,18 @@ const (
+ 	// AutonomyKey decides whether the orch settles every halt of a task's runs.
+ 	// Under it the orch reaches the operator only for a severe halt or a merge-ready beam.
+ 	AutonomyKey = "autonomy"
++	// RunWatchKey decides which changes of a task's run dobby mails the orch as a watch line.
++	RunWatchKey = "run_watch"
++)
++
++// The values of beam.run_watch.
++const (
++	// RunWatchStops mails a line for each stop of the run.
++	RunWatchStops = "stops"
++	// RunWatchRows mails a line for every change of the run.
++	RunWatchRows = "rows"
++	// RunWatchOff mails none.
++	RunWatchOff = "off"
+ )
+ 
+ // The values of beam.yaml's pull_request.
+@@ -47,3 +59,8 @@ func PullRequestValues() []string {
+ func LandNoticeValues() []string {
+ 	return []string{LandNoticeOn, LandNoticeOff}
+ }
++
++// RunWatchValues returns every value beam.run_watch takes.
++func RunWatchValues() []string {
++	return []string{RunWatchStops, RunWatchRows, RunWatchOff}
++}
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 28963757d..9fa8dcfe8 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -584,7 +584,7 @@ Optional fields:
+   "created"    string — RFC 3339 creation
+   "revised"    string — RFC 3339 scope change
+   "run_settings" object — module name to config keys; {} clears it;
+-                  beam.pull_request, beam.land_notice and beam.autonomy set the task's per-task beam settings
++                  beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch are per task
+   "profile"    string — a "lym board profiles" name; "" clears it
+   "owner_machine" string — the effective owner only; "lym adopt" moves it
+   "project"    string — slug of the open project holding the entry; "" leaves none
+diff --git a/internal/boardcli/help_test.go b/internal/boardcli/help_test.go
+index ffbcfed79..d7590b361 100644
+--- a/internal/boardcli/help_test.go
++++ b/internal/boardcli/help_test.go
+@@ -60,6 +60,7 @@ func TestHelpSchema_LeafCommands(t *testing.T) {
+ 				"priority",
+ 				"beam.pull_request",
+ 				"beam.land_notice",
++				"beam.run_watch",
+ 				"notice",
+ 				"Example",
+ 			},
+diff --git a/internal/configreg/runsettings_test.go b/internal/configreg/runsettings_test.go
+index 7b6f359d7..c8784698b 100644
+--- a/internal/configreg/runsettings_test.go
++++ b/internal/configreg/runsettings_test.go
+@@ -104,6 +104,18 @@ func TestPrepareRunSettings(t *testing.T) {
+ 			wantModule:  "beam",
+ 			wantInvalid: true,
+ 		},
++		{
++			name:     "a beam run_watch of rows is admitted into a beam local document",
++			settings: map[string]any{"beam": map[string]any{"run_watch": "rows"}},
++			wantDocs: map[string]string{"beam": "run_watch: rows\n"},
++		},
++		{
++			name:        "a beam run_watch the lookup refuses is refused at the run settings",
++			settings:    map[string]any{"beam": map[string]any{"run_watch": "all"}},
++			wantRefusal: "run_watch",
++			wantModule:  "beam",
++			wantInvalid: true,
++		},
+ 		{
+ 			name:     "hardener packages and llm_driving pass",
+ 			settings: map[string]any{"hardener": map[string]any{"packages": []any{"internal/foo"}, "llm_driving": true}},
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index b6362079c..dc1179fe9 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -5,6 +5,7 @@ package dobbyengine
+ import (
+ 	_ "embed"
+ 	"fmt"
++	"math"
+ 	"strconv"
+ 
+ 	"gopkg.in/yaml.v3"
+@@ -53,9 +54,22 @@ const (
+ 	LandNoticeOff = beamsetting.LandNoticeOff
+ )
+ 
++// RunWatchKey is the per-task key deciding which changes of a task's run dobby mails the orch, and its values.
++// They are declared once, in beamsetting.
++const (
++	// RunWatchKey names the key.
++	RunWatchKey = beamsetting.RunWatchKey
++	// RunWatchStops mails a line for each stop of the run.
++	RunWatchStops = beamsetting.RunWatchStops
++	// RunWatchRows mails a line for every change of the run.
++	RunWatchRows = beamsetting.RunWatchRows
++	// RunWatchOff mails none.
++	RunWatchOff = beamsetting.RunWatchOff
++)
++
+ // Config is the resolved beam.yaml's worktree-wide keys.
+-// The per-task keys are pull_request, land_notice and autonomy.
+-// They are read through LookupPullRequest, LookupLandNotice, LookupAutonomy and LookupWithSource alone.
++// The per-task keys are beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch.
++// They are read through LookupPullRequest, LookupLandNotice, LookupAutonomy, LookupRunWatch and LookupWithSource alone.
+ type Config struct {
+ 	// MaxRuns is the most runs dobby drives at once; 0 starts none.
+ 	MaxRuns int `yaml:"max_runs"`
+@@ -67,6 +81,11 @@ type Config struct {
+ 	TaskHeadroom int `yaml:"task_headroom"`
+ 	// AdoptFixTries is the most fix tasks a failed adopt check files for the worktree's subject between two hand adopts; 0 files none.
+ 	AdoptFixTries int `yaml:"adopt_fix_tries"`
++	// GateHoldFactor times a tier's gate.tiers.<tier>.timeout_min is how long a run may hold a gate slot unnoticed.
++	// 0 sends no gate-hold notice.
++	GateHoldFactor float64 `yaml:"gate_hold_factor"`
++	// GateHoldMin is the minutes the gate-hold bound is for a holder with no tier or a tier with no timeout.
++	GateHoldMin int `yaml:"gate_hold_min"`
+ }
+ 
+ // ConfigSpec returns beam's layered-load spec: a per-worktree module whose keys are all open to every layer.
+@@ -85,7 +104,10 @@ func ConfigSpec() configengine.Spec {
+ 			PullRequestKey:           configengine.CategoryNone,
+ 			LandNoticeKey:            configengine.CategoryNone,
+ 			AutonomyKey:              configengine.CategoryNone,
++			RunWatchKey:              configengine.CategoryNone,
+ 			"adopt_fix_tries":        configengine.CategoryNone,
++			gateHoldFactorKey:        configengine.CategoryNone,
++			gateHoldMinKey:           configengine.CategoryNone,
+ 		},
+ 		RetiredKeys: map[string]configengine.Category{
+ 			"test_map_upkeep": configengine.CategoryNone,
+@@ -97,9 +119,11 @@ func ConfigSpec() configengine.Spec {
+ 
+ // LoadConfig resolves beam.yaml strictly from the layer stack under dirs, since dobby only ever runs inside a hub.
+ // A negative value is refused, naming its key.
+-// So is a resolved pull_request other than on, off, merge or merge-in, a land_notice other than on or off,
+-// and an autonomy that is no YAML boolean,
+-// so a write the per-task lookup would refuse is refused when it is made.
++// So is a beam.gate_hold_factor that is negative or not finite, and a beam.gate_hold_min below 1.
++// A resolved per-task key holding a value it does not take is refused too.
++// beam.pull_request takes on, off, merge or merge-in, and beam.land_notice takes on or off.
++// beam.run_watch takes stops, rows or off, and beam.autonomy takes a YAML boolean.
++// A write the per-task lookup would refuse is therefore refused when it is made.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+ 	if err != nil {
+@@ -123,11 +147,18 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 			return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q is %d: must not be negative; way forward: fix it with `lym config beam --set %s=<value>`", keyName(key.name), key.value, key.name))
+ 		}
+ 	}
++	// A NaN or an infinity passes a sign check and makes a bound every hold is past.
++	if factor := cfg.GateHoldFactor; math.IsNaN(factor) || math.IsInf(factor, 0) || factor < 0 {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q is %v: must be a finite number that is not negative; way forward: fix it with `lym config beam --set %s=<value>`", keyName(gateHoldFactorKey), factor, gateHoldFactorKey))
++	}
++	if cfg.GateHoldMin < 1 {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q is %d: must be at least 1; way forward: fix it with `lym config beam --set %s=<value>`", keyName(gateHoldMinKey), cfg.GateHoldMin, gateHoldMinKey))
++	}
+ 	var perTask map[string]any
+ 	if err := yaml.Unmarshal(resolved, &perTask); err != nil {
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("unmarshal beam config: %w", err))
+ 	}
+-	for _, key := range []string{PullRequestKey, LandNoticeKey, AutonomyKey} {
++	for _, key := range []string{PullRequestKey, LandNoticeKey, AutonomyKey, RunWatchKey} {
+ 		if _, err := checkTaskSetting(key, perTask[key], "the resolved beam.yaml"); err != nil {
+ 			return Config{}, err
+ 		}
+@@ -136,14 +167,14 @@ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ }
+ 
+ // CheckLocalValues refuses a local-layer beam document holding a value its key does not take.
+-// It checks only pull_request, land_notice and autonomy.
++// It checks only beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch.
+ // The refusal is marked [configengine.ErrInvalid] and names the key, the values it takes and the way forward.
+ func CheckLocalValues(document []byte) error {
+ 	var keys map[string]any
+ 	if err := yaml.Unmarshal(document, &keys); err != nil {
+ 		return configengine.MarkInvalid(fmt.Errorf("unmarshal beam run settings: %w", err))
+ 	}
+-	for _, key := range []string{PullRequestKey, LandNoticeKey, AutonomyKey} {
++	for _, key := range []string{PullRequestKey, LandNoticeKey, AutonomyKey, RunWatchKey} {
+ 		value, set := keys[key]
+ 		if !set {
+ 			continue
+@@ -167,8 +198,11 @@ func checkTaskSetting(key string, value any, where string) (string, error) {
+ 		return "", configengine.MarkInvalid(fmt.Errorf("config key %q in %s is %v: must be true or false; way forward: fix it with `lym config beam --set %s=<true|false>` in that worktree, or in the task's run_settings for its next run", keyName(key), where, value, key))
+ 	}
+ 	allowed := beamsetting.LandNoticeValues()
+-	if key == PullRequestKey {
++	switch key {
++	case PullRequestKey:
+ 		allowed = beamsetting.PullRequestValues()
++	case RunWatchKey:
++		allowed = beamsetting.RunWatchValues()
+ 	}
+ 	text, isText := value.(string)
+ 	if isText {
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index ca215949d..1527572b5 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -31,6 +31,7 @@ func defaultsWith(change func(*Config)) Config {
+ 	cfg := Config{
+ 		MaxRuns: 3, BoardTidyEvery: 5, BoardTidyTimeoutMin: 30,
+ 		TaskHeadroom: 500, AdoptFixTries: 3,
++		GateHoldFactor: 1.5, GateHoldMin: 90,
+ 	}
+ 	change(&cfg)
+ 	return cfg
+@@ -65,6 +66,15 @@ func TestLoadConfig(t *testing.T) {
+ 		{name: "a worktree layer's retired test_map_upkeep loads and changes nothing", worktree: "test_map_upkeep: false\n", want: defaultsWith(func(*Config) {})},
+ 		{name: "a local layer's retired test_map_every of 0 loads and changes nothing", local: "test_map_every: 0\n", want: defaultsWith(func(*Config) {})},
+ 		{name: "a retired test_map_every other than 0 and a retired test_map_batch load and change nothing", worktree: "test_map_every: 3\ntest_map_batch: 0\n", want: defaultsWith(func(*Config) {})},
++		{name: "a worktree layer's run_watch of rows loads", worktree: "run_watch: rows\n", want: defaultsWith(func(*Config) {})},
++		{name: "a local layer's run_watch of off loads", local: "run_watch: \"off\"\n", want: defaultsWith(func(*Config) {})},
++		{name: "an unknown run_watch is refused naming the key, the values and the way forward", worktree: "run_watch: all\n", wantErr: []string{"run_watch", "all", "[stops rows off]", "lym config beam --set run_watch="}},
++		{name: "a gate_hold_factor of 0 resolves as set", worktree: "gate_hold_factor: 0\n", want: defaultsWith(func(c *Config) { c.GateHoldFactor = 0 })},
++		{name: "a gate_hold_min of 30 resolves as set", worktree: "gate_hold_min: 30\n", want: defaultsWith(func(c *Config) { c.GateHoldMin = 30 })},
++		{name: "a negative gate_hold_factor is refused naming the key", worktree: "gate_hold_factor: -0.5\n", wantErr: []string{"gate_hold_factor", "must be a finite number that is not negative", "lym config beam --set"}},
++		{name: "a gate_hold_factor that is not a number is refused", worktree: "gate_hold_factor: .nan\n", wantErr: []string{"gate_hold_factor", "NaN", "must be a finite number"}},
++		{name: "an infinite gate_hold_factor is refused", worktree: "gate_hold_factor: .inf\n", wantErr: []string{"gate_hold_factor", "+Inf", "must be a finite number"}},
++		{name: "a gate_hold_min of 0 is refused naming the key", worktree: "gate_hold_min: 0\n", wantErr: []string{"gate_hold_min", "at least 1", "lym config beam --set"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index c76cd166b..35304882f 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -135,8 +135,8 @@
+ //
+ // The landing notice:
+ //
+-//   - `pull_request`, `land_notice` and `autonomy` are per-task settings,
+-//     read only through LookupPullRequest, LookupLandNotice, LookupAutonomy and LookupWithSource.
++//   - `beam.pull_request`, `beam.land_notice`, `beam.autonomy` and `beam.run_watch` are per-task settings,
++//     read only through LookupPullRequest, LookupLandNotice, LookupAutonomy, LookupRunWatch and LookupWithSource.
+ //     LookupWithSource also names the worktree of the chain whose own files set the value, or the hub-wide default.
+ //     A task's value is the one its own worktree's files set, else each parent worktree's own value up to the prime,
+ //     else the hub's default layer's, else the template's.
+@@ -150,6 +150,50 @@
+ //   - An owed line stays in the state record and is posted every tick until a post succeeds.
+ //   - A run first seen past its Land row gets no line, and a done board entry owes none by itself.
+ //
++// The run watch:
++//
++//   - Each scheduling tick reads every listed run:
++//     its derived state, batten's state, row, reason and history, and the child's state, row, reason and history.
++//     The child is read only when a status file was written since its last read.
++//     A child that does not read or has no status keeps the child part read last.
++//     So does a child written after the runs were listed, which the next tick reads;
++//     with no reading yet, the run keeps none for that tick.
++//   - A run's `beam.run_watch`, read through Deps.RunWatch.Level, is stops, rows or off.
++//     Stops owes a line for a change to a stop, rows for every change, off for none.
++//     A run whose level never read keeps no reading, so its first read tells the standing stop.
++//   - The level kept is the one read ahead of the Land row:
++//     the task worktree that sets it is torn down before batten reads done, so a later read would answer a parent's.
++//   - A stop is a derived state of paused, halted, cancelling, cancelled or landed,
++//     or a batten or child state other than running.
++//     A stop is new when the derived state, batten's state, the child's state, whether the child is read
++//     or the episode changed.
++//     The episode is a history length plus its newest entry's folded repeats, so a repeated block at one row counts.
++//   - A landed run whose `beam.land_notice` read on owes no line, since the landing notice reports it.
++//   - The memory is State.Watches, keyed by slug, which outlives the run's entry in the pass records.
++//     It is dropped once the run is no longer listed, owes nothing and has no batten status.
++//   - An owed line stays in the memory until Deps.RunWatch.Post posts it, oldest first.
++//     A post that finds no orch counts no attempt.
++//     A failing post is retried a probe interval later and dropped after three failures,
++//     and a line owed an hour of awake time is dropped.
++//   - A nil Level or Post watches nothing.
++//
++// The gate-hold notice:
++//
++//   - On each probe tick that schedules, dobby reads the held gate slots through Deps.GateHolds.
++//     The slots one process holds are one hold, which starts at the earliest of them.
++//     A hold belongs to the listed run whose task worktree it works in.
++//   - The bound is `beam.gate_hold_factor` times the largest `gate.tiers.<tier>.timeout_min` of the hold,
++//     or `beam.gate_hold_min` minutes when it has none; a factor of 0 sends nothing.
++//   - The bound runs on awake time, so a machine sleep delays the notice.
++//   - A hold past its bound gets one `[dobby notice]` line, whatever the run's watch level.
++//     It names the slots, tier, site, start, bound, the holder's process tree with each process's CPU time,
++//     and the processes outside the tree that carry the holder's environment marker.
++//     Each list names the busiest processes and counts the rest.
++//     A tree or marker scan that fails still sends the notice, naming the tree as unreadable.
++//   - The noticed holds are kept in State.Watches, so a re-exec sends no second line, and a failed post is retried.
++//     A new hold, by another process or with another start, is noticed again.
++//   - The step only reads: it ends no process and frees no slot.
++//
+ // The board tidy:
+ //
+ //   - Each tick records every Land Done that names this machine as counted in the state record,
+@@ -188,7 +232,9 @@
+ //     whose batten status reads done, through Deps.ClearDoneRun,
+ //     so a finished run never refuses a later start under its slug.
+ //   - A run is cleared only when no pass of it is in flight, its driver lock is free, its pair is gone,
+-//     and neither its landing notice nor its board-tidy count is still owed.
++//     and none of its landing notice, its board-tidy count and a watch line is still owed.
++//     A run whose watch entry holds no level waits too, as does every run on a tick whose watch step failed to record.
++//     The clear drops the run's watch entry.
+ //   - A failed clear is logged once per episode and never fails the tick.
+ //
+ // The catch-up:
+diff --git a/internal/dobbyengine/donerun.go b/internal/dobbyengine/donerun.go
+index a80a938cc..aee7fc1b2 100644
+--- a/internal/dobbyengine/donerun.go
++++ b/internal/dobbyengine/donerun.go
+@@ -16,8 +16,11 @@ import (
+ // no pass of it is in flight and its driver lock is free;
+ // its pair is gone, so the leftover teardown, which reads the run's records, takes a pair left standing first;
+ // the landing-notice memory holds nothing of it, so its notice is decided and posted;
++// no watch line of it is owed, and with the run watch wired its beam.run_watch has been read;
++// the tick's run watch step recorded its memory;
+ // and a landing it holds is counted.
+-// A cleared run logs `run <slug>: done run cleared`, and its slug leaves the counted landings,
++// A cleared run logs `run <slug>: done run cleared`.
++// Its run watch memory is dropped, and its slug leaves the counted landings,
+ // so a later run under the slug counts its own landing.
+ // Every tick also drops the counted landings of a slug that is neither landed nor listed,
+ // so a drop the state update missed is repaired at the next tick.
+@@ -34,6 +37,7 @@ func (d *daemon) clearDoneRuns(now time.Time) {
+ 		logger.Warn("dobbyengine: the state record is unreadable, so no done run is cleared this tick", "worktree", d.geom.WorktreeName, "error", err)
+ 		return
+ 	}
++	watching := d.deps.RunWatch.Level != nil && d.deps.RunWatch.Post != nil
+ 	var cleared []string
+ 	for _, run := range d.listedRuns {
+ 		if run.State != runStateDone || run.DriverLockHeld || run.PairPresent {
+@@ -45,6 +49,10 @@ func (d *daemon) clearDoneRuns(now time.Time) {
+ 		if _, remembered := current.LandNotices[run.Slug]; remembered {
+ 			continue
+ 		}
++		watch := current.Watches[run.Slug]
++		if d.watchRecordFailed || len(watch.Owed) > 0 || (watching && watch.Level == "") {
++			continue
++		}
+ 		if slices.Contains(d.landed, run.Slug) && !current.CountedLandings[run.Slug] {
+ 			continue
+ 		}
+@@ -73,6 +81,9 @@ func (d *daemon) clearDoneRuns(now time.Time) {
+ 		for _, slug := range dropped {
+ 			delete(s.CountedLandings, slug)
+ 		}
++		for _, slug := range cleared {
++			delete(s.Watches, slug)
++		}
+ 		return nil
+ 	})
+ 	if err != nil {
+diff --git a/internal/dobbyengine/donerun_test.go b/internal/dobbyengine/donerun_test.go
+index b3701e033..65e97b762 100644
+--- a/internal/dobbyengine/donerun_test.go
++++ b/internal/dobbyengine/donerun_test.go
+@@ -3,13 +3,18 @@
+ package dobbyengine
+ 
+ import (
++	"context"
+ 	"errors"
++	"os"
+ 	"path/filepath"
++	"runtime"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -92,6 +97,7 @@ func TestClearDoneRuns(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	const slug = "beam-merge-in"
++	cleared := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
+ 	tests := []struct {
+ 		name  string
+ 		state string
+@@ -106,11 +112,17 @@ func TestClearDoneRuns(t *testing.T) {
+ 		// clearResult and clearErr are what the clear seam returns.
+ 		clearResult bool
+ 		clearErr    error
++		// watch seeds the run's run watch entry, none when nil.
++		watch *RunWatchState
++		// posts runs the run watch step, whose post succeeds, between a first clear and the second.
++		posts       bool
+ 		wantCalled  bool
+ 		wantCleared bool
+ 	}{
+-		{name: "DoneRunIsCleared", state: runStateDone, clearResult: true, wantCalled: true, wantCleared: true},
+-		{name: "DoneRunWithACountedLandingIsClearedAndLeavesTheCount", state: runStateDone, landed: true, counted: true, clearResult: true, wantCalled: true, wantCleared: true},
++		{name: "DoneRunIsCleared", state: runStateDone, clearResult: true, watch: &RunWatchState{Level: RunWatchStops}, wantCalled: true, wantCleared: true},
++		{name: "DoneRunWithACountedLandingIsClearedAndLeavesTheCount", state: runStateDone, landed: true, counted: true, clearResult: true, watch: &RunWatchState{Level: RunWatchStops}, wantCalled: true, wantCleared: true},
++		{name: "DoneRunOwingAWatchLineIsNotCleared", state: runStateDone, clearResult: true, watch: &RunWatchState{Owed: []OwedWatchLine{{Line: "line", OwedAt: cleared}}}},
++		{name: "DoneRunIsClearedOnceItsOwedWatchLinePosted", state: runStateDone, clearResult: true, watch: &RunWatchState{Level: RunWatchStops, Owed: []OwedWatchLine{{Line: "line", OwedAt: cleared}}}, posts: true, wantCalled: true, wantCleared: true},
+ 		{name: "RunningRunIsNotCleared", state: runStateRunning},
+ 		{name: "DoneRunWithItsDriverLockHeldIsNotCleared", state: runStateDone, driverLockHeld: true},
+ 		{name: "DoneRunWithAPassInFlightIsNotCleared", state: runStateDone, inFlight: true},
+@@ -154,13 +166,32 @@ func TestClearDoneRuns(t *testing.T) {
+ 				if tt.counted {
+ 					s.CountedLandings[slug] = true
+ 				}
++				if tt.watch != nil {
++					s.Watches = map[string]RunWatchState{slug: *tt.watch}
++				}
+ 				return nil
+ 			})
+ 			if err != nil {
+ 				t.Fatalf("UpdateState() = %v; want nil", err)
+ 			}
+ 
+-			d.clearDoneRuns(time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC))
++			d.clearDoneRuns(cleared)
++			if tt.posts {
++				if len(calls) != 0 {
++					t.Fatalf("ClearDoneRun calls = %v; want none while the watch line is owed", calls)
++				}
++				d.deps.Log = nil
++				d.deps.RunWatch = RunWatchDeps{
++					Level: func(string) (string, error) { return RunWatchStops, nil },
++					Post:  func(context.Context, string, string) (bool, error) { return true, nil },
++				}
++				d.runWatch(context.Background(), cleared)
++				d.deps.Log = func(_, line string, _ bool) {
++					_, text, _ := strings.Cut(line, " ")
++					logged = append(logged, text)
++				}
++				d.clearDoneRuns(cleared)
++			}
+ 
+ 			if called := slices.Equal(calls, []string{slug}); called != tt.wantCalled {
+ 				t.Errorf("ClearDoneRun calls = %v; want called %t", calls, tt.wantCalled)
+@@ -185,6 +216,100 @@ func TestClearDoneRuns(t *testing.T) {
+ 			if after.CountedLandings["gone"] {
+ 				t.Errorf("CountedLandings = %v; want the entry of a slug neither landed nor listed dropped", after.CountedLandings)
+ 			}
++			if _, kept := after.Watches[slug]; tt.wantCleared && kept {
++				t.Errorf("Watches = %v; want the cleared run's entry gone", after.Watches)
++			}
+ 		})
+ 	}
++
++	t.Run("DoneRunIsNotClearedOnATickWhoseRunWatchCouldNotRecord", func(t *testing.T) {
++		t.Parallel()
++		if runtime.GOOS == "windows" || os.Geteuid() == 0 {
++			t.Skip("directory mode bits do not refuse the write here")
++		}
++		var calls []string
++		recordDir := t.TempDir()
++		d := &daemon{
++			geom: Geometry{WorktreeName: "prime", StatePath: filepath.Join(recordDir, StateFileName)},
++			deps: Deps{
++				ClearDoneRun: func(slug string) (bool, error) {
++					calls = append(calls, slug)
++					return true, nil
++				},
++				RunWatch: RunWatchDeps{
++					Level: func(string) (string, error) { return RunWatchStops, nil },
++					Post:  func(context.Context, string, string) (bool, error) { return true, nil },
++				},
++			},
++			flights:    map[string]flight{},
++			listedRuns: []RunView{{Slug: slug, State: runStateDone}},
++		}
++		if err := UpdateState(d.geom.StatePath, func(s *State) error {
++			s.Watches = map[string]RunWatchState{slug: {Level: RunWatchStops}}
++			return nil
++		}); err != nil {
++			t.Fatalf("UpdateState() = %v; want nil", err)
++		}
++		permkit.Chmod(t, recordDir, 0o555)
++
++		d.runWatch(context.Background(), cleared)
++		d.clearDoneRuns(cleared)
++
++		// The clear reads the record itself, so an unreadable one would hold it for another reason.
++		if _, _, err := ReadState(d.geom.StatePath); err != nil {
++			t.Fatalf("ReadState() = %v; want the record readable", err)
++		}
++		if len(calls) != 0 {
++			t.Errorf("ClearDoneRun calls = %v; want none while the watch cannot record", calls)
++		}
++	})
++
++	t.Run("DoneRunWhoseRunWatchNeverReadsWaitsForItAndThenClears", func(t *testing.T) {
++		t.Parallel()
++		var calls, posted []string
++		levelErr := errors.New("level unreadable")
++		d := &daemon{
++			geom: Geometry{WorktreeName: "prime", StatePath: filepath.Join(t.TempDir(), StateFileName)},
++			deps: Deps{
++				ClearDoneRun: func(slug string) (bool, error) {
++					calls = append(calls, slug)
++					return true, nil
++				},
++				RunWatch: RunWatchDeps{
++					Level: func(string) (string, error) { return RunWatchStops, levelErr },
++					Post: func(_ context.Context, _, line string) (bool, error) {
++						posted = append(posted, line)
++						return true, nil
++					},
++				},
++			},
++			flights:    map[string]flight{},
++			listedRuns: []RunView{{Slug: slug, State: runStateDone, Run: runfsm.Landed, Producer: "Done", PastLand: true, Landed: true, StatusModified: cleared}},
++		}
++		if err := UpdateState(d.geom.StatePath, func(s *State) error {
++			s.Watches = map[string]RunWatchState{slug: {}}
++			return nil
++		}); err != nil {
++			t.Fatalf("UpdateState() = %v; want nil", err)
++		}
++
++		for range 2 {
++			d.runWatch(context.Background(), cleared)
++			d.clearDoneRuns(cleared)
++		}
++		if len(calls) != 0 || len(posted) != 0 {
++			t.Fatalf("ClearDoneRun calls = %v, lines = %q; want none while the level does not read", calls, posted)
++		}
++
++		levelErr = nil
++		d.runWatch(context.Background(), cleared)
++		d.clearDoneRuns(cleared)
++
++		if want := []string{"[run watch] " + slug + ": landed; batten done at Done; child none; since 2026-11-15T12:00:00Z"}; !slices.Equal(posted, want) {
++			t.Errorf("lines posted = %q; want %q", posted, want)
++		}
++		if !slices.Equal(calls, []string{slug}) {
++			t.Errorf("ClearDoneRun calls = %v; want the one call once the landed line posted", calls)
++		}
++	})
+ }
+diff --git a/internal/dobbyengine/gatehold.go b/internal/dobbyengine/gatehold.go
+new file mode 100644
+index 000000000..dfdadef57
+--- /dev/null
++++ b/internal/dobbyengine/gatehold.go
+@@ -0,0 +1,277 @@
++// gatehold.go implements the gate-hold notice.
++// On a probe tick it reads the held gate slots and posts one line for each hold of a driven run that is past its bound.
++// The line names the holder's process tree and the marked processes outside it.
++
++package dobbyengine
++
++import (
++	"cmp"
++	"context"
++	"fmt"
++	"math"
++	"path/filepath"
++	"slices"
++	"strconv"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/proc"
++)
++
++// gateHoldProcessMax is the most descendants, and the most marked processes outside the tree, one line names.
++const gateHoldProcessMax = 20
++
++// GateHolder is one held gate slot as dobby reads it.
++type GateHolder struct {
++	Slot int
++	// Worktree is the directory the holding run works in.
++	Worktree string
++	// Site is the label of what holds the slot.
++	Site string
++	// Tier is the tier key of a tier run, empty for any other holder.
++	Tier string
++	// Marker is the `NAME=value` entry the holder's processes carry in their environment, empty when it records none.
++	Marker string
++	// PID is the holding process.
++	PID int
++	// Started is when the slot was acquired.
++	Started time.Time
++	// TierTimeout is the tier's gate.tiers.<tier>.timeout_min, zero for a holder with no tier or a tier with none.
++	TierTimeout time.Duration
++}
++
++// GateHoldDeps is the seams of the gate-hold notice, told by the hub wiring.
++// A nil Holders or a nil Post checks nothing.
++type GateHoldDeps struct {
++	// Holders reads the live holders with their tier timeouts.
++	Holders func() ([]GateHolder, error)
++	// TaskWorktree returns the task worktree path of the run slug.
++	TaskWorktree func(slug string) (string, error)
++	// Tree samples the process pid and every descendant of it.
++	Tree func(pid int) ([]proc.ProcessSample, error)
++	// MarkedPIDs returns the processes whose environment holds entry.
++	MarkedPIDs func(entry string) ([]int, error)
++	// Post posts one line about the run slug to the nearest live orch.
++	Post func(ctx context.Context, slug, line string) error
++}
++
++// gateHolds notices each hold of a listed run that is past its bound, once per hold, on a probe tick.
++// The bound runs on awake time, and the keys of the holds noticed are kept in the run's watch memory.
++// A failed read or post is logged once per episode and tried again on the next probe tick.
++func (d *daemon) gateHolds(ctx context.Context, now time.Time) {
++	seams := d.deps.GateHolds
++	if seams.Holders == nil || seams.Post == nil || !d.probeDue {
++		return
++	}
++	cfg, err := d.deps.LoadConfig()
++	if err != nil {
++		d.gateHoldReads.Fail("config", "dobbyengine: the config does not load; no gate-hold check", "error", err)
++		return
++	}
++	d.gateHoldReads.Recover("config", "dobbyengine: the config loads again for the gate-hold check")
++	if cfg.GateHoldFactor == 0 {
++		return
++	}
++	holders, err := seams.Holders()
++	if err != nil {
++		d.gateHoldReads.Fail("holders", "dobbyengine: the gate slot holders are unreadable; no gate-hold check", "error", err)
++		return
++	}
++	d.gateHoldReads.Recover("holders", "dobbyengine: the gate slot holders read again")
++	record, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		d.gateHoldReads.Fail("state", "dobbyengine: the state record is unreadable; no gate-hold check", "error", err)
++		return
++	}
++	d.gateHoldReads.Recover("state", "dobbyengine: the state record reads again for the gate-hold check")
++
++	// One process may hold several slots, which are one hold.
++	holds := map[string][]GateHolder{}
++	byPID := map[int][]GateHolder{}
++	for _, holder := range holders {
++		byPID[holder.PID] = append(byPID[holder.PID], holder)
++	}
++	for _, hold := range byPID {
++		holds[gateHoldKey(hold)] = hold
++	}
++
++	for _, run := range d.listedRuns {
++		worktree, err := seams.TaskWorktree(run.Slug)
++		if err != nil {
++			d.gateHoldReads.Fail(run.Slug+"|worktree", "dobbyengine: the run's task worktree does not resolve; no gate-hold check for it", "slug", run.Slug, "error", err)
++			continue
++		}
++		d.gateHoldReads.Recover(run.Slug+"|worktree", "dobbyengine: the run's task worktree resolves again", "slug", run.Slug)
++
++		noticed := record.Watches[run.Slug].GateHolds
++		kept := slices.DeleteFunc(slices.Clone(noticed), func(key string) bool { return holds[key] == nil })
++		for key, hold := range holds {
++			if !underWorktree(hold[0].Worktree, worktree) || slices.Contains(kept, key) {
++				continue
++			}
++			bound := gateHoldBound(cfg, hold)
++			if pauserecord.AwakeSince(gateHoldStart(hold), now, record.Sleeps) < bound {
++				continue
++			}
++			tree, marked := d.gateHoldProcesses(run.Slug, hold)
++			if err := seams.Post(ctx, run.Slug, gateHoldLine(run.Slug, hold, bound, tree, marked)); err != nil {
++				d.gateHoldPosts.Fail(run.Slug, "dobbyengine: a gate-hold notice did not go out", "slug", run.Slug, "error", err)
++				continue
++			}
++			d.gateHoldPosts.Recover(run.Slug, "dobbyengine: the gate-hold notices go out again", "slug", run.Slug)
++			kept = append(kept, key)
++		}
++		if slices.Equal(kept, noticed) {
++			continue
++		}
++		err = UpdateState(d.geom.StatePath, func(s *State) error {
++			if s.Watches == nil {
++				s.Watches = map[string]RunWatchState{}
++			}
++			watch := s.Watches[run.Slug]
++			watch.GateHolds = kept
++			s.Watches[run.Slug] = watch
++			return nil
++		})
++		if err != nil {
++			d.gateHoldPosts.Fail(run.Slug+"|record", "dobbyengine: the noticed gate holds could not be recorded", "slug", run.Slug, "error", err)
++			continue
++		}
++		d.gateHoldPosts.Recover(run.Slug+"|record", "dobbyengine: the noticed gate holds are recorded again", "slug", run.Slug)
++	}
++}
++
++// gateHoldProcesses samples the holder's tree and the marked processes outside it.
++// It returns nothing at all when either cannot be read, so the line names the tree as unreadable.
++func (d *daemon) gateHoldProcesses(slug string, hold []GateHolder) (tree, marked []proc.ProcessSample) {
++	seams := d.deps.GateHolds
++	unreadable := func(err error) {
++		d.gateHoldReads.Fail(slug+"|processes", "dobbyengine: the gate holder's processes are unreadable", "slug", slug, "pid", hold[0].PID, "error", err)
++	}
++	tree, err := seams.Tree(hold[0].PID)
++	if err != nil {
++		unreadable(err)
++		return nil, nil
++	}
++	if marker := gateHoldMarker(hold); marker != "" {
++		pids, err := seams.MarkedPIDs(marker)
++		if err != nil {
++			unreadable(err)
++			return nil, nil
++		}
++		for _, pid := range pids {
++			if slices.ContainsFunc(tree, func(sample proc.ProcessSample) bool { return sample.PID == pid }) {
++				continue
++			}
++			own, err := seams.Tree(pid)
++			if err != nil {
++				unreadable(err)
++				return nil, nil
++			}
++			// A process that ended since the marker scan has no entry.
++			if i := slices.IndexFunc(own, func(sample proc.ProcessSample) bool { return sample.PID == pid }); i >= 0 {
++				marked = append(marked, own[i])
++			}
++		}
++	}
++	d.gateHoldReads.Recover(slug+"|processes", "dobbyengine: the gate holder's processes read again", "slug", slug)
++	return tree, marked
++}
++
++// gateHoldStart returns the earliest acquire time among the slots of hold.
++func gateHoldStart(hold []GateHolder) time.Time {
++	start := hold[0].Started
++	for _, holder := range hold[1:] {
++		if holder.Started.Before(start) {
++			start = holder.Started
++		}
++	}
++	return start
++}
++
++// gateHoldKey tells one hold from another: another process, or a later start of the same one, is a new hold.
++func gateHoldKey(hold []GateHolder) string {
++	return strconv.Itoa(hold[0].PID) + "|" + strconv.FormatInt(gateHoldStart(hold).UnixNano(), 10)
++}
++
++// gateHoldBound returns how long hold may stand: the factor times its largest tier timeout,
++// or the configured minutes when no slot of it has one.
++func gateHoldBound(cfg Config, hold []GateHolder) time.Duration {
++	var timeout time.Duration
++	for _, holder := range hold {
++		timeout = max(timeout, holder.TierTimeout)
++	}
++	if timeout <= 0 {
++		return time.Duration(cfg.GateHoldMin) * time.Minute
++	}
++	bound := cfg.GateHoldFactor * float64(timeout)
++	// A product past the type's range converts to a negative bound, which every hold is past.
++	if bound >= float64(math.MaxInt64) {
++		return math.MaxInt64
++	}
++	return time.Duration(bound)
++}
++
++// gateHoldMarker returns the first environment marker a slot of hold records, empty when none does.
++func gateHoldMarker(hold []GateHolder) string {
++	for _, holder := range hold {
++		if holder.Marker != "" {
++			return holder.Marker
++		}
++	}
++	return ""
++}
++
++// gateHoldLine renders the gate-hold notice of the run slug.
++// The tree argument is the holder's process tree, empty when it could not be read.
++// The marked argument is the processes outside that tree that carry the holder's marker.
++// Each process list is ordered by CPU time, most first, and cut at gateHoldProcessMax.
++func gateHoldLine(slug string, hold []GateHolder, bound time.Duration, tree []proc.ProcessSample, marked []proc.ProcessSample) string {
++	slots := make([]int, len(hold))
++	for i, holder := range hold {
++		slots[i] = holder.Slot
++	}
++	slices.Sort(slots)
++	slotNames := make([]string, len(slots))
++	for i, slot := range slots {
++		slotNames[i] = strconv.Itoa(slot)
++	}
++
++	var b strings.Builder
++	fmt.Fprintf(&b, "%s %s: a gate slot is held past its bound: slots %s; tier %s; site %s; started %s; bound %s; holder pid %d",
++		runNoticePrefix, slug, strings.Join(slotNames, ","), cmp.Or(hold[0].Tier, "none"), hold[0].Site,
++		gateHoldStart(hold).UTC().Format(time.RFC3339), bound, hold[0].PID)
++	if len(tree) == 0 {
++		b.WriteString("; process tree unreadable")
++		return b.String()
++	}
++
++	var descendants []proc.ProcessSample
++	for _, sample := range tree {
++		if sample.PID == hold[0].PID {
++			fmt.Fprintf(&b, " %s cpu %s", sample.Path, sample.CPU)
++			continue
++		}
++		descendants = append(descendants, sample)
++	}
++	writeProcesses := func(lead string, samples []proc.ProcessSample) {
++		ordered := slices.Clone(samples)
++		slices.SortStableFunc(ordered, func(a, b proc.ProcessSample) int { return cmp.Compare(b.CPU, a.CPU) })
++		for _, sample := range ordered[:min(len(ordered), gateHoldProcessMax)] {
++			fmt.Fprintf(&b, "; %s %d %s cpu %s", lead, sample.PID, sample.Path, sample.CPU)
++		}
++		if rest := len(ordered) - gateHoldProcessMax; rest > 0 {
++			fmt.Fprintf(&b, "; and %d more", rest)
++		}
++	}
++	writeProcesses("child pid", descendants)
++	writeProcesses("outside the tree, carrying "+gateHoldMarker(hold)+": pid", marked)
++	return b.String()
++}
++
++// underWorktree reports whether path is worktree or lies inside it, compared on whole path segments.
++func underWorktree(path, worktree string) bool {
++	path, worktree = filepath.Clean(path), filepath.Clean(worktree)
++	return path == worktree || strings.HasPrefix(path, worktree+string(filepath.Separator))
++}
+diff --git a/internal/dobbyengine/gatehold_test.go b/internal/dobbyengine/gatehold_test.go
+new file mode 100644
+index 000000000..dc85410b1
+--- /dev/null
++++ b/internal/dobbyengine/gatehold_test.go
+@@ -0,0 +1,279 @@
++// gatehold_test.go pins the gate-hold notice over fake slot holders and process reads.
++// It covers the bound on awake time, the one notice per hold, the line and the retries after a failed read or post.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"slices"
++	"strconv"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/proc"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// gateHoldFake is what the gate-hold seams of one test report, and what they were given.
++type gateHoldFake struct {
++	holders     []GateHolder
++	holdersErr  error
++	holderCalls int
++	trees       map[int][]proc.ProcessSample
++	treeErr     error
++	marked      []int
++	markedErr   error
++	worktreeErr error
++	cfg         Config
++	cfgErr      error
++	postErr     error
++	posted      []string
++}
++
++// newGateHoldHarness returns a pass harness over one running run, task, whose task worktree is /hub/task,
++// and a fake holding one tier3 slot under it since the harness clock's start.
++func newGateHoldHarness(t *testing.T) (*passHarness, *gateHoldFake) {
++	t.Helper()
++	h := newPassHarness(t, runningRun("task"))
++	f := &gateHoldFake{
++		holders: []GateHolder{{
++			Slot: 1, Worktree: "/hub/task/sub", Site: "gate test tier3", Tier: "tier3", Marker: "LYM_GATE_TEST_PID=100",
++			PID: 100, Started: h.clock.now(), TierTimeout: 35 * time.Minute,
++		}},
++		trees: map[int][]proc.ProcessSample{
++			100: {
++				{PID: 100, Path: "/bin/lym", CPU: time.Second},
++				{PID: 101, Parent: 100, Path: "/bin/go", CPU: 2 * time.Second},
++				{PID: 102, Parent: 101, Path: "/tmp/x.test", CPU: 3 * time.Second},
++			},
++			200: {{PID: 200, Path: "/usr/bin/tmux", CPU: 4 * time.Second}},
++		},
++		marked: []int{101, 200},
++		cfg:    Config{GateHoldFactor: 1.5, GateHoldMin: 30},
++	}
++	h.d.deps.LoadConfig = func() (Config, error) { return f.cfg, f.cfgErr }
++	h.d.deps.GateHolds = GateHoldDeps{
++		Holders: func() ([]GateHolder, error) {
++			f.holderCalls++
++			return slices.Clone(f.holders), f.holdersErr
++		},
++		TaskWorktree: func(slug string) (string, error) { return "/hub/" + slug, f.worktreeErr },
++		Tree:         func(pid int) ([]proc.ProcessSample, error) { return f.trees[pid], f.treeErr },
++		MarkedPIDs:   func(string) ([]int, error) { return f.marked, f.markedErr },
++		Post: func(_ context.Context, _, line string) error {
++			if f.postErr != nil {
++				return f.postErr
++			}
++			f.posted = append(f.posted, line)
++			return nil
++		},
++	}
++	return h, f
++}
++
++// tickAt runs one probe tick at the wall time since past start.
++func (h *passHarness) tickAt(start time.Time, since time.Duration) {
++	h.t.Helper()
++	// tick itself advances the clock by one probe interval.
++	h.advance(start.Add(since).Sub(h.clock.now()) - 10*time.Second)
++	h.tick(true)
++}
++
++func TestGateHolds(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const line = "[dobby notice] task: a gate slot is held past its bound: slots 1; tier tier3; site gate test tier3; " +
++		"started 2026-10-25T12:00:00Z; bound 52m30s; holder pid 100 /bin/lym cpu 1s; " +
++		"child pid 102 /tmp/x.test cpu 3s; child pid 101 /bin/go cpu 2s; " +
++		"outside the tree, carrying LYM_GATE_TEST_PID=100: pid 200 /usr/bin/tmux cpu 4s"
++	past := 53 * time.Minute
++	requirePosts := func(t *testing.T, f *gateHoldFake, want int) {
++		t.Helper()
++		if len(f.posted) != want {
++			t.Fatalf("posted = %q; want %d notices", f.posted, want)
++		}
++	}
++	requireHolds := func(t *testing.T, f *gateHoldFake, want ...string) {
++		t.Helper()
++		requirePosts(t, f, 1)
++		for _, part := range want {
++			if !strings.Contains(f.posted[0], part) {
++				t.Errorf("notice = %q; want it to hold %q", f.posted[0], part)
++			}
++		}
++	}
++	unreadable := func(fail func(f *gateHoldFake)) func(*testing.T, *passHarness, *gateHoldFake, time.Time) {
++		return func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			fail(f)
++			h.tickAt(start, past)
++			h.tickAt(start, past+time.Minute)
++			requireHolds(t, f, "holder pid 100; process tree unreadable")
++		}
++	}
++
++	tests := []struct {
++		name string
++		run  func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time)
++	}{
++		{"PostsTheLineOnceTheAwakeBoundPasses", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			h.tickAt(start, 52*time.Minute)
++			requirePosts(t, f, 0)
++			h.tickAt(start, past)
++			if want := []string{line}; !slices.Equal(f.posted, want) {
++				t.Errorf("posted = %q; want %q", f.posted, want)
++			}
++		}},
++		{"AMachineSleepDelaysTheNotice", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			h.tick(true)
++			h.clock.suspend(2 * time.Minute)
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++			h.tickAt(start, past+2*time.Minute)
++			requirePosts(t, f, 1)
++		}},
++		{"OneHoldIsNoticedOnceAcrossTicksAndARestart", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			h.tickAt(start, past)
++			h.tick(true)
++			h.restartDobby()
++			h.tick(true)
++			requirePosts(t, f, 1)
++		}},
++		{"TwoSlotsOfOneProcessAreOneHoldFromItsEarliestStart", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			second := f.holders[0]
++			second.Slot, second.TierTimeout = 2, 40*time.Minute
++			f.holders[0].Started = start.Add(10 * time.Minute)
++			f.holders = append(f.holders, second)
++			h.tickAt(start, 59*time.Minute)
++			requirePosts(t, f, 0)
++			h.tickAt(start, 61*time.Minute)
++			h.tick(true)
++			requireHolds(t, f, "slots 1,2;", "started 2026-10-25T12:00:00Z;", "bound 1h0m0s;")
++		}},
++		{"AnotherProcessOrALaterStartIsANewHold", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			h.tickAt(start, past)
++			f.holders[0].PID = 300
++			h.tick(true)
++			requirePosts(t, f, 2)
++			f.holders[0].Started = start.Add(time.Minute)
++			h.tickAt(start, past+time.Minute)
++			requirePosts(t, f, 3)
++			want := []string{"300|" + strconv.FormatInt(start.Add(time.Minute).UnixNano(), 10)}
++			if got := h.stateRecord().Watches["task"].GateHolds; !slices.Equal(got, want) {
++				t.Errorf("GateHolds = %q; want only the current hold %q", got, want)
++			}
++		}},
++		{"AHolderInTheTaskWorktreeItselfIsTheRuns", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.holders[0].Worktree = "/hub/task"
++			h.tickAt(start, past)
++			requirePosts(t, f, 1)
++		}},
++		{"AFactorPastTheDurationRangeNoticesNothing", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.cfg.GateHoldFactor = 1e10
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++		}},
++		{"ASiblingWorktreeIsNotTheRuns", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.holders[0].Worktree = "/hub/task-b"
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++		}},
++		{"AHolderWithNoTierTakesTheMinutesBound", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.holders[0].Tier, f.holders[0].TierTimeout = "", 0
++			h.tickAt(start, 29*time.Minute)
++			requirePosts(t, f, 0)
++			h.tickAt(start, 30*time.Minute)
++			requireHolds(t, f, "tier none;", "bound 30m0s;")
++		}},
++		{"FactorZeroSendsNothing", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.cfg.GateHoldFactor = 0
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++		}},
++		{"UnreadableHoldersAreReadAgain", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.holdersErr = errors.New("no pool")
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++			f.holdersErr = nil
++			h.tick(true)
++			requirePosts(t, f, 1)
++		}},
++		{"AFailingConfigIsLoadedAgain", func(t *testing.T, h *passHarness, f *gateHoldFake, _ time.Time) {
++			// A tick itself fails on a config that does not load, so the step is called on its own.
++			h.advance(past)
++			h.d.probeDue = true
++			h.d.listedRuns = []RunView{runningRun("task")}
++			f.cfgErr = errors.New("bad config")
++			h.d.gateHolds(context.Background(), h.clock.now())
++			requirePosts(t, f, 0)
++			f.cfgErr = nil
++			h.d.gateHolds(context.Background(), h.clock.now())
++			requirePosts(t, f, 1)
++		}},
++		{"ATickThatIsNoProbeReadsNothing", func(t *testing.T, h *passHarness, f *gateHoldFake, _ time.Time) {
++			h.advance(past)
++			h.tick(false)
++			requirePosts(t, f, 0)
++			if f.holderCalls != 0 {
++				t.Errorf("Holders calls = %d; want 0", f.holderCalls)
++			}
++		}},
++		{"AFailingTreeStillPosts", unreadable(func(f *gateHoldFake) { f.treeErr = errors.New("no proc") })},
++		{"AFailingMarkerScanStillPosts", unreadable(func(f *gateHoldFake) { f.markedErr = errors.New("no proc") })},
++		{"AnUnresolvedTaskWorktreeSkipsTheRun", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.worktreeErr = errors.New("no pair")
++			h.tickAt(start, past)
++			requirePosts(t, f, 0)
++		}},
++		{"AFailedPostIsTriedAgainAndThenRecorded", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			f.postErr = errors.New("no orch")
++			h.tickAt(start, past)
++			if got := h.stateRecord().Watches["task"].GateHolds; len(got) != 0 {
++				t.Errorf("GateHolds after a failed post = %q; want none", got)
++			}
++			f.postErr = nil
++			h.tick(true)
++			requirePosts(t, f, 1)
++			want := []string{"100|" + strconv.FormatInt(start.UnixNano(), 10)}
++			if got := h.stateRecord().Watches["task"].GateHolds; !slices.Equal(got, want) {
++				t.Errorf("GateHolds = %q; want %q", got, want)
++			}
++		}},
++		{"ALongProcessListIsCutAndCounted", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			for i := range 23 {
++				f.trees[100] = append(f.trees[100], proc.ProcessSample{PID: 400 + i, Parent: 100, Path: "/bin/sh"})
++			}
++			f.marked = nil
++			h.tickAt(start, past)
++			requireHolds(t, f, "child pid 102 /tmp/x.test cpu 3s; child pid 101 /bin/go cpu 2s;")
++			if got := strings.Count(f.posted[0], "; child pid "); got != 20 {
++				t.Errorf("descendants named = %d; want 20", got)
++			}
++			if !strings.HasSuffix(f.posted[0], "; and 5 more") {
++				t.Errorf("notice = %q; want it to end with the count of the rest", f.posted[0])
++			}
++		}},
++		{"AWatchLevelOfOffStillGetsTheNotice", func(t *testing.T, h *passHarness, f *gateHoldFake, start time.Time) {
++			h.d.deps.RunWatch = RunWatchDeps{
++				Level: func(string) (string, error) { return RunWatchOff, nil },
++				Post:  func(context.Context, string, string) (bool, error) { return true, nil },
++			}
++			h.tickAt(start, past)
++			requirePosts(t, f, 1)
++			// The run watch rewrites the memory that holds the noticed holds on every tick.
++			h.tick(true)
++			h.restartDobby()
++			h.tick(true)
++			requirePosts(t, f, 1)
++		}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h, f := newGateHoldHarness(t)
++			tt.run(t, h, f, h.clock.now())
++		})
++	}
++}
+diff --git a/internal/dobbyengine/keynames.go b/internal/dobbyengine/keynames.go
+index c9da61ea1..228c57df1 100644
+--- a/internal/dobbyengine/keynames.go
++++ b/internal/dobbyengine/keynames.go
+@@ -10,6 +10,12 @@ import (
+ // taskHeadroomKey is the beam.yaml key a start hold names.
+ const taskHeadroomKey = "task_headroom"
+ 
++// The beam.yaml keys of the gate-hold notice's bound.
++const (
++	gateHoldFactorKey = "gate_hold_factor"
++	gateHoldMinKey    = "gate_hold_min"
++)
++
+ // keyName returns the full name of the beam.yaml key at path.
+ func keyName(path string) string {
+ 	return configengine.KeyName(beamsetting.Module, path)
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 7061a81cc..67395fe78 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -151,6 +151,11 @@ type Deps struct {
+ 	NearestOrch func() (string, error)
+ 	// RunNotices are the seams the run notices of the runs this dobby drives read; a nil RunNotices.ReadChild sends none.
+ 	RunNotices RunNoticeDeps
++	// RunWatch are the seams of the run watch; a nil RunWatch.Level or RunWatch.Post watches nothing.
++	// The child it reads comes through RunNotices.ReadChild.
++	RunWatch RunWatchDeps
++	// GateHolds are the seams of the gate-hold notice; a nil GateHolds.Holders or GateHolds.Post checks nothing.
++	GateHolds GateHoldDeps
+ 	// WaitReminders are the seams the reminders of a child waiting on the operator read; nil WaitReminders.Post sends none.
+ 	WaitReminders WaitReminderDeps
+ 	// CanLand reads whether the beam of this dobby is flagged ready with nothing working under it, and who owns its parent.
+@@ -382,6 +387,14 @@ type daemon struct {
+ 	landNoticeLookup logger.EpisodeSet
+ 	// landNoticePosts guards each owed landing notice's post by its slug.
+ 	landNoticePosts logger.EpisodeSet
++	// watchRecordFailed reports that the tick's run watch step could not read or write the state record.
++	watchRecordFailed bool
++	// watchLevelReads guards each run's beam.run_watch lookup by its slug, and watchPosts each owed watch line's post.
++	watchLevelReads logger.EpisodeSet
++	watchPosts      logger.EpisodeSet
++	// gateHoldReads guards each read of the gate-hold check, and gateHoldPosts each run's notice and its record.
++	gateHoldReads logger.EpisodeSet
++	gateHoldPosts logger.EpisodeSet
+ 	// listedRuns is the run listing of the tick's pass step, done runs included.
+ 	listedRuns []RunView
+ 	// landed is the slugs whose landing the tick's landing count read, nil while Deps.Landings is nil.
+@@ -717,6 +730,8 @@ func (d *daemon) tick(ctx context.Context, now time.Time) error {
+ 		d.runNotices(ctx, now)
+ 		d.waitReminders(ctx, now)
+ 		d.landNotices(ctx, now, d.listedRuns)
++		d.runWatch(ctx, now)
++		d.gateHolds(ctx, now)
+ 		d.settleFronts(ctx)
+ 		if err := d.startReady(ctx, now); err != nil {
+ 			return err
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index 080955497..047e4333b 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -34,6 +34,12 @@ type RunView struct {
+ 	// State is batten's status state and Producer its current producer.
+ 	State    string
+ 	Producer string
++	// HistoryLen is the length of batten's status history.
++	// LastRepeats is the folded repeats of its last entry, zero for an empty history.
++	HistoryLen  int
++	LastRepeats int
++	// Error is batten's status reason.
++	Error string
+ 	// StatusModified is the modification time of batten's own status file and ChildStatusModified that of the child's status file.
+ 	StatusModified      time.Time
+ 	ChildStatusModified time.Time
+diff --git a/internal/dobbyengine/runnotice.go b/internal/dobbyengine/runnotice.go
+index 093a966d7..a8263d016 100644
+--- a/internal/dobbyengine/runnotice.go
++++ b/internal/dobbyengine/runnotice.go
+@@ -72,8 +72,10 @@ type ChildReading struct {
+ 	CurrentProducer string
+ 	Error           string
+ 	// HistoryLen is the child's history length; NewestHistory is its newest entry's time, zero when unparsable or absent.
++	// LastRepeats is the folded repeats of its newest entry, zero for an empty history.
+ 	HistoryLen    int
+ 	NewestHistory time.Time
++	LastRepeats   int
+ 	// Modified is the modification time of the child's status file.
+ 	Modified time.Time
+ 	// PairDir is the task worktree's directory, which every path in a notice is rendered relative to.
+@@ -105,6 +107,7 @@ type AgentRun struct {
+ // A nil ReadChild sends no run notice.
+ type RunNoticeDeps struct {
+ 	// ReadChild reads the child of the run slug; found is false while the child has no status file.
++	// The reading then holds PairDir alone, which is empty while the task worktree is absent.
+ 	ReadChild func(slug string) (child ChildReading, found bool, err error)
+ 	// DriverAlive reports whether the child has a live driver: a driver strand, or a held driver, run or bootstrap lock.
+ 	DriverAlive func(ctx context.Context, slug string) (bool, error)
+diff --git a/internal/dobbyengine/runwatch.go b/internal/dobbyengine/runwatch.go
+new file mode 100644
+index 000000000..efd3c421b
+--- /dev/null
++++ b/internal/dobbyengine/runwatch.go
+@@ -0,0 +1,342 @@
++// runwatch.go implements the run watch.
++// It owes the nearest live orch one mail line for each change of a driven run that the run's beam.run_watch asks for.
++// It reads every listed run on each scheduling tick, remembers the reading, and owes and delivers the lines.
++
++package dobbyengine
++
++import (
++	"context"
++	"fmt"
++	"maps"
++	"slices"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/runfsm"
++)
++
++// runWatchPrefix is the literal every watch line begins with, so the orch can tell it from operator input.
++const runWatchPrefix = "[run watch]"
++
++const (
++	// watchLineMaxAge is the awake time a line stays owed before it is dropped.
++	watchLineMaxAge = time.Hour
++	// watchPostMaxAttempts is how many failed posts a line gets before it is dropped.
++	watchPostMaxAttempts = 3
++)
++
++// RunWatchDeps is the seams of the run watch, told by the hub wiring.
++// A nil Level or a nil Post sends no watch line and keeps no memory.
++type RunWatchDeps struct {
++	// Level reads the beam.run_watch of the run slug: stops, rows or off.
++	Level func(slug string) (string, error)
++	// Post posts one untagged line about the run slug to the nearest live orch.
++	// posted is false with a nil error while no orch strand is recorded.
++	Post func(ctx context.Context, slug, line string) (posted bool, err error)
++}
++
++// WatchReading is what the run watch reads of one run at one tick.
++// It is comparable.
++type WatchReading struct {
++	// Run is the run's state derived from its tracked records.
++	Run string `json:"run,omitempty"`
++	// BattenState, BattenRow and BattenError are batten's status state, current producer and reason.
++	BattenState string `json:"batten_state,omitempty"`
++	BattenRow   string `json:"batten_row,omitempty"`
++	BattenError string `json:"batten_error,omitempty"`
++	// ChildRead reports whether the child's status was ever read, which the child fields below then describe.
++	ChildRead  bool   `json:"child_read,omitempty"`
++	ChildState string `json:"child_state,omitempty"`
++	ChildRow   string `json:"child_row,omitempty"`
++	ChildError string `json:"child_error,omitempty"`
++	// ChildEpisode is the child's history length plus its newest entry's folded repeats.
++	ChildEpisode int `json:"child_episode,omitempty"`
++	// PairDir is the task worktree's directory, which a reason's paths are rendered relative to.
++	PairDir string `json:"pair_dir,omitempty"`
++	// Episode tells two stops at the same place apart:
++	// the history length plus the newest entry's folded repeats, of batten while it is not running, else of the child.
++	Episode int `json:"episode,omitempty"`
++	// Since is when the newer of batten's and the child's status was written.
++	Since time.Time `json:"since,omitzero"`
++}
++
++// compared returns the reading without the parts that make no change of their own:
++// its time, its reason texts, the pair directory, and the child's episode, which Episode carries while it counts.
++func (r WatchReading) compared() WatchReading {
++	r.Since, r.BattenError, r.ChildError, r.PairDir, r.ChildEpisode = time.Time{}, "", "", "", 0
++	return r
++}
++
++// OwedWatchLine is one watch line still to post.
++type OwedWatchLine struct {
++	Line   string    `json:"line"`
++	OwedAt time.Time `json:"owed_at"`
++	// Attempts counts the failed posts, and NextTry is the earliest time of the next.
++	Attempts int       `json:"attempts,omitempty"`
++	NextTry  time.Time `json:"next_try,omitzero"`
++}
++
++// RunWatchState is dobby's memory of one run for the run watch.
++type RunWatchState struct {
++	// Level is the last beam.run_watch read for the run, empty while none was read.
++	Level string `json:"level,omitempty"`
++	// Last is the last reading the watch handled, nil while there is none.
++	Last *WatchReading `json:"last,omitempty"`
++	// LandNotice is the run's beam.land_notice reading copied ahead of its Land row, nil while none was copied.
++	LandNotice *bool `json:"land_notice,omitempty"`
++	// AheadOfLand reports that the run was ahead of its Land row at the last tick that listed it.
++	AheadOfLand bool `json:"ahead_of_land,omitempty"`
++	// Owed is the lines still to post, oldest first.
++	Owed []OwedWatchLine `json:"owed,omitempty"`
++	// GateHolds is the gate holds of the run already noticed.
++	GateHolds []string `json:"gate_holds,omitempty"`
++	// StatusSeen and ChildSeen are batten's and the child's listed status times at the last child read the watch took.
++	// A child written after its listing is not taken.
++	StatusSeen time.Time `json:"status_seen,omitzero"`
++	ChildSeen  time.Time `json:"child_seen,omitzero"`
++}
++
++// runWatch reads every listed run, owes the watch lines its changes call for, and posts the owed ones.
++// A run no longer listed keeps its memory while it owes a line or batten still has its status.
++// A record that cannot be read or written is one Warn and ends the step; watchRecordFailed then tells the tick.
++func (d *daemon) runWatch(ctx context.Context, now time.Time) {
++	d.watchRecordFailed = false
++	if d.deps.RunWatch.Level == nil || d.deps.RunWatch.Post == nil {
++		return
++	}
++	record, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		d.failWatchRecord(err)
++		return
++	}
++	watches := maps.Clone(record.Watches)
++	if watches == nil {
++		watches = map[string]RunWatchState{}
++	}
++	listed := make(map[string]bool, len(d.listedRuns))
++	for _, run := range d.listedRuns {
++		listed[run.Slug] = true
++		watches[run.Slug] = d.watchRun(now, run, watches[run.Slug], record.LandNotices[run.Slug])
++	}
++	for slug, watch := range watches {
++		if listed[slug] {
++			continue
++		}
++		// The landing memory of a run first listed again past Land is gone for good,
++		// so the copy would skip a line nothing else sends.
++		if _, remembered := record.LandNotices[slug]; watch.AheadOfLand && !remembered {
++			watch.LandNotice = nil
++			watches[slug] = watch
++		}
++		if len(watch.Owed) > 0 || d.deps.StatusExists == nil {
++			continue
++		}
++		if exists, err := d.deps.StatusExists(slug); err == nil && !exists {
++			delete(watches, slug)
++		}
++	}
++	if !d.recordWatches(watches) {
++		return
++	}
++	if d.postWatchLines(ctx, now, watches, record.Sleeps) {
++		d.recordWatches(watches)
++	}
++}
++
++// failWatchRecord logs a state record the watch could not use and marks the tick.
++func (d *daemon) failWatchRecord(err error) {
++	d.watchRecordFailed = true
++	logger.Warn("dobbyengine: the run watch could not use the state record; the next tick tries again", "worktree", d.geom.WorktreeName, "error", err)
++}
++
++// recordWatches writes watches as the record's run watch memory and reports whether it did.
++func (d *daemon) recordWatches(watches map[string]RunWatchState) bool {
++	err := UpdateState(d.geom.StatePath, func(s *State) error {
++		s.Watches = watches
++		return nil
++	})
++	if err != nil {
++		d.failWatchRecord(err)
++		return false
++	}
++	return true
++}
++
++// watchRun returns run's memory after this tick's reading, with the line it owes, if any.
++func (d *daemon) watchRun(now time.Time, run RunView, watch RunWatchState, landNote LandNoticeState) RunWatchState {
++	// Copied ahead of Land and before the level is read, since the landing notice drops its memory once it posted.
++	if !run.PastLand && landNote.read() {
++		requested := landNote.Requested
++		watch.LandNotice = &requested
++	}
++	watch.AheadOfLand = !run.PastLand
++	// Past Land the task's worktree, where its own setting lives, is torn down, so a read would answer a parent's.
++	if !run.PastLand || watch.Level == "" {
++		level, err := d.deps.RunWatch.Level(run.Slug)
++		if err != nil {
++			d.watchLevelReads.Fail(run.Slug, "dobbyengine: the run's "+keyName(RunWatchKey)+" does not read; it keeps its last level", "slug", run.Slug, "error", err)
++		} else {
++			d.watchLevelReads.Recover(run.Slug, "dobbyengine: the run's "+keyName(RunWatchKey)+" reads again", "slug", run.Slug)
++			watch.Level = level
++		}
++	}
++	if watch.Level == "" {
++		return watch
++	}
++	reading, ok := d.readWatchedRun(now, run, &watch)
++	if !ok {
++		return watch
++	}
++	last := watch.Last
++	watch.Last = &reading
++	if last != nil && reading.compared() == last.compared() {
++		return watch
++	}
++	if watch.Level == RunWatchOff {
++		return watch
++	}
++	if watch.Level == RunWatchStops {
++		if !watchStop(reading) {
++			return watch
++		}
++		if last != nil && reading.Run == last.Run && reading.BattenState == last.BattenState && reading.ChildState == last.ChildState &&
++			reading.ChildRead == last.ChildRead && reading.Episode == last.Episode {
++			return watch
++		}
++	}
++	// The landing notice reports this landing.
++	if reading.Run == string(runfsm.Landed) && watch.LandNotice != nil && *watch.LandNotice {
++		return watch
++	}
++	watch.Owed = append(slices.Clone(watch.Owed), OwedWatchLine{Line: watchLine(run.Slug, reading), OwedAt: now})
++	return watch
++}
++
++// readWatchedRun reads run.
++// It reads the child only when watch has no reading yet or a status file was written since the last child read.
++// A child that is not read, does not read or has no status keeps the child part of the last reading.
++// So does a child written after the run was listed, since the listed state is older than it;
++// ok is false when there is no last reading to keep.
++// Every other child read that succeeds records the status times in watch.
++func (d *daemon) readWatchedRun(now time.Time, run RunView, watch *RunWatchState) (reading WatchReading, ok bool) {
++	reading = WatchReading{Run: string(run.Run), BattenState: run.State, BattenRow: run.Producer, BattenError: run.Error}
++	if last := watch.Last; last != nil {
++		reading.ChildRead, reading.ChildState, reading.ChildRow, reading.ChildError = last.ChildRead, last.ChildState, last.ChildRow, last.ChildError
++		reading.ChildEpisode, reading.PairDir = last.ChildEpisode, last.PairDir
++	}
++	childModified := run.ChildStatusModified
++	written := watch.Last == nil || !run.StatusModified.Equal(watch.StatusSeen) || !run.ChildStatusModified.Equal(watch.ChildSeen)
++	if read := d.deps.RunNotices.ReadChild; read != nil && written {
++		key := run.Slug + "|watch-child"
++		child, found, err := read(run.Slug)
++		if err != nil {
++			d.noticeFailures.Fail(key, "dobbyengine: the child is unreadable; the run watch keeps its last child reading", "slug", run.Slug, "error", err)
++		} else {
++			d.noticeFailures.Recover(key, "dobbyengine: the child reads again for the run watch", "slug", run.Slug)
++			if child.PairDir != "" {
++				reading.PairDir = child.PairDir
++			}
++			// Pairing a newer child with the older listed state would tell one stop twice.
++			if found && !child.Modified.Equal(run.ChildStatusModified) {
++				if watch.Last == nil {
++					return WatchReading{}, false
++				}
++			} else {
++				watch.StatusSeen, watch.ChildSeen = run.StatusModified, run.ChildStatusModified
++				if found {
++					reading.ChildRead, reading.ChildState, reading.ChildRow, reading.ChildError = true, child.State, child.CurrentProducer, child.Error
++					reading.ChildEpisode = child.HistoryLen + child.LastRepeats
++				}
++			}
++		}
++	}
++	switch {
++	case run.State != runStateRunning:
++		reading.Episode = run.HistoryLen + run.LastRepeats
++	case reading.ChildRead:
++		reading.Episode = reading.ChildEpisode
++	}
++	reading.Since = run.StatusModified
++	if childModified.After(reading.Since) {
++		reading.Since = childModified
++	}
++	if reading.Since.IsZero() {
++		reading.Since = now
++	}
++	return reading, true
++}
++
++// watchStop reports whether reading shows a run that stopped:
++// a derived state of paused, halted, cancelling, cancelled or landed, or a batten or child state other than running.
++func watchStop(reading WatchReading) bool {
++	switch runfsm.State(reading.Run) {
++	case runfsm.Paused, runfsm.Halted, runfsm.Cancelling, runfsm.Cancelled, runfsm.Landed:
++		return true
++	}
++	return reading.BattenState != runStateRunning || (reading.ChildRead && reading.ChildState != childStateRunning)
++}
++
++// watchLine renders the watch line of the run slug:
++// its derived state, batten's and the child's state and row, the child's reason or else batten's, and since when.
++// Every path under the pair directory is rendered relative to it, and the reason is cut to one line.
++func watchLine(slug string, reading WatchReading) string {
++	var b strings.Builder
++	fmt.Fprintf(&b, "%s %s: %s; batten %s at %s", runWatchPrefix, slug, reading.Run, reading.BattenState, reading.BattenRow)
++	if reading.ChildRead {
++		fmt.Fprintf(&b, "; child %s at %s", reading.ChildState, reading.ChildRow)
++	} else {
++		b.WriteString("; child none")
++	}
++	reason := reading.ChildError
++	if reason == "" {
++		reason = reading.BattenError
++	}
++	if reason != "" {
++		fmt.Fprintf(&b, "; %s", oneLineCut(pairRelative(reason, reading.PairDir), runNoticeErrorMax))
++	}
++	fmt.Fprintf(&b, "; since %s", reading.Since.UTC().Format(time.RFC3339))
++	return b.String()
++}
++
++// postWatchLines posts the owed lines of watches, by sorted slug and oldest first.
++// It reports whether any memory changed.
++// A run's posting ends at the first line that does not go.
++// A line owed for watchLineMaxAge of awake time, or whose post failed watchPostMaxAttempts times, is dropped with a Warn.
++func (d *daemon) postWatchLines(ctx context.Context, now time.Time, watches map[string]RunWatchState, sleeps []pauserecord.Interval) bool {
++	changed := false
++	for _, slug := range slices.Sorted(maps.Keys(watches)) {
++		watch := watches[slug]
++		owed := slices.Clone(watch.Owed)
++		for len(owed) > 0 && !owed[0].NextTry.After(now) {
++			line := owed[0]
++			if pauserecord.AwakeSince(line.OwedAt, now, sleeps) >= watchLineMaxAge {
++				logger.Warn("dobbyengine: a watch line owed too long is dropped", "slug", slug, "line", line.Line)
++				owed, changed = owed[1:], true
++				continue
++			}
++			posted, err := d.deps.RunWatch.Post(ctx, slug, line.Line)
++			if err != nil {
++				owed[0].Attempts++
++				owed[0].NextTry = now.Add(d.probe)
++				changed = true
++				d.watchPosts.Fail(slug, "dobbyengine: a watch line did not go out", "slug", slug, "error", err)
++				if owed[0].Attempts >= watchPostMaxAttempts {
++					logger.Warn("dobbyengine: a watch line is dropped after its failed posts", "slug", slug, "line", line.Line, "attempts", owed[0].Attempts)
++					owed = owed[1:]
++				}
++				break
++			}
++			if !posted {
++				break
++			}
++			d.watchPosts.Recover(slug, "dobbyengine: the watch lines go out again", "slug", slug)
++			d.logLine(now, "run watch "+slug+": "+line.Line)
++			owed, changed = owed[1:], true
++		}
++		watch.Owed = owed
++		watches[slug] = watch
++	}
++	return changed
++}
+diff --git a/internal/dobbyengine/runwatch_test.go b/internal/dobbyengine/runwatch_test.go
+new file mode 100644
+index 000000000..5b8b6b9ff
+--- /dev/null
++++ b/internal/dobbyengine/runwatch_test.go
+@@ -0,0 +1,646 @@
++// runwatch_test.go pins the run watch over a fake level, child reading and post:
++// which changes owe a line, what the line says, what the memory keeps and how owed lines are delivered.
++
++package dobbyengine
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// watchWritten is when batten's status of the watched run was written.
++var watchWritten = time.Date(2026, 10, 25, 11, 0, 0, 0, time.UTC)
++
++// watchFake is the seams of one run watch test, and the harness that ticks over them.
++type watchFake struct {
++	t *testing.T
++	h *passHarness
++
++	level    string
++	levelErr error
++
++	// child is the child reading, childMissing reports no status file, and childErr is a read error.
++	// childReads counts the reads.
++	child        ChildReading
++	childMissing bool
++	childErr     error
++	childReads   int
++	// childWritten is the modification time of the child status, which the next listed view carries.
++	childWritten time.Time
++
++	// noOrch answers that no orch strand is recorded, postErr fails the post, and postCalls counts the posts.
++	noOrch    bool
++	postErr   error
++	postCalls int
++	lines     []string
++}
++
++func newWatchFake(t *testing.T) *watchFake {
++	t.Helper()
++	w := &watchFake{t: t, h: newPassHarness(t), level: RunWatchStops, childWritten: watchWritten}
++	w.h.d.deps.RunNotices.ReadChild = func(string) (ChildReading, bool, error) {
++		w.childReads++
++		return w.child, !w.childMissing, w.childErr
++	}
++	w.h.d.deps.RunWatch = RunWatchDeps{
++		Level: func(string) (string, error) { return w.level, w.levelErr },
++		Post: func(_ context.Context, _, line string) (bool, error) {
++			w.postCalls++
++			if w.postErr != nil || w.noOrch {
++				return false, w.postErr
++			}
++			w.lines = append(w.lines, line)
++			return true, nil
++		},
++	}
++	w.writeChild("running", "Plan-Write")
++	return w
++}
++
++// writeChild writes the child's status with state at row, one second after the last write.
++func (w *watchFake) writeChild(state, row string, change ...func(*ChildReading)) {
++	w.childWritten = w.childWritten.Add(time.Second)
++	w.child = ChildReading{State: state, CurrentProducer: row, Modified: w.childWritten, PairDir: "/wt/task"}
++	for _, apply := range change {
++		apply(&w.child)
++	}
++}
++
++// view is the listing of the running run task, carrying the child status's write time, with change applied.
++func (w *watchFake) view(change ...func(*RunView)) RunView {
++	run := runningRun("task")
++	run.StatusModified, run.ChildStatusModified = watchWritten, w.childWritten
++	for _, apply := range change {
++		apply(&run)
++	}
++	return run
++}
++
++// tick lists the run with change applied and runs one tick.
++func (w *watchFake) tick(change ...func(*RunView)) {
++	w.t.Helper()
++	w.h.fake.runs = []RunView{w.view(change...)}
++	w.h.tick(false)
++}
++
++// tickUnlisted runs one tick that lists no run.
++func (w *watchFake) tickUnlisted() {
++	w.t.Helper()
++	w.h.fake.runs = nil
++	w.h.tick(false)
++}
++
++// landNotice makes the landing notice read on for the run.
++func (w *watchFake) landNotice() {
++	w.h.d.deps.LandNotice = func(string) (bool, error) { return true, nil }
++}
++
++func (w *watchFake) memory() (RunWatchState, bool) {
++	w.t.Helper()
++	watch, found := w.h.stateRecord().Watches["task"]
++	return watch, found
++}
++
++func landedView(run *RunView) {
++	run.State, run.Run, run.Producer, run.PastLand, run.Landed = runStateDone, runfsm.Landed, "Done", true, true
++}
++
++func landingView(run *RunView) {
++	run.Run, run.Producer, run.PastLand = runfsm.Landing, "Land", true
++}
++
++func TestRunWatch(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		head    = "[run watch] task: running; batten running at Run-Shed; child "
++		landed  = "[run watch] task: landed; batten done at Done; child running at Plan-Write"
++		blocked = head + "blocked at Plan-Write"
++	)
++
++	tests := []struct {
++		name string
++		act  func(t *testing.T, w *watchFake)
++		// want is every line posted, in order, each without its closing since clause unless exact is set.
++		want  []string
++		exact bool
++	}{
++		{
++			name: "AChildBlockedAtARowPostsItsLineOnce",
++			act: func(t *testing.T, w *watchFake) {
++				logged := w.h.recordLog()
++				w.tick()
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.Error = "needs a decision" })
++				w.tick()
++				w.tick()
++				want := "run watch task: " + blocked + "; needs a decision; since 2026-10-25T11:00:02Z"
++				if !slices.Contains(*logged, want) {
++					t.Errorf("log lines = %q; want %q among them", *logged, want)
++				}
++			},
++			want:  []string{blocked + "; needs a decision; since 2026-10-25T11:00:02Z"},
++			exact: true,
++		},
++		{
++			name: "AFoldedRepeatOfABlockAtTheSameRowPostsASecondLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.HistoryLen = 3 })
++				w.tick()
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.HistoryLen, c.LastRepeats = 3, 1 })
++				w.tick()
++			},
++			want: []string{blocked, blocked},
++		},
++		{
++			name: "AChildChangedWithNoStatusWriteIsNotRead",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				reads := w.childReads
++				w.child.State = "blocked"
++				w.tick()
++				if w.childReads != reads {
++					t.Errorf("ReadChild calls = %d; want %d, none without a status write", w.childReads, reads)
++				}
++				w.child.State = "running"
++				w.tick(func(r *RunView) { r.StatusModified = watchWritten.Add(time.Minute) })
++				if w.childReads != reads+1 {
++					t.Errorf("ReadChild calls = %d; want %d after batten's status write", w.childReads, reads+1)
++				}
++			},
++		},
++		{
++			name: "AChildBlockedAgainWithALongerHistoryPostsASecondLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.HistoryLen = 3 })
++				w.tick()
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.HistoryLen = 4 })
++				w.tick()
++			},
++			want: []string{blocked, blocked},
++		},
++		{
++			name: "BattenBlockedAgainAtTheSameRowPostsASecondLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.tick(func(r *RunView) { r.State, r.HistoryLen = "blocked", 1 })
++				w.tick(func(r *RunView) { r.State, r.HistoryLen = "blocked", 2 })
++				w.tick(func(r *RunView) { r.State, r.HistoryLen, r.LastRepeats = "blocked", 2, 1 })
++			},
++			want: []string{
++				"[run watch] task: running; batten blocked at Run-Shed; child running at Plan-Write",
++				"[run watch] task: running; batten blocked at Run-Shed; child running at Plan-Write",
++				"[run watch] task: running; batten blocked at Run-Shed; child running at Plan-Write",
++			},
++		},
++		{
++			name: "ARewriteOfOnlyTheTimeAndReasonOwesNoLineUnderRows",
++			act: func(_ *testing.T, w *watchFake) {
++				w.level = RunWatchRows
++				w.tick()
++				w.writeChild("running", "Plan-Write", func(c *ChildReading) { c.Error = "a new reason" })
++				w.tick()
++			},
++			want: []string{head + "running at Plan-Write"},
++		},
++		{
++			name: "AChildWrittenAfterTheListingWaitsForTheNextTick",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				// The listing sees a write the watch has not read, and the child is written again after it.
++				w.writeChild("running", "Plan-Write")
++				listed := w.childWritten
++				w.writeChild("blocked", "Plan-Write")
++				w.tick(func(r *RunView) { r.ChildStatusModified = listed })
++				if len(w.lines) != 0 {
++					t.Errorf("lines over the older listing = %q; want none", w.lines)
++				}
++				w.tick(func(r *RunView) { r.Run = runfsm.Halted })
++			},
++			want: []string{"[run watch] task: halted; batten running at Run-Shed; child blocked at Plan-Write"},
++		},
++		{
++			name: "AFirstReadingOverAnOlderListingKeepsNone",
++			act: func(t *testing.T, w *watchFake) {
++				listed := w.childWritten
++				w.writeChild("blocked", "Plan-Write")
++				w.tick(func(r *RunView) { r.Run, r.ChildStatusModified = runfsm.Halted, listed })
++				if watch, _ := w.memory(); watch.Last != nil {
++					t.Errorf("memory = %+v; want no reading", watch.Last)
++				}
++				w.tick(func(r *RunView) { r.Run = runfsm.Halted })
++			},
++			want: []string{"[run watch] task: halted; batten running at Run-Shed; child blocked at Plan-Write"},
++		},
++		{
++			name: "AFailedChildReadKeepsTheLastChildAndReadsAgainNextTick",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				w.writeChild("blocked", "Plan-Write")
++				w.childErr = errors.New("unreadable")
++				w.tick()
++				if len(w.lines) != 0 {
++					t.Errorf("lines after the failed read = %q; want none", w.lines)
++				}
++				reads := w.childReads
++				w.childErr = nil
++				w.tick()
++				if w.childReads != reads+1 {
++					t.Errorf("ReadChild calls = %d; want %d after the recovery", w.childReads, reads+1)
++				}
++			},
++			want: []string{blocked},
++		},
++		{
++			name: "AReasonIsRelativeToThePairAndOnOneLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.childMissing = true
++				w.tick(func(r *RunView) { r.State, r.Error = "blocked", "no seed in /wt/task/_lym/seed.yaml" })
++				w.childMissing = false
++				w.writeChild("blocked", "Plan-Write", func(c *ChildReading) { c.Error = "stuck on /wt/task/_lym/x.md\nagain" })
++				w.tick()
++			},
++			want: []string{
++				"[run watch] task: running; batten blocked at Run-Shed; child none; no seed in _lym/seed.yaml",
++				blocked + "; stuck on _lym/x.md again",
++			},
++		},
++		{
++			name: "LearningThePairDirectoryAloneOwesNoLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.level, w.childMissing, w.child.PairDir = RunWatchRows, true, ""
++				w.tick()
++				w.writeChild("running", "Plan-Write")
++				w.tick()
++			},
++			want: []string{"[run watch] task: running; batten running at Run-Shed; child none"},
++		},
++		{
++			name: "AChildDoneAndACancellingRunAreStops",
++			act: func(_ *testing.T, w *watchFake) {
++				w.tick()
++				w.writeChild("done", "Land")
++				w.tick()
++				w.tick(func(r *RunView) { r.Run = runfsm.Cancelling })
++			},
++			want: []string{head + "done at Land", "[run watch] task: cancelling; batten running at Run-Shed; child done at Land"},
++		},
++		{
++			name: "BattenBlockedAtLandOverADoneChildPostsItsLine",
++			act: func(_ *testing.T, w *watchFake) {
++				refused := func(r *RunView) { r.State, r.Producer, r.Error = "blocked", "Land", "the land refused" }
++				w.writeChild("done", "Land")
++				w.tick(refused)
++				w.writeChild("blocked", "Land", func(c *ChildReading) { c.Error = "the child's own reason" })
++				w.tick(refused)
++			},
++			want: []string{
++				"[run watch] task: running; batten blocked at Land; child done at Land; the land refused",
++				"[run watch] task: running; batten blocked at Land; child blocked at Land; the child's own reason",
++			},
++		},
++		{
++			name: "ARunWithNoChildStatusPostsNothingWhileRunning",
++			act: func(_ *testing.T, w *watchFake) {
++				w.childMissing = true
++				w.tick()
++				w.tick()
++			},
++		},
++		{
++			name: "StopsTellsOnlyTheStops",
++			act:  watchRowMoves,
++			want: []string{head + "blocked at Webster", head + "done at Land"},
++		},
++		{
++			name: "RowsTellsEveryChange",
++			act: func(t *testing.T, w *watchFake) {
++				w.level = RunWatchRows
++				watchRowMoves(t, w)
++			},
++			want: []string{
++				head + "running at Plan-Write",
++				head + "running at Webster",
++				head + "blocked at Webster",
++				head + "running at Webster",
++				head + "done at Land",
++				"[run watch] task: running; batten running at Land; child done at Land",
++			},
++		},
++		{
++			name: "OffTellsNothing",
++			act: func(t *testing.T, w *watchFake) {
++				w.level = RunWatchOff
++				watchRowMoves(t, w)
++			},
++		},
++		{
++			name: "AChildGoingFromBlockedToFailedAndAPauseLiftingOverItEachPost",
++			act: func(_ *testing.T, w *watchFake) {
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.writeChild("failed", "Plan-Write")
++				w.tick()
++				w.tick(func(r *RunView) { r.State, r.Run = runStatePaused, runfsm.Paused })
++				w.tick()
++			},
++			want: []string{
++				blocked,
++				head + "failed at Plan-Write",
++				"[run watch] task: paused; batten paused at Run-Shed; child failed at Plan-Write",
++				head + "failed at Plan-Write",
++			},
++		},
++		{
++			name: "ALevelThatNeverReadKeepsNoReadingAndTellsTheStandingStopOnceItReads",
++			act: func(t *testing.T, w *watchFake) {
++				w.levelErr = errors.New("unreadable")
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				if watch, _ := w.memory(); watch.Last != nil || len(w.lines) != 0 {
++					t.Errorf("memory = %+v, lines = %q; want no reading and no line", watch.Last, w.lines)
++				}
++				w.levelErr = nil
++				w.tick()
++			},
++			want: []string{blocked},
++		},
++		{
++			name: "AFailedLevelReadKeepsTheLastLevel",
++			act: func(_ *testing.T, w *watchFake) {
++				w.level = RunWatchRows
++				w.tick()
++				w.level, w.levelErr = "", errors.New("unreadable")
++				w.writeChild("running", "Webster")
++				w.tick()
++			},
++			want: []string{head + "running at Plan-Write", head + "running at Webster"},
++		},
++		{
++			name: "AStandingAnchorChangeHoldsTheLine",
++			act: func(t *testing.T, w *watchFake) {
++				record := filepath.Join(t.TempDir(), "move")
++				if err := os.WriteFile(record, nil, 0o644); err != nil {
++					t.Fatal(err)
++				}
++				w.h.d.geom.MoveRecords = []string{record}
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				if len(w.lines) != 0 {
++					t.Errorf("lines under the anchor change = %q; want none", w.lines)
++				}
++				if err := os.Remove(record); err != nil {
++					t.Fatal(err)
++				}
++				w.tick()
++			},
++			want: []string{blocked},
++		},
++		{
++			name: "AnUnlistedRunWithNoStatusAndNothingOwedIsForgotten",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				w.tickUnlisted()
++				if _, found := w.memory(); found {
++					t.Errorf("memory of the gone run is kept; want it dropped")
++				}
++			},
++		},
++		{
++			name: "AnUnlistedRunThatStillHasItsStatusIsRemembered",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				w.h.fake.statuses["task"] = true
++				w.tickUnlisted()
++				if _, found := w.memory(); !found {
++					t.Errorf("memory of the run with a status is dropped; want it kept")
++				}
++			},
++		},
++		{
++			name: "AnUnlistedRunWhoseStatusCheckFailsIsRemembered",
++			act: func(t *testing.T, w *watchFake) {
++				w.tick()
++				w.h.d.deps.StatusExists = func(string) (bool, error) { return false, errors.New("unreadable") }
++				w.tickUnlisted()
++				if _, found := w.memory(); !found {
++					t.Errorf("memory of the run whose status check failed is dropped; want it kept")
++				}
++			},
++		},
++		{
++			name: "AnUnlistedRunOwingALineIsRemembered",
++			act: func(t *testing.T, w *watchFake) {
++				w.noOrch = true
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.tickUnlisted()
++				if _, found := w.memory(); !found {
++					t.Errorf("memory of the run owing a line is dropped; want it kept")
++				}
++			},
++		},
++		{
++			name: "ARestartedDobbyTellsNoReadingTwice",
++			act: func(_ *testing.T, w *watchFake) {
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.h.restartDobby()
++				w.tick()
++			},
++			want: []string{blocked},
++		},
++		{
++			name: "ALandedRunWithLandNoticeOffPostsOnceAndAVanishedChildStatusPostsNothing",
++			act: func(_ *testing.T, w *watchFake) {
++				w.tick()
++				w.tick(landedView)
++				w.childMissing, w.childWritten = true, time.Time{}
++				w.tick(landedView)
++				w.tick(landedView)
++			},
++			want: []string{landed},
++		},
++		{
++			name: "ALandedRunWhoseLandNoticeNeverReadPostsItsLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.h.d.deps.LandNotice = func(string) (bool, error) { return false, errors.New("unreadable") }
++				w.tick()
++				w.tick(landedView)
++			},
++			want: []string{landed},
++		},
++		{
++			name: "ALandedRunWithLandNoticeOnPostsNoWatchLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.landNotice()
++				w.tick()
++				w.tick(landedView)
++			},
++		},
++		{
++			name: "ACancelledRunWithLandNoticeOnPostsItsLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.landNotice()
++				w.tick()
++				w.tick(func(r *RunView) { r.State, r.Run, r.PastLand = "cancelled", runfsm.Cancelled, true })
++			},
++			want: []string{"[run watch] task: cancelled; batten cancelled at Run-Shed; child running at Plan-Write"},
++		},
++		{
++			name: "ARunUnlistedAheadOfLandAndNextListedLandedPostsItsLine",
++			act: func(_ *testing.T, w *watchFake) {
++				w.landNotice()
++				w.h.fake.statuses["task"] = true
++				w.tick()
++				w.tickUnlisted()
++				w.tick(landedView)
++			},
++			want: []string{landed},
++		},
++		{
++			name: "ARunUnlistedPastLandKeepsItsLandNoticeReading",
++			act: func(_ *testing.T, w *watchFake) {
++				w.landNotice()
++				w.h.fake.statuses["task"] = true
++				w.tick()
++				w.tick(landingView)
++				w.tickUnlisted()
++				w.tick(landedView)
++			},
++		},
++		{
++			name: "ALevelThatFirstReadsPastLandKeepsTheLandNoticeReadingCopiedAheadOfIt",
++			act: func(_ *testing.T, w *watchFake) {
++				w.landNotice()
++				w.levelErr = errors.New("unreadable")
++				w.tick()
++				w.levelErr = nil
++				w.tick(landedView)
++			},
++		},
++		{
++			name: "ALevelOffAheadOfLandIsKeptPastIt",
++			act: func(_ *testing.T, w *watchFake) {
++				w.level = RunWatchOff
++				w.tick()
++				w.level = RunWatchStops
++				w.tick(landingView)
++				w.h.restartDobby()
++				w.tick(landedView)
++			},
++		},
++		{
++			name: "ALevelStopsAheadOfLandIsKeptPastIt",
++			act: func(_ *testing.T, w *watchFake) {
++				w.tick()
++				w.level = RunWatchOff
++				w.tick(landingView)
++				w.tick(landedView)
++				w.tick(landedView)
++			},
++			want: []string{landed},
++		},
++		{
++			name: "OwedLinesWaitForAnOrchAndPostOldestFirst",
++			act: func(t *testing.T, w *watchFake) {
++				w.noOrch = true
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.writeChild("failed", "Plan-Write")
++				w.tick()
++				w.tick()
++				w.tick()
++				if watch, _ := w.memory(); len(watch.Owed) != 2 || watch.Owed[0].Attempts != 0 {
++					t.Errorf("owed = %+v; want both lines owed with no attempt counted", watch.Owed)
++				}
++				w.noOrch = false
++				w.tick()
++			},
++			want: []string{blocked, head + "failed at Plan-Write"},
++		},
++		{
++			name: "AFailingPostWaitsAProbeIntervalAndIsDroppedAfterThreeFailures",
++			act: func(t *testing.T, w *watchFake) {
++				w.postErr = errors.New("creel down")
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.h.tickAfter(w.h.d.probe / 2)
++				if w.postCalls != 1 {
++					t.Errorf("posts within a probe interval = %d; want 1", w.postCalls)
++				}
++				for range 3 {
++					w.h.tickAfter(w.h.d.probe)
++				}
++				w.postErr = nil
++				w.h.tickAfter(w.h.d.probe)
++				if w.postCalls != 3 {
++					t.Errorf("posts = %d; want the line dropped after 3", w.postCalls)
++				}
++			},
++		},
++		{
++			name: "ALineOwedAnHourAwakeIsDropped",
++			act: func(_ *testing.T, w *watchFake) {
++				w.noOrch = true
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.h.advance(time.Hour)
++				w.noOrch = false
++				w.tick()
++			},
++		},
++		{
++			name: "ALineOwedAcrossAnHourOfMachineSleepStillPosts",
++			act: func(_ *testing.T, w *watchFake) {
++				w.noOrch = true
++				w.writeChild("blocked", "Plan-Write")
++				w.tick()
++				w.h.clock.suspend(time.Hour)
++				w.noOrch = false
++				w.tick()
++			},
++			want: []string{blocked},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			w := newWatchFake(t)
++
++			tt.act(t, w)
++
++			got := slices.Clone(w.lines)
++			if !tt.exact {
++				for i := range got {
++					got[i], _, _ = strings.Cut(got[i], "; since ")
++				}
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("lines posted = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// watchRowMoves moves the child through a row, a block, a resume and its end, then moves batten's row.
++func watchRowMoves(_ *testing.T, w *watchFake) {
++	w.tick()
++	w.writeChild("running", "Webster")
++	w.tick()
++	w.writeChild("blocked", "Webster")
++	w.tick()
++	w.writeChild("running", "Webster")
++	w.tick()
++	w.writeChild("done", "Land")
++	w.tick()
++	w.tick(func(r *RunView) { r.Producer = "Land" })
++}
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index d60e782d6..f8d93eafc 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -44,6 +44,9 @@ type State struct {
+ 	Describe *DescribeState `json:"describe,omitempty"`
+ 	// LandNotices is the memory of the landing notices of the runs seen ahead of their Land row, keyed by slug.
+ 	LandNotices map[string]LandNoticeState `json:"land_notices,omitempty"`
++	// Watches is the run watch's memory, keyed by slug.
++	// A run keeps its entry after it leaves Runs.
++	Watches map[string]RunWatchState `json:"watches,omitempty"`
+ 	// Land is the landing step taken in the current episode: a land request asked for or a notice posted.
+ 	// It is nil when none was taken or the beam can no longer land.
+ 	// It stays open to a retry when it holds only a posted refusal of Land.
+diff --git a/internal/dobbyengine/tasksetting.go b/internal/dobbyengine/tasksetting.go
+index b55e78e01..b60e9d639 100644
+--- a/internal/dobbyengine/tasksetting.go
++++ b/internal/dobbyengine/tasksetting.go
+@@ -1,4 +1,4 @@
+-// tasksetting.go is the one reader of beam.yaml's per-task settings, pull_request, land_notice and autonomy.
++// tasksetting.go alone reads beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch per task.
+ // A task's value is the one its own worktree's files set.
+ // Failing that, it is the value of the nearest worktree above it that sets one, up to the prime.
+ // Failing all of those, it is the hub's default layer's, else the template's.
+@@ -54,6 +54,13 @@ func LookupAutonomy(chain TaskSettingChain) (bool, error) {
+ 	return value == "true", err
+ }
+ 
++// LookupRunWatch returns the beam.run_watch of the task at the chain's head: stops, rows or off.
++// It is the only reader of the key.
++// A value the key does not take is refused, naming the file that set it.
++func LookupRunWatch(chain TaskSettingChain) (string, error) {
++	return lookupTaskSetting(chain, RunWatchKey)
++}
++
+ // ownTaskSetting returns the value the files of the one place dirs names set for the per-task key.
+ // It returns the setting file's path with it.
+ // It never checks the value, and set is false when none of that place's own files sets the key.
+diff --git a/internal/dobbyengine/tasksetting_test.go b/internal/dobbyengine/tasksetting_test.go
+index 1970f3fb0..5d4503007 100644
+--- a/internal/dobbyengine/tasksetting_test.go
++++ b/internal/dobbyengine/tasksetting_test.go
+@@ -1,4 +1,4 @@
+-// tasksetting_test.go pins the per-task lookup of beam.yaml's pull_request, land_notice and autonomy.
++// tasksetting_test.go pins the per-task lookup of beam.pull_request, beam.land_notice, beam.autonomy and beam.run_watch.
+ // It pins which of a task's own files, its parents' files, the hub default and the template decides.
+ // It also pins the refusal of a bad value.
+ 
+@@ -42,6 +42,9 @@ func lookupAsText(key string, chain TaskSettingChain) (string, error) {
+ 		}
+ 		return LandNoticeOff, nil
+ 	}
++	if key == RunWatchKey {
++		return LookupRunWatch(chain)
++	}
+ 	return LookupPullRequest(chain)
+ }
+ 
+@@ -120,6 +123,39 @@ func TestLookupTaskSettings(t *testing.T) {
+ 		}
+ 	}
+ 
++	t.Run("run_watch takes the nearest value that sets it, else the template's", func(t *testing.T) {
++		t.Parallel()
++		rows := []struct {
++			name                                string
++			task, taskLocal, parent, prime, hub string
++			want                                string
++		}{
++			{name: "the task's local file wins over its worktree file", task: RunWatchOff, taskLocal: RunWatchRows, want: RunWatchRows},
++			{name: "a task that sets nothing takes the parent's value over the prime's", parent: RunWatchOff, prime: RunWatchRows, want: RunWatchOff},
++			{name: "the hub default applies when no anchor sets the key", hub: RunWatchRows, want: RunWatchRows},
++			{name: "nothing set anywhere takes the template's value", want: RunWatchStops},
++		}
++		for _, row := range rows {
++			t.Run(row.name, func(t *testing.T) {
++				t.Parallel()
++				taskDir, parentDir, primeDir, board := t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir()
++				for dir, value := range map[string]string{taskDir: row.task, parentDir: row.parent, primeDir: row.prime, board: row.hub} {
++					if value != "" {
++						writeBeamLayer(t, dir, settingDocument(RunWatchKey, value))
++					}
++				}
++				if row.taskLocal != "" {
++					writeBeamLocalLayer(t, taskDir, settingDocument(RunWatchKey, row.taskLocal))
++				}
++
++				got, err := LookupRunWatch(TaskSettingChain{Anchors: []string{taskDir, parentDir, primeDir}, Board: board})
++				if err != nil || got != row.want {
++					t.Errorf("LookupRunWatch() = %q, %v; want %q", got, err, row.want)
++				}
++			})
++		}
++	})
++
+ 	t.Run("pull_request merge-in and merge pass through as set", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, value := range []string{PullRequestMergeIn, PullRequestMerge} {
+@@ -206,7 +242,10 @@ func TestLookupTaskSettings_RefusesAValueTheKeyDoesNotTake(t *testing.T) {
+ 		value string
+ 		// place is where the bad value is written: worktree, local or hub.
+ 		place string
++		// wantValues, when set, is the list of values the refusal must name.
++		wantValues string
+ 	}{
++		{name: "run_watch all in a worktree file", key: RunWatchKey, value: "all", place: "worktree", wantValues: "[stops rows off]"},
+ 		{name: "pull_request required in a worktree file", key: PullRequestKey, value: "required", place: "worktree"},
+ 		{name: "land_notice all in a worktree file", key: LandNoticeKey, value: "all", place: "worktree"},
+ 		{name: "land_notice per-task in a worktree file", key: LandNoticeKey, value: "per-task", place: "worktree"},
+@@ -238,7 +277,7 @@ func TestLookupTaskSettings_RefusesAValueTheKeyDoesNotTake(t *testing.T) {
+ 			if err == nil {
+ 				t.Fatalf("lookup of %s = _, nil; want a refusal", tt.key)
+ 			}
+-			for _, want := range []string{wantPath, tt.key, tt.value, "lym config beam --set " + tt.key + "="} {
++			for _, want := range []string{wantPath, tt.key, tt.value, tt.wantValues, "lym config beam --set " + tt.key + "="} {
+ 				if !strings.Contains(err.Error(), want) {
+ 					t.Errorf("lookup error = %q; want it to contain %q", err.Error(), want)
+ 				}
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index 205ae0d2c..c83b787b2 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -6,3 +6,6 @@ pull_request: "on"  # per task: whether a task's landing goes through a GitHub p
+ land_notice: "off"  # per task: whether dobby posts a line to the orch once a task's run lands or ends without landing: on or off; decided like beam.pull_request
+ autonomy: false  # per task: whether the orch settles every halt of the task's runs and reaches the operator only for a severe halt or a merge-ready beam: true or false; decided like beam.pull_request
+ adopt_fix_tries: 3  # the most adopt fix tasks a failed adopt check files for this worktree's subject between two hand adopts; 0 files none
++run_watch: "stops"  # per task: which changes of a task's run dobby mails the orch as a `[run watch]` line: stops, rows or off; decided like beam.pull_request
++gate_hold_factor: 1.5  # dobby notices a gate slot a run holds past this many times its tier's gate.tiers.<tier>.timeout_min, in awake time; 0 sends no gate-hold notice
++gate_hold_min: 90  # the minutes the gate-hold bound is for a holder with no tier or a tier with no gate.tiers.<tier>.timeout_min; at least 1
+diff --git a/internal/gatecli/detachfront_integration_test.go b/internal/gatecli/detachfront_integration_test.go
+index a7c821a34..2ee4b547c 100644
+--- a/internal/gatecli/detachfront_integration_test.go
++++ b/internal/gatecli/detachfront_integration_test.go
+@@ -379,6 +379,13 @@ func TestGateTest_DetachedRun(t *testing.T) {
+ 
+ 		requireGoing(t, rig.call("3s", env, "./pkg"), "running tier0")
+ 		run := rig.currentRun("./pkg")
++		holders, err := rig.pool.Holders()
++		if err != nil {
++			t.Fatal(err)
++		}
++		if len(holders) != 1 || holders[0].Marker != "LYM_GATE_TEST_PID="+strconv.Itoa(holders[0].PID) {
++			t.Errorf("Holders() = %+v; want the one tier holder, marked with its own pid", holders)
++		}
+ 		release()
+ 		waitExitOf(t, run)
+ 
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index b26a5090a..2acb74650 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -169,7 +169,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	logger.Info("gate test: memory guard decision", "applies", guarding, "reason", guardReason)
+ 	exe.request.memoryGuarding = guarding
+ 	// A nested `lym gate test` reads the variable to learn this run's watchdog already sees its test binaries.
+-	exe.env = append(slices.DeleteFunc(env, func(entry string) bool { return strings.HasPrefix(entry, enclosingGateEnv+"=") }), enclosingGateEnv+"="+strconv.Itoa(os.Getpid()))
++	exe.env = append(slices.DeleteFunc(env, func(entry string) bool { return strings.HasPrefix(entry, enclosingGateEnv+"=") }), runMarkerEntry(os.Getpid()))
+ 
+ 	// Without --stop-on-fail a failed run does not stop the call, so every later tier and guard run stays checked.
+ 	// That holds even when the change under test did not cause the failure.
+@@ -803,6 +803,13 @@ func resolveHub(dir string) (*lymcwd.Location, bool, error) {
+ 	return location, true, nil
+ }
+ 
++// runMarkerEntry returns the environment entry that every process the tier run of pid starts carries,
++// so a process can be traced to the run after it has left the run's process tree.
++// A nested `lym gate test` replaces the entry for the processes it starts.
++func runMarkerEntry(pid int) string {
++	return enclosingGateEnv + "=" + strconv.Itoa(pid)
++}
++
+ // acquireSlot takes count slots of pool for tier.
+ // It keeps a wait record in the worktree's wait directory until the acquire returns.
+ // The wait has no cap of its own: it ends when the slots free or ctx is cancelled.
+@@ -819,7 +826,8 @@ func acquireSlot(ctx context.Context, out io.Writer, pool *gateslot.Pool, locati
+ 		defer os.Remove(waitPath)
+ 	}
+ 
+-	lease, err := pool.AcquireSlots(ctx, gateslot.Holder{Worktree: location.WorktreePath(), Site: site, Tier: tier}, count)
++	holder := gateslot.Holder{Worktree: location.WorktreePath(), Site: site, Tier: tier, Marker: runMarkerEntry(os.Getpid())}
++	lease, err := pool.AcquireSlots(ctx, holder, count)
+ 	switch {
+ 	case err == nil:
+ 		return lease, 0
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index cad8c4e66..5c5a2a855 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -9,6 +9,7 @@
+ //
+ // A Pool holds one OS file lock per slot at `<Dir>/slot-<n>.lock`, n from 1 to the current Limits.Slots.
+ // Acquire takes the first free slot and writes its Holder record as YAML at `<Dir>/slot-<n>.yaml`.
++// A tier run's record also carries the environment marker of the processes the run starts.
+ // Limits is a closure read at every attempt.
+ // A lowered count takes effect on the next acquire, while a running holder of a higher slot finishes.
+ // Acquire imposes no deadline: a caller wanting a bound passes a deadline context.
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index 766db774a..9ae3f3804 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -81,6 +81,11 @@ type Holder struct {
+ 	Started time.Time `yaml:"started"`
+ 	// Tier is the tier key, such as tier0, of the tier run holding the slot; empty when the holder is not a tier run.
+ 	Tier string `yaml:"tier,omitempty"`
++	// Marker is the `NAME=value` entry every process the tier run starts carries in its environment;
++	// empty for a holder that is no tier run.
++	// A nested `lym gate test` run inside the slot replaces the entry for the processes it starts,
++	// so those do not carry this marker.
++	Marker string `yaml:"marker,omitempty"`
+ 	// Slot is the number of the held slot, read from the record's file name; the record never carries it.
+ 	Slot int `yaml:"-"`
+ }
+diff --git a/internal/gateslot/pool_test.go b/internal/gateslot/pool_test.go
+index 31b519c1b..4bcccd3f7 100644
+--- a/internal/gateslot/pool_test.go
++++ b/internal/gateslot/pool_test.go
+@@ -188,12 +188,13 @@ func TestHolders_NamesLiveHoldersAndDropsRecordsOfFreeLocks(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	pool := newPool(t, fixedLimits(2))
+-	lease, err := pool.Acquire(shortContext(t), Holder{Worktree: "wt", Site: "webster gate"})
++	lease, err := pool.Acquire(shortContext(t), Holder{Worktree: "wt", Site: "webster gate", Marker: "RUN_MARKER=7"})
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	staleRecord := filepath.Join(pool.Dir, "slot-2.yaml")
+-	if err := os.WriteFile(staleRecord, []byte("site: crashed\npid: 1\n"), 0o644); err != nil {
++	// Neither this record nor the second live holder's below has a marker key, as a record an older binary wrote.
++	otherRecord := filepath.Join(pool.Dir, "slot-2.yaml")
++	if err := os.WriteFile(otherRecord, []byte("site: crashed\npid: 1\n"), 0o644); err != nil {
+ 		t.Fatal(err)
+ 	}
+ 
+@@ -201,10 +202,28 @@ func TestHolders_NamesLiveHoldersAndDropsRecordsOfFreeLocks(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	if len(holders) != 1 || holders[0].Slot != 1 || holders[0].Worktree != "wt" || holders[0].Site != "webster gate" || holders[0].PID != os.Getpid() || holders[0].Started.IsZero() {
+-		t.Fatalf("Holders() = %+v; want only the live holder of slot 1 with worktree, site, pid and start time", holders)
++	if len(holders) != 1 || holders[0].Slot != 1 || holders[0].Worktree != "wt" || holders[0].Site != "webster gate" || holders[0].PID != os.Getpid() || holders[0].Started.IsZero() || holders[0].Marker != "RUN_MARKER=7" {
++		t.Fatalf("Holders() = %+v; want only the live holder of slot 1 with worktree, site, pid, start time and marker", holders)
+ 	}
+ 
++	older, err := pool.Acquire(shortContext(t), Holder{Site: "older"})
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(otherRecord, []byte("site: older\npid: 1\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	holders, err = pool.Holders()
++	if err != nil {
++		t.Fatal(err)
++	}
++	if len(holders) != 2 || !slices.ContainsFunc(holders, func(h Holder) bool { return h.Slot == 2 && h.Site == "older" && h.Marker == "" }) {
++		t.Fatalf("Holders() = %+v; want the second holder, of slot 2, with no marker", holders)
++	}
++
++	if err := older.Release(); err != nil {
++		t.Fatal(err)
++	}
+ 	if err := lease.Release(); err != nil {
+ 		t.Fatal(err)
+ 	}
+diff --git a/pattern/PATTERN-config-layers.md b/pattern/PATTERN-config-layers.md
+index 9c1220a58..91eaca33d 100644
+--- a/pattern/PATTERN-config-layers.md
++++ b/pattern/PATTERN-config-layers.md
+@@ -122,7 +122,7 @@ a caller adopts exactly one, except `runprofile` and the per-task lookup.
+ 
+ ## Per-task beam settings
+ 
+-Rule: Reading a per-task beam setting, `beam.pull_request`, `beam.land_notice` or `beam.autonomy`: only `dobbyengine`'s one lookup, at call time, over the chain `hubgeom.TaskSettingChain` tells it.
++Rule: Reading a per-task beam setting, `beam.pull_request`, `beam.land_notice`, `beam.autonomy` or `beam.run_watch`: only `dobbyengine`'s one lookup, at call time, over the chain `hubgeom.TaskSettingChain` tells it.
+ 
+ - The value the task's own worktree sets applies.
+   A task sets it through its board `run_settings`, which batten copies into the worktree's local layer.
