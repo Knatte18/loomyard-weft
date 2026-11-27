@@ -900,6 +900,26 @@
       "body": "## Seen (board tidy, 2026-11-27)\n\n`card-gate-scope-gaps` landed with a bound it did not fix:\na computed or `--base` scope never runs a guard test of an impacted package when that test's tier is one the listed runs skip.\nIts change description says this conflicts with `PATTERN-test-speed`.\n\n## Idea\n\nDecide per guard test where it runs, as note `whole-repo-guards-off-gates` does for `cmd/lym`'s guards:\nin the task gate, at landing or in the upkeep run, so no guard is left to a scope that skips it.\n",
       "created": "2026-11-27T07:32:41Z",
       "revised": "2026-11-27T07:32:41Z"
+    },
+    {
+      "id": 1720,
+      "handle": "B3",
+      "slug": "memory-guard-infra-stop",
+      "title": "Memory guard fails a gate by killing cmd/lym tier1 when the user slice is full from elsewhere",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [
+        267
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #267](https://github.com/Knatte18/loomyard/issues/267).\n\n## What happened\n\nThe memory guard killed the `cmd/lym` tier1 test binary in repeated gate runs: two `lym gate test --gate darn-write` runs by a gate fixer, and one run of the loom verify step.\nIn the gate fixer's runs, `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` was running each time.\nThe branch's changed test files were all outside what the `cmd/lym` test binary builds.\n\nThe guard's output (paths made repo-relative):\n\n```\nlym gate: memory guard: killed the test binary lym.test of the package in cmd/lym, with every process it started: the memory limit of /user.slice/user-1000.slice had 1635 MB left of 16384 MB, and it was the largest test binary at 2027 MB\nlym gate: memory guard: killed the test binary lym.test of the package in cmd/lym, with every process it started: the memory limit of /user.slice/user-1000.slice had 1199 MB left of 16384 MB, and it was the largest test binary at 1606 MB\nlym gate: memory guard: killed the test binary lym.test of the package in cmd/lym, with every process it started: the memory limit of /user.slice/user-1000.slice had 1516 MB left of 16384 MB, and it was the largest test binary at 1199 MB\n```\n\nEach message ends:\n\n```\nits tests fail; way forward: find the test that holds memory without bound, fix it and re-run the same command; raise gate.memory_quit_mb through \"lym config gate\" from the prime only for a package whose tests need that much\n```\n\nAfter the red tier, all the follow-on steps judged nothing:\n\n```\ngate test: reach report: a tier of the call was red, so the step judged nothing\ngate test: redundancy report: a tier of the call was red, so the step judged nothing\ngate test: mutation report: a tier of the call was red, so the step judged nothing\n```\n\nThe final verify log of the run has no memory-guard kill.\n\n## Why it is abnormal\n\n- The killed binary held 1.2 to 2 GB of a 16 GB slice, so most of the slice's use lay elsewhere. The cause of that use was not measured.\n- The run reports the kill as a test failure, although no test failed, and a change that cannot affect `cmd/lym` gets a red gate.\n- The way forward asks for a fix to a test that holds memory without bound, or a higher limit set from the prime. A gate fixer in a task worktree can do neither when the pressure comes from other processes, so it left the gate red.\n\n## What to do\n\n- Have the guard tell slice-wide pressure apart from one binary's growth, and wait and retry, or report the run as not judged, instead of failing the tests.\n- Name the other large holders of memory in the kill message, and give a way forward that fits that case.\n- Check the memory use of `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain`, which was running at the time of the gate fixer's kills.\n\nProvenance: task `prebootstrap-board-proc-leak`; note `gate-fixer-darn-write.md`.\n",
+      "created": "2026-11-27T07:50:58Z",
+      "revised": "2026-11-27T07:50:58Z"
     }
   ],
   "prime_owner": "neve",
