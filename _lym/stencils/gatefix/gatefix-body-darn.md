@@ -3,7 +3,7 @@
      Its markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.decision_record_path}}, {{.fix_gate}}),
      and stencil.FillOptional requires each to be non-empty.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=d747704cae460e8cbcc92de390c6f10d8e580e69a64b868c78355833cee2e4ce build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=7611daf76f107acdfec123ccdd20c8299a22a5372de23e02c40ff854447ec9f2 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 ## The failure
 
@@ -30,3 +30,5 @@ You never run a Bash call in the background.
 - Leave the worktree clean: no uncommitted change may remain when you write your reply.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}

@@ -9,7 +9,7 @@
      plan_dir, failure_record_path, fix_review_path and, in finalize mode, aligned_tip.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=529ee9a72b834eb10f3603dd890141ed0b034bf362b25e3cd9d9ae59fcf00178 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=4edf42788a46108cc33b8b26cd1b14edf07d3f70314625654becc6b1e5f66ffb build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -48,6 +48,8 @@ When the landing failure record holds `build: true`, the gate failed in its buil
 - Leave the working tree clean when you end your turn.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 ## External tools and processes
 

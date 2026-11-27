@@ -3,7 +3,7 @@
      Its markers are required top-level {{.X}} substitutions ({{.worktree_root}}, {{.card_ids}}, {{.gate_call}}),
      and stencil.FillOptional requires each to be non-empty.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=91138e95390fba7c9283fbcf3ae60040ce379af16290b4ff77a0bea5d6a7c663 build=40c66912c08839dc8d46483f325e6474c3062a7d time=2026-11-17T14:20:00Z -->
+lym-stencil: sha256=1eabd9c72780616f9b69ae1e8fcf8fa78833fddedd37c3b1019563ba92562d57 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 ## The failure
 
@@ -26,3 +26,5 @@ You never run a Bash call in the background.
 - Leave every failure whose fix would add, remove or change a decision, an acceptance criterion, a PATTERN change, a card or a card's scope, or a test's intended assertion, or that needs a choice the plan or the card does not make.
   Name each one you leave in your reply, with why.
 - Re-run the check that failed first, then run `{{.gate_call}}` as a foreground Bash call under the gate rule in {{template "engine-standing-instructions"}}, and fix what it still reports.
+
+{{template "loom-fragment-tooling-names"}}

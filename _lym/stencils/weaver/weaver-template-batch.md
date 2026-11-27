@@ -6,7 +6,7 @@
      failure_digest and uncommitted_paths render as `none` on a first attempt and a clean tree.
      parent_directive, pattern_directive and friction_directive are optional and render as nothing when inactive.
      There are no {{if}} or {{range}} conditionals in this file.
-lym-stencil: sha256=fe1f21f69884b5583bb0217a0a4c378ab243b243b7cc06c37a16358d1ce5cb22 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=c0aef7dfa0da53890e712552d030ab55c9c481dffa40ed842d7a0a1afb2bdaf1 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Weaver batch implementer — starting COLD, inheriting nothing
 
@@ -72,6 +72,8 @@ For each card above, in the order listed:
 A card that departs from its own text because a PATTERN entry forbids the card's way records the departure as a `Pattern-Departure:` trailer in that card's commit.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 ## Where and how you run commands
 

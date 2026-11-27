@@ -5,7 +5,7 @@
      {{.beam_branch}} and {{.parent_branch}} the beam's branch and the branch it lands on, {{.changes}} the beam's commits as a list,
      {{.parent_directive}} the parent directive rendered by internal/parentdirective, naming the nearest live orch when there is one,
      and {{.edit_directive}} the edit directive of the engine the prompt launches on, rendered by internal/editdirective.
-lym-stencil: sha256=418a554c3780ad7368b55837fb45639c6abbdbe93f75ae12d806eacb4d54d198 build=1cd11ee5ee5a7ff49ece6d4d7a04779ff49d9670 time=2026-11-23T10:00:36Z -->
+lym-stencil: sha256=f50e9a8066439e0d5d3dd3c4984fb07157580f74a10706519c0a082869a2ed1f build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Beam description
 
@@ -42,6 +42,10 @@ Follow the format of the final-summary spec (`loom-final-summary-spec.md`), with
 Never list the decisions made along the way, from the project record or elsewhere.
 Never describe how the work was run.
 Write no `Co-Authored-By` line and no credit lines.
+
+The reader knows this repository and nothing of the tooling that wrote the change.
+Name nothing of that tooling that the repository itself does not hold: not LoomYard or lym, the board or a board entry, the task, the Sketch or the decision record, the parent or an orch, the scoper, a gate, a tier or a perch.
+Never point at the scope by its numbering, as "item 3 of the task" does, and never report what the parent recorded or ruled: state the requirement or the decision itself.
 
 ## Rules
 

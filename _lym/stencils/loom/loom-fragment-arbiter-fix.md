@@ -1,13 +1,14 @@
 <!-- This is the arbiter's edit rules for a run whose driver lets it fix the stop itself.
      internal/shedarbiter's Prompt fills {{.worktree}} and {{.run_id}},
      then fills the result whole into loom-template-arbiter's edit_scope marker.
-lym-stencil: sha256=ad6ab3a646055749278ffc5bd6adc8091dac0d65b986693336a96361042af189 build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=fb31b4ddd8d5082fbca7d0b3385c78e421f763b65797529280352fc097b1c778 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 ## Your one fix
 
 You may settle the stop with one fix of your own, made and committed in `{{.worktree}}` before you write the verdict.
 
 - Fix only what the stop needs and the board entry's design and the decision record already settle, in the task's code, tests and docs.
+- A line you write into the code, tests or docs names nothing of the tooling that runs this session which the repository itself does not already hold, such as LoomYard or lym, a task or a gate: state the requirement itself.
 - Change the plan, the decision record or a PATTERN entry only through the repair verbs above, never by editing the file.
 - Never edit under `_lym/` or `.lym/`, which hold the run's records and state, nor any file outside `{{.worktree}}`.
 - Commit every edit on the branch you found, with a message whose last line is the trailer `Arbiter-Attempt: {{.run_id}}`.

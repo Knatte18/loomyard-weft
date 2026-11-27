@@ -11,7 +11,7 @@
      It is empty when the worktree has no PATTERN overview.
      The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=0a32e193f9d2811d4fb18599bb6a233174324f950e8afe1951bda0d221206f6e build=ae56c20d9a4cb9476da6d6c98e7f9dd520d995e6 time=2026-11-26T11:22:32Z -->
+lym-stencil: sha256=4887741babb96d46eb4f01232067150c337cd993d98a8844b2c775f1dd8fc79e build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Sampler — work out a change with the operator
 
@@ -48,6 +48,8 @@ Kill that server before you run `lym loom sampler-done`.
 Commit what the trial settled as an ordinary change.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 ## The operator's ending
 

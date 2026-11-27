@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b83a77073963b47b2d6fce7c9c743d3c5cccff3be50c451f7639878d21f041fe build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
+<!-- lym-stencil: sha256=8be140cf795a7c23f7a374aec434d3e8ef03d4c3dd3673a50501cd1a1addc4ee build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -93,6 +93,8 @@ Make exactly the changes the card describes, in exactly the targets its type lab
 A card that departs from its own text because a PATTERN entry forbids the card's way records the departure as a `Pattern-Departure:` trailer in that card's commit, in the shape the `## Pattern-Departure trailer` section of `{{.specs_dir}}/loom/loom-plan-spec.md` defines.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
 

@@ -6,7 +6,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive unconditionally.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=e68a9b0b4da8323896421ebebad343c71b0b622008ad0220c214b13df6d194ca build=33cbce98260e0621b44769c00a5f252b764945b2 time=2026-11-23T20:39:02Z -->
+lym-stencil: sha256=aad01cc30541d2f5bd2b45c3607330abb75e2bc23040eba0833886ee928e12b9 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Conflict resolution — resolve each listed path in place
 
@@ -43,6 +43,8 @@ Never run `git` in any form — resolving a path means editing its file content,
 
 Edit a file outside the listed paths only when the merged tree would otherwise stop building or its tests would fail, and only to keep it building and passing.
 Create no new file: a file you add is never part of the merge, and it halts the merge as stuck.
+
+A line you write into a repository file names nothing of the tooling that runs this session which the repository itself does not already hold, such as LoomYard or lym, a task or a gate: state the requirement itself.
 
 Never start a background or detached process from the shell: such a process outlives your command and runs outside every memory cap lym sets.
 

@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=8fc3789cbdb81d8a38f5ef497bad6f91bd4d7d8817351507b65100bd65d5bb59 build=34e64ac2eb24ade3497b7db898483a9fcc907938 time=2026-11-27T07:21:35Z -->
+lym-stencil: sha256=d086df0214b3f7313605e0c6de78c121259015413011a42dcc9d01b29c129691 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Code-Review rubric
 
@@ -102,6 +102,9 @@ Do not flag any of the following as a finding:
   Raise nothing when every declared entry lands, or when your directive declares none.
 - **The change description.**
   A claim in `_lym/landing/summary.md` that the diff does not bear out is a finding.
+- **Names of the tooling.**
+  A repository document the diff adds or changes, or the change description, that names the tooling which wrote the change is a finding: LoomYard or lym, the board or a board entry, the Sketch or the decision record, another task, a gate or a tier of that tooling, or what the parent recorded.
+  A name the repository itself holds, as its own subject, is not flagged.
 - **Merge danger.**
   Check the door the change description's `## Merge danger` section calls against the diff;
   a `two-way` call earns the most suspicion.

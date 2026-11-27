@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=13a2f881c957fb07aa16cd5412839cf3c03575b67b84602839bbaa5d666b7cd2 build=39c7ea47f357acd6a057c926134086443a1d7a99 time=2026-11-21T15:42:29Z -->
+lym-stencil: sha256=56ea8d63d17a4442baf19a1e5f375d60d2c54d000ed9e2a3d43c4d7a051fb390 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 {{.friction_directive}}
 
@@ -91,6 +91,8 @@ The review at `{{.review_path}}` is the reviewer's file: you never write it.
 The round is not done until `{{.fixer_report_path}}` exists on disk — a skipped fixer-report leaves the round looking unfinished.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 ## Never push, never touch `_lym`
 

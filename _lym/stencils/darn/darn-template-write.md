@@ -14,9 +14,9 @@
      edit_directive is rendered unconditionally by internal/editdirective.
      make_change holds Step 4's list: `darnengine.DarnTable` fills it with darn-fragment-make-change,
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
-     report_directive holds darn-fragment-report, led by a blank line, when darn.yaml's report_dir is set.
+     report_directive holds darn-fragment-report, led by a blank line, when darn.report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=e5604cee97024e0edb2064659ae1bb621081943ab544fc6ad65a34bad18d9885 build=f83682c3d0e2d65d0fe4cda05b84359fac4ba683 time=2026-11-23T18:55:41Z -->
+lym-stencil: sha256=b7d6817cc8dfdbcba16c4d23d7e159e7a60203d32a82bf62fc21836a45e11af1 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -71,6 +71,7 @@ Check whether landed work, another board entry or another run overtook or contra
 Write the change description to `{{.description_path}}`, in the format the final-summary spec defines at `{{.specs_dir}}/loom/loom-final-summary-spec.md`.
 Read that spec for the format; it is authoritative and this prompt does not restate it.
 Write the description for a reviewer who knows the codebase but has not seen this session, and never describe the session's own process.
+That reviewer knows nothing of the tooling that ran this session: name nothing of it that the repository itself does not hold, such as LoomYard, lym, the board, the task, the Sketch, the decision record, the parent, an orch, a gate or a tier, and never "item N of the task"; state the requirement or the decision itself.
 Close it with the `## Merge danger` section the spec defines, its door and blast radius called from your diff.
 A claim that a result agrees with a reference, or that the change improves one, carries before and after figures from the current code, taken from your commits or the drift verdict.
 Leave out a claim that has none.
@@ -126,6 +127,8 @@ Name the defect, never the symptom the entry reports.
 Code-Review reads this line.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
 
 ## What happens after you hand off
 

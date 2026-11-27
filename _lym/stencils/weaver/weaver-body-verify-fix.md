@@ -3,7 +3,7 @@
      Its required markers are {{.findings}}, {{.journal_path}}, {{.plan_dir}} and {{.worktree_root}}.
      The frame fills report_path and reply_path.
      It holds no {{if}} or {{range}} conditional.
-lym-stencil: sha256=355d28dfce7b5c16fd6b7bf352d3a3f3e87555af47ac561be15aa0d92f2bcb7b build=72c3e192e7b9afff71558513de71d385538ff8cf time=2026-11-18T15:45:48Z -->
+lym-stencil: sha256=68ff44881d5ba1e3dacef96331f158571c7bd6cbc2f62caf6cfddb0b6b392971 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
 
 ## The findings — read them first
 
@@ -43,3 +43,5 @@ You never run a Bash call in the background, and you end your turn only after yo
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
 
 {{template "loom-fragment-loosened-check"}}
+
+{{template "loom-fragment-tooling-names"}}
