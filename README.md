@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 18:24 UTC; every age below is as of then.
+Rendered 2026-11-27 18:25 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -17,14 +17,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Darn-Write | neve | 6m<br>1m | gate |
-| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light | Code-Burler-Review | neve | 26m<br>26m | gate, testkit |
-| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | Darn-Write | neve | 26m<br>26m | webster, loom, testkit |
+| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light | Code-Burler-Fix | neve | 27m<br>27m | gate, testkit |
+| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | Darn-Write | neve | 27m<br>27m | webster, loom, testkit |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 26m<br>26m | batten, testkit |
+| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 27m<br>27m | batten, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -159,7 +159,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 19m<br>19m | stencil, orch, board |
 | E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 19m<br>19m | orch, board, stencil |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>3h | landing, gate, batten |
-| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 0m<br>0m | stencil, loom |
+| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 1m<br>0m | stencil, loom |
 
 ### Features (1)
 
