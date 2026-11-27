@@ -27,3 +27,15 @@ Cards 4-6 are committed; the batch gate passed (tier2 and tier3 not run).
   every plugin's hook sets session_scope.enabled: false.
 - Seen once on card 4's gate, unrelated and passing on rerun: internal/shedverbs
   TestUntilStop_EnvelopeCurrency/an_envelope_the_run_has_moved_past_is_retired_and_a_fresh_loop_spawned.
+
+## Batch 07-producer-table, attempt 1
+
+Cards 7-9 are committed; the batch gate with --main-packages passed (tier2 and tier3 not run).
+- Parent decision (mail #2902): internal/shuttleparity joins treeSitterAllowedLinks, since its producer table renders
+  the driver prompt through loomcli. Card 7's commit carries the Loosened-Check and Pattern-Departure (PATTERN-test-speed) trailers.
+- Producer entries also set Interactive and DenyPublish where the production literal does (sampler, PR-Review),
+  beyond the fields card 7 lists, since both decide Claude's and Codex's denies.
+- Card 8: testOnlyCodeAllowed lost Prompts, Specs, FixReviewSeatTable, MissingItems and NewWithSeams;
+  it held no burlerengine.Engine.SeatTables entry.
+- lym shuttle manifest takes the worktree name as the seat's slug, on the prime too.
+- lym shuttle manifest was not run live; its production wiring (worktreeManifestReport) has no test.

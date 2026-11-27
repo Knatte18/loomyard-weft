@@ -171,7 +171,7 @@
         "09-pattern-engine-parity"
       ],
       "profile": "wide",
-      "estimate": 170398,
+      "estimate": 171646,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -187,7 +187,7 @@
         },
         "position": 3,
         "startup": 46600,
-        "read_union": 51648,
+        "read_union": 51996,
         "cards": [
           {
             "card": 7,
@@ -196,14 +196,15 @@
               "package:internal/shuttleparity": 2000,
               "tests:internal/shuttleparity": 2000
             },
-            "messages": 86,
-            "written": 26652
+            "messages": 87.5,
+            "written": 27102
           },
           {
             "card": 8,
             "card_text": 948,
             "reads": {
               "file:docs/overview.md": 24876,
+              "file:internal/shuttleparity/doc.go": 348,
               "package:cmd/lym": 2000,
               "package:docs": 2000,
               "package:internal/shuttlecli": 2000,
@@ -213,8 +214,8 @@
               "tests:internal/shuttlecli": 2000,
               "tests:internal/shuttleparity": 2000
             },
-            "messages": 135.5,
-            "written": 41598
+            "messages": 137,
+            "written": 42048
           },
           {
             "card": 9,
@@ -308,6 +309,43 @@
       "cardShas": [
         "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
       ]
+    },
+    "7": {
+      "slug": "producer-table",
+      "cards": [
+        "07-producer-table",
+        "08-shuttle-manifest-verb",
+        "09-pattern-engine-parity"
+      ],
+      "cardHashes": {
+        "07-producer-table": "295d2a25ef35b675625bfe2954d374996e11d86d17299b65649e97e369110fb1",
+        "08-shuttle-manifest-verb": "a42c2533ee13fd9cd480be8138920c208fa85d6ee2abdd05ad01f28151fa8315",
+        "09-pattern-engine-parity": "450fef2deae8176ab1a9e495b82b39c3959e69a021832e12b8587a36e04f7005"
+      },
+      "startSha": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T14:13:14Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-producer-table",
+        "status": "done",
+        "head_sha": "44e4bc47ae1a0b5156d1231b633afe178f1f4abb",
+        "deviations": [
+          "cmd/lym/treesitterlink_integration_test.go",
+          "internal/shuttlecli/manifest.go",
+          "internal/shuttleparity/literals_test.go",
+          "internal/shuttleparity/parity_test.go",
+          "internal/shuttleparity/producers_test.go",
+          "internal/shuttleparity/seats_test.go"
+        ],
+        "departures": [
+          "7: List every launch-spec producer for the parity test: PATTERN-test-speed — internal/shuttleparity's test binary links tree-sitter although it does not call the code index, because its producer table renders the loom driver prompt through loomcli's own renderer"
+        ]
+      },
+      "cardShas": [
+        "44e4bc47ae1a0b5156d1231b633afe178f1f4abb"
+      ]
     }
   },
   "attempts": [
@@ -330,11 +368,22 @@
       "strandName": "ly:weaver-bench-b3:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T13:52:49Z"
+    },
+    {
+      "batch": 7,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b3/_lym/weaver/reports/07-producer-table-a1.yaml",
+      "strandGuid": "95531c8a8934daf85d70f17e46c84a0e",
+      "strandName": "ly:weaver-bench-b3:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T14:13:14Z"
     }
   ],
   "batchEnds": {
     "1": "fba24bbbb26d9528302a58052d8645dfa702aa8d",
-    "4": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
+    "4": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6",
+    "7": "44e4bc47ae1a0b5156d1231b633afe178f1f4abb"
   },
-  "lastEnd": "a136dd0dbd9dcd11415585bf2dd8d8c8133751d6"
+  "lastEnd": "44e4bc47ae1a0b5156d1231b633afe178f1f4abb"
 }
