@@ -1,6 +1,6 @@
 # Measure the fixed steps of a gate call one by one
 
-`gate-fixed-cost-measure` · Task · research, gate · running · Darn-Write
+`gate-fixed-cost-measure` · Task · research, gate · running · Drift-Verify
 
 ## Aim
 
