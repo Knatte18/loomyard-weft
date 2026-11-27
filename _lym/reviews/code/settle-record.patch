@@ -1,0 +1,256 @@
+diff --git a/contracts/stencils/friction/friction-template-reflection.md b/contracts/stencils/friction/friction-template-reflection.md
+index f95292484..85e963dcb 100644
+--- a/contracts/stencils/friction/friction-template-reflection.md
++++ b/contracts/stencils/friction/friction-template-reflection.md
+@@ -48,6 +48,12 @@ A halt caused by the task's own code, or a review segment that did not converge,
+ A `build-skew` halt is dropped too: the run's lym was older than a board stencil it read,
+ which is a binary to update and not a lym defect;
+ the driver hands such a run to a fresh driver when a newer build is on disk.
++A `transient-stop` halt is dropped too: an infrastructure failure that lym classed transient, which a re-step can clear.
++A step loop re-steps it once.
++The Go driver also re-steps a git-transport or GitHub API stop with waits, and sends any other class to the tackler;
++the prompt-driven driver repairs what outlasts the loop's re-step under its repair cap.
++File one only when the notes show such halts at one row that the re-steps never cleared,
++or a failure classed transient that no retry could fix.
+ A dropped event stays recoverable: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lym selfreport create`.
+ 
+ ## Step 3 — File each issue
+diff --git a/internal/landingshed/parentguard.go b/internal/landingshed/parentguard.go
+index 17086a540..e1ac788cb 100644
+--- a/internal/landingshed/parentguard.go
++++ b/internal/landingshed/parentguard.go
+@@ -33,6 +33,9 @@ func newParentGuard(deps Deps) parentGuard {
+ // ensure takes the parent lock for the run, waiting in the queue while another run holds it.
+ // When front is set, the run waits at the front of the queue.
+ // While it waits it keeps the run's wait record and the driver strand's pane mark, and removes both on every way out.
++// It logs the wait's start, each change of holder and the wait's end.
++// The end line carries the wall-clock and the awake time waited.
++// A gap between them points to a wall-clock step, or to a host suspend where the monotonic clock pauses in suspend.
+ //
+ // It returns "" once the lock is held.
+ // It returns a non-empty reason when the operator halted the wait or the lock record is unreadable,
+@@ -50,10 +53,17 @@ func (g parentGuard) ensure(ctx context.Context, producer string, front bool) (s
+ 
+ 	label := "parent lock " + g.parentBranch
+ 	var waiting bool
++	var waitStarted time.Time
+ 	var holderSlug string
+ 	var pauseFailures logger.Episode
+ 	waiter := parentlock.Waiter{
+ 		OnWait: func(holder parentlock.Record) {
++			if waiting {
++				logger.Info("landingshed: the parent lock changed holder during the wait", "producer", producer, "branch", g.parentBranch, "holder", holder.Owner.Slug)
++			} else {
++				waitStarted = time.Now()
++				logger.Info("landingshed: waiting for the parent lock", "producer", producer, "branch", g.parentBranch, "holder", holder.Owner.Slug)
++			}
+ 			waiting = true
+ 			holderSlug = holder.Owner.Slug
+ 			if err := parentlock.WriteWait(g.lock.WaitPath, parentlock.NewWait(g.parentBranch, holderSlug)); err != nil {
+@@ -67,6 +77,11 @@ func (g parentGuard) ensure(ctx context.Context, producer string, front bool) (s
+ 	}
+ 	_, err = g.lock.Store.Acquire(ctx, g.parentBranch, owner, waiter)
+ 	if waiting {
++		// Round(0) strips the monotonic reading, so the wall-clock difference counts time the host spent suspended.
++		ended := time.Now()
++		logger.Info("landingshed: the parent lock wait ended", "producer", producer, "branch", g.parentBranch, "holder", holderSlug,
++			"granted", err == nil, "waited", ended.Round(0).Sub(waitStarted.Round(0)).Round(time.Second).String(),
++			"awake", ended.Sub(waitStarted).Round(time.Second).String())
+ 		if removeErr := parentlock.RemoveWait(g.lock.WaitPath); removeErr != nil {
+ 			logger.Warn("landingshed: could not remove the parent lock wait record", "cause", removeErr)
+ 		}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 59a58d3ec..dec8df051 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -13,6 +13,11 @@
+ // A failed halt on a board stencil that a newer lym build wrote carries `build-skew`:
+ // the run's lym was older than a board stencil it read, which is a binary to update and not a lym defect;
+ // the driver hands such a run to a fresh driver when a newer build is on disk.
++// A failed halt whose status records a transient class carries `transient-stop`:
++// an infrastructure failure classed transient, which a re-step can clear and which is no producer defect.
++// A step loop re-steps it once.
++// The Go driver also re-steps a git-transport or GitHub API stop with waits, and sends any other class to the tackler;
++// the prompt-driven driver repairs what outlasts the loop's re-step under its repair cap.
+ //
+ // The `lym loom` verbs serve loom runs only.
+ // `armAt` refuses a recipe that does not declare the loom contract.
+diff --git a/internal/loomcli/halt.go b/internal/loomcli/halt.go
+index a6b75ac97..6b5d94deb 100644
+--- a/internal/loomcli/halt.go
++++ b/internal/loomcli/halt.go
+@@ -34,6 +34,8 @@ type haltNote struct {
+ 	Interrupted bool
+ 	// BuildSkew is true for a failed halt on a board stencil that a lym build newer than the running one wrote.
+ 	BuildSkew bool
++	// Transient is true for a failed halt whose status records a transient class.
++	Transient bool
+ }
+ 
+ // writeHistoryRows appends the history section of a friction note:
+@@ -69,7 +71,7 @@ func writeHaltNote(frictionDir string, n haltNote) error {
+ 		HistoryEntries: len(n.History),
+ 		TraceFile:      n.TraceFile,
+ 	}
+-	if kind, ok := loomengine.ClassifyHalt(n.State, n.Reason, n.Interrupted, n.BuildSkew); ok {
++	if kind, ok := loomengine.ClassifyHalt(n.State, n.Reason, n.Interrupted, n.BuildSkew, n.Transient); ok {
+ 		note.Anomaly = string(kind)
+ 	}
+ 	for _, h := range n.History {
+@@ -102,6 +104,7 @@ func (c *loomCLI) reflectHalt(n haltNote) string {
+ // That is how shedengine persists the producer-error and unrecognised-outcome arms.
+ // A stale `failed` status left by an earlier invocation therefore never writes a second note.
+ // The halt is a build skew when err's chain holds a board stencil that a newer lym build wrote.
++// It is transient when the status records a transient class.
+ func (c *loomCLI) failedHalt(err error) (haltNote, bool) {
+ 	if err == nil || errors.Is(err, shedengine.ErrShedBusy) {
+ 		return haltNote{}, false
+@@ -121,6 +124,7 @@ func (c *loomCLI) failedHalt(err error) (haltNote, bool) {
+ 		History:   st.History,
+ 		TraceFile: logger.TraceFile(),
+ 		BuildSkew: errors.As(err, &skew),
++		Transient: st.Transient != "",
+ 	}, true
+ }
+ 
+diff --git a/internal/loomcli/halt_test.go b/internal/loomcli/halt_test.go
+index d1afe0a79..6ede710f8 100644
+--- a/internal/loomcli/halt_test.go
++++ b/internal/loomcli/halt_test.go
+@@ -463,7 +463,8 @@ func TestStep_EscalationHaltSkipsReflectionAndKeepsBothNotes(t *testing.T) {
+ 
+ // TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection drives step with a producer that returns an error.
+ // The error envelope reports friction skipped, the halt note is on disk and no reflection ran.
+-// The note's anomaly kind is a build skew for a board stencil a newer lym build wrote, and a producer failure otherwise.
++// The note's anomaly kind is a build skew for a board stencil a newer lym build wrote.
++// It is a transient stop for an error marked transient, and a producer failure otherwise.
+ func TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -480,6 +481,12 @@ func TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 				&stencilstore.NewerBoardCopyError{Stencil: "burler-assist-consolidation", WrittenBy: "newer", Running: "running"}),
+ 			wantAnomaly: "anomaly: build-skew",
+ 		},
++		{
++			name: "GitHubAPIFailureMarkedTransient",
++			err: shedengine.MarkTransient(shedengine.TransientGitHubAPI,
++				errors.New("landingshed: Finalize: read GitHub's rules for the parent branch: dial tcp: lookup api.github.com: server misbehaving")),
++			wantAnomaly: "anomaly: transient-stop",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomengine/anomaly.go b/internal/loomengine/anomaly.go
+index e8e9bb918..6e79fe19d 100644
+--- a/internal/loomengine/anomaly.go
++++ b/internal/loomengine/anomaly.go
+@@ -31,6 +31,12 @@ const (
+ 	// The driver hands such a run to a fresh driver when a newer build is on disk,
+ 	// so no producer is at fault.
+ 	AnomalyBuildSkew AnomalyKind = "build-skew"
++	// AnomalyTransientStop marks a failed halt whose error carries a transient class:
++	// an infrastructure failure classed transient, which a re-step can clear, so no producer is at fault.
++	// A step loop re-steps it once.
++	// The Go driver also re-steps a git-transport or GitHub API stop with waits, and sends any other class to the tackler;
++	// the prompt-driven driver repairs what outlasts the loop's re-step under its repair cap.
++	AnomalyTransientStop AnomalyKind = "transient-stop"
+ 	// AnomalyInterrupted marks a non-blocked halt of a step that ended without an envelope, from outside its producer.
+ 	// That covers a killed or crashed step, a stalled one the watchdog killed, or a loop that died under it.
+ 	AnomalyInterrupted AnomalyKind = "interrupted-stop"
+@@ -82,11 +88,14 @@ func DetectCrashResume(entry EntryObservation) bool {
+ // ClassifyHalt names the kind of a run's final halt, and reports whether one applies.
+ // It reads the final state, the reason the state was persisted with, and whether the stop was interrupted.
+ // buildSkew reports whether the failure is a board stencil that a lym build newer than the running one wrote.
++// transient reports whether the failure carries a transient class.
+ // At most one kind fires, since the cases partition the state.
+ // A blocked state with shedengine.ReasonBounceBudgetExhausted is budget-exhausted.
+ // Any other blocked state is an escalation, and the interrupted flag changes no blocked kind.
+ // Otherwise an interrupted stop is AnomalyInterrupted.
+-// A failed state is AnomalyBuildSkew when buildSkew is set, and AnomalyProducerFailure when it is not.
++// A failed state is AnomalyBuildSkew when buildSkew is set.
++// With buildSkew unset, a failed state is AnomalyTransientStop when transient is set.
++// With both unset, a failed state is AnomalyProducerFailure.
+ // Any other state reports no kind.
+ // An interrupted step can leave any state its failed write could reach.
+ // For example, a paused run died before its resume write, or a running run was found busy by the failed write.
+@@ -96,7 +105,7 @@ func DetectCrashResume(entry EntryObservation) bool {
+ // The budget prefix is the one text still matched, with strings.HasPrefix.
+ // The persisted reason carries the exhausted row and the way forward after it.
+ // A producer reason starting with the prefix would read as budget exhaustion, and no shipped producer returns one.
+-func ClassifyHalt(state shedengine.State, reason string, interrupted, buildSkew bool) (AnomalyKind, bool) {
++func ClassifyHalt(state shedengine.State, reason string, interrupted, buildSkew, transient bool) (AnomalyKind, bool) {
+ 	switch {
+ 	case state == shedengine.StateBlocked && strings.HasPrefix(reason, shedengine.ReasonBounceBudgetExhausted):
+ 		return AnomalyBudgetExhausted, true
+@@ -106,6 +115,8 @@ func ClassifyHalt(state shedengine.State, reason string, interrupted, buildSkew
+ 		return AnomalyInterrupted, true
+ 	case state == shedengine.StateFailed && buildSkew:
+ 		return AnomalyBuildSkew, true
++	case state == shedengine.StateFailed && transient:
++		return AnomalyTransientStop, true
+ 	case state == shedengine.StateFailed:
+ 		return AnomalyProducerFailure, true
+ 	default:
+diff --git a/internal/loomengine/anomaly_test.go b/internal/loomengine/anomaly_test.go
+index 2a576e427..2c3df2067 100644
+--- a/internal/loomengine/anomaly_test.go
++++ b/internal/loomengine/anomaly_test.go
+@@ -120,6 +120,7 @@ func TestClassifyHalt(t *testing.T) {
+ 		reason      string
+ 		interrupted bool
+ 		buildSkew   bool
++		transient   bool
+ 		wantKind    AnomalyKind
+ 		wantOK      bool
+ 	}{
+@@ -166,6 +167,38 @@ func TestClassifyHalt(t *testing.T) {
+ 			wantKind:  AnomalyBuildSkew,
+ 			wantOK:    true,
+ 		},
++		{
++			name:      "FailedTransient_TransientStop",
++			state:     shedengine.StateFailed,
++			reason:    "landingshed: Finalize: read GitHub's rules for the parent branch: dial tcp: lookup api.github.com: server misbehaving",
++			transient: true,
++			wantKind:  AnomalyTransientStop,
++			wantOK:    true,
++		},
++		{
++			name:      "FailedBuildSkewTransient_BuildSkew",
++			state:     shedengine.StateFailed,
++			buildSkew: true,
++			transient: true,
++			wantKind:  AnomalyBuildSkew,
++			wantOK:    true,
++		},
++		{
++			name:        "FailedInterruptedTransient_InterruptedStop",
++			state:       shedengine.StateFailed,
++			reason:      "loop-exited: loop 1 ended without an envelope",
++			interrupted: true,
++			transient:   true,
++			wantKind:    AnomalyInterrupted,
++			wantOK:      true,
++		},
++		{
++			name:      "NotFailedTransient_NoKind",
++			state:     shedengine.StateRunning,
++			transient: true,
++			wantKind:  "",
++			wantOK:    false,
++		},
+ 		{
+ 			name:      "NotFailedBuildSkew_NoKind",
+ 			state:     shedengine.StateRunning,
+@@ -244,9 +277,9 @@ func TestClassifyHalt(t *testing.T) {
+ 
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			kind, ok := ClassifyHalt(tt.state, tt.reason, tt.interrupted, tt.buildSkew)
++			kind, ok := ClassifyHalt(tt.state, tt.reason, tt.interrupted, tt.buildSkew, tt.transient)
+ 			if kind != tt.wantKind || ok != tt.wantOK {
+-				t.Errorf("ClassifyHalt(%q, %q, %v, %v) = (%q, %v); want (%q, %v)", tt.state, tt.reason, tt.interrupted, tt.buildSkew, kind, ok, tt.wantKind, tt.wantOK)
++				t.Errorf("ClassifyHalt(%q, %q, %v, %v, %v) = (%q, %v); want (%q, %v)", tt.state, tt.reason, tt.interrupted, tt.buildSkew, tt.transient, kind, ok, tt.wantKind, tt.wantOK)
+ 			}
+ 		})
+ 	}
