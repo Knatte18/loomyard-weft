@@ -850,7 +850,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nThe operator tried the agent button in reed's status bar for the first time.\n\n1. It refused a name with spaces without saying what a valid name is.\n2. The agent it spawned knew nothing of lym: no skills, no commands, no idea what it is, which hub, worktree or task it serves, or what it is for.\n\n## Task\n\n- Name the rule for the agent's name when asking for it; on a refusal name the rule and ask again, or turn spaces into dashes.\n- Spawn the agent with an opening stencil that says what it is, which hub, worktree and task (or the prime) it sits in and what it is for,\n  and which skills to load for that context, such as `ly:cli`, `ly:board` and the scribe skills.\n  Give it the same instructions, guards and skills any other lym session of its engine gets.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-27T16:37:28Z",
       "revised": "2026-11-27T17:58:16Z",
       "profile": "light"
