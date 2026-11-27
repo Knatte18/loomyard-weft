@@ -33,5 +33,11 @@
       "title": "This part's fabric test code shrinks in net",
       "digest": "226755b6565170527c783d4be33f8d4c98f6c29bb1e7c204516cff1714348b00"
     }
-  ]
+  ],
+  "decisions_routed": true,
+  "fixer_rerun": {
+    "review_digest": "189d085766b8b213a59616329e42c5621b8755d2bcf9eedc2faa42bececc3aaf",
+    "reason": "the round halted: shedadapters: Plan-Burler-Fix (burler-fix): round 2 attempt 2: fix: burler: twill fixer fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/fecd010a-97a1-415c-8d4a-716a0e7703e8/subagents/agent-abc5528dbce58b86c.jsonl\" attempted 4 nested spawn call(s) — forks cannot nest and must never spawn a fork or subagent, even when the attempt was denied; no target change was found: no fork wrote a file or ran a state-changing git command outside a repository it created; way forward: resume the run",
+    "report": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-foundation/_lym/reviews/plan/round-2-fixer-report-20261127T080451Z.md"
+  }
 }
