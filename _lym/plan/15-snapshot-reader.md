@@ -1,13 +1,13 @@
 # Card 15 — snapshot-reader
 
 **Create:**
-- `plan:internal/fabricengine#snapshotReader` -> `type snapshotReader struct`
-- `plan:internal/fabricengine#snapshotReader.read` -> `func (r snapshotReader) read(phase fabriccore.Phase, fields []fabriccore.Field, snapshot *fabriccore.Snapshot) error`
-- `plan:internal/fabricengine#readLocalRefs` -> `func readLocalRefs(dir string) (fabriccore.Refs, error)`
-- `plan:internal/fabricengine#ReadSnapshotForTest` -> `func ReadSnapshotForTest(hub string, stores map[fabriccore.Store]string, phase fabriccore.Phase, fields []fabriccore.Field) (fabriccore.Snapshot, error)`
-- `plan:internal/fabricengine#WritePendingTeardownForTest` -> `func WritePendingTeardownForTest(hub string, record fabriclayout.PendingTeardown) error`
-- `plan:internal/fabricengine_test#TestSnapshotReader_ReadsAHub` -> `func TestSnapshotReader_ReadsAHub(t *testing.T)`
-- `plan:internal/fabricengine_test#TestSnapshotReader_RefStorage` -> `func TestSnapshotReader_RefStorage(t *testing.T)`
+- `internal/fabricengine#snapshotReader`
+- `internal/fabricengine#snapshotReader.read`
+- `internal/fabricengine#readLocalRefs`
+- `internal/fabricengine#ReadSnapshotForTest`
+- `internal/fabricengine#WritePendingTeardownForTest`
+- `internal/fabricengine_test#TestSnapshotReader_ReadsAHub`
+- `internal/fabricengine_test#TestSnapshotReader_RefStorage`
 
 **Edit:**
 - `cmd/lym#testOnlyCodeAllowed`
