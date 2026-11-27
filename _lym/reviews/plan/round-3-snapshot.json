@@ -1,0 +1,13 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "4fa851883dac9929d22aefd47b1ae3467f44ae765c18fbb2cb7b56c7bd8a5ca7",
+  "added_decisions": [
+    {
+      "title": "A first card runs the KWin probes",
+      "digest": "f4f51170f5705279067f76fe9887959f729bc2ed6601c8b44d790c0ccbae1f4c"
+    }
+  ]
+}
