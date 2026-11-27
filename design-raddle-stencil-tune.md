@@ -1,6 +1,6 @@
 # Tune the raddle stencil and split rubric from the study of every raddle run
 
-`raddle-stencil-tune` · Note · enhancement, docs
+`raddle-stencil-tune` · Note · enhancement, stencil, loom
 
 ## Seen
 

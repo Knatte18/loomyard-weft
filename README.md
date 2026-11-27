@@ -159,7 +159,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 18m<br>18m | stencil, orch, board |
 | E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 18m<br>18m | orch, board, stencil |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>3h | landing, gate, batten |
-| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 0m<br>0m | docs |
+| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 0m<br>0m | stencil, loom |
 
 ### Features (1)
 

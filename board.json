@@ -945,7 +945,8 @@
       "kind": "note",
       "labels": [
         "enhancement",
-        "docs"
+        "stencil",
+        "loom"
       ],
       "issues": [],
       "depends_on": [],
@@ -953,7 +954,7 @@
       "brief": "Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts",
       "body": "## Seen\n\nThe study `docs/research/raddle/raddle-split-quality.md` read every raddle run of this hub up to 2026-11-27.\nThe most common revision is a missing dependency on work already running or released.\nCorrections to part count and recipe are about size and cost: too many solid tapestries, or one part too large for one review.\nThe stencil has no size rule and no recipe or profile rule, and its one cost sentence pushes toward larger parts.\n\n## Change\n\nApply the report's section \"Proposed stencil changes\" to `contracts/stencils/raddle/raddle-template-agent.md`\nand `contracts/stencils/loom/loom-rubric-raddle-review.md`:\norder and dependencies, part count and size, recipe and profile, cut lines, missing or invented parts, wording,\nsuperseded decisions, size estimates, where the entries are filed, and the split perch's rubric.\nThe report's change that would let the operator choose the filed project's level needs code and spec, and stays out of this task.\n",
       "created": "2026-11-27T18:24:08Z",
-      "revised": "2026-11-27T18:24:08Z"
+      "revised": "2026-11-27T18:24:15Z"
     }
   ],
   "prime_owner": "neve",
