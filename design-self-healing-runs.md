@@ -25,3 +25,11 @@ Goal: lym can run overnight.
   and autonomy mode's severe-halt classes are the only ones that reach the operator.
 - Quiet notices name what the agent waits on, so a correct wait raises nothing.
 - Collect the stop classes from the drive reports and notices of the last weeks before designing.
+
+## Operator decision (2026-11-27)
+
+Lym runs overnight with no one to answer questions.
+Everything that is not truly severe is settled without the operator: by lym, or by the orch under autonomy.
+A stop truly severe enough that the operator must see it waits until the operator answers,
+and reaches the operator on Slack as an imperative message, so it can be answered from the phone.
+Other work goes on meanwhile.
