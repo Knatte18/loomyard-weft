@@ -1,34 +1,47 @@
-# Class transient failed halts as transient-stop; log parent lock waits
+# Give transient halts their own anomaly kind and log parent-lock waits
 
-A step whose producer error carries a transient class, such as Finalize's read of GitHub's branch rules failing on a DNS lookup, persists state `failed` with `transient=github-api`.
-The driver's rule table already re-steps such a stop with waits.
-The halt note that step left still named it `producer-hard-failure`,
-so the friction reflection read an outage that cleared at once as a defect.
+A Finalize step that failed on a DNS lookup of `api.github.com` was classed `transient=github-api`,
+yet its halt note read `producer-hard-failure`.
+Reflection took an outage that a second step cleared for a defect signal.
 
-## Changes
+- A failed halt whose status records a transient class now writes `anomaly: transient-stop` in its halt note.
+  `loomengine.ClassifyHalt` takes a new `transient` argument for this.
+- The reflection template drops a `transient-stop` halt.
+  It files one only when the notes show such halts at one row that the re-steps never cleared,
+  or a failure classed transient that no retry could fix.
+- The parent-lock wait in `landingshed` now logs its start, each change of holder and its end.
+  The end line says whether the lock was granted, with both the wall-clock time (`waited`) and the monotonic time (`awake`).
+  A gap between the two points to a wall-clock step, or to a host suspend where the monotonic clock pauses in suspend.
+  This is there to explain long waits:
+  the failed step spent about nine hours between its parent-lock wait mark and its refusal,
+  and the trace did not show whether the lock was held that long or the host was suspended.
 
-- `loomengine.ClassifyHalt` takes a `transient` flag and returns the new kind `transient-stop` for a failed halt that carries one.
-  An interrupted stop and a build skew keep their own kinds.
-- The failed-halt note in `internal/loomcli/halt.go` reads the transient class from the status file, so the note names `anomaly: transient-stop`.
-- The reflection template drops a `transient-stop` halt, unless the notes show re-steps at one row that never cleared it, or a failure classed transient that no retry could fix.
-- Finalize's parent lock guard logs the wait's start and holder, each change of holder, and the wait's end.
-  The end line carries both the wall-clock time waited and the awake time,
-  so a nine-hour gap like the one in the report shows whether the lock was held that long or the host was suspended.
+Closes #269
 
 ## Design decisions
 
-- The status file keeps state `failed` with its `transient` class, and no new shed state is added.
-  That class is already the retryable marker: the driver re-steps a git-transport or GitHub API stop three times with waits before it hands back.
-  A new state would move every reader of `failed`, the run state machine's halted reading and the board status among them.
-  Retrying in place of failing is the scope of the separate task on landing pushes and reads.
-- A transient halt still writes its note, under its own kind, so the outage stays on record and the reflection can tell it apart from a defect.
+- **The persisted state stays `failed`.**
+  The issue asks for a retryable stop rather than `failed` / `producer-hard-failure`.
+  This change adds no new run state and leaves the status write as it was:
+  the status already records the transient class beside `failed`, and the re-steps key on that class.
+  The halt note still says `state: failed`; only its anomaly kind differs.
+- **A halt note is still written**, under its own kind, so the event stays on disk with its trace file.
+- **The kind covers every transient class**, including `agent-start` and `host-resources`, not only network failures.
+  A step loop re-steps each once.
+  The Go driver also re-steps `git-transport` and `github-api` with waits and sends the other classes to the tackler.
+- **Precedence among failed halts:** build skew wins over transient, and an interrupted stop wins over both.
 
-## Tests
+## To check by hand
 
-- `TestClassifyHalt` gains rows for a transient failed halt, a transient interrupted stop and a transient non-failed state.
-- `TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection` gains a row that steps a producer returning a GitHub API error marked transient, and expects `anomaly: transient-stop` in the note.
-  On the merge base the same note reads `producer-hard-failure`.
-- The wait log lines are read only by people, so no test pins them.
+- A failure with a transient class is still persisted as state `failed`, not as a separate retryable stop
+  (the failed-step persist in `internal/shedengine/run.go`).
+  Confirm that `failed` plus the recorded class is enough for every reader of the status.
+- Confirm that the `transient-stop` texts hold for every transient class:
+  that a re-step can clear the failure, and what the step loop, the Go driver and the prompt-driven driver each do with it.
+  The texts are the doc comment on `AnomalyTransientStop` in `internal/loomengine/anomaly.go`,
+  the package doc in `internal/loomcli/doc.go`,
+  and the drop rule in `contracts/stencils/friction/friction-template-reflection.md`.
+- The new parent-lock log lines have no test.
 
 ## Merge danger
 
