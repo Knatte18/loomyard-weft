@@ -14,10 +14,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Write | neve | 24m<br>24m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
+| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Write | neve | 25m<br>25m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T4 | **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid | Darn-Write | neve | 1m<br>1m | shuttle, claude, codex, testkit |
 | T5 | **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid | Darn-Write | neve | 1m<br>1m | orch, testkit |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | starting · Open-IDE | neve | 1m<br>1m | config, reconcile, testkit |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Preflight | neve | 1m<br>1m | config, reconcile, testkit |
 | T8 | **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid | starting · Worktree-Create | neve | 1m<br>1m | parsers, burler, testkit |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 4h<br>4h | weaver, webster |
 
