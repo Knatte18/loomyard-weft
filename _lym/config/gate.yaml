@@ -60,6 +60,3 @@ gates:
         reports: []
         tiers: [0]
         scope: diff
-    upkeep:
-        tiers: [0, 1]
-        scope: marked
