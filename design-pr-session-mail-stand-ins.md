@@ -6,7 +6,7 @@
 
 The run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:
 the `MailAgent` closures in the PR-Review session tests, one returning a made-up "no such strand" error,
-and the session stand-ins in `envkit`, whose `envkit.go` the running push-retry-not-halt also changes.
+and the session stand-ins in `envkit`.
 `MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.
 
 ## Idea

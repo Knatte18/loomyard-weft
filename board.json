@@ -778,9 +778,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins",
-      "body": "## Seen\n\nThe run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`, whose `envkit.go` the running push-retry-not-halt also changes.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\n## Idea\n\nMove the `MailAgent` rows to a tier1 loomcli test over a real creel daemon,\nand move `envkit`'s session stand-ins onto the recorded tmux kit.\n",
+      "body": "## Seen\n\nThe run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\n## Idea\n\nMove the `MailAgent` rows to a tier1 loomcli test over a real creel daemon,\nand move `envkit`'s session stand-ins onto the recorded tmux kit.\n",
       "created": "2026-11-27T19:02:48Z",
-      "revised": "2026-11-27T19:02:49Z"
+      "revised": "2026-11-27T21:29:05Z"
     },
     {
       "id": 1759,
@@ -805,7 +805,7 @@
       "id": 1760,
       "handle": "B1",
       "slug": "battencli-wire-test-gofmt",
-      "title": "battencli wire_test.go holds a line gofmt would rewrite, and no gate caught it",
+      "title": "No gate checks Go formatting",
       "kind": "note",
       "labels": [
         "bug",
@@ -815,10 +815,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "err =c.env.SeedChild.WriteSeed in internal/battencli/wire_test.go",
-      "body": "## Seen\n\n`internal/battencli/wire_test.go` has `err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite, and it landed on main.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nFix the line, and add a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n",
+      "brief": "A mis-formatted Go file passes every tier; add a gofmt check to tier0",
+      "body": "## Seen\n\nThe `design-first-route` landing (`9acc400f8`) listed a mis-spaced assignment in `internal/battencli/wire_test.go`,\n`err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite.\nThat line does not stand in the file at `9acc400f8` or at `3fb0787e3`, and `gofmt -l cmd internal tools` lists no file at `3fb0787e3`.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nAdd a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n",
       "created": "2026-11-27T19:53:36Z",
-      "revised": "2026-11-27T19:53:36Z"
+      "revised": "2026-11-27T21:29:05Z"
     },
     {
       "id": 1761,
@@ -838,6 +838,24 @@
       "body": "## Seen\n\nThe landed recorded tmux kit (`internal/testkit/tmuxrec`) neither records nor matches a call's stdin.\nEach paste names a fresh random buffer in its arguments, so a replayed paste matches no recorded one and fails as unanswered.\nNo current recording holds a `load-buffer` call, so the PR-Review session tests pass; a scenario that sends text to a pane cannot use the kit.\n\n## Idea\n\nRecord and match stdin, and match a paste's buffer name by pattern rather than literally, with a recording that pastes and a replay test over it.\n",
       "created": "2026-11-27T20:27:53Z",
       "revised": "2026-11-27T20:27:53Z"
+    },
+    {
+      "id": 1762,
+      "handle": "E5",
+      "slug": "shedcli-names-unreached",
+      "title": "internal/shedcli.names is reached by no main package",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate",
+      "body": "## Seen\n\nThe upkeep gate at `3fb0787e3` fails `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` (`cmd/lym/testonlycode_linux_test.go`):\n`internal/shedcli.names`, in `internal/shedcli/table.go`, is reached by no main package of the module.\nOnly `internal/shedcli/table_test.go` calls it.\nSince `design-first-route` (`9acc400f8`) the unknown-recipe error in `lookup` lists `shedrun.OfferedRecipeNames()` instead.\n\n## Idea\n\nRemove `names` with the test of it, or give it a production caller.\nThe file's header comment names the `names` accessor and needs the same edit.\n",
+      "created": "2026-11-27T21:29:06Z",
+      "revised": "2026-11-27T21:29:06Z"
     }
   ],
   "prime_owner": "neve",

@@ -1,12 +1,14 @@
-# battencli wire_test.go holds a line gofmt would rewrite, and no gate caught it
+# No gate checks Go formatting
 
 `battencli-wire-test-gofmt` · Note · bug, gate, batten
 
 ## Seen
 
-`internal/battencli/wire_test.go` has `err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite, and it landed on main.
+The `design-first-route` landing (`9acc400f8`) listed a mis-spaced assignment in `internal/battencli/wire_test.go`,
+`err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite.
+That line does not stand in the file at `9acc400f8` or at `3fb0787e3`, and `gofmt -l cmd internal tools` lists no file at `3fb0787e3`.
 No gate checks formatting, so a mis-formatted Go file passes every tier.
 
 ## Idea
 
-Fix the line, and add a gofmt check to tier0 (for example `gofmt -l` over the changed files).
+Add a gofmt check to tier0 (for example `gofmt -l` over the changed files).
