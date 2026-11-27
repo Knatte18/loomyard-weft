@@ -869,6 +869,25 @@
       "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
       "created": "2026-11-27T19:53:35Z",
       "revised": "2026-11-27T19:53:35Z"
+    },
+    {
+      "id": 1760,
+      "handle": "B1",
+      "slug": "battencli-wire-test-gofmt",
+      "title": "battencli wire_test.go holds a line gofmt would rewrite, and no gate caught it",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "err =c.env.SeedChild.WriteSeed in internal/battencli/wire_test.go",
+      "body": "## Seen\n\n`internal/battencli/wire_test.go` has `err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite, and it landed on main.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nFix the line, and add a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n",
+      "created": "2026-11-27T19:53:36Z",
+      "revised": "2026-11-27T19:53:36Z"
     }
   ],
   "prime_owner": "neve",
