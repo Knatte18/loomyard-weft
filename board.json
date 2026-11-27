@@ -65,23 +65,6 @@
       "revised": "2026-11-17T18:54:35Z"
     },
     {
-      "id": 1659,
-      "handle": "P1",
-      "slug": "intake-wave-1",
-      "title": "Intake wave 1: PR modes, Webster, dotnet gate, reed, creel, commits",
-      "kind": "project",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "",
-      "created": "2026-11-26T08:19:24Z",
-      "revised": "2026-11-26T08:20:40Z"
-    },
-    {
       "id": 1660,
       "handle": "P3",
       "slug": "intake-wave-2",
