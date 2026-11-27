@@ -1,6 +1,6 @@
 # Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits
 
-`restep-prior-work-none` · Task · bug, loom, stencil · starting · Open-IDE
+`restep-prior-work-none` · Task · bug, loom, stencil · running · Darn-Write
 
 Imported from [issue #278](https://github.com/Knatte18/loomyard/issues/278).
 
