@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 09:15 UTC; every age below is as of then.
+Rendered 2026-11-27 09:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -123,7 +123,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Command-help byte-cap test is not run by card or batch gates** | [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | gate, cli |
+| T8 | **Command-help byte-cap test is not run by card or batch gates** | [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | gate, cli |
 
 ### Layer H (1)
 
