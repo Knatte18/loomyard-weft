@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T15:21:57Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/twill-nested-spawn-inherited/_lym/landing/summary.md",
+      "at": "2026-11-27T15:48:46Z",
+      "started_at": "2026-11-27T15:21:57Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T15:27:27.819783255Z",
+          "end": "2026-11-27T15:27:27.844857872Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T15:27:27.935353466Z",
+          "end": "2026-11-27T15:47:00.691038673Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-27T15:47:00.793620198Z",
+          "end": "2026-11-27T15:47:24.784734875Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-27T15:47:24.965493026Z",
+          "end": "2026-11-27T15:47:25.741611426Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T15:47:25.909469828Z",
+          "end": "2026-11-27T15:47:25.909692515Z"
+        }
+      ]
     }
   ],
   "product": {
