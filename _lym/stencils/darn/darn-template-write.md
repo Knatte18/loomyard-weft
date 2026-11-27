@@ -16,7 +16,7 @@
      or with darn-fragment-make-change-gated when a cold fixer clears the row's verify gate.
      report_directive holds darn-fragment-report, led by a blank line, when darn.report_dir is set.
      It shares make_change's line, so an empty value leaves the prompt's bytes unchanged.
-lym-stencil: sha256=e602697d7b9547f223724822ea04e4e06e5ce40de43b4cd24f8d0b0225575046 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
+lym-stencil: sha256=858fc416cec87c252a2f393b6e9afb31e9e11a53be829c974a78ee13a7231bab build=ed317e89128895d564478ca2dabd7b258da32a97 time=2026-11-27T16:53:11Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -36,11 +36,12 @@ The record's format is defined at `{{.specs_dir}}/loom/loom-discussion-spec.md`;
 
 ## Step 2 — This spawn's work
 
-Prior work, which you continue from when it is not `(none)`:
+Prior work:
 
 {{.prior_work}}
 
-When the prior work is not `(none)`, the commits already on the task branch are yours from an earlier spawn: continue from them and fix what the prior work names, never restart the change.
+When the prior work is not `(none)`, it names what is already on the task branch or in the scratch directory: continue from an earlier spawn's work and fix what the prior work names, never restart the change.
+When it says a spawn was interrupted or may have been, read the commits and scratch entries it lists before you continue, since an interrupted spawn records no outcome.
 When it is `(none)`, this is the first spawn and the branch holds no work of yours yet.
 
 ## Step 3 — Check the entry before any code
