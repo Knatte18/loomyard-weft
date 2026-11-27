@@ -6,8 +6,8 @@
 - `internal/landingshed#TestFinalize_PullRequest`
 
 **Create:**
-- `plan:internal/landingshed#Finalize.parentPushBlocks` -> `func (fz *Finalize) parentPushBlocks(ctx context.Context) *ending`
-- `plan:internal/loomcli#TestLandingDeps_ParentPushState` -> `func TestLandingDeps_ParentPushState(t *testing.T)`
+- `internal/landingshed#Finalize.parentPushBlocks`
+- `internal/loomcli#TestLandingDeps_ParentPushState`
 
 **Uses:**
 - `internal/landingshed/doc.go`

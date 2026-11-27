@@ -7,11 +7,11 @@
 - `internal/testkit/envkit#nilLegal`
 
 **Create:**
-- `plan:internal/lymdirs#IgnoreCheckDirName` -> `const IgnoreCheckDirName = "ignore-check"`
-- `plan:internal/shedrun#MergeInBaseFile` -> `func MergeInBaseFile(l *lymcwd.Location, runID string) string`
-- `plan:internal/fabricengine#RemoveIgnoredLeftovers` -> `func RemoveIgnoredLeftovers(l *lymcwd.Location, base string) ([]string, error)`
-- `plan:internal/landingshed#Finalize.removeLeftovers` -> `func (fz *Finalize) removeLeftovers(ctx context.Context) *ending`
-- `plan:internal/landingshed_test#TestFinalize_RemovesIgnoredLeftoversOfADeletedDirectory` -> `func TestFinalize_RemovesIgnoredLeftoversOfADeletedDirectory(t *testing.T)`
+- `internal/lymdirs#IgnoreCheckDirName`
+- `internal/shedrun#MergeInBaseFile`
+- `internal/fabricengine#RemoveIgnoredLeftovers`
+- `internal/landingshed#Finalize.removeLeftovers`
+- `internal/landingshed_test#TestFinalize_RemovesIgnoredLeftoversOfADeletedDirectory`
 
 **Extends:**
 - `internal/lymdirs/doc.go`
