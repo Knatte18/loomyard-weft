@@ -24,6 +24,12 @@ Make no code change.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Measurement tiers and gate calls
+
+Decision: The parent added temporary manual tiers tier4 (go build ./... alone) and tier5 (go vet {targets} alone) at the hub default layer, and removes them when the writer reports done. The skip-build variant is derived as tier1 minus tier4 on the same case. The writer may run lym gate test --wait --no-carry with --tier 1, 4 or 5 in the foreground, one call at a time: three runs each for the one-package and ten-package cases, two runs for the whole tier1 set. Link time comes from -debug-actiongraph and the DWARF variant from -ldflags=-w, both passed after --; the lym binary build and other steps come from the gate trace logs.
+
+Rationale: The entry asks for each fixed step timed separately; the writer may not edit hub config or run raw module-wide go commands, and the whole-set calls hold a gate slot for about ten minutes each while other runs need slots.
+
 ## Constraints
 
 ## Auto-mode assumptions
