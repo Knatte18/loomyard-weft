@@ -40,15 +40,6 @@ tiers:
         timeout_min: 60
         prebuilt_lym: true
         manual: true
-    tier4:
-        about: "temporary: tier1 module-wide build alone (gate-fixed-cost-measure)"
-        command: "go build ./..."
-        all_targets: ./...
-        env: {GOFLAGS: "-trimpath -p={parallel} -timeout=20m", LYM_TEST_TIER: "1"}
-        counter: go-json
-        parallel: 4
-        timeout_min: 30
-        manual: true
     tier5:
         about: "temporary: tier1 vet alone (gate-fixed-cost-measure)"
         command: "go vet {targets}"
