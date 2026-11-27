@@ -737,6 +737,25 @@
       "profile": "solid",
       "discussed": true,
       "record_body_sha256": "7185fadce0ac8aaffa290d00eb6dce06acc5c55751db769c75aba435c5cf6ef0"
+    },
+    {
+      "id": 1731,
+      "handle": "B2",
+      "slug": "upkeep-gate-lacks-tier1",
+      "title": "Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (board tidy, 2026-11-27, main at `2326ef4da`)\n\n`lym gate test --gate upkeep` was refused, so it ran no check:\n\n```\ngate test: --gate \"upkeep\" lists no tier that is or covers tier1, so its marked tests there cannot run: TestCSharpFixtures_CompileWithDotnet, TestGateRedFirst_Dotnet, TestGateTest_DotnetFixture, TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain; set gate.gates.upkeep to list tier1; way forward: fix it with \"lym config gate\" from the prime; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them\n```\n\n## Fix\n\nSet `gate.gates.upkeep` to `{tiers: [0, 1], scope: marked}` with `lym config gate` from the prime, as the change description of `2326ef4da` asks under \"To check by hand\".\nEvery binary that reads the hub's gate config must hold that change first, since an older one does not accept the scope `marked`.\nThen run `lym gate test --gate upkeep` on the main branch and confirm that it runs the dead-code and .NET tests.\n\nThe shipped template gives `{tiers: [0], scope: marked}` while the marked upkeep tests are `tier1`,\nso a hub whose `tier0` does not cover `tier1` is refused the same way until it sets the key.\n",
+      "created": "2026-11-27T14:35:03Z",
+      "revised": "2026-11-27T14:35:03Z"
     }
   ],
   "prime_owner": "neve",
