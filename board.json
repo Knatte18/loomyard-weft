@@ -761,7 +761,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nCode-Review round 1 of the task that restores the PR-Review agent session (#282) raised a BLOCKING PATTERN finding: the session tests and `envkit` stand in for repository modules.\nThe fixer removed `fakePRSessions` and envkit's `noopSessions` and runs the real `shuttleengine.Runner` over `shuttlefake`, adding `shuttlefake.ResumeEngine`.\nStill hand-written: the `SessionLive` closures over the kit's strand table and in `envkit`, the `RegisterSession` closures, and the `MailAgent` closures, one of them returning a made-up \"no such strand\" error.\nNo kit holds a recorded session stand-in, and a real reed needs tmux while these tests are tier0.\nThe parent accepted the round with this open, to land the urgent fix.\n\n## Idea\n\nGive testkit a recorded reed and creel session stand-in usable at tier0, and move the PR-Review session tests onto it.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-27T16:37:27Z",
       "revised": "2026-11-27T18:59:01Z",
       "profile": "light"
