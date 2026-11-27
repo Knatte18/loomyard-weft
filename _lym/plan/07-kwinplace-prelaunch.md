@@ -1,4 +1,4 @@
-# Card 6 — kwinplace-prelaunch
+# Card 7 — kwinplace-prelaunch
 
 **Create:**
 - `plan:internal/kwinplace#PreLaunch` -> `func PreLaunch(konsole bool) error`
@@ -25,7 +25,7 @@ The names of the variables, values and tools are named constants.
 it takes `placed` as `PreLaunch(launcher.IsKonsole()) == nil`, logs at Info that placement is skipped and why when it is not,
 once per window (D1's bound), and returns `launcher.Open(dir, title, lymPath, placed)`'s pid with `placed`.
 `Open` with `placed` false is today's command line, and no KWin call is made on that path.
-The choice is pinned by `TestPreLaunch`, and the command line each choice runs by card 4's `TestLauncher_OpenRunsTheChosenCommandLine`.
+The choice is pinned by `TestPreLaunch`, and the command line each choice runs by card 5's `TestLauncher_OpenRunsTheChosenCommandLine`.
 `doc.go` gains a paragraph on the two.
 
 `TestPreLaunch` is `tier0`, rows over the probe: every check passing; `KDE_SESSION_VERSION` unset and `5`;
@@ -34,4 +34,4 @@ a launcher other than Konsole; and each of the three tools missing from `PATH`.
 Each failing row asserts the error names its check.
 It adds under 0.1 seconds to one `tier0` run.
 
-**ImpactSummary:** Two new exported functions in the new package; nothing calls them until cards 12 and 13.
+**ImpactSummary:** Two new exported functions in the new package; nothing calls them until cards 13 and 14.

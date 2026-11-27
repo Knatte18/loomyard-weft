@@ -1,4 +1,4 @@
-# Card 2 — desktop-placement-keys
+# Card 3 — desktop-placement-keys
 
 **Edit:**
 - `internal/desktophook#Config`
@@ -29,7 +29,7 @@ the dotted form a nested template key takes in `Categories`.
 `LoadConfig` refuses, through `configengine.MarkInvalid` and naming the key with `configengine.KeyName`,
 a `window_placement` that is not one of `beamsetting.WindowPlacementModes()`, and a tile size below 1.
 Each refusal names its way forward: `lym config desktop --layer machine --set <key>=<value>` from the prime.
-The package comment in `window.go` stays true: it describes the window command only, and the placement keys are read by the placement child (card 11).
+The package comment in `window.go` stays true: it describes the window command only, and the placement keys are read by the placement child (card 12).
 
 Tests, `tier0`, rows in existing tests:
 - `TestLoadConfig` (desktophook): `TemplateDefaults` also asserts `off`, 500 and 600;

@@ -1,4 +1,4 @@
-# Card 3 — window-command-cancel
+# Card 4 — window-command-cancel
 
 **Create:**
 - `plan:internal/desktophook#AfterPlacement` -> `func AfterPlacement(ctx context.Context, dirs configengine.Dirs, dir string) error`
@@ -40,4 +40,4 @@ On Windows, where `proc` has no process group, the command alone is killed, as `
   the call returns an error, and the pid in `child` is gone (`proc.IsAlive` false) within a minute.
 The cut-off at the command timeout is `TestAfterWindow`'s row, through the same `runWindowCommand`.
 
-**ImpactSummary:** The private runner takes a context and a process group; `AfterWindow`'s two callers (`lym reed window`, `lym ide`) see the same behaviour, and the new entry point has no caller until card 11.
+**ImpactSummary:** The private runner takes a context and a process group; `AfterWindow`'s two callers (`lym reed window`, `lym ide`) see the same behaviour, and the new entry point has no caller until card 12.

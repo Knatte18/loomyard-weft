@@ -1,4 +1,4 @@
-# Card 4 — konsole-separate-launch
+# Card 5 — konsole-separate-launch
 
 **Create:**
 - `plan:internal/termwindow#Launcher.IsKonsole` -> `func (l Launcher) IsKonsole() bool`

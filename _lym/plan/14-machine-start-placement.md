@@ -1,4 +1,4 @@
-# Card 13 — machine-start-placement
+# Card 14 — machine-start-placement
 
 **Create:**
 - `plan:internal/machinecli#TestStart_HandsEachPlacedWindowToThePlacementChild` -> `func TestStart_HandsEachPlacedWindowToThePlacementChild(t *testing.T)`

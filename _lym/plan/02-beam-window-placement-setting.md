@@ -1,4 +1,4 @@
-# Card 1 — beam-window-placement-setting
+# Card 2 — beam-window-placement-setting
 
 **Create:**
 - `plan:internal/beamsetting#WindowPlacementKey` -> `const WindowPlacementKey = "window_placement"`
@@ -37,7 +37,7 @@
 In `internal/beamsetting` declare the key `window_placement` and its values:
 `""` (`WindowPlacementInherit`, hand over to the machine key), `off`, `same` and `next`.
 `WindowPlacementValues` returns all four, for the per-task check.
-`WindowPlacementModes` returns `off`, `same` and `next`, the values the machine key `desktop.window_placement` takes (card 2),
+`WindowPlacementModes` returns `off`, `same` and `next`, the values the machine key `desktop.window_placement` takes (card 3),
 so both keys take their values from this one declaration.
 The package comment's list of per-task settings names the new one.
 
