@@ -347,6 +347,12 @@ Decision: Before each parent push the pusher reads the owner of the parent and o
 
 Rationale: Round-3 F2: today's handedOverStop reads the run's own owner; moving the push to the parent's pusher must keep that guard, as PATTERN-owner-machine requires.
 
+### Added after Discussion (parent, 2026-11-27): No teardown while a landing entry stands
+
+Decision: While a run's landing entry stands, every teardown of its pair refuses before any mutation: lym fabric remove with and without --force or --remote, Worktree-Teardown and the dobby's teardown alike. The refusal's way forward names the owed parent push: wait for it, or run the refused record's step. Add a criterion: lym fabric remove of a pair with a standing landing entry leaves origin's board and records without done and without the held commit, at the lowest tier that fits.
+
+Rationale: Round-3 F3: lym fabric remove marked the entry done and pushed the held records, so origin could read an ended entry whose parent lacks the run's work.
+
 ## Constraints
 
 - Root cause, from the code at `3fbf277ca`:
