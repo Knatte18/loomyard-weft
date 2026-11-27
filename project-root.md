@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 19:29 UTC; every age below is as of then.
+Rendered 2026-11-27 19:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,9 +14,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light | Code-Burler-Fix | neve | 1h<br>30m | stencil, orch, board, loom |
-| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | Darn-Write | neve | 2h<br>30m | testkit, landing |
+| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 5h<br>5h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
+| T4 | **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light | Code-Bouncer | neve | 1h<br>37m | stencil, orch, board, loom |
+| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | Darn-Write | neve | 2h<br>37m | testkit, landing |
 
 ## Layer A (2)
 
@@ -41,11 +41,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | T5<br>T11 | 26m<br>26m | testkit, landing |
+| E1 |  | **PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | T5<br>T11 | 34m<br>33m | testkit, landing |
 | E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) |  | 12h<br>1h | landing, gate, batten |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 1h<br>0m | dobby, batten, orch |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 1h<br>7m | dobby, batten, orch |
