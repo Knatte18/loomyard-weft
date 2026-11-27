@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -48,22 +48,26 @@ The cards run in order: timing config and the driver's wait first, then the ledg
 
 ### Decision: a spawn starts the pusher through its command line
 
-- **Decision:** a detached spawn launches `lym loom pusher --push-now` for its target, built by `fabriclayout.PusherCommand`; the pusher verb sets the push-now mark and exits at a held lock.
-- **Rationale:** `fabricengine` and `boardengine` cannot import `runpusher`, and a second process that only wakes the running pusher keeps one pusher per target.
-- **Applies to:** cards 6, 7 and 11
+- **Decision:** a detached spawn launches `lym loom pusher` for its target with no `--push-now`, built by `fabriclayout.PusherCommand`, so a running pusher takes the commit at its next pass;
+  only the landing, settle and teardown starts pass `--push-now`, which sets the push-now mark, and the pusher verb exits at a held lock.
+- **Rationale:** `fabricengine` and `boardengine` cannot import `runpusher`, a second process that exits at the lock keeps one pusher per target,
+  and a spawn that skipped the interval would push every commit at once, outage or not (D2).
+- **Applies to:** cards 6, 7, 11, 12 and 19
 
 ### Decision: a landing entry is the hold and the pending done write
 
 - **Decision:** a run's landing entry on its parent target names the landed tip and the records commit it holds; the pending `done` write lasts exactly as long as the entry.
-  The records hold lasts as long as the entry, and past a dropped landing it lasts until the pair goes: the drop moves the held commit into the pair target's own entry as `HeldRecords`, which `RemovePair` removes with the pair (D5).
+  The records hold lasts as long as the entry, and past a dropped landing it lasts until the pair goes: the drop moves the held commit into the pair target's own entry as `HeldRecords` and keeps it under a local ref of the records repo, which the pair's removal deletes with the entry (D5).
 - **Rationale:** one record answers every reader, the pushes of card 9, the teardowns of card 19, the pulls of card 16 and the settles of card 11, so no two can disagree.
+- **Applies to:** cards 4, 9, 11, 12, 15, 16, 17 and 19
 
 ### Decision: a landing commit carries its run in a trailer
 
 - **Decision:** Finalize's landing commit carries the trailer `Lym-Landing: <slug>` (`fabriclayout.LandingTrailerKey`), so `fabricengine.LandingCommits` finds every landing commit on a parent's first-parent chain past origin, recorded or not.
-- **Rationale:** D5 refuses a parent push whose tip carries a landing commit no entry records, and re-reads each entry's tip after a rebase as the local parent commit that merges its run; a trailer is the one mark both reads can find on the prime and on a beam parent alike.
+  Every local landing makes that commit: a squash landing its squash commit, and any other a merge commit made with no fast-forward (`MergeOptions.NoFastForward`, card 12), so a landing that would fast-forward still leaves one.
+- **Rationale:** D5 refuses a parent push whose tip carries a landing commit of a run still at Finalize that no entry records, re-records one of a run past Finalize, and re-reads each entry's tip after a rebase as the local parent commit that merges its run;
+  so the ledger is a cache git rebuilds (PATTERN-lym-files), and a trailer is the one mark every such read can find on the prime and on a beam parent alike.
 - **Applies to:** cards 10, 11 and 12
-- **Applies to:** cards 4, 9, 11, 12, 15, 16, 17 and 19
 
 ### Decision: the change description settles D12
 

@@ -14,6 +14,7 @@
 - `internal/sheddriver/doc.go`
 - `internal/loomcli#loomCLI.goDriverDepsFor`
 - `internal/loomcli/doc.go`
+- `internal/battencli#battenCLI.driverDepsFor`
 - `internal/loomengine#AnomalyTransientStop`
 - `contracts/stencils/friction/friction-template-reflection.md`
 - `cmd/lym#unboundedWaitFiles`
@@ -52,6 +53,8 @@ The record stands across every later wait and the re-steps between them while th
 An empty `WaitRecordPath` writes and removes none.
 `shedrun.DriveWaitRecord` names the record's file under `shedrun.ScratchDir` beside `shedrun.DriverLock`.
 `goDriverDepsFor` sets `WaitRecordPath` to it and `NetworkWaitCeiling` to the hub's `fabric.push_ceiling_s` through `Config.PushTiming`, logging each floor line once.
+`battenCLI.driverDepsFor`, batten's own driver in the prime, sets both the same way, `WaitRecordPath` to `shedrun.DriveWaitRecord` over the prime's location and the slug,
+so a Land `git-transport` stop (card 16) is waited out under a record its readers see (card 3, card 20).
 
 `cmd/lym#unboundedWaitFiles` gains `internal/sheddriver/drive.go`, the driver's network wait.
 

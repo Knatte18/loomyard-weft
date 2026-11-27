@@ -5,7 +5,6 @@
 - `internal/pairteardown#TestReadRun`
 
 **Uses:**
-- `internal/pairteardown/doc.go`
 - `internal/pairteardown#runReader`
 - `internal/pairteardown#hubRunReader`
 - `internal/pairteardown#runFakes`
