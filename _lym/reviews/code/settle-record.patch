@@ -1,0 +1,829 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index d89eae435..4b5ced3dc 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1734,6 +1734,7 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym batten cancel <slug> [--remove]` ends a run for good from the prime, whatever its state.
+   It leaves the task's claim `draft` and keeps batten's record with the cancel's finish, state `cancelled`.
+   `--remove` also removes its pair and task branches and deletes the record.
++  On a beam it also clears the project's beam flag, ending the beam's life and leaving a plain project with its members.
+   The hidden `lym batten overview` is the pane process of the `runs` strand of the prime and of each beam.
+   `lym beam start` ensures it, in the beam's window named `beam: prime` or `<handle>: beam: <slug>`.
+   A pawl run's `lym loom start` first puts a `loom-status` strand in an overview window, the session's first.
+diff --git a/internal/battencli/beamland.go b/internal/battencli/beamland.go
+index deff01319..b7624680a 100644
+--- a/internal/battencli/beamland.go
++++ b/internal/battencli/beamland.go
+@@ -19,10 +19,12 @@ import (
+ // Slug names the entry, and HasPair reports whether this machine holds its pair as a registered worktree.
+ // A directory left at the pair's path reads as no pair.
+ // Running reports whether the board status is a run status, so a run is in flight on some machine.
++// Beam reports whether the entry is itself a beam, which may be open on another machine with neither of those set.
+ type BeamLandMember struct {
+ 	Slug    string
+ 	HasPair bool
+ 	Running bool
++	Beam    bool
+ }
+ 
+ // BeamLandBlockers is what still works under a beam: its open members and the local pairs forked from it.
+@@ -131,7 +133,7 @@ func beamMembers(prime *lymcwd.Location, slug string) ([]BeamLandMember, error)
+ 			continue
+ 		}
+ 		hasPair := fabricengine.PairWorktreeStands(prime, task.Slug)
+-		members = append(members, BeamLandMember{Slug: task.Slug, HasPair: hasPair, Running: boardengine.IsRunStatus(task.Status)})
++		members = append(members, BeamLandMember{Slug: task.Slug, HasPair: hasPair, Running: boardengine.IsRunStatus(task.Status), Beam: task.Beam})
+ 	}
+ 	slices.SortFunc(members, func(a, b BeamLandMember) int { return strings.Compare(a.Slug, b.Slug) })
+ 	return members, nil
+diff --git a/internal/battencli/beamland_integration_test.go b/internal/battencli/beamland_integration_test.go
+index a7ca858ee..57e86de02 100644
+--- a/internal/battencli/beamland_integration_test.go
++++ b/internal/battencli/beamland_integration_test.go
+@@ -157,6 +157,9 @@ func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T) {
+ 		got := map[string]bool{}
+ 		for _, member := range members {
+ 			got[member.Slug] = member.HasPair
++			if member.Beam != (member.Slug == "c") {
++				t.Errorf("member %s Beam = %v; want it set for the sub-beam c alone", member.Slug, member.Beam)
++			}
+ 		}
+ 		if hasPair, listed := got["c"]; !listed || !hasPair {
+ 			t.Errorf("member c HasPair, listed = %v, %v; want true, true for a registered worktree", hasPair, listed)
+diff --git a/internal/battencli/cancel.go b/internal/battencli/cancel.go
+index 0d985424f..fc2bd8509 100644
+--- a/internal/battencli/cancel.go
++++ b/internal/battencli/cancel.go
+@@ -10,6 +10,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"slices"
+ 	"strings"
+ 	"time"
+ 
+@@ -29,7 +30,7 @@ const windowsGOOS = "windows"
+ 
+ // cancelDeps carries every substrate call a cancel makes, as function values.
+ // Production fills each one over the hub, and a test replaces each one with a fake.
+-// None is nil except BeamProject and LandingHeld.
++// None is nil except BeamProject and LandingHeld, and EndBeam while BeamProject is nil.
+ type cancelDeps struct {
+ 	// HubPaused reports whether a live hub-scope pause entry covers the prime.
+ 	HubPaused func() (bool, error)
+@@ -128,8 +129,10 @@ type cancelDeps struct {
+ 	LandingHeld func() (bool, error)
+ 	// LandBlockers reads what still works under the beam, over the Bolt the reconcile left.
+ 	LandBlockers func() (BeamLandBlockers, error)
+-	// StopBeam stops the beam's orch and watcher when its pair is present locally.
++	// StopBeam stops the beam's orch and watcher when its pair is present locally and marked a beam.
+ 	StopBeam func() error
++	// EndBeam clears the beam flag of the slug's board entry, leaving a plain project, and reports whether it cleared one.
++	EndBeam func() (bool, error)
+ }
+ 
+ // cancelReport records what one cancel did; with EndOnly set, it records what the cancel ended before stopping.
+@@ -159,6 +162,8 @@ type cancelReport struct {
+ 	RecordsCommitted bool
+ 	// ClaimCleared is true when a run-form board status was cleared.
+ 	ClaimCleared bool
++	// BeamEnded is true when the cancel cleared the beam flag of the slug's project, which only --remove does.
++	BeamEnded bool
+ 	// Lifted lists the scopes of the slug's own pause entries that were lifted.
+ 	Lifted []string
+ 	// PushSpawned is true when the records push was started, and NoticePosted when the orch notice went out.
+@@ -312,7 +317,7 @@ func endRunPhase(ctx context.Context, slug string, remove bool, rerun string, de
+ 	if err != nil {
+ 		return report, probeRefusal("the pause gate", slug, rerun, err)
+ 	}
+-	if err := refuseBeamCancel(slug, rerun, deps); err != nil {
++	if err := refuseBeamCancel(slug, rerun, remove, deps); err != nil {
+ 		return report, err
+ 	}
+ 
+@@ -454,13 +459,15 @@ func isBeamProject(deps cancelDeps) (bool, error) {
+ // It refuses before the cancel's lock is taken or anything is ended.
+ // It first reconciles the hub against origin, so the members are read over the Bolt origin holds.
+ // An error or an unreachable origin refuses with a way forward.
++// With remove, a task member with neither a pair on this machine nor a run status is no work under the beam:
++// it keeps its project field on the plain project the removal leaves.
+ // While the beam's pawl run does not hold its entry, the refusal is the beam's landing refusal.
+ // It names each member to land or cancel.
+ // Once the run holds its entry, a member's landing is refused,
+-// so each blocker names the cancel in the beam's parent worktree and the move off the beam.
++// so each blocker names the cancel in the beam's parent worktree, and without remove the move off the beam.
+ // The blockers never name `lym batten run`.
+ // A task returns before any of this.
+-func refuseBeamCancel(slug, rerun string, deps cancelDeps) error {
++func refuseBeamCancel(slug, rerun string, remove bool, deps cancelDeps) error {
+ 	beam, err := isBeamProject(deps)
+ 	if err != nil {
+ 		return probeRefusal("the board entry", slug, rerun, err)
+@@ -486,30 +493,50 @@ func refuseBeamCancel(slug, rerun string, deps cancelDeps) error {
+ 			return probeRefusal("the beam's landing hold", slug, rerun, err)
+ 		}
+ 	}
+-	if !held {
++	if !held && !remove {
+ 		return fmt.Errorf("%w; then run %s again", refusal, rerun)
+ 	}
+ 	blockers, err := deps.LandBlockers()
+ 	if err != nil {
+ 		return probeRefusal("the members of the beam", slug, rerun, err)
+ 	}
++	if remove {
++		blockers = workingBlockers(blockers)
++	}
+ 	if blockers.Empty() {
+ 		return nil
+ 	}
+-	return heldBeamCancelRefusal(slug, rerun, blockers)
++	if !held {
++		return fmt.Errorf("%w; then run %s again", beamLandRefusal(slug, blockers), rerun)
++	}
++	return heldBeamCancelRefusal(slug, rerun, remove, blockers)
++}
++
++// workingBlockers drops every task member with neither a pair on this machine nor a run status.
++// A member that is itself a beam stays, since it may be open on another machine.
++func workingBlockers(blockers BeamLandBlockers) BeamLandBlockers {
++	blockers.Members = slices.DeleteFunc(slices.Clone(blockers.Members), func(member BeamLandMember) bool {
++		return !member.HasPair && !member.Running && !member.Beam
++	})
++	return blockers
+ }
+ 
+ // heldBeamCancelRefusal words the refusal of a beam's cancel while its pawl run holds its entry.
+ // It names every blocker with the step that ends it, then the cancel's re-run.
+-// A member with a pair or a run in flight is cancelled in the beam's parent worktree, then moved off the beam.
+-// The cancel leaves that member a `draft`, which still blocks the landing, so the move is needed.
++// A member with a pair or a run in flight is cancelled in the beam's parent worktree.
++// Without remove it is then moved off the beam:
++// the cancel leaves that member a `draft`, which still blocks the landing.
+ // A member with no run status is moved alone.
+-func heldBeamCancelRefusal(slug, rerun string, blockers BeamLandBlockers) error {
++func heldBeamCancelRefusal(slug, rerun string, remove bool, blockers BeamLandBlockers) error {
+ 	moveOff := "move its `project` off the beam with `lym board upsert`"
+ 	var ways []string
+ 	for _, member := range blockers.Members {
+ 		if member.HasPair || member.Running {
+-			ways = append(ways, fmt.Sprintf("the open entry %s is a member of the beam: end it with `lym batten cancel %s --remove`, run in the beam's parent worktree, then %s, since the cancel leaves a `draft` member, which still blocks the landing", member.Slug, member.Slug, moveOff))
++			way := fmt.Sprintf("the open entry %s is a member of the beam: end it with `lym batten cancel %s --remove`, run in the beam's parent worktree", member.Slug, member.Slug)
++			if !remove {
++				way += fmt.Sprintf(", then %s, since the cancel leaves a `draft` member, which still blocks the landing", moveOff)
++			}
++			ways = append(ways, way)
+ 			continue
+ 		}
+ 		ways = append(ways, fmt.Sprintf("the open entry %s is a member of the beam with no run status: %s", member.Slug, moveOff))
+@@ -528,6 +555,8 @@ func heldBeamCancelRefusal(slug, rerun string, blockers BeamLandBlockers) error
+ // It then clears the board claim and lifts the slug's own pauses.
+ // If the records were committed, it pushes them after the lifts and waits for the push.
+ // A push that is owed makes the report's way forward name rerun, and any other failed push is a warning.
++// With remove it last clears the beam flag of a beam project, whose life the removal ends,
++// so a failed clear never skips the records push.
+ // It releases the batten locks the report holds once the claim is cleared.
+ // The cancel's lock and the pause gate stay with the caller.
+ // Its errors name rerun as the step to run again.
+@@ -592,6 +621,15 @@ func clearRunPhase(slug string, remove bool, rerun string, report *cancelReport,
+ 			report.PushSpawned = true
+ 		}
+ 	}
++	if remove {
++		beam, err := isBeamProject(deps)
++		if err == nil && beam {
++			report.BeamEnded, err = deps.EndBeam()
++		}
++		if err != nil {
++			return fmt.Errorf("battencli: could not clear the beam flag of %s: %w; way forward: fix the cause, then run %s again", slug, err, rerun)
++		}
++	}
+ 	if report.pairKept {
+ 		ways = append(ways, fmt.Sprintf("run %q before rerunning it", cancelCommand(slug, true)))
+ 	}
+@@ -723,7 +761,7 @@ func cancelOwnedElsewhere(slug, owner, subject string) error {
+ // refuseNothingLeft refuses a cancel when no record, claim, pair part, session, process or cancel of the slug is left.
+ // Without remove, it also refuses when only a task branch or a stray directory is left.
+ // A stray directory is one that is no worktree at the task worktree's path.
+-// With remove, neither a local task branch nor a stray directory refuses.
++// With remove, neither a local task branch, a stray directory nor a beam flag on the slug's project refuses.
+ // With remove, an unfinished teardown that names this cancel counts as left too,
+ // so the re-run its record names finishes it whatever of the pair is still on origin.
+ // A task branch on origin counts as left, and it is read only when nothing else is left and origin was reached.
+@@ -762,6 +800,13 @@ func refuseNothingLeft(slug string, remove, endOnly bool, rerun string, reading
+ 	if parts.TaskBranch || parts.StrayPath {
+ 		return nil
+ 	}
++	beam, err := isBeamProject(deps)
++	if err != nil {
++		return probeRefusal("the board entry", slug, rerun, err)
++	}
++	if beam {
++		return nil
++	}
+ 	pending, err := deps.TeardownPending()
+ 	if err != nil {
+ 		return probeRefusal("the unfinished teardowns", slug, rerun, err)
+@@ -845,11 +890,15 @@ func cancelNotice(report cancelReport) string {
+ 	if report.RecordKept {
+ 		record = "; its record is kept with the cancel's finish"
+ 	}
++	beam := ""
++	if report.BeamEnded {
++		beam = ", and its beam flag cleared, leaving a plain project"
++	}
+ 	switch {
+ 	case report.EndOnly:
+ 		return fmt.Sprintf("batten cancel of %s ended its processes only (%s); origin was unreachable, so %s", report.Slug, stood, report.WayForward)
+ 	case report.PairRemoved:
+-		return fmt.Sprintf("batten cancel of %s ended the run (%s); its pair and record were removed", report.Slug, stood)
++		return fmt.Sprintf("batten cancel of %s ended the run (%s); its pair and record were removed%s", report.Slug, stood, beam)
+ 	case report.WayForward != "":
+ 		return fmt.Sprintf("batten cancel of %s ended the run (%s); its pair was kept%s, so %s", report.Slug, stood, record, report.WayForward)
+ 	}
+diff --git a/internal/battencli/cancel_integration_test.go b/internal/battencli/cancel_integration_test.go
+index 0e1e25d84..202f1b55e 100644
+--- a/internal/battencli/cancel_integration_test.go
++++ b/internal/battencli/cancel_integration_test.go
+@@ -1,6 +1,6 @@
+ // cancel_integration_test.go drives "lym batten cancel" through clihelp.ExecuteIn over hubforge hubs.
+-// It covers a blocked run with no pair, a kept pair whose reconcile only judges, a removed pair,
+-// and the re-run that finishes an unfinished removal.
++// It covers a blocked run with no pair, a kept pair whose reconcile only judges, and a removed pair.
++// It also covers the re-run that finishes an unfinished removal, and the removal of a beam.
+ 
+ package battencli
+ 
+@@ -24,15 +24,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/runfsm"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -48,7 +51,12 @@ func seedCancelRun(t *testing.T, h *hubforge.Hub, slug, producer string, rowStat
+ 	if err := board.SetStatus(slug, &claim); err != nil {
+ 		t.Fatalf("claim %q on the board: %v", claim, err)
+ 	}
++	seedRunRecords(t, h, slug, producer, rowState)
++}
+ 
++// seedRunRecords writes and commits a batten seed and a status at producer in rowState for slug on h's prime.
++func seedRunRecords(t *testing.T, h *hubforge.Hub, slug, producer string, rowState shedengine.State) {
++	t.Helper()
+ 	if err := shedrun.WriteSeed(h.Location, slug, shedrun.Seed{Recipe: shedrun.RecipeBatten, Driver: shedrun.DriverGo}); err != nil {
+ 		t.Fatalf("write the seed: %v", err)
+ 	}
+@@ -410,6 +418,121 @@ func TestCancelIntegration_FinishesAnUnfinishedRemoval(t *testing.T) {
+ 	envelope.RequireErr(t, runCancel(t, h.PrimeWorktree(), slug, "--remove"), "nothing of "+slug+" is left to cancel")
+ }
+ 
++// TestCancelIntegration_RemoveOfABeamLeavesAPlainProject cancels beams with --remove over a real hub board.
++// The first beam has a paused run, a draft member with no pair, and a pair whose origin record has no beam mark.
++// The removal ends the beam, leaves its member, and warns of no orch left unstopped.
++// The second beam has only its flag left once a removal fails to clear it.
++// A board that cannot be read refuses that cancel, and the re-run clears the flag.
++func TestCancelIntegration_RemoveOfABeamLeavesAPlainProject(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const lone, member = "cancel-lone-beam", "cancel-beam-member"
++	slug := hubforge.TemplatePairSlug
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{slug}})
++	board, err := boardengine.OpenHub(h.Path)
++	if err != nil {
++		t.Fatalf("open the hub board: %v", err)
++	}
++	for _, entry := range []map[string]any{
++		{"slug": slug, "kind": "project"},
++		{"slug": lone, "kind": "project"},
++		{"slug": member, "kind": "task", "project": slug},
++	} {
++		entry["title"] = entry["slug"]
++		entry["labels"] = []string{"bug"}
++		if _, err := board.UpsertTask(entry); err != nil {
++			t.Fatalf("seed board entry %v: %v", entry["slug"], err)
++		}
++	}
++	machine, err := machinename.Name()
++	if err != nil {
++		t.Fatalf("machine name: %v", err)
++	}
++	if _, err := boardengine.SetOwners(h.BoardDir(), boardengine.OwnerRequest{Machine: machine, Slugs: []string{slug, lone}, Beam: true}); err != nil {
++		t.Fatalf("flag the beam projects: %v", err)
++	}
++	seedRunRecords(t, h, slug, battenrecipe.NameRunShed, shedengine.StatePaused)
++
++	got := envelope.RequireOK(t, runCancel(t, h.PrimeWorktree(), slug, "--remove"))
++
++	if got.Raw["beam_ended"] != true || got.Raw["pair_removed"] != true {
++		t.Errorf("envelope = %v; want the pair removed and the beam ended", got.Raw)
++	}
++	if warnings, _ := got.Raw["warnings"].([]any); slices.ContainsFunc(warnings, func(warning any) bool {
++		text, _ := warning.(string)
++		return strings.Contains(text, "the beam's orch was not stopped")
++	}) {
++		t.Errorf("warnings = %v; want no orch stop attempted on an unmarked pair", warnings)
++	}
++	ended, found, err := board.GetTask(slug)
++	if err != nil || !found {
++		t.Fatalf("GetTask(%s) = found %v, %v; want the project kept", slug, found, err)
++	}
++	if ended.Beam || ended.Recipe != "" || ended.OwnerMachine != "" || ended.BeamColor != "" {
++		t.Errorf("beam, recipe, owner, colour = %v, %q, %q, %q; want false and all empty", ended.Beam, ended.Recipe, ended.OwnerMachine, ended.BeamColor)
++	}
++	kept, found, err := board.GetTask(member)
++	if err != nil || !found || kept.Project != slug || kept.Status == nil || *kept.Status != boardengine.StatusDraft {
++		t.Errorf("member = %+v, found %v, %v; want a draft still under %s", kept, found, err, slug)
++	}
++	if _, err := board.UpsertTask(map[string]any{"slug": slug, "beam": false}); err != nil {
++		t.Errorf("UpsertTask(%s, beam false) error = %v; want nil once the beam is ended", slug, err)
++	}
++
++	boardFile := filepath.Join(h.BoardDir(), "board.json")
++	// Each subtest makes the board unreadable partway through a cancel, and its end restores it.
++	t.Run("FailedFlagClearNamesTheRerunAfterThePush", func(t *testing.T) {
++		seedRunRecords(t, h, lone, battenrecipe.NameRunShed, shedengine.StatePaused)
++		deps, err := hubCancelDeps(h.Location, lone)
++		if err != nil {
++			t.Fatalf("hubCancelDeps(%s): %v", lone, err)
++		}
++		push, pushed := deps.PushRecords, false
++		deps.PushRecords = func() (bool, error) {
++			owed, err := push()
++			pushed = true
++			permkit.Chmod(t, boardFile, 0)
++			return owed, err
++		}
++
++		_, err = cancelRun(context.Background(), lone, true, deps)
++
++		want := "could not clear the beam flag of " + lone
++		if err == nil || !strings.Contains(err.Error(), want) || !strings.Contains(err.Error(), `run "lym batten cancel `+lone+` --remove" again`) {
++			t.Errorf("cancelRun() error = %v; want %q naming the re-run", err, want)
++		}
++		if !pushed {
++			t.Error("the records were not pushed before the failed flag clear")
++		}
++	})
++
++	t.Run("UnreadableBoardRefusesTheFlagAloneCancel", func(t *testing.T) {
++		deps, err := hubCancelDeps(h.Location, lone)
++		if err != nil {
++			t.Fatalf("hubCancelDeps(%s): %v", lone, err)
++		}
++		list := deps.LiveRecords
++		deps.LiveRecords = func() ([]runproc.Record, error) {
++			permkit.Chmod(t, boardFile, 0)
++			return list()
++		}
++
++		_, err = cancelRun(context.Background(), lone, true, deps)
++
++		if want := "could not read the board entry of " + lone; err == nil || !strings.Contains(err.Error(), want) {
++			t.Errorf("cancelRun() error = %v; want it to contain %q", err, want)
++		}
++	})
++
++	got = envelope.RequireOK(t, runCancel(t, h.PrimeWorktree(), lone, "--remove"))
++
++	if got.Raw["beam_ended"] != true {
++		t.Errorf("envelope = %v; want the flag left alone cleared", got.Raw)
++	}
++}
++
+ // mustRunGit runs git with args in dir and returns its output, failing the test on an error.
+ func mustRunGit(t *testing.T, dir string, args ...string) string {
+ 	t.Helper()
+diff --git a/internal/battencli/cancel_test.go b/internal/battencli/cancel_test.go
+index 5c2b507a2..8aa0dbd12 100644
+--- a/internal/battencli/cancel_test.go
++++ b/internal/battencli/cancel_test.go
+@@ -25,7 +25,7 @@ import (
+ const cancelSlug = "some-slug"
+ 
+ // destructiveCancelCalls are the seams whose call means the cancel ended, removed, cleared or lifted something.
+-var destructiveCancelCalls = []string{"WriteIntent", "CommitRecord", "EndForCancel", "StopTackler", "RemovePair", "DiscardTaskBranch", "FinishCancel", "RemoveRecords", "ClearClaim", "LiftPauses", "SettleTeardown"}
++var destructiveCancelCalls = []string{"WriteIntent", "CommitRecord", "EndForCancel", "StopTackler", "RemovePair", "DiscardTaskBranch", "FinishCancel", "RemoveRecords", "ClearClaim", "LiftPauses", "SettleTeardown", "EndBeam"}
+ 
+ // cancelFake is a set of fake substrates for cancelRun that records every call and answers from its knobs.
+ // Its zero value has no status, no board entry and no records, and nothing alive.
+@@ -85,8 +85,8 @@ type cancelFake struct {
+ 	intentRemove bool
+ 	finishRemove bool
+ 
+-	// beamProject, hubReport, hubReconcileErr, landRefusal, landingHeld, landBlockers and stopBeamErr answer the beam seams;
+-	// the zero value is a task.
++	// The fields from beamProject through stopBeamErr answer the beam seams;
++	// their zero values make the slug a task.
+ 	beamProject     bool
+ 	hubReport       fabricengine.OriginReport
+ 	hubReconcileErr error
+@@ -253,6 +253,8 @@ func (f *cancelFake) deps() cancelDeps {
+ 		LandingHeld:  func() (bool, error) { f.call("LandingHeld"); return f.landingHeld, nil },
+ 		LandBlockers: func() (BeamLandBlockers, error) { f.call("LandBlockers"); return f.landBlockers, nil },
+ 		StopBeam:     func() error { f.call("StopBeam"); return f.stopBeamErr },
++		// EndBeam only records the call; what it does to the board is pinned over a real hub.
++		EndBeam: func() (bool, error) { f.call("EndBeam"); return false, nil },
+ 	}
+ }
+ 
+@@ -990,11 +992,103 @@ func TestCancelRun(t *testing.T) {
+ 			marker:      "none",
+ 		},
+ 		{
+-			name:      "BeamWithNoMembersEndsAndStopsItsOrchAfterTheEnd",
++			name:      "BeamWithNoMembersEndsAndStopsItsOrchAfterTheEndKeepingItsFlag",
+ 			setup:     func(f *cancelFake) { f.beamProject = true },
+ 			wantCalls: []string{"BeamProject", "ReconcileHub", "LandRefusal", "TakeMarker", "EndForCancel", "StopTackler", "StopBeam", "FinishCancel", "ClearClaim"},
+-			noCalls:   []string{"LandBlockers"},
++			noCalls:   []string{"LandBlockers", "EndBeam"},
+ 			marker:    "removed",
++			check: func(t *testing.T, r cancelReport, _ *cancelFake) {
++				if r.BeamEnded {
++					t.Error("BeamEnded = true; want the flag kept by a cancel that keeps the pair")
++				}
++			},
++		},
++		{
++			name:      "RemoveOfABeamClearsItsFlagAfterTheClaim",
++			remove:    true,
++			setup:     func(f *cancelFake) { f.beamProject = true },
++			wantCalls: []string{"StopBeam", "RemovePair", "RemoveRecords", "ClearClaim", "LiftPauses", "PushRecords", "EndBeam", "Notify"},
++			marker:    "removed",
++			check: func(t *testing.T, r cancelReport, _ *cancelFake) {
++				if !r.PairRemoved || !r.ClaimCleared {
++					t.Errorf("report = %+v; want the pair removed and the claim cleared", r)
++				}
++				notice := cancelNotice(cancelReport{Slug: cancelSlug, PairRemoved: true, BeamEnded: true})
++				if !strings.Contains(notice, "its beam flag cleared, leaving a plain project") {
++					t.Errorf("notice = %q; want it to name the cleared beam flag", notice)
++				}
++			},
++		},
++		{
++			name:   "BeamFlagAloneIsLeftToClearWithRemove",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.beamProject = true
++				f.recordsPresent, f.boardStatus, f.boardFound, f.statusFound = false, nil, false, false
++			},
++			wantCalls: []string{"TakeMarker", "EndForCancel", "RemovePair", "ClearClaim", "EndBeam"},
++			noCalls:   []string{"TeardownPending"},
++			marker:    "removed",
++		},
++		{
++			name: "BeamFlagAloneRefusesWithoutRemove",
++			setup: func(f *cancelFake) {
++				f.beamProject = true
++				f.recordsPresent, f.boardStatus, f.boardFound, f.statusFound = false, nil, false, false
++			},
++			wantErr:     `nothing of some-slug is left to cancel`,
++			nothingLeft: true,
++			noCalls:     append([]string{"TakeMarker"}, destructiveCancelCalls...),
++			marker:      "none",
++		},
++		{
++			name:   "RemoveOfABeamWithOnlyIdleMembersEndsItAndItsFlag",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.beamProject = true
++				f.landRefusal = errors.New("battencli: the beam some-slug cannot land")
++				f.landBlockers = BeamLandBlockers{Members: []BeamLandMember{{Slug: "n"}}}
++			},
++			wantCalls: []string{"LandRefusal", "LandBlockers", "TakeMarker", "EndForCancel", "EndBeam"},
++			marker:    "removed",
++		},
++		{
++			name:   "RemoveOfAHeldBeamWithOnlyIdleMembersEndsIt",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.beamProject, f.landingHeld = true, true
++				f.landRefusal = errors.New("battencli: the beam some-slug cannot land")
++				f.landBlockers = BeamLandBlockers{Members: []BeamLandMember{{Slug: "n"}}}
++			},
++			wantCalls: []string{"LandingHeld", "LandBlockers", "EndForCancel", "EndBeam"},
++			marker:    "removed",
++		},
++		{
++			name:   "RemoveOfABeamRefusesOnlyWhatStillWorksUnderIt",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.beamProject = true
++				f.landRefusal = errors.New("battencli: the beam some-slug cannot land")
++				f.landBlockers = BeamLandBlockers{Members: []BeamLandMember{{Slug: "m", HasPair: true}, {Slug: "n"}, {Slug: "s", Beam: true}}}
++			},
++			wantErr:     "the open entry m is a member of the beam",
++			wantErrAlso: []string{"the open entry s is a member of the beam", `then run "lym batten cancel some-slug --remove" again`},
++			errAbsent:   []string{"the open entry n "},
++			noCalls:     append([]string{"TakeMarker", "StopBeam"}, destructiveCancelCalls...),
++			marker:      "none",
++		},
++		{
++			name:   "RemoveOfAHeldBeamNamesNoMoveForAMemberItCancels",
++			remove: true,
++			setup: func(f *cancelFake) {
++				f.beamProject, f.landingHeld = true, true
++				f.landRefusal = errors.New("battencli: the beam some-slug cannot land")
++				f.landBlockers = BeamLandBlockers{Members: []BeamLandMember{{Slug: "k", Running: true}, {Slug: "n"}}}
++			},
++			wantErr:   "the open entry k is a member of the beam: end it with `lym batten cancel k --remove`",
++			errAbsent: []string{"the open entry n ", "move its `project`", "lym batten run"},
++			noCalls:   append([]string{"TakeMarker", "StopBeam"}, destructiveCancelCalls...),
++			marker:    "none",
+ 		},
+ 		{
+ 			name: "FailingStopBeamWarnsAndTheCancelSucceeds",
+diff --git a/internal/battencli/cancelcmd.go b/internal/battencli/cancelcmd.go
+index 0d9000d2f..fadf72f23 100644
+--- a/internal/battencli/cancelcmd.go
++++ b/internal/battencli/cancelcmd.go
+@@ -70,12 +70,13 @@ It skips every wait a teardown makes for a working driver.
+ With origin unreachable it only ends the run's processes and strands and posts a notice;
+ running it again finishes the cancel.
+ 
+-The cancel of a beam first runs the hub's origin reconcile and refuses while members remain,
+-naming each to land or cancel first. A beam with no members ends the pawl run's processes and
+-the beam's dobby, then stops its orch and watcher; "lym beam create <slug>" starts the run again.
++A beam's cancel first reconciles the hub with origin and refuses while members remain, naming each
++way forward. It ends the pawl run and dobby, then stops the orch and watcher; "lym beam create <slug>"
++restarts it. --remove passes a task with no pair here and no run status, and clears the beam flag.
+ 
+-Output: a JSON envelope of the slug, its state and row, what ended, and whether the pair and record were
+-removed or kept, the claim cleared and the push spawned; push_spawned says the push was started, not that origin took it.
++Output: a JSON envelope of the slug, state, row, what ended, whether the pair and record were removed
++or kept, the claim and beam flag (beam_ended) cleared, and push_spawned: whether the push
++started, not whether origin took it.
+ 
+ Example:
+   lym batten cancel some-slug
+@@ -166,6 +167,7 @@ func cancelEnvelope(report cancelReport) map[string]any {
+ 		"records_removed":         report.RecordsRemoved,
+ 		"record_kept":             report.RecordKept,
+ 		"claim_cleared":           report.ClaimCleared,
++		"beam_ended":              report.BeamEnded,
+ 		"lifted":                  slices.Concat([]string{}, report.Lifted),
+ 		"push_spawned":            report.PushSpawned,
+ 		"notice_posted":           report.NoticePosted,
+@@ -392,9 +394,21 @@ func hubCancelDeps(location *lymcwd.Location, slug string) (cancelDeps, error) {
+ 			if err != nil {
+ 				return err
+ 			}
++			// A pair the pawl run ended before its Beam-Up marked it runs no orch, which refuses an unmarked pair.
++			origin, found, err := fabricengine.ReadOrigin(beamLocation)
++			if err != nil || !found || !origin.Beam {
++				return err
++			}
+ 			_, err = orchcli.BeamDown(beamLocation)
+ 			return err
+ 		},
++		EndBeam: func() (bool, error) {
++			hubBoard, err := board()
++			if err != nil {
++				return false, err
++			}
++			return hubBoard.EndBeam(slug)
++		},
+ 	}, nil
+ }
+ 
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index a785ae34c..a55a569d0 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -26,7 +26,7 @@
+ // A second cancel reads them to finish an interrupted one.
+ // The order is: end the registered processes; take batten's locks; stop the pair's strands and the tackler;
+ // remove the pair and its task branches with --remove; remove the records; leave the claim draft;
+-// lift the slug's own pauses; push and notify; and release the cancel's lock last.
++// lift the slug's own pauses; push; clear a beam's flag with --remove; notify; and release the cancel's lock last.
+ // Without --remove, the pair is kept.
+ // The cancel names "lym batten cancel <slug> --remove" as the step before the slug runs again.
+ // Records already removed and untracked at the records HEAD count as removed.
+@@ -34,12 +34,17 @@
+ // An unreachable origin ends only the processes and strands.
+ // It leaves the intent in the record and posts a notice naming the cancel to run once origin answers.
+ // The cancel of a beam project first runs the hub's origin reconcile.
+-// It refuses while the beam has members, and names the way out for each one:
+-// to land or cancel first, or, once the beam's pawl run holds its entry, to cancel and move off the beam.
++// It refuses while work remains under the beam: a member, or a pair forked from it.
++// With --remove, a task member with neither a pair here nor a run status is no such work.
++// It names the way out for each blocker, which is to land or cancel it first.
++// Once the beam's pawl run holds its entry, the way out is to cancel it.
++// Without --remove, a member is then moved off the beam too.
+ // With origin unreachable it refuses and names the reconcile's way forward.
+-// A beam with no members is ended like a task, its dobby with its run.
++// A beam with nothing refusing it is ended like a task, its dobby with its run.
+ // Its orch and watcher are then stopped; a failure there is only a warning on the report.
+ // `lym beam create <slug>` starts the run again.
++// With --remove the beam's life ends too: the project's beam flag is cleared and its members are untouched.
++// A beam flag that is all that is left of the slug still counts as left for --remove.
+ //
+ // "lym batten overview" (overview.go) is the hidden pane verb that `lym beam start` runs.
+ // `lym beam start` runs it in the runs strand of the prime and of each beam.
+diff --git a/internal/boardengine/beamend.go b/internal/boardengine/beamend.go
+new file mode 100644
+index 000000000..d2f4a378a
+--- /dev/null
++++ b/internal/boardengine/beamend.go
+@@ -0,0 +1,27 @@
++// beamend.go holds the board write that ends a beam's life without a landing, leaving a plain project.
++
++package boardengine
++
++// EndBeam clears the beam flag of the project slug names, under the write lock.
++// It ends the life of a beam whose pair is gone with no landing, which would otherwise keep a flag no write can clear.
++// The pawl recipe, the owner machine and the colour that only a beam carries go with the flag.
++// The project keeps its status, its order and its members, whose project field is untouched.
++// It reports whether it cleared a flag, and it writes nothing for an absent entry or one that is no beam.
++func (b *Board) EndBeam(slug string) (bool, error) {
++	result, err := b.boardCriticalSection(func(store *Store) (any, error) {
++		i, found := store.index(slug)
++		if !found || store.tasks[i].Kind != KindProject || !store.tasks[i].Beam {
++			return noWrite{result: false}, nil
++		}
++		entry := &store.tasks[i]
++		entry.Beam = false
++		entry.Recipe = ""
++		entry.OwnerMachine = ""
++		entry.BeamColor = ""
++		return true, nil
++	}, nil)
++	if err != nil {
++		return false, err
++	}
++	return result.(bool), nil
++}
+diff --git a/internal/boardengine/beamend_test.go b/internal/boardengine/beamend_test.go
+new file mode 100644
+index 000000000..c56021036
+--- /dev/null
++++ b/internal/boardengine/beamend_test.go
+@@ -0,0 +1,64 @@
++// beamend_test.go covers the end of a beam's life on the board in beamend.go.
++
++package boardengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestEndBeam pins the end of a beam without a landing.
++// The beam's flag, recipe, owner and colour are cleared, its status and member kept,
++// and the beam key the board refused on it before is a no-op after.
++// An entry that is no beam is left as it was.
++func TestEndBeam(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	var boardPath string
++	b := newProjectBoard(t, func(cfg *boardengine.Config) { boardPath = cfg.Path })
++	seedBoardJSON(t, boardPath,
++		`{"id":1,"slug":"beamer","title":"B","kind":"project","labels":["bug"],"beam":true,"recipe":"pawl","owner_machine":"this-machine","beam_color":"#123456","status":"draft"}`,
++		`{"id":2,"slug":"member","title":"M","kind":"task","labels":["bug"],"project":"beamer","status":"draft"}`,
++		`{"id":3,"slug":"plain","title":"P","kind":"project","labels":["bug"]}`,
++		`{"id":4,"slug":"lone","title":"L","kind":"task","labels":["bug"]}`,
++	)
++
++	tests := []struct {
++		name string
++		slug string
++		want bool
++	}{
++		{"Beam", "beamer", true},
++		{"BeamAlreadyEnded", "beamer", false},
++		{"PlainProject", "plain", false},
++		{"Task", "lone", false},
++		{"AbsentEntry", "absent", false},
++	}
++	// The rows run in order on one board, since the second ends the beam the first already ended.
++	for _, tt := range tests {
++		got, err := b.EndBeam(tt.slug)
++		if err != nil || got != tt.want {
++			t.Errorf("%s: EndBeam(%s) = %v, %v; want %v, nil", tt.name, tt.slug, got, err, tt.want)
++		}
++	}
++
++	beam, found, err := b.GetTask("beamer")
++	if err != nil || !found {
++		t.Fatalf("GetTask(beamer) = found %v, %v; want the entry", found, err)
++	}
++	if beam.Beam || beam.Recipe != "" || beam.OwnerMachine != "" || beam.BeamColor != "" {
++		t.Errorf("beamer beam, recipe, owner, colour = %v, %q, %q, %q; want false and all empty", beam.Beam, beam.Recipe, beam.OwnerMachine, beam.BeamColor)
++	}
++	if beam.Kind != boardengine.KindProject || beam.Status == nil || *beam.Status != "draft" {
++		t.Errorf("beamer kind, status = %q, %v; want a project kept at draft", beam.Kind, beam.Status)
++	}
++	member, _, err := b.GetTask("member")
++	if err != nil || member.Project != "beamer" {
++		t.Errorf("member project = %q, %v; want beamer, nil", member.Project, err)
++	}
++	if _, err := b.UpsertTask(map[string]any{"slug": "beamer", "beam": false}); err != nil {
++		t.Errorf("UpsertTask(beamer, beam false) error = %v; want nil once the beam is ended", err)
++	}
++}
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 5da85c88a..fc1eace3d 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -36,6 +36,7 @@
+ // A payload may carry either only as the entry's stored value; any other value is refused.
+ // A front task's project and kind are fixed, and a run-held entry takes no change to either field.
+ // SetOwners writes the beam flag through OwnerRequest.Beam, in the one commit that records the owner.
++// Board.EndBeam clears it for a beam that ends with no landing, leaving a plain project with its members.
+ //
+ // # Labels
+ //
+@@ -76,7 +77,7 @@
+ // ParentBeam and Board.ParentBeamOf keep the empty slug for the prime, and every owner read and beam verb takes it so.
+ // The list view prints the prime as RootSubject, `root`, since an empty value reads as no beam.
+ //
+-// SetOwners is the only writer of an owner or the prime owner.
++// SetOwners is the only writer that records an owner or the prime owner.
+ // It pulls the board level with its upstream, writes one commit, and pushes it.
+ // Without Takeover, it leaves an entry whose effective owner is another machine untouched.
+ // The exception is an entry whose recorded owner Replace names, which it reports in OwnerWrite.Lost.
+@@ -86,6 +87,9 @@
+ // and a push a held lock keeps deferring is refused naming `lym board sync`.
+ // An upsert payload may carry owner_machine only as the entry's effective owner, which is dropped as a no-op;
+ // any other value is refused naming `lym adopt`.
++// Board.EndBeam is the one other write of an owner: it clears the owner of a beam whose life ends with no landing.
++// It takes the ordinary write and detached sync.
++// That is enough because the cancel that ends such a beam has already refused one another machine owns.
+ //
+ // # Machine registry and holds
+ //
+diff --git a/internal/boardengine/owners.go b/internal/boardengine/owners.go
+index fe0dee53f..46925cf58 100644
+--- a/internal/boardengine/owners.go
++++ b/internal/boardengine/owners.go
+@@ -115,7 +115,7 @@ func (s *Store) effectiveOwner(slug string) (string, error) {
+ 
+ // checkOwnerPayload judges the owner_machine key of an upsert payload against the entry's effective owner.
+ // A value equal to it is a no-op and is dropped from fields;
+-// any other value is refused, since only the owner setter writes an owner.
++// any other value is refused, since an upsert never writes an owner.
+ // A payload without the key passes untouched.
+ func checkOwnerPayload(s *Store, fields map[string]any) error {
+ 	value, carried := fields["owner_machine"]
+@@ -135,7 +135,7 @@ func checkOwnerPayload(s *Store, fields map[string]any) error {
+ 	if err != nil {
+ 		return fmt.Errorf("entry %q: resolve what adopt takes: %w", slug, err)
+ 	}
+-	return fmt.Errorf("entry %q is owned by %q, and a board write never changes an owner: run `lym adopt %s` from this machine's prime to take it over", slug, effective, subject)
++	return fmt.Errorf("entry %q is owned by %q, and an upsert never changes an owner: run `lym adopt %s` from this machine's prime to take it over", slug, effective, subject)
+ }
+ 
+ // Effective returns the owner machine the entry slug reads as, where "" means owned by no other machine.
+diff --git a/internal/boardengine/ownerset.go b/internal/boardengine/ownerset.go
+index 36983e876..cf5590532 100644
+--- a/internal/boardengine/ownerset.go
++++ b/internal/boardengine/ownerset.go
+@@ -1,4 +1,4 @@
+-// ownerset.go holds the owner write, the only writer of a beam project's owner machine and of the hub's prime owner.
++// ownerset.go holds the owner write, which alone records a beam project's owner machine and the hub's prime owner.
+ //
+ // SetOwners records a machine as the owner of named beam projects in one pull-first Bolt commit and pushes it;
+ // ReadOwners reads the owners a board directory's local board.json records;
+diff --git a/internal/boardengine/project.go b/internal/boardengine/project.go
+index 0697c51fb..246293863 100644
+--- a/internal/boardengine/project.go
++++ b/internal/boardengine/project.go
+@@ -65,7 +65,7 @@ func checkBeamPayload(s *Store, fields map[string]any) error {
+ 		return nil
+ 	}
+ 	if !proposed {
+-		return fmt.Errorf("entry %q is a beam, and the beam flag stays set for the beam's life, which ends when `lym beam land %s` lands it and marks the project done: drop the beam key from the payload", slug, slug)
++		return fmt.Errorf("entry %q is a beam, and the beam flag stays set for the beam's life, which ends when `lym beam land %s` lands it and marks the project done, or when `lym batten cancel %s --remove` ends it and clears the flag: drop the beam key from the payload", slug, slug, slug)
+ 	}
+ 	kind, _ := fields["kind"].(string)
+ 	if held {
+diff --git a/pattern/PATTERN-owner-machine.md b/pattern/PATTERN-owner-machine.md
+index 8e01acbf9..4f1dfd657 100644
+--- a/pattern/PATTERN-owner-machine.md
++++ b/pattern/PATTERN-owner-machine.md
+@@ -26,7 +26,8 @@ The rest of a Finalize already past its parent-side merge finishes on the run's
+ - The rest of a Finalize already past its parent-side merge finishes on the run's owner.
+   A landing in flight is therefore never stranded.
+ - An owner is recorded for a beam project as `owner_machine` and for the root as `prime_owner`.
+-  Only `boardengine`'s owner setter writes either.
++  Only `boardengine`'s owner setter records either.
++  `Board.EndBeam` alone also clears one: the owner of a beam whose life ends with no landing.
+   It takes a project or the prime another machine owns only when `lym adopt` asks for it, or when `lym machine name`'s sweep names that recorded owner among this machine's former names.
+   A task and a grouping project record none, and a load drops the key an older machine recorded on one.
+ - Every other entry reads the owner of its parent, and so does a beam project with no owner recorded.
