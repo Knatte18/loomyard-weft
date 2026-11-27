@@ -1,21 +1,21 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-27 07:16 UTC; every age below is as of then.
+Rendered 2026-11-27 07:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-`intake-wave-2` · Age 22h · Owner `neve`
+`intake-wave-2` · Age 23h · Owner `neve`
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Layer A (1)
+## Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | T1 | 23h<br>18h | landing, stencil, burler, shuttle |
+| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid |  | 23h<br>18h | landing, stencil, burler, shuttle |
 
 ## Layer G (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T1<br>T9<br>T28 | 23h<br>9h | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T9<br>T28 | 23h<br>9h | fabric, shed, landing, batten, dobby |
