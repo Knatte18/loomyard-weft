@@ -22,4 +22,12 @@ Expected: batten cancel --remove of a beam's pawl run ends the beam's life and c
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - endbeam-second-owner-writer (class design, severity MEDIUM, open in rounds 1)
+  - merge-danger-understated (class consistency, severity MEDIUM, open in rounds 1)
+  - stopbeam-skip-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
