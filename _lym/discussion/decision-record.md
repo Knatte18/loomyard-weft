@@ -273,6 +273,12 @@ Keeping `window_command` lets an operator's own script still act after lym place
 Bound: a hub whose `batten.open_window_command` no longer runs `lym reed window` gets no placement for its run windows.
 Under placement, `lym machine start`'s windows gain the `window_command` they never ran before.
 
+### Added after Discussion (parent, 2026-11-27): A first card runs the KWin probes
+
+Decision: The plan gets a card ahead of every card that rests on a KWin fact. It runs the read-only Open-risks probes and takes the read-only recordings that cards 5 and 7 name, with their source.yaml lines. It records each fact's outcome in the change description and halts the run for the parent when a probe contradicts a fact a decision rests on. The moving probes and recordings (neve-apply, neve-apply-one-row, and any probe that moves a window) are asked of the operator through the parent in that same card, before any later card starts. Cards 5 and 7 then commit the recordings already taken and carry no operator step. The probes are not run before the plan is approved.
+
+Rationale: Plan review F4: the probes-before-code decision had no card that carried it. Putting it in one first card keeps every probe and every operator step in one place before code rests on the facts, without a fresh Plan-Write.
+
 ## Constraints
 
 - Plasma 6.6.6, KWin 6.6.6, Wayland on Neve (`plasmashell --version`, `kwin_wayland --version`, `XDG_SESSION_TYPE`).
