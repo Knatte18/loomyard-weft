@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "ce6d7860fbd06067f2c8c26c8189ba52dbf483be",
+  "added_decisions": [
+    {
+      "title": "Drop the C# half of item 3, file no note",
+      "digest": "ee61f1656697bb3781ce309b8b405ceb468803d33eab53dd7228f236aebc45a6"
+    }
+  ]
+}
