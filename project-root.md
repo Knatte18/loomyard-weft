@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 11:24 UTC; every age below is as of then.
+Rendered 2026-11-27 11:25 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Darn-Write | neve | 14h<br>59m | gate, testkit |
-| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | starting · Seed-IDE | neve | 4h<br>1h | landing, gate |
+| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | Darn-Write | neve | 4h<br>1h | landing, gate |
 | T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Code-Burler-Fix | neve | 53m<br>50m | fabric, darn, batten |
 
 ## Layer A (1)
