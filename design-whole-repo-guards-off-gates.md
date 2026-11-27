@@ -1,6 +1,6 @@
 # Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep
 
-`whole-repo-guards-off-gates` · Task · enhancement, gate, testkit · running · PR-Review
+`whole-repo-guards-off-gates` · Task · enhancement, gate, testkit · landing · Finalize
 
 ## Seen (2026-11-26)
 
