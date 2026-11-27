@@ -10,18 +10,13 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (2)
+## Running (3)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 3h<br>3h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Darn-Write | neve | 1h<br>9m | reed, stencil |
-
-## Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Study every raddle run and tune the split it proposes** | [`raddle-split-quality`](design-raddle-split-quality.md) | darn · docs |  | 2m<br>0m | stencil, board |
+| T9 | **Study every raddle run and tune the split it proposes** | [`raddle-split-quality`](design-raddle-split-quality.md) | darn · docs | starting · Worktree-Create | neve | 2m<br>0m | stencil, board |
 
 ## Layer A (1)
 
@@ -60,4 +55,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 8m<br>8m | dobby, batten, orch |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 9m<br>9m | dobby, batten, orch |
