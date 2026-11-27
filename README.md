@@ -121,7 +121,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light | Darn-Write | neve | 3m<br>2m | webster, fabric, pattern |
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | Darn-Write | neve | 3m<br>2m | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Code-Burler-Review | neve | 6h<br>6h | batten, fabric |
-| T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | starting · Seed-IDE | neve | 2m<br>1m | gate |
+| T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | starting · Open-IDE | neve | 3m<br>1m | gate |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Darn-Write | neve | 1d<br>3h | fabric, cleanup, batten |
 
 ### Layer A (7)
