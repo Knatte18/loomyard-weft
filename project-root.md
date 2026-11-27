@@ -35,7 +35,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
-## Bugs (6)
+## Bugs (7)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -45,6 +45,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | B4 |  | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | 0m<br>0m | shuttle, shed |
 | B5 |  | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | 0m<br>0m | batten, fabric |
 | B6 |  | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | 0m<br>0m | loom, stencil |
+| B7 |  | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | 0m<br>0m | burler |
 
 ## Enhancements (1)
 
