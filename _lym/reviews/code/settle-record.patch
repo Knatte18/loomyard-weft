@@ -1,0 +1,183 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 8f7aa77f4..54e604213 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -269,8 +269,10 @@
+ //
+ // A key of scope `marked` runs no package in its listed tiers, under any flag or tier setting.
+ // Its guard step runs every test marked for the key under its file's tier, the guard step's way.
+-// A marked test whose tier no listed tier is or covers refuses the call, naming the tests and the key to set.
+-// In a hub that declares tiers, so does a call that would run no test:
++// The key's tiers play no part in that, so no hub sets them to reach its marked tests, except for a manual tier:
++// its marked tests run only when the key lists that tier or one that covers it, and any other call is refused.
++// A marked test of a tier the hub does not declare refuses the call, as a guard test of such a tier does.
++// In a hub that declares tiers, a call that would run no test is refused too:
+ // no test is marked for the key, or the scanned directory holds no `go.mod`.
+ // The scope needs the `go` scoper, and a listing failure refuses the call, since the scope would run nothing.
+ // The template's `gateslot.UpkeepGateKey` is such a key.
+diff --git a/internal/gatecli/only.go b/internal/gatecli/only.go
+index 01f3f012e..8ad584fb0 100644
+--- a/internal/gatecli/only.go
++++ b/internal/gatecli/only.go
+@@ -81,8 +81,10 @@ func withOnlyTests(ctx context.Context, cfg gateslot.Config, request testRequest
+ 
+ // markedScope returns the scope of a key whose scope is gateslot.ScopeMarked: no listed tier runs a package,
+ // and the guard step runs the tests marked for the key, each under its file's tier.
+-// It refuses a marked test of a tier no listed tier is or covers, and a module with no test marked for the key,
+-// so the key's tiers never leave a marked test out silently.
++// The key's listed tiers limit only the marked tests of a manual tier:
++// every other marked test runs whatever the key lists, so a hub never sets them to reach a higher tier.
++// It refuses a marked test of a manual tier that the key neither lists nor covers through a listed tier,
++// and a module with no test marked for the key.
+ // Any scoper but go is refused, since the scan is Go's.
+ func markedScope(cfg gateslot.Config, request testRequest) (scope, error) {
+ 	if cfg.Scoper != "go" {
+@@ -92,19 +94,6 @@ func markedScope(cfg gateslot.Config, request testRequest) (scope, error) {
+ 	if err != nil {
+ 		return scope{}, err
+ 	}
+-	listed := coveredTiers(cfg, request)
+-	var unlisted []int
+-	var unrun []string
+-	for _, number := range slices.Sorted(maps.Keys(request.marked)) {
+-		if !slices.Contains(listed, number) {
+-			unlisted = append(unlisted, number)
+-			unrun = append(unrun, markedNames(request.marked[number])...)
+-		}
+-	}
+-	if len(unlisted) > 0 {
+-		return scope{}, configRefusal("--gate %q lists no tier that is or covers %s, so its marked tests there cannot run: %s; set %s to list %s",
+-			request.gate, tierNames(unlisted), strings.Join(unrun, ", "), keyName(gatesKey+"."+request.gate), tierNames(unlisted))
+-	}
+ 	if len(request.marked) == 0 {
+ 		moduleDir := resolveRunDir(request.root, dir)
+ 		if _, err := os.Stat(filepath.Join(moduleDir, "go.mod")); err != nil {
+@@ -114,17 +103,23 @@ func markedScope(cfg gateslot.Config, request testRequest) (scope, error) {
+ 		return scope{}, fmt.Errorf("gate test: --gate %q has scope %s and would run no test: no test of the module at %s is marked //lym:only %s; way forward: mark a test of the module `//lym:only %s`, then re-run the same command",
+ 			request.gate, gateslot.ScopeMarked, moduleDir, request.gate, request.gate)
+ 	}
+-	return scope{form: scopeMarked, guardStep: true, guardDir: dir, guards: request.marked}, nil
+-}
+-
+-// markedNames returns the sorted test names of a tier's marked tests, keyed by package directory.
+-func markedNames(byDir map[string][]string) []string {
+-	var names []string
+-	for _, dirNames := range byDir {
+-		names = append(names, dirNames...)
++	// A manual tier runs only when named, such as one that spends tokens, so a marker alone never starts it.
++	for _, number := range slices.Sorted(maps.Keys(request.marked)) {
++		named := slices.ContainsFunc(cfg.Gates[request.gate].Tiers, func(listed int) bool {
++			return listed == number || slices.Contains(cfg.Tiers[tierName(listed)].Covers, number)
++		})
++		if named || !cfg.Tiers[tierName(number)].Manual {
++			continue
++		}
++		var names []string
++		for _, inDir := range request.marked[number] {
++			names = append(names, inDir...)
++		}
++		slices.Sort(names)
++		return scope{}, configRefusal("--gate %q marks %s in %s, which is manual and runs only when the key lists it or a tier that covers it; list %s in %s",
++			request.gate, strings.Join(names, ", "), tierName(number), tierName(number), keyName(gatesKey+"."+request.gate))
+ 	}
+-	sort.Strings(names)
+-	return slices.Compact(names)
++	return scope{form: scopeMarked, guardStep: true, guardDir: dir, guards: request.marked}, nil
+ }
+ 
+ // withoutHeld returns guards with the held test names removed, dropping a directory or tier left with none.
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 487276183..421188374 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -490,12 +490,45 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "needs the go scoper", `"none"`)
+ 		writeScoper(t, "go")
+ 
+-		unlisted := filepath.Join(pair, "heldpkg", "h1_test.go")
++		// The key lists tier0 alone, and its marked tier1 test still runs, under tier1's command.
++		tierOne := filepath.Join(pair, "heldpkg", "h1_test.go")
+ 		plankit.WriteTree(t, pair, map[string]string{
+ 			"heldpkg/h1_test.go": "//go:build tier1\n\npackage heldpkg\n\nimport \"testing\"\n\n//lym:only upkeep\nfunc TestHeldTierOne(t *testing.T) {}\n",
+ 		})
+-		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "lists no tier that is or covers tier1", "TestHeldTierOne", "gate.gates.upkeep", "way forward")
+-		if err := os.Remove(unlisted); err != nil {
++		bothTiers := [][]string{{"./heldpkg", "-run", "^(TestHeld)$"}, {"./heldpkg", "-run", "^(TestHeldTierOne)$"}}
++		upkeep := gate(t, pair, nil, "--gate", "upkeep")
++		wantArgs(t, upkeep, bothTiers...)
++		// The two tiers share one command, so the settings tell them apart:
++		// tier1's slots: all records as 0, where tier0 records 1.
++		if run, _ := guardRunRecordOf(t, upkeep.stdout.String(), 1); !run.GuardStep || run.Tier != 1 || run.Slots != 0 {
++			t.Errorf("tier1 guard run record = %+v; want a guard step of tier1 under its slots: all", run)
++		}
++
++		// A manual tier1 runs its marked test only for a key that lists it or a tier covering it.
++		writeManualTierOne := func(mutate func(cfg map[string]any)) {
++			config := scopesConfigWith(t, "go", func(cfg map[string]any) {
++				cfg["tiers"].(map[string]any)["tier1"].(map[string]any)["manual"] = true
++				if mutate != nil {
++					mutate(cfg)
++				}
++			})
++			if err := os.WriteFile(configPath, config, 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}
++		writeManualTierOne(nil)
++		wantRefusal(t, gate(t, pair, nil, "--gate", "upkeep"), "marks TestHeldTierOne in tier1, which is manual", "list tier1 in gate.gates.upkeep")
++		writeManualTierOne(func(cfg map[string]any) {
++			cfg["gates"] = map[string]any{"upkeep": map[string]any{"tiers": []int{0, 1}, "scope": "marked"}}
++		})
++		wantArgs(t, gate(t, pair, nil, "--gate", "upkeep"), bothTiers...)
++		writeManualTierOne(func(cfg map[string]any) {
++			cfg["tiers"].(map[string]any)["tier6"].(map[string]any)["covers"] = []int{1}
++			cfg["gates"] = map[string]any{"upkeep": map[string]any{"tiers": []int{6}, "scope": "marked"}}
++		})
++		wantArgs(t, gate(t, pair, nil, "--gate", "upkeep"), bothTiers...)
++		writeScoper(t, "go")
++		if err := os.Remove(tierOne); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 159cf8e54..bc1db7fd8 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -227,7 +227,7 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		}
+ 		tier, declared := cfg.Tiers[tierName(number)]
+ 		if !declared {
+-			return nil, configRefusal("the guard tests of %s run under its command, but the hub declares no %s", tierName(number), tierName(number))
++			return nil, configRefusal("the guard step runs the guard and marked tests of %s under its command, but the hub declares no %s", tierName(number), tierName(number))
+ 		}
+ 		if !gateslot.HoldsTargets(tier.Command) || !strings.Contains(tier.Command, "{args}") {
+ 			return nil, configRefusal("the guard step runs the command of %s, which must hold {targets} or {test_targets} and {args}", tierName(number))
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index cdf584629..5303fb2c6 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -17,7 +17,7 @@ tiers: {}
+ # gate.gates maps a gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all|marked}.
+ # The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base), and upkeep (scope marked, run under the go scoper by the board-tidy agent on the main branch).
+ # Under the go scoper a Go test marked //lym:only <key>... runs only in a --gate call whose key the marker names, and a call without --gate; every other key's call skips it.
+-# Scope marked runs only the tests marked for the key, each under its file's tier; a marked test of a tier that no listed tier is or covers, and a key no test is marked for, refuse the call, so a hub whose marked tests sit in tier1 sets gate.gates.upkeep to {tiers: [0, 1], scope: marked}.
++# Scope marked runs only the tests marked for the key, each under its file's tier whatever tiers the key lists, so gate.gates.upkeep needs no tier1 to run marked tier1 tests; a manual tier's marked tests run only when the key lists that tier or one that covers it; a marked test of a manual tier the key names in neither way or of a tier the hub does not declare, and a key no test is marked for, refuse the call.
+ # The two harden keys name tier 0, the tier a key may name before the hub declares more, so a hardener run needs no gate write; a hub whose live tests sit in a higher tier may point harden-live at one tier below tier3, since the run's concurrent copies call runs that same key.
+ # The scope card is only for the card and batch keys.
+ # The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 7dfa1ec9d..7138d5ab9 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -152,7 +152,10 @@ Bound: a forged value misleads only an ungated raw run, since `lym gate test` se
+   the dead-code guard of [PATTERN-test-only-code](PATTERN-test-only-code.md),
+   and every test that builds a real .NET project, whatever its package and whether or not it is watched.
+   The `upkeep` key's scope `marked` runs only the tests marked for it,
+-  and refuses a call that would leave a marked test out or run none.
++  each under its own file's tier whatever tiers the key lists,
++  except that a `manual` tier must be listed by the key or covered by a tier it lists.
++  It refuses a call with a marked test of a `manual` tier named in neither way or of a tier the hub does not declare,
++  or one that would run none.
+   The prime's board-tidy agent runs it on the main branch every `beam.board_tidy_every` landings
+   and files a board note per failure: one per dead function, and a bug note for any other test.
+ - A watched guard that reads a bounded set of files, and a guard of any package but `cmd/lym`, stays at the task gates.
