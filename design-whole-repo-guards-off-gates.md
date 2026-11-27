@@ -1,6 +1,6 @@
 # Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep
 
-`whole-repo-guards-off-gates` · Task · enhancement, gate, testkit · draft
+`whole-repo-guards-off-gates` · Task · enhancement, gate, testkit
 
 Depends on: [`remove-testmap`](design-remove-testmap.md)
 
