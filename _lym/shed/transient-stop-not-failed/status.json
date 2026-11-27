@@ -1,14 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/transient-stop-not-failed/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept transient-stop-not-failed` or `lym loom circling continue transient-stop-not-failed`, then run `lym loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `transient-stop-not-failed` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/transient-stop-not-failed/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with \"lym loom circling accept transient-stop-not-failed\" or \"lym loom circling continue transient-stop-not-failed\".",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
     "last": "Code-Bouncer → awaiting",
-    "wait": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: budget); brief at /home/knatte/Code/loomyard-LYMHUB/transient-stop-not-failed/_lym/reviews/code/round-1-escalation.md; decide with `lym loom circling accept transient-stop-not-failed` or `lym loom circling continue transient-stop-not-failed`, then run `lym loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
