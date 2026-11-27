@@ -8,6 +8,13 @@ The landed split of the long gatecli tier1 scenario tests made `TestGateTest_Sco
 The package time did not fall: `TestGateRedFirst_Dotnet` took 31.0 and 38.9 s before and 47.5 and 44.4 s after (the after runs ran at a load of 31 and 46),
 and `TestGateTest_DotnetFixture` takes about 21 s. The figures are in the landing commit's Measurements section.
 
+## Which runs pay for it
+
+Both .NET tests are marked `//lym:only upkeep`.
+With `gate.scoper: go`, as this hub sets it, a `--gate` call of any other key skips them.
+The landing commit's measurement command was a `--tier 1` call with no `--gate`, which runs them,
+so the times above do not show the cost of a task gate.
+
 ## Idea
 
 Find where `TestGateRedFirst_Dotnet` spends its time (dotnet restore and build, likely) and cut it, for example by sharing one built .NET fixture across its rows or with `TestGateTest_DotnetFixture`.
