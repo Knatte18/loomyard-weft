@@ -1,4 +1,4 @@
-# Lym settles known run stops itself, so runs go on overnight without anyone pointing at them
+# Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
 `self-healing-runs` · Note · feature, dobby, batten, orch
 
