@@ -876,6 +876,28 @@
       "created": "2026-11-27T07:54:01Z",
       "revised": "2026-11-27T07:54:01Z",
       "profile": "solid"
+    },
+    {
+      "id": 1728,
+      "handle": "T9",
+      "slug": "weaver-bench",
+      "title": "Bench Weaver against Webster on plans Webster already implemented: time, cost and quality",
+      "kind": "task",
+      "labels": [
+        "research",
+        "weaver",
+        "webster"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Aim (operator, 2026-11-27)\n\nWeaver, the cold-start implementer with model escalation (`18abfaf50`), landed long ago and has never been tried on a real plan.\nThis bench runs it on plans Webster has already implemented and landed, and measures time, cost and quality against Webster on the same plans.\nIt is large, long and costly, and the operator judges it worth that.\n\n## Plans\n\n- Only existing plans that Webster implemented and that landed; no new plans are written.\n- Three plans, found in the records history (the plan directory and `_lym/webster/` state of landed tapestry runs), chosen so that:\n  - each is a Go plan of the current plan format, with 4 to 12 cards and at least two batches in Webster's partition;\n  - the three touch different packages;\n  - each one's base commit, the task branch's commit the plan was implemented on, can still be checked out and builds.\n- The report names each chosen plan, its landed commit and why it was chosen.\n\n## Runs\n\n- Each plan is implemented once by Weaver and once by Webster, from the plan's base commit, with the current lym and the hub's default settings for each implementer: six runs in all.\n  Rerunning Webster puts both on the same lym, machine and load; Webster's recorded run from the time is reported beside them, never used in its place.\n- Weaver uses its default ladder (`lym config weaver`); Webster its default engine and models.\n- Each run has a bench pair of its own, which the parent creates from this task's worktree when the run asks for it; this task's agent runs them.\n  The two runs of one plan run at the same time so they share the machine's load.\n- No run is repeated; a run lost to the machine (a reboot or an infrastructure stop) is rerun once and the report says so.\n\n## Measures\n\n- Wall time from the implementer row's start to its end, and the time in batches, gates and fixers.\n- Cost: tokens and dollars per model, from the sessions' usage records.\n- Weaver's ladder: how many attempts climbed past the first rung, and the stops that reached the stop chain.\n- Quality:\n  - whether the plan-level verify gate passes, and how many fixer rounds it took;\n  - the cards left undone or deviated from;\n  - a diff of each result against the landed commit, and the findings one Code-Review round (the hub's Burler reviewer, once per run) gives on each result.\n\n## Output\n\nA report under `docs/research/weaver/` with one table per measure across the six runs and the recorded Webster run, the findings per run, and a recommendation:\nwhether Weaver can replace Webster as tapestry's implementer, and what it would need first.\n",
+      "status": "draft",
+      "created": "2026-11-27T10:28:28Z",
+      "revised": "2026-11-27T10:28:28Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
