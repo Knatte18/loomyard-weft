@@ -1,6 +1,6 @@
 # Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt
 
-`transient-stop-not-failed` · Task · bug, shed, loom · starting · Worktree-Create
+`transient-stop-not-failed` · Task · bug, shed, loom · starting · Open-Window
 
 Depends on: [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md)
 
