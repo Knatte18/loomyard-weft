@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 19:00 UTC; every age below is as of then.
+Rendered 2026-11-27 19:02 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,15 +15,15 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light | Darn-Write | neve | 55m<br>1m | stencil, orch, board, loom |
-| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | Darn-Write | neve | 2h<br>1m | testkit, landing |
+| T4 | **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light | Darn-Write | neve | 57m<br>3m | stencil, orch, board, loom |
+| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | Darn-Write | neve | 2h<br>3m | testkit, landing |
 
 ## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 3h<br>3h | batten, fabric |
-| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>37m | fabric, cleanup, batten |
+| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>39m | fabric, cleanup, batten |
 
 ## Layer B (1)
 
@@ -37,11 +37,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 10d<br>10d | shuttle |
 
-## Enhancements (1)
+## Enhancements (2)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>34m | landing, gate, batten |
+| E1 |  | **PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | 0m<br>0m | testkit, landing |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>36m | landing, gate, batten |
 
 ## Features (1)
 
