@@ -268,6 +268,13 @@ Rationale: The operator wants fabric's test code cut, with no part allowed to gr
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - executor-tests-fake-git-errors (class consistency, severity BLOCKING, open in rounds 3)
+  - net-shrink-left-to-card-15-halt (class design, severity MEDIUM, open in rounds 2, 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A tier0 test fails when `internal/fabriccore` (new) or `internal/fabriclayout` (new) imports a package outside its closed set, `gitexec`, `gitrepo`, `dotgit`, `lymcwd` and `os/exec` included (D1).
