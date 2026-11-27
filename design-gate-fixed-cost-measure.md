@@ -1,6 +1,6 @@
 # Measure the fixed steps of a gate call one by one
 
-`gate-fixed-cost-measure` · Task · research, gate · landing · Finalize
+`gate-fixed-cost-measure` · Task · research, gate · done
 
 ## Aim
 
