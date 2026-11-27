@@ -1,0 +1,606 @@
+diff --git a/cmd/lym/testsupportdirs_linux_test.go b/cmd/lym/testsupportdirs_linux_test.go
+new file mode 100644
+index 000000000..10cdb15a1
+--- /dev/null
++++ b/cmd/lym/testsupportdirs_linux_test.go
+@@ -0,0 +1,27 @@
++// testsupportdirs_linux_test.go holds the plan check's test-support directories equal to the test-only code guard's list.
++// The guard's list compiles on Linux only, so this file does too.
++
++package main
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestTestSupportDirectories_MatchTheTestOnlyCodeGuard fails when the two lists differ.
++// A difference makes the plan check refuse a function the guard counts as reached, or pass one it does not.
++func TestTestSupportDirectories_MatchTheTestOnlyCodeGuard(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	var guarded []string
++	for _, entry := range testSupportPackages {
++		guarded = append(guarded, entry.Key)
++	}
++	if !slices.Equal(planparser.TestSupportDirectories, guarded) {
++		t.Errorf("planparser.TestSupportDirectories = %q; want testSupportPackages' keys %q", planparser.TestSupportDirectories, guarded)
++	}
++}
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 346c12445..9707e13eb 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -174,6 +174,26 @@ Under `language: none` the glyph checks are skipped:
+   a pending card's `Delete` target is already gone, in place of its `path-missing` or `glyph-not-found`.
+ - `uses-later-target` — a card's `Uses:` entry that a later card targets, matched as exact trimmed strings;
+   one finding per consumer, producer and entry, on the consumer.
++- `create-caller-later` — under `go`, a card creates a production function that no ref of its own can call,
++  and a later card that can call it names the handle among its targets or `Uses`.
++  The card then fails its gate on the guard that every production function is reachable from a `main`.
++  A function is production code unless its unit is `<dir>_test`, its name opens `Test`, `Benchmark`, `Fuzz` or `Example`,
++  its head names a `testing.` type, or it is `main` or `init`.
++  A function of `internal/testkit`, `internal/gitkit`, `internal/hubforge` or a directory below one is skipped too,
++  since the guard counts it as reached.
++  A helper of a package-internal `_test.go` file is declared on its package directory and so reads as production code.
++  A later card that names it and changes production code, or creates another such helper, raises the finding,
++  and moving the `Create` to that card clears it.
++  A card can call the function through a ref of its `Create`, `Edit`, `Extends` or `Custom` groups
++  that names production Go code other than the function itself.
++  A handle the card creates as a `type` or `const` is no such ref.
++  A handle it creates as a `func` in one of the test-support directories above is one.
++  Any other `func` handle it creates is none for the creating card.
++  For a later card it is one, unless its unit is `<dir>_test`, its name opens a test prefix above or its head names a `testing.` type.
++  A non-Go file, a `_test.go` file and a test member are no such ref either;
++  a package self glyph or a bare symbol is one.
++  One finding per function, on the creating card, naming the first such later card.
++  Way forward: move the `Create` to the card that adds its first production caller, or list that caller on the creating card.
+ 
+ ## Verify lines
+ 
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index f23fb796e..8cd98b5f6 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -41,7 +41,7 @@ How webster groups cards into batches is no card property; `internal/batcher`'s
+ A valid plan is executable strictly in card-number order: a card never depends on anything a later card does.
+ Webster runs the cards in that order and never sorts them,
+ so a card that needs a symbol, file or fixture a later card creates is a defect of the plan.
+-`uses-later-target` and `delete-before-reference` refuse the cases a card's own refs show;
++`uses-later-target`, `delete-before-reference` and `create-caller-later` refuse the cases a card's own refs show;
+ every other dependency on a later card is the writer's to avoid and the plan reviewer's to flag.
+ 
+ ## On-disk layout
+@@ -360,7 +360,8 @@ A private supporting type or a constructor inseparable from its type goes on the
+ and so does a helper serving one surface.
+ A symbol of a module's public surface, or one reused across packages, gets its own card.
+ A new function is the exception: it goes on the card that adds its first production caller,
+-since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
++since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`
++(`create-caller-later`).
+ 
+ A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
+ Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+diff --git a/internal/planglyph/glyphchain_integration_test.go b/internal/planglyph/glyphchain_integration_test.go
+index 58de3256b..917a9eecf 100644
+--- a/internal/planglyph/glyphchain_integration_test.go
++++ b/internal/planglyph/glyphchain_integration_test.go
+@@ -241,8 +241,8 @@ func TestGlyphChain_RedundantPackage(t *testing.T) {
+ 	}{
+ 		{
+ 			name:      "create handle beside its package self glyph",
+-			cards:     []string{createCard(&createLeg{"plan:shapes#Fresh", "func Fresh() int", ""}), editCard("shapes#", "plan:shapes#Fresh")},
+-			edits:     []codeEdit{appendText(shapesFile, "\nfunc Fresh() int { return 1 }\n")},
++			cards:     []string{createCard(&createLeg{"plan:shapes#Fresh", "type Fresh struct{}", ""}), editCard("shapes#", "plan:shapes#Fresh")},
++			edits:     []codeEdit{appendText(shapesFile, "\ntype Fresh struct{}\n")},
+ 			wantGate:  redundant,
+ 			wantBound: redundant,
+ 		},
+diff --git a/internal/planparser/latercaller.go b/internal/planparser/latercaller.go
+new file mode 100644
+index 000000000..9161f3f68
+--- /dev/null
++++ b/internal/planparser/latercaller.go
+@@ -0,0 +1,184 @@
++// latercaller.go implements the create-caller-later check.
++// It finds a new production function that only a later card can give a caller.
++// The check reads plan text alone, so it runs at every gate that runs ValidateFormat.
++
++package planparser
++
++import (
++	"fmt"
++	"path"
++	"slices"
++	"strings"
++)
++
++// goEntryFunctions are the function names a Go program enters through, which no caller needs.
++var goEntryFunctions = []string{"main", "init"}
++
++// TestSupportDirectories are the package directories whose functions the reachability guard counts as reached.
++// A function created in one needs no caller, and can be the caller of another.
++// Each matches its own directory and every directory below it.
++// It is exported so that the guard's own list is held equal to it.
++var TestSupportDirectories = []string{"internal/testkit", "internal/gitkit", "internal/hubforge"}
++
++// checkCreateCallerLater implements create-caller-later under go.
++// Every production function has to be reachable from a main.
++// A card that creates one and changes no production code that could call it fails its own gate on that guard.
++// The finding fires when a later card names the function and can call it.
++// That card can write the call in production code it changes or in a function it creates.
++// That later card is where the first caller goes.
++// A function the creating card itself can call stays silent, and so does one no later card names.
++// One finding per function, attributed to the creating card, naming the first such later card.
++func checkCreateCallerLater(plan *Plan) []ValidationError {
++	var findings []ValidationError
++	if !plan.GoToolchain() {
++		return findings
++	}
++
++	for _, creator := range plan.Cards {
++		for _, declaration := range creator.Declarations {
++			if !isProductionFunctionDeclaration(declaration) || cardCanHoldProductionCaller(plan, creator, declaration.Handle, false) {
++				continue
++			}
++			for _, caller := range plan.Cards {
++				if caller.Number <= creator.Number || !cardNamesRef(caller, declaration.Handle) {
++					continue
++				}
++				if !cardCanHoldProductionCaller(plan, caller, declaration.Handle, true) {
++					continue
++				}
++				findings = append(findings, ValidationError{
++					Check: "create-caller-later",
++					Card:  cardID(creator),
++					Ref:   declaration.Handle,
++					Detail: fmt.Sprintf(
++						"card %d creates %q, but no target of card %d can call it from production code, and card %d names it; "+
++							"a function no production code calls fails card %d's gate on the guard that every production function is reachable from a main, "+
++							"so move the Create to card %d, the card that adds its first production caller, or list that caller on card %d",
++						creator.Number, declaration.Handle, creator.Number, caller.Number,
++						creator.Number, caller.Number, creator.Number,
++					),
++				})
++				break
++			}
++		}
++	}
++
++	return findings
++}
++
++// isProductionFunctionDeclaration reports whether declaration creates a function or method of production code.
++// A declaration in an external test package or a test-support directory, one named as a test, one taking a testing type,
++// and a program entry point are not.
++func isProductionFunctionDeclaration(declaration CardDeclaration) bool {
++	if declarationKeyword(declaration.Decl) != "func" {
++		return false
++	}
++	unit, ok := handleUnit(declaration.Handle)
++	if !ok || strings.HasSuffix(unit, "_test") || isTestSupportUnit(unit) {
++		return false
++	}
++	identifier, ok := HandleIdentifier(declaration.Handle)
++	if !ok || hasTestPrefix(identifier) || slices.Contains(goEntryFunctions, identifier) {
++		return false
++	}
++	return !strings.Contains(declaration.Decl, "testing.")
++}
++
++// isTestSupportUnit reports whether unit is a test-support directory or lies below one.
++func isTestSupportUnit(unit string) bool {
++	return slices.ContainsFunc(TestSupportDirectories, func(directory string) bool {
++		return unit == directory || strings.HasPrefix(unit, directory+"/")
++	})
++}
++
++// cardCanHoldProductionCaller reports whether card can write a call to callee into production Go code.
++// A ref to callee itself does not count.
++// Only the Create, Edit, Extends and Custom groups add code; a Delete, Rename, Move or Prosa group adds none.
++// A ref whose shape says nothing certain, such as a package self glyph or a bare symbol, counts as able to hold one.
++// A function card creates in a test-support directory counts, since the guard reaches it without a caller.
++// With ownFunctionsCall, any other function card creates counts too.
++// The exceptions are a function whose head names a testing type and one that is a test by name or package.
++// Set it to ask whether card can write the call, and leave it unset to ask whether card satisfies the guard alone.
++// A new function outside test support is reached only through a caller of its own.
++func cardCanHoldProductionCaller(plan *Plan, card Card, callee string, ownFunctionsCall bool) bool {
++	declared := make(map[string]string, len(card.Declarations))
++	for _, declaration := range card.Declarations {
++		unit, _ := handleUnit(declaration.Handle)
++		counts := isTestSupportUnit(unit) || ownFunctionsCall && !strings.Contains(declaration.Decl, "testing.")
++		if declarationKeyword(declaration.Decl) == "func" && counts {
++			continue
++		}
++		declared[declaration.Handle] = declaration.Decl
++	}
++	for _, group := range card.TargetGroups {
++		switch group.Type {
++		case CardTypeCreate, CardTypeEdit, CardTypeExtends, CardTypeCustom:
++		default:
++			continue
++		}
++		for _, ref := range group.Refs {
++			if ref != callee && refCanHoldProductionCaller(plan, ref, declared) {
++				return true
++			}
++		}
++	}
++	return false
++}
++
++// refCanHoldProductionCaller reports whether ref names production Go code that a call could be written into.
++// declared maps handles the ref's card creates to their declaration heads.
++// A handle declared there as a function, type or constant is not such code.
++func refCanHoldProductionCaller(plan *Plan, ref string, declared map[string]string) bool {
++	if IsHandleRef(ref) {
++		if isTestHandle(ref) {
++			return false
++		}
++		decl, createdHere := declared[ref]
++		if !createdHere {
++			return true
++		}
++		switch declarationKeyword(decl) {
++		case "func", "type", "const":
++			return false
++		}
++		return true
++	}
++	if diskPath, ok := diskPathForRef(plan, ref); ok {
++		switch path.Ext(diskPath) {
++		case "":
++			return !strings.HasSuffix(diskPath, "_test")
++		case ".go":
++			return !strings.HasSuffix(diskPath, "_test.go")
++		}
++		return false
++	}
++	parsed, err := ParseRef(plan, ref)
++	if err != nil {
++		return true
++	}
++	return !strings.HasSuffix(parsed.Unit, "_test") && !strings.HasSuffix(parsed.Unit, "_test.go") && !hasTestPrefix(parsed.Name)
++}
++
++// isTestHandle reports whether handle declares test code: a member of an external test package, or one named as a test.
++func isTestHandle(handle string) bool {
++	unit, ok := handleUnit(handle)
++	if ok && strings.HasSuffix(unit, "_test") {
++		return true
++	}
++	identifier, ok := HandleIdentifier(handle)
++	return ok && hasTestPrefix(identifier)
++}
++
++// declarationKeyword returns the Go keyword a declaration head opens with, such as "func" or "type".
++func declarationKeyword(decl string) string {
++	head := strings.TrimSpace(decl)
++	if end := strings.IndexAny(head, " (\t"); end != -1 {
++		return head[:end]
++	}
++	return head
++}
++
++// cardNamesRef reports whether ref is one of card's targets or Uses entries.
++func cardNamesRef(card Card, ref string) bool {
++	return slices.Contains(card.Targets, ref) || slices.Contains(card.Uses, ref)
++}
+diff --git a/internal/planparser/latercaller_test.go b/internal/planparser/latercaller_test.go
+new file mode 100644
+index 000000000..7b270750b
+--- /dev/null
++++ b/internal/planparser/latercaller_test.go
+@@ -0,0 +1,296 @@
++// latercaller_test.go covers create-caller-later over plans parsed from card files.
++
++package planparser_test
++
++import (
++	"path/filepath"
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestValidateFormat_CreateCallerLater covers create-caller-later:
++// a card creating a production function it cannot call, which a later card that can call it names.
++// Every finding sits on card 1 and carries the row's wantRef.
++func TestValidateFormat_CreateCallerLater(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const (
++		level        = "plan:internal/watch#Level"
++		levelDecl    = level + "` -> `func Level(name string) string"
++		method       = "plan:internal/watch#Watcher.Level"
++		methodDecl   = method + "` -> `func (w *Watcher) Level() string"
++		levelFinding = `card 1 creates "plan:internal/watch#Level", but no target of card 1 can call it from production code, and card 2 names it; ` +
++			`a function no production code calls fails card 1's gate on the guard that every production function is reachable from a main, ` +
++			`so move the Create to card 2, the card that adds its first production caller, or list that caller on card 1`
++	)
++	creator := func(groups ...plankit.Group) plankit.Card {
++		return plankit.Card{Number: 1, Slug: "create", Groups: groups, ImpactSummary: "one package"}
++	}
++	caller := func(uses []string, groups ...plankit.Group) plankit.Card {
++		return plankit.Card{Number: 2, Slug: "wire", Groups: groups, Uses: uses, ImpactSummary: "one package"}
++	}
++	create := func(targets ...string) plankit.Group { return plankit.Group{Label: "Create", Targets: targets} }
++	edit := func(targets ...string) plankit.Group { return plankit.Group{Label: "Edit", Targets: targets} }
++	extends := func(targets ...string) plankit.Group { return plankit.Group{Label: "Extends", Targets: targets} }
++	custom := func(targets ...string) plankit.Group { return plankit.Group{Label: "Custom", Targets: targets} }
++	remove := func(targets ...string) plankit.Group { return plankit.Group{Label: "Delete", Targets: targets} }
++	// wired is the plan of a creating card and a later card that uses level and edits a production member.
++	wired := func(groups ...plankit.Group) []plankit.Card {
++		return []plankit.Card{creator(groups...), caller([]string{level}, edit("internal/dobby#Tick"))}
++	}
++
++	tests := []struct {
++		name     string
++		language string
++		cards    []plankit.Card
++		want     []string
++		wantRef  string
++	}{
++		{
++			name: "a function whose only caller is on a later card",
++			cards: []plankit.Card{
++				creator(create(levelDecl, "internal/watch/level_test.go"), edit("internal/watch/template.yaml")),
++				caller([]string{level}, edit("internal/dobby#Tick")),
++			},
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name: "a later card that names the function among its targets",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller(nil, edit(level, "internal/dobby/tick.go")),
++			},
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name: "a method whose only caller is on a later card",
++			cards: []plankit.Card{
++				creator(create("plan:internal/watch#Watcher` -> `type Watcher struct", methodDecl)),
++				caller([]string{method}, edit("internal/dobby#")),
++			},
++			want: []string{
++				`card 1 creates "plan:internal/watch#Watcher.Level", but no target of card 1 can call it from production code, and card 2 names it; ` +
++					`a function no production code calls fails card 1's gate on the guard that every production function is reachable from a main, ` +
++					`so move the Create to card 2, the card that adds its first production caller, or list that caller on card 1`,
++			},
++			wantRef: method,
++		},
++		{
++			name:  "the creating card extends a production member that can call it",
++			cards: wired(create(levelDecl), extends("internal/dobby#Tick")),
++		},
++		{
++			name:  "the creating card has a custom change to a production file",
++			cards: wired(create(levelDecl), custom("internal/dobby/tick.go")),
++		},
++		{
++			name:    "the creating card otherwise only deletes",
++			cards:   wired(create(levelDecl), remove("internal/dobby#Old")),
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name:    "the creating card creates a second function",
++			cards:   wired(create(levelDecl, "plan:internal/watch#format` -> `func format() string")),
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name:    "the creating card creates a constant",
++			cards:   wired(create(levelDecl, "plan:internal/watch#Limit` -> `const Limit = 3")),
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name:    "the creating card edits a test handle it does not create",
++			cards:   wired(create(levelDecl), edit("plan:internal/watch_test#helper")),
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name:  "the creating card edits a production handle it does not create",
++			cards: wired(create(levelDecl), edit("plan:internal/other#Thing")),
++		},
++		{
++			name:  "the creating card creates a function of a test-support directory",
++			cards: wired(create(levelDecl, "plan:internal/testkit/watchkit#Probe` -> `func Probe() string")),
++		},
++		{
++			name: "a later card whose refs are a test by name in a production package",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, edit("internal/dobby#TestTick", "plan:internal/watch#TestHelper")),
++			},
++		},
++		{
++			name: "two later cards that can call the function",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, edit("internal/dobby#Tick")),
++				{Number: 3, Slug: "report", Groups: []plankit.Group{edit("internal/dobby#Report")}, Uses: []string{level}, ImpactSummary: "one package"},
++			},
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name: "a later card whose production ref is a bare symbol",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, edit("dobby.Tick")),
++			},
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name: "a later card that creates the caller as a new function",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, create("plan:internal/watch#Run` -> `func Run()")),
++			},
++			want:    []string{levelFinding},
++			wantRef: level,
++		},
++		{
++			name: "a later card that creates only a test helper taking a testing type",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, create("plan:internal/watch#newFixture` -> `func newFixture(t testing.TB)")),
++			},
++		},
++		{
++			name: "a later card whose refs are an external test package and its member",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, edit("internal/dobby_test#", "internal/watch_test#helper")),
++			},
++		},
++		{
++			name: "a function of a test-support directory",
++			cards: []plankit.Card{
++				creator(create("plan:internal/gitkit#NewRepo` -> `func NewRepo() string")),
++				caller([]string{"plan:internal/gitkit#NewRepo"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a function below a test-support directory",
++			cards: []plankit.Card{
++				creator(create("plan:internal/testkit/watchkit#New` -> `func New() string")),
++				caller([]string{"plan:internal/testkit/watchkit#New"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a function named as a test without a testing type",
++			cards: []plankit.Card{
++				creator(create("plan:internal/watch#ExampleLevel` -> `func ExampleLevel()")),
++				caller([]string{"plan:internal/watch#ExampleLevel"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "the creating card edits a production member that can call it",
++			cards: []plankit.Card{
++				creator(create(levelDecl), edit("internal/dobby#Tick")),
++				caller([]string{level}, edit("internal/dobby#Report")),
++			},
++		},
++		{
++			name: "the creating card creates a production file that can call it",
++			cards: []plankit.Card{
++				creator(create(levelDecl, "internal/watch/wire.go")),
++				caller([]string{level}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "the creating card creates a variable that can call it",
++			cards: []plankit.Card{
++				creator(create(levelDecl, "plan:internal/watch#levels` -> `var levels = map[string]func(string) string")),
++				caller([]string{level}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "the later card only changes the function and tests",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller(nil, edit(level, "internal/watch_test#TestLevel", "internal/watch/level_test.go")),
++			},
++		},
++		{
++			name: "no later card names the function",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller(nil, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a test helper taking a testing type",
++			cards: []plankit.Card{
++				creator(create("plan:internal/watch#newFixture` -> `func newFixture(t testing.TB) string")),
++				caller([]string{"plan:internal/watch#newFixture"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a function of an external test package",
++			cards: []plankit.Card{
++				creator(create("plan:internal/watch_test#helper` -> `func helper() string")),
++				caller([]string{"plan:internal/watch_test#helper"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a program entry point",
++			cards: []plankit.Card{
++				creator(create("plan:cmd/watch#main` -> `func main()")),
++				caller([]string{"plan:cmd/watch#main"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name: "a type, which holds no code to reach",
++			cards: []plankit.Card{
++				creator(create("plan:internal/watch#Watcher` -> `type Watcher struct")),
++				caller([]string{"plan:internal/watch#Watcher"}, edit("internal/dobby#Tick")),
++			},
++		},
++		{
++			name:     "a plan with no glyph language",
++			language: "none",
++			cards: []plankit.Card{
++				creator(create(levelDecl)),
++				caller([]string{level}, edit("internal/dobby/tick.go")),
++			},
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := filepath.Join(t.TempDir(), "plan")
++			plankit.Write(t, dir, plankit.Plan{Language: tt.language, Cards: tt.cards})
++			plan, err := planparser.ParsePlan(dir)
++			if err != nil {
++				t.Fatalf("ParsePlan() failed: %v", err)
++			}
++
++			var got []string
++			for _, finding := range planparser.ValidateFormat(plan, t.TempDir()) {
++				if finding.Check != "create-caller-later" {
++					continue
++				}
++				if finding.Card != "1-create" {
++					t.Errorf("create-caller-later finding attributed to %q; want %q", finding.Card, "1-create")
++				}
++				if finding.Ref != tt.wantRef {
++					t.Errorf("create-caller-later finding Ref = %q; want %q", finding.Ref, tt.wantRef)
++				}
++				got = append(got, finding.Detail)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("ValidateFormat() create-caller-later details = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 362f1c1c9..4fb932209 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -91,6 +91,7 @@ func validate(plan *Plan, worktreeRoot string, requireApproved bool) []Validatio
+ 	findings = append(findings, checkExtendsOverlap(plan)...)
+ 	findings = append(findings, checkExtendsResign(plan)...)
+ 	findings = append(findings, checkUsesLaterTarget(plan)...)
++	findings = append(findings, checkCreateCallerLater(plan)...)
+ 	findings = append(findings, checkRedundantPackageTarget(plan)...)
+ 	findings = append(findings, checkImpactSummaryMultiline(plan)...)
+ 	findings = append(findings, checkProsaSymbolTarget(plan)...)
