@@ -17,6 +17,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | landing · Finalize | neve | 2h<br>1h | reed, stencil |
 
+## Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light |  | 53m<br>0m | stencil, orch, board, loom |
+
 ## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -30,11 +36,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>22h | docs |
 
-## Draft (2)
+## Draft (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split**<br>• Hide arras, follow up every Sketch a motif leaves, and apply the raddle split study rules, all working under autonomy | [`design-first-route`](design-design-first-route.md) | darn · light |  | 53m<br>0m | stencil, orch, board, loom |
 | T5 | `draft` **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light |  | 2h<br>0m | testkit, landing |
 
 ## Research (1)
