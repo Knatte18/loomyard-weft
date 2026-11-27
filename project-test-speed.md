@@ -1,9 +1,9 @@
 # P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages
 
-Rendered 2026-11-27 15:45 UTC; every age below is as of then.
+Rendered 2026-11-27 15:46 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`test-speed`](design-test-speed.md) · Age 26m · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 27m · Owner `neve`
 
 ## Aim (operator, 2026-11-27)
 
@@ -19,4 +19,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 26m<br>26m | gate, testkit |
+| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 27m<br>27m | gate, testkit |

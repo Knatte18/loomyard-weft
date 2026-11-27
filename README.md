@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 15:45 UTC; every age below is as of then.
+Rendered 2026-11-27 15:46 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -10,13 +10,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (1)
 
-[`test-speed`](design-test-speed.md) · Age 26m · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 27m · Owner `neve`
 
 ### Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 26m<br>26m | gate, testkit |
+| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 27m<br>27m | gate, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -36,7 +36,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md)<br>[Sketch](decision-push-retry-not-halt.md) | tapestry | Plan-Burler-Fix | neve | 1d<br>4h | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md)<br>[Sketch](decision-push-retry-not-halt.md) | tapestry | Plan-Bouncer | neve | 1d<br>4h | fabric, shed, landing, batten, dobby |
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (6)
 
@@ -96,7 +96,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T11<br>T12<br>T28 | 1d<br>5h | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
+| T17 | **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T11<br>T12<br>T28 | 1d<br>6h | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
 
 ## [P7 A closed area per hub: Landlock and a seccomp connect supervisor](project-closed-area.md) (4)
 
@@ -122,24 +122,24 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Review | neve | 1h<br>1h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 24m<br>24m | landing, loom, shuttle |
-| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | landing · Finalize | neve | 24m<br>24m | shuttle, shed |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Review | neve | 48m<br>48m | config, reconcile, testkit |
-| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 24m<br>24m | loom, stencil |
-| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 24m<br>24m | burler |
+| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 26m<br>25m | landing, loom, shuttle |
+| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | landing · Finalize | neve | 26m<br>25m | shuttle, shed |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Review | neve | 49m<br>49m | config, reconcile, testkit |
+| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 26m<br>25m | loom, stencil |
+| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 26m<br>25m | burler |
 
 ### Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light |  | 2h<br>18m | webster |
-| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>18m | gate, config |
+| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light |  | 2h<br>20m | webster |
+| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>19m | gate, config |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 24m<br>24m | batten, fabric |
+| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 26m<br>25m | batten, fabric |
 
 ### Layer G (1)
 
