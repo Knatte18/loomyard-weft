@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 28,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-27T16:47:53.229656867+01:00",
+  "deadline": "2026-11-27T17:17:53.229656867+01:00",
+  "strand_guid": "d2e9a98092c3d953b3d61946cf3e5081",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/shed/push-retry-not-halt/drive-reports/drive-envelope-20261127-164752-84f5.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/shed/push-retry-not-halt/drive-reports/drive-report-20261127-164752-e6b3.md",
+  "snapshot": {
+    "head": "3fbf277ca6a3b2012f98384e1ed68fe310c17002",
+    "branch": "push-retry-not-halt",
+    "dirty": {}
+  }
+}

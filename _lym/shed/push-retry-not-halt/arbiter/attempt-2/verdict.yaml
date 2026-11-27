@@ -1,0 +1,21 @@
+verdict: resume
+reason: |-
+  Plan-Bouncer stopped at its hard cap (round 3) with five design-wrong findings and one mechanical one open (F1 to F6).
+  The round 3 fixer revised the plan after that review, and I read each fix against the cards now in place:
+  F1: card 6 makes the board's Ahead HasUncommitted or HasUnpushed (HasUncommitted alone with pushes off), adds Board.PusherSync committing then pushing with OwedUnrecorded and SingleAttempt, and the tier1 TestPusherDeps_BoardPushCommitsTheBoardWrite.
+  F2: card 12 adds MergeOptions.NoFastForward and gitrepo Repo.MergeStartNoFastForward, which landUnderLock sets, so every local landing leaves one trailer commit, plus a squash-off row.
+  F3: card 11 pulls the Bolt (or runs the beam reconcile) before every owner read in a pass and in SettleRefused. A run owned elsewhere gets no done write and is released and handed over. The fixer did this differently from the review's held_back proposal, and that follows the record's hand-over ruling.
+  F4: card 11 step 1 and SettleRefused clear the drop's refused-push record when the last Dropped run whose commit the tip carried goes, restartHubPushers reaches Dropped-only targets, and rows cover it.
+  F5: card 2 wires battenCLI.driverDepsFor's WaitRecordPath and NetworkWaitCeiling, card 3 reads batten Waiting/WaitDied, card 20's Waits reads batten records, and rows cover it.
+  F6: card 9 adds RunPush.BackoffSleep and card 17 passes an instant sleep.
+  So every open finding is answered by the fix in place, and accept is the right outcome.
+  I recorded the ruling as an arbiter decision. It says that card text governs where the fixer fixed differently (F3, F5), since the parent's entry points the implementer at round-3-review.md's fix text.
+  The same decision corrects two plan defects the review named outside its findings, both settled by the record: card 14's shared ignore-check scratch repository becomes one per call (D9's bound), and card 12's unreachable-origin row expects the git-transport stop (D5, D6).
+  `lym loom circling accept` refused with: "a decision is already recorded for the escalated round at Plan-Bouncer; way forward: the decision for this round is recorded and stays; run \"lym loom resume\" in the task worktree to resume the run".
+  round-3-circling-decision.md already records `decision: accept` (cause hard-cap, automatic: false), the outcome I ruled, so the segment's decision stands and the run can resume.
+  I made no commit in the worktree, so no goto is needed.
+verbs:
+  - |-
+    lym loom decision add push-retry-not-halt --by arbiter --title "Plan review accepted at the hard cap; card text governs where round 3 fixed differently" --decision "…" --rationale "…"
+  - |-
+    lym loom circling accept push-retry-not-halt
