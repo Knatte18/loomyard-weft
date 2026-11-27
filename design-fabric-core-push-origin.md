@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-fabric-core-push-origin.md)
 
-Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md)
+Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
 Filed from the Sketch `fabric-git-free-core`.
 
