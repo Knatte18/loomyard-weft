@@ -615,7 +615,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #259](https://github.com/Knatte18/loomyard/issues/259).\n\nA beam was made with lym beam create \u003cslug\u003e from the prime, then ended before any member ran with lym batten cancel \u003cslug\u003e --remove. The cancel ended the pawl run and removed the pair and its records, but the board project kept \"beam\": true and had status draft.\n\nThe flag cannot be cleared afterwards. lym board upsert '{\"slug\":\"\u003cslug\u003e\",\"beam\":false}' is refused: 'the beam flag stays set for the beam's life, which ends when lym beam land \u003cslug\u003e lands it'. But the beam has no pair and no run left to land. The only way back to a plain project was to detach the members, remove the project, upsert it again and re-attach the members and their depends_on, which changes the project's handle.\n\nThe cancel also warned: 'the beam's orch was not stopped: lym orch runs from the hub's prime worktree or a beam; \"\u003cslug\u003e\" is neither', which shows the cancel no longer saw the entry as a beam once the pair was gone.\n\nExpected: batten cancel --remove of a beam's pawl run ends the beam's life and clears the project's beam flag, leaving a plain project whose members are untouched. Alternatively, a verb such as lym beam cancel \u003cslug\u003e does so.",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-26T20:18:37Z",
       "revised": "2026-11-26T20:19:00Z",
       "profile": "light"
