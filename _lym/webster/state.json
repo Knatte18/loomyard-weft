@@ -1,0 +1,585 @@
+{
+  "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
+  "planFingerprint": "4e50c4c26a870917732aeafc5fcc921b4e2815da188537d0b2d4447361e23c9c",
+  "planFileHashes": {
+    "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
+    "01-scankit-banned-imports.md": "0b6220b24dea9c95a1f6df659c9a5812206a995aaba235cba1c2d7ca06a1927f",
+    "02-layout-package-classify.md": "3de3794dc9407a1b48ff2729348aef2cd3988e5b2ce1e6aabcc4927ceec2e83a",
+    "03-layout-hub-paths.md": "e04357fec90d39fed33541ec408005eb82d4a2ecaf5cd69966b7b532141e99c9",
+    "04-layout-ref-names.md": "9229f825e9d7b4bfd1197c6c9893feeeae88e9ded0d9e9c7438edf4d237adb3f",
+    "05-layout-mutation-kinds.md": "640a33382fc59b03276b8faa07ba81fa46dd04942f086c5e859673178dbf3cde",
+    "06-layout-mutation-record.md": "90f1f38abeb659f7942fe5a9e0b87e0605b4842e973ec2fece1ad1c5a96361a9",
+    "07-layout-origin-types.md": "a63e0bb26439543d3bbd26c93cbe7277fb3b19745643aefb798db1e0095d04d8",
+    "08-layout-push-types.md": "76a3fd2152dc17fb609c3263fa9ed494ac278ccdcc0c5caf30edebb767d6b0af",
+    "09-engine-repo-side-names.md": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a",
+    "10-layout-verb-results.md": "e76ca54ff35058308753f8d226ccb85d32340f1c6b2b680608db18d1394449b9",
+    "11-layout-read-types.md": "c76574a0c8e38ab6f351567788d84eca4365228654f1ea80c90e4c9089dc9a2a",
+    "12-core-package.md": "95ae49120114c0be3eb5632df2a36da7e718dfe04abbb99c3e99660213680cc1",
+    "13-fabrickit-snapshot-builder.md": "0423eca654a94a57b7df9c212d10d472bda96b329caff81077e8fbffa0e4a448",
+    "14-executor-loop.md": "7ac2be6f1d4d94cb6774fb8b30489f69b5fb46a96662917969c554d867539e8a",
+    "15-snapshot-reader.md": "4be860bcd97f739a8e679d0f42b85ed44c8a16d0865844e83db213c4b702b4d6"
+  },
+  "planOverviewFrameHash": "167029faa5a4884c0aa3b037bf7b0882647b7aa1007607788fd3df3d5ad161f4",
+  "partition": [
+    {
+      "cards": [
+        "01-scankit-banned-imports",
+        "02-layout-package-classify"
+      ],
+      "profile": "wide",
+      "estimate": 235832,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55828,
+        "read_union": 66424,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 432,
+            "reads": {
+              "package:internal/testkit/scankit": 2000,
+              "tests:internal/testkit/scankit": 2000
+            },
+            "messages": 33,
+            "written": 10332
+          },
+          {
+            "card": 2,
+            "card_text": 1248,
+            "reads": {
+              "file:docs/overview.md": 25932,
+              "file:internal/fabriccli/doc.go": 1776,
+              "file:internal/fabricengine/classify.go": 708,
+              "file:internal/fabricengine/classify_test.go": 2736,
+              "file:internal/fabricvocab/doc.go": 120,
+              "file:pattern/PATTERN-fabric-boundary.md": 2040,
+              "file:pattern/PATTERN-leaf-packages.md": 1944,
+              "file:pattern/PATTERN-lym-files.md": 1488,
+              "package:docs": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "package:internal/fabricvocab": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000,
+              "tests:internal/fabricvocab": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 340,
+            "written": 103248
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-layout-hub-paths"
+      ],
+      "profile": "wide",
+      "estimate": 296728,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62828,
+        "read_union": 57920,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 1680,
+            "reads": {
+              "file:docs/overview.md": 25932,
+              "file:internal/fabricengine/doc.go": 7392,
+              "file:internal/reedengine/doc.go": 2916,
+              "package:docs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "package:internal/lymcwd": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000,
+              "tests:internal/lymcwd": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 581,
+            "written": 175980
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-layout-ref-names"
+      ],
+      "profile": "wide",
+      "estimate": 231508,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69828,
+        "read_union": 25528,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1152,
+            "reads": {
+              "file:internal/fabricengine/branchname.go": 156,
+              "file:internal/fabricengine/doc.go": 7392,
+              "file:pattern/PATTERN-single-repo-hub.md": 828,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "package:internal/lymcwd": 2000,
+              "package:pattern": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000,
+              "tests:internal/lymcwd": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 450,
+            "written": 136152
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-layout-mutation-kinds",
+        "06-layout-mutation-record"
+      ],
+      "profile": "wide",
+      "estimate": 295318,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76828,
+        "read_union": 37320,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 504,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 281.5,
+            "written": 84954
+          },
+          {
+            "card": 6,
+            "card_text": 816,
+            "reads": {
+              "package:cmd/lym": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/stencilcli": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/stencilcli": 2000
+            },
+            "messages": 318,
+            "written": 96216
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-layout-origin-types"
+      ],
+      "profile": "wide",
+      "estimate": 250702,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83828,
+        "read_union": 16508,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1116,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000
+            },
+            "messages": 497.5,
+            "written": 150366
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-layout-push-types",
+        "09-engine-repo-side-names"
+      ],
+      "profile": "wide",
+      "estimate": 252468,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90828,
+        "read_union": 20316,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 756,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fabriclayout": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fabriclayout": 2000
+            },
+            "messages": 342.5,
+            "written": 103506
+          },
+          {
+            "card": 9,
+            "card_text": 168,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 125.5,
+            "written": 37818
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-layout-verb-results"
+      ],
+      "profile": "wide",
+      "estimate": 286726,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97828,
+        "read_union": 22020,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1128,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "file:pattern/PATTERN-pair-remote.md": 1500,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 552.5,
+            "written": 166878
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-layout-read-types"
+      ],
+      "profile": "wide",
+      "estimate": 227938,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104828,
+        "read_union": 16076,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 684,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 354.5,
+            "written": 107034
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-core-package"
+      ],
+      "profile": "wide",
+      "estimate": 242776,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 111828,
+        "read_union": 22348,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 1500,
+            "reads": {
+              "file:PATTERN.md": 744,
+              "file:internal/fabricvocab/doc.go": 120,
+              "file:pattern/PATTERN-fabric-boundary.md": 2040,
+              "file:pattern/PATTERN-leaf-packages.md": 1944,
+              "package:.": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricvocab": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricvocab": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 357,
+            "written": 108600
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-fabrickit-snapshot-builder",
+        "14-executor-loop"
+      ],
+      "profile": "wide",
+      "estimate": 260882,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 118828,
+        "read_union": 27916,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 648,
+            "reads": {
+              "file:internal/testkit/doc.go": 168,
+              "package:cmd/lym": 2000,
+              "package:internal/testkit": 2000,
+              "package:internal/testkit/fabrickit": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/testkit": 2000,
+              "tests:internal/testkit/fabrickit": 2000
+            },
+            "messages": 142,
+            "written": 43248
+          },
+          {
+            "card": 14,
+            "card_text": 1140,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "file:internal/fabricengine/livestate_doc_test.go": 2568,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 232.5,
+            "written": 70890
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-snapshot-reader"
+      ],
+      "profile": "wide",
+      "estimate": 274186,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 125828,
+        "read_union": 17924,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 1884,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 7392,
+              "file:internal/fabricengine/remove_siblingdirty_integration_test.go": 648,
+              "package:cmd/lym": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 428.5,
+            "written": 130434
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "scankit-banned-imports",
+      "cards": [
+        "01-scankit-banned-imports",
+        "02-layout-package-classify"
+      ],
+      "cardHashes": {
+        "01-scankit-banned-imports": "0b6220b24dea9c95a1f6df659c9a5812206a995aaba235cba1c2d7ca06a1927f",
+        "02-layout-package-classify": "3de3794dc9407a1b48ff2729348aef2cd3988e5b2ce1e6aabcc4927ceec2e83a"
+      },
+      "startSha": "6cd2546f7ca26c1b55865f08d8897433a8a76758",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T08:36:47Z",
+      "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
+  "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
+  "masterEngine": "claude",
+  "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-foundation/_lym/loom/friction/webster-master.md",
+  "masterRecordsBase": "df0433d34cbe8b8d23aee2d098a2072df676a481"
+}
