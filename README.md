@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 06:30 UTC; every age below is as of then.
+Rendered 2026-11-27 06:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -91,7 +91,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T9<br>T11 | 22h<br>17h | batten, landing, orch, stencil, shed, loom, pawl |
+| T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | T9<br>T11 | 22h<br>18h | batten, landing, orch, stencil, shed, loom, pawl |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (2)
 
@@ -132,9 +132,9 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | darn · light | Darn-Write | neve | 9h<br>8h | desktop |
 | T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed | Darn-Write | neve | 9h<br>8h | board |
-| T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | landing · Finalize | neve | 17h<br>17h | gate, testmap |
+| T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | darn · light | landing · Finalize | neve | 18h<br>17h | gate, testmap |
 | T19 | **Card gate runs only the card's listed packages, so a wider intent breaks tests unseen** | [`card-gate-scope-gaps`](design-card-gate-scope-gaps.md) | darn · light | Code-Burler-Fix | neve | 10h<br>10h | webster, gate, loom |
-| T20 | **Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load** | [`gatemap-passedalone-flake`](design-gatemap-passedalone-flake.md) | darn · light | Describe | neve | 10h<br>10h | gate |
+| T20 | **Flaky gate: TestGateTestMap/NamedPackageIsRebuiltWhenFresh reports an unexpected PassedAlone entry under load** | [`gatemap-passedalone-flake`](design-gatemap-passedalone-flake.md) | darn · light | PR-Review | neve | 10h<br>10h | gate |
 | T22 | **batten cancel --remove of a beam leaves the project's beam flag set** | [`beam-cancel-keeps-flag`](design-beam-cancel-keeps-flag.md) | darn · light | Darn-Write | neve | 10h<br>10h | batten |
 
 ### Layer C (1)
