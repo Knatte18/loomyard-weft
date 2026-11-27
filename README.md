@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 15:44 UTC; every age below is as of then.
+Rendered 2026-11-27 15:45 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -10,13 +10,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (1)
 
-[`test-speed`](design-test-speed.md) · Age 25m · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 26m · Owner `neve`
 
 ### Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 25m<br>25m | gate, testkit |
+| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 26m<br>26m | gate, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -121,25 +121,25 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Bouncer | neve | 1h<br>1h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 24m<br>23m | landing, loom, shuttle |
-| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | landing · Finalize | neve | 24m<br>23m | shuttle, shed |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Review | neve | 47m<br>47m | config, reconcile, testkit |
-| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 24m<br>23m | loom, stencil |
-| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 24m<br>23m | burler |
+| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Review | neve | 1h<br>1h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
+| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 24m<br>24m | landing, loom, shuttle |
+| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | landing · Finalize | neve | 24m<br>24m | shuttle, shed |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Review | neve | 48m<br>48m | config, reconcile, testkit |
+| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 24m<br>24m | loom, stencil |
+| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 24m<br>24m | burler |
 
 ### Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light |  | 2h<br>18m | webster |
-| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>17m | gate, config |
+| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>18m | gate, config |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 24m<br>23m | batten, fabric |
+| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 24m<br>24m | batten, fabric |
 
 ### Layer G (1)
 
