@@ -279,6 +279,12 @@ Decision: The plan gets a card ahead of every card that rests on a KWin fact. It
 
 Rationale: Plan review F4: the probes-before-code decision had no card that carried it. Putting it in one first card keeps every probe and every operator step in one place before code rests on the facts, without a fresh Plan-Write.
 
+### Added after Discussion (parent, 2026-11-27): KWin probes run on one output; cross-output facts stay open risks
+
+Decision: The operator tests on one screen only: with DP-2 connected, KWin moves a window the operator moves between virtual desktops on to another desktop unasked, so nothing can be observed there. Adapt .scratch/kwin-probes/run-probes.sh so every probe runs with eDP-1 as the only enabled output: read-only as written; apply and apply-one-row open the throwaway windows on eDP-1 and place them on a non-current desktop's grid there, with no drag to another screen. Drop the neve-kscreen-laptop-off recording; card 6's recording check and card 8 read only the recordings that exist. The cross-output move (workspace.sendClientToScreen from another output, D3, D4) and a disabled output's priority value stay unobserved: write them under the record's Open risks, and make the code for them as small and as plainly guarded as D4 allows. Also record under Open risks the operator's report that on two screens KWin moves windows between virtual desktops on its own, since lym's placement may meet it.
+
+Rationale: The operator cannot test anything with two screens connected (operator, 2026-11-27), so the run proceeds on what one screen can observe rather than waiting.
+
 ## Constraints
 
 - Plasma 6.6.6, KWin 6.6.6, Wayland on Neve (`plasmashell --version`, `kwin_wayland --version`, `XDG_SESSION_TYPE`).
