@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -140,6 +140,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-cancel-keeps-flag/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-27T07:22:40Z",
+      "started_at": "2026-11-27T07:07:35Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T07:16:04.26072057Z",
+          "end": "2026-11-27T07:16:04.290617324Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T07:16:42.859401086Z",
+          "end": "2026-11-27T07:16:42.876957546Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T07:16:04.415339933Z",
+          "end": "2026-11-27T07:16:04.852043287Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-27T07:16:05.450726883Z",
+          "end": "2026-11-27T07:16:42.642779405Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T07:16:42.939715107Z",
+          "end": "2026-11-27T07:22:39.526503182Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-27T07:22:39.622220115Z",
+          "end": "2026-11-27T07:22:39.629154476Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
