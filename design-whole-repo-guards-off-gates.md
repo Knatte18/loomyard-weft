@@ -25,6 +25,19 @@ So the card and batch gates also run `cmd/lym`'s listed-tier tests whenever it d
 Under `--card`, the guard step still runs a `//lym:guard` test inside the scope that no listed tier covers.
 Moving guards off the task gates now has the widened card scope to deal with too.
 
+## Changed since (`165f91c6b`, `plan-later-caller-guard`)
+
+Plan validation now refuses a Go plan in which a card creates a production function that only a later card can call (`create-caller-later`).
+Its reason is that such a card fails its own gate on the call-graph test above.
+Moving that test off the task gates removes that reason, so the same change has to decide whether the plan check stays.
+
+## Changed since (`3f83bb888`, `memory-guard-infra-stop`)
+
+The memory guard still kills the largest test binary when memory is short.
+When the gate call's own processes hold less than half of the limit's use, the kill is now reported as an infrastructure stop, not a test failure,
+and a tier stopped only that way is rerun once.
+The change description reports that the call-graph test, run alone, peaked at 2011532 KB resident; the change did not alter the test.
+
 ## Idea (operator, 2026-11-26 and 2026-11-27)
 
 - Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.
