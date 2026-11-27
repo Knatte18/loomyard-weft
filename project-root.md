@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 12:21 UTC; every age below is as of then.
+Rendered 2026-11-27 12:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -16,7 +16,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | raddle | Raddle-Write | neve | 15h<br>6m | termwindow, desktop |
 | T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Code-Burler-Fix | neve | 15h<br>1h | gate, testkit |
-| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | Describe | neve | 5h<br>2h | landing, gate |
+| T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | PR-Review | neve | 5h<br>2h | landing, gate |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 1h<br>1h | weaver, webster |
 
 ## Layer H (1)
