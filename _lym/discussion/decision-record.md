@@ -275,6 +275,20 @@ Rationale: The operator wants fabric's test code cut, with no part allowed to gr
   - net-shrink-left-to-card-15-halt (class design, severity MEDIUM, open in rounds 2, 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - F1 (class decision, severity BLOCKING, open in rounds 1)
+  - F6 (class decision, severity MEDIUM, open in rounds 1)
+  - deleted-tests-without-loosened-check-trailer (class consistency, severity MEDIUM, open in rounds 1)
+  - fabric-test-code-barely-shrinks (class decision, severity MEDIUM, open in rounds 1)
+  - mixed-joined-read-error-untested (class scope, severity MEDIUM, open in rounds 1)
+  - multi-store-partial-fill-untested (class scope, severity MEDIUM, open in rounds 1)
+  - records-store-field-half-tested (class scope, severity MEDIUM, open in rounds 1)
+  - reread-transport-failure-untested (class scope, severity MEDIUM, open in rounds 1)
+  - test-only-functions-in-production-files (class decision, severity BLOCKING, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A tier0 test fails when `internal/fabriccore` (new) or `internal/fabriclayout` (new) imports a package outside its closed set, `gitexec`, `gitrepo`, `dotgit`, `lymcwd` and `os/exec` included (D1).
