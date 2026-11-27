@@ -850,6 +850,25 @@
       "body": "## Seen\n\nThe run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`, whose `envkit.go` the running push-retry-not-halt also changes.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\n## Idea\n\nMove the `MailAgent` rows to a tier1 loomcli test over a real creel daemon,\nand move `envkit`'s session stand-ins onto the recorded tmux kit.\n",
       "created": "2026-11-27T19:02:48Z",
       "revised": "2026-11-27T19:02:49Z"
+    },
+    {
+      "id": 1759,
+      "handle": "E2",
+      "slug": "arras-visible-leftovers",
+      "title": "Arras still shows in seeded profiles and in the overview and glossary",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board",
+        "docs"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The landed design-first route left arras keys in the profile template and descriptions in two docs",
+      "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
+      "created": "2026-11-27T19:53:35Z",
+      "revised": "2026-11-27T19:53:35Z"
     }
   ],
   "prime_owner": "neve",
