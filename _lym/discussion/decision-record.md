@@ -19,6 +19,12 @@
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Writer measures gatecli tier1 time itself
+
+Decision: The writer may run lym gate test --gate darn-write --wait --no-carry --tier 1 ./internal/gatecli -- -count=1 -v in the foreground, twice on the untouched base and twice after its commits, and put both pairs with the load average at each start in the change description. It runs no other gate test beyond its normal gates.
+
+Rationale: The task exists to cut this package's test time; only the writer's worktree holds the before and after trees, and the orch runs no tests.
+
 ## Constraints
 
 ## Auto-mode assumptions
