@@ -4,7 +4,7 @@
      and the Raddle-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=bcafb0af0340bdd2917ff579c0af11007d9d49798f40553a565c4e2742542c6e build=77b47ae10d761ff2d7d723891ab483dceb71f9d9 time=2026-11-17T11:05:23Z -->
+lym-stencil: sha256=e4cc0f2318321dc84f7019d8b0e67265699e35b408e350a29c0668be522d5c1a build=9acc400f82106e363fc1bc05d6fab9525721ca71 time=2026-11-27T19:51:50Z -->
 
 # Raddle-Review rubric
 
@@ -46,8 +46,20 @@ Judge the split's judgement, not its format:
 - **Each part's labels name its modules.**
   A part's `labels` name the module of each package its body names, and no module the part does not change.
   A label for a module the part never touches is a finding, and so is a named package whose module no label names.
+- **Each part is bounded.**
+  A `darn` part past about 1,500 changed lines, deleted lines left out, or past about eight packages,
+  with a seam that holds, is a finding.
+  So is a `tapestry` part with no shared interface or data shape that needs one plan.
 - **Each part's recipe and profile fit it.**
-  A part's recipe and profile fit its size and risk, and each cost line rests on the cells it cites.
+  `darn` is the default and `light` its profile; `solid` needs a data risk, a wide change or a bundle.
+  Each cost line rests on the cells it cites and states the sum of its part's package sizes.
+- **Running work is ordered.**
+  A part with no `depends_on` on a run in flight or a released task that changes the same package
+  or behaviour the part reads, where the overlap is more than a few lines, is a finding.
+- **Every part lands whole.**
+  Code whose only production caller a later part builds, or a criterion a later part's work makes true, is a finding.
+- **The later decision wins.**
+  A part that builds what the Sketch's board entry or a later decision has replaced is a finding.
 - **The outcome fits the record's scope.**
   One task or a family of parts fits the scope the record states.
 
@@ -73,6 +85,8 @@ a decision no part can build, a seam that does not hold,
 a part added only so parts run at once,
 a cut that runs fewer parts at once than another cut with the same part count,
 labels that do not match the packages a part changes,
+a part past its bound, an overlap with running work left unordered, a part that does not land whole,
+a part that builds a replaced decision,
 or a recipe or profile that does not fit its part.
 In this segment, `decision` means a question only the run's parent can settle:
 two record entries that contradict each other on what the split must build,
