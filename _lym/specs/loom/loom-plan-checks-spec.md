@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=070ec7bf9ff4cb2a2465dc004fe04711486426a9091743cef20f1ab64364bba9 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
+<!-- lym-stencil: sha256=e36e28214cf67fc1d9d6e40771bd4dc39ec36a250427a4bf60e092d7005eb759 build=2326ef4da0640800959a1d7b2bc9c3444f708748 time=2026-11-27T13:07:11Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -176,26 +176,6 @@ Under `language: none` the glyph checks are skipped:
   a pending card's `Delete` target is already gone, in place of its `path-missing` or `glyph-not-found`.
 - `uses-later-target` — a card's `Uses:` entry that a later card targets, matched as exact trimmed strings;
   one finding per consumer, producer and entry, on the consumer.
-- `create-caller-later` — under `go`, a card creates a production function that no ref of its own can call,
-  and a later card that can call it names the handle among its targets or `Uses`.
-  The card then fails its gate on the guard that every production function is reachable from a `main`.
-  A function is production code unless its unit is `<dir>_test`, its name opens `Test`, `Benchmark`, `Fuzz` or `Example`,
-  its head names a `testing.` type, or it is `main` or `init`.
-  A function of `internal/testkit`, `internal/gitkit`, `internal/hubforge` or a directory below one is skipped too,
-  since the guard counts it as reached.
-  A helper of a package-internal `_test.go` file is declared on its package directory and so reads as production code.
-  A later card that names it and changes production code, or creates another such helper, raises the finding,
-  and moving the `Create` to that card clears it.
-  A card can call the function through a ref of its `Create`, `Edit`, `Extends` or `Custom` groups
-  that names production Go code other than the function itself.
-  A handle the card creates as a `type` or `const` is no such ref.
-  A handle it creates as a `func` in one of the test-support directories above is one.
-  Any other `func` handle it creates is none for the creating card.
-  For a later card it is one, unless its unit is `<dir>_test`, its name opens a test prefix above or its head names a `testing.` type.
-  A non-Go file, a `_test.go` file and a test member are no such ref either;
-  a package self glyph or a bare symbol is one.
-  One finding per function, on the creating card, naming the first such later card.
-  Way forward: move the `Create` to the card that adds its first production caller, or list that caller on the creating card.
 
 ## Verify lines
 

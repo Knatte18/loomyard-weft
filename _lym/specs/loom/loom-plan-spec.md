@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=e6833dccfd1217668976c251ab3bc92b91a052d0b90e1b7f1c77ab8a8d5e9319 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
+<!-- lym-stencil: sha256=4944123128fe6d92ce9d5144385a9711222c7ceba02aff67c8a1ba1f2294a14d build=2326ef4da0640800959a1d7b2bc9c3444f708748 time=2026-11-27T13:07:11Z -->
 
 # Loom plan-spec — flat card list
 
@@ -43,7 +43,7 @@ How webster groups cards into batches is no card property; `internal/batcher`'s 
 A valid plan is executable strictly in card-number order: a card never depends on anything a later card does.
 Webster runs the cards in that order and never sorts them,
 so a card that needs a symbol, file or fixture a later card creates is a defect of the plan.
-`uses-later-target`, `delete-before-reference` and `create-caller-later` refuse the cases a card's own refs show;
+`uses-later-target` and `delete-before-reference` refuse the cases a card's own refs show;
 every other dependency on a later card is the writer's to avoid and the plan reviewer's to flag.
 
 ## On-disk layout
@@ -365,9 +365,6 @@ One card per independently reviewable unit, never one card per symbol.
 A private supporting type or a constructor inseparable from its type goes on the card of the symbol it serves,
 and so does a helper serving one surface.
 A symbol of a module's public surface, or one reused across packages, gets its own card.
-A new function is the exception: it goes on the card that adds its first production caller,
-since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`
-(`create-caller-later`).
 
 A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
 Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
