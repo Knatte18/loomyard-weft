@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=4c90df394b61b2f1384a5a0b0a8d9d55d0dfc0674afa86c7d076ec63d418d995 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
+<!-- lym-stencil: sha256=46c6c451a83d3f9bf7f21fe4207743dfa6ea1e30691acbc395bd148872ca627a build=34e64ac2eb24ade3497b7db898483a9fcc907938 time=2026-11-27T07:21:35Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -81,7 +81,7 @@ It lists each failure of its landing gate that passed when run once more on the 
 it opens one from the artifact, or refreshes an open one's title and body,
 so a re-run Publish carries a rewritten description onto the pull request.
 While its review runs, PR-Review reads the artifact at each status poll of an open pull request.
-It sets the title and body again when the artifact yields other text, so the pr-reviewer changes them by rewriting the artifact.
+It sets the title and body again when the artifact yields other text, so a rewrite of the artifact while the review waits reaches the pull request.
 A read that fails there is logged and retried at the next poll, never an error.
 
 ## Producer-appended sections
