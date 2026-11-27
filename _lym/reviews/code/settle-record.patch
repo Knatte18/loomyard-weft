@@ -1,0 +1,693 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index 73af050de..f23fb796e 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -324,7 +324,7 @@ The hub's tests run through `lym gate test`.
+ It runs the numbered tiers `gate.yaml` declares over a scope lym computes.
+ A gate key names a site's tiers and scope, `card`, `diff` or `all`.
+ A Go site runs `lym gate test --wait --gate <key>`; an agent's card, batch and `webster-fix` calls carry no `--wait`.
+-The `card` key runs per card and the `batch` key per batch, both over the cards' packages;
++The `card` key runs per card and the `batch` key per batch, both over the cards' packages and the packages that depend on them;
+ `webster-fix` in Webster's verify fixers;
+ `webster` once for the whole plan;
+ `parent-align` and `finalize` at Parent-Align and Finalize.
+@@ -332,7 +332,8 @@ The plan writer and reviewer get the hub's tiers and gate keys in their prompts,
+ so a plan names no gate, tier list or target list.
+ 
+ - **Per card.** The fork runs `lym gate test --gate card --card <card id>`.
+-  The call computes the card's packages from the plan and runs the `//lym:guard` tests and the lints the key lists.
++  The call computes the card's packages from the plan and adds every package whose build or tests reach one of them.
++  It runs the `//lym:guard` tests and the lints the key lists.
+   It does not test the rest of the module or the tiers the key leaves out,
+   and a passing call names the declared tiers it did not run.
+ - **Per batch.** The fork runs `lym gate test --gate batch` after its last card.
+@@ -358,6 +359,11 @@ One card per independently reviewable unit, never one card per symbol.
+ A private supporting type or a constructor inseparable from its type goes on the card of the symbol it serves,
+ and so does a helper serving one surface.
+ A symbol of a module's public surface, or one reused across packages, gets its own card.
++A new function is the exception: it goes on the card that adds its first production caller,
++since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
++
++A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
++Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+ 
+ Removing a symbol's last caller and deleting the symbol are separate cards:
+ each caller's `Edit` card, then one `Delete`.
+diff --git a/contracts/stencils/loom/loom-block-plan-cards.md b/contracts/stencils/loom/loom-block-plan-cards.md
+index d53d30190..74daa0475 100644
+--- a/contracts/stencils/loom/loom-block-plan-cards.md
++++ b/contracts/stencils/loom/loom-block-plan-cards.md
+@@ -50,6 +50,12 @@ A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exe
+ A branch that upstream validation already rules out is not prescribed: drop it, or, when it guards an invariant, write it as a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no reaching test.
+ A test that calls only the refusal's error constructor does not reach it.
+ 
++A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
++Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
++
++A new function goes on the card that adds its first production caller, even when it is part of a module's public surface:
++a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
++
+ A field with no content is omitted entirely — never write a `none` sentinel on any field.
+ 
+ **`Uses:` names what the card reads but does not change — never a target.**
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 48987f666..0631cb454 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -55,6 +55,14 @@ Do not flag any of the following as a finding:
+   One card per independently reviewable unit, not one card per literal symbol.
+   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
+   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
++  A new function is the exception: it goes on the card that adds its first production caller.
++  A card that adds it alone fails its gate on the guard that every production function is reachable from a `main`;
++  the finding names the function and the card that adds its caller.
++- **A repository-wide intent.**
++  A card whose `**Intent:**` covers every instance of one kind across the repository needs a search that proves its targets complete.
++  It is a finding when its Intent names no repository search that found its targets.
++  The reviewer runs the card's search, or one of its own when the card names none;
++  the finding names each instance the search finds outside the card's targets.
+ - **Test economy.**
+   A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans a test asserting the static prose of a stencil, spec, doc or other text.
+   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 2a1f6115e..fa0fdb5be 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -42,7 +42,7 @@ For EACH card file listed above, in the order listed:
+ Make exactly the changes the card describes, in exactly the targets its type labels name.
+    A deviation is a change outside the batch's card targets as the scope guard counts them: a member target covers that member, a file target every member of that file, a package target every member of the files directly in its directory, and a rename is inside when either its old or its new name is a target.
+    `**Uses:**` entries add no coverage, so a change to a member a card only reads is a deviation unless a target of some card in the batch covers it.
+-   Three deviations are sanctioned, each within its bound: the guard-step fix in step 3, only in a file the guard step's failure names; a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap; and the retired-name sweep edit below, only to a hit that references a name the card retires.
++   Three deviations are sanctioned, each within its bound: the guard-test fix in step 3, only in a file a `//lym:guard` test's failure names; a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap; and the retired-name sweep edit below, only to a hit that references a name the card retires.
+    No other change outside the targets is made.
+    The scope guard records every deviation, sanctioned ones included; you list, compare and report none, and a deviation alone never makes the report `FAILED`.
+    The plan's glyph names are the contract: keep every name a card gives a symbol, and rename nothing the plan does not declare.
+@@ -70,10 +70,11 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+ {{.card_gates}}{{.card_gate_fixer}}
+ 
+    A failing gate call closes with a failure report that lists every failure at once, its lint findings included, with each failure's `file:line` and the log path; fix every failure it lists before you run the gate again.
+-   The gate call computes the card's packages from the plan and runs the guard step itself, the step over the repository's `//lym:guard` tests, which can fail on a file the card does not list, such as the pinned set in a `cmd/lym` test.
+-   Fix it under the card's commit.
++   The gate call computes the card's packages from the plan, with every package that depends on them, and runs the guard step itself, the step over the repository's `//lym:guard` tests.
++   The gate call's runs, the listed tiers over the dependent packages as well as the guard step, can fail on a file the card does not list, such as the pinned set in a `cmd/lym` test.
++   When a `//lym:guard` test fails so, in either, fix it under the card's commit.
+    Fix the code that broke the guard where that is the right fix, and change a pinned set or an allowlist only when the pin itself must move.
+-   Change only a file the guard step's failure names this way, the first sanctioned deviation in step 2's rule.
++   Change only a file that guard test's failure names this way, the first sanctioned deviation in step 2's rule.
+ 
+ 4. Commit the card to the repo — normal dev git, run from your working directory — never any `_lym` path.
+    One commit per card is the norm.
+diff --git a/docs/overview.md b/docs/overview.md
+index d460a19c0..1fde5a253 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -957,7 +957,8 @@ User-facing modules each get one `lym <module>` namespace:
+   ✅ Implemented. See the `internal/slackengine` and `internal/slackcli` package documentation.
+ - **gate** — the tier runner:
+   `lym gate test` runs the numbered tiers the hub declares in `gate.tiers` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `gate.tiers.<tier>.timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board;
+-  a `--card` scope under the `go` scoper also vets the card's packages under each other tier tag that adds a file to one of them,
++  a `--card` scope under the `go` scoper takes the cards' packages and every package whose build or tests reach one of them,
++  and it also vets those packages under each other tier tag that adds a file to one of them,
+   so a tag-set compile break fails at the card;
+   a failing tier stops no later tier, vet or guard run;
+   the gate key's lint steps run after the tiers;
+diff --git a/internal/gatecli/carddependents_integration_test.go b/internal/gatecli/carddependents_integration_test.go
+new file mode 100644
+index 000000000..6e84c2401
+--- /dev/null
++++ b/internal/gatecli/carddependents_integration_test.go
+@@ -0,0 +1,34 @@
++// carddependents_integration_test.go covers a --card scope's module whose dependent packages cannot be listed.
++// It spawns `go list` in a temp directory, so it is Tier 1.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestCardDependents_UnlistableModuleKeepsTheCardsPackagesAndSaysSo(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	module := planparser.ModulePackages{Dir: ".", Packages: []string{"./lib"}}
++	root := t.TempDir()
++	plankit.WriteTree(t, root, map[string]string{"lib/lib.go": "package lib\n"})
++	var stderr bytes.Buffer
++
++	if got, want := cardDependents(context.Background(), root, module, &stderr), []string{"./lib"}; !slices.Equal(got, want) {
++		t.Errorf("cardDependents() = %q; want %q", got, want)
++	}
++	want := "gate test: the card scope holds the cards' packages alone: cannot list the packages that depend on them in .: "
++	if got := stderr.String(); !strings.HasPrefix(got, want) {
++		t.Errorf("cardDependents() stderr = %q; want it to open with %q", got, want)
++	}
++}
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index a8b71cf1c..7a1983ea7 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -83,7 +83,7 @@ The exit code is the first failing run's own, or 0.
+ Without --gate the scope is the explicit <targets>, --all, --card <id>, --base <rev>, or the diff from the merge base with the pair's parent branch.
+ Arguments after "--" fill each tier's {args}.
+ A --filter among them is ANDed with the tier's filter where the tier's command holds {filter}.
+---guards, and a narrower scope while ` + keyName(scoperKey) + ` is go, also run the //lym:guard tests outside the scope.
++--guards, and a narrower scope while ` + keyName(scoperKey) + ` is go, also run the //lym:guard tests outside the scope; --card adds tier-skipped ones.
+ --map builds the tier0 and tier1 coverage maps, and refuses the flags that pick tiers or steps.
+ --copies N, with --gate and explicit targets, runs N copies of the key's one tier side by side.
+ 
+@@ -122,7 +122,7 @@ Examples:
+ 	testCmd.Flags().StringVar(&gate, "gate", "", "key of "+keyName(gatesKey)+" whose tiers and scope the call runs; goes with none of --tier, --upto, --all and --base")
+ 	testCmd.Flags().IntSliceVar(&tiers, "tier", nil, "tier number to run; repeatable, default 0")
+ 	testCmd.Flags().IntVar(&upto, "upto", 0, "run every declared tier numbered 0 through N but the manual ones")
+-	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages are the scope; repeatable")
++	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages, and the packages that depend on them, are the scope; repeatable")
+ 	testCmd.Flags().BoolVar(&mainPackages, gateslot.MainPackagesFlag, false, "with --card under the go scoper, add every package main of tier0's module to the scope")
+ 	testCmd.Flags().StringVar(&base, "base", "", "revision whose diff to the working tree is the scope")
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index cab367f93..97fb6d9e1 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -137,8 +137,10 @@
+ // Under the `none` scoper each scoped form is whole, so a tier takes its `all_targets`, and no guard step is planned.
+ // Under the `go` scoper a computed or `--base` scope is `impactset.DeriveTargets` of the base-to-working-tree diff.
+ // It falls back to whole wherever the derivation does, naming the reason on stderr.
+-// A `--card` scope is the cards' packages;
+-// with `--main-packages` it also holds every `package main` package of tier0's module.
++// A `--card` scope is the cards' packages and, per module, every package whose build or tests reach one of them.
++// So a test outside the cards that asserts on what they change runs at the card's gate;
++// a module `go list` cannot list keeps the cards' packages alone, which the call names on stderr.
++// With `--main-packages` it also holds every `package main` package of tier0's module.
+ // A narrower scope runs each listed tier once per module, in that module's directory.
+ // One slot hold and one `timeout_min` cover every invocation.
+ // An empty scope, such as a diff of Markdown files only, runs no listed tier's command, bar a tier with `carry: false`:
+@@ -206,19 +208,24 @@
+ // # Vet step
+ //
+ // Under the `go` scoper a `--card` scope also plans vet runs, after the listed tiers and before the guard step.
+-// Each declared tier whose build tag `tierN` brings a `.go` file into a card package gets a `go vet -tags tierN` run.
+-// The run covers the card's packages, once per module.
++// Each declared tier whose tag `tierN` adds a `.go` file to a card-scope package gets a `go vet -tags tierN` run.
++// The run covers the card scope's packages, once per module.
+ // A listed tier and a tier a listed tier covers get none.
+ // So a card that breaks the compile under another tier's tag fails at its own gate.
+ // The run holds one slot, takes part in the green record under its own fingerprint, and stops no later run.
+ // Bound: it does not vet a break visible only under a combination of tags.
+-// Nor does it vet one visible only under a tag that adds no file to a card package; the batch gate finds both.
++// Nor does it vet one visible only under a tag that adds no file to a package of the card scope;
++// the batch gate finds both.
+ //
+ // # Guard step
+ //
+ // The verb runs the guard step after the listed tiers when given `--guards`.
+ // Under the `go` scoper it also runs after any computed, `--base` or `--card` scope.
+ // It covers the module's `//lym:guard` tests outside the scope, so a narrower gate keeps full guard coverage.
++// Under `--card` it also covers a scope package's guard test whose tier no listed tier is or covers.
++// The listed runs skip that test.
++// Bound: a computed or `--base` scope leaves every guard test of an impacted package to the listed runs,
++// so one of a tier they do not run is not run there.
+ // A guard test's tier comes from its file's `tierN` build tag, a file naming none counting as `tier0`.
+ // The step plans one run per tier holding guard tests, ascending.
+ // Each run is the tier's command with the group's packages as `{targets}`;
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index b26a5090a..f0d2c83ee 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -133,7 +133,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 		return output.Err(out, err.Error())
+ 	}
+ 	if (request.guards || sc.guardStep) && len(sc.guards) == 0 {
+-		logger.Info("gate test: no guard test found outside the scope; the guard step runs nothing")
++		logger.Info("gate test: no guard test is left for the guard step; it runs nothing")
+ 	}
+ 
+ 	exe := &execution{
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index b0ef4d9a0..215661e4a 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -10,6 +10,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"go/build"
++	"io"
+ 	"io/fs"
+ 	"maps"
+ 	"os"
+@@ -77,9 +78,12 @@ type scope struct {
+ 	// guardDir is the run directory of that guard step, relative to the worktree root.
+ 	// Empty means the directory of each guard group's own tier.
+ 	guardDir string
+-	// guards maps a tier number to each directory outside the scope that holds its guard tests, and to their names.
++	// guards maps a tier number to each directory that holds guard tests of it for the guard step, and to their names.
+ 	// The directories are relative to guardDir; nil when no scan has run.
+ 	guards map[int]map[string][]string
++	// listedTiers are the tiers a --card scope's listed runs run: each listed tier and every tier it covers.
++	// A guard test of any other tier is left to the guard step, even in a package of the scope.
++	listedTiers []int
+ 	// tagTiers are the declared tiers, ascending, whose build tag adds a file to a --card scope's package.
+ 	// A build without tags leaves that file out, so the vet step is planned over these tiers.
+ 	tagTiers []int
+@@ -139,6 +143,7 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ // It leaves the guard tests to the module scan, as a whole tier does.
+ // A set that cannot be narrowed falls back to whole, naming the reason on request.stderr.
+ // A --card scope is the cards' packages per module.
++// It holds every package of that module whose build or tests reach one of them too.
+ // With request.mainPackages it also holds every package main of tier0's module, listed once.
+ // It adds the declared tiers whose build tag brings a file into one of those packages.
+ // A narrowed share, and a --card scope, skip the `//lym:watch` tests of their packages that no changed file concerns.
+@@ -192,18 +197,19 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 		return scope{}, fmt.Errorf("gate test: %w", err)
+ 	}
+ 	if form == scopeCard {
+-		modules := make([]moduleTargets, len(cardModules))
+-		for i, module := range cardModules {
+-			modules[i] = moduleTargets{dir: module.Dir, targets: module.Packages}
+-		}
++		// The main packages are listed first, so a refused call names no narrowed scope.
++		mainsDir := moduleKey(root, tier0.Dir)
++		var mains []string
+ 		if request.mainPackages {
+-			moduleDir := moduleKey(root, tier0.Dir)
+-			mains, err := impactset.ModuleMainPackages(ctx, resolveRunDir(root, tier0.Dir))
+-			if err != nil {
+-				return scope{}, fmt.Errorf("gate test: --%s cannot list the main packages of the module at %s: %w; way forward: fix the module until \"go list ./...\" succeeds there, then re-run the same command", gateslot.MainPackagesFlag, moduleDir, err)
++			if mains, err = impactset.ModuleMainPackages(ctx, resolveRunDir(root, tier0.Dir)); err != nil {
++				return scope{}, fmt.Errorf("gate test: --%s cannot list the main packages of the module at %s: %w; way forward: fix the module until \"go list ./...\" succeeds there, then re-run the same command", gateslot.MainPackagesFlag, mainsDir, err)
+ 			}
+-			modules = withMainPackages(modules, moduleDir, mains)
+ 		}
++		modules := make([]moduleTargets, len(cardModules))
++		for i, module := range cardModules {
++			modules[i] = moduleTargets{dir: module.Dir, targets: cardDependents(ctx, root, module, request.stderr)}
++		}
++		modules = withMainPackages(modules, mainsDir, mains)
+ 		var dirs []string
+ 		for _, module := range modules {
+ 			for _, target := range module.targets {
+@@ -214,7 +220,7 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 				}
+ 			}
+ 		}
+-		sc := scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir, tagTiers: tagTiers(cfg, root, modules)}
++		sc := scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir, tagTiers: tagTiers(cfg, root, modules), listedTiers: coveredTiers(cfg, request)}
+ 		sc.changed, sc.changesRead = cardChanges(ctx, location, root)
+ 		if sc.changesRead {
+ 			watched, err := impactset.FindWatchedTests(root, dirs)
+@@ -278,6 +284,20 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 	return scope{form: form, tiers: shares, guardStep: true, guardDir: ".", guards: guardsByTier(guards)}, nil
+ }
+ 
++// cardDependents returns module's packages and every package of that module whose build or tests reach one of them.
++// A test outside the cards' packages that asserts on what a card changes then runs at the card's own gate.
++// When the module's packages cannot be listed it returns the cards' packages alone.
++// It then names the narrowing and its cause in the log and on stderr.
++func cardDependents(ctx context.Context, root string, module planparser.ModulePackages, stderr io.Writer) []string {
++	dependents, err := impactset.DependentPackages(ctx, resolveRunDir(root, module.Dir), module.Packages)
++	if err != nil {
++		logger.Warn("gate test: could not list the packages that depend on the cards' packages; the card scope holds the cards' packages alone", "module", module.Dir, "cause", err)
++		printLine(stderr, fmt.Sprintf("gate test: the card scope holds the cards' packages alone: cannot list the packages that depend on them in %s: %v", module.Dir, err))
++		return module.Packages
++	}
++	return dependents
++}
++
+ // withMainPackages returns modules with mains, the main packages of the module at dir, added to that module's targets.
+ // A package the cards already name is not added twice, and a module the cards leave out joins the list last.
+ func withMainPackages(modules []moduleTargets, dir string, mains []string) []moduleTargets {
+@@ -446,6 +466,18 @@ func keptTiers(cfg gateslot.Config, request testRequest) []int {
+ 	return dropCovered(listed, declared, silent)
+ }
+ 
++// coveredTiers returns the tiers the request's listed runs run: each kept listed tier and every tier it covers.
++func coveredTiers(cfg gateslot.Config, request testRequest) []int {
++	var numbers []int
++	for _, number := range keptTiers(cfg, request) {
++		numbers = append(numbers, number)
++		if tier, err := cfg.Tier(number); err == nil {
++			numbers = append(numbers, tier.Covers...)
++		}
++	}
++	return numbers
++}
++
+ // tierNames returns the names of the tiers numbers, joined by commas.
+ func tierNames(numbers []int) string {
+ 	names := make([]string, len(numbers))
+@@ -548,9 +580,10 @@ func guardScanDir(cfg gateslot.Config, request testRequest, sc scope) (string, e
+ 	return tier0.Dir, nil
+ }
+ 
+-// scanGuards fills sc.guards with the guard tests outside the scope's packages, grouped by their file's tier.
++// scanGuards fills sc.guards with the guard tests the scope's listed runs leave out, grouped by their file's tier.
++// Those are the guard tests outside the scope's packages, and those inside one whose tier no listed run runs.
+ // It scans the module at sc.guardDir.
+-// A whole scope and an explicit-targets scope hold no package of that module, so every guard test counts as outside.
++// A whole scope and an explicit-targets scope hold no package of that module, so every guard test counts as left out.
+ // It scans the guard packages for `//lym:watch` markers too.
+ // When the scope read its changes, it drops each watched guard test those changes leave alone.
+ // A scan error is returned as the refusal.
+@@ -569,22 +602,24 @@ func scanGuards(sc scope, root string) (scope, error) {
+ 			inside[strings.TrimPrefix(path.Clean(target), "./")] = true
+ 		}
+ 	}
+-	outside := map[string][]impactset.GuardTest{}
++	leftOut := map[string][]impactset.GuardTest{}
+ 	for dir, tests := range all {
+-		if len(tests) > 0 && !inside[path.Clean(dir)] {
+-			outside[dir] = tests
++		for _, test := range tests {
++			if !inside[path.Clean(dir)] || !slices.Contains(sc.listedTiers, test.Tier) {
++				leftOut[dir] = append(leftOut[dir], test)
++			}
+ 		}
+ 	}
+-	watched, err := impactset.FindWatchedTests(moduleDir, slices.Sorted(maps.Keys(outside)))
++	watched, err := impactset.FindWatchedTests(moduleDir, slices.Sorted(maps.Keys(leftOut)))
+ 	if err != nil {
+ 		return scope{}, errors.New(guardScanRefusal(moduleDir, err))
+ 	}
+ 	if sc.changesRead {
+ 		for dir, names := range impactset.UnwatchedTests(watched, moduleRelative(root, sc.guardDir, sc.changed)) {
+-			outside[dir] = slices.DeleteFunc(outside[dir], func(test impactset.GuardTest) bool { return slices.Contains(names, test.Name) })
++			leftOut[dir] = slices.DeleteFunc(leftOut[dir], func(test impactset.GuardTest) bool { return slices.Contains(names, test.Name) })
+ 		}
+ 	}
+-	sc.guards = guardsByTier(outside)
++	sc.guards = guardsByTier(leftOut)
+ 	return sc, nil
+ }
+ 
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 6255a0235..5c3c61264 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -402,9 +402,9 @@ func TestGateTest_Scopes(t *testing.T) {
+ 	}}}
+ 	plankit.Write(t, planparser.PlanDir(pair), plan)
+ 
+-	t.Run("--card runs a card's packages once per module, then the guard step over the guard tests outside them", func(t *testing.T) {
++	t.Run("--card runs a card's packages and the packages that import them once per module, then the guard step over the guard tests outside them", func(t *testing.T) {
+ 		g := gate(t, pair, nil, "--card", "1")
+-		wantArgs(t, g, []string{"./lib"}, []string{"."}, guardInvocation)
++		wantArgs(t, g, []string{"./lib", "./user"}, []string{"."}, guardInvocation)
+ 		var cwds []string
+ 		for _, record := range g.tierRecords(t) {
+ 			cwds = append(cwds, record.Cwd)
+@@ -417,6 +417,23 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("--card runs a dependent package's guard in the guard step unless a listed tier is or covers its tier", func(t *testing.T) {
++		plankit.WriteTree(t, pair, map[string]string{
++			"consumer/c.go":      "package consumer\n\nimport \"example.com/scopes/lib\"\n\nvar One = lib.One\n",
++			"consumer/c_test.go": "//go:build tier1\n\npackage consumer\n\nimport \"testing\"\n\n//lym:guard\nfunc TestConsumerGuard(t *testing.T) {}\n",
++			// The listed tier0, and tier1 which covers it, both run this one, so the guard step never names it.
++			"consumer/c0_test.go": "package consumer\n\nimport \"testing\"\n\n//lym:guard\nfunc TestConsumerTierZeroGuard(t *testing.T) {}\n",
++		})
++		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "consumer")) })
++		scoped := []string{"./lib", "./consumer", "./user"}
++
++		wantArgs(t, gate(t, pair, nil, "--card", "1"),
++			scoped, []string{"."},
++			append([]string{"vet", "-tags", "tier1"}, scoped...), []string{"vet", "-tags", "tier1", "."},
++			guardInvocation, []string{"./consumer", "-run", "^(TestConsumerGuard)$"})
++		wantArgs(t, gate(t, pair, nil, "--card", "1", "--tier", "1"), scoped, []string{"."}, guardInvocation)
++	})
++
+ 	t.Run("--card under dotnet runs the project of the test class naming a card's member glyph target", func(t *testing.T) {
+ 		writeDotnet(t, nil)
+ 		defer writeScoper(t, "go")
+@@ -490,7 +507,7 @@ func TestGateTest_Scopes(t *testing.T) {
+ 	t.Run("--card vets a card's packages per module under the tag of a tier that adds a file to one, between the listed tier and the guard step", func(t *testing.T) {
+ 		edit(t, "lib/use_test.go", fmt.Sprintf(tier1File, "One"))
+ 		g := gate(t, pair, nil, "--card", "1")
+-		wantArgs(t, g, []string{"./lib"}, []string{"."}, []string{"vet", "-tags", "tier1", "./lib"}, []string{"vet", "-tags", "tier1", "."}, guardInvocation)
++		wantArgs(t, g, []string{"./lib", "./user"}, []string{"."}, []string{"vet", "-tags", "tier1", "./lib", "./user"}, []string{"vet", "-tags", "tier1", "."}, guardInvocation)
+ 		if line := vetSummary(t, g.stdout.String()); !strings.Contains(line, " exit 0 ") {
+ 			t.Errorf("vet summary line = %q; want exit 0", line)
+ 		}
+@@ -541,7 +558,7 @@ func TestGateTest_Scopes(t *testing.T) {
+ 			}
+ 		})
+ 		// The timed-out tier stops its own invocations, but not the guard step after it.
+-		if got, want := g.tierArgs(t), [][]string{{"./lib"}, guardInvocation}; !reflect.DeepEqual(got, want) {
++		if got, want := g.tierArgs(t), [][]string{{"./lib", "./user"}, guardInvocation}; !reflect.DeepEqual(got, want) {
+ 			t.Errorf("tier invocations = %q; want the first module's run alone, killed before the second starts, then the guard step: %q", got, want)
+ 		}
+ 		if tier, ok := gateslot.FindTierTimeout(g.stdout.String()); g.exit != 1 || !ok || tier != "tier0" {
+@@ -569,7 +586,7 @@ func TestGateTest_Scopes(t *testing.T) {
+ 	t.Run("--gate with scope card runs the --card packages and records the key", func(t *testing.T) {
+ 		edit(t, "docs/note.md", "a dirtying note\n")
+ 		g := gate(t, pair, nil, "--gate", "card", "--card", "1")
+-		wantArgs(t, g, []string{"./lib"}, []string{"."}, guardInvocation)
++		wantArgs(t, g, []string{"./lib", "./user"}, []string{"."}, guardInvocation)
+ 		if run, _ := runRecordOf(t, g.stdout.String(), 0); run.ScopeForm != "card" || run.GateKey != "card" {
+ 			t.Errorf("tier0 run record = %+v; want the card scope form and gate key card", run)
+ 		}
+@@ -581,7 +598,7 @@ func TestGateTest_Scopes(t *testing.T) {
+ 	t.Run("--card with --main-packages adds the module's main packages to the card's packages", func(t *testing.T) {
+ 		plankit.WriteTree(t, pair, map[string]string{"tool/main.go": "package main\n\nfunc main() {}\n"})
+ 		t.Cleanup(func() { _ = os.RemoveAll(filepath.Join(pair, "tool")) })
+-		wantArgs(t, gate(t, pair, nil, "--card", "1", "--main-packages"), []string{"./lib", "./tool"}, []string{"."}, guardInvocation)
++		wantArgs(t, gate(t, pair, nil, "--card", "1", "--main-packages"), []string{"./lib", "./user", "./tool"}, []string{"."}, guardInvocation)
+ 	})
+ 
+ 	t.Run("--card with --main-packages is refused naming the module and the way forward when go list fails there", func(t *testing.T) {
+diff --git a/internal/gatecli/testmap_integration_test.go b/internal/gatecli/testmap_integration_test.go
+index 0af9b9fa6..af0fcc946 100644
+--- a/internal/gatecli/testmap_integration_test.go
++++ b/internal/gatecli/testmap_integration_test.go
+@@ -732,7 +732,7 @@ func readTestMap(t *testing.T, mapsDir, pkg string) testcover.Map {
+ // TestGateTestMapInATaskWorktreeKeepsItsOwnMaps builds a map from a task worktree at that worktree's HEAD.
+ // The call writes the map under the worktree's own `.lym` and leaves the hub's shared maps alone,
+ // and `lym gate redundant` from the same worktree reads the map it wrote.
+-// A card scope there maps the card's packages inside the module alone.
++// A card scope there maps the card's packages and their importers, inside the module alone.
+ func TestGateTestMapInATaskWorktreeKeepsItsOwnMaps(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -791,11 +791,13 @@ func TestGateTestMapInATaskWorktreeKeepsItsOwnMaps(t *testing.T) {
+ 
+ 	// The card names a package of the backend module and a file outside it.
+ 	plankit.WriteTree(t, anchor, map[string]string{
+-		"other/other.go":      testMapSource("other"),
+-		"other/other_test.go": testMapTestFile("other", map[string]int{"TestOtherOne": 0}),
++		"other/other.go":            testMapSource("other"),
++		"other/other_test.go":       testMapTestFile("other", map[string]int{"TestOtherOne": 0}),
++		"importer/importer.go":      "package importer\n\nimport \"" + module + "/solo\"\n\nfunc One() int { return solo.One() }\n\nfunc Two() int { return 2 }\n",
++		"importer/importer_test.go": testMapTestFile("importer", map[string]int{"TestImporterOne": 0}),
+ 	})
+ 	gitkit.Git(t, pair, "add", "backend")
+-	gitkit.Git(t, pair, "commit", "-q", "-m", "add the other package")
++	gitkit.Git(t, pair, "commit", "-q", "-m", "add the other and importer packages")
+ 	plankit.Write(t, planparser.PlanDir(anchor), plankit.Plan{Approved: true, Cards: []plankit.Card{{
+ 		Number: 1, Slug: "span", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"backend/solo/solo.go", "tools/gen.go"}}},
+ 	}}})
+@@ -803,11 +805,11 @@ func TestGateTestMapInATaskWorktreeKeepsItsOwnMaps(t *testing.T) {
+ 		scope: testRequest{cards: []string{"1"}}, goBinary: standIn, environ: env,
+ 		secondUnit: 150 * time.Millisecond, minuteUnit: time.Minute, grace: time.Second, cappedParallel: unclampedParallel,
+ 	})
+-	if diff := cmp.Diff(testMapOutcome{Built: []string{"solo"}}, decodeTestMap(t, code, out2), cmpopts.EquateEmpty()); diff != "" {
++	if diff := cmp.Diff(testMapOutcome{Built: []string{"importer", "solo"}}, decodeTestMap(t, code, out2), cmpopts.EquateEmpty()); diff != "" {
+ 		t.Errorf("runTestMap() --card 1 from the task worktree mismatch (-want +got):\n%s", diff)
+ 	}
+ 	if _, found, err := testcover.ReadMap(testcover.Dir(anchor), "other"); err != nil || found {
+-		t.Errorf("ReadMap(other) = found %v, err %v; want no map, since the card names solo alone", found, err)
++		t.Errorf("ReadMap(other) = found %v, err %v; want no map, since the card names solo alone and other does not import it", found, err)
+ 	}
+ }
+ 
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 79735e477..8cc4cecad 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -22,7 +22,7 @@ mutation_budget_min: 20  # minutes lym gate mutate or the mutation report step m
+ tiers: {}
+ 
+ # gate.gates maps a gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all}.
+-# The keys lym reads: card and batch (scope card, the card's own packages), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base).
++# The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), and webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base).
+ # The two harden keys name tier 0, the tier a key may name before the hub declares more, so a hardener run needs no gate write; a hub whose live tests sit in a higher tier may point harden-live at one tier below tier3, since the run's concurrent copies call runs that same key.
+ # The scope card is only for the card and batch keys.
+ # The darn-write key's scope is not card and its tiers all hold {args} in their command, since the darn writer's measuring call passes the words that select one test class there.
+diff --git a/internal/impactset/dependents.go b/internal/impactset/dependents.go
+new file mode 100644
+index 000000000..d3d19a1d4
+--- /dev/null
++++ b/internal/impactset/dependents.go
+@@ -0,0 +1,45 @@
++// dependents.go widens a named set of packages to every package of its module whose build or tests reach one of them.
++
++package impactset
++
++import (
++	"context"
++	"fmt"
++	"path"
++	"slices"
++)
++
++// DependentPackages returns packages and every package of the module at moduleDir whose build or tests reach one of them.
++// packages and the result are module-relative `go` package arguments, such as `./internal/x`, or `.` for the module root.
++// The result keeps packages first, in their order and cleaned spelling, then the added packages sorted by directory.
++// A package the module does not hold yet stays in the result and adds nothing.
++// A package that a plan card has still to create is one such.
++// The graph is built under the tier tags `tier0` through `tier3`, test imports included,
++// and the `cmd/lym` main package reaches every package whose tests import `internal/testkit/lymbin`.
++// A failed `go list` run is an error naming moduleDir; ctx bounds the run, so a stalled `go list` is killed when it ends.
++func DependentPackages(ctx context.Context, moduleDir string, packages []string) ([]string, error) {
++	pkgs, err := listPackages(ctx, moduleDir)
++	if err != nil {
++		return nil, fmt.Errorf("impactset: list the packages of %s: %w", moduleDir, err)
++	}
++	return dependentsFor(newModuleGraph(pkgs), packages), nil
++}
++
++// dependentsFor is the pure core of DependentPackages over graph.
++func dependentsFor(graph moduleGraph, packages []string) []string {
++	seeds := map[string]bool{}
++	dirs := make([]string, len(packages))
++	for i, arg := range packages {
++		dirs[i] = path.Clean(arg)
++		if p, ok := graph.byDir[dirs[i]]; ok {
++			seeds[p.ImportPath] = true
++		}
++	}
++	result := packageArgs(dirs)
++	for _, arg := range packageArgs(graph.packageDirs(graph.impactedSet(seeds))) {
++		if !slices.Contains(result, arg) {
++			result = append(result, arg)
++		}
++	}
++	return result
++}
+diff --git a/internal/impactset/dependents_integration_test.go b/internal/impactset/dependents_integration_test.go
+new file mode 100644
+index 000000000..f1c35a7d7
+--- /dev/null
++++ b/internal/impactset/dependents_integration_test.go
+@@ -0,0 +1,44 @@
++// dependents_integration_test.go drives DependentPackages over real modules, whose package listing spawns `go list`.
++
++package impactset
++
++import (
++	"context"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDependentPackages(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	t.Run("a package gains its importer and a package whose tagged test imports it, and no unrelated package", func(t *testing.T) {
++		t.Parallel()
++		moduleDir := t.TempDir()
++		writeRepoFile(t, moduleDir, "go.mod", "module example.com/m\n\ngo 1.26\n")
++		writeRepoFile(t, moduleDir, "lib/lib.go", "package lib\n\nfunc One() int { return 1 }\n")
++		writeRepoFile(t, moduleDir, "user/user.go", "package user\n\nimport \"example.com/m/lib\"\n\nfunc Two() int { return lib.One() + 1 }\n")
++		writeRepoFile(t, moduleDir, "probe/probe.go", "package probe\n")
++		writeRepoFile(t, moduleDir, "probe/probe_test.go", "//go:build tier1\n\npackage probe\n\nimport (\n\t\"testing\"\n\n\t\"example.com/m/lib\"\n)\n\nfunc TestOne(t *testing.T) { _ = lib.One() }\n")
++		writeRepoFile(t, moduleDir, "other/other.go", "package other\n")
++
++		got, err := DependentPackages(context.Background(), moduleDir, []string{"./lib"})
++		if err != nil {
++			t.Fatalf("DependentPackages() error = %v; want nil", err)
++		}
++		if want := []string{"./lib", "./probe", "./user"}; !slices.Equal(got, want) {
++			t.Errorf("DependentPackages() = %q; want %q", got, want)
++		}
++	})
++
++	t.Run("a directory with no go.mod is an error naming it", func(t *testing.T) {
++		t.Parallel()
++		bare := t.TempDir()
++		if _, err := DependentPackages(context.Background(), bare, []string{"./lib"}); err == nil || !strings.Contains(err.Error(), bare) {
++			t.Errorf("DependentPackages(%s) error = %v; want an error naming the directory", bare, err)
++		}
++	})
++}
+diff --git a/internal/impactset/dependents_test.go b/internal/impactset/dependents_test.go
+new file mode 100644
+index 000000000..4204b9ac6
+--- /dev/null
++++ b/internal/impactset/dependents_test.go
+@@ -0,0 +1,50 @@
++// dependents_test.go drives the pure core of DependentPackages over the shared hand-built package graph.
++
++package impactset
++
++import (
++	"reflect"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDependentsFor(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		packages []string
++		want     []string
++	}{
++		{
++			name:     "a package gains every package that reaches it, a test import included, sorted after it",
++			packages: []string{"./internal/a"},
++			want:     []string{"./internal/a", "./cmd/lym", "./internal/b", "./internal/c", "./internal/tmuxonly"},
++		},
++		{
++			name:     "a package nothing reaches stays alone",
++			packages: []string{"./internal/d"},
++			want:     []string{"./internal/d"},
++		},
++		{
++			name:     "a package the module does not hold yet stays first and adds nothing",
++			packages: []string{"./internal/new", "./internal/b"},
++			want:     []string{"./internal/new", "./internal/b", "./cmd/lym", "./internal/c"},
++		},
++		{
++			name:     "the cmd/lym main package gains the packages whose tests build the binary",
++			packages: []string{"./cmd/lym"},
++			want:     []string{"./cmd/lym", "./internal/e"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := dependentsFor(testGraph(), tt.packages); !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("dependentsFor(%q) = %q; want %q", tt.packages, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index 699f9f387..8a98361c0 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -29,6 +29,9 @@
+ // The context is checked before each git read, and cancelling it kills a stalled `go list`;
+ // a local git read already in flight runs to its end.
+ //
++// DependentPackages widens a named set of a module's packages, such as a plan card's, over the same graph and rules.
++// It adds every package whose build or tests reach one of them, and keeps a named package the module does not hold yet.
++//
+ // Every top-level test marked `//lym:guard` runs by name in its own package, even outside the set.
+ // A repository-scanning test can fail on a change far from its package.
+ // Guards holds, per directory, the `//lym:guard` tests of the packages outside the set, sorted by name.
