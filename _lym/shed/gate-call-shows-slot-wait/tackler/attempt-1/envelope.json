@@ -1,0 +1,11 @@
+{
+  "verdict": "resume",
+  "reason": "Blocked at Worktree-Create (step 1 of 8), claiming the board entry. The board commit fa084f3f was pushed to origin main at 22:41:25 (trace e237d393c72b44f0, \"push landed\", tip fa084f3f). The retry push at 22:41:28 was refused by the remote because origin main had moved to 2623ca4c (stderr in trace line 58: \"cannot lock ref ... expected fa084f3f\"). That is a concurrent-writer race on the board ref, not a lasting fault: 2623ca4c was then pushed at 22:41:30 (trace line 59, \"push landed\"). Read-only checks: git ls-remote origin refs/heads/main in _bolt returns f394f62d (current tip); git merge-base --is-ancestor confirms both fa084f3f and 2623ca4c are ancestors of f394f62d, so the board commit is present on origin and is not absent. The stop's \"board still ahead of origin\" text is therefore stale. The step's own fix (\"run lym board sync, then re-run the verb\") is a plain re-run of a verb the run can make, so a resume with goto Worktree-Create settles it. I did not run lym board sync (not mine to run; I may not change the run). Caveat: batten's locate warning (trace line 10) says the task worktree /home/knatte/Code/loomyard-LYMHUB/gate-call-shows-slot-wait is not present although durable status says it was created. This does not cause the stop (Worktree-Create has not yet run its create step), but if the re-run refuses for a missing worktree, the next judge should read that warning and the run's durable status before choosing a new verdict.",
+  "question": "",
+  "goto": "Worktree-Create",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gate-call-shows-slot-wait/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/loomyard/_lym/shed/gate-call-shows-slot-wait/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
