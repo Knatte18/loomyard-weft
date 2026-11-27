@@ -54,7 +54,7 @@
 - `internal/fabricengine#seedSubjectPrefix`
 
 **Edit:**
-- `plan:internal/fabriclayout#TestLeafInvariant_AllowlistOnly`
+- `internal/fabriclayout#TestLeafInvariant_AllowlistOnly`
 - `internal/lymcwd#weftnameImportOwners`
 - `internal/lymcwd#TestEnforcement_FabricVocabulary`
 - `internal/fabricengine#IsSeedCommit`

@@ -2,16 +2,16 @@
 
 **Create:**
 - `internal/fabriclayout/doc.go`
-- `plan:internal/fabriclayout#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/fabriclayout#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/fabriclayout#TestLeafInvariant_NoIO` -> `func TestLeafInvariant_NoIO(t *testing.T)`
-- `plan:internal/fabriclayout#ClassifyPaths` -> `func ClassifyPaths(relPath string, routingNames, neverCommittedNames []string, files []string) (warp, weft, neverCommitted []string)`
-- `plan:internal/fabriclayout#normalizedScopedPathspec` -> `func normalizedScopedPathspec(relPath string, names []string) []string`
-- `plan:internal/fabriclayout#isUnderAnyPrefix` -> `func isUnderAnyPrefix(normalizedFile string, normalizedPrefixes []string) bool`
-- `plan:internal/fabriclayout#StructuralCommittedDirs` -> `func StructuralCommittedDirs() []string`
-- `plan:internal/fabriclayout#StructuralNeverCommittedDirs` -> `func StructuralNeverCommittedDirs() []string`
-- `plan:internal/fabriclayout#TestClassifyPaths` -> `func TestClassifyPaths(t *testing.T)`
-- `plan:internal/fabriclayout#TestStructuralDirs` -> `func TestStructuralDirs(t *testing.T)`
+- `internal/fabriclayout#TestMain`
+- `internal/fabriclayout#TestLeafInvariant_AllowlistOnly`
+- `internal/fabriclayout#TestLeafInvariant_NoIO`
+- `internal/fabriclayout#ClassifyPaths`
+- `internal/fabriclayout#normalizedScopedPathspec`
+- `internal/fabriclayout#isUnderAnyPrefix`
+- `internal/fabriclayout#StructuralCommittedDirs`
+- `internal/fabriclayout#StructuralNeverCommittedDirs`
+- `internal/fabriclayout#TestClassifyPaths`
+- `internal/fabriclayout#TestStructuralDirs`
 
 **Move:**
 - `internal/fabricengine#ScopedPathspec`
@@ -46,7 +46,7 @@
 **Uses:**
 - `internal/fabricvocab/doc.go`
 - `internal/fabriccli/doc.go`
-- `plan:internal/testkit/scankit#AssertNoImports`
+- `internal/testkit/scankit#AssertNoImports`
 - `internal/testkit/scankit#AssertImportAllowlistNoStale`
 
 **Intent:** Create the leaf package `internal/fabriclayout` (D1) and move classify.go's path classification into it, the move D9 pairs with the `PATTERN-lym-files` background edit.

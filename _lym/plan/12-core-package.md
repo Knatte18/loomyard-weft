@@ -67,7 +67,7 @@
 **Uses:**
 - `internal/fabriclayout/doc.go`
 - `internal/fabricvocab/doc.go`
-- `plan:internal/testkit/scankit#AssertNoImports`
+- `internal/testkit/scankit#AssertNoImports`
 - `internal/testkit/scankit#AssertImportAllowlistNoStale`
 
 **Intent:** Create the leaf package `internal/fabriccore` (D1) with the snapshot, phase, action list and outcome types the later parts' rules read and return, and no rule yet (D9 part 1).

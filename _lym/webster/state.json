@@ -1,12 +1,12 @@
 {
   "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
-  "planFingerprint": "4e50c4c26a870917732aeafc5fcc921b4e2815da188537d0b2d4447361e23c9c",
+  "planFingerprint": "6b5bf0049325eadc30d1bc09f0b88bd82f784f7c60e968ca3602a916ddb6901a",
   "planFileHashes": {
     "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
-    "01-scankit-banned-imports.md": "0b6220b24dea9c95a1f6df659c9a5812206a995aaba235cba1c2d7ca06a1927f",
-    "02-layout-package-classify.md": "3de3794dc9407a1b48ff2729348aef2cd3988e5b2ce1e6aabcc4927ceec2e83a",
-    "03-layout-hub-paths.md": "e04357fec90d39fed33541ec408005eb82d4a2ecaf5cd69966b7b532141e99c9",
-    "04-layout-ref-names.md": "9229f825e9d7b4bfd1197c6c9893feeeae88e9ded0d9e9c7438edf4d237adb3f",
+    "01-scankit-banned-imports.md": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
+    "02-layout-package-classify.md": "167eee117226bc272e69b11d06821240fdb31fc68eaa3f10b0d0e84bf4ea2aa7",
+    "03-layout-hub-paths.md": "55cd190fe2f33d02a260fe7177ad917619d148cd1a76a40c8ed0553233469758",
+    "04-layout-ref-names.md": "7922f01aafabab3ca4ccc7689f5a760746746e706a5866bef2819d3cde61bbfa",
     "05-layout-mutation-kinds.md": "640a33382fc59b03276b8faa07ba81fa46dd04942f086c5e859673178dbf3cde",
     "06-layout-mutation-record.md": "90f1f38abeb659f7942fe5a9e0b87e0605b4842e973ec2fece1ad1c5a96361a9",
     "07-layout-origin-types.md": "a63e0bb26439543d3bbd26c93cbe7277fb3b19745643aefb798db1e0095d04d8",
@@ -14,7 +14,7 @@
     "09-engine-repo-side-names.md": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a",
     "10-layout-verb-results.md": "e76ca54ff35058308753f8d226ccb85d32340f1c6b2b680608db18d1394449b9",
     "11-layout-read-types.md": "c76574a0c8e38ab6f351567788d84eca4365228654f1ea80c90e4c9089dc9a2a",
-    "12-core-package.md": "95ae49120114c0be3eb5632df2a36da7e718dfe04abbb99c3e99660213680cc1",
+    "12-core-package.md": "8ece3617b949659200dfb4a99b71fd7f89866b31aef09ecd1b54698fff15a1fc",
     "13-fabrickit-snapshot-builder.md": "0423eca654a94a57b7df9c212d10d472bda96b329caff81077e8fbffa0e4a448",
     "14-executor-loop.md": "7ac2be6f1d4d94cb6774fb8b30489f69b5fb46a96662917969c554d867539e8a",
     "15-snapshot-reader.md": "4be860bcd97f739a8e679d0f42b85ed44c8a16d0865844e83db213c4b702b4d6"
@@ -564,22 +564,63 @@
         "02-layout-package-classify"
       ],
       "cardHashes": {
-        "01-scankit-banned-imports": "0b6220b24dea9c95a1f6df659c9a5812206a995aaba235cba1c2d7ca06a1927f",
-        "02-layout-package-classify": "3de3794dc9407a1b48ff2729348aef2cd3988e5b2ce1e6aabcc4927ceec2e83a"
+        "01-scankit-banned-imports": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
+        "02-layout-package-classify": "167eee117226bc272e69b11d06821240fdb31fc68eaa3f10b0d0e84bf4ea2aa7"
       },
       "startSha": "6cd2546f7ca26c1b55865f08d8897433a8a76758",
       "kind": "fork",
       "spawnedAt": "2026-11-27T08:36:47Z",
       "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-scankit-banned-imports",
+        "status": "done",
+        "head_sha": "48770d47297c85c0407b2fd438c89ef76e8d2e7a",
+        "deviations": [
+          "internal/fabricengine/addanchor.go",
+          "internal/fabricengine/bolt.go",
+          "internal/fabricengine/committedfile.go",
+          "internal/fabricengine/commitweftpaths.go",
+          "internal/fabricengine/configchanges.go",
+          "internal/fabricengine/forkrecords.go",
+          "internal/fabricengine/hubreservedroutes_test.go",
+          "internal/fabricengine/junctionnames.go",
+          "internal/fabricengine/junctionnames_test.go",
+          "internal/fabricengine/remove.go",
+          "internal/fabricengine/shortnamecommit.go",
+          "internal/fabricengine/snapshotuncommitted.go",
+          "internal/fabricengine/stencilcommit.go",
+          "internal/fabricengine/trailercommit.go",
+          "internal/fabricengine/weftgit_exclude_test.go",
+          "internal/fabriclayout/classify.go",
+          "internal/fabriclayout/classify_test.go",
+          "internal/testkit/scankit/scankit.go",
+          "internal/testkit/scankit/scankit_test.go",
+          "internal/weavercli/wiring.go",
+          "internal/webstercli/cli.go",
+          "internal/webstercli/sync.go"
+        ]
+      },
+      "cardShas": [
+        "48770d47297c85c0407b2fd438c89ef76e8d2e7a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a145db6b35ccf195d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a145db6b35ccf195d.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-foundation/_lym/loom/friction/webster-master.md",
-  "masterRecordsBase": "df0433d34cbe8b8d23aee2d098a2072df676a481"
+  "masterRecordsBase": "df0433d34cbe8b8d23aee2d098a2072df676a481",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a145db6b35ccf195d.jsonl"
+  ]
 }

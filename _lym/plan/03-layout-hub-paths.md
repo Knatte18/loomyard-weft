@@ -76,8 +76,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/fabriclayout#StructuralCommittedDirs`
-- `plan:internal/fabriclayout#StructuralNeverCommittedDirs`
+- `internal/fabriclayout#StructuralCommittedDirs`
+- `internal/fabriclayout#StructuralNeverCommittedDirs`
 - `internal/fabricengine#containsName`
 
 **Intent:** Move the hub's path names and pure path functions into `internal/fabriclayout`'s `hubpaths.go` (D1, D7), and retarget every caller.

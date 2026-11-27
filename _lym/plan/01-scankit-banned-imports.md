@@ -1,10 +1,10 @@
 # Card 1 — scankit-banned-imports
 
 **Create:**
-- `plan:internal/testkit/scankit#AssertNoImports` -> `func AssertNoImports(t testing.TB, pkgDir string, banned ...string)`
-- `plan:internal/testkit/scankit#bannedImports` -> `func bannedImports(dir string, banned []string) (violations []string, parsed int, err error)`
-- `plan:internal/testkit/scankit#TestBannedImports` -> `func TestBannedImports(t *testing.T)`
-- `plan:internal/testkit/scankit#recordingTB` -> `type recordingTB struct`
+- `internal/testkit/scankit#AssertNoImports`
+- `internal/testkit/scankit#bannedImports`
+- `internal/testkit/scankit#TestBannedImports`
+- `internal/testkit/scankit#recordingTB`
 
 **Uses:**
 - `internal/testkit/scankit#writeTree`
