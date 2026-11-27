@@ -1,6 +1,8 @@
 # Finalize gates the merged tree without the parent lock and holds the lock only to land
 
-`landing-lock-only-for-land` · Note · enhancement, landing, gate
+`landing-lock-only-for-land` · Task · enhancement, landing, gate · draft
+
+Depends on: [`transient-stop-not-failed`](design-transient-stop-not-failed.md)
 
 ## Seen (operator, 2026-11-27)
 
