@@ -1,0 +1,10 @@
+status: OK
+head_sha: 601e7c089848676634da0f3229f101fd733447d5
+journal: |
+  Cards 5 and 6 are committed and the batch gate passed; TestBoardServeScenario ran and passed in tier1.
+  `lym board open` (operator) and `lym board serve` (internal) exist in boardcli.Command; their logic is in internal/boardcli/open.go.
+  boardengine now exports EntryStoreFile (no card named it) so the watch loop does not repeat "board.json".
+  Card 4's temporary testonlycode allowlist entries are removed.
+  A test file named *_linux_integration_test.go gets no platform constraint from its name; it needs `//go:build linux`.
+  A test that needs lock.AcquireWriteLockWithin to succeed needs a generous wait: a 10 ms one can expire before the first attempt under load.
+  The card gate's comment lint runs a fixer that rewrites comments, so read changed files again after a gate call.

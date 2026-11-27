@@ -97,7 +97,7 @@
         "06-board-serve-open-verbs"
       ],
       "profile": "wide",
-      "estimate": 203476,
+      "estimate": 204754,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -113,12 +113,13 @@
         },
         "position": 2,
         "startup": 39600,
-        "read_union": 46048,
+        "read_union": 46576,
         "cards": [
           {
             "card": 5,
             "card_text": 1164,
             "reads": {
+              "file:internal/boardserve/doc.go": 324,
               "file:internal/lymdirs/doc.go": 144,
               "file:pattern/PATTERN-daemon-wakeups.md": 1668,
               "package:cmd/lym": 2000,
@@ -130,15 +131,15 @@
               "tests:internal/lymdirs": 2000,
               "tests:pattern": 2000
             },
-            "messages": 177,
-            "written": 54264
+            "messages": 178,
+            "written": 54564
           },
           {
             "card": 6,
             "card_text": 1464,
             "reads": {
               "file:internal/boardcli/doc.go": 2448,
-              "file:internal/boardengine/doc.go": 10308,
+              "file:internal/boardengine/doc.go": 10512,
               "file:internal/runproc/doc.go": 852,
               "package:internal/boardcli": 2000,
               "package:internal/boardengine": 2000,
@@ -147,8 +148,8 @@
               "tests:internal/boardengine": 2000,
               "tests:internal/runproc": 2000
             },
-            "messages": 207,
-            "written": 63564
+            "messages": 208.5,
+            "written": 64014
           }
         ]
       }
@@ -160,7 +161,7 @@
         "09-beam-start-workspace-task"
       ],
       "profile": "wide",
-      "estimate": 248652,
+      "estimate": 248664,
       "breakdown": {
         "weights": {
           "orientation": 31400,
@@ -176,13 +177,13 @@
         },
         "position": 3,
         "startup": 46600,
-        "read_union": 78992,
+        "read_union": 79004,
         "cards": [
           {
             "card": 7,
             "card_text": 684,
             "reads": {
-              "file:docs/overview.md": 25476,
+              "file:docs/overview.md": 25488,
               "package:docs": 2000,
               "package:internal/ideengine": 2000,
               "package:internal/vscode": 2000,
@@ -210,7 +211,7 @@
             "card": 9,
             "card_text": 576,
             "reads": {
-              "file:docs/overview.md": 25476,
+              "file:docs/overview.md": 25488,
               "package:cmd/lym": 2000,
               "package:docs": 2000,
               "package:internal/ideengine": 2000,
@@ -270,6 +271,37 @@
       "cardShas": [
         "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
       ]
+    },
+    "5": {
+      "slug": "board-server-lifecycle",
+      "cards": [
+        "05-board-server-lifecycle",
+        "06-board-serve-open-verbs"
+      ],
+      "cardHashes": {
+        "05-board-server-lifecycle": "fcd79135eea48fddeae7d518df2cb54d281e36804fd61f0fa87878efdcadc430",
+        "06-board-serve-open-verbs": "ad56df7eb1f8c65548bd29fe422dd7ee295e4c80a21968e0eec6a04d54ecff29"
+      },
+      "startSha": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T12:37:48Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-board-server-lifecycle",
+        "status": "done",
+        "head_sha": "601e7c089848676634da0f3229f101fd733447d5",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardcli/open.go",
+          "internal/boardengine/view.go",
+          "internal/boardserve/run.go",
+          "internal/boardserve/state.go"
+        ]
+      },
+      "cardShas": [
+        "601e7c089848676634da0f3229f101fd733447d5"
+      ]
     }
   },
   "attempts": [
@@ -293,10 +325,21 @@
       "strandName": "ly:weaver-bench-b1:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T12:28:09Z"
+    },
+    {
+      "batch": 5,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b1/_lym/weaver/reports/05-board-server-lifecycle-a1.yaml",
+      "strandGuid": "e04c0c2b9b7e5714e1212b09ea68b5af",
+      "strandName": "ly:weaver-bench-b1:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T12:37:48Z"
     }
   ],
   "batchEnds": {
-    "1": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
+    "1": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56",
+    "5": "601e7c089848676634da0f3229f101fd733447d5"
   },
-  "lastEnd": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
+  "lastEnd": "601e7c089848676634da0f3229f101fd733447d5"
 }
