@@ -1,6 +1,6 @@
 # Cut config, configsync and hubreconcile tier1 test time in half
 
-`config-test-cut` · Task · enhancement, config, reconcile, testkit · starting · Worktree-Create
+`config-test-cut` · Task · enhancement, config, reconcile, testkit · starting · Seed-Child
 
 ## Aim (operator, 2026-11-27)
 
