@@ -2,8 +2,6 @@
 
 `self-healing-runs` · Note · feature, dobby, batten, orch
 
-Depends on: [`autonomy-stop-classes-study`](design-autonomy-stop-classes-study.md)
-
 ## Seen (operator, 2026-11-27)
 
 Everything is in place for autonomy, yet runs keep stopping on assorted causes,
