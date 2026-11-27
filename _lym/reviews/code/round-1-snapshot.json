@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "c397569cb5a7d648bed77d0f9bb951912131f7a6",
+  "added_decisions": [
+    {
+      "title": "Restore the PR-Review agent session as before 34e64ac2e",
+      "digest": "b08d483401ef5ffbe54f73736fc6b74c209fb8ff266a63b7da7d8766b777f984"
+    },
+    {
+      "title": "PR-Review session answers to the writer's questions",
+      "digest": "d3af6b30190adb91c2aac69371ae391a693a9718ffc01a254e688dcd4e8c2507"
+    }
+  ]
+}
