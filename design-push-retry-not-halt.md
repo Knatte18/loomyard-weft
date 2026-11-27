@@ -2,7 +2,7 @@
 
 `push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby
 
-Depends on: [`fabric-core-records-guards`](design-fabric-core-records-guards.md)
+Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md)
 
 ## Decisions (operator, 2026-11-26)
 
