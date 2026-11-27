@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=0821a8ce5fe8ad4f578e1ab0e1cb0cb7f82b7864bf8f9976d715fa3d7fe4dfc0 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
+<!-- lym-stencil: sha256=188cd8c0c21e3feea8d4f6e8811fe534a83cc9038dc6c8cf79726d1571f9c18c build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
 
 # Loom plan-spec — flat card list
 
@@ -326,7 +326,7 @@ The hub's tests run through `lym gate test`.
 It runs the numbered tiers `gate.yaml` declares over a scope lym computes.
 A gate key names a site's tiers and scope, `card`, `diff` or `all`.
 A Go site runs `lym gate test --wait --gate <key>`; an agent's card, batch and `webster-fix` calls carry no `--wait`.
-The `card` key runs per card and the `batch` key per batch, both over the cards' packages;
+The `card` key runs per card and the `batch` key per batch, both over the cards' packages and the packages that depend on them;
 `webster-fix` in Webster's verify fixers;
 `webster` once for the whole plan;
 `parent-align` and `finalize` at Parent-Align and Finalize.
@@ -334,7 +334,8 @@ The plan writer and reviewer get the hub's tiers and gate keys in their prompts,
 so a plan names no gate, tier list or target list.
 
 - **Per card.** The fork runs `lym gate test --gate card --card <card id>`.
-  The call computes the card's packages from the plan and runs the `//lym:guard` tests and the lints the key lists.
+  The call computes the card's packages from the plan and adds every package whose build or tests reach one of them.
+  It runs the `//lym:guard` tests and the lints the key lists.
   It does not test the rest of the module or the tiers the key leaves out,
   and a passing call names the declared tiers it did not run.
 - **Per batch.** The fork runs `lym gate test --gate batch` after its last card.
@@ -360,6 +361,11 @@ One card per independently reviewable unit, never one card per symbol.
 A private supporting type or a constructor inseparable from its type goes on the card of the symbol it serves,
 and so does a helper serving one surface.
 A symbol of a module's public surface, or one reused across packages, gets its own card.
+A new function is the exception: it goes on the card that adds its first production caller,
+since a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
+
+A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
+Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
 
 Removing a symbol's last caller and deleting the symbol are separate cards:
 each caller's `Edit` card, then one `Delete`.
