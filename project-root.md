@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 17:02 UTC; every age below is as of then.
+Rendered 2026-11-27 17:03 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -54,10 +54,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 25m<br>25m | testkit, landing |
 | E2 |  | **Agent spawned from the reed agent button starts with no lym context** | [`reed-agent-blank-context`](design-reed-agent-blank-context.md) | 25m<br>25m | reed, stencil |
-| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 9h<br>2h | landing, gate, batten |
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | 3h<br>1h | webster |
+| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 10h<br>2h | landing, gate, batten |

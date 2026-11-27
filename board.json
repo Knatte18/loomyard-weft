@@ -669,27 +669,6 @@
       "revised": "2026-11-27T14:34:50Z"
     },
     {
-      "id": 1729,
-      "handle": "T13",
-      "slug": "webster-audit-old-friction-note",
-      "title": "Webster run-exit audit flags a resumed Master earlier friction note",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Seen on weaver-bench-b2 (2026-11-27): Webster Master's first prompt named its friction note `_lym/loom/friction/webster-master.md`, and Master wrote it.\nAfter `lym loom resume` the new Master prompt named the note `webster-master-2.md`.\nThe run-exit audit then flagged the earlier, legitimate note as a parent-write and blocked the Webster row, although the audit itself reported the path as cleared, unchanged since Master spawned.\nThe orch had to run `lym webster accept-audit` by hand.\n\nIdea: the audit treats every friction note path a Master of this run was given as Master's own, not only the latest prompt's.\n",
-      "status": "done",
-      "created": "2026-11-27T13:29:08Z",
-      "revised": "2026-11-27T15:26:41Z",
-      "profile": "light"
-    },
-    {
       "id": 1730,
       "handle": "T2",
       "slug": "kde-window-placement-build",
