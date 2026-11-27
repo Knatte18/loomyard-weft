@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 09:47 UTC; every age below is as of then.
+Rendered 2026-11-27 09:48 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -123,7 +123,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | halted · Worktree-Create | neve | 1h<br>1m | landing |
+| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | starting · Worktree-Create | neve | 1h<br>1m | landing |
 | T19 | **Remove the coverage maps and every user of them, keeping the redundancy sweep and red-first** | [`remove-testmap`](design-remove-testmap.md) | darn · solid | Darn-Write | neve | 1h<br>1h | testmap, gate, darn, loom, stencil, cleanup |
 
 ### Layer A (1)
