@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 16:40 UTC; every age below is as of then.
+Rendered 2026-11-27 16:42 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -48,12 +48,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Reed agent button refuses a name with spaces without saying why** | [`reed-agent-name-spaces`](design-reed-agent-name-spaces.md) | 3m<br>3m | reed |
+| B1 |  | **Reed agent button refuses a name with spaces without saying why** | [`reed-agent-name-spaces`](design-reed-agent-name-spaces.md) | 5m<br>5m | reed |
 
 ## Enhancements (3)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 3m<br>3m | testkit, landing |
-| E2 |  | **Agent spawned from the reed agent button starts with no lym context** | [`reed-agent-blank-context`](design-reed-agent-blank-context.md) | 3m<br>3m | reed, stencil |
+| E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 5m<br>5m | testkit, landing |
+| E2 |  | **Agent spawned from the reed agent button starts with no lym context** | [`reed-agent-blank-context`](design-reed-agent-blank-context.md) | 5m<br>5m | reed, stencil |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 9h<br>2h | landing, gate, batten |
