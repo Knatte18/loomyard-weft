@@ -2,8 +2,6 @@
 
 `cli-form-test-in-card-gate` · Task · bug, gate, cli · running · Darn-Write
 
-Depends on: [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md)
-
 Imported from [issue #274](https://github.com/Knatte18/loomyard/issues/274).
 
 **What happened.**

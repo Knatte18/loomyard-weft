@@ -2,7 +2,7 @@
 
 `remove-testmap` · Task · enhancement, testmap, gate, darn, loom, stencil, cleanup · draft
 
-Depends on: [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md), [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md)
+Depends on: [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md)
 
 ## Decision (operator, 2026-11-27)
 
