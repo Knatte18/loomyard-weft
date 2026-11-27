@@ -80,6 +80,12 @@ The issue on taking the parent out of PR-Review leaves these checks to the cold-
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Drop the C# half of item 3, file no note
+
+Decision: Item 3's C# half, running the mutation or redundancy tier on every C# task, is dropped from this run and filed nowhere: the operator chose to remove the coverage maps and every report step built on them (task remove-testmap), so no dotnet analogue is wanted. Keep item 3's other half, the tier0 cost budget the Plan is held to. Build (a), (b) and (c) as proposed.
+
+Rationale: The report steps are off in every gate of this hub and their removal is filed; a C# engine for them would be work toward code that is being deleted.
+
 ## Constraints
 
 ## Auto-mode assumptions
