@@ -2,8 +2,6 @@
 
 `beam-member-parent` · Task · bug, batten, landing, orch, stencil, shed, loom, pawl
 
-Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
-
 Bundled from the notes below; each part keeps its note's text.
 
 # A beam member's run records the prime orch as its parent orch

@@ -2,8 +2,6 @@
 
 `battencli-split-long-tests` · Task · enhancement, batten, testkit
 
-Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
-
 ## Aim
 
 `docs/research/speed/test-time-measure-2026-11-27/report.md` measured `internal/battencli` at 33 to 75 s of tier1 test time.

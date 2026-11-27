@@ -7,9 +7,3 @@ Under: [Board](README.md).
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md)<br>[Sketch](decision-push-retry-not-halt.md) | 1d<br>10h | fabric, shed, landing, batten, dobby |

@@ -2,8 +2,6 @@
 
 `hardener-study-faults` · Task · bug, fabric, cleanup, batten
 
-Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
-
 ## Seen
 
 `docs/research/hardener-works-study.md` (`c6618b538`), section "Faults found by this study", read these in the code; none was driven:
