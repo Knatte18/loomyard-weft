@@ -67,12 +67,50 @@ Duplicates across lenses are merged; each line names the lenses that raised it.
 - Marking lym's commits with a trailer to tell them from hand commits: rejected because agents' code commits carry no trailer; reachability from a local branch or reflog is the test lym can apply to every commit.
 - Presence in this machine's object store as the hand-commit test: rejected in the lens review, since every fetch copies origin's commits in.
 - Removing every untracked path after the merge-in: rejected because a file git did not ignore may be work, so D9 removes only previously ignored files under a deleted directory.
-- A list of ignored paths taken before the merge-in: rejected in the lens review, since a resume after the merge has none; D9 reads the first parent's rules instead.
+- A list of ignored paths taken before the merge-in: rejected in the lens review, since a resume after the merge has none; D9 reads the rules of the merge record's pre-merge task head instead.
 - Per-run driver notices beside the dobby's summary: rejected in the lens review, since N waiting runs would mail 2N times, the per-item mail the operator ruled out.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+The review raised 27 findings; every one is fixed in the decision record.
+
+- F1: D5 now waits (D6) at its owner reads until origin answers, as PATTERN-owner-machine requires; the Goal and the D5 criterion say so.
+- F2, F6: D5 lands on a parent ahead only by owed tips, and every pass that finds the work merged locally but not on origin records the landing entry.
+- F3, F7: the parent target's pusher makes the board `done` write once the parent push landed, and the landing entry holds the run's records commit until then.
+  The self-check showed that a hold on the board target leaks through the synchronous board pushes and freezes the board behind a refusal, so the `done` write moved.
+- F4, F8, F9: a refused target keeps its entry marked refused; "owes a parent push" means the landing entry stands; a long wait record triggers the summary too.
+- F5, F13: D6 names the driver lock, and the step writes no halt note for a network-class stop.
+- F10, F14: D13 removes the pair as today with pushes off; a beam parent has no landing target of its own.
+- F11: D1 sorts pushes by kind; hubreconcile's board push is a `boardengine.SpawnSync` spawn, so it moves to the pusher instead of staying synchronous.
+- F12, F27: D2 names the three keys and replaces `PushUntilLanded`'s loop and the transport backoff with one push per interval.
+- F15, F16, F25: D9 takes its base from the merge record, runs before the pre-merge clean check, evaluates the rules with `git check-ignore --no-index` in a scratch repository, and states what its bound removes.
+- F17, F20, F21, F22: D7 and D6 pin their git and classifier facts, name the known gaps and give the refusal a way forward.
+- F18, F19, F23, F24, F26: the PATTERN text, the #238 red-first criterion, D8's pusher choice, the reproduction and the dropped Open risk.
+
+### Round 2
+
+The review raised six findings; every one is fixed in the decision record.
+
+- F1: D5 gives batten's Land row the owed-tip rule for its pull of the prime, and an unreachable origin there waits as `git-transport`.
+- F2: D5 keeps one landing entry per landed run, settled in landing order; D3 keeps the parent target's ledger entry while any landing entry stands.
+- F3: D5's records hold binds every push of the run's pair records, and D13 removes the pair only once the run's landing entry is gone.
+  Batten's record in the prime's records is not held, since every run shares that branch; a reader of it at Land checks the parent instead.
+- F4: D5 and PATTERN-owner-machine give the parent target's pusher an owner read before each parent push and `done` write.
+  The landing target pulls the Bolt for each read instead of waiting on the run-scoped catch-up, which no landing target triggers; a parent owned elsewhere is a refusal with a record.
+- F5: D3 reads the refused state from the refused-push record and drops any entry a dobby tick finds level.
+- F6: D9 takes the base from the pre-merge task head read in the merge-in pass and writes the merge record before the after-the-merge-in clean check.
+
+### Round 3
+
+The review raised four findings; every one is fixed in the decision record.
+
+- F1: D5 names each parent target's push in its refusal, `git push` in the prime's worktree for the prime's code branch and `lym fabric push` for a beam parent, and D3 and its criteria follow.
+  A landing whose work origin's parent already holds is dropped by the pusher with no `done` write, its held records commit reaching no branch, and a run owned elsewhere is then handed over by the pusher.
+- F2: D5 and PATTERN-owner-machine read the owner of every run a parent push carries, and that run's owner again before its `done` write; a run owned elsewhere holds back the whole parent push.
+- F3: D13 makes every other teardown of a pair refuse while its run's landing entry stands, `lym fabric remove` with `--force` or `--remote` included.
+- F4: D9 writes the pre-merge task head to a base file under the run's scratch directory before the merge-in, and a resume reads the base from it alone.
 
 ## Question ledger
 
@@ -86,7 +124,7 @@ _No rounds yet._
 - Q8 (auto-pick): does the catch-up's fetch failure also hand off? No: that fetch is the owner verdict PATTERN-owner-machine requires; only the owed push hands off.
 - Q9 (auto-pick): F1 of `transient-stop-not-failed`, a retryable stop: the Go driver waits out a network stop with no halt note, and `lym loom status` reads the run as waiting, with no new shed state.
 - Q10 (resolved by reading): issues #218 and #254 are settled by `async-run-pusher`; D12 names them in the change description.
-- Q11 (open, for the parent): should the `sync:` field and the all-clear cover every hub on the machine, as the entry's word "machine" says? Recorded under Open risks.
+- Q11 (auto-pick, round 1): should the `sync:` field and the all-clear cover every hub on the machine, as the entry's word "machine" says? Settled by Q3's pick: each hub has its own origin and orch, so "this machine" is read as this machine's hub.
 - Q12 (open, for the parent): should a catch-up fetch failure on an unreachable origin still stop a run's start? Recorded under Open risks.
 - Q13 (auto-pick): what owes a push? A target with a branch ahead of its origin tracking ref, so D3's ledger and D4's field count work no pusher has tried yet.
 - Q14 (auto-pick): how does a landing or teardown push at once while a pusher sleeps? A push-now mark in the ledger entry that the pusher's wait watches.
