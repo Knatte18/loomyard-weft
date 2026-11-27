@@ -359,6 +359,12 @@ Decision: D9's merge-in pass persists the pre-merge task head under the run's sc
 
 Rationale: Round-3 F4, open in every round: a kill between the merge commit and the record write left no usable base, and the resume halted as in issue #242.
 
+### Added after Discussion (arbiter, 2026-11-27): Discussion review accepted at the hard cap; round 3 findings answered in the record
+
+Decision: The round 3 Discussion review findings are answered by the record's round 3 text, which the plan writer and Plan-Review take as settled: F1 by D5's refusal paragraph (git push in the prime's worktree for the prime's code branch, lym fabric push for a beam parent), the drop of a landing whose work origin's parent already holds under another commit, and the D3 and D5 criteria; F2 by D5's owner reads of the parent and of every run a parent push carries, again before each done write, and the PATTERN-owner-machine constraint; F3 by D13's refusal of every other teardown of a pair while its run's landing entry stands, checked in internal/pairteardown's teardown composite; F4 by D9's base file under shedrun.ScratchDir, written before the merge-in, and its kill criterion. A pull-request landing makes D5's owed-landing-push check again after it takes the parent lock and, finding one owed, releases the lock and stops as git-transport, so a local landing recorded while it waited for the lock never leaves GitHub merging onto a stale base.
+
+Rationale: The review segment stopped at its hard cap with these four design findings open; each fix text was read against the code (failedpush.go pushStep, pushanchored.go, finalize_owner.go adopterFirstRepair, finalize.go handedOverStop, pairteardown RemovePair and HandOverOwnedElsewhere, shedrun.ScratchDir) and answers its finding. The re-check under the parent lock follows from D5's own rule and Q5, that GitHub never merges into a stale base; the round 3 review named that gap among its unraised observations.
+
 ## Constraints
 
 - Root cause, from the code at `3fbf277ca`:
