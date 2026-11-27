@@ -1,6 +1,6 @@
 # Cut loomcli's tier1 test time at least in half
 
-`loomcli-test-cut` · Task · enhancement, loom, testkit · draft
+`loomcli-test-cut` · Task · enhancement, loom, testkit
 
 ## Aim (operator, 2026-11-27)
 

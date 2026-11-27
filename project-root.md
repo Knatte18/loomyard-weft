@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 14:56 UTC; every age below is as of then.
+Rendered 2026-11-27 14:57 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -17,6 +17,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Write | neve | 23m<br>23m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 4h<br>4h | weaver, webster |
 
+## Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 0m<br>0m | loom, testkit |
+
 ## Layer G (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -29,11 +35,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>18h | docs |
 
-## Draft (5)
+## Draft (4)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 0m<br>0m | loom, testkit |
 | T4 | `draft` **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid |  | 0m<br>0m | shuttle, claude, codex, testkit |
 | T5 | `draft` **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid |  | 0m<br>0m | orch, testkit |
 | T6 | `draft` **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid |  | 0m<br>0m | config, reconcile, testkit |
@@ -50,7 +55,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | 1h<br>1h | webster |
-| B2 |  | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | 21m<br>21m | gate, config |
+| B2 |  | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | 22m<br>22m | gate, config |
 
 ## Enhancements (1)
 
