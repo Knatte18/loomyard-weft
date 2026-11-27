@@ -1,6 +1,6 @@
 # Cut the parsers' and burlerengine's tier1 test time in half
 
-`parsers-burler-test-cut` · Task · enhancement, parsers, burler, testkit · draft
+`parsers-burler-test-cut` · Task · enhancement, parsers, burler, testkit
 
 ## Aim (operator, 2026-11-27)
 

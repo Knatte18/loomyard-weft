@@ -17,11 +17,15 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Write | neve | 23m<br>23m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 4h<br>4h | weaver, webster |
 
-## Ready (1)
+## Ready (5)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 0m<br>0m | loom, testkit |
+| T4 | **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid |  | 0m<br>0m | shuttle, claude, codex, testkit |
+| T5 | **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid |  | 0m<br>0m | orch, testkit |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid |  | 0m<br>0m | config, reconcile, testkit |
+| T8 | **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid |  | 0m<br>0m | parsers, burler, testkit |
 
 ## Layer G (1)
 
@@ -34,15 +38,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>18h | docs |
-
-## Draft (4)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid |  | 0m<br>0m | shuttle, claude, codex, testkit |
-| T5 | `draft` **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid |  | 0m<br>0m | orch, testkit |
-| T6 | `draft` **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid |  | 0m<br>0m | config, reconcile, testkit |
-| T8 | `draft` **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid |  | 0m<br>0m | parsers, burler, testkit |
 
 ## Research (1)
 
