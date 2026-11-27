@@ -1,6 +1,6 @@
 # Chair timeout stops the session, but its way forward says resume re-attaches it
 
-`chair-timeout-way-forward` · Task · bug, shuttle, shed · running · Drift-Recheck
+`chair-timeout-way-forward` · Task · bug, shuttle, shed · running · Describe
 
 Imported from [issue #281](https://github.com/Knatte18/loomyard/issues/281).
 
