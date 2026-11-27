@@ -1,67 +1,58 @@
-# A docs bench's darn writer adds and removes its own bench pairs
+# Let a docs run's darn writer add and remove its own bench pairs
 
-A darn run that benchmarks something on the docs profile often needs pairs of its own to measure in.
-Until now the sandboxed-role guard refused every mutating fabric verb from such a session on the real hub,
-so each add and each removal had to be handed to the orchestrating session and waited on.
-This change lets the darn writer make and remove those pairs itself, within fixed bounds,
-and makes the run's Worktree-Teardown remove any it left behind.
+A docs bench that needs pairs of its own could not make them:
+the fabric guard refuses every mutating `lym fabric` verb from a task session on the real hub,
+so the writer had to ask the orch for each add and removal.
 
-## What changes
+A darn writer on a run with profile `docs` now runs `lym fabric add` and `lym fabric remove` on its bench pairs itself,
+and every run's Worktree-Teardown removes the bench pairs left behind.
 
-**The guard (`internal/fabriccli/roleguard.go`).**
-The fabric `add` and `remove` verbs now pass for a darn writer strand when all of these hold:
+## What the guard admits
 
-- the one argument is a bench pair slug of the writer's own slug: `<slug>-b<N>`, `N` a positive number with no leading zero (`darnengine.IsBenchPairSlug`);
-- the verb runs in the writer's own worktree or its records sibling, in the writer's own hub;
-- an `add` carries neither `--parent` nor `--adopt-local`, so the pair forks from the writer's task branch, as the hand-off did;
-- the run's identity record in that worktree, `_lym/usage/run.json`, names the darn recipe and the docs profile.
+- The one argument is a bench pair slug, `<task-slug>-b<N>`, where `N` is a positive number with no leading zero.
+- The verb runs from the writer's task worktree or its records sibling.
+- `add` takes neither `--parent` nor `--adopt-local`, so the pair forks from the task branch.
+- `remove` has no flag restriction, so `--force` and `--remote` pass too.
+  `--remote` irreversibly deletes the pair's weft branch on the weft remote,
+  and also the landed task branch on the warp origin.
+- The recipe (`darn`) and profile (`docs`) come from the run's identity record, `_lym/usage/run.json`, not from the board.
+- A slug that a batten run directory on the prime names is refused, and the refusal says why.
+  The guard reads no board, so a slug that only a board entry names passes.
+- A detached push of a bench pair passes for the same writer under the same record and run directory checks.
+- A darn writer's other refused `add` or `remove` calls now name the admitted form.
 
-The detached push an `add` spawns for the new pair, and any later push of a bench pair, carries the writer's strand name and the pair's paths.
-`injectedPathsAreOwn` now accepts a darn writer's bench pair, so those pushes are no longer refused.
-A refused `add` or `remove` from a darn writer appends the bench pair way forward to the refusal text.
+Nothing caps how many bench pairs a writer makes.
 
-**Worktree-Teardown (`internal/pairteardown/leftover.go`, `internal/battencli/wire.go`).**
-`pairteardown.RemoveBenchPairs` lists the hub's pairs and tears down each whose slug is a bench pair slug of the run.
-Each goes the way an orphan pair goes:
-tips origin lacks are archived under owner archive tags, uncommitted files committed onto them,
-then the pair is removed with force, its branches left on origin and no claim settled.
-Unlike the orphan route, a live process of the pair is ended rather than refused, since the run's teardown is the pair's last chance to go.
-A pair whose slug a `boardengine` entry or a batten run directory names belongs to another run and is left standing.
-The Worktree-Teardown removal half calls it before removing the run's own pair,
-so a failure halts the row with the run's pair still standing, and resuming the row retries the removal.
+## What teardown does
 
-**Smaller pieces.**
-`runprofile.DocsProfile` names the docs profile once; `retroengine.TaskProfile` now uses it.
-`darnengine.IsWriter` recognizes a darn writer strand, and `IsMergeTaskWriter` builds on it.
-`shedrun.ReadRunUsageRecord` reads `run.json` alone through the existing usage parser.
+Worktree-Teardown's push step first calls `pairteardown.RemoveBenchPairs`, with no prime lock held.
+The removal goes by slug alone and reads no recipe or profile:
+every run's teardown force-removes each `<task-slug>-b<N>` pair that no board entry or batten run directory names,
+whoever made it.
+For each such pair it:
 
-## Design decisions
+1. ends the pair's registered processes, sparing the same roles as other teardowns;
+2. commits any uncommitted files off the tip,
+   then pushes an owner archive tag to origin for each resulting tip that origin lacks;
+3. tears the pair down with force, leaving its branches on origin and settling no board claim.
 
-- **The profile comes from the run's identity record, not the `boardengine` entry.**
-  Fabric may learn nothing new of `boardengine`, so the guard reads the record the run's seed writes in the worktree.
-  That record already holds the profile the run took, the entry's own or the recipe's default, so no default lookup is needed.
-- **The slug form is strict, `<slug>-b<N>`, not any slug that starts with the run's slug.**
-  Real slugs share prefixes, such as `fabric-core` and `fabric-core-teardown`,
-  and a teardown that removed every pair under the prefix would remove another run's pair.
-  The guard does not read the board for a clashing entry; the teardown does, and skips such a pair.
-- **No cap on the number of bench pairs.**
-  Whether to cap the number was left open; the bench body's own cap on runs already bounds it, so none is added.
-- **Bench pairs keep their history.**
-  The teardown archives each pair's tips before removing it and leaves its branches on origin, as the orphan sweep does, so nothing the bench committed is lost.
+- The processes end before the run-lock wait and the refusal probe, so a failed archive or removal leaves them ended.
+  `pattern/PATTERN-pair-remote.md` records this as an exception to the order it lists.
+- A half-removed bench pair is left with a warning that points at `lym fabric prune --apply`.
+- A failure halts the row with the task pair kept, and a resume retries.
+  The row's reason now reads "the push step failed", since the step does more than push.
+- The bench pairs' archive tags are pushed even with git or pushes switched off.
 
-## Tests
+Only Worktree-Teardown calls this removal.
+Bench pairs left by a cancelled run are not removed by the cancel.
 
-- `TestIsBenchPairSlug` pins which slugs read as a bench pair, including a shared-prefix slug and a zero or leading-zero number.
-- `TestSandboxedRoleGuard` gains a subtest: add and remove pass from the worktree and from its records sibling, for a numbered writer role too.
-  They are refused with `--parent`, with `--adopt-local`, for a slug outside the form, from another worktree,
-  with no run record, on another profile, on another recipe, and under a non-darn role.
-  It also pins that only a darn writer's refusal names the bench pair way forward,
-  and that a bench pair's push passes in the writer's hub but not in another hub or under another role.
-- `TestRemoveBenchPairs` drives the teardown over a hub holding two bench pairs and a shared-prefix pair.
-  Both bench pairs are archived and removed and the shared-prefix pair stands, also with a live process registered under a bench pair.
-  A `boardengine` entry naming a bench slug keeps that pair, and a refused archive push keeps the pair and returns the error.
+## To check by hand
+
+The guard tests drive stand-in worktrees.
+On a real hub, try `lym fabric add <task-slug>-b1` and its `remove` from a docs run's darn writer,
+including the detached push that follows the add.
 
 ## Merge danger
 
-**Door:** two-way
-**Blast radius:** teardown
+**Door:** one-way
+**Blast radius:** fabric
