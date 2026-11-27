@@ -757,6 +757,28 @@
       "body": "## Seen (board tidy, 2026-11-27, main at `2326ef4da`)\n\n`lym gate test --gate upkeep` was refused, so it ran no check:\n\n```\ngate test: --gate \"upkeep\" lists no tier that is or covers tier1, so its marked tests there cannot run: TestCSharpFixtures_CompileWithDotnet, TestGateRedFirst_Dotnet, TestGateTest_DotnetFixture, TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain; set gate.gates.upkeep to list tier1; way forward: fix it with \"lym config gate\" from the prime; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them\n```\n\n## Fix\n\nSet `gate.gates.upkeep` to `{tiers: [0, 1], scope: marked}` with `lym config gate` from the prime, as the change description of `2326ef4da` asks under \"To check by hand\".\nEvery binary that reads the hub's gate config must hold that change first, since an older one does not accept the scope `marked`.\nThen run `lym gate test --gate upkeep` on the main branch and confirm that it runs the dead-code and .NET tests.\n\nThe shipped template gives `{tiers: [0], scope: marked}` while the marked upkeep tests are `tier1`,\nso a hub whose `tier0` does not cover `tier1` is refused the same way until it sets the key.\n",
       "created": "2026-11-27T14:35:03Z",
       "revised": "2026-11-27T14:35:03Z"
+    },
+    {
+      "id": 1732,
+      "handle": "T1",
+      "slug": "loomcli-test-cut",
+      "title": "Cut loomcli's tier1 test time at least in half",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Aim (operator, 2026-11-27)\n\nCut the tier1 test time of internal/loomcli at least in half, measured before and after on this machine with `lym gate test --tier tier1` naming these packages.\nThe cut removes tests, it does not move them to another tier: delete tests that repeat what another test already pins, merge table cases that walk the same path, share heavy fixtures (repos, binaries, fake sessions) across a package's tests, and replace sleeps and real timeouts with injected clocks or shortened bounds.\nKeep one test for every behaviour a PATTERN or a criterion names.\n\n## Scope\n\n- Only the test files of internal/loomcli, plus test-only helpers they alone use.\n- No production change, except a seam a test needs to drop a sleep or real timeout, such as an injectable clock or bound.\n- Report the before and after times per package and the net test-line change in the change description.\n\n",
+      "status": "draft",
+      "created": "2026-11-27T14:56:56Z",
+      "revised": "2026-11-27T14:56:56Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve",
