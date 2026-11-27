@@ -293,11 +293,32 @@
       "spawnedAt": "2026-11-27T12:38:02Z",
       "sessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-board-server-lifecycle",
+        "status": "done",
+        "head_sha": "5fd0dd530f13e60bfe835b6a5c5a223f05eaeec8",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardserve/run.go",
+          "internal/boardserve/state.go",
+          "internal/lock/lock.go",
+          "internal/lock/lock_test.go"
+        ]
+      },
+      "cardShas": [
+        "5fd0dd530f13e60bfe835b6a5c5a223f05eaeec8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a4ea2b02ff892850b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a4ea2b02ff892850b.jsonl"
+      ]
     }
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "eb4e363928392664bad82975b499603f",
   "masterSessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
   "masterEngine": "claude",
@@ -305,6 +326,7 @@
   "masterRecordsBase": "1cde0e838961bc28d2dc2b392403906e995993d4",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a4ea2b02ff892850b.jsonl"
   ]
 }
