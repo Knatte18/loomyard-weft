@@ -94,11 +94,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-motifs` · Age 1d · Owner `neve`
 
-### Layer C (1)
+### Layer H (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T17 | **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T11<br>T12<br>T13 | 21h<br>21h | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
+| T17 | **Keep each landed run's findings, asks and fixer reports in its archive tag, with an index row and lym report landed** | [`keep-landed-run-records`](design-keep-landed-run-records.md)<br>[Sketch](decision-keep-landed-run-records.md) | tapestry · solid | T11<br>T12<br>T13<br>T28 | 21h<br>0m | landing, fabric, report, loom, burler, shed, cwd, git, testkit, pattern |
 
 ## [P7 A closed area per hub: Landlock and a seccomp connect supervisor](project-closed-area.md) (4)
 
@@ -119,29 +119,24 @@ Owner `neve`
 
 Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Layer D (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | T17 | 1h<br>1h | landing |
-
-### Layer E (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | T2 | 1h<br>1h | shed, loom |
-
 ### Layer H (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11<br>T28 | 22h<br>0m | fabric, cleanup, batten |
 
-### Layer I (1)
+### Layer I (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | T17 | 1h<br>1h | landing |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 19h<br>13h | docs |
+
+### Layer J (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | T2 | 1h<br>1h | shed, loom |
 
 ### Draft (1)
 
