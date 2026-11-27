@@ -1,6 +1,6 @@
 # PR-Review in review mode stalls with no agent session
 
-`pr-review-stalls-no-session` · Task · bug, landing, loom, shuttle · running · PR-Review
+`pr-review-stalls-no-session` · Task · bug, landing, loom, shuttle · landing · Finalize
 
 Imported from [issue #282](https://github.com/Knatte18/loomyard/issues/282).
 
