@@ -1,6 +1,6 @@
 # Command-help byte-cap test is not run by card or batch gates
 
-`cli-form-test-in-card-gate` · Task · bug, gate, cli · starting · Worktree-Create
+`cli-form-test-in-card-gate` · Task · bug, gate, cli · starting · Seed-Child
 
 Depends on: [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md)
 
