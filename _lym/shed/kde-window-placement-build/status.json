@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,22 @@
       "output": "",
       "at": "2026-11-27T14:35:19Z",
       "reason": "tapestry.plan.split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/plan/00-overview.md",
+      "at": "2026-11-27T14:58:34Z",
+      "started_at": "2026-11-27T14:35:19Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-27T14:57:43.771932751Z",
+          "end": "2026-11-27T14:58:33.489072431Z"
+        }
+      ]
     }
   ],
   "product": {
