@@ -853,7 +853,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #278](https://github.com/Knatte18/loomyard/issues/278).\n\nA run was interrupted by a machine reboot at the Darn-Write row and re-stepped.\nThe re-spawned agent's prompt said the prior work was `(none)` and that the branch held no work of this session's.\nThe branch already carried three commits from the interrupted spawn, and `.scratch` held a half-finished measurement.\nThe agent had to read the halt note and file timestamps to tell the earlier spawn's work apart from someone else's.\n\nThis is abnormal because the prompt's prior-work statement contradicts the branch state, and an agent trusting it could redo or overwrite finished work.\n\nWhat to do: when a row is re-stepped after an interrupted-stop halt, compute the prior-work section from the commits the branch holds beyond the base and from the surviving scratch files, or state that the earlier spawn was interrupted and its work may be present.\n\nProvenance: task count-branching-solver; note Darn-Write.md.",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-27T15:20:40Z",
       "revised": "2026-11-27T15:20:57Z",
       "profile": "light"
