@@ -1,13 +1,13 @@
 {
   "current_producer": "Finalize",
-  "state": "failed",
-  "error": "landingshed: Finalize: read GitHub's rules for the parent branch: pullrequest: read the rules active on branch main: Get \"https://api.github.com/repos/Knatte18/loomyard/rules/branches/main?per_page=100\": dial tcp: lookup api.github.com on 127.0.0.53:53: server misbehaving",
-  "transient": "github-api",
+  "state": "running",
+  "error": "",
+  "pending_by": "orch",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
     "last": "PR-Review → done",
-    "wait": "landingshed: Finalize: read GitHub's rules for the parent branch: pullrequest: read the rules active on branch main: Get \"https://api.github.com/repos/Knatte18/loomyard/rules/branches/main?per_page=100\": dial tcp: lookup api.github.com on 127.0.0.53:53: server misbehaving"
+    "wait": ""
   },
   "history": [
     {
