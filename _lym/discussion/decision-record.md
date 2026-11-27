@@ -179,4 +179,10 @@ Provenance: task `dead-code-and-timing-docs`; notes `pr-review-send-back-1.md`, 
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - describe-reviewer-budget-runs-from-row-start (class design, severity MEDIUM, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
