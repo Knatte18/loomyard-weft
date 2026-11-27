@@ -1,6 +1,6 @@
 # Study every run stop of the last two weeks and propose who settles each class under autonomy
 
-`autonomy-stop-classes-study` · Task · feature, dobby, batten, orch · running · Drift-Verify
+`autonomy-stop-classes-study` · Task · feature, dobby, batten, orch · landing · Finalize
 
 ## Aim
 
