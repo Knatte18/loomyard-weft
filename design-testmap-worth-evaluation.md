@@ -1,6 +1,6 @@
 # Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them
 
-`testmap-worth-evaluation` · Task · research, testmap, gate · starting · Open-IDE
+`testmap-worth-evaluation` · Task · research, testmap, gate · running · Preflight
 
 ## Why (operator, 2026-11-26)
 
