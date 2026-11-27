@@ -1,6 +1,6 @@
 # boardengine: TestDiscussedPayload crashes with concurrent map writes
 
-`discussed-payload-map-race` · Task · bug, board · starting · Worktree-Create
+`discussed-payload-map-race` · Task · bug, board · running · Darn-Write
 
 Imported from [issue #289](https://github.com/Knatte18/loomyard/issues/289).
 
