@@ -1,0 +1,19 @@
+## Goal
+
+```markdown
+Imported from [issue #279](https://github.com/Knatte18/loomyard/issues/279).
+
+Seen: a released task's batten run blocked at Worktree-Create when `git ls-remote origin refs/heads/<branch>-weft` failed with "Recv failure: Connection reset by peer". The error was transient: the same lookup succeeded seconds later. The run stayed blocked with no retry. When it was handed back, the stop question claimed that the run's durable status said the task worktree was already created, and asked whether to restore the absent weft branch on origin or abandon the pair. In fact the status history held only the one stuck Worktree-Create step, no worktree existed, and the branch is absent for every new task. Workaround: a hand pass with `lym batten run <slug>` went straight through Worktree-Create to Run-Shed. Expected: Worktree-Create retries a network failure of a remote lookup a few times with backoff before it blocks, and the stop question reads an absent branch on a run whose Worktree-Create never succeeded as the normal fresh state.
+```
+
+## Scope
+
+## Decisions
+
+## Constraints
+
+## Auto-mode assumptions
+
+## Open risks
+
+## Acceptance criteria
