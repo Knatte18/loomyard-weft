@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -163,6 +163,30 @@
       "started_at": "2026-11-27T21:13:00Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/self-healing-runs/_lym/reviews/discussion/round-3-review.md",
+      "at": "2026-11-27T21:16:47Z",
+      "started_at": "2026-11-27T21:13:34Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-27T21:16:47.172987819Z",
+          "end": "2026-11-27T21:16:47.173328716Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-27T21:16:47.21417957Z",
+          "end": "2026-11-27T21:16:47.21443067Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
