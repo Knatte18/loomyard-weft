@@ -1,6 +1,6 @@
 # PR-Review session tests still hand-write reed, creel and session stand-ins
 
-`pr-session-test-stand-ins` · Task · enhancement, testkit, landing · running · Describe
+`pr-session-test-stand-ins` · Task · enhancement, testkit, landing · running · PR-Review
 
 ## Seen
 
