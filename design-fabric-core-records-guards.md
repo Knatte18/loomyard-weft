@@ -20,3 +20,8 @@ The part changes these packages:
 - internal/testkit/fabrickit (about 100 changed lines)
 - pattern (about 100 changed lines)
 - docs/research/speed (about 250 changed lines)
+
+## Added by the parent (2026-11-27)
+
+The foundation part leaves temporary `testOnlyCodeAllowed` entries for chain functions whose first production caller is a later part (its record entry "A chain part may leave production code that only a named later part first calls").
+This part's PATTERN close-out also states that allowance in `pattern/PATTERN-test-only-code.md` under `## Rule` for as long as such entries exist, or, once every entry is gone, checks that no entry of that kind is left and that the PATTERN text needs none.
