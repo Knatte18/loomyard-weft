@@ -984,6 +984,27 @@
       "body": "Imported from [issue #273](https://github.com/Knatte18/loomyard/issues/273).\n\n**What happened.**\nA plan created a function in one card and gave it its first production caller in a card of a later batch.\nThe test-only-code guard (`cmd/lym/testonlycode_linux_test.go`) therefore failed the first card's gate.\nThe implementer added a temporary `testOnlyCodeAllowed` entry, with a `Loosened-Check` trailer, to pass.\nThe guard also fails on a stale entry, so the later card that wires the caller has to remove it,\nbut that card's targets did not list the guard file.\n\n**Why it is abnormal.**\nThe plan as written could not pass its own gates.\nThe implementer had to loosen a check, and the removal fell outside every card's declared targets.\n\n**What to do.**\nHave plan writing or plan validation handle a symbol whose first production caller is in a later card:\nput the declaration and its first caller in one card, or list the guard file in the targets of both cards,\nor let the card gate defer this guard until the card that adds the caller.\n\nProvenance: task `dobby-run-watch-build`, note `01-run-watch-setting.md`.\n",
       "created": "2026-11-27T07:51:11Z",
       "revised": "2026-11-27T07:51:11Z"
+    },
+    {
+      "id": 1724,
+      "handle": "B7",
+      "slug": "cli-form-test-in-card-gate",
+      "title": "Command-help byte-cap test is not run by card or batch gates",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "cli"
+      ],
+      "issues": [
+        274
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #274](https://github.com/Knatte18/loomyard/issues/274).\n\n**What happened.**\nA card added text to the `lym board upsert` help and pushed it past the 2000-byte cap that `TestCLIForm_EveryCommand` in `cmd/lym` holds.\nNeither that batch's card gates nor its batch gate ran the test.\nIt first failed at a later batch's `--main-packages` gate, and was fixed there.\n\n**Why it is abnormal.**\nA change passed every gate of its own batch while breaking a test.\nThe failure landed on a different implementer, whose cards had not caused it.\n\n**What to do.**\nMake a scoped gate run this test when command help changes, for example by marking it `//lym:guard`\n(its own doc comment says its checks are pure and run no invocation),\nor by having the go scoper include `cmd/lym` when a package that registers commands changes.\n\nProvenance: task `dobby-run-watch-build`, note `04-run-watch-wiring.md`.\n",
+      "created": "2026-11-27T07:51:14Z",
+      "revised": "2026-11-27T07:51:14Z"
     }
   ],
   "prime_owner": "neve",

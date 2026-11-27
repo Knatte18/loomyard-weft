@@ -123,7 +123,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 19h<br>19h | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 19h<br>19h | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (14)
+## [P0 Root: entries under no project](project-root.md) (15)
 
 Owner `neve`
 
@@ -147,7 +147,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
-### Bugs (6)
+### Bugs (7)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -157,6 +157,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | B4 |  | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) |  | 0m<br>0m | landing |
 | B5 |  | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) |  | 0m<br>0m | shed, loom |
 | B6 |  | **Test-only-code guard fails a card whose function gets its first caller in a later card** | [`plan-later-caller-guard`](design-plan-later-caller-guard.md) |  | 0m<br>0m | webster, loom |
+| B7 |  | **Command-help byte-cap test is not run by card or batch gates** | [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md) |  | 0m<br>0m | gate, cli |
 
 ### Enhancements (4)
 
