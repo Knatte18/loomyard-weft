@@ -36,6 +36,12 @@ Workaround used: with `lym loom pr-continue` refused in every lym session and Gi
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Restore the PR-Review agent session as before 34e64ac2e
+
+Decision: Operator decision in chat (2026-11-27): PR-Review in review mode works as it did before 34e64ac2e retired the pr-reviewer. An agent session sits in the task's window while the row waits, visibly, takes the operator's feedback on the pull request, answers comments, fixes findings, and on the operator's word ends the review by merging the pull request itself, which got past the approve-by gate. Bring that session back for review mode, from the code 34e64ac2e removed where it still fits. The trail and off modes stay as they are.
+
+Rationale: The operator said the old behaviour worked well; in today's review mode nothing showed on screen and no agent took the operator's feedback.
+
 ## Constraints
 
 ## Auto-mode assumptions
