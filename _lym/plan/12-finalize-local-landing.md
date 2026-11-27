@@ -46,10 +46,10 @@
 - `internal/loomcli/doc.go`
 - `internal/landingshed#Finalize.handedOverStop`
 - `internal/landingshed#recordingParentMerger`
-- `plan:internal/fabriclayout#LandingTrailerKey`
-- `plan:internal/fabricengine#AheadByOnly`
-- `plan:internal/runpusher#RecordLanding`
-- `plan:internal/runpusher#ParentTarget`
+- `internal/fabriclayout#LandingTrailerKey`
+- `internal/fabricengine#AheadByOnly`
+- `internal/runpusher#RecordLanding`
+- `internal/runpusher#ParentTarget`
 - `internal/runpusher#TargetRefused`
 - `internal/pushledger#OwedTips`
 - `internal/loomcli#TestWire_EverySeamFilled`

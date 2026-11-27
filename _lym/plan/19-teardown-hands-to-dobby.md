@@ -43,12 +43,12 @@
 - `internal/battenshed#TeardownDeps`
 - `internal/battenshed#teardownCallRecorder`
 - `internal/fabricengine#TipsOnOrigin`
-- `plan:internal/fabricengine#LandingCommits`
+- `internal/fabricengine#LandingCommits`
 - `internal/pushledger#HeldRecordsCommit`
 - `internal/pushledger#OwedTips`
 - `internal/pushledger#List`
 - `internal/pushledger#Update`
-- `plan:internal/runpusher#RecordLanding`
+- `internal/runpusher#RecordLanding`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_SamplerRecipe`
 - `internal/loomcli#TestWire_BeamRecipe`

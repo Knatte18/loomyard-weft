@@ -12,9 +12,9 @@
 **Uses:**
 - `internal/landingshed/doc.go`
 - `plan:internal/landingshed#ParentPush`
-- `plan:internal/runpusher#RecordLanding`
+- `internal/runpusher#RecordLanding`
 - `internal/fabricengine#RecordPushFailure`
-- `plan:internal/fabriclayout#PushFailureHeldBack`
+- `internal/fabriclayout#PushFailureHeldBack`
 
 **Intent:** D5: a landing that needs GitHub never merges onto a parent whose landing push origin still lacks, so GitHub never merges into a stale base.
 

@@ -14,18 +14,18 @@
 - `internal/beamcli#TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings`
 
 **Create:**
-- `plan:internal/fabriclayout#PushFailureHeldBack` -> `const PushFailureHeldBack PushFailureClass = "held_back"`
-- `plan:internal/fabriclayout#LandingTrailerKey` -> `const LandingTrailerKey = "Lym-Landing"`
-- `plan:internal/fabricengine#PushPrimeCodeTip` -> `func PushPrimeCodeTip(prime *lymcwd.Location, tip string, opts SyncOptions) error`
-- `plan:internal/fabricengine#PrimeCodeRefusalStands` -> `func PrimeCodeRefusalStands(prime *lymcwd.Location) (bool, error)`
-- `plan:internal/fabricengine#ClearPrimeCodeRefusal` -> `func ClearPrimeCodeRefusal(prime *lymcwd.Location) error`
-- `plan:internal/fabricengine#LandingCommits` -> `func LandingCommits(l *lymcwd.Location) (map[string]string, error)`
-- `plan:internal/fabricengine#AheadByOnly` -> `func AheadByOnly(l *lymcwd.Location, tips []string) (bool, error)`
-- `plan:internal/fabricengine#ResetParentToOrigin` -> `func ResetParentToOrigin(l *lymcwd.Location) error`
-- `plan:internal/fabricengine#KeepHeldRecords` -> `func KeepHeldRecords(pair *lymcwd.Location, slug, commit string) error`
-- `plan:internal/fabricengine_test#TestPushPrimeCodeTip` -> `func TestPushPrimeCodeTip(t *testing.T)`
-- `plan:internal/fabricengine_test#TestParentAheadReads` -> `func TestParentAheadReads(t *testing.T)`
-- `plan:internal/fabricengine#TestFailedPushWayForward` -> `func TestFailedPushWayForward(t *testing.T)`
+- `internal/fabriclayout#PushFailureHeldBack`
+- `internal/fabriclayout#LandingTrailerKey`
+- `internal/fabricengine#PushPrimeCodeTip`
+- `internal/fabricengine#PrimeCodeRefusalStands`
+- `internal/fabricengine#ClearPrimeCodeRefusal`
+- `internal/fabricengine#LandingCommits`
+- `internal/fabricengine#AheadByOnly`
+- `internal/fabricengine#ResetParentToOrigin`
+- `internal/fabricengine#KeepHeldRecords`
+- `internal/fabricengine_test#TestPushPrimeCodeTip`
+- `internal/fabricengine_test#TestParentAheadReads`
+- `internal/fabricengine#TestFailedPushWayForward`
 
 **Uses:**
 - `internal/fabriclayout/doc.go`

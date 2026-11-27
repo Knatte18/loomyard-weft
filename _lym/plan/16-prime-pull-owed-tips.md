@@ -17,7 +17,7 @@
 - `internal/battencli#pullStopOutcome`
 - `internal/pushledger#OwedTips`
 - `internal/pushledger#LandingKey`
-- `plan:internal/fabricengine#AheadByOnly`
+- `internal/fabricengine#AheadByOnly`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_BeamRecipe`
 - `internal/loomcli#TestWire_EverySeamFilled`

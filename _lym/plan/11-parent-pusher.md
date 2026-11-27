@@ -13,23 +13,23 @@
 - `internal/runpusher#TargetRefused`
 
 **Create:**
-- `plan:internal/runpusher#ParentDeps` -> `type ParentDeps struct`
-- `plan:internal/runpusher#settleParent` -> `func settleParent(ctx context.Context, t Target, deps Deps) (pushed bool, err error)`
-- `plan:internal/runpusher#SettleRefused` -> `func SettleRefused(ctx context.Context, t Target, deps Deps) error`
-- `plan:internal/runpusher#RecordLanding` -> `func RecordLanding(parent Target, landing pushledger.Landing, now time.Time) error`
-- `plan:internal/runpusher#ParentTarget` -> `func ParentTarget(prime, parent *lymcwd.Location) (Target, error)`
-- `plan:internal/loomcli#TestParentPush` -> `func TestParentPush(t *testing.T)`
+- `internal/runpusher#ParentDeps`
+- `internal/runpusher#settleParent`
+- `internal/runpusher#SettleRefused`
+- `internal/runpusher#RecordLanding`
+- `internal/runpusher#ParentTarget`
+- `internal/loomcli#TestParentPush`
 
 **Uses:**
 - `internal/loomcli/doc.go`
 - `internal/beamcli/doc.go`
-- `plan:internal/fabriclayout#PushFailureHeldBack`
-- `plan:internal/fabricengine#PushPrimeCodeTip`
-- `plan:internal/fabricengine#PrimeCodeRefusalStands`
-- `plan:internal/fabricengine#ClearPrimeCodeRefusal`
-- `plan:internal/fabricengine#LandingCommits`
-- `plan:internal/fabricengine#ResetParentToOrigin`
-- `plan:internal/fabricengine#KeepHeldRecords`
+- `internal/fabriclayout#PushFailureHeldBack`
+- `internal/fabricengine#PushPrimeCodeTip`
+- `internal/fabricengine#PrimeCodeRefusalStands`
+- `internal/fabricengine#ClearPrimeCodeRefusal`
+- `internal/fabricengine#LandingCommits`
+- `internal/fabricengine#ResetParentToOrigin`
+- `internal/fabricengine#KeepHeldRecords`
 - `internal/fabricengine#RecordPushFailure`
 - `internal/fabricengine#OriginParentHoldsTaskWork`
 - `internal/boardengine#PullBolt`
