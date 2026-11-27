@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "internal/gatecli processcap.go, memoryguard.go, the tier-run path and cli.go: with the report chain and the outside-a-tier carve-out gone, do the process cap, memory guard, slot release, exit codes and gate-result records still behave correctly on every path, including failure, detach and re-run paths? Check that the removed in-process guard start and killed-pid notes (commit 3026c4337) leave no live caller relying on them."
+  - "Config loading (internal/gateslot and the gate config template): does a hub gate.yaml that still holds `reports` inside gates entries and any retired top-level redundancy_*, reach_budget_min or mutation_* key load on every layer and verb, including `lym config gate --set` and `lym config reconcile --layer default --apply`? Check the change description's Hub config section against what that code does."
+  - "Removal of the reach turn: in internal/shuttleengine, shedrecipe, shedadapters, verifytree, loomcli wiring, webster and internal/gatefixer, are the verify gate, gate fixer and Weaver batch entry equivalent to before apart from the reach turn? Look for doc comments or fields that still describe removed behaviour, for example the comment near internal/gatefixer/rowgate.go:205."
+  - "Completeness of the removal: search code, comments, help text, stencils, specs, orchrole texts, README, docs, PATTERN and pattern/ for anything that still names or serves the stored maps, the removed verbs, report steps, review markers or a map-starting dobby or row step, and for state left only the removed features used (lymdirs, envkit, weaverengine geometry and strand, run records)."
+  - "Red-first gate: internal/gatecli/gomodule.go, redfirst.go and internal/testreach/changedtests.go. Does comparing declaration text instead of a block hash select the same changed tests as at the base (comments, build tags, generics, same name in two files or packages, renamed or moved tests), and did the moved helpers keep their behaviour?"
+  - "Keep list: does `cmd/testtiming -redundancy` still work with the cut internal/testcover (runner, profile reading, verdict, spawn scan, keep scan), and was coverage of those kept parts or of surviving gate behaviour deleted together with the tests of removed code? Judge loosened checks against the Loosened-Check trailers, including whether each names a measured cause and whether the allowlist entries added to cmd/lym/testonlycode_linux_test.go are justified."
+  - "Merge danger and change description: the diff removes config keys and a gate-key field that other binaries may read or write, and changes records. Check the two-way call, the `gate` blast radius and every claim in _lym/landing/summary.md against the diff, including the names-of-the-tooling rule for repository documents and the description."
+---
+
+Seed focus for round 1.
+The range is a large deletion, so the risk is in what survives:
+shared code that was cut or moved, references left behind, and hub config written by an earlier binary.
