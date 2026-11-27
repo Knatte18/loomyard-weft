@@ -1,39 +1,55 @@
-# batten cancel --remove of a beam clears the project's beam flag
+# batten cancel --remove of a beam clears its beam flag
 
-`lym batten cancel <slug> --remove` on a beam's pawl run ended the run and removed the pair and its records, but the board project kept `"beam": true`.
-The board refuses any payload that clears the flag, since a beam's life was meant to end only at `lym beam land`.
-A beam cancelled before it landed was therefore stuck as a beam with no pair and no run to land.
-The only way back to a plain project was to remove and re-create the entry, which changes its handle.
+`lym batten cancel <slug> --remove` on a beam now ends the beam's life.
+It clears the project's beam flag and leaves a plain project, with its handle and its members unchanged.
 
-## What changes
+Before this change the cancel removed the pair and records but left `"beam": true` on the board.
+No write could clear the flag, and nothing was left to land.
+The only way out was to remove and recreate the project.
 
-- `boardengine.Board.EndBeam` is a new board write that clears a project's beam flag, together with the pawl recipe, owner machine and colour that only a beam carries.
-  The project keeps its status, order and members, and the members' `project` field is untouched.
-  It writes nothing for an absent entry or one that is no beam.
-- `clearRunPhase` in `internal/battencli/cancel.go` calls the new `EndBeam` seam after it clears the claim, when `--remove` is set and the entry is a beam project.
-  A failure there refuses with the cancel's re-run as the way forward.
-  The report and the JSON envelope gain `beam_ended`, and the orch notice says the flag was cleared.
-- With `--remove`, `refuseNothingLeft` counts a beam flag as something left to cancel.
-  A beam already stuck this way, with nothing else left, is finished by running `lym batten cancel <slug> --remove` again, so an affected hub needs no hand edit.
-- A cancel without `--remove` keeps the pair and the flag as before, since `lym beam create <slug>` restarts that beam.
-- The board's refusal of `beam: false` now names the cancel with `--remove` as the second way a beam's life ends.
+Closes #259
 
-## The orch-stop warning
+## Behaviour
 
-The cancel also warned `the beam's orch was not stopped: lym orch runs from the hub's prime worktree or a beam; "<slug>" is neither`.
-The pawl run had ended before its Beam-Up step wrote the beam mark into the pair's origin record.
-`orchcli.BeamDown` judges a worktree a beam by that mark, so it refused the pair.
-No orch can run on such a pair, so the production `StopBeam` seam now reads the origin record and skips the stop when the mark is absent.
+- With `--remove`, a task member with neither a pair on this machine nor a run status no longer refuses the cancel.
+  It keeps its `project` field.
+  These still refuse: a member with a pair or a run status, a member that is itself a beam,
+  and a pair forked from the beam.
+- Without `--remove`, the beam keeps its flag and every open member still refuses.
+- A beam flag that is all that is left of a slug now counts as something to cancel under `--remove`.
+  A beam already stuck this way is cleared by running `lym batten cancel <slug> --remove`.
+- A pair with no beam mark in its origin record no longer gets an orch stop,
+  which removes the "orch was not stopped" warning.
+- The JSON envelope has a new `beam_ended` key, and the orch notice names the cleared flag.
+- The upsert refusal for `beam: false` now also names `batten cancel --remove`.
 
-## Tests
+## Design decisions
 
-- `TestEndBeam` (boardengine, tier 0) pins the cleared fields, the kept status and member, the no-op on a plain project, a task and an absent entry, and that `beam: false` upserts cleanly afterwards.
-- `TestCancelRun` gains rows for a beam's `--remove` clearing the flag after the claim, a beam flag alone being left to clear, and a failed clear naming the re-run.
-  The existing no-remove beam row now asserts the flag is kept.
+- The new `Board.EndBeam` clears `beam`, `recipe`, `owner_machine` and `beam_color`.
+  It keeps the project's status, order and members.
+- `EndBeam` clears an owner through the ordinary board write and detached sync, not through `SetOwners`.
+  The `boardengine` package doc and `PATTERN-owner-machine` now name it as the one other write of an owner.
+  The reason given is that the cancel has already refused a beam another machine owns.
+- A sub-beam member stays a blocker even when it looks idle, because it can be open on another machine
+  with no local pair and no run status.
+- The flag is cleared after the records push, so a failed clear does not skip the push.
+  The error names the same `--remove` command to run again.
 
-The orch-stop skip sits in the production wiring in `cancelcmd.go`, which the fake-driven table does not reach, and no test pins it.
+## To check by hand
+
+- `EndBeam` is a second writer of `owner_machine` (`internal/boardengine/beamend.go`).
+  It does not pull first or push in its own commit as `SetOwners` does.
+  Check that the ordinary write and detached sync are enough.
+- The merge danger of this change was understated as two-way with a radius that left out `boardengine`.
+  Check the call below against the board fields `EndBeam` erases.
+- The skip of the orch stop on an unmarked pair (`internal/battencli/cancelcmd.go`, the `StopBeam` seam)
+  was found untested.
+  `TestCancelIntegration_RemoveOfABeamLeavesAPlainProject` now asserts that no warning appears.
+  Check that this test fails when the guard is removed.
 
 ## Merge danger
 
-**Door:** two-way
-**Blast radius:** batten
+**Door:** one-way
+**Blast radius:** board
+
+A revert does not restore the beam fields that `EndBeam` has already erased and the board sync has pushed.
