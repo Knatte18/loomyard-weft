@@ -20,7 +20,7 @@
 - `internal/fabricengine#parentLockHeldBy`
 
 **Uses:**
-- `plan:internal/fabriclayout#PusherCommand`
+- `internal/fabriclayout#PusherCommand`
 - `internal/fabricengine#Fabric.commit`
 - `internal/fabriccli#runAdd`
 - `internal/fabriccli/doc.go`

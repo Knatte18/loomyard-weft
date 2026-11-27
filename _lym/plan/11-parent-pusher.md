@@ -8,9 +8,9 @@
 - `internal/runpusher/doc.go`
 - `internal/loomcli#pusherDeps`
 - `internal/loomcli#TestPusherDeps`
-- `plan:internal/beamcli#restartHubPushers`
-- `plan:internal/beamcli#TestRestartHubPushers`
-- `plan:internal/runpusher#TargetRefused`
+- `internal/beamcli#restartHubPushers`
+- `internal/beamcli#TestRestartHubPushers`
+- `internal/runpusher#TargetRefused`
 
 **Create:**
 - `plan:internal/runpusher#ParentDeps` -> `type ParentDeps struct`

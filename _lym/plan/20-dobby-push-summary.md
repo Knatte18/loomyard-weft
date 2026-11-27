@@ -17,7 +17,7 @@
 **Uses:**
 - `internal/beamcli/doc.go`
 - `internal/dobbyengine#RunView`
-- `plan:internal/runpusher#TargetRefused`
+- `internal/runpusher#TargetRefused`
 - `internal/pushledger#List`
 - `internal/pushledger#Entry`
 - `internal/pushledger#Entry.Owed`

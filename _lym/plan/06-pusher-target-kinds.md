@@ -18,20 +18,20 @@
 - `internal/beamcli#hubDobbyDepsStarting`
 
 **Create:**
-- `plan:internal/runpusher#TargetKind` -> `type TargetKind string`
-- `plan:internal/runpusher#BoardTarget` -> `func BoardTarget(prime *lymcwd.Location) Target`
-- `plan:internal/runpusher#LandingTarget` -> `func LandingTarget(prime *lymcwd.Location) Target`
-- `plan:internal/runpusher#PruneLedger` -> `func PruneLedger(hubPath string, now time.Time) error`
-- `plan:internal/runpusher#TargetRefused` -> `func TargetRefused(t Target) (bool, error)`
-- `plan:internal/runpusher#TestPruneLedger` -> `func TestPruneLedger(t *testing.T)`
-- `plan:internal/fabriclayout#PusherFlags` -> `type PusherFlags struct`
-- `plan:internal/fabriclayout#PusherCommand` -> `func PusherCommand(flags PusherFlags) []string`
-- `plan:internal/loomcli#TestStartRunPusher` -> `func TestStartRunPusher(t *testing.T)`
-- `plan:internal/loomcli#TestPusherCmd_PushNowWakesAndExitsAtAHeldLock` -> `func TestPusherCmd_PushNowWakesAndExitsAtAHeldLock(t *testing.T)`
-- `plan:internal/beamcli#restartHubPushers` -> `func restartHubPushers(prime *lymcwd.Location, start func(runpusher.Target) (bool, error))`
-- `plan:internal/beamcli#TestRestartHubPushers` -> `func TestRestartHubPushers(t *testing.T)`
-- `plan:internal/boardengine#Board.PusherSync` -> `func (b *Board) PusherSync() error`
-- `plan:internal/loomcli#TestPusherDeps_BoardPushCommitsTheBoardWrite` -> `func TestPusherDeps_BoardPushCommitsTheBoardWrite(t *testing.T)`
+- `internal/runpusher#TargetKind`
+- `internal/runpusher#BoardTarget`
+- `internal/runpusher#LandingTarget`
+- `internal/runpusher#PruneLedger`
+- `internal/runpusher#TargetRefused`
+- `internal/runpusher#TestPruneLedger`
+- `internal/fabriclayout#PusherFlags`
+- `internal/fabriclayout#PusherCommand`
+- `internal/loomcli#TestStartRunPusher`
+- `internal/loomcli#TestPusherCmd_PushNowWakesAndExitsAtAHeldLock`
+- `internal/beamcli#restartHubPushers`
+- `internal/beamcli#TestRestartHubPushers`
+- `internal/boardengine#Board.PusherSync`
+- `internal/loomcli#TestPusherDeps_BoardPushCommitsTheBoardWrite`
 
 **Uses:**
 - `internal/fabriclayout/doc.go`

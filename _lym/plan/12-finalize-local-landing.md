@@ -50,7 +50,7 @@
 - `plan:internal/fabricengine#AheadByOnly`
 - `plan:internal/runpusher#RecordLanding`
 - `plan:internal/runpusher#ParentTarget`
-- `plan:internal/runpusher#TargetRefused`
+- `internal/runpusher#TargetRefused`
 - `internal/pushledger#OwedTips`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_DarnRecipe`
