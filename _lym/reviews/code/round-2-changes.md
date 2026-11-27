@@ -1,0 +1,14 @@
+internal/gatefixer/await_test.go
+internal/gatefixer/doc.go
+internal/gatefixer/rowgate.go
+internal/gatefixer/rowgate_test.go
+internal/shedadapters/bouncer.go
+internal/shedadapters/bouncer_judge_test.go
+internal/shuttleengine/claudeengine/session_test.go
+internal/shuttleengine/readiness.go
+internal/shuttleengine/rundir.go
+internal/shuttleengine/rundir_test.go
+internal/shuttleengine/session_test.go
+internal/websterengine/planfixer.go
+internal/websterengine/verifyfixer.go
+internal/websterengine/verifyfixer_test.go
