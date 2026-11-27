@@ -986,6 +986,28 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-abb1f2f1308ef0aa4.jsonl"
       ]
     },
+    "20": {
+      "slug": "dobby-push-summary",
+      "cards": [
+        "20-dobby-push-summary",
+        "21-sync-status-bar",
+        "22-edit-directives",
+        "23-pattern-docs"
+      ],
+      "cardHashes": {
+        "20-dobby-push-summary": "d0b646d0eebf08a19529f76d91714d4b205b4e8658eebf47ec13b7a8999eaef5",
+        "21-sync-status-bar": "e6caaaa21332d8b897647e1a718baec8a71040a4fe1c67a43c09925cfa86aa6f",
+        "22-edit-directives": "de155d6d06296ba12898504e9185c557032717b85f26f855fcd6968dc74d1658",
+        "23-pattern-docs": "02170a9ac46e4d3a9c607e43d6a584a19f32e5ff89af51ecc59745f949a24857"
+      },
+      "startSha": "7a737661b6d54665a981c44597ad8fc0859c17de",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T19:53:15Z",
+      "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "driver-wait-readers",
       "cards": [
@@ -1166,7 +1188,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 20,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
