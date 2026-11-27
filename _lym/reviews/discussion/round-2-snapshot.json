@@ -4,5 +4,6 @@
     "_lym/discussion/decision-record.md",
     "_lym/discussion/support-log.md"
   ],
-  "target_id": "009bd1d9c71d67f0ace809bc6fb012fc2183eae4d43db4a5d687e3a2e7f4e68c"
+  "target_id": "009bd1d9c71d67f0ace809bc6fb012fc2183eae4d43db4a5d687e3a2e7f4e68c",
+  "decisions_routed": true
 }
