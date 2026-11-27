@@ -1,6 +1,6 @@
 # Study every raddle run and tune the split it proposes
 
-`raddle-split-quality` · Task · research, stencil, board · starting · Seed-Child
+`raddle-split-quality` · Task · research, stencil, board · starting · Open-Window
 
 ## Seen (operator, 2026-11-27)
 
