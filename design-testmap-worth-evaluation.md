@@ -1,6 +1,6 @@
 # Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them
 
-`testmap-worth-evaluation` · Task · research, testmap, gate · running · Darn-Write
+`testmap-worth-evaluation` · Task · research, testmap, gate · running · Drift-Verify
 
 ## Why (operator, 2026-11-26)
 
