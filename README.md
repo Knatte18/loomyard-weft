@@ -42,7 +42,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | PR-Review | neve | 23h<br>22h | shuttle, claude, tender, gate, burler, shed, reed |
+| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | landing · Finalize | neve | 23h<br>22h | shuttle, claude, tender, gate, burler, shed, reed |
 
 ### Layer A (1)
 
