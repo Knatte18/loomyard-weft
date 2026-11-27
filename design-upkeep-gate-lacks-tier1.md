@@ -18,3 +18,8 @@ Then run `lym gate test --gate upkeep` on the main branch and confirm that it ru
 
 The shipped template gives `{tiers: [0], scope: marked}` while the marked upkeep tests are `tier1`,
 so a hub whose `tier0` does not cover `tier1` is refused the same way until it sets the key.
+
+## Task (operator, 2026-11-27)
+
+Change the shipped gate template so `gates.upkeep` defaults to the tiers that hold the marked upkeep tests, `[0, 1]` today, or derive the tiers from the marked tests so no hub needs the key by hand.
+Setting this hub's key and the hand check on main stay with the orch after the operator's next lym update.
