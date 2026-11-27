@@ -49,3 +49,11 @@ The change description reports that the call-graph test, run alone, peaked at 20
     Dead code breaks nothing, so finding it a few landings late costs little.
   - The .NET tests above; a failure becomes a bug note.
 - Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or in the upkeep run.
+
+## A computed or base gate scope skips the guard tests of an impacted package (folded from note B2, board tidy, 2026-11-27)
+
+`card-gate-scope-gaps` landed with a bound it did not fix:
+a computed or `--base` scope never runs a guard test of an impacted package when that test's tier is one the listed runs skip.
+Its change description says this conflicts with `PATTERN-test-speed`.
+Deciding per guard test where it runs (task gate, landing or upkeep run) covers every package's guards, not only `cmd/lym`'s,
+so no guard is left to a scope that skips it.
