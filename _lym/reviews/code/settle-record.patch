@@ -1,0 +1,1428 @@
+diff --git a/contracts/stencils/operatoragent/operatoragent-template-start.md b/contracts/stencils/operatoragent/operatoragent-template-start.md
+new file mode 100644
+index 000000000..47aa6af8a
+--- /dev/null
++++ b/contracts/stencils/operatoragent/operatoragent-template-start.md
+@@ -0,0 +1,48 @@
++<!-- This is the opening prompt of the agent the operator starts from a status-bar agent button.
++     It ships as an embedded default in contracts/stencils/stencils.go and is seeded to the hub's stencils directory.
++     It is read from there at call time through internal/stencilstore.
++     internal/operatoragent's SessionSpec fills it and hands it to shuttle as the interactive session's first prompt.
++     Every marker below is a top-level {{.X}} substitution.
++     stencil.FillOptional requires every marker but pattern_directive to be non-empty:
++     hub_shortname, hub_path and worktree;
++     place, the Go-filled clause naming the board entry the worktree serves or the prime;
++     parent_directive, rendered by internal/parentdirective;
++     mode_rules, the Go-filled rules that take precedence over the parent directive in a session the operator drives;
++     and edit_directive, rendered unconditionally by internal/editdirective.
++     pattern_directive is the implementer directive internal/pattern renders.
++     It is empty when the worktree has no PATTERN overview.
++     There are no {{if}}/{{range}} conditionals anywhere in this file. -->
++
++# Agent — work with the operator in this worktree
++
++{{.parent_directive}}
++
++{{.mode_rules}}
++
++{{.edit_directive}}
++
++You are an agent the operator started from the agent button in the status bar of lym's tmux session.
++lym is LoomYard's command-line tool: it keeps a board of tasks for a hub and runs each task through agent sessions, each task in a git worktree of its own.
++You sit in the hub `{{.hub_shortname}}`, whose directory is `{{.hub_path}}`.
++Your worktree is `{{.worktree}}`, {{.place}}.
++The operator works with you in this pane, and you act on what they type there.
++
++{{.pattern_directive}}
++
++## What you are for
++
++You help the operator with whatever they bring to this worktree:
++
++- explain lym, this hub, its board and the runs in flight, from what lym itself prints;
++- run lym verbs for them, which `lym --help` and each verb's `--help` describe;
++- read the code here, and change or commit it when they say so.
++
++## Start
++
++Say in one line which hub and worktree you sit in and what the worktree serves, then wait for the operator's message.
++
++## Limits
++
++- Work only in `{{.worktree}}`, unless the operator names another directory.
++- A run's own agents may be working in this worktree: change files, commit or move its branch only on the operator's word.
++- Never push a branch: lym pushes what it lands.
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index fbab14207..fa4961d2a 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -70,6 +70,12 @@ var DarnFragmentMakeChangeGated []byte
+ //go:embed darn/darn-fragment-report.md
+ var DarnFragmentReport []byte
+ 
++// OperatoragentTemplateStart is the shipped-default opening prompt of the agent a status-bar agent button starts.
++// It tells the interactive session what it is, which hub and worktree it sits in, and what the worktree serves.
++//
++//go:embed operatoragent/operatoragent-template-start.md
++var OperatoragentTemplateStart []byte
++
+ // SamplerTemplateAgent is the sampler agent's shipped-default prompt.
+ // It is the whole instruction set of the interactive session the operator works a change out with.
+ //
+@@ -944,6 +950,7 @@ var entries = []registryEntry{
+ 	{"darn-fragment-make-change", &DarnFragmentMakeChange},
+ 	{"darn-fragment-make-change-gated", &DarnFragmentMakeChangeGated},
+ 	{"darn-fragment-report", &DarnFragmentReport},
++	{"operatoragent-template-start", &OperatoragentTemplateStart},
+ 	{"sampler-template-agent", &SamplerTemplateAgent},
+ 	{"raddle-template-agent", &RaddleTemplateAgent},
+ 	{"drift-template-expect", &DriftTemplateExpect},
+@@ -1124,6 +1131,7 @@ var roleOpeningStencils = map[string][]string{
+ 	"friction":             {"friction-template-reflection"},
+ 	"describe":             {"landing-template-describe"},
+ 	"darn":                 {"darn-template-write"},
++	"agent":                {"operatoragent-template-start"},
+ 	"sampler":              {"sampler-template-agent"},
+ 	"raddle":               {"raddle-template-agent"},
+ 	"drift-expect":         {"drift-template-expect"},
+diff --git a/docs/overview.md b/docs/overview.md
+index 96915b2c4..bb9323fae 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -322,6 +322,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/selfreportcli/       the selfreport CLI command
+ ├── internal/selfreportengine/    the selfreport domain kernel, filing LoomYard bugs to LoomYard's own repository only
+ ├── internal/shuttleengines/      the engine registry: the named engines a shuttle config builds into a set, and the only production importer of a concrete engine
++├── internal/operatoragent/       the spec and opening prompt of the agent session a status-bar agent button starts through `lym shuttle agent`
+ ├── internal/shuttleparity/       the per-seat comparison of the engines' launch manifests: the seat catalog, the manifest report behind `lym shuttle manifest`, and the parity tests over every seat and launch-spec producer
+ ├── internal/hardenshed/          the Hardener campaign's engine: live gate, sandbox hubs, sandbox reaper and round rows
+ ├── internal/shedengine/          generic outer phase-FSM: walks one flat producer list, honoring resume, crash-recovery, and pause at producer granularity
+@@ -645,7 +646,10 @@ User-facing modules each get one `lym <module>` namespace:
+   Every other reed verb still refuses on a cold worktree.
+   ✅ Implemented.
+   See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengine/bashlookup` + `internal/shuttleengines` + `internal/shuttlecli` + `internal/shuttleparity`; `lym shuttle run|open|manifest|state|await|await-forks`).
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengine/codexengine` + `internal/shuttleengine/bashlookup` + `internal/shuttleengines` + `internal/shuttlecli` + `internal/shuttleparity`; `lym shuttle run|open|agent|manifest|state|await|await-forks`).
++  `lym shuttle agent --name <name>` starts the agent session a status-bar agent button opens: an unawaited interactive run session whose opening prompt names its hub, its worktree and the board entry it serves or the prime, with the agents.yaml skills of the agent role and the hub's language skills;
++  its window closes when the session exits, it is refused under a pause, and it carries no operator instructions over from an earlier session;
++  it and `lym shuttle open --role` join a typed name's words with dashes and lower them, and refuse a name still outside the role grammar, naming the rule.
+   `lym shuttle manifest <seat>` prints the launch manifest each engine writes for one seat of the seat catalog and exits non-zero when the Codex manifest lacks a compared item of Claude's;
+   it starts no session, runs no plugin hook or sandbox probe, and keeps no manifest copy.
+   `lym shuttle open` starts a named session with no turn in its own window, which closes when the session exits,
+@@ -2038,7 +2042,7 @@ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the rule.
+   the reed view takes the foreground.
+   A `.lym/lymrun.cmd` launcher makes it one click.
+ - `reed`, `shuttle`, and `loom` each get a user-facing `lym <module>` CLI.
+-  `lym shuttle run|open|manifest|state|await` lets an operator or another process drive one agent standalone.
++  `lym shuttle run|open|agent|manifest|state|await|await-forks` lets an operator or another process drive one agent standalone.
+   `burler` is composed by loom's own review segments (`lym burler run` is a debug-only wrapper, not a product verb),
+   and `proc` alone stays an internal library with no CLI of its own.
+ 
+diff --git a/internal/agentconfig/config.go b/internal/agentconfig/config.go
+index 27b5444c5..d1ee7bf22 100644
+--- a/internal/agentconfig/config.go
++++ b/internal/agentconfig/config.go
+@@ -18,6 +18,7 @@ type Role string
+ 
+ // The roles lym starts, one per skill list.
+ const (
++	RoleAgent             Role = "agent"
+ 	RoleArbiter           Role = "arbiter"
+ 	RoleBoardTidy         Role = "board-tidy"
+ 	RoleBouncerJudge      Role = "bouncer-judge"
+@@ -46,7 +47,7 @@ const (
+ 
+ // roles is every Role, in sort order.
+ var roles = []Role{
+-	RoleArbiter, RoleBoardTidy, RoleBouncerJudge, RoleBouncerSeed, RoleBurler, RoleConflictResolver,
++	RoleAgent, RoleArbiter, RoleBoardTidy, RoleBouncerJudge, RoleBouncerSeed, RoleBurler, RoleConflictResolver,
+ 	RoleDarn, RoleDescriber, RoleDiscussion, RoleDiscussionAdvisor, RoleDriftExpect, RoleDriftJudge,
+ 	RoleDriver, RoleFixReview, RoleFriction, RoleGateFixer, RoleMergeFixer, RoleOrch, RolePlan,
+ 	RolePRReviewer, RoleRaddle, RoleSampler, RoleTackler, RoleWebster,
+diff --git a/internal/agentconfig/template.yaml b/internal/agentconfig/template.yaml
+index 6d0d4a0e8..cf4c2155b 100644
+--- a/internal/agentconfig/template.yaml
++++ b/internal/agentconfig/template.yaml
+@@ -2,6 +2,7 @@ efforts:  # the Claude Code reasoning effort of every Claude session lym launche
+   default: medium
+   fable: high
+ skills:  # the skills each role lym starts loads in its first turn, in order, keyed by role; the hub's language.skills follow for a role that writes or reviews code; every role lym starts must hold a list, so a role set to null is refused at load, and [] loads none; a role this file leaves out takes the template's list
++  agent: [scribe:prose, scribe:conversation, ly:cli, ly:board]
+   arbiter: []
+   board-tidy: [ly:board]
+   bouncer-judge: [scribe:prose]
+diff --git a/internal/agentname/agentname.go b/internal/agentname/agentname.go
+index ac26cc2c3..9fd00b5e1 100644
+--- a/internal/agentname/agentname.go
++++ b/internal/agentname/agentname.go
+@@ -116,6 +116,16 @@ func ValidateSlug(slug string) error { return validateDashed("slug", slug) }
+ // the set of roles is open.
+ func ValidateRole(role string) error { return validateDashed("role", role) }
+ 
++// RoleRule states the role grammar in words, for a message that asks a person for a role or refuses one.
++const RoleRule = "lowercase letters, digits and dashes, starting with a letter"
++
++// RoleFromText turns a role a person typed into the role grammar's shape where the text allows it:
++// it lowercases the text and joins its words with a dash, so "My Agent" becomes "my-agent".
++// Text holding a character the grammar refuses keeps it, so the result still needs ValidateRole.
++func RoleFromText(text string) string {
++	return strings.ToLower(strings.Join(strings.Fields(text), "-"))
++}
++
+ // Format validates each segment and joins them;
+ // an empty slug gives the two-segment form.
+ func Format(shortname, slug, role string) (string, error) {
+diff --git a/internal/agentname/agentname_test.go b/internal/agentname/agentname_test.go
+index 61abb646f..7bb5ccf74 100644
+--- a/internal/agentname/agentname_test.go
++++ b/internal/agentname/agentname_test.go
+@@ -108,6 +108,38 @@ func TestValidationRejections(t *testing.T) {
+ 	}
+ }
+ 
++func TestRoleFromText(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		text      string
++		want      string
++		wantValid bool
++	}{
++		{"SpacesBecomeDashes", "my agent", "my-agent", true},
++		{"UpperCaseIsLowered", "Review Helper", "review-helper", true},
++		{"SurroundingAndRepeatedSpaceCollapse", "  board \t tidy  ", "board-tidy", true},
++		{"ValidRoleIsKept", "agent-2", "agent-2", true},
++		{"RefusedCharacterStays", "my_agent", "my_agent", false},
++		{"LeadingDigitStays", "2 agents", "2-agents", false},
++		{"Empty", "   ", "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got := RoleFromText(tt.text)
++			if got != tt.want {
++				t.Errorf("RoleFromText(%q) = %q; want %q", tt.text, got, tt.want)
++			}
++			if err := ValidateRole(got); (err == nil) != tt.wantValid {
++				t.Errorf("ValidateRole(%q) = %v; want valid %v", got, err, tt.wantValid)
++			}
++		})
++	}
++}
++
+ func TestNumberRole(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/operatoragent/spec.go b/internal/operatoragent/spec.go
+new file mode 100644
+index 000000000..058ffb6e1
+--- /dev/null
++++ b/internal/operatoragent/spec.go
+@@ -0,0 +1,141 @@
++// Package operatoragent builds the session the operator starts from a status-bar agent button:
++// an interactive, unawaited agent in the worktree the button belongs to.
++// The session opens on the `operatoragent-template-start` stencil.
++// That stencil tells the agent what it is and which hub and worktree it sits in.
++// It also names the board entry the worktree serves, or says that the worktree is the prime.
++// The session starts as a run session does.
++// It gets the settings, shell guards, standing passages and skills every lym session of its engine gets.
++// Its skills are the agents.yaml list of the agent role, followed by the hub's language skills the caller passes.
++// Unlike a run session, it takes no earlier session's operator instructions over, and its window closes when it exits.
++//
++// The package is told every path and name it renders and imports no resolver.
++package operatoragent
++
++import (
++	"errors"
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/editdirective"
++	"github.com/Knatte18/loomyard/internal/parentdirective"
++	"github.com/Knatte18/loomyard/internal/pattern"
++	"github.com/Knatte18/loomyard/internal/reedengine/render"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencil"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
++)
++
++// stencilName is the registered name of the agent's opening prompt.
++const stencilName = "operatoragent-template-start"
++
++// patternDirectiveMarker is the stencil's one optional marker.
++// It is filled with the PATTERN directive and left empty when the worktree has no PATTERN overview.
++const patternDirectiveMarker = "pattern_directive"
++
++// paneRules fills the mode_rules marker.
++// The parent directive is written for a run's agent, so these rules override it for a session the operator drives.
++const paneRules = "The operator started this session and works with you in this pane, " +
++	"so these rules take precedence over the section on your parent above.\n" +
++	"Put a question or a blocker to the operator here and wait for the answer: " +
++	"post none to a parent, and end no turn to wait on a run.\n" +
++	"You have no report to write.\n" +
++	"Of that section, only what it says about creel mail applies to you."
++
++// Inputs holds the caller-supplied values the agent's session spec is built from.
++type Inputs struct {
++	// StencilsDir is the directory the stencils are read from.
++	StencilsDir string
++	// Name is the strand role the operator chose, already in the role grammar.
++	Name string
++	// HubShortname and HubPath name the hub the worktree belongs to.
++	HubShortname string
++	HubPath      string
++	// WorktreeRoot is the worktree the agent works in.
++	WorktreeRoot string
++	// Slug is the board entry the worktree serves, empty in the prime.
++	Slug string
++	// ParentName names the session that spawned the worktree's run, empty for a worktree with none.
++	ParentName string
++	// LanguageSkills are the hub's language skills the agent loads after the agent role's agents.yaml skills.
++	LanguageSkills []string
++}
++
++// SessionSpec builds the spec the agent's interactive session starts under on choice, its prompt rendered for engine.
++// The session is unawaited, opens focused in a window of its own, and carries the agent role's skills.
++// It ends with its provider, and it neither takes over nor leaves behind operator instructions.
++// It refuses an empty StencilsDir, Name, HubShortname, HubPath or WorktreeRoot by name.
++func SessionSpec(in Inputs, choice shuttleengine.ModelChoice, engine string) (shuttleengine.Spec, error) {
++	prompt, err := RenderPrompt(in, engine)
++	if err != nil {
++		return shuttleengine.Spec{}, err
++	}
++	return shuttleengine.Spec{
++		Prompt:          prompt,
++		PromptEngine:    engine,
++		ModelChoice:     choice,
++		Interactive:     true,
++		Unawaited:       true,
++		EndsWithSession: true,
++		NoCarryOver:     true,
++		Role:            in.Name,
++		Display:         render.Display{Anchor: render.AnchorOwnWindow, Focus: true},
++		ConfigRole:      agentconfig.RoleAgent,
++		Skills:          in.LanguageSkills,
++	}, nil
++}
++
++// RenderPrompt renders the agent's opening prompt for engine.
++// The implementer PATTERN directive is rendered from WorktreeRoot, since the agent may change and commit code.
++// It refuses an empty required input by name, and returns an error when a stencil or directive cannot be rendered.
++func RenderPrompt(in Inputs, engine string) (string, error) {
++	required := []struct{ field, value string }{
++		{"StencilsDir", in.StencilsDir},
++		{"Name", in.Name},
++		{"HubShortname", in.HubShortname},
++		{"HubPath", in.HubPath},
++		{"WorktreeRoot", in.WorktreeRoot},
++	}
++	for _, r := range required {
++		if r.value == "" {
++			return "", errors.New("operatoragent: " + r.field + " must not be empty")
++		}
++	}
++	template, err := stencilstore.ReadForEngine(in.StencilsDir, engine, stencilName)
++	if err != nil {
++		return "", err
++	}
++	parentDirective, err := parentdirective.Directive(in.StencilsDir, in.ParentName, true)
++	if err != nil {
++		return "", err
++	}
++	editDirective, err := editdirective.Directive(in.StencilsDir, engine)
++	if err != nil {
++		return "", err
++	}
++	patternDirective, err := pattern.Directive(in.WorktreeRoot, in.StencilsDir, pattern.RoleImplementer, nil)
++	if err != nil {
++		return "", err
++	}
++	prompt, err := stencil.FillOptional(template, map[string]string{
++		"hub_shortname":            in.HubShortname,
++		"hub_path":                 in.HubPath,
++		"worktree":                 in.WorktreeRoot,
++		"place":                    placeClause(in.Slug),
++		parentdirective.MarkerName: parentDirective,
++		"mode_rules":               paneRules,
++		editdirective.MarkerName:   editDirective,
++		patternDirectiveMarker:     patternDirective,
++	}, []string{patternDirectiveMarker})
++	if err != nil {
++		return "", fmt.Errorf("operatoragent: fill the agent prompt: %w", err)
++	}
++	return string(prompt), nil
++}
++
++// placeClause names what the worktree serves: the board entry slug names, or the prime for an empty slug.
++func placeClause(slug string) string {
++	if slug == "" {
++		return "the hub's prime worktree, where the hub's orch runs and the board's entries are filed"
++	}
++	return "the worktree of the board entry `" + slug + "`, where that entry's run works"
++}
+diff --git a/internal/operatoragent/spec_test.go b/internal/operatoragent/spec_test.go
+new file mode 100644
+index 000000000..4a950e591
+--- /dev/null
++++ b/internal/operatoragent/spec_test.go
+@@ -0,0 +1,117 @@
++// spec_test.go covers the spec and opening prompt of the agent a status-bar agent button starts.
++
++package operatoragent_test
++
++import (
++	"os"
++	"path/filepath"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/agentconfig"
++	"github.com/Knatte18/loomyard/internal/operatoragent"
++	"github.com/Knatte18/loomyard/internal/reedengine/render"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSessionSpec covers the spec a task worktree's agent and the prime's agent start under.
++// It also covers the hub, worktree, place and parent each prompt names.
++// A worktree with a PATTERN overview gets the PATTERN directive.
++// It also covers the required inputs a call refuses by name.
++func TestSessionSpec(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	stencilsDir := stencilkit.Seed(t)
++	choice := shuttleengine.ModelChoice{Engine: "claude", Model: "opus", Effort: "high"}
++	task := operatoragent.Inputs{
++		StencilsDir:    stencilsDir,
++		Name:           "my-agent",
++		HubShortname:   "ly",
++		HubPath:        "/hubs/loomyard",
++		WorktreeRoot:   "/hubs/loomyard/fix-the-thing",
++		Slug:           "fix-the-thing",
++		ParentName:     "ly:orch",
++		LanguageSkills: []string{"scribe:golang-testing"},
++	}
++	prime := task
++	prime.WorktreeRoot, prime.Slug, prime.ParentName = "/hubs/loomyard/loomyard", "", ""
++	patterned := task
++	patterned.WorktreeRoot = t.TempDir()
++	if err := os.WriteFile(filepath.Join(patterned.WorktreeRoot, "PATTERN.md"), []byte("- `PATTERN-example` — an example rule.\n"), 0o644); err != nil {
++		t.Fatalf("write PATTERN.md: %v", err)
++	}
++
++	tests := []struct {
++		name      string
++		in        operatoragent.Inputs
++		wantPlace string
++		// wantAlso are further texts the prompt must hold.
++		wantAlso []string
++	}{
++		{"TaskWorktreeNamesItsEntry", task, "the worktree of the board entry `fix-the-thing`", []string{"`ly:orch`"}},
++		{"PrimeNamesThePrime", prime, "the hub's prime worktree", []string{"No parent is recorded for this run."}},
++		{
++			"WorktreeWithAPatternOverviewCarriesTheImplementerDirective", patterned, "the worktree of the board entry `fix-the-thing`",
++			[]string{"## Constraints — do this before you write any code", "`PATTERN-example`"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			spec, err := operatoragent.SessionSpec(tt.in, choice, "claude")
++			if err != nil {
++				t.Fatalf("SessionSpec() = _, %v; want nil error", err)
++			}
++			if !spec.Interactive || !spec.Unawaited {
++				t.Errorf("SessionSpec() Interactive, Unawaited = %v, %v; want both true", spec.Interactive, spec.Unawaited)
++			}
++			if !spec.EndsWithSession || !spec.NoCarryOver {
++				t.Errorf("SessionSpec() EndsWithSession, NoCarryOver = %v, %v; want both true", spec.EndsWithSession, spec.NoCarryOver)
++			}
++			if spec.Role != "my-agent" || spec.ConfigRole != agentconfig.RoleAgent {
++				t.Errorf("SessionSpec() Role, ConfigRole = %q, %q; want %q, %q", spec.Role, spec.ConfigRole, "my-agent", agentconfig.RoleAgent)
++			}
++			if spec.ModelChoice != choice || spec.PromptEngine != "claude" {
++				t.Errorf("SessionSpec() ModelChoice, PromptEngine = %+v, %q; want %+v, %q", spec.ModelChoice, spec.PromptEngine, choice, "claude")
++			}
++			if spec.Display.Anchor != render.AnchorOwnWindow || !spec.Display.Focus {
++				t.Errorf("SessionSpec() Display = %+v; want a focused %s strand", spec.Display, render.AnchorOwnWindow)
++			}
++			if !slices.Equal(spec.Skills, tt.in.LanguageSkills) {
++				t.Errorf("SessionSpec() Skills = %v; want %v", spec.Skills, tt.in.LanguageSkills)
++			}
++			for _, want := range append([]string{"`ly`", "`/hubs/loomyard`", "`" + tt.in.WorktreeRoot + "`", tt.wantPlace}, tt.wantAlso...) {
++				if !strings.Contains(spec.Prompt, want) {
++					t.Errorf("SessionSpec() Prompt lacks %q:\n%s", want, spec.Prompt)
++				}
++			}
++			stencilkit.RequireEditDirectiveOf(t, stencilsDir, spec.Prompt, "claude", "codex")
++		})
++	}
++
++	t.Run("RefusesAnEmptyRequiredInput", func(t *testing.T) {
++		t.Parallel()
++		clears := []struct {
++			field string
++			clear func(*operatoragent.Inputs)
++		}{
++			{"StencilsDir", func(in *operatoragent.Inputs) { in.StencilsDir = "" }},
++			{"Name", func(in *operatoragent.Inputs) { in.Name = "" }},
++			{"HubShortname", func(in *operatoragent.Inputs) { in.HubShortname = "" }},
++			{"HubPath", func(in *operatoragent.Inputs) { in.HubPath = "" }},
++			{"WorktreeRoot", func(in *operatoragent.Inputs) { in.WorktreeRoot = "" }},
++		}
++		for _, tt := range clears {
++			in := task
++			tt.clear(&in)
++			_, err := operatoragent.SessionSpec(in, choice, "claude")
++			if err == nil || !strings.Contains(err.Error(), tt.field) {
++				t.Errorf("SessionSpec() with empty %s = _, %v; want an error naming %s", tt.field, err, tt.field)
++			}
++		}
++	})
++}
+diff --git a/internal/operatoragent/testmain_test.go b/internal/operatoragent/testmain_test.go
+new file mode 100644
+index 000000000..6721465c2
+--- /dev/null
++++ b/internal/operatoragent/testmain_test.go
+@@ -0,0 +1,15 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main,
++// so their temp files live in the process run directory and go with it.
++
++package operatoragent_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/reedengine/config_test.go b/internal/reedengine/config_test.go
+index 1cf63bd88..b01ea13fa 100644
+--- a/internal/reedengine/config_test.go
++++ b/internal/reedengine/config_test.go
+@@ -99,12 +99,12 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 		{Label: "CANCEL", Run: "lym batten cancel {slug}", Confirm: "Cancel {slug}?"},
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+ 		{Label: "terminal", Run: "lym reed window {worktree}"},
+-		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'", Ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):", AskDefault: "agent"},
+ 	}
+ 	wantBeamButtons := []buttonWant{
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+ 		{Label: "terminal", Run: "lym reed window {worktree}"},
+-		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'", Ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):", AskDefault: "agent"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+ 		{Label: "merge-in", Run: "lym beam merge-parent {slug}", Confirm: "Merge the parent into {slug}?"},
+@@ -116,8 +116,8 @@ func TestLoadConfig_TemplateDefaultsResolve(t *testing.T) {
+ 	wantPrimeButtons := []buttonWant{
+ 		{Label: "code", Run: "lym ide spawn {slug}"},
+ 		{Label: "terminal", Run: "lym reed window {worktree}"},
+-		{Label: "agent", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'", Ask: "Agent name:", AskDefault: "agent"},
+-		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board", Ask: "Board agent name:", AskDefault: "board"},
++		{Label: "agent", Run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'", Ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):", AskDefault: "agent"},
++		{Label: "board", Run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board", Ask: "Board agent name (lowercase letters/digits/dashes; spaces become dashes):", AskDefault: "board"},
+ 		{Label: "distill", Run: "lym orch distill", Confirm: "Distill the orch?"},
+ 		{Label: "refresh", Run: "lym orch refresh", Confirm: "Refresh the orch?"},
+ 		{Label: "stop", Run: "lym beam stop --all", Confirm: "Stop every orch, dobby, run and reed session of the hub on this machine?"},
+diff --git a/internal/reedengine/template_posix.yaml b/internal/reedengine/template_posix.yaml
+index ea02cdd63..3edc063f8 100644
+--- a/internal/reedengine/template_posix.yaml
++++ b/internal/reedengine/template_posix.yaml
+@@ -32,18 +32,18 @@ buttons:  # status-bar buttons in the groups reed.buttons.task, reed.buttons.bea
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+   beam:
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
+@@ -62,11 +62,11 @@ buttons:  # status-bar buttons in the groups reed.buttons.task, reed.buttons.bea
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+     - label: board
+-      ask: "Board agent name:"
++      ask: "Board agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: board
+       run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board"
+     - label: distill
+diff --git a/internal/reedengine/template_windows.yaml b/internal/reedengine/template_windows.yaml
+index a0c84447a..212b38bbe 100644
+--- a/internal/reedengine/template_windows.yaml
++++ b/internal/reedengine/template_windows.yaml
+@@ -32,18 +32,18 @@ buttons:  # status-bar buttons in the groups reed.buttons.task, reed.buttons.bea
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+   beam:
+     - label: code
+       run: lym ide spawn {slug}
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+     - label: distill
+       run: lym orch distill
+       confirm: Distill the orch?
+@@ -62,11 +62,11 @@ buttons:  # status-bar buttons in the groups reed.buttons.task, reed.buttons.bea
+     - label: terminal
+       run: lym reed window {worktree}
+     - label: agent
+-      ask: "Agent name:"
++      ask: "Agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: agent
+-      run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]'"
++      run: "cd {worktree} && lym shuttle agent --name {answer} --model 'opus[high]'"
+     - label: board
+-      ask: "Board agent name:"
++      ask: "Board agent name (lowercase letters/digits/dashes; spaces become dashes):"
+       ask_default: board
+       run: "cd {worktree} && lym shuttle open --role {answer} --model 'opus[high]' --skill scribe:prose --skill scribe:conversation --skill ly:board-policy --skill ly:board"
+     - label: distill
+diff --git a/internal/shuttlecli/agent.go b/internal/shuttlecli/agent.go
+new file mode 100644
+index 000000000..12275e3a7
+--- /dev/null
++++ b/internal/shuttlecli/agent.go
+@@ -0,0 +1,128 @@
++// agent.go implements the `agent` shuttle verb, which starts the operator's agent session in this worktree.
++// The session opens on a prompt that names its hub, worktree and board entry.
++// It runs under every setting a run session gets.
++// The file also holds the role-name check `agent` and `open` share.
++
++package shuttlecli
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabriclayout"
++	"github.com/Knatte18/loomyard/internal/languageconfig"
++	"github.com/Knatte18/loomyard/internal/operatoragent"
++	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/spf13/cobra"
++)
++
++// defaultAgentName is the strand role `agent` takes when --name is not given.
++const defaultAgentName = "agent"
++
++// agentCmd builds the `agent` subcommand.
++// The subcommand starts one interactive agent session for the operator and returns once it is up.
++func (c *shuttleCLI) agentCmd() *cobra.Command {
++	var (
++		name  string
++		model string
++	)
++
++	cmd := &cobra.Command{
++		Use:         "agent",
++		Short:       "start an agent session for the operator that knows its hub, worktree and board entry",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `agent starts one interactive agent session in a focused window of its own
++and returns once the session has taken its opening prompt.
++The prompt tells the agent what it is, the hub and worktree it sits in, and the
++board entry the worktree serves or that it is the prime.
++The session starts as a run session does: it gets the same settings, shell
++guards, standing passages and skills, the agents.yaml list of the agent role
++followed by the hub's language skills.
++Its window closes when the session exits. It is refused under a pause.
++
++--name names the strand, ` + agentname.RoleRule + `;
++its words are joined with dashes and lowered, so "My Agent" names my-agent,
++and a second session of a held name is numbered by reed.
++--model takes the model spec lym shuttle open takes.
++
++Example:
++  lym shuttle agent --name review-helper --model 'opus[high]'`,
++		RunE: func(cmd *cobra.Command, args []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			out := cmd.OutOrStdout()
++
++			role, err := roleFromFlag("--name", name)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			var choice shuttleengine.ModelChoice
++			if model != "" {
++				if choice, err = c.resolveModelSpec(model); err != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--model: %v", err)))
++					return nil
++				}
++			}
++			// The error already names the failing key and its own way forward.
++			language, err := languageconfig.Load(c.configDirs)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++
++			geometry := c.reedGeometry
++			engine := c.runner.EngineName(choice)
++			spec, err := operatoragent.SessionSpec(operatoragent.Inputs{
++				StencilsDir:    fabriclayout.StencilsDir(geometry.HubPath),
++				Name:           role,
++				HubShortname:   geometry.NameShortname,
++				HubPath:        geometry.HubPath,
++				WorktreeRoot:   geometry.WorktreeRoot,
++				Slug:           geometry.NameSlug,
++				ParentName:     geometry.ParentName,
++				LanguageSkills: language.Skills,
++			}, choice, engine)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++
++			// A start waits out a pause, and a button click would show nothing while it did.
++			if err := c.runner.RefuseCovered("re-run lym shuttle agent"); err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			result, err := c.runner.StartSession(spec)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), output.Ok(out, map[string]any{
++				"guid":      result.StrandGUID,
++				"name":      result.StrandName,
++				"sessionId": result.SessionID,
++				"engine":    result.Engine,
++			}))
++			return nil
++		},
++	}
++
++	cmd.Flags().StringVar(&name, "name", defaultAgentName, "strand role of the session: "+agentname.RoleRule+"; spaces become dashes")
++	cmd.Flags().StringVar(&model, "model", "", "model spec, <alias>[<effort>] or <engine>:<model-id>[<effort>]; empty defers to the provider default")
++
++	return cmd
++}
++
++// roleFromFlag returns the strand role a person typed as flag's value, its words joined with dashes and lowered.
++// It refuses a value that is still no role, naming the flag, the value and the rule a role follows.
++func roleFromFlag(flag, value string) (string, error) {
++	role := agentname.RoleFromText(value)
++	if err := agentname.ValidateRole(role); err != nil {
++		return "", fmt.Errorf("%s %q is no valid agent name: use %s, as in my-agent", flag, value, agentname.RoleRule)
++	}
++	return role, nil
++}
+diff --git a/internal/shuttlecli/cli.go b/internal/shuttlecli/cli.go
+index 03092f06a..deeac4ee5 100644
+--- a/internal/shuttlecli/cli.go
++++ b/internal/shuttlecli/cli.go
+@@ -3,7 +3,8 @@
+ // config -> reed config -> reed engine -> claude engine -> shuttleengine.Runner exactly once per
+ // invocation, into a receiver every verb (run.go, open.go, state.go) closes over, so no
+ // subcommand re-resolves geometry, config, or engine construction itself.
+-// The verbs are run, open, manifest and the read-only state, which lists the session state of each running run.
++// The verbs are run, open, agent, manifest and the read-only state, which lists the session state of each running run.
++// agent, implemented in agent.go, starts the operator's agent session from the worktree's reed geometry.
+ // The read-only manifest, which prints what each engine gives one seat's session, is implemented in manifest.go.
+ // The read-only await, the capped wait on one or more files, is implemented in await.go.
+ // The read-only await-forks, the capped wait until the calling session's forks have finished, is implemented in awaitforks.go.
+@@ -47,6 +48,8 @@ type shuttleCLI struct {
+ 	cfg        shuttleengine.Config
+ 	anchorPath string
+ 	engines    shuttleengine.EngineSet
++	// reedGeometry is the worktree's reed geometry, whose hub, worktree, entry and parent agent renders into its prompt.
++	reedGeometry reedengine.Geometry
+ 	// configDirs are the config layers both configs load from, set by PersistentPreRunE; open resolves its model registry through them.
+ 	configDirs configengine.Dirs
+ 	// manifestReport prepares the named seat on each engine for the current worktree and compares the manifests.
+@@ -136,7 +139,7 @@ provider specifics.`,
+ 				clihelp.Abort(ctx, 1)
+ 				return nil
+ 			}
+-			c.cfg, c.anchorPath, c.engines, c.reed = shuttleCfg, reedGeom.AnchorPath, engines, reedEngine
++			c.cfg, c.anchorPath, c.engines, c.reed, c.reedGeometry = shuttleCfg, reedGeom.AnchorPath, engines, reedEngine, reedGeom
+ 			c.runner = shuttleengine.NewRunner(reedEngine, c.engines, c.anchorPath, reedGeom.WorktreeRoot, c.cfg)
+ 			pauseGeom, err := hubgeom.PauseGeometry(layout)
+ 			if err != nil {
+@@ -153,7 +156,7 @@ provider specifics.`,
+ 		},
+ 	}
+ 
+-	parent.AddCommand(c.runCmd(), c.openCmd(), c.manifestCmd(), c.stateCmd(), c.awaitCmd(), c.awaitForksCmd(), hookBatchingCmd(), hookEditCmd(), hookPythonAllowedCmd())
++	parent.AddCommand(c.runCmd(), c.openCmd(), c.agentCmd(), c.manifestCmd(), c.stateCmd(), c.awaitCmd(), c.awaitForksCmd(), hookBatchingCmd(), hookEditCmd(), hookPythonAllowedCmd())
+ 
+ 	return parent
+ }
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index ad410904f..b79142044 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -20,16 +20,19 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fabriclayout"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
++	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/google/go-cmp/cmp"
+ 	"github.com/spf13/cobra"
+@@ -60,7 +63,7 @@ func newFakeClockRunner(reed shuttleengine.ReedOps, engine shuttleengine.Engine,
+ 	return runner
+ }
+ 
+-// TestCommand_Run_FlagValidation drives runCmd, and openCmd for its OpenMissingRole and OpenInvalidModelSpec rows.
++// TestCommand_Run_FlagValidation drives runCmd, and openCmd for the rows named Open*.
+ // It drives them directly rather than through clihelp.Execute, so no parent PersistentPreRunE runs.
+ // No abort is in play, so this is the flag-shape check on its own terms, which is what these cases are about.
+ // Its companion below covers what happens when a pre-run abort and a flag error coincide.
+@@ -81,6 +84,12 @@ func TestCommand_Run_FlagValidation(t *testing.T) {
+ 			build:   (*shuttleCLI).openCmd,
+ 			wantErr: "--role is required",
+ 		},
++		{
++			name:    "OpenInvalidRole",
++			build:   (*shuttleCLI).openCmd,
++			args:    []string{"--role", "my_agent"},
++			wantErr: `--role "my_agent" is no valid agent name: use lowercase letters, digits and dashes, starting with a letter, as in my-agent`,
++		},
+ 		{
+ 			name:    "OpenInvalidModelSpec",
+ 			build:   (*shuttleCLI).openCmd,
+@@ -962,9 +971,12 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 		wantEffort string
+ 		wantMode   string
+ 		wantSkills []string
++		// wantRole is the role the engine's spec must carry; empty checks none.
++		wantRole string
+ 		// openErr scripts the wanted engine's refusal.
+ 		openErr error
+ 	}{
++		{name: "a typed role is joined with dashes and lowered", args: []string{"--role", "My Agent"}, wantEngine: shuttlefake.EngineName, wantRole: "my-agent"},
+ 		{
+ 			name: "skills are passed in the order given", args: []string{"--role", "board", "--skill", "ly:board-policy", "--skill", "ly:board"},
+ 			wantEngine: shuttlefake.EngineName, wantSkills: []string{"ly:board-policy", "ly:board"},
+@@ -1028,6 +1040,89 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 				if len(recorder.specs) != 1 || recorder.specs[0].PermissionMode != tt.wantMode || !slices.Equal(recorder.specs[0].Skills, tt.wantSkills) {
+ 					t.Errorf("engine %s saw specs %+v; want exactly one with PermissionMode %q and Skills %v", name, recorder.specs, tt.wantMode, tt.wantSkills)
+ 				}
++				if tt.wantRole != "" && (len(recorder.specs) != 1 || recorder.specs[0].Role != tt.wantRole) {
++					t.Errorf("engine %s saw specs %+v; want exactly one with Role %q", name, recorder.specs, tt.wantRole)
++				}
++			}
++		})
++	}
++}
++
++// TestAgentCmd_StartsSessionFromGeometry drives agentCmd over a task worktree's reed geometry.
++// It pins the spec the engine prepares.
++// That spec carries the normalized name, the agent role, the language skills and a prompt naming the worktree's places.
++// It also pins the --name and --model refusals, which prepare nothing.
++func TestAgentCmd_StartsSessionFromGeometry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		args []string
++		// wantErr is the refusal's text; empty means the session's spec reaches the engine.
++		wantErr string
++	}{
++		{name: "a typed name starts the session", args: []string{"--name", "My Agent"}},
++		{
++			name: "a name outside the grammar is refused with the rule", args: []string{"--name", "my_agent"},
++			wantErr: `--name "my_agent" is no valid agent name: use lowercase letters, digits and dashes, starting with a letter, as in my-agent`,
++		},
++		{name: "a malformed model spec is refused", args: []string{"--model", "opus[nope"}, wantErr: "--model"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			hub := t.TempDir()
++			worktree := t.TempDir()
++			board := t.TempDir()
++			stencilsDir := fabriclayout.StencilsDir(hub)
++			stencilkit.SeedInto(t, stencilsDir)
++			stencilkit.SeedEngineBlockCopies(t, stencilsDir, shuttlefake.EngineName)
++			if err := os.MkdirAll(configengine.ConfigDir(board), 0o755); err != nil {
++				t.Fatalf("MkdirAll: %v", err)
++			}
++			if err := os.WriteFile(configengine.ConfigFile(board, "language"), []byte("skills:\n  - scribe:golang-testing\n"), 0o644); err != nil {
++				t.Fatalf("WriteFile: %v", err)
++			}
++			dirs := configengine.Dirs{Anchor: t.TempDir(), Board: board}
++			agents, err := agentconfig.Load(dirs)
++			if err != nil {
++				t.Fatalf("agentconfig.Load: %v", err)
++			}
++			engine := &shuttlefake.Engine{PrepareErr: errSpecCaptured}
++			runner := shuttleengine.NewRunner(&shuttlefake.Reed{}, shuttlefake.EngineSet(engine), worktree, worktree, shuttleengine.Config{RunTimeoutMin: 30, Agents: agents})
++			c := &shuttleCLI{runner: runner, configDirs: dirs, reedGeometry: reedengine.Geometry{
++				HubPath: hub, WorktreeRoot: worktree, NameShortname: "ly", NameSlug: "fix-the-thing", ParentName: "ly:orch",
++			}}
++			cmd := c.agentCmd()
++			var out bytes.Buffer
++			cmd.SetOut(&out)
++			cmd.SetArgs(tt.args)
++			if err := cmd.Execute(); err != nil {
++				t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++			}
++
++			envelope := parseSingleEnvelope(t, out.Bytes())
++			message, _ := envelope["error"].(string)
++			if tt.wantErr != "" {
++				if !strings.Contains(message, tt.wantErr) || engine.PrepareCalls != 0 {
++					t.Errorf("error = %q, Prepare calls = %d; want an error holding %q and no call", message, engine.PrepareCalls, tt.wantErr)
++				}
++				return
++			}
++			if engine.PrepareCalls != 1 {
++				t.Fatalf("Prepare calls = %d; want 1; output: %s", engine.PrepareCalls, out.String())
++			}
++			spec := engine.LastSpec
++			if spec.Role != "my-agent" || spec.ConfigRole != agentconfig.RoleAgent || !spec.Unawaited {
++				t.Errorf("Spec Role, ConfigRole, Unawaited = %q, %q, %v; want %q, %q, true", spec.Role, spec.ConfigRole, spec.Unawaited, "my-agent", agentconfig.RoleAgent)
++			}
++			if !slices.Contains(spec.Skills, "scribe:golang-testing") {
++				t.Errorf("Spec.Skills = %v; want the hub's language skill among them", spec.Skills)
++			}
++			for _, want := range []string{"`ly`", "`" + hub + "`", "`" + worktree + "`", "`fix-the-thing`", "`ly:orch`"} {
++				if !strings.Contains(spec.Prompt, want) {
++					t.Errorf("Spec.Prompt lacks %q:\n%s", want, spec.Prompt)
++				}
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shuttlecli/open.go b/internal/shuttlecli/open.go
+index 0dc04a28f..f375c3670 100644
+--- a/internal/shuttlecli/open.go
++++ b/internal/shuttlecli/open.go
+@@ -7,6 +7,7 @@ import (
+ 	"fmt"
+ 	"sort"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/output"
+@@ -31,8 +32,11 @@ func (c *shuttleCLI) openCmd() *cobra.Command {
+ 		Short:       "open a named llm session with no prompt in its own window",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `open starts one interactive LLM session in a detached window of its own and
+-returns at once. --role is required and names the strand; a second open of the
+-same role is numbered by reed.
++returns at once. --role is required and names the strand,
++in ` + agentname.RoleRule + `;
++its words are joined with dashes and lowered,
++so "My Agent" names my-agent, and a second open of the same role is numbered
++by reed.
+ The session takes no turn and writes no run record, so lym shuttle state never
+ lists it. Each --skill, repeatable, is loaded in the order given in the
+ session's one first turn; an engine that cannot load skills refuses the open. Its window closes when the session exits. It is refused under a pause.
+@@ -76,8 +80,13 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, "--role is required"))
+ 				return nil
+ 			}
++			strandRole, err := roleFromFlag("--role", role)
++			if err != nil {
++				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
++				return nil
++			}
+ 
+-			spec := shuttleengine.OpenSpec{Role: role, Segment: segmentcolor.Segment(segment), PermissionMode: permissionMode, Skills: skills}
++			spec := shuttleengine.OpenSpec{Role: strandRole, Segment: segmentcolor.Segment(segment), PermissionMode: permissionMode, Skills: skills}
+ 			if model != "" {
+ 				choice, err := c.resolveModelSpec(model)
+ 				if err != nil {
+diff --git a/internal/shuttleengine/accountrelaunch.go b/internal/shuttleengine/accountrelaunch.go
+index 0e4e612f4..133e7a398 100644
+--- a/internal/shuttleengine/accountrelaunch.go
++++ b/internal/shuttleengine/accountrelaunch.go
+@@ -242,6 +242,7 @@ func (run *Run) relaunchUnderAccount(launch relaunchLaunch, startPath bool) (Res
+ 	if err != nil {
+ 		return run.endFailedRelaunch(fmt.Errorf("prepare the relaunched session: %w", err), startPath)
+ 	}
++	launched = withSessionEnd(spec, run.runDir, launched)
+ 
+ 	eventsOffset := eventsSize(run.state.EventsPath)
+ 	stopped, err = run.updateRelaunchRecord(func(rs *RunState) {
+diff --git a/internal/shuttleengine/carryover.go b/internal/shuttleengine/carryover.go
+index 12cb23688..55d4663d5 100644
+--- a/internal/shuttleengine/carryover.go
++++ b/internal/shuttleengine/carryover.go
+@@ -108,7 +108,11 @@ func operatorInstructions(runDir string, rs RunState, engine Engine) []string {
+ }
+ 
+ // roleKey returns the key a run start matches its predecessor by: the spec's name override, else its role.
++// A spec with NoCarryOver set has the empty key, which matches no run.
+ func roleKey(spec Spec) string {
++	if spec.NoCarryOver {
++		return ""
++	}
+ 	if spec.NameOverride != "" {
+ 		return spec.NameOverride
+ 	}
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 59da9d85c..e46c36d43 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -109,6 +109,8 @@
+ // Runner.StartSession starts a session that carries the rendered prompt and is never awaited.
+ // The Spec sets Unawaited and names no output file, and the caller stops it through StopStrand.
+ // The run record reads running until a stop ends it.
++// A Spec that also sets EndsWithSession needs no stop:
++// as an opened session does, its strand removes itself when the provider exits, and a resume drops it.
+ // A Spec with ResumeSessionID resumes that session through the engine's resume capability.
+ //
+ // # Stop verb
+@@ -156,6 +158,7 @@
+ // An ungated run's strand is registered with its output files as reed's done-when list,
+ // so reed's resume drops a finished agent strand instead of reviving it.
+ // A gated run's strand carries none, since its outputs existing does not mean its gate passed.
++// An opened session and a run whose Spec sets EndsWithSession carry the exit marker their pane line writes.
+ //
+ // # Skill loading
+ //
+@@ -254,4 +257,5 @@
+ // Before its orphan sweep, a start finds the newest unfinished run with the same role key.
+ // It appends that run's carried and operator instructions to the new prompt as one block.
+ // A done or live predecessor and an empty role key carry nothing.
++// A Spec with NoCarryOver set has no role key, so it neither takes instructions over nor leaves any to a later start.
+ package shuttleengine
+diff --git a/internal/shuttleengine/open.go b/internal/shuttleengine/open.go
+index a657de891..60d390d35 100644
+--- a/internal/shuttleengine/open.go
++++ b/internal/shuttleengine/open.go
+@@ -1,5 +1,6 @@
+ // open.go implements Runner.Open: it opens a named interactive provider session with no prompt in a window of its own.
+-// It writes no run directory, run record or output file.
++// An open writes no run directory, run record or output file.
++// The file also holds the pane line that ends a session's own strand, and the start refusal under a pause.
+ 
+ package shuttleengine
+ 
+@@ -44,6 +45,56 @@ func openSessionDir(anchorPath, token string) string {
+ 	return filepath.Join(anchorPath, lymdirs.DotLymDirName, openMarkerDirName, token)
+ }
+ 
++// sessionExitMarkerPath returns the exit marker a run whose spec sets EndsWithSession touches when its provider ends.
++func sessionExitMarkerPath(runDir string) string {
++	return filepath.Join(runDir, "session.exited")
++}
++
++// endSessionLine returns the pane line that runs cmd and then ends the session's strand.
++// After cmd, the line writes the exit marker, asks reed to remove the strand and exits the shell.
++// A cmd that only exits the shell, a resume line that revives no session, is left out so the rest still runs.
++func endSessionLine(cmd, marker string) string {
++	sh := shell.ForGOOS()
++	if cmd == sh.Exit() {
++		cmd = ""
++	}
++	selfRemove := sh.Invoke("lym") + " reed remove --name " + sh.EnvRef(agentname.StrandNameEnv) + " --detach"
++	return sh.Chain(cmd, sh.Touch(marker), selfRemove, sh.Exit())
++}
++
++// withSessionEnd returns launch as the strand of a run of spec in runDir is given it.
++// For a spec that sets EndsWithSession, both pane lines end the strand when the provider exits.
++func withSessionEnd(spec Spec, runDir string, launch Launch) Launch {
++	if !spec.EndsWithSession {
++		return launch
++	}
++	marker := sessionExitMarkerPath(runDir)
++	launch.Cmd = endSessionLine(launch.Cmd, marker)
++	launch.ResumeCmd = endSessionLine(launch.ResumeCmd, marker)
++	return launch
++}
++
++// RefuseCovered returns an error when a live pause covers the runner's worktree, naming wayForward as what to do next.
++// It is the check of a session start that refuses under a pause instead of waiting it out.
++// A runner told no pause geometry is never covered, and an unreadable pause record is warned about and reads uncovered.
++func (r *Runner) RefuseCovered(wayForward string) error {
++	if r.toldErr != nil {
++		return r.toldErr
++	}
++	if r.pause.RecordPath == "" {
++		return nil
++	}
++	coverage, err := pauserecord.ReadCoverage(r.pause.RecordPath, r.pause.Slug, r.clock.Now())
++	if err != nil {
++		logger.Warn("shuttle: opening despite an unreadable pause record", "path", r.pause.RecordPath, "cause", err)
++		return nil
++	}
++	if coverage.Covered {
++		return pauserecord.CoveredError(coverage.Entry, r.pause.Slug, wayForward)
++	}
++	return nil
++}
++
+ // Open opens a named interactive session with no prompt in its own window and returns without waiting.
+ // The strand takes its name from spec.Role, numbered by reed when the role is held.
+ // It carries the launch's CreelHooks mark.
+@@ -69,13 +120,8 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 	if err != nil {
+ 		return OpenResult{}, err
+ 	}
+-	if r.pause.RecordPath != "" {
+-		coverage, err := pauserecord.ReadCoverage(r.pause.RecordPath, r.pause.Slug, r.clock.Now())
+-		if err != nil {
+-			logger.Warn("shuttle: opening despite an unreadable pause record", "path", r.pause.RecordPath, "cause", err)
+-		} else if coverage.Covered {
+-			return OpenResult{}, pauserecord.CoveredError(coverage.Entry, r.pause.Slug, "re-run lym shuttle open")
+-		}
++	if err := r.RefuseCovered("re-run lym shuttle open"); err != nil {
++		return OpenResult{}, err
+ 	}
+ 	opener, ok := engine.(SessionOpener)
+ 	if !ok {
+@@ -101,15 +147,13 @@ func (r *Runner) Open(spec OpenSpec) (OpenResult, error) {
+ 		return OpenResult{}, fmt.Errorf("shuttle: open: create the exit marker directory: %w", err)
+ 	}
+ 
+-	sh := shell.ForGOOS()
+-	selfRemove := sh.Invoke("lym") + " reed remove --name " + sh.EnvRef(agentname.StrandNameEnv) + " --detach"
+ 	strand, err := r.reed.AddStrand(reedengine.AddSpec{
+ 		Role:       spec.Role,
+ 		Segment:    string(spec.Segment),
+ 		Provider:   engineName,
+ 		CreelHooks: launch.CreelHooks,
+-		Cmd:        sh.Chain(launch.Cmd, sh.Touch(marker), selfRemove, sh.Exit()),
+-		ResumeCmd:  sh.Chain(launch.ResumeCmd, sh.Touch(marker), selfRemove, sh.Exit()),
++		Cmd:        endSessionLine(launch.Cmd, marker),
++		ResumeCmd:  endSessionLine(launch.ResumeCmd, marker),
+ 		SessionID:  launch.SessionID,
+ 		Display:    render.Display{Anchor: render.AnchorOwnWindow},
+ 		DoneWhen:   []string{marker},
+diff --git a/internal/shuttleengine/run.go b/internal/shuttleengine/run.go
+index 1b2f307db..379ac1d0d 100644
+--- a/internal/shuttleengine/run.go
++++ b/internal/shuttleengine/run.go
+@@ -580,6 +580,7 @@ func (r *Runner) StartGated(spec Spec, gate GateSpec) (*Run, error) {
+ // The session gets a run directory and a run record reading running.
+ // It also gets settings, shell guards, its skills, and its startup gates.
+ // The caller owns stopping it, through StopStrand, which records the stop.
++// A spec that sets EndsWithSession needs no such stop: its strand removes itself when the provider exits.
+ // A spec with ResumeSessionID set resumes that session through the engine's resume capability.
+ // A spec without Unawaited is refused before anything is created.
+ // Each call starts one session in the caller's worktree.
+@@ -718,6 +719,7 @@ func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, res
+ 		_ = os.RemoveAll(runDir)
+ 		return nil, Result{}, fmt.Errorf("shuttle: prepare run: %w", err)
+ 	}
++	launch = withSessionEnd(spec, runDir, launch)
+ 
+ 	if err := recordEngineRun(root, engineName); err != nil {
+ 		_ = os.RemoveAll(runDir)
+@@ -727,10 +729,14 @@ func (r *Runner) launch(spec Spec, gate GateSpec, engine Engine, engineName, res
+ 	// An ungated run's output files are its finished signal, so reed's resume drops a finished strand;
+ 	// a gated run's outputs existing does not mean the gate passed,
+ 	// so it carries no list and is relaunched.
++	// A session that ends its own strand has no output files: its exit marker says it finished.
+ 	var doneWhen []string
+ 	if len(gate) == 0 {
+ 		doneWhen = spec.OutputFiles
+ 	}
++	if spec.EndsWithSession {
++		doneWhen = []string{sessionExitMarkerPath(runDir)}
++	}
+ 
+ 	strand, err := r.reed.AddStrand(strandAddSpec(spec, engineName, launch, doneWhen))
+ 	if err != nil {
+diff --git a/internal/shuttleengine/rundir.go b/internal/shuttleengine/rundir.go
+index 690d34d24..1872f3230 100644
+--- a/internal/shuttleengine/rundir.go
++++ b/internal/shuttleengine/rundir.go
+@@ -165,6 +165,7 @@ type RunState struct {
+ 	// An empty value reads as the engine set's default engine.
+ 	Engine string `json:"engine,omitempty"`
+ 	// RoleKey is the spawning Spec's name override, else its role, which a later run start matches its predecessor by.
++	// It is empty for a Spec with NoCarryOver set.
+ 	// A record without it is never a predecessor.
+ 	RoleKey string `json:"roleKey,omitempty"`
+ 	// CarriedInstructions are the operator instructions a predecessor run carried over, so a re-spawn carries them again.
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index ea6ed10b7..776abe82a 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -36,6 +36,16 @@ type Spec struct {
+ 	// Unawaited marks a session nobody waits on, with no output file: its run record reads running until a stop ends it.
+ 	// Only Runner.StartSession accepts such a spec, and validation refuses one that also names output files.
+ 	Unawaited bool
++	// EndsWithSession, set on an Unawaited spec, gives the session an end of life no caller has to drive.
++	// When the provider exits, the pane line writes an exit marker in the run directory.
++	// It then asks reed to remove the strand and exits the shell, so the session's window closes.
++	// The strand carries the marker as its done-when list, so a resume drops a closed session.
++	// The run record reads running until the orphan sweep removes the run directory.
++	EndsWithSession bool
++	// NoCarryOver marks a session whose role names no predecessor and which is no later run's predecessor.
++	// Its start appends no earlier run's operator instructions to the prompt,
++	// and its record holds no role key, so no later start reads the instructions typed into it.
++	NoCarryOver bool
+ 	// ModelChoice is the engine and the model, effort and version the run uses.
+ 	ModelChoice
+ 	// PromptEngine names the engine Prompt was rendered for.
+diff --git a/internal/shuttleengine/startup_test.go b/internal/shuttleengine/startup_test.go
+index 72a8f410d..36de90326 100644
+--- a/internal/shuttleengine/startup_test.go
++++ b/internal/shuttleengine/startup_test.go
+@@ -15,9 +15,11 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/shell"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -864,6 +866,9 @@ func TestStartup_ChecksAfterStartup(t *testing.T) {
+ // A ready start returns the strand, session id and engine with a run record reading running.
+ // A spec without Unawaited is refused before any strand is added, and a ResumeSessionID reaches the engine's launch.
+ // StopStrand on the started run records it stopped and removes its strand.
++// A spec with EndsWithSession registers a strand that removes itself and that a resume drops.
++// A strand already gone at the startup teardown counts as removed.
++// A spec with NoCarryOver takes no operator instructions over and records no role key.
+ func TestRunner_StartSession(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	newReed := func() *fakeReed {
+@@ -925,6 +930,101 @@ func TestRunner_StartSession(t *testing.T) {
+ 		}
+ 	})
+ 
++	for _, tt := range []struct {
++		name   string
++		resume string
++		// wantResumed is the statement the resume line opens with, empty for a resume line that only exits.
++		wantResumed string
++	}{
++		{"EndsWithSession chains the self-removal and marks the strand done on exit", "resume", "resume"},
++		{"EndsWithSession removes the strand of a resume that revives no session", "exit", ""},
++	} {
++		t.Run(tt.name, func(t *testing.T) {
++			reed := newReed()
++			engine := &fakeEngine{PrepareLaunch: Launch{Cmd: "cmd", ResumeCmd: tt.resume, SessionID: "session-1"}}
++			readyStart(reed, engine)
++			fx := newFixture(t, reed, engine, withConfig(fastConfig))
++
++			spec := unawaited
++			spec.EndsWithSession = true
++			if _, err := fx.Runner.StartSession(spec); err != nil {
++				t.Fatalf("StartSession() error = %v; want nil", err)
++			}
++
++			if len(reed.AddStrandCalls) != 1 {
++				t.Fatalf("AddStrandCalls = %+v; want one", reed.AddStrandCalls)
++			}
++			add := reed.AddStrandCalls[0]
++			marker := filepath.Join(soleStartupRunDir(t, fastConfig, fx.Anchor), "session.exited")
++			if !reflect.DeepEqual(add.DoneWhen, []string{marker}) {
++				t.Errorf("DoneWhen = %v; want [%s]", add.DoneWhen, marker)
++			}
++			sh := shell.ForGOOS()
++			selfRemove := sh.Invoke("lym") + " reed remove --name " + sh.EnvRef(agentname.StrandNameEnv) + " --detach"
++			if want := sh.Chain("cmd", sh.Touch(marker), selfRemove, "exit"); add.Cmd != want {
++				t.Errorf("Cmd = %q; want %q", add.Cmd, want)
++			}
++			if want := sh.Chain(tt.wantResumed, sh.Touch(marker), selfRemove, "exit"); add.ResumeCmd != want {
++				t.Errorf("ResumeCmd = %q; want %q", add.ResumeCmd, want)
++			}
++		})
++	}
++
++	t.Run("a strand that removed itself before the startup teardown counts as removed", func(t *testing.T) {
++		reed := newReed()
++		reed.RemoveStrandErr = fmt.Errorf("%w %q", reedengine.ErrUnknownStrand, "strand-1")
++		engine := &fakeEngine{PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1"}, StartupScript: []StartupState{StartupPending}}
++		readyStart(reed, engine)
++		fx := newFixture(t, reed, engine, withConfig(shortStartupConfig))
++
++		_, err := fx.Runner.StartSession(unawaited)
++
++		if err == nil || !strings.Contains(err.Error(), "the strand was removed") {
++			t.Fatalf("StartSession() error = %v; want one saying the strand was removed", err)
++		}
++		if len(reed.RemoveStrandCalls) != 1 {
++			t.Errorf("RemoveStrandCalls = %+v; want one, with no retry", reed.RemoveStrandCalls)
++		}
++	})
++
++	t.Run("NoCarryOver takes no instructions from an unfinished run of the role", func(t *testing.T) {
++		reed := newReed()
++		engine := &fakeEngine{PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1"}}
++		readyStart(reed, engine)
++		fx := newFixture(t, reed, instructionEngine{engine}, withConfig(fastConfig))
++		var notices []string
++		fx.Runner.SetNotifier(func(line string) error {
++			notices = append(notices, line)
++			return nil
++		})
++		seedPredecessor(t, fx, RunState{RunID: "run-old", CreatedAt: "2026-10-28T08:00:00Z", Outcome: runOutcomeRunning, PID: -1, RoleKey: "pr-review"}, predecessorEvents)
++
++		spec := unawaited
++		spec.NoCarryOver = true
++		if _, err := fx.Runner.StartSession(spec); err != nil {
++			t.Fatalf("StartSession() error = %v; want nil", err)
++		}
++
++		if len(engine.PrepareCalls) != 1 || engine.PrepareCalls[0].Spec.Prompt != "x" {
++			t.Errorf("Prepare calls = %+v; want one with the prompt %q alone", engine.PrepareCalls, "x")
++		}
++		if len(notices) != 0 {
++			t.Errorf("notices = %q; want none", notices)
++		}
++		for _, runDir := range runDirsUnder(t, fx.RunRoot) {
++			if filepath.Base(runDir) == "run-old" {
++				continue
++			}
++			rs, found, err := loadRunState(runDir)
++			if err != nil || !found {
++				t.Fatalf("loadRunState: found=%v err=%v", found, err)
++			}
++			if rs.RoleKey != "" || rs.CarriedInstructions != nil {
++				t.Errorf("new record RoleKey, CarriedInstructions = %q, %q; want both empty", rs.RoleKey, rs.CarriedInstructions)
++			}
++		}
++	})
++
+ 	t.Run("StopStrand records the unawaited run stopped and removes its strand", func(t *testing.T) {
+ 		reed := newReed()
+ 		engine := &fakeEngine{PrepareLaunch: Launch{Cmd: "cmd", SessionID: "session-1"}}
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 5c99aca52..9d1e20bce 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -911,10 +911,14 @@ const (
+ // removeStartupStrand removes the run's strand.
+ // While the removal fails it tries again after a doubling wait on the run clock, up to startupRemoveAttempts tries.
+ // It returns nil once a removal succeeds, and the last removal's error otherwise.
++// A strand reed no longer knows counts as removed, since a pane line that ends its own strand may get there first.
+ func (run *Run) removeStartupStrand() error {
+ 	delay := startupRemoveFirstDelay
+ 	for attempt := 1; ; attempt++ {
+ 		_, err := run.runner.reed.RemoveStrand(run.state.StrandGUID, false)
++		if errors.Is(err, reedengine.ErrUnknownStrand) {
++			return nil
++		}
+ 		if err == nil || attempt == startupRemoveAttempts {
+ 			return err
+ 		}
+diff --git a/internal/shuttleparity/producers_test.go b/internal/shuttleparity/producers_test.go
+index dfbe52c47..64933199b 100644
+--- a/internal/shuttleparity/producers_test.go
++++ b/internal/shuttleparity/producers_test.go
+@@ -25,6 +25,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomcli"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/mergeresolve"
++	"github.com/Knatte18/loomyard/internal/operatoragent"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/samplerengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+@@ -101,6 +102,7 @@ func producers(t *testing.T, fx parityFixture) []producer {
+ 		{"internal/websterengine#recoverSpawn", buildRecovery},
+ 		{"internal/websterengine#Run", buildMerriam},
+ 		{"internal/samplerengine#SessionSpec", buildSampler},
++		{"internal/operatoragent#SessionSpec", buildOperatorAgent},
+ 		{"internal/landingshed#PRReview.sessionSpec", buildPRReview},
+ 		{"internal/loomcli#driverSpec", buildDriver},
+ 		{"internal/dobbyengine#TidySpec", buildBoardTidy},
+@@ -258,6 +260,24 @@ func buildSampler(fx parityFixture, engine string) (shuttleengine.Spec, error) {
+ 	}), nil
+ }
+ 
++func buildOperatorAgent(fx parityFixture, engine string) (shuttleengine.Spec, error) {
++	env := fx.env
++	skills, err := languageSkillsOf(env)
++	if err != nil {
++		return shuttleengine.Spec{}, err
++	}
++	return operatoragent.SessionSpec(operatoragent.Inputs{
++		StencilsDir:    env.StencilsDir,
++		Name:           string(agentconfig.RoleAgent),
++		HubShortname:   env.Shortname,
++		HubPath:        env.Location.HubPath,
++		WorktreeRoot:   env.Location.WorktreePath(),
++		Slug:           env.Slug,
++		ParentName:     env.ParentName,
++		LanguageSkills: skills,
++	}, shuttleengine.ModelChoice{Engine: engine}, engine)
++}
++
+ func buildPRReview(fx parityFixture, engine string) (shuttleengine.Spec, error) {
+ 	env := fx.env
+ 	skills, err := languageSkillsOf(env)
+diff --git a/pattern/PATTERN-shuttle-provider-seam.md b/pattern/PATTERN-shuttle-provider-seam.md
+index ed88bda60..6a2484165 100644
+--- a/pattern/PATTERN-shuttle-provider-seam.md
++++ b/pattern/PATTERN-shuttle-provider-seam.md
+@@ -86,6 +86,8 @@ and an attach probe or a Wait then reads a strand that is gone.
+   a selector in either is a finding until an entry with a reason is added.
+ - `internal/loomcli` removes the loom driver's strand and `internal/orchcli` the orch strand.
+   Both are exempt because no attach probe or Wait reads their records.
++- A pane line may remove its own strand when its provider exits, for an unawaited run whose spec sets `EndsWithSession`.
++  No attach probe or Wait reads such a run's record.
+ - `cmd/lym/removestrand_test.go` enforces it.
+   It fails on a selector expression selecting `RemoveStrand` in a package outside that list.
+   So a method value handed to a wrapper is caught as well as a call.
+@@ -117,7 +119,8 @@ It consults `allOutputFilesExist` over the run's `OutputFiles` first.
+ ### The done-when list
+ 
+ A reed strand's done-when list is the one place reed learns a strand finished.
+-Only `shuttleengine` fills it, from an ungated run's `OutputFiles`;
++Only `shuttleengine` fills it, from an ungated run's `OutputFiles`,
++or with the exit marker of a session whose pane line ends its own strand;
+ a gated run's strand carries none, since its outputs existing does not mean its gate passed.
+ Only `reedengine`'s resume reads it.
+ It drops a non-live strand whose list is non-empty and fully present instead of relaunching it.
