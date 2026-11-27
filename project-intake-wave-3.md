@@ -1,6 +1,6 @@
 # P5 Intake wave 3: beam orch parent, scope and earlier checks
 
-Rendered 2026-11-27 06:33 UTC; every age below is as of then.
+Rendered 2026-11-27 06:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-3` · Age 22h · Owner `neve`
@@ -12,7 +12,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T9<br>T10 | 22h<br>22h | loom, burler |
+| T13 | **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | T9<br>T10 | 23h<br>22h | loom, burler |
 
 ## Layer C (1)
 
