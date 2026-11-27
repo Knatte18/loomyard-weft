@@ -2,8 +2,6 @@
 
 `transient-stop-not-failed` · Task · bug, shed, loom · running · Darn-Write
 
-Depends on: [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md)
-
 Imported from [issue #269](https://github.com/Knatte18/loomyard/issues/269).
 
 ## What happened
