@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Darn-Write (seats): the chair's session timed out; elapsed 3h0m1s, limit 3h0m0s, last session state busy (cause turn); way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
-    "wait": ""
+    "last": "Darn-Write → stuck",
+    "wait": "Darn-Write (seats): the chair's session timed out; elapsed 3h0m1s, limit 3h0m0s, last session state busy (cause turn); way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over"
   },
   "history": [
     {
@@ -43,6 +43,14 @@
       "output": "",
       "at": "2026-11-27T11:50:08Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-27T14:50:10Z",
+      "started_at": "2026-11-27T11:50:08Z",
+      "budget_exempt": true
     }
   ],
   "product": {
