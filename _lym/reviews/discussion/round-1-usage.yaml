@@ -1,0 +1,13 @@
+round: 1
+fan: ""
+fix_fan: ""
+seed:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-11-27T10:25:56Z
+      end: 2026-11-27T11:26:27.525456074+01:00
+      wall_seconds: 31.525456074
+      tokens_known: true
+      fresh_tokens: 41594
+      cache_read_tokens: 122388
