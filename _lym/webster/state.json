@@ -1,13 +1,13 @@
 {
   "runGuid": "5016f5ab475a11e964a5512fe64fe303",
-  "planFingerprint": "26a059b6212479b95c96115bda3846b288f2825470ff90fdf5740c783af8b323",
+  "planFingerprint": "b433e06a6b17c5b8b9175f9797c0df0a81c4723cdc7c4ac496cdd39004255caa",
   "planFileHashes": {
     "00-overview.md": "a0d68e40b2375546df3bf8fe278ae20ac38431940188d26f2c30fd6f320eae52",
-    "01-push-timing-config.md": "2cc0029377bb991774356be9d7d7079f1ac69eff8e10729779986cb633c0c43b",
-    "02-driver-network-wait.md": "f26a1aca87dbf3543a4ffcd142ed38d88e9b65f0ff00e8325ee90c8a4be1fa9e",
-    "03-driver-wait-readers.md": "fc50d74b4d8bb8909a1e5b20021dc254569a852ceeaeb7bb0d1a80017c5439cb",
+    "01-push-timing-config.md": "9b146dceda2b800a867e23d78246b3913d01636c3b9a945f71f2b2f2a192851a",
+    "02-driver-network-wait.md": "e8bdbd15893fc14d6e296a04e4b862e60f916ac18314376411fe319f024b4b79",
+    "03-driver-wait-readers.md": "c79fb79cd0b7614e182ae31b1f0123fb9166d75bbb3823c88f090450d816d54c",
     "04-push-ledger.md": "d0bc9461d5b4e98f51b8728842d0e4ec55fad99079bd9ffb81df033b1ffacf81",
-    "05-pusher-interval.md": "f969300b798ebf5d2eb68b62b9ec1ed1d68473ab42d47cd9287a9352dbb3c3f2",
+    "05-pusher-interval.md": "655af5cd0ba543cf1fa524a49ae33e0d36b92ff5b499279cc39092f5c1098b21",
     "06-pusher-target-kinds.md": "eae36d52bb16251ba011859111b4da060c0002f726b21b3bb7ba8a881983b21e",
     "07-spawns-start-the-pusher.md": "173a0358707931b4aededec9473e130317a16da4ebdf7a6212df48c1f8c4a3d4",
     "08-owed-code-commits.md": "04bcbb8c074f2eaabde71f7adeacefce6d157b87827d4777ff1d87426d7acb8c",
@@ -22,8 +22,8 @@
     "17-catch-up-hands-to-pusher.md": "1d539e25a1001e0428668607d0f1670fe832c4eac5156b91a2c206c9ff5a2d0f",
     "18-reset-hand-commit-guard.md": "1bf05242ce3ee4e78eb3649eca97885f44926cb822e58867a5daf81f134a1dcd",
     "19-teardown-hands-to-dobby.md": "65585156c93f411ea43a62c32170deeddb1856e8419dd02839afce7c98895a26",
-    "20-dobby-push-summary.md": "a66a8b2b4921c9f944a3060fee0d404db7c5a371c8b41ae4bd0106ca0aa10269",
-    "21-sync-status-bar.md": "2f2ddbd0715cb52ce00a89936bfa1c47000cf20b36954b8d649c90f28dbc3c8e",
+    "20-dobby-push-summary.md": "e75f749d06d06e837eb2d8ed2ae618b446b53b54aee452900cd1af4521dc5555",
+    "21-sync-status-bar.md": "76f071f2674eafe8a768ca3b54bda23fc21841b9008ac772b1a1e6f713d086df",
     "22-edit-directives.md": "de155d6d06296ba12898504e9185c557032717b85f26f855fcd6968dc74d1658",
     "23-pattern-docs.md": "02170a9ac46e4d3a9c607e43d6a584a19f32e5ff89af51ecc59745f949a24857"
   },
@@ -734,22 +734,48 @@
         "02-driver-network-wait"
       ],
       "cardHashes": {
-        "01-push-timing-config": "2cc0029377bb991774356be9d7d7079f1ac69eff8e10729779986cb633c0c43b",
-        "02-driver-network-wait": "f26a1aca87dbf3543a4ffcd142ed38d88e9b65f0ff00e8325ee90c8a4be1fa9e"
+        "01-push-timing-config": "9b146dceda2b800a867e23d78246b3913d01636c3b9a945f71f2b2f2a192851a",
+        "02-driver-network-wait": "e8bdbd15893fc14d6e296a04e4b862e60f916ac18314376411fe319f024b4b79"
       },
       "startSha": "3fbf277ca6a3b2012f98384e1ed68fe310c17002",
       "kind": "fork",
       "spawnedAt": "2026-11-27T15:51:21Z",
       "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-push-timing-config",
+        "status": "done",
+        "head_sha": "eb50fe308753e02c065051605f2c1f402726f14f",
+        "deviations": [
+          "internal/battencli/run_test.go",
+          "internal/configreg/configreg_test.go",
+          "internal/fabricengine/config_test.go",
+          "internal/sheddriver/drive.go",
+          "internal/sheddriver/driverules.go",
+          "internal/sheddriver/seam_enforcement_test.go",
+          "internal/shedrun/paths.go"
+        ]
+      },
+      "cardShas": [
+        "eb50fe308753e02c065051605f2c1f402726f14f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-af4eccf17c6ef0be3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-af4eccf17c6ef0be3.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/loom/friction/webster-master.md",
-  "masterRecordsBase": "c978944de24dbb14cc123b2fda8c456680476b55"
+  "masterRecordsBase": "c978944de24dbb14cc123b2fda8c456680476b55",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-af4eccf17c6ef0be3.jsonl"
+  ]
 }

@@ -21,8 +21,8 @@
 **Uses:**
 - `internal/sheddriver/doc.go`
 - `internal/loomcli/doc.go`
-- `plan:internal/sheddriver#DriveWait`
-- `plan:internal/shedrun#DriveWaitRecord`
+- `internal/sheddriver#DriveWait`
+- `internal/shedrun#DriveWaitRecord`
 
 **Intent:** D6: a run the Go driver waits on reads as waiting, not as a stop, and mails nothing.
 

@@ -29,8 +29,8 @@
 - `plan:internal/runpusher#TestNewDeps_WaitWakesOnAPushNowMark` -> `func TestNewDeps_WaitWakesOnAPushNowMark(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#PushTiming`
-- `plan:internal/fabricengine#Config.PushTiming`
+- `internal/fabricengine#PushTiming`
+- `internal/fabricengine#Config.PushTiming`
 - `plan:internal/pushledger#Update`
 - `plan:internal/pushledger#Read`
 - `plan:internal/pushledger#RecordsKey`

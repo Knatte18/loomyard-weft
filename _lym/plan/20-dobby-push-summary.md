@@ -21,11 +21,11 @@
 - `plan:internal/pushledger#List`
 - `plan:internal/pushledger#Entry`
 - `plan:internal/pushledger#Entry.Owed`
-- `plan:internal/fabricengine#Config.PushTiming`
+- `internal/fabricengine#Config.PushTiming`
 - `internal/fabricengine#FailedPushWayForward`
 - `internal/battencli#HubRunSlugs`
 - `plan:internal/sheddriver#ReadDriveWait`
-- `plan:internal/shedrun#DriveWaitRecord`
+- `internal/shedrun#DriveWaitRecord`
 
 **Intent:** D3: no mail per failed push; the prime's dobby posts one summary once something stays owed past the threshold, and one all-clear once everything is pushed.
 

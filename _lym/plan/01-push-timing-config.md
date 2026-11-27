@@ -7,12 +7,12 @@
 - `internal/fabricengine#TestConfigTemplate`
 
 **Create:**
-- `plan:internal/fabricengine#PushIntervalKey` -> `const PushIntervalKey = "push_interval_s"`
-- `plan:internal/fabricengine#PushCeilingKey` -> `const PushCeilingKey = "push_ceiling_s"`
-- `plan:internal/fabricengine#PushNoticeAfterKey` -> `const PushNoticeAfterKey = "push_notice_after_min"`
-- `plan:internal/fabricengine#PushTiming` -> `type PushTiming struct`
-- `plan:internal/fabricengine#Config.PushTiming` -> `func (c Config) PushTiming() (PushTiming, []string)`
-- `plan:internal/fabricengine#TestConfig_PushTiming` -> `func TestConfig_PushTiming(t *testing.T)`
+- `internal/fabricengine#PushIntervalKey`
+- `internal/fabricengine#PushCeilingKey`
+- `internal/fabricengine#PushNoticeAfterKey`
+- `internal/fabricengine#PushTiming`
+- `internal/fabricengine#Config.PushTiming`
+- `internal/fabricengine_test#TestConfig_PushTiming`
 
 **Uses:**
 - `internal/configengine#KeyName`

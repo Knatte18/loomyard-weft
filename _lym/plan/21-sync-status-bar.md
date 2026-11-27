@@ -29,7 +29,7 @@
 - `plan:internal/pushledger#List`
 - `plan:internal/pushledger#LastClear`
 - `plan:internal/pushledger#Entry.Owed`
-- `plan:internal/fabricengine#Config.PushTiming`
+- `internal/fabricengine#Config.PushTiming`
 - `plan:internal/pushledger#Update`
 - `internal/reedengine#TestBar_LineTwoShowsTheCheckMarkBeforeTheClock`
 

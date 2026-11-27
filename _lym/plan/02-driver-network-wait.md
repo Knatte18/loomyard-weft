@@ -25,13 +25,13 @@
 - `internal/sheddriver#goDriver.networkNotice`
 
 **Create:**
-- `plan:internal/shedrun#DriveWaitRecord` -> `func DriveWaitRecord(l *lymcwd.Location, runID string) string`
-- `plan:internal/sheddriver#DriveWait` -> `type DriveWait struct`
-- `plan:internal/sheddriver#networkWait` -> `func networkWait(repairCount int, ceiling time.Duration) time.Duration`
+- `internal/shedrun#DriveWaitRecord`
+- `internal/sheddriver#DriveWait`
+- `internal/sheddriver#networkWait`
 
 **Uses:**
 - `internal/shedrun/doc.go`
-- `plan:internal/fabricengine#Config.PushTiming`
+- `internal/fabricengine#Config.PushTiming`
 - `internal/sheddriver#TestGoDriver_Wait`
 
 **Intent:** D6: the Go driver waits out a network stop instead of handing it back.
