@@ -1,6 +1,6 @@
 # Bench Weaver against Webster on plans Webster already implemented: time, cost and quality
 
-`weaver-bench` · Task · research, weaver, webster
+`weaver-bench` · Task · research, weaver, webster · starting · Worktree-Create
 
 Depends on: [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md)
 
