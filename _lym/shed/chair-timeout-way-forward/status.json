@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T15:22:05Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/chair-timeout-way-forward/_lym/landing/summary.md",
+      "at": "2026-11-27T15:31:00Z",
+      "started_at": "2026-11-27T15:22:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T15:23:35.523080061Z",
+          "end": "2026-11-27T15:23:35.539463354Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T15:23:35.599167891Z",
+          "end": "2026-11-27T15:28:27.866065643Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-27T15:28:28.178444583Z",
+          "end": "2026-11-27T15:28:47.104135428Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-27T15:28:47.826566566Z",
+          "end": "2026-11-27T15:28:49.179608943Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T15:28:50.108984138Z",
+          "end": "2026-11-27T15:28:50.10912969Z"
+        }
+      ]
     }
   ],
   "product": {
