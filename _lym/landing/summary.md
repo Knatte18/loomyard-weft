@@ -1,86 +1,69 @@
 # Machine stops, dead judges and idle seats are not producer failures
 
-Five infrastructure events were read as a producer failing.
-A gate fixer ended by a reboot was reported as timed out, and its record still counted against the fixer budget.
-A Code-Bouncer judge that never came up used up the bounce budget.
-`lym tender revive` read Claude Code's own post-error prompt as a typed draft.
-A healthy seat read as having no input box.
-The OOM notice told one kill twice when two strands shared a pane scope.
-Each is fixed in its own commit, with a test that fails on the merge base.
+Several infrastructure stops were treated as an agent's own failure, or as a reason to leave a session alone.
+This change classifies each one for what it is, so a run recovers or stops with the right cause.
 
-## Gate fixer interrupted by a machine stop
+- **A cold fixer ended by a machine stop** was reported as `timeout`, and it spent one of the visit's fixers.
+  `gatefixer.Await` now reads the strand before the timeout.
+  A gone strand whose shuttle run is recorded as interrupted ends dead as `interrupted`.
+  The row gate replaces such a fixer, resuming its session where shuttle can.
+- **A bouncer judge that died before its verdict** degraded to `Stuck`, which spent the row's bounce budget.
+  `Bouncer.Call` now returns an error.
+- **The prompt Claude Code leaves after an API error** (`Resend your message to try again`) was read as a typed draft,
+  so `lym tender revive` skipped the stalled session. It now reads as an empty input box.
+- **An idle seat read as having no input box** could kill a review before its prompt was delivered.
+  When the styled capture shows no box and the plain capture shows one, shuttle now reads the plain capture.
+- **Two strands in one pane scope** each got an OOM notice for the same kills. A cgroup now gets one notice.
 
-`gatefixer.Await` checked the elapsed time before it checked whether the strand was live.
-So a fixer whose strand a reboot ended was classified `timeout` whenever the stop outlasted its timeout.
-`Await` now reads the strand first.
-A gone strand whose shuttle run record lym marked `interrupted` ends dead with the new `DeadReasonInterrupted`.
-Any other gone strand is still `died`.
-
-The row gate (`internal/gatefixer/rowgate.go`) now treats an interrupted fixer like an interrupted run agent.
-The fixer entry marks the record terminal and spawns a replacement on the same report and reply files.
-The replacement declares the interrupted run's own output file, so shuttle's crash resume picks the interrupted session up where it can.
-An interrupted record spends none of the visit's fixer budget: `rowStore.budget` counts it apart.
-Once a visit holds more than attempts plus one interrupted records, a further interruption stands as the outcome.
-The writer then gets a note saying the fixer was interrupted, not that it was slow.
-Only the entry that carries the fixer replaces one.
-The other entries and the final closure still only wait.
-
-## A died bouncer judge
-
-`Bouncer.judgeCall` sent a died judge run through `degrade`.
-That returns a plain `Stuck`, which the engine counts as a bounce.
-A judge run that died with no verdict written now fails the call with an error instead:
-it wraps `shuttleengine.ErrNotStarted` for a judge that never came up, carrying the shuttle's start error,
-and `shuttleengine.ErrAgentDied` for one that died after it started.
-The engine records a producer error with no history entry, so the round spends no bounce budget.
-`shedtransient` classes the not-started case as a transient agent start, which the driver re-steps.
-A died judge whose verdict and ledger are on disk is still settled by the harvest, as before.
-A timed-out judge still degrades.
-
-## Claude Code's prompt after an API error
-
-After an API error Claude Code leaves `Resend your message to try again` in its input box.
-`InputBoxText` and `IdleSession` in `internal/shuttleengine/claudeengine` now read a box holding only that prompt as empty, as they already did for the shell's lone `%`.
-The conditioned send that `lym tender revive` uses reads the box through `InputBoxText`, so revive reaches the stalled session.
-A draft that only starts with that text is still a draft.
-
-## A healthy seat reading as having no input box
-
-The seat's error quoted a pane tail showing an empty box under the skill-load reply.
-That tail is a plain capture, while the idle wait read the box only from the styled capture, turned plain by `PlainBoxCapture`.
-The idle wait already polls for its full send-ready window, and the start prompt is sent up to three times.
-So a styled reading that keeps losing the box is a persistent disagreement between the two captures, not a repaint race.
-`boxCapture` now also takes the plain capture when the styled one shows no box, and reads the plain one when it shows a box.
-It logs a warning quoting the styled capture's last lines, so the styled shape that loses the box can be pinned once one is captured.
-The plain capture blanks no placeholder, so a placeholder read that way reads as a draft and holds the send, never the reverse.
-A pane that shows no box in both captures is held as before.
-
-## Review findings from the memory cap and crash resume landings
-
-- `planPaneOOMNotices` now gives a cgroup at most one notice, under the first strand in it.
-  Before, two strands in one `lym-pane-` scope each got a notice for the same kills.
-- A new row in `TestLaunchStrandLocked_APaneThatCannotBeCappedStillLaunchesWithAWarning` reaches the warning a launch logs when `proc.CapProcessMemory` fails.
-  It then checks the launch still submits its command.
-- `TestReportPaneOOMKills_DeliversTheNoticeToTheParentOrchsCreelMailbox`, at tier 1, posts a notice through the post `engineOOMBoundaries` builds over a real hub.
-  It checks the notice lands in the parent orch's creel mailbox.
-- The OOM step does not stall the watchdog loop.
-  It runs in its own goroutine per entered session, and only that goroutine waits on the reed operation lock.
-- `removeSupersededStrands` recording a running candidate as interrupted is covered by `TestAttach_RecordsASupersededRunningCandidateAsInterrupted`.
-- The start retry loop already starts a retry fresh after a failed resume: it sets aside both runs and restores the fresh spec.
-  `TestStart_FailedResumeRetriesAsAFreshSession` covers that.
+Closes #248
+Closes #239
+Closes #219
 
 ## Design decisions
 
-- The interrupted reason comes from the shuttle run record's `Interrupted` flag, read through `shuttleengine.FindRun`.
-  A gone strand with no readable record stays `died`, the reason it had before.
-- The replacement cap reuses the entry's attempts plus one.
-  A fixer the loop's reconcile stops again and again therefore cannot spawn replacements without bound.
-- The no-box fix falls back to the plain capture rather than adding a timed retry, because the existing idle window already re-reads the pane for its whole length.
-- The shared-cgroup finding's other parts are left alone.
-  Those are kills in a descendant cgroup shifting the journal index, and a scope name reused after pid wrap.
-  Both need a change in how kills are matched to journal lines, beyond this entry's fixes.
+**Interrupted fixers**
+
+- A replacement runs on the interrupted fixer's report and reply files, which is what lets shuttle resume the session.
+- Interrupted records spend none of the `attempts + 1` fixer budget.
+  Replacements stop once the set holds more than `attempts + 1` interrupted records,
+  and the interruption then stands as the outcome.
+- The entry that carries the fixer, its final closure included, may now spawn a replacement.
+  Another entry that fails over an interrupted fixer leaves the record live for that entry,
+  and `Expired` does not report it.
+- A killed pane is recorded the same way as a machine stop, so a fixer whose pane someone killed is replaced too.
+- Webster's plan and verify fixers share the new order and can report `interrupted`, but they get no replacement here.
+- The orphan sweep now keeps a stopped, interrupted run's directory while a later start of its role may resume it.
+  That record is the only evidence of the interruption.
+
+**Bouncer judge**
+
+- A judge that never came up wraps `shuttleengine.ErrNotStarted`, which the driver re-steps as a transient agent start.
+- A judge that died after starting wraps `shuttleengine.ErrAgentDied`.
+  It is transient only under the existing host spawn-refusal rule; otherwise the call fails with that error.
+- A run error, from a spawned or an attached judge, also fails the call and wraps its cause.
+  The `RunError` row of `TestBouncer_JudgeCall_Degradations`, which expected `Stuck`, is replaced accordingly.
+- A timed-out judge still degrades, and a verdict written before the judge died is still acted on.
+
+**Input box**
+
+- The plain-capture fallback blanks no placeholder, so a placeholder read that way counts as a draft and holds the send.
+- The disagreement is warned once per strand per process, with the styled capture's last lines, and logged at debug after.
+- An operator draft of exactly the API-error prompt now reads as empty.
+  The operator-activity hold still runs before every write.
+
+## To check by hand
+
+- The idle-seat fix is a fallback around the styled reading, and its tests simulate the lost box with a fake engine.
+  On a live seat, check that skill load is followed by prompt delivery,
+  and read the styled tail of any disagreement warning to find why the styled reading lost the box.
+- The interrupted-fixer path is tested with a fake fixer and hand-edited run records.
+  A real reboot or killed pane during a row gate, ending in a resumed replacement, is worth one live try.
+- The API-error prompt is matched as exact text against constructed captures.
+  Check `lym tender revive` against a session stalled on a real API error.
+- A shared pane scope's single OOM notice names the first strand in the scope,
+  which may not be the one whose process was killed (`planPaneOOMNotices` in `internal/reedcli/oomnotice.go`).
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** shed
+**Blast radius:** shuttle
