@@ -229,6 +229,12 @@ Decision: Within project fabric-core, a part may add production functions that o
 
 Rationale: The operator chose seven parts that each land a working fabric over weeks; D9 delivers the executor loop before its callers move in. A bounded, named allowance keeps PATTERN-test-only-code checkable and makes each leftover entry visible until its caller lands.
 
+### Added after Discussion (parent, 2026-11-27): This part's fabric test code shrinks in net
+
+Decision: Apply the review's fix for F12: card 2 cuts TestStructuralDirs' literal-member rows and keeps only the row that appending to a returned slice leaves the next call's answer unchanged. Each card's commit body names the test functions it added and deleted. The part as a whole must still end with less fabric test code than it started with: tests the new core packages need are paid for by deleting fabricengine tests whose assertions the new tests hold, or that guard no rule of their own. The plan names, for each added test, the new code it alone guards.
+
+Rationale: The operator wants fabric's test code cut, with no part allowed to grow it; 'every test is needed' is no reason. A foundation part adds core packages, so it must find the deletions that pay for their tests rather than be exempt.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
