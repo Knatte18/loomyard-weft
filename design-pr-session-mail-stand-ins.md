@@ -2,7 +2,7 @@
 
 `pr-session-mail-stand-ins` · Note · enhancement, testkit, landing
 
-Depends on: [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
+Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
 ## Seen
 
