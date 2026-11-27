@@ -247,7 +247,19 @@
       "sessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
       "engine": "claude",
       "terminal": false,
-      "status": ""
+      "status": "waiting",
+      "digest": {
+        "batch": "01-board-view-projection",
+        "status": "waiting",
+        "head_sha": "91b6884b74a7e3a8c1333e1dccc44bbdf02a54b7",
+        "need": "Decide how cards 1-3 pass tier1 guard TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain: BoardRevision, Board.View, Board.Expecting and ViewerPage have no caller from main until card 6; either authorize temporary testOnlyCodeAllowed entries in cmd/lym/testonlycode_linux_test.go that card 6 removes, or amend the plan"
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl"
+      ]
     }
   },
   "currentBatch": 1,
@@ -255,5 +267,8 @@
   "masterSessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b2/_lym/loom/friction/webster-master.md",
-  "masterRecordsBase": "1cde0e838961bc28d2dc2b392403906e995993d4"
+  "masterRecordsBase": "1cde0e838961bc28d2dc2b392403906e995993d4",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl"
+  ]
 }
