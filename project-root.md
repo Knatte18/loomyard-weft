@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | starting · Worktree-Create | neve | 2h<br>0m | testkit, landing |
+| T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | starting · Seed-Child | neve | 2h<br>0m | testkit, landing |
 | T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | landing · Finalize | neve | 2h<br>1h | reed, stencil |
 
 ## Ready (1)
@@ -29,7 +29,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 3h<br>3h | batten, fabric |
-| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>35m | fabric, cleanup, batten |
+| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>36m | fabric, cleanup, batten |
 
 ## Layer B (1)
 
@@ -47,7 +47,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>32m | landing, gate, batten |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>33m | landing, gate, batten |
 
 ## Features (1)
 
