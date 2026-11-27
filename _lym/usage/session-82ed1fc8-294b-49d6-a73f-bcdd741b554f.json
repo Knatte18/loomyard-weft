@@ -1,0 +1,32 @@
+{
+  "session_id": "82ed1fc8-294b-49d6-a73f-bcdd741b554f",
+  "row": "Darn-Write",
+  "role": "darn",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 116,
+  "cache_write_tokens": 493646,
+  "cache_read_tokens": 6267724,
+  "output_tokens": 148533,
+  "cost_usd": 5.251809800000001,
+  "started": "2026-11-27T17:59:01Z",
+  "ended": "2026-11-27T18:18:54Z",
+  "models": [
+    {
+      "model": "claude-opus-5-5",
+      "input_tokens": 72,
+      "cache_write_tokens": 214285,
+      "cache_read_tokens": 4036072,
+      "output_tokens": 32369,
+      "cost_usd": 2.5263074000000003
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 44,
+      "cache_write_tokens": 279361,
+      "cache_read_tokens": 2231652,
+      "output_tokens": 116164,
+      "cost_usd": 2.7255024000000008
+    }
+  ]
+}
