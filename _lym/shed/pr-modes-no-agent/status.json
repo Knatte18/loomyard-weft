@@ -1,12 +1,12 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "landing stop: the fixer session of Finalize pushed origin/pr-modes-no-agent at b6eb9ac69a8d5e12c863dd0a5a27587e1ff0446a; session log: /home/knatte/Code/loomyard-LYMHUB/pr-modes-no-agent/.lym/shuttle/55336935c2b090f90010928604d00408; way forward: check the pushed commits are the task's, then `lym loom resume`",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
-    "last": "PR-Review → done",
-    "wait": ""
+    "last": "Finalize → stuck",
+    "wait": "landing stop: the fixer session of Finalize pushed origin/pr-modes-no-agent at b6eb9ac69a8d5e12c863dd0a5a27587e1ff0446a; session log: /home/knatte/Code/loomyard-LYMHUB/pr-modes-no-agent/.lym/shuttle/55336935c2b090f90010928604d00408; way forward: check the pushed commits are the task's, then `lym loom resume`"
   },
   "history": [
     {
@@ -341,6 +341,14 @@
       "output": "",
       "at": "2026-11-26T21:29:26Z",
       "started_at": "2026-11-26T21:29:25Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-27T06:33:53Z",
+      "started_at": "2026-11-26T21:29:29Z",
+      "budget_exempt": true
     }
   ],
   "product": {
