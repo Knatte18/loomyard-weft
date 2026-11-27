@@ -1,6 +1,6 @@
 # P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages
 
-Rendered 2026-11-27 21:06 UTC; every age below is as of then.
+Rendered 2026-11-27 21:08 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-speed`](design-test-speed.md) · Age 5h · Owner `neve`
