@@ -19,6 +19,12 @@ Keep one test for every behaviour a PATTERN or a criterion names.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Cut only where test time is real
+
+Decision: The entry's package list came from an old coverage-mode survey. orchcli's tier1 takes about 2 s, so it is not cut. Measure internal/orchengine's tier0 time once with -count=1. If it takes 15 s or more, cut it at least in half by the entry's means; if it takes less, the run makes no test change and its change description reports the measured times as the result.
+
+Rationale: orchengine has no tier1 tests, and a cut of a package that runs in a few seconds saves no gate time.
+
 ## Constraints
 
 ## Auto-mode assumptions
