@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "8630ae4f2311b7fc9250eeb3564c436e633fa889",
+  "added_decisions": [
+    {
+      "title": "No reproduction run on the base",
+      "digest": "a4d34d9ad7deec2359d7c80003385d06ca048bdbc0b1fb51194157ab589ec342"
+    },
+    {
+      "title": "No test seam: the flake is in the test's own time limit",
+      "digest": "a7c5cfeef38be0e7c6ea98c9cb1e9fe80dcf0db4afc4d94f65b54c62c9bb0802"
+    }
+  ]
+}
