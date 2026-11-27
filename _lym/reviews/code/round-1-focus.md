@@ -1,0 +1,16 @@
+---
+round: 1
+focus:
+  - "internal/testkit/tmuxrec/tmuxrec.go, Replay.answer, Call.matches and readVerbs: can the replay answer a call with a stale or wrong-state answer, or let a changed, skipped or reordered mutating call pass (ignored stdin, reads repeated from earlier, pane-age counted as a read, an unanswered call the caller swallows)?"
+  - "internal/testkit/tmuxrec/record.go and Bindings in tmuxrec.go and session.go: does substring replacement of paths, host, user and whole-number pid tokens corrupt or miss anything, and do the testdata/*.json files keep any machine- or operator-specific value (home path, environment, pane title, pid)?"
+  - "internal/testkit/tmuxrec/testdata, tmuxrec.go and recordings_test.go against PATTERN-test-stand-ins: is every answer recorded rather than hand-written or edited, is each source line complete, does the tier0 test run the production readers over every recording, and does the tier2 contract test compare enough of what reed and the runner read to detect drift?"
+  - "internal/reedengine/lifecycle.go and lock.go, NewOver and the toldTmux spawn branch: is behaviour under New unchanged, and does a told tmux skip anything the real spawn does (version floor, env scrub, working directory, server flags) in a way that matters to a recording or to the contract test?"
+  - "internal/testkit/tmuxrec and PlaySession: does a tier0 replay reach a real process, tmux binary, user bus or shared directory (replayed pids passed to process-table reads or kills, os.TempDir binding, any seam of reed or the runner that Outside leaves real)?"
+  - "internal/landingshed/prreview_session_test.go and prreview_wait_test.go: for each changed row and helper (seedLive, the dead-strand and ended-session rows, the registration, status, start-failure and transient-failure rows), does it still check what its name says, is any assertion looser than at the review base without a Loosened-Check trailer, and can it pass for an unintended cause?"
+  - "Scope against the amended board entry: is every part of option B present (seam, kit, tier0 replay, tier2 recorder and contract test, moved session reads with their tests, session tests over real reed and runner), are MailAgent closures and envkit untouched, and is anything beyond it (extra Outside fields, the pattern/PATTERN-test-stand-ins.md paragraph) licensed?"
+  - "Repository rules and docs for a new testkit package and a new reedengine export: check CONSTRAINTS/PATTERN.md entries (test-only code, test isolation, test speed, import limits of kits) and whether docs such as docs/overview.md's testkit list and the research inventory of standing fakes need to change in this diff."
+  - "Test economy and coverage: are NewOver's zero-field defaults, the told-tmux spawn path, and the kit's replay failure behaviour covered, and does any new test duplicate another?"
+  - "_lym/landing/summary.md and the commit messages of the range: check each claim against the diff, including 'unchanged apart from their error prefix', 'New builds over the real ones, as before', the never-reads-or-signals claim, and whether the Merge danger door and blast radius name all the diff can break."
+---
+
+Initial focus only; no round has been judged.
