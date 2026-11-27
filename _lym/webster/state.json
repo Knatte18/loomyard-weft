@@ -1,6 +1,6 @@
 {
   "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
-  "planFingerprint": "2b10c9de512cacb851d2be9d56c36c6b4d4339e4768b8f7635530b6081acf01e",
+  "planFingerprint": "3b2a3a560069ea18891a7c58017a72d7a9b68efe21c1d37f69db89772c36adc9",
   "planFileHashes": {
     "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
     "01-scankit-banned-imports.md": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
@@ -14,7 +14,7 @@
     "09-engine-repo-side-names.md": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a",
     "10-layout-verb-results.md": "e76ca54ff35058308753f8d226ccb85d32340f1c6b2b680608db18d1394449b9",
     "11-layout-read-types.md": "c76574a0c8e38ab6f351567788d84eca4365228654f1ea80c90e4c9089dc9a2a",
-    "12-core-package.md": "8ece3617b949659200dfb4a99b71fd7f89866b31aef09ecd1b54698fff15a1fc",
+    "12-core-package.md": "be6bdcc71c13fb804294917c4dc8f46cc47aff87446ad92951074bdcf5bf437b",
     "13-fabrickit-snapshot-builder.md": "0423eca654a94a57b7df9c212d10d472bda96b329caff81077e8fbffa0e4a448",
     "14-executor-loop.md": "7ac2be6f1d4d94cb6774fb8b30489f69b5fb46a96662917969c554d867539e8a",
     "15-snapshot-reader.md": "4be860bcd97f739a8e679d0f42b85ed44c8a16d0865844e83db213c4b702b4d6"
@@ -947,15 +947,32 @@
         "12-core-package"
       ],
       "cardHashes": {
-        "12-core-package": "8ece3617b949659200dfb4a99b71fd7f89866b31aef09ecd1b54698fff15a1fc"
+        "12-core-package": "be6bdcc71c13fb804294917c4dc8f46cc47aff87446ad92951074bdcf5bf437b"
       },
       "startSha": "d24cc8fed3b66593c2dfa0f4bd20dbb7cf358ab5",
       "kind": "fork",
       "spawnedAt": "2026-11-27T10:45:02Z",
       "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-core-package",
+        "status": "done",
+        "head_sha": "71473fd829b146b95eeef05a4bec25a2292fc702",
+        "deviations": [
+          "internal/fabriccore/answer_test.go"
+        ]
+      },
+      "cardShas": [
+        "71473fd829b146b95eeef05a4bec25a2292fc702"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af3ab95960a1f2457.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af3ab95960a1f2457.jsonl"
+      ]
     },
     "3": {
       "slug": "layout-hub-paths",
@@ -1857,7 +1874,7 @@
       ]
     }
   },
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
@@ -1871,6 +1888,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a3d7e74b49ad10a93.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a8c24f89e44bab578.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a51dc7fa6cae900fe.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af2a1393b87ab4bad.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af2a1393b87ab4bad.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af3ab95960a1f2457.jsonl"
   ]
 }

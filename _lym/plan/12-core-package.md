@@ -2,59 +2,59 @@
 
 **Create:**
 - `internal/fabriccore/doc.go`
-- `plan:internal/fabriccore#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/fabriccore#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/fabriccore#TestLeafInvariant_NoIO` -> `func TestLeafInvariant_NoIO(t *testing.T)`
-- `plan:internal/fabriccore#Phase` -> `type Phase string`
-- `plan:internal/fabriccore#PhasePreLock` -> `const PhasePreLock Phase = "pre_lock"`
-- `plan:internal/fabriccore#PhaseUnderLock` -> `const PhaseUnderLock Phase = "under_lock"`
-- `plan:internal/fabriccore#PhaseOrigin` -> `const PhaseOrigin Phase = "origin"`
-- `plan:internal/fabriccore#Store` -> `type Store string`
-- `plan:internal/fabriccore#StoreCode` -> `const StoreCode Store = fabriclayout.RepoCode`
-- `plan:internal/fabriccore#StoreRecords` -> `const StoreRecords Store = fabriclayout.RepoRecords`
-- `plan:internal/fabriccore#StoreBolt` -> `const StoreBolt Store = fabriclayout.RepoBolt`
-- `plan:internal/fabriccore#Field` -> `type Field string`
-- `plan:internal/fabriccore#FieldLocalRefs` -> `const FieldLocalRefs Field = "local_refs"`
-- `plan:internal/fabriccore#FieldOriginRefs` -> `const FieldOriginRefs Field = "origin_refs"`
-- `plan:internal/fabriccore#FieldWorktrees` -> `const FieldWorktrees Field = "worktrees"`
-- `plan:internal/fabriccore#FieldAnchors` -> `const FieldAnchors Field = "anchors"`
-- `plan:internal/fabriccore#FieldRecordsStore` -> `const FieldRecordsStore Field = "records_store"`
-- `plan:internal/fabriccore#FieldPendingTeardowns` -> `const FieldPendingTeardowns Field = "pending_teardowns"`
-- `plan:internal/fabriccore#Refs` -> `type Refs map[string]string`
-- `plan:internal/fabriccore#StoreRefs` -> `type StoreRefs struct`
-- `plan:internal/fabriccore#RecordsStore` -> `type RecordsStore struct`
-- `plan:internal/fabriccore#Snapshot` -> `type Snapshot struct`
-- `plan:internal/fabriccore#ActionKind` -> `type ActionKind string`
-- `plan:internal/fabriccore#ActionRefCreate` -> `const ActionRefCreate ActionKind = "ref_create"`
-- `plan:internal/fabriccore#ActionRefMove` -> `const ActionRefMove ActionKind = "ref_move"`
-- `plan:internal/fabriccore#ActionRefDelete` -> `const ActionRefDelete ActionKind = "ref_delete"`
-- `plan:internal/fabriccore#ActionTag` -> `const ActionTag ActionKind = "tag"`
-- `plan:internal/fabriccore#ActionPush` -> `const ActionPush ActionKind = "push"`
-- `plan:internal/fabriccore#ActionWorktreeAdd` -> `const ActionWorktreeAdd ActionKind = "worktree_add"`
-- `plan:internal/fabriccore#ActionWorktreeRemove` -> `const ActionWorktreeRemove ActionKind = "worktree_remove"`
-- `plan:internal/fabriccore#ActionAnchorWrite` -> `const ActionAnchorWrite ActionKind = "anchor_write"`
-- `plan:internal/fabriccore#ActionExcludeWrite` -> `const ActionExcludeWrite ActionKind = "exclude_write"`
-- `plan:internal/fabriccore#ActionCommit` -> `const ActionCommit ActionKind = "commit"`
-- `plan:internal/fabriccore#ActionPendingWrite` -> `const ActionPendingWrite ActionKind = "pending_write"`
-- `plan:internal/fabriccore#ActionPendingClear` -> `const ActionPendingClear ActionKind = "pending_clear"`
-- `plan:internal/fabriccore#ActionWait` -> `const ActionWait ActionKind = "wait"`
-- `plan:internal/fabriccore#ActionSeamCall` -> `const ActionSeamCall ActionKind = "seam_call"`
-- `plan:internal/fabriccore#Action` -> `type Action struct`
-- `plan:internal/fabriccore#OutcomeClass` -> `type OutcomeClass string`
-- `plan:internal/fabriccore#OutcomeDone` -> `const OutcomeDone OutcomeClass = "done"`
-- `plan:internal/fabriccore#OutcomeRejected` -> `const OutcomeRejected OutcomeClass = "rejected"`
-- `plan:internal/fabriccore#OutcomeAuthRefused` -> `const OutcomeAuthRefused OutcomeClass = "auth_refused"`
-- `plan:internal/fabriccore#OutcomeTransportFailure` -> `const OutcomeTransportFailure OutcomeClass = "transport_failure"`
-- `plan:internal/fabriccore#OutcomeDestructiveRefusal` -> `const OutcomeDestructiveRefusal OutcomeClass = "destructive_refusal"`
-- `plan:internal/fabriccore#OutcomeAnchorStop` -> `const OutcomeAnchorStop OutcomeClass = "anchor_stop"`
-- `plan:internal/fabriccore#OutcomeFailed` -> `const OutcomeFailed OutcomeClass = "failed"`
-- `plan:internal/fabriccore#Outcome` -> `type Outcome struct`
-- `plan:internal/fabriccore#ReadFailure` -> `type ReadFailure struct`
-- `plan:internal/fabriccore#Refusal` -> `type Refusal struct`
-- `plan:internal/fabriccore#Refusal.Error` -> `func (r *Refusal) Error() string`
-- `plan:internal/fabriccore#Answer` -> `type Answer struct`
-- `plan:internal/fabriccore#Rule` -> `type Rule func(snapshot Snapshot) Answer`
-- `plan:internal/fabriccore#TestRefusal_Error` -> `func TestRefusal_Error(t *testing.T)`
+- `internal/fabriccore#TestMain`
+- `internal/fabriccore#TestLeafInvariant_AllowlistOnly`
+- `internal/fabriccore#TestLeafInvariant_NoIO`
+- `internal/fabriccore#Phase`
+- `internal/fabriccore#PhasePreLock`
+- `internal/fabriccore#PhaseUnderLock`
+- `internal/fabriccore#PhaseOrigin`
+- `internal/fabriccore#Store`
+- `internal/fabriccore#StoreCode`
+- `internal/fabriccore#StoreRecords`
+- `internal/fabriccore#StoreBolt`
+- `internal/fabriccore#Field`
+- `internal/fabriccore#FieldLocalRefs`
+- `internal/fabriccore#FieldOriginRefs`
+- `internal/fabriccore#FieldWorktrees`
+- `internal/fabriccore#FieldAnchors`
+- `internal/fabriccore#FieldRecordsStore`
+- `internal/fabriccore#FieldPendingTeardowns`
+- `internal/fabriccore#Refs`
+- `internal/fabriccore#StoreRefs`
+- `internal/fabriccore#RecordsStore`
+- `internal/fabriccore#Snapshot`
+- `internal/fabriccore#ActionKind`
+- `internal/fabriccore#ActionRefCreate`
+- `internal/fabriccore#ActionRefMove`
+- `internal/fabriccore#ActionRefDelete`
+- `internal/fabriccore#ActionTag`
+- `internal/fabriccore#ActionPush`
+- `internal/fabriccore#ActionWorktreeAdd`
+- `internal/fabriccore#ActionWorktreeRemove`
+- `internal/fabriccore#ActionAnchorWrite`
+- `internal/fabriccore#ActionExcludeWrite`
+- `internal/fabriccore#ActionCommit`
+- `internal/fabriccore#ActionPendingWrite`
+- `internal/fabriccore#ActionPendingClear`
+- `internal/fabriccore#ActionWait`
+- `internal/fabriccore#ActionSeamCall`
+- `internal/fabriccore#Action`
+- `internal/fabriccore#OutcomeClass`
+- `internal/fabriccore#OutcomeDone`
+- `internal/fabriccore#OutcomeRejected`
+- `internal/fabriccore#OutcomeAuthRefused`
+- `internal/fabriccore#OutcomeTransportFailure`
+- `internal/fabriccore#OutcomeDestructiveRefusal`
+- `internal/fabriccore#OutcomeAnchorStop`
+- `internal/fabriccore#OutcomeFailed`
+- `internal/fabriccore#Outcome`
+- `internal/fabriccore#ReadFailure`
+- `internal/fabriccore#Refusal`
+- `internal/fabriccore#Refusal.Error`
+- `internal/fabriccore#Answer`
+- `internal/fabriccore#Rule`
+- `internal/fabriccore_test#TestRefusal_Error`
 
 **Edit:**
 - `internal/fabricvocab#owners`
