@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "weaver-bench"
+  },
+  "started_at": "2026-11-27T11:57:00Z"
+}
