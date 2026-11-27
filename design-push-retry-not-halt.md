@@ -1,6 +1,6 @@
 # Background pushes retry quietly; landing pushes and reads retry instead of failing
 
-`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby
+`push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby · starting · Worktree-Create
 
 Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md)
 
