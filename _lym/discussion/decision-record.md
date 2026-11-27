@@ -398,6 +398,15 @@ Rationale: The review segment stopped at its hard cap with these four design fin
 - A dobby catch-up whose fetch fails on an unreachable origin still stops that run's start (Scope, Out), although the entry says a network outage never stops other work; the parent decides whether that stays.
 - A landing whose parent push stays owed holds every later pull-request landing on that parent (D5); D3's summary is its only signal.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - parent-pusher-drops-run-owner-check (class design, severity BLOCKING, open in rounds 3)
+  - records-hold-bypassed-by-other-pushes (class design, severity BLOCKING, open in rounds 2, 3)
+  - refused-prime-code-push-way-forward-dead-end (class design, severity BLOCKING, open in rounds 3)
+  - removal-base-and-resume-placement (class design, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: red-first test in `internal/fabricengine`, tier1, for issue #238: an owed failure of `lym fabric sync`'s push mails the orch on the merge base,
