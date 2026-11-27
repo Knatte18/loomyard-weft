@@ -1,9 +1,15 @@
 # Board
 
-Rendered 2026-11-27 07:35 UTC; every age below is as of then.
+Rendered 2026-11-27 07:36 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
+On the mode line of a beam or the root, a **bold** value is that project's own setting,
+and an _italic_ value is inherited from the place in brackets.
+A setting that the root and every beam read by this render take from the hub-wide default is stated here alone.
+A beam the render could not read, such as one whose worktree is on another machine, has no mode line,
+and its settings may differ.
+Beam PR links the pull request the beam's landing record names; it may already be closed or merged on GitHub.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -46,7 +52,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget** | [`fabric-core-foundation`](design-fabric-core-foundation.md)<br>[Sketch](decision-fabric-core-foundation.md) | tapestry · solid | Plan-Burler-Fix | neve | 9h<br>9h | fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report |
+| T6 | **Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget** | [`fabric-core-foundation`](design-fabric-core-foundation.md)<br>[Sketch](decision-fabric-core-foundation.md) | tapestry · solid | Plan-Bouncer | neve | 9h<br>9h | fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report |
 
 ### Layer A (1)
 
@@ -132,8 +138,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 ## [P0 Root: entries under no project](project-root.md) (12)
 
 Owner `neve`
-
-Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 ### Running (2)
 
