@@ -933,6 +933,25 @@
       "body": "## Seen\n\nThe study `docs/research/raddle/raddle-split-quality.md` read every raddle run of this hub up to 2026-11-27.\nThe most common revision is a missing dependency on work already running or released.\nCorrections to part count and recipe are about size and cost: too many solid tapestries, or one part too large for one review.\nThe stencil has no size rule and no recipe or profile rule, and its one cost sentence pushes toward larger parts.\n\n## Change\n\nApply the report's section \"Proposed stencil changes\" to `contracts/stencils/raddle/raddle-template-agent.md`\nand `contracts/stencils/loom/loom-rubric-raddle-review.md`:\norder and dependencies, part count and size, recipe and profile, cut lines, missing or invented parts, wording,\nsuperseded decisions, size estimates, where the entries are filed, and the split perch's rubric.\nThe report's change that would let the operator choose the filed project's level needs code and spec, and stays out of this task.\n",
       "created": "2026-11-27T18:24:08Z",
       "revised": "2026-11-27T18:24:15Z"
+    },
+    {
+      "id": 1756,
+      "handle": "E6",
+      "slug": "gatecli-dotnet-redfirst-time",
+      "title": "TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After the scenario split, one .NET red-first test holds gatecli tier1 near its old time",
+      "body": "## Seen\n\nThe landed split of the long gatecli tier1 scenario tests made `TestGateTest_Scopes` and `TestGateTest_Scenario` parallel; their longest rows now take 2.9 to 7.3 s.\nThe package time did not fall: `TestGateRedFirst_Dotnet` took 31.0 and 38.9 s before and 47.5 and 44.4 s after (the after runs ran at a load of 31 and 46),\nand `TestGateTest_DotnetFixture` takes about 21 s. The figures are in the landing commit's Measurements section.\n\n## Idea\n\nFind where `TestGateRedFirst_Dotnet` spends its time (dotnet restore and build, likely) and cut it, for example by sharing one built .NET fixture across its rows or with `TestGateTest_DotnetFixture`.\n",
+      "created": "2026-11-27T18:42:04Z",
+      "revised": "2026-11-27T18:42:04Z",
+      "project": "test-speed"
     }
   ],
   "prime_owner": "neve",
