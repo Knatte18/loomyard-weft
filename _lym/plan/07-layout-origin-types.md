@@ -53,10 +53,10 @@
 - `internal/fabricengine#ReplayResult`
 
 **Create:**
-- `plan:internal/fabriclayout#EntryOutcome.AdoptTarget` -> `func (e EntryOutcome) AdoptTarget() string`
-- `plan:internal/fabricengine#branchStopWayForward` -> `func branchStopWayForward(b fabriclayout.BranchOutcome) string`
-- `plan:internal/fabricengine#branchAnchorStopWayForward` -> `func branchAnchorStopWayForward(b fabriclayout.BranchOutcome) string`
-- `plan:internal/fabricengine#branchDirtyWayForward` -> `func branchDirtyWayForward(b fabriclayout.BranchOutcome) string`
+- `internal/fabriclayout#EntryOutcome.AdoptTarget`
+- `internal/fabricengine#branchStopWayForward`
+- `internal/fabricengine#branchAnchorStopWayForward`
+- `internal/fabricengine#branchDirtyWayForward`
 
 **Delete:**
 - `internal/fabricengine#EntryOutcome.adoptSubject`
