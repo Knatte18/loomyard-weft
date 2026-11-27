@@ -916,7 +916,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #274](https://github.com/Knatte18/loomyard/issues/274).\n\n**What happened.**\nA card added text to the `lym board upsert` help and pushed it past the 2000-byte cap that `TestCLIForm_EveryCommand` in `cmd/lym` holds.\nNeither that batch's card gates nor its batch gate ran the test.\nIt first failed at a later batch's `--main-packages` gate, and was fixed there.\n\n**Why it is abnormal.**\nA change passed every gate of its own batch while breaking a test.\nThe failure landed on a different implementer, whose cards had not caused it.\n\n**What to do.**\nMake a scoped gate run this test when command help changes, for example by marking it `//lym:guard`\n(its own doc comment says its checks are pure and run no invocation),\nor by having the go scoper include `cmd/lym` when a package that registers commands changes.\n\nProvenance: task `dobby-run-watch-build`, note `04-run-watch-wiring.md`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Drift-Recheck",
       "created": "2026-11-27T07:51:14Z",
       "revised": "2026-11-27T07:51:36Z",
       "profile": "light"
