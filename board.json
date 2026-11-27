@@ -826,7 +826,7 @@
       "isolated": false,
       "brief": "prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary",
       "body": "## Seen\n\nThe study `docs/research/speed/gate-fixed-cost-2026-11-27/report.md` timed a tier1 call on one small package at about 6 s before its tests.\nThe `lym` build in `prebuildLym` (`internal/gatecli/prebuild.go`) takes 2.4 to 2.8 s of that on every run of a tier with `prebuilt_lym`,\nwhether or not a test of the targeted packages uses the binary.\n\n## Change\n\nBuild `lym` only when a test file of a targeted package imports `internal/testkit/lymbin`.\nFirst check every route by which a test reaches the prebuilt binary, and count each of them, so no test loses the binary it needs.\nA call over the whole set still builds it.\n\nThe hub's tier1 command change from the same report (`go vet ./...` in place of `go build ./... \u0026\u0026 go vet {targets}`) is hub config, set apart from this task.\n",
-      "status": "running · Drift-Recheck",
+      "status": "running · Describe",
       "created": "2026-11-27T18:18:50Z",
       "revised": "2026-11-27T18:23:52Z",
       "profile": "light",
