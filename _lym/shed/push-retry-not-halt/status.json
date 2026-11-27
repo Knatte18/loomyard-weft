@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Motif → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -22,6 +22,23 @@
       "output": "",
       "at": "2026-11-27T12:41:10Z",
       "started_at": "2026-11-27T12:41:10Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/discussion/decision-record.md",
+      "at": "2026-11-27T12:54:12Z",
+      "started_at": "2026-11-27T12:41:11Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-27T12:52:36.50261288Z",
+          "end": "2026-11-27T12:54:10.234639195Z"
+        }
+      ],
+      "block": "Motif"
     }
   ],
   "product": {
