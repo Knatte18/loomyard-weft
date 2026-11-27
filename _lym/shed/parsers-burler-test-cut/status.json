@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,13 @@
       "output": "",
       "at": "2026-11-27T14:58:33Z",
       "started_at": "2026-11-27T14:58:32Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/parsers-burler-test-cut/_lym/discussion/decision-record.md",
+      "at": "2026-11-27T14:58:33Z",
+      "started_at": "2026-11-27T14:58:33Z"
     }
   ],
   "product": {
