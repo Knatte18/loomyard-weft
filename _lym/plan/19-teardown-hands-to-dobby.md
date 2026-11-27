@@ -31,11 +31,11 @@
 - `internal/battencli#TestTeardownPushSeams_PushBringsAPresentPairsTipsToOrigin`
 
 **Create:**
-- `plan:internal/pairteardown#ErrLandingStands` -> `var ErrLandingStands = errors.New("pairteardown: the run's landing entry stands")`
-- `plan:internal/pairteardown#LandingStands` -> `func LandingStands(hubPath, slug string, pair *lymcwd.Location) (bool, error)`
-- `plan:internal/battenshed#TestWorktreeTeardown_AFalseLevelEndsDoneWithThePairStanding` -> `func TestWorktreeTeardown_AFalseLevelEndsDoneWithThePairStanding(t *testing.T)`
-- `plan:internal/battencli#TestTeardownPushSeams_PushWakesThePairsPusher` -> `func TestTeardownPushSeams_PushWakesThePairsPusher(t *testing.T)`
-- `plan:internal/fabriccli_test#TestCommand_RemoveRefusesWhileALandingStands` -> `func TestCommand_RemoveRefusesWhileALandingStands(t *testing.T)`
+- `internal/pairteardown#ErrLandingStands`
+- `internal/pairteardown#LandingStands`
+- `internal/battenshed#TestWorktreeTeardown_AFalseLevelEndsDoneWithThePairStanding`
+- `internal/battencli#TestTeardownPushSeams_PushWakesThePairsPusher`
+- `internal/fabriccli_test#TestCommand_RemoveRefusesWhileALandingStands`
 
 **Uses:**
 - `internal/beamcli/doc.go`
