@@ -365,6 +365,12 @@ Decision: The round 3 Discussion review findings are answered by the record's ro
 
 Rationale: The review segment stopped at its hard cap with these four design findings open; each fix text was read against the code (failedpush.go pushStep, pushanchored.go, finalize_owner.go adopterFirstRepair, finalize.go handedOverStop, pairteardown RemovePair and HandOverOwnedElsewhere, shedrun.ScratchDir) and answers its finding. The re-check under the parent lock follows from D5's own rule and Q5, that GitHub never merges into a stale base; the round 3 review named that gap among its unraised observations.
 
+### Added after Discussion (parent, 2026-11-27): Plan round-3 findings are built as their fixes state
+
+Decision: The six open findings of Plan review round 3 (_lym/reviews/plan/round-3-review.md) are built as each finding's fix there states, and the implementer reads them from that file: (1) the board pusher commits uncommitted board writes before it pushes, through a Board.PusherSync, and reads the board as owed when the Bolt has uncommitted or unpushed changes; (2) every local landing leaves one trailer commit on the parent, so a non-squash landing makes a merge commit carrying the landing message; (3) the landing target pulls the Bolt, or a beam parent runs its run-scope reconcile, before any owner read, and a run read as owned elsewhere gets no done write; (4) clearing the last dropped landing also clears the refused-push record that drop wrote, in a pass and in SettleRefused; (5) batten's own Go driver gets a wait record and the network wait ceiling, and Waits reads batten runs' records in the prime too; (6) the catch-up push takes an injected backoff sleep, so no test waits out the production backoff. Each gets the test row its fix names.
+
+Rationale: Plan-Bouncer reached its hard cap with these open; each has a concrete fix inside the task's scope, so the parent rules them in rather than leaving them unconverged.
+
 ## Constraints
 
 - Root cause, from the code at `3fbf277ca`:
