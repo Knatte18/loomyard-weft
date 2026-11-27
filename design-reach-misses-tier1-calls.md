@@ -1,6 +1,6 @@
 # gate reach: functions called directly by tier1 tests are reported as reached by no mapped test
 
-`reach-misses-tier1-calls` · Task · bug, gate, testmap · halted · Finalize
+`reach-misses-tier1-calls` · Task · bug, gate, testmap · landing · Finalize
 
 Imported from [issue #250](https://github.com/Knatte18/loomyard/issues/250).
 
