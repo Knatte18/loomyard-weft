@@ -3,41 +3,29 @@ lens: fix-affected-set
 outcome: reported
 ```
 
-Lens fix-affected-set: I checked that each set-premised finding's fix covers every member of its set.
+Task: check that each set-shaped fix covers every member (fix-affected-set lens).
 
-Findings left unchecked: none. F15 (the deletion set, plus the helpers and references it reaches) and F16 (the six fields, and the card 14 Phases and re-read sites) were both rerun.
+Unchecked list:
+- F15: I did not re-check which test holds the assertion of each card 15 deletion. The parent's own span measurements cover the line counts. That leaves the estimate's set only partly rerun.
 
-**LOW: card 15, "Whole tests and helpers deleted", `TestNew_HappyPath` (`fabric_test.go`) entry.**
-The file header of `internal/fabricengine/fabric_test.go` names the deleted test and the constructor it covered, and no card edits that header.
-- `fabric_test.go:6` reads "TestNew_HappyPath tests the newPaired constructor at tier 0, spawning no git and using no hub fixtures."
-- `fabric_test.go:1` reads "holds the unit tests for the Fabric handle, its sync options, and ScopedPathspec." Card 2 already moves `TestScopedPathspec` out of this file.
-- After card 15 the header describes tests the file no longer holds.
-- Card 15's Edit list has no entry for the header, though card 3 does name file-header edits for `junctionnames_test.go`.
+Findings:
 
-**F15 set: no gap.** Every helper the deleted spans call still has another user:
-- `setupCleanNonFastForward`: `mergein_recovery_integration_test.go:446`, `mergein_integration_test.go:173`
-- `writeHandOverMark`: `takeoverrun_integration_test.go:90`, `rejectedtakeover_integration_test.go`
-- `gitStatusPorcelain`: `bolt_integration_test.go:126`
-- `newPlainWarpRepo`: other `commitweftat_test.go` tests and `pushdeferral_integration_test.go`
-- `showAtTag`: `remove_records_integration_test.go:37`
-- `findCleanupEntry`, `mustCreateOrphanWeftBranch`, `mustPushBranch`, `tagTargetAt`: many other files
-- `dirtinessNA`, `dirtyScopeTracked`: production code
-- `NewCommitFixtureForTest`, `ParseWarpSHATrailerForTest`, `CommitMessageAtForTest`, `WriteWarpFileForTest`: other `commit_integration_test.go` tests
+1. **MEDIUM**: card 6's new bullet ("A call of `Snapshot` or `Extend` on a record value… becomes `fabriclayout.MutationsOf` over both entry lists") lists three sites and misses a fourth.
+   - `internal/fabriccli/fabric.go:894` copies `rec := r.Mutations`, a record value, and line 899 calls `rec.Extend(warp.Mutations)`. Line 901 then passes `rec` to `errWithRecordFields`.
+   - Once card 6 lands, `r.Mutations` is a `fabriclayout.Mutations`, which has no `Extend`, so the build fails there.
+   - The bullet's general sentence covers the site in principle. But its explicit list reads as complete and omits this one.
+   - Evidence: `grep -rn "\.Extend(" internal cmd` gives `internal/fabriccli/fabric.go:899: rec.Extend(warp.Mutations)`. The site reads `rec := r.Mutations` at `:894`.
 
-`TestDropHandOverMark` calls the production `fabricengine.DropHandOverMark`, which keeps `TakeOverRun` as its caller, so the deletion leaves no test-only production code.
+2. **MEDIUM**: the same class of break sits outside the bullet and outside card 6's Edit set. This is a recorder method called on a record value, here `Append`.
+   - `internal/orchcli/start_test.go:1186` calls `h.report.Mutations.Append(fabricengine.KindWorktreeRemoved, …)`.
+   - `h.report` is a `fabricengine.OriginReport` (`start_test.go:157`), whose `Mutations` field becomes `fabriclayout.Mutations` under card 6. That type has no `Append`.
+   - `internal/orchcli` is not among card 6's Edit targets, and card 4 moves `KindWorktreeRemoved`'s kind. The test stops compiling at card 6.
+   - The fix's bullet frames the affected set as `Snapshot` or `Extend` only, so it understates the set. It should cover any recorder method on a record value, with this site turned into `MutationsOf` over a literal entry, and add `internal/orchcli#TestStart_ReconcilesTheHubFirst` or its package to card 6's Edit list.
 
-I also checked the `TestGate_CheckOrdering` deletion, because the test carries a `//testtiming:keep` ordering reason (`destroy_test.go:27`). The holder rows `WithinContainerPassesContainment` (`destroy_test.go:130-144`) and `AbsoluteOutsideContainer` (`destroy_test.go:106`) send the same two-check requests and assert the earlier check. The ordering stays held.
+F16's set is covered: card 15 gives a `Store` for all six fields. `FieldLocalRefs` and `FieldOriginRefs` take the walk order, and the other four are named at `15-snapshot-reader.md:86`.
 
-The deleted names appear elsewhere only in their own files, in their doc comments, and in `docs/benchmarks/test-redundancy.md` and `docs/research/.../internal_fabricengine.json`. Those are measurement reports and need no edit.
-
-**F16 set: no gap.**
-- Card 15 gives each of the six fields its error's `Store`, and the store order for the two multi-store fields.
-- Card 14 covers both read sites: the phase request, where Phases is appended on success, and the re-read, which records the phase it ran under.
-- The `TestRunRule` transport row now asserts Phases.
-
-Tool calls beyond context:
-1. Grepped helper identifiers in the deleted spans: my context lacked the deleted tests' bodies.
-2. Counted the files using each helper and listed calls per deleted span: context lacked the helpers' users.
-3. Located every use of each helper: needed to tell definition sites from other users.
-4. Grepped the repository for references to the deleted test names: context lacked references outside the plan.
-5. Read the `fabric_test.go` header, `TestGate_CheckOrdering`, and the gate containment rows: needed to confirm the header's staleness and the ordering holder.
+Tool calls:
+- grep for `Mutations.Extend` and `Snapshot` calls on record values, to rerun the card 6 site search, which my context lacked.
+- grep for every `.Extend(` call, to widen that search past the variable names the review named.
+- grep for `Append`, `AppendRef` and `Snapshot` on `.Mutations`, plus the type of `rec` in `fabriccli/fabric.go` and `destroy.go`, to tell recorder receivers from record-value receivers.
+- sed of `fabriccli/fabric.go:888-904` and `orchcli/start_test.go:1178-1190`, to confirm the two extra sites' receiver types.

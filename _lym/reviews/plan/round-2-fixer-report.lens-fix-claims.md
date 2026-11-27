@@ -3,27 +3,65 @@ lens: fix-claims
 outcome: reported
 ```
 
-Task: check that every claim the fix added or rewrote holds against the code at HEAD.
+Lens fix-claims: check that every claim the fix added or rewrote holds against the code at HEAD.
 
-**MEDIUM — `15-snapshot-reader.md`, "Parts of tests deleted", `TestMergeState_Record` bullet: the holding test is misnamed.**
-- The card says "`TestMergeSiblings_Dispositions` [holds] the record's absence".
-- The record-absence assertion is at `internal/fabricengine/mergesiblings_integration_test.go:268-270`, and the test enclosing it is `TestMergeSiblings_CommitRefusesForeignMergeState`.
-- The bullet should name that test.
+no findings
 
-**MEDIUM — `15-snapshot-reader.md`, "Whole tests and helpers deleted", `TestRemove_ForceStillArchives` bullet: the holder is weaker than the card claims.**
-- The card says "`remove_records_integration_test.go`'s forced remove asserts the archive tag". That forced remove is in `TestRemove_OutOfPathspecSiblingDirtRefusesBeforeAnyMutation`, and at `remove_records_integration_test.go:133-142` it only checks that `ArchiveTag` is non-empty and what file content sits at the tag.
-- The deleted test pins more: the exact name `archive/&lt;slug&gt;/&lt;tip[:12]&gt;`, and origin's tag pointing at the records tip (`remove_archive_integration_test.go:256-264`, keep reason "the archive tag pushed to origin at the weft tip").
-- So the deletion loses the tag-name and tag-target assertion under a force remove, and the card's justification overstates what the holder covers.
+Claims checked, all of which hold:
+- **`00-overview.md`, deletion estimates.**
+  - Card 15's further deletions come to about 700 lines: the whole tests add up to about 280, the subtests to about 333 and the tails to about 90.
+  - Cards 2, 3 and 4 plus `TestList_RefStorage` come to about 520, against the stated "about 530":
+    - the four removed files are 211 lines;
+    - the partition test and its helper about 55;
+    - `TestBoardDir`, `TestHubPath`, `TestOriginRecordPaths`, `TestHubReservedNames_Still…` and `TestRecordsBranchName_RoundTrips…` 142;
+    - the subtest and loop cuts about 55;
+    - `TestList_RefStorage` 54.
+  - The net of "about 180 lines down" follows from those figures. The 1,050 added lines is an estimate of code not yet written, so it cannot be checked against HEAD.
+- **Card 6, the new bullet.** The record-value `Extend` calls are exactly the three it names:
+  - `originreconcile.go:815`, in `ReconcileOrigin`;
+  - `originreconcileended.go:125`, in `reconcileEnded`;
+  - `teardown.go:584`, in `applyTo`.
+  - Every other `Extend` call is on a recorder (`weft_verbs.go:286`, `clone.go:68`, `destroy.go:2255`).
+  - `TeardownReport` embeds `MutationRecord`, so `report.Mutations` is the record value.
+  - `s.rec` is a `fabricengine.Mutations` field of a value receiver, so the pointer method `Snapshot` can be called on it.
+  - `applyTo`'s doc says the snapshot's record goes ahead of the removal's own, which matches the bullet's order.
+- **Card 15, holder tests.** Every named holder test and subtest exists in `internal/fabricengine`:
+  - `TestRemove_CommitsPendingRecordsIntoArchiveTag`
+  - `TestMergeSiblings_CommitRefusesForeignMergeState`
+  - `TestPushLock_…`'s `TeardownLockHeldPastTheWaitOwesTheRecordsPush`
+  - `TestGate_Containment`'s two rows
+  - `TestOpen`'s `happy_path`
+  - `TestBolt_SkipGit_ShortCircuits`
+  - `TrailersEndTheWeftMessageOnly`
+  - `TagsEveryOrphan`
+  - `TestCleanup_PrefixSetOverBareSlugOrphan`
+  - `TestMergeContinue_ConcludeFailureThenRetryConcludes` and `InvisibleLandedConclude`
+  - `WritesTheEntry` and `APauseHolds`
+  - `TestMidMerge_…_Parked`
+  - `TestMergeCrucible_AbortRefusesOnTheRecordedConcludeSHAAlone`
+  - `TestMergeErrors_PinnedStrings`
+  - `TestMergeStageTracked_NoMergeInProgressRefuses`
+  - `RemovePath_AbsentTargetRecordsNothing`
+  - `PathEmptyNAReasonWithAbsentTarget`
+  - `RefusingRecordsRemoteWithholdsTheCodeSide`
+  - `TestList_RejectsBareRepository`, `TestList_Errors` and `TestList_ParsesPrunable`
 
-Claims I checked that hold:
-- **`TestCommit_TwoSided_WarpFirstOrdering`:** `TestCommitWithTrailers/TrailersEndTheWeftMessageOnly` asserts both sides committed and that the weft message ends with the `Warp-SHA: &lt;WarpSHA&gt;` trailer (`commit_integration_test.go:325-332`).
-- **`TestDropHandOverMark`:** the `WritesTheEntry` subtest writes a mark and asserts it is dropped (`takeoverrun_integration_test.go:90,106-108`). The `APauseHolds` subtest writes no mark and wants a nil error.
-- **`TestNew_HappyPath`:** `Open` returns `newPaired(...)` (`open.go`), `TestOpen` has a `happy_path` row (`fabric_test.go:43`), and `newPaired` always returns a non-nil `&amp;Fabric` on success (`fabric.go:51-65`).
-- **`TestCheck_HasNoFourthMemberForForce`:** it checks `len` of a literal it builds itself (`refusalof_test.go:121-125`).
-- **`TestGate_*`:** the cited row and subtest names exist in `destroy_test.go`: `AbsoluteOutsideContainer`, `WithinContainerPassesContainment`, `PathEmptyNAReasonWithAbsentTarget`, the `WithAbsentTarget` rows and `RemovePath_AbsentTargetRecordsNothing`.
-- **Card 15's reason that `gitrepo`'s open refuses a non-repository path:** it matches the doc comment at `internal/gitrepo/gogit.go:58-60`.
+  `remove_siblingdirty_integration_test.go` holds the single test `TestRemove_UntrackedDriveReportIsCommittedAndArchived`.
+- **Card 15, reader helpers.** Each exists with the shape the card uses:
+  - `lsRemoteHeads(side, dir, opts)`
+  - `committedMarker`
+  - `originNamespaceAt`
+  - `PendingTeardowns`
+  - `ForgetOriginNamespaceForTest`
+  - `dotgit.ErrRefStorage`
+  - `gitrepo`'s `BranchRefs` and `TagRefs`
+  - `hubforge.NewOneRepoHub`
+  - `gitkit.SkipBelowGitVersion`
+
+  `gitrepo`'s open refuses a path that is not itself a repository, as `internal/gitrepo/gogit.go:58-60` says.
 
 Tool calls:
-1. `commit_integration_test.go:312-340`, `fabric_test.go`, `fabric.go`, `mergesiblings_integration_test.go:260-272`, the `takeoverrun` subtest list, `refusalof_test.go:113-126` and the `destroy_test.go` row names. My context held only the search agent's citations, not the code.
-2. `takeoverrun_integration_test.go:86-131`, the name of the test enclosing `mergesiblings:268`, `commit_integration_test.go:29-77`, `newPaired` and `Open`. Needed to verify the holder claims.
-3. `takeoverrun_integration_test.go:338-368`, `remove_records_integration_test.go:128-145` and `remove_archive_integration_test.go:240-266`. Needed to verify the hand-over-mark and forced-remove holders.
+1. A grep for each holder test and subtest card 15 names. The context did not show those test files.
+2. `TeardownReport` and a repo-wide grep for `Extend` calls, to check that card 6's list of call sites is complete. The context showed only the three sites.
+3. Line counts of cards 2–4's deletions, to check the 530 figure. The context had measured only card 15.
+4. A grep for the helper signatures card 15 relies on, and `gogit.go:55-62`. The context did not show them.

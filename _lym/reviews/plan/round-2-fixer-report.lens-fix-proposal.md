@@ -3,31 +3,30 @@ lens: fix-proposal
 outcome: reported
 ```
 
-Lens fix-proposal: I challenged the reviewer's proposals that the fix carried out (F15's deletions and estimate, F16's store order and `Phases` rule). One finding.
+Lens: fix-proposal. I challenged the reviewer's proposals the fix carried out for F15 and F16.
 
-**MEDIUM — card 15, the new sentence "`FieldLocalRefs` and `FieldOriginRefs` … walk them in the fixed order `StoreCode`, `StoreRecords`, `StoreBolt` … each stops at its first failing store"**
+**Proposals checked, F15:** cutting the card-15 halt and settling the count now; naming further engine deletions together with their holders.
+**Proposals checked, F16:** a fixed store order; a `Store` for each field's error; `Phases` holding a phase only after its read succeeds; a failed re-read recording the phase it ran under.
 
-- **Summary:** with the order now pinned, a code-store origin that can't be reached always hides a records-store origin that can.
-- **Case:**
-  1. In a two-repository hub, the code and records stores have different origins.
-  2. The code origin fails with a transport error. `FieldOriginRefs` stops at `StoreCode`, so `StoreRecords`' origin heads are never read and its `OriginRead` stays false.
-  3. Card 14's loop records one `ReadFailure`, for `StoreCode` only, and asks the rule again.
-  4. A rule that needs the records origin can't tell "records origin unreached" from "records origin not yet read". Re-requesting the phase walks the same order and fails at `StoreCode` again, every time.
-- **Evidence:**
-  - Card 15: "each stops at its first failing store, whose `Store` the error carries, and keeps what the stores before it filled."
-  - Card 14: a read error yields one `ReadFailure` "its `Field` and `Store` from the error".
-- **Better change:** have a transport failure on one store not stop the walk for the others, with one failure recorded per failing store. Stopping at the first failure fits a raw I/O error only.
+1. **MEDIUM. F15: cutting the halt leaves nothing that acts if the part's test code grows.** This concerns the changed text at `00-overview.md:70-71` ("come to about 1,050; … about 700, so the part ends about 180 lines down").
+   - **Case:** the margin of about 180 lines is within the error of the estimates it rests on. The review puts the additions at "800 lines or more", an open bound. The 1,050 figure comes from the plan's writing with no derivation shown. The 700 figure is a rough measure of spans: the whole-test spans are measured, but the tails and subtests were counted by eye.
+   - **Effect:** if the additions come in about 200 lines over the estimate, the part grows. With the halt cut, card 15's commit body only reports the totals and no step acts on them. The added entry "This part's fabric test code shrinks in net" would then ship broken.
+   - **Evidence:** `00-overview.md:70-73`, and the review's line 67 ("I estimate them at 800 lines or more").
+   - **Possible fix:** state in the overview the limit the additions must stay under, or name further reserve deletions on card 15. Either way the plan says up front what pays for an overrun, rather than finding out at run time.
 
-Checks that held:
-- F15 `TestCommit_TwoSided_WarpFirstOrdering` and the `TestCommit_ResultFields/TwoSided` subtest: `Commit` and `CommitWithTrailers` both call `f.commit` (`commit.go:95`, `commit.go:111`). `TestCommitWithTrailers/TrailersEndTheWeftMessageOnly` asserts both sides were committed and that the Warp-SHA trailer equals `result.WarpSHA` (`commit_integration_test.go:322-334`).
-- F15 `TestNew_HappyPath`: `Open` is `newPaired(...)` (`open.go:9-10`), and `TestOpen` has a `happy_path` row (`fabric_test.go:43`).
-- F15 `TestDropHandOverMark`: `TakeOverRun` is `DropHandOverMark`'s only production caller (`takeoverwrite.go:162`). The `WritesTheEntry…` subtest asserts the mark is dropped (`takeoverrun_integration_test.go:90`, 106-108).
-- F15 `TestRemove_ForceStillArchives`: the holder at `remove_records_integration_test.go:133-142` asserts that a forced remove archives, and the archived content. It doesn't pin the tag's name or its target at the tip, but force doesn't change naming, so I raise nothing.
-- F16 `Phases` only after a successful read: no case breaks it. A rule that checks `Phases` asks again, which is what the transport row expects.
+2. **MEDIUM. F16: reporting only the first failing store's error hides a second store that also failed.** This concerns the changed text at `15-snapshot-reader.md:83-86` ("a failing store does not stop the walk … the error returned is the first failing store's, whose `Store` it carries").
+   - **Case:** the code and records origins are both unreachable, and the rule asks for `FieldOriginRefs`. The walk tries both stores, but `read` returns one `*fieldReadError`, the one for `StoreCode`. `runRule` turns one read error into one `ReadFailure` (`14-executor-loop.md:47`), so `ReadFailures` names only `StoreCode`.
+   - **Effect:** the records store's `OriginRead` stays false and no `ReadFailure` names it. A rule cannot tell "records origin unreachable" from "records origin not read". Asking again repeats the same single failure, because the code store always fails first.
+   - **Evidence:** `15-snapshot-reader.md:83-86`, `14-executor-loop.md:46-47`.
+   - **Possible fix:** return one error per failing store, for example joined with `errors.Join`, and have `runRule` record a `ReadFailure` for each `*fieldReadError` it finds.
+
+These held up when I checked them in the code:
+- `TestGate_ZeroValueDeclarationsAreRefusals`' `PathZeroOwnership` and `PathZeroDirtiness` rows are held by the `WithAbsentTarget` rows at `destroy_test.go:336-358`.
+- `TestDropHandOverMark` is held by `TestTakeOverRun`'s subtests, and `TakeOverRun` (`takeoverwrite.go:162`) is the only production caller.
+- `TestCommit_TwoSided_WarpFirstOrdering`'s check that the Warp-SHA trailer equals `WarpSHA` is held by `TrailersEndTheWeftMessageOnly`'s `wantTail` (`commit_integration_test.go:331`).
 
 Tool calls:
-1. Read `commit_integration_test.go:27-80, 312-340`, to check the commit tests' holder claim; my context didn't have that file.
-2. Read the `Commit`/`CommitWithTrailers` bodies, `Open` and `TestOpen`'s `happy_path` row, to check the "same `commit`" and `TestNew_HappyPath` claims; not in context.
-3. Read `remove_archive_integration_test.go:240-266` and `remove_records_integration_test.go:120-145`, to check the forced-archive holder; not in context.
-4. Read `takeoverrun_integration_test.go:337-361` and `85-131`, to check the hand-over-mark holder; not in context.
-5. Grepped `DropHandOverMark`'s production callers and read `takeoverwrite.go:155-170`, to check the single-caller claim; not in context.
+- `destroy_test.go:360-420` and a grep for its `WithAbsentTarget` rows: to check the holders card 15 names for the cut gate rows, which my context did not show.
+- `TestTakeOverRun`, `TestCommitWithTrailers` and `TestCommit_TwoSided_WarpFirstOrdering` located by grep: to compare deleted tests with their named holders.
+- The bodies of `TrailersEndTheWeftMessageOnly`, `TestTakeOverRun`'s subtests and `TestDropHandOverMark`: to compare their assertions.
+- A grep for production callers of `DropHandOverMark`: to check card 15's claim that `TakeOverRun` is its only caller.
