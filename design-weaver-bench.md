@@ -1,6 +1,6 @@
 # Bench Weaver against Webster on plans Webster already implemented: time, cost and quality
 
-`weaver-bench` · Task · research, weaver, webster · starting · Open-IDE
+`weaver-bench` · Task · research, weaver, webster · running · Record-Write
 
 ## Aim (operator, 2026-11-27)
 
