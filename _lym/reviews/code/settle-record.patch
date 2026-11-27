@@ -1,0 +1,232 @@
+diff --git a/internal/boardengine/beammodes.go b/internal/boardengine/beammodes.go
+index de587a2d4..8b6d120cf 100644
+--- a/internal/boardengine/beammodes.go
++++ b/internal/boardengine/beammodes.go
+@@ -20,7 +20,7 @@ type BeamModes struct {
+ 	Root BeamMode
+ 	// Beams holds each beam's settings and landing facts by slug.
+ 	// A beam whose read failed, or whose worktree is not on this machine, is absent.
+-	// The sections of an absent beam show no mode line.
++	// The mode line of an open absent beam says its settings were not read.
+ 	Beams map[string]BeamMode
+ }
+ 
+@@ -97,7 +97,11 @@ const (
+ // hubWideSourceText names the hub-wide default as the place an inherited value comes from.
+ const hubWideSourceText = "hub-wide"
+ 
+-// modeHeader is the README's statement of the hub-wide defaults and the legend of the mode lines.
++// unreadModesText is the mode line of an open beam whose settings the render could not read.
++// A beam whose worktree is on another machine is one such beam.
++const unreadModesText = autonomyLabel + " and " + pullRequestLabel + " not read on this machine"
++
++// modeHeader is the README's statement of the hub-wide defaults and the blank line after it.
+ // It is empty when the render has no modes.
+ func (b boardView) modeHeader() []string {
+ 	if b.modes == nil {
+@@ -107,36 +111,35 @@ func (b boardView) modeHeader() []string {
+ 	return []string{
+ 		fmt.Sprintf("Hub-wide default: %s %s · %s %s.",
+ 			strings.ToLower(autonomyLabel), codeSpan(hubWide.Autonomy.Value), pullRequestLabel, codeSpan(hubWide.PullRequest.Value)),
+-		"On the mode line of a beam or the root, a **bold** value is that project's own setting,",
+-		"and an _italic_ value is inherited from the place in brackets.",
+-		"A setting that the root and every beam read by this render take from the hub-wide default is stated here alone.",
+-		"A beam the render could not read, such as one whose worktree is on another machine, has no mode line,",
+-		"and its settings may differ.",
+-		beamPRLabel + " links the pull request the beam's landing record names; it may already be closed or merged on GitHub.",
+ 		"",
+ 	}
+ }
+ 
+ // modeLines are project's mode line and the blank line after it.
+-// They are empty for a project that is neither the root nor a beam the modes hold, and for a line with no part.
++// The root and every open beam have one, which always shows autonomy and the PR setting;
++// an open beam the modes do not hold gets a line saying its settings were not read.
++// They are empty for any other project and for a render with no modes.
+ func (b boardView) modeLines(project Task) []string {
+ 	if b.modes == nil {
+ 		return nil
+ 	}
+ 	mode, own := b.modes.Root, RootSubject
+ 	if project.Slug != "" {
+-		beamMode, found := b.modes.Beams[project.Slug]
+-		if !project.Beam || !found {
++		if !project.Beam {
+ 			return nil
+ 		}
++		beamMode, found := b.modes.Beams[project.Slug]
++		if !found {
++			if isDone(project) {
++				return nil
++			}
++			return []string{unreadModesText, ""}
++		}
+ 		mode, own = beamMode, project.Slug
+ 	}
+-	var parts []string
+-	if !b.everyPlaceHubWide(func(m BeamMode) SettingValue { return m.Autonomy }) {
+-		parts = append(parts, autonomyLabel+" "+b.settingText(mode.Autonomy, own))
+-	}
+-	if !b.everyPlaceHubWide(func(m BeamMode) SettingValue { return m.PullRequest }) {
+-		parts = append(parts, pullRequestLabel+" "+b.settingText(mode.PullRequest, own))
++	parts := []string{
++		autonomyLabel + " " + b.settingText(mode.Autonomy, own),
++		pullRequestLabel + " " + b.settingText(mode.PullRequest, own),
+ 	}
+ 	if mode.ParentBranch != "" {
+ 		parts = append(parts, parentBranchLabel+" "+codeSpan(mode.ParentBranch))
+@@ -144,26 +147,9 @@ func (b boardView) modeLines(project Task) []string {
+ 	if mode.PullRequestNumber > 0 {
+ 		parts = append(parts, fmt.Sprintf("%s [#%d](%s)", beamPRLabel, mode.PullRequestNumber, mode.PullRequestURL))
+ 	}
+-	if len(parts) == 0 {
+-		return nil
+-	}
+ 	return []string{strings.Join(parts, " · "), ""}
+ }
+ 
+-// everyPlaceHubWide reports whether the hub-wide default decides the setting pick selects in every place.
+-// The places are the root and every beam the modes hold.
+-func (b boardView) everyPlaceHubWide(pick func(BeamMode) SettingValue) bool {
+-	if pick(b.modes.Root).SetBy != "" {
+-		return false
+-	}
+-	for _, mode := range b.modes.Beams {
+-		if pick(mode).SetBy != "" {
+-			return false
+-		}
+-	}
+-	return true
+-}
+-
+ // settingText is setting's value as a mode line shows it:
+ // bold when own set it, else italic with the place it is inherited from in brackets.
+ func (b boardView) settingText(setting SettingValue, own string) string {
+diff --git a/internal/boardengine/beammodes_test.go b/internal/boardengine/beammodes_test.go
+index c42145125..c848c0bdd 100644
+--- a/internal/boardengine/beammodes_test.go
++++ b/internal/boardengine/beammodes_test.go
+@@ -1,6 +1,5 @@
+ // beammodes_test.go pins the beam modes a render reads through the installed reader.
+ // A mode line marks each value as the project's own or as inherited, and names where an inherited one comes from.
+-// A setting every place takes from the hub-wide default stands in the README header alone.
+ 
+ package boardengine_test
+ 
+@@ -18,19 +17,22 @@ import (
+ 
+ // TestRenderToDisk_ShowsTheInstalledBeamModes renders two open beams through Config.Outputs with a fixed-mode reader.
+ // It pins the mode line of the root and of each beam, in the README and in the project files.
+-// It pins how an inherited value names its source.
+-// It pins that a setting every place takes from the hub-wide default stands in the README header alone.
++// It pins how an inherited value names its source,
++// and that a setting every place takes from the hub-wide default still shows on each mode line.
++// It pins the mode line of an open beam the reader leaves out.
+ // It pins that the reader is asked for the open beams alone, and that a failed read renders no mode line.
+ // It installs the process-wide reader, so it does not run in parallel.
+ func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	const pullRequestURL = "https://github.com/example/repo/pull/12"
++	const unreadLine = "Autonomy and PR setting not read on this machine"
+ 	done := boardengine.StatusDone
+ 	tasks := []boardengine.Task{
+ 		{ID: 0, Handle: "P1", Slug: "beam-a", Title: "Beam A", Kind: boardengine.KindProject, Beam: true},
+ 		{ID: 1, Handle: "P2", Slug: "beam-b", Title: "Beam B", Kind: boardengine.KindProject, Beam: true},
+ 		{ID: 2, Handle: "P3", Slug: "beam-done", Title: "Beam done", Kind: boardengine.KindProject, Beam: true, Status: &done},
+ 		{ID: 3, Handle: "P4", Slug: "grouping", Title: "Grouping", Kind: boardengine.KindProject},
++		{ID: 4, Handle: "P5", Slug: "beam-elsewhere", Title: "Beam elsewhere", Kind: boardengine.KindProject, Beam: true},
+ 	}
+ 	hubWide := boardengine.BeamMode{
+ 		Autonomy:    boardengine.SettingValue{Value: "off"},
+@@ -42,8 +44,6 @@ func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
+ 		rootPR, beamAPR, beamBPR boardengine.SettingValue
+ 		// wantLines are lines the README must hold, each whole.
+ 		wantLines []string
+-		// wantAbsent are lines the README must not hold.
+-		wantAbsent []string
+ 		// wantProjectLines maps a project file to a line it must hold, whole.
+ 		wantProjectLines map[string]string
+ 		// readErr is the reader's error, nil for a read that answers.
+@@ -61,24 +61,25 @@ func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
+ 				"Autonomy **on** · PR setting _on_ (hub-wide)",
+ 				"Autonomy _on_ (P0) · PR setting **merge** · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
+ 				"Autonomy **off** · PR setting _on_ (hub-wide) · Parent branch `beam-a`",
++				unreadLine,
+ 			},
+ 			wantProjectLines: map[string]string{
+-				"project-root.md":   "Autonomy **on** · PR setting _on_ (hub-wide)",
+-				"project-beam-a.md": "Autonomy _on_ (P0) · PR setting **merge** · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++				"project-root.md":           "Autonomy **on** · PR setting _on_ (hub-wide)",
++				"project-beam-a.md":         "Autonomy _on_ (P0) · PR setting **merge** · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++				"project-beam-elsewhere.md": unreadLine,
+ 			},
+ 		},
+ 		{
+-			name:    "a setting every place takes from the hub-wide default is left off the mode lines",
++			name:    "a setting every place takes from the hub-wide default still shows on each mode line",
+ 			rootPR:  boardengine.SettingValue{Value: "on"},
+ 			beamAPR: boardengine.SettingValue{Value: "on"},
+ 			beamBPR: boardengine.SettingValue{Value: "on"},
+ 			wantLines: []string{
+ 				"Hub-wide default: autonomy `off` · PR setting `on`.",
+-				"Autonomy **on**",
+-				"Autonomy _on_ (P0) · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
+-				"Autonomy **off** · Parent branch `beam-a`",
++				"Autonomy **on** · PR setting _on_ (hub-wide)",
++				"Autonomy _on_ (P0) · PR setting _on_ (hub-wide) · Parent branch `main` · Beam PR [#12](" + pullRequestURL + ")",
++				"Autonomy **off** · PR setting _on_ (hub-wide) · Parent branch `beam-a`",
+ 			},
+-			wantAbsent: []string{"Autonomy **on** · PR setting _on_ (hub-wide)"},
+ 		},
+ 		{
+ 			name:      "a value inherited from a beam names the beam's handle",
+@@ -134,7 +135,7 @@ func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
+ 			if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
+ 				t.Fatalf("RenderToDisk() = %v; want nil", err)
+ 			}
+-			if want := []string{"beam-a", "beam-b"}; !slices.Equal(gotBeams, want) {
++			if want := []string{"beam-a", "beam-b", "beam-elsewhere"}; !slices.Equal(gotBeams, want) {
+ 				t.Errorf("reader beams = %v; want %v", gotBeams, want)
+ 			}
+ 			readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
+@@ -147,11 +148,6 @@ func TestRenderToDisk_ShowsTheInstalledBeamModes(t *testing.T) {
+ 					t.Errorf("README.md lacks the line %q; got:\n%s", want, readme)
+ 				}
+ 			}
+-			for _, absent := range tt.wantAbsent {
+-				if slices.Contains(lines, absent) {
+-					t.Errorf("README.md holds the line %q; want it absent", absent)
+-				}
+-			}
+ 			for _, prefix := range tt.wantAbsentPrefixes {
+ 				if slices.ContainsFunc(lines, func(line string) bool { return strings.HasPrefix(line, prefix) }) {
+ 					t.Errorf("README.md holds a line opening %q; want none; got:\n%s", prefix, readme)
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 5da85c88a..93f971b0a 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -150,16 +150,15 @@
+ // RenderToDisk reads the beam modes through the BeamModeReader its Outputs carry.
+ // Config.Outputs takes that reader from InstallBeamModeReader;
+ // the lym root installs it, and a test binary installs none.
+-// With modes, the README's header states the hub-wide default of autonomy and of the pull-request setting,
+-// and the legend of the mode lines.
++// With modes, the README's header states the hub-wide default of autonomy and of the pull-request setting.
+ // The section and file header of the root and of each open beam carry a mode line.
+-// A beam the reader leaves out of its answer, such as one whose worktree is not on this machine, carries none,
+-// and the legend says its settings may differ.
+-// It shows autonomy and the pull-request setting, then a beam's parent branch and its recorded pull request as a link.
+-// The link is the one the landing record names, so GitHub may already have closed or merged that pull request,
+-// and the legend says so.
+-// A setting is bold when the project sets it itself, and it is italic with the place it inherits from otherwise.
+-// A setting that the root and every beam read take from the hub-wide default stands in the README's header alone.
++// It always shows autonomy and the pull-request setting.
++// A beam's line then names its parent branch and links its recorded pull request.
++// The link is the one the landing record names, so GitHub may already have closed or merged that pull request.
++// A setting is bold when the project sets it itself.
++// Otherwise it is italic with the place it inherits from, the hub-wide default included.
++// A beam the reader leaves out of its answer carries a mode line saying its settings were not read.
++// A beam whose worktree is not on this machine is one such beam.
+ // A failed read renders the board with no mode line and logs a warning.
+ // board-data.js is the board's view projection as `window.BOARD = <JSON>;`.
+ // Each entry in it carries a revision, the SHA-256 of its stored encoding, which Board.View and the render both take.
