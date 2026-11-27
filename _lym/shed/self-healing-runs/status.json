@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/self-healing-runs/_lym/discussion/decision-record.md",
+      "at": "2026-11-27T20:38:13Z",
+      "started_at": "2026-11-27T20:22:01Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-27T20:36:11.663042037Z",
+          "end": "2026-11-27T20:38:12.570997512Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "self-healing-runs",
     "parent": "main",
