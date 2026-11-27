@@ -7,6 +7,8 @@ Hub-wide default: autonomy `off` · PR setting `off`.
 On the mode line of a beam or the root, a **bold** value is that project's own setting,
 and an _italic_ value is inherited from the place in brackets.
 A setting that the root and every beam read by this render take from the hub-wide default is stated here alone.
+PR setting `review` opens a pull request that waits for the operator to approve or merge it, `trail` opens one and merges it at once with no review, `off` opens none unless GitHub's rules for the parent branch require one, and `merge-in` lands by a true merge with no pull request;
+no agent reviews a pull request under any of them.
 A beam the render could not read, such as one whose worktree is on another machine, has no mode line,
 and its settings may differ.
 Beam PR links the pull request the beam's landing record names; it may already be closed or merged on GitHub.
@@ -145,7 +147,7 @@ Owner `neve`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | darn · light | landing · Finalize | neve | 10h<br>9h | desktop |
 | T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed | landing · Finalize | neve | 10h<br>9h | board |
-| T5 | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | darn · docs | Drift-Verify | neve | 10h<br>14m | testmap, gate |
+| T5 | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | darn · docs | landing · Finalize | neve | 10h<br>14m | testmap, gate |
 | T22 | **batten cancel --remove of a beam leaves the project's beam flag set** | [`beam-cancel-keeps-flag`](design-beam-cancel-keeps-flag.md) | darn · light | landing · Finalize | neve | 11h<br>11h | batten |
 
 ### Layer H (1)
