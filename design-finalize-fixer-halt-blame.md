@@ -2,8 +2,6 @@
 
 `finalize-fixer-halt-blame` · Task · bug, landing
 
-Depends on: [`keep-landed-run-records`](design-keep-landed-run-records.md)
-
 Imported from [issue #271](https://github.com/Knatte18/loomyard/issues/271).
 
 ## What happened
