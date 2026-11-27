@@ -1,6 +1,6 @@
 # Cut the fixed steps of a tier1 gate call from about 6 s to about 2 s
 
-`gate-fixed-cost-cuts` · Note · enhancement, gate
+`gate-fixed-cost-cuts` · Task · enhancement, gate · draft
 
 ## Seen
 
