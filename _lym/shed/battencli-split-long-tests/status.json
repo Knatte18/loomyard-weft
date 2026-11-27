@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T21:26:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/battencli-split-long-tests/_lym/landing/summary.md",
+      "at": "2026-11-27T21:35:10Z",
+      "started_at": "2026-11-27T21:26:23Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T21:32:07.695841563Z",
+          "end": "2026-11-27T21:32:07.716896782Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T21:32:07.815505479Z",
+          "end": "2026-11-27T21:34:06.518760445Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-27T21:34:06.696789931Z",
+          "end": "2026-11-27T21:34:06.704013632Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-27T21:34:06.787843437Z",
+          "end": "2026-11-27T21:34:07.304560245Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T21:34:07.492665155Z",
+          "end": "2026-11-27T21:34:07.492874897Z"
+        }
+      ]
     }
   ],
   "product": {
