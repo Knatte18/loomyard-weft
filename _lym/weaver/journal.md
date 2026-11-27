@@ -12,3 +12,11 @@
 The testcover selector, upkeep planning, declaration compare, Map.FailedAt and Toolchain.GoRoot are gone,
 and cmd/lym's test-only-code allowlist holds no map planning entry.
 `Map.Failure` and `Map.BuildFailure` stay as record fields; no method reads them together any more.
+
+## Batch 03-map-run-tier-bounds, attempt 1
+
+- Cards 3 to 5 are committed; the map run now ends in one `unmeasured` list, and `skipped` and `queued` are gone from its envelope.
+- `dirtyModuleFile` reads `Fabric.CodeWorktreeChanges`: the fabric-vocabulary guard refused filtering `Fabric.Status` by side in gatecli.
+- The card gate runs no tier1 test of internal/gatecli; check the map run with
+  `lym gate test --tier 1 ./internal/gatecli -- -run 'TestGateTestMap|TestGateRedundant'`.
+- A test config whose tier command names targets needs `{targets}` and `all_targets`.

@@ -251,6 +251,37 @@
       "cardShas": [
         "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
       ]
+    },
+    "3": {
+      "slug": "map-run-tier-bounds",
+      "cards": [
+        "03-map-run-tier-bounds",
+        "04-map-run-clean-checks",
+        "05-redundant-map-way-forward"
+      ],
+      "cardHashes": {
+        "03-map-run-tier-bounds": "8cc131b8089db87fdd3d8338af5ce0ae09c21d2ebe0684646055ba78cb54e2dd",
+        "04-map-run-clean-checks": "564182b0e8c56a00ea267c368624f61fb25aa0af3655fed72de6bed4df9abd68",
+        "05-redundant-map-way-forward": "ee04c56e702917fbd5b84000371fd1845f8edb41209b308c4241b6f862e69b80"
+      },
+      "startSha": "090d0f6d2b2b9d479907fa82662a5911f08d62bc",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:55:02Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-map-run-tier-bounds",
+        "status": "done",
+        "head_sha": "ebdb1317df2e14af117c918dc7bff18bf0ce903b",
+        "deviations": [
+          "internal/gatecli/testmap.go",
+          "internal/gatecli/testmap_integration_test.go",
+          "internal/gatecli/testmappackage.go"
+        ]
+      },
+      "cardShas": [
+        "ebdb1317df2e14af117c918dc7bff18bf0ce903b"
+      ]
     }
   },
   "attempts": [
@@ -273,11 +304,22 @@
       "strandName": "ly:weaver-bench-b4:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T13:51:44Z"
+    },
+    {
+      "batch": 3,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b4/_lym/weaver/reports/03-map-run-tier-bounds-a1.yaml",
+      "strandGuid": "26093e2a41c2057dd681bd4cf01c7b3d",
+      "strandName": "ly:weaver-bench-b4:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:55:02Z"
     }
   ],
   "batchEnds": {
     "1": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f",
-    "2": "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
+    "2": "090d0f6d2b2b9d479907fa82662a5911f08d62bc",
+    "3": "ebdb1317df2e14af117c918dc7bff18bf0ce903b"
   },
-  "lastEnd": "090d0f6d2b2b9d479907fa82662a5911f08d62bc"
+  "lastEnd": "ebdb1317df2e14af117c918dc7bff18bf0ce903b"
 }
