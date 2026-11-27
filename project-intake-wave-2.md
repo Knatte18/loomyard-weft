@@ -1,6 +1,6 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-27 13:46 UTC; every age below is as of then.
+Rendered 2026-11-27 13:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-2` · Age 1d · Owner `neve`
@@ -12,4 +12,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | halted · Discussion-Bouncer | neve | 1d<br>2h | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | Discussion-Bouncer | neve | 1d<br>2h | fabric, shed, landing, batten, dobby |
