@@ -1,6 +1,6 @@
 # Timing a gate test call includes the slot wait; run time needs the run record
 
-`gate-call-shows-slot-wait` · Task · enhancement, gate · halted · Worktree-Create
+`gate-call-shows-slot-wait` · Task · enhancement, gate · starting · Worktree-Create
 
 Imported from [issue #284](https://github.com/Knatte18/loomyard/issues/284).
 
