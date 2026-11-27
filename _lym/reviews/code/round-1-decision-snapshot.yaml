@@ -1,0 +1,8 @@
+titles:
+    - push-retry-not-halt waits for the whole chain
+    - hubforge, boardkit and envkit keep their import sets in this task
+    - The secret-path refusal reaches the core as a snapshot fact
+    - Process-installed seams follow the sequential rule, not OriginSeams' per-call shape
+    - The restructure cuts fabric's test code, it does not only move it
+    - A chain part may leave production code that only a named later part first calls
+    - This part's fabric test code shrinks in net
