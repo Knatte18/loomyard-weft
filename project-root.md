@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | raddle | Raddle-Write | neve | 15h<br>38m | termwindow, desktop |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | raddle | Raddle-Write | neve | 15h<br>39m | termwindow, desktop |
 | T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Code-Burler-Fix | neve | 15h<br>2h | gate, testkit |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 2h<br>2h | weaver, webster |
 
