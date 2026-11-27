@@ -52,8 +52,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#snapshotRead`
-- `plan:internal/fabricengine#fieldReadError`
+- `internal/fabricengine#snapshotRead`
+- `internal/fabricengine#fieldReadError`
 - `internal/fabricengine#ForgetOriginNamespaceForTest`
 - `internal/fabricengine#List`
 - `internal/fabricengine#lsRemoteHeads`

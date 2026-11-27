@@ -1,6 +1,6 @@
 {
   "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
-  "planFingerprint": "3b2a3a560069ea18891a7c58017a72d7a9b68efe21c1d37f69db89772c36adc9",
+  "planFingerprint": "1c5c36faf8754506be194f40081accb765829fc9e704532b5b8e9f154fe3e771",
   "planFileHashes": {
     "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
     "01-scankit-banned-imports.md": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
@@ -15,9 +15,9 @@
     "10-layout-verb-results.md": "e76ca54ff35058308753f8d226ccb85d32340f1c6b2b680608db18d1394449b9",
     "11-layout-read-types.md": "c76574a0c8e38ab6f351567788d84eca4365228654f1ea80c90e4c9089dc9a2a",
     "12-core-package.md": "be6bdcc71c13fb804294917c4dc8f46cc47aff87446ad92951074bdcf5bf437b",
-    "13-fabrickit-snapshot-builder.md": "0423eca654a94a57b7df9c212d10d472bda96b329caff81077e8fbffa0e4a448",
-    "14-executor-loop.md": "7ac2be6f1d4d94cb6774fb8b30489f69b5fb46a96662917969c554d867539e8a",
-    "15-snapshot-reader.md": "4be860bcd97f739a8e679d0f42b85ed44c8a16d0865844e83db213c4b702b4d6"
+    "13-fabrickit-snapshot-builder.md": "4dde0c2698c25f43a74f40ebcbf057f4a7fd70847f2a4ee946c05a57326fa23f",
+    "14-executor-loop.md": "32e1482c00b28f23a21c4687028db66534020f7e9626e5d3de1ceef02f32be86",
+    "15-snapshot-reader.md": "cdf3897d05adba310be0b223a7256609fd48a22a39dfb712c26cebc7d36d330c"
   },
   "planOverviewFrameHash": "167029faa5a4884c0aa3b037bf7b0882647b7aa1007607788fd3df3d5ad161f4",
   "partition": [
@@ -981,16 +981,35 @@
         "14-executor-loop"
       ],
       "cardHashes": {
-        "13-fabrickit-snapshot-builder": "0423eca654a94a57b7df9c212d10d472bda96b329caff81077e8fbffa0e4a448",
-        "14-executor-loop": "7ac2be6f1d4d94cb6774fb8b30489f69b5fb46a96662917969c554d867539e8a"
+        "13-fabrickit-snapshot-builder": "4dde0c2698c25f43a74f40ebcbf057f4a7fd70847f2a4ee946c05a57326fa23f",
+        "14-executor-loop": "32e1482c00b28f23a21c4687028db66534020f7e9626e5d3de1ceef02f32be86"
       },
       "startSha": "71473fd829b146b95eeef05a4bec25a2292fc702",
       "kind": "fork",
       "spawnedAt": "2026-11-27T10:55:55Z",
       "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-fabrickit-snapshot-builder",
+        "status": "done",
+        "head_sha": "a291100d2490f8fd96926f9bb8a648e5a01e083d",
+        "deviations": [
+          "internal/fabricengine/executor_test.go",
+          "internal/testkit/fabrickit/builder_test.go",
+          "internal/testkit/fabrickit/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "a291100d2490f8fd96926f9bb8a648e5a01e083d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ae91d8d56216cea0f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ae91d8d56216cea0f.jsonl"
+      ]
     },
     "3": {
       "slug": "layout-hub-paths",
@@ -1892,7 +1911,7 @@
       ]
     }
   },
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
@@ -1907,6 +1926,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a8c24f89e44bab578.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a51dc7fa6cae900fe.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af2a1393b87ab4bad.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af3ab95960a1f2457.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af3ab95960a1f2457.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ae91d8d56216cea0f.jsonl"
   ]
 }

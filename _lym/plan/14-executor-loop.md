@@ -1,15 +1,15 @@
 # Card 14 — executor-loop
 
 **Create:**
-- `plan:internal/fabricengine#snapshotRead` -> `type snapshotRead func(phase fabriccore.Phase, fields []fabriccore.Field, snapshot *fabriccore.Snapshot) error`
-- `plan:internal/fabricengine#actionRunner` -> `type actionRunner func(action fabriccore.Action) error`
-- `plan:internal/fabricengine#fieldReadError` -> `type fieldReadError struct`
-- `plan:internal/fabricengine#fieldReadError.Error` -> `func (e *fieldReadError) Error() string`
-- `plan:internal/fabricengine#fieldReadError.Unwrap` -> `func (e *fieldReadError) Unwrap() error`
-- `plan:internal/fabricengine#runRule` -> `func runRule(rule fabriccore.Rule, start fabriccore.Answer, read snapshotRead, lock func(phase fabriccore.Phase) (release func(), err error), runners map[fabriccore.ActionKind]actionRunner, sleep func(time.Duration)) (fabriccore.Snapshot, error)`
-- `plan:internal/fabricengine#outcomeClassOf` -> `func outcomeClassOf(err error) fabriccore.OutcomeClass`
-- `plan:internal/fabricengine#TestRunRule` -> `func TestRunRule(t *testing.T)`
-- `plan:internal/fabricengine#TestOutcomeClassOf` -> `func TestOutcomeClassOf(t *testing.T)`
+- `internal/fabricengine#snapshotRead`
+- `internal/fabricengine#actionRunner`
+- `internal/fabricengine#fieldReadError`
+- `internal/fabricengine#fieldReadError.Error`
+- `internal/fabricengine#fieldReadError.Unwrap`
+- `internal/fabricengine#runRule`
+- `internal/fabricengine#outcomeClassOf`
+- `internal/fabricengine#TestRunRule`
+- `internal/fabricengine#TestOutcomeClassOf`
 
 **Edit:**
 - `cmd/lym#testOnlyCodeAllowed`
@@ -19,8 +19,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/testkit/fabrickit#NewSnapshot`
-- `plan:internal/testkit/fabrickit#Builder.Build`
+- `internal/testkit/fabrickit#NewSnapshot`
+- `internal/testkit/fabrickit#Builder.Build`
 - `internal/fabriccore/doc.go`
 - `internal/gitexec#Run`
 - `internal/gitrepo#Repo.PushRebaseFree`

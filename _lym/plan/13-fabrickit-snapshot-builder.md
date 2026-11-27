@@ -2,21 +2,21 @@
 
 **Create:**
 - `internal/testkit/fabrickit/doc.go`
-- `plan:internal/testkit/fabrickit#Builder` -> `type Builder struct`
-- `plan:internal/testkit/fabrickit#NewSnapshot` -> `func NewSnapshot() *Builder`
-- `plan:internal/testkit/fabrickit#Builder.Phases` -> `func (b *Builder) Phases(phases ...fabriccore.Phase) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.LocalRef` -> `func (b *Builder) LocalRef(store fabriccore.Store, ref, sha string) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.OriginRef` -> `func (b *Builder) OriginRef(store fabriccore.Store, ref, sha string) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.Worktree` -> `func (b *Builder) Worktree(entry fabriclayout.WorktreeEntry) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.Anchor` -> `func (b *Builder) Anchor(worktree, anchor string) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.RecordsStore` -> `func (b *Builder) RecordsStore(store fabriccore.RecordsStore) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.PendingTeardown` -> `func (b *Builder) PendingTeardown(record fabriclayout.PendingTeardown) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.Outcome` -> `func (b *Builder) Outcome(outcome fabriccore.Outcome) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.ReadFailure` -> `func (b *Builder) ReadFailure(failure fabriccore.ReadFailure) *Builder`
-- `plan:internal/testkit/fabrickit#Builder.Build` -> `func (b *Builder) Build() fabriccore.Snapshot`
-- `plan:internal/testkit/fabrickit#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/testkit/fabrickit#TestBuilder` -> `func TestBuilder(t *testing.T)`
-- `plan:internal/testkit#TestEnforcement_FabrickitLeafOnly` -> `func TestEnforcement_FabrickitLeafOnly(t *testing.T)`
+- `internal/testkit/fabrickit#Builder`
+- `internal/testkit/fabrickit#NewSnapshot`
+- `internal/testkit/fabrickit#Builder.Phases`
+- `internal/testkit/fabrickit#Builder.LocalRef`
+- `internal/testkit/fabrickit#Builder.OriginRef`
+- `internal/testkit/fabrickit#Builder.Worktree`
+- `internal/testkit/fabrickit#Builder.Anchor`
+- `internal/testkit/fabrickit#Builder.RecordsStore`
+- `internal/testkit/fabrickit#Builder.PendingTeardown`
+- `internal/testkit/fabrickit#Builder.Outcome`
+- `internal/testkit/fabrickit#Builder.ReadFailure`
+- `internal/testkit/fabrickit#Builder.Build`
+- `internal/testkit/fabrickit_test#TestMain`
+- `internal/testkit/fabrickit_test#TestBuilder`
+- `internal/testkit#TestEnforcement_FabrickitLeafOnly`
 
 **Edit:**
 - `cmd/lym#testOnlyCodeAllowed`
