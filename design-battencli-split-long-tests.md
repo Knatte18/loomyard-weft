@@ -1,6 +1,6 @@
 # Split the long battencli integration scenario so its parts run in parallel
 
-`battencli-split-long-tests` · Task · enhancement, batten, testkit · running · Darn-Write
+`battencli-split-long-tests` · Task · enhancement, batten, testkit · running · Drift-Verify
 
 ## Aim
 
