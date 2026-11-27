@@ -5,6 +5,8 @@ Under: [Board](README.md).
 
 Owner `neve`
 
+Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
+
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
@@ -47,10 +49,3 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | 10h<br>10h | termwindow, desktop |
-
-## Done (2)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | 10h<br>26m | testmap, gate |
-| T22 | **batten cancel --remove of a beam leaves the project's beam flag set** | [`beam-cancel-keeps-flag`](design-beam-cancel-keeps-flag.md) | 11h<br>11h | batten |

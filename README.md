@@ -4,14 +4,6 @@ Rendered 2026-11-27 07:41 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
-On the mode line of a beam or the root, a **bold** value is that project's own setting,
-and an _italic_ value is inherited from the place in brackets.
-A setting that the root and every beam read by this render take from the hub-wide default is stated here alone.
-PR setting `review` opens a pull request that waits for the operator to approve or merge it, `trail` opens one and merges it at once with no review, `off` opens none unless GitHub's rules for the parent branch require one, and `merge-in` lands by a true merge with no pull request;
-no agent reviews a pull request under any of them.
-A beam the render could not read, such as one whose worktree is on another machine, has no mode line,
-and its settings may differ.
-Beam PR links the pull request the beam's landing record names; it may already be closed or merged on GitHub.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -141,6 +133,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Owner `neve`
 
+Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
+
 ### Layer H (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -180,10 +174,3 @@ Owner `neve`
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | 10h<br>10h | termwindow, desktop |
-
-### Done (2)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T5 | **Evaluate the coverage maps (testmap), every user of them and what each gives, and whether to remove them** | [`testmap-worth-evaluation`](design-testmap-worth-evaluation.md) | 10h<br>26m | testmap, gate |
-| T22 | **batten cancel --remove of a beam leaves the project's beam flag set** | [`beam-cancel-keeps-flag`](design-beam-cancel-keeps-flag.md) | 11h<br>11h | batten |
