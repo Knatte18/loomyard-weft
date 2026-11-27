@@ -6,7 +6,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=26a1995b92fe8fa80a4bc96724696f763e3ded1396ffcc47b0cd7d6a7859821c build=6fbe0ff7a2c21a4ed705e6256ed84e80dd75f880 time=2026-11-27T11:24:16Z -->
+lym-stencil: sha256=72610b796ac010f9cb1ec9eb814614cfd54ebdcf057f3118652ec743a6506f31 build=3fb0787e32473e6bd8d961da278a4bcecb4d2460 time=2026-11-27T21:24:06Z -->
 
 # Reflection — read the friction notes, file every distinct lym problem
 
@@ -51,7 +51,8 @@ which is a binary to update and not a lym defect;
 the driver hands such a run to a fresh driver when a newer build is on disk.
 A `transient-stop` halt is dropped too: an infrastructure failure that lym classed transient, which a re-step can clear.
 A step loop re-steps it once.
-The Go driver also re-steps a git-transport or GitHub API stop with waits, and sends any other class to the tackler;
+The Go driver re-steps only a git-transport or GitHub API stop with waits, for as long as it stays network-class.
+It sends every other class to the tackler;
 the prompt-driven driver repairs what outlasts the loop's re-step under its repair cap.
 File one only when the notes show such halts at one row that the re-steps never cleared,
 or a failure classed transient that no retry could fix.
