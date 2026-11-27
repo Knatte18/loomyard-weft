@@ -101,7 +101,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 1d<br>1d | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 1d<br>1d | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (9)
+## [P0 Root: entries under no project](project-root.md) (13)
 
 Owner `neve`
 
@@ -126,11 +126,15 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>18h | docs |
 
-### Draft (1)
+### Draft (5)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Cut loomcli's tier1 test time at least in half** | [`loomcli-test-cut`](design-loomcli-test-cut.md) | darn · solid |  | 0m<br>0m | loom, testkit |
+| T4 | `draft` **Cut shuttle and seat engines' tier1 test time at least in half** | [`shuttle-test-cut`](design-shuttle-test-cut.md) | darn · solid |  | 0m<br>0m | shuttle, claude, codex, testkit |
+| T5 | `draft` **Cut orchcli and orchengine tier1 test time at least in half** | [`orch-test-cut`](design-orch-test-cut.md) | darn · solid |  | 0m<br>0m | orch, testkit |
+| T6 | `draft` **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid |  | 0m<br>0m | config, reconcile, testkit |
+| T8 | `draft` **Cut the parsers' and burlerengine's tier1 test time in half** | [`parsers-burler-test-cut`](design-parsers-burler-test-cut.md) | darn · solid |  | 0m<br>0m | parsers, burler, testkit |
 
 ### Research (1)
 
