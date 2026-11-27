@@ -24,7 +24,7 @@ Goal: lym can run overnight.
 - A rule table decides, per stop class, whether lym settles it, the orch settles it, or it goes to the operator,
   and autonomy mode's severe-halt classes are the only ones that reach the operator.
 - Quiet notices name what the agent waits on, so a correct wait raises nothing.
-- Collect the stop classes from the drive reports and notices of the last weeks before designing.
+- The stop classes, their counts, who settled them and a proposed rule table for two autonomy levels are in `docs/research/autonomy/stop-classes-2026-11-27.md`; design from it, and settle the three open points its section 3 names.
 
 ## Operator decision (2026-11-27)
 
