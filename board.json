@@ -887,12 +887,15 @@
         "landing"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "pr-session-test-stand-ins",
+        "push-retry-not-halt"
+      ],
       "isolated": false,
       "brief": "Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins",
       "body": "## Seen\n\nThe run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`, whose `envkit.go` the running push-retry-not-halt also changes.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\n## Idea\n\nMove the `MailAgent` rows to a tier1 loomcli test over a real creel daemon,\nand move `envkit`'s session stand-ins onto the recorded tmux kit.\n",
       "created": "2026-11-27T19:02:48Z",
-      "revised": "2026-11-27T19:02:48Z"
+      "revised": "2026-11-27T19:02:49Z"
     }
   ],
   "prime_owner": "neve",

@@ -2,6 +2,8 @@
 
 `pr-session-mail-stand-ins` · Note · enhancement, testkit, landing
 
+Depends on: [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
+
 ## Seen
 
 The run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:
