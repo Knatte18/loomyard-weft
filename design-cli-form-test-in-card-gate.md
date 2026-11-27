@@ -1,6 +1,6 @@
 # Command-help byte-cap test is not run by card or batch gates
 
-`cli-form-test-in-card-gate` · Task · bug, gate, cli · running · PR-Review
+`cli-form-test-in-card-gate` · Task · bug, gate, cli · landing · Finalize
 
 Imported from [issue #274](https://github.com/Knatte18/loomyard/issues/274).
 
