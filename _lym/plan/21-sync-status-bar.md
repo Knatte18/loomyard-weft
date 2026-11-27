@@ -11,13 +11,13 @@
 - `internal/reedengine#TestPinBindingsLocked_PinsTheToggleLinesOnlyWhenEverythingResolves`
 
 **Create:**
-- `plan:internal/pushledger#SyncStatus` -> `func SyncStatus(hubPath string, now time.Time, base time.Duration) (string, error)`
-- `plan:internal/pushledger#TestSyncStatus` -> `func TestSyncStatus(t *testing.T)`
-- `plan:internal/fabriccli#SyncStatusVerb` -> `const SyncStatusVerb = "sync-status"`
-- `plan:internal/fabriccli#syncStatusCmd` -> `func syncStatusCmd() *cobra.Command`
-- `plan:internal/reedengine#syncStatusCommandOption` -> `const syncStatusCommandOption = "@lym_sync_status_command"`
-- `plan:internal/reedengine#syncStatusFormat` -> `const syncStatusFormat = "#(#{E:@lym_sync_status_command})"`
-- `plan:internal/reedengine#composeSyncStatusCommand` -> `func composeSyncStatusCommand(sh shell.Shell, executablePath func() (string, error), hubPath string) (string, bool)`
+- `internal/pushledger#SyncStatus`
+- `internal/pushledger_test#TestSyncStatus`
+- `internal/fabriccli#SyncStatusVerb`
+- `internal/fabriccli#syncStatusCmd`
+- `internal/reedengine#syncStatusCommandOption`
+- `internal/reedengine#syncStatusFormat`
+- `internal/reedengine#composeSyncStatusCommand`
 
 **Uses:**
 - `internal/fabriccli/doc.go`

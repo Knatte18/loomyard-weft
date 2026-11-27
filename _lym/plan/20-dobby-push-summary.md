@@ -8,11 +8,11 @@
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#PushSummaryDeps` -> `type PushSummaryDeps struct`
-- `plan:internal/dobbyengine#PushPeriod` -> `type PushPeriod struct`
-- `plan:internal/dobbyengine#daemon.pushSummary` -> `func (d *daemon) pushSummary(ctx context.Context, now time.Time)`
-- `plan:internal/dobbyengine#TestPushSummary` -> `func TestPushSummary(t *testing.T)`
-- `plan:internal/beamcli#TestHubDobbyDeps_PushSummaryWaitsReadBattenAndPairRecords` -> `func TestHubDobbyDeps_PushSummaryWaitsReadBattenAndPairRecords(t *testing.T)`
+- `internal/dobbyengine#PushSummaryDeps`
+- `internal/dobbyengine#PushPeriod`
+- `internal/dobbyengine#daemon.pushSummary`
+- `internal/dobbyengine#TestPushSummary`
+- `internal/beamcli#TestHubDobbyDeps_PushSummaryWaitsReadBattenAndPairRecords`
 
 **Uses:**
 - `internal/beamcli/doc.go`
