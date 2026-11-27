@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -168,6 +168,16 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer",
+      "block": "Motif"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-27T13:30:36Z",
+      "started_at": "2026-11-27T13:30:00Z",
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Review",
       "block": "Motif"
     }
   ],
