@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 15:35 UTC; every age below is as of then.
+Rendered 2026-11-27 15:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,24 +15,24 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 1h<br>1h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 14m<br>14m | landing, loom, shuttle |
-| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | Describe | neve | 14m<br>14m | shuttle, shed |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Fix | neve | 38m<br>38m | config, reconcile, testkit |
-| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 14m<br>14m | loom, stencil |
-| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 14m<br>14m | burler |
+| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Darn-Write | neve | 15m<br>15m | landing, loom, shuttle |
+| T5 | **Chair timeout stops the session, but its way forward says resume re-attaches it** | [`chair-timeout-way-forward`](design-chair-timeout-way-forward.md) | darn · light | PR-Review | neve | 15m<br>15m | shuttle, shed |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Fix | neve | 39m<br>39m | config, reconcile, testkit |
+| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Darn-Write | neve | 15m<br>15m | loom, stencil |
+| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Darn-Write | neve | 15m<br>15m | burler |
 
 ## Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light |  | 2h<br>8m | webster |
-| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>8m | gate, config |
+| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light |  | 2h<br>9m | webster |
+| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light |  | 1h<br>9m | gate, config |
 
 ## Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 14m<br>14m | batten, fabric |
+| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 15m<br>15m | batten, fabric |
 
 ## Layer G (1)
 
