@@ -16,7 +16,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Code-Burler-Review | neve | 28m<br>22m | gate |
+| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Code-Burler-Review | neve | 28m<br>23m | gate |
 | T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | landing · Finalize | neve | 48m<br>48m | webster, loom, testkit |
 
 ### Layer A (1)
@@ -135,7 +135,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Drift-Recheck | neve | 2h<br>48m | reed, stencil |
+| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Describe | neve | 2h<br>48m | reed, stencil |
 
 ### Layer A (2)
 
