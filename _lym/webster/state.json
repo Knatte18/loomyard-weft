@@ -335,21 +335,12 @@
       },
       "startSha": "2326ef4da0640800959a1d7b2bc9c3444f708748",
       "kind": "fork",
-      "spawnedAt": "2026-11-27T15:53:19Z",
+      "spawnedAt": "2026-11-27T20:55:14Z",
       "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
       "engine": "claude",
       "terminal": false,
-      "status": "waiting",
-      "digest": {
-        "batch": "01-kwin-probes",
-        "status": "waiting",
-        "head_sha": "f619351fc5be217c5dea75f34ecabfc8364219c9",
-        "need": "Ask the operator to run /home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/.scratch/kwin-probes/run-probes.sh (sessions may not use the session bus, so none of the probes has run) in Neve's Plasma session: `read-only` (with at least two lym Konsole windows open on two desktops, and no window titles they do not want committed), then `apply` and `apply-one-row` (each moves two throwaway windows and replaces one non-current desktop's tiling grid), then `laptop-off` with eDP-1 disabled; send back each run's printed output and what they saw, and the implementer then copies .scratch/kwin-probes/recordings/ into internal/kwinplace/testdata/recordings/"
-      },
+      "status": "",
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl"
-      ],
-      "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl"
       ]
     }
@@ -358,7 +349,9 @@
   "masterStrand": "b19f1c9d69e8efc58cd59ad562567257",
   "masterSessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
   "masterEngine": "claude",
-  "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/loom/friction/webster-master.md",
+  "masterNotePaths": [
+    "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/loom/friction/webster-master.md"
+  ],
   "masterRecordsBase": "6bbba30721e6f1773da5a26e11b11a86e9fa5878",
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl"
