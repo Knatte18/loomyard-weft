@@ -761,7 +761,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nCode-Review round 1 of the task that restores the PR-Review agent session (#282) raised a BLOCKING PATTERN finding: the session tests and `envkit` stand in for repository modules.\nThe fixer removed `fakePRSessions` and envkit's `noopSessions` and runs the real `shuttleengine.Runner` over `shuttlefake`, adding `shuttlefake.ResumeEngine`.\nStill hand-written: the `SessionLive` closures over the kit's strand table and in `envkit`, the `RegisterSession` closures, and the `MailAgent` closures, one of them returning a made-up \"no such strand\" error.\nNo kit holds a recorded session stand-in, and a real reed needs tmux while these tests are tier0.\nThe parent accepted the round with this open, to land the urgent fix.\n\n## Idea\n\nGive testkit a recorded reed and creel session stand-in usable at tier0, and move the PR-Review session tests onto it.\n",
-      "status": "running · Record-Write",
+      "status": "running · Drift-Await",
       "created": "2026-11-27T16:37:27Z",
       "revised": "2026-11-27T18:59:01Z",
       "profile": "light"
@@ -807,7 +807,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nThe operator tried the agent button in reed's status bar for the first time.\n\n1. It refused a name with spaces without saying what a valid name is.\n2. The agent it spawned knew nothing of lym: no skills, no commands, no idea what it is, which hub, worktree or task it serves, or what it is for.\n\n## Task\n\n- Name the rule for the agent's name when asking for it; on a refusal name the rule and ask again, or turn spaces into dashes.\n- Spawn the agent with an opening stencil that says what it is, which hub, worktree and task (or the prime) it sits in and what it is for,\n  and which skills to load for that context, such as `ly:cli`, `ly:board` and the scribe skills.\n  Give it the same instructions, guards and skills any other lym session of its engine gets.\n",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-27T16:37:28Z",
       "revised": "2026-11-27T17:58:16Z",
       "profile": "light"
