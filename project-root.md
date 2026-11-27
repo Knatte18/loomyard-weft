@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Memory guard fails a gate by killing cmd/lym tier1 when the user slice is full from elsewhere** | [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md) | darn · light | starting · Worktree-Create | neve | 1m<br>0m | gate |
-| T10 | **Foreground lym gate test is backgrounded after 180 s despite a one-hour Bash timeout** | [`gate-call-backgrounded-180s`](design-gate-call-backgrounded-180s.md) | darn · light | starting · Worktree-Create | neve | 0m<br>0m | shuttle, gate |
+| T10 | **Foreground lym gate test is backgrounded after 180 s despite a one-hour Bash timeout** | [`gate-call-backgrounded-180s`](design-gate-call-backgrounded-180s.md) | darn · light | starting · Worktree-Create | neve | 1m<br>0m | shuttle, gate |
 
 ## Ready (2)
 
