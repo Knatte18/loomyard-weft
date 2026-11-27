@@ -19,11 +19,14 @@ It is large, long and costly, and the operator judges it worth that.
 
 ## Runs
 
-- Each plan is implemented once by Weaver and once by Webster, from the plan's base commit, with the current lym and the hub's default settings for each implementer: six runs in all.
-  Rerunning Webster puts both on the same lym, machine and load; Webster's recorded run from the time is reported beside them, never used in its place.
+- Each plan is implemented once by Weaver, from the plan's base commit, with the current lym and the hub's default settings: three runs.
+- One of the three plans, the one whose recorded Webster run is newest, is also implemented once by Webster under the same conditions, as a calibration: four runs in all (operator, 2026-11-27).
+  The calibration shows how far Webster's recorded numbers lie from today's lym, machine and load,
+  and the other two plans compare Weaver with their recorded Webster runs, adjusted by that calibration, with the adjustment stated.
+
 - Weaver uses its default ladder (`lym config weaver`); Webster its default engine and models.
 - Each run has a bench pair of its own, which the parent creates from this task's worktree when the run asks for it; this task's agent runs them.
-  The two runs of one plan run at the same time so they share the machine's load.
+  The calibration plan's two runs run at the same time so they share the machine's load.
 - No run is repeated; a run lost to the machine (a reboot or an infrastructure stop) is rerun once and the report says so.
 
 ## Measures
@@ -38,5 +41,5 @@ It is large, long and costly, and the operator judges it worth that.
 
 ## Output
 
-A report under `docs/research/weaver/` with one table per measure across the six runs and the recorded Webster run, the findings per run, and a recommendation:
+A report under `docs/research/weaver/` with one table per measure across the four runs and the recorded Webster runs, the findings per run, and a recommendation:
 whether Weaver can replace Webster as tapestry's implementer, and what it would need first.
