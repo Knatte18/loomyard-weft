@@ -4,7 +4,7 @@
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills.
      ReadRubric fills gate_tiers from the hub's gate.yaml tiers and gate lists, or with none.
      internal/stencil's StripLeadingComment removes this leading comment before either consumer sees it.
-lym-stencil: sha256=48041caab118143ca5bf0d2492f5dbe54df32f5b164d50971722a6214e3cfb35 build=90819df40ce18f2430e040088255add21dd44c74 time=2026-11-26T12:07:25Z -->
+lym-stencil: sha256=7c6fcdede033b00f08263863b57e8ef2a4df22905d09fb6db6890fe4e799fb87 build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
 
 # Plan-Review rubric
 
@@ -56,6 +56,14 @@ Do not flag any of the following as a finding:
   One card per independently reviewable unit, not one card per literal symbol.
   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
+  A new function is the exception: it goes on the card that adds its first production caller.
+  A card that adds it alone fails its gate on the guard that every production function is reachable from a `main`;
+  the finding names the function and the card that adds its caller.
+- **A repository-wide intent.**
+  A card whose `**Intent:**` covers every instance of one kind across the repository needs a search that proves its targets complete.
+  It is a finding when its Intent names no repository search that found its targets.
+  The reviewer runs the card's search, or one of its own when the card names none;
+  the finding names each instance the search finds outside the card's targets.
 - **Test economy.**
   A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans a test asserting the static prose of a stencil, spec, doc or other text.
   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;

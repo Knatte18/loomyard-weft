@@ -4,7 +4,7 @@
      so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it;
      each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=e7a3cbcdebe4924ac20498e02a44d781238622893467f312b14c3ce1d79142b9 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
+lym-stencil: sha256=0cf508922fb62bcc79c6455955c478074f0a26609efa639cb2a600864f824f56 build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
 
 A symbol `Rename` needs the hub's `language.rename_tools`; the plan gate refuses one when the list is empty.
 
@@ -50,6 +50,12 @@ A card that prescribes a refusal or guard branch names in its `**Intent:**` the 
 A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt.
 A branch that upstream validation already rules out is not prescribed: drop it, or, when it guards an invariant, write it as a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no reaching test.
 A test that calls only the refusal's error constructor does not reach it.
+
+A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
+Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+
+A new function goes on the card that adds its first production caller, even when it is part of a module's public surface:
+a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.
 
