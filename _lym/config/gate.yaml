@@ -44,7 +44,7 @@ gates:
     batch: {tiers: [0, 1], scope: card, reports: []}
     webster-fix: {tiers: [0, 1], scope: diff, reports: []}
     webster: {tiers: [0, 1, 2], scope: all, reports: []}
-    parent-align: {tiers: [0, 1, 2], scope: all}
+    parent-align: {tiers: [0, 1, 2], scope: all, reports: []}
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
     darn-write: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
