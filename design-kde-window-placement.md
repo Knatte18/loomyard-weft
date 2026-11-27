@@ -1,6 +1,6 @@
 # Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs
 
-`kde-window-placement` · Task · sketch, termwindow, desktop · starting · Open-IDE
+`kde-window-placement` · Task · sketch, termwindow, desktop · running · Raddle-Write
 
 Decision record: [Sketch](decision-kde-window-placement.md)
 
