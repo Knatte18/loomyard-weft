@@ -40,14 +40,8 @@ The stored decision record (`lym board get S1 --record`) decides what this wish 
 the tiling screen (D4), the smallest tile size (D5), how a grid grows (D6), a screen change (D11) and where remembered places live (D9).
 lym depends on no operator auto-snap script; the record finds none on Neve.
 
-## Left open by Discussion (review round 3, accepted at the hard cap, 2026-11-27)
+## Left after Discussion (review round 3, accepted at the hard cap, 2026-11-27)
 
-The record was accepted with four BLOCKING design findings open, each read from KWin Plasma 6.6 source and not observed on Neve.
-Settle them, and probe them on Neve, before this Sketch is split:
-
-- D2's resource class: on Wayland KWin reports the app_id, `org.kde.konsole` for Konsole, not `konsole`, so D2's match finds no window.
-- Script ids: KWin gives a loaded script the id `scripts.size()`, so after an unload the next load can reuse a live script's id and `run` reaches that other script.
-  D3 and D10 must decide how a run reaches its own script (a machine-wide script lock, a plugin name unique per run, -1 as a failed load), and D3's bound on a killed child's script is false.
-- D3's query lacks what D6 needs: each window's `internalId`, `workspace.currentDesktop`, and per desktop the leaf tiles of `rootTile(output, desktop)` with `absoluteGeometry`, `padding` and `windows`;
-  a window's zone is the leaf whose `windows` lists it, never `window.tile`.
-- D9's renumber must count only settled entries, so a reopened window not yet placed keeps its home and order key.
+Round 3's fixer rewrote D2 (`org.kde.konsole`), D3 and D10 (script lock, a plugin name unique per run, -1 as a failed load, the fuller query) and D9 (renumber over settled entries only),
+but no review round checked those fixes, since the round was accepted at the hard cap.
+The KWin facts they rest on are read from source and not observed on Neve; the record's Open risks makes probing them the implementing run's first step.
