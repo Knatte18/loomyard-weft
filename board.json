@@ -398,8 +398,7 @@
       "depends_on": [
         "push-retry-not-halt",
         "beam-member-parent",
-        "fabric-core-records-guards",
-        "transient-stop-not-failed"
+        "fabric-core-records-guards"
       ],
       "isolated": false,
       "brief": "",
@@ -742,9 +741,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "transient-stop-not-failed"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nFinalize takes the parent lock, merges the parent into the task worktree, runs the `landing` gate and only then lands.\nThe gate is skipped only when the parent has not moved since the tree was last verified.\nWith many runs in flight the parent moves between almost every landing,\nso nearly every landing runs the whole landing gate under the lock, and every other landing on that parent waits for it.\nUnder today's load a landing gate takes 4 to 12 minutes.\n\n## Idea\n\nRun the merge and the landing gate with no lock held, and take the parent lock only to land:\n\n- Merge the parent's tip into the task worktree and gate the merged tree, unlocked.\n- Take the parent lock and check that the parent's tip is still the commit the gated tree was merged from.\n- If it is, land at once; the lock is held for seconds.\n- If the parent moved, release the lock, merge the new tip and gate again, unlocked.\n- After a bounded number of lost races, fall back to today's path, merging and gating under the lock, so a run is never starved.\n\nNo drift is possible: what lands is always the tree that passed the gate on top of the parent it lands on.\nThe cost is an extra gate run when a run loses the race.\n\nThe fixer and fix review already run with the lock freed; the change is to the merge and the gate around them.\n",
@@ -774,30 +771,6 @@
       "body": "## Seen (operator, 2026-11-27)\n\nEach landing runs its own landing gate, one after the other, so with many runs ready the gates queue in series.\n\n## Idea\n\nA landing queue in the manner of GitHub's merge queue, bors or Zuul:\n\n- A run ready to land joins a queue for its parent branch instead of taking the parent lock.\n- The queue takes the waiting runs, say A, B and C, builds the tree parent + A + B + C and runs the landing gate once on it.\n- A pass lands all of them together.\n- A failure is bisected (parent + A + B, and so on): the runs that pass land, and the culprit goes back to its own run's fixer.\n- A later step may gate the prefixes in parallel (parent + A, parent + A + B, parent + A + B + C) so a failure costs little time.\n\nNo drift: the batch is gated exactly as it lands.\nIt saves the most gate time when many runs land often, and it costs the most to build:\na queue service, batch merging, bisection on failure and fixer handling for the culprit.\nIt builds on the unlocked gating of the other note, which comes first.\n",
       "created": "2026-11-27T07:03:20Z",
       "revised": "2026-11-27T07:03:20Z"
-    },
-    {
-      "id": 1722,
-      "handle": "T4",
-      "slug": "transient-stop-not-failed",
-      "title": "Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "shed",
-        "loom"
-      ],
-      "issues": [
-        269
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #269](https://github.com/Knatte18/loomyard/issues/269).\n\n## What happened\n\nA `lym loom step` at Finalize failed on a DNS lookup of `api.github.com` while reading the parent branch's rules.\nThe step was refused with `transient=github-api`, yet the run was recorded as `failed` with anomaly `producer-hard-failure`.\n\nTrace excerpt:\n\n```\n22:40:16 level=INFO msg=\"shed: step\"\n22:40:18 level=INFO msg=\"loomcli: no live driver strand to carry the verify wait mark\" label=\"parent lock main\"\n07:21:41 level=INFO msg=\"loomcli: no live driver strand to carry the verify wait mark\" label=\"\"   (next day)\n07:21:41 level=WARN msg=\"shed: step refused\" kind=producer transient=github-api error=\"landingshed: Finalize: read GitHub's rules for the parent branch: pullrequest: read the rules active on branch main: Get \\\"https://api.github.com/repos/\u003cowner\u003e/\u003crepo\u003e/rules/branches/main?per_page=100\\\": dial tcp: lookup api.github.com on 127.0.0.53:53: server misbehaving\"\n```\n\nHalt note:\n\n```\nloom halted failed at Finalize\nproducer: Finalize\nstate: failed\nanomaly: producer-hard-failure\nhistory_entries: 14\n```\n\nA second `lym loom step` started about 0.1 s after the refusal and got through Finalize.\nIts post-merge gate passed and the parent branch was pushed.\n\n## Why it is abnormal\n\nlym itself classes the error as transient, but the persisted state and the halt note class it as a hard producer failure.\nThe halt note then reaches reflection as a defect signal for an outage that cleared at once.\n\nThis is the same shape as #240 (a GitHub API EOF at Finalize), seen here on a DNS failure at the rules read.\n\nThe step also spent about nine hours between the parent-lock wait mark and the refusal.\nThe trace does not show whether the lock was held that long or the host was suspended.\n\n## What to do\n\n- Record a failure with a non-empty transient class as a retryable stop, not as `failed` / `producer-hard-failure`, at least until the driver's re-steps are spent.\n- Write no `loom-halt` note, or one with its own anomaly kind, for such a stop.\n- Log the parent-lock wait's start, end and holder in the trace, so a long wait can be explained.\n\nProvenance: task `reach-misses-tier1-calls`; note `loom-halt.md`.\n",
-      "status": "done",
-      "created": "2026-11-27T07:51:09Z",
-      "revised": "2026-11-27T07:51:51Z",
-      "profile": "light"
     },
     {
       "id": 1728,

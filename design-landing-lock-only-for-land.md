@@ -2,8 +2,6 @@
 
 `landing-lock-only-for-land` · Task · enhancement, landing, gate · running · Darn-Write
 
-Depends on: [`transient-stop-not-failed`](design-transient-stop-not-failed.md)
-
 ## Seen (operator, 2026-11-27)
 
 Finalize takes the parent lock, merges the parent into the task worktree, runs the `landing` gate and only then lands.
