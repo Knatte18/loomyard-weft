@@ -1,0 +1,37 @@
+# Command-help byte-cap test at card gates: closed as fixed by a69580709
+
+This task changes no code.
+The defect it reports is fixed on `main` by `a69580709` (Card gate runs the packages that depend on a card's packages).
+
+## What was reported
+
+A plan card in `dobby-run-watch-build` edited `internal/boardcli#storeVerbs` and pushed the `lym board upsert` help past the 2000-byte cap that `TestCLIForm_EveryCommand` in `cmd/lym` holds.
+The card's gate and its batch gate passed, and the test first failed at a later batch's `--main-packages` gate.
+
+## Why it no longer happens
+
+That run's batches ran on a `--card` scope that held only the packages a card names, so `cmd/lym` was outside it.
+Since `a69580709`, the go scoper's `--card` scope also holds every package whose build or tests reach a card's packages, through `impactset.DependentPackages`.
+`cmd/lym/main.go` imports `internal/boardcli`, so a card naming a command package brings `cmd/lym` into its scope.
+The tier0 `TestCLIForm_EveryCommand` then runs at that card's gate and at the batch's `--card` gate.
+
+## Remaining gap
+
+A card that changes command help in a package it does not name still leaves `cmd/lym` out of its scope.
+The plan rule `a69580709` added covers that case:
+a card whose intent covers every instance of one kind across the repository lists every file holding one and names the search that found them,
+and Plan-Review flags a card that names no search.
+
+## Design decisions
+
+- **No `//lym:guard` mark on `TestCLIForm_EveryCommand`.**
+  The parent recorded this in the decision record:
+  the bug is fixed on `main`, and a guard mark that fixes no bug only adds weight to the gates.
+- **No regression test.**
+  `a69580709` is already on the merge base, so no test can fail there;
+  the parent recorded this as a no-test-seam decision.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** none
