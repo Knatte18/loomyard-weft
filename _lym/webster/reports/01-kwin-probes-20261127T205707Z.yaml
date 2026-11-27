@@ -1,0 +1,3 @@
+status: NEEDS_PARENT
+head_sha: 3ae3e45bac3200df93e8ca82fe745b5e947e2a17
+need: "The earlier DP-2 recordings under .scratch/kwin-probes/recordings/ are deleted; ask the operator to run /home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/.scratch/kwin-probes/run-probes.sh with eDP-1 as the only enabled output as `read-only`, `apply` and `apply-one-row`, with no window open whose title must not be committed, and send back each printed output and what they saw"
