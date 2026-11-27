@@ -40,11 +40,11 @@
 - `internal/fabricengine#TestInWorktreeStaging`
 
 **Create:**
-- `plan:internal/fabriclayout#WorktreeStagingPrefix` -> `const WorktreeStagingPrefix = ".fabric-wt-staging-"`
-- `plan:internal/fabriclayout#RecordsLockDirName` -> `const RecordsLockDirName = ".weft"`
-- `plan:internal/fabriclayout#TeardownLockDirName` -> `const TeardownLockDirName = "teardown"`
-- `plan:internal/fabriclayout#TestHubPaths` -> `func TestHubPaths(t *testing.T)`
-- `plan:internal/fabriclayout#TestIsReservedHubName` -> `func TestIsReservedHubName(t *testing.T)`
+- `internal/fabriclayout#WorktreeStagingPrefix`
+- `internal/fabriclayout#RecordsLockDirName`
+- `internal/fabriclayout#TeardownLockDirName`
+- `internal/fabriclayout#TestHubPaths`
+- `internal/fabriclayout#TestIsReservedHubName`
 
 **Delete:**
 - `internal/fabricengine#weftLockDirName`
