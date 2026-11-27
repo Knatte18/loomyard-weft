@@ -25,5 +25,6 @@
       "title": "The restructure cuts fabric's test code, it does not only move it",
       "digest": "a04c6f1cc28cec12c63da4ef755867580caf293bba445956955994770a8ef756"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
