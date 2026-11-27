@@ -2,6 +2,7 @@
   "current_producer": "Finalize",
   "state": "blocked",
   "error": "landing stop: the fixer session of Finalize pushed origin/pr-modes-no-agent at b6eb9ac69a8d5e12c863dd0a5a27587e1ff0446a; session log: /home/knatte/Code/loomyard-LYMHUB/pr-modes-no-agent/.lym/shuttle/55336935c2b090f90010928604d00408; way forward: check the pushed commits are the task's, then `lym loom resume`",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
