@@ -8,28 +8,33 @@ Hub-wide default: autonomy `on` · PR setting `off`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (4)
+## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (3)
 
 [`test-speed`](design-test-speed.md) · Age 3h · Owner `neve`
 
-### Running (2)
+### Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Code-Burler-Review | neve | 30m<br>25m | gate |
-| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | landing · Finalize | neve | 50m<br>50m | webster, loom, testkit |
+| T1 | **Build lym for a gate call only when a targeted package test uses it**<br>• prebuildLym builds lym on every tier1 call, 2.4 to 2.8 s, whether or not a test uses the binary | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | darn · light | Code-Burler-Review | neve | 31m<br>26m | gate |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 50m<br>50m | batten, testkit |
+| T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 51m<br>51m | batten, testkit |
 
 ### Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E6 |  | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | 6m<br>6m | gate |
+| E6 |  | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | 7m<br>7m | gate |
+
+### Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | 51m<br>51m | webster, loom, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -59,7 +64,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 21h<br>25m | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 21h<br>26m | fabric, testkit, shed, board, pattern |
 
 ### Layer C (1)
 
@@ -135,14 +140,14 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 4h<br>4h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | landing · Finalize | neve | 2h<br>50m | reed, stencil |
+| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | landing · Finalize | neve | 2h<br>51m | reed, stencil |
 
 ### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 3h<br>3h | batten, fabric |
-| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>25m | fabric, cleanup, batten |
+| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>26m | fabric, cleanup, batten |
 
 ### Layer B (1)
 
@@ -161,13 +166,13 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 2h<br>2h | testkit, landing |
-| E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 43m<br>43m | stencil, orch, board |
-| E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 43m<br>43m | orch, board, stencil |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>22m | landing, gate, batten |
-| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 24m<br>24m | stencil, loom |
+| E2 |  | **Hide the arras recipe from orchs and skills; motif is the design-first route** | [`hide-arras-recipe`](design-hide-arras-recipe.md) | 44m<br>44m | stencil, orch, board |
+| E3 |  | **A Sketch a motif run leaves is followed up, not left lying on the board** | [`motif-sketch-follow-up`](design-motif-sketch-follow-up.md) | 44m<br>44m | orch, board, stencil |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>23m | landing, gate, batten |
+| E5 |  | **Tune the raddle stencil and split rubric from the study of every raddle run**<br>• Apply the stencil and rubric changes the raddle split study proposes: dependencies on running work, part size, darn light by default, whole parts | [`raddle-stencil-tune`](design-raddle-stencil-tune.md) | 25m<br>25m | stencil, loom |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 50m<br>50m | dobby, batten, orch |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 51m<br>51m | dobby, batten, orch |
