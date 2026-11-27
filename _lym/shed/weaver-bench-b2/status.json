@@ -2,6 +2,7 @@
   "current_producer": "Webster",
   "state": "failed",
   "error": "webster: run master: shuttle: gate: websterengine: verify gate: config key \"gate.gates.upkeep\": scope \"marked\"; want card, diff or all; fix it with \"lym config gate\" from the prime; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them",
+  "pending_by": "shed",
   "pause_requested": false,
   "pause_after": "Webster",
   "pause_after_by": "bench",
