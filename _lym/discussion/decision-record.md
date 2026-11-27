@@ -18,6 +18,12 @@
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Writer measures webstercli and loomcli tier1 time itself
+
+Decision: The writer may run lym gate test --gate darn-write --wait --no-carry --tier 1 ./internal/<pkg> -- -count=1 in the foreground for internal/webstercli and internal/loomcli, twice each on the untouched base and twice each after its commits, and put the times with the load average at each start in the change description.
+
+Rationale: The task exists to cut these packages' test time; only the writer's worktree holds the before and after trees, and the orch runs no tests.
+
 ## Constraints
 
 ## Auto-mode assumptions
