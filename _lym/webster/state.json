@@ -1437,9 +1437,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a3d7e74b49ad10a93.jsonl"
       ]
+    },
+    "8": {
+      "slug": "layout-push-types",
+      "cards": [
+        "08-layout-push-types",
+        "09-engine-repo-side-names"
+      ],
+      "cardHashes": {
+        "08-layout-push-types": "76a3fd2152dc17fb609c3263fa9ed494ac278ccdcc0c5caf30edebb767d6b0af",
+        "09-engine-repo-side-names": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a"
+      },
+      "startSha": "b3ca5d67f5005e28e1b1f9810215057a7683ebf1",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T09:54:06Z",
+      "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
