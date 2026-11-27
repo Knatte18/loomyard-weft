@@ -1,6 +1,6 @@
 # Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt
 
-`transient-stop-not-failed` · Note · bug, shed, loom
+`transient-stop-not-failed` · Task · bug, shed, loom · draft
 
 Imported from [issue #269](https://github.com/Knatte18/loomyard/issues/269).
 
