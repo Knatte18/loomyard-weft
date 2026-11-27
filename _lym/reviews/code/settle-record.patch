@@ -1,0 +1,691 @@
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 0fe3d349b..a0bc5b547 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -35,11 +35,12 @@ The record's format is defined at `{{.specs_dir}}/loom/loom-discussion-spec.md`;
+ 
+ ## Step 2 — This spawn's work
+ 
+-Prior work, which you continue from when it is not `(none)`:
++Prior work:
+ 
+ {{.prior_work}}
+ 
+-When the prior work is not `(none)`, the commits already on the task branch are yours from an earlier spawn: continue from them and fix what the prior work names, never restart the change.
++When the prior work is not `(none)`, it names what is already on the task branch or in the scratch directory: continue from an earlier spawn's work and fix what the prior work names, never restart the change.
++When it says a spawn was interrupted or may have been, read the commits and scratch entries it lists before you continue, since an interrupted spawn records no outcome.
+ When it is `(none)`, this is the first spawn and the branch holds no work of yours yet.
+ 
+ ## Step 3 — Check the entry before any code
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index e19c692a4..88b4408c7 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -151,6 +151,7 @@ var intentionallyNil = map[string]string{
+ 	"Darn.Commit":                        "darn-only seam, batten has no darn segment",
+ 	"Darn.LatestOutcome":                 "darn-only seam, batten has no darn segment",
+ 	"Darn.CheckRecord":                   "darn-only seam, batten has no darn segment",
++	"Darn.BranchCommits":                 "darn-only seam, batten has no darn segment",
+ 	"Darn.CommittedRecord":               "darn-only seam, batten has no darn segment",
+ 	"EntryLabels":                        "darn-only seam, batten has no red-first gate",
+ 	"RedFirstCommand":                    "darn-only seam, batten has no red-first gate",
+diff --git a/internal/darnengine/spec.go b/internal/darnengine/spec.go
+index 23a61b5c1..faa2996b2 100644
+--- a/internal/darnengine/spec.go
++++ b/internal/darnengine/spec.go
+@@ -61,7 +61,8 @@ type DarnInputs struct {
+ 	StopMarkerPath string
+ 	// ConditionStopMarkerPath is the absolute path of the marker the writer creates when a task-named condition stops it.
+ 	ConditionStopMarkerPath string
+-	// PriorWork names what an earlier spawn left unfinished or broken; empty on a first spawn.
++	// PriorWork tells of an earlier spawn's outcome or interruption and of the work already on the branch or in scratch.
++	// It is empty when there is none of these to tell.
+ 	PriorWork string
+ 	// LanguageSkills are the hub's language skills the writer loads after the darn role's agents.yaml skills.
+ 	// Empty means none.
+diff --git a/internal/fabricengine/scratchlink.go b/internal/fabricengine/scratchlink.go
+index f6ca1d8e8..c4eec6752 100644
+--- a/internal/fabricengine/scratchlink.go
++++ b/internal/fabricengine/scratchlink.go
+@@ -64,6 +64,11 @@ func scratchLinkPath(l *lymcwd.Location, slug string) string {
+ 	return filepath.Join(WorktreePath(l, slug), l.AnchorRel, scratchDirName)
+ }
+ 
++// ScratchLinkPath returns the `.scratch` link at the anchor of the worktree at l, under which agents keep scratch files.
++func ScratchLinkPath(l *lymcwd.Location) string {
++	return filepath.Join(l.AnchorPath(), scratchDirName)
++}
++
+ // scratchLinkTarget returns the weft-side directory the `.scratch` link of slug's warp worktree points at.
+ // It is built like every weft-side junction target and never by resolving the warp `.lym` link.
+ func scratchLinkTarget(l *lymcwd.Location, slug string) string {
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 7e09efd4f..c97a0edfe 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -183,6 +183,7 @@ func discussionRecordCheck(l *lymcwd.Location, recipe string) func() ([]discussi
+ // darnDeps assembles the Darn-Write row's seams for location and the run addressed by runID, whose recipe is recipe.
+ // Every closure reads or writes on demand and opens nothing at build time.
+ func darnDeps(l *lymcwd.Location, runID, recipe string) loomshed.DarnDeps {
++	mergeBase := taskMergeBase(l)
+ 	return loomshed.DarnDeps{
+ 		RecordPath:              loomengine.DiscussionDecisionRecord(l),
+ 		SupportLogPath:          loomengine.DiscussionSupportLog(l),
+@@ -196,6 +197,18 @@ func darnDeps(l *lymcwd.Location, runID, recipe string) loomshed.DarnDeps {
+ 		LatestOutcome: func() (loomshed.DarnOutcome, bool, error) {
+ 			return latestDarnOutcome(shedrun.StatusFile(l, runID), shedrun.StatusLock(l, runID), shedrun.GateFindingsFile(l, runID, loomshed.NameDarnWrite))
+ 		},
++		BranchCommits: func() ([]string, error) {
++			base, err := mergeBase()
++			if err != nil {
++				return nil, err
++			}
++			handle, err := fabricengine.Open(l)
++			if err != nil {
++				return nil, err
++			}
++			return handle.CommitLog(base, "HEAD")
++		},
++		ScratchDir:  fabricengine.ScratchLinkPath(l),
+ 		CheckRecord: discussionRecordCheck(l, recipe),
+ 	}
+ }
+diff --git a/internal/loomcli/subjects_integration_test.go b/internal/loomcli/subjects_integration_test.go
+index ba4d146ec..666925c2a 100644
+--- a/internal/loomcli/subjects_integration_test.go
++++ b/internal/loomcli/subjects_integration_test.go
+@@ -1,5 +1,5 @@
+-// subjects_integration_test.go drives codeSubject and taskMergeBase against a real fabric pair and real git.
+-// Their identity is the task's diff against the merge base that the pair's history leaves.
++// subjects_integration_test.go drives codeSubject, taskMergeBase and darnDeps' branch reads against a real fabric pair.
++// Each reads the task's diff against the merge base that the pair's real git history leaves.
+ 
+ package loomcli
+ 
+@@ -7,6 +7,7 @@ import (
+ 	"bytes"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+@@ -165,6 +166,39 @@ func TestTaskMergeBase_FollowsTheMergedTip(t *testing.T) {
+ 	}
+ }
+ 
++// TestDarnDeps_BranchWorkSeams pins the Darn-Write row's reads of the task's own work.
++// BranchCommits lists the commits beyond the task's merge base and no other.
++// A merged parent tip that the local parent branch has not reached is therefore left out.
++// ScratchDir is the anchor's `.scratch`.
++func TestDarnDeps_BranchWorkSeams(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	const slug = "darnbranchwork"
++	hubforge.AddPair(t, hub, slug)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree error = %v; want nil", err)
++	}
++	_, mergedTip, _ := mergeUnreachedParentTip(t, hub, slug)
++	writeMergeRecordNaming(t, location, mergedTip)
++	sha := gitkit.CommitFile(t, hub.PairCodeWorktree(slug), "solver.txt", "branch table\n", "solver: add the branch table")
++
++	deps := darnDeps(location, shedrun.SelfRunID, shedrun.RecipeDarn)
++
++	// The three commits are the task's newest, the one before it and the merge; the parent's commit is not among them.
++	newest := sha[:7] + " solver: add the branch table"
++	got, err := deps.BranchCommits()
++	if err != nil || len(got) != 3 || got[0] != newest ||
++		!strings.HasSuffix(got[1], " task: work after the merge") || !strings.HasSuffix(got[2], " merge the parent tip") {
++		t.Errorf("BranchCommits() = %q, %v; want %q, the task commit after the merge and the merge, nil", got, err, newest)
++	}
++	if want := filepath.Join(location.AnchorPath(), ".scratch"); deps.ScratchDir != want {
++		t.Errorf("ScratchDir = %q; want %q", deps.ScratchDir, want)
++	}
++}
++
+ // sameCodeSubject reports whether a and b carry the same merge base, head, full hash and patch-id.
+ func sameCodeSubject(a, b shedadapters.Subject) bool {
+ 	return a.MergeBase == b.MergeBase && a.Head == b.Head && a.FullHash == b.FullHash && a.PatchID == b.PatchID
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index c49f9b3d9..02093cc7d 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -78,7 +78,7 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	darnSeams := []string{"DarnTable", "Darn.Commit", "Darn.LatestOutcome", "Darn.CommittedRecord", "RecordWrite.ReadBody", "RecordWrite.ReadStored", "RecordWrite.Commit"}
++	darnSeams := []string{"DarnTable", "Darn.Commit", "Darn.LatestOutcome", "Darn.CommittedRecord", "Darn.BranchCommits", "RecordWrite.ReadBody", "RecordWrite.ReadStored", "RecordWrite.Commit"}
+ 
+ 	t.Run("a darn seed fills the darn seams, the verify source and the attempts", func(t *testing.T) {
+ 		t.Parallel()
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index e6839272e..faa022d14 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -53,6 +53,7 @@ var intentionallyNil = map[string]string{
+ 	"Darn.Commit":                        "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.LatestOutcome":                 "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.CheckRecord":                   "darn-only seam, filled by wire for a darn seed",
++	"Darn.BranchCommits":                 "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.CommittedRecord":               "darn-only seam, filled by wire for a darn seed",
+ 	"CreateWorktree":                     "batten-only seam, filled by battencli",
+ 	"ExecutableSetting":                  "no tapestry or darn row is a Command row; battencli alone fills it",
+diff --git a/internal/loomshed/darnwrite.go b/internal/loomshed/darnwrite.go
+index cf6060b49..2c34f6128 100644
+--- a/internal/loomshed/darnwrite.go
++++ b/internal/loomshed/darnwrite.go
+@@ -56,12 +56,25 @@ func DarnGateReprompt(decisionRecordPath string) func(findingsPath string) strin
+ 	}
+ }
+ 
++// priorWorkListLimit is how many commits or scratch entries the prior-work note lists before it counts the rest.
++const priorWorkListLimit = 20
++
+ // DarnTold carries the token text the producer decides for one darn writer spawn, empty when it has nothing to tell.
+ type DarnTold struct {
+-	// PriorWork is the note that the change is already under way on the task branch.
++	// PriorWork is the note on what is already on the task branch and in the scratch directory.
+ 	PriorWork string
+ }
+ 
++// branchWork is what the task branch and the scratch directory already hold, whether or not a spawn recorded an outcome.
++type branchWork struct {
++	// commits are the task branch's commits beyond its merge base, newest first, each a short SHA and its subject.
++	commits []string
++	// scratchDir is the absolute path of the scratch directory.
++	scratchDir string
++	// scratchEntries are the names of the direct children of scratchDir, a directory's name ending in a slash.
++	scratchEntries []string
++}
++
+ // DarnOutcome is the latest Darn-Write history entry as the producer reads it.
+ type DarnOutcome struct {
+ 	// Outcome is the result the history entry recorded for the spawn.
+@@ -90,6 +103,12 @@ type DarnDeps struct {
+ 	// LatestOutcome returns the latest Darn-Write history entry of the run that records a spawn;
+ 	// found is false when the row has no such entry yet.
+ 	LatestOutcome func() (DarnOutcome, bool, error)
++	// BranchCommits lists the task branch's commits beyond its merge base, newest first, each a short SHA and its subject.
++	// A spawn interrupted before it recorded an outcome leaves no history entry, but its commits stay on the branch.
++	BranchCommits func() ([]string, error)
++	// ScratchDir is the absolute path of the task's scratch directory, which the writer shares with other agents.
++	// It may be a link, and it need not exist.
++	ScratchDir string
+ 	// CheckRecord validates the decision record once the writer session returns, returning the findings that halt the run;
+ 	// it commits nothing.
+ 	CheckRecord func() ([]discussionparser.Finding, error)
+@@ -155,7 +174,12 @@ func (p *darnWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("loomshed: %s: read the latest outcome: %w", p.name, err)
+ 	}
+ 
+-	told := DarnTold{PriorWork: renderPriorWork(latest, found)}
++	work, err := p.readBranchWork()
++	if err != nil {
++		return "", shedengine.OutputPointer{}, err
++	}
++
++	told := DarnTold{PriorWork: renderPriorWork(latest, found, work)}
+ 
+ 	outcome, pointer, err := runAndCommit(ctx, p.name, p.session(told), p.deps.Commit)
+ 	if err != nil || pointer.Path == "" {
+@@ -212,12 +236,14 @@ func (p *darnWrite) checkSeams() error {
+ 		{"session factory", p.session == nil},
+ 		{"Commit", p.deps.Commit == nil},
+ 		{"LatestOutcome", p.deps.LatestOutcome == nil},
++		{"BranchCommits", p.deps.BranchCommits == nil},
+ 		{"CheckRecord", p.deps.CheckRecord == nil},
+ 		{"CommittedRecord", p.deps.CommittedRecord == nil},
+ 		{"RecordPath", p.deps.RecordPath == ""},
+ 		{"SupportLogPath", p.deps.SupportLogPath == ""},
+ 		{"StopMarkerPath", p.deps.StopMarkerPath == ""},
+ 		{"ConditionStopMarkerPath", p.deps.ConditionStopMarkerPath == ""},
++		{"ScratchDir", p.deps.ScratchDir == ""},
+ 	}
+ 	for _, s := range seams {
+ 		if s.missing {
+@@ -277,27 +303,105 @@ func readStopReport(path string) (string, error) {
+ 	return strings.TrimSpace(string(data)), nil
+ }
+ 
+-// renderPriorWork returns the note that the change is already under way on the task branch.
+-// The note names the latest outcome and its kept gate findings file.
+-// It tells the writer that a decision recorded after the Discussion wins over a finding it forbids fixing,
+-// so a resumed spawn never works against the parent's call.
+-// It is empty when the row has no earlier entry.
+-func renderPriorWork(latest DarnOutcome, found bool) string {
+-	if !found {
++// readBranchWork reads the task branch's commits beyond its base and the entries of the scratch directory.
++func (p *darnWrite) readBranchWork() (branchWork, error) {
++	commits, err := p.deps.BranchCommits()
++	if err != nil {
++		return branchWork{}, fmt.Errorf("loomshed: %s: read the task branch's commits: %w", p.name, err)
++	}
++	entries, err := listScratchEntries(p.deps.ScratchDir)
++	if err != nil {
++		return branchWork{}, fmt.Errorf("loomshed: %s: list the scratch directory %s: %w", p.name, p.deps.ScratchDir, err)
++	}
++	return branchWork{commits: commits, scratchDir: p.deps.ScratchDir, scratchEntries: entries}, nil
++}
++
++// listScratchEntries returns the names of the direct children of dir in lexical order.
++// A directory's name ends in a slash.
++// It reads no subdirectory, so one deep tree takes a single place in the list.
++// A dir that is a link is followed; an absent dir holds nothing.
++func listScratchEntries(dir string) ([]string, error) {
++	entries, err := os.ReadDir(dir)
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, err
++	}
++	names := make([]string, 0, len(entries))
++	for _, entry := range entries {
++		name := entry.Name()
++		if entry.IsDir() {
++			name += "/"
++		}
++		names = append(names, name)
++	}
++	return names, nil
++}
++
++// renderPriorWork returns the note on what is already on the task branch and in the scratch directory.
++// After a recorded outcome, the note names that outcome and its kept gate findings file.
++// When commits or scratch entries are listed, it adds that a later spawn may have been interrupted.
++// With no recorded outcome, commits beyond the base mean an earlier spawn was interrupted,
++// and the note says its work may be present.
++// Scratch entries with neither are listed without that claim, since other agents of the task write there too.
++// Every note lists the commits and scratch entries there are.
++// It also tells the writer that a decision recorded after the Discussion wins over a finding it forbids fixing.
++// A resumed spawn therefore never works against the parent's call.
++// It is empty when the row has no earlier entry, the branch has no commit and the scratch directory holds nothing.
++func renderPriorWork(latest DarnOutcome, found bool, work branchWork) string {
++	if !found && len(work.commits) == 0 && len(work.scratchEntries) == 0 {
+ 		return ""
+ 	}
+-	lines := []string{
+-		"An earlier spawn of this task already began the change, and its work is committed on the task branch.",
+-		"Read that work first and continue it instead of starting over.",
+-		fmt.Sprintf("That spawn ended %s.", latest.Outcome),
++	var lines []string
++	switch {
++	case found:
++		lines = append(lines,
++			"An earlier spawn of this task already began the change, and its work is committed on the task branch.",
++			"Read that work first and continue it instead of starting over.",
++			fmt.Sprintf("That spawn ended %s.", latest.Outcome))
++		if latest.FindingsPath != "" {
++			lines = append(lines, fmt.Sprintf("Its last gate findings are kept at %s: read them and fix what they name.", latest.FindingsPath))
++		}
++		if len(work.commits) > 0 || len(work.scratchEntries) > 0 {
++			lines = append(lines, "A later spawn may have been interrupted before it recorded an outcome, so what is listed below can go beyond the spawn that ended so.")
++		}
++	case len(work.commits) > 0:
++		lines = append(lines,
++			"An earlier spawn of this task was interrupted before it recorded an outcome, and its work may be present on the task branch and in the scratch directory.",
++			"Read that work first and continue it instead of starting over.")
++	default:
++		lines = append(lines,
++			"No earlier spawn of this task recorded an outcome, and the task branch holds no commits beyond its base.",
++			"An interrupted spawn or another agent of this task may have left the scratch entries below.",
++			"Read those that bear on the change before you redo or overwrite them.")
+ 	}
+-	if latest.FindingsPath != "" {
+-		lines = append(lines, fmt.Sprintf("Its last gate findings are kept at %s: read them and fix what they name.", latest.FindingsPath))
++	if len(work.commits) > 0 {
++		lines = append(lines, "The task branch holds these commits beyond its base, newest first:")
++		lines = append(lines, bulletList(work.commits)...)
++	}
++	if len(work.scratchEntries) > 0 {
++		lines = append(lines, fmt.Sprintf("These entries survive under the scratch directory %s:", work.scratchDir))
++		lines = append(lines, bulletList(work.scratchEntries)...)
+ 	}
+ 	lines = append(lines, decisionsWinLine)
+ 	return strings.Join(lines, "\n")
+ }
+ 
++// bulletList renders at most priorWorkListLimit of the items as markdown list lines.
++// When items are left out, a closing line counts them.
++func bulletList(items []string) []string {
++	shown := items[:min(len(items), priorWorkListLimit)]
++	lines := make([]string, 0, len(shown)+1)
++	for _, item := range shown {
++		lines = append(lines, "- "+item)
++	}
++	if left := len(items) - len(shown); left > 0 {
++		lines = append(lines, fmt.Sprintf("- and %d more", left))
++	}
++	return lines
++}
++
+ // nonEmpty returns the values that are not empty, in order.
+ func nonEmpty(values ...string) []string {
+ 	var kept []string
+diff --git a/internal/loomshed/darnwrite_test.go b/internal/loomshed/darnwrite_test.go
+index 5947f63b2..3f4fc7252 100644
+--- a/internal/loomshed/darnwrite_test.go
++++ b/internal/loomshed/darnwrite_test.go
+@@ -13,12 +13,16 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/permkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+ // darnStopReport is the stop report the fixture's description file holds.
+ const darnStopReport = "The entry is outdated: landed work removed the module it names."
+ 
++// scratchDirToken stands in a case's expected prior work for the fixture's scratch directory, a per-test temporary path.
++const scratchDirToken = "<scratch>"
++
+ // darnFixture is one Darn-Write producer setup.
+ // It runs over a temporary directory holding a record, a support log and a description.
+ // Its seams log their calls, and its fake session reports a fixed verdict.
+@@ -64,6 +68,8 @@ func newDarnFixture(t *testing.T) *darnFixture {
+ 		CommittedRecord:         func() (bool, error) { return f.committed, nil },
+ 		Commit:                  func() error { f.events = append(f.events, "commit"); return nil },
+ 		LatestOutcome:           func() (DarnOutcome, bool, error) { return DarnOutcome{}, false, nil },
++		BranchCommits:           func() ([]string, error) { return nil, nil },
++		ScratchDir:              filepath.Join(dir, "scratch"),
+ 		CheckRecord: func() ([]discussionparser.Finding, error) {
+ 			f.events = append(f.events, "check")
+ 			return f.findings, f.checkErr
+@@ -114,7 +120,14 @@ func TestDarnWrite_Call(t *testing.T) {
+ 		// wantReasonLacks is a text the reason must not hold.
+ 		wantReasonLacks string
+ 		wantEvents      string
+-		wantTold        DarnTold
++		// wantTold is the told text, with scratchDirToken standing for the fixture's scratch directory.
++		wantTold DarnTold
++		// scratchFiles are written under a directory the fixture's scratch directory links to, as the `.scratch` link does.
++		scratchFiles []string
++		// unreadableScratchDir names a directory of scratchFiles whose permission bits are cleared before the call.
++		unreadableScratchDir string
++		// danglingScratch makes the fixture's scratch directory a link to a path that does not exist.
++		danglingScratch bool
+ 		// staleMarker leaves a stop marker from an earlier spawn in place before the call.
+ 		staleMarker bool
+ 		// wantNoMarker asserts the stop marker is absent after the call.
+@@ -146,6 +159,61 @@ func TestDarnWrite_Call(t *testing.T) {
+ 				"Its last gate findings are kept at /run/Darn-Write.findings.md: read them and fix what they name.\n" +
+ 				decisionsWinLine},
+ 		},
++		{
++			name: "an interrupted spawn that recorded no outcome is named by its commits and scratch files",
++			mutate: func(f *darnFixture) {
++				f.deps.BranchCommits = func() ([]string, error) {
++					return []string{"b2c3d4e solver: count branches", "a1b2c3d solver: add the branch table"}, nil
++				}
++			},
++			scratchFiles: []string{"runs/second.txt", "measure.md"},
++			session:      true,
++			wantResult:   shedengine.Done,
++			wantEvents:   "session,commit,check",
++			wantTold: DarnTold{PriorWork: "An earlier spawn of this task was interrupted before it recorded an outcome, and its work may be present on the task branch and in the scratch directory.\n" +
++				"Read that work first and continue it instead of starting over.\n" +
++				"The task branch holds these commits beyond its base, newest first:\n" +
++				"- b2c3d4e solver: count branches\n" +
++				"- a1b2c3d solver: add the branch table\n" +
++				"These entries survive under the scratch directory <scratch>:\n" +
++				"- measure.md\n" +
++				"- runs/\n" +
++				decisionsWinLine},
++		},
++		{
++			name:                 "an unreadable scratch subdirectory is listed by name and not read",
++			scratchFiles:         []string{"locked/hidden.txt", "measure.md"},
++			unreadableScratchDir: "locked",
++			session:              true,
++			wantResult:           shedengine.Done,
++			wantEvents:           "session,commit,check",
++			wantTold: DarnTold{PriorWork: "No earlier spawn of this task recorded an outcome, and the task branch holds no commits beyond its base.\n" +
++				"An interrupted spawn or another agent of this task may have left the scratch entries below.\n" +
++				"Read those that bear on the change before you redo or overwrite them.\n" +
++				"These entries survive under the scratch directory <scratch>:\n" +
++				"- locked/\n" +
++				"- measure.md\n" +
++				decisionsWinLine},
++		},
++		{
++			name:            "a dangling scratch link tells nothing",
++			danglingScratch: true,
++			session:         true,
++			wantResult:      shedengine.Done,
++			wantEvents:      "session,commit,check",
++		},
++		{
++			name:    "a scratch path that cannot be listed is an error",
++			mutate:  func(f *darnFixture) { f.deps.ScratchDir = f.deps.RecordPath },
++			wantErr: "list the scratch directory",
++		},
++		{
++			name: "branch commits read failure is an error",
++			mutate: func(f *darnFixture) {
++				f.deps.BranchCommits = func() ([]string, error) { return nil, errors.New("merge base unreadable") }
++			},
++			wantErr: "merge base unreadable",
++		},
+ 		{
+ 			name: "gate-failed Stuck commits, keeps the record and appends the way forward",
+ 			mutate: func(f *darnFixture) {
+@@ -288,7 +356,10 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			wantReason:    darnStopReport,
+ 			wantReasonHas: []string{"lym loom decision add", "lym loom resume"},
+ 			wantEvents:    "session,commit",
+-			wantTold:      DarnTold{PriorWork: renderPriorWork(DarnOutcome{Outcome: shedengine.Done}, true)},
++			wantTold: DarnTold{PriorWork: "An earlier spawn of this task already began the change, and its work is committed on the task branch.\n" +
++				"Read that work first and continue it instead of starting over.\n" +
++				"That spawn ended done.\n" +
++				decisionsWinLine},
+ 		},
+ 		{
+ 			name: "a stop marker with no report file halts naming the missing report",
+@@ -390,6 +461,16 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			mutate:  func(f *darnFixture) { f.deps.CheckRecord = nil },
+ 			wantErr: "no CheckRecord seam wired",
+ 		},
++		{
++			name:    "unwired BranchCommits seam is named",
++			mutate:  func(f *darnFixture) { f.deps.BranchCommits = nil },
++			wantErr: "no BranchCommits seam wired",
++		},
++		{
++			name:    "unwired ScratchDir is named",
++			mutate:  func(f *darnFixture) { f.deps.ScratchDir = "" },
++			wantErr: "no ScratchDir seam wired",
++		},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -408,6 +489,17 @@ func TestDarnWrite_Call(t *testing.T) {
+ 					t.Fatalf("WriteFile(%q) = %v; want nil", f.deps.ConditionStopMarkerPath, err)
+ 				}
+ 			}
++			if len(tc.scratchFiles) > 0 {
++				writeLinkedScratch(t, f.deps.ScratchDir, tc.scratchFiles)
++			}
++			if tc.unreadableScratchDir != "" {
++				permkit.Chmod(t, filepath.Join(f.deps.ScratchDir, tc.unreadableScratchDir), 0)
++			}
++			if tc.danglingScratch {
++				if err := os.Symlink(f.deps.ScratchDir+"-absent", f.deps.ScratchDir); err != nil {
++					t.Fatalf("Symlink(%q) = %v; want nil", f.deps.ScratchDir, err)
++				}
++			}
+ 			outcome, pointer, err := NewDarnWrite(NameDarnWrite, f.session, f.deps).Call(context.Background())
+ 
+ 			if tc.wantErr != "" {
+@@ -448,8 +540,9 @@ func TestDarnWrite_Call(t *testing.T) {
+ 				}
+ 				return
+ 			}
+-			if len(f.told) != 1 || f.told[0] != tc.wantTold {
+-				t.Errorf("told = %+v; want one %+v", f.told, tc.wantTold)
++			wantTold := DarnTold{PriorWork: strings.ReplaceAll(tc.wantTold.PriorWork, scratchDirToken, f.deps.ScratchDir)}
++			if len(f.told) != 1 || f.told[0] != wantTold {
++				t.Errorf("told = %+v; want one %+v", f.told, wantTold)
+ 			}
+ 		})
+ 	}
+@@ -468,6 +561,25 @@ func TestDarnWrite_Call(t *testing.T) {
+ 	})
+ }
+ 
++// writeLinkedScratch writes each of files, slash-separated, under a new directory beside link.
++// It then makes link a link to that directory.
++func writeLinkedScratch(t *testing.T, link string, files []string) {
++	t.Helper()
++	target := link + "-target"
++	for _, file := range files {
++		path := filepath.Join(target, filepath.FromSlash(file))
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(path), err)
++		}
++		if err := os.WriteFile(path, []byte("partial\n"), 0o644); err != nil {
++			t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++		}
++	}
++	if err := os.Symlink(target, link); err != nil {
++		t.Fatalf("Symlink(%q, %q) = %v; want nil", target, link, err)
++	}
++}
++
+ func TestDarnWrite_CancelledContextRefusesBeforeAnySeam(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -485,20 +597,54 @@ func TestDarnWrite_CancelledContextRefusesBeforeAnySeam(t *testing.T) {
+ func TestRenderPriorWork(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
++	manyFiles := make([]string, priorWorkListLimit+2)
++	for i := range manyFiles {
++		manyFiles[i] = "f.txt"
++	}
+ 	cases := []struct {
+ 		name   string
+ 		latest DarnOutcome
+ 		found  bool
++		work   branchWork
+ 		want   string
+ 	}{
+-		{"nothing to name", DarnOutcome{}, false, ""},
+-		{"findings of an entry the read did not find are ignored", DarnOutcome{FindingsPath: "/run/stale.md"}, false, ""},
+-		{"an earlier entry with no kept findings", DarnOutcome{Outcome: shedengine.Done}, true, "An earlier spawn of this task already began the change, and its work is committed on the task branch.\nRead that work first and continue it instead of starting over.\nThat spawn ended done.\n" + decisionsWinLine},
++		{"nothing to name", DarnOutcome{}, false, branchWork{}, ""},
++		{"findings of an entry the read did not find are ignored", DarnOutcome{FindingsPath: "/run/stale.md"}, false, branchWork{}, ""},
++		{"an earlier entry with no kept findings", DarnOutcome{Outcome: shedengine.Done}, true, branchWork{}, "An earlier spawn of this task already began the change, and its work is committed on the task branch.\nRead that work first and continue it instead of starting over.\nThat spawn ended done.\n" + decisionsWinLine},
++		{
++			"an earlier entry lists the commits and scratch files after its findings, as maybe a later spawn's",
++			DarnOutcome{Outcome: shedengine.Stuck, FindingsPath: "/run/f.md"},
++			true,
++			branchWork{commits: []string{"a1b2c3d solver: add the branch table"}, scratchDir: "/w/.scratch", scratchEntries: []string{"measure.md"}},
++			"An earlier spawn of this task already began the change, and its work is committed on the task branch.\n" +
++				"Read that work first and continue it instead of starting over.\n" +
++				"That spawn ended stuck.\n" +
++				"Its last gate findings are kept at /run/f.md: read them and fix what they name.\n" +
++				"A later spawn may have been interrupted before it recorded an outcome, so what is listed below can go beyond the spawn that ended so.\n" +
++				"The task branch holds these commits beyond its base, newest first:\n" +
++				"- a1b2c3d solver: add the branch table\n" +
++				"These entries survive under the scratch directory /w/.scratch:\n" +
++				"- measure.md\n" +
++				decisionsWinLine,
++		},
++		{
++			"scratch files alone claim no interrupted spawn and a long list is cut with a count",
++			DarnOutcome{},
++			false,
++			branchWork{scratchDir: "/w/.scratch", scratchEntries: manyFiles},
++			"No earlier spawn of this task recorded an outcome, and the task branch holds no commits beyond its base.\n" +
++				"An interrupted spawn or another agent of this task may have left the scratch entries below.\n" +
++				"Read those that bear on the change before you redo or overwrite them.\n" +
++				"These entries survive under the scratch directory /w/.scratch:\n" +
++				strings.Repeat("- f.txt\n", priorWorkListLimit) +
++				"- and 2 more\n" +
++				decisionsWinLine,
++		},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+-			if got := renderPriorWork(tc.latest, tc.found); got != tc.want {
++			if got := renderPriorWork(tc.latest, tc.found, tc.work); got != tc.want {
+ 				t.Errorf("renderPriorWork() = %q; want %q", got, tc.want)
+ 			}
+ 		})
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index f12574da0..2b5551530 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -96,6 +96,10 @@
+ // A condition stop marker beside it marks a stop on a condition the task body names;
+ // the stop report's own way forward then stands instead.
+ // A gate-failed Stuck keeps its record and gains the resume way forward.
++// Prior work told to a spawn is the latest recorded outcome, the branch's commits beyond base and the scratch entries.
++// A spawn interrupted before it recorded an outcome is still named by those commits.
++// Scratch entries with no commit and no outcome are listed with no claim of who wrote them.
++// Every agent of the task shares the scratch directory.
+ // A Done session is then guarded by DarnDeps.CheckRecord, and findings halt the run Stuck with no re-prompt.
+ // Every restore keeps each `Added after Discussion` entry the record held.
+ //
+diff --git a/internal/shedrecipe/entries_darnwrite.go b/internal/shedrecipe/entries_darnwrite.go
+index dd5fbaf20..4e3ffa7ae 100644
+--- a/internal/shedrecipe/entries_darnwrite.go
++++ b/internal/shedrecipe/entries_darnwrite.go
+@@ -54,6 +54,7 @@ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 		{"Darn.SupportLogPath", dw.SupportLogPath},
+ 		{"Darn.StopMarkerPath", dw.StopMarkerPath},
+ 		{"Darn.ConditionStopMarkerPath", dw.ConditionStopMarkerPath},
++		{"Darn.ScratchDir", dw.ScratchDir},
+ 	} {
+ 		if err := requireAbsRoot("DarnWrite", path.field, path.value); err != nil {
+ 			return nil, err
+@@ -65,6 +66,7 @@ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 	}{
+ 		{"Darn.Commit", dw.Commit},
+ 		{"Darn.LatestOutcome", dw.LatestOutcome},
++		{"Darn.BranchCommits", dw.BranchCommits},
+ 		{"Darn.CheckRecord", dw.CheckRecord},
+ 		{"Darn.CommittedRecord", dw.CommittedRecord},
+ 	}
+diff --git a/internal/shedrecipe/entries_darnwrite_test.go b/internal/shedrecipe/entries_darnwrite_test.go
+index 9e6624bd8..89861901b 100644
+--- a/internal/shedrecipe/entries_darnwrite_test.go
++++ b/internal/shedrecipe/entries_darnwrite_test.go
+@@ -44,6 +44,8 @@ func darnTestEnv(t *testing.T) Env {
+ 		CommittedRecord: func() (bool, error) { return false, nil },
+ 		Commit:          func() error { return nil },
+ 		LatestOutcome:   func() (loomshed.DarnOutcome, bool, error) { return loomshed.DarnOutcome{}, false, nil },
++		BranchCommits:   func() ([]string, error) { return nil, nil },
++		ScratchDir:      filepath.Join(dir, "scratch"),
+ 		CheckRecord:     func() ([]discussionparser.Finding, error) { return nil, nil },
+ 
+ 		ConditionStopMarkerPath: filepath.Join(dir, "condition-stop-marker"),
+@@ -64,6 +66,8 @@ func TestDarnWriteEntry_ConstructionFailures(t *testing.T) {
+ 		{"NilSeats", "Seats", gated, func(e *Env) { e.Seats = nil }},
+ 		{"NilCommit", "Darn.Commit", gated, func(e *Env) { e.Darn.Commit = nil }},
+ 		{"NilLatestOutcome", "Darn.LatestOutcome", gated, func(e *Env) { e.Darn.LatestOutcome = nil }},
++		{"NilBranchCommits", "Darn.BranchCommits", gated, func(e *Env) { e.Darn.BranchCommits = nil }},
++		{"RelativeScratchDir", "Darn.ScratchDir", gated, func(e *Env) { e.Darn.ScratchDir = "scratch" }},
+ 		{"NilCheckRecord", "Darn.CheckRecord", gated, func(e *Env) { e.Darn.CheckRecord = nil }},
+ 		{"NilCommittedRecord", "Darn.CommittedRecord", gated, func(e *Env) { e.Darn.CommittedRecord = nil }},
+ 		{"RelativeRecordPath", "Darn.RecordPath", gated, func(e *Env) { e.Darn.RecordPath = "decision-record.md" }},
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index e56ee94c6..9cc6bed3f 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -581,6 +581,8 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			CommittedRecord: func() (bool, error) { return false, nil },
+ 			Commit:          func() error { return nil },
+ 			LatestOutcome:   func() (loomshed.DarnOutcome, bool, error) { return loomshed.DarnOutcome{}, false, nil },
++			BranchCommits:   func() ([]string, error) { return nil, nil },
++			ScratchDir:      filepath.Join(dir, "darn-scratch"),
+ 			CheckRecord:     func() ([]discussionparser.Finding, error) { return nil, nil },
+ 
+ 			ConditionStopMarkerPath: filepath.Join(dir, "condition-stop-marker"),
