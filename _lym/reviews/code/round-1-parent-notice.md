@@ -1,0 +1,1 @@
+Review segment of task `pr-review-stalls-no-session` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/pr-review-stalls-no-session/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept pr-review-stalls-no-session" or "lym loom circling continue pr-review-stalls-no-session".

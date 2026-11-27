@@ -1,0 +1,9 @@
+---
+round: 2
+focus:
+  - "internal/landingshed/prreview.go, the wait's stop, read, judge and resume cycle (wake, sessionStopWanted, judge, openPullRequest) and internal/landingshed/prsession.go#endSession: for each combination of pull request state, continue flag, approval, local head, dirty tree, stale text and error kind, is the session stopped, started or resumed only when the answer key calls for it?"
+  - "internal/landingshed/prreview.go gateHead, mailFailure, gateRetryHint and the MailedHead and ReviewEnded records, with internal/loomcli/prcontinue.go: can a head that failed the gate be passed, forgotten or left unannounced, and can any retry route the agent is told about (mail, contracts/stencils/landing/landing-template-pr-review.md, pr-continue help, docs/overview.md) end the review without the operator's word?"
+  - "internal/loomcli/prcontinue.go#prContinueAdmitsStrand and the record read that follows it: which strand names are admitted, across another run's slug, a slugless name and another hub's shortname, and do the refusal text, doc comment and PATTERN-landing agree with the code?"
+  - "Tests of the PR-Review session (internal/landingshed/prreview_session_test.go, internal/testkit/envkit/envkit.go and any session kit under internal/testkit): do they comply with PATTERN-test-stand-ins, and would they fail if the session stop on an ending, the tree re-read, the resume, or the wireLanding filling of Landing.PullRequest.SessionLive and RegisterSession were removed?"
+  - "Comments and prose the diff touches or leaves describing PR-Review (internal/landingshed/config.go LoadConfig doc, internal/beamsetting/beamsetting.go, internal/dobbyengine/config.go, the PR-Review stencil, _lym/landing/summary.md): are config keys written in full per PATTERN-config-key-names, and does each statement match the code?"
+---
