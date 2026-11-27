@@ -341,6 +341,12 @@ Decision: For a refused landing push of the prime's code branch, D5's and D3's w
 
 Rationale: Round-3 F1: lym fabric push in the prime pushes only the records side, so the record never cleared and the pusher never restarted; merging origin's parent in after a takeover lands the work twice.
 
+### Added after Discussion (parent, 2026-11-27): Pusher checks each carried run's owner
+
+Decision: Before each parent push the pusher reads the owner of the parent and of every run whose landing entry the push carries, and before each done write it reads that run's owner again. A run owned elsewhere is the same refusal as a parent owned elsewhere, naming lym adopt for that run, and it holds back the whole push of that parent, since one push carries every entry on it. Add a D5 criterion: a beam run landed on the prime and adopted by another machine while its push is owed gets no push and no done write.
+
+Rationale: Round-3 F2: today's handedOverStop reads the run's own owner; moving the push to the parent's pusher must keep that guard, as PATTERN-owner-machine requires.
+
 ## Constraints
 
 - Root cause, from the code at `3fbf277ca`:
