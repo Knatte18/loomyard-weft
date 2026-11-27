@@ -1,15 +1,24 @@
-# Raddle split proposals need too much revision by the operator
+# Study every raddle run and tune the split it proposes
 
-`raddle-split-quality` · Task · enhancement, stencil, board · draft
+`raddle-split-quality` · Task · research, stencil, board
 
 ## Seen (operator, 2026-11-27)
 
-The split a raddle run proposes for a Sketch must be approved, and today it is not tuned well:
-the operator often has to revise what it proposes.
-This is the same distrust that keeps arras out of use.
+The split a raddle run proposes for a Sketch is too often absurd, and the operator has to revise it before approving.
+This is also why arras, which lets a review approve the split, is not trusted.
+The operator believes raddle can be tuned so its proposals hold.
 
-## Idea
+## Work
 
-- Collect the operator's revisions from past raddle runs' support logs and approvals, and class them: wrong cut lines, too many or too few parts, wrong recipe or profile, wrong order or dependencies, missing parts.
-- Tune the Raddle-Write stencil against those classes, and add checks the proposal must pass before it is shown.
-- The approval stays with the operator.
+- Find every raddle run made in this hub. Their records are in the weft repository's `archive/<slug>` tags
+  (`git -C <weft> tag -l 'archive/*'`, then read the tagged trees' `_lym` records); the board's done history and Bolt's git log name which tasks had recipe `raddle`.
+- For each run, put side by side: the Sketch's decision record, the split Raddle-Write first proposed (parts, cut lines, order, dependencies, recipes, profiles),
+  every revision the operator asked for in the session, and the split finally filed.
+- Class each revision: wrong cut lines, too many or too few parts, parts that overlap a package, wrong recipe or profile, wrong order or dependencies, missing or invented parts, wording, other.
+- Count the classes, and quote the operator's own words for each.
+- Read the Raddle-Write stencil and recipe, and name for each class the passage that led to it or the rule that is missing.
+
+## Output
+
+A report under `docs/research/raddle/` with the table of runs, the classes and counts, and for each class a concrete stencil change, written as the new text.
+Make no stencil or code change in this task; the stencil change becomes its own task from the report.
