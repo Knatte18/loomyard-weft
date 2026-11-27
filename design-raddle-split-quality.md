@@ -1,6 +1,6 @@
 # Raddle split proposals need too much revision by the operator
 
-`raddle-split-quality` · Note · enhancement, stencil, board
+`raddle-split-quality` · Task · enhancement, stencil, board · draft
 
 ## Seen (operator, 2026-11-27)
 

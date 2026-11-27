@@ -939,10 +939,10 @@
     },
     {
       "id": 1753,
-      "handle": "E5",
+      "handle": "T9",
       "slug": "raddle-split-quality",
       "title": "Raddle split proposals need too much revision by the operator",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "stencil",
@@ -953,6 +953,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nThe split a raddle run proposes for a Sketch must be approved, and today it is not tuned well:\nthe operator often has to revise what it proposes.\nThis is the same distrust that keeps arras out of use.\n\n## Idea\n\n- Collect the operator's revisions from past raddle runs' support logs and approvals, and class them: wrong cut lines, too many or too few parts, wrong recipe or profile, wrong order or dependencies, missing parts.\n- Tune the Raddle-Write stencil against those classes, and add checks the proposal must pass before it is shown.\n- The approval stays with the operator.\n",
+      "status": "draft",
       "created": "2026-11-27T18:05:19Z",
       "revised": "2026-11-27T18:05:19Z"
     }
