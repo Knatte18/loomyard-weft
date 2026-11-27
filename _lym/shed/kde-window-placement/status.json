@@ -1,14 +1,31 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement/_lym/discussion/decision-record.md",
+      "at": "2026-11-27T10:25:55Z",
+      "started_at": "2026-11-27T10:10:46Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-11-27T10:23:42.662699161Z",
+          "end": "2026-11-27T10:25:53.908463633Z"
+        }
+      ]
+    }
+  ],
   "product": {
     "slug": "kde-window-placement",
     "parent": "main",
