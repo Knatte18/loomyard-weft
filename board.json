@@ -718,7 +718,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Wish (operator, 2026-11-26)\n\nThe desktop launchers `internal/desktoplauncher` writes carry names such as \"lym: start the hub odd\", which is too long; the operator needs mainly the repository's name.\nFor now each hub's launcher is named \"lym: \u003cshortname\u003e\", such as \"lym: odd\".\nLater, with a lym icon on the launcher, the name may be the shortname alone.\n",
-      "status": "running · PR-Review",
+      "status": "landing · Finalize",
       "created": "2026-11-26T21:21:13Z",
       "revised": "2026-11-26T21:41:20Z",
       "profile": "light"
