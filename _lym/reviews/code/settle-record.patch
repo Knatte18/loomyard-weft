@@ -1,0 +1,2476 @@
+diff --git a/internal/gatecli/cardfixer_test.go b/internal/gatecli/cardfixer_test.go
+index 0e3b80b56..5638f0f0d 100644
+--- a/internal/gatecli/cardfixer_test.go
++++ b/internal/gatecli/cardfixer_test.go
+@@ -351,20 +351,29 @@ func TestRunWithFixer(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("RunnerCrashLineSpawnsNone", func(t *testing.T) {
+-		t.Parallel()
+-		rig := newFixerRig(t, 134)
+-		rig.closing = gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)") + "\n"
+-		if exit := rig.runRequest(request); exit != (detachExit{Code: 134}) {
+-			t.Errorf("exit = %+v; want the first exit 134", exit)
+-		}
+-		if len(rig.fixer.specs) != 0 || rig.calls.Load() != 1 {
+-			t.Errorf("spawned %d fixers over %d gate calls; want none over one", len(rig.fixer.specs), rig.calls.Load())
+-		}
+-		if stderr := rig.stderr(); strings.Contains(stderr, "Cold fixer reply") {
+-			t.Errorf("stderr = %q; want no fixer reply for a crash", stderr)
+-		}
+-	})
++	for _, unjudged := range []struct {
++		name    string
++		code    int
++		closing string
++	}{
++		{name: "RunnerCrashLineSpawnsNone", code: 134, closing: gateslot.RunnerCrashLine("tier1 (exit 134, SIGABRT)")},
++		{name: "MemoryPressureLineSpawnsNone", code: 1, closing: gateslot.MemoryPressureLine("tier1 (exit 1)")},
++	} {
++		t.Run(unjudged.name, func(t *testing.T) {
++			t.Parallel()
++			rig := newFixerRig(t, unjudged.code)
++			rig.closing = unjudged.closing + "\n"
++			if exit := rig.runRequest(request); exit != (detachExit{Code: unjudged.code}) {
++				t.Errorf("exit = %+v; want the first exit %d", exit, unjudged.code)
++			}
++			if len(rig.fixer.specs) != 0 || rig.calls.Load() != 1 {
++				t.Errorf("spawned %d fixers over %d gate calls; want none over one", len(rig.fixer.specs), rig.calls.Load())
++			}
++			if stderr := rig.stderr(); strings.Contains(stderr, "Cold fixer reply") {
++				t.Errorf("stderr = %q; want no fixer reply for a run that judged no code", stderr)
++			}
++		})
++	}
+ 
+ 	t.Run("DeadFixerCarriesTheDeadNote", func(t *testing.T) {
+ 		t.Parallel()
+diff --git a/internal/gatecli/copies.go b/internal/gatecli/copies.go
+index ab39cd031..dcae1ed2e 100644
+--- a/internal/gatecli/copies.go
++++ b/internal/gatecli/copies.go
+@@ -101,12 +101,20 @@ func runTierCopies(ctx context.Context, run tierRun, env []string, request testR
+ // mergeCopies folds the results of the copies of one tier run into the tier run's result.
+ // The merged record totals the copies' counts and launches and takes the first failing exit code.
+ // The merged result keeps the copies' own results, so the report can name each copy.
++// It is a slice-pressure stop when one copy was and every other copy passed or was one too.
+ func mergeCopies(results []tierResult) tierResult {
+ 	merged := tierResult{record: results[0].record, copies: results}
+ 	merged.record.Launches = slices.Clone(merged.record.Launches)
+ 	merged.record.Failures = slices.Clone(merged.record.Failures)
+ 	var log bytes.Buffer
++	pressured, failedOtherwise := false, false
+ 	for i, result := range results {
++		if result.slicePressure {
++			pressured = true
++		} else if result.record.ExitCode != 0 {
++			failedOtherwise = true
++		}
++		merged.slicePressure = pressured && !failedOtherwise
+ 		fmt.Fprintf(&log, "copy %d:\n", i+1)
+ 		log.Write(result.log)
+ 		if merged.refusal == "" {
+diff --git a/internal/gatecli/copies_test.go b/internal/gatecli/copies_test.go
+index 64aa6e076..bb0d602b4 100644
+--- a/internal/gatecli/copies_test.go
++++ b/internal/gatecli/copies_test.go
+@@ -199,16 +199,38 @@ func TestMergeCopies(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	launch := gateslot.PackageLaunch{}
+-	merged := mergeCopies([]tierResult{
+-		{record: gateslot.RunRecord{Launches: []gateslot.PackageLaunch{launch}}},
+-		{record: gateslot.RunRecord{Launches: []gateslot.PackageLaunch{launch, launch}, ExitCode: 1}},
+-	})
+-
+-	if got := len(merged.record.Launches); got != 3 {
+-		t.Errorf("merged launches = %d; want the copies' 1 and 2 summed to 3", got)
++	passed := tierResult{record: gateslot.RunRecord{Launches: []gateslot.PackageLaunch{launch}}}
++	failed := tierResult{record: gateslot.RunRecord{Launches: []gateslot.PackageLaunch{launch, launch}, ExitCode: 1}}
++	pressured := tierResult{record: failed.record, slicePressure: true}
++	tests := []struct {
++		name         string
++		copies       []tierResult
++		wantExit     int
++		wantOutcome  string
++		wantLaunches int
++		wantPressure bool
++	}{
++		{"APassedAndAFailedCopy", []tierResult{passed, failed}, 1, "failed", 3, false},
++		{"EveryCopyUnderSlicePressure", []tierResult{pressured, pressured}, 1, "failed", 4, true},
++		{"ASlicePressureCopyAfterAPassedOne", []tierResult{passed, pressured}, 1, "failed", 3, true},
++		{"ASlicePressureCopyBesideAFailedOne", []tierResult{pressured, failed}, 1, "failed", 4, false},
++		{"AFailedCopyBeforeASlicePressureOne", []tierResult{failed, pressured}, 1, "failed", 4, false},
+ 	}
+-	if merged.record.ExitCode != 1 || merged.record.Outcome != "failed" || len(merged.copies) != 2 {
+-		t.Errorf("merged record = exit %d, outcome %q, %d copies; want the first failing exit 1, failed, and both copies kept", merged.record.ExitCode, merged.record.Outcome, len(merged.copies))
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			merged := mergeCopies(tt.copies)
++
++			if got := len(merged.record.Launches); got != tt.wantLaunches {
++				t.Errorf("merged launches = %d; want the copies' launches summed to %d", got, tt.wantLaunches)
++			}
++			if merged.record.ExitCode != tt.wantExit || merged.record.Outcome != tt.wantOutcome || len(merged.copies) != len(tt.copies) {
++				t.Errorf("merged record = exit %d, outcome %q, %d copies; want exit %d, %q, and every copy kept", merged.record.ExitCode, merged.record.Outcome, len(merged.copies), tt.wantExit, tt.wantOutcome)
++			}
++			if merged.slicePressure != tt.wantPressure {
++				t.Errorf("merged slicePressure = %v; want %v", merged.slicePressure, tt.wantPressure)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/gatecli/counters.go b/internal/gatecli/counters.go
+index a6e74905a..aada7384f 100644
+--- a/internal/gatecli/counters.go
++++ b/internal/gatecli/counters.go
+@@ -91,6 +91,8 @@ type runFailure struct {
+ 	// lines are the failure's first printed lines, trimmed and without go test's status lines, at most failureLines.
+ 	// A lint finding has its one line.
+ 	lines []string
++	// killed is set on a package failure whose test binary go test reported as ended by SIGKILL.
++	killed bool
+ }
+ 
+ const (
+@@ -100,6 +102,10 @@ const (
+ 	unparsedLines = 12
+ )
+ 
++// killedBinaryLine is the output go test adds to a package whose test binary SIGKILL ended.
++// The event carries the test that was running, when one was.
++const killedBinaryLine = "signal: killed"
++
+ // newCounter returns the counter for kind, which writes the tier's text output to out.
+ // Any kind but `go-json` and `vstest` is an error.
+ func newCounter(kind string, out io.Writer) (counter, error) {
+@@ -184,6 +190,8 @@ type goJSONCounter struct {
+ 	buildLines   map[string][]string
+ 	// failedPackages holds the packages with a failed test, whose own fail event the test explains.
+ 	failedPackages map[string]bool
++	// killedPackages holds the packages whose output carried killedBinaryLine.
++	killedPackages map[string]bool
+ 	// failures holds every failed test, parents of failed subtests included, and each failed package no test explains.
+ 	failures []runFailure
+ 	// unparsed holds the first non-empty lines that were no JSON event.
+@@ -334,6 +342,12 @@ func (c *goJSONCounter) observeTest(event goTestEvent) {
+ // On a package's fail event that no failed test explains, it adds a failure for the package.
+ // The failure carries the package's own lines and those of its failed build.
+ func (c *goJSONCounter) observePackageOutcome(event goTestEvent) {
++	if event.Action == "output" && strings.TrimSpace(event.Output) == killedBinaryLine {
++		if c.killedPackages == nil {
++			c.killedPackages = map[string]bool{}
++		}
++		c.killedPackages[event.Package] = true
++	}
+ 	switch {
+ 	case event.Action == "build-output" && event.ImportPath != "":
+ 		c.buildLines = appendCapped(c.buildLines, event.ImportPath, strings.TrimSpace(event.Output))
+@@ -345,7 +359,7 @@ func (c *goJSONCounter) observePackageOutcome(event goTestEvent) {
+ 		if len(lines) > failureLines {
+ 			lines = lines[:failureLines]
+ 		}
+-		c.failures = append(c.failures, runFailure{pkg: event.Package, lines: lines})
++		c.failures = append(c.failures, runFailure{pkg: event.Package, lines: lines, killed: c.killedPackages[event.Package]})
+ 	}
+ }
+ 
+diff --git a/internal/gatecli/detachfixer.go b/internal/gatecli/detachfixer.go
+index b16334f29..c59928120 100644
+--- a/internal/gatecli/detachfixer.go
++++ b/internal/gatecli/detachfixer.go
+@@ -119,7 +119,7 @@ func (d detachRun) runWithFixer(ctx context.Context, request detachRequest, gate
+ 		return exit
+ 	}
+ 	first := d.runRequest(ctx, request, gateTree, seams.leaseRead())
+-	if !on || first.Abandoned || first.Code == 0 || !d.holdsFailureReport() || d.endedOnRunnerCrash() {
++	if !on || first.Abandoned || first.Code == 0 || !d.holdsFailureReport() || d.endedUnjudged() {
+ 		return first
+ 	}
+ 	return d.fixAndRerun(ctx, request, gateTree, seams, kit, store, first)
+@@ -131,14 +131,17 @@ func (d detachRun) holdsFailureReport() bool {
+ 	return err == nil && info.Size() > 0
+ }
+ 
+-// endedOnRunnerCrash reports whether the run's stderr file holds the line a call closes with when every failed run crashed its test runner, a failure no change to the code mends.
+-func (d detachRun) endedOnRunnerCrash() bool {
++// endedUnjudged reports whether the run's stderr file holds a line a call closes with when no failed run judged the code.
++// Every failed run crashed its test runner, or the memory guard stopped it for a memory limit other load filled;
++// no change to the code mends either.
++func (d detachRun) endedUnjudged() bool {
+ 	report, err := os.ReadFile(d.path(stderrFile))
+ 	if err != nil {
+ 		return false
+ 	}
+ 	_, crashed := gateslot.FindRunnerCrash(string(report))
+-	return crashed
++	_, pressured := gateslot.FindMemoryPressureStop(string(report))
++	return crashed || pressured
+ }
+ 
+ // settleLiveFixer waits on the live fixer record of an earlier run before the gate runs, under `phaseFixing`.
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 09acc11e9..3d910ac53 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -21,6 +21,7 @@
+ // so a failure the change under test did not cause hides no later check.
+ // `--stop-on-fail` ends the call at its first failed run instead, naming the failed run and every run it skipped.
+ // A run that crashed its test runner in its run and its rerun judged no code, so it stops nothing.
++// Nor does a run the memory guard stopped in its run and its rerun for a memory limit other load filled.
+ // `--no-carry` treats every tier of the call as a `carry: false` tier.
+ // A call over an unchanged tree then still runs its tests.
+ // When a run failed, the call prints the failure report, then closes with one stderr line naming each failed run.
+@@ -60,16 +61,21 @@
+ // A vet or guard run does not count as running a tier.
+ // The line is output only and changes no exit code or record.
+ //
+-// A tier run that fails without timing out is rerun once after a delay in two cases.
++// A tier run that fails without timing out is rerun once after a delay in three cases.
+ // The first is an output that holds a resource-shortage marker.
+ // The markers are `resource temporarily unavailable`, `failed to create new OS thread` and `cannot fork`.
+ // The second is a run that reports no failing test and exits 128 plus a crash signal number.
+ // That code is what a shell reports when a runtime aborted and crashed its test runner.
++// The third is a run whose only stops were the memory guard's slice-pressure kills.
++// Such a run has no failing test and no failed package but those whose test binary was killed.
+ // The rerun's result is the tier's.
+ // The first run's record carries `runner_crash` for a crash; the rerun's record carries `rerun`.
++// The record of a run the guard stopped so, the first or the rerun, carries `memory_pressure`.
+ // A call closes with `gateslot.RunnerCrashLine` when every failed run of it crashed so.
+-// It needs no failing test, failed build or lint finding beside those runs;
+-// the line lets a site tell a runtime's crash from a failing test.
++// It closes with `gateslot.MemoryPressureLine` instead when the guard stopped one of them so twice,
++// and every other failed run crashed or was stopped so too.
++// Either needs no failing test, failed build or lint finding beside those runs;
++// the line lets a site tell a runtime's crash or a full memory limit from a failing test.
+ // Bound: one rerun per tier run, and a test that aborts its own runner is reported as a crash, not a failing test.
+ // The build step is not rerun.
+ //
+@@ -618,10 +624,17 @@
+ // While a tier's command runs, a memory guard samples its child tree through `proc.TreeSample`.
+ // A `.test` process whose tree holds more than `memory_quit_mb` resident is killed whole with SIGKILL;
+ // a tree that holds another tree over the cap is spared, and the inner binary is killed.
+-// When no tree passes the cap and the memory limit the verb sits under is nearly spent;
++// When no tree passes the cap and the memory limit the verb sits under is nearly spent,
+ // the largest tree of 1024 MB or more is killed whole.
++// That kill is a slice-pressure kill when the gate call's own process tree holds less than half the limit's use:
++// other load filled it.
++// The tree is the whole call's, so sibling `--copies` copies and report-step binaries count as the call's own.
++// Its line names the largest other holders of the limit's cgroup, which `proc.ResidentInCgroup` lists.
++// It calls the kill an infrastructure stop, whose way forward is to wait for that load to end.
+ // Each kill prints a line naming the binary, its package directory and the reason;
+-// the tier's log and failure report carry it, and the tier is never rerun.
++// the tier's log and failure report carry it.
++// A tier whose only stops were slice-pressure kills, and that failed nothing else, is rerun once;
++// after any other guard kill the tier is never rerun.
+ // `lym gate redundant`, `lym gate mutate`, `lym gate test --map` and the report steps run the same guard.
+ // The report steps' guard leaves alone a test binary below a running tier command, which the tier's own guard watches.
+ // A test run the guard kills there is not judged, a mutant run it kills counts as no kill,
+@@ -733,7 +746,7 @@
+ // It then runs the gate again.
+ // It appends the fixer's reply or the dead note to the re-run's stderr under `## Cold fixer reply`.
+ // A pass, an abandoned exit, a `card-verify` request and a refusal end with the first run's result.
+-// So do a red verdict holding `gateslot.RunnerCrashLine` and a failed spawn.
++// So do a red verdict holding `gateslot.RunnerCrashLine` or `gateslot.MemoryPressureLine` and a failed spawn.
+ // A passed lease or a terminating signal during the phase stops the fixer and the run ends abandoned.
+ // A run in the phase `fixing` is joinable under changed dirty paths,
+ // so a caller's repeated call joins whatever tree the fixer is changing.
+diff --git a/internal/gatecli/memoryguard.go b/internal/gatecli/memoryguard.go
+index eee5bbe32..a4678e9b9 100644
+--- a/internal/gatecli/memoryguard.go
++++ b/internal/gatecli/memoryguard.go
+@@ -1,9 +1,11 @@
+ // memoryguard.go samples the memory of the Go test binaries under a process and kills a runaway one whole.
+ // It names the killed binary's package directory and the tests it was told to run.
++// It tells a memory limit other load filled apart from the run's own growth, naming the other holders.
+ 
+ package gatecli
+ 
+ import (
++	"cmp"
+ 	"context"
+ 	"errors"
+ 	"fmt"
+@@ -32,6 +34,14 @@ const pressureHeadroomDivisor = 10
+ // A smaller tree is not what drives the limit, so killing it would fail a healthy test and free little.
+ const pressureKillFloor = 1 << 30
+ 
++// pressureOwnShareDivisor sets when a pressure kill is a slice-pressure kill:
++// the processes of the guarding gate call hold less than the limit's use divided by this.
++// The rest of the use then lies with other processes, which no change to the code under test frees.
++const pressureOwnShareDivisor = 2
++
++// pressureHoldersShown caps the other holders of memory a slice-pressure kill's line names.
++const pressureHoldersShown = 3
++
+ // testRunFlagPrefix opens the argument that tells a test binary which tests to run.
+ const testRunFlagPrefix = "-test.run="
+ 
+@@ -45,8 +55,12 @@ type memoryGuard struct {
+ 	period time.Duration
+ 	// sample returns the process tree under root.
+ 	sample func(root int) ([]proc.ProcessSample, error)
++	// own returns every process of the calling gate call, those outside the guarded tree included.
++	own func() ([]proc.ProcessSample, error)
+ 	// pressure reads the memory limit the calling process sits under; found is false where none is set.
+ 	pressure func() (limit proc.MemoryLimit, found bool)
++	// holders reads every process under a cgroup with the memory it holds resident.
++	holders func(cgroup string) ([]proc.ProcessSample, error)
+ 	// describe reads a process's working directory and command line; ok is false once it is gone.
+ 	describe func(pid int) (process proc.Process, ok bool)
+ 	// kill sends SIGKILL to pid.
+@@ -62,14 +76,16 @@ type memoryGuard struct {
+ }
+ 
+ // newMemoryGuard returns the production memory guard over trees past limit bytes, printing each kill's line to out.
+-// It samples /proc, reads the cgroup memory limit, kills with SIGKILL and waits on the real clock.
++// It samples /proc, reads the cgroup memory limit and its processes, kills with SIGKILL and waits on the real clock.
+ func newMemoryGuard(limit int64, out io.Writer) memoryGuard {
+ 	return memoryGuard{
+ 		limit:    limit,
+ 		floor:    pressureKillFloor,
+ 		period:   memoryGuardPeriod,
+ 		sample:   proc.TreeSample,
++		own:      func() ([]proc.ProcessSample, error) { return proc.TreeSample(os.Getpid()) },
+ 		pressure: proc.ReadMemoryLimit,
++		holders:  proc.ResidentInCgroup,
+ 		describe: proc.ReadProcess,
+ 		kill:     func(pid int) error { return proc.SignalProcess(pid, true) },
+ 		after:    time.After,
+@@ -90,31 +106,41 @@ type testTree struct {
+ type memoryKill struct {
+ 	tree   testTree
+ 	reason string
++	// slicePressure is set when the kill is a slice-pressure kill: other load filled the memory limit.
++	slicePressure bool
+ 	// enclosing are the pids of the Go test binaries that started the killed binary, directly or not.
+ 	// Their own tests fail with the killed binary's death, so they count as killed too.
+ 	enclosing []int
+ }
+ 
+-// run samples the tree under root once per period until ctx ends, and returns the line of each kill.
++// guardKill is the line of one kill the guard made.
++type guardKill struct {
++	line string
++	// slicePressure is set when other load filled the memory limit that drove the kill, so the kill judged no code.
++	slicePressure bool
++}
++
++// run samples the tree under root once per period until ctx ends, and returns each kill.
+ // A test binary whose tree, itself and every process it started, holds more than limit is killed whole.
+ // When none does, the memory limit the calling process sits under is checked.
+ // With less than a tenth of its Max left, the largest tree holding at least floor is killed whole.
++// That kill is a slice-pressure kill when the calling gate call's processes hold less than half the limit's use.
+ // Each binary is killed once, and a binary below a process foreign names is never killed.
+ // A platform that cannot sample ends run after one log line.
+-func (g memoryGuard) run(ctx context.Context, root int) []string {
++func (g memoryGuard) run(ctx context.Context, root int) []guardKill {
+ 	logger.Info("gate: memory guard started", "limit_mb", g.limit>>20, "period", g.period)
+-	var lines []string
++	var kills []guardKill
+ 	killed := map[int]bool{}
+ 	for ctx.Err() == nil {
+ 		select {
+ 		case <-ctx.Done():
+-			return lines
++			return kills
+ 		case <-g.after(g.period):
+ 		}
+ 		tree, err := g.sample(root)
+ 		if errors.Is(err, errors.ErrUnsupported) {
+ 			logger.Info("gate: no memory guard applies on this platform")
+-			return lines
++			return kills
+ 		}
+ 		if err != nil {
+ 			logger.Warn("gate: the memory guard could not sample the process tree", "cause", err)
+@@ -127,10 +153,10 @@ func (g memoryGuard) run(ctx context.Context, root int) []string {
+ 		for _, kill := range g.kills(trees, killed) {
+ 			killed[kill.tree.binary.PID] = true
+ 			kill.enclosing = enclosingTestBinaries(tree, kill.tree.binary)
+-			lines = append(lines, g.killTree(kill))
++			kills = append(kills, g.killTree(kill))
+ 		}
+ 	}
+-	return lines
++	return kills
+ }
+ 
+ // withoutForeign returns trees without each tree whose binary has an ancestor in sample that foreign names.
+@@ -199,8 +225,12 @@ func testTrees(tree []proc.ProcessSample) []testTree {
+ }
+ 
+ // kills returns the trees of one sample to kill, leaving out a binary in killed.
++// trees are the test binaries of one sample that the guard may kill.
+ // Every tree over limit is one, bar a tree that holds another tree over limit: the inner binary is the runaway.
+ // With none over limit and the memory limit short, the largest tree holding at least floor is the one.
++// That kill is a slice-pressure kill when the calling gate call's processes hold less than half the limit's use.
++// Its reason then names the other holders.
++// A call whose processes cannot be sampled counts as holding the use itself.
+ func (g memoryGuard) kills(trees []testTree, killed map[int]bool) []memoryKill {
+ 	var over []testTree
+ 	for _, tree := range trees {
+@@ -236,15 +266,61 @@ func (g memoryGuard) kills(trees []testTree, killed map[int]bool) []memoryKill {
+ 	if largest == nil {
+ 		return nil
+ 	}
+-	reason := fmt.Sprintf("the memory limit of %s had %d MB left of %d MB, and it was the largest test binary at %d MB", limit.Cgroup, max(limit.Headroom(), 0)>>20, limit.Max>>20, largest.held>>20)
+-	return []memoryKill{{tree: *largest, reason: reason}}
++	headroom := max(limit.Headroom(), 0) >> 20
++	ordinary := []memoryKill{{tree: *largest, reason: fmt.Sprintf("the memory limit of %s had %d MB left of %d MB, and it was the largest test binary at %d MB",
++		limit.Cgroup, headroom, limit.Max>>20, largest.held>>20)}}
++	call, err := g.own()
++	if err != nil {
++		logger.Warn("gate: the memory guard could not sample the gate call's processes, so the kill counts as the run's own", "cause", err)
++		return ordinary
++	}
++	var own int64
++	for _, process := range call {
++		own += process.RSS
++	}
++	if own*pressureOwnShareDivisor >= limit.Used {
++		return ordinary
++	}
++	reason := fmt.Sprintf("the memory limit of %s had %d MB left of %d MB, and this run's processes held only %d MB of the %d MB in use; %s; it was the largest test binary at %d MB",
++		limit.Cgroup, headroom, limit.Max>>20, own>>20, limit.Used>>20, g.otherHolders(limit.Cgroup, call), largest.held>>20)
++	return []memoryKill{{tree: *largest, reason: reason, slicePressure: true}}
++}
++
++// otherHolders returns the clause naming the processes under cgroup, outside call, that hold the most memory resident.
++// It names at most pressureHoldersShown of them, largest first.
++func (g memoryGuard) otherHolders(cgroup string, call []proc.ProcessSample) string {
++	listed, err := g.holders(cgroup)
++	if err != nil {
++		logger.Warn("gate: the memory guard could not read the processes of the memory limit's cgroup", "cgroup", cgroup, "cause", err)
++		return "the other holders of its memory could not be read"
++	}
++	own := make(map[int]bool, len(call))
++	for _, process := range call {
++		own[process.PID] = true
++	}
++	others := slices.DeleteFunc(slices.Clone(listed), func(process proc.ProcessSample) bool {
++		return own[process.PID] || process.RSS == 0
++	})
++	if len(others) == 0 {
++		return "no other process under it holds memory the guard could read"
++	}
++	slices.SortStableFunc(others, func(a, b proc.ProcessSample) int { return cmp.Compare(b.RSS, a.RSS) })
++	named := make([]string, 0, pressureHoldersShown)
++	for _, process := range others[:min(len(others), pressureHoldersShown)] {
++		name := "a process whose executable could not be read"
++		if process.Path != "" {
++			name = filepath.Base(process.Path)
++		}
++		named = append(named, fmt.Sprintf("%s (pid %d) at %d MB", name, process.PID, process.RSS>>20))
++	}
++	return "its largest other holders are " + strings.Join(named, ", ")
+ }
+ 
+ // killTree reads the binary's package directory and test filter.
+ // It sends SIGKILL to every process of the tree.
+-// It returns the line naming the kill, which it also logs and prints to out.
++// It returns the kill with the line naming it, which it also logs and prints to out.
+ // A process already gone is no failure.
+-func (g memoryGuard) killTree(kill memoryKill) string {
++func (g memoryGuard) killTree(kill memoryKill) guardKill {
+ 	binary := kill.tree.binary
+ 	dir, filter := "", ""
+ 	if process, ok := g.describe(binary.PID); ok {
+@@ -265,16 +341,18 @@ func (g memoryGuard) killTree(kill memoryKill) string {
+ 			logger.Debug("gate: the memory guard could not kill a process", "pid", pid, "cause", err)
+ 		}
+ 	}
+-	line := memoryGuardLine(filepath.Base(binary.Path), binary.PID, dir, filter, kill.reason)
+-	logger.Warn("gate: the memory guard killed a test binary and every process it started", "binary", binary.Path, "pid", binary.PID, "dir", dir, "filter", filter, "held_mb", kill.tree.held>>20, "reason", kill.reason)
++	line := memoryGuardLine(filepath.Base(binary.Path), binary.PID, dir, filter, kill.reason, kill.slicePressure)
++	logger.Warn("gate: the memory guard killed a test binary and every process it started", "binary", binary.Path, "pid", binary.PID, "dir", dir, "filter", filter, "held_mb", kill.tree.held>>20, "reason", kill.reason, "slice_pressure", kill.slicePressure)
+ 	printLine(g.out, line)
+-	return line
++	return guardKill{line: line, slicePressure: kill.slicePressure}
+ }
+ 
+ // memoryGuardLine is the line a memory guard kill prints and logs.
+ // dir is the binary's working directory, the package's own under go test, empty when it could not be read;
+ // filter is its -test.run value, empty when it was given none.
+-func memoryGuardLine(binary string, pid int, dir, filter, reason string) string {
++// A slice-pressure kill's line calls it an infrastructure stop and gives the way forward of waiting for the other load;
++// any other kill's line says its tests fail and points at the test that holds the memory.
++func memoryGuardLine(binary string, pid int, dir, filter, reason string, slicePressure bool) string {
+ 	where := "of a package whose directory could not be read"
+ 	if dir != "" {
+ 		where = "of the package in " + dir
+@@ -283,10 +361,14 @@ func memoryGuardLine(binary string, pid int, dir, filter, reason string) string
+ 	if filter != "" {
+ 		tests = ", running the tests -test.run=" + filter + " selects"
+ 	}
+-	return fmt.Sprintf("lym gate: memory guard: killed the test binary %s (pid %d) %s%s, with every process it started: %s; "+
+-		"its tests fail; way forward: find the test that holds memory without bound, fix it and re-run the same command; "+
+-		"raise %s through \"lym config gate\" from the prime only for a package whose tests need that much",
+-		binary, pid, where, tests, reason, keyName(memoryQuitMBKey))
++	outcome := fmt.Sprintf("its tests fail; way forward: find the test that holds memory without bound, fix it and re-run the same command; "+
++		"raise %s through \"lym config gate\" from the prime only for a package whose tests need that much", keyName(memoryQuitMBKey))
++	if slicePressure {
++		outcome = "an infrastructure stop, not a test failure: other load filled the memory limit, and no change to the code under test frees it; " +
++			"way forward: wait for that load to end, then re-run the same command"
++	}
++	return fmt.Sprintf("lym gate: memory guard: killed the test binary %s (pid %d) %s%s, with every process it started: %s; %s",
++		binary, pid, where, tests, reason, outcome)
+ }
+ 
+ // memoryGuardApplies decides whether the memory guard runs, and returns the reason it logs.
+diff --git a/internal/gatecli/memoryguard_test.go b/internal/gatecli/memoryguard_test.go
+index 8c7363da9..0e04127fd 100644
+--- a/internal/gatecli/memoryguard_test.go
++++ b/internal/gatecli/memoryguard_test.go
+@@ -40,24 +40,32 @@ func guardTree(binaryRSS, childRSS int64) []proc.ProcessSample {
+ 
+ // guardRun is what one scripted run of the memory guard left behind.
+ type guardRun struct {
+-	killed  []int
+-	lines   []string
+-	out     string
+-	samples int
++	killed []int
++	lines  []string
++	// pressureKills counts the kills the guard made as slice-pressure kills.
++	pressureKills int
++	out           string
++	samples       int
+ }
+ 
+ // runGuardScripted runs a memory guard over script and returns once the script's last sample has been handled.
+ // limit is the memory limit the guard reads, and limited whether it finds one.
++// holders answers the guard's read of the limit's cgroup.
+ // foreign names the processes another guard watches.
++// own answers the guard's read of the gate call's processes; nil answers with the tree last sampled.
+ // Only the test binary at testBinaryPID can be described.
+-func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLimit, limited bool, foreign func(pid int) bool) guardRun {
++func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLimit, limited bool, holders func(cgroup string) ([]proc.ProcessSample, error), foreign func(pid int) bool, own func() ([]proc.ProcessSample, error)) guardRun {
+ 	t.Helper()
+ 	ctx, cancel := context.WithCancel(context.Background())
+ 	defer cancel()
+ 
+ 	var result guardRun
+ 	var out bytes.Buffer
++	if own == nil {
++		own = func() ([]proc.ProcessSample, error) { return script[result.samples-1].tree, nil }
++	}
+ 	g := memoryGuard{
++		own:    own,
+ 		limit:  guardLimit,
+ 		floor:  guardFloor,
+ 		period: time.Second,
+@@ -70,6 +78,7 @@ func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLi
+ 			return next.tree, next.err
+ 		},
+ 		pressure: func() (proc.MemoryLimit, bool) { return limit, limited },
++		holders:  holders,
+ 		describe: func(pid int) (proc.Process, bool) {
+ 			process := proc.Process{PID: pid, Cwd: guardTestDir, Argv: []string{testBinaryPath, testRunFlagPrefix + guardFilter, "-test.v=true"}}
+ 			return process, pid == testBinaryPID
+@@ -86,7 +95,13 @@ func runGuardScripted(t *testing.T, script []scriptedSample, limit proc.MemoryLi
+ 		},
+ 		out: &out,
+ 	}
+-	result.lines = g.run(ctx, 1)
++
++	for _, kill := range g.run(ctx, 1) {
++		result.lines = append(result.lines, kill.line)
++		if kill.slicePressure {
++			result.pressureKills++
++		}
++	}
+ 	result.out = out.String()
+ 	return result
+ }
+@@ -96,19 +111,50 @@ func TestMemoryGuard(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	overCap := guardTree(3000<<20, 2000<<20)
+-	overLine := memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "it held 5000 MB, over gate.memory_quit_mb's 4096 MB")
++	overLine := memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "it held 5000 MB, over gate.memory_quit_mb's 4096 MB", false)
+ 	short := proc.MemoryLimit{Used: 16384<<20 - 512<<20, Max: 16384 << 20, Cgroup: "/user.slice"}
+ 	ample := proc.MemoryLimit{Used: 8192 << 20, Max: 16384 << 20, Cgroup: "/user.slice"}
++	// smallRun is a run of two test binaries holding 2700 MB together, under half of short's use.
++	smallRun := []proc.ProcessSample{
++		{PID: testBinaryPID, Parent: 1, Path: testBinaryPath, RSS: 1500 << 20},
++		{PID: otherPID, Parent: 1, Path: longBinaryPath, RSS: 1200 << 20},
++	}
++	// siblingRun is smallRun with a binary the same gate call runs outside the guarded tree.
++	siblingRun := func(rss int64) func() ([]proc.ProcessSample, error) {
++		return func() ([]proc.ProcessSample, error) {
++			return append(slices.Clone(smallRun), proc.ProcessSample{PID: innerPID, Parent: 1, Path: testBinaryPath, RSS: rss}), nil
++		}
++	}
++	// otherLoad is the user slice's processes.
++	// It holds two of the gate call's own binaries and processes that do not count.
++	// It also holds large holders, one of them with an unreadable executable.
++	otherLoad := func(string) ([]proc.ProcessSample, error) {
++		return []proc.ProcessSample{
++			{PID: 903, Path: "/usr/bin/bash", RSS: 4 << 20},
++			{PID: innerPID, Path: testBinaryPath, RSS: 3500 << 20},
++			{PID: 905, RSS: 2500 << 20},
++			{PID: 901, Path: "/usr/bin/node", RSS: 3000 << 20},
++			{PID: testBinaryPID, Path: testBinaryPath, RSS: 1500 << 20},
++			{PID: 900, Path: "/usr/share/code/code", RSS: 6000 << 20},
++			{PID: 904, Path: "/usr/bin/kworker", RSS: 0},
++			{PID: 902, Path: "/usr/lib/firefox/firefox", RSS: 2000 << 20},
++		}, nil
++	}
++	unreadable := func(string) ([]proc.ProcessSample, error) { return nil, errors.New("proc listing failed") }
+ 	tests := []struct {
+ 		name    string
+ 		script  []scriptedSample
+ 		limit   proc.MemoryLimit
+ 		limited bool
++		holders func(cgroup string) ([]proc.ProcessSample, error)
+ 		// foreign are the running tier commands, whose test binaries the tier's own guard watches.
+-		foreign     []int
+-		wantKilled  []int
+-		wantLines   []string
+-		wantSamples int
++		foreign []int
++		// own answers the read of the gate call's processes; nil answers with the sampled tree.
++		own               func() ([]proc.ProcessSample, error)
++		wantKilled        []int
++		wantLines         []string
++		wantPressureKills int
++		wantSamples       int
+ 	}{
+ 		{
+ 			name:       "a tree over the cap is killed whole, once",
+@@ -131,7 +177,7 @@ func TestMemoryGuard(t *testing.T) {
+ 				{PID: innerPID, Parent: testBinaryPID, Path: longBinaryPath, RSS: 5000 << 20},
+ 			}}},
+ 			wantKilled: []int{innerPID},
+-			wantLines:  []string{memoryGuardLine("averylongpackagenamethatpassesfifteen.test", innerPID, "", "", "it held 5000 MB, over gate.memory_quit_mb's 4096 MB")},
++			wantLines:  []string{memoryGuardLine("averylongpackagenamethatpassesfifteen.test", innerPID, "", "", "it held 5000 MB, over gate.memory_quit_mb's 4096 MB", false)},
+ 		},
+ 		{
+ 			name: "a test binary below a running tier command is left to the tier's own guard",
+@@ -145,15 +191,63 @@ func TestMemoryGuard(t *testing.T) {
+ 			wantLines:  []string{overLine},
+ 		},
+ 		{
+-			name: "a short memory limit kills the largest tree at or above the floor",
++			name: "a short memory limit the run fills kills the largest tree at or above the floor",
+ 			script: []scriptedSample{{tree: []proc.ProcessSample{
+-				{PID: testBinaryPID, Parent: 1, Path: testBinaryPath, RSS: 1500 << 20},
+-				{PID: otherPID, Parent: 1, Path: longBinaryPath, RSS: 1200 << 20},
++				{PID: 2, Parent: 1, Path: nonTestBinary, RSS: 6000 << 20},
++				{PID: testBinaryPID, Parent: 2, Path: testBinaryPath, RSS: 1500 << 20},
++				{PID: otherPID, Parent: 2, Path: longBinaryPath, RSS: 1200 << 20},
+ 			}}},
+ 			limit:      short,
+ 			limited:    true,
++			holders:    otherLoad,
++			wantKilled: []int{testBinaryPID},
++			wantLines:  []string{memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "the memory limit of /user.slice had 512 MB left of 16384 MB, and it was the largest test binary at 1500 MB", false)},
++		},
++		{
++			name:       "a short memory limit other load fills kills the largest tree as an infrastructure stop naming the other holders",
++			script:     []scriptedSample{{tree: smallRun}},
++			limit:      short,
++			limited:    true,
++			holders:    otherLoad,
++			own:        siblingRun(3500 << 20),
++			wantKilled: []int{testBinaryPID},
++			wantLines: []string{"lym gate: memory guard: killed the test binary pkg.test (pid 42) of the package in /work/internal/foo, running the tests -test.run=^TestHog$ selects, with every process it started: " +
++				"the memory limit of /user.slice had 512 MB left of 16384 MB, and this run's processes held only 6200 MB of the 15872 MB in use; " +
++				"its largest other holders are code (pid 900) at 6000 MB, node (pid 901) at 3000 MB, a process whose executable could not be read (pid 905) at 2500 MB; " +
++				"it was the largest test binary at 1500 MB; " +
++				"an infrastructure stop, not a test failure: other load filled the memory limit, and no change to the code under test frees it; " +
++				"way forward: wait for that load to end, then re-run the same command"},
++			wantPressureKills: 1,
++		},
++		{
++			name:       "a gate call holding most of the use beside a small guarded tree is an ordinary pressure kill",
++			script:     []scriptedSample{{tree: smallRun}},
++			limit:      short,
++			limited:    true,
++			holders:    otherLoad,
++			own:        siblingRun(6000 << 20),
++			wantKilled: []int{testBinaryPID},
++			wantLines:  []string{memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "the memory limit of /user.slice had 512 MB left of 16384 MB, and it was the largest test binary at 1500 MB", false)},
++		},
++		{
++			name:       "a gate call whose processes cannot be sampled makes an ordinary pressure kill",
++			script:     []scriptedSample{{tree: smallRun}},
++			limit:      short,
++			limited:    true,
++			holders:    otherLoad,
++			own:        func() ([]proc.ProcessSample, error) { return nil, errors.New("proc listing failed") },
+ 			wantKilled: []int{testBinaryPID},
+-			wantLines:  []string{memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "the memory limit of /user.slice had 512 MB left of 16384 MB, and it was the largest test binary at 1500 MB")},
++			wantLines:  []string{memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "the memory limit of /user.slice had 512 MB left of 16384 MB, and it was the largest test binary at 1500 MB", false)},
++		},
++		{
++			name:              "a slice-pressure kill whose cgroup cannot be read says its other holders could not be read",
++			script:            []scriptedSample{{tree: smallRun}},
++			limit:             short,
++			limited:           true,
++			holders:           unreadable,
++			wantKilled:        []int{testBinaryPID},
++			wantLines:         []string{memoryGuardLine("pkg.test", testBinaryPID, guardTestDir, guardFilter, "the memory limit of /user.slice had 512 MB left of 16384 MB, and this run's processes held only 2700 MB of the 15872 MB in use; the other holders of its memory could not be read; it was the largest test binary at 1500 MB", true)},
++			wantPressureKills: 1,
+ 		},
+ 		{
+ 			name:    "a short memory limit spares a tree under the floor",
+@@ -186,13 +280,16 @@ func TestMemoryGuard(t *testing.T) {
+ 			for _, pid := range tt.foreign {
+ 				commands.add(pid)
+ 			}
+-			got := runGuardScripted(t, tt.script, tt.limit, tt.limited, commands.holds)
++			got := runGuardScripted(t, tt.script, tt.limit, tt.limited, tt.holders, commands.holds, tt.own)
+ 			if !slices.Equal(got.killed, tt.wantKilled) {
+ 				t.Errorf("killed pids = %v; want %v", got.killed, tt.wantKilled)
+ 			}
+ 			if !slices.Equal(got.lines, tt.wantLines) {
+ 				t.Errorf("lines = %q; want %q", got.lines, tt.wantLines)
+ 			}
++			if got.pressureKills != tt.wantPressureKills {
++				t.Errorf("slice-pressure kills = %d; want %d", got.pressureKills, tt.wantPressureKills)
++			}
+ 			wantOut := ""
+ 			if len(tt.wantLines) > 0 {
+ 				wantOut = strings.Join(tt.wantLines, "\n") + "\n"
+diff --git a/internal/gatecli/redfirstdotnet.go b/internal/gatecli/redfirstdotnet.go
+index 6018c44da..5c538a5b1 100644
+--- a/internal/gatecli/redfirstdotnet.go
++++ b/internal/gatecli/redfirstdotnet.go
+@@ -290,8 +290,9 @@ type dotnetVerdict struct {
+ 	red []dotnetimpact.ChangedTest
+ 	// buildError is the first compile error of the project's files when its tests did not build on the base.
+ 	buildError string
+-	// noTestRan is set for an unjudged run whose tiers discovered no test and neither timed out nor crashed their runner:
+-	// an exit code 0 means the filter selected none, any other that a restore or build failure ended the run.
++	// noTestRan is set for an unjudged run whose tiers discovered no test.
++	// A run whose tiers timed out, crashed their runner or stopped for memory pressure never sets it.
++	// An exit code 0 means the filter selected none, any other that a restore or build failure ended the run.
+ 	noTestRan bool
+ }
+ 
+@@ -305,7 +306,8 @@ type dotnetVerdict struct {
+ // a test that reads a member only the change adds does not build on the base.
+ // A failing run that makes no test red judged none of them.
+ // It ran no test when the tier summary lines report none discovered or the output holds none.
+-// A tier that timed out or crashed its runner is the exception, since it may have started tests before it ended.
++// The exception is a tier that timed out, crashed its runner or was stopped for memory pressure.
++// Such a tier may have started tests before it ended.
+ func judgeDotnetRedFirst(exitCode int, captured string, tests []dotnetimpact.ChangedTest, projectDir string) dotnetVerdict {
+ 	discovered, summarized := gateslot.TierDiscovered(captured)
+ 	if exitCode == 0 {
+@@ -329,7 +331,8 @@ func judgeDotnetRedFirst(exitCode int, captured string, tests []dotnetimpact.Cha
+ 	}
+ 	_, timedOut := gateslot.FindTierTimeout(captured)
+ 	_, crashed := gateslot.FindRunnerCrash(captured)
+-	return dotnetVerdict{outcome: redFirstUnjudged, noTestRan: (!summarized || discovered == 0) && !timedOut && !crashed}
++	_, pressured := gateslot.FindMemoryPressureStop(captured)
++	return dotnetVerdict{outcome: redFirstUnjudged, noTestRan: (!summarized || discovered == 0) && !timedOut && !crashed && !pressured}
+ }
+ 
+ // failedNameMatches reports whether name, a failed test's name in a VSTest result, names the test method method.
+diff --git a/internal/gatecli/redfirstdotnet_test.go b/internal/gatecli/redfirstdotnet_test.go
+index fe2015bd1..1e1213829 100644
+--- a/internal/gatecli/redfirstdotnet_test.go
++++ b/internal/gatecli/redfirstdotnet_test.go
+@@ -93,6 +93,11 @@ func TestJudgeDotnetRedFirst_ReadsTheRunsExitCodeFailureReportAndCompileErrors(t
+ 			captured: tierSummary(0, 139) + gateslot.RunnerCrashLine("tier0 (exit 139, SIGSEGV)") + "\n",
+ 			want:     dotnetVerdict{outcome: redFirstUnjudged},
+ 		},
++		{
++			name: "ARunStoppedForMemoryPressureWithNoTestDiscoveredRanTests", exitCode: 1,
++			captured: tierSummary(0, 1) + gateslot.MemoryPressureLine("tier0 (exit 1)") + "\n",
++			want:     dotnetVerdict{outcome: redFirstUnjudged},
++		},
+ 		{
+ 			name: "ARunThatDiscoveredTestsAndJudgedNoneRanTests", exitCode: 1, captured: tierSummary(3, 1),
+ 			want: dotnetVerdict{outcome: redFirstUnjudged},
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 11ebf9ed8..18cfbfba9 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -176,11 +176,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	var failures []string
+ 	code, firstFailed := 0, ""
+ 	buildNamed := false
+-	// crashed names the failed runs that crashed their test runner twice.
+-	// judged is set once any other run failed.
+-	// The call closes with the runner crash line only when no failure judged the code.
+-	var crashed []string
+-	judged := false
++	var unjudged unjudgedRuns
+ 	// The report steps judge in the background beside the plan's last tier, once every earlier run passed.
+ 	// A failed run cancels them, and every return waits for their end.
+ 	var reports reportSteps
+@@ -205,7 +201,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			end = exe.runListed(run)
+ 		}
+ 		if end.blocked {
+-			judged = true
++			unjudged.judged = true
+ 			// The build is a failed run counted before the first tier it blocked.
+ 			if !buildNamed {
+ 				buildNamed = true
+@@ -217,11 +213,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 			failures = append(failures, runLabel(run)+" (blocked by the build)")
+ 		} else if end.ran && end.code != 0 {
+ 			failures = append(failures, failedRunLabel(run, end))
+-			if end.crash != "" {
+-				crashed = append(crashed, fmt.Sprintf("%s (exit %d, %s)", runLabel(run), end.code, end.crash))
+-			} else {
+-				judged = true
+-			}
++			unjudged.add(runLabel(run), end)
+ 			if code == 0 {
+ 				code, firstFailed = end.code, runLabel(run)
+ 			}
+@@ -250,7 +242,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	if request.gate != "" && runCtx.Err() == nil {
+ 		red := code != 0
+ 		for _, lint := range runLints(request.root, cfg.Gates[request.gate].Lints) {
+-			judged = true
++			unjudged.judged = true
+ 			exe.failed = append(exe.failed, lint)
+ 			failures = append(failures, fmt.Sprintf("%s (%s)", lint.label, lint.outcome))
+ 			if code == 0 {
+@@ -276,8 +268,8 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	}
+ 	exe.printReport(inHub)
+ 	printFailedRuns(request.stderr, failures, firstFailed, false)
+-	if len(crashed) > 0 && !judged {
+-		printLine(request.stderr, gateslot.RunnerCrashLine(strings.Join(crashed, ", ")))
++	if line := unjudged.closingLine(); line != "" {
++		printLine(request.stderr, line)
+ 	}
+ 	if code == 0 && sc.form == scopeCard {
+ 		printNotRunTiers(request.stderr, notRunTiers(cfg, plan))
+@@ -290,6 +282,42 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 	return exitAfterSignal(caught, code)
+ }
+ 
++// unjudgedRuns collects a call's failures by whether each judged the code.
++type unjudgedRuns struct {
++	// crashed names the failed runs that crashed their test runner twice.
++	crashed []string
++	// pressured names the failed runs the memory guard stopped twice for a memory limit other load filled.
++	pressured []string
++	// judged is set once any other failure happened.
++	judged bool
++}
++
++// add records the run labelled label, which ran and failed as end.
++func (u *unjudgedRuns) add(label string, end runEnd) {
++	switch {
++	case end.crash != "":
++		u.crashed = append(u.crashed, fmt.Sprintf("%s (exit %d, %s)", label, end.code, end.crash))
++	case end.pressureStop:
++		u.pressured = append(u.pressured, fmt.Sprintf("%s (exit %d)", label, end.code))
++	default:
++		u.judged = true
++	}
++}
++
++// closingLine returns the line saying no failure of the call judged the code, or "" when one did or nothing failed.
++// It is the runner crash line when every failed run crashed, and the memory pressure line when one was a pressure stop.
++func (u unjudgedRuns) closingLine() string {
++	switch {
++	case u.judged:
++		return ""
++	case len(u.pressured) > 0:
++		return gateslot.MemoryPressureLine(strings.Join(u.pressured, ", "))
++	case len(u.crashed) > 0:
++		return gateslot.RunnerCrashLine(strings.Join(u.crashed, ", "))
++	}
++	return ""
++}
++
+ // haltExitCode returns the exit code of a call that the run end halted.
+ // firstFailureCode is the code of the first failed run, the halting run included, or 0 when none failed.
+ // A run that ran and halted the call exits with firstFailureCode, or 1 when that is 0, since a halt is never green.
+@@ -320,8 +348,9 @@ func printFailedRuns(stderr io.Writer, failures []string, firstFailed string, ha
+ // stopsCall reports whether a run that ended so stops a --stop-on-fail call.
+ // A failed or blocked run does.
+ // A run that crashed its test runner in its run and its rerun judged no code, so it does not.
++// Nor does a run the memory guard stopped in its run and its rerun for a memory limit other load filled.
+ func stopsCall(end runEnd) bool {
+-	return end.blocked || (end.ran && end.code != 0 && end.crash == "")
++	return end.blocked || (end.ran && end.code != 0 && end.crash == "" && !end.pressureStop)
+ }
+ 
+ // stopOnFailLine returns the stderr line a --stop-on-fail call prints when the failed run stops it.
+@@ -351,12 +380,15 @@ func printNotRunTiers(stderr io.Writer, numbers []int) {
+ // The label carries the run's exit code.
+ // A run that hit a resource shortage twice carries the marker and the way forward of re-running once the load drops.
+ // A run that crashed its test runner twice carries the signal and says that no test failed.
++// A run the memory guard stopped twice for a memory limit other load filled says it is an infrastructure stop.
+ func failedRunLabel(run tierRun, end runEnd) string {
+ 	switch {
+ 	case end.shortage != "":
+ 		return fmt.Sprintf("%s (exit %d, a resource shortage, %q, in its run and its rerun: an environment error, not a test failure; way forward: re-run the same command once the machine's process load drops)", runLabel(run), end.code, end.shortage)
+ 	case end.crash != "":
+ 		return fmt.Sprintf("%s (exit %d, a runner crash, %s, in its run and its rerun with no failing test: the code under test was not judged)", runLabel(run), end.code, end.crash)
++	case end.pressureStop:
++		return fmt.Sprintf("%s (exit %d, a memory guard kill in its run and its rerun for a memory limit other load filled: an infrastructure stop, not a test failure; way forward: re-run the same command once that load ends)", runLabel(run), end.code)
+ 	}
+ 	return fmt.Sprintf("%s (exit %d)", runLabel(run), end.code)
+ }
+@@ -375,6 +407,8 @@ type runEnd struct {
+ 	shortage string
+ 	// crash is the signal name of a test runner that crashed in the run and its rerun with no failing test; empty otherwise.
+ 	crash string
++	// pressureStop is set when the memory guard stopped the run and its rerun for a memory limit other load filled.
++	pressureStop bool
+ }
+ 
+ // runLabel names a run in the closing line of failed runs: its tier.
+@@ -754,7 +788,7 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 	if e.request.observer.Ended != nil {
+ 		e.request.observer.Ended(record)
+ 	}
+-	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true, shortage: result.shortage, crash: result.crash}
++	return runEnd{code: record.ExitCode, halt: e.ctx.Err() != nil, ran: true, shortage: result.shortage, crash: result.crash, pressureStop: result.pressureStop}
+ }
+ 
+ // writeRecord adds the call's worktree, slug, tier list, gate key and call id to record.
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index eb9429b7b..bd8120d3a 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -12,6 +12,7 @@ import (
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	"io"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -672,6 +673,44 @@ func standaloneWorktree(t *testing.T, withConfig bool) string {
+ 	return dir
+ }
+ 
++func TestGoJSONCounter_MarksTheFailureOfAKilledTestBinary(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the test binary ends itself with SIGKILL")
++	}
++
++	module := t.TempDir()
++	for name, content := range map[string]string{
++		"go.mod":    "module example.com/killed\n\ngo 1.21\n",
++		"p_test.go": "package p\n\nimport (\n\t\"syscall\"\n\t\"testing\"\n)\n\nfunc TestKilled(t *testing.T) {\n\tsyscall.Kill(syscall.Getpid(), syscall.SIGKILL)\n\tselect {}\n}\n",
++	} {
++		if err := os.WriteFile(filepath.Join(module, name), []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	counter, err := newCounter(counterGoJSON, io.Discard)
++	if err != nil {
++		t.Fatal(err)
++	}
++	cmd := exec.Command("go", "test", "-json", "./...")
++	cmd.Dir = module
++	cmd.Env = append(os.Environ(), "GOWORK=off")
++	cmd.Stdout, cmd.Stderr = counter, counter
++
++	if err := cmd.Run(); err == nil {
++		t.Fatal("go test passed; want it to fail on the killed test binary")
++	}
++	if err := counter.Flush(); err != nil {
++		t.Fatal(err)
++	}
++
++	failures := counter.Failures()
++	if len(failures) != 1 || failures[0].pkg != "example.com/killed" || failures[0].test != "" || !failures[0].killed {
++		t.Errorf("Failures() = %+v; want the package example.com/killed alone, marked killed", failures)
++	}
++}
++
+ func TestGateTest_Scenario(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index c85872fa6..01ae59527 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -54,8 +54,14 @@ type tierResult struct {
+ 	// processCapped is set when the process cap killed the run's processes; such a run is never rerun.
+ 	processCapped bool
+ 	// memoryStopped is set when the memory guard or the tier's memory cap killed a process of the run;
+-	// such a run is never rerun.
++	// such a run is never rerun, bar one whose stops were all slice-pressure kills.
+ 	memoryStopped bool
++	// slicePressure is set when other load filled the memory limit, so the run judged no code and is rerun once.
++	// Every stop of such a run was a slice-pressure kill of the memory guard.
++	// No test of it failed, and no package of it failed without its test binary being killed.
++	slicePressure bool
++	// pressureStop is set on a rerun when the run and its rerun both ended on slice-pressure kills alone; false otherwise.
++	pressureStop bool
+ 	// failures, causes and unparsed feed the failure report: failed tests, lines the verb states, and unparsed output.
+ 	failures []runFailure
+ 	causes   []string
+@@ -226,7 +232,8 @@ func runTierCommands(ctx context.Context, out io.Writer, run tierRun, env []stri
+ 	return tierResult{
+ 		record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote,
+ 		processCapped: stops.processCap != "", memoryStopped: len(stops.memoryLines()) > 0,
+-		failures: failures, causes: causes, unparsed: counter.Unparsed(),
++		slicePressure: stops.slicePressureOnly() && record.Failed == 0 && !failedBeyondKills(failures),
++		failures:      failures, causes: causes, unparsed: counter.Unparsed(),
+ 	}
+ }
+ 
+@@ -311,21 +318,45 @@ func envOverrideLine(tier string, tierEnv, session []string) string {
+ type runStops struct {
+ 	// processCap is the process cap's line once it killed the run's processes, empty otherwise.
+ 	processCap string
+-	// guardKills holds the memory guard's line for each test binary it killed.
+-	guardKills []string
++	// guardKills holds the memory guard's kill of each test binary it killed.
++	guardKills []guardKill
+ 	// memoryCap is the line of a kill at the tier's memory cap, empty otherwise.
+ 	memoryCap string
+ }
+ 
+ // memoryLines returns the memory guard's lines followed by the tier's memory cap line, when there is one.
+ func (s runStops) memoryLines() []string {
+-	lines := slices.Clone(s.guardKills)
++	var lines []string
++	for _, kill := range s.guardKills {
++		lines = append(lines, kill.line)
++	}
+ 	if s.memoryCap != "" {
+ 		lines = append(lines, s.memoryCap)
+ 	}
+ 	return lines
+ }
+ 
++// slicePressureOnly reports whether the guards' only stops of the run were the memory guard's slice-pressure kills.
++func (s runStops) slicePressureOnly() bool {
++	if len(s.guardKills) == 0 || s.memoryCap != "" || s.processCap != "" {
++		return false
++	}
++	for _, kill := range s.guardKills {
++		if !kill.slicePressure {
++			return false
++		}
++	}
++	return true
++}
++
++// failedBeyondKills reports whether failures holds a failure a killed test binary does not explain:
++// a failed test, or a package that failed outside any test with its binary not killed.
++func failedBeyondKills(failures []runFailure) bool {
++	return slices.ContainsFunc(failures, func(failure runFailure) bool {
++		return failure.test != "" || !failure.killed
++	})
++}
++
+ // stopped reports whether any guard stopped part of the run.
+ func (s runStops) stopped() bool {
+ 	return s.processCap != "" || len(s.memoryLines()) > 0
+@@ -439,25 +470,35 @@ func runnerCrash(result tierResult) string {
+ 	return crashSignals[syscall.Signal(result.record.ExitCode-128)]
+ }
+ 
++// stoppedOnSlicePressure reports whether a tier run that ran and did not time out ended on slice-pressure kills alone.
++func stoppedOnSlicePressure(result tierResult) bool {
++	return result.refusal == "" && !result.buildFailed && !result.record.TimedOut && result.slicePressure
++}
++
+ // retryTier runs attempt, the tier named tier, and returns its result.
+ // It reruns the tier after delay if the run failed on a shortage, or crashed its test runner with no failing test.
+-// Neither judges the code under test.
++// It does so too if the memory guard stopped the run for a memory limit other load filled.
++// None of them judges the code under test.
++// The record of every attempt stopped so, the first or the rerun, carries MemoryPressure.
+ // The line announcing the rerun goes to stderr and opens the rerun's log.
+ // Once the delay has passed, recordFirst gets the first run's result,
+ // so its record stays on file beside the rerun's, which is marked Rerun.
+ // A rerun that fails on a shortage again carries its marker in shortage,
+ // and a rerun that crashes after a first run that crashed carries its signal in crash and its record's RunnerCrash.
++// A rerun that the guard stops so after a first run it stopped so carries pressureStop.
+ // A rerun that crashes after a first run that failed on a shortage carries no crash:
+ // only one of the two runs crashed.
+ // A ctx cancelled before or during the delay returns the first result.
+ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Duration, attempt func() tierResult, recordFirst func(tierResult)) tierResult {
+ 	result := attempt()
++	result.record.MemoryPressure = stoppedOnSlicePressure(result)
+ 	marker := failedOnShortage(result)
+ 	signal := ""
+ 	if marker == "" {
+ 		signal = runnerCrash(result)
+ 	}
+-	if (marker == "" && signal == "") || ctx.Err() != nil {
++	pressured := marker == "" && signal == "" && stoppedOnSlicePressure(result)
++	if (marker == "" && signal == "" && !pressured) || ctx.Err() != nil {
+ 		return result
+ 	}
+ 	cause := fmt.Sprintf("failed on a resource shortage (%q in its output), an environment error a rerun clears", marker)
+@@ -465,6 +506,9 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ 		cause = fmt.Sprintf("crashed its test runner (exit %d, %s) with no failing test, which judges no code", result.record.ExitCode, signal)
+ 		result.record.RunnerCrash = signal
+ 	}
++	if pressured {
++		cause = "had a test binary killed by the memory guard for a memory limit other load filled, which judges no code"
++	}
+ 	line := fmt.Sprintf("gate test: %s %s; running it once more in %s", tier, cause, delay)
+ 	printLine(stderr, line)
+ 	logger.Warn("gate test: rerunning a tier that failed on its environment", "tier", tier, "marker", marker, "signal", signal, "delay", delay)
+@@ -483,6 +527,8 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ 		retried.crash = runnerCrash(retried)
+ 		retried.record.RunnerCrash = retried.crash
+ 	}
++	retried.pressureStop = pressured && stoppedOnSlicePressure(retried)
++	retried.record.MemoryPressure = stoppedOnSlicePressure(retried)
+ 	retried.log = append([]byte(line+"\n"), retried.log...)
+ 	return retried
+ }
+diff --git a/internal/gatecli/tierrun_test.go b/internal/gatecli/tierrun_test.go
+index 0290a3508..aaab88663 100644
+--- a/internal/gatecli/tierrun_test.go
++++ b/internal/gatecli/tierrun_test.go
+@@ -49,8 +49,11 @@ func TestRetryTier(t *testing.T) {
+ 	aborted := failed(abort, "Fatal error. Internal CLR error. (0x80131506)\nAborted (core dumped)\n")
+ 	segv := failed(128+int(syscall.SIGSEGV), "Segmentation fault (core dumped)\n")
+ 	abortedWithFailure := tierResult{record: gateslot.RunRecord{ExitCode: abort, Failed: 1}, log: aborted.log}
++	pressured := tierResult{record: gateslot.RunRecord{ExitCode: 1}, log: []byte("signal: killed\n"), memoryStopped: true, slicePressure: true}
++	pressuredTimedOut := tierResult{record: gateslot.RunRecord{ExitCode: 1, TimedOut: true}, memoryStopped: true, slicePressure: true}
+ 	const shortageAnnounced = "gate test: tier0 failed on a resource shortage"
+ 	crashAnnounced := fmt.Sprintf("gate test: tier0 crashed its test runner (exit %d, SIGABRT) with no failing test", abort)
++	const pressureAnnounced = "gate test: tier0 had a test binary killed by the memory guard for a memory limit other load filled"
+ 	tests := []struct {
+ 		name      string
+ 		attempts  []tierResult
+@@ -61,6 +64,9 @@ func TestRetryTier(t *testing.T) {
+ 		wantExit          int
+ 		wantShortage      string
+ 		wantCrash         string
++		wantPressureStop  bool
++		// wantRerunMarked is whether the rerun's record carries the memory pressure mark.
++		wantRerunMarked bool
+ 		// wantAnnounced opens stderr when the rerun is announced, and is empty when it is not.
+ 		wantAnnounced string
+ 	}{
+@@ -80,6 +86,11 @@ func TestRetryTier(t *testing.T) {
+ 		{name: "ShortageThenCrashCarriesNoCrash", attempts: []tierResult{eagain, aborted}, wantAttempts: 2, wantExit: abort, wantAnnounced: shortageAnnounced},
+ 		{name: "SignalExitWithAFailingTestIsNotRerun", attempts: []tierResult{abortedWithFailure}, wantAttempts: 1, wantExit: abort},
+ 		{name: "TerminatedRunIsNoCrash", attempts: []tierResult{failed(128+int(syscall.SIGTERM), "Terminated\n")}, wantAttempts: 1, wantExit: 128 + int(syscall.SIGTERM)},
++		{name: "SlicePressureThenPassEndsPassed", attempts: []tierResult{pressured, failed(0, "ok\n")}, wantAttempts: 2, wantAnnounced: pressureAnnounced},
++		{name: "SlicePressureThenOrdinaryFailureCarriesNoPressureStop", attempts: []tierResult{pressured, failed(1, "--- FAIL: TestX\n")}, wantAttempts: 2, wantExit: 1, wantAnnounced: pressureAnnounced},
++		{name: "SlicePressureTwiceIsAPressureStop", attempts: []tierResult{pressured, pressured}, wantAttempts: 2, wantExit: 1, wantPressureStop: true, wantRerunMarked: true, wantAnnounced: pressureAnnounced},
++		{name: "ShortageThenSlicePressureCarriesNoPressureStop", attempts: []tierResult{eagain, pressured}, wantAttempts: 2, wantExit: 1, wantRerunMarked: true, wantAnnounced: shortageAnnounced},
++		{name: "TimedOutSlicePressureIsNotRerun", attempts: []tierResult{pressuredTimedOut}, wantAttempts: 1, wantExit: 1},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -105,8 +116,8 @@ func TestRetryTier(t *testing.T) {
+ 			if calls != tt.wantAttempts {
+ 				t.Errorf("retryTier ran %d attempts; want %d", calls, tt.wantAttempts)
+ 			}
+-			if got.record.ExitCode != tt.wantExit || got.shortage != tt.wantShortage || got.crash != tt.wantCrash || got.record.RunnerCrash != tt.wantCrash {
+-				t.Errorf("retryTier() = exit %d, shortage %q, crash %q, record crash %q; want exit %d, shortage %q, crash %q", got.record.ExitCode, got.shortage, got.crash, got.record.RunnerCrash, tt.wantExit, tt.wantShortage, tt.wantCrash)
++			if got.record.ExitCode != tt.wantExit || got.shortage != tt.wantShortage || got.crash != tt.wantCrash || got.record.RunnerCrash != tt.wantCrash || got.pressureStop != tt.wantPressureStop {
++				t.Errorf("retryTier() = exit %d, shortage %q, crash %q, record crash %q, pressure stop %v; want exit %d, shortage %q, crash %q, pressure stop %v", got.record.ExitCode, got.shortage, got.crash, got.record.RunnerCrash, got.pressureStop, tt.wantExit, tt.wantShortage, tt.wantCrash, tt.wantPressureStop)
+ 			}
+ 			retried := tt.wantAnnounced != ""
+ 			if announced := retried && strings.HasPrefix(stderr.String(), tt.wantAnnounced); announced != retried || (!retried && stderr.Len() > 0) {
+@@ -121,6 +132,10 @@ func TestRetryTier(t *testing.T) {
+ 			if !strings.HasPrefix(string(got.log), stderr.String()) || !got.record.Rerun {
+ 				t.Errorf("rerun log = %q, rerun mark %v; want the log to open with the announcement %q and the record marked a rerun", got.log, got.record.Rerun, stderr.String())
+ 			}
++			wantFirstPressure := tt.wantAnnounced == pressureAnnounced
++			if recorded[0].record.MemoryPressure != wantFirstPressure || got.record.MemoryPressure != tt.wantRerunMarked {
++				t.Errorf("memory pressure marks = first %v, rerun %v; want %v, %v", recorded[0].record.MemoryPressure, got.record.MemoryPressure, wantFirstPressure, tt.wantRerunMarked)
++			}
+ 			wantFirstCrash := ""
+ 			if tt.wantAnnounced == crashAnnounced {
+ 				wantFirstCrash = "SIGABRT"
+@@ -360,7 +375,8 @@ func TestRunTierProcessCap(t *testing.T) {
+ // TestRunTierMemoryGuard pins the tier run's wiring of the memory guard.
+ // A guard kill fails a command that exited 0.
+ // It puts the kill's line and the tests it left running in the log and the causes.
+-// It also marks the result so no rerun follows.
++// It marks the result of a kill over the cap so no rerun follows, and that of a slice-pressure kill so one does.
++// A slice-pressure kill beside a failed test, or beside a failed package whose binary was not killed, is not marked so.
+ // A request that turns the guard off builds none.
+ // The tier command is recorded in the request's running commands while it runs and removed once it ends.
+ func TestRunTierMemoryGuard(t *testing.T) {
+@@ -371,26 +387,61 @@ func TestRunTierMemoryGuard(t *testing.T) {
+ 	}
+ 
+ 	const shortage = "resource temporarily unavailable"
+-	killLine := memoryGuardLine(filepath.Base(testBinaryPath), testBinaryPID, guardTestDir, guardFilter, "it held 5000 MB, over gate.memory_quit_mb's 4096 MB")
++	const (
++		overCapReason  = "it held 5000 MB, over gate.memory_quit_mb's 4096 MB"
++		pressureReason = "the memory limit of /user.slice had 512 MB left of 16384 MB, and this run's processes held only 1500 MB of the 15872 MB in use; " +
++			"no other process under it holds memory the guard could read; it was the largest test binary at 1500 MB"
++	)
++	// killedPackageEvents are what go test reports for the package of a killed binary.
++	killedPackageEvents := []string{
++		`{"Action":"output","Package":"example.com/m/p","Test":"TestHog","Output":"signal: killed\n"}`,
++		`{"Action":"fail","Package":"example.com/m/p"}`,
++	}
+ 	tests := []struct {
+ 		name string
+ 		// guarding is whether the request turns the memory guard on.
+-		guarding   bool
++		guarding bool
++		// slicePressure has the guard see a small run under a memory limit other load filled, instead of a tree over the cap.
++		slicePressure bool
++		// events are further test events the command prints.
++		events     []string
+ 		wantKilled bool
++		// wantRerun is whether the result is marked for the slice-pressure rerun.
++		wantRerun  bool
+ 		wantStarts int32
+ 	}{
+ 		{name: "AGuardKillFailsACommandThatExitedZero", guarding: true, wantKilled: true, wantStarts: 1},
++		{name: "ASlicePressureKillMarksTheRunForARerun", guarding: true, slicePressure: true, wantKilled: true, wantRerun: true, wantStarts: 1},
++		{
++			name: "TheKilledPackagesOwnFailureKeepsTheRerun", guarding: true, slicePressure: true,
++			events: killedPackageEvents, wantKilled: true, wantRerun: true, wantStarts: 1,
++		},
++		{
++			name: "AnotherPackagesFailureBesideASlicePressureKillIsJudged", guarding: true, slicePressure: true,
++			events: append(slices.Clone(killedPackageEvents), `{"Action":"fail","Package":"example.com/m/other"}`), wantKilled: true, wantStarts: 1,
++		},
++		{
++			name: "AFailedTestBesideASlicePressureKillIsJudged", guarding: true, slicePressure: true,
++			events: []string{`{"Action":"fail","Package":"example.com/m/p","Test":"TestOther"}`}, wantKilled: true, wantStarts: 1,
++		},
+ 		{name: "NoGuardLeavesAPassingCommandPassing", guarding: false, wantKilled: false, wantStarts: 0},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 			dir := t.TempDir()
++			reason := overCapReason
++			if tt.slicePressure {
++				reason = pressureReason
++			}
++			wantLine := memoryGuardLine(filepath.Base(testBinaryPath), testBinaryPID, guardTestDir, guardFilter, reason, tt.slicePressure)
+ 			killed := filepath.Join(dir, "killed")
+ 			command := "echo " + shortage
+ 			if tt.guarding {
+ 				// The command reports a test as started, then waits for the stand-in guard's kill before it exits 0.
+-				command = fmt.Sprintf(`echo '{"Action":"run","Package":"example.com/p","Test":"TestHog"}'; until [ -f %q ]; do sleep 0.01; done; echo %s`, killed, shortage)
++				// printf takes each event verbatim, where echo would expand the JSON's own escapes.
++				events := append([]string{`{"Action":"run","Package":"example.com/m/p","Test":"TestHog"}`}, tt.events...)
++				command = fmt.Sprintf(`printf '%%s\n' '%s'; until [ -f %q ]; do sleep 0.01; done; echo %s`, strings.Join(events, "' '"), killed, shortage)
+ 			}
+ 			var starts atomic.Int32
+ 			var stderr bytes.Buffer
+@@ -413,11 +464,21 @@ func TestRunTierMemoryGuard(t *testing.T) {
+ 							if commands.holds(root) {
+ 								registered.Store(true)
+ 							}
++							if tt.slicePressure {
++								return []proc.ProcessSample{{PID: testBinaryPID, Parent: root, Path: testBinaryPath, RSS: 1500 << 20}}, nil
++							}
+ 							return guardTree(3000<<20, 2000<<20), nil
+ 						},
++						own: func() ([]proc.ProcessSample, error) {
++							return []proc.ProcessSample{{PID: testBinaryPID, Path: testBinaryPath, RSS: 1500 << 20}}, nil
++						},
+ 						pressure: func() (proc.MemoryLimit, bool) {
++							if tt.slicePressure {
++								return proc.MemoryLimit{Used: 16384<<20 - 512<<20, Max: 16384 << 20, Cgroup: "/user.slice"}, true
++							}
+ 							return proc.MemoryLimit{}, false
+ 						},
++						holders: func(string) ([]proc.ProcessSample, error) { return nil, nil },
+ 						describe: func(pid int) (proc.Process, bool) {
+ 							process := proc.Process{PID: pid, Cwd: guardTestDir, Argv: []string{testBinaryPath, testRunFlagPrefix + guardFilter}}
+ 							return process, pid == testBinaryPID
+@@ -459,13 +520,16 @@ func TestRunTierMemoryGuard(t *testing.T) {
+ 			if result.record.ExitCode != 1 {
+ 				t.Errorf("runTier() exit = %d; want 1 for a command that exited 0 after a guard kill", result.record.ExitCode)
+ 			}
+-			if !slices.Contains(result.causes, killLine) || !strings.Contains(stderr.String(), killLine) || !strings.Contains(string(result.log), killLine+"\n") {
+-				t.Errorf("runTier() causes = %q, stderr = %q, log = %q; want the kill line in each", result.causes, stderr.String(), result.log)
++			if !slices.Contains(result.causes, wantLine) || !strings.Contains(stderr.String(), wantLine) || !strings.Contains(string(result.log), wantLine+"\n") {
++				t.Errorf("runTier() causes = %q, stderr = %q, log = %q; want the kill line %q in each", result.causes, stderr.String(), result.log, wantLine)
++			}
++			if result.slicePressure != tt.wantRerun || stoppedOnSlicePressure(result) != tt.wantRerun {
++				t.Errorf("runTier() slicePressure = %v, stoppedOnSlicePressure() = %v; want %v for both", result.slicePressure, stoppedOnSlicePressure(result), tt.wantRerun)
+ 			}
+ 			if !slices.ContainsFunc(result.causes, func(cause string) bool {
+-				return strings.Contains(cause, "example.com/p") && strings.Contains(cause, "TestHog")
++				return strings.Contains(cause, "example.com/m/p") && strings.Contains(cause, "TestHog")
+ 			}) {
+-				t.Errorf("runTier() causes = %q; want one naming the test TestHog that was running in example.com/p", result.causes)
++				t.Errorf("runTier() causes = %q; want one naming the test TestHog that was running in example.com/m/p", result.causes)
+ 			}
+ 			if resourceShortage(result.log) == "" {
+ 				t.Fatalf("runTier() log = %q; want it to hold the shortage marker the command printed", result.log)
+@@ -635,6 +699,82 @@ func TestRunTierEndsAVSTestSummaryWithItsInvocation(t *testing.T) {
+ 	}
+ }
+ 
++// A run's stops are slice pressure alone only when every one is a slice-pressure kill of the memory guard.
++func TestRunStopsSlicePressureOnly(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	pressure := guardKill{line: "pressure kill", slicePressure: true}
++	overCap := guardKill{line: "over-cap kill"}
++	tests := []struct {
++		name  string
++		stops runStops
++		want  bool
++	}{
++		{"NoStop", runStops{}, false},
++		{"SlicePressureKills", runStops{guardKills: []guardKill{pressure, pressure}}, true},
++		{"BesideAnOverCapKill", runStops{guardKills: []guardKill{pressure, overCap}}, false},
++		{"BesideTheMemoryCap", runStops{guardKills: []guardKill{pressure}, memoryCap: "memory cap"}, false},
++		{"BesideTheProcessCap", runStops{guardKills: []guardKill{pressure}, processCap: "process cap"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := tt.stops.slicePressureOnly(); got != tt.want {
++				t.Errorf("slicePressureOnly() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++}
++
++// A call closes with the memory pressure or runner crash line only when no failure judged the code.
++// A run that judged no code stops no --stop-on-fail call.
++func TestUnjudgedRunsClosingLineAndStopsCall(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	pressure := runEnd{code: 1, ran: true, pressureStop: true}
++	crash := runEnd{code: 134, ran: true, crash: "SIGABRT"}
++	failure := runEnd{code: 2, ran: true}
++	pressureLine := gateslot.MemoryPressureLine("tier1 (exit 1)")
++	tests := []struct {
++		name string
++		ends []runEnd
++		// lintFailed is whether a lint step found something.
++		lintFailed bool
++		want       string
++		// wantStops is whether each of ends stops a --stop-on-fail call.
++		wantStops []bool
++	}{
++		{name: "NothingFailed"},
++		{name: "APressureStop", ends: []runEnd{pressure}, want: pressureLine, wantStops: []bool{false}},
++		{name: "ACrash", ends: []runEnd{crash}, want: gateslot.RunnerCrashLine("tier0 (exit 134, SIGABRT)"), wantStops: []bool{false}},
++		{name: "ACrashAndAPressureStopCloseWithThePressureLine", ends: []runEnd{crash, pressure}, want: gateslot.MemoryPressureLine("tier1 (exit 1)"), wantStops: []bool{false, false}},
++		{name: "APressureStopBesideAFailure", ends: []runEnd{pressure, failure}, wantStops: []bool{false, true}},
++		{name: "APressureStopBesideALintFinding", ends: []runEnd{pressure}, lintFailed: true, wantStops: []bool{false}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var runs unjudgedRuns
++			for i, end := range tt.ends {
++				label := "tier0"
++				if end.pressureStop {
++					label = "tier1"
++				}
++				runs.add(label, end)
++				if got := stopsCall(end); got != tt.wantStops[i] {
++					t.Errorf("stopsCall(%+v) = %v; want %v", end, got, tt.wantStops[i])
++				}
++			}
++			runs.judged = runs.judged || tt.lintFailed
++			if got := runs.closingLine(); got != tt.want {
++				t.Errorf("closingLine() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
++
+ // The kill line names the tier's memory cap in full, as the key to raise.
+ func TestTierMemoryCapLine(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -669,6 +809,11 @@ func TestFailedRunLabel(t *testing.T) {
+ 			end:  runEnd{code: 134, ran: true, crash: "SIGABRT"},
+ 			want: "tier1 (exit 134, a runner crash, SIGABRT, in its run and its rerun with no failing test: the code under test was not judged)",
+ 		},
++		{
++			name: "PressureStopTwice",
++			end:  runEnd{code: 1, ran: true, pressureStop: true},
++			want: "tier1 (exit 1, a memory guard kill in its run and its rerun for a memory limit other load filled: an infrastructure stop, not a test failure; way forward: re-run the same command once that load ends)",
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 5c5a2a855..949f79a99 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -106,9 +106,10 @@
+ //
+ // # Watchdog and timeout lines
+ //
+-// Each line the gate prints after a CPU-watchdog quit, a tier or build timeout, or a runner crash has one renderer.
++// The gate prints a line after a CPU-watchdog quit, a tier or build timeout, a runner crash or a memory pressure stop.
++// Each such line has one renderer.
+ // It also has one finder.
+-// A site therefore tells a runtime's crash from a failing test.
++// A site therefore tells a runtime's crash, or a memory limit other load filled, from a failing test.
+ //
+ // # Red-first call
+ //
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index 2684e43e1..f522a3e76 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -1,5 +1,5 @@
+ // runlog.go writes the diagnostic record and log of each tier run under the gate directory;
+-// it also renders and finds the timeout, runner crash and tier summary lines that a log carries.
++// it also renders and finds the timeout, runner crash, memory pressure and tier summary lines that a log carries.
+ 
+ package gateslot
+ 
+@@ -30,6 +30,8 @@ const (
+ 	buildTierName      = "build"
+ 
+ 	runnerCrashPrefix = "lym gate test: runner crash: "
++
++	memoryPressurePrefix = "lym gate test: memory pressure stop: "
+ )
+ 
+ // TimeoutKeyName returns the full name of the gate.yaml key bounding the run named tier, a tier or the build.
+@@ -100,8 +102,12 @@ type RunRecord struct {
+ 	// RunnerCrash names the signal, such as SIGABRT, that ended a tier run with no failing test.
+ 	// Such a run judged no code; the field is empty for any other run.
+ 	RunnerCrash string `json:"runner_crash,omitempty"`
++	// MemoryPressure is set on the record of a tier run, the first or the rerun, that judged no code.
++	// The memory guard's only stops of such a run were for a memory limit other load filled.
++	MemoryPressure bool `json:"memory_pressure,omitempty"`
+ 	// Rerun is set on the record of a tier's one rerun.
+-	// The rerun follows a first run that crashed its test runner or failed on a resource shortage.
++	// The rerun follows a first run that judged no code:
++	// a runner crash, a resource shortage or a stop for a memory limit other load filled.
+ 	// The first run has its own record.
+ 	Rerun bool `json:"rerun,omitempty"`
+ }
+@@ -260,8 +266,28 @@ func RunnerCrashLine(runs string) string {
+ 
+ // FindRunnerCrash returns the runs the first runner crash line in log names, and false when log holds none.
+ func FindRunnerCrash(log string) (runs string, ok bool) {
++	return findClosingRuns(log, runnerCrashPrefix)
++}
++
++// MemoryPressureLine renders the line a gate call closes with when no failed run judged the code,
++// and the memory guard stopped runs of it in their run and their one rerun for a memory limit other load filled.
++// runs names each such run with its exit code, and holds no semicolon.
++// The line names the way forward, since no change to the code under test frees memory other processes hold.
++func MemoryPressureLine(runs string) string {
++	return fmt.Sprintf("%s%s; the memory guard killed a test binary of each in its run and its one rerun because other load had nearly filled the memory limit the call runs under, so no test judged the code; way forward: wait for that load to end, then re-run the same command",
++		memoryPressurePrefix, runs)
++}
++
++// FindMemoryPressureStop returns the runs the first memory pressure line in log names, and false when log holds none.
++func FindMemoryPressureStop(log string) (runs string, ok bool) {
++	return findClosingRuns(log, memoryPressurePrefix)
++}
++
++// findClosingRuns returns the runs the first line of log opening with prefix names, up to its first semicolon.
++// It reports false when no line opens with prefix.
++func findClosingRuns(log, prefix string) (runs string, ok bool) {
+ 	for _, line := range strings.Split(log, "\n") {
+-		rest, found := strings.CutPrefix(strings.TrimRight(line, "\r"), runnerCrashPrefix)
++		rest, found := strings.CutPrefix(strings.TrimRight(line, "\r"), prefix)
+ 		if !found {
+ 			continue
+ 		}
+diff --git a/internal/gateslot/watchdogline_test.go b/internal/gateslot/watchdogline_test.go
+index 01c883c9d..0af6f2919 100644
+--- a/internal/gateslot/watchdogline_test.go
++++ b/internal/gateslot/watchdogline_test.go
+@@ -66,22 +66,27 @@ func TestWatchdogLine(t *testing.T) {
+ 	}
+ 
+ 	crashLine := RunnerCrashLine("tier1 (exit 134, SIGABRT)")
+-	crashTests := []struct {
++	pressureLine := MemoryPressureLine("tier1 (exit 1), guard tier1 (exit 1)")
++	closingTests := []struct {
+ 		name     string
++		find     func(log string) (string, bool)
+ 		log      string
+ 		wantRuns string
+ 		wantOK   bool
+ 	}{
+-		{"the crash line after the closing line of failed runs", "Aborted (core dumped)\n" + FailedRunsPrefix + "tier1 (exit 134)\r\n" + crashLine + "\r\n", "tier1 (exit 134, SIGABRT)", true},
+-		{"a log with no crash line", "Fatal error. Internal CLR error. (0x80131506)\n" + FailedRunsPrefix + "tier1 (exit 134)\n", "", false},
++		{"RunnerCrash_the crash line after the closing line of failed runs", FindRunnerCrash, "Aborted (core dumped)\n" + FailedRunsPrefix + "tier1 (exit 134)\r\n" + crashLine + "\r\n", "tier1 (exit 134, SIGABRT)", true},
++		{"RunnerCrash_a log with no crash line", FindRunnerCrash, "Fatal error. Internal CLR error. (0x80131506)\n" + FailedRunsPrefix + "tier1 (exit 134)\n", "", false},
++		{"RunnerCrash_a memory pressure line is no crash", FindRunnerCrash, pressureLine + "\n", "", false},
++		{"MemoryPressure_the pressure line after the closing line of failed runs", FindMemoryPressureStop, "signal: killed\n" + FailedRunsPrefix + "tier1 (exit 1)\r\n" + pressureLine + "\r\n", "tier1 (exit 1), guard tier1 (exit 1)", true},
++		{"MemoryPressure_a crash line is no memory pressure stop", FindMemoryPressureStop, crashLine + "\n", "", false},
+ 	}
+-	for _, tt := range crashTests {
+-		t.Run("RunnerCrash_"+tt.name, func(t *testing.T) {
++	for _, tt := range closingTests {
++		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			runs, ok := FindRunnerCrash(tt.log)
++			runs, ok := tt.find(tt.log)
+ 			if runs != tt.wantRuns || ok != tt.wantOK {
+-				t.Errorf("FindRunnerCrash() = %q, %v; want %q, %v", runs, ok, tt.wantRuns, tt.wantOK)
++				t.Errorf("finder(%q) = %q, %v; want %q, %v", tt.log, runs, ok, tt.wantRuns, tt.wantOK)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index ed9c60dc2..78f362f69 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -45,7 +45,7 @@
+ // When a pull request is wanted, Finalize merges it on GitHub under the lock instead of landing by a local push.
+ //
+ // Each row gates the merged tree through internal/verifytree under its own told gate key.
+-// A gate whose every failed run crashed its test runner judged no code:
++// A gate whose result is a runner crash or a memory pressure stop judged no code:
+ // the row halts with LandingStopPrefix, spawns no fixer and writes no landing failure record.
+ // A failing gate spawns the merge fixer, whose whole change is judged against the size and kind caps.
+ // A change over the caps lands only behind the fix review's approval or the operator's acceptance.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 9e329b686..d1fb84199 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -927,7 +927,7 @@ func (fz *Finalize) mergeAndGate(ctx context.Context, parentHandle parentMerger)
+ //
+ // A failing gate spawns the fixer while the entry has attempts left under finalize_fix_attempts in landing.yaml.
+ // The attempts are read from the attempt record under the row's entry.
+-// A gate whose every failed run crashed its test runner judged no code;
++// A gate whose result is a runner crash or a memory pressure stop judged no code;
+ // it halts with the gate's LandingStopPrefix reason, spawning no fixer and spending no attempt.
+ // A pass after the lock was taken again spends from the same attempts,
+ // so a second failed verify never grants a fresh cap.
+@@ -968,11 +968,11 @@ func (fz *Finalize) gateAndFix(ctx context.Context) *ending {
+ 		return fail(ctx, finalizeName, err)
+ 	}
+ 
+-	gateReason, crashed, err := fz.gate.check(ctx, finalizeName, fz.deps.ParentBranch)
++	gateReason, unjudged, err := fz.gate.check(ctx, finalizeName, fz.deps.ParentBranch)
+ 	if err != nil {
+ 		return fail(ctx, finalizeName, err)
+ 	}
+-	if crashed {
++	if unjudged {
+ 		return halt(ctx, finalizeName, gateReason)
+ 	}
+ 	passed := gateReason == ""
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index 9f112474d..59ca2833c 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -58,8 +58,9 @@ const (
+ 	fixerEndDirty fixerEnd = "dirty"
+ 	// fixerEndPushed is a session during which the task branch's remote ref moved.
+ 	fixerEndPushed fixerEnd = "pushed"
+-	// fixerEndCrash is a landing gate after a turn whose every failed run crashed its test runner, which judged no code.
+-	fixerEndCrash fixerEnd = "crash"
++	// fixerEndUnjudged is a landing gate after a turn whose result judged no code:
++	// a runner crash or a memory pressure stop.
++	fixerEndUnjudged fixerEnd = "unjudged"
+ )
+ 
+ // fixerOutcome is how a fixer run ended and what the halt that follows names.
+@@ -77,8 +78,8 @@ type fixerOutcome struct {
+ 	pushedRef string
+ 	// dirty lists the uncommitted or untracked paths the last turn left; set for a dirty end.
+ 	dirty []string
+-	// crash is the landing gate's halt reason naming the crashed runs; set for a crash end.
+-	crash string
++	// unjudged is the landing gate's halt reason naming the runs that judged no code; set for an unjudged end.
++	unjudged string
+ }
+ 
+ // fixerRun runs the merge fixer for one row.
+@@ -254,7 +255,7 @@ func (s *fixerSession) halt(end fixerEnd, findings string) (shuttleengine.GateRe
+ // A dirty tree with a turn left charges that turn and re-prompts naming the paths,
+ // so the fixer commits or deletes what it left; with none left, the run ends dirty.
+ // A failing gate with a turn left charges that turn and re-prompts; with none left, the run ends spent.
+-// A gate whose every failed run crashed its test runner ends the run as a crash, whatever turns are left;
++// A gate whose result judged no code ends the run as unjudged, whatever turns are left;
+ // no turn mends such a gate.
+ func (s *fixerSession) check() (shuttleengine.GateResult, error) {
+ 	result, err := s.judge()
+@@ -301,13 +302,13 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ 		return s.halt(fixerEndEscalate, report.Conflict)
+ 	}
+ 
+-	reason, crashed, err := gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
++	reason, unjudged, err := gate.check(s.ctx, s.run.row, s.run.deps.ParentBranch)
+ 	if err != nil {
+ 		return shuttleengine.GateResult{}, err
+ 	}
+-	if crashed {
+-		s.outcome.crash = reason
+-		return s.halt(fixerEndCrash, reason)
++	if unjudged {
++		s.outcome.unjudged = reason
++		return s.halt(fixerEndUnjudged, reason)
+ 	}
+ 	if reason == "" {
+ 		passed := shuttleengine.GateResult{Passed: true}
+@@ -342,14 +343,14 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ // it names `lym loom decision add` as its way forward.
+ // With escalateJudgedFirst false, a pawl run's arbiter has no decision verb to settle it with;
+ // so the way forward is to settle the conflict on the task branch.
+-// A crash end's reason is the landing gate's own;
++// An unjudged end's reason is the landing gate's own;
+ // it already opens with LandingStopPrefix and names its way forward.
+ func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
+ 	prefix := LandingStopPrefix
+ 	var cause, wayForward string
+ 	switch o.end {
+-	case fixerEndCrash:
+-		return o.crash
++	case fixerEndUnjudged:
++		return o.unjudged
+ 	case fixerEndSpent:
+ 		cause = fmt.Sprintf("the fixer spent every attempt of %s and the landing gate still fails; log: %s", row, o.failureLog)
+ 		wayForward = "fix the failure on the task branch, then `lym loom resume`"
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index ff8c440af..3844a6b52 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -297,13 +297,13 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			avoidReason: []string{"without a usable turn"},
+ 		},
+ 		{
+-			name: "a gate whose runner crashed after a turn is the crash end, never re-prompted",
++			name: "a gate whose runner crashed after a turn is the unjudged end, never re-prompted",
+ 			setup: func(t *testing.T, fx *fixerRunFixture) {
+ 				fx.gate.fake.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)"}
+ 				report := func() { fx.writeReport(t, fixedReport) }
+ 				fx.seats.turns = []func(){report, report}
+ 			},
+-			wantEnd: fixerEndCrash, wantSpent: 1, wantTurns: 1,
++			wantEnd: fixerEndUnjudged, wantSpent: 1, wantTurns: 1,
+ 			wantReason: []string{LandingStopPrefix, "test runner crashed", "tier1 (exit 134, SIGABRT)", "`lym loom resume`"},
+ 		},
+ 		{
+diff --git a/internal/landingshed/parentalign.go b/internal/landingshed/parentalign.go
+index 3fdf11cb1..45c507257 100644
+--- a/internal/landingshed/parentalign.go
++++ b/internal/landingshed/parentalign.go
+@@ -122,7 +122,7 @@ func NewParentAlign(deps Deps) (*ParentAlign, error) {
+ // After the merge and the `landing` gate it aligns:
+ // it runs the merge fixer when the parent brought in commits or the gate fails,
+ // and every halt of that alignment is a Stuck with Halt whose reason opens with LandingStopPrefix.
+-// A gate whose every failed run crashed its test runner judged no code:
++// A gate whose result is a runner crash or a memory pressure stop judged no code:
+ // it halts the same way before any alignment, with no fixer.
+ // A fixer's escalate on a tapestry, darn or sampler run (Deps.EscalateJudgedFirst) opens with EscalateStopPrefix.
+ // A failed record write and every infrastructure fault are errors.
+@@ -193,11 +193,11 @@ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 	if end := gateEnding(ctx, parentAlignName, reason, err); end != nil {
+ 		return end.result()
+ 	}
+-	gateReason, crashed, err := m.gate.check(ctx, parentAlignName, m.deps.ParentBranch)
++	gateReason, unjudged, err := m.gate.check(ctx, parentAlignName, m.deps.ParentBranch)
+ 	if err != nil {
+ 		return fail(ctx, parentAlignName, err).result()
+ 	}
+-	if crashed {
++	if unjudged {
+ 		return halt(ctx, parentAlignName, gateReason).result()
+ 	}
+ 	if gateReason == "" {
+diff --git a/internal/landingshed/prreview.go b/internal/landingshed/prreview.go
+index b6e2e7ec0..a9d589e54 100644
+--- a/internal/landingshed/prreview.go
++++ b/internal/landingshed/prreview.go
+@@ -542,11 +542,11 @@ func (p *PRReview) readTree() (string, []string, error) {
+ // A pass pushes head and records it as gated.
+ // On a failure the row pushes nothing and halts with the gate's reason;
+ // the resume gates the task head again, so a fix committed meanwhile or a failure from outside the change is retried.
+-// A runner crash judges no code, so it halts the row naming the crash.
++// A runner crash or a memory pressure stop judges no code, so it halts the row naming it.
+ // A head moved or a tree dirtied during the gate discards the verdict.
+ // It returns nil when the wait goes on.
+ func (p *PRReview) gateHead(ctx context.Context, head string, rec pullrequest.Record, label string) *ending {
+-	reason, crashed, err := p.gate.checkHead(ctx, p.name)
++	reason, unjudged, err := p.gate.checkHead(ctx, p.name)
+ 	p.gate.markWait(label)
+ 	if err != nil {
+ 		return &ending{err: err}
+@@ -559,7 +559,7 @@ func (p *PRReview) gateHead(ctx context.Context, head string, rec pullrequest.Re
+ 		return nil
+ 	}
+ 
+-	if crashed {
++	if unjudged {
+ 		return halt(ctx, p.name, reason)
+ 	}
+ 	if reason != "" {
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index b505461c3..9b4dcce82 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -70,12 +70,12 @@ type failureRecorder struct {
+ // recordFailure writes the landing failure record for a verify of the row's gate key that ended in result.
+ // The record's kind is that key, and its tier is the first failing tier the log's summary lines name;
+ // a log without one, such as a refusal before the first tier, takes the highest tier of the key.
+-// A result that is not a failed run, nor a timeout, a runner crash or a shell that could not start, writes none.
++// A result that is not a failed run, nor a timeout, an unjudged run or a shell that could not start, writes none.
+ // Those results name no failing test.
+ // It reports whether it wrote the record: a write failure is logged, reported as false and changes nothing else.
+ func (g verifyGate) recordFailure(result verifytree.Result) bool {
+ 	kind := verifytree.FailureKind(g.key)
+-	if g.recorder == nil || result.Status != verifytree.StatusFailed || result.TimedOut || result.RunnerCrash || result.ExitCode < 0 {
++	if g.recorder == nil || result.Status != verifytree.StatusFailed || result.TimedOut || result.Unjudged() || result.ExitCode < 0 {
+ 		return false
+ 	}
+ 	failure := verifytree.LandingFailure{
+@@ -267,13 +267,13 @@ func (g verifyGate) runMarked(ctx context.Context, producer string, site verifyt
+ // It returns a non-empty Stuck reason naming the gate when the call fails or the tree is dirty.
+ // It returns a non-nil error for an infrastructure fault or a cancellation.
+ // It returns ("", false, nil) when the producer may proceed.
+-// crashed is set when every failed run of the call crashed its test runner with no failing test,
++// unjudged is set when the failed call's result is unjudged, a runner crash or a memory pressure stop,
+ // so no test judged the code: the reason is then a halt reason opening with `LandingStopPrefix`.
+ // The producer halts with it instead of spawning a fixer.
+ // A pass, and a skip over a tree already recorded as passed, remove a landing failure record an earlier failed call left.
+ // A gate told onFlakyPass runs a failure once more on the same head when its report lists tier and guard runs alone.
+ // It then judges the rerun's result in its place.
+-func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (reason string, crashed bool, err error) {
++func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (reason string, unjudged bool, err error) {
+ 	command, site, ok, err := g.gateCall(producer, "landingshed: post-merge verify skipped because no verify command is configured", "parentBranch", parentBranch)
+ 	if !ok {
+ 		return "", false, err
+@@ -293,18 +293,18 @@ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (r
+ 	if reason == "" && err == nil {
+ 		g.clearFailure()
+ 	}
+-	return reason, result.Status == verifytree.StatusFailed && result.RunnerCrash, err
++	return reason, result.Status == verifytree.StatusFailed && result.Unjudged(), err
+ }
+ 
+ // rerunTestFailure runs the failed verify first once more on the same head and returns the result the gate judges.
+ // A test can fail on a race with another test, so only a failure whose report lists tier and guard runs alone is rerun.
+-// A timeout, a runner crash and a shell that could not start come back as they are.
++// A timeout, an unjudged run and a shell that could not start come back as they are.
+ // So do a build, vet or lint failure, a package that failed outside any test and a log with no report.
+ // The rerun runs the report's failed tests alone when it names Go tests only, and command otherwise.
+ // A rerun that passes hands first's failures to onFlakyPass and returns the pass.
+ // Any other rerun result comes back, so a failure the rerun repeats is judged on the rerun's log.
+ func (g verifyGate) rerunTestFailure(ctx context.Context, producer string, site verifytree.Site, command string, first verifytree.Result) (verifytree.Result, error) {
+-	if first.Status != verifytree.StatusFailed || first.TimedOut || first.RunnerCrash || first.ExitCode < 0 || first.Log == "" {
++	if first.Status != verifytree.StatusFailed || first.TimedOut || first.Unjudged() || first.ExitCode < 0 || first.Log == "" {
+ 		return first, nil
+ 	}
+ 	content, err := os.ReadFile(first.Log)
+@@ -345,10 +345,10 @@ func (g verifyGate) rerunTestFailure(ctx context.Context, producer string, site
+ // It returns the reason the gate refuses the head, written for whoever made the commit to act on in a new one.
+ // It returns an error for an infrastructure fault or a cancellation, and ("", false, nil) on a pass or a skip.
+ // A dirty result returns the dirty reason.
+-// crashed is set when every failed run of the call crashed its test runner with no failing test:
++// unjudged is set when the failed call's result is unjudged, a runner crash or a memory pressure stop:
+ // no test judged the head, so the reason is a halt reason opening with `LandingStopPrefix`.
+ // The caller halts the row with that reason as it stands.
+-func (g verifyGate) checkHead(ctx context.Context, producer string) (reason string, crashed bool, err error) {
++func (g verifyGate) checkHead(ctx context.Context, producer string) (reason string, unjudged bool, err error) {
+ 	command, site, ok, err := g.gateCall(producer, "landingshed: the pr-review gate skipped because no verify command is configured")
+ 	if !ok {
+ 		return "", false, err
+@@ -366,7 +366,7 @@ func (g verifyGate) checkHead(ctx context.Context, producer string) (reason stri
+ 	case verifytree.StatusDirty:
+ 		return dirtyReason("when the pr-review gate was about to run", result.Dirty), false, nil
+ 	case verifytree.StatusFailed:
+-		return g.headFailureReason(result), result.RunnerCrash, nil
++		return g.headFailureReason(result), result.Unjudged(), nil
+ 	default:
+ 		return "", false, fmt.Errorf("landingshed: %s: unknown pr-review gate status %q", producer, result.Status)
+ 	}
+@@ -375,15 +375,15 @@ func (g verifyGate) checkHead(ctx context.Context, producer string) (reason stri
+ 
+ // headFailureReason is the reason a failed run of the pr-review gate gives:
+ // the failing tier or the build, the log and the instruction to fix it in a new commit.
+-// A timeout, a runner crash and a shell that could not start name no tier, since none names a failing test.
+-// A runner crash is a halt reason opening with `LandingStopPrefix`:
++// A timeout, an unjudged run and a shell that could not start name no tier, since none names a failing test.
++// An unjudged run is a halt reason opening with `LandingStopPrefix`:
+ // no change to the code mends it, and there is no commit to make.
+ func (g verifyGate) headFailureReason(result verifytree.Result) string {
+ 	switch {
+ 	case result.TimedOut:
+ 		return fmt.Sprintf("the pr-review gate timed out: %s; output: %s; fix the hanging test or build in a new commit", result.Detail, result.Log)
+-	case result.RunnerCrash:
+-		return fmt.Sprintf("%sthe pr-review gate's test runner crashed in its run and its one rerun (%s), so no test judged the head and no change to the code mends it; output: %s; way forward: `lym loom resume`, which runs the gate again, and when the runner crashes again, find the runtime's own fault in the output", LandingStopPrefix, result.Detail, result.Log)
++	case result.Unjudged():
++		return fmt.Sprintf("%sthe pr-review gate's %s (%s), so no test judged the head and no change to the code mends it; output: %s; way forward: `lym loom resume`, which runs the gate again, and %s", LandingStopPrefix, result.UnjudgedStop(), result.Detail, result.Log, result.UnjudgedAdvice())
+ 	case result.ExitCode < 0:
+ 		return fmt.Sprintf("the pr-review gate could not start: %s; output: %s", result.Detail, result.Log)
+ 	}
+@@ -426,8 +426,8 @@ func watchdogClause(logPath string) string {
+ // It returns an error for an unknown status, and ("", nil) when the producer may proceed.
+ // A failed command with an exit code ends its reason with the clause asking to fix forward on the task branch.
+ // After a CPU watchdog quit the reason names the window and the `busy_quit_sec` way forward before that clause.
+-// A runner crash is a halt reason opening with `LandingStopPrefix`.
+-// The reason names the crashed runs and the way forward of resuming, which runs the gate again.
++// An unjudged run is a halt reason opening with `LandingStopPrefix`.
++// The reason names its runs and the way forward of resuming, which runs the gate again.
+ func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBranch string) (string, error) {
+ 	switch result.Status {
+ 	case verifytree.StatusPassed:
+@@ -446,8 +446,8 @@ func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBran
+ 		if result.ExitCode < 0 {
+ 			return fmt.Sprintf("%s could not start after merging parent branch %q: %s; output: %s", what, parentBranch, result.Detail, result.Log), nil
+ 		}
+-		if result.RunnerCrash {
+-			return fmt.Sprintf("%s%s's test runner crashed after merging parent branch %q, in its run and its one rerun (%s), so no test judged the code and no fixer runs; output: %s; way forward: `lym loom resume`, which runs the gate again, and when the runner crashes again, find the runtime's own fault in the output", LandingStopPrefix, what, parentBranch, result.Detail, result.Log), nil
++		if result.Unjudged() {
++			return fmt.Sprintf("%s%s's %s after merging parent branch %q (%s), so no test judged the code and no fixer runs; output: %s; way forward: `lym loom resume`, which runs the gate again, and %s", LandingStopPrefix, what, result.UnjudgedStop(), parentBranch, result.Detail, result.Log, result.UnjudgedAdvice()), nil
+ 		}
+ 		watchdog := watchdogClause(result.Log)
+ 		return fmt.Sprintf("%s failed after merging parent branch %q (exit code %d); output: %s%s; fix forward on the task branch, then resume", what, parentBranch, result.ExitCode, result.Log, watchdog), nil
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 3bd942019..f12574da0 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -72,7 +72,7 @@
+ // So does a C# change whose tests the check cannot select or run.
+ // A diff that adds or changes no test holds the run without spending an attempt.
+ // The hold lasts until a new commit or the parent's record.
+-// Failing exits name their way forward, and any other exit code, a timeout or a runner crash fails terminally.
++// Failing exits name their way forward, and any other exit code, a timeout or an unjudged run fails terminally.
+ // A labels or record read error is the gate's returned error.
+ //
+ // The Plan-Write rotation archives the prior plan and webster's run record,
+diff --git a/internal/loomshed/redfirstgate.go b/internal/loomshed/redfirstgate.go
+index 8cbd2daba..68afa8e32 100644
+--- a/internal/loomshed/redfirstgate.go
++++ b/internal/loomshed/redfirstgate.go
+@@ -48,7 +48,7 @@ type RedFirstGate struct {
+ // While HEAD's tree stays the one the refusal judged, Gate answers pending again without running command.
+ // Final answers that refusal as a failure whose findings name the same way forward.
+ // On that same tree it runs no command again.
+-// Any other failed run, a timeout or a runner crash included, judged none of the diff's tests and fails terminally:
++// Any other failed run, a timeout or an unjudged run included, judged none of the diff's tests and fails terminally:
+ // no change to the code mends it, and resuming the run runs the check again.
+ // A labels read error, a record read or parse error, a HEAD read error and a verify error are returned errors.
+ func NewRedFirstGate(worktreeRoot, verifyDir, siteLabel, command string, labels func() ([]string, error), recordPath string, hold *verifytree.PauseHold) RedFirstGate {
+@@ -214,18 +214,18 @@ func (g *redFirstGate) verify() (verifytree.Result, *shuttleengine.GateResult, e
+ 		dirty := dirtyResult(res, g.siteLabel, g.attempt)
+ 		return res, &dirty, nil
+ 	}
+-	if res.ExitCode == gateslot.RedFirstUnjudgedExit && !res.TimedOut && !res.RunnerCrash {
++	if res.ExitCode == gateslot.RedFirstUnjudgedExit && !res.TimedOut && !res.Unjudged() {
+ 		logger.Info("loomshed: red-first gate passed unjudged, the check cannot judge the tests", "gate", g.siteLabel, "attempt", g.attempt, "log", res.Log)
+ 		return res, &shuttleengine.GateResult{Passed: true}, nil
+ 	}
+-	logger.Warn("loomshed: red-first gate failed", "gate", g.siteLabel, "attempt", g.attempt, "exitCode", res.ExitCode, "timedOut", res.TimedOut, "runnerCrash", res.RunnerCrash, "log", res.Log)
++	logger.Warn("loomshed: red-first gate failed", "gate", g.siteLabel, "attempt", g.attempt, "exitCode", res.ExitCode, "timedOut", res.TimedOut, "runnerCrash", res.RunnerCrash, "memoryPressure", res.MemoryPressure, "log", res.Log)
+ 	return res, nil, nil
+ }
+ 
+ // holdsForCommitOrRecord reports whether a failed red-first run is a refusal the writer's next turn may not lift.
+ // Only a commit that adds a failing test, or the parent's record that lifts the gate, lifts a diff with no test.
+ func holdsForCommitOrRecord(res verifytree.Result) bool {
+-	if res.TimedOut || res.RunnerCrash {
++	if res.TimedOut || res.Unjudged() {
+ 		return false
+ 	}
+ 	return res.ExitCode == gateslot.RedFirstNoTestExit
+@@ -254,9 +254,9 @@ func redFirstFailure(res verifytree.Result) shuttleengine.GateResult {
+ 	case res.TimedOut:
+ 		terminal = true
+ 		fmt.Fprintf(&b, "The red-first check timed out, so it judged none of the diff's tests: %s. %s", res.Detail, redFirstNoMend)
+-	case res.RunnerCrash:
++	case res.Unjudged():
+ 		terminal = true
+-		fmt.Fprintf(&b, "The red-first check's test runner crashed, so it judged none of the diff's tests: %s. %s", res.Detail, redFirstNoMend)
++		fmt.Fprintf(&b, "The red-first check's %s, so it judged none of the diff's tests: %s. No change to the code mends it, so the run stops here; resuming it runs the check again, and %s.", res.UnjudgedStop(), res.Detail, res.UnjudgedAdvice())
+ 	case res.ExitCode == gateslot.RedFirstGreenExit:
+ 		fmt.Fprintf(&b, "Every test the diff adds or changes passed on the merge base, so none of them fails before the change.\n\n"+
+ 			"Way forward: when the change fixes a bug, make a test fail on the merge base and pass with the fix, "+
+diff --git a/internal/loomshed/verifygate.go b/internal/loomshed/verifygate.go
+index f3b8a62f5..ade19e734 100644
+--- a/internal/loomshed/verifygate.go
++++ b/internal/loomshed/verifygate.go
+@@ -77,7 +77,8 @@ const failedAloneNote = "The tests that failed the last verify run were run alon
+ // That arrival first runs them alone through verifytree.Verify, the command gateslot.FailedTestsCall renders.
+ // Tests that fail again fail the arrival with their findings alone and are kept for the arrival after.
+ // A run of them that passes, or fails naming no failed test, leaves the arrival to the full command.
+-// A timed-out run, a runner crash and a failure outside any test keep nothing, so the next arrival runs the full command.
++// A timed-out run, an unjudged run and a failure outside any test keep nothing,
++// so the next arrival runs the full command.
+ //
+ // `StatusPassed` and `StatusSkipped` pass.
+ // `StatusDirty` fails with the dirty paths.
+@@ -85,8 +86,9 @@ const failedAloneNote = "The tests that failed the last verify run were run alon
+ // After a CPU watchdog quit, it adds the window and the `busy_quit_sec` way forward.
+ // The command's guard scan rejects a test file, such as one with a misplaced `//lym:guard` marker.
+ // That rejection reaches the findings through the tail, with its file and line.
+-// A `StatusFailed` result is a runner crash when every failed run crashed its test runner with no failing test.
+-// That fails terminally and names the crashed runs.
++// A `StatusFailed` result is unjudged when every failed run crashed its test runner with no failing test,
++// or the memory guard stopped runs of it for a memory limit other load filled and no failed run judged the code.
++// That fails terminally and names those runs.
+ // No change the writer makes mends it, so no fixer gets it.
+ // A headroom finding or a comment lint finding fails with its file and line or its bytes and the way forward.
+ // A command, merge base or tree scope read error is a returned error.
+@@ -196,8 +198,8 @@ func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase
+ 				failedBefore, _ = namedFailures(res)
+ 			}
+ 			findings := verifyFailureFindings(res, res.Log)
+-			logger.Warn("loomshed: verify gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "runnerCrash", res.RunnerCrash, "log", res.Log)
+-			return shuttleengine.GateResult{Passed: false, Findings: findings, Terminal: res.RunnerCrash}, nil
++			logger.Warn("loomshed: verify gate failed", "gate", siteLabel, "attempt", attempt, "exitCode", res.ExitCode, "runnerCrash", res.RunnerCrash, "memoryPressure", res.MemoryPressure, "log", res.Log)
++			return shuttleengine.GateResult{Passed: false, Findings: findings, Terminal: res.Unjudged()}, nil
+ 		}
+ 	}
+ }
+@@ -236,9 +238,9 @@ func runFailedTestsAlone(paths verifytree.Paths, site verifytree.Site, failed []
+ }
+ 
+ // namedFailures returns the failed tests res's log names, when its failure report names failed tests alone.
+-// A timed-out run and a runner crash name none.
++// A timed-out run and an unjudged run name none.
+ func namedFailures(res verifytree.Result) ([]gateslot.FailedTest, bool) {
+-	if res.TimedOut || res.RunnerCrash || res.Log == "" {
++	if res.TimedOut || res.Unjudged() || res.Log == "" {
+ 		return nil, false
+ 	}
+ 	log, err := os.ReadFile(res.Log)
+@@ -279,7 +281,7 @@ func commentLintFindings(findings []commentlint.Finding) string {
+ 	return b.String()
+ }
+ 
+-// verifyFailureFindings renders a StatusFailed result with its exit code, timeout or runner crash, and log path.
++// verifyFailureFindings renders a StatusFailed result with its exit code, timeout or unjudged stop, and log path.
+ // It quotes each failing test and package the log names, with its own output.
+ // It also quotes the gate's closing line of failed runs.
+ // A log that names no failing test or package is quoted as its tail instead.
+@@ -292,8 +294,8 @@ func verifyFailureFindings(res verifytree.Result, logPath string) string {
+ 	switch {
+ 	case res.TimedOut:
+ 		fmt.Fprintf(&b, "The verify command timed out: %s.", res.Detail)
+-	case res.RunnerCrash:
+-		fmt.Fprintf(&b, "The verify command's test runner crashed in its run and its one rerun, so no test judged the code: %s. No change to the code mends it, so the run stops here; resuming it runs the gate again.", res.Detail)
++	case res.Unjudged():
++		fmt.Fprintf(&b, "The verify command's %s, so no test judged the code: %s. No change to the code mends it, so the run stops here; resuming it runs the gate again, and %s.", res.UnjudgedStop(), res.Detail, res.UnjudgedAdvice())
+ 	default:
+ 		fmt.Fprintf(&b, "The verify command failed with exit code %d.", res.ExitCode)
+ 		if res.Detail != "" {
+diff --git a/internal/loomshed/verifygate_test.go b/internal/loomshed/verifygate_test.go
+index cf4ae7f28..e38dbeda6 100644
+--- a/internal/loomshed/verifygate_test.go
++++ b/internal/loomshed/verifygate_test.go
+@@ -66,6 +66,12 @@ func TestVerifyFailureFindings(t *testing.T) {
+ 			want:    []string{"test runner crashed in its run and its one rerun", "tier1 (exit 134, SIGABRT)", "the run stops here"},
+ 			wantNot: []string{"failed with exit code", "could not start", "timed out"},
+ 		},
++		{
++			name:    "a memory pressure stop names the stopped runs and no crash",
++			result:  verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, MemoryPressure: true, Detail: "gate test stopped for a memory limit other load filled: tier1 (exit 1)"},
++			want:    []string{"stopped for a memory limit other load filled", "tier1 (exit 1)", "the run stops here", "the other load has to end"},
++			wantNot: []string{"failed with exit code", "crashed", "timed out"},
++		},
+ 		{
+ 			name:    "a log with the watchdog line names the window and the way forward",
+ 			result:  verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1},
+diff --git a/internal/proc/doc.go b/internal/proc/doc.go
+index 9546271f2..f482f833e 100644
+--- a/internal/proc/doc.go
++++ b/internal/proc/doc.go
+@@ -21,9 +21,10 @@
+ // a process that re-execs itself keeps its children but not the goroutines that waited on them,
+ // so the new image calls it before it starts a child of its own.
+ //
+-// The process readers are TreeSample, ListProcesses, ReadProcess, ListStats and PIDsWithEnv.
++// The process readers are TreeSample, ResidentInCgroup, ListProcesses, ReadProcess, ListStats and PIDsWithEnv.
++// ResidentInCgroup lists the processes of a cgroup and its descendants with the memory each holds resident.
+ // They, the signal senders and the cgroup readers read /proc or signal by pid, so they work on Linux only.
+-// On Windows TreeSample, ListProcesses, ListStats and PIDsWithEnv return errors.ErrUnsupported.
++// On Windows TreeSample, ResidentInCgroup, ListProcesses, ListStats and PIDsWithEnv return errors.ErrUnsupported.
+ // ReadProcess and IsAncestor are false there.
+ // SignalProcess only kills, and SignalGroup returns ErrNoProcessGroup.
+ // SignalProcess and SignalGroup return the raw syscall error.
+diff --git a/internal/proc/proc_linux.go b/internal/proc/proc_linux.go
+index a95411d67..c720f76a0 100644
+--- a/internal/proc/proc_linux.go
++++ b/internal/proc/proc_linux.go
+@@ -160,6 +160,48 @@ func TreeSample(root int) ([]ProcessSample, error) {
+ 	return tree, nil
+ }
+ 
++// ResidentInCgroup returns every process whose cgroup v2 path is cgroup or lies below it.
++// Each entry carries the parent, the executable path and the memory the process holds resident, but no CPU time.
++// A caller under a nearly spent memory limit reads it to name what holds the limit's memory.
++// A process that ends between the /proc listing and its reads, or whose cgroup the caller may not read, is skipped;
++// an unreadable /proc is an error.
++func ResidentInCgroup(cgroup string) ([]ProcessSample, error) {
++	entries, err := os.ReadDir("/proc")
++	if err != nil {
++		return nil, fmt.Errorf("proc: list /proc: %w", err)
++	}
++
++	pageSize := int64(os.Getpagesize())
++	var held []ProcessSample
++	for _, entry := range entries {
++		pid, err := strconv.Atoi(entry.Name())
++		if err != nil {
++			continue
++		}
++		member, ok := readCgroupV2Path("/proc/" + entry.Name() + "/cgroup")
++		if !ok || !withinCgroup(member, cgroup) {
++			continue
++		}
++		fields, ok := statFieldsAfterName(pid)
++		if !ok || len(fields) < 22 {
++			continue
++		}
++		// The remainder starts at field 3, so field 4 (parent pid) is entry 1 and field 24 (resident pages) is entry 21.
++		parent, parentErr := strconv.Atoi(fields[1])
++		residentPages, residentErr := strconv.ParseInt(fields[21], 10, 64)
++		if parentErr != nil || residentErr != nil {
++			continue
++		}
++		held = append(held, ProcessSample{PID: pid, Parent: parent, Path: executablePath(pid), RSS: residentPages * pageSize})
++	}
++	return held, nil
++}
++
++// withinCgroup reports whether the cgroup v2 path member is cgroup or lies below it.
++func withinCgroup(member, cgroup string) bool {
++	return cgroup == "/" || member == cgroup || strings.HasPrefix(member, cgroup+"/")
++}
++
+ // executablePath returns the executable of pid from its /proc exe link.
+ // When that link cannot be read, it falls back to the first field of the command line.
+ // The 15-character command name in stat is never used, so a long test-binary name keeps its suffix.
+diff --git a/internal/proc/proc_linux_test.go b/internal/proc/proc_linux_test.go
+index 9c7754cb0..1ba6b8e8c 100644
+--- a/internal/proc/proc_linux_test.go
++++ b/internal/proc/proc_linux_test.go
+@@ -4,6 +4,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"os/exec"
++	"path"
+ 	"path/filepath"
+ 	"slices"
+ 	"syscall"
+@@ -173,6 +174,44 @@ func TestProcessTreeReads(t *testing.T) {
+ 		t.Errorf("ListProcesses test process = %+v, found %v; want Exe %q", selfListed, found, executable)
+ 	}
+ 
++	ownCgroup, ok := readCgroupV2Path(selfCgroupFile)
++	if !ok {
++		t.Fatalf("readCgroupV2Path(%s) unreadable; want the test process's cgroup v2 path", selfCgroupFile)
++	}
++	for _, cgroup := range []string{ownCgroup, path.Dir(ownCgroup)} {
++		held, err := ResidentInCgroup(cgroup)
++		if err != nil {
++			t.Fatalf("ResidentInCgroup(%q): %v", cgroup, err)
++		}
++		if self, found := find(held, os.Getpid()); !found || self.Path != executable || self.RSS <= 0 || self.Parent != os.Getppid() {
++			t.Errorf("ResidentInCgroup(%q) test process = %+v, found %v; want Path %q, RSS above zero and Parent %d", cgroup, self, found, executable, os.Getppid())
++		}
++		if sleeper, found := find(held, childPID); !found || sleeper.Parent != os.Getpid() {
++			t.Errorf("ResidentInCgroup(%q) child = %+v, found %v; want the child with Parent %d", cgroup, sleeper, found, os.Getpid())
++		}
++	}
++	if held, err := ResidentInCgroup(ownCgroup + "/lym-no-such-child"); err != nil || len(held) != 0 {
++		t.Errorf("ResidentInCgroup(a cgroup no process is in) = %+v, %v; want no process and no error", held, err)
++	}
++	held, err := ResidentInCgroup("/")
++	if err != nil {
++		t.Fatalf("ResidentInCgroup(/): %v", err)
++	}
++	if _, found := find(held, os.Getpid()); !found {
++		t.Errorf("ResidentInCgroup(/) lists %d processes without the test process; want it listed below the root", len(held))
++	}
++	// A cgroup whose path is a bare prefix of the test process's own is a sibling, which holds none of it.
++	if len(path.Base(ownCgroup)) > 1 {
++		sibling := ownCgroup[:len(ownCgroup)-1]
++		held, err := ResidentInCgroup(sibling)
++		if err != nil {
++			t.Fatalf("ResidentInCgroup(%q): %v", sibling, err)
++		}
++		if _, found := find(held, os.Getpid()); found {
++			t.Errorf("ResidentInCgroup(%q) lists the test process of %q; want a shared name prefix not to count", sibling, ownCgroup)
++		}
++	}
++
+ 	if parent, ok := ParentPID(childPID); !ok || parent != os.Getpid() {
+ 		t.Errorf("ParentPID(child pid) = %d, %v; want %d, true", parent, ok, os.Getpid())
+ 	}
+diff --git a/internal/proc/proc_windows.go b/internal/proc/proc_windows.go
+index e9556ee93..3e376df28 100644
+--- a/internal/proc/proc_windows.go
++++ b/internal/proc/proc_windows.go
+@@ -91,6 +91,11 @@ func TreeSample(root int) ([]ProcessSample, error) {
+ 	return nil, errors.ErrUnsupported
+ }
+ 
++// ResidentInCgroup reports errors.ErrUnsupported on Windows, which has no cgroups.
++func ResidentInCgroup(cgroup string) ([]ProcessSample, error) {
++	return nil, errors.ErrUnsupported
++}
++
+ // ReadProcess reports false on Windows, where the process links it reads do not exist.
+ func ReadProcess(pid int) (Process, bool) {
+ 	return Process{}, false
+diff --git a/internal/verifytree/doc.go b/internal/verifytree/doc.go
+index cf842e0e8..bdebfbc34 100644
+--- a/internal/verifytree/doc.go
++++ b/internal/verifytree/doc.go
+@@ -11,8 +11,10 @@
+ // Verify takes no gate slot and applies no timeout.
+ // Each command is one `lym gate test --wait` call, or such calls joined by `&&`, bounded by the gate.
+ // A failed command whose log holds a tier timeout line is a failed result with TimedOut set.
+-// One whose log holds the runner crash line is a failed result with RunnerCrash set, which judged no code.
+-// A site stops on a runner crash rather than hand it to a fixer.
++// One whose log holds the runner crash line is a failed result with RunnerCrash set.
++// One whose log holds the memory pressure line is a failed result with MemoryPressure set.
++// Either judged no code, which Result.Unjudged reports.
++// A site stops on an unjudged result rather than hand it to a fixer.
+ // The command's environment drops the strand-name variable and gateslot.PrebuiltLymEnv.
+ // Bound: a test is code the fork writes, which could clear the variable itself.
+ //
+diff --git a/internal/verifytree/verify.go b/internal/verifytree/verify.go
+index 5ffcdec23..9950cbea1 100644
+--- a/internal/verifytree/verify.go
++++ b/internal/verifytree/verify.go
+@@ -105,12 +105,36 @@ type Result struct {
+ 	// RunnerCrash is set when the failed command's log holds the gate's runner crash line; the status stays StatusFailed.
+ 	// It means every failed run, its one rerun included, crashed its test runner on a signal, so no test judged the code.
+ 	RunnerCrash bool
+-	// Detail names a shell start failure, the tier and timeout of a timed-out run, or the crashed runs of a runner crash.
++	// MemoryPressure is set when the failed command's log holds the gate's memory pressure line;
++	// the status stays StatusFailed.
++	// It means the memory guard stopped runs, their one rerun included, for a memory limit other load filled,
++	// and no failed run judged the code.
++	MemoryPressure bool
++	// Detail names a shell start failure, the tier and timeout of a timed-out run, or the runs of an unjudged result.
+ 	Detail string
+ 	// Log is this run's own verify log, empty for a dirty or skipped result.
+ 	Log string
+ }
+ 
++// Unjudged reports whether the failed command judged no code, so no change to the code mends it and no fixer gets it.
++func (r Result) Unjudged() bool { return r.RunnerCrash || r.MemoryPressure }
++
++// UnjudgedStop says what stopped an unjudged result, as words that follow a possessive such as "the verify command's".
++func (r Result) UnjudgedStop() string {
++	if r.MemoryPressure {
++		return "run was stopped for a memory limit other load filled, as was its one rerun"
++	}
++	return "test runner crashed in its run and its one rerun"
++}
++
++// UnjudgedAdvice is the clause that closes the way forward of running an unjudged result's command again.
++func (r Result) UnjudgedAdvice() string {
++	if r.MemoryPressure {
++		return "the other load has to end before that run"
++	}
++	return "when the runner crashes again, find the runtime's own fault in the output"
++}
++
+ // record is the verified-tree record Verify writes after a pass: one entry per command.
+ type record struct {
+ 	Entries []entry `yaml:"entries"`
+@@ -318,6 +342,7 @@ func parsePorcelainZ(out string) []string {
+ // Detail names the tier and its timeout, and ExitCode stays the command's own exit code.
+ // One whose log holds no timeout line but the gate's runner crash line is marked RunnerCrash instead.
+ // Detail names the crashed runs.
++// One with neither line but the gate's memory pressure line is marked MemoryPressure, and Detail names the stopped runs.
+ // A cancelled ctx is a returned error and writes no record.
+ // With a site.Hold, a covering pause holds Verify before its command,
+ // and it stops a running command at the pause's grace end.
+@@ -439,6 +464,9 @@ func runAndRecord(ctx context.Context, p Paths, site Site, command, tree, commit
+ 		if !failed.TimedOut {
+ 			failed.RunnerCrash, failed.Detail = runnerCrashDetail(logPath)
+ 		}
++		if !failed.TimedOut && !failed.RunnerCrash {
++			failed.MemoryPressure, failed.Detail = memoryPressureDetail(logPath)
++		}
+ 		return failed, false, nil
+ 	}
+ 
+@@ -539,6 +567,20 @@ func runnerCrashDetail(logPath string) (bool, string) {
+ 	return true, "gate test runner crashed with no failing test: " + runs
+ }
+ 
++// memoryPressureDetail reports whether the log at logPath holds the gate's memory pressure line.
++// When it does, the detail names the stopped runs.
++func memoryPressureDetail(logPath string) (bool, string) {
++	data, err := os.ReadFile(logPath)
++	if err != nil {
++		return false, ""
++	}
++	runs, ok := gateslot.FindMemoryPressureStop(string(data))
++	if !ok {
++		return false, ""
++	}
++	return true, "gate test stopped for a memory limit other load filled: " + runs
++}
++
+ // HeadTree returns HEAD's tree SHA in worktree, so a caller can tell whether the tree a verify judged is still HEAD's.
+ func HeadTree(worktree string) (string, error) {
+ 	out, err := gitexec.Run([]string{"rev-parse", "HEAD^{tree}"}, worktree)
+diff --git a/internal/verifytree/verify_crash_integration_test.go b/internal/verifytree/verify_crash_integration_test.go
+index e626535b7..60af222b3 100644
+--- a/internal/verifytree/verify_crash_integration_test.go
++++ b/internal/verifytree/verify_crash_integration_test.go
+@@ -1,4 +1,4 @@
+-// verify_crash_integration_test.go covers how Verify reads the gate's runner crash line and tier timeout line.
++// verify_crash_integration_test.go covers how Verify reads the gate's crash, memory pressure and tier timeout lines.
+ // It reads them from a failed command's log, over real shell processes.
+ 
+ package verifytree
+@@ -27,9 +27,11 @@ func TestVerify_ReadsTheRunnerCrashAndTimeoutLines(t *testing.T) {
+ 		exit         string
+ 		wantCrash    bool
+ 		wantTimedOut bool
++		wantPressure bool
+ 		wantDetail   string
+ 	}{
+ 		{name: "a crash line", logLines: []string{crashLine}, exit: "134", wantCrash: true, wantDetail: "tier1 (exit 134, SIGABRT)"},
++		{name: "a memory pressure line", logLines: []string{gateslot.MemoryPressureLine("tier1 (exit 1)")}, exit: "1", wantPressure: true, wantDetail: "tier1 (exit 1)"},
+ 		{name: "a timeout line beside a crash line is a timeout", logLines: []string{timeoutLine, crashLine}, exit: "1", wantTimedOut: true, wantDetail: "tier2"},
+ 		{name: "neither line", logLines: []string{"FAIL"}, exit: "3"},
+ 	}
+@@ -50,6 +52,9 @@ func TestVerify_ReadsTheRunnerCrashAndTimeoutLines(t *testing.T) {
+ 			if res.Status != StatusFailed || res.RunnerCrash != tt.wantCrash || res.TimedOut != tt.wantTimedOut {
+ 				t.Errorf("Verify() = status %q, runner crash %v, timed out %v; want %q, %v, %v", res.Status, res.RunnerCrash, res.TimedOut, StatusFailed, tt.wantCrash, tt.wantTimedOut)
+ 			}
++			if res.MemoryPressure != tt.wantPressure || res.Unjudged() != (tt.wantCrash || tt.wantPressure) {
++				t.Errorf("Verify() = memory pressure %v, unjudged %v; want %v, %v", res.MemoryPressure, res.Unjudged(), tt.wantPressure, tt.wantCrash || tt.wantPressure)
++			}
+ 			if !strings.Contains(res.Detail, tt.wantDetail) || (tt.wantDetail == "" && res.Detail != "") {
+ 				t.Errorf("Verify() detail = %q; want it to name %q", res.Detail, tt.wantDetail)
+ 			}
+diff --git a/internal/weaverengine/run.go b/internal/weaverengine/run.go
+index 213178664..5d3047e7d 100644
+--- a/internal/weaverengine/run.go
++++ b/internal/weaverengine/run.go
+@@ -740,7 +740,7 @@ func finishRun(deps RunDeps, st *State) (RunResult, error) {
+ 			flaky = append(flaky, out.Flaky...)
+ 			break
+ 		}
+-		if out.RunnerCrash {
++		if out.Unjudged {
+ 			return verifyStop(len(st.Fixers), out.Findings), nil
+ 		}
+ 
+diff --git a/internal/weaverengine/strand.go b/internal/weaverengine/strand.go
+index 0a0db1d73..43bcd1eb6 100644
+--- a/internal/weaverengine/strand.go
++++ b/internal/weaverengine/strand.go
+@@ -154,7 +154,7 @@ func batchGateSpec(geom Geometry, cards []planparser.Card, last bool, rowGates s
+ }
+ 
+ // batchGateClosure returns the gate that runs call through verifytree.Verify at each arrival.
+-// A dirty tree and a failed run fail with findings the agent reads, and a crashed test runner fails terminally.
++// A dirty tree and a failed run fail with findings the agent reads, and a run that judged no code fails terminally.
+ func batchGateClosure(geom Geometry, name, call string) shuttleengine.Gate {
+ 	paths := verifytree.NewPaths(geom.PaneCwd, geom.VerifyDir)
+ 	attempt := 0
+@@ -171,8 +171,8 @@ func batchGateClosure(geom Geometry, name, call string) shuttleengine.Gate {
+ 		case verifytree.StatusDirty:
+ 			return shuttleengine.GateResult{Findings: verifytree.UncommittedFindings(res.Dirty)}, nil
+ 		}
+-		if res.RunnerCrash {
+-			return shuttleengine.GateResult{Terminal: true, Findings: runnerCrashFindings(res)}, nil
++		if res.Unjudged() {
++			return shuttleengine.GateResult{Terminal: true, Findings: unjudgedFindings(res)}, nil
+ 		}
+ 		output, err := readVerifyLog(res.Log)
+ 		if err != nil {
+@@ -183,9 +183,9 @@ func batchGateClosure(geom Geometry, name, call string) shuttleengine.Gate {
+ 	}
+ }
+ 
+-// runnerCrashFindings words a verify whose every failed run crashed its test runner, which no code change mends.
+-func runnerCrashFindings(res verifytree.Result) string {
+-	return fmt.Sprintf("The verify command's test runner crashed in its run and its one rerun, so no test judged the code: %s. No change to the code mends it; output: %s.", res.Detail, res.Log)
++// unjudgedFindings words a verify that judged no code, which no code change mends.
++func unjudgedFindings(res verifytree.Result) string {
++	return fmt.Sprintf("The verify command's %s, so no test judged the code: %s. No change to the code mends it; before it runs again, note that %s; output: %s.", res.UnjudgedStop(), res.Detail, res.UnjudgedAdvice(), res.Log)
+ }
+ 
+ // readVerifyLog returns the content of the verify log at path.
+diff --git a/internal/weaverengine/verify.go b/internal/weaverengine/verify.go
+index 074d6c179..2be0c29b8 100644
+--- a/internal/weaverengine/verify.go
++++ b/internal/weaverengine/verify.go
+@@ -116,13 +116,14 @@ type verifyOutcome struct {
+ 	Flaky []string
+ 	// Findings is the failure rendered for a fixer; empty when the verify passed.
+ 	Findings string
+-	// RunnerCrash reports that the test runner crashed in every failed run, so no fixer can mend it.
+-	RunnerCrash bool
++	// Unjudged reports that the verify judged no code, by a runner crash or a memory pressure stop,
++	// so no fixer can mend it.
++	Unjudged bool
+ }
+ 
+ // runVerify runs the hub's verify gate call through the verify seam under the geometry's pause hold.
+ // A failure is rerun once, and a pass on the rerun is a pass whose failing identities are flaky.
+-// A timeout, a dirty tree and a runner crash are not rerun, and a crash starts no fixer.
++// A timeout, a dirty tree and an unjudged run are not rerun, and an unjudged run starts no fixer.
+ // A failure writes the verify-failure record and returns its findings.
+ func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
+ 	if deps.Geom.GateConfig == nil {
+@@ -148,7 +149,7 @@ func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
+ 	}
+ 
+ 	var flaky []string
+-	if res.Status == verifytree.StatusFailed && !res.TimedOut && !res.RunnerCrash {
++	if res.Status == verifytree.StatusFailed && !res.TimedOut && !res.Unjudged() {
+ 		firstOutput, err := readVerifyLog(res.Log)
+ 		if err != nil {
+ 			return verifyOutcome{}, err
+@@ -165,8 +166,8 @@ func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
+ 		}
+ 	}
+ 
+-	if res.RunnerCrash {
+-		return verifyOutcome{RunnerCrash: true, Findings: runnerCrashFindings(res)}, nil
++	if res.Unjudged() {
++		return verifyOutcome{Unjudged: true, Findings: unjudgedFindings(res)}, nil
+ 	}
+ 	report := runplan.VerifyGateReport{Attempt: evaluation, Cap: len(deps.Ladder), Command: call, Fixer: "verify fixer"}
+ 	if res.Status == verifytree.StatusDirty {
+diff --git a/internal/webstercli/verify.go b/internal/webstercli/verify.go
+index dbf16b541..af2a2f7b2 100644
+--- a/internal/webstercli/verify.go
++++ b/internal/webstercli/verify.go
+@@ -4,8 +4,8 @@
+ // A passing or skipped run is an ok envelope.
+ // A dirty tree or a failing command is an error envelope carrying a `findings` key;
+ // the gate-parity test maps that shape onto a stuck verdict.
+-// A command whose test runner crashed in its run and its rerun is an error envelope too;
+-// it names the crashed runs and says to run the verb again rather than fix the code.
++// A command that judged no code, by a runner crash or a memory pressure stop, is an error envelope too;
++// it names those runs and says to run the verb again rather than fix the code.
+ 
+ package webstercli
+ 
+@@ -40,8 +40,9 @@ its paths under "findings", and a failing command with its exit code, log path
+ and failing identities under "findings"; both exit non-zero. A gate.yaml that
+ cannot be loaded, or a "webster" key naming an undeclared tier, is refused
+ naming "lym config gate". A command whose test runner crashed in its run and
+-its one rerun judged no code: it is refused naming the crashed runs under
+-"findings", and the way forward is to run the verb again.
++its one rerun, or that was stopped so for a memory limit other load filled,
++judged no code: it is refused naming those runs under "findings", and the way
++forward is to run the verb again.
+ 
+ A pause covering the worktree holds the run until the resume: the verify waits
+ before its command, and stops a running command at the pause's grace end.
+@@ -86,9 +87,9 @@ func (c *websterCLI) runVerify(cmd *cobra.Command) int {
+ 			map[string]any{"findings": map[string]any{"dirty": res.Dirty}})
+ 	}
+ 
+-	if res.RunnerCrash {
++	if res.Unjudged() {
+ 		return output.ErrFields(out,
+-			fmt.Sprintf("webster: verify: the verify command's test runner crashed in its run and its one rerun, so no test judged the code (%s); no change to the code mends it; way forward: run `lym webster verify` again, and when the runner crashes again, find the runtime's own fault in %s", res.Detail, res.Log),
++			fmt.Sprintf("webster: verify: the verify command's %s, so no test judged the code (%s); no change to the code mends it; way forward: run `lym webster verify` again, and %s: %s", res.UnjudgedStop(), res.Detail, res.UnjudgedAdvice(), res.Log),
+ 			map[string]any{"findings": map[string]any{"exit_code": res.ExitCode, "log": res.Log, "detail": res.Detail}})
+ 	}
+ 
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 070e95b09..85ce057ab 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -256,7 +256,7 @@
+ // A pass with HEAD above it records it as `FixedBase` and HEAD as `FixedHead`.
+ // accept-audit accepts the fix commits in that range.
+ // A failure is rerun once and only a failure that survives the rerun goes to a fixer;
+-// a hang (classifyHang) or a crashed test runner is never rerun, since neither is flakiness.
++// a hang (classifyHang) or a run that judged no code is never rerun, since neither is flakiness.
+ // Tests that fail once and pass on the rerun are reported as flaky, not failed.
+ // A run whose gate spent its budget ends stuck with a reason that names the command and what failed.
+ // A run-level entry's failure quotes the head of its findings and names the report, which holds them all.
+diff --git a/internal/websterengine/verifygate.go b/internal/websterengine/verifygate.go
+index 93aa6e6d4..af052ff94 100644
+--- a/internal/websterengine/verifygate.go
++++ b/internal/websterengine/verifygate.go
+@@ -31,9 +31,9 @@ const verifyGateName = "verify"
+ // verifyGateSite is the site label the gate's verify call writes to the running marker.
+ const verifyGateSite = "webster gate"
+ 
+-// verifyGateCrashFindingsPrefix opens the findings of a verify whose test runner crashed.
++// verifyGateUnjudgedFindingsPrefix opens the findings of a verify that judged no code.
+ // verifyGateStuckReason reads that prefix to end the stuck reason in reentry alone.
+-const verifyGateCrashFindingsPrefix = "The verify command's test runner crashed"
++const verifyGateUnjudgedFindingsPrefix = "The verify command judged no code"
+ 
+ // VerifyGateNotes collects what a gate's evaluations observed that is not a failure:
+ // the failures that passed on rerun, each with its first run's log, and the commits made above the pre-fix head.
+@@ -218,8 +218,8 @@ type verifyGateSeams struct {
+ // otherwise it runs that call through verifytree.Verify, told geom.VerifyHold on the first run and the rerun alike;
+ // on a failure it reruns once, and a failure whose rerun passes is flaky and passes the gate.
+ // A run that timed out or hung, as classifyHang reads its log and exit code, is not re-run: it fails at once.
+-// A run whose every failed tier run crashed its test runner with no failing test judged no code:
+-// it fails `Terminal` at once, on the first run or the rerun, naming the crashed runs,
++// A run whose result is a runner crash or a memory pressure stop judged no code:
++// it fails `Terminal` at once, on the first run or the rerun, naming those runs,
+ // and no fixer gets it, no attempt is spent and no report is written.
+ // A failure that survives returns findings.
+ // The first failure of any kind records HEAD as the pre-fix head, unless the gate took over an earlier run's.
+@@ -501,11 +501,11 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		})
+ 	}
+ 
+-	// failRunnerCrash fails the gate terminally for res, a verify whose failed tier runs all crashed the test runner:
+-	// No failing test judged the code, and no change to the code mends it, so no fixer gets it and it is never rerun.
+-	failRunnerCrash := func(res verifytree.Result) shuttleengine.GateResult {
+-		logger.Warn("websterengine: verify gate's test runner crashed, so no fixer runs", "attempt", attempt, "detail", res.Detail, "log", res.Log)
+-		findings := fmt.Sprintf("%s in its run and its one rerun, so no test judged the code: %s. No change to the code mends it, so no fixer runs and the run stops here; output: %s.", verifyGateCrashFindingsPrefix, res.Detail, res.Log)
++	// failUnjudged fails the gate terminally for res, a verify that judged no code.
++	// No change to the code mends it, so no fixer gets it and it is never rerun.
++	failUnjudged := func(res verifytree.Result) shuttleengine.GateResult {
++		logger.Warn("websterengine: verify gate judged no code, so no fixer runs", "attempt", attempt, "detail", res.Detail, "log", res.Log)
++		findings := fmt.Sprintf("%s, as its %s: %s. No change to the code mends it, so no fixer runs and the run stops here; before it runs again, note that %s; output: %s.", verifyGateUnjudgedFindingsPrefix, res.UnjudgedStop(), res.Detail, res.UnjudgedAdvice(), res.Log)
+ 		return shuttleengine.GateResult{Passed: false, Terminal: true, Findings: findings}
+ 	}
+ 
+@@ -574,8 +574,8 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if res.TimedOut {
+ 			return failTimedOut(res)
+ 		}
+-		if res.RunnerCrash {
+-			return failRunnerCrash(res), nil
++		if res.Unjudged() {
++			return failUnjudged(res), nil
+ 		}
+ 
+ 		firstOutput, err := readOutput(res)
+@@ -608,8 +608,8 @@ func newVerifyGate(reportsDir string, attempts int, notes *VerifyGateNotes, fixP
+ 		if res.TimedOut {
+ 			return failTimedOut(res)
+ 		}
+-		if res.RunnerCrash {
+-			return failRunnerCrash(res), nil
++		if res.Unjudged() {
++			return failUnjudged(res), nil
+ 		}
+ 		rerunOutput, err := readOutput(res)
+ 		if err != nil {
+@@ -644,12 +644,13 @@ func readVerifyGateReport(path string) (VerifyGateReport, error) {
+ // verifyGateStuckReason is the one-line stuck reason of a done run whose verify gate did not pass.
+ // A Terminal failure, the rejection of a fixer commit, names the gate's own reason.
+ // It ends in the reset to the pre-fix head, then reentry.
+-// A Terminal runner crash names the gate's own reason and ends in reentry alone, since no fixer commit exists to reset.
++// A Terminal unjudged verify names the gate's own reason and ends in reentry alone.
++// It has no fixer commit to reset.
+ // Otherwise it opens with the re-prompts the failing entry sent against its limit.
+ // When the run ended with re-prompts left, it says why.
+ // It then names the verify command and what failed, and ends in a way forward.
+ func verifyGateStuckReason(reportsDir string, gate *shuttleengine.GateOutcome, reentry string) string {
+-	if strings.HasPrefix(gate.Reason, verifyGateCrashFindingsPrefix) {
++	if strings.HasPrefix(gate.Reason, verifyGateUnjudgedFindingsPrefix) {
+ 		return "verify gate failed: " + oneLine(gate.Reason) + "; " + wayForwardSteps(reentry)
+ 	}
+ 	if gate.Reason != "" {
