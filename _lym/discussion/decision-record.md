@@ -30,6 +30,12 @@ Decision: Option (a): a69580709 already puts cmd/lym in a card's scope when a ca
 
 Rationale: The bug is fixed on main; a guard mark that fixes no bug only adds weight to the gates, which the operator wants lighter.
 
+### Added after Discussion (parent, 2026-11-27): No test seam: the fix a69580709 is already on the merge base
+
+Decision: The run changes no code and adds no test; no test can fail on the merge base, since a69580709 is already on it. The red-first gate passes on this record.
+
+Rationale: The bug was fixed on main before this run started; the run closes as overtaken per the earlier parent decision.
+
 ## Constraints
 
 ## Auto-mode assumptions
