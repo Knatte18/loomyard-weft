@@ -1,0 +1,32 @@
+verdict: hand-on
+reason: |-
+  The stop is a hard-cap escalation of the Discussion review at round 3, with one open design-wrong finding, F37:
+  a producer error leaves the run failed and appends no history entry, so the halt was neither counted toward the third halt at a row nor recorded.
+  The premise holds in the code: appendHistory in internal/shedengine/run.go returns the history unchanged for an empty outcome,
+  and StopKey in internal/shedrun/settle.go is the producer, the history length and the state.
+  The round-3 fixer's change already answers the finding point by point.
+  D3 now gives each stop an identity in the driver's stop record, which survives a driver restart and is carried by every settle record.
+  It counts an entry-less stop once and narrows the nothing-count bullet.
+  D7 records the four facts on the stop record and keys the halt by its row and stop identity.
+  D8's dedup criterion and D10's chase read that key and that record.
+  The criteria add the three-failure launch reaching settle: operator, a second failed halt getting a new key and a second post, and the restart cases.
+  So the fix in place answers F37, and accepting the round is the right outcome.
+  I recorded that ruling as an arbiter decision.
+  While I worked, another session recorded a --by parent decision adopting F37's fix (22:22:26).
+  A round-3 circling decision was also written: decision accept, cause hard-cap, automatic false.
+  My own accept was then refused:
+  "loom: circling accept: a decision is already recorded for the escalated round at Discussion-Bouncer; way forward: the decision for this round is recorded and stays; run \"lym loom resume\" in the task worktree to resume the run".
+  A refusal from a repair verb hands the stop on, and another session is acting on this run, so I do not resume it.
+  I made no commit of my own in the worktree.
+verbs:
+  - |-
+    lym loom decision add self-healing-runs --by arbiter --title "A stop with no history entry is counted and recorded through its stop identity" --decision "…" --rationale "…"
+  - |-
+    lym loom circling accept self-healing-runs (refused: a decision is already recorded for the escalated round)
+question: |-
+  Round 3 of the Discussion review at Discussion-Bouncer already has an accept recorded in _lym/reviews/discussion/round-3-circling-decision.md (decision accept, cause hard-cap).
+  The decision record now holds your --by parent entry on F37 and an arbiter entry ruling that the round-3 fix in D3, D7, D8, D10 and the criteria already answers F37.
+  The arbiter checked F37 against the code and the record and agrees with the accept.
+  The run is still awaiting at Discussion-Bouncer.
+  Will you run `lym loom resume` in /home/knatte/Code/loomyard-LYMHUB/self-healing-runs, if you have not already, so the run goes on past the Discussion review?
+  The two entries on F37 say the same thing. Do you want the arbiter's entry kept as the code-checked ruling, or treated as redundant beside yours?
