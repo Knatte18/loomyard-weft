@@ -439,25 +439,6 @@
       "record_body_sha256": "37629e3d2343113b7ce7092d0a23fa283360eb95f52355bb89f2b1dbbc0aac4c"
     },
     {
-      "id": 1694,
-      "handle": "E2",
-      "slug": "bridge-inbound-per-orch",
-      "title": "Cross-machine mail into the receiving orch own channel instead of a channel per orch pair",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "slack",
-        "creel"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (operator, 2026-11-26, relayed by norce:orch on osl46)\n\nThe first cross-machine test over the Slack bridge worked both ways (Neve #2650, osl46 #129).\nSetup was clumsy: `approve \u003cmachine\u003e` by name failed, and each side needed `approve \u003cmachine\u003e \u003capp id\u003e`.\nBridge channels are made per pair of orchs, so their number grows with the square of the orchs and machines.\n\n## Idea\n\nOne inbound channel per orch: its existing channel.\nAn orch on another machine posts its mail into the receiver's channel.\nThe receiving relay checks the sender bot's app id against the approved peers, as today.\nChannels then grow linearly.\n\nCost and open points:\n\n- A conversation between A and B is split across two channels.\n  A could mirror its outgoing mail into its own channel, or the two could use threads, so the operator sees the whole exchange in one place.\n- The relay must keep telling the operator's messages apart from peer bots' posts in the same channel.\n- Why approve by name found no bot `lym-neve` is unexplained; a design that still names peers must find them.\n\nThe operator will think further about it; this is a note, not a task.\n",
-      "created": "2026-11-26T13:15:12Z",
-      "revised": "2026-11-26T13:15:12Z"
-    },
-    {
       "id": 1695,
       "handle": "T3",
       "slug": "config-key-comment-sweep",
