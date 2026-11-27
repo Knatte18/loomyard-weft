@@ -86,6 +86,12 @@ Decision: Item 3's C# half, running the mutation or redundancy tier on every C# 
 
 Rationale: The report steps are off in every gate of this hub and their removal is filed; a C# engine for them would be work toward code that is being deleted.
 
+### Added after Discussion (parent, 2026-11-27): No operator exemption at PR-Review
+
+Decision: Build no exemption for --by operator calls at PR-Review: no PR agent exists, so finding F3 is moot. The change description drops its claim that operator feedback on the pull request needs no record entry; operator feedback found after the scope closes becomes a board note, like any other late call.
+
+Rationale: --by is an unverified label, so admitting --by operator inside the closed span would reopen the scope to any agent; with no PR agent nothing needs the exemption.
+
 ## Constraints
 
 ## Auto-mode assumptions
