@@ -995,6 +995,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #273](https://github.com/Knatte18/loomyard/issues/273).\n\n**What happened.**\nA plan created a function in one card and gave it its first production caller in a card of a later batch.\nThe test-only-code guard (`cmd/lym/testonlycode_linux_test.go`) therefore failed the first card's gate.\nThe implementer added a temporary `testOnlyCodeAllowed` entry, with a `Loosened-Check` trailer, to pass.\nThe guard also fails on a stale entry, so the later card that wires the caller has to remove it,\nbut that card's targets did not list the guard file.\n\n**Why it is abnormal.**\nThe plan as written could not pass its own gates.\nThe implementer had to loosen a check, and the removal fell outside every card's declared targets.\n\n**What to do.**\nHave plan writing or plan validation handle a symbol whose first production caller is in a later card:\nput the declaration and its first caller in one card, or list the guard file in the targets of both cards,\nor let the card gate defer this guard until the card that adds the caller.\n\nProvenance: task `dobby-run-watch-build`, note `01-run-watch-setting.md`.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-27T07:51:11Z",
       "revised": "2026-11-27T07:51:33Z",
       "profile": "light"
