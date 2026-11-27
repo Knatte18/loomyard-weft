@@ -1,9 +1,9 @@
 # P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages
 
-Rendered 2026-11-27 18:18 UTC; every age below is as of then.
+Rendered 2026-11-27 18:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`test-speed`](design-test-speed.md) · Age 2h · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 3h · Owner `neve`
 
 ## Aim (operator, 2026-11-27)
 
@@ -19,7 +19,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light | Darn-Write | neve | 20m<br>20m | gate, testkit |
+| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light | Darn-Write | neve | 21m<br>21m | gate, testkit |
 | T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | Darn-Write | neve | 20m<br>20m | webster, loom, testkit |
 
 ## Layer A (1)
@@ -27,3 +27,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 20m<br>20m | batten, testkit |
+
+## Enhancements (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| E5 |  | **Cut the fixed steps of a tier1 gate call from about 6 s to about 2 s**<br>• Drop go build ./... for go vet ./... in tier1, and build lym only for packages whose tests use it | [`gate-fixed-cost-cuts`](design-gate-fixed-cost-cuts.md) | 0m<br>0m | gate |
