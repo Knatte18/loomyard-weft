@@ -1,18 +1,18 @@
 # Card 6 — layout-mutation-record
 
 **Create:**
-- `plan:internal/fabriclayout#Mutations` -> `type Mutations struct`
-- `plan:internal/fabriclayout#Mutations.Entries` -> `func (m Mutations) Entries() []Mutation`
-- `plan:internal/fabriclayout#Mutations.Len` -> `func (m Mutations) Len() int`
-- `plan:internal/fabriclayout#Mutations.MarshalJSON` -> `func (m Mutations) MarshalJSON() ([]byte, error)`
-- `plan:internal/fabriclayout#MutationsOf` -> `func MutationsOf(entries []Mutation) Mutations`
-- `plan:internal/fabriclayout#MutationRecord` -> `type MutationRecord struct`
-- `plan:internal/fabriclayout#MutationRecord.Mutated` -> `func (r MutationRecord) Mutated() Mutations`
-- `plan:internal/fabriclayout#TestMutations_MarshalJSON` -> `func TestMutations_MarshalJSON(t *testing.T)`
-- `plan:internal/fabriclayout#TestMutationRecord_EmbedsAndMarshalsUnderMutationsKey` -> `func TestMutationRecord_EmbedsAndMarshalsUnderMutationsKey(t *testing.T)`
-- `plan:internal/fabriclayout#TestMutationsOf` -> `func TestMutationsOf(t *testing.T)`
-- `plan:cmd/lym#isMutationRecordEmbed` -> `func isMutationRecordEmbed(firstField string) bool`
-- `plan:cmd/lym#TestIsMutationRecordEmbed` -> `func TestIsMutationRecordEmbed(t *testing.T)`
+- `internal/fabriclayout#Mutations`
+- `internal/fabriclayout#Mutations.Entries`
+- `internal/fabriclayout#Mutations.Len`
+- `internal/fabriclayout#Mutations.MarshalJSON`
+- `internal/fabriclayout#MutationsOf`
+- `internal/fabriclayout#MutationRecord`
+- `internal/fabriclayout#MutationRecord.Mutated`
+- `internal/fabriclayout#TestMutations_MarshalJSON`
+- `internal/fabriclayout#TestMutationRecord_EmbedsAndMarshalsUnderMutationsKey`
+- `internal/fabriclayout#TestMutationsOf`
+- `cmd/lym#isMutationRecordEmbed`
+- `cmd/lym#TestIsMutationRecordEmbed`
 
 **Edit:**
 - `internal/fabricengine#`

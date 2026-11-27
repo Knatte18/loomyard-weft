@@ -1,6 +1,6 @@
 {
   "runGuid": "6db487b6b069c761b9a283a6e06cc1a0",
-  "planFingerprint": "56a13a9df18aa35a6f80d4796d44aee5e957efeba6639f79184b1f87665041d8",
+  "planFingerprint": "6acee217c92841253de9ac92882129e7fa433f18189337d13f456a6965f558fc",
   "planFileHashes": {
     "00-overview.md": "17c3a6237f8ebb05e3802cb2f4645b9d6891f94c48f4ca848459cd52c94ba2f3",
     "01-scankit-banned-imports.md": "093cac997f1b0611e0a73c4ae104d522b05a7da2ce7bfcd74ecf74935e10f873",
@@ -8,7 +8,7 @@
     "03-layout-hub-paths.md": "1964ddd9d4ae48bd10fda42369248a1aead5ba87e91172d61b8cc12b7c8ffa69",
     "04-layout-ref-names.md": "a030042e02f84687f24f4a72efd7cb9f49397f4f79416d540f4f67bfbe2a2662",
     "05-layout-mutation-kinds.md": "640a33382fc59b03276b8faa07ba81fa46dd04942f086c5e859673178dbf3cde",
-    "06-layout-mutation-record.md": "90f1f38abeb659f7942fe5a9e0b87e0605b4842e973ec2fece1ad1c5a96361a9",
+    "06-layout-mutation-record.md": "a48f6b885a9cdd88d1537885f60981a41afb1f6399e68d3991a288569f07cbb8",
     "07-layout-origin-types.md": "a63e0bb26439543d3bbd26c93cbe7277fb3b19745643aefb798db1e0095d04d8",
     "08-layout-push-types.md": "76a3fd2152dc17fb609c3263fa9ed494ac278ccdcc0c5caf30edebb767d6b0af",
     "09-engine-repo-side-names.md": "96d1095b1716858129467bcd0c3dce8c2394834abf18e32e964e25d7b1828d1a",
@@ -1271,18 +1271,41 @@
       ],
       "cardHashes": {
         "05-layout-mutation-kinds": "640a33382fc59b03276b8faa07ba81fa46dd04942f086c5e859673178dbf3cde",
-        "06-layout-mutation-record": "90f1f38abeb659f7942fe5a9e0b87e0605b4842e973ec2fece1ad1c5a96361a9"
+        "06-layout-mutation-record": "a48f6b885a9cdd88d1537885f60981a41afb1f6399e68d3991a288569f07cbb8"
       },
       "startSha": "54682478b92fcbb088cd1be3ebaf4ba483e200ab",
       "kind": "fork",
       "spawnedAt": "2026-11-27T09:28:20Z",
       "sessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-layout-mutation-kinds",
+        "status": "done",
+        "head_sha": "cf268a610f7b50dd64e38dc9a77441b33999bd2d",
+        "deviations": [
+          "docs/logging-inventory.md",
+          "internal/beamcli/cli.go",
+          "internal/cleanupcli/cleanup_integration_test.go",
+          "internal/fabriclayout/mutation.go",
+          "internal/orchcli/start.go",
+          "internal/webstercli/reset.go",
+          "internal/webstercli/reset_test.go"
+        ]
+      },
+      "cardShas": [
+        "cf268a610f7b50dd64e38dc9a77441b33999bd2d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af004d91b603f85f5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af004d91b603f85f5.jsonl"
+      ]
     }
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "6716580e0b7a402fc4fe96522bc51e5d",
   "masterSessionId": "aaec7fc1-4d40-401e-b3f4-02ace2fbd744",
   "masterEngine": "claude",
@@ -1291,6 +1314,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a145db6b35ccf195d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-a7d2cb290e14ea8d8.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ac24087785ba2b35a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-ac24087785ba2b35a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-foundation/aaec7fc1-4d40-401e-b3f4-02ace2fbd744/subagents/agent-af004d91b603f85f5.jsonl"
   ]
 }
