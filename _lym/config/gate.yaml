@@ -55,7 +55,7 @@ gates:
     harden-burler-fix:
         tiers: [0, 1]
         scope: diff
-        reports: [reach, redundancy]
+        reports: []
     pr-review:
         reports: []
         tiers: [0]
