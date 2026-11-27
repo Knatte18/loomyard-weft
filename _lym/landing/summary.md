@@ -1,43 +1,51 @@
-# shell-edit guard refuses sed -i and perl -pi after a closed heredoc
+# shellguard: deny in-place edits that follow a closed heredoc
 
-The shell-edit row's in-place edit match now reads the commands after a heredoc's closing line and still skips the heredoc body.
-Before, a command such as
+The `shell-edit` guard now refuses `sed -i`, `perl -pi` and `tee` into a source file
+on the lines after a heredoc's closing line.
+Before, it read nothing past the heredoc operator's line,
+so writing a script with a heredoc and running the editor on the next line passed.
 
-```
-cat > .scratch/fix.pl <<'EOF'
-s/a/b/;
-EOF
-f=docs/x.md; perl -pi -e "$(cat .scratch/fix.pl)" $f
-```
+Heredoc bodies are still skipped, with the false denials listed under the design decisions.
+The script of a `sh`, `bash`, `dash`, `ksh` or `zsh` `-c` after the closing line is read too, one level deep.
+The new reach covers only the in-place edit match; the redirect match and the other command-shaped rows are unchanged.
 
-passed the guard, while `perl -pi` on its own line was refused.
-
-## Cause
-
-`inPlaceEditCommandPattern` reached command position only through `topLevelReachPattern`.
-That pattern's run of shell units stops at a heredoc operator and reads only the operator's own line,
-so no command after the heredoc's line was ever in command position.
-
-## Change
-
-- `internal/shellguard/rows.go`: `closedHeredocPattern` matches a heredoc operator, the rest of its line, its body lines and a closing line.
-  `afterClosedHeredocScope` is the top-level scope read past one or more closed heredocs.
-  The in-place edit alternatives, now `inPlaceEditCommandIn`, are matched in every existing scope and in this one.
-  The redirect match and every other row are unchanged.
-- `internal/shellguard/doc.go` and the shell-edit row's comment state the new reach and what still passes.
-- `internal/shellguard/rows_integration_test.go`: rows for `sed -i` and `perl -pi` after a closed heredoc, after a `<<-` tab-indented closing line and after a separator on a later line.
-  Other rows pin that `sed -i` inside a heredoc body, inside a body with no closing line, and `sed -n` after a closed heredoc still pass.
+Closes #268
 
 ## Design decisions
 
-- grep -E has no backreference, so the pattern cannot tie the closing line to the operator's word.
-  Any line that holds a bare word alone, after optional tabs, closes the body.
-  This is fail-closed: an in-place edit on a later body line after such a line is falsely denied, and the row's comment says so.
-- The scope is limited to the in-place edit match, as the entry asks.
-  A redirect into a source file after a heredoc's line still passes.
-  That gap stays documented in the row's comment.
+- `grep -E` has no backreference, so the closing line is tied to the operator's word
+  only for the words in `heredocDelimiterWords`, each rendered as its own alternative.
+- For any other delimiter word, a body line holding a bare word alone is taken for the closing line.
+  A later line that opens with an in-place edit spelling is then denied, even in prose that only names the command.
+- The same false denial follows a tab-indented line holding the listed word of a `<<` operator,
+  and a `<<` that shifts by a name.
+- A delimiter word may not open with a digit or a dash, so an arithmetic shift such as `1<<2` is no operator.
+- These shapes still let an in-place edit through:
+  - a heredoc with no closing line;
+  - two heredoc operators on one line, since each body cannot be tied to its operator;
+  - a delimiter word that opens with a digit or a dash;
+  - a quoted delimiter word holding a space or a character that ends an unquoted word;
+  - a closing word holding anything but letters, digits, `_`, `.` and `-`;
+  - a later line of a `shell -c` script, after a heredoc closed inside that script.
+- `notWordFrom` now takes the word-breaking characters and the first-character exclusions as arguments,
+  so it serves both the `gh` words and the delimiter words.
+- The Claude settings golden is regenerated from the new pattern.
+
+## To check by hand
+
+- A heredoc body line holding a bare word alone can end the skipped body
+  (`closedHeredocPattern` in `internal/shellguard/rows.go`).
+  The listed delimiter words are tied to their closing line; confirm the remaining false denial for other words
+  is acceptable.
+- A `shell -c` script around or after a heredoc was not read
+  (`inPlaceEditAfterClosedHeredocPattern` in `internal/shellguard/rows.go`).
+  A script after the closing line is now read;
+  confirm that leaving a heredoc closed inside the script unread is acceptable.
+- The final rendered hook pattern was not timed under `grep` on a large command with several heredocs.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** shellguard
+**Blast radius:** sessions
+
+A wrong pattern changes which Bash commands the guard refuses in lym sessions.
