@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -382,6 +382,22 @@
       "output": "",
       "at": "2026-11-27T07:39:29Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/dobby-run-watch-build/_lym/landing/summary.md",
+      "at": "2026-11-27T07:40:18Z",
+      "started_at": "2026-11-27T07:39:29Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T07:40:17.423774242Z",
+          "end": "2026-11-27T07:40:17.423845155Z"
+        }
+      ]
     }
   ],
   "product": {
