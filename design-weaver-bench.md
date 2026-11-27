@@ -1,6 +1,6 @@
 # Bench Weaver against Webster on plans Webster already implemented: time, cost and quality
 
-`weaver-bench` · Task · research, weaver, webster · landing · Finalize
+`weaver-bench` · Task · research, weaver, webster · done
 
 ## Aim (operator, 2026-11-27)
 
