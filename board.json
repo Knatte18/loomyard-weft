@@ -792,10 +792,10 @@
     },
     {
       "id": 1750,
-      "handle": "F1",
+      "handle": "T1",
       "slug": "self-healing-runs",
       "title": "Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "dobby",
@@ -803,12 +803,14 @@
         "orch"
       ],
       "issues": [],
+      "recipe": "motif",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nEverything is in place for autonomy, yet runs keep stopping on assorted causes,\nand the operator has to tell the orch \"this one is stuck, get it going\".\nEvery LLM session runs under Go programs (dobby, batten, the driver) that see all of it,\nso the known stop classes should be settled by those programs, not wait for a person or an orch turn.\nGoal: lym can run overnight.\n\n## Stops the orch settled by hand on 2026-11-27, each mechanical\n\n- `lym loom resume` refused with `driver_not_parked` until the driver parked; the orch retried it in a loop.\n- A start failed on \"push lock busy\" or \"held board lock\"; the orch ran `lym board sync` and `lym batten run` again.\n- A review round ran out of budget with only findings the fixer had deferred; the orch accepted and filed a note.\n- A hard cap was hit before Code-Review; the orch recorded the open findings as parent decisions and accepted.\n- Idle notices for an agent that was correctly waiting on a gate loop or on an operator answer.\n\n## Idea\n\n- Dobby, or the driver, retries the mechanical ones itself with a bound and reports only what it could not settle.\n- A rule table decides, per stop class, whether lym settles it, the orch settles it, or it goes to the operator,\n  and autonomy mode's severe-halt classes are the only ones that reach the operator.\n- Quiet notices name what the agent waits on, so a correct wait raises nothing.\n- The stop classes, their counts, who settled them and a proposed rule table for two autonomy levels are in `docs/research/autonomy/stop-classes-2026-11-27.md`; design from it, and settle the three open points its section 3 names.\n\n## Operator decision (2026-11-27)\n\nLym runs overnight with no one to answer questions.\nEverything that is not truly severe is settled without the operator: by lym, or by the orch under autonomy.\nA stop truly severe enough that the operator must see it waits until the operator answers,\nand reaches the operator on Slack as an imperative message, so it can be answered from the phone.\nOther work goes on meanwhile.\nThis belongs in autonomy itself, possibly as a second, stricter level of it beside today's, in which the orch never asks the operator and only severe halts go to Slack (operator, 2026-11-27). Its name is open; the glossary rules out \"full auto\".\n",
+      "status": "draft",
       "created": "2026-11-27T17:58:36Z",
-      "revised": "2026-11-27T20:21:37Z"
+      "revised": "2026-11-27T20:21:38Z"
     },
     {
       "id": 1756,

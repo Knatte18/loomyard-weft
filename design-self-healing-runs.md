@@ -1,6 +1,6 @@
 # Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-`self-healing-runs` · Note · feature, dobby, batten, orch
+`self-healing-runs` · Task · feature, dobby, batten, orch · draft
 
 ## Seen (operator, 2026-11-27)
 
