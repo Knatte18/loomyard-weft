@@ -19,6 +19,12 @@ Keep one test for every behaviour a PATTERN or a criterion names.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): Cut only packages at 15 s or more
+
+Decision: The entry's package list came from an old coverage-mode survey. Cut only a package whose measured time, in tier1 or in tier0 when it has no tier1 tests, is 15 s or more; leave a faster one unchanged and report its measured time. Here that cuts internal/hubreconcile and leaves internal/configengine and internal/configsync unchanged.
+
+Rationale: Cutting a package that runs in a few seconds saves no gate time; the measured baseline shows only hubreconcile above the bound.
+
 ## Constraints
 
 ## Auto-mode assumptions
