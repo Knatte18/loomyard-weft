@@ -1,0 +1,2765 @@
+diff --git a/contracts/orchrole/orch-role.md b/contracts/orchrole/orch-role.md
+index 710c43c0a..9bc35fc21 100644
+--- a/contracts/orchrole/orch-role.md
++++ b/contracts/orchrole/orch-role.md
+@@ -146,6 +146,17 @@ a hard-cap accept; a landing stop; or a false premise in the entry.
+ Only a design question goes to the operator:
+ what to build, a change of a task's scope, or a choice between designs the board entry leaves open.
+ 
++Put every call in as early as you can: a task's scope closes when its first Code-Review round starts.
++From the recipe's first Code-Review row until Finalize, `lym loom decision add` and `replace` refuse every caller, yours and the operator's included,
++and a run sent back to its writer after that round stays closed.
++The one call those verbs still take there is an `add` on a `bug` entry,
++titled `No test seam` or `No bug fixed` and changing nothing else:
++it records why the red-first check does not apply, so it changes no scope.
++A call that comes up there is a board note for a new task, filed with `lym board upsert` and kind note, never a change to this task.
++Finalize's fixes to a merge or test failure stay outside the line, and their escalations still take `lym loom decision add`.
++Feedback the operator gives after the scope closes, on the pull request or elsewhere,
++is a board note for a new task like any other late call.
++
+ - **The arbiter's own hand-on:** a review escalation whose stop report names an arbiter attempt.
+   Its `envelope.json` sits in the attempt directory beside the verdict file.
+   The envelope carries verdict `hand-on` and an empty `cause`.
+@@ -157,6 +168,9 @@ what to build, a change of a task's scope, or a choice between designs the board
+ - **Cause `decision`:** a question the review could not settle goes to the arbiter as `hard-cap` and `circling` do,
+   so it reaches you only as a hand-on.
+   Record the answer with `lym loom decision add <slug> --by parent` before the escalation brief's circling verb.
++  At Code-Review, where the scope is closed, rule each finding the board entry and the record already ask for in scope
++  with `lym loom circling continue <slug> --in-scope <finding-id>`, so the next round's fixer takes it,
++  and file every other call as a board note before you accept.
+   Then resume.
+ - **Cause `stalemate`:** the review target stayed unchanged for the configured rounds in a row.
+   The arbiter settles it as it settles `circling`, so it reaches you only as a hand-on.
+@@ -167,7 +181,7 @@ what to build, a change of a task's scope, or a choice between designs the board
+   At or past it, or at a `hard-cap` escalation, take the work as it stands with `lym loom circling accept <slug>`.
+   Or raise the hard cap by the command the refusal names for the layer its value comes from.
+   A new round is expensive:
+-  prefer recording the blocking fixes with `lym loom decision add`, then `lym loom circling accept <slug>`.
++  before Code-Review, prefer recording the blocking fixes with `lym loom decision add`, then `lym loom circling accept <slug>`.
+   Grant a round only for findings no decision settles.
+   Either verb only records the decision, so run `lym loom resume` in the task worktree to go on.
+ - **An exhausted bounce budget at a producer:** `lym loom resume` in the task worktree grants the row one more budget.
+@@ -184,7 +198,7 @@ what to build, a change of a task's scope, or a choice between designs the board
+   A release never stops a run:
+   it takes the lock again at its next lock-taking row and merges the moved parent at its next Finalize.
+ - **A design call the child cannot make**, in an escalation that is not a review escalation:
+-  decide it and record it with `lym loom decision add`.
++  decide it and record it with `lym loom decision add`, or, once the task's scope is closed, file it as a board note.
+   One that amends the approved plan follows Fixing a run.
+ - **An escalation naming a peer run:** classify each as a hand-on or a fault first, and investigate a fault as a stop.
+   Two runs with related work never talk to each other; you align them.
+@@ -255,7 +269,8 @@ It goes out once the round's fixer report exists, before the round's Bouncer jud
+ The line names the slug, the round, the ask number, the task worktree, the round's own review and fixer report,
+ the deadline and the answer verb with its `--ask` filled in.
+ The review holds the findings the round ruled on, and the fixer report what its fixer did with each.
+-Hand the review to a one-shot fork, as for a decision record, with the same two writing verbs and the same findings file.
++Hand the review to a one-shot fork, as for a decision record, with the same findings file and the answer verb alone:
++the task's scope is closed at Code-Review, so `lym loom decision add` refuses, and the fork names a call beyond the record in its report for you to file as a board note.
+ The fork reads the task's diff, the named review and fixer report, and the run's decision record,
+ and answers `--satisfied` when the change and those rulings stand, or gives each finding it wants fixed.
+ The round's Bouncer waits for your answer and keeps every finding you give:
+@@ -312,11 +327,16 @@ To stop a run at a point, message its driver with the producer name and whether
+ A go-driven run has no driver to message.
+ Address it through `lym loom` and `lym shed` verbs (pause, goto, decision, resume).
+ A scope correction on a run whose decision record exists goes through `lym loom decision add <slug> --by parent`.
++Once the task's scope is closed, it is a board note for a new task instead.
+ That holds even while an agent of the run is alive, and you send no message of your own.
+ The verb tells each live agent.
+ Record a design call that amends the approved plan with `lym loom decision add <slug> --by parent … --amends-plan`.
+ Word it as a concrete change to named cards, each named by slug as well as number.
+ Then run `lym loom goto --to Plan-Burler-Review` and `lym loom resume` in the task worktree.
++Once the task's scope is closed, no call amends the plan: file it as a board note.
++The settled plan then takes no goto onto its review, so when the plan itself needs the fix,
++run `lym loom goto --to Plan-Write` (`--to Parts-Plan-Write` for a split plan) and `lym loom resume`,
++which writes the plan again from the record as it stands.
+ Never edit a card yourself.
+ A spent Plan-Review bounce budget pauses the judge for `lym loom resume`.
+ That bounds your repeats by your own judgment.
+@@ -361,6 +381,7 @@ An operator decision made in chat is recorded in the same turn:
+ - On an entry no run holds, write it into that entry's body through `lym board`.
+ - On a task a run holds, record it with `lym loom decision add <slug> --by parent`;
+   the board's run lock means a held task's entry is never edited.
++  Once that task's scope is closed, it is a board note for a new task instead.
+   An operator decision on a running arras entry goes the same way, with `--by operator`, never into the entry body.
+   - Several decisions taken together go in one call with `--from <file>`, a JSON array of entries,
+     so they land in one commit and one notice.
+diff --git a/contracts/orchrole/role-autonomy.md b/contracts/orchrole/role-autonomy.md
+index 01ef63265..2f2b2b28d 100644
+--- a/contracts/orchrole/role-autonomy.md
++++ b/contracts/orchrole/role-autonomy.md
+@@ -17,9 +17,13 @@ For the steps you take for your own worktree, such as `[beam drained]`, read you
+ 
+ - Settle every halt and run-level call yourself, as the role says.
+ - Settle a design choice the board entry leaves open with `lym loom decision add <slug> --by parent`.
++  Once the task's scope is closed at Code-Review, file the choice as a board note for a new task with `lym board upsert` and kind note instead,
++  and at a Code-Review decision escalation rule what the record already asks for with `lym loom circling continue <slug> --in-scope <finding-id>`.
+ - Resume a halted run on your own judgment, without waiting for the operator's word.
+ - A drift does-not-match stop is a run-level call:
+-  settle it with a decision and a `goto` back to fix the code, or with `lym drift amend` when the expectation was wrong.
++  settle it with a `goto` back to fix the code, recording a decision first while the scope is open, or with `lym drift amend` when the expectation was wrong.
++  A stop from Drift-Recheck follows Code-Review, so it takes no decision:
++  fix the code toward what the record already asks, and file anything beyond it as a board note.
+ 
+ ## Severe halts
+ 
+diff --git a/contracts/orchrole/role-landing-halts.md b/contracts/orchrole/role-landing-halts.md
+index 96f86a178..f448bcb15 100644
+--- a/contracts/orchrole/role-landing-halts.md
++++ b/contracts/orchrole/role-landing-halts.md
+@@ -20,6 +20,9 @@ Never answer one with a goto to Plan-Bouncer, since the plan does not change.
+   The halt's reason says which, and names the commits the fixer kept.
+   Read the commits and decide what the run needs.
+   Record it with `lym loom decision add <slug> --by parent`, then run `lym loom resume` in the task worktree.
++  Once the task's scope is closed, as for a Parent-Align stop after a Code-Review round has run, the record takes no decision:
++  file the call as a board note for a new task with `lym board upsert` and kind note, then resume.
++  A Finalize stop is outside the closed span and still records the call.
+ - **An undecodable attempt record:** remove that record by the path the reason names.
+   That grants the entry a fresh cap.
+ - **Finalize's fix reviews out of rounds:** the reason names the open findings.
+@@ -29,6 +32,8 @@ Never answer one with a goto to Plan-Bouncer, since the plan does not change.
+ - **A fixer that escalated a decision** on a tapestry, darn or sampler run halts with the landing-escalate prefix instead.
+   The arbiter judges it first, so it reaches you only as the arbiter's hand-on.
+   Record the deciding decision with `lym loom decision add`, then `lym loom resume`.
++  Once the task's scope is closed, as for a Parent-Align stop, file the call as a board note instead,
++  have the conflict settled on the task branch so the record's decisions hold, then resume.
+ - **A beam** has no Parent-Align, and its Finalize merges the beam's pull request on GitHub.
+   It halts when GitHub refuses:
+   a pending check, a dismissed review, a refused merge method or a pull request closed on GitHub.
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 796c79bad..ca0aa8359 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -188,6 +188,10 @@ producers:
+       # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
+       # given none and posts no notice of its own.
+       escalate_decisions: true
++      # scope_closed says the segment runs after the task's scope closed at its first round, so a
++      # decision escalation is answered by ruling findings in scope or filing a note, never by a
++      # decision-record entry, which "lym loom decision add" refuses here.
++      scope_closed: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+       # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
+       # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+diff --git a/contracts/recipes/sampler-recipe.yaml b/contracts/recipes/sampler-recipe.yaml
+index 587b314d1..2056ec39a 100644
+--- a/contracts/recipes/sampler-recipe.yaml
++++ b/contracts/recipes/sampler-recipe.yaml
+@@ -143,6 +143,10 @@ producers:
+       # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
+       # given none and posts no notice of its own.
+       escalate_decisions: true
++      # scope_closed says the segment runs after the task's scope closed at its first round, so a
++      # decision escalation is answered by ruling findings in scope or filing a note, never by a
++      # decision-record entry, which "lym loom decision add" refuses here.
++      scope_closed: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+       # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
+       # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index a0dec886e..d2c78691f 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -387,6 +387,10 @@ producers:
+       # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
+       # given none and posts no notice of its own.
+       escalate_decisions: true
++      # scope_closed says the segment runs after the task's scope closed at its first round, so a
++      # decision escalation is answered by ruling findings in scope or filing a note, never by a
++      # decision-record entry, which "lym loom decision add" refuses here.
++      scope_closed: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+       # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
+       # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index a0e1167f7..1b23f0af8 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -119,6 +119,11 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as
+ - **A criterion is behavior a test can check, or a review check.**
+   A criterion that a stencil, spec, doc or other prose names, says or contains a wording opens its bullet with `Review:`.
+   The code review checks it by reading the text the diff leaves, and no test asserts that prose.
++- **`## Acceptance criteria` names what a reviewer of the landed change will check by hand.**
++  It names each figure the change must measure and state, with the case it is measured on and where the figure is stated;
++  each doc statement the change must make true, as a `Review:` bullet naming the doc;
++  and the intent of each test the change adds: the behavior it pins and its tier.
++  A criterion left for the reviewer to infer is checked only after the scope has closed, when no fix enters this task.
+ - **A Decision that adds an edge or weakens a guard states its bound.**
+   A Decision that adds a verb, flag, escape hatch or routing edge states what it can skip or let through and what bounds it.
+   The same holds for a Decision that removes, downgrades or makes bypassable a guard.
+diff --git a/contracts/specs/loom-plan-checks-spec.md b/contracts/specs/loom-plan-checks-spec.md
+index 9707e13eb..434047735 100644
+--- a/contracts/specs/loom-plan-checks-spec.md
++++ b/contracts/specs/loom-plan-checks-spec.md
+@@ -246,6 +246,7 @@ The overview is read at the task branch's merge base with its parent, or at `HEA
+   Way forward: shorten the prescribed lines or move detail into background files.
+   When that is not enough, record a `changes` decision that shortens other entries.
+   Record it with `lym loom decision add`, adding `--amends-plan` once the plan is approved.
++  Once the task's scope is closed no decision enters the record, so only the shortening is left.
+ - `pattern-card-headroom` — a pending card's own step grows the projected overview past the headroom line.
+   The projection takes the cards in plan order.
+   Each card applies its fenced lines, then drops the `removes` entries it is first to name.
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index 8cd98b5f6..a7c301a71 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -109,6 +109,10 @@ Rules on targets:
+ - A new test file is a `**Create:**` file target.
+   The card's Intent states its tier, such as `tier0`, on a line that names no other test file (`test-tier-unstated`).
+   The tier is the one its test functions name in their opening `tiergate.Require` call.
++- When the tiers the planner is given hold a plan tier0 budget line, set by `gate.plan_tier0_budget_sec`,
++  a card that creates or widens a `tier0` test states, in its Intent, the seconds the test adds to one `tier0` run.
++  The plan's estimates together stay within that budget;
++  a test that cannot fit moves to a higher tier or shares an existing test.
+ - A card that touches a struct a `//lym:seam` test marks lists that test by its member glyph (`seam-test-unlisted`).
+   The test goes under `Edit` when the card changes it and under `Uses` when it stays as is.
+ - A card that changes a package's non-test Go code covers the package's `doc.go` (`doc-go-unlisted`):
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 56c2e4554..0d2d1afe6 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -133,6 +133,10 @@ each entry it confirms fixed is resolved in the ledger, and only the entries lef
+ A round whose review holds a `decision`-class finding is handed over the same way under `escalate_decisions`,
+ unless every open BLOCKING entry is of class `decision`.
+ The shipped Code-Review rows set it.
++A `Bouncer` row's optional boolean `scope_closed` key defaults to false.
++When true, its decision escalation's brief, notice and reason name the `--in-scope` ruling and a board note
++in place of a decision-record entry.
++The shipped Code-Review rows of `tapestry`, `darn` and `sampler` set it.
+ 
+ A `MultiLLM` row runs one lead and its advisors as seats.
+ Its keys are `role`, `segment` and `seats`, and the optional `gates`, `timeout_min`, `interactive` and `tokens`.
+diff --git a/contracts/stencils/bouncer/bouncer-fragment-decision.md b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+index 492974de9..f9052fa1b 100644
+--- a/contracts/stencils/bouncer/bouncer-fragment-decision.md
++++ b/contracts/stencils/bouncer/bouncer-fragment-decision.md
+@@ -1,6 +1,6 @@
+ <!-- This is the decision detail of the Bouncer's escalation brief for cause `decision`: the questions the review cannot settle itself, the BLOCKING findings the round's review holds, the refusal the recorded answer would meet, and the verbs that record it.
+      renderDecisionDetail fills it and passes the result as the brief's cause_detail marker, after the cause list.
+-     Every marker below is a top-level {{.X}} substitution: slug, decision_findings, blocking_findings, refusal and decide_verbs, each Go-filled and non-empty. -->
++     Every marker below is a top-level {{.X}} substitution: decision_findings, blocking_findings, refusal, answer_route and decide_verbs, each Go-filled and non-empty. -->
+ 
+ ### Decision findings
+ 
+@@ -24,7 +24,7 @@ A `continue` runs another round whose fresh reviewers re-review the artifact, so
+ 
+ ### Way forward
+ 
+-Record the answer with `lym loom decision add {{.slug}}`, then record the segment's outcome with exactly one of:
++{{.answer_route}}
+ 
+ {{.decide_verbs}}
+ 
+diff --git a/contracts/stencils/bouncer/bouncer-template-escalation.md b/contracts/stencils/bouncer/bouncer-template-escalation.md
+index fb3c56728..1e017bccc 100644
+--- a/contracts/stencils/bouncer/bouncer-template-escalation.md
++++ b/contracts/stencils/bouncer/bouncer-template-escalation.md
+@@ -57,6 +57,8 @@ When a recorded operator decision answers the question:
+ 
+ 1. Record the operator decision you applied, citing where it is recorded, with `lym loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`, when the decision record exists; never record with `--by operator`.
+    Without a decision record, name the applied decision and its source in your report back to your parent session instead.
++   When the verb refuses because the task's scope is closed, name the applied decision and its source in your report back instead,
++   and handle each decision finding as the cause detail says for a closed scope.
+ 2. {{.decide_options}}
+ 3. Resume the run with `lym loom resume` in `{{.worktree}}`.
+ 
+diff --git a/contracts/stencils/burler/burler-step-review.md b/contracts/stencils/burler/burler-step-review.md
+index 813f0cea5..b965a5209 100644
+--- a/contracts/stencils/burler/burler-step-review.md
++++ b/contracts/stencils/burler/burler-step-review.md
+@@ -45,8 +45,10 @@ a section without that heading has none of them.
+   Keep a disputed finding `open` only when you answer the rebuttal in the entry's `answer`.
+ - Resolve a finding marked as held by the parent only by quoting, in the entry's `answer`, the title of a listed added entry that settles it.
+   Otherwise mark it `open` and carry it.
++- A finding marked as ruled in scope by the parent is fixer work the task's record already asks for.
++  Resolve it once the code does what it asks; otherwise mark it `open` and carry it with a class other than `decision`, so this round's fixer takes it.
+ - Carry every `open` finding as one finding with `carries` set to its id.
+-  Keep its class.
++  Keep its class, except on a finding ruled in scope.
+   Keep or lower its severity.
+   Keep its location path, or move it to a file the changes file lists.
+   When there is no changes file, name the moved site in the `summary` and the `fix`.
+diff --git a/contracts/stencils/darn/darn-fragment-make-change.md b/contracts/stencils/darn/darn-fragment-make-change.md
+index 0e210cb5b..281afd79d 100644
+--- a/contracts/stencils/darn/darn-fragment-make-change.md
++++ b/contracts/stencils/darn/darn-fragment-make-change.md
+@@ -22,6 +22,7 @@
+ 4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
+    the repository's overview doc when a module table or execution stack it shows changes;
+    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
++   A figure a doc or comment quotes as measured on a case the change alters is measured again from the current code, or dropped.
+ 5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
+ 6. Commit on the task branch after each coherent step, as soon as its gate passes, in small commits that each leave the tree green.
+    Never hold the change uncommitted until the end:
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index 79ffb80fe..0fe3d349b 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -49,12 +49,16 @@ Check whether landed work, another board entry or another run overtook or contra
+ - Read `lym board list`, every entry that touches the task and every board note titled `Decision for {{.slug}}:` for it, and `lym loom peers` for the runs in flight and the parent's commits since the fork.
+ - An ordinary misalignment you settle yourself.
+ - When the entry is plainly outdated, and no `Added after Discussion` entry in the record answers it, you stop:
++  - The exception: once a Code-Review round has run on this task, its scope is closed and the record takes no new entry.
++    A parent's answer, or a `Decision for {{.slug}}:` note, that says the scope is closed and the call is filed for a new task settles the point:
++    make what the record as it stands asks, leave the filed part to that task, and name the note in the change description's design decisions.
+   - With a parent, send it a message with `lym creel post --parent --expect-reply "<text>"` naming what overtook or contradicts the entry.
+     Ask it to record its answer with `lym loom decision add`; then end your turn to wait.
+     That verb appends an `Added after Discussion` entry to the record and types a line into your pane naming it.
+     On any message from your parent, re-read the record, and follow the entry you find over the board entry's body.
+-  - With no parent, a `Decision for {{.slug}}:` note never settles the stop: an outdated entry with no `Added after Discussion` entry answering it stops you again, whatever note answers it.
+-    Write the change description, your one output file, as a stop report in the final-summary spec's form, naming the outdated entry, what overtook or contradicts it, and as the way forward `lym loom decision add` and then `lym loom resume`, never a board note.
++  - With no parent, while the scope is open, a `Decision for {{.slug}}:` note never settles the stop: an outdated entry with no `Added after Discussion` entry answering it stops you again, whatever note answers it.
++    Write the change description, your one output file, as a stop report in the final-summary spec's form, naming the outdated entry, what overtook or contradicts it, and as the way forward `lym loom decision add` and then `lym loom resume`,
++    or, on a task a Code-Review round has run on, a board note saying the scope is closed and then `lym loom resume`.
+     Then create the stop marker, an empty file, at `{{.stop_marker_path}}`, and end your turn with no commit.
+ - When the task's body names a stop condition and you find it holds, you stop.
+   Write the change description, your one output file, as the stop report with the content the body asks for, in the final-summary spec's form.
+@@ -81,6 +85,8 @@ A clean `validate-description` run is the last thing you do before you end your
+ ## A scope correction from your parent
+ 
+ Your parent records a scope correction with `lym loom decision add`, which appends an `Added after Discussion` entry to the decision record and types a line into your pane naming the new entry.
++Once a Code-Review round has run on this task, the record takes no such entry:
++your parent files the correction as a board note for a new task, and you change nothing for it.
+ On that line, or when a message from your parent carries a correction, re-read the record's `Added after Discussion` entries and follow them over the board entry's body.
+ When the message names a correction the record does not yet hold, ask your parent to record it, follow the message meanwhile, and name it as an unrecorded parent correction in the change description's design decisions.
+ You never run `lym loom decision add` yourself; the verb refuses a task session.
+@@ -91,7 +97,10 @@ A follow-up you file goes on the board as a note, never as a task, and you never
+ When the board entry or the decision record asks for such a step, leave it out from the start and ask your parent to record the drop with `lym loom decision add`.
+ Until the record carries that `Added after Discussion` entry, name the omission in the change description's design decisions as an unrecorded parent correction.
+ Once the entry exists, the omission is no deviation from the amended board entry.
+-With no parent to ask, stop and report the step.
++Once a Code-Review round has run, no entry can record the drop:
++your parent files it as a board note, and the omission stays named in the design decisions.
++With no parent to ask, stop and report the step,
++unless a `Decision for {{.slug}}:` note says the scope is closed and files the drop: then leave the step out and name it.
+ The route admits a drop of an own-entry step only: no other step is left out through it.
+ 
+ ## The sealed expectation
+diff --git a/contracts/stencils/landing/landing-template-describe-review.md b/contracts/stencils/landing/landing-template-describe-review.md
+index 7a1c7c5ac..3353aa4ab 100644
+--- a/contracts/stencils/landing/landing-template-describe-review.md
++++ b/contracts/stencils/landing/landing-template-describe-review.md
+@@ -29,7 +29,8 @@ While it answers `ready: false`, run it again in a turn that does nothing else,
+ 
+ Read these first, and the description last, so you review the text as the writer left it:
+ 
+-- The decision record, `{{.decision_record_path}}`: its `## Goal`, as its `Added after Discussion` entries amend it, is the task's scope.
++- The decision record, `{{.decision_record_path}}`: its `## Goal`, as its `Added after Discussion` entries amend it, is the task's scope,
++  and its `## Acceptance criteria` names the figures, doc statements and test intents the description states.
+ - The board entry, via `lym board get '{"slug":"{{.slug}}"}'`.
+ - The diff, read as `git diff {{.merge_base}} {{.task_branch}}`.
+ - The run records, as the source of measured figures and of items to check by hand; `(none)` means the run has none:
+diff --git a/contracts/stencils/loom/loom-block-plan-cards.md b/contracts/stencils/loom/loom-block-plan-cards.md
+index 74daa0475..f63dbe0af 100644
+--- a/contracts/stencils/loom/loom-block-plan-cards.md
++++ b/contracts/stencils/loom/loom-block-plan-cards.md
+@@ -65,6 +65,8 @@ That is the `card-field-overlap` finding — see `{{.specs_dir}}/loom/loom-plan-
+ The gates run the hub's tier lists over scopes lym computes, so the plan carries no plan-level verify section and asks for none.
+ The hub's tiers and gate lists follow:
+ {{.gate_tiers}}
++When they hold a plan tier0 budget line, each card that creates or widens a `tier0` test states in its Intent the seconds the test adds to one `tier0` run,
++and the plan's estimates together stay within that budget; a test that cannot fit moves to a higher tier or shares an existing test.
+ A card's `**Verify:**` is the optional escape hatch for what no gate expresses, written only for what the gates cannot catch on their own.
+ A `**Verify:**` line that tests is one `lym gate test --wait` call with a tier list and a scope form, never a raw test command or a target list.
+ See `{{.specs_dir}}/loom/loom-plan-spec.md`'s verify model section for the gates and scope forms themselves — this file does not restate them.
+diff --git a/contracts/stencils/loom/loom-rubric-code-review.md b/contracts/stencils/loom/loom-rubric-code-review.md
+index fcf0b29df..b60eb7b71 100644
+--- a/contracts/stencils/loom/loom-rubric-code-review.md
++++ b/contracts/stencils/loom/loom-rubric-code-review.md
+@@ -95,6 +95,9 @@ Do not flag any of the following as a finding:
+ - **Claims of agreement or improvement.**
+   A claim in the change description or in a commit message of the range that a result agrees with a reference, or improves, carries before and after figures from the current code.
+   A claim without them is a finding, as is a figure the change itself made obsolete and an agreement claim across a set-up difference it does not name.
++- **A quoted figure whose measured case changed.**
++  A constant or figure that a doc, comment, spec or stencil quotes as measured, where the diff changes the case it was measured on, is a finding unless the diff re-measures it from the current code or drops it.
++  The case is the code, input or setting the figure was taken from; a figure whose case the diff leaves alone is no finding.
+ - **Declared PATTERN changes landed.**
+   Check that the branch's `PATTERN.md` and `pattern/` diff carries each entry the constraints section's declared changes list, its add, change or remove with the declared text, and raise a BLOCKING finding for each declared entry the diff does not land.
+   Read the declarations rendered into your directive, never the plan's or the record's section, so a bullet appended after the gate is checked too.
+@@ -113,7 +116,8 @@ Do not flag any of the following as a finding:
+ - **An unrecorded parent correction, with a decision record alone.**
+   A deviation from the amended board entry that the change description names as an unrecorded parent correction is never fixed by revert.
+   File it as class `decision` at severity MEDIUM.
+-  Its fix text tells the fixer to leave the code in place and defer the finding to the run's parent, since its only sound change, recording or refusing the correction with `lym loom decision add`, is the parent's and lies outside the fixer's write surface.
++  Its fix text tells the fixer to leave the code in place and defer the finding to the run's parent, since its only sound change, a ruling on the correction, is the parent's and lies outside the fixer's write surface.
++  The record takes no new entry once this review has begun, so the parent files a correction the record lacks as a board note for a new task.
+ - **A step that edits the task's own board entry, with a decision record alone.**
+   A step that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
+   A step writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
+@@ -121,6 +125,7 @@ Do not flag any of the following as a finding:
+   A decision-record step asking for such a change is evidence only of the request.
+   A step left out through the writer's own-entry route is no scope finding once the record carries its `Added after Discussion` entry;
+   before then the omission is an unrecorded parent correction, filed under that bullet as a MEDIUM `decision` finding deferred to the parent.
++  An omission first met once this review has begun gets no entry, so it stays under that bullet for the parent to rule.
+ - **Stencil wording.**
+   A diff that changes a stencil is read against the measuring stick, the plan card's `Intent` with a plan and the amended board entry with a decision record alone; a rule the answer key did not ask to change that the diff drops, weakens or contradicts is a finding.
+ - **Wording criteria.**
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index e67193171..f0880b208 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -49,6 +49,9 @@ Do not flag any of the following as a finding:
+   the root cause or what is still unknown about it,
+   and the test that fails on the merge base, why no test seam exists, or that the entry fixes no bug.
+   A record that omits one of them is a finding.
++- **A check left for the reviewer to infer.**
++  A record whose change must measure a figure, make a doc statement true or add a test, and whose `## Acceptance criteria` does not name the figure and its measured case, the doc statement, or the test's intent and tier, is a finding.
++  The fix names each in the criteria, as the discussion spec says.
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
+   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 0631cb454..4597b242e 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -121,6 +121,9 @@ Do not flag any of the following as a finding:
+   The hub's tiers and gate lists, as the plan writer was given them:
+ {{.gate_tiers}}
+   A plan-level `## verify:` section is accepted and ignored, so it is no finding.
++- **The plan tier0 budget.**
++  When the tiers above hold a plan tier0 budget line, a card that creates or widens a `tier0` test and states no estimate of the seconds it adds is a finding,
++  and so is a plan whose estimates together pass the budget; the finding names the cards and their sum.
+ - **The attack-surface question.**
+   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
+   A card that introduces one with no stated bound is a finding.
+diff --git a/contracts/stencils/loom/loom-template-arbiter.md b/contracts/stencils/loom/loom-template-arbiter.md
+index 506bc36b3..1cc2f68a0 100644
+--- a/contracts/stencils/loom/loom-template-arbiter.md
++++ b/contracts/stencils/loom/loom-template-arbiter.md
+@@ -65,6 +65,10 @@ When the run's repair verbs include `lym loom decision add`, you settle every ca
+ - When the stop asks for one edit, such as the correction of a false clause in the decision record, record that edit as a decision that names the clause and its exact replacement.
+   That is the one decision edit you make; the edit rules below govern any other.
+ - Anything wider than the edit rules below let you make, such as a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
++- Once the run's first Code-Review round has started, the task's scope is closed and `lym loom decision add` refuses.
++  There a decision finding the board entry and the record already ask for is ruled in scope with `lym loom circling continue {{.slug}} --in-scope <finding-id>` below the hard cap, and every other call is handed on.
++  Wherever a rule below says to record a ruling or an amendment as a decision, once the scope is closed you rule in scope or hand on instead.
++  The one entry the verb still takes then is a `bug` entry's, titled `No test seam` or `No bug fixed`, which changes no scope.
+ 
+ The escalation brief's "What to do" section is the parent's procedure, and these parts of it do not bind you:
+ settling only on a recorded operator decision, never counting a `--by arbiter` entry, recording with `--by parent`, resuming the run, never accepting over an open design-wrong finding, and ending by reporting back to the parent.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index 0d1ded89b..95e16db07 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -98,6 +98,8 @@ Cover:
+ - **Testing** — approach per module, key scenarios to cover.
+   Phrase each acceptance criterion as behavior a test can check;
+   a criterion about wording in a stencil, spec, doc or other prose is a review check, marked as the discussion spec's acceptance-criteria rule says, never a test of that prose.
++- **What the reviewer will check** — settle now, and record under `## Acceptance criteria` as the discussion spec says,
++  each figure the change must measure and state and the case it is measured on, each doc statement the change must make true, and each new test's intent and tier.
+ 
+ When the entry is labelled `bug`, the design also settles the observed fault and how to reproduce it,
+ its root cause or what is still unknown about it,
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index b789f7248..638183c05 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -88,7 +88,7 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"bouncer-template-verify", BouncerTemplateVerify, []string{"edit_directive", "fixed_findings", "fixer_report_path", "ledger_entries", "ledger_path", "parent_directive", "review_path", "round", "verification_path", "worktree"}},
+ 		{"bouncer-fragment-decide-capped", BouncerFragmentDecideCapped, []string{"slug"}},
+ 		{"bouncer-fragment-parent-review", BouncerFragmentParentReview, nil},
+-		{"bouncer-fragment-decision", BouncerFragmentDecision, []string{"blocking_findings", "decide_verbs", "decision_findings", "refusal", "slug"}},
++		{"bouncer-fragment-decision", BouncerFragmentDecision, []string{"answer_route", "blocking_findings", "decide_verbs", "decision_findings", "refusal"}},
+ 		{"harden-template-seed", HardenTemplateSeed, []string{"artifacts", "edit_directive", "focus_example_lists", "focus_list_rules", "focus_path", "parent_directive", "round", "rubric", "seed_brief"}},
+ 		{"pattern-fragment-changes", PatternFragmentChanges, []string{"pattern_change_list"}},
+ 		{"loom-directive-project-record", LoomDirectiveProjectRecord, []string{"project_records"}},
+diff --git a/contracts/stencils/parent/parent-directive-parent.md b/contracts/stencils/parent/parent-directive-parent.md
+index bccfcafb6..12d5bd210 100644
+--- a/contracts/stencils/parent/parent-directive-parent.md
++++ b/contracts/stencils/parent/parent-directive-parent.md
+@@ -31,4 +31,8 @@ When you are the parent of a run yourself, keep its decision record current this
+   on a record whose `## Goal` is a fenced board body, as Record-Write renders it, the fold rewrites that body to carry the call, since darn and drift give precedence over the body to added entries alone;
+ - once a motif run has made a Sketch whose record holds added entries, fold them with `lym board upsert --record-file`;
+ - before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`;
+-  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`.
++  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`;
++  once the run's scope is closed no call is recorded again, so file what that send-back would miss as a board note;
++- record every call before the run's first Code-Review round, where its scope closes and both verbs refuse until Finalize:
++  a call that comes later is a board note for a new task, and a Code-Review decision finding the record already asks for is ruled in scope with `lym loom circling continue --in-scope`.
++  The one record still taken then is a `bug` entry's, titled `No test seam` or `No bug fixed` and changing nothing else.
+diff --git a/contracts/stencils/sampler/sampler-template-agent.md b/contracts/stencils/sampler/sampler-template-agent.md
+index 147074bdf..86e91dcb7 100644
+--- a/contracts/stencils/sampler/sampler-template-agent.md
++++ b/contracts/stencils/sampler/sampler-template-agent.md
+@@ -36,6 +36,8 @@ Say in a line or two what you understood, then wait for the operator's message.
+ - Write any board result with `lym board` as a note.
+   A run's agent never creates or promotes a task and never changes its own run's entry, and the board refuses both; the operator promotes a note when they want one.
+ - Record each thing the operator settles that changes the task's scope with `lym loom decision add --by operator`.
++  Once a Code-Review round has run on this task, the record takes no such call:
++  file it as a board note for a new task with `lym board upsert` and kind note.
+ 
+ ## Trying a build of lym
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 3a404d432..f8434b5e8 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -1137,6 +1137,7 @@ User-facing modules each get one `lym <module>` namespace:
+   A writer that finds the entry overtaken writes a stop report as its description and creates the stop marker.
+   The marker halts the run after the session, with the report as the reason.
+   The parent records its answer with `lym loom decision add`, and the run resumes.
++  Once the task's scope is closed, the parent files the answer as a board note saying so instead.
+   The perch is loom's own, with the same rows and rubric.
+   It uses the `loom.code.*` keys for models, fans, budget, hard cap and auto-accept.
+   Only its answer key differs.
+@@ -1262,6 +1263,11 @@ User-facing modules each get one `lym <module>` namespace:
+   It appends one design call made after the Discussion to the decision record.
+   The call goes under an `Added after Discussion` heading.
+   It re-runs the discussion check, restoring the record on a finding, and commits the record.
++  It and `decision replace` refuse every caller once the task's scope is closed, from the recipe's first Code-Review row,
++  or once that segment has run, until its Finalize row; a later call becomes a board note for a new task.
++  `decision add` still takes a `bug` entry's record titled `No test seam` or `No bug fixed` that changes nothing else.
++  At a Code-Review decision escalation, `lym loom circling continue --in-scope <finding-id>` rules a finding the record already asks for in scope,
++  and the next round's fixer takes it.
+   `--pattern-entry <id> --pattern-action adds|changes|removes|withdraws` writes the entry's bullet too.
+   The bullet goes under `## PATTERN changes`; for `withdraws`, the call strikes it in the same commit.
+   `--from <file>` in place of the per-entry flags records a JSON array of such calls in one write and one commit.
+diff --git a/internal/boardengine/recordupsert.go b/internal/boardengine/recordupsert.go
+index c54408e06..e911c42e6 100644
+--- a/internal/boardengine/recordupsert.go
++++ b/internal/boardengine/recordupsert.go
+@@ -112,7 +112,8 @@ func (b *Board) judgeRecordReplaceIn(store *Store, slug string) (bool, error) {
+ 			"way forward: file the change as a new entry with `lym board upsert`", slug)
+ 	case RunHolds(task):
+ 		return false, fmt.Errorf("entry %q is held by a run (status %q), which reads its own record and never the stored one; nothing was written; "+
+-			"way forward: change the record on the run with `lym loom decision replace %s`", slug, *task.Status, slug)
++			"way forward: change the record on the run with `lym loom decision replace %s`, "+
++			"or, once that run's scope is closed, file the change as a board note with `lym board upsert` and kind note", slug, *task.Status, slug)
+ 	}
+ 	raddle, err := ReadRaddleStore(b.boardPath)
+ 	if err != nil {
+diff --git a/internal/boardengine/recordupsert_test.go b/internal/boardengine/recordupsert_test.go
+index 5a0687c84..f2e2421a5 100644
+--- a/internal/boardengine/recordupsert_test.go
++++ b/internal/boardengine/recordupsert_test.go
+@@ -142,7 +142,7 @@ func TestUpsertTaskWithRecord_Refusals(t *testing.T) {
+ 					t.Fatalf("SetRunStatus() error = %v; want nil", err)
+ 				}
+ 			},
+-			wantErr: []string{"is held by a run", "lym loom decision replace idea"},
++			wantErr: []string{"is held by a run", "lym loom decision replace idea", "kind note"},
+ 		},
+ 		{
+ 			name: "TaskWorktreeStands", pairExists: func(string) bool { return true },
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index b70f79248..716ff2b53 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -79,6 +79,9 @@
+ // RunOpts.DecisionsRouted marks a caller that sends decision-class findings to the run's parent.
+ // Fix then counts those findings as no work until the parent rules on one.
+ // A ruling that reaches the fixer makes the ruled finding its work, and the fixer-report records it under Rulings.
++// A held finding the parent ruled in scope is marked PriorFinding.InScope.
++// The next round's review carries it outside class decision, so that round's fixer takes it.
++// The round check refuses a carry that keeps class decision.
+ //
+ // The fixer-report opens with `---`-delimited YAML frontmatter over its prose.
+ // `dispositions` holds one entry per finding the fixer owns:
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 33861c80d..32773101d 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -417,6 +417,9 @@ const priorFindingsHeading = "### Prior findings"
+ // heldByParentMark marks a prior finding that the run's parent rules on, not the fixer.
+ const heldByParentMark = "held by the parent: the run's parent rules on this finding"
+ 
++// inScopeMark marks a held prior finding that the run's parent ruled in scope, so this round's fixer takes it.
++const inScopeMark = "ruled in scope by the parent: the task's record already asks for it, so carry it as fixer work with a class other than decision, or resolve it once the code does it"
++
+ // amendsPlanMark leads an added decision record entry that is pending as a plan amendment.
+ const amendsPlanMark = "(amends the plan) "
+ 
+@@ -551,7 +554,10 @@ func writePriorFinding(b *strings.Builder, prior PriorFinding) {
+ 	fmt.Fprintf(b, "- `%s` — %s, %s, `%s`\n", finding.ID, finding.Severity, finding.Class, finding.Location)
+ 	fmt.Fprintf(b, "  - summary: %s\n", finding.Summary)
+ 	fmt.Fprintf(b, "  - fix: %s\n", finding.Fix)
+-	if prior.Held {
++	switch {
++	case prior.InScope:
++		fmt.Fprintf(b, "  - %s\n", inScopeMark)
++	case prior.Held:
+ 		fmt.Fprintf(b, "  - %s\n", heldByParentMark)
+ 	}
+ 	disposition := prior.Disposition
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 7b7d914c2..061a959ba 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -528,6 +528,10 @@ func TestComposePrompt_PriorRounds(t *testing.T) {
+ 				}}),
+ 				want: []string{heldByParentMark, rulingReportLabel, "followed the parent's ruling"},
+ 			},
++			{
++				name: "HeldFindingRuledInScopeIsMarkedForTheFixer", round: round(PriorFinding{Held: true, InScope: true, Finding: earlier("E1")}),
++				want: []string{inScopeMark}, notWant: []string{heldByParentMark},
++			},
+ 			{
+ 				name: "AddedEntriesAreListedOnce", round: twoAdded, notWant: []string{"No entry was added"},
+ 				once: []string{"first added entry text", "second added entry text"},
+diff --git a/internal/burlerengine/roundcheck.go b/internal/burlerengine/roundcheck.go
+index 0cb6df315..ca933617b 100644
+--- a/internal/burlerengine/roundcheck.go
++++ b/internal/burlerengine/roundcheck.go
+@@ -43,10 +43,12 @@ type PriorEntry struct {
+ // PriorFinding is one finding of the round before the one being judged, with what the fixer answered.
+ // Disposition is nil when the fixer gave none.
+ // Held marks a decision-class finding of a round that routed its decisions to the run's parent.
++// InScope marks a held finding the parent ruled in scope: the review carries it as fixer work, outside class decision.
+ type PriorFinding struct {
+ 	Finding     Finding
+ 	Disposition *FindingDisposition
+ 	Held        bool
++	InScope     bool
+ }
+ 
+ // RoundContext is what a review after the first round is judged against.
+@@ -102,9 +104,10 @@ func roundRefusal(problem, rewrite string) error {
+ // Otherwise it refuses, with the way forward:
+ // a `prior` list that misses, repeats or invents an id of the round before, or holds an unknown status;
+ // a withdrawn entry whose finding the fixer did not dispute, or an open one that gives a disputed finding no answer;
+-// a held finding that is neither resolved nor open, or resolved without quoting a title of an added entry;
++// a held finding not ruled in scope that is neither open nor resolved with a quoted title of an added entry;
+ // `carries` links that do not match the open entries one to one;
+ // a carried finding that changes class, raises its severity, or moves to a file the round did not change;
++// a carried in-scope finding that keeps the class decision, since its class must change for the fixer to take it;
+ // and a new finding in an incremental round that is not BLOCKING, is outside the changed files, or is not covered.
+ // A new `origin: parent` finding is exempt from the BLOCKING and changed-file rules.
+ // It is exempt only when its parent_ids are all ids of the round's parent report.
+@@ -215,7 +218,7 @@ func (c *roundCheck) priorEntry(entry PriorEntry, earlier PriorFinding) error {
+ 		return roundRefusal(fmt.Sprintf("gives the held finding %q the status %q, but only the parent's call settles it", entry.ID, entry.Status),
+ 			fmt.Sprintf("with the status resolved or open for %q", entry.ID))
+ 	}
+-	if entry.Status == PriorResolved && !quotesAddedTitle(entry.Answer, c.ctx.AddedTitles) {
++	if entry.Status == PriorResolved && !earlier.InScope && !quotesAddedTitle(entry.Answer, c.ctx.AddedTitles) {
+ 		return roundRefusal(fmt.Sprintf("resolves the held finding %q without quoting the title of an entry added to the decision record", entry.ID),
+ 			fmt.Sprintf("with the `answer` for %q quoting the title of the added entry that settles it, or with the status open", entry.ID))
+ 	}
+@@ -248,7 +251,7 @@ func (c *roundCheck) carries(findings []Finding) error {
+ 			return roundRefusal(fmt.Sprintf("carries %q in more than one finding", f.Carries), fmt.Sprintf("with one finding carrying %q", f.Carries))
+ 		}
+ 		carried[f.Carries] = true
+-		if err := c.carriedFinding(f, c.earlier[f.Carries].Finding); err != nil {
++		if err := c.carriedFinding(f, c.earlier[f.Carries]); err != nil {
+ 			return err
+ 		}
+ 	}
+@@ -261,9 +264,15 @@ func (c *roundCheck) carries(findings []Finding) error {
+ 	return nil
+ }
+ 
+-// carriedFinding checks a finding that carries earlier: its class, its severity and its location path.
+-func (c *roundCheck) carriedFinding(f, earlier Finding) error {
+-	if f.Class != earlier.Class {
++// carriedFinding checks a finding that carries prior: its class, its severity and its location path.
++// A finding the parent ruled in scope leaves class decision, so the fixer takes it; any other keeps its class.
++func (c *roundCheck) carriedFinding(f Finding, prior PriorFinding) error {
++	earlier := prior.Finding
++	switch {
++	case prior.InScope && f.Class == ClassDecision:
++		return roundRefusal(fmt.Sprintf("finding %q carries %q, which the parent ruled in scope, with the class %q, which no fixer takes", f.ID, earlier.ID, ClassDecision),
++			fmt.Sprintf("with a class of %q other than %q", f.ID, ClassDecision))
++	case !prior.InScope && f.Class != earlier.Class:
+ 		return roundRefusal(fmt.Sprintf("finding %q carries %q with the class %q, not the earlier class %q", f.ID, earlier.ID, f.Class, earlier.Class),
+ 			fmt.Sprintf("with the class of %q kept as %q", f.ID, earlier.Class))
+ 	}
+diff --git a/internal/burlerengine/roundcheck_test.go b/internal/burlerengine/roundcheck_test.go
+index c59b1c1f9..b0ed8cfcc 100644
+--- a/internal/burlerengine/roundcheck_test.go
++++ b/internal/burlerengine/roundcheck_test.go
+@@ -105,6 +105,14 @@ func TestCheckReviewRound(t *testing.T) {
+ 			ctx.Prior[0].Held, ctx.AddedTitles = true, titles
+ 		}
+ 	}
++	// inScope makes E1 a held decision-class finding the parent ruled in scope.
++	inScope := func(ctx *RoundContext) {
++		ctx.Prior[0].Held, ctx.Prior[0].InScope, ctx.Prior[0].Finding.Class = true, true, ClassDecision
++	}
++	asDecision := func(f Finding) Finding {
++		f.Class = ClassDecision
++		return f
++	}
+ 
+ 	tests := []struct {
+ 		name     string
+@@ -132,6 +140,20 @@ func TestCheckReviewRound(t *testing.T) {
+ 			name: "HeldFindingResolvedWithoutAQuotedTitle", ctx: round(held("Use X")),
+ 			prior: []PriorEntry{{ID: "E1", Status: PriorResolved, Answer: "done"}}, wantErr: "without quoting the title",
+ 		},
++		{name: "InScopeFindingResolvedWithoutAQuotedTitlePasses", ctx: round(inScope), prior: []PriorEntry{{ID: "E1", Status: PriorResolved, Answer: "the code does it now"}}},
++		{name: "InScopeFindingOutdatedIsRefused", ctx: round(inScope), prior: []PriorEntry{entry("E1", PriorOutdated)}, wantErr: "held finding"},
++		{
++			name: "InScopeFindingCarriedAsADecisionIsRefused", ctx: round(inScope), prior: []PriorEntry{entry("E1", PriorOpen)},
++			findings: []Finding{carrying(asDecision(finding("F1", SeverityMedium, "a.go:10")), "E1")}, wantErr: "which no fixer takes",
++		},
++		{
++			name: "InScopeFindingCarriedAsFixerWorkPasses", ctx: round(inScope), prior: []PriorEntry{entry("E1", PriorOpen)},
++			findings: []Finding{carrying(finding("F1", SeverityMedium, "a.go:10"), "E1")},
++		},
++		{
++			name: "HeldFindingCarriedWithAnotherClassIsRefused", ctx: round(func(ctx *RoundContext) { held()(ctx); ctx.Prior[0].Finding.Class = ClassDecision }),
++			prior: []PriorEntry{entry("E1", PriorOpen)}, findings: []Finding{carrying(finding("F1", SeverityMedium, "a.go:10"), "E1")}, wantErr: "not the earlier class",
++		},
+ 
+ 		{name: "CarriesANonOpenEntry", ctx: round(nil), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{carrying(finding("F1", SeverityMedium, "a.go:10"), "E1")}, wantErr: "not an open `prior` entry"},
+ 		{name: "CarriesAnUnknownId", ctx: round(nil), prior: []PriorEntry{entry("E1", PriorResolved)}, findings: []Finding{carrying(finding("F1", SeverityMedium, "a.go:10"), "E9")}, wantErr: "not an open `prior` entry"},
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index 94e56fbaf..1ef0d84fc 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -56,6 +56,9 @@ type Config struct {
+ 	// MutationBudgetMin is the minutes `lym gate mutate` and the mutation report step may spend on mutant builds and runs.
+ 	// It counts from the hold of their slot.
+ 	MutationBudgetMin int `yaml:"mutation_budget_min"`
++	// PlanTier0BudgetSec is the seconds a plan's new and changed tier0 tests may add to one tier0 run; 0 sets no budget.
++	// The planner and the plan review read it through TiersValue.
++	PlanTier0BudgetSec int `yaml:"plan_tier0_budget_sec"`
+ 	// Tiers are the declared test tiers keyed tier0, tier1, and so on.
+ 	Tiers map[string]Tier `yaml:"tiers"`
+ 	// Gates maps a gate key to the tiers and scope that site runs.
+@@ -141,6 +144,7 @@ type configFile struct {
+ 	ReachBudgetMin            int                  `yaml:"reach_budget_min"`
+ 	MutationMaxMutants        int                  `yaml:"mutation_max_mutants"`
+ 	MutationBudgetMin         int                  `yaml:"mutation_budget_min"`
++	PlanTier0BudgetSec        int                  `yaml:"plan_tier0_budget_sec"`
+ 	Tiers                     map[string]tierFile  `yaml:"tiers"`
+ 	Gates                     map[string]yaml.Node `yaml:"gates"`
+ 	Scoper                    string               `yaml:"scoper"`
+@@ -205,6 +209,7 @@ func ConfigSpec() configengine.Spec {
+ 			"reach_budget_min":             configengine.CategoryCrossPair,
+ 			"mutation_max_mutants":         configengine.CategoryCrossPair,
+ 			"mutation_budget_min":          configengine.CategoryCrossPair,
++			"plan_tier0_budget_sec":        configengine.CategoryGuard,
+ 			"tiers":                        configengine.CategoryExecutable,
+ 			"gates":                        configengine.CategoryGuard,
+ 			"scoper":                       configengine.CategoryGuard,
+@@ -362,6 +367,9 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 	if file.MemoryQuitMB < 0 {
+ 		return Config{}, fmt.Errorf("config key %q: %d; want at least 0", keyName("memory_quit_mb"), file.MemoryQuitMB)
+ 	}
++	if file.PlanTier0BudgetSec < 0 {
++		return Config{}, fmt.Errorf("config key %q: %d; want at least 0", keyName("plan_tier0_budget_sec"), file.PlanTier0BudgetSec)
++	}
+ 	for _, bound := range []struct {
+ 		key   string
+ 		value int
+@@ -420,6 +428,7 @@ func decodeConfig(data []byte, machineLayerApplies bool) (Config, error) {
+ 		ReachBudgetMin:            file.ReachBudgetMin,
+ 		MutationMaxMutants:        file.MutationMaxMutants,
+ 		MutationBudgetMin:         file.MutationBudgetMin,
++		PlanTier0BudgetSec:        file.PlanTier0BudgetSec,
+ 		Tiers:                     tiers,
+ 		Gates:                     gates,
+ 		Scoper:                    file.Scoper,
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 0750ea107..11a36d660 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -70,7 +70,7 @@ func TestConfigSpec_SetNestedKeys(t *testing.T) {
+ var templateDefaults = Config{
+ 	Slots: 2, BusyQuitSec: 120, MemoryQuitMB: 4096, FixerTimeoutMin: 30,
+ 	RedundancyBuildTimeoutMin: 10, RedundancyTestTimeoutSec: 120, RedundancyTestMemoryMB: 2048, RedundancyMaxTests: 40, RedundancyBudgetMin: 10,
+-	ReachBudgetMin: 10, MutationMaxMutants: 40, MutationBudgetMin: 20,
++	ReachBudgetMin: 10, MutationMaxMutants: 40, MutationBudgetMin: 20, PlanTier0BudgetSec: 60,
+ 	Gates: map[string]GateKey{
+ 		"card":            {Tiers: []int{0}, Scope: "card", Lints: []string{"comments", "pattern"}, Fixer: "sonnet[medium]"},
+ 		"batch":           {Tiers: []int{0}, Scope: "card", Reports: []string{"reach"}},
+@@ -346,6 +346,7 @@ func TestLoadConfig(t *testing.T) {
+ 		{"reach_budget_min zero", baseKeys + "reach_budget_min: 0\n", Config{}, `config key "gate.reach_budget_min": 0; want at least 1` + fixIt},
+ 		{"mutation_max_mutants zero", baseKeys + "mutation_max_mutants: 0\n", Config{}, `config key "gate.mutation_max_mutants": 0; want at least 1` + fixIt},
+ 		{"mutation_budget_min zero", baseKeys + "mutation_budget_min: 0\n", Config{}, `config key "gate.mutation_budget_min": 0; want at least 1` + fixIt},
++		{"plan_tier0_budget_sec negative", baseKeys + "plan_tier0_budget_sec: -1\n", Config{}, `config key "gate.plan_tier0_budget_sec": -1; want at least 0` + fixIt},
+ 		{"an unknown report", baseKeys + "gates:\n  webster: {tiers: [0], scope: all, reports: [speed]}\n", Config{}, `config key "gate.gates.webster": report "speed"; want reach, redundancy or mutation` + fixIt},
+ 		{
+ 			"a key listing every report loads", baseKeys + "gates:\n  finalize: {tiers: [0], scope: all, reports: [reach, redundancy, mutation]}\n",
+@@ -989,6 +990,12 @@ func TestConfig_TierUse(t *testing.T) {
+ 		if got := twoTier.TiersValue(); got != want {
+ 			t.Errorf("TiersValue() = %q; want %q", got, want)
+ 		}
++		budgeted := twoTier
++		budgeted.PlanTier0BudgetSec = 45
++		wantBudget := want + "\n- plan tier0 budget: 45 seconds, the most a plan's new and changed tier0 tests may add to one tier0 run"
++		if got := budgeted.TiersValue(); got != wantBudget {
++			t.Errorf("TiersValue() with a plan tier0 budget = %q; want %q", got, wantBudget)
++		}
+ 		template, err := TemplateConfig()
+ 		if err != nil {
+ 			t.Fatal(err)
+diff --git a/internal/gateslot/redfirst.go b/internal/gateslot/redfirst.go
+index 9cdffa980..610e540ba 100644
+--- a/internal/gateslot/redfirst.go
++++ b/internal/gateslot/redfirst.go
+@@ -3,6 +3,8 @@
+ 
+ package gateslot
+ 
++import "strings"
++
+ // RedFirstGreenExit is the exit code of a `lym gate red-first` call.
+ // Every test the diff adds or changes passed on the base in that call.
+ // The site reads it as a fix whose test would have passed before the fix.
+@@ -30,6 +32,13 @@ const NoTestSeamTitle = "No test seam"
+ // The parent records that entry, and the red-first gate then passes without running the call.
+ const NoBugFixedTitle = "No bug fixed"
+ 
++// LiftsRedFirst reports whether an added entry titled title records why the red-first check does not apply.
++// The title opens with NoTestSeamTitle or NoBugFixedTitle, compared case-insensitively.
++func LiftsRedFirst(title string) bool {
++	lower := strings.ToLower(strings.TrimSpace(title))
++	return strings.HasPrefix(lower, strings.ToLower(NoTestSeamTitle)) || strings.HasPrefix(lower, strings.ToLower(NoBugFixedTitle))
++}
++
+ // RedFirstCall renders the call a site runs to check that the diff's tests fail on the merge base.
+ // It is `lym gate red-first --gate <key>`, and runs the tiers of the named gate key.
+ func RedFirstCall(key string) string {
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 8cc4cecad..d864c345a 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -10,6 +10,7 @@ redundancy_budget_min: 10  # minutes the redundancy report step may spend on its
+ reach_budget_min: 10  # minutes the reach and mutation report steps and lym gate mutate may spend refreshing the worktree's coverage maps once they hold a gate slot; past it they start no further build or test
+ mutation_max_mutants: 40  # the most mutants lym gate mutate or the mutation report step runs for one diff, one per changed function in turn, spread evenly over the functions when the cap is short of one each; the rest are listed as not run
+ mutation_budget_min: 20  # minutes lym gate mutate or the mutation report step may spend on its mutant builds and runs once it holds its gate slot; past it it starts no further build or test
++plan_tier0_budget_sec: 60  # seconds a plan's new and changed tier0 tests may add to one tier0 run; the planner states each card's estimate in its test Intent and the plan review flags a plan past it; 0 sets no budget
+ 
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lym config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index b3539f31d..40b218d79 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -587,6 +587,7 @@ func (c Config) renderGateCall(key string, wait bool, cards []string) (string, e
+ // TiersValue renders the value prompts take for the hub's tiers.
+ // It holds one line per declared tier in number order: `- tier<N>: <about>`.
+ // Then it holds one line per Go-read gate key the config lists: `- gate <key>: [<n>, ...] <scope>`.
++// A set plan tier0 budget ends it with one line naming the seconds a plan's tier0 tests may add.
+ // It is `none` when no tier is declared.
+ func (c Config) TiersValue() string {
+ 	if len(c.Tiers) == 0 {
+@@ -613,5 +614,8 @@ func (c Config) TiersValue() string {
+ 		}
+ 		lines = append(lines, fmt.Sprintf("- gate %s: [%s] %s", gate, strings.Join(items, ", "), key.Scope))
+ 	}
++	if c.PlanTier0BudgetSec > 0 {
++		lines = append(lines, fmt.Sprintf("- plan tier0 budget: %d seconds, the most a plan's new and changed tier0 tests may add to one tier0 run", c.PlanTier0BudgetSec))
++	}
+ 	return strings.Join(lines, "\n")
+ }
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index a2721b83b..89afedf11 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -1167,7 +1167,7 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 
+ 		outcome, ptr := fx.call(t)
+ 
+-		requireEscalateHalt(t, outcome, ptr, finalizeName, fx.reportPath(), "decision D3", "`lym loom decision add`")
++		requireEscalateHalt(t, outcome, ptr, finalizeName, fx.reportPath(), "decision D3", "`lym loom decision add`", "kind note")
+ 	})
+ 
+ 	t.Run("a re-entry from another row starts at zero attempts while a resume keeps the spent ones", func(t *testing.T) {
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index 59ca2833c..9f88553c7 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -340,7 +340,8 @@ func (s *fixerSession) judge() (shuttleengine.GateResult, error) {
+ // Every reason except a tapestry, darn or sampler escalate opens with LandingStopPrefix and ends with a way forward;
+ // each is one line.
+ // With escalateJudgedFirst true, an escalate end opens with EscalateStopPrefix instead;
+-// it names `lym loom decision add` as its way forward.
++// it names `lym loom decision add` as its way forward,
++// and a board note with a fix on the task branch once the task's scope is closed.
+ // With escalateJudgedFirst false, a pawl run's arbiter has no decision verb to settle it with;
+ // so the way forward is to settle the conflict on the task branch.
+ // An unjudged end's reason is the landing gate's own;
+@@ -358,7 +359,7 @@ func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
+ 		cause = fmt.Sprintf("the fixer of %s found a parent change that conflicts with a decision of the record; report: %s; conflict: %s", row, o.reportPath, singleLine(o.conflict))
+ 		if escalateJudgedFirst {
+ 			prefix = EscalateStopPrefix
+-			wayForward = "record the deciding decision with `lym loom decision add` in the task worktree, then `lym loom resume`"
++			wayForward = "record the deciding decision with `lym loom decision add` in the task worktree, then `lym loom resume`; once the task's scope is closed, file the call as a board note for a new task with `lym board upsert` and kind note, settle the conflict on the task branch so the record's decisions hold, then `lym loom resume`"
+ 		} else {
+ 			wayForward = "settle the conflict on the task branch, then `lym loom resume`"
+ 		}
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index 3844a6b52..f06051144 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -374,7 +374,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				if !strings.HasPrefix(judged, EscalateStopPrefix) {
+ 					t.Errorf("haltReason(judged first) = %q; want the prefix %q", judged, EscalateStopPrefix)
+ 				}
+-				for _, want := range []string{outcome.reportPath, fixerTestRow, "decision D3", "`lym loom decision add`", "`lym loom resume`"} {
++				for _, want := range []string{outcome.reportPath, fixerTestRow, "decision D3", "`lym loom decision add`", "`lym loom resume`", "kind note"} {
+ 					if !strings.Contains(judged, want) {
+ 						t.Errorf("haltReason(judged first) = %q; want it to contain %q", judged, want)
+ 					}
+diff --git a/internal/landingshed/parentalign_fixer_test.go b/internal/landingshed/parentalign_fixer_test.go
+index 840aaa2b9..d86a52aab 100644
+--- a/internal/landingshed/parentalign_fixer_test.go
++++ b/internal/landingshed/parentalign_fixer_test.go
+@@ -247,7 +247,7 @@ func TestMergeIn_Fixer(t *testing.T) {
+ 
+ 		outcome, ptr := fx.call(t)
+ 
+-		requireEscalateHalt(t, outcome, ptr, parentAlignName, fx.fixerReportPath(), "decision D3", "`lym loom decision add`")
++		requireEscalateHalt(t, outcome, ptr, parentAlignName, fx.fixerReportPath(), "decision D3", "`lym loom decision add`", "kind note")
+ 	})
+ 
+ 	t.Run("a first Merge-In that stops with an error after the merge still spawns the fixer when resumed", func(t *testing.T) {
+diff --git a/internal/loomcli/arbiterprompt.go b/internal/loomcli/arbiterprompt.go
+index dfa15cac1..9b8708d55 100644
+--- a/internal/loomcli/arbiterprompt.go
++++ b/internal/loomcli/arbiterprompt.go
+@@ -17,7 +17,9 @@ const arbiterAbsentPath = "none"
+ // The verbs end every recipe description, so the arbiter stencil's `{{.recipe}}` marker carries them.
+ const arbiterRepairVerbs = "Its repair verbs, run with `<slug>` the task named above:" +
+ 	" at a review escalation exactly one of `lym loom circling accept <slug>` or `lym loom circling continue <slug>`;" +
+-	" `lym loom decision add <slug> --by arbiter --title … --decision … --rationale … [--amends-plan]` to record a design call." +
++	" `lym loom decision add <slug> --by arbiter --title … --decision … --rationale … [--amends-plan]` to record a design call," +
++	" refused once the task's scope closed at its first Code-Review round;" +
++	" there `lym loom circling continue <slug> --in-scope <finding-id>` rules a decision finding the record already asks for in scope." +
+ 	" A decision that adds, changes or removes a PATTERN entry, or `withdraws` a declared change, also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lym loom decision add --help` says."
+ 
+ // arbiterRecipeDescription returns the description of recipe that the arbiter stencil's `{{.recipe}}` marker carries:
+diff --git a/internal/loomcli/circling.go b/internal/loomcli/circling.go
+index 27f1c6523..9dfca1da9 100644
+--- a/internal/loomcli/circling.go
++++ b/internal/loomcli/circling.go
+@@ -47,6 +47,7 @@ const (
+ 	circlingWayRetry     = `way forward: re-run the verb; if the failure persists, fix the file or directory the message names`
+ 	circlingWayRecipe    = `way forward: the embedded tapestry recipe failed to parse, so this lym build is broken; rebuild or reinstall lym, then re-run the verb`
+ 	circlingWayFinalize  = `way forward: fix the findings on the task branch, then run "lym loom resume", which runs the fix reviews afresh; or run "lym loom circling accept %s" to land the change as it stands`
++	circlingWayInScope   = `way forward: "--in-scope" answers a decision escalation only; run "lym loom circling continue %s" without it, or read the brief's decision findings and name only their ids`
+ )
+ 
+ // circlingDeps holds every side effect of a circling verb, injected so tests can supply fakes.
+@@ -56,7 +57,8 @@ type circlingDeps struct {
+ 	// bouncerSubdir reports the run subdirectory of the named recipe row when that row is a Bouncer.
+ 	bouncerSubdir func(row string) (subdir string, isBouncer bool, err error)
+ 	// record writes decision for the latest round at subdir, and returns that round and its escalation cause.
+-	record func(subdir string, decision shedadapters.CirclingDecision) (round int, cause shedadapters.EscalationCause, err error)
++	// inScope names the decision findings a continue rules in scope, none for a plain decision.
++	record func(subdir string, decision shedadapters.CirclingDecision, inScope []string) (round int, cause shedadapters.EscalationCause, err error)
+ 	// latestRound returns the latest round of the Bouncer run directory named by subdir.
+ 	latestRound func(subdir string) (int, error)
+ 	// escalationPending reports whether the latest round at subdir carries an escalation no decision has answered.
+@@ -77,7 +79,9 @@ type circlingDeps struct {
+ // That reach is limited only by what names the verbs:
+ // the Bouncer escalation brief, the arbiter stencil and Finalize's halt at its fix review round cap.
+ // The decision file in the committed run directory records the decision and the escalation's cause for that round.
+-func circlingVerb(out io.Writer, slug string, deps circlingDeps, decision shedadapters.CirclingDecision) int {
++// inScope, set only on `continue`, names the round's decision-class findings the task's record already asks for.
++// The next round carries them as fixer work; a round whose cause is not decision, or an id that names none, is refused.
++func circlingVerb(out io.Writer, slug string, deps circlingDeps, decision shedadapters.CirclingDecision, inScope []string) int {
+ 	verb := string(decision)
+ 	refuse := func(format string, args ...any) int {
+ 		return output.Err(out, fmt.Sprintf("loom: %s %s: ", circlingGroup, verb)+fmt.Sprintf(format, args...))
+@@ -125,8 +129,10 @@ func circlingVerb(out io.Writer, slug string, deps circlingDeps, decision shedad
+ 		}
+ 	}
+ 
+-	round, cause, err := deps.record(subdir, decision)
++	round, cause, err := deps.record(subdir, decision, inScope)
+ 	switch {
++	case errors.Is(err, shedadapters.ErrInScopeCause), errors.Is(err, shedadapters.ErrInScopeFinding):
++		return refuse("%s; %s", err, fmt.Sprintf(circlingWayInScope, slug))
+ 	case errors.Is(err, shedadapters.ErrNotEscalated):
+ 		return refuse("the latest judged round at %s is not escalated; %s", st.CurrentProducer, circlingWayNot)
+ 	case errors.Is(err, shedadapters.ErrCirclingDecided):
+@@ -136,13 +142,17 @@ func circlingVerb(out io.Writer, slug string, deps circlingDeps, decision shedad
+ 	case err != nil:
+ 		return refuse("%s; %s", err, circlingWayRetry)
+ 	}
+-	return output.Ok(out, map[string]any{
++	result := map[string]any{
+ 		"slug":     slug,
+ 		"decision": verb,
+ 		"round":    round,
+ 		"cause":    string(cause),
+ 		"resume":   "lym loom resume",
+-	})
++	}
++	if len(inScope) > 0 {
++		result["in_scope"] = inScope
++	}
++	return output.Ok(out, result)
+ }
+ 
+ // finalizeCirclingVerb settles a run halted at Finalize after its fix reviews ran out of rounds.
+@@ -175,6 +185,18 @@ type circlingState struct {
+ 	slug string
+ }
+ 
++// recordCircling returns the recorder of a circling decision into a segment's run directory under reviewsDir.
++// A decision that names findings to rule in scope is recorded as a continue carrying that ruling.
++func recordCircling(reviewsDir string) func(subdir string, decision shedadapters.CirclingDecision, inScope []string) (int, shedadapters.EscalationCause, error) {
++	return func(subdir string, decision shedadapters.CirclingDecision, inScope []string) (int, shedadapters.EscalationCause, error) {
++		if len(inScope) == 0 {
++			return shedadapters.RecordCirclingDecision(filepath.Join(reviewsDir, subdir), decision)
++		}
++		round, err := shedadapters.RecordInScopeContinue(filepath.Join(reviewsDir, subdir), inScope)
++		return round, shedadapters.EscalationDecision, err
++	}
++}
++
+ // preRun resolves the review target of the invoked verb and wires the dependencies that the verb runs against.
+ func (s *circlingState) preRun(cmd *cobra.Command, args []string) error {
+ 	if cmd.Name() == circlingGroup {
+@@ -212,9 +234,7 @@ func (s *circlingState) preRun(cmd *cobra.Command, args []string) error {
+ 	s.deps = circlingDeps{
+ 		readStatus:    circlingStatusReader(statusPath, statusLock),
+ 		bouncerSubdir: loomrecipe.BouncerRunSubdir,
+-		record: func(subdir string, decision shedadapters.CirclingDecision) (int, shedadapters.EscalationCause, error) {
+-			return shedadapters.RecordCirclingDecision(filepath.Join(reviewsDir, subdir), decision)
+-		},
++		record:        recordCircling(reviewsDir),
+ 		latestRound: func(subdir string) (int, error) {
+ 			return shedadapters.LatestRound(filepath.Join(reviewsDir, subdir))
+ 		},
+@@ -329,6 +349,7 @@ Example:
+ 		PersistentPreRunE: st.preRun,
+ 	}
+ 
++	var inScope []string
+ 	verb := func(decision shedadapters.CirclingDecision, short, long string) *cobra.Command {
+ 		return &cobra.Command{
+ 			Use:         string(decision) + " [<slug>]",
+@@ -340,7 +361,7 @@ Example:
+ 				if clihelp.ShouldAbort(cmd.Context()) {
+ 					return nil
+ 				}
+-				clihelp.SetExit(cmd.Context(), circlingVerb(cmd.OutOrStdout(), st.slug, st.deps, decision))
++				clihelp.SetExit(cmd.Context(), circlingVerb(cmd.OutOrStdout(), st.slug, st.deps, decision, inScope))
+ 				return nil
+ 			},
+ 		}
+@@ -366,8 +387,16 @@ round only below the perch's hard cap and is refused at or past it, where
+ "accept" or raising the hard cap is the way forward. It resumes nothing
+ itself: run "lym loom resume" in the task worktree.
+ 
++--in-scope <finding-id> (repeatable) answers a decision escalation by ruling
++that decision-class finding of the round's review in scope: the task's record
++already asks for it, so the next round carries it as fixer work. It is
++refused on any other cause and for an id the review holds no such finding
++under.
++
+ Example:
+-  lym loom circling continue <slug>`)
++  lym loom circling continue <slug>
++  lym loom circling continue <slug> --in-scope f2`)
++	cont.Flags().StringArrayVar(&inScope, "in-scope", nil, "a decision-class finding of the escalated round that the task's record already asks for, which the next round's fixer takes")
+ 
+ 	group.AddCommand(accept, cont)
+ 	return group
+diff --git a/internal/loomcli/circling_test.go b/internal/loomcli/circling_test.go
+index 5ee24ef3c..94aa10b36 100644
+--- a/internal/loomcli/circling_test.go
++++ b/internal/loomcli/circling_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -53,11 +54,15 @@ func (f *circlingFake) deps() circlingDeps {
+ 	return circlingDeps{
+ 		readStatus:    func() (shedengine.Status, bool, error) { return f.status, f.found, f.statusErr },
+ 		bouncerSubdir: bouncerSubdir,
+-		record: func(subdir string, d shedadapters.CirclingDecision) (int, shedadapters.EscalationCause, error) {
++		record: func(subdir string, d shedadapters.CirclingDecision, inScope []string) (int, shedadapters.EscalationCause, error) {
+ 			if f.recordErr != nil {
+ 				return 0, "", f.recordErr
+ 			}
+-			f.records = append(f.records, subdir+":"+string(d))
++			record := subdir + ":" + string(d)
++			if len(inScope) > 0 {
++				record += ":" + strings.Join(inScope, ",")
++			}
++			f.records = append(f.records, record)
+ 			return f.round, f.cause, nil
+ 		},
+ 		latestRound:       func(string) (int, error) { return f.latest, f.latestErr },
+@@ -89,33 +94,81 @@ func TestCirclingVerb_Records(t *testing.T) {
+ 	tests := []struct {
+ 		name      string
+ 		decision  shedadapters.CirclingDecision
++		inScope   []string
+ 		fake      circlingFake
+ 		wantRound float64
+ 		wantCause string
++		// wantRecord is the record the verb makes after the plan subdir's prefix.
++		wantRecord string
+ 	}{
+-		{"accept", shedadapters.CirclingAccept, escalated(3, shedadapters.EscalationBudget), 3, "budget"},
+-		{"continue", shedadapters.CirclingContinue, escalated(3, shedadapters.EscalationBudget), 3, "budget"},
+-		{"continue below the hard cap on a circling escalation", shedadapters.CirclingContinue, belowCap, 3, "circling"},
+-		{"accept at the hard cap", shedadapters.CirclingAccept, acceptAtCap, 4, "hard-cap"},
++		{"accept", shedadapters.CirclingAccept, nil, escalated(3, shedadapters.EscalationBudget), 3, "budget", "accept"},
++		{"continue", shedadapters.CirclingContinue, nil, escalated(3, shedadapters.EscalationBudget), 3, "budget", "continue"},
++		{"continue below the hard cap on a circling escalation", shedadapters.CirclingContinue, nil, belowCap, 3, "circling", "continue"},
++		{"accept at the hard cap", shedadapters.CirclingAccept, nil, acceptAtCap, 4, "hard-cap", "accept"},
++		{"continue ruling findings in scope", shedadapters.CirclingContinue, []string{"f1", "f3"}, escalated(2, shedadapters.EscalationDecision), 2, "decision", "continue:f1,f3"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			f := tt.fake
+ 			var out bytes.Buffer
+-			if code := circlingVerb(&out, "task-a", f.deps(), tt.decision); code != 0 {
++			if code := circlingVerb(&out, "task-a", f.deps(), tt.decision, tt.inScope); code != 0 {
+ 				t.Fatalf("exit = %d, out %s; want 0", code, out.String())
+ 			}
+ 			data := envelope.RequireOK(t, out.String()).Raw
+ 			if data["slug"] != "task-a" || data["decision"] != string(tt.decision) || data["round"] != tt.wantRound || data["cause"] != tt.wantCause || data["resume"] != "lym loom resume" {
+ 				t.Fatalf("envelope = %v; want slug, decision, round %v, cause %s and the resume hint", data, tt.wantRound, tt.wantCause)
+ 			}
+-			if want := "plan:" + string(tt.decision); len(f.records) != 1 || f.records[0] != want {
++			if _, named := data["in_scope"]; named != (tt.inScope != nil) {
++				t.Errorf("envelope in_scope present = %v; want %v", named, tt.inScope != nil)
++			}
++			if want := "plan:" + tt.wantRecord; len(f.records) != 1 || f.records[0] != want {
+ 				t.Fatalf("records = %v; want [%s]", f.records, want)
+ 			}
+ 		})
+ 	}
+ }
+ 
++// TestRecordCircling asserts that a continue records the findings it names as ruled in scope, and no others.
++func TestRecordCircling(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		inScope []string
++	}{
++		{name: "RulingFindingsInScope", inScope: []string{"D1"}},
++		{name: "WithoutARuling"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reviewsDir := t.TempDir()
++			runDir := filepath.Join(reviewsDir, "code")
++			if err := os.MkdirAll(runDir, 0o755); err != nil {
++				t.Fatalf("MkdirAll(%s) = %v; want nil", runDir, err)
++			}
++			files := map[string]string{
++				"round-1-review.md":     "---\nverdict: APPROVED\nfindings:\n  - id: D1\n    severity: LOW\n    class: decision\n    location: plan.md:4\n    summary: open question\n    fix: settle it\n---\n",
++				"round-1-escalation.md": "---\nround: 1\ncause: decision\n---\n",
++			}
++			for name, content := range files {
++				if err := os.WriteFile(filepath.Join(runDir, name), []byte(content), 0o644); err != nil {
++					t.Fatalf("WriteFile(%s) = %v; want nil", name, err)
++				}
++			}
++
++			round, cause, err := recordCircling(reviewsDir)("code", shedadapters.CirclingContinue, tt.inScope)
++
++			if err != nil || round != 1 || cause != shedadapters.EscalationDecision {
++				t.Fatalf("record(code, continue, %v) = %d, %q, %v; want 1, decision, nil", tt.inScope, round, cause, err)
++			}
++			if got, err := shedadapters.InScopeFindings(runDir, 1); err != nil || !slices.Equal(got, tt.inScope) {
++				t.Errorf("InScopeFindings() = %v, %v; want %v", got, err, tt.inScope)
++			}
++		})
++	}
++}
++
+ // blockedAtFinalize is a run halted at Finalize as its second row entry: one earlier row ran before it.
+ func blockedAtFinalize() shedengine.Status {
+ 	return shedengine.Status{
+@@ -132,7 +185,7 @@ func TestCirclingVerb_AcceptsFinalizeFixReviewHalt(t *testing.T) {
+ 	f := circlingFake{status: blockedAtFinalize(), found: true}
+ 	var out bytes.Buffer
+ 
+-	if code := circlingVerb(&out, "task-a", f.deps(), shedadapters.CirclingAccept); code != 0 {
++	if code := circlingVerb(&out, "task-a", f.deps(), shedadapters.CirclingAccept, nil); code != 0 {
+ 		t.Fatalf("exit = %d, out %s; want 0", code, out.String())
+ 	}
+ 
+@@ -169,6 +222,8 @@ func TestCirclingVerb_Refusals(t *testing.T) {
+ 		{"latest round not escalated", "", circlingFake{status: awaitingAt(loomshed.NameCodeBouncer), found: true, recordErr: shedadapters.ErrNotEscalated}, []string{"is not escalated"}},
+ 		{"malformed escalation record", "", circlingFake{status: atPlanBouncer, found: true, recordErr: fmt.Errorf("%w: round-2-escalation.md: bad cause", shedadapters.ErrEscalationMalformed)}, []string{"fix or delete the named escalation file"}},
+ 		{"second decision", "", circlingFake{status: awaitingAt(loomshed.NameDiscussionBouncer), found: true, recordErr: shedadapters.ErrCirclingDecided}, []string{`already recorded for the escalated round at Discussion-Bouncer; way forward: the decision for this round is recorded and stays; run "lym loom resume"`}},
++		{"in-scope ruling on another cause", shedadapters.CirclingContinue, circlingFake{status: awaitingAt(loomshed.NameCodeBouncer), found: true, recordErr: fmt.Errorf("%w: round 2's escalation cause is budget", shedadapters.ErrInScopeCause)}, []string{"answers only a decision escalation", `run "lym loom circling continue task-a" without it`}},
++		{"in-scope ruling naming no decision finding", shedadapters.CirclingContinue, circlingFake{status: awaitingAt(loomshed.NameCodeBouncer), found: true, recordErr: fmt.Errorf("%w: f9, while round 2's decision-class findings are f1", shedadapters.ErrInScopeFinding)}, []string{"f9, while round 2's decision-class findings are f1", "name only their ids"}},
+ 		{
+ 			"continue at the hard cap", shedadapters.CirclingContinue,
+ 			circlingFake{status: atPlanBouncer, found: true, latest: 4, hardCap: 4, pending: true, raise: loomRaise},
+@@ -208,7 +263,7 @@ func TestCirclingVerb_Refusals(t *testing.T) {
+ 				decision = shedadapters.CirclingAccept
+ 			}
+ 			var out bytes.Buffer
+-			if code := circlingVerb(&out, "task-a", f.deps(), decision); code != 1 {
++			if code := circlingVerb(&out, "task-a", f.deps(), decision, nil); code != 1 {
+ 				t.Fatalf("exit = %d; want 1", code)
+ 			}
+ 			msg := envelope.RequireErr(t, out.String(), tt.want[0]).Error
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index b18f50845..e8d1a0bd1 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -7,6 +7,7 @@
+ // A call made while `Discussion-Bouncer` is settling is not copied to the board,
+ // and `store` closes that window by hand.
+ // Each live shuttle run of the target worktree gets a creel notice, except the tackler, the arbiter and the caller.
++// `add` and `replace` refuse every caller once the run's scope is closed, from its first Code-Review row up to Finalize.
+ // No verb routes the run or touches the support log or the plan.
+ // The caller check guards against a mistaken call, not a forged strand name, so `--by` stays an unverified label.
+ 
+@@ -14,6 +15,7 @@ package loomcli
+ 
+ import (
+ 	"bytes"
++	"cmp"
+ 	"crypto/sha256"
+ 	"encoding/hex"
+ 	"encoding/json"
+@@ -36,6 +38,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gatefixer"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -49,6 +52,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
+ 	"github.com/Knatte18/loomyard/internal/samplerengine"
++	"github.com/Knatte18/loomyard/internal/shedadapters"
+ 	"github.com/Knatte18/loomyard/internal/sheddriver"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -101,6 +105,7 @@ const (
+ 	decisionWayNoticeTooLong   = "way forward: shorten the decision or rationale, put the detail in a file and name that file in the entry"
+ 	decisionWayLock            = `way forward: re-run the verb; nothing was written`
+ 	decisionWayJudgeOpen       = `way forward: re-run the call once Drift-Verify has ended its judge session: wait for a running judge, or run "lym loom resume" when the row is halted; or record the decision now without --amends-plan and without a PATTERN change; nothing was written`
++	decisionWayScopeClosed     = `way forward: file the call as a board note for a new task with "lym board upsert" and kind note; at a Code-Review decision escalation, rule a finding the record already asks for in scope with "lym loom circling continue --in-scope <finding-id>"; nothing was written`
+ 
+ 	replaceWayRebuild   = `way forward: re-read the record, rebuild the --from file from it and re-run "lym loom decision replace" with the sha256 of the record you read as --base-sha256`
+ 	replaceWayAdd       = `way forward: record the call with "lym loom decision add"`
+@@ -358,6 +363,45 @@ type decisionDeps struct {
+ 	raddleBoardFiling func() ([]string, bool, error)
+ 	// judgeSessionOpen reports whether the run's drift scope record holds an open judge session.
+ 	judgeSessionOpen func() (bool, error)
++	// scopeClosed reports whether the run at currentRow (empty if no status file) stands where its task's scope is closed.
++	scopeClosed func(currentRow string) (bool, error)
++	// entryLabels returns the labels of the run's board entry.
++	entryLabels func() ([]string, error)
++}
++
++// scopeClosedRefusal returns the refusal for a scope closed at currentRow, or empty when the scope is open.
++// The scope closes at the first Code-Review round, so a call made after it becomes a note for a new task.
++func scopeClosedRefusal(deps decisionDeps, currentRow string) (string, error) {
++	closed, err := deps.scopeClosed(currentRow)
++	if err != nil || !closed {
++		return "", err
++	}
++	return fmt.Sprintf("the run stands at %s, at or past its first Code-Review round, where the task's scope is closed and no decision enters the record; %s", cmp.Or(currentRow, "no row"), decisionWayScopeClosed), nil
++}
++
++// onlyLiftsRedFirst reports whether a call only records why the red-first check does not apply.
++// Such a call changes no scope: every entry's title names that,
++// and the call amends no plan, changes no PATTERN entry and drops no Create target.
++func onlyLiftsRedFirst(input decisionInput, entries []decisionEntry) bool {
++	if input.amendsPlan || len(input.dropsCreate) > 0 || entriesChangePattern(entries) {
++		return false
++	}
++	return !slices.ContainsFunc(entries, func(entry decisionEntry) bool { return !gateslot.LiftsRedFirst(entry.Title) })
++}
++
++// scopeClosedAt reports whether target's run of recipe at currentRow stands where its task's scope is closed.
++// A Code-Review segment that has run counts as the line reached, whatever row the run stands at now,
++// so a run sent back to its writer after its first Code-Review round stays closed.
++func scopeClosedAt(target *lymcwd.Location, recipe, currentRow string) (bool, error) {
++	subdir, hasRow, err := loomrecipe.CodeReviewRunSubdir(recipe)
++	if err != nil || !hasRow {
++		return false, err
++	}
++	reviewRan, err := shedadapters.SegmentRan(loomengine.LoomReviewsDir(target), subdir)
++	if err != nil {
++		return false, err
++	}
++	return loomrecipe.InClosedScope(recipe, currentRow, reviewRan)
+ }
+ 
+ // decisionNoticeError is one notice the verb could not send, reported on its success envelope.
+@@ -917,6 +961,8 @@ func planApprovedReader(anchorPath string) func() (bool, error) {
+ // The call holds the run's decision lock from its first precondition through its commit and board copy.
+ // A call with --amends-plan or a PATTERN change is refused while the run's drift judge session is open.
+ // The judge's check cannot tell what those forms write beside the record from the judge's own edit.
++// The run's task scope is closed at or past its first Code-Review round and before Finalize.
++// A closed scope takes only a bug entry's call that records why the red-first check does not apply.
+ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionInput) int {
+ 	refuse := func(format string, args ...any) int {
+ 		return output.Err(out, fmt.Sprintf("loom: %s add: ", decisionGroup)+fmt.Sprintf(format, args...))
+@@ -960,6 +1006,23 @@ func decisionVerb(out io.Writer, slug string, deps decisionDeps, input decisionI
+ 	if filingRefusal != "" {
+ 		return refuse("%s", filingRefusal)
+ 	}
++	scopeRefusal, err := scopeClosedRefusal(deps, currentRow)
++	if err != nil {
++		return refuse("read where the run's scope closes: %s; %s", err, decisionWayRetry)
++	}
++	if scopeRefusal != "" && onlyLiftsRedFirst(input, entries) {
++		// Only a bug entry has a red-first check, so on any other the title records nothing.
++		labels, err := deps.entryLabels()
++		if err != nil {
++			return refuse("read the entry's labels: %s; %s", err, decisionWayRetry)
++		}
++		if slices.Contains(labels, gateslot.BugLabel) {
++			scopeRefusal = ""
++		}
++	}
++	if scopeRefusal != "" {
++		return refuse("%s", scopeRefusal)
++	}
+ 	// A run whose board entry holds a copy of the record has that copy to refresh once the commit lands.
+ 	wayCommit := decisionWayFabricCommit
+ 	if due, _ := boardCopyDue(deps, currentRow); due {
+@@ -1326,6 +1389,7 @@ func replaceFileRefusal(current, file []byte) string {
+ // It is also refused before a Discussion approval the recipe has.
+ // It is refused between the plan's approval and the last Webster row too.
+ // Each fresh Webster prompt there renders only added entries.
++// It is refused once the run's task scope is closed, as decisionVerb is.
+ // The record committed at HEAD must hash to --base-sha256 and equal the working copy, so no concurrent write is lost.
+ // The file must pass replaceFileRefusal; a refused file leaves the record as it was.
+ // The commit carries the Lym-Record-Replaced trailer, and when HEAD already holds the bytes an empty commit carries it,
+@@ -1377,6 +1441,13 @@ func decisionReplaceVerb(out io.Writer, slug string, deps decisionDeps, input re
+ 	if filingRefusal != "" {
+ 		return refuse("%s", filingRefusal)
+ 	}
++	scopeRefusal, err := scopeClosedRefusal(deps, currentRow)
++	if err != nil {
++		return refuse("read where the run's scope closes: %s; %s", err, replaceWayRetry)
++	}
++	if scopeRefusal != "" {
++		return refuse("%s", scopeRefusal)
++	}
+ 	if deps.approvalRow() && !deps.pastApproval(currentRow) {
+ 		return refuse("the run has not passed its Discussion approval, and before it the Discussion's own review folds each call into the main decisions; %s", replaceWayAdd)
+ 	}
+@@ -1613,6 +1684,10 @@ func (s *decisionState) preRun(cmd *cobra.Command, args []string) error {
+ 		},
+ 		raddleBoardFiling: func() ([]string, bool, error) { return raddleBoardFiling(target) },
+ 		judgeSessionOpen:  driftJudgeSessionOpen(target),
++		scopeClosed: func(currentRow string) (bool, error) {
++			return scopeClosedAt(target, recipe, currentRow)
++		},
++		entryLabels: entryLabels(target),
+ 		append: func(ds []discussionparser.AddedDecision) ([]discussionparser.Finding, error) {
+ 			return discussionparser.AppendDecisions(recordPath, supportLogPath, ds)
+ 		},
+@@ -1990,29 +2065,30 @@ It then notifies the run's other live agents.
+ 
+ --by is parent, operator or arbiter (the last only from the run's arbiter
+ strand). --title, --decision and --rationale are required without --from.
+-A session other than the run's parent orch, arbiter or sampler session (--by
+-operator only) is refused, as is any call while Discussion-Write runs or, on a
+-Record-Write recipe, before it has committed the record.
+-
+---amends-plan marks a decision that amends the approved plan: the call also
+-appends the title to the plan amendment record in the same commit. It is
+-refused on a recipe with no Plan-Write row and with no approved plan.
+-Then the parent runs "lym loom goto --to Plan-Burler-Review", "lym loom resume".
+-
+-A decision on a PATTERN entry also passes --pattern-entry <PATTERN-id>,
+---pattern-action adds|changes|removes and, for adds or changes, --pattern-text
+-<new entry text>, which writes its bullet to the "## PATTERN changes" section.
+---pattern-action withdraws strikes the declared bullet, takes no --pattern-text
+-and is refused when the record declares none.
+-
+---from <file> records several decisions from a JSON array of objects with the
+-keys title, decision, rationale and optional pattern_entry, pattern_action,
+-pattern_text. --by and --amends-plan apply to every entry. All land in one
+-commit or none does; no two share a title or a PATTERN entry.
+-
+---drops-create <target> (repeatable) records that the decision drops a Create
+-target, as the card spells it, so Webster's done-check skips it. It applies to
+-one entry; record the dropping decision as its own call.
++Callers other than the parent orch, arbiter or sampler session (--by operator
++only) are refused, as is any call while Discussion-Write runs or before a
++Record-Write recipe has committed the record.
++
++From the first Code-Review round until Finalize only a bug's "No test seam" or
++"No bug fixed" entry that changes nothing else is taken: file any other call
++as a board note, or rule an asked-for finding in with
++"lym loom circling continue --in-scope <id>".
++
++--amends-plan also records the title in the plan amendment record; it needs an
++approved plan. Then run "lym loom goto --to Plan-Burler-Review", then resume.
++
++--pattern-entry PATTERN-<id>, --pattern-action adds|changes|removes and, for
++adds or changes, --pattern-text write a "## PATTERN changes" bullet.
++--pattern-action withdraws strikes the declared one and takes no text.
++
++--from <file> records a JSON array of objects with the keys title, decision,
++rationale and optional pattern_entry, pattern_action, pattern_text. --by and
++--amends-plan apply to every entry; all land in one commit or none does; no
++two share a title or a PATTERN entry.
++
++--drops-create <target> (repeatable) drops a Create target, as the card spells
++it, so Webster's done-check skips it. It applies to one entry; record the
++dropping decision as its own call.
+ 
+ Example:
+   lym loom decision add <slug> --by parent --title "T" --decision "D" --rationale "R"`,
+@@ -2082,7 +2158,8 @@ bullets, never insert or rewrite one. A new call is recorded with "add".
+ 
+ The callers are "add"'s. It is refused while Discussion-Write runs, before a
+ Discussion approval the recipe has, between the plan's approval and the last
+-Webster row, and on a raddle run whose filing is done. It refreshes the board
++Webster row, once the task's scope is closed at its first Code-Review round,
++as for "add", and on a raddle run whose filing is done. It refreshes the board
+ copy as "add" does and tells each live agent to re-read the record whole.
+ 
+ Example:
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 7420786ed..29643251e 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -161,6 +161,12 @@ type decisionFake struct {
+ 	// implementerRows reports, per row, whether the run stands in its Webster span; implementerErr makes the read fail.
+ 	implementerRows map[string]bool
+ 	implementerErr  error
++	// closedRows reports, per row, whether the run's scope is closed there; closedErr makes the read fail.
++	closedRows map[string]bool
++	closedErr  error
++	// labels are the labels of the run's board entry, and labelsErr makes their read fail.
++	labels    []string
++	labelsErr error
+ 	// boardStored is whether the run's board entry carries a stored record; boardStoredErr makes the read fail.
+ 	boardStored    bool
+ 	boardStoredErr error
+@@ -478,6 +484,8 @@ func (f *decisionFake) deps() decisionDeps {
+ 			return f.headTrailer == value, nil
+ 		},
+ 		implementerSpan:   func(row string) (bool, error) { return f.implementerRows[row], f.implementerErr },
++		scopeClosed:       func(row string) (bool, error) { return f.closedRows[row], f.closedErr },
++		entryLabels:       func() ([]string, error) { return f.labels, f.labelsErr },
+ 		boardRecordStored: func() (bool, error) { return f.boardStored, f.boardStoredErr },
+ 	}
+ }
+diff --git a/internal/loomcli/decisionreplace_test.go b/internal/loomcli/decisionreplace_test.go
+index 0e516f293..0a50f4eac 100644
+--- a/internal/loomcli/decisionreplace_test.go
++++ b/internal/loomcli/decisionreplace_test.go
+@@ -6,6 +6,7 @@ package loomcli
+ 
+ import (
+ 	"bytes"
++	"cmp"
+ 	"errors"
+ 	"io/fs"
+ 	"os"
+@@ -15,9 +16,13 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/discussionparser"
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -726,6 +731,159 @@ func TestDecisionStoreVerb_TakesTheDecisionLock(t *testing.T) {
+ 	}
+ }
+ 
++// TestDecisionCalls_RefusedOnceTheScopeCloses asserts add and replace refuse every caller once the scope is closed.
++// The refusal names the board note as the way forward, leaves the record and board copy alone and sends no notice;
++// a failed read of where the scope closes is refused too.
++// A bug entry's add that only records why the red-first check does not apply is taken.
++func TestDecisionCalls_RefusedOnceTheScopeCloses(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	cases := []struct {
++		name string
++		by   string
++		err  error
++		want []string
++	}{
++		{name: "Parent", by: decisionByParent, want: []string{"the run stands at Code-Bouncer, at or past its first Code-Review round", `"lym board upsert" and kind note`, "--in-scope"}},
++		{name: "Operator", by: decisionByOperator, want: []string{"where the task's scope is closed"}},
++		{name: "ReadFails", by: decisionByParent, err: errors.New("disk gone"), want: []string{"read where the run's scope closes: disk gone"}},
++	}
++	for _, tc := range cases {
++		for _, verb := range []string{"add", "replace"} {
++			t.Run(tc.name+"_"+verb, func(t *testing.T) {
++				t.Parallel()
++				f := newReplaceFake(t).atPastRow("Code-Bouncer")
++				f.boardStored = true
++				f.closedRows, f.closedErr = map[string]bool{"Code-Bouncer": true}, tc.err
++
++				var out bytes.Buffer
++				var code int
++				if verb == "add" {
++					input := goodDecisionInput()
++					input.by = tc.by
++					code = decisionVerb(&out, "task-a", f.deps(), input)
++				} else {
++					input := replaceInputOf(t, replaceFoldedRecord)
++					input.by = tc.by
++					code = decisionReplaceVerb(&out, "task-a", f.deps(), input)
++				}
++				if code == 0 {
++					t.Fatalf("%s exit = 0, out %s; want a refusal", verb, out.String())
++				}
++				msg := envelope.Decode(t, out.String()).Error
++				for _, w := range tc.want {
++					if !strings.Contains(msg, w) {
++						t.Errorf("message %q lacks %q", msg, w)
++					}
++				}
++				if got := readDecisionRecord(t, f.path); got != replaceBaseRecord {
++					t.Errorf("record = %q; want it unchanged", got)
++				}
++				if len(f.stored) != 0 || len(f.posts) != 0 || f.commits != 0 || f.replaceCommits != 0 {
++					t.Errorf("stored %d, posts %d, commits %d, replace commits %d; want none", len(f.stored), len(f.posts), f.commits, f.replaceCommits)
++				}
++			})
++		}
++	}
++
++	redFirst := []struct {
++		name       string
++		title      string
++		amendsPlan bool
++		pattern    string
++		notBug     bool
++		labelsErr  error
++		wantTaken  bool
++		// wantRefusal is the text a refused call carries, the closed-scope refusal when empty.
++		wantRefusal string
++	}{
++		{name: "NoTestSeam", title: "No test seam: the parser", wantTaken: true},
++		{name: "NoBugFixed", title: "no bug fixed, the tests pin behaviour", wantTaken: true},
++		{name: "NoTestSeamAmendingThePlan", title: "No test seam: the parser", amendsPlan: true},
++		{name: "NoTestSeamChangingAPattern", title: "No test seam: the parser", pattern: "PATTERN-cache"},
++		{name: "NoTestSeamOnAnEntryThatIsNoBug", title: "No test seam: the parser", notBug: true},
++		{name: "LabelsUnreadable", title: "No test seam: the parser", labelsErr: errors.New("board down"), wantRefusal: "read the entry's labels: board down"},
++	}
++	for _, tc := range redFirst {
++		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
++			f := newReplaceFake(t).atPastRow("Code-Bouncer")
++			f.closedRows = map[string]bool{"Code-Bouncer": true}
++			if !tc.notBug {
++				f.labels = []string{gateslot.BugLabel}
++			}
++			f.labelsErr = tc.labelsErr
++			input := goodDecisionInput()
++			input.title, input.amendsPlan = tc.title, tc.amendsPlan
++			if tc.pattern != "" {
++				input.patternEntry, input.patternAction, input.patternText = tc.pattern, "adds", "Cache per run."
++			}
++
++			var out bytes.Buffer
++			code := decisionVerb(&out, "task-a", f.deps(), input)
++
++			recorded := strings.Contains(readDecisionRecord(t, f.path), tc.title)
++			if (code == 0) != tc.wantTaken || recorded != tc.wantTaken {
++				t.Errorf("add exit = %d, recorded %v, out %s; want taken %v", code, recorded, out.String(), tc.wantTaken)
++			}
++			if want := cmp.Or(tc.wantRefusal, "where the task's scope is closed"); !tc.wantTaken && !strings.Contains(envelope.Decode(t, out.String()).Error, want) {
++				t.Errorf("out = %s; want a refusal holding %q", out.String(), want)
++			}
++		})
++	}
++}
++
++// TestScopeClosedAt asserts which contents of the reviews directory close the scope of a run sent back to Darn-Write.
++func TestScopeClosedAt(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name   string
++		recipe string
++		// paths are made under the reviews directory; one ending in a slash is a directory.
++		paths   []string
++		want    bool
++		wantErr bool
++	}{
++		{name: "NoReviewsDirectory", recipe: shedrun.RecipeDarn},
++		{name: "EmptyRunDirectory", recipe: shedrun.RecipeDarn, paths: []string{"code/"}},
++		{name: "RoundReview", recipe: shedrun.RecipeDarn, paths: []string{"code/round-1-review.md"}, want: true},
++		{name: "GenerationRecord", recipe: shedrun.RecipeDarn, paths: []string{"code/generation-record.json"}, want: true},
++		{name: "SettleRecord", recipe: shedrun.RecipeDarn, paths: []string{"code/settle-record.json"}, want: true},
++		{name: "ArchivedRunDirectory", recipe: shedrun.RecipeDarn, paths: []string{"code-20260301T120000Z/", "code/"}, want: true},
++		{name: "AnotherSegmentsArchive", recipe: shedrun.RecipeDarn, paths: []string{"plan-20260301T120000Z/"}},
++		{name: "UnreadableRunDirectory", recipe: shedrun.RecipeDarn, paths: []string{"code"}, wantErr: true},
++		{name: "RecipeWithoutCodeReview", recipe: shedrun.RecipeArras, paths: []string{"code/round-1-review.md"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			target := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."}
++			for _, rel := range tt.paths {
++				path := filepath.Join(loomengine.LoomReviewsDir(target), rel)
++				dir := filepath.Dir(path)
++				if strings.HasSuffix(rel, "/") {
++					dir = path
++				}
++				if err := os.MkdirAll(dir, 0o755); err != nil {
++					t.Fatalf("MkdirAll(%s) = %v; want nil", dir, err)
++				}
++				if dir != path {
++					if err := os.WriteFile(path, []byte("x\n"), 0o644); err != nil {
++						t.Fatalf("WriteFile(%s) = %v; want nil", path, err)
++					}
++				}
++			}
++
++			got, err := scopeClosedAt(target, tt.recipe, "Darn-Write")
++
++			if got != tt.want || (err != nil) != tt.wantErr {
++				t.Errorf("scopeClosedAt(%s, Darn-Write) = %v, %v; want %v, error %v", tt.recipe, got, err, tt.want, tt.wantErr)
++			}
++		})
++	}
++}
++
+ // TestDecisionCalls_RefusedOnAFiledRaddleRun asserts add, replace and store are refused on a raddle run once it filed.
+ // It holds in every mode and at any row, the board copy is left alone,
+ // and a filing the raddle store has not marked done names a resume first.
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 59a58d3ec..c87e848c4 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -44,6 +44,11 @@
+ // and a sampler run's recorded session strand with `--by operator` only while its Sampler-Session row is current.
+ // `decision add`, `replace` and `store` refuse a raddle run, naming the goto or the filed parts.
+ // `decision add` with `--amends-plan` or a PATTERN change is refused while the run's drift judge session is open.
++// `decision add` and `replace` refuse every caller once the task's scope is closed:
++// from the recipe's first Code-Review row, or once that segment has run, until its Finalize row.
++// `add` still takes a `bug` entry's call that only records why the red-first check does not apply.
++// Such a call changes no scope.
++// The refusal names a board note for a new task as the way forward.
+ // `decision replace` commits a whole record with a `Lym-Record-Replaced` trailer under the run's decision lock.
+ //
+ // `parent-review answer` records the parent orch's answer to the run's latest ask.
+@@ -108,6 +113,8 @@
+ // and the envelope lists them under `stencils_changed`.
+ // A failed compare never fails the verb.
+ // `lym loom circling continue` refuses at or past the perch's hard cap, naming `circling accept` or raising the cap.
++// Its `--in-scope <finding-id>` rules a decision-class finding of a decision escalation in scope,
++// so the next round carries it as fixer work; any other cause, and an id naming no such finding, is refused.
+ //
+ // # Plan card verbs
+ //
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+index 42a1c688e..66ce75785 100644
+--- a/internal/loomcli/parentreview.go
++++ b/internal/loomcli/parentreview.go
+@@ -145,6 +145,7 @@ func parentAnswerCallerRefusal(caller string, parent hubgeom.Parent, parentErr e
+ 
+ // parentReviewWayDecision returns the way forward of a refused answer that no later answer can take:
+ // a call the parent still wants made goes in with `lym loom decision add`.
++// Once the task's scope is closed, it is filed as a board note instead.
+ // It names who runs that verb as its guard resolves it: the run's parent orch,
+ // or the operator's own unnamed shell when no parent orch resolves or the resolved one has no name.
+ func parentReviewWayDecision(slug string, parent hubgeom.Parent, parentErr error) string {
+@@ -152,7 +153,7 @@ func parentReviewWayDecision(slug string, parent hubgeom.Parent, parentErr error
+ 	if parentErr == nil && parent.Name != "" {
+ 		who = "the run's parent orch " + parent.Name
+ 	}
+-	return fmt.Sprintf(`way forward: a call the parent still wants made goes in with "lym loom decision add %s --by parent", run by %s`, slug, who)
++	return fmt.Sprintf(`way forward: a call the parent still wants made goes in with "lym loom decision add %s --by parent", run by %s; once the task's scope is closed, as from Code-Review on, file it instead as a board note for a new task with "lym board upsert" and kind note`, slug, who)
+ }
+ 
+ // parentAnswerRefusalText returns the refusal text of an answer to the ask numbered number that refusal turned down.
+@@ -360,7 +361,8 @@ in the file's order.
+ It answers only the run's latest ask while that ask is pending-post or open
+ and before its deadline; an ask at or past its deadline is set timeout and the
+ answer refused. A call the parent still wants made after a refusal goes in with
+-"lym loom decision add <slug> --by parent".
++"lym loom decision add <slug> --by parent"; once the task's scope is closed, as
++from Code-Review on, it is filed as a board note for a new task instead.
+ 
+ The callers are the run's parent orch, resolved at call time, the orch strand
+ the ask went to, and the operator's own unnamed shell; the strand name is not
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+index e5b7416e7..9eba1552a 100644
+--- a/internal/loomcli/parentreview_test.go
++++ b/internal/loomcli/parentreview_test.go
+@@ -53,7 +53,7 @@ func openParentAsk(d time.Duration) burlerengine.ParentAsk {
+ func TestParentReviewAnswerVerb(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	const decisionWay = `"lym loom decision add task-a --by parent", run by the run's parent orch ly:orch`
++	const decisionWay = `"lym loom decision add task-a --by parent", run by the run's parent orch ly:orch; once the task's scope is closed, as from Code-Review on, file it instead as a board note`
+ 	tests := []struct {
+ 		name string
+ 		asks []burlerengine.ParentAsk
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 489622fe3..213539ab0 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -1636,7 +1636,7 @@ const loomMissingStatusWayForward = "way forward: run \"lym loom start\" first t
+ 
+ // loomRerouteCapWayForward is the told clause a reroute-cap halt ends with, whichever row's reroute hit the cap.
+ // The halt is resumed once the cause its reason quotes is cleared.
+-const loomRerouteCapWayForward = "run \"lym loom resume\" in the task worktree once the cause the halt's reason quotes is cleared: for a Webster plan conflict, once the run's parent has recorded the fix with \"lym loom decision add\" and \"--amends-plan\", then run \"lym loom goto --to Plan-Burler-Review\""
++const loomRerouteCapWayForward = "run \"lym loom resume\" in the task worktree once the cause the halt's reason quotes is cleared: for a Webster plan conflict, once the run's parent has recorded the fix with \"lym loom decision add\" and \"--amends-plan\", then run \"lym loom goto --to Plan-Burler-Review\"; once the task's scope is closed no amendment enters the record and the settled plan takes no goto back to Plan-Burler-Review, so the parent files the fix as a board note for a new task with \"lym board upsert\" and kind note, then runs \"lym loom goto --to Plan-Write\" (\"--to Parts-Plan-Write\" for a split plan) before the resume, which writes the plan again from the record as it stands"
+ 
+ // loomBudgetWayForward is the told clause a bounce-budget-exhausted halt ends with, whichever row's budget ran out.
+ // Only the resume grants a budget; a goto keeps the spent one.
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 23cbefa5d..58c2b3ae9 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -1359,7 +1359,7 @@ func TestLoomRerouteCapWayForward_IsRowNeutral(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	for _, want := range []string{`lym loom resume`, "--amends-plan", "lym loom goto --to Plan-Burler-Review"} {
++	for _, want := range []string{`lym loom resume`, "--amends-plan", "lym loom goto --to Plan-Burler-Review", "kind note", "lym loom goto --to Plan-Write"} {
+ 		if !strings.Contains(loomRerouteCapWayForward, want) {
+ 			t.Errorf("loomRerouteCapWayForward = %q; want it to contain %q", loomRerouteCapWayForward, want)
+ 		}
+diff --git a/internal/loomrecipe/decisionswitches_test.go b/internal/loomrecipe/decisionswitches_test.go
+index 7166e0a4b..3200bc2bb 100644
+--- a/internal/loomrecipe/decisionswitches_test.go
++++ b/internal/loomrecipe/decisionswitches_test.go
+@@ -7,6 +7,7 @@
+ // The Bouncer sends a round's decision-class findings to the run's parent,
+ // and the fix row of the same segment keeps them out of the fixer and posts nothing.
+ // blocking_escalates sends a spent budget with an open BLOCKING finding to the parent instead of an accept.
++// scope_closed sits on a Bouncer row whose segment runs after the task's scope closed.
+ // It parses the real embedded recipes and reads no worktree, staying offline.
+ 
+ package loomrecipe
+@@ -23,22 +24,24 @@ import (
+ // TestDecisionSwitches_SetOnTheRowsThatAskTheParent asserts which rows carry each switch.
+ // The decision switches sit on the Discussion-Review, Code-Review, split and Harden-Review perches,
+ // so the Plan-Review rows keep the fix row's own parent notice.
+-// blocking_escalates sits on every Code-Bouncer row.
++// blocking_escalates sits on every Code-Bouncer row, and so does scope_closed.
+ //
+-//testtiming:keep pins which shipped recipe rows set escalate_decisions, decisions_escalated and blocking_escalates
++//testtiming:keep pins which shipped recipe rows set escalate_decisions, decisions_escalated, blocking_escalates and scope_closed
+ func TestDecisionSwitches_SetOnTheRowsThatAskTheParent(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	tests := []struct {
+ 		recipe                                    string
+ 		wantEscalate, wantEscalated, wantBlocking []string
++		wantScopeClosed                           []string
+ 	}{
+ 		{recipe: shedrun.RecipeTapestry,
+-			wantEscalate:  []string{"Code-Bouncer", "Discussion-Bouncer"},
+-			wantEscalated: []string{"Code-Burler-Fix", "Discussion-Burler-Fix"},
+-			wantBlocking:  []string{"Code-Bouncer"}},
+-		{recipe: shedrun.RecipeDarn, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}},
+-		{recipe: shedrun.RecipeSampler, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}},
++			wantEscalate:    []string{"Code-Bouncer", "Discussion-Bouncer"},
++			wantEscalated:   []string{"Code-Burler-Fix", "Discussion-Burler-Fix"},
++			wantBlocking:    []string{"Code-Bouncer"},
++			wantScopeClosed: []string{"Code-Bouncer"}},
++		{recipe: shedrun.RecipeDarn, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}, wantScopeClosed: []string{"Code-Bouncer"}},
++		{recipe: shedrun.RecipeSampler, wantEscalate: []string{"Code-Bouncer"}, wantEscalated: []string{"Code-Burler-Fix"}, wantBlocking: []string{"Code-Bouncer"}, wantScopeClosed: []string{"Code-Bouncer"}},
+ 		{recipe: shedrun.RecipeArras,
+ 			wantEscalate:  []string{"Discussion-Bouncer", "Raddle-Bouncer"},
+ 			wantEscalated: []string{"Discussion-Burler-Fix", "Raddle-Burler-Fix"}},
+@@ -51,8 +54,11 @@ func TestDecisionSwitches_SetOnTheRowsThatAskTheParent(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("parseEmbeddedRecipe(%s) error = %v; want nil", tt.recipe, err)
+ 			}
+-			var gotEscalate, gotEscalated, gotBlocking []string
++			var gotEscalate, gotEscalated, gotBlocking, gotScopeClosed []string
+ 			for _, row := range recipe.Producers {
++				if set, _ := row.Config["scope_closed"].(bool); set {
++					gotScopeClosed = append(gotScopeClosed, row.Name)
++				}
+ 				if set, _ := row.Config["escalate_decisions"].(bool); set {
+ 					gotEscalate = append(gotEscalate, row.Name)
+ 				}
+@@ -75,6 +81,10 @@ func TestDecisionSwitches_SetOnTheRowsThatAskTheParent(t *testing.T) {
+ 			if !reflect.DeepEqual(gotBlocking, tt.wantBlocking) {
+ 				t.Errorf("rows with blocking_escalates = %v; want %v", gotBlocking, tt.wantBlocking)
+ 			}
++			sort.Strings(gotScopeClosed)
++			if !reflect.DeepEqual(gotScopeClosed, tt.wantScopeClosed) {
++				t.Errorf("rows with scope_closed = %v; want %v", gotScopeClosed, tt.wantScopeClosed)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/loomrecipe/doc.go b/internal/loomrecipe/doc.go
+index eea553c78..6f307f41e 100644
+--- a/internal/loomrecipe/doc.go
++++ b/internal/loomrecipe/doc.go
+@@ -26,6 +26,10 @@
+ // PastDiscussionApproval answers whether a run standing at a row is past that approval.
+ // Both read the expanded rows and never the recipe's name.
+ //
++// InClosedScope answers whether a run at a row stands where its task's scope is closed:
++// from the recipe's first Code-Review row, or after that segment has run, until its Finalize row.
++// CodeReviewRunSubdir answers the run directory of the recipe's Code-Review perch.
++//
+ // HoldsSplitPerch and RowsHoldSplitPerch answer whether rows hold a split perch, a Bouncer row over the raddle proposal.
+ // CodePerchGate answers the entry gate of a recipe's Code-Review Bouncer row, nil when the perch carries none;
+ // a reader of whether the perch is off follows that gate as well as the budget.
+diff --git a/internal/loomrecipe/scopeline.go b/internal/loomrecipe/scopeline.go
+new file mode 100644
+index 000000000..700e53ec5
+--- /dev/null
++++ b/internal/loomrecipe/scopeline.go
+@@ -0,0 +1,61 @@
++// scopeline.go — where a recipe closes a task's scope: the span from its first Code-Review row to its Finalize row.
++//
++// The answer is read from the recipe's own rows, never from its name.
++
++package loomrecipe
++
++import "github.com/Knatte18/loomyard/internal/shedrecipe"
++
++// InClosedScope reports whether a run of the named recipe at currentRow stands where its task's scope is closed.
++// The scope closes when the run reaches the first row of the recipe's Code-Review segment.
++// The last Code-Review round is the last step that can change the code against the record.
++// A row at or past the recipe's Finalize row is outside the closed span.
++// Finalize's merge and test fixes are no change of scope.
++// reviewRan reports whether the run's Code-Review segment has already run;
++// a run sent back before the segment afterwards is then still inside the closed span.
++// It answers false for a recipe with no Code-Review segment.
++// Unless reviewRan is set, it also answers false for an empty currentRow or one the recipe does not hold.
++// An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
++func InClosedScope(recipe, currentRow string, reviewRan bool) (bool, error) {
++	parsed, err := parseEmbeddedRecipe(recipe)
++	if err != nil {
++		return false, err
++	}
++	firstReviewIndex, finalizeIndex, currentIndex := -1, -1, -1
++	for i, row := range parsed.Producers {
++		if row.Segment == codeReviewSegment && firstReviewIndex < 0 {
++			firstReviewIndex = i
++		}
++		if row.Engine == shedrecipe.LoomFinalizeEngine && finalizeIndex < 0 {
++			finalizeIndex = i
++		}
++		if currentRow != "" && row.Name == currentRow {
++			currentIndex = i
++		}
++	}
++	if firstReviewIndex < 0 {
++		return false, nil
++	}
++	if finalizeIndex >= 0 && currentIndex >= finalizeIndex {
++		return false, nil
++	}
++	return reviewRan || currentIndex >= firstReviewIndex, nil
++}
++
++// CodeReviewRunSubdir returns the `run_subdir` of the named recipe's Code-Review Bouncer row.
++// The bool is false for a recipe with no such row or one whose row names no run_subdir.
++// An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
++func CodeReviewRunSubdir(recipe string) (string, bool, error) {
++	parsed, err := parseEmbeddedRecipe(recipe)
++	if err != nil {
++		return "", false, err
++	}
++	for _, row := range parsed.Producers {
++		if row.Engine != bouncerEngine || row.Segment != codeReviewSegment {
++			continue
++		}
++		subdir, ok := row.Config["run_subdir"].(string)
++		return subdir, ok && subdir != "", nil
++	}
++	return "", false, nil
++}
+diff --git a/internal/loomrecipe/scopeline_test.go b/internal/loomrecipe/scopeline_test.go
+new file mode 100644
+index 000000000..b07a90385
+--- /dev/null
++++ b/internal/loomrecipe/scopeline_test.go
+@@ -0,0 +1,76 @@
++// scopeline_test.go — tests for the span of a recipe's rows where a task's scope is closed.
++
++package loomrecipe
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestInClosedScope pins which rows of each recipe close a task's scope, with and without a Code-Review segment that ran.
++func TestInClosedScope(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name      string
++		recipe    string
++		row       string
++		reviewRan bool
++		want      bool
++	}{
++		{"DarnWriterBeforeTheLine", shedrun.RecipeDarn, "Darn-Write", false, false},
++		{"DarnDriftVerifyBeforeTheLine", shedrun.RecipeDarn, "Drift-Verify", false, false},
++		{"DarnFirstCodeReviewRow", shedrun.RecipeDarn, "Code-Bouncer", false, true},
++		{"DarnInsideTheSegment", shedrun.RecipeDarn, "Code-Burler-Fix", false, true},
++		{"DarnDriftRecheck", shedrun.RecipeDarn, "Drift-Recheck", false, true},
++		{"DarnPRReview", shedrun.RecipeDarn, "PR-Review", false, true},
++		{"DarnFinalizeIsOutside", shedrun.RecipeDarn, "Finalize", true, false},
++		{"DarnPastFinalize", shedrun.RecipeDarn, "Friction-Reflect", false, false},
++		{"DarnWriterAfterAStartedRound", shedrun.RecipeDarn, "Darn-Write", true, true},
++		{"TapestryWebsterBeforeTheLine", shedrun.RecipeTapestry, "Webster", false, false},
++		{"TapestryPlanReviewIsNoCodeReview", shedrun.RecipeTapestry, "Plan-Bouncer", false, false},
++		{"TapestryDescribe", shedrun.RecipeTapestry, "Describe", false, true},
++		{"NoStatusFile", shedrun.RecipeDarn, "", false, false},
++		{"RowTheRecipeLacks", shedrun.RecipeDarn, "No-Such-Row", false, false},
++		{"ArrasHasNoCodeReview", shedrun.RecipeArras, "Raddle-Bouncer", true, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := InClosedScope(tt.recipe, tt.row, tt.reviewRan)
++			if err != nil || got != tt.want {
++				t.Errorf("InClosedScope(%q, %q, %v) = %v, %v; want %v, nil", tt.recipe, tt.row, tt.reviewRan, got, err, tt.want)
++			}
++		})
++	}
++	if _, err := InClosedScope("no-such-recipe", "Code-Bouncer", false); err == nil {
++		t.Error("InClosedScope(unknown recipe) error = nil; want a refusal")
++	}
++}
++
++// TestCodeReviewRunSubdir pins the run directory of each recipe's Code-Review perch, and none for a recipe without one.
++func TestCodeReviewRunSubdir(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name    string
++		recipe  string
++		want    string
++		wantRow bool
++	}{
++		{"Darn", shedrun.RecipeDarn, "code", true},
++		{"Tapestry", shedrun.RecipeTapestry, "code", true},
++		{"Arras", shedrun.RecipeArras, "", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, hasRow, err := CodeReviewRunSubdir(tt.recipe)
++			if err != nil || got != tt.want || hasRow != tt.wantRow {
++				t.Errorf("CodeReviewRunSubdir(%q) = %q, %v, %v; want %q, %v, nil", tt.recipe, got, hasRow, err, tt.want, tt.wantRow)
++			}
++		})
++	}
++}
+diff --git a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+index 8cf5852ff..79726138b 100644
+--- a/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
++++ b/internal/loomrecipe/testdata/tapestry-rows-before-motif.yaml
+@@ -503,6 +503,8 @@ producers:
+       # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
+       # given none and posts no notice of its own.
+       escalate_decisions: true
++      # scope_closed says the segment runs after the task's scope closed at its first round.
++      scope_closed: true
+       # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+       # which accepts it or orders another round, instead of to the auto-accept.
+       blocking_escalates: true
+diff --git a/internal/loomshed/darnwrite.go b/internal/loomshed/darnwrite.go
+index 7c115020a..cf6060b49 100644
+--- a/internal/loomshed/darnwrite.go
++++ b/internal/loomshed/darnwrite.go
+@@ -29,7 +29,7 @@ const darnRecordGotoWayForward = "way forward: run \"lym loom goto --to Record-W
+ const darnRecordRestoreWayForward = "way forward: restore the decision record from the committed copy under _lym with \"git -C _lym checkout HEAD -- discussion/decision-record.md\", then run \"lym loom resume\""
+ 
+ // darnStopWayForward follows the stop report in the Reason of a Darn-Write session whose writer stopped and wrote the stop marker.
+-const darnStopWayForward = "way forward: record the answer with \"lym loom decision add\", then run \"lym loom resume\""
++const darnStopWayForward = "way forward: record the answer with \"lym loom decision add\", then run \"lym loom resume\"; once the task's scope is closed, file the call instead as a board note for a new task with \"lym board upsert\" and kind note, titled \"Decision for <slug>: <call>\" and saying the scope is closed, then run \"lym loom resume\""
+ 
+ // darnStopReportMissing stands in for the stop report when the writer wrote the stop marker and no report.
+ const darnStopReportMissing = "the writer stopped and wrote no stop report"
+diff --git a/internal/loomshed/darnwrite_test.go b/internal/loomshed/darnwrite_test.go
+index abd9a836e..5947f63b2 100644
+--- a/internal/loomshed/darnwrite_test.go
++++ b/internal/loomshed/darnwrite_test.go
+@@ -260,7 +260,7 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			session:       true,
+ 			wantResult:    shedengine.Stuck,
+ 			wantReason:    darnStopReport,
+-			wantReasonHas: []string{"lym loom decision add", "lym loom resume"},
++			wantReasonHas: []string{"lym loom decision add", "lym loom resume", "lym board upsert", "kind note"},
+ 			wantEvents:    "session,commit",
+ 		},
+ 		{
+diff --git a/internal/loomshed/patternplan.go b/internal/loomshed/patternplan.go
+index 4898ef13b..c91b11b2d 100644
+--- a/internal/loomshed/patternplan.go
++++ b/internal/loomshed/patternplan.go
+@@ -25,7 +25,7 @@ const patternHeadroomCheck = "pattern-headroom"
+ const patternCardHeadroomCheck = "pattern-card-headroom"
+ 
+ // patternHeadroomWayForward is the fix both headroom findings name.
+-const patternHeadroomWayForward = "shorten the prescribed lines or move detail into the entries' background files, and when that is not enough ask the parent to record a `changes` decision that shortens other entries with `lym loom decision add --pattern-entry ... --pattern-action changes --pattern-text ...` and prescribe those lines on a card; once the plan is approved, the parent passes `--amends-plan` as well"
++const patternHeadroomWayForward = "shorten the prescribed lines or move detail into the entries' background files, and when that is not enough ask the parent to record a `changes` decision that shortens other entries with `lym loom decision add --pattern-entry ... --pattern-action changes --pattern-text ...` and prescribe those lines on a card; once the plan is approved, the parent passes `--amends-plan` as well; once the task's scope is closed no decision enters the record, so only the shortening is left"
+ 
+ // patternRemovesPrescribedCheck names the finding reported when a card fences a line for an entry the plan removes.
+ const patternRemovesPrescribedCheck = "pattern-removes-prescribed"
+diff --git a/internal/loomshed/redfirstgate.go b/internal/loomshed/redfirstgate.go
+index 68afa8e32..5e916b524 100644
+--- a/internal/loomshed/redfirstgate.go
++++ b/internal/loomshed/redfirstgate.go
+@@ -188,11 +188,9 @@ func (g *redFirstGate) exempt() (bool, error) {
+ 		return false, fmt.Errorf("loomshed: red-first gate: parse the decision record's added entries: %w", err)
+ 	}
+ 	for _, entry := range added {
+-		for _, title := range []string{gateslot.NoTestSeamTitle, gateslot.NoBugFixedTitle} {
+-			if strings.HasPrefix(strings.ToLower(entry.Title), strings.ToLower(title)) {
+-				logger.Info("loomshed: red-first gate ran nothing, the decision record lifts the check", "gate", g.siteLabel, "attempt", g.attempt, "title", entry.Title)
+-				return true, nil
+-			}
++		if gateslot.LiftsRedFirst(entry.Title) {
++			logger.Info("loomshed: red-first gate ran nothing, the decision record lifts the check", "gate", g.siteLabel, "attempt", g.attempt, "title", entry.Title)
++			return true, nil
+ 		}
+ 	}
+ 	return false, nil
+diff --git a/internal/shedadapters/archive.go b/internal/shedadapters/archive.go
+index b9a454bef..27c5eeee7 100644
+--- a/internal/shedadapters/archive.go
++++ b/internal/shedadapters/archive.go
+@@ -6,7 +6,9 @@
+ package shedadapters
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"regexp"
+@@ -102,6 +104,42 @@ func ArchivedRunDirSegment(dirName string) (string, bool) {
+ 	return match[1], true
+ }
+ 
++// SegmentRan reports whether the review segment whose run directory is reviewsDir/segment has run.
++// A round review, a generation record or a settle record in that directory shows that it has.
++// So does an archived sibling of the directory.
++// An absent directory is no run, and any other read failure is an error.
++func SegmentRan(reviewsDir, segment string) (bool, error) {
++	entries, err := os.ReadDir(reviewsDir)
++	if errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	if err != nil {
++		return false, fmt.Errorf("shedadapters: read reviews dir %s: %w", reviewsDir, err)
++	}
++	for _, entry := range entries {
++		if archived, ok := ArchivedRunDirSegment(entry.Name()); ok && archived == segment && entry.IsDir() {
++			return true, nil
++		}
++	}
++
++	runDir := filepath.Join(reviewsDir, segment)
++	if _, err := os.Stat(runDir); errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	} else if err != nil {
++		return false, fmt.Errorf("shedadapters: stat run dir %s: %w", runDir, err)
++	}
++	for _, name := range []string{generationRecordFile, settleRecordFile} {
++		path := filepath.Join(runDir, name)
++		if _, err := os.Stat(path); err == nil {
++			return true, nil
++		} else if !errors.Is(err, fs.ErrNotExist) {
++			return false, fmt.Errorf("shedadapters: stat %s: %w", path, err)
++		}
++	}
++	round, err := LatestRound(runDir)
++	return round > 0, err
++}
++
+ // firstFreeArchivePath returns the first path that candidate builds and that does not exist.
+ // It tries the suffixes "", "-1", "-2", and so on, in that order.
+ // Any os.Stat error other than not-exist is returned as-is.
+diff --git a/internal/shedadapters/bouncer.go b/internal/shedadapters/bouncer.go
+index 7391f280f..6862420ef 100644
+--- a/internal/shedadapters/bouncer.go
++++ b/internal/shedadapters/bouncer.go
+@@ -182,6 +182,10 @@ type BouncerConfig struct {
+ 	// The arbiter settles it where the board entry and the decision record answer it; otherwise the run's parent does.
+ 	// A parent's recorded accept passes over those findings and carries them forward; a continue runs another round.
+ 	EscalateDecisions bool
++	// ScopeClosed marks a segment that runs after the task's scope closed, where no decision enters the record.
++	// Its decision escalation names two routes in place of recording each answer as a decision:
++	// ruling a finding in scope through the continue verb's --in-scope, and filing every other call as a board note.
++	ScopeClosed bool
+ 	// CirclingCheckpoint is the first round a CIRCLING verdict is legal in.
+ 	// The judge prompt offers CIRCLING only from this round on,
+ 	// and an earlier CIRCLING is read as CONTINUE.
+@@ -1758,14 +1762,20 @@ func (b *Bouncer) renderEscalation(round int, cause EscalationCause, detail stri
+ }
+ 
+ // noticeWayForward returns the clause of the parent notice that names how to settle round's escalation of cause.
+-// A cause decision opens with recording each answer through `lym loom decision add`.
++// For cause decision on an open scope, it opens with recording each answer through `lym loom decision add`.
++// On a segment whose scope is closed, it opens with ruling findings in scope and filing other calls as board notes.
+ // Every cause then names the accept and continue verbs, and at or past the hard cap the accept verb alone.
+ func (b *Bouncer) noticeWayForward(round int, cause EscalationCause) string {
+ 	decide := fmt.Sprintf(`"lym loom circling accept %s" or "lym loom circling continue %s"`, b.cfg.Slug, b.cfg.Slug)
+ 	if b.atHardCap(round) {
+ 		decide = fmt.Sprintf(`"lym loom circling accept %s"`, b.cfg.Slug)
+ 	}
+-	if cause == EscalationDecision {
++	switch {
++	case cause == EscalationDecision && b.cfg.ScopeClosed && !b.atHardCap(round):
++		return fmt.Sprintf(`Way forward: the task's scope is closed, so no decision enters the record: rule each finding the record already asks for in scope with "lym loom circling continue %s --in-scope <finding-id>", which hands it to the next round's fixer, file every other call as a board note for a new task, and decide with %s.`, b.cfg.Slug, decide)
++	case cause == EscalationDecision && b.cfg.ScopeClosed:
++		return fmt.Sprintf(`Way forward: the task's scope is closed, so no decision enters the record: file each call as a board note for a new task, then decide with %s.`, decide)
++	case cause == EscalationDecision:
+ 		return fmt.Sprintf(`Way forward: record each answer with "lym loom decision add %s --by parent", one entry per answered finding, then decide with %s.`, b.cfg.Slug, decide)
+ 	}
+ 	return fmt.Sprintf("Way forward: decide with %s.", decide)
+@@ -1777,6 +1787,7 @@ func (b *Bouncer) noticeWayForward(round int, cause EscalationCause) string {
+ // The circling verbs take the slug, while the resume command addresses the cwd worktree's own run.
+ // At or past the hard cap, whatever the cause, the decide clause names accept alone.
+ // For cause decision the decide clause opens with recording the answer through `lym loom decision add`.
++// On a segment whose scope is closed, it opens with filing each call the record does not ask for as a board note.
+ func (b *Bouncer) escalationReason(round int, cause EscalationCause, briefPath string) string {
+ 	verbSuffix := ""
+ 	if b.cfg.Slug != "" {
+@@ -1787,7 +1798,10 @@ func (b *Bouncer) escalationReason(round int, cause EscalationCause, briefPath s
+ 		reason += fmt.Sprintf("; brief at %s", briefPath)
+ 	}
+ 	recordAnswer := ""
+-	if cause == EscalationDecision {
++	switch {
++	case cause == EscalationDecision && b.cfg.ScopeClosed:
++		recordAnswer = "file each call the record does not ask for as a board note for a new task, since the task's scope is closed, then "
++	case cause == EscalationDecision:
+ 		recordAnswer = fmt.Sprintf("record the answer with `lym loom decision add%s`, then ", verbSuffix)
+ 	}
+ 	if b.atHardCap(round) {
+diff --git a/internal/shedadapters/bouncer_decision_test.go b/internal/shedadapters/bouncer_decision_test.go
+index ff2466ca4..f10c8b60c 100644
+--- a/internal/shedadapters/bouncer_decision_test.go
++++ b/internal/shedadapters/bouncer_decision_test.go
+@@ -285,6 +285,31 @@ func TestBouncer_DecisionEscalation(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("AClosedScopeNamesTheInScopeRulingAndABoardNoteInPlaceOfADecisionEntry", func(t *testing.T) {
++		t.Parallel()
++		b, cfg, _ := decisionBouncerFor(t, "CONTINUE", decisionReviewContent(lowDecision), bouncerLedgerContent(2), func(c *BouncerConfig) { c.ScopeClosed = true })
++
++		ptr := shedfake.RequireOutcome(t, b, shedengine.Awaiting)
++		requireReasonContains(t, ptr.Reason, "cause: decision", "board note for a new task", "lym loom circling continue my-task")
++		if strings.Contains(ptr.Reason, "lym loom decision add") {
++			t.Errorf("Reason = %q; want no decision entry named", ptr.Reason)
++		}
++		for _, want := range []string{"the task's scope is closed", `"lym loom circling continue my-task --in-scope <finding-id>"`, "board note"} {
++			if !strings.Contains(ptr.ParentNotice, want) {
++				t.Errorf("ParentNotice = %q; want it to contain %q", ptr.ParentNotice, want)
++			}
++		}
++		brief := requireDecisionEscalation(t, cfg)
++		for _, want := range []string{"D1", "`lym loom decision add` refuses", "lym loom circling continue my-task --in-scope <finding-id>", "`lym board upsert` and kind note"} {
++			if !strings.Contains(brief, want) {
++				t.Errorf("escalation brief = %q; want it to contain %q", brief, want)
++			}
++		}
++		if strings.Contains(brief, "Record the answer with `lym loom decision add") {
++			t.Errorf("escalation brief = %q; want no decision entry as the answer's route", brief)
++		}
++	})
++
+ 	t.Run("AHeldFindingCarriedByTheReviewIsTheOnlyOneTheDetailNames", func(t *testing.T) {
+ 		t.Parallel()
+ 		review := "---\nverdict: APPROVED\nprior:\n  - id: H1\n    status: resolved\n    answer: settled by the added entry\n  - id: H2\n    status: open\n" +
+@@ -608,6 +633,27 @@ func TestBouncer_DecisionEscalation(t *testing.T) {
+ 				t.Errorf("escalation brief = %q; want the accept verb", brief)
+ 			}
+ 		})
++		t.Run("at the cap on a closed scope", func(t *testing.T) {
++			t.Parallel()
++			b, cfg, _ := decisionBouncerFor(t, "CONVERGED", decisionReviewContent(lowDecision), bouncerLedgerContent(2), func(c *BouncerConfig) {
++				c.HardCap = 2
++				c.ScopeClosed = true
++			})
++			ptr := shedfake.RequireOutcome(t, b, shedengine.Awaiting)
++			requireReasonContains(t, ptr.Reason, "board note for a new task", "lym loom circling accept my-task")
++			brief := requireDecisionEscalation(t, cfg)
++			for _, got := range []string{ptr.Reason, ptr.ParentNotice, brief} {
++				if strings.Contains(got, "--in-scope") || strings.Contains(got, "lym loom circling continue") {
++					t.Errorf("escalation text = %q; want the accept verb alone and no in-scope ruling", got)
++				}
++			}
++			if !strings.Contains(ptr.ParentNotice, "file each call as a board note") {
++				t.Errorf("ParentNotice = %q; want every call filed as a board note", ptr.ParentNotice)
++			}
++			if !strings.Contains(brief, "File every call as a board note") {
++				t.Errorf("escalation brief = %q; want every call filed as a board note", brief)
++			}
++		})
+ 		t.Run("a continue settled after the cap is lowered", func(t *testing.T) {
+ 			t.Parallel()
+ 			b, cfg, _ := decisionBouncerFor(t, "CONVERGED", decisionReviewContent(lowDecision), bouncerLedgerContent(2), nil)
+diff --git a/internal/shedadapters/bouncer_escalation_test.go b/internal/shedadapters/bouncer_escalation_test.go
+index 8e423f976..8e468b05c 100644
+--- a/internal/shedadapters/bouncer_escalation_test.go
++++ b/internal/shedadapters/bouncer_escalation_test.go
+@@ -837,7 +837,7 @@ func runSoftCapRuleRow(t *testing.T, row softCapRuleRow, path softCapPath) {
+ 		}
+ 	}
+ 	if row.prevDecision {
+-		if err := createCirclingDecision(cfg.RunDir, 1, CirclingContinue, EscalationBudget, true); err != nil {
++		if err := createCirclingDecision(cfg.RunDir, 1, CirclingContinue, EscalationBudget, true, nil); err != nil {
+ 			t.Fatalf("createCirclingDecision(round 1) = %v; want nil", err)
+ 		}
+ 	}
+diff --git a/internal/shedadapters/bouncerdecision.go b/internal/shedadapters/bouncerdecision.go
+index ea0947156..085013604 100644
+--- a/internal/shedadapters/bouncerdecision.go
++++ b/internal/shedadapters/bouncerdecision.go
+@@ -255,7 +255,8 @@ func (b *Bouncer) decisionRefusal(round int, verdict bouncerVerdict, ledger ledg
+ 
+ // renderDecisionDetail renders the decision fragment for round.
+ // It holds the round's decision-class findings and every BLOCKING finding of its review.
+-// It also holds the refusal and the verbs that record the answer.
++// It also holds the refusal, the route the answer takes and the verbs that record the outcome.
++// On a closed-scope segment the route rules findings in scope or files them as board notes, never a decision entry.
+ // held reports whether the refusal already retired an accept at the budget;
+ // if so, the fragment says that an accept escalates the round again while the refusal holds.
+ // A refusal over a dropped ledger key also makes the fragment say that a continue meets the same check.
+@@ -296,6 +297,7 @@ func (b *Bouncer) renderDecisionDetail(round int, refusal string, held bool) (st
+ 		"decision_findings": strings.Join(decisionLines, "\n"),
+ 		"blocking_findings": blocking,
+ 		"refusal":           refusalText,
++		"answer_route":      b.answerRoute(round),
+ 		"decide_verbs":      b.decideVerbs(round),
+ 	})
+ 	if err != nil {
+@@ -318,8 +320,27 @@ func oneLine(text string) string {
+ 	return strings.Join(strings.Fields(text), " ")
+ }
+ 
++// answerRoute renders how the parent's answer to the decision findings is recorded before the outcome.
++// An open scope records each answer as a decision entry.
++// A closed scope rules a finding the record already asks for in scope and files every other call as a board note.
++// At or past the hard cap no further round exists to take a ruling, so a closed scope files every call as a note.
++func (b *Bouncer) answerRoute(round int) string {
++	if !b.cfg.ScopeClosed {
++		return fmt.Sprintf("Record the answer with `lym loom decision add %s`, then record the segment's outcome with exactly one of:", b.cfg.Slug)
++	}
++	calls := "Rule each finding the decision record already asks for in scope by passing its id to `--in-scope` on the continue verb below; the next round's fixer then takes it.\n" +
++		"File every other call"
++	if b.atHardCap(round) {
++		calls = "File every call"
++	}
++	return "The task's scope closed before this segment, so no decision enters the record, and `lym loom decision add` refuses.\n" +
++		calls + " as a board note for a new task with `lym board upsert` and kind note.\n" +
++		"Then record the segment's outcome with exactly one of:"
++}
++
+ // decideVerbs renders the verb lines that record the segment's outcome for round.
+ // Below the hard cap it offers continue and accept; at or past it, only accept.
++// On a segment whose scope is closed the continue line names its --in-scope flag.
+ func (b *Bouncer) decideVerbs(round int) string {
+ 	verbSuffix := ""
+ 	if b.cfg.Slug != "" {
+@@ -329,6 +350,9 @@ func (b *Bouncer) decideVerbs(round int) string {
+ 	if b.atHardCap(round) {
+ 		return accept
+ 	}
++	if b.cfg.ScopeClosed {
++		return fmt.Sprintf("- `lym loom circling continue%s --in-scope <finding-id>`, the flag repeated per finding, for a round whose fixer takes the findings ruled in scope\n%s", verbSuffix, accept)
++	}
+ 	return fmt.Sprintf("- `lym loom circling continue%s` for a round over the amended record\n%s", verbSuffix, accept)
+ }
+ 
+diff --git a/internal/shedadapters/circling.go b/internal/shedadapters/circling.go
+index e22144f17..561ee21d3 100644
+--- a/internal/shedadapters/circling.go
++++ b/internal/shedadapters/circling.go
+@@ -3,17 +3,23 @@
+ // The writer checks the mechanical precondition: the latest round is escalated,
+ // and no decision exists for it yet.
+ // The run-state check, that the run is awaiting at a Bouncer row, belongs to the verbs.
++// A continue may rule decision-class findings in scope, which the next round's fixer takes.
+ 
+ package shedadapters
+ 
+ import (
++	"cmp"
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
++	"strings"
+ 
+ 	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/burlerengine"
+ )
+ 
+ // CirclingDecision is the operator's answer to an escalated round.
+@@ -30,18 +36,24 @@ var (
+ 	ErrNotEscalated = errors.New("shedadapters: the latest round is not escalated")
+ 	// ErrCirclingDecided reports that a decision is already recorded for the escalated round.
+ 	ErrCirclingDecided = errors.New("shedadapters: a circling decision is already recorded for this round")
++	// ErrInScopeCause reports an in-scope ruling on a round whose escalation cause is not decision.
++	ErrInScopeCause = errors.New("shedadapters: an in-scope ruling answers only a decision escalation")
++	// ErrInScopeFinding reports an in-scope ruling naming an id that is no decision-class finding of the round's review.
++	ErrInScopeFinding = errors.New("shedadapters: an in-scope ruling names no decision-class finding of the round's review")
+ )
+ 
+ // circlingDecisionHeader mirrors a circling decision file's YAML frontmatter.
+ // Automatic is true for a decision the Bouncer recorded itself:
+ // an auto-accept, or the soft-cap rule's accept or continue.
+ // A parent's decision never sets it.
++// InScope lists the decision-class findings a continue rules in scope, which the next round's fixer takes.
+ type circlingDecisionHeader struct {
+-	Round     int    `yaml:"round"`
+-	Decision  string `yaml:"decision"`
+-	Cause     string `yaml:"cause"`
+-	Settled   bool   `yaml:"settled"`
+-	Automatic bool   `yaml:"automatic"`
++	Round     int      `yaml:"round"`
++	Decision  string   `yaml:"decision"`
++	Cause     string   `yaml:"cause"`
++	Settled   bool     `yaml:"settled"`
++	Automatic bool     `yaml:"automatic"`
++	InScope   []string `yaml:"in_scope,omitempty"`
+ }
+ 
+ // LatestRound returns the run directory's latest round, 0 when it holds none.
+@@ -74,27 +86,104 @@ func RecordCirclingDecision(runDir string, d CirclingDecision) (int, EscalationC
+ 		return 0, "", ErrNotEscalated
+ 	}
+ 
+-	if err := createCirclingDecision(runDir, round, d, cause, false); err != nil {
++	if err := createCirclingDecision(runDir, round, d, cause, false, nil); err != nil {
+ 		return 0, "", err
+ 	}
+ 	return round, cause, nil
+ }
+ 
++// RecordInScopeContinue records a pending continue for the run directory's latest round that rules ids in scope.
++// Each id is a decision-class finding of that round's review the task's record already asks for,
++// so the next round carries it as fixer work instead of a question for the parent.
++// On success it returns that round.
++// It returns ErrNotEscalated unless that round carries an escalation record.
++// It returns ErrInScopeCause unless that record's cause is decision.
++// It returns ErrInScopeFinding, naming the ids, when an id is no decision-class finding of the round's review.
++// It returns ErrCirclingDecided when a decision file for the round already exists, leaving it untouched.
++func RecordInScopeContinue(runDir string, ids []string) (int, error) {
++	round, err := LatestRound(runDir)
++	if err != nil {
++		return 0, err
++	}
++	if round == 0 {
++		return 0, ErrNotEscalated
++	}
++	cause, _, escalated, err := readEscalation(runDir, round)
++	if err != nil {
++		return 0, err
++	}
++	if !escalated {
++		return 0, ErrNotEscalated
++	}
++	if cause != EscalationDecision {
++		return 0, fmt.Errorf("%w: round %d's escalation cause is %s", ErrInScopeCause, round, cause)
++	}
++	raw, err := os.ReadFile(roundReviewPath(runDir, round))
++	if err != nil {
++		return 0, fmt.Errorf("shedadapters: read round %d's review: %w", round, err)
++	}
++	_, findings, err := burlerengine.ParseReview(raw)
++	if err != nil {
++		return 0, fmt.Errorf("shedadapters: parse round %d's review: %w", round, err)
++	}
++	var decisions, unknown []string
++	for _, finding := range findings {
++		if finding.Class == burlerengine.ClassDecision {
++			decisions = append(decisions, finding.ID)
++		}
++	}
++	for _, id := range ids {
++		if !slices.Contains(decisions, id) {
++			unknown = append(unknown, id)
++		}
++	}
++	if len(unknown) > 0 {
++		return 0, fmt.Errorf("%w: %s, while round %d's decision-class findings are %s", ErrInScopeFinding, strings.Join(unknown, ", "), round, cmp.Or(strings.Join(decisions, ", "), "none"))
++	}
++	if err := createCirclingDecision(runDir, round, CirclingContinue, cause, false, ids); err != nil {
++		return 0, err
++	}
++	return round, nil
++}
++
++// InScopeFindings returns the ids round's circling decision rules in scope, none when the round holds no such ruling.
++// A malformed decision file is an error.
++func InScopeFindings(runDir string, round int) ([]string, error) {
++	path := circlingDecisionPath(runDir, round)
++	raw, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return nil, nil
++	}
++	if err != nil {
++		return nil, fmt.Errorf("shedadapters: read circling decision %s: %w", path, err)
++	}
++	header, err := splitFrontmatter(raw, "circling decision")
++	if err != nil {
++		return nil, err
++	}
++	var parsed circlingDecisionHeader
++	if err := yaml.Unmarshal([]byte(header), &parsed); err != nil {
++		return nil, fmt.Errorf("shedadapters: circling decision %s frontmatter is not valid YAML: %w", path, err)
++	}
++	return parsed.InScope, nil
++}
++
+ // recordAutoAccept records round's circling decision as an automatic, not yet settled accept with cause budget.
+ // It serves the automatic accepts recorded at the soft cap.
+ // It returns ErrCirclingDecided when a decision file for the round already exists, leaving it untouched.
+ func recordAutoAccept(runDir string, round int) error {
+-	return createCirclingDecision(runDir, round, CirclingAccept, EscalationBudget, true)
++	return createCirclingDecision(runDir, round, CirclingAccept, EscalationBudget, true, nil)
+ }
+ 
+ // recordAutoContinue records round's circling decision as an automatic, not yet settled continue with cause budget.
+ // It returns ErrCirclingDecided when a decision file for the round already exists, leaving it untouched.
+ func recordAutoContinue(runDir string, round int) error {
+-	return createCirclingDecision(runDir, round, CirclingContinue, EscalationBudget, true)
++	return createCirclingDecision(runDir, round, CirclingContinue, EscalationBudget, true, nil)
+ }
+ 
+ // createCirclingDecision writes round's pending decision file, refusing with ErrCirclingDecided to overwrite one.
+-func createCirclingDecision(runDir string, round int, d CirclingDecision, cause EscalationCause, automatic bool) error {
++// inScope lists the findings a continue rules in scope, none for any other decision.
++func createCirclingDecision(runDir string, round int, d CirclingDecision, cause EscalationCause, automatic bool, inScope []string) error {
+ 	path := circlingDecisionPath(runDir, round)
+ 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+ 	if err != nil {
+@@ -103,7 +192,7 @@ func createCirclingDecision(runDir string, round int, d CirclingDecision, cause
+ 		}
+ 		return fmt.Errorf("shedadapters: create circling decision %s: %w", path, err)
+ 	}
+-	content, err := renderCirclingDecision(round, d, cause, false, automatic)
++	content, err := renderCirclingDecision(round, d, cause, false, automatic, inScope)
+ 	if err == nil {
+ 		_, err = f.Write(content)
+ 	}
+@@ -238,7 +327,7 @@ func settleCirclingAccept(runDir string, round int) error {
+ 	if decision != CirclingAccept {
+ 		return fmt.Errorf("shedadapters: round %d circling decision is %q; only an accept settles", round, decision)
+ 	}
+-	content, err := renderCirclingDecision(round, decision, cause, true, automatic)
++	content, err := renderCirclingDecision(round, decision, cause, true, automatic, nil)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -250,8 +339,8 @@ func settleCirclingAccept(runDir string, round int) error {
+ }
+ 
+ // renderCirclingDecision marshals a decision file's bytes: the YAML frontmatter alone.
+-func renderCirclingDecision(round int, d CirclingDecision, cause EscalationCause, settled, automatic bool) ([]byte, error) {
+-	headerBytes, err := yaml.Marshal(circlingDecisionHeader{Round: round, Decision: string(d), Cause: string(cause), Settled: settled, Automatic: automatic})
++func renderCirclingDecision(round int, d CirclingDecision, cause EscalationCause, settled, automatic bool, inScope []string) ([]byte, error) {
++	headerBytes, err := yaml.Marshal(circlingDecisionHeader{Round: round, Decision: string(d), Cause: string(cause), Settled: settled, Automatic: automatic, InScope: inScope})
+ 	if err != nil {
+ 		return nil, fmt.Errorf("bouncer: render circling decision frontmatter: %w", err)
+ 	}
+diff --git a/internal/shedadapters/circling_test.go b/internal/shedadapters/circling_test.go
+index 837ac18b0..c77eb472f 100644
+--- a/internal/shedadapters/circling_test.go
++++ b/internal/shedadapters/circling_test.go
+@@ -4,8 +4,10 @@ package shedadapters
+ 
+ import (
+ 	"bytes"
++	"cmp"
+ 	"errors"
+ 	"os"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 
+@@ -141,6 +143,94 @@ func recordCirclingDecisionOverEscalation(t *testing.T, runDir string, round int
+ 	}
+ }
+ 
++// TestRecordInScopeContinue pins the pending continue an in-scope ruling records, and its refusals, which write nothing.
++func TestRecordInScopeContinue(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	review := decisionReviewContent(reviewFixtureFinding{"D1", "LOW", "decision"}, reviewFixtureFinding{"F1", "BLOCKING", "design"})
++	tests := []struct {
++		name string
++		// cause is the round's escalation cause, empty for a round that is not escalated.
++		cause EscalationCause
++		ids   []string
++		// review replaces the round's review text, and noRound leaves the run directory without a review.
++		review  string
++		noRound bool
++		// decided puts a decision file in place before the ruling.
++		decided bool
++		wantErr error
++		// wantMsg is the text of a refusal that has no sentinel.
++		wantMsg string
++	}{
++		{name: "RulesADecisionFindingInScope", cause: EscalationDecision, ids: []string{"D1"}},
++		{name: "AnotherCauseIsRefused", cause: EscalationBudget, ids: []string{"D1"}, wantErr: ErrInScopeCause},
++		{name: "AFindingOfAnotherClassIsRefused", cause: EscalationDecision, ids: []string{"D1", "F1"}, wantErr: ErrInScopeFinding},
++		{name: "AnIdTheReviewLacksIsRefused", cause: EscalationDecision, ids: []string{"D9"}, wantErr: ErrInScopeFinding},
++		{name: "ARoundNotEscalatedIsRefused", ids: []string{"D1"}, wantErr: ErrNotEscalated},
++		{name: "ARunDirectoryWithNoRoundIsRefused", noRound: true, ids: []string{"D1"}, wantErr: ErrNotEscalated},
++		{name: "AnUnparseableReviewIsRefused", cause: EscalationDecision, review: "no frontmatter\n", ids: []string{"D1"}, wantMsg: "parse round 1's review"},
++		{name: "ASecondDecisionIsRefused", cause: EscalationDecision, decided: true, ids: []string{"D1"}, wantErr: ErrCirclingDecided},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			if !tt.noRound {
++				if err := os.WriteFile(roundReviewPath(dir, 1), []byte(cmp.Or(tt.review, review)), 0o644); err != nil {
++					t.Fatalf("WriteFile(review) = %v; want nil", err)
++				}
++			}
++			if tt.cause != "" {
++				if err := writeEscalation(dir, 1, tt.cause, "brief\n", "notice"); err != nil {
++					t.Fatalf("writeEscalation() = %v; want nil", err)
++				}
++			}
++			earlier := ""
++			if tt.decided {
++				earlier = "earlier decision\n"
++				if err := os.WriteFile(circlingDecisionPath(dir, 1), []byte(earlier), 0o644); err != nil {
++					t.Fatalf("WriteFile(decision) = %v; want nil", err)
++				}
++			}
++
++			round, err := RecordInScopeContinue(dir, tt.ids)
++			if tt.wantErr != nil || tt.wantMsg != "" {
++				if err == nil || (tt.wantErr != nil && !errors.Is(err, tt.wantErr)) || !strings.Contains(err.Error(), tt.wantMsg) {
++					t.Errorf("RecordInScopeContinue(%v) error = %v; want %v %q", tt.ids, err, tt.wantErr, tt.wantMsg)
++				}
++				got, readErr := os.ReadFile(circlingDecisionPath(dir, 1))
++				if string(got) != earlier || (readErr == nil) != tt.decided {
++					t.Errorf("decision file = %q, %v; want %q, present %v", got, readErr, earlier, tt.decided)
++				}
++				return
++			}
++			if err != nil || round != 1 {
++				t.Fatalf("RecordInScopeContinue(%v) = %d, %v; want 1, nil", tt.ids, round, err)
++			}
++			decision, cause, settled, exists, err := readCirclingDecision(dir, 1)
++			if err != nil || !exists || settled || decision != CirclingContinue || cause != EscalationDecision {
++				t.Errorf("decision file = %q, %q, settled %v, exists %v, %v; want a pending continue with cause decision", decision, cause, settled, exists, err)
++			}
++			if got, err := InScopeFindings(dir, 1); err != nil || !slices.Equal(got, []string{"D1"}) {
++				t.Errorf("InScopeFindings() = %v, %v; want [D1]", got, err)
++			}
++		})
++	}
++}
++
++func TestInScopeFindings_RefusesAMalformedDecisionFile(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dir := t.TempDir()
++	if err := os.WriteFile(circlingDecisionPath(dir, 1), []byte("no frontmatter\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile(decision) = %v; want nil", err)
++	}
++
++	if got, err := InScopeFindings(dir, 1); err == nil {
++		t.Errorf("InScopeFindings() = %v, nil; want an error", got)
++	}
++}
++
+ func TestRecordCirclingDecision_SecondRecordIsRefused(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	dir := t.TempDir()
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 10f1a97bf..232cfd5ad 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -180,6 +180,10 @@
+ // The escalation rules read only files in the run directory, so a harvest and a replay settle alike.
+ // A pass that settles a judged round calls the CarryOver seam, which only writes the segment's `## Open risks` entry:
+ // it approves nothing, and a failure is the settle's own error, so neither Approve nor Commit runs.
++// A continue recorded through RecordInScopeContinue names decision-class findings the parent ruled in scope;
++// BuildRoundContext marks them on the next round's prior findings, so that round's fixer takes them.
++// BouncerConfig.ScopeClosed marks a segment after the task's scope closed.
++// Its decision escalation names that ruling and a board note in place of a decision-record entry.
+ // A decision halt is a recorded accept held by a refusal at the budget and the hard cap.
+ // It archives the judge outputs and halts the run with a Reason opening with DecisionHaltPrefix.
+ // Drift-Verify opens the Reason of its decision halts with the same prefix.
+diff --git a/internal/shedadapters/roundcontext.go b/internal/shedadapters/roundcontext.go
+index 222d3760e..2f0d2a041 100644
+--- a/internal/shedadapters/roundcontext.go
++++ b/internal/shedadapters/roundcontext.go
+@@ -206,9 +206,14 @@ func BuildRoundContext(runDir string, round int, paths RoundContextSources) (*bu
+ 	for _, disposition := range report.Dispositions {
+ 		dispositions[disposition.ID] = disposition
+ 	}
++	inScope, err := InScopeFindings(runDir, previous)
++	if err != nil {
++		return nil, err
++	}
+ 	prior := make([]burlerengine.PriorFinding, len(findings))
+ 	for i, finding := range findings {
+-		prior[i] = burlerengine.PriorFinding{Finding: finding, Held: routed && finding.Class == burlerengine.ClassDecision}
++		held := routed && finding.Class == burlerengine.ClassDecision
++		prior[i] = burlerengine.PriorFinding{Finding: finding, Held: held, InScope: held && slices.Contains(inScope, finding.ID)}
+ 		if disposition, answered := dispositions[finding.ID]; answered {
+ 			prior[i].Disposition = &disposition
+ 		}
+diff --git a/internal/shedadapters/roundcontext_test.go b/internal/shedadapters/roundcontext_test.go
+index 942c2bf52..ddc0f0530 100644
+--- a/internal/shedadapters/roundcontext_test.go
++++ b/internal/shedadapters/roundcontext_test.go
+@@ -205,6 +205,23 @@ func TestBuildRoundContext(t *testing.T) {
+ 				if got.Prior[0].Held || !got.Prior[1].Held {
+ 					t.Errorf("held = %v, %v; want only the decision-class finding held", got.Prior[0].Held, got.Prior[1].Held)
+ 				}
++				if got.Prior[0].InScope || got.Prior[1].InScope {
++					t.Errorf("in scope = %v, %v; want none with no ruling", got.Prior[0].InScope, got.Prior[1].InScope)
++				}
++			},
++		},
++		{
++			name: "InScopeRulingMarksOnlyTheHeldFindingsItNames",
++			setup: func(t *testing.T, e env) {
++				writeCompleteRound(t, e.runDir, 1, true)
++				if err := createCirclingDecision(e.runDir, 1, CirclingContinue, EscalationDecision, false, []string{"F1", "F2"}); err != nil {
++					t.Fatalf("createCirclingDecision(round 1) = %v; want nil", err)
++				}
++			},
++			check: func(t *testing.T, got *burlerengine.RoundContext, _ env) {
++				if got.Prior[0].InScope || !got.Prior[1].InScope {
++					t.Errorf("in scope = %v, %v; want only the held decision-class finding F2 in scope", got.Prior[0].InScope, got.Prior[1].InScope)
++				}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/shedadapters/webster.go b/internal/shedadapters/webster.go
+index ba781f023..59e3603d6 100644
+--- a/internal/shedadapters/webster.go
++++ b/internal/shedadapters/webster.go
+@@ -35,7 +35,7 @@ const (
+ 
+ // planConflictWayForward is the way-forward clause that ends the Stuck reason for a webster plan conflict.
+ // It names the steps that clear the conflict.
+-const planConflictWayForward = "the run's parent records the fix as a decision naming the conflicting pending cards by slug and number with \"lym loom decision add <slug> --by parent … --amends-plan\", then runs \"lym loom goto --to Plan-Burler-Review\" and \"lym loom resume\" in the task worktree"
++const planConflictWayForward = "the run's parent records the fix as a decision naming the conflicting pending cards by slug and number with \"lym loom decision add <slug> --by parent … --amends-plan\", then runs \"lym loom goto --to Plan-Burler-Review\" and \"lym loom resume\" in the task worktree; once the task's scope is closed no amendment enters the record and the settled plan takes no goto back to Plan-Burler-Review, so the parent files the fix as a board note for a new task with \"lym board upsert\" and kind note, then runs \"lym loom goto --to Plan-Write\" (\"--to Parts-Plan-Write\" for a split plan) and \"lym loom resume\", which writes the plan again from the record as it stands"
+ 
+ // WebsterProducer is a shedengine.ShedProducer that runs websterengine.Run once per Call.
+ // Each Call runs with Fresh false and AutoRebaseline true, and maps the result onto the shedengine contract.
+diff --git a/internal/shedadapters/webster_test.go b/internal/shedadapters/webster_test.go
+index 44b932b32..6066fc04a 100644
+--- a/internal/shedadapters/webster_test.go
++++ b/internal/shedadapters/webster_test.go
+@@ -184,7 +184,7 @@ func TestWebsterProducer_OutcomeStuck(t *testing.T) {
+ 				seedWebsterConflictRecord(t, deps, "finding-a", "finding-b")
+ 				writeWebsterFile(t, websterengine.RoutedConflictPath(scratch), "- finding-a\n- finding-b\n")
+ 			},
+-			wantReasonHas:  []string{"the same webster plan conflict recurred", stuckReason, "--amends-plan", "lym loom goto --to Plan-Burler-Review", "lym loom resume"},
++			wantReasonHas:  []string{"the same webster plan conflict recurred", stuckReason, "--amends-plan", "lym loom goto --to Plan-Burler-Review", "lym loom resume", "kind note", "lym loom goto --to Plan-Write"},
+ 			wantReasonLack: []string{"review"},
+ 			wantRouted:     "- finding-a\n- finding-b\n",
+ 		},
+diff --git a/internal/shedrecipe/entries_bouncer.go b/internal/shedrecipe/entries_bouncer.go
+index ac21278a8..78944bf9a 100644
+--- a/internal/shedrecipe/entries_bouncer.go
++++ b/internal/shedrecipe/entries_bouncer.go
+@@ -85,6 +85,10 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	scopeClosed, err := configBool(cfg, "scope_closed", false)
++	if err != nil {
++		return nil, err
++	}
+ 	zeroRounds, err := configBool(cfg, "zero_rounds", false)
+ 	if err != nil {
+ 		return nil, err
+@@ -105,7 +109,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if err := configRejectUnknown(cfg, "run_subdir", "artifact_paths", "rubric_stencil", "seed_stencil", "commit_seam", "approve_seam", "skip_seam", "carry_over", "subject", "cluster_excludes", "blocking_escalates", "escalate_decisions", "zero_rounds", "color_segment", "role_prefix", "reviewer_fan_setting", "auto_accept_setting", "harden_round"); err != nil {
++	if err := configRejectUnknown(cfg, "run_subdir", "artifact_paths", "rubric_stencil", "seed_stencil", "commit_seam", "approve_seam", "skip_seam", "carry_over", "subject", "cluster_excludes", "blocking_escalates", "escalate_decisions", "scope_closed", "zero_rounds", "color_segment", "role_prefix", "reviewer_fan_setting", "auto_accept_setting", "harden_round"); err != nil {
+ 		return nil, err
+ 	}
+ 	if hardenRound {
+@@ -354,6 +358,7 @@ func bouncerEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer
+ 
+ 		BlockingEscalates: blockingEscalates,
+ 		EscalateDecisions: escalateDecisions,
++		ScopeClosed:       scopeClosed,
+ 		ColorSegment:      colorSegment,
+ 		RolePrefix:        rolePrefix,
+ 
+diff --git a/internal/shedrecipe/entries_bouncer_test.go b/internal/shedrecipe/entries_bouncer_test.go
+index 993205ed9..a946dc5dc 100644
+--- a/internal/shedrecipe/entries_bouncer_test.go
++++ b/internal/shedrecipe/entries_bouncer_test.go
+@@ -1412,6 +1412,7 @@ func callStalemateBouncer(t *testing.T, stalemateRounds int) (shedengine.Outcome
+ // TestBouncerEntry_BlockingEscalatesAndColorSegment covers the two optional keys the Merge-Review perch's Bouncer row carries.
+ // A round-1 judge call writes a CONTINUE verdict over a ledger holding an open BLOCKING entry, with the row's budget spent and its auto-accept set.
+ // blocking_escalates turns that auto-accept into an escalation, and color_segment colors the judge's session, the review color where absent.
++// scope_closed changes what a decision escalation tells the parent to do.
+ func TestBouncerEntry_BlockingEscalatesAndColorSegment(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	tests := []struct {
+@@ -1423,7 +1424,10 @@ func TestBouncerEntry_BlockingEscalatesAndColorSegment(t *testing.T) {
+ 		decisionReview bool
+ 		wantOutcome    shedengine.Outcome
+ 		wantSegment    segmentcolor.Segment
++		// wantReason, when set, is text the escalation reason holds.
++		wantReason string
+ 	}{
++		{name: "scope_closed names the closed-scope route in a decision escalation", extra: Config{"escalate_decisions": true, "scope_closed": true}, autoAccept: true, decisionReview: true, wantOutcome: shedengine.Awaiting, wantSegment: segmentcolor.Review, wantReason: "since the task's scope is closed"},
+ 		{name: "absent keys auto-accept in the review color", autoAccept: true, wantOutcome: shedengine.Done, wantSegment: segmentcolor.Review},
+ 		{name: "a decision finding without escalate_decisions settles as today", autoAccept: true, decisionReview: true, wantOutcome: shedengine.Done, wantSegment: segmentcolor.Review},
+ 		{name: "escalate_decisions escalates a decision finding to the parent", extra: Config{"escalate_decisions": true}, autoAccept: true, decisionReview: true, wantOutcome: shedengine.Awaiting, wantSegment: segmentcolor.Review},
+@@ -1481,6 +1485,9 @@ func TestBouncerEntry_BlockingEscalatesAndColorSegment(t *testing.T) {
+ 			if len(segments) != 1 || segments[0] != tt.wantSegment {
+ 				t.Errorf("judge spawn segments = %v; want [%s]", segments, tt.wantSegment)
+ 			}
++			if !strings.Contains(ptr.Reason, tt.wantReason) {
++				t.Errorf("Reason = %q; want it to contain %q", ptr.Reason, tt.wantReason)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index e813fe19a..d7af87183 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -119,7 +119,7 @@ func createTargetWayForward(number int, uncheckable, signatureMismatch, droppabl
+ 	if !droppableCreate {
+ 		return fmt.Sprintf("%s; or `lym webster recover-batch %02d` to build the target as the card names it", amend, number)
+ 	}
+-	return fmt.Sprintf("%s; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch %02d`, and the done-check skips that target; or `lym webster recover-batch %02d` to build the target as the card names it", amend, number, number)
++	return fmt.Sprintf("%s; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch %02d`, and the done-check skips that target; or `lym webster recover-batch %02d` to build the target as the card names it; once the task's scope is closed no decision records a drop, so the run's parent files it as a board note for a new task with `lym board upsert` and kind note, and one of the other steps is taken", amend, number, number)
+ }
+ 
+ // exhaustedRecoveryWayForward is the way forward for a batch that has used its counted recoveries.
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 9ad250765..438d1170a 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -1631,7 +1631,7 @@ func TestFailCardNotDone_WayForward(t *testing.T) {
+ 
+ 	const (
+ 		amend        = "amend the card's Create target or Rename new side to the unit, owner or parameter list the finding names the member declared with, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
+-		createWays   = amend + "; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch 01`, and the done-check skips that target; or `lym webster recover-batch 01` to build the target as the card names it"
++		createWays   = amend + "; or, when a parent decision drops the Create, the run's parent records it with `lym loom decision add <slug> --by parent … --drops-create <target>`, then `lym webster recover-batch 01`, and the done-check skips that target; or `lym webster recover-batch 01` to build the target as the card names it; once the task's scope is closed no decision records a drop, so the run's parent files it as a board note for a new task with `lym board upsert` and kind note, and one of the other steps is taken"
+ 		renameWays   = amend + "; or `lym webster recover-batch 01` to build the target as the card names it"
+ 		amendGlyph   = "amend the card's target to a spelling `lym quarry resolve` answers, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
+ 		moveDelete   = "move the delete to a card after the one that still references it, run `lym webster rebaseline --card NN` naming each card you edited, then `lym webster recover-batch 01`"
