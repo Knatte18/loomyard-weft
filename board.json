@@ -649,7 +649,7 @@
       "id": 1703,
       "handle": "E1",
       "slug": "whole-repo-guards-off-gates",
-      "title": "Whole-repo guards run at landing, and the dead-code check with the board tidy, not in every task gate",
+      "title": "Slow whole-repo guards, .NET builds and testmap tests leave the task gates for landing or periodic upkeep",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -660,9 +660,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (2026-11-26)\n\n`cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.\nIts tests build few hubs (7 `CopyHub` calls); most are guard tests that read the whole repository's source.\nThe heaviest is the tier1 test `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym/testonlycode_linux_test.go`:\nit loads every package with `packages.LoadAllSyntax` and builds an SSA call graph of the whole program to find code only tests reach.\n`cmd/lym` imports nearly every package, so nearly every change puts it in the gate's impacted set, and the whole-repo guards run in every task gate.\n\n## Idea (operator, 2026-11-26)\n\n- Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.\n- The dead-code check, the call-graph test above, leaves the gates altogether and runs with the periodic upkeep:\n  dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`).\n  At that point the check runs on the main branch, and each dead function it finds becomes a note on the board.\n  Dead code breaks nothing, so finding it a few landings late costs little.\n- Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or with the tidy.\n",
+      "body": "## Seen (2026-11-26)\n\n`cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.\nIts tests build few hubs (7 `CopyHub` calls); most are guard tests that read the whole repository's source.\nThe heaviest is the tier1 test `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym/testonlycode_linux_test.go`:\nit loads every package with `packages.LoadAllSyntax` and builds an SSA call graph of the whole program to find code only tests reach.\n`cmd/lym` imports nearly every package, so nearly every change puts it in the gate's impacted set, and the whole-repo guards run in every task gate.\n\n## Seen (2026-11-27)\n\nIn a tier1 landing gate of `pr-modes-no-agent`, `internal/gatecli` spent about 4.5 minutes of package time in two groups of tests:\n\n- Tests that build a real .NET project: `TestGateRedFirst_Dotnet` (56 s) and `TestGateTest_DotnetFixture` (29 s).\n- Tests of the coverage-map tools: `TestGateTestMap` (65 s), `TestGateMutate` (42 s), `TestGateReach` (31 s), `TestGateRedundant` (28 s), `TestRedundancyStep` (28 s).\n  The report steps those tools feed are now off in every gate key of the loomyard hub (operator, 2026-11-27); the tools stay for manual use.\n\n## Idea (operator, 2026-11-26 and 2026-11-27)\n\n- Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.\n- An upkeep run takes the checks that need not stop a task:\n  dobby already spawns the board-tidy agent every `board_tidy_every` landings (`internal/dobbyengine`), and the upkeep run goes with it, on the main branch.\n  - The dead-code check, the call-graph test above; each dead function it finds becomes a note on the board.\n    Dead code breaks nothing, so finding it a few landings late costs little.\n  - The .NET tests and the coverage-map tool tests above; a failure becomes a bug note.\n- Find every whole-repo guard in `cmd/lym` and name for each where it runs: at landing or in the upkeep run.\n",
       "created": "2026-11-26T21:11:57Z",
-      "revised": "2026-11-26T21:13:22Z"
+      "revised": "2026-11-27T07:14:38Z"
     },
     {
       "id": 1704,
