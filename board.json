@@ -747,7 +747,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nFinalize takes the parent lock, merges the parent into the task worktree, runs the `landing` gate and only then lands.\nThe gate is skipped only when the parent has not moved since the tree was last verified.\nWith many runs in flight the parent moves between almost every landing,\nso nearly every landing runs the whole landing gate under the lock, and every other landing on that parent waits for it.\nUnder today's load a landing gate takes 4 to 12 minutes.\n\n## Idea\n\nRun the merge and the landing gate with no lock held, and take the parent lock only to land:\n\n- Merge the parent's tip into the task worktree and gate the merged tree, unlocked.\n- Take the parent lock and check that the parent's tip is still the commit the gated tree was merged from.\n- If it is, land at once; the lock is held for seconds.\n- If the parent moved, release the lock, merge the new tip and gate again, unlocked.\n- After a bounded number of lost races, fall back to today's path, merging and gating under the lock, so a run is never starved.\n\nNo drift is possible: what lands is always the tree that passed the gate on top of the parent it lands on.\nThe cost is an extra gate run when a run loses the race.\n\nThe fixer and fix review already run with the lock freed; the change is to the merge and the gate around them.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T07:03:19Z",
       "revised": "2026-11-27T10:15:17Z",
       "profile": "solid"
