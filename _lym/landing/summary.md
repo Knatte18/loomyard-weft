@@ -1,67 +1,69 @@
-# Slow whole-repo checks leave task gates for landing and an upkeep run
+# Run slow whole-repository tests at landing or upkeep, not in task gates
 
-The main command package's test binary holds most of the module's whole-repository guards.
-It reaches about 2 GB while its reachability guard builds an SSA call graph of the whole program.
-That package imports nearly every package, so nearly every change put it in the impacted set, and every task gate ran those guards.
-The tests that build a real .NET project added minutes to `internal/gatecli`'s runs.
-None of these needs to stop a task's own gate: a break they catch can wait for landing, and dead code or a .NET break can wait a few landings.
+`cmd/lym`'s test binary reaches about 2 GB, mostly from tests that read the whole repository's source,
+and it is the binary the memory guard kills first.
+Nearly every change puts `cmd/lym` in the impacted set, so every task gate paid for those tests.
+Tests that build a real .NET project added to the gate time too.
 
-## What changes
+A new test marker, `//lym:only <key>...`, limits a test to the `--gate` calls whose key it names.
+With it, the slow tests move to one of two places:
 
-**A test can name the gate keys that run it.**
-A top-level test whose directive lines carry an `only <key>...` marker runs only in a `--gate` test call whose key the marker names.
-When the gate config derives scopes from Go packages, every `--gate` call scans its module for the markers (`impactset.FindOnlyTests`, `ModuleOnlyTests`).
-The call holds back each marked test its key is not named in:
-every listed tier run adds it to its `-skip` beside the watched tests, and the guard step leaves it out.
-A call whose words after `--` carry a filter flag holds nothing back, and so does a call without `--gate`, so a hand run reaches every test.
-A marker naming a key `gate.gates` does not hold refuses the call, naming the test and the key.
+- **Landing (`parent-align finalize`)**: every `cmd/lym` whole-repository guard that has no `//lym:watch`,
+  except the dead-code guard, plus the tree-sitter link check and the Linux cross-compile.
+  Every other key skips them, `webster` and `adopt` included, although both run the whole tree.
+- **Upkeep (`upkeep`)**: the dead-code guard and the tests that build a real .NET project.
+  The latter include the watched guard `TestCSharpFixtures_CompileWithDotnet`,
+  so a `*.cs` change no longer compiles the fixtures at its task gate.
+  No task gate and no landing gate runs any upkeep test.
 
-**A gate key of scope `marked` runs only the tests marked for it.**
-Its listed tiers run no package, and its guard step runs each marked test under its file's tier, the way guard tests run.
-The template gains the key `upkeep: {tiers: [0], scope: marked}` (`gateslot.UpkeepGateKey`, `gateslot.ScopeMarked`).
+The other watched `cmd/lym` guards and the guards of other packages stay at the task gates.
+`TestAgentMessaging_NoEngineTool` and `TestRemovedVerbs_NamedNowhere` gain `//lym:guard` along with the landing marker.
 
-**The green record keeps what a pass held back.**
-A green entry records the held tests in `held`, apart from its args.
-It covers a later request, or serves as a computed scope's base, only when that request holds back each of those tests too.
-So a webster gate that skipped the landing checks never lets Finalize carry its pass over them.
+## The upkeep run
 
-**Where each check now runs.**
-- Every guard of the main command package that carries no watch marker now names `parent-align finalize` in its only marker.
-  So do the tree-sitter link check and the Linux cross-compile.
-  The task gates skip them, and the landing gates run them once over the whole tree.
-- The reachability guard (`TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain`), `TestGateRedFirst_Dotnet` and `TestGateTest_DotnetFixture` name `upkeep`.
-- The prime's dobby, whose worktree is on the main branch, now gives its board-tidy agent an upkeep step (`Deps.UpkeepCall`, the new `beam-fragment-board-tidy-upkeep` stencil).
-  The step runs the `upkeep` key and files a tracker note per failure:
-  one per function a dead-code test names, and a `bug` note for any other failing test.
-  A beam's agent gets a step that runs no upkeep checks.
+`gate.gates` gains the key `upkeep` with a new scope, `marked`, which runs only the tests marked for the key.
+The prime's board-tidy agent, on the main branch, runs it every `beam.board_tidy_every` landings.
+It files a board note per dead function, and a `bug` note for any other failing test or for a refused call.
+A failure that an open note already names gets no second note,
+and a call refused because no test is marked for it gets none.
+A beam's board-tidy agent runs no upkeep, and neither does a hub whose scoper is not `go`.
 
-**The computed and `--base` guard step closes a gap.**
-It used to leave every guard test of an impacted package to the listed runs, so a guard of a tier no listed tier runs ran nowhere.
-It now also runs such a test, as the `--card` guard step already did (`Targets.InsideGuards`, `skippedInside`).
+## Plan check removed
 
-**The `create-caller-later` plan check is retired.**
-It refused a card that creates a production function only a later card calls, because that card failed its own gate on the reachability guard.
-The guard no longer runs at a card's gate, so the check, its spec entries and the plan-card rule it backed are removed.
+The `create-caller-later` plan check is gone, with its spec text and the stencil rules that went with it.
+It existed because a card adding a function that only a later card calls failed its own gate on the dead-code guard.
+No card gate runs that guard now.
 
 ## Design decisions
 
-- The marker names gate keys, not an abstract site that each key would list in config.
-  So existing hubs need no config change, and a hub with no marked tests behaves as before.
-- The landing checks name both `parent-align` and `finalize`.
-  With the same held set at both keys, Finalize carries Parent-Align's pass over an unchanged tree instead of rerunning every tier.
-- A watched guard stays at the task gates: it reads a bounded set of files and runs only when one of them changes, so it is no whole-repository check.
-  Guards of packages other than the main command package stay where they are too.
-- `TestGofmt_ModuleFilesAreFormatted` moves to landing with the other unwatched guards, so a formatting slip is first caught at Parent-Align.
-- A module whose packages `go list` cannot list holds nothing back and says so, so its tiers still report the break; a `marked` key refuses instead, since it would run nothing.
-- The template's `upkeep` key names tier 0 alone, the tier every hub declares.
-  The upkeep tests of this repository are tier-1 tests, so this hub's gate config needs `gates.upkeep` set to `{tiers: [0, 1], scope: marked}`.
-  Until then the upkeep run prints a line naming the tier-1 tests it does not run.
+- Markers apply only under the `go` scoper and only to `--gate` calls.
+  A call without `--gate` holds no marked test back, though it runs only the tiers it names, `tier0` by default.
+  A call whose words after `--` carry a test filter holds none back either, and runs what the filter selects.
+  A tier whose command holds no `{args}` holds nothing back in its listed run.
+- The landing marker names both `parent-align` and `finalize`, so Finalize can carry Parent-Align's pass over an unchanged tree.
+- A green record entry stores the tests it held back.
+  It covers a later request only if that request holds them back too.
+- A `marked` key refuses a call that would leave a marked test out because no listed tier is or covers its tier.
+  In a hub that declares tiers, it also refuses a call that would run no test.
+- A marker naming a key that `gate.gates` does not hold refuses the gate.
+- A computed or `--base` scope now also runs a guard test of an impacted package when no listed tier is or covers its tier.
+  Before, no run of such a call included it.
+- Accepted costs: a break that only a landing test sees first fails a task at Parent-Align.
+  Dead code, and broken behaviour that only the .NET tests see, pass every task and landing gate
+  and sit on `main` until the next upkeep run.
+
+## To check by hand
+
+- **This hub's `upkeep` key needs setting.**
+  The template gives `{tiers: [0], scope: marked}`, but the marked upkeep tests are `tier1`,
+  and this hub's `tier0` does not cover `tier1`.
+  Until `gate.gates.upkeep` is set to `{tiers: [0, 1], scope: marked}`, the upkeep call is refused and checks nothing.
+  A binary without this change does not accept the scope `marked`,
+  so update every binary that reads the hub's gate config before writing it.
+- After that, run `lym gate test --gate upkeep` on the main branch and confirm that it runs the dead-code and .NET tests.
+- Confirm that `beam.board_tidy_every` is not 0, since the upkeep tests otherwise never run on their own.
 
 ## Merge danger
 
 **Door:** two-way
 **Blast radius:** gate
-
-A revert restores the old skip and scope behaviour.
-Green entries written meanwhile carry a `held` list that the reverted binary ignores, so on an unchanged tree such an entry could carry a pass that skipped the held tests.
-That lasts until the tree changes.
