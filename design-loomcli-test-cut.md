@@ -1,6 +1,6 @@
 # Cut loomcli's tier1 test time at least in half
 
-`loomcli-test-cut` · Task · enhancement, loom, testkit · starting · Seed-Child
+`loomcli-test-cut` · Task · enhancement, loom, testkit · starting · Open-IDE
 
 ## Aim (operator, 2026-11-27)
 
