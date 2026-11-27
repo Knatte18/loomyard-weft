@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "948548f4d9b9c1887265c2b9da84e55276981e61",
+  "added_decisions": [
+    {
+      "title": "Drop the C# half of item 3, file no note",
+      "digest": "ee61f1656697bb3781ce309b8b405ceb468803d33eab53dd7228f236aebc45a6"
+    },
+    {
+      "title": "No operator exemption at PR-Review",
+      "digest": "b2023a39635b140d02464602e8005faf9c91077e0e7f61cbf06e158cb5260819"
+    },
+    {
+      "title": "PR feedback stays outside the line with no record entry, F3 ruled moot",
+      "digest": "39914b4e9fb00c3872b115e13b949e34bfc4ff91e88b8d45a181ae039ab0d979"
+    },
+    {
+      "title": "The parent's PR-Review ruling governs the description's wording",
+      "digest": "6b8d6d3663539b4ae1599d19a9dc797cc56283e35ec779976a1bb84c1b87958a"
+    }
+  ]
+}
