@@ -18,6 +18,13 @@ In a tier1 landing gate of `pr-modes-no-agent`, `internal/gatecli` spent about 4
 - Tests of the coverage-map tools: `TestGateTestMap` (65 s), `TestGateMutate` (42 s), `TestGateReach` (31 s), `TestGateRedundant` (28 s), `TestRedundancyStep` (28 s).
   The report steps those tools feed are now off in every gate key of the loomyard hub (operator, 2026-11-27); the tools stay for manual use.
 
+## Changed since (`a69580709`, `card-gate-scope-gaps`)
+
+A card scope now holds the cards' packages and every package whose build or tests reach one of them.
+So the card and batch gates also run `cmd/lym`'s listed-tier tests whenever it depends on a card's packages, which is often.
+Under `--card`, the guard step still runs a `//lym:guard` test inside the scope that no listed tier covers.
+Moving guards off the task gates now has the widened card scope to deal with too.
+
 ## Idea (operator, 2026-11-26 and 2026-11-27)
 
 - Whole-repo guards that catch a break, such as tree-sitter linking and the cross-compile check, leave the task gates and run once at landing.
