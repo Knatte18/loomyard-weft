@@ -1,0 +1,92 @@
+{
+  "sketch": "kde-window-placement",
+  "shape": "tapestry",
+  "board_checked": [
+    {"slug": "area-host-exits", "revised": "2026-11-26T11:58:18Z"},
+    {"slug": "closed-area", "revised": "2026-11-26T20:49:28Z"},
+    {"slug": "fabric-core-foundation", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "whole-repo-guards-off-gates", "revised": "2026-11-27T10:25:57Z"}
+  ],
+  "parts": [
+    {
+      "slug": "kde-window-placement-build",
+      "title": "Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub",
+      "type": "feature",
+      "labels": ["termwindow", "desktop", "reed", "dobby", "cwd", "fabric", "gate", "pattern", "docs"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"],
+      "packages": [
+        {"path": "internal/kwinplace", "size": 2600},
+        {"path": "internal/termwindow", "size": 120},
+        {"path": "internal/desktophook", "size": 150},
+        {"path": "internal/reedcli", "size": 200},
+        {"path": "internal/machinecli", "size": 80},
+        {"path": "internal/beamsetting", "size": 30},
+        {"path": "internal/dobbyengine", "size": 100},
+        {"path": "internal/fabricengine", "size": 20},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/gateslot", "size": 20},
+        {"path": "cmd/lym", "size": 30},
+        {"path": "pattern", "size": 10},
+        {"path": "docs", "size": 20}
+      ],
+      "contract": {
+        "takes": "termwindow's Launcher.OpenAttach and Resolve, desktophook's AfterWindow runner and config, dobbyengine's per-task lookup over hubgeom.TaskSettingChain, hubgeom.ParentOf, state.UpdateJSON, lock.AcquireWriteLock, standalonestate.UserStateDir, selfexec.LymBinary, runproc.Register, lymtemp, and the layout as fabric-core-foundation and whole-repo-guards-off-gates land it; the KWin facts Open risks lists, probed as the run's first step, each with a KWin script run through `qdbus6` and its console.log lines read from the journal: the read-only probes run first, the moving probes only once the operator runs or approves them, and a probe that contradicts a listed fact stops the run for the parent, with the probe's command and output, before any code rests on it",
+        "delivers": "D1's pre-launch checks and --separate Konsole launch returning its pid; internal/kwinplace (new) with the script runner, script lock, query cache, kscreen reader, pure planner, places file and placement child; the hidden placement verb that lym reed window and lym machine start hand each window to; desktop.window_placement, desktop.tiling.min_tile_width and min_tile_height, and beam.window_placement; a cancellable window_command runner; the real-desktop contract test in a manual tier",
+        "exports": "kwinplace's placement entry and planner, termwindow's pid-returning launch and pre-launch check, dobbyengine.LookupWindowPlacement, the three desktop keys"
+      },
+      "depends_on": ["fabric-core-foundation", "whole-repo-guards-off-gates"],
+      "open_risks": [
+        "The entry says a beam or a project may override the default.\nA project entry that is not a beam carries no settings: the board refuses `run_settings` on a project.\nD7 gives the override to task and beam worktrees only; a project-level override needs the board to accept a setting on a project, which is a board design call for the parent.",
+        "The entry's title covers every window lym opens, and VS Code windows are left out: VS Code runs all its windows in one process, so D2's match cannot find one.\nThe parent decides whether VS Code placement belongs here, through a caption match, or in a later entry.",
+        "These KWin facts are unobserved, since the parent declined to have them probed during this discussion:\n- `rootTile(output, desktop)` with `split`, `relativeGeometry` and `manage` on a desktop that is not current, which D3's apply and D6's grid rest on;\n- setting a window's `desktops`, and `workspace.sendClientToScreen` for a window on another output, since a window's `output` is read-only, which D3's move and D4's tiling screen rest on;\n- setting `frameGeometry`, and reading `clientArea` and a tile's `absoluteGeometry`, `padding` and `windows` on a desktop that is not current, which D6's clamp and zone reading rest on;\n- `kscreen-doctor -j` output names against `workspace.screens` names, which D4's match rests on;\n- `rootTile` returning two different root tiles for one output and two desktops, which D1's per-desktop tiling probe rests on, since QJSEngine ignores a surplus argument and an arity check proves nothing;\n- a script's body running to its end once `run` is called, whatever happens to the caller, which D3's end-of-run guarantee rests on;\n- `isScriptLoaded` reading false once an unloaded script has left KWin's list, which D3's script lock rests on;\n- a running Konsole window's resource class reading `org.kde.konsole`, which D2's match rests on."
+      ],
+      "criteria": [
+        "D1: with `KDE_SESSION_VERSION` unset, another desktop named, an X11 session, a missing tool or a launcher other than Konsole, the Konsole command line is today's and no KWin call is made; a placement error is a logged warning and the verb exits zero.",
+        "D1: under mode `off` with every check passing, the window's place is recorded and no apply runs; a query report whose probe fails leaves the `--separate` window where KWin opened it and settles its entry, with a warning.",
+        "D2: with the pre-launch checks passing the Konsole command line carries `--separate` and the launcher returns the process id; a snapshot window with the right `pid` and caption and the resource class `org.kde.konsole` matches, and one with the right `pid` but another resource class, `konsole` included, or another caption does not match.",
+        "D3: over recorded `qdbus6`, `journalctl` and `kscreen-doctor` output, the readers parse the snapshot, with each window's `internalId`, the current desktop and each desktop's leaf tiles with their `absoluteGeometry`, `padding` and `windows`, and the apply report; a window's zone is the leaf that lists it, whatever its `tile`; a `tier0` test runs them over every recording.",
+        "D3: two runs that overlap, a window-wait query and another child's apply, hold the script lock one after the other, each under its own plugin name and each reading its own end marker; a load that returns -1 fails the run; a plugin name a killed run left in `kwinscript.loaded` is unloaded before the next load; a run whose plugin name still reads as loaded after its 2-second wait releases the script lock and leaves the name in `kwinscript.loaded`, and the next run fails before its load while that name stays loaded; an acquire abandoned past its bound that takes the lock later releases it at once; a window-wait child that finds a query report newer than its previous query reads it and loads no script.",
+        "D3: lines of another run id are ignored, and a journal with no end marker within the bound fails the run as a timeout and unloads its script by plugin name.",
+        "D3: the apply script addresses windows by `internalId` and sets the placed window's desktops to the target alone and sends it to the tiling output.",
+        "D3: the planner, given a snapshot, rules and places, returns the target desktop, grid and window order; tier-1 tests cover each rule in D4 to D9 through it.",
+        "D4: the output with the lowest priority among enabled outputs is the tiling screen, and windows on other outputs are not counted.",
+        "D5: a 2560x1440 logical output gives capacity 2x5 and a 1536x960 one gives 1x3 with the template sizes; a tiny minimum still caps at 2x5; a desktop holding capacity minus one windows plus the placed window is not full.",
+        "D6: 3 windows with 5 columns give 1x3; 6 give 2x3; 7 give 2x4 with the last zone empty; windows with remembered keys 2, 0 and 1 reopening in that order end in key order.",
+        "D6: on a 2-row grid whose bottom row runs under a panel, each bottom-row window is released and its frame ends at the usable area's bottom, and at the next placement it counts in its zone; on a 1-row grid under such a panel every window is clamped, in its zone's box and untiled; a window on two desktops is not counted.",
+        "D7: a task `run_settings` value wins over its beam's, a beam's over the prime's, `\"\"` falls to the machine key, and an unknown value is refused on load.",
+        "D8: `next` from desktop 1 with desktop 2 full lands on 3; past the last desktop nothing is moved and the warning names the start desktop; a home desktop wins over the mode; a parent whose placement settles its entry during the wait anchors its child on the desktop it was placed on.",
+        "D8: a child whose parent's entry is unsettled under the lock waits again and anchors on the desktop the parent's placement settles it on, including a parent under mode `off` and a parent whose full home overflowed it; every return to the wait falls within one 180-second bound.",
+        "D8: with no parent entry the child waits, and past the wait the current desktop is the anchor and the child's entry takes no home, so its next placement anchors on its parent; the wait's re-reads back off from one to eight seconds.",
+        "D9: after an apply, the places file holds every reported window of the hub; a reopen that keeps the keys' order keeps the keys, a hand move renumbers the desktop; a worktree the hub no longer has is dropped; an absent file reads as empty.",
+        "D9: a pre-wait write and a post-apply write that interleave keep each other's entries, and the pre-wait write keeps the home desktop, order key and last desktop.",
+        "D9: another child's apply report showing a window whose entry is unsettled leaves that entry's home as it was; a child that ends on a timeout or a failed probe settles its entry; another child's apply on a different desktop leaves the order key of an unsettled window sitting on its home unchanged, and windows reopening on their home desktop end in key order.",
+        "D9: a window that overflows from its full home keeps its home and order key, and its next placement with room returns it there; a renumber keeps an absent entry between the windows it sat between, and no two entries share a key; a renumber of the desktop an overflowed window landed on leaves that window's home and order key unchanged, and a renumber of its home keeps its position there.",
+        "D10: the opening verb returns before the window appears in KWin; two children started together run their KWin steps one after the other; one that cannot take the lock in time, or whose window never appears, logs a warning, runs `window_command` and exits; a child that returns to the parent wait shares one 120-second lock timer across its acquires.",
+        "D10: a child waiting on a held lock makes no attempt until the lock frees; the window wait's query runs start at least one second after the previous run ends.",
+        "D11: a placement touches no desktop but its target, and a desktop at or over capacity is never rebuilt.",
+        "D12: `lym reed window` and `lym machine start` both reach the one placement call; with the pre-launch checks passing, the child runs `window_command` with no sleep after placement, under mode `off`, and after a lock timeout, a window timeout and a failed probe; a child ended by SIGTERM runs none and ends one already running.",
+        "D12: with the pre-launch checks failing, `lym reed window` runs `window_command` after the wait as today and `lym machine start` runs none.",
+        "Review: the desktop template's comments for the new keys name the machine-layer set command, and `PATTERN-config-layers`'s background lists `beam.window_placement` (new) among the per-task beam settings.",
+        "Review: `lym reed window`'s Long help and the desktop template's `window_command` and `window_wait_ms` comments say that under placement the placement child runs `window_command`, with no wait, except when the child is ended by SIGTERM."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": 41.3,
+      "cost_line": "tapestry solid stored-record cell (5 runs, fit 12.61 fixed + 0.84 per 100 lines, r 0.99) at about 3400 changed lines"
+    }
+  ],
+  "cost": {
+    "expected_usd": 41.3,
+    "line": "one tapestry part on the tapestry solid stored-record cell (5 runs, fit 12.61 + 0.84 per 100 lines) at about 3400 changed lines",
+    "next_best": {
+      "split": "two tasks: a darn part for the config keys, the pre-launch checks, the --separate pid launch and the cancellable window_command runner, then a tapestry part for internal/kwinplace and the window-path wiring",
+      "expected_usd": null,
+      "line": "the tapestry part's share is about 37.1 on the tapestry solid stored-record cell at about 2900 lines, but the darn solid stored-record cell reads too few runs, so the total has no figure"
+    },
+    "cells": [
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
