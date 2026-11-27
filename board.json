@@ -916,6 +916,45 @@
       "body": "## Seen (operator, 2026-11-27)\n\nOrchs still propose `arras`, though it is never used.\nThe operator does not trust raddle's split enough to let a run split an entry on its own approval.\n\n## Operator decision (2026-11-27)\n\nArras is no longer an option anyone is offered.\nIts code stays, but nothing visible names it: the shipped orch role, the `ly:board` and `ly:board-policy` skills, help text and recipe listings.\nMotif is the route for a design-first entry: it stores the decision record as a Sketch, and the Sketch's raddle run splits it on the operator's approval.\n\n## Idea\n\n- Rewrite the board-policy passage that proposes an arras task for a tapestry-sized note to propose motif.\n- Drop arras from the recipe lists in the board skill, the orch role and `lym board` help.\n- Decide whether a board write naming `recipe: arras` is refused or only warned.\n",
       "created": "2026-11-27T18:05:18Z",
       "revised": "2026-11-27T18:05:18Z"
+    },
+    {
+      "id": 1752,
+      "handle": "E3",
+      "slug": "motif-sketch-follow-up",
+      "title": "A Sketch a motif run leaves is followed up, not left lying on the board",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "board",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-27)\n\nA motif run ends by leaving its entry on the board as a Sketch, a note that never runs.\nNothing then follows it up: it waits until someone remembers it.\n\n## Idea\n\nWhen a motif run lands, the orch is told and puts the Sketch to the operator: promote it to its raddle run now, or say what it waits for.\nA Sketch left waiting carries its `depends_on`, so the board shows why.\n",
+      "created": "2026-11-27T18:05:18Z",
+      "revised": "2026-11-27T18:05:18Z"
+    },
+    {
+      "id": 1753,
+      "handle": "E5",
+      "slug": "raddle-split-quality",
+      "title": "Raddle split proposals need too much revision by the operator",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-27)\n\nThe split a raddle run proposes for a Sketch must be approved, and today it is not tuned well:\nthe operator often has to revise what it proposes.\nThis is the same distrust that keeps arras out of use.\n\n## Idea\n\n- Collect the operator's revisions from past raddle runs' support logs and approvals, and class them: wrong cut lines, too many or too few parts, wrong recipe or profile, wrong order or dependencies, missing parts.\n- Tune the Raddle-Write stencil against those classes, and add checks the proposal must pass before it is shown.\n- The approval stays with the operator.\n",
+      "created": "2026-11-27T18:05:19Z",
+      "revised": "2026-11-27T18:05:19Z"
     }
   ],
   "prime_owner": "neve",
