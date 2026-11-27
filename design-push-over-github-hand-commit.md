@@ -2,6 +2,8 @@
 
 `push-over-github-hand-commit` · Note · bug, fabric, landing
 
+Depends on: [`fabric-core-push-origin`](design-fabric-core-push-origin.md)
+
 ## Seen (board tidy, 2026-11-27)
 
 `pr-modes-no-agent` landed with an open point in its change description: a push can still drop a hand commit made on GitHub.
