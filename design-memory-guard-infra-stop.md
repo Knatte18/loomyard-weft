@@ -1,6 +1,6 @@
 # Memory guard fails a gate by killing cmd/lym tier1 when the user slice is full from elsewhere
 
-`memory-guard-infra-stop` · Note · bug, gate
+`memory-guard-infra-stop` · Task · bug, gate · draft
 
 Imported from [issue #267](https://github.com/Knatte18/loomyard/issues/267).
 
