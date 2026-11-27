@@ -1,6 +1,6 @@
 # Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget
 
-`fabric-core-foundation` · Task · enhancement, fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report · draft
+`fabric-core-foundation` · Task · enhancement, fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report
 
 Decision record: [Sketch](decision-fabric-core-foundation.md)
 
