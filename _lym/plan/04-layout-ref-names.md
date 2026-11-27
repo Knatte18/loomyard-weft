@@ -47,7 +47,7 @@
 - `internal/fabricengine#syncSubjectPrefix`
 
 **Create:**
-- `plan:internal/fabriclayout#SeedSubjectPrefix` -> `const SeedSubjectPrefix = "lym: seed "`
+- `internal/fabriclayout#SeedSubjectPrefix`
 
 **Delete:**
 - `internal/fabricengine_test#TestRecordsBranchName_RoundTripsWithWeftWarpSlug`
