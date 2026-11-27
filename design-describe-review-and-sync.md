@@ -1,6 +1,6 @@
 # Review the Describe text in its row, keep LoomYard terms out, sync the PR body
 
-`describe-review-and-sync` · Task · enhancement, landing, stencil, burler, shuttle
+`describe-review-and-sync` · Task · enhancement, landing, stencil, burler, shuttle · starting · Worktree-Create
 
 Depends on: [`pr-modes-no-agent`](design-pr-modes-no-agent.md)
 

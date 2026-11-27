@@ -1,6 +1,6 @@
 # P3 Intake wave 2: Describe text, infra stops, push retries
 
-Rendered 2026-11-27 07:21 UTC; every age below is as of then.
+Rendered 2026-11-27 07:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-2` · Age 23h · Owner `neve`
@@ -8,11 +8,11 @@ Under: [Board](README.md).
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (1)
+## Running (1)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid |  | 23h<br>18h | landing, stencil, burler, shuttle |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T9 | **Review the Describe text in its row, keep LoomYard terms out, sync the PR body** | [`describe-review-and-sync`](design-describe-review-and-sync.md) | darn · solid | starting · Worktree-Create | neve | 23h<br>18h | landing, stencil, burler, shuttle |
 
 ## Layer G (1)
 
