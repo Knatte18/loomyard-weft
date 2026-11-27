@@ -6,7 +6,7 @@
      Every marker below is a top-level {{.X}} substitution, and stencil.Fill requires each to be non-empty.
      internal/parentdirective renders parent_directive, and internal/editdirective renders edit_directive.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=ac5329fadbdb22521d21de0ef33dbd1e8895b9c0c59a5314d02ad0763034d0c3 build=02da2c1360fcc63609c8e8c0c5b759af40fad0c5 time=2026-11-23T13:11:38Z -->
+lym-stencil: sha256=26a1995b92fe8fa80a4bc96724696f763e3ded1396ffcc47b0cd7d6a7859821c build=6fbe0ff7a2c21a4ed705e6256ed84e80dd75f880 time=2026-11-27T11:24:16Z -->
 
 # Reflection — read the friction notes, file every distinct lym problem
 
@@ -49,6 +49,12 @@ A halt caused by the task's own code, or a review segment that did not converge,
 A `build-skew` halt is dropped too: the run's lym was older than a board stencil it read,
 which is a binary to update and not a lym defect;
 the driver hands such a run to a fresh driver when a newer build is on disk.
+A `transient-stop` halt is dropped too: an infrastructure failure that lym classed transient, which a re-step can clear.
+A step loop re-steps it once.
+The Go driver also re-steps a git-transport or GitHub API stop with waits, and sends any other class to the tackler;
+the prompt-driven driver repairs what outlasts the loop's re-step under its repair cap.
+File one only when the notes show such halts at one row that the re-steps never cleared,
+or a failure classed transient that no retry could fix.
 A dropped event stays recoverable: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lym selfreport create`.
 
 ## Step 3 — File each issue
