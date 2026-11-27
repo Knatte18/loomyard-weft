@@ -47,7 +47,7 @@ gates:
     parent-align: {tiers: [0, 1, 2], scope: all, reports: []}
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
-    darn-write: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
+    darn-write: {tiers: [0, 1, 2], scope: diff, reports: []}
     code-burler-fix: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
     harden-live:
         tiers: [1]
