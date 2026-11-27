@@ -1,71 +1,71 @@
-# Review the Describe text, keep tool terms out, sync the PR body
+# Review the change description, bar tooling names, sync the PR body
 
-The change description becomes the pull request's title and body and the landing commit's message, and since PR-Review runs no agent it is the last text a model checks.
-This change hardens it in four ways: a mechanical check refuses the tooling's own vocabulary, a reviewer seat checks the text inside the Describe row, the pull request's body follows the description file as GitHub holds it, and a timed-out seat session halts as a resumable stop.
-
-Closes #227
-Closes #228
-Closes #244
-
-Part of #225 (its first two ideas), #241 (the halt's classification) and #255 (the Describe and writer prompts).
+The change description becomes the PR title, the PR body and the landing commit message.
+Until now only its format was checked, an edit on GitHub could leave the PR out of step with it,
+and a timed-out `Describe` session halted the run as `failed`.
 
 ## What changes
 
-**Forbidden terms.**
-`summaryparser.ValidateDescription` takes a list of compiled patterns and reports one `forbidden-term` finding per matching line, naming the line number and the matched text.
-The patterns come from the new `landing.describe_forbidden_terms` key, a list of Go regular expressions compiled and checked at `LoadConfig`.
-The template's defaults cover LoomYard and lym, a Sketch, the decision record, a board entry or note, the scoper, a perch, an orch, "item N of the task" and "the parent recorded".
-They are word-bounded, so "lymph" or a lower-case "sketch" pass.
-The check reads the description file only, so the credit block and the regression check appended after it are never checked.
-It runs in the Describe row's `description` gate, in `lym loom validate-description`, in the beam describer's gate and in `lym beam describe`'s recorders.
-The Describe and darn writer prompts state the same rule for the writer.
+**Tooling names are refused.**
+The new `landing.describe_forbidden_terms` key holds regular expressions for names a repository's reader never sees.
+The `description` gate, `lym loom validate-description` and `lym beam describe` refuse each matching line,
+naming its number and the matched text.
+The appended credit block and regression check are not checked.
+The `Describe`, beam-describe and darn writer prompts state the rule, as do the briefs of sessions that write repository files.
+The Code-Review rubric flags such names in documents and in the description.
 
-**Reviewer seat.**
-`DescribeTable` adds an assistant seat, `review`, on `landing.describe_review`'s model (default `sonnet[medium]`) for `landing.describe_review_timeout_min` (default 15).
-Its prompt, `landing-template-describe-review`, waits for the description, reads the decision record, the board entry, the diff and the run records, then the text.
-It reports tool terms, claims the diff or the records do not bear out, missing deliverables, and a wrong Merge danger call.
-Its report opens with `# Describe review: approved` or `# Describe review: findings`, which its own gate checks.
-The table's gate entry `Describe-Review` stays pending until the reviewer's end marker exists, which holds the writer's turn end.
-It then hands a review with findings to the writer once, as a writer-only failure, and passes from then on.
-It also passes when the reviewer approved, did not finish or wrote no report, and it always passes at the run's final verdict.
-`describeEntry` now puts the row's own `gates` ahead of the table's entries, so the reviewer only reads a text that passed the mechanical check.
-An empty `landing.describe_review` keeps the seat from starting.
-Its report and marker sit under the never-tracked landing directory (`loomengine.DescribeReviewDir`).
+**`Describe` gets a reviewer.**
+An assistant seat on `landing.describe_review` checks the text for tooling names, unsupported claims,
+missing deliverables and a wrong `## Merge danger` call.
+It starts reading once the description passes its mechanical check.
+The writer's turn end waits for the report, and findings go back to the writer once.
+An empty `describe_review` runs no reviewer.
 
-**Pull request body sync.**
-`pullrequest.Status` now carries the title and body GitHub holds.
-PR-Review's wait used to compare the description's text with the text it had last set itself.
-It now compares with GitHub's text at each polled wake, ignoring line-ending and trailing-whitespace differences, and edits when they differ.
-A reopened pull request or a body edited by hand on GitHub is therefore set right too.
-Finalize does the same before it merges a recorded pull request that is not a beam's.
+**The PR follows the description.**
+PR-Review compares the title and body GitHub holds with what the description yields, at every poll of an open PR,
+and sets them again when they differ.
+`Finalize` does the same before it merges a recorded PR that is not a beam's.
+A hand edit of the title or body on GitHub is therefore overwritten.
+While the text cannot be built, or the edit fails transiently,
+neither an approval nor `lym loom pr-continue` ends the review.
 
-**Timeout halts.**
-In `MultiLLMProducer`, a chair that started and then timed out used to return an error, which halted the run as a producer hard failure.
-It now returns Stuck with a reason naming the elapsed time, the limit, the last session state the wait recorded, and `lym loom resume` as the way forward.
-The pointer's path is empty, since the output may not exist.
-A writer seat's timeout reason carries the same detail.
+**Timeouts and interrupted turns.**
+A seat step whose chair started and timed out is now `Stuck` instead of an engine error.
+Its reason names the elapsed time, the limit, the last session state and `lym loom resume` as the way forward.
+A timed-out writer seat's reason carries the same details.
+When a turn the operator started ends with output files missing, an autonomous run types one reminder per run,
+naming the files.
+
+Closes #227
+Closes #228
+Closes #241
+Closes #244
+Closes #255
+
+Part of #225: this covers its first two items, the review of the description and the PR body sync.
+Its other four items are not in this change.
 
 ## Design decisions
 
-- The term list is a config key, not a built-in, because LoomYard's own repository uses these names legitimately.
-  A hub whose repository owns them sets `landing.describe_forbidden_terms: []`.
-- The reviewer is an assistant seat driven by the writer's gate, not an advisor the writer must remember to ask.
-  The seat engine requires the lead's stencil of an assistant table to include `seat-directive-assistant-chair`.
-  So the seat is always in the table, and an empty model key skips it rather than dropping it.
-- The reviewer's findings go back once per session.
-  The "sent" state lives in memory, so after a re-attach the same findings can reach the writer a second time.
-- The reviewer waits on the description file itself, so it can read a version the writer is still editing.
-  The prompt has it read the description last to narrow that window.
-- Not changed here: shuttle's silent hold of an operator-started turn end with outputs missing (#241's sequence).
-  With the new classification its timeout halts as a resumable stop rather than a hard failure, but the hold still sends no reminder.
-  Also not changed: a Code-Review check of repository documents for tool terms (#255's second item).
+- The term check is a configurable list, because a repository may own some of these names.
+  The check at `Publish` and `Finalize` is unchanged: neither runs it.
+- The review never fails the step.
+  A reviewer that does not finish, or whose time runs out, leaves the description as written, with a log line.
+- `describe_review_timeout_min` bounds an unbroken wait; the wait starts over after a gap between checks.
+- While a reviewer runs, the writer's and the reviewer's session limits are each
+  `describe_timeout_min` plus `describe_review_timeout_min`.
+- The chair-timeout and reminder changes are not specific to `Describe`:
+  the first applies to every seat step, the second to every autonomous run.
 
 ## To check by hand
 
-- Before or right after landing, set this hub's `landing.describe_forbidden_terms` to `[]`, after `lym config reconcile --apply` writes the new keys.
-  Until then its own Describe rows and `validate-description` refuse descriptions that name lym.
-- No test in this change drives the pending review entry through a live shuttle run.
-  Watch the first real Describe run: the writer's turn end should wait for the reviewer, and a findings report should arrive as one re-prompt.
+- The reviewer's time is still counted from the start of the row.
+  Both session limits start when the seats spawn (`describeReviewSeat` in `internal/landingshed/describereview.go`,
+  `DescribeTable` in `internal/landingshed/describe.go`).
+  A writer that runs past `describe_timeout_min` eats into the review's time, down to none at the combined limit.
+- LoomYard's own hub owns the names in the default patterns, so set `landing.describe_forbidden_terms` to `[]` there.
+- The diff adds no test that drives a live reviewer session, the typed reminder in a real pane,
+  or the title and body comparison against real GitHub.
 
 ## Merge danger
 
