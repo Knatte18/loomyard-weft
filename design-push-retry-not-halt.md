@@ -237,3 +237,10 @@ This is read from the code and was not tested against a remote.
 
 A push that finds origin ahead with a commit lym did not make stops and names that commit, rather than resetting past it,
 as the decision above on refusals that retrying cannot fix says; check every push path the change description names.
+
+# Left open by `transient-stop-not-failed` (orch, 2026-11-27)
+
+That task kept state `failed` for a step failure with a non-empty transient class and gave it its own anomaly kind, `AnomalyTransientStop` (`internal/loomengine/anomaly.go`);
+recording it as a retryable stop is this task's (its Code-Review finding F1, accepted unconverged).
+Its finding F2 was also left open: the kind's doc comment, the `loomcli` package doc and the reflection template call every transient-stop halt one the driver re-steps,
+while the driver re-steps only `git-transport` and `github-api`; `agent-start` and `host-resources` get the loop's one re-step and then go to the tackler.
