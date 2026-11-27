@@ -10,20 +10,20 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (3)
+## Running (4)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 7h<br>7h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
+| T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | starting · Worktree-Create | neve | 1m<br>0m | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Darn-Write | neve | 6h<br>6h | batten, fabric |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Darn-Write | neve | 1d<br>3h | fabric, cleanup, batten |
 
-## Ready (2)
+## Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light |  | 0m<br>0m | webster, fabric, pattern |
-| T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light |  | 0m<br>0m | board |
+| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light |  | 1m<br>0m | webster, fabric, pattern |
 
 ## Layer A (7)
 
@@ -31,9 +31,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | darn · light | T21 | 1m<br>0m | fabric, git |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T21 | 1d<br>1d | docs |
-| T4 | **Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock** | [`finalize-owed-tips-gate`](design-finalize-owed-tips-gate.md) | darn · light | T12 | 0m<br>0m | landing |
-| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | T21 | 0m<br>0m | fabric |
-| T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | T12 | 0m<br>0m | shed, burler |
+| T4 | **Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock** | [`finalize-owed-tips-gate`](design-finalize-owed-tips-gate.md) | darn · light | T12 | 1m<br>0m | landing |
+| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | T21 | 1m<br>0m | fabric |
+| T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | T12 | 1m<br>0m | shed, burler |
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | T12 | 0m<br>0m | burler, stencil, webster |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | T12 | 0m<br>0m | darn, stencil |
 
