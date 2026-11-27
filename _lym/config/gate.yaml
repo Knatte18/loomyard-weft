@@ -41,7 +41,7 @@ tiers:
         prebuilt_lym: true
         manual: true
 gates:
-    batch: {tiers: [0, 1], scope: card}
+    batch: {tiers: [0, 1], scope: card, reports: []}
     webster-fix: {tiers: [0, 1], scope: diff, reports: []}
     webster: {tiers: [0, 1, 2], scope: all}
     parent-align: {tiers: [0, 1, 2], scope: all}
