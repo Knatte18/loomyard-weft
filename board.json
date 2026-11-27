@@ -716,7 +716,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Aim\n\n`docs/research/speed/test-time-measure-2026-11-27/report.md` measured `internal/battencli` at 33 to 75 s of tier1 test time.\n`TestBattenIntegration_Rows` (54 s) runs its steps one after another on one hub copy and sets the package's floor.\n\n## Work\n\n- Split it into groups with a hub each, so the groups run in parallel.\n- Keep every assertion; drop none.\n- Leave the cancel tests' structure for a later task.\n- The two measured runs differed by more than a factor of two: measure the package before and after three times each, and put them in the change description.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-27T17:58:08Z",
       "revised": "2026-11-27T17:58:08Z",
       "profile": "light",
