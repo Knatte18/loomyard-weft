@@ -1,0 +1,56 @@
+# Remove the coverage maps and every user of them
+
+The per-test coverage maps cost far more than they gave.
+Over the window `docs/research/testmap-worth-evaluation.md` measured, none of the 88 code-review findings that cited a report found a production defect on its own,
+and the report steps took 7.0 hours of work and 2.8 hours of slot waiting.
+This change removes the stored maps, everything that writes or reads them, and the review and gate features built on them.
+It keeps `go run ./cmd/testtiming -redundancy` for an occasional redundancy sweep, and the red-first gate, neither of which reads a map.
+
+## What goes
+
+- **Report steps of the `gate test` verb.**
+  The `reach`, `redundancy` and `mutation` steps, the report chain that judged beside a key's last tier, and the `reports` list of a gate key.
+  The process cap and memory guard lose their carve-out for processes outside a running tier command.
+  It existed only so the report steps could run beside a tier.
+- **Verbs.** `gate reach`, `gate mutate`, `gate redundant` and the `--map` flag of `gate test`, with their help, refusals and tests.
+- **Config keys.** `gate.redundancy_build_timeout_min`, `gate.redundancy_test_timeout_sec`, `gate.redundancy_test_memory_mb`, `gate.redundancy_max_tests`, `gate.redundancy_budget_min`, `gate.reach_budget_min`, `gate.mutation_max_mutants` and `gate.mutation_budget_min` leave the template and the loader.
+- **The reach turn.** `verifytree.WithReachTurn` and its wiring in the `verify` gate and the Weaver batch entry.
+  `shuttleengine.RerunMark` and the gate entry's `Rerun` field existed only for that turn and go with it; `gatefixer` now runs the inner gate directly.
+- **Review markers.** The Code-Review rubric's `redundancy_report`, `reach_report` and `mutation_report` sections, the notes that filled them, and the text telling the reviewer how to read them.
+  The rubric's own test-economy findings stay.
+- **`internal/testcover`** drops the map record, mutants, line mutants, block keys, source scan and test-function scan.
+  It keeps the runner, profile reading, `Judge`, the spawn scan and the keep scan that `cmd/testtiming` runs on.
+- **`internal/testreach`** drops the map reader, its index, `ChangedFuncs` and `ChangedLines`.
+  It keeps `ChangedTests` for the red-first gate, which now compares declaration text directly instead of through a block hash, and no longer imports `internal/testcover`.
+- **`PATTERN-coverage-map-reader`** and its enforcing test retire.
+  `PATTERN-test-speed`, `PATTERN-gate-slot`, `PATTERN-daemon-wakeups`, the README and `docs/overview.md` lose the map, report-step and verb text.
+
+## What moves
+
+The red-first gate shared Go-module and source-tree helpers with the redundancy step's files.
+They now live in `internal/gatecli/gomodule.go`, renamed for what they do: `redundancyTree` became `sourceTree`, `redundancyModule` became `goModuleOf`, `reachModuleOf` became `testreachModule`.
+`verbDiffBase` and `noteScoper` moved into `redfirst.go`.
+
+## Design decisions
+
+- **A leftover `reports` list still loads.**
+  Gate key entries decode leniently, so a hub file whose tuned `gates` entries still hold `reports: []` keeps loading, the list ignored.
+  A row of `TestLoadConfig` pins this.
+  The retired top-level keys are not added to the refusing retired-key list either: a hub file that still sets one loads, with the unknown-key warning.
+- **Tests of removed code go with it.**
+  Rows and subtests that pinned only removed behaviour were deleted, such as the `--map` flag-shape refusals and the carve-out rows of `TestProcessCap` and `TestMemoryGuard`.
+  `TestLoadConfig`'s template defaults lose the removed keys.
+  `changedtests_test.go` gains a row for a test name declared in two files of one package, which only the deleted `ChangedFuncs` tests covered.
+- **Research reports stay.** The measurement reports under `docs/research/` record past runs and are left as written.
+
+## Hub config
+
+This repository's own hub sets `reports: []` on several `gates` entries of its `gate.yaml`.
+They keep loading, since the list is ignored.
+From the prime, the `config reconcile --layer default --apply` verb drops the keys the template no longer holds.
+A `reports` list inside a tuned `gates` entry belongs to that entry's value, so it goes when the `config gate --set` verb rewrites the entry.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** gate
