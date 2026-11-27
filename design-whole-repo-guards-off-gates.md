@@ -2,8 +2,6 @@
 
 `whole-repo-guards-off-gates` · Task · enhancement, gate, testkit · running · Darn-Write
 
-Depends on: [`remove-testmap`](design-remove-testmap.md)
-
 ## Seen (2026-11-26)
 
 `cmd/lym`'s test binary reaches about 2 GB and is the binary the gate's memory guard kills first when the machine is short.
