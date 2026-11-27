@@ -1,6 +1,6 @@
 # Cut shuttle and seat engines' tier1 test time at least in half
 
-`shuttle-test-cut` · Task · enhancement, shuttle, claude, codex, testkit · running · Darn-Write
+`shuttle-test-cut` · Task · enhancement, shuttle, claude, codex, testkit · draft
 
 ## Aim (operator, 2026-11-27)
 
