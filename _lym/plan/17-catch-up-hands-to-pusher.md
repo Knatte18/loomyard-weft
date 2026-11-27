@@ -15,7 +15,7 @@
 - `internal/dobbyengine#TestCatchUp`
 - `internal/pushledger#HeldRecordsCommit`
 - `internal/pushledger#Update`
-- `plan:internal/fabricengine#HoldPairPushLock`
+- `internal/fabricengine#HoldPairPushLock`
 
 **Intent:** D8: the dobby's catch-up hands an owed push to the pusher and starts the run.
 

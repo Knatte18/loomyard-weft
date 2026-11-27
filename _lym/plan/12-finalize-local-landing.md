@@ -32,12 +32,12 @@
 - `internal/fabricengine_test#TestArchiveParentMerge`
 
 **Create:**
-- `plan:internal/landingshed#ParentPush` -> `type ParentPush struct`
-- `plan:internal/loomcli#landLocally` -> `func landLocally(l *lymcwd.Location, slug string) func(tip string) error`
-- `plan:internal/fabricengine#HoldPairPushLock` -> `func HoldPairPushLock(pair *lymcwd.Location) (release func(), err error)`
-- `plan:internal/loomcli#TestLandLocally` -> `func TestLandLocally(t *testing.T)`
-- `plan:internal/loomcli#TestLandingDeps_LocalLanding` -> `func TestLandingDeps_LocalLanding(t *testing.T)`
-- `plan:internal/gitrepo#Repo.MergeStartNoFastForward` -> `func (r *Repo) MergeStartNoFastForward(ref string) (MergeOutcome, error)`
+- `internal/landingshed#ParentPush`
+- `internal/loomcli#landLocally`
+- `internal/fabricengine#HoldPairPushLock`
+- `internal/loomcli#TestLandLocally`
+- `internal/loomcli#TestLandingDeps_LocalLanding`
+- `internal/gitrepo#Repo.MergeStartNoFastForward`
 
 **Uses:**
 - `internal/fabricengine#TestMergeVocabulary_ResultAndOptionsFieldsAreSideFree`

@@ -11,7 +11,7 @@
 
 **Uses:**
 - `internal/landingshed/doc.go`
-- `plan:internal/landingshed#ParentPush`
+- `internal/landingshed#ParentPush`
 - `internal/runpusher#RecordLanding`
 - `internal/fabricengine#RecordPushFailure`
 - `internal/fabriclayout#PushFailureHeldBack`
