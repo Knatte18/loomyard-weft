@@ -16,7 +16,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 3h<br>3h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | darn · light | Darn-Write | neve | 1h<br>18m | reed, stencil |
-| T9 | **Study every raddle run and tune the split it proposes** | [`raddle-split-quality`](design-raddle-split-quality.md) | darn · docs | Darn-Write | neve | 11m<br>8m | stencil, board |
+| T9 | **Study every raddle run and tune the split it proposes** | [`raddle-split-quality`](design-raddle-split-quality.md) | darn · docs | Darn-Write | neve | 11m<br>9m | stencil, board |
 
 ## Layer A (1)
 
@@ -55,4 +55,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 17m<br>17m | dobby, batten, orch |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 18m<br>18m | dobby, batten, orch |
