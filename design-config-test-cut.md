@@ -1,6 +1,6 @@
 # Cut config, configsync and hubreconcile tier1 test time in half
 
-`config-test-cut` · Task · enhancement, config, reconcile, testkit · running · Drift-Verify
+`config-test-cut` · Task · enhancement, config, reconcile, testkit · running · Code-Bouncer
 
 ## Aim (operator, 2026-11-27)
 
