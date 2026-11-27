@@ -1,0 +1,1 @@
+Review segment of task `kde-window-placement` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/kde-window-placement/_lym/reviews/discussion/round-3-escalation.md` with a one-shot fork. Way forward: decide with "lym loom circling accept kde-window-placement".
