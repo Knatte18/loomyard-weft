@@ -2,7 +2,7 @@
 
 `push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby
 
-Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md), [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md)
+Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md)
 
 ## Decisions (operator, 2026-11-26)
 

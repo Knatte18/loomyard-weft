@@ -2,8 +2,6 @@
 
 `landing-queue` · Note · enhancement, landing, gate, batten
 
-Depends on: [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md)
-
 ## Seen (operator, 2026-11-27)
 
 Each landing runs its own landing gate, one after the other, so with many runs ready the gates queue in series.
