@@ -1,6 +1,6 @@
 # P5 Intake wave 3: beam orch parent, scope and earlier checks
 
-Rendered 2026-11-27 11:22 UTC; every age below is as of then.
+Rendered 2026-11-27 11:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-3` · Age 1d · Owner `neve`
@@ -8,7 +8,7 @@ Under: [Board](README.md).
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Layer C (1)
+## Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
