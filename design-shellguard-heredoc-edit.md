@@ -1,6 +1,6 @@
 # shell-edit guard passes perl -pi / sed -i on a line after a heredoc
 
-`shellguard-heredoc-edit` · Task · bug, process · draft
+`shellguard-heredoc-edit` · Task · bug, process
 
 Imported from [issue #268](https://github.com/Knatte18/loomyard/issues/268).
 

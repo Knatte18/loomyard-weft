@@ -129,13 +129,14 @@ Owner `neve`
 
 Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Ready (3)
+### Ready (4)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Memory guard fails a gate by killing cmd/lym tier1 when the user slice is full from elsewhere** | [`memory-guard-infra-stop`](design-memory-guard-infra-stop.md) | darn · light |  | 0m<br>0m | gate |
 | T5 | **Test-only-code guard fails a card whose function gets its first caller in a later card** | [`plan-later-caller-guard`](design-plan-later-caller-guard.md) | darn · light |  | 0m<br>0m | webster, loom |
 | T10 | **Foreground lym gate test is backgrounded after 180 s despite a one-hour Bash timeout** | [`gate-call-backgrounded-180s`](design-gate-call-backgrounded-180s.md) | darn · light |  | 0m<br>0m | shuttle, gate |
+| T18 | **shell-edit guard passes perl -pi / sed -i on a line after a heredoc** | [`shellguard-heredoc-edit`](design-shellguard-heredoc-edit.md) | darn · light |  | 0m<br>0m | process |
 
 ### Layer A (2)
 
@@ -161,12 +162,6 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 17h<br>11h | docs |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T18 | `draft` **shell-edit guard passes perl -pi / sed -i on a line after a heredoc** | [`shellguard-heredoc-edit`](design-shellguard-heredoc-edit.md) | darn · light |  | 0m<br>0m | process |
 
 ### Research (1)
 
