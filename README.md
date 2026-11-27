@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 06:21 UTC; every age below is as of then.
+Rendered 2026-11-27 06:22 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -42,7 +42,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Burler-Review | neve | 22h<br>22h | shuttle, claude, tender, gate, burler, shed, reed |
+| T10 | **Machine stops, dead judges and idle seats are not producer failures** | [`infra-stops-not-failures`](design-infra-stops-not-failures.md) | darn · solid | Code-Burler-Fix | neve | 22h<br>22h | shuttle, claude, tender, gate, burler, shed, reed |
 
 ### Layer A (1)
 
@@ -96,7 +96,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T8 | **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | Webster | neve | 18h<br>18h | dobby, gate, batten, orch, pattern |
+| T8 | **Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long** | [`dobby-run-watch-build`](design-dobby-run-watch-build.md)<br>[Sketch](decision-dobby-run-watch-build.md) | tapestry · solid | Webster | neve | 19h<br>19h | dobby, gate, batten, orch, pattern |
 
 ### Layer D (1)
 
@@ -135,7 +135,7 @@ Owner `neve`
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | darn · light |  | 9h<br>8h | desktop |
-| T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed |  | 8h<br>8h | board |
+| T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed |  | 9h<br>8h | board |
 
 ### Layer C (1)
 

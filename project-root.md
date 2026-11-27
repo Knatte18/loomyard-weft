@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 06:21 UTC; every age below is as of then.
+Rendered 2026-11-27 06:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -22,7 +22,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Desktop launchers are named "lym: <hub>" instead of "lym: start the hub <hub>"** | [`desktop-launcher-names`](design-desktop-launcher-names.md) | darn · light |  | 9h<br>8h | desktop |
-| T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed |  | 8h<br>8h | board |
+| T4 | **Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam** | [`readme-header-and-mode-lines`](design-readme-header-and-mode-lines.md) | darn · speed |  | 9h<br>8h | board |
 
 ## Layer C (1)
 
