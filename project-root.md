@@ -19,7 +19,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | Code-Burler-Fix | neve | 45m<br>45m | loom, stencil |
 | T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | Code-Burler-Fix | neve | 45m<br>45m | burler |
 | T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light | Darn-Write | neve | 2h<br>39m | webster |
-| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light | starting · Seed-IDE | neve | 1h<br>39m | gate, config |
+| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light | starting · Open-IDE | neve | 1h<br>39m | gate, config |
 
 ## Layer A (1)
 
