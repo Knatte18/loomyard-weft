@@ -1,0 +1,18 @@
+---
+round: 1
+focus:
+  - "D12's exit paths, cards 10 and 11: trace every way the child can end after it is handed a window (a failed RecordOpen, ReadTilingOutput, RecordReport or places write, a failed lock acquire, a failed resolution or runner construction in the verb, an unresolved worktree, a SIGTERM during each wait, lock hold or apply, or before the signal context exists) and settle whether each settles the entry and runs or skips window_command as D9, D10 and D12 say."
+  - "D3 and D10's script lock and query sharing, cards 7 and 10: compare the `after` and `within` values the flow passes, the report written to kwinquery.json (including failed-probe and no-output reports) and what a sharing child reads against the record's wording; settle also whether the unload, abandoned-acquire and SIGTERM paths hold across a real process exit."
+  - "D8 and D9, cards 8, 9 and 10: walk each rule and acceptance criterion to the function that carries it, and settle whether the inputs each function is given suffice. Look at how report windows are matched to worktrees, the current order a renumber reads, entries of a parent or sibling that change between a wait and the locked read, the homed-window and prime anchor cases, and where the 180-second and 120-second budgets are kept across returns."
+  - "D6's apply and zone reading, cards 5 and 9: settle whether ApplyOrder, ApplyReport and Snapshot carry everything the apply script, the planner and the places update need (padding, usable area, untiled and clamped windows, empty zones, windows leaving a tile), and whether the stated tests can pin that behaviour."
+  - "Research steps, the probes-before-code Shared Decision and card 5: for each unobserved KWin or kscreen fact in the record's Open risks, and each recording that needs operator approval or a particular screen or window state, settle whether any card leaves a fact to be found while it runs or depends on a step no card or decision makes reachable."
+  - "Recordings and stand-ins, cards 5, 7, 10 and 11: check PATTERN-test-stand-ins and PATTERN-test-speed against the planned tests, including the function-field fakes at tier0, the hand-cut recording variants, the tier3 contract test's coverage of qdbus6, journalctl and kscreen-doctor, and whether card 11's reduced PATH keeps the test away from a real desktop."
+  - "Acceptance criteria, all cards: map every bullet to a planned test or, for a Review bullet, to a card that edits the named text; settle which behaviours (D1's no-KWin-call path, D11, D12 for `lym reed window` and `lym machine start`) have no test that reaches them."
+  - "Refusals and new surfaces, cards 2, 4, 6, 7, 11 and 12: check each prescribed refusal for a named reaching input and test, and each new verb, flag or routing edge (place-window and its flags, the placement hand-off, runproc registration) for a stated and true attack-surface bound."
+  - "Card targets, cards 1, 7, 10, 11, 12 and 13: check source-file self glyphs against the symbols their Intent changes, Extends entries on text the card rewrites rather than only adds to, missing re-sign arrows, and search for further docs, help texts, comments, pattern backgrounds or scans (daemon wakeups, child processes, lym files, runproc role consumers) that the change makes stale and no card targets."
+  - "Fidelity and scope, all cards: check every Decision and Constraint of the decision record against a carrying card, and look for card behaviour the record does not license, such as the Shared Decisions on tiers and run registration."
+---
+
+Seed focus for round 1.
+The plan's weight is in the new `internal/kwinplace` package and the detached child (cards 5 to 11),
+where concurrency, exit paths and unobserved KWin facts meet.
