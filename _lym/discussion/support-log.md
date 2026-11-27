@@ -58,7 +58,11 @@ Findings, merged across lenses:
 
 ## Rejected alternatives
 
-- **Match the KWin window by caption.** The tab title is lym's only handle today, but Konsole's caption carries more than the title and changes with the shell; the process id under `--separate` is exact.
+- **Match the KWin window by caption.** The tab title is lym's only handle today, and a lym window's caption reads `<lym title> — Konsole` on Neve, but a second window opened on the same worktree carries the same caption; the process id under `--separate` tells them apart.
+- **Open the orch windows before the beam starts.** `lym machine start` opens windows only for the worktrees whose beam start succeeded, so the order cannot change; the parent wait covers the gap instead (D8, D12).
+- **Poll the per-user lock.** `lock.AcquireWriteLockWithin` retries every 10 ms, which a wait past a minute may not do under `PATTERN-daemon-wakeups`; a blocking acquire wakes only when the lock frees (D10).
+- **Clamp the panel row with `kdotool`.** It adds a tool to D1's checks; the apply script sets the frame itself (D6).
+- **Record an overflow as the window's place.** A session on a smaller screen would move the window's place for good; the home desktop is kept apart from the last desktop (D9).
 - **A session-bus listener for script results.** A KWin script could `callDBus` back to lym, but lym would need its own bus name and a listener; the journal channel works on Neve today and needs neither.
 - **A persistent KWin script that watches every window.** It would record moves as they happen, but it needs installing and enabling in `kwinrc` and still needs a return channel; snapshots at each placement catch moves well enough.
 - **Places in hub config per machine.** Places are observed state that changes on every placement, not a setting, and a config write per window would churn the machine layer.
@@ -71,7 +75,40 @@ Findings, merged across lenses:
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1, the 120 s lock wait polls every 10 ms: fixed differently; a blocking acquire that wakes only when the lock frees (D10).
+- F2, a child anchors on its parent's unplaced desktop: fixed; under the lock the anchor reads the parent's live window only once its entry is settled, and its home while it is being placed (D8, D9).
+- F3, `lym machine start` opens windows after every beam start: fixed; the real order stated, the parent wait raised to 180 s with back-off, the first-start fallback a bound (D8, D12).
+- F4, the panel clamp dropped: fixed; the apply script clamps the bottom row through `frameGeometry` (D3, D6).
+- F5, concurrent places writes: fixed; one `UpdateJSON` per write, changing only its own fields (D9).
+- F6, an overflow overwrites the remembered desktop: fixed; a home desktop kept apart from the last desktop (D8, D9).
+- F7, KWin behaviour on non-current desktops unobserved: the apply step's desktop and output move added (D3) and the probe's mechanism replaced; observing each fact on Neve deferred, since it needs the session bus and the operator's live desktop (Constraints).
+- F8, D2's pid and caption facts: fixed; observation recorded and `--separate` justified by Konsole's single-process setting (D2).
+- F9, the probe cannot decide the command line: fixed; pre-launch checks and the post-launch probe split (D1).
+- F10, the waits need KWin queries outside the lock: fixed differently; the window wait runs read-only queries unlocked, a second apart, and the parent wait reads only the places file (D8, D10).
+- F11, the per-user lock has no home: fixed; `kwinplace.lock` in `standalonestate.UserStateDir` (D10).
+- F12, timeout and kill leave the script loaded: fixed; unload on every exit, SIGTERM unloads, a kill is a bound; a script's body runs whole in KWin, so no half-built desktop (D3, D10).
+- F13, `window_command` lost or gained: fixed; run on every exit path of the child, `off` included, `lym machine start` gains it under placement only (D12).
+- F14, help and template text: fixed; Review criterion extended.
+- F15, a renumber collides with absent keys: fixed; present windows renumbered into their own positions (D9).
+- F16, the `--since` granularity claim: fixed; dropped (D3).
+- F17, D6's count against `arrange-to-tiles.sh`: fixed; the rationale reworded (D6).
+
+### Round 2
+
+- F1, an unsettled parent entry's home is not where the parent lands: fixed; the anchor reads only a settled parent entry, a child finding it unsettled under the lock releases the lock and waits again within one 180 s bound, and a window placed from the current-desktop fallback stays homeless (D8, D9, D10).
+- F2, a renumber rewrites an overflowed window's key: fixed; a renumber covers only the present windows homed on the desktop (D9).
+- F3, KWin facts left for later: put to the parent for observation on Neve (creel #2818); the parent declined every probe (#2819), so the facts moved to Open risks with the probes as the implementing run's first step, and the parent's `kscreen-doctor -o` and `kwinrc` readings went into Constraints.
+- F4, `window_command` on the SIGTERM exit: fixed; a child ended by SIGTERM runs none and ends one already running (D12).
+
+### Round 3
+
+- F5, D2's resource class `konsole` matches no Wayland window: fixed; the match takes `org.kde.konsole`, read from source and added to the probes, and placement takes a Wayland session only (D1, D2, Constraints).
+- F6, a script run can reach another script through a reused id: fixed; every script run holds a per-user script lock until its script has left KWin, under a plugin name unique per run, with -1 a failed load and a leftover unloaded first; collisions with scripts lym does not own are a bound (D3, D10, Constraints).
+  The fixer's self-check added: a leftover still loaded fails the next run before its load, an abandoned acquire releases the lock at once, window-wait children share one fresh query report so the lock does not starve them, and D10's total wait counts the script lock (D3, D10).
+- F7, the query lacks what D6 orders by: fixed; it reports each window's `internalId`, the current desktop and every desktop's leaf tiles with geometry, padding and windows, and a zone is the leaf that lists the window (D3, D6, Constraints).
+- F8, a renumber rewrites an unsettled window's key: fixed; the renumber and its trigger take settled entries only, an unsettled entry counting as absent (D9).
 
 ## Question ledger
 
@@ -88,5 +125,12 @@ _No rounds yet._
 - Q11 (auto-pick): Are VS Code windows placed? No; raised as an open risk.
 - Q12 (auto-pick): Are non-lym windows counted? Yes, as `arrange-to-tiles.sh` does (D6).
 - Q13 (auto-pick): Where does placement run? In a detached child, so the Open-Window row's 30 s bound never fails (D10).
-- Q14 (auto-pick): How long are the waits? Window 10 s, parent 20 s, lock 120 s, journal 5 s (D3, D8, D10).
+- Q14 (auto-pick): How long are the waits? Window 10 s with query runs a second apart, parent 180 s re-reading from one to eight seconds, lock 120 s through a blocking acquire, journal 5 s (D3, D8, D10).
 - Q15 (auto-pick): Is a window recorded under `off`? Yes, so a child with its own mode has an anchor (D1, D9).
+- Q16 (auto-pick): What does an overflow record? Its landing desktop as its last desktop, keeping its home and order key (D9).
+- Q17 (auto-pick): Does lym clamp the bottom row at the panel? Yes, in the apply script (D6).
+- Q18 (auto-pick): When does `window_command` run under placement? In the child on every exit path but SIGTERM, mode `off` included; `lym machine start` gains it under placement only (D12).
+- Q19 (auto-pick): Where is the per-user lock? In the per-user state directory (D10).
+- Q20 (auto-pick): What does a window anchored on the current desktop past the parent wait record? No home, so its next placement anchors on its parent again (D8, D9).
+- Q21 (auto-pick): Is an X11 session placed? No; it works as today, since Konsole's resource class differs there and only Wayland runs on Neve (D1, D2).
+- Q22 (auto-pick): How does a script run reach its own script? A per-user script lock held from load until the script has left KWin, a plugin name per run, and a leftover unloaded first (D3).
