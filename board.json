@@ -1044,7 +1044,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #275](https://github.com/Knatte18/loomyard/issues/275).\n\n**What happened.**\nAn implementer ran `lym gate test` in the foreground with the Bash tool timeout set to 3600000 ms, as the gate rule says.\nSeveral times the harness moved the call to the background after 180 s.\nEach time the call then ended with exit 75 and had to be run again.\n\n**Why it is abnormal.**\nThe gate rule requires foreground calls.\nExit 75 with `done: false` is the documented keep-warm answer,\nbut it is meant to return to a foreground call.\nThe `keep_warm_cap` default in the claude engine's `template.yaml` is 250s, longer than the 180 s at which the call was backgrounded\n(the value in effect for this run was not recorded).\nThe launch line sets `BASH_MAX_TIMEOUT_MS` to one hour, and the engine's docs say no Bash call stays in the foreground past that ceiling;\nthese calls left the foreground far earlier.\n\n**What to do.**\nFind which harness setting backgrounds a foreground Bash call at 180 s.\nThen either set it in the launch and resume lines, or keep the keep-warm cap below it,\nso a gate call always answers while still in the foreground.\n\nProvenance: task `dobby-run-watch-build`, note `04-run-watch-wiring.md`.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-27T07:51:17Z",
       "revised": "2026-11-27T07:51:35Z",
       "profile": "light"
