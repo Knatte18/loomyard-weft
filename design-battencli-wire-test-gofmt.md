@@ -1,6 +1,6 @@
 # No gate checks Go formatting
 
-`battencli-wire-test-gofmt` · Note · bug, gate, batten
+`battencli-wire-test-gofmt` · Note · enhancement, gate
 
 ## Seen
 
