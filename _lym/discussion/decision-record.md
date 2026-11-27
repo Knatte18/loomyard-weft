@@ -353,6 +353,12 @@ Decision: While a run's landing entry stands, every teardown of its pair refuses
 
 Rationale: Round-3 F3: lym fabric remove marked the entry done and pushed the held records, so origin could read an ended entry whose parent lacks the run's work.
 
+### Added after Discussion (parent, 2026-11-27): Merge-in base persisted before the merge
+
+Decision: D9's merge-in pass persists the pre-merge task head under the run's scratch directory before it merges, in its own file named through the existing scratch path, keeps it until the removal has run, and a resume takes the base from it, never from an earlier merge's task_head or a head read after the merge. The D9 red-first criterion adds a resume after a kill between the merge-in and the merge record write, on a first merge-in and on a later one.
+
+Rationale: Round-3 F4, open in every round: a kill between the merge commit and the record write left no usable base, and the resume halted as in issue #242.
+
 ## Constraints
 
 - Root cause, from the code at `3fbf277ca`:
