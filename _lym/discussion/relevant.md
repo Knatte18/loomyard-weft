@@ -1,0 +1,25 @@
+# Relevant files
+
+- `internal/runpusher/run.go` — the pusher's pass loop, its interval and its one notice at the ceiling
+- `internal/runpusher/pushuntillanded.go` — the owed retry from one second to a one-minute ceiling
+- `internal/runpusher/start.go` `RestartPusher` — the pusher's start conditions and its restart from the dobby tick and resumes
+- `internal/loomcli/pusher.go` — wires the pusher's push and notify seams
+- `internal/fabricengine/spawn.go` — the detached status and pair pushes of `lym fabric sync` and `add`
+- `internal/boardengine/spawn.go` — the board's detached `lym board sync` push
+- `internal/fabricengine/failedpush.go` `RecordPushFailure` — the failed-push record and its per-episode notice
+- `internal/orchcli/pushnotifier.go` — the notifier that mails the orch per failed push
+- `internal/fabricengine/pushanchored.go` — the push lock and its busy error, read as owed
+- `internal/fabricengine/pushclassified.go` `resetUnnamedTip` — the lease reset that can pass a hand commit
+- `internal/sheddriver/driverules.go` `networkFailure` — the capped network re-step and the hand-back after it
+- `internal/loomengine/anomaly.go` `AnomalyTransientStop` — the transient-stop kind whose doc comment overstates the re-step
+- `internal/landingshed/finalize.go` — the local landing's merge and synchronous parent push under the parent lock
+- `internal/landingshed/finalize_owner.go` — Finalize's owner check that halts on an unreachable origin
+- `internal/landingshed/verifygate.go` — the clean-tree check after the merge-in
+- `internal/boardengine/ownerset.go` `ErrOwnerOriginUnreachable` — the owner write's unreachable-origin error with no transient class
+- `internal/battencli/catchup.go` — the dobby's catch-up whose owed push fails on a held push lock
+- `internal/battenshed/teardown.go` — Worktree-Teardown's bounded push rounds and its stuck halt
+- `internal/runfsm/act.go` `CodeTipGrace` — the code-tip wait issue #218 quotes, already lifted for a pair standing here
+- `internal/reedengine/bar.go` — the bar's format strings and the Slack `#()` job
+- `contracts/stencils/engine/claude/edit-directive.md` — the agents' push directive
+- `internal/pairteardown/runread.go` — the run reader's past-the-merge read, from origin's parent while pushes are on
+- `internal/beamcli/dobbydeps.go` `tearDownLeftover` — the dobby's landed-pair teardown, with no origin-tip check today
