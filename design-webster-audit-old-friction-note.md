@@ -1,6 +1,6 @@
 # Webster run-exit audit flags a resumed Master earlier friction note
 
-`webster-audit-old-friction-note` · Task · bug, webster
+`webster-audit-old-friction-note` · Task · bug, webster · starting · Worktree-Create
 
 Seen on weaver-bench-b2 (2026-11-27): Webster Master's first prompt named its friction note `_lym/loom/friction/webster-master.md`, and Master wrote it.
 After `lym loom resume` the new Master prompt named the note `webster-master-2.md`.
