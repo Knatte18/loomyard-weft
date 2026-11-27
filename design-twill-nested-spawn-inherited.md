@@ -1,6 +1,6 @@
 # twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run
 
-`twill-nested-spawn-inherited` · Task · bug, burler · starting · Seed-IDE
+`twill-nested-spawn-inherited` · Task · bug, burler · starting · Open-IDE
 
 Imported from [issue #276](https://github.com/Knatte18/loomyard/issues/276).
 
