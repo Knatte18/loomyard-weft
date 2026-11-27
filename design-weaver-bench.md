@@ -2,6 +2,8 @@
 
 `weaver-bench` · Task · research, weaver, webster · draft
 
+Depends on: [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md)
+
 ## Aim (operator, 2026-11-27)
 
 Weaver, the cold-start implementer with model escalation (`18abfaf50`), landed long ago and has never been tried on a real plan.
