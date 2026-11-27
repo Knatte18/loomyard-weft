@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 15:12 UTC; every age below is as of then.
+Rendered 2026-11-27 15:16 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,8 +14,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 38m<br>38m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Darn-Write | neve | 15m<br>15m | config, reconcile, testkit |
+| T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 42m<br>42m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Darn-Write | neve | 19m<br>19m | config, reconcile, testkit |
 
 ## Layer G (1)
 
@@ -40,10 +40,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | 1h<br>1h | webster |
-| B2 |  | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | 37m<br>37m | gate, config |
+| B2 |  | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | 41m<br>41m | gate, config |
 
 ## Enhancements (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 8h<br>37m | landing, gate, batten |
+| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 8h<br>41m | landing, gate, batten |
