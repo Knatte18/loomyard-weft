@@ -1,6 +1,6 @@
 # P4 Fabric split into a git-free core, a layout package and a thin git engine
 
-Rendered 2026-11-27 18:39 UTC; every age below is as of then.
+Rendered 2026-11-27 18:40 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-core`](design-fabric-core.md) · Age 20h · Owner `neve`
@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 20h<br>16m | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11<br>T21 | 20h<br>17m | fabric, testkit, shed, board, pattern |
 
 ## Layer C (1)
 
