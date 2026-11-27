@@ -23,7 +23,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 3h<br>3h | batten, fabric |
-| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>36m | fabric, cleanup, batten |
+| T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11 | 1d<br>37m | fabric, cleanup, batten |
 
 ## Layer B (1)
 
@@ -41,16 +41,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>33m | landing, gate, batten |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 11h<br>34m | landing, gate, batten |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 1h<br>1h | dobby, batten, orch |
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T8 | **Reed agent button: explain the name rule and start the agent with lym context** | [`reed-agent-button-fixes`](design-reed-agent-button-fixes.md) | 2h<br>1h | reed, stencil |
