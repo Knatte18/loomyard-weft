@@ -1,0 +1,548 @@
+diff --git a/docs/benchmarks/running-tests.md b/docs/benchmarks/running-tests.md
+index 8318f35d9..e835f0d97 100644
+--- a/docs/benchmarks/running-tests.md
++++ b/docs/benchmarks/running-tests.md
+@@ -87,7 +87,7 @@ go run ./cmd/testtiming -tags tier2
+ 
+ It shells out to `go test ./... -json -count=1 -tags <tags>` (`tier0` with no tags of its own, `tier1` in full mode), so it needs nothing beyond a working Go toolchain.
+ It sets `LYM_TEST_TIER` to the tiers the tags name, so a run that wants several names every tag, and the tiers must form one range.
+-A run under a tier above `tier0` builds `lym` once and hands it to every test binary through the `LYM_PREBUILT_LYM` variable, as `lym gate test --tags` does, and a `tier0` run builds nothing and strips an inherited value.
++A run under a tier above `tier0` builds `lym` once and hands it to every test binary through the `LYM_PREBUILT_LYM` variable, and a `tier0` run builds nothing and strips an inherited value.
+ `lym gate test --tags <tags> <packages>` is where one `lym` build serves every package of the run.
+ Exit code mirrors `go test`: `0` on success, `1` if any package fails to build or any test fails (failing rows are marked `FAIL` in the table).
+ 
+diff --git a/internal/gatecli/copies.go b/internal/gatecli/copies.go
+index dcae1ed2e..e6805c222 100644
+--- a/internal/gatecli/copies.go
++++ b/internal/gatecli/copies.go
+@@ -59,10 +59,10 @@ func (l *lockedWriter) Write(p []byte) (int, error) {
+ 
+ // runTierCopies runs request.copiesRun copies of run side by side, each a tier run of its own, and waits on all of them.
+ // Each copy runs under the tier's own counter, timeout, CPU watchdog and memory guard.
+-// A tier that asks for a prebuilt `lym` builds it once for all the copies.
++// A tier that asks for a prebuilt `lym` builds it once for all the copies, when a test they run may use it.
+ // A copy's stdout is kept in its log only, so the copies never interleave their output.
+ func runTierCopies(ctx context.Context, run tierRun, env []string, request testRequest) tierResult {
+-	if run.tier.PrebuiltLym && len(run.invocations) > 0 {
++	if len(run.invocations) > 0 && needsPrebuiltLym(run, request.root) {
+ 		prebuildCtx, cancel := withTimeoutMin(ctx, time.Duration(run.tier.TimeoutMin)*request.timeoutUnit, elapsedSinceNow(), time.After)
+ 		bin, cleanup, err := prebuildLym(prebuildCtx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore, request.pipeWaitDelay, nil)
+ 		cancel()
+@@ -77,8 +77,8 @@ func runTierCopies(ctx context.Context, run tierRun, env []string, request testR
+ 		if bin != "" {
+ 			env = append(slices.Clone(env), gateslot.PrebuiltLymEnv+"="+bin)
+ 		}
+-		run.tier.PrebuiltLym = false
+ 	}
++	run.tier.PrebuiltLym = false
+ 
+ 	copyRequest := request
+ 	copyRequest.copiesRun = 0
+diff --git a/internal/gatecli/copies_test.go b/internal/gatecli/copies_test.go
+index bb0d602b4..a2c0571ef 100644
+--- a/internal/gatecli/copies_test.go
++++ b/internal/gatecli/copies_test.go
+@@ -234,44 +234,73 @@ func TestMergeCopies(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRunTierCopies_BuildsThePrebuiltLymOnce is not parallel:
+-// it writes and then executes a stand-in go binary.
++// TestRunTierCopies_PrebuildsLymOnceWhenATestMayUseIt is not parallel, and neither are its subtests:
++// each writes and then executes a stand-in go binary.
+ // A fork in a parallel test could hold the script's write handle open.
+-func TestRunTierCopies_BuildsThePrebuiltLymOnce(t *testing.T) {
++func TestRunTierCopies_PrebuildsLymOnceWhenATestMayUseIt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	if runtime.GOOS == "windows" {
+ 		t.Skip("the tier command and the stand-in go binary are POSIX shell scripts")
+ 	}
+ 
+-	dir := t.TempDir()
+-	builds := filepath.Join(dir, "builds")
+-	goBinary := filepath.Join(dir, "go")
+-	// The build's arguments are `build -C <root> -p <n> -trimpath -o <bin> ./cmd/lym`, so $8 is the binary's path.
+-	script := fmt.Sprintf("#!/bin/sh\necho built >> %q\n: > \"$8\"\n", builds)
+-	if err := os.WriteFile(goBinary, []byte(script), 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-	// A root without cmd/lym builds nothing.
+-	if err := os.MkdirAll(filepath.Join(dir, "cmd", "lym"), 0o755); err != nil {
+-		t.Fatal(err)
+-	}
+-	run := tierRun{
+-		number: 0,
+-		tier: gateslot.Tier{
+-			Command: fmt.Sprintf(`test -e "$%s"`, gateslot.PrebuiltLymEnv), Counter: counterGoJSON, TimeoutMin: 1, PrebuiltLym: true,
++	tests := []struct {
++		name string
++		// command exits 0 only when it sees the prebuilt-binary variable as the row expects.
++		command    string
++		targets    []string
++		wantBuilds int
++	}{
++		{
++			name:       "BothCopiesShareOneBuild",
++			command:    fmt.Sprintf(`test -e "$%s"`, gateslot.PrebuiltLymEnv),
++			wantBuilds: 1,
++		},
++		{
++			name:    "TargetsWhoseTestsDoNotUseItBuildNone",
++			command: fmt.Sprintf(`test -z "$%s" && : {targets}`, gateslot.PrebuiltLymEnv),
++			targets: []string{"./plain"},
+ 		},
+-		invocations: []invocation{{dir: dir}},
+-	}
+-	request := testRequest{
+-		root: dir, goBinary: goBinary, stderr: io.Discard, copiesRun: 2, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay,
+ 	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			dir := t.TempDir()
++			builds := filepath.Join(dir, "builds")
++			goBinary := filepath.Join(dir, "go")
++			// The build's arguments are `build -C <root> -p <n> -trimpath -o <bin> ./cmd/lym`, so $8 is the binary's path.
++			script := fmt.Sprintf("#!/bin/sh\necho built >> %q\n: > \"$8\"\n", builds)
++			if err := os.WriteFile(goBinary, []byte(script), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			// A root without cmd/lym builds nothing.
++			for _, sub := range []string{filepath.Join("cmd", "lym"), "plain"} {
++				if err := os.MkdirAll(filepath.Join(dir, sub), 0o755); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if err := os.WriteFile(filepath.Join(dir, "plain", "plain_test.go"), []byte("package plain\n\nimport \"testing\"\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			run := tierRun{
++				number:      0,
++				tier:        gateslot.Tier{Command: tt.command, Counter: counterGoJSON, TimeoutMin: 1, PrebuiltLym: true},
++				invocations: []invocation{{dir: dir, targets: tt.targets}},
++			}
++			request := testRequest{
++				root: dir, goBinary: goBinary, stderr: io.Discard, copiesRun: 2, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay,
++			}
+ 
+-	result := runTierCopies(context.Background(), run, []string{"PATH=" + os.Getenv("PATH")}, request)
++			result := runTierCopies(context.Background(), run, []string{"PATH=" + os.Getenv("PATH")}, request)
+ 
+-	if result.refusal != "" || result.record.ExitCode != 0 || len(result.copies) != 2 {
+-		t.Fatalf("runTierCopies() = refusal %q, exit %d, %d copies, log %q; want two green copies that saw the prebuilt lym", result.refusal, result.record.ExitCode, len(result.copies), result.log)
+-	}
+-	if content, err := os.ReadFile(builds); err != nil || strings.Count(string(content), "built") != 1 {
+-		t.Errorf("builds record = %q, %v; want the one build both copies share", content, err)
++			if result.refusal != "" || result.record.ExitCode != 0 || len(result.copies) != 2 {
++				t.Fatalf("runTierCopies() = refusal %q, exit %d, %d copies, log %q; want two green copies", result.refusal, result.record.ExitCode, len(result.copies), result.log)
++			}
++			content, err := os.ReadFile(builds)
++			if err != nil && !os.IsNotExist(err) {
++				t.Fatal(err)
++			}
++			if got := strings.Count(string(content), "built"); got != tt.wantBuilds {
++				t.Errorf("builds = %d; want %d", got, tt.wantBuilds)
++			}
++		})
+ 	}
+ }
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 54e604213..e82d890b3 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -104,6 +104,13 @@
+ // It names the tier's value only, never the session's, which may be a secret.
+ // A tier with `prebuilt_lym` first builds `lym` inside its slots and timeout, where the worktree root holds `cmd/lym`.
+ // It then exports `gateslot.PrebuiltLymEnv`.
++// It builds only when a test it runs may use the binary.
++// A command that takes no targets runs whole, so it always builds.
++// For one that takes targets, that is so when a targeted package's test file imports `internal/testkit/lymbin`.
++// It is also so when the kit's own directory is targeted, or when a target is a `...` pattern or no directory.
++// The whole set's `./...` therefore builds it, and an invocation with no target does too.
++// The Testkit Invariant keeps every other file from importing the kit,
++// so a test reaches the binary through no other route.
+ // Inside a hub the binary is copied into the pool's store under a name from its content hash.
+ // Go therefore keeps a re-run on an unchanged tree cached.
+ //
+diff --git a/internal/gatecli/prebuild.go b/internal/gatecli/prebuild.go
+index 1dfb8f5bd..20492d186 100644
+--- a/internal/gatecli/prebuild.go
++++ b/internal/gatecli/prebuild.go
+@@ -1,4 +1,4 @@
+-// prebuild.go builds `lym` once for a tagged `lym gate test` run.
++// prebuild.go builds `lym` once for a tagged `lym gate test` run whose tests may use it.
+ // Every package of that run shares the one binary.
+ // Every package reaches it through gateslot.PrebuiltLymEnv.
+ // Inside a hub, the binary is kept in the hub's content-addressed store.
+@@ -19,12 +19,59 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/impactset"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymtemp"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+ 
++// needsPrebuiltLym reports whether run's tier asks for a prebuilt `lym` and a test the run executes may use it.
++// root is the worktree root the invocations' run directories resolve against.
++// A command that takes no targets runs whole whatever the invocations' targets say, so it counts as using it.
++// A tier that asks for one but whose targets' tests cannot use it logs that it builds none.
++func needsPrebuiltLym(run tierRun, root string) bool {
++	if !run.tier.PrebuiltLym {
++		return false
++	}
++	if !gateslot.HoldsTargets(run.tier.Command) || invocationsUseLymBinary(root, run.invocations) {
++		return true
++	}
++	logger.Info("gate test: no targeted package's tests use the lym binary, so the tier builds none", "tier", tierName(run.number))
++	return false
++}
++
++// invocationsUseLymBinary reports whether a test the invocations run may use the prebuilt `lym`.
++// An invocation with no target runs its command whole, and so does a target that holds `...`,
++// and a target that is no relative or absolute directory may name any package:
++// each counts as using it.
++// A directory target resolves against its invocation's run directory under root.
++// It counts when impactset.TestsUseLymBinary reports that the tests in that directory use the binary.
++func invocationsUseLymBinary(root string, invocations []invocation) bool {
++	for _, invocation := range invocations {
++		if len(invocation.targets) == 0 {
++			return true
++		}
++		dir := resolveRunDir(root, invocation.dir)
++		for _, target := range invocation.targets {
++			if strings.Contains(target, "...") || !isDirectoryTarget(target) {
++				return true
++			}
++			if impactset.TestsUseLymBinary(resolveRunDir(dir, target)) {
++				return true
++			}
++		}
++	}
++	return false
++}
++
++// isDirectoryTarget reports whether target names a directory as `go` reads a package argument:
++// `.` or `..`, a path opening with one of them and a slash, or an absolute path.
++func isDirectoryTarget(target string) bool {
++	return target == "." || target == ".." || strings.HasPrefix(target, "./") || strings.HasPrefix(target, "../") || filepath.IsAbs(target)
++}
++
+ // prebuiltRetention is how long a stored binary stays after its last use before a later prebuild prunes it.
+ // It is far longer than any gate run, so no run loses its binary while it still runs.
+ const prebuiltRetention = 2 * time.Hour
+diff --git a/internal/gatecli/prebuild_test.go b/internal/gatecli/prebuild_test.go
+index d5587cd49..5a1c0d8a0 100644
+--- a/internal/gatecli/prebuild_test.go
++++ b/internal/gatecli/prebuild_test.go
+@@ -1,4 +1,4 @@
+-// prebuild_test.go covers the prebuilt lym store over plain files.
++// prebuild_test.go covers the prebuilt lym store over plain files, and which targets make a run build the binary.
+ // It tests the content-derived name, reuse of a stored binary, refreshing a missing entry and pruning by last use.
+ // It also tests a destination another run published first and a store that cannot be created.
+ 
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -170,3 +171,62 @@ func TestStorePrebuilt(t *testing.T) {
+ 		}
+ 	})
+ }
++
++func TestInvocationsUseLymBinary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	root := t.TempDir()
++	// user's tests import the kit, plain's do not, and mod/user is a nested module's package whose tests import it.
++	for rel, content := range map[string]string{
++		"user/user_test.go":     "package user_test\n\nimport \"github.com/Knatte18/loomyard/internal/testkit/lymbin\"\n",
++		"plain/plain_test.go":   "package plain\n\nimport \"testing\"\n",
++		"mod/user/user_test.go": "package user\n\nimport \"example.com/mod/internal/testkit/lymbin\"\n",
++	} {
++		path := filepath.Join(root, filepath.FromSlash(rel))
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatal(err)
++		}
++		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++
++	tests := []struct {
++		name        string
++		invocations []invocation
++		want        bool
++	}{
++		{"NoTargetRunsWhole", []invocation{{dir: "."}}, true},
++		{"WholePattern", []invocation{{dir: ".", targets: []string{"./..."}}}, true},
++		{"SubtreePattern", []invocation{{dir: ".", targets: []string{"./plain/..."}}}, true},
++		{"ImportPathTarget", []invocation{{dir: ".", targets: []string{"example.com/plain"}}}, true},
++		{"PackageWhoseTestsImportTheKit", []invocation{{dir: ".", targets: []string{"./plain", "./user"}}}, true},
++		{"AbsolutePackageWhoseTestsImportTheKit", []invocation{{dir: ".", targets: []string{filepath.Join(root, "user")}}}, true},
++		{"NestedModulePackageResolvedFromItsRunDir", []invocation{{dir: ".", targets: []string{"./plain"}}, {dir: "mod", targets: []string{"./user"}}}, true},
++		{"PackagesWhoseTestsDoNotImportTheKit", []invocation{{dir: ".", targets: []string{"./plain"}}}, false},
++		{"CurrentDirectoryTarget", []invocation{{dir: "plain", targets: []string{"."}}}, false},
++		{"ParentDirectoryTarget", []invocation{{dir: "plain/sub", targets: []string{".."}}}, false},
++		{"TargetOpeningWithTheParentDirectory", []invocation{{dir: "mod", targets: []string{"../plain"}}}, false},
++		{"NoInvocation", nil, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := invocationsUseLymBinary(root, tt.invocations); got != tt.want {
++				t.Errorf("invocationsUseLymBinary(%+v) = %v; want %v", tt.invocations, got, tt.want)
++			}
++		})
++	}
++
++	t.Run("CommandWithoutTargetsRunsWhole", func(t *testing.T) {
++		t.Parallel()
++		run := tierRun{
++			tier:        gateslot.Tier{Command: "go test ./...", PrebuiltLym: true},
++			invocations: []invocation{{dir: ".", targets: []string{"./plain"}}},
++		}
++		if !needsPrebuiltLym(run, root) {
++			t.Errorf("needsPrebuiltLym(%q over ./plain) = false; want true", run.tier.Command)
++		}
++	})
++}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index ba7cf8782..7a1ed5910 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -2093,6 +2093,27 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a prebuilding tier whose targeted package's tests do not use the lym binary builds nothing", func(t *testing.T) {
++		worktree := standalone(t, true)
++		quiet := filepath.Join(worktree, "quiet")
++		for _, dir := range []string{filepath.Join(worktree, "cmd", "lym"), quiet} {
++			if err := os.MkdirAll(dir, 0o755); err != nil {
++				t.Fatal(err)
++			}
++		}
++		if err := os.WriteFile(filepath.Join(quiet, "quiet_test.go"), []byte("package quiet\n\nimport \"testing\"\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		g := startGate(t, gateRun{cwd: worktree, args: []string{"test", "--tier", "3", "./quiet"}, env: []string{helperBuildContentEnv + "=lym build"}})
++		if code := g.wait(t); code != 0 {
++			t.Fatalf("exit code = %d, stdout %q; want 0", code, g.stdout.String())
++		}
++		records := g.records(t)
++		if len(records) != 1 || records[0].Build || records[0].Prebuilt != "" {
++			t.Errorf("records = %+v; want the tier invocation alone, with no build and no %s", records, gateslot.PrebuiltLymEnv)
++		}
++	})
++
+ 	// Each row breaks the shared hub in its setup and repairs it in the returned restore, so the rows run in order.
+ 	refusals := []struct {
+ 		name string
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index fa59a9d02..4486072f0 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -113,7 +113,7 @@ func runTierChecked(ctx context.Context, out io.Writer, run tierRun, env []strin
+ }
+ 
+ // runTierCommands runs the tier of run once in ctx with its slots held.
+-// It prebuilds `lym` when the tier asks.
++// It prebuilds `lym` when the tier asks and a test the run executes may use it.
+ // Each invocation's command then runs through the platform shell as a tied child.
+ // The run stops at the first non-zero exit.
+ // The tier's timeout_min bounds the prebuild and every invocation together, counted from the call;
+@@ -533,7 +533,7 @@ func retryTier(ctx context.Context, stderr io.Writer, tier string, delay time.Du
+ 	return retried
+ }
+ 
+-// runInvocations prebuilds `lym` when the tier asks.
++// runInvocations prebuilds `lym` when the tier asks and a test the run executes may use it.
+ // It then runs each invocation of run in order under ctx, stopping at the first non-zero exit.
+ // For a command holding {test_targets} it first narrows each invocation's targets.
+ // It keeps the packages holding a test of the tier.
+@@ -555,7 +555,7 @@ func runInvocations(ctx context.Context, run tierRun, counter counter, env []str
+ 	if refusal := resultsArgsRefusal(run.number, run.tier, run.args); refusal != "" {
+ 		return 0, nil, runStops{}, refusal
+ 	}
+-	if run.tier.PrebuiltLym {
++	if needsPrebuiltLym(run, request.root) {
+ 		bin, cleanup, err := prebuildLym(ctx, request.goBinary, request.root, run.tier.Parallel, request.prebuiltStore, request.pipeWaitDelay, nil)
+ 		if err != nil {
+ 			if ctx.Err() != nil {
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index 9ae3f3804..f16dbf129 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -27,7 +27,8 @@ import (
+ const InheritEnv = "LYM_GATE_SLOT"
+ 
+ // PrebuiltLymEnv names the environment variable that carries the path of the `lym` binary.
+-// A tagged gate run builds it once for all packages, and each test binary runs that build instead.
++// A tagged gate run whose tests may use the binary builds it once for all packages,
++// and each test binary runs that build instead.
+ const PrebuiltLymEnv = "LYM_PREBUILT_LYM"
+ 
+ // StripPrebuilt returns env without PrebuiltLymEnv.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 03d62a925..0713cd427 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -46,6 +46,7 @@ type Tier struct {
+ 	// Slots is how many gate slots the tier holds; 0 means every slot.
+ 	Slots int
+ 	// PrebuiltLym makes a run of the tier prebuild lym from the worktree first.
++	// It does so only when a test the run executes may use the binary.
+ 	PrebuiltLym bool
+ 	// Manual keeps the tier out of a tier range, so it runs only when named by number, such as a tier that spends tokens.
+ 	Manual bool
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index 982c7e12e..1a948d8bb 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -25,6 +25,8 @@
+ // So the set also gets every package whose tests import `internal/testkit/lymbin`, which builds the binary;
+ // any other change reaches those packages through the import graph only.
+ // Targets.BinaryTests lists those packages, inside the set or not.
++// TestsUseLymBinary answers the same question for one package directory from its test files' imports alone.
++// It runs no `go list`, so a caller can decide before any build whether a run needs the binary.
+ // A diff touching only Markdown files yields no module and no package.
+ // The context is checked before each git read, and cancelling it kills a stalled `go list`;
+ // a local git read already in flight runs to its end.
+diff --git a/internal/impactset/tiertests.go b/internal/impactset/tiertests.go
+index 7bf8af37b..0926b00a7 100644
+--- a/internal/impactset/tiertests.go
++++ b/internal/impactset/tiertests.go
+@@ -1,4 +1,5 @@
+-// tiertests.go reads which tiers' tests a package directory holds, from the `tiergate.Require` call opening each test.
++// tiertests.go reads what the test files of a package directory hold, without `go list`:
++// which tiers' tests, from the `tiergate.Require` call opening each test, and whether they use the `lym` binary.
+ 
+ package impactset
+ 
+@@ -9,11 +10,43 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strconv"
+ 	"strings"
+ 	"unicode"
+ 	"unicode/utf8"
+ )
+ 
++// TestsUseLymBinary reports whether the tests of the package directly in dir may run the `lym` binary.
++// Only `internal/testkit/lymbin` hands a test that binary.
++// So they may when dir is that package's own directory, or when a `_test.go` file directly in dir imports it.
++// Build constraints are not read, so a file only another platform compiles still counts.
++// A directory or test file that cannot be read or parsed counts as using it, so a run that needs the binary keeps it.
++func TestsUseLymBinary(dir string) bool {
++	if strings.HasSuffix(filepath.ToSlash(filepath.Clean(dir)), "/"+lymbinDir) {
++		return true
++	}
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return true
++	}
++	for _, entry := range entries {
++		if entry.IsDir() || !strings.HasSuffix(entry.Name(), "_test.go") {
++			continue
++		}
++		file, err := parser.ParseFile(token.NewFileSet(), filepath.Join(dir, entry.Name()), nil, parser.ImportsOnly)
++		if err != nil {
++			return true
++		}
++		for _, spec := range file.Imports {
++			path, err := strconv.Unquote(spec.Path.Value)
++			if err == nil && (path == lymbinDir || strings.HasSuffix(path, "/"+lymbinDir)) {
++				return true
++			}
++		}
++	}
++	return false
++}
++
+ // testFunctionPrefixes are the name prefixes of the top-level functions `go test` runs, benchmarks, fuzzes or checks.
+ var testFunctionPrefixes = []string{"Test", "Benchmark", "Fuzz", "Example"}
+ 
+diff --git a/internal/impactset/tiertests_test.go b/internal/impactset/tiertests_test.go
+index e4929f8b7..3be3e7c8e 100644
+--- a/internal/impactset/tiertests_test.go
++++ b/internal/impactset/tiertests_test.go
+@@ -1,4 +1,4 @@
+-// tiertests_test.go covers HoldsTierTest over a package directory written for each case.
++// tiertests_test.go covers HoldsTierTest and TestsUseLymBinary over a package directory written for each case.
+ 
+ package impactset_test
+ 
+@@ -60,3 +60,48 @@ func TestHoldsTierTest(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestTestsUseLymBinary(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	const lymbinImport = "\"github.com/Knatte18/loomyard/internal/testkit/lymbin\""
++	tests := []struct {
++		name string
++		// rel is the package directory under the case's temp root.
++		rel string
++		// files are the directory's files, keyed by name; nil leaves the directory absent.
++		files map[string]string
++		want  bool
++	}{
++		{name: "an external test file importing the kit", rel: "p", files: map[string]string{"a_test.go": "package p_test\n\nimport " + lymbinImport + "\n"}, want: true},
++		{name: "an in-package test file importing the kit among others", rel: "p", files: map[string]string{"a_test.go": "package p\n\nimport (\n\t\"testing\"\n\n\t" + lymbinImport + "\n)\n"}, want: true},
++		{name: "a second test file importing the kit is enough", rel: "p", files: map[string]string{"a_test.go": "package p\n\nimport \"testing\"\n", "b_test.go": "package p\n\nimport " + lymbinImport + "\n"}, want: true},
++		{name: "a test file under another platform's constraint still counts", rel: "p", files: map[string]string{"a_test.go": "//go:build plan9\n\npackage p\n\nimport " + lymbinImport + "\n"}, want: true},
++		{name: "test files importing other packages", rel: "p", files: map[string]string{"a_test.go": "package p\n\nimport (\n\t\"testing\"\n\n\t\"github.com/Knatte18/loomyard/internal/testkit/tiergate\"\n)\n"}},
++		{name: "a package whose own file imports the kit is not a test of it", rel: "p", files: map[string]string{"a.go": "package p\n\nimport " + lymbinImport + "\n"}},
++		{name: "a package with no test file", rel: "p", files: map[string]string{"a.go": "package p\n"}},
++		{name: "the kit's own directory", rel: "internal/testkit/lymbin", files: map[string]string{"kit.go": "package lymbin\n"}, want: true},
++		{name: "a test file that does not parse counts as using it", rel: "p", files: map[string]string{"a_test.go": "package p\n\nimport (\n"}, want: true},
++		{name: "a directory that cannot be read counts as using it", rel: "p", want: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := filepath.Join(t.TempDir(), filepath.FromSlash(tt.rel))
++			if tt.files != nil {
++				if err := os.MkdirAll(dir, 0o755); err != nil {
++					t.Fatal(err)
++				}
++			}
++			for name, content := range tt.files {
++				if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if got := impactset.TestsUseLymBinary(dir); got != tt.want {
++				t.Errorf("TestsUseLymBinary(%s) = %v; want %v", tt.rel, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
+index 7138d5ab9..d1b8ad00a 100644
+--- a/pattern/PATTERN-test-speed.md
++++ b/pattern/PATTERN-test-speed.md
+@@ -72,6 +72,11 @@ so the hub never runs more at once than its configured count.
+ A tier run takes the slots its tier asks for, and the non-tier holders `internal/gateslot`'s doc lists each hold one.
+ An agent runs a module-wide or `tier2` test only through `lym gate test`, and never as a raw `go` run.
+ A tagged gate run builds `lym` once and hands it to every package through the `LYM_PREBUILT_LYM` variable.
++It builds only when a test it runs may use the binary:
++a targeted package's test file imports `internal/testkit/lymbin`, or the kit's own directory is targeted;
++a target is a pattern such as `./...`, an import path or absent;
++a targeted directory or test file cannot be read or parsed;
++or the command takes no targets, so it runs whole.
+ `lymbin` returns that binary instead of building.
+ A tagged hub run exports a path named by the binary's content,
+ and `lym gate test` strips the trace id from `go test`'s environment.
