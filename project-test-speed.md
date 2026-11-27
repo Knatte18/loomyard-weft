@@ -3,7 +3,7 @@
 Rendered 2026-11-27 15:36 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`test-speed`](design-test-speed.md) · Age 16m · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 17m · Owner `neve`
 
 ## Aim (operator, 2026-11-27)
 
@@ -19,4 +19,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 16m<br>16m | gate, testkit |
+| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs | Darn-Write | neve | 17m<br>17m | gate, testkit |
