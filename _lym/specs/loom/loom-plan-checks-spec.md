@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=b88c0c6ec2c94005c8436bf7b1420540e765dc9d4f30a2d1e4798ed7e86ee8d6 build=165f91c6bf17a5ff0ff85bded8a6e2b4a1b8b1c9 time=2026-11-27T08:58:03Z -->
+<!-- lym-stencil: sha256=070ec7bf9ff4cb2a2465dc004fe04711486426a9091743cef20f1ab64364bba9 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Loom plan-checks spec — the plan gate's validation checks
 
@@ -248,6 +248,7 @@ The overview is read at the task branch's merge base with its parent, or at `HEA
   Way forward: shorten the prescribed lines or move detail into background files.
   When that is not enough, record a `changes` decision that shortens other entries.
   Record it with `lym loom decision add`, adding `--amends-plan` once the plan is approved.
+  Once the task's scope is closed no decision enters the record, so only the shortening is left.
 - `pattern-card-headroom` — a pending card's own step grows the projected overview past the headroom line.
   The projection takes the cards in plan order.
   Each card applies its fenced lines, then drops the `removes` entries it is first to name.

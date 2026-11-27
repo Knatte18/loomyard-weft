@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=e3b6950d1be864c8657836f271327323542d9291b9534f934c7eccc2d728b040 build=0edcc4491c10d7582401fc088660153f420eb2e8 time=2026-11-26T13:46:56Z -->
+<!-- lym-stencil: sha256=3c6d4f2c849fe5f4ad0d6219abf322362e36e4e40908c027fcd069ee98714681 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Discussion spec — the decision record, the support log and the relevant list
 
@@ -121,6 +121,11 @@ The Discussion-Write and Discussion-Burler-Fix gates halt on a quarry outage as 
 - **A criterion is behavior a test can check, or a review check.**
   A criterion that a stencil, spec, doc or other prose names, says or contains a wording opens its bullet with `Review:`.
   The code review checks it by reading the text the diff leaves, and no test asserts that prose.
+- **`## Acceptance criteria` names what a reviewer of the landed change will check by hand.**
+  It names each figure the change must measure and state, with the case it is measured on and where the figure is stated;
+  each doc statement the change must make true, as a `Review:` bullet naming the doc;
+  and the intent of each test the change adds: the behavior it pins and its tier.
+  A criterion left for the reviewer to infer is checked only after the scope has closed, when no fix enters this task.
 - **A Decision that adds an edge or weakens a guard states its bound.**
   A Decision that adds a verb, flag, escape hatch or routing edge states what it can skip or let through and what bounds it.
   The same holds for a Decision that removes, downgrades or makes bypassable a guard.

@@ -1,4 +1,4 @@
-<!-- lym-stencil: sha256=bcebd0032d88fabfe18fb4413e32fbe1efe94e87980fcfec13191de7de49c442 build=165f91c6bf17a5ff0ff85bded8a6e2b4a1b8b1c9 time=2026-11-27T08:58:03Z -->
+<!-- lym-stencil: sha256=e6833dccfd1217668976c251ab3bc92b91a052d0b90e1b7f1c77ab8a8d5e9319 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Loom plan-spec — flat card list
 
@@ -111,6 +111,10 @@ Rules on targets:
 - A new test file is a `**Create:**` file target.
   The card's Intent states its tier, such as `tier0`, on a line that names no other test file (`test-tier-unstated`).
   The tier is the one its test functions name in their opening `tiergate.Require` call.
+- When the tiers the planner is given hold a plan tier0 budget line, set by `gate.plan_tier0_budget_sec`,
+  a card that creates or widens a `tier0` test states, in its Intent, the seconds the test adds to one `tier0` run.
+  The plan's estimates together stay within that budget;
+  a test that cannot fit moves to a higher tier or shares an existing test.
 - A card that touches a struct a `//lym:seam` test marks lists that test by its member glyph (`seam-test-unlisted`).
   The test goes under `Edit` when the card changes it and under `Uses` when it stays as is.
 - A card that changes a package's non-test Go code covers the package's `doc.go` (`doc-go-unlisted`):
