@@ -1,13 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "failed",
-  "error": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: read the fixer body: stencilstore: stencil \"gatefix-body-darn\" was written by lym build d51900fb264f4423409439bc74805c8a92b0ab77, which is newer than the running build 3f83bb888aef38d1f9bd8d5d03c731661d6699d5, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Drift-Expect → skipped",
-    "wait": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: read the fixer body: stencilstore: stencil \"gatefix-body-darn\" was written by lym build d51900fb264f4423409439bc74805c8a92b0ab77, which is newer than the running build 3f83bb888aef38d1f9bd8d5d03c731661d6699d5, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board"
+    "wait": ""
   },
   "history": [
     {
