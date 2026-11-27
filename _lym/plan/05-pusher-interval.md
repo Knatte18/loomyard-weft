@@ -24,9 +24,9 @@
 - `internal/runpusher#noticeOf`
 
 **Create:**
-- `plan:internal/runpusher#awaitInterval` -> `func awaitInterval(ctx context.Context, t Target, deps Deps) error`
-- `plan:internal/runpusher#recordAttempt` -> `func recordAttempt(t Target, deps Deps, pushErr error) error`
-- `plan:internal/runpusher#TestNewDeps_WaitWakesOnAPushNowMark` -> `func TestNewDeps_WaitWakesOnAPushNowMark(t *testing.T)`
+- `internal/runpusher#awaitInterval`
+- `internal/runpusher#recordAttempt`
+- `internal/runpusher#TestNewDeps_WaitWakesOnAPushNowMark`
 
 **Uses:**
 - `internal/fabricengine#PushTiming`
