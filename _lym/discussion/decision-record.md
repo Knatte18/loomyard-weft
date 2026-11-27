@@ -430,6 +430,19 @@ Rationale: Plan-Bouncer stopped at its hard cap (round 3) with F1 to F6 open; ea
   - non-squash-landing-has-no-trailer-commit (class design, severity BLOCKING, open in rounds 3)
 <!-- /lym:carry-over Plan-Review -->
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - acceptance-behaviours-untested (class scope, severity MEDIUM, open in rounds 1)
+  - diverged-prime-pulls-as-level (class design, severity MEDIUM, open in rounds 1)
+  - finalize-resume-releases-held-records (class design, severity MEDIUM, open in rounds 1)
+  - hub-lift-pushes-no-held-pair (class design, severity MEDIUM, open in rounds 1)
+  - parent-pusher-test-rows-missing (class scope, severity MEDIUM, open in rounds 1)
+  - protected-branch-way-forward-missing (class scope, severity MEDIUM, open in rounds 1)
+  - rebased-away-landing-commit-pushed (class design, severity MEDIUM, open in rounds 1)
+  - webster-reset-push-no-owed-record (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D1: red-first test in `internal/fabricengine`, tier1, for issue #238: an owed failure of `lym fabric sync`'s push mails the orch on the merge base,
