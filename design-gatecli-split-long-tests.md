@@ -1,6 +1,6 @@
 # Split the long gatecli tier1 scenario tests
 
-`gatecli-split-long-tests` · Task · enhancement, gate, testkit · landing · Finalize
+`gatecli-split-long-tests` · Task · enhancement, gate, testkit · done
 
 ## Aim
 
