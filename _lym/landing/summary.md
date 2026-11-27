@@ -1,39 +1,56 @@
-# Tell a re-spawned writer the interrupted spawn's commits and scratch
+# darn: tell a re-spawned writer what an interrupted spawn left behind
 
-A darn writer spawn killed before it recorded an outcome, by a machine reboot for instance, leaves no Darn-Write history entry.
-The next spawn's prompt then gave its prior work as `(none)` and said the branch held no work of its own.
-In fact the task branch already carried the killed spawn's commits, and `.scratch` held its half-finished files.
-A writer that trusted the prompt could redo or overwrite finished work.
+A `Darn-Write` run interrupted before it recorded an outcome, for instance by a reboot, was told its prior work was `(none)`
+when it was stepped again, though the task branch already carried the earlier spawn's commits.
+A writer trusting that could redo or overwrite finished work.
 
-## What changes
+The prior-work note is now built from the branch and the scratch directory as well as from the latest recorded outcome:
 
-- `loomshed.DarnDeps` gains two seams. `BranchCommits` lists the task branch's commits beyond its merge base. `ScratchDir` is the directory the writer keeps scratch files under.
-  The producer reads both before each spawn, following `ScratchDir` when it is a link, as the `.scratch` link is.
-- `renderPriorWork` decides the prior work from those reads as well as the recorded history:
-  - with no recorded outcome but commits beyond the base or files in the scratch directory, the note says an earlier spawn was interrupted before it recorded an outcome and its work may be present, then lists the commits and the files;
-  - after a recorded outcome, the existing note stands and the same lists follow it;
-  - it stays empty, rendered as `(none)`, only when there is no recorded outcome, no commit beyond the base and no scratch file.
-  Each list shows its first 20 items and counts the rest.
-- `loomcli.darnDeps` wires `BranchCommits` to `CommitLog` from the task's merge base to `HEAD`, and `ScratchDir` to the new `fabricengine.ScratchLinkPath`.
-- The `DarnWrite` registry row refuses an unwired `Darn.BranchCommits` or a relative `Darn.ScratchDir`, as it does the other seams.
+- With a recorded outcome, the note names it and any kept gate findings, as before.
+  When there are commits or scratch entries to list, it adds that a later spawn may have been interrupted,
+  so the lists can go beyond the spawn that ended that way.
+- With no recorded outcome but commits beyond the merge base, it says an earlier spawn was interrupted
+  and its work may be present.
+- With only scratch entries, it lists them and says an interrupted spawn or another agent may have left them.
+- With none of the three, the prior work is still `(none)`.
+
+Every non-empty note lists the commits and scratch entries there are,
+and ends with the existing line on recorded decisions winning over findings.
+Step 2 of the darn writer's stencil is reworded to match:
+it no longer says the commits on the branch are the writer's own,
+and tells it to read the listed work when a spawn was or may have been interrupted.
+
+Closes #278
 
 ## Design decisions
 
-- The rows before Darn-Write in the darn recipe commit only to the records side.
-  So any code commit beyond the merge base at Darn-Write is the writer's own, and listing it needs no filter.
-- The note states the interruption as a likelihood ("may be present"), since no record says what the killed spawn finished.
-- Each list is capped so a scratch directory full of files cannot swamp the prompt.
+- **Scratch entries alone claim no interrupted spawn.**
+  Other agents of the task write to `.scratch` too, so files there are not evidence of an earlier writer.
+  They are still listed: for a spawn killed before its first commit, the note has nothing else of it to list.
+- **The scratch listing is shallow.**
+  Only direct children are listed, a directory with a trailing slash, so one deep tree cannot crowd out other entries.
+  The scratch directory itself may be a link, which is followed, and an absent or dangling one holds nothing.
+  A child that is a link is listed without a slash and not followed.
+- **Each list is capped** at `priorWorkListLimit` items, with the rest counted.
+- **A failed read halts the row before the spawn.**
+  This covers both the branch's commit log and the scratch directory itself.
 
-## Tests
+`DarnDeps` gains `BranchCommits` and `ScratchDir`, which the producer and the `DarnWrite` recipe entry both require.
+`darnDeps` in `loomcli` wires them from the task's merge base and the new `fabricengine.ScratchLinkPath`.
 
-- `TestDarnWrite_Call` gains a regression row.
-  A spawn with no recorded outcome, two commits beyond the base and two files under a linked scratch directory must be told it was interrupted, with both lists.
-  On the previous code this spawn was told nothing.
-  The test also gains rows for a failed commit read and for each unwired new seam.
-- `TestRenderPriorWork` gains rows for a recorded outcome with commits after its findings, and for scratch files alone with a list past the cap.
-- `TestDarnWriteEntry_ConstructionFailures` gains rows for the two new `Env.Darn` fields.
+## To check by hand
+
+- No test interrupts a real run and steps it again.
+- The wiring of `BranchCommits` and `ScratchDir` in `darnDeps` (`internal/loomcli/darnwiring.go`):
+  check that `TestDarnDeps_BranchWorkSeams` pins the base, the range and the path well enough.
+- The scratch-only note from `renderPriorWork` (`internal/loomshed/darnwrite.go`):
+  it claims no interruption but is not `(none)`, so a first spawn can receive it.
+  Check that its wording cannot lead that writer to treat another agent's files as its own work.
+- Step 2 of `contracts/stencils/darn/darn-template-write.md`:
+  it says to continue from an earlier spawn's work whenever the prior work is not `(none)`.
+  Check that this holds for the scratch-only note, which claims no earlier spawn's work.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** loomshed
+**Blast radius:** darn
