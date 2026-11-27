@@ -1,0 +1,14 @@
+{
+  "session_id": "df32badb-a452-4630-9356-58b456f8d446",
+  "row": "Code-Bouncer",
+  "role": "code-bouncer-verify",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 20,
+  "cache_write_tokens": 44210,
+  "cache_read_tokens": 245451,
+  "output_tokens": 2246,
+  "cost_usd": 0.1821152,
+  "started": "2026-11-27T09:05:44Z",
+  "ended": "2026-11-27T09:06:08Z"
+}
