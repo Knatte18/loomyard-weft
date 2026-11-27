@@ -1,6 +1,6 @@
 # Split the long battencli integration scenario so its parts run in parallel
 
-`battencli-split-long-tests` · Task · enhancement, batten, testkit · starting · Open-IDE
+`battencli-split-long-tests` · Task · enhancement, batten, testkit · running · Darn-Write
 
 ## Aim
 
