@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: the gatefix-body-darn prompt's edit directive: editdirective: stencilstore: stencil \"engine/claude/edit-directive\" was written by lym build 3fb0787e32473e6bd8d961da278a4bcecb4d2460, which is newer than the running build c287558a4846b39be2f87658e9e2720ecc99d626, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Drift-Expect → skipped",
-    "wait": ""
+    "wait": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: gate: gatefixer: build the fixer's launch: gatefixer: the gatefix-body-darn prompt's edit directive: editdirective: stencilstore: stencil \"engine/claude/edit-directive\" was written by lym build 3fb0787e32473e6bd8d961da278a4bcecb4d2460, which is newer than the running build c287558a4846b39be2f87658e9e2720ecc99d626, and this process may not render it; way forward: restart the run's driver on the current lym binary, and update that binary first if it is older than the board"
   },
   "history": [
     {
