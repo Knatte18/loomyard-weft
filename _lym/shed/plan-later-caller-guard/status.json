@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -122,6 +122,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/plan-later-caller-guard/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-27T08:43:45Z",
+      "started_at": "2026-11-27T08:27:27Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T08:33:05.731034916Z",
+          "end": "2026-11-27T08:33:05.786481068Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T08:33:44.441752761Z",
+          "end": "2026-11-27T08:33:44.463765905Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T08:33:06.002640131Z",
+          "end": "2026-11-27T08:33:06.136533456Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-27T08:33:06.87939223Z",
+          "end": "2026-11-27T08:33:44.183926916Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T08:33:44.549756451Z",
+          "end": "2026-11-27T08:43:44.324133781Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-27T08:43:44.472693555Z",
+          "end": "2026-11-27T08:43:44.473577348Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
