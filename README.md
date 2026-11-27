@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 06:39 UTC; every age below is as of then.
+Rendered 2026-11-27 06:40 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -167,9 +167,3 @@ Owner `neve`
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | 9h<br>9h | termwindow, desktop |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T18 | **gate reach: functions called directly by tier1 tests are reported as reached by no mapped test** | [`reach-misses-tier1-calls`](design-reach-misses-tier1-calls.md) | 18h<br>18h | gate, testmap |
