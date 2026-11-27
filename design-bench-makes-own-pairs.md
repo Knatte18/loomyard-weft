@@ -1,6 +1,6 @@
 # A bench run creates and removes its own bench pairs, forked from its task worktree
 
-`bench-makes-own-pairs` · Task · enhancement, fabric, darn, batten · running · Drift-Verify
+`bench-makes-own-pairs` · Task · enhancement, fabric, darn, batten · running · Code-Bouncer
 
 ## Seen (operator, 2026-11-27)
 
