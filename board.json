@@ -896,6 +896,26 @@
       "body": "## Seen (operator, 2026-11-27)\n\nEverything is in place for autonomy, yet runs keep stopping on assorted causes,\nand the operator has to tell the orch \"this one is stuck, get it going\".\nEvery LLM session runs under Go programs (dobby, batten, the driver) that see all of it,\nso the known stop classes should be settled by those programs, not wait for a person or an orch turn.\nGoal: lym can run overnight.\n\n## Stops the orch settled by hand on 2026-11-27, each mechanical\n\n- `lym loom resume` refused with `driver_not_parked` until the driver parked; the orch retried it in a loop.\n- A start failed on \"push lock busy\" or \"held board lock\"; the orch ran `lym board sync` and `lym batten run` again.\n- A review round ran out of budget with only findings the fixer had deferred; the orch accepted and filed a note.\n- A hard cap was hit before Code-Review; the orch recorded the open findings as parent decisions and accepted.\n- Idle notices for an agent that was correctly waiting on a gate loop or on an operator answer.\n\n## Idea\n\n- Dobby, or the driver, retries the mechanical ones itself with a bound and reports only what it could not settle.\n- A rule table decides, per stop class, whether lym settles it, the orch settles it, or it goes to the operator,\n  and autonomy mode's severe-halt classes are the only ones that reach the operator.\n- Quiet notices name what the agent waits on, so a correct wait raises nothing.\n- Collect the stop classes from the drive reports and notices of the last weeks before designing.\n",
       "created": "2026-11-27T17:58:36Z",
       "revised": "2026-11-27T17:58:36Z"
+    },
+    {
+      "id": 1751,
+      "handle": "E2",
+      "slug": "hide-arras-recipe",
+      "title": "Hide the arras recipe from orchs and skills; motif is the design-first route",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "orch",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-27)\n\nOrchs still propose `arras`, though it is never used.\nThe operator does not trust raddle's split enough to let a run split an entry on its own approval.\n\n## Operator decision (2026-11-27)\n\nArras is no longer an option anyone is offered.\nIts code stays, but nothing visible names it: the shipped orch role, the `ly:board` and `ly:board-policy` skills, help text and recipe listings.\nMotif is the route for a design-first entry: it stores the decision record as a Sketch, and the Sketch's raddle run splits it on the operator's approval.\n\n## Idea\n\n- Rewrite the board-policy passage that proposes an arras task for a tapestry-sized note to propose motif.\n- Drop arras from the recipe lists in the board skill, the orch role and `lym board` help.\n- Decide whether a board write naming `recipe: arras` is refused or only warned.\n",
+      "created": "2026-11-27T18:05:18Z",
+      "revised": "2026-11-27T18:05:18Z"
     }
   ],
   "prime_owner": "neve",
