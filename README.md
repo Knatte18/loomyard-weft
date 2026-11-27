@@ -12,11 +12,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`test-speed`](design-test-speed.md) · Age 0m · Owner `neve`
 
-### Draft (1)
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs |  | 0m<br>0m | gate, testkit |
+| T1 | **Measure every package tier0 and tier1 test, build and wall time** | [`test-time-measure`](design-test-time-measure.md) | darn · docs |  | 0m<br>0m | gate, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 

@@ -1,6 +1,6 @@
 # Measure every package tier0 and tier1 test, build and wall time
 
-`test-time-measure` · Task · research, gate, testkit · draft
+`test-time-measure` · Task · research, gate, testkit
 
 ## Aim (operator, 2026-11-27)
 
