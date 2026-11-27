@@ -1,6 +1,6 @@
 # Cut orchcli and orchengine tier1 test time at least in half
 
-`orch-test-cut` · Task · enhancement, orch, testkit · starting · Seed-Child
+`orch-test-cut` · Task · enhancement, orch, testkit · running · Darn-Write
 
 ## Aim (operator, 2026-11-27)
 
