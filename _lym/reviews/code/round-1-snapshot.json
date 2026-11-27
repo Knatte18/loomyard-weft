@@ -11,5 +11,6 @@
       "title": "No test seam: the fix a69580709 is already on the merge base",
       "digest": "93f8ede6e003edb649de20fd8a243c33d9ca397f39d401f93d5e000acad07ab3"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
