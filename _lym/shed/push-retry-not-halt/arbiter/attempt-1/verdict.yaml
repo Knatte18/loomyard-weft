@@ -1,0 +1,18 @@
+verdict: resume
+reason: |-
+  The Discussion review stopped at its hard cap (round 3) with four open design-wrong findings, F1 to F4.
+  The round 3 fixer rewrote the decision record after that review, and the text now in place answers each finding.
+  I read each fix against the code:
+  F1: D5's refusal names `git push` in the prime's worktree for the prime's code branch and `lym fabric push` for a beam parent. failedpush.go pushStep and pushanchored.go confirm that the prime's pair push covers only the records. The adopterFirstRepair-style drop and the hand-over are stated, with D3 and D5 criteria.
+  F2: D5 and the PATTERN-owner-machine constraint read the parent's owner and the owner of every run a push carries, and read that run's owner again before each done write. This matches handedOverStop in finalize.go.
+  F3: D13 refuses every other teardown of the pair in the pairteardown composite while the run's landing entry stands. RemovePair lives in that composite and fabric remove goes through it. A criterion covers --force and --remote.
+  F4: D9 writes the pre-merge task head to a base file under shedrun.ScratchDir before the merge-in, and its criterion drives the kill case. ScratchDir exists.
+  So accepting is the right outcome. I recorded the ruling as an arbiter decision. It also adds the one re-check the review flagged and D5/Q5 already settle: a pull-request landing checks again under the parent lock for an owed landing push.
+  `lym loom circling accept` then refused with: "a decision is already recorded for the escalated round at Discussion-Bouncer; way forward: the decision for this round is recorded and stays; run \"lym loom resume\" in the task worktree to resume the run".
+  round-3-circling-decision.md already records `decision: accept` (cause hard-cap, automatic: false). That is the same outcome I ruled, so the segment's circling decision stands and the run can resume.
+  I made no commit in the worktree, so no goto is needed.
+verbs:
+  - |-
+    lym loom decision add push-retry-not-halt --by arbiter --title "Discussion review accepted at the hard cap; round 3 findings answered in the record" --decision "…" --rationale "…"
+  - |-
+    lym loom circling accept push-retry-not-halt
