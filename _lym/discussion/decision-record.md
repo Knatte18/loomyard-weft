@@ -92,6 +92,12 @@ Decision: Build no exemption for --by operator calls at PR-Review: no PR agent e
 
 Rationale: --by is an unverified label, so admitting --by operator inside the closed span would reopen the scope to any agent; with no PR agent nothing needs the exemption.
 
+### Added after Discussion (arbiter, 2026-11-27): PR feedback stays outside the line with no record entry, F3 ruled moot
+
+Decision: Code-Review finding F3 (pr-agent-operator-exemption-not-built) needs no code change. Do not admit --by operator, or any other caller, to decision add or replace while the run stands at PR-Review: the closed span keeps running through PR-Review to Finalize, as scopeClosedRefusal and TestDecisionCalls_RefusedOnceTheScopeCloses already have it. The board entry's 'feedback from a person through the PR agent' stays outside the line because it reaches the task as the operator's own work on the pull request, which the PR-Review wait gates and pushes, and never as a decision-record entry. Keep the summary's 'Feedback the operator gives on the pull request needs no entry in the record' and orch-role.md's 'the operator's own feedback on the pull request' wording as they are. A later round raises F3 again only if that text claims an exemption the code does not have.
+
+Rationale: The board entry says no decision enters the record after the line, and it names no record entry for PR feedback. PR-Review has no agent (internal/landingshed/prreview.go: no agent takes part, since commit 34e64ac2e). There the operator acts on the pull request itself, by committing in the task worktree or approving on GitHub, and the scope line refuses none of that. Admitting a --by operator label at PR-Review would let any caller through, because --by is unverified, and would break the entry's rule that no decision enters the record past the line.
+
 ## Constraints
 
 ## Auto-mode assumptions
