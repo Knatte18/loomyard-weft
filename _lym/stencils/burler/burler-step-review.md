@@ -15,7 +15,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=a0db852a3c7681c231b25711fdbbbb9bfc576c6a5079c5abaea722a9b98251af build=248543129a712f379d400e128ec301a69dff2eb6 time=2026-11-26T20:23:10Z -->
+lym-stencil: sha256=ecf28c9bc8a613fcaeb76adcf911fd92a617d36ca594d505e4a256811147e5c3 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 ## Cluster rules
 
@@ -46,8 +46,10 @@ a section without that heading has none of them.
   Keep a disputed finding `open` only when you answer the rebuttal in the entry's `answer`.
 - Resolve a finding marked as held by the parent only by quoting, in the entry's `answer`, the title of a listed added entry that settles it.
   Otherwise mark it `open` and carry it.
+- A finding marked as ruled in scope by the parent is fixer work the task's record already asks for.
+  Resolve it once the code does what it asks; otherwise mark it `open` and carry it with a class other than `decision`, so this round's fixer takes it.
 - Carry every `open` finding as one finding with `carries` set to its id.
-  Keep its class.
+  Keep its class, except on a finding ruled in scope.
   Keep or lower its severity.
   Keep its location path, or move it to a file the changes file lists.
   When there is no changes file, name the moved site in the `summary` and the `fix`.

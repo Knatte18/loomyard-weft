@@ -6,7 +6,7 @@
      and renders parent_directive, edit_directive and the assistant block's markers itself.
      Every marker below is a top-level {{.X}} substitution.
      There are no {{if}}/{{range}} conditionals in this file.
-lym-stencil: sha256=acb89e9076d3935fa886dc8ba0eba1c4efcf924cee1be5ee27042a15da0edfcb build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
+lym-stencil: sha256=4bf2dc6f27b2f7d48948ded944cad6b3e12d2dae68d19750f0302ff198bb31ae build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Change description review — check the description this task lands under
 
@@ -30,7 +30,8 @@ While it answers `ready: false`, run it again in a turn that does nothing else, 
 
 Read these first, and the description last, so you review the text as the writer left it:
 
-- The decision record, `{{.decision_record_path}}`: its `## Goal`, as its `Added after Discussion` entries amend it, is the task's scope.
+- The decision record, `{{.decision_record_path}}`: its `## Goal`, as its `Added after Discussion` entries amend it, is the task's scope,
+  and its `## Acceptance criteria` names the figures, doc statements and test intents the description states.
 - The board entry, via `lym board get '{"slug":"{{.slug}}"}'`.
 - The diff, read as `git diff {{.merge_base}} {{.task_branch}}`.
 - The run records, as the source of measured figures and of items to check by hand; `(none)` means the run has none:

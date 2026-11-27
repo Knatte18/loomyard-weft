@@ -4,7 +4,7 @@
      and the Discussion-Burler-Review row interpolates it the same way into internal/burlerengine's review prompt.
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=94a8485c504cebc52a061c811f18afb9f602ef91eec7773333cea588bdca95ca build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
+lym-stencil: sha256=76ecdd8f33abc709c58c929e207fb4082ebb237f6f07adb3d3671409705cae28 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Discussion-Review rubric
 
@@ -50,6 +50,9 @@ Do not flag any of the following as a finding:
   the root cause or what is still unknown about it,
   and the test that fails on the merge base, why no test seam exists, or that the entry fixes no bug.
   A record that omits one of them is a finding.
+- **A check left for the reviewer to infer.**
+  A record whose change must measure a figure, make a doc statement true or add a test, and whose `## Acceptance criteria` does not name the figure and its measured case, the doc statement, or the test's intent and tier, is a finding.
+  The fix names each in the criteria, as the discussion spec says.
 - **A Decision that edits the task's own board entry.**
   A Decision that asks the run to change this task's own board entry's body or scope, through `lym board` or otherwise, is a finding, because the run's board lock refuses such a change.
   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.

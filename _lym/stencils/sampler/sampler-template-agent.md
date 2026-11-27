@@ -11,7 +11,7 @@
      It is empty when the worktree has no PATTERN overview.
      The prompt carries paths only, never file content, bar the PATTERN overview inside pattern_directive.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lym-stencil: sha256=4887741babb96d46eb4f01232067150c337cd993d98a8844b2c775f1dd8fc79e build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
+lym-stencil: sha256=7c6d27d7473b31376b9537fb53e2f956b2a116692a13862185390362a3d90a74 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Sampler — work out a change with the operator
 
@@ -37,6 +37,8 @@ Say in a line or two what you understood, then wait for the operator's message.
 - Write any board result with `lym board` as a note.
   A run's agent never creates or promotes a task and never changes its own run's entry, and the board refuses both; the operator promotes a note when they want one.
 - Record each thing the operator settles that changes the task's scope with `lym loom decision add --by operator`.
+  Once a Code-Review round has run on this task, the record takes no such call:
+  file it as a board note for a new task with `lym board upsert` and kind note.
 
 ## Trying a build of lym
 

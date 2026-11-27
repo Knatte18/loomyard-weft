@@ -4,7 +4,7 @@
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills.
      ReadRubric fills gate_tiers from the hub's gate.yaml tiers and gate lists, or with none.
      internal/stencil's StripLeadingComment removes this leading comment before either consumer sees it.
-lym-stencil: sha256=7c6fcdede033b00f08263863b57e8ef2a4df22905d09fb6db6890fe4e799fb87 build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
+lym-stencil: sha256=cf81a7561087e9a3a34e8ceb56cbbc117ca617b936db9e4966ab649a28617336 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Plan-Review rubric
 
@@ -122,6 +122,9 @@ Do not flag any of the following as a finding:
   The hub's tiers and gate lists, as the plan writer was given them:
 {{.gate_tiers}}
   A plan-level `## verify:` section is accepted and ignored, so it is no finding.
+- **The plan tier0 budget.**
+  When the tiers above hold a plan tier0 budget line, a card that creates or widens a `tier0` test and states no estimate of the seconds it adds is a finding,
+  and so is a plan whose estimates together pass the budget; the finding names the cards and their sum.
 - **The attack-surface question.**
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
   A card that introduces one with no stated bound is a finding.

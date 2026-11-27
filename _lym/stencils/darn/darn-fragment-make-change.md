@@ -3,7 +3,7 @@
      internal/darnengine's DarnTable reads it for the writer's engine,
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.subagent_model,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=7e4347d2a69164fb94272fd8358d1452e3d598fd0412378a5d577cbbca4baa13 build=548291383ceb71438c6855d02d06553ba9c56532 time=2026-11-26T18:49:47Z -->
+lym-stencil: sha256=e1b3cdd594343137da8cabd9e8ff5e5835a39e540dbd823d2548246b6cc53953 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
@@ -23,6 +23,7 @@ lym-stencil: sha256=7e4347d2a69164fb94272fd8358d1452e3d598fd0412378a5d577cbbca4b
 4. Update, in the same commits as the code, the docs the change makes stale: the package doc of each package whose behavior changes, `doc.go` for a Go package;
    the repository's overview doc when a module table or execution stack it shows changes;
    and, when the repository has a `PATTERN.md`, its entry for a cross-cutting invariant the change adds or changes.
+   A figure a doc or comment quotes as measured on a case the change alters is measured again from the current code, or dropped.
 5. Apply each bullet of the record's `## PATTERN changes` section to `PATTERN.md` in your own commits.
 6. Commit on the task branch after each coherent step, as soon as its gate passes, in small commits that each leave the tree green.
    Never hold the change uncommitted until the end:

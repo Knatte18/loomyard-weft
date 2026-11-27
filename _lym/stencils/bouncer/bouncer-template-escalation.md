@@ -3,7 +3,7 @@
      Every marker below is a top-level {{.X}} substitution, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      Go interpolates only paths, round, cause, segment and slug, plus the decide fragment it picks by the hard cap; the wording lives here and nowhere else.
      cause_detail is the one optional marker, filled through stencil.FillOptional: it renders the cause's detail, and nothing for a cause that carries none.
-lym-stencil: sha256=37aa207e14abef0e97b1f9c6d449a7ddd12005095fbbb337fe4049f90c5ddad8 build=8cf7f477563f044e178a070cfd7dd27cb9f03c78 time=2026-11-23T09:03:29Z -->
+lym-stencil: sha256=5debe2ddd20b9d943d3ac226ef72e36e2388823ac62172d188370f0df22b94bc build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Escalation — review segment `{{.segment}}`, round {{.round}}
 
@@ -58,6 +58,8 @@ When a recorded operator decision answers the question:
 
 1. Record the operator decision you applied, citing where it is recorded, with `lym loom decision add {{.slug}} --by parent --title … --decision … --rationale …`, run in `{{.worktree}}`, when the decision record exists; never record with `--by operator`.
    Without a decision record, name the applied decision and its source in your report back to your parent session instead.
+   When the verb refuses because the task's scope is closed, name the applied decision and its source in your report back instead,
+   and handle each decision finding as the cause detail says for a closed scope.
 2. {{.decide_options}}
 3. Resume the run with `lym loom resume` in `{{.worktree}}`.
 

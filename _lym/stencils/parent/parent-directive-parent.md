@@ -4,7 +4,7 @@
      Its markers are the parent name and the operator-ban line,
      which Directive fills from parent-directive-operator-ban and leaves empty for an interactive role.
      The decision-notice lines quote the openings internal/loomcli's add and replace notices start with; a loomcli test pins them together.
-lym-stencil: sha256=754cca8404a31b06fe1c3ad2a9258ccdae3b4fdf55162b5c0188a07e7b966a6f build=f1d807c82325c12e1894dcea5f36d449556a13b0 time=2026-11-23T12:17:33Z -->
+lym-stencil: sha256=e292e81200a148043e8842ecf2af929025214a2a74760ffee44426b3e769e218 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 ## Your parent
 
@@ -32,4 +32,8 @@ When you are the parent of a run yourself, keep its decision record current this
   on a record whose `## Goal` is a fenced board body, as Record-Write renders it, the fold rewrites that body to carry the call, since darn and drift give precedence over the body to added entries alone;
 - once a motif run has made a Sketch whose record holds added entries, fold them with `lym board upsert --record-file`;
 - before sending a run back to a Webster row after a fold, record each folded call again with `lym loom decision add`;
-  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`.
+  a call that carried `Drops Create:` lines passes the same targets again with `--drops-create`;
+  once the run's scope is closed no call is recorded again, so file what that send-back would miss as a board note;
+- record every call before the run's first Code-Review round, where its scope closes and both verbs refuse until Finalize:
+  a call that comes later is a board note for a new task, and a Code-Review decision finding the record already asks for is ruled in scope with `lym loom circling continue --in-scope`.
+  The one record still taken then is a `bug` entry's, titled `No test seam` or `No bug fixed` and changing nothing else.

@@ -21,10 +21,10 @@
      self_check is a required marker: the body of Step 6 up to its closing two lines.
      DiscussionTable fills it with the fragment that has the writer run the validator or,
      when the gate has a cold fixer, the one that has it run none.
-     The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.yaml's subagent_model.
+     The subagent_model marker is declared by the Claude engine block the stencil includes, and filled from loom.subagent_model.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax;
      only `{{` begins a template action.
-lym-stencil: sha256=aacac3efdd15cc544065d726782417f487dc15c9eb259d83d39c8ee5589acda6 build=6005144b4fa6515e55e227a933fc370015e9fb14 time=2026-11-23T09:17:44Z -->
+lym-stencil: sha256=7140a6dc31981044b0429e9c4b14513c92631f3d37645199b28fec655346272b build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -99,6 +99,8 @@ Cover:
 - **Testing** — approach per module, key scenarios to cover.
   Phrase each acceptance criterion as behavior a test can check;
   a criterion about wording in a stencil, spec, doc or other prose is a review check, marked as the discussion spec's acceptance-criteria rule says, never a test of that prose.
+- **What the reviewer will check** — settle now, and record under `## Acceptance criteria` as the discussion spec says,
+  each figure the change must measure and state and the case it is measured on, each doc statement the change must make true, and each new test's intent and tier.
 
 When the entry is labelled `bug`, the design also settles the observed fault and how to reproduce it,
 its root cause or what is still unknown about it,

@@ -4,7 +4,7 @@
      so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it;
      each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=0cf508922fb62bcc79c6455955c478074f0a26609efa639cb2a600864f824f56 build=a695807093e6696afae8680f61bafb6451aa1e20 time=2026-11-27T07:14:07Z -->
+lym-stencil: sha256=ad08944df97a64257874da6fa836919a28c70c3083311672cdd672e61774d673 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 A symbol `Rename` needs the hub's `language.rename_tools`; the plan gate refuses one when the list is empty.
 
@@ -66,6 +66,8 @@ That is the `card-field-overlap` finding — see `{{.specs_dir}}/loom/loom-plan-
 The gates run the hub's tier lists over scopes lym computes, so the plan carries no plan-level verify section and asks for none.
 The hub's tiers and gate lists follow:
 {{.gate_tiers}}
+When they hold a plan tier0 budget line, each card that creates or widens a `tier0` test states in its Intent the seconds the test adds to one `tier0` run,
+and the plan's estimates together stay within that budget; a test that cannot fit moves to a higher tier or shares an existing test.
 A card's `**Verify:**` is the optional escape hatch for what no gate expresses, written only for what the gates cannot catch on their own.
 A `**Verify:**` line that tests is one `lym gate test --wait` call with a tier list and a scope form, never a raw test command or a target list.
 See `{{.specs_dir}}/loom/loom-plan-spec.md`'s verify model section for the gates and scope forms themselves — this file does not restate them.

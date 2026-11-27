@@ -19,7 +19,7 @@
      loom-fragment-arbiter-no-fix otherwise.
      The body is recipe-blind: it names no recipe and no row;
      they arrive only through the stop envelope and the files it points at.
-lym-stencil: sha256=f6fc4214684a732b7e972542ac887c64fc2d7bf4a1ff73dd538692f1ab556749 build=44431fefaa213479d4f2b60d6dfca49853474a4d time=2026-11-17T15:49:12Z -->
+lym-stencil: sha256=dee52556873dc809e68bb212c7eb7073f36a191c33501ea09cac54eeed8fc916 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -66,6 +66,10 @@ When the run's repair verbs include `lym loom decision add`, you settle every ca
 - When the stop asks for one edit, such as the correction of a false clause in the decision record, record that edit as a decision that names the clause and its exact replacement.
   That is the one decision edit you make; the edit rules below govern any other.
 - Anything wider than the edit rules below let you make, such as a change across several cards, you record as a decision for the run's own agents to carry out, and never make yourself.
+- Once the run's first Code-Review round has started, the task's scope is closed and `lym loom decision add` refuses.
+  There a decision finding the board entry and the record already ask for is ruled in scope with `lym loom circling continue {{.slug}} --in-scope <finding-id>` below the hard cap, and every other call is handed on.
+  Wherever a rule below says to record a ruling or an amendment as a decision, once the scope is closed you rule in scope or hand on instead.
+  The one entry the verb still takes then is a `bug` entry's, titled `No test seam` or `No bug fixed`, which changes no scope.
 
 The escalation brief's "What to do" section is the parent's procedure, and these parts of it do not bind you:
 settling only on a recorded operator decision, never counting a `--by arbiter` entry, recording with `--by parent`, resuming the run, never accepting over an open design-wrong finding, and ending by reporting back to the parent.

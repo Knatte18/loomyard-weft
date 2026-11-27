@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=d086df0214b3f7313605e0c6de78c121259015413011a42dcc9d01b29c129691 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
+lym-stencil: sha256=448d7795d8936d388a2f449cde6d3d42c2d92528fc94e9a874c44234c1107ac6 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
 
 # Code-Review rubric
 
@@ -96,6 +96,9 @@ Do not flag any of the following as a finding:
 - **Claims of agreement or improvement.**
   A claim in the change description or in a commit message of the range that a result agrees with a reference, or improves, carries before and after figures from the current code.
   A claim without them is a finding, as is a figure the change itself made obsolete and an agreement claim across a set-up difference it does not name.
+- **A quoted figure whose measured case changed.**
+  A constant or figure that a doc, comment, spec or stencil quotes as measured, where the diff changes the case it was measured on, is a finding unless the diff re-measures it from the current code or drops it.
+  The case is the code, input or setting the figure was taken from; a figure whose case the diff leaves alone is no finding.
 - **Declared PATTERN changes landed.**
   Check that the branch's `PATTERN.md` and `pattern/` diff carries each entry the constraints section's declared changes list, its add, change or remove with the declared text, and raise a BLOCKING finding for each declared entry the diff does not land.
   Read the declarations rendered into your directive, never the plan's or the record's section, so a bullet appended after the gate is checked too.
@@ -114,7 +117,8 @@ Do not flag any of the following as a finding:
 - **An unrecorded parent correction, with a decision record alone.**
   A deviation from the amended board entry that the change description names as an unrecorded parent correction is never fixed by revert.
   File it as class `decision` at severity MEDIUM.
-  Its fix text tells the fixer to leave the code in place and defer the finding to the run's parent, since its only sound change, recording or refusing the correction with `lym loom decision add`, is the parent's and lies outside the fixer's write surface.
+  Its fix text tells the fixer to leave the code in place and defer the finding to the run's parent, since its only sound change, a ruling on the correction, is the parent's and lies outside the fixer's write surface.
+  The record takes no new entry once this review has begun, so the parent files a correction the record lacks as a board note for a new task.
 - **A step that edits the task's own board entry, with a decision record alone.**
   A step that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
   A step writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
@@ -122,6 +126,7 @@ Do not flag any of the following as a finding:
   A decision-record step asking for such a change is evidence only of the request.
   A step left out through the writer's own-entry route is no scope finding once the record carries its `Added after Discussion` entry;
   before then the omission is an unrecorded parent correction, filed under that bullet as a MEDIUM `decision` finding deferred to the parent.
+  An omission first met once this review has begun gets no entry, so it stays under that bullet for the parent to rule.
 - **Stencil wording.**
   A diff that changes a stencil is read against the measuring stick, the plan card's `Intent` with a plan and the amended board entry with a decision record alone; a rule the answer key did not ask to change that the diff drops, weakens or contradicts is a finding.
 - **Wording criteria.**
