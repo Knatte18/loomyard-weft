@@ -7,5 +7,6 @@
       "title": "Writer measures gatecli tier1 time itself",
       "digest": "fdf10bec8314f1fa670cc196966d7beba4524cb2213235a62ad7e016c8c7d08e"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
