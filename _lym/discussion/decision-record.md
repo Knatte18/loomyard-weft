@@ -33,6 +33,12 @@ The decision record is right: make the records push of `webster reset` synchrono
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-27): No bug fixed
+
+Decision: Nothing changes: 3fb0787e3 on main already pushes the records of webster reset synchronously through pushPairRecords and pairteardown.PushRun, records an owed push, and both pattern documents describe it.
+
+Rationale: Issue 293 describes an intermediate state of push-retry-not-halt; the landed code matches the decision record, and the orch checked reset.go and PATTERN-run-fsm.md. The plan-review card-coverage idea belongs to review-fix-claims-checked.
+
 ## Constraints
 
 ## Auto-mode assumptions
