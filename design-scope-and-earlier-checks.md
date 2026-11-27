@@ -1,6 +1,6 @@
 # Close a task's scope at Code-Review, and catch earlier what a PR review found
 
-`scope-and-earlier-checks` · Task · enhancement, loom, burler · starting · Open-Window
+`scope-and-earlier-checks` · Task · enhancement, loom, burler · running · Drift-Baseline
 
 Depends on: [`describe-review-and-sync`](design-describe-review-and-sync.md)
 
