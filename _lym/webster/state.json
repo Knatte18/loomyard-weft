@@ -899,6 +899,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-acd231604a3173ee8.jsonl"
       ]
     },
+    "16": {
+      "slug": "prime-pull-owed-tips",
+      "cards": [
+        "16-prime-pull-owed-tips",
+        "17-catch-up-hands-to-pusher",
+        "18-reset-hand-commit-guard"
+      ],
+      "cardHashes": {
+        "16-prime-pull-owed-tips": "6b22feea90da02d0cc2eb2107b78f0f9b615b0cbb3a9ca8386d517a2558f44c2",
+        "17-catch-up-hands-to-pusher": "5e598f745f750705aa34e168fa30bdc367e0f3ab1737d684703d17e179577b6c",
+        "18-reset-hand-commit-guard": "1bf05242ce3ee4e78eb3649eca97885f44926cb822e58867a5daf81f134a1dcd"
+      },
+      "startSha": "db612427dca4bd8e89a3b5364e28319936688f1d",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T19:14:11Z",
+      "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "driver-wait-readers",
       "cards": [
@@ -1079,7 +1099,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 16,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
