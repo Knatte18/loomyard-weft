@@ -857,6 +857,62 @@
       "created": "2026-11-27T15:20:40Z",
       "revised": "2026-11-27T15:20:57Z",
       "profile": "light"
+    },
+    {
+      "id": 1742,
+      "handle": "E1",
+      "slug": "pr-session-test-stand-ins",
+      "title": "PR-Review session tests still hand-write reed, creel and session stand-ins",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "testkit",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nCode-Review round 1 of the task that restores the PR-Review agent session (#282) raised a BLOCKING PATTERN finding: the session tests and `envkit` stand in for repository modules.\nThe fixer removed `fakePRSessions` and envkit's `noopSessions` and runs the real `shuttleengine.Runner` over `shuttlefake`, adding `shuttlefake.ResumeEngine`.\nStill hand-written: the `SessionLive` closures over the kit's strand table and in `envkit`, the `RegisterSession` closures, and the `MailAgent` closures, one of them returning a made-up \"no such strand\" error.\nNo kit holds a recorded session stand-in, and a real reed needs tmux while these tests are tier0.\nThe parent accepted the round with this open, to land the urgent fix.\n\n## Idea\n\nGive testkit a recorded reed and creel session stand-in usable at tier0, and move the PR-Review session tests onto it.\n",
+      "created": "2026-11-27T16:37:27Z",
+      "revised": "2026-11-27T16:37:27Z"
+    },
+    {
+      "id": 1743,
+      "handle": "B1",
+      "slug": "reed-agent-name-spaces",
+      "title": "Reed agent button refuses a name with spaces without saying why",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-27)\n\nThe operator tried the agent button in reed's status bar for the first time and typed a name with spaces.\nIt was refused without telling the operator what a valid name is.\n\n## Idea\n\nSay what the name allows when asking for it, and on a refusal name the rule and ask again; or turn spaces into dashes.\n",
+      "created": "2026-11-27T16:37:28Z",
+      "revised": "2026-11-27T16:37:28Z"
+    },
+    {
+      "id": 1744,
+      "handle": "E2",
+      "slug": "reed-agent-blank-context",
+      "title": "Agent spawned from the reed agent button starts with no lym context",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-27)\n\nThe agent the reed agent button spawns knows nothing of lym: no skills, no commands, no idea what it is or what worktree and task it serves.\n\n## Idea\n\nSpawn it with an opening stencil that says what it is, which hub, worktree and task (or prime) it sits in and what it is for, and which skills to load for that context, such as `ly:cli`, `ly:board` and the scribe skills.\n",
+      "created": "2026-11-27T16:37:29Z",
+      "revised": "2026-11-27T16:37:29Z"
     }
   ],
   "prime_owner": "neve",
