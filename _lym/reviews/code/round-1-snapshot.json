@@ -11,5 +11,6 @@
       "title": "No test seam: the flake is in the test's own time limit",
       "digest": "a7c5cfeef38be0e7c6ea98c9cb1e9fe80dcf0db4afc4d94f65b54c62c9bb0802"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
