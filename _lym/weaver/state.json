@@ -302,6 +302,40 @@
       "cardShas": [
         "601e7c089848676634da0f3229f101fd733447d5"
       ]
+    },
+    "7": {
+      "slug": "vscode-tasks-and-keys",
+      "cards": [
+        "07-vscode-tasks-and-keys",
+        "08-workspace-content-seam",
+        "09-beam-start-workspace-task"
+      ],
+      "cardHashes": {
+        "07-vscode-tasks-and-keys": "26bf4ab10eb7a217ba600e0f71cf2079605cdf74e17bd622daaa8b913a1375f7",
+        "08-workspace-content-seam": "549c51698866b1778cfa47003e12c6aa9cffc9ad424ea272354e72bcf89b3de8",
+        "09-beam-start-workspace-task": "076aa1ed6e8d6d4ecb1ce3b3cbe92533c669bce7939b1a3f22ac70a721f850a2"
+      },
+      "startSha": "601e7c089848676634da0f3229f101fd733447d5",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:03:22Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-vscode-tasks-and-keys",
+        "status": "done",
+        "head_sha": "18ad1c92f16e6a205eb1c999a519bb127ed44833",
+        "deviations": [
+          "internal/fabricengine/hubworkspace.go",
+          "internal/fabricengine/hubworkspace_integration_test.go",
+          "internal/ideengine/spawn_hub_integration_test.go",
+          "internal/vscode/config.go",
+          "internal/vscode/config_test.go",
+          "internal/vscode/workspace.go"
+        ]
+      },
+      "cardShas": [
+        "18ad1c92f16e6a205eb1c999a519bb127ed44833"
+      ]
     }
   },
   "attempts": [
@@ -335,11 +369,22 @@
       "strandName": "ly:weaver-bench-b1:weaver",
       "outcome": "done",
       "beganAt": "2026-11-27T12:37:48Z"
+    },
+    {
+      "batch": 7,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b1/_lym/weaver/reports/07-vscode-tasks-and-keys-a1.yaml",
+      "strandGuid": "d3decc8bacb3c9ebbc3cbd1ebea27435",
+      "strandName": "ly:weaver-bench-b1:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:03:22Z"
     }
   ],
   "batchEnds": {
     "1": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56",
-    "5": "601e7c089848676634da0f3229f101fd733447d5"
+    "5": "601e7c089848676634da0f3229f101fd733447d5",
+    "7": "18ad1c92f16e6a205eb1c999a519bb127ed44833"
   },
-  "lastEnd": "601e7c089848676634da0f3229f101fd733447d5"
+  "lastEnd": "18ad1c92f16e6a205eb1c999a519bb127ed44833"
 }

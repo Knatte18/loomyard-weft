@@ -16,3 +16,12 @@ Card 4's temporary testonlycode allowlist entries are removed.
 A test file named *_linux_integration_test.go gets no platform constraint from its name; it needs `//go:build linux`.
 A test that needs lock.AcquireWriteLockWithin to succeed needs a generous wait: a 10 ms one can expire before the first attempt under load.
 The card gate's comment lint runs a fixer that rewrites comments, so read changed files again after a gate call.
+
+## Batch 07-vscode-tasks-and-keys, attempt 1
+
+Cards 7-9 are committed and the batch gate passed with --main-packages; the new tier1 ide and fabric checks ran and passed.
+Card 8 added a temporary testOnlyCodeAllowed entry for fabricengine.InstallWorkspaceContent; card 9 removed it.
+Card 7 also updated TestWriteConfigFallsBackToBareName and TestWriteConfigLeavesUndecodableSettingsAlone (not in its targets), which counted one task.
+vscode.BuildWorkspace now takes a members map; the root pre-run installs ideengine.WorkspaceContent for the workspace files' tasks key.
+Seen once under load and left alone: fabricengine TestHoldRecordsWriteLock (recordswritelock_test.go) gives a free lock only 20ms.
+One gate call refused the hub gate config (gate.gates.upkeep scope "marked") and passed on retry; the parent may want to check the hub's gate.yaml.

@@ -1,0 +1,9 @@
+status: OK
+head_sha: 18ad1c92f16e6a205eb1c999a519bb127ed44833
+journal: |
+  Cards 7-9 are committed and the batch gate passed with --main-packages; the new tier1 ide and fabric checks ran and passed.
+  Card 8 added a temporary testOnlyCodeAllowed entry for fabricengine.InstallWorkspaceContent; card 9 removed it.
+  Card 7 also updated TestWriteConfigFallsBackToBareName and TestWriteConfigLeavesUndecodableSettingsAlone (not in its targets), which counted one task.
+  vscode.BuildWorkspace now takes a members map; the root pre-run installs ideengine.WorkspaceContent for the workspace files' tasks key.
+  Seen once under load and left alone: fabricengine TestHoldRecordsWriteLock (recordswritelock_test.go) gives a free lock only 20ms.
+  One gate call refused the hub gate config (gate.gates.upkeep scope "marked") and passed on retry; the parent may want to check the hub's gate.yaml.
