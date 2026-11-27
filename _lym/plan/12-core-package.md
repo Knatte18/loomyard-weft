@@ -10,9 +10,9 @@
 - `plan:internal/fabriccore#PhaseUnderLock` -> `const PhaseUnderLock Phase = "under_lock"`
 - `plan:internal/fabriccore#PhaseOrigin` -> `const PhaseOrigin Phase = "origin"`
 - `plan:internal/fabriccore#Store` -> `type Store string`
-- `plan:internal/fabriccore#StoreCode` -> `const StoreCode Store = "code"`
-- `plan:internal/fabriccore#StoreRecords` -> `const StoreRecords Store = "records"`
-- `plan:internal/fabriccore#StoreBolt` -> `const StoreBolt Store = "bolt"`
+- `plan:internal/fabriccore#StoreCode` -> `const StoreCode Store = fabriclayout.RepoCode`
+- `plan:internal/fabriccore#StoreRecords` -> `const StoreRecords Store = fabriclayout.RepoRecords`
+- `plan:internal/fabriccore#StoreBolt` -> `const StoreBolt Store = fabriclayout.RepoBolt`
 - `plan:internal/fabriccore#Field` -> `type Field string`
 - `plan:internal/fabriccore#FieldLocalRefs` -> `const FieldLocalRefs Field = "local_refs"`
 - `plan:internal/fabriccore#FieldOriginRefs` -> `const FieldOriginRefs Field = "origin_refs"`
@@ -75,11 +75,13 @@ In code, docs and records the core's input is the "snapshot" and its output the 
 
 The types (`snapshot.go`, `action.go`, `answer.go`):
 - `Phase` names when a snapshot part is read (D2): `PhasePreLock` before any lock, for refusals made early; `PhaseUnderLock` once the verb holds the lock it takes today; `PhaseOrigin` for a read of origin the core asks for.
-- `Store` names a repository of the hub, `StoreCode`, `StoreRecords` or `StoreBolt`, and `Field` names one part of a snapshot a phase reads or re-reads.
+- `Store` names a repository of the hub, `StoreCode`, `StoreRecords` or `StoreBolt`, each valued at the layout's repository-side name, `fabriclayout.RepoCode`, `RepoRecords` or `RepoBolt`, so the literals are declared once (`PATTERN-code-conventions`);
+  `Field` names one part of a snapshot a phase reads or re-reads.
 - `Refs` maps a full ref name to its commit; `StoreRefs` holds a store's `Local` and `Origin` refs and `OriginRead`, set once origin was read.
 - `RecordsStore` holds `Present`, whether the hub has a records store, and the origin ref prefixes its layout maps, `Heads` and `Tags`, empty for the identity layout.
-- `Snapshot` holds `Phases`, the phases read so far in order; `Stores map[Store]StoreRefs`; `Worktrees []fabriclayout.WorktreeEntry`; `Anchors`, each worktree's committed anchor marker by path; `RecordsStore`; `PendingTeardowns []fabriclayout.PendingTeardown`; `BackoffDelays []time.Duration`, the delays a rule's waits take (D3); `Outcomes []Outcome`, every action outcome so far;
+- `Snapshot` holds `Phases`, the phases read so far in order; `Stores map[Store]StoreRefs`; `Worktrees []fabriclayout.WorktreeEntry`; `Anchors`, each worktree's committed anchor marker by path; `RecordsStore`; `PendingTeardowns []fabriclayout.PendingTeardown`; `Outcomes []Outcome`, every action outcome so far;
   and `ReadFailures []ReadFailure`, each read the engine could not complete for a class a rule decides on.
+  The backoff delays D3 hands the core land with part 2's first wait rule, as the overview's snapshot-fields decision says of a field no rule of this part reads.
 - `ReadFailure` holds the `Phase`, the `Field`, the `Store`, the `OutcomeClass` and the error text of a read that failed as a transport failure, such as an origin read of an unreachable remote, so the rule decides what an unreachable origin means, as `ReconcileOrigin` decides it today (D3).
   A seam fact a later part needs, such as the matched secret paths, is a field that part adds, in fabric's vocabulary (D13, the record's secret-path entry).
 - `ActionKind` is the closed set D3 lists: ref create, move and delete, locally or on origin; tag; push of a refspec; worktree add and remove; anchor and exclude writes; a scoped-pathspec commit; pending-record write and clear; a wait; a seam call.

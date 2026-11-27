@@ -58,7 +58,9 @@
 - `internal/lymcwd#weftnameImportOwners`
 - `internal/lymcwd#TestEnforcement_FabricVocabulary`
 - `internal/fabricengine#IsSeedCommit`
+- `internal/fabricengine#TestWeftPathAccessors`
 - `internal/fabricengine/doc.go`
+- `pattern/PATTERN-single-repo-hub.md`
 
 **Intent:** Move fabric's branch, tag, ref-namespace, trailer-key, flag and subject names into `internal/fabriclayout`'s `refnames.go` (D1, D7), and retarget every caller.
 
@@ -81,8 +83,11 @@ Tests:
 - `TestRecordsBranchName_RoundTripsWithWeftWarpSlug` is deleted: `TestRecordsBranchName`'s rows and `TestWeftWarpSlug`'s rows pin both directions of the same suffix with literals, so the round trip asserts nothing they do not.
 - `TestWeftWarpSlug`, `TestArchiveTagSlug` and `TestOwnerArchiveTagName` (tier0) move to `internal/fabriclayout` unchanged.
   `TestArchiveTagPushDelays` stays, since it tests the engine's push delays.
+- `TestWeftPathAccessors` stays in the engine, since the accessors take a `lymcwd` location, and loses its pairing tail:
+  that tail compares a base the test joins itself, and the base of `RecordsWorktreePath` it checks is held by each row's literal `wantWeftWorktreePath`.
 
 Docs: `internal/fabricengine/doc.go`'s one-repository section says the only spelling of the records namespace is `fabriclayout`'s constants whose names open with `RecordsNamespace`.
+`pattern/PATTERN-single-repo-hub.md`'s layout bullets say the namespace is spelled once, by `fabriclayout`'s `RecordsNamespaceRoot`, `RecordsNamespaceHeads` and `RecordsNamespaceTags`, and the board's branch is `fabriclayout`'s `OneRepositoryBoardBranch`.
 
 No behavior changes (D5): every name is the same string as before.
 

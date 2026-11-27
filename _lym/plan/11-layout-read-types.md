@@ -32,6 +32,7 @@
 - `internal/fabricengine#Trailer`
 - `internal/fabricengine#TrailerCommit`
 - `internal/fabricengine#PollutionEntry`
+- `internal/fabricengine#TestOrigin_JSONRoundTrip`
 
 **Edit:**
 - `cmd/lym#destructiveGuardReadOnlyResultTypes`
@@ -46,6 +47,8 @@ The same-named engine methods `Fabric.LineChange` and `Topology.PairParts` stay,
 `cmd/lym#destructiveGuardReadOnlyResultTypes`' `DiffResult` row names `internal/fabriclayout/readtypes.go`, so the guard still checks it embeds no record.
 `doc.go` names the `fabriclayout` home of `DiffResult.NoWeftCorrespondence` and `HealthReason` where it names them as this package's own; its rules are unchanged.
 Every reference to a moved name, in the engine and in every other production and test file, becomes `fabriclayout.<Name>`, imports following as card 3 says.
+`TestOrigin_JSONRoundTrip` (tier0) tests only `Origin`'s wire keys, so it moves to the layout's tests unchanged;
+`origin_test.go`, which card 3 left holding it alone, is removed.
 The read verbs' tests stay in the engine: each asserts a read the engine runs.
 No behavior changes (D5).
 

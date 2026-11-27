@@ -21,6 +21,7 @@
 - `internal/pairteardown#`
 - `internal/hibernatecli#`
 - `internal/hubforge#`
+- `internal/orchcli#TestStart_ReconcilesTheHubFirst`
 - `cmd/lym#TestMutationRecord_FabricengineProductionSource`
 
 **Intent:** Split the mutation record into the plain record data `internal/fabriclayout` holds and the recorder `internal/fabricengine` keeps (D1: the layout holds `MutationRecord` as plain data that serializes as today; the engine keeps the recorder that appends and logs entries).
@@ -35,6 +36,11 @@ In `internal/fabricengine` (the whole package, so every caller of the changed me
 - `Mutations` stays the recorder: `hubRoot` and its entries, `NewMutations`, `Append` and `AppendRef`, which log every entry, and `Extend`, `Entries` and `Len`.
   `Snapshot` returns a `fabriclayout.Mutations` built through `MutationsOf`, and `Extend` takes a `fabriclayout.Mutations`, appending its `Entries()`.
   The recorder's `MarshalJSON` goes, since only the record value is marshalled.
+- A recorder method called on a record value, `Append`, `Extend` or `Snapshot`, which the layout's `Mutations` lacks, becomes `fabriclayout.MutationsOf` over the entry lists, in their order:
+  `ReconcileOrigin`'s deferred merge and `reconcileEnded`'s teardown merge set `res.Mutations` to `MutationsOf(append(res.Mutations.Entries(), other.Entries()...))`, with `other` the recorder's `Snapshot()` or the report's `Mutations`;
+  `internal/pairteardown`'s `snapshotOutcome.applyTo` sets it to `MutationsOf(append(s.rec.Snapshot().Entries(), res.Mutations.Entries()...))`, keeping the snapshot's entries ahead of the removal's;
+  `internal/fabriccli`'s `runCleanupWithFlags` sets `rec` to `MutationsOf(append(rec.Entries(), warp.Mutations.Entries()...))`;
+  `TestStart_ReconcilesTheHubFirst`'s `addRemovedPair` sets `h.report.Mutations` to `MutationsOf` over one literal `fabriclayout.Mutation` of kind `KindWorktreeRemoved`, target `/hub/ended-slug` and detail `ended pair removed`, the entry its `Append` records today.
 - Every result type embeds `fabriclayout.MutationRecord` as its first field, and the engine's `MutationRecord` declaration goes.
 - `doc.go`'s mutation record section says the entry, the kinds, the record value and `MutationRecord` live in `internal/fabriclayout` and the recorder here; its rules are unchanged.
 - In `mutation_test.go`, `TestMutations_MarshalJSON` and `TestMutationRecord_EmbedsAndMarshalsUnderMutationsKey` move to the layout as the tier0 tests above, with their rows and literal wants.
@@ -57,6 +63,6 @@ Its `//lym:watch` adds `internal/fabriclayout/*.go`, since cards 10 and 11 move 
 
 No behavior changes (D5): every verb's JSON carries the same `mutations` array, and the recorder logs each entry as before.
 
-**ImpactSummary:** The recorder keeps its name and call shape, so its call sites compile unchanged; the record value's few spellings outside fabric, in five packages, and the result-type guard change.
+**ImpactSummary:** The recorder keeps its name and call shape, so its call sites compile unchanged; the record value's few spellings outside fabric, the few calls of a recorder method on a record value, and the result-type guard change.
 
 **Commit:** `6: layout-mutation-record`

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -29,7 +29,7 @@ Every verb still runs on today's code (D5).
 12 — core-package — create internal/fabriccore with the snapshot, phase, action list and outcome types and its leaf tests
 13 — fabrickit-snapshot-builder — add the shared snapshot builder kit
 14 — executor-loop — add the engine's executor loop and its error-to-class mapping
-15 — snapshot-reader — add the phased snapshot reader with its git fallback for non-files ref storage
+15 — snapshot-reader — add the phased snapshot reader with its git fallback for non-files ref storage, and delete the engine tests whose assertions others hold
 
 ## Shared Decisions
 
@@ -63,19 +63,41 @@ Every verb still runs on today's code (D5).
 
 ### Decision: the foundation's tests shrink
 
-- **Decision:** a test of a moved pure name moves to the layout at tier0 or is folded into one table per kind of name;
-  a test whose assertion another test already holds is deleted in the card that makes it redundant (D5, D6, the added entry "The restructure cuts fabric's test code").
-  Each card's commit body lists every test it deleted, naming the test that now holds its assertion or why it guarded nothing of its own, and for each test it kept or moved, the rule it alone guards.
-- **Rationale:** the added entry's criterion; the deletions here are cards 2, 3, 4 and 15.
+- **Decision:** the part ends with less fabric test code than it started with: the `_test.go` files of `internal/fabricengine`, `internal/fabriclayout`, `internal/fabriccore` and `internal/testkit/fabrickit` together shrink (the added entry "This part's fabric test code shrinks in net").
+  A test of a moved pure name moves to the layout at tier0 or is folded into one table per kind of name;
+  a test whose assertion another test already holds, or that guards no rule of its own, is deleted in the card that touches it, or in card 15 when no card touches it and its deletion pays for the net shrink (D5, D6, the added entry "The restructure cuts fabric's test code").
+  The new packages' tests are paid for by the deletions of cards 2, 3, 4 and 15, and the new tests stay as small as the rules they guard: one row per rule, rows that walk one scenario merged.
+  Estimated at the plan's writing, the added `_test.go` lines, file headers, `TestMain`s and `export_test.go` accessors included, come to about 1,050;
+  cards 2, 3 and 4 and card 15's `TestList_RefStorage` delete about 530, and card 15's further engine test deletions about 700, so the part ends about 180 lines down.
+  The 1,050 is the added tests' budget as well as an estimate: the cards write their new tests within it, merging rows before adding a test, so the deletions keep that margin.
+  Each card's commit body names the test functions it added and deleted, naming for each deletion the test that now holds its assertion or why it guarded nothing of its own, and for each test it kept or moved, the rule it alone guards.
+  Card 15's commit body states the line totals of those `_test.go` files at the part's base and after card 15, measured with `wc -l`.
+- **Added tests and the new code each alone guards:**
+  - `TestBannedImports` (card 1): `scankit`'s `bannedImports` and `AssertNoImports`.
+  - The layout's `TestLeafInvariant_AllowlistOnly` and `TestLeafInvariant_NoIO` (card 2): `internal/fabriclayout`'s closed import set and its I/O ban (D1).
+  - `TestStructuralDirs` (card 2): `StructuralCommittedDirs` and `StructuralNeverCommittedDirs` returning a fresh slice each call.
+  - `TestHubPaths` (card 3): the literal joins of the moved hub path functions, which five deleted engine tests held.
+  - `TestMutationsOf` (card 6): the copies `MutationsOf` and the record value's `Entries` make.
+  - `TestIsMutationRecordEmbed` (card 6): the first-field comparison of the result-type guard.
+  - The core's `TestLeafInvariant_AllowlistOnly` and `TestLeafInvariant_NoIO` (card 12): `internal/fabriccore`'s closed import set and its I/O ban (D1).
+  - `TestRefusal_Error` (card 12): `Refusal.Error`.
+  - `TestBuilder` (card 13): the kit's setters and `Build` sharing nothing with the builder.
+  - `TestEnforcement_FabrickitLeafOnly` (card 13): the kit's closed import set, narrower than the denied imports `TestEnforcement_TestkitInvariant` bars for every kit (D8).
+  - `TestRunRule` (card 14): `runRule`, its lock seam and its read-failure handling.
+  - `TestOutcomeClassOf` (card 14): `outcomeClassOf`.
+  - `TestSnapshotReader_ReadsAHub` (card 15): `snapshotReader.read`'s field reads on a real hub.
+  - `TestSnapshotReader_RefStorage` (card 15): `readLocalRefs`' per-store probe and git fallback, and the reader's worktree-list read; it replaces `TestList_RefStorage`.
+- **Rationale:** the two added entries' criteria; a foundation part adds packages, so it finds the deletions that pay for their tests.
 - **Applies to:** every card with a test change
 
 ### Decision: the foundation's unreached loop functions take dead-code allowlist entries
 
-- **Decision:** `runRule`, `outcomeClassOf`, `snapshotReader.read`, `readLocalRefs` and `fabriccore.Refusal.Error` have no production caller until part 2 drives the loop.
-  `cmd/lym#testOnlyCodeAllowed` admits them, each reason naming the tests that run it and part 2 as its first caller, and part 2 removes each entry as its caller lands; the guard's stale-entry check then holds the list.
-- **Departure:** `PATTERN-test-only-code` admits an unreachable function only as a helper other packages' tests share.
-  The record's D9 delivers the executor loop in this part and every verb's move in later parts, so no verb may call it yet (D5).
-- **Applies to:** cards 14–15
+- **Decision:** `runRule`, `outcomeClassOf`, `fieldReadError.Error`, `fieldReadError.Unwrap`, `snapshotReader.read`, `readLocalRefs` and `fabriccore.Refusal.Error` have no production caller until part 2, `fabric-core-push-origin`, drives the loop.
+  `cmd/lym#testOnlyCodeAllowed` admits each, as the added entry "A chain part may leave production code that only a named later part first calls" allows:
+  each entry's reason names the tests that run it and `fabric-core-push-origin` as the part that adds its first production caller, and that part removes the entry in the change that adds the caller; the guard's stale-entry check then holds the list.
+  Card 13 adds the entry for `fabriccore.Refusal.Error`, since the kit's import first brings the core into the analysis there; cards 14 and 15 add the rest, and card 14 updates the allowlist's doc comment to name this second, temporary kind of entry.
+- **Rationale:** D9 delivers the executor loop in this part and every verb's move in later parts, so no verb may call it yet (D5); the added entry bounds the allowance to named functions and a named part.
+- **Applies to:** cards 13–15
 
 ### Decision: action runners land with their kinds
 

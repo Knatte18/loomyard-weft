@@ -29,7 +29,8 @@ A missing directory and an unparsable file return the error.
   an import outside the banned list, a `_test.go` file and a file in a subdirectory are not;
   a clean tree reports nothing with its parsed count;
   a missing directory and an unparsable file return an error.
-- `AssertNoImports` rows run it on a `recordingTB`, a test-file type embedding `testing.TB` that records `Errorf` and `Fatalf` messages and the failed state:
-  a missing directory records a fatal message, an empty directory records the floor failure, and a banned import records one error naming the package and the path.
+- `AssertNoImports` rows run it on a `recordingTB`, a test-file type embedding `testing.TB` that overrides `Helper` as a no-op and `Error`, `Errorf` and `Fatalf`, recording each message and the failed state, so no call reaches the nil embedded `testing.TB`.
+  `AssertNoImports` returns right after its `t.Fatalf` on a scan error, since a recorded `Fatalf` does not stop the call.
+  A missing directory records exactly one fatal message and no floor message, an empty directory records the floor failure, and a banned import records one error naming the package and the path.
 
 **Commit:** `1: scankit-banned-imports`

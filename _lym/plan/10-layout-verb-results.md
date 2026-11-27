@@ -63,6 +63,7 @@
 - `internal/fabricengine#CommitResult.Committed`
 - `internal/fabricengine#TakeOverResult`
 - `internal/fabricengine#OwnerArchive`
+- `internal/fabricengine_test#TestCommitResult_Committed`
 
 **Edit:**
 - `cmd/lym#destructiveGuardMutatingResultTypes`
@@ -84,6 +85,7 @@ The guard then still checks that each embeds the record as its first field.
 `doc.go` names the `fabriclayout` home of `PullResult`, `UnwireVerbResult.WeftContent`, `MergeResult.Committed` and `CommitResult.Committed()` where it names them as this package's own; its rules are unchanged.
 
 Every reference to a moved name, in the engine and in every other production and test file, becomes `fabriclayout.<Name>`, imports following as card 3 says.
+`TestCommitResult_Committed` (tier0) tests only the pure `CommitResult.Committed`, so it moves to the layout's tests unchanged, and the emptied `committed_test.go` is removed.
 The verbs' tests stay in the engine: each asserts what a verb does, and the verbs stay.
 No behavior changes (D5): every verb returns and prints the same fields.
 

@@ -15,6 +15,7 @@
 
 **Move:**
 - `internal/fabricengine#ScopedPathspec`
+- `internal/fabricengine_test#TestScopedPathspec`
 
 **Delete:**
 - `internal/fabricengine/classify.go`
@@ -68,6 +69,7 @@ The classification:
 - `StructuralCommittedDirs` returns a fresh `[]string{lymdirs.LymDirName}` and `StructuralNeverCommittedDirs` a fresh `[]string{lymdirs.DotLymDirName}`, each carrying the doc comment of the var it replaces.
   A function, not an exported var, so no caller can change the structural sets.
 - `ScopedPathspec` moves unchanged from `fabric.go`; every caller, in the engine and outside it, now calls `fabriclayout.ScopedPathspec`.
+  `TestScopedPathspec` (tier0) moves from `fabric_test.go` to the layout's tests unchanged.
 - `classify.go` and `classify_test.go` go; the engine's callers name the new functions:
   `Fabric.commit` calls `fabriclayout.ClassifyPaths` with `fabriclayout.StructuralNeverCommittedDirs()`;
   `pathspecNames`, `junctionNames`, `IsReservedHubName` and `detectWarpPollution` read the two sets through the functions;
@@ -77,8 +79,10 @@ The classification:
   The row `routingNames_with_more_than_two_entries` spells the Bolt directory as `lymdirs.BoltDirName`, since the engine's `BoltDirName` is out of the layout's reach.
   `TestClassifyPaths_PartitionsInputWithNothingLostOrDuplicated` is deleted with `classify_test.go` and has no successor:
   each `TestClassifyPaths` row checks all three buckets for exact, ordered equality with literals that partition its input, so the partition test asserts nothing those rows do not.
-- `TestStructuralDirs` (tier0) pins each set's literal members, `_lym` and `.lym`, and that appending to a returned slice leaves the next call's answer unchanged, the guarantee the functions exist for.
-- The comment of `TestStructuralNameSets_ForAConfigNamingNeitherStructuralDirectory` names `fabriclayout.ClassifyPaths` and `fabriclayout.StructuralNeverCommittedDirs` where it named the unexported names.
+- `TestStructuralDirs` (tier0) holds one row: overwriting a returned slice's first element and appending to it leaves the next call's answer unchanged, the guarantee the functions exist for.
+  The overwrite is what fails a shared package slice, since an append to a one-element slice with no spare capacity always allocates.
+  It pins no literal member: `TestIsReservedHubName`'s `_lym` row and `TestStructuralNameSets_ForAConfigNamingNeitherStructuralDirectory`'s `.lym` checks already hold the members.
+- The comment of `TestStructuralNameSets_ForAConfigNamingNeitherStructuralDirectory` and the file header of `internal/fabricengine/structuraldirs_test.go` name `fabriclayout.ClassifyPaths`, `fabriclayout.StructuralCommittedDirs` and `fabriclayout.StructuralNeverCommittedDirs` where they named the unexported names.
 
 Vocabulary and docs:
 - `internal/fabricvocab#owners` gains `internal/fabriclayout`, so its names may carry the side tokens (the record's `PATTERN-fabric-boundary` constraint).
