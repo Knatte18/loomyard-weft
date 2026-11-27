@@ -1,4 +1,4 @@
-slots: 4 # how many gate builds and test runs the hub executes at once; a lowered count takes effect on the next acquire while a running holder finishes
+slots: 2 # how many gate builds and test runs the hub executes at once; a lowered count takes effect on the next acquire while a running holder finishes
 scoper: go
 refuse_raw: ["go test"]
 tiers:
