@@ -4,7 +4,7 @@
      so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it;
      each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=ad08944df97a64257874da6fa836919a28c70c3083311672cdd672e61774d673 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
+lym-stencil: sha256=d8746ff91b3d897c16c1637e8796ad6b7d71e1a6f292d3b31267b4baacbcc6e9 build=2326ef4da0640800959a1d7b2bc9c3444f708748 time=2026-11-27T13:07:11Z -->
 
 A symbol `Rename` needs the hub's `language.rename_tools`; the plan gate refuses one when the list is empty.
 
@@ -53,9 +53,6 @@ A test that calls only the refusal's error constructor does not reach it.
 
 A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
 Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
-
-A new function goes on the card that adds its first production caller, even when it is part of a module's public surface:
-a card that adds it alone fails its gate on the guard that every production function is reachable from a `main`.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.
 
