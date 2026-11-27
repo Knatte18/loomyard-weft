@@ -1,11 +1,11 @@
 {
-  "current_producer": "Parent-Align",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Parent-Align",
-    "last": "Webster → done",
+    "now": "Drift-Verify",
+    "last": "Parent-Align → done",
     "wait": ""
   },
   "history": [
@@ -503,6 +503,13 @@
           "end": "2026-11-27T20:15:30.117975429Z"
         }
       ]
+    },
+    {
+      "producer": "Parent-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-27T20:27:45Z",
+      "started_at": "2026-11-27T20:15:33Z"
     }
   ],
   "product": {
