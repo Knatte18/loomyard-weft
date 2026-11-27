@@ -1,0 +1,728 @@
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 7fd845db8..b84e67467 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -113,6 +113,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.IsTestFile":                 "loom-only seam, batten lands no branch",
+ 	"Landing.RowEntry":                   "loom-only seam, batten lands no branch",
+ 	"Landing.TaskRemoteTip":              "loom-only seam, batten lands no branch",
++	"Landing.IsAncestor":                 "loom-only seam, batten lands no branch",
+ 	"Landing.CodeReviewOff":              "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.Mode":           "loom-only seam, batten lands no branch",
+ 	"Landing.PullRequest.Origin":         "loom-only seam, batten lands no branch",
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 5ff631c07..6c42c33bb 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -95,6 +95,7 @@
+ // so a hook's own refusal text reaches the caller.
+ // PushCoalesced takes a single-pusher lock file in the checkout's own git dir before it checks for unpushed work,
+ // so a burst of concurrent callers collapses into as few pushes as possible.
++// Every push or remote-branch delete that lands leaves a trace line naming the checkout, the remote ref and its new tip.
+ //
+ // # Pull and reset
+ //
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index 36422335f..af983d564 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -172,12 +172,15 @@ func (r *Repo) pushPlainWithRetry(remote, source, branch string, ns RefNamespace
+ 	return nil
+ }
+ 
+-// recordLandedPush records a push whose transfer already landed.
++// recordLandedPush records a push whose transfer already landed, sha being the remote ref's new tip, "" for a delete.
++// It first leaves a trace line naming the checkout, the remote ref and its new tip,
++// so the process that moved a remote ref can be found from the logs.
+ // It logs a failure of the record instead of returning it.
+ // The remote has changed, so reporting the push as failed would be wrong.
+ // A fetch corrects a tracking ref that the push moved.
+ // A ref that a delete left behind stays until something drops it, so the warning names that ref.
+ func (r *Repo) recordLandedPush(dest pushDestination, sha string, keepNewer bool) {
++	logger.Info("gitrepo: push landed", "repo", r.path, "remote", dest.remote, "ref", dest.namespace.Branch(dest.branch), "tip", sha)
+ 	if err := r.recordPush(dest, sha, keepNewer); err != nil {
+ 		logger.Warn("gitrepo: push landed but its tracking ref was not recorded", "branch", dest.branch, "trackingRef", dest.trackingRef, "error", err)
+ 	}
+diff --git a/internal/gitrepo/pushbranch_integration_test.go b/internal/gitrepo/pushbranch_integration_test.go
+index 6f7a932c2..fa39ef61c 100644
+--- a/internal/gitrepo/pushbranch_integration_test.go
++++ b/internal/gitrepo/pushbranch_integration_test.go
+@@ -1,17 +1,82 @@
+-// pushbranch_integration_test.go covers PushBranch and DropRemoteTracking against a real bare remote and clones.
+-// It reuses push_test.go's fixtures.
++// pushbranch_integration_test.go covers PushBranch, DropRemoteTracking and the trace line of a landed push or delete.
++// It runs them against a real bare remote and clones, and reuses push_test.go's fixtures.
+ 
+ package gitrepo_test
+ 
+ import (
+ 	"errors"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestLandedPush_LeavesTraceLine is not parallel, nor are its subtests:
++// each points the process-global logger at its own buffer.
++func TestLandedPush_LeavesTraceLine(t *testing.T) {
++	tiergate.Require(t, 1)
++	tests := []struct {
++		name string
++		// onOrigin pushes the branch with plain git before act, which leaves no trace line.
++		onOrigin bool
++		act      func(repo *gitrepo.Repo, tip string) error
++		// wantTip returns the tip field the line must hold for a branch whose local tip is tip.
++		wantTip func(tip string) string
++	}{
++		{
++			name: "PushBranch names the new tip",
++			act: func(repo *gitrepo.Repo, _ string) error {
++				return repo.PushBranch("origin", "feat", gitrepo.RefNamespace{})
++			},
++			wantTip: func(tip string) string { return "tip=" + tip },
++		},
++		{
++			name:     "DeleteRemoteBranch names an empty tip",
++			onOrigin: true,
++			act: func(repo *gitrepo.Repo, _ string) error {
++				_, err := repo.DeleteRemoteBranch("origin", "feat", gitrepo.RefNamespace{})
++				return err
++			},
++			wantTip: func(string) string { return `tip=""` },
++		},
++		{
++			name:     "DeleteRemoteBranchLeased names an empty tip",
++			onOrigin: true,
++			act: func(repo *gitrepo.Repo, tip string) error {
++				return repo.DeleteRemoteBranchLeased("origin", "feat", tip, gitrepo.RefNamespace{})
++			},
++			wantTip: func(string) string { return `tip=""` },
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			logs := logcapture.CaptureVerbose(t)
++			_, _, clonePath, repo := newPushedMainClone(t)
++			tip := commitOnUncheckedBranch(t, clonePath, "feat")
++			if tt.onOrigin {
++				gitkit.Git(t, clonePath, "push", "origin", "feat")
++			}
++
++			if err := tt.act(repo, tip); err != nil {
++				t.Fatalf("act error = %v; want nil", err)
++			}
++			want := tt.wantTip(tip)
++			for _, line := range strings.Split(logs.String(), "\n") {
++				if strings.Contains(line, "gitrepo: push landed") && strings.Contains(line, "ref=refs/heads/feat") {
++					if !strings.Contains(line, "remote=origin") || !strings.Contains(line, want) {
++						t.Errorf("push trace line = %q; want it to name remote=origin and %s", line, want)
++					}
++					return
++				}
++			}
++			t.Errorf("logs = %q; want a push landed line naming ref=refs/heads/feat", logs.String())
++		})
++	}
++}
++
+ // newPushedMainClone returns a clone whose main is pushed to a fresh bare remote, with main checked out.
+ func newPushedMainClone(t *testing.T) (container, bareRemote, clonePath string, repo *gitrepo.Repo) {
+ 	t.Helper()
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 3c34b6290..384ef1e8c 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -391,8 +391,11 @@ type Deps struct {
+ 	RowEntry func(row string) (int, error)
+ 	// TaskRemoteTip reads the task branch's remote-tracking tip, `origin/<task branch>`, without a fetch.
+ 	// It answers "" when there is none.
+-	// A push the fixer session makes from the task pair updates that ref, so a changed tip shows the push.
++	// A changed tip shows that some writer moved that ref during a fixer session, which need not be the session.
+ 	TaskRemoteTip func() (string, error)
++	// IsAncestor reports whether the commit sha is ref or one of its ancestors, over the task pair.
++	// The fixer loop uses it to tell a remote tip the session cannot have added from one it could have.
++	IsAncestor func(sha, ref string) (bool, error)
+ 	// CodeReviewOff reports whether the Code-Perch reads as off:
+ 	// its effective review budget is 0, or the Code-Review rows' entry gate leaves them out.
+ 	// With the perch off no review follows Parent-Align and its fixer's change is judged against the caps instead.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index df57f992e..fa8dd4755 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -49,6 +49,11 @@
+ // the row halts with LandingStopPrefix, spawns no fixer and writes no landing failure record.
+ // A failing gate spawns the merge fixer, whose whole change is judged against the size and kind caps.
+ // A change over the caps lands only behind the fix review's approval or the operator's acceptance.
++// A move of the task branch's remote ref during a fixer session can halt the row.
++// It does so only when the new tip holds commits that the task head the session started from lacks.
++// The halt says the ref moved, since the writer is unknown.
++// A fixer or fix review halt names the session by its engine session id.
++// That id outlives the run directory removed after a done session.
+ // Each of these halts with LandingStopPrefix for the orch:
+ // a spent fixer, a fix review out of rounds, a turn without a usable result and a tree left dirty.
+ // Bound: the fix review lets an over-cap change land behind one reviewer's approval of the fixer's own commits.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index d1fb84199..fac23c51f 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -1141,7 +1141,7 @@ func (fz *Finalize) judgeFixerChange(ctx context.Context, rec FixerAttempts) *en
+ 			if err := WriteFixerAttempts(attemptsPath, rec); err != nil {
+ 				return fail(ctx, finalizeName, err)
+ 			}
+-			return halt(ctx, finalizeName, fmt.Sprintf("%sthe fix review session of %s changed the task branch: %s; session log: %s; way forward: restore the task branch to the fixer's commits %s..%s with a clean tree, then `lym loom resume`", LandingStopPrefix, finalizeName, review.cause, review.sessionLog, rec.Baseline, head))
++			return halt(ctx, finalizeName, fmt.Sprintf("%sthe fix review session of %s changed the task branch: %s; session: %s; way forward: restore the task branch to the fixer's commits %s..%s with a clean tree, then `lym loom resume`", LandingStopPrefix, finalizeName, review.cause, review.session, rec.Baseline, head))
+ 		}
+ 		if rec.ReviewRounds >= fz.deps.Config.FinalizeFixReviewRounds {
+ 			return fz.haltReviewCapped(ctx, rec, head, capReason, review)
+diff --git a/internal/landingshed/finalize_gate_test.go b/internal/landingshed/finalize_gate_test.go
+index a2721b83b..6d8ec6edd 100644
+--- a/internal/landingshed/finalize_gate_test.go
++++ b/internal/landingshed/finalize_gate_test.go
+@@ -848,7 +848,7 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 				name:          "a session past its timeout runs again, and the last round halts naming the timeout key",
+ 				review:        func(*testing.T, *finalizeGateFixture) func() { return func() {} },
+ 				reviewTimeout: true,
+-				wantReason:    []string{"the fix review gave no verdict", "fixer_timeout_min", "session log: " + fakeFixerRunDir, "fixer commits: t2..f1"},
++				wantReason:    []string{"the fix review gave no verdict", "fixer_timeout_min", "session: " + fakeFixerSession, "fixer commits: t2..f1"},
+ 				wantReviews:   2,
+ 			},
+ 			{
+@@ -859,9 +859,9 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 				wantReviews: 1,
+ 			},
+ 			{
+-				name:        "a session that leaves no report runs again, and the last round halts naming the session log",
++				name:        "a session that leaves no report runs again, and the last round halts naming the session",
+ 				review:      func(*testing.T, *finalizeGateFixture) func() { return func() {} },
+-				wantReason:  []string{"the fix review gave no verdict", "session log: " + fakeFixerRunDir, "fixer commits: t2..f1"},
++				wantReason:  []string{"the fix review gave no verdict", "session: " + fakeFixerSession, "fixer commits: t2..f1"},
+ 				wantReviews: 2,
+ 			},
+ 			{
+@@ -880,7 +880,7 @@ func TestFinalize_GateAndFixer(t *testing.T) {
+ 					}
+ 				},
+ 				wantReviews:  1,
+-				wantReason:   []string{"the fix review session of Finalize changed the task branch", "a/a.go", "way forward: restore the task branch to the fixer's commits t2..f1", "`lym loom resume`"},
++				wantReason:   []string{"the fix review session of Finalize changed the task branch", "a/a.go", "session: " + fakeFixerSession, "way forward: restore the task branch to the fixer's commits t2..f1", "`lym loom resume`"},
+ 				absentReason: "commit or remove them",
+ 			},
+ 			{
+diff --git a/internal/landingshed/fixerrun.go b/internal/landingshed/fixerrun.go
+index 59ca2833c..be2fc427d 100644
+--- a/internal/landingshed/fixerrun.go
++++ b/internal/landingshed/fixerrun.go
+@@ -56,7 +56,8 @@ const (
+ 	fixerEndNoReport fixerEnd = "no-report"
+ 	// fixerEndDirty is a turn that left the working tree dirty with no turn left to clean it.
+ 	fixerEndDirty fixerEnd = "dirty"
+-	// fixerEndPushed is a session during which the task branch's remote ref moved.
++	// fixerEndPushed is a session during which the task branch's remote ref was deleted or moved.
++	// A move counts only when the new tip holds commits that the task head the session started from lacks.
+ 	fixerEndPushed fixerEnd = "pushed"
+ 	// fixerEndUnjudged is a landing gate after a turn whose result judged no code:
+ 	// a runner crash or a memory pressure stop.
+@@ -68,14 +69,18 @@ type fixerOutcome struct {
+ 	end fixerEnd
+ 	// reportPath is the report the session writes.
+ 	reportPath string
+-	// sessionLog is the session's run directory, which holds its log.
+-	sessionLog string
++	// session names the session by its engine session id, and by its run directory while that survives.
++	session string
+ 	// failureLog is the log the landing failure record names; set for a spent end.
+ 	failureLog string
+ 	// conflict is the report's conflict text; set for an escalate end.
+ 	conflict string
+-	// pushedRef is the remote ref that moved, with its new tip; set for a pushed end.
+-	pushedRef string
++	// remoteRef is the task branch's remote-tracking ref that moved; set for a pushed end.
++	remoteRef string
++	// remoteTip is remoteRef's tip after the session, "" for a deleted ref; set for a pushed end.
++	remoteTip string
++	// startHead is the task head the session started from; set for a pushed end.
++	startHead string
+ 	// dirty lists the uncommitted or untracked paths the last turn left; set for a dirty end.
+ 	dirty []string
+ 	// unjudged is the landing gate's halt reason naming the runs that judged no code; set for an unjudged end.
+@@ -102,6 +107,9 @@ func newFixerRun(deps Deps, row string, gate verifyGate) fixerRun {
+ // A turn is charged into the record when it starts, so a turn that never returns to the gate is still spent.
+ // The first turn's charge is taken back when the session fails to start with an error marked transient.
+ // An escalate report takes its own turn back.
++// A deletion of the task branch's remote ref during the session ends the run pushed.
++// A move of that ref does too, except to a commit the task head held when the session started.
++// The session cannot have added such a commit.
+ func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, cap int, tips [2]string) (fixerOutcome, FixerAttempts, error) {
+ 	reportPath := filepath.Join(f.deps.ScratchDir, f.row+"-fixer-report.md")
+ 	attemptsPath := FixerAttemptsPath(f.deps.RecordsDir, f.row)
+@@ -134,6 +142,10 @@ func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, ca
+ 	if err != nil {
+ 		return fixerOutcome{}, rec, fmt.Errorf("landingshed: %s: read the task branch's remote tip: %w", f.row, err)
+ 	}
++	startHead, err := f.deps.TaskHead()
++	if err != nil {
++		return fixerOutcome{}, rec, fmt.Errorf("landingshed: %s: read the task head: %w", f.row, err)
++	}
+ 
+ 	original := rec
+ 	session := &fixerSession{run: f, ctx: ctx, rec: rec, cap: cap, attemptsPath: attemptsPath, turnLimit: turnLimit, outcome: fixerOutcome{reportPath: reportPath}}
+@@ -158,7 +170,7 @@ func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, ca
+ 	}
+ 
+ 	outcome := session.outcome
+-	outcome.sessionLog = result.Chair.RunDir
++	outcome.session = sessionRef(result.Chair)
+ 	switch {
+ 	case session.end != "":
+ 		outcome.end = session.end
+@@ -175,8 +187,19 @@ func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, ca
+ 		return fixerOutcome{}, session.rec, fmt.Errorf("landingshed: %s: read the task branch's remote tip: %w", f.row, err)
+ 	}
+ 	if remoteAfter != remoteBefore {
+-		outcome.end = fixerEndPushed
+-		outcome.pushedRef = fmt.Sprintf("origin/%s at %s", f.deps.TaskBranch, remoteAfter)
++		remoteRef := "origin/" + f.deps.TaskBranch
++		predates := false
++		if remoteAfter != "" {
++			if predates, err = f.deps.IsAncestor(remoteAfter, startHead); err != nil {
++				return fixerOutcome{}, session.rec, fmt.Errorf("landingshed: %s: test whether %s at %s predates the fixer session: %w", f.row, remoteRef, remoteAfter, err)
++			}
++		}
++		if predates {
++			logger.Info("landingshed: the task branch's remote ref moved during the fixer session to a commit the session started from", "row", f.row, "ref", remoteRef, "tip", remoteAfter, "startHead", startHead)
++		} else {
++			outcome.end = fixerEndPushed
++			outcome.remoteRef, outcome.remoteTip, outcome.startHead = remoteRef, remoteAfter, startHead
++		}
+ 	}
+ 	logger.Info("landingshed: fixer run ended", "row", f.row, "mode", string(mode), "end", string(outcome.end), "spent", session.rec.Spent, "cap", cap)
+ 	return outcome, session.rec, nil
+@@ -203,6 +226,25 @@ func archiveStaleReport(reportPath string, now time.Time, row, what string) erro
+ 	return nil
+ }
+ 
++// sessionRef names a finished session for a halt reason by its engine and session id.
++// Those outlive the run directory, which the session runner removes after a done outcome;
++// the run directory is named too while it still exists, as after a timeout.
++func sessionRef(chair shuttleengine.Result) string {
++	var parts []string
++	if chair.SessionID != "" {
++		parts = append(parts, strings.TrimSpace(chair.Engine+" session "+chair.SessionID))
++	}
++	if chair.RunDir != "" {
++		if _, err := os.Stat(chair.RunDir); err == nil {
++			parts = append(parts, "run dir "+chair.RunDir)
++		}
++	}
++	if len(parts) == 0 {
++		return "none recorded"
++	}
++	return strings.Join(parts, ", ")
++}
++
+ // startFailure returns why a seat run's chair session did not start, or nil when it started.
+ func startFailure(result seatengine.Result, runErr error) error {
+ 	switch {
+@@ -363,14 +405,19 @@ func (o fixerOutcome) haltReason(row string, escalateJudgedFirst bool) string {
+ 			wayForward = "settle the conflict on the task branch, then `lym loom resume`"
+ 		}
+ 	case fixerEndTimeout, fixerEndNoReport:
+-		cause = fmt.Sprintf("the fixer session of %s ended without a usable turn (%s); session log: %s; report: %s", row, o.end, o.sessionLog, o.reportPath)
++		cause = fmt.Sprintf("the fixer session of %s ended without a usable turn (%s); session: %s; report: %s", row, o.end, o.session, o.reportPath)
+ 		wayForward = "fix or clean the task branch, then `lym loom resume`"
+ 	case fixerEndDirty:
+-		cause = fmt.Sprintf("the fixer session of %s left uncommitted or untracked paths in the task worktree after its last turn: %s; session log: %s; report: %s", row, listShown(o.dirty), o.sessionLog, o.reportPath)
++		cause = fmt.Sprintf("the fixer session of %s left uncommitted or untracked paths in the task worktree after its last turn: %s; session: %s; report: %s", row, listShown(o.dirty), o.session, o.reportPath)
+ 		wayForward = "commit or remove them on the task branch, then `lym loom resume`"
+ 	case fixerEndPushed:
+-		cause = fmt.Sprintf("the fixer session of %s pushed %s; session log: %s", row, o.pushedRef, o.sessionLog)
+-		wayForward = "check the pushed commits are the task's, then `lym loom resume`"
++		if o.remoteTip == "" {
++			cause = fmt.Sprintf("the remote ref %s was deleted during the fixer session of %s; session: %s", o.remoteRef, row, o.session)
++			wayForward = "check why the task branch is gone from origin, then `lym loom resume`"
++			break
++		}
++		cause = fmt.Sprintf("the remote ref %s moved during the fixer session of %s to %s, which holds commits the task head %s the session started from lacks; session: %s", o.remoteRef, row, o.remoteTip, o.startHead, o.session)
++		wayForward = fmt.Sprintf("check the commits %s..%s are the task's, then `lym loom resume`", o.startHead, o.remoteTip)
+ 	default:
+ 		return ""
+ 	}
+diff --git a/internal/landingshed/fixerrun_test.go b/internal/landingshed/fixerrun_test.go
+index 3844a6b52..9299af9b8 100644
+--- a/internal/landingshed/fixerrun_test.go
++++ b/internal/landingshed/fixerrun_test.go
+@@ -43,6 +43,11 @@ type fakeFixerSeats struct {
+ 	// hangAfter, when above zero, ends the turn at that index with hangOutcome after its callback, never reaching the gate.
+ 	hangAfter   int
+ 	hangOutcome shuttleengine.Outcome
++	// runDir is the run directory the session reports; empty reports fakeFixerRunDir.
++	runDir string
++	// omitSessionID and omitEngine have the session report no session id and no engine.
++	omitSessionID bool
++	omitEngine    bool
+ 
+ 	// tables records every table Run was given.
+ 	tables []seatengine.Table
+@@ -52,7 +57,30 @@ type fakeFixerSeats struct {
+ 	turnsRun int
+ }
+ 
+-const fakeFixerRunDir = "/runs/fixer"
++const (
++	// fakeFixerRunDir is the run directory a fake session reports by default.
++	// Nothing exists there, as after the cleanup that follows a done session.
++	fakeFixerRunDir    = "/runs/fixer"
++	fakeFixerSessionID = "sess-fixer"
++	// fakeFixerSession is how a halt reason names the fake session.
++	fakeFixerSession = "claude session " + fakeFixerSessionID
++)
++
++// chair returns the seat run's result for a chair session that ended with outcome.
++func (f *fakeFixerSeats) chair(outcome shuttleengine.Outcome) seatengine.Result {
++	runDir := f.runDir
++	if runDir == "" {
++		runDir = fakeFixerRunDir
++	}
++	chair := shuttleengine.Result{Outcome: outcome, RunDir: runDir, SessionID: fakeFixerSessionID, Engine: "claude"}
++	if f.omitSessionID {
++		chair.SessionID = ""
++	}
++	if f.omitEngine {
++		chair.Engine = ""
++	}
++	return seatengine.Result{Chair: chair}
++}
+ 
+ // Run runs the scripted turns until the gate passes, ends the run, or its re-prompts are spent.
+ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error) {
+@@ -65,7 +93,7 @@ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)
+ 		return seatengine.Result{}, f.reviewStartErr
+ 	}
+ 	if f.sessionTimeout || (isReview && f.reviewTimeout) {
+-		return seatengine.Result{Chair: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout, RunDir: fakeFixerRunDir}}, nil
++		return f.chair(shuttleengine.OutcomeTimeout), nil
+ 	}
+ 	turns := f.turns
+ 	if isReview {
+@@ -78,7 +106,7 @@ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)
+ 			turns[turn]()
+ 		}
+ 		if f.hangAfter > 0 && turn == f.hangAfter {
+-			return seatengine.Result{Chair: shuttleengine.Result{Outcome: f.hangOutcome, RunDir: fakeFixerRunDir}}, nil
++			return f.chair(f.hangOutcome), nil
+ 		}
+ 		result, err := entry.Gate()
+ 		if err != nil {
+@@ -89,17 +117,23 @@ func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)
+ 		}
+ 		f.findings = append(f.findings, result.Findings)
+ 	}
+-	return seatengine.Result{Chair: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, RunDir: fakeFixerRunDir}}, nil
++	return f.chair(shuttleengine.OutcomeDone), nil
+ }
+ 
+ // fixerRunFixture wires one fixer run to a gate fixture, a fake seat runner, a fake clock and a fake remote tip.
++// head is the task head a turn may move by committing.
++// ancestors holds each "sha..ref" pair the ancestry seam answers true for; any other pair answers false.
++// ancestorErr, when set, is the error the ancestry seam fails with.
+ type fixerRunFixture struct {
+-	run       fixerRun
+-	gate      *gateFixture
+-	seats     *fakeFixerSeats
+-	deps      Deps
+-	clock     time.Time
+-	remoteTip string
++	run         fixerRun
++	gate        *gateFixture
++	seats       *fakeFixerSeats
++	deps        Deps
++	clock       time.Time
++	remoteTip   string
++	head        string
++	ancestors   map[string]bool
++	ancestorErr error
+ }
+ 
+ const (
+@@ -115,6 +149,7 @@ func newFixerRunFixture(t *testing.T) *fixerRunFixture {
+ 		seats:     &fakeFixerSeats{},
+ 		clock:     gateMarkStart,
+ 		remoteTip: "remote-1",
++		head:      "head-1",
+ 	}
+ 	scratch := t.TempDir()
+ 	stencilsDir := t.TempDir()
+@@ -143,6 +178,8 @@ func newFixerRunFixture(t *testing.T) *fixerRunFixture {
+ 		Registry:           modelspec.Registry{},
+ 		FixerSeats:         fx.seats,
+ 		TaskRemoteTip:      func() (string, error) { return fx.remoteTip, nil },
++		TaskHead:           func() (string, error) { return fx.head, nil },
++		IsAncestor:         func(sha, ref string) (bool, error) { return fx.ancestors[sha+".."+ref], fx.ancestorErr },
+ 	}
+ 	fx.run = newFixerRun(fx.deps, fixerTestRow, fx.gate.gate)
+ 	return fx
+@@ -184,6 +221,9 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 		wantFindings []string
+ 		wantReason   []string
+ 		avoidReason  []string
++		// keepRunDir has the session report a run directory that exists, which the reason must then name;
++		// otherwise the reported run directory is absent and the reason must not name one.
++		keepRunDir bool
+ 	}{
+ 		{
+ 			name: "fixed over a passing gate with an unmoved remote tip",
+@@ -226,7 +266,26 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.sessionTimeout = true
+ 			},
+ 			wantEnd: fixerEndTimeout, wantSpent: 1,
+-			wantReason: []string{LandingStopPrefix, fakeFixerRunDir, "`lym loom resume`"},
++			wantReason: []string{LandingStopPrefix, "session: " + fakeFixerSession + ", run dir ", "`lym loom resume`"},
++			keepRunDir: true,
++		},
++		{
++			name: "a session with no session id and no surviving run dir is named as none recorded",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.seats.sessionTimeout = true
++				fx.seats.omitSessionID = true
++			},
++			wantEnd: fixerEndTimeout, wantSpent: 1,
++			wantReason: []string{"session: none recorded;"},
++		},
++		{
++			name: "a session with no engine is named by its session id alone",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.seats.sessionTimeout = true
++				fx.seats.omitEngine = true
++			},
++			wantEnd: fixerEndTimeout, wantSpent: 1,
++			wantReason: []string{"session: session " + fakeFixerSessionID + ";"},
+ 		},
+ 		{
+ 			name: "a later turn that hangs after a failing gate is the timeout end, not fixed",
+@@ -237,7 +296,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.hangOutcome = shuttleengine.OutcomeTimeout
+ 			},
+ 			wantEnd: fixerEndTimeout, wantSpent: fixerTestCap, wantTurns: 2,
+-			wantReason: []string{LandingStopPrefix, fakeFixerRunDir, "`lym loom resume`"},
++			wantReason: []string{LandingStopPrefix, fakeFixerSession, "`lym loom resume`"},
+ 		},
+ 		{
+ 			name: "a later turn that dies after a failing gate is the no-report end, not fixed",
+@@ -248,7 +307,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.hangOutcome = shuttleengine.OutcomeDone
+ 			},
+ 			wantEnd: fixerEndNoReport, wantSpent: fixerTestCap, wantTurns: 2,
+-			wantReason: []string{LandingStopPrefix, fakeFixerRunDir, "`lym loom resume`"},
++			wantReason: []string{LandingStopPrefix, fakeFixerSession, "`lym loom resume`"},
+ 		},
+ 		{
+ 			name: "a turn that returns past fixer_timeout_min is the timeout end",
+@@ -266,7 +325,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.writeReport(t, fixedReport)
+ 			},
+ 			wantEnd: fixerEndNoReport, wantSpent: 1, wantTurns: 1,
+-			wantReason: []string{LandingStopPrefix, fakeFixerRunDir, "`lym loom resume`"},
++			wantReason: []string{LandingStopPrefix, fakeFixerSession, "`lym loom resume`"},
+ 		},
+ 		{
+ 			name: "an unparseable report is the no-report end",
+@@ -293,7 +352,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				fx.seats.turns = []func(){func() { fx.writeReport(t, fixedReport) }}
+ 			},
+ 			wantEnd: fixerEndDirty, wantSpent: fixerTestCap, wantTurns: 1,
+-			wantReason:  []string{LandingStopPrefix, "after its last turn: a.go;", fakeFixerRunDir, "commit or remove them on the task branch", "`lym loom resume`"},
++			wantReason:  []string{LandingStopPrefix, "after its last turn: a.go;", fakeFixerSession, "commit or remove them on the task branch", "`lym loom resume`"},
+ 			avoidReason: []string{"without a usable turn"},
+ 		},
+ 		{
+@@ -307,7 +366,7 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			wantReason: []string{LandingStopPrefix, "test runner crashed", "tier1 (exit 134, SIGABRT)", "`lym loom resume`"},
+ 		},
+ 		{
+-			name: "a remote tip that moved during the session is the pushed end",
++			name: "a remote tip that moved during the session to a commit the start head lacks is the pushed end",
+ 			setup: func(t *testing.T, fx *fixerRunFixture) {
+ 				fx.seats.turns = []func(){func() {
+ 					fx.writeReport(t, fixedReport)
+@@ -315,7 +374,49 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				}}
+ 			},
+ 			wantEnd: fixerEndPushed, wantSpent: 1, wantTurns: 1,
+-			wantReason: []string{LandingStopPrefix, "origin/task-branch at remote-2", "check the pushed commits are the task's", "`lym loom resume`"},
++			wantReason: []string{
++				LandingStopPrefix,
++				"the remote ref origin/task-branch moved during the fixer session of Parent-Align to remote-2",
++				"the task head head-1 the session started from lacks",
++				fakeFixerSession,
++				"check the commits head-1..remote-2 are the task's",
++				"`lym loom resume`",
++			},
++			avoidReason: []string{"pushed"},
++		},
++		{
++			name: "a remote tip that moved during the session to a commit the start head holds is no push",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.ancestors = map[string]bool{"head-1..head-1": true}
++				fx.seats.turns = []func(){func() {
++					fx.writeReport(t, fixedReport)
++					fx.head = "f1"
++					fx.remoteTip = "head-1"
++				}}
++			},
++			wantEnd: fixerEndFixed, wantSpent: 1, wantTurns: 1,
++		},
++		{
++			name: "a remote tip that moved back to an ancestor of the start head is no push",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.ancestors = map[string]bool{"older..head-1": true}
++				fx.seats.turns = []func(){func() {
++					fx.writeReport(t, fixedReport)
++					fx.remoteTip = "older"
++				}}
++			},
++			wantEnd: fixerEndFixed, wantSpent: 1, wantTurns: 1,
++		},
++		{
++			name: "a remote ref deleted during the session is the pushed end",
++			setup: func(t *testing.T, fx *fixerRunFixture) {
++				fx.seats.turns = []func(){func() {
++					fx.writeReport(t, fixedReport)
++					fx.remoteTip = ""
++				}}
++			},
++			wantEnd: fixerEndPushed, wantSpent: 1, wantTurns: 1,
++			wantReason: []string{LandingStopPrefix, "the remote ref origin/task-branch was deleted during the fixer session of Parent-Align", fakeFixerSession, "`lym loom resume`"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+@@ -326,6 +427,9 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 			if start.Entry == 0 {
+ 				start = FixerAttempts{Entry: 1}
+ 			}
++			if tt.keepRunDir {
++				fx.seats.runDir = t.TempDir()
++			}
+ 			tt.setup(t, fx)
+ 
+ 			outcome, rec, err := fx.execute(t, start)
+@@ -361,6 +465,12 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 				}
+ 				return
+ 			}
++			if named := strings.Contains(reason, "run dir "+fx.seats.runDir); tt.keepRunDir != named {
++				t.Errorf("haltReason() = %q; naming the run dir %q = %v; want %v", reason, fx.seats.runDir, named, tt.keepRunDir)
++			}
++			if !tt.keepRunDir && strings.Contains(reason, fakeFixerRunDir) {
++				t.Errorf("haltReason() = %q; want it to omit the removed run dir %q", reason, fakeFixerRunDir)
++			}
+ 			for _, avoid := range tt.avoidReason {
+ 				if strings.Contains(reason, avoid) {
+ 					t.Errorf("haltReason() = %q; want it to omit %q", reason, avoid)
+@@ -411,6 +521,21 @@ func TestFixerRun_Outcomes(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a failing ancestry query over a moved remote tip is returned as an error", func(t *testing.T) {
++		t.Parallel()
++		fx := newFixerRunFixture(t)
++		fx.ancestorErr = errors.New("ancestry query broke")
++		fx.seats.turns = []func(){func() {
++			fx.writeReport(t, fixedReport)
++			fx.remoteTip = "remote-2"
++		}}
++
++		_, _, err := fx.execute(t, FixerAttempts{Entry: 1})
++		if !errors.Is(err, fx.ancestorErr) || !strings.Contains(err.Error(), "predates the fixer session") {
++			t.Errorf("run() error = %v; want it to wrap %v and say what the query tested", err, fx.ancestorErr)
++		}
++	})
++
+ 	t.Run("a failed start leaves the record as it was and returns a transient error", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newFixerRunFixture(t)
+diff --git a/internal/landingshed/fixreview.go b/internal/landingshed/fixreview.go
+index 75b671c2f..9ffc9271b 100644
+--- a/internal/landingshed/fixreview.go
++++ b/internal/landingshed/fixreview.go
+@@ -173,14 +173,14 @@ const (
+ 	fixReviewEndChanged fixReviewEnd = "changed"
+ )
+ 
+-// fixReviewOutcome is how a fix review session ended, with the report it wrote and the run directory holding its log.
++// fixReviewOutcome is how a fix review session ended, with the report it wrote and the session that wrote it.
+ // It also carries a rejected report's findings, and the cause of a no-verdict or changed end.
+ type fixReviewOutcome struct {
+ 	end fixReviewEnd
+ 	// reportPath is the report the session writes.
+ 	reportPath string
+-	// sessionLog is the session's run directory, which holds its log.
+-	sessionLog string
++	// session names the session by its engine session id, and by its run directory while that survives.
++	session string
+ 	// findings are the rejected report's findings.
+ 	findings []string
+ 	// cause is why a no-verdict or changed session ended so.
+@@ -230,7 +230,7 @@ func runFixReview(deps Deps, gate verifyGate, row, baseline, head, capReason str
+ 		return fixReviewOutcome{}, fmt.Errorf("landingshed: %s: run the fix review session: %w", row, runErr)
+ 	}
+ 
+-	outcome := fixReviewOutcome{reportPath: reportPath, sessionLog: result.Chair.RunDir}
++	outcome := fixReviewOutcome{reportPath: reportPath, session: sessionRef(result.Chair)}
+ 	defer func() {
+ 		logger.Info("landingshed: fix review ended", "row", row, "end", string(outcome.end), "range", baseline+".."+head)
+ 	}()
+@@ -271,7 +271,7 @@ func (o fixReviewOutcome) verdictSummary() string {
+ 	if o.end == fixReviewEndRejected {
+ 		return fmt.Sprintf("the fix review rejected it: %s; review: %s", singleLine(strings.Join(o.findings, "; ")), o.reportPath)
+ 	}
+-	return fmt.Sprintf("the fix review gave no verdict (%s); session log: %s", o.cause, o.sessionLog)
++	return fmt.Sprintf("the fix review gave no verdict (%s); session: %s", o.cause, o.session)
+ }
+ 
+ // openFindings returns what a rejected or verdict-less review left open.
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index c3e4d476f..af83b8d2c 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -343,6 +343,13 @@ func landingDeps(
+ 			}
+ 			return tip, err
+ 		},
++		IsAncestor: func(sha, ref string) (bool, error) {
++			f, err := fabricengine.Open(l)
++			if err != nil {
++				return false, err
++			}
++			return f.IsAncestor(sha, ref)
++		},
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 42f188212..e6839272e 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -33,6 +33,7 @@ var intentionallyNil = map[string]string{
+ 	"Landing.IsTestFile":                 "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.RowEntry":                   "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.TaskRemoteTip":              "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
++	"Landing.IsAncestor":                 "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.CodeReviewOff":              "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.Mode":           "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+ 	"Landing.PullRequest.Origin":         "Env.Landing is assembled in run.go, because its constructors open the fabric pair eagerly",
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 6c05957ef..3cdad9cfd 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -236,6 +236,7 @@ func LandingDeps(dir string) landingshed.Deps {
+ 		IsTestFile:         func(string) bool { return false },
+ 		RowEntry:           func(string) (int, error) { return 1, nil },
+ 		TaskRemoteTip:      func() (string, error) { return "", nil },
++		IsAncestor:         func(string, string) (bool, error) { return false, nil },
+ 		CodeReviewOff:      func() (bool, error) { return false, nil },
+ 		// Mode answers off and Origin is empty, so a landing through this deps takes the local path and calls no GitHub.
+ 		PullRequest: landingshed.PullRequestDeps{
