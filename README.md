@@ -124,7 +124,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 2h<br>2h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Describe | neve | 1h<br>1h | landing, loom, shuttle |
 | T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | landing · Finalize | neve | 1h<br>1h | loom, stencil |
-| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light | Describe | neve | 3h<br>1h | webster |
+| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light | PR-Review | neve | 3h<br>1h | webster |
 | T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light | Darn-Write | neve | 2h<br>1h | gate, config |
 
 ### Layer A (1)
