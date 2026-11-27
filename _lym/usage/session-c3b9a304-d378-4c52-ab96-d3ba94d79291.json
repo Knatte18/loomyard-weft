@@ -1,0 +1,32 @@
+{
+  "session_id": "c3b9a304-d378-4c52-ab96-d3ba94d79291",
+  "row": "Discussion-Burler-Review",
+  "role": "discussion-burler-review",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 72,
+  "cache_write_tokens": 379168,
+  "cache_read_tokens": 3172834,
+  "output_tokens": 74779,
+  "cost_usd": 1.72582654,
+  "started": "2026-11-27T11:03:41Z",
+  "ended": "2026-11-27T11:12:22Z",
+  "models": [
+    {
+      "model": "claude-haiku-5-5",
+      "input_tokens": 20,
+      "cache_write_tokens": 188377,
+      "cache_read_tokens": 540966,
+      "output_tokens": 21587,
+      "cost_usd": 0.19045143999999997
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "input_tokens": 52,
+      "cache_write_tokens": 190791,
+      "cache_read_tokens": 2631868,
+      "output_tokens": 53192,
+      "cost_usd": 1.5353751
+    }
+  ]
+}
