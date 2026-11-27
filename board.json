@@ -898,30 +898,6 @@
       "profile": "light"
     },
     {
-      "id": 1724,
-      "handle": "T8",
-      "slug": "cli-form-test-in-card-gate",
-      "title": "Command-help byte-cap test is not run by card or batch gates",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "gate",
-        "cli"
-      ],
-      "issues": [
-        274
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #274](https://github.com/Knatte18/loomyard/issues/274).\n\n**What happened.**\nA card added text to the `lym board upsert` help and pushed it past the 2000-byte cap that `TestCLIForm_EveryCommand` in `cmd/lym` holds.\nNeither that batch's card gates nor its batch gate ran the test.\nIt first failed at a later batch's `--main-packages` gate, and was fixed there.\n\n**Why it is abnormal.**\nA change passed every gate of its own batch while breaking a test.\nThe failure landed on a different implementer, whose cards had not caused it.\n\n**What to do.**\nMake a scoped gate run this test when command help changes, for example by marking it `//lym:guard`\n(its own doc comment says its checks are pure and run no invocation),\nor by having the go scoper include `cmd/lym` when a package that registers commands changes.\n\nProvenance: task `dobby-run-watch-build`, note `04-run-watch-wiring.md`.\n",
-      "status": "done",
-      "created": "2026-11-27T07:51:14Z",
-      "revised": "2026-11-27T07:51:36Z",
-      "profile": "light"
-    },
-    {
       "id": 1727,
       "handle": "T19",
       "slug": "remove-testmap",
@@ -938,9 +914,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "cli-form-test-in-card-gate"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Decision (operator, 2026-11-27)\n\nThe evaluation in `docs/research/testmap-worth-evaluation.md` (landed `8989232ea`) recommends removing the stored coverage maps and every user of them, and the operator chose that.\nThe tools work, but few tests turned out redundant, and they cost far more than they gave:\nnone of the 88 code-review findings that used a report found a production defect on its own,\nand the report steps took 7.0 hours of work and 2.8 hours of slot waiting over the window measured.\nThe maps and their users are about 11,400 non-test and 10,300 test lines.\n\n## Remove\n\n- The `reach`, `redundancy` and `mutation` report steps of `lym gate test`, the `reports` key of a gate key, and their stencil text: the reach turn, the review markers and every prompt or rubric line that names a report.\n- `lym gate reach`, `lym gate mutate`, `lym gate redundant` and `lym gate test --map`, with their help, docs and PATTERN text.\n- The stored maps, their writers and readers, their upkeep, and any dobby or row step that starts a map run.\n- The tests of everything removed.\n\n## Keep\n\n- `cmd/testtiming -redundancy`, for an occasional sweep, and the part of `internal/testcover` it needs.\n- The red-first gate and `internal/testreach`, which use no map.\n\n## Hub config\n\nThe loomyard hub's `gate.yaml` sets `reports: []` on several gate keys.\nWhen the key leaves the template, the change description names the `lym config reconcile --layer default --apply` step the hub needs.\n",

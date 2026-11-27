@@ -2,8 +2,6 @@
 
 `remove-testmap` · Task · enhancement, testmap, gate, darn, loom, stencil, cleanup · draft
 
-Depends on: [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md)
-
 ## Decision (operator, 2026-11-27)
 
 The evaluation in `docs/research/testmap-worth-evaluation.md` (landed `8989232ea`) recommends removing the stored coverage maps and every user of them, and the operator chose that.
