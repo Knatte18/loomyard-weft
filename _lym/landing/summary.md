@@ -1,14 +1,17 @@
 # Run hubreconcile's Ensure tests in parallel and drop repeated walks
 
-Most of `internal/hubreconcile`'s tier1 time went on tests that ran one at a time.
-Each one swapped the package-global detached board sync or the process-global notifier, even when it never asserted on either.
-This change installs one recording board sync and one recording notifier for the whole test binary in `TestMain`.
-Both key every call by board dir, so each test reads only its own hub's calls and the tests run in parallel.
-It changes only test files; no production code changes.
+The aim is to cut the tier1 test time of `internal/hubreconcile` at least in half.
+Many of its tests ran one at a time because they swapped the package-global detached board sync
+or the process-global notifier.
+`TestMain` now installs one recording board sync and one recording notifier for the whole test binary.
+Both key every call by board dir, so each test reads only its own hub's calls and can run in parallel.
+The board sync recorder counts the call and passes it on to `boardengine.SpawnSync`.
+Only test files change.
 
-## Timings
+## Timings and size
 
-Measured on the same machine with `lym gate test --tier 1` (and `--tier 0` where a package has no tier1 test), `-v -count=1`, test binary time:
+Measured on one machine with `lym gate test --tier 1` (`--tier 0` where a package has no tier1 test),
+`-v -count=1`, as test binary time:
 
 | Package | Before | After |
 |---|---|---|
@@ -16,41 +19,69 @@ Measured on the same machine with `lym gate test --tier 1` (and `--tier 0` where
 | `internal/configengine` (no tier1 tests; tier0) | 0.06 s | 0.06 s, unchanged |
 | `internal/configsync` (no tier1 tests; tier0) | 2.43 s | 2.43 s, unchanged |
 
-The tier1 call's wall time for `internal/hubreconcile`, build included, went from 29.5 s to 9.6 s.
-Net test-line change: 394 added, 450 removed, so 56 fewer lines, all in `internal/hubreconcile`.
+The wall time of the `internal/hubreconcile` tier1 call, build included, went from 29.5 s to 9.6 s.
+
+The `internal/hubreconcile` after figures are older than the final code:
+they were measured before the broken-config row of `TestEnsureOrWarn_WarnsWithTheWayForward` got its second,
+serial walk back.
+A later run of the final code on a heavily loaded machine (load average 38 to 51) took 18.15 s of test binary time
+and 28.1 s of wall time.
+That run neither confirms nor refutes the halving.
+
+Net test-line change: 390 added, 428 removed, so 38 fewer lines, all in `internal/hubreconcile`.
 
 ## What changed
 
 - `testmain_integration_test.go` holds the two recorders.
-  The notifier recorder can answer a board's mail as unposted or failed, so the notifier-outcome rows need no notifier of their own.
-- The tests that install the reinterpretation registry are now subtests of one test, `TestEnsure_Reinterpretation`, and run in parallel with each other.
-  So are the tests that install the worktree seam, under `TestEnsure_RendersTheHeddleFileTargetsOfEveryWalkedWorktree`.
-  The row that removes the notifier and the row with a refusing seam run on their own before their group's parallel rows start.
-- Only the tests that capture the logger still run serially.
-- The two unpushed-hub-wide cases become two tests.
-  The replayed case needs no log capture, so it runs in parallel.
+  The notifier recorder can answer a board's mail as unposted or failed.
+- The tests that install the reinterpretation registry are now subtests of `TestEnsure_Reinterpretation`.
+  The tests that install the worktree seam are subtests of
+  `TestEnsure_RendersTheHeddleFileTargetsOfEveryWalkedWorktree`.
+  Within each, the subtests run in parallel,
+  except the one that removes the notifier and the one with a refusing seam, which run alone first.
+- Those two parent tests and the tests that capture the logger still run serially against the rest of the package.
+- The two unpushed-hub-wide-commit cases are now two tests, and the replayed case runs in parallel.
+- Tests that need no pair copy the prime-only hub.
 
 ## Coverage merged or dropped
 
-Every behaviour keeps a test.
-- The three stale-build rows become one walk: the board is behind its upstream, and loom's default is deleted beside a current stamp.
-  Other tests already walk a board that is up to date.
+- The three stale-build rows are one walk: the board is behind its upstream,
+  and loom's default is deleted beside a current stamp.
 - `TestEnsure_BoardWithNoRemoteCommitsHubWideConfigAndWritesStamp` is removed.
-  `TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile` walks a board with no remote, and now asserts the same things: one sync asked for, the running key stamped and the board clean.
-- The failed-walk row "a failure after the hub-wide files and a template base were written" is removed.
-  The reinterpretation subtest that fails the same write now also asserts what that row asserted: the board's status unchanged, no stamp, then a stamp and a clean board after the retry.
-- Reinterpretation rows removed: "a rewritten value is mailed", which the rewritten-once subtest covers, and "a hub file with no value to carry", which walks the same unchanged path as the row with a value the rewrite leaves alone.
-- Retry walks removed where another row already covers the retry: the EnsureOrWarn broken-config row, the unreadable pair config and the non-mapping template base.
-  The arrange helper for an unpushed hub-wide commit no longer runs a second walk in the diverged case.
+  `TestEnsure_CarriesATemplateChangeIntoASeedOnlyConfigFile` walks a board with no remote.
+  It already asserted a clean board, and now also asserts one board sync and the running key stamped.
+  The removed test's assertion that the walk adds exactly one local board commit is dropped.
+- The failed-walk row for a failure after the hub-wide files and a template base were written is removed.
+  The reinterpretation subtest that fails the same write takes over its assertions,
+  except that the error message names the board directory; it checks the error's `Worktree` field instead.
+- Two reinterpretation rows are removed: a rewritten value being mailed, which the rewritten-once subtest covers,
+  and a hub file with no value to carry, which takes the same path as a value the rewrite leaves alone.
+- The retry walks of the unreadable-pair-config and non-mapping-template-base rows are removed;
+  other rows of that test still retry.
+- The diverged unpushed-commit case no longer reruns the walk before the upstream moves.
   The replayed case still checks that the rerun asks for the sync again.
-- Tests that need no pair now copy the prime-only hub.
 
 ## Design decisions
 
-- Only `internal/hubreconcile` reached 15 s, so it is the only package cut; `internal/configengine` and `internal/configsync` were already far below that and are left as they are.
-  Cutting a package that runs in a few seconds saves no test time, so the aim of halving all three packages was narrowed to the packages at 15 s or more.
-- No production seam was needed: no test waited out a sleep or a production timeout.
-  The one bounded wait, the held-lock row, already passes a 50 ms lock wait.
+- Only packages that took 15 s or more are cut.
+  `internal/hubreconcile` was the only one;
+  cutting a package that runs in a few seconds saves no meaningful test time,
+  so `internal/configengine` and `internal/configsync` are left as they are.
+- No production seam was needed.
+  The held-lock cases already pass a 50 ms lock wait.
+- Keying the recorders by board dir loosens some assertions:
+  a board sync or a mail aimed at a wrong path would not be noticed by the test of the right board.
+
+## To check by hand
+
+- Re-time `internal/hubreconcile` tier1 on an idle machine with the command above,
+  and confirm that it is at most half of the before figure.
+- The notifier recorder in `internal/hubreconcile/testmain_integration_test.go` (`mailRecorder.send`)
+  is a standing fake of the notifier that `internal/orchcli` installs in production,
+  with hand-set posted, unposted and error answers.
+  A per-test fake of this kind existed before; it is now installed for the whole test binary,
+  so walks that ran with no notifier now mail into it.
+  Decide whether that is acceptable as a test stand-in.
 
 ## Merge danger
 
