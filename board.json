@@ -918,6 +918,28 @@
       "body": "Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).\n\n## What happened\n\nWith local landing, a parent that is ahead of origin by owed landing tips always reads as moved to Finalize's locked pass.\nThe lock-free pass records the upstream tip (`parentMergeTip`) as the gated tip, while the parent's head is past it.\nEvery such landing therefore loses each of its `landing.finalize_lost_races` races, then merges and runs verify under the parent lock.\nThe behavior was left as it is because `gateUnlocked` and `parentMergeTip` were outside the card's targets.\n\n## Why it is abnormal\n\nThe landing is correct, but the parent lock is held across the verify for as long as an earlier landing's push is owed.\nThe lock-free gate gives no benefit in that state, and other landings on the same parent wait.\n\n## What to do\n\nMake the lock-free pass gate against the parent's local head when that head is ahead of origin only by owed landing tips.\n\nProvenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.\n",
       "created": "2026-11-27T21:39:10Z",
       "revised": "2026-11-27T21:39:10Z"
+    },
+    {
+      "id": 1766,
+      "handle": "B4",
+      "slug": "webster-reset-push-sync",
+      "title": "webster reset records push is asynchronous and unrecorded, against the decision record",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "fabric",
+        "pattern"
+      ],
+      "issues": [
+        293
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).\n\n## What happened\n\nThe task's decision record lists the records push of `webster reset` among the pushes that stay synchronous, because its owed record holds the run at its transition.\nThe code differs: `fabricSync` in `webstercli` only commits through `Fabric.CommitWithTrailers`, whose spawn starts the pusher.\nThe pusher writes no record for an owed push.\nNo card targeted that path, so it was not changed.\nThe pattern documents `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` describe the code as it is.\n\n## Why it is abnormal\n\nThe approved decision and the delivered behavior disagree: a failed push of the reset's records commit does not hold the run.\nNo card covered this item of the decision record, and the gap surfaced only during documentation.\n\n## What to do\n\nDecide whether the decision record or the code is right.\nIf the record is right, make the reset's records push synchronous and recorded, and update the two pattern documents.\nAlso consider checking at plan review that every decision item is covered by a card.\n\nProvenance: task `push-retry-not-halt`, note `20-dobby-push-summary.md`.\n",
+      "created": "2026-11-27T21:39:12Z",
+      "revised": "2026-11-27T21:39:12Z"
     }
   ],
   "prime_owner": "neve",
