@@ -48,7 +48,7 @@ gates:
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
     darn-write: {tiers: [0, 1, 2], scope: diff, reports: []}
-    code-burler-fix: {tiers: [0, 1, 2], scope: diff, reports: [reach, redundancy]}
+    code-burler-fix: {tiers: [0, 1, 2], scope: diff, reports: []}
     harden-live:
         tiers: [1]
         scope: diff
