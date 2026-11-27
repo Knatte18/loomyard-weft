@@ -1,6 +1,6 @@
 # Finalize gates the merged tree without the parent lock and holds the lock only to land
 
-`landing-lock-only-for-land` · Task · enhancement, landing, gate · running · Code-Bouncer
+`landing-lock-only-for-land` · Task · enhancement, landing, gate · running · Code-Burler-Review
 
 ## Seen (operator, 2026-11-27)
 
