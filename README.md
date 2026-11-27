@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 20:19 UTC; every age below is as of then.
+Rendered 2026-11-27 20:20 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -117,17 +117,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 1d<br>1d | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 1d<br>1d | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (12)
+## [P0 Root: entries under no project](project-root.md) (11)
 
 Owner `neve`
 
 Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Running (3)
+### Running (2)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Study every run stop of the last two weeks and propose who settles each class under autonomy**<br>• Count the stop classes from run records, notices and orch transcripts, 2026-11-13 to 2026-11-27, and propose a rule table for two autonomy levels | [`autonomy-stop-classes-study`](design-autonomy-stop-classes-study.md) | darn · docs | landing · Finalize | neve | 15m<br>15m | dobby, batten, orch |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 5h<br>5h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T5 | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | darn · light | landing · Finalize | neve | 3h<br>1h | testkit, landing |
 
@@ -166,6 +165,12 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 ### Features (1)
 
-| # | Prio | Note | Slug | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack** | [`self-healing-runs`](design-self-healing-runs.md) | T1 | 2h<br>15m | dobby, batten, orch |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F1 |  | **Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack** | [`self-healing-runs`](design-self-healing-runs.md) | 2h<br>15m | dobby, batten, orch |
+
+### Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Study every run stop of the last two weeks and propose who settles each class under autonomy**<br>• Count the stop classes from run records, notices and orch transcripts, 2026-11-13 to 2026-11-27, and propose a rule table for two autonomy levels | [`autonomy-stop-classes-study`](design-autonomy-stop-classes-study.md) | 15m<br>15m | dobby, batten, orch |
