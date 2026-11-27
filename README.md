@@ -123,7 +123,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 19h<br>19h | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 19h<br>19h | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (16)
+## [P0 Root: entries under no project](project-root.md) (17)
 
 Owner `neve`
 
@@ -147,7 +147,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 9d<br>9d | shuttle |
 
-### Bugs (8)
+### Bugs (9)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -159,6 +159,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | B6 |  | **Test-only-code guard fails a card whose function gets its first caller in a later card** | [`plan-later-caller-guard`](design-plan-later-caller-guard.md) |  | 0m<br>0m | webster, loom |
 | B7 |  | **Command-help byte-cap test is not run by card or batch gates** | [`cli-form-test-in-card-gate`](design-cli-form-test-in-card-gate.md) |  | 0m<br>0m | gate, cli |
 | B8 |  | **Foreground lym gate test is backgrounded after 180 s despite a one-hour Bash timeout** | [`gate-call-backgrounded-180s`](design-gate-call-backgrounded-180s.md) |  | 0m<br>0m | shuttle, gate |
+| B9 |  | **shell-edit guard passes perl -pi / sed -i on a line after a heredoc** | [`shellguard-heredoc-edit`](design-shellguard-heredoc-edit.md) |  | 0m<br>0m | process |
 
 ### Enhancements (4)
 
@@ -166,8 +167,8 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Slow whole-repo guards, .NET builds and testmap tests leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) |  | 10h<br>19m | gate, testkit |
 | E2 |  | **Cross-machine mail into the receiving orch own channel instead of a channel per orch pair** | [`bridge-inbound-per-orch`](design-bridge-inbound-per-orch.md) |  | 18h<br>18h | slack, creel |
-| E3 | H | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) |  | 47m<br>47m | landing, gate |
-| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | E3 | 47m<br>47m | landing, gate, batten |
+| E3 | H | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) |  | 48m<br>48m | landing, gate |
+| E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | E3 | 48m<br>48m | landing, gate, batten |
 
 ### Features (1)
 
