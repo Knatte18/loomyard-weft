@@ -170,7 +170,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`), section \"Faults found by this study\", read these in the code; none was driven:\n\n- a refused credential during a one-repository seed keeps the hub and says origin may still take the push;\n- an empty teardown job clears an earlier teardown's pending record;\n- the `cleanup` remote sweep counts local tags as landed and never pushes them;\n- `--reset` is advised without regard to unpushed work;\n- `fetchRunForCatchUp` reads no records layout;\n- a `lym fabric remove` pending record can outlive its pair (`cd8090733` fixed only the cancel's records, by choice).\n\n## Idea\n\nConfirm each against the code with a test that fails first, and fix the confirmed ones.\n",
-      "status": "starting · Open-Window",
+      "status": "running · Darn-Write",
       "created": "2026-11-26T11:25:44Z",
       "revised": "2026-11-27T18:23:35Z",
       "profile": "light"
@@ -694,7 +694,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #279](https://github.com/Knatte18/loomyard/issues/279).\n\nSeen: a released task's batten run blocked at Worktree-Create when `git ls-remote origin refs/heads/\u003cbranch\u003e-weft` failed with \"Recv failure: Connection reset by peer\". The error was transient: the same lookup succeeded seconds later. The run stayed blocked with no retry. When it was handed back, the stop question claimed that the run's durable status said the task worktree was already created, and asked whether to restore the absent weft branch on origin or abandon the pair. In fact the status history held only the one stuck Worktree-Create step, no worktree existed, and the branch is absent for every new task. Workaround: a hand pass with `lym batten run \u003cslug\u003e` went straight through Worktree-Create to Run-Shed. Expected: Worktree-Create retries a network failure of a remote lookup a few times with backoff before it blocks, and the stop question reads an absent branch on a run whose Worktree-Create never succeeded as the normal fresh state.",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Open-IDE",
       "created": "2026-11-27T15:20:37Z",
       "revised": "2026-11-27T15:20:57Z",
       "profile": "light"
@@ -716,7 +716,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Aim\n\n`docs/research/speed/test-time-measure-2026-11-27/report.md` measured `internal/battencli` at 33 to 75 s of tier1 test time.\n`TestBattenIntegration_Rows` (54 s) runs its steps one after another on one hub copy and sets the package's floor.\n\n## Work\n\n- Split it into groups with a hub each, so the groups run in parallel.\n- Keep every assertion; drop none.\n- Leave the cancel tests' structure for a later task.\n- The two measured runs differed by more than a factor of two: measure the package before and after three times each, and put them in the change description.\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-27T17:58:08Z",
       "revised": "2026-11-27T17:58:08Z",
       "profile": "light",
