@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -207,6 +207,52 @@
       "output": "",
       "at": "2026-11-27T10:49:29Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/remove-testmap/_lym/landing/summary.md",
+      "at": "2026-11-27T10:52:30Z",
+      "started_at": "2026-11-27T10:49:29Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T10:50:36.68413481Z",
+          "end": "2026-11-27T10:50:36.685100466Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T10:52:26.994759851Z",
+          "end": "2026-11-27T10:52:26.996280445Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-27T10:50:37.683446164Z",
+          "end": "2026-11-27T10:50:37.683656978Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "held",
+          "start": "2026-11-27T10:50:37.822098738Z",
+          "end": "2026-11-27T10:52:08.176269939Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "rework",
+          "start": "2026-11-27T10:52:09.656246856Z",
+          "end": "2026-11-27T10:52:25.191645303Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-27T10:52:27.316227749Z",
+          "end": "2026-11-27T10:52:27.316257775Z"
+        }
+      ]
     }
   ],
   "product": {
