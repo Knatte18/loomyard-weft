@@ -1,0 +1,232 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index ad8293c43..ba032a1f8 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -712,8 +712,10 @@ User-facing modules each get one `lym <module>` namespace:
+   and the settings set `CLAUDE_CODE_SUBAGENT_EFFORT`, so a subagent whose call names no effort still runs at the role's.
+   The worktree's `.claude/settings.local.json` carries the efforts table's default as `effortLevel` and as that variable,
+   so a session started by hand in the worktree runs at it.
+-  The engine sets the prompt-cache TTL per role on launch, resume and open from `claude.prompt_cache_ttl` and `claude.prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role).
++  The engine sets the main conversation's prompt-cache TTL per role on launch, resume and open from `claude.prompt_cache_ttl` and `claude.prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role).
+   `claude.keep_warm_cap` (template 250s) and `claude.keep_warm_cap_roles` set the per-role keep-warm cap beside them.
++  Every request outside the main conversation, a subagent's, a fork's or a helper's, runs under a one-hour prompt cache.
++  The reason is that Claude Code backgrounds a 5-minute-cache subagent's foreground Bash call after 180 seconds.
+   While the `claude.batching_nudge` block is on, a `PostToolUse` hook after each `Read`, `Grep`, `Glob`, `Bash`, `Edit` or `Write` call runs the hidden `lym shuttle hook-batching`, which adds one line naming the breach and quoting the rule to a session above the block's context threshold whose recent messages make a chain of single lookups (a Bash call with a read-only lookup command such as `grep`, `find` or a git read counting as one), a sliced read of a short or already-read file, or a chain of edit-only messages;
+   a subagent's or fork's call is judged against that agent's own transcript, context and nudge count;
+   it never denies a call, and the block's switches and thresholds are config.
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index b977c8605..8960d6ba3 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -93,11 +93,26 @@ func claudeBinary(claude Config) string {
+ // It must ride the pane command because the reed server env is scrubbed of CLAUDE_CODE_* at boot.
+ const forkSubagentEnvKey = "CLAUDE_CODE_FORK_SUBAGENT"
+ 
+-// promptCacheTTLEnvKey is the variable Claude Code reads to pick the TTL of the prompt cache it writes.
++// promptCacheTTLEnvKey is the variable Claude Code reads as the TTL of the main conversation's prompt cache.
+ // It rides the pane line because the reed server env is scrubbed of CLAUDE_CODE_* at boot,
+-// and it outranks every Claude Code control for the TTL but FORCE_PROMPT_CACHING_5M.
++// and it outranks every Claude Code control for that TTL but FORCE_PROMPT_CACHING_5M.
+ const promptCacheTTLEnvKey = "CLAUDE_CODE_PROMPT_CACHE_TTL"
+ 
++// subagentPromptCacheTTLEnvKey is the variable Claude Code reads as the TTL of requests outside the main conversation.
++// Those are subagents, forks, and background and helper requests such as compaction.
++// Claude Code counts a few of its helper requests, such as the auto-mode classifier's, as the main conversation.
++// It rides the pane line because the reed server env is scrubbed of CLAUDE_CODE_* at boot.
++const subagentPromptCacheTTLEnvKey = "CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL"
++
++// subagentPromptCacheTTL is the prompt-cache TTL of a lym-spawned session's requests outside its main conversation.
++// Claude Code moves a background subagent's foreground Bash call to the background after 180 seconds.
++// A subagent whose prompt cache is one hour is exempt.
++// A capped `lym gate test` call waits up to the role's keep-warm cap.
++// On the 5-minute default, a cap past 180 seconds would therefore answer a backgrounded call.
++// One-hour cache writes cost more than 5-minute ones.
++// Subagents, forks, and background and helper requests all pay that price for the exemption.
++const subagentPromptCacheTTL = "1h"
++
+ // bashMaxTimeoutEnvKey is the variable Claude Code reads as the ceiling on the Bash tool's timeout parameter.
+ // It rides the pane line because the reed server env is scrubbed of CLAUDE_CODE_* at boot.
+ // BASH_DEFAULT_TIMEOUT_MS is left at Claude Code's default.
+@@ -327,6 +342,7 @@ func envFileContentFor(goos string) string {
+ // Shuttle builds this line before reed forms the strand's name,
+ // so the pane shell expands the reference from the export that reed's launch script makes.
+ // A non-empty remoteControlName adds --remote-control naming it, so the session starts with remote control on.
++// It sets subagentPromptCacheTTLEnvKey to subagentPromptCacheTTL, so no fork's gate call leaves the foreground early.
+ // It wraps the finished line in the envFileKey assignment naming envFilePath, so that assignment leads the line.
+ // The account's environment is applied outermost, so it wins over a value the pane's own environment holds.
+ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model, effort, appendPromptPath, envFilePath, promptCacheTTL, remoteControlName string, account accountEnv, resume, skipPermissions, forkSubagents bool) string {
+@@ -359,6 +375,7 @@ func buildLaunchCmd(sh shell.Shell, bin, pointer, settingsPath, sessionID, model
+ 		cmd = sh.WithEnv(forkSubagentEnvKey, "1", cmd)
+ 	}
+ 	cmd = sh.WithEnv(promptCacheTTLEnvKey, promptCacheTTL, cmd)
++	cmd = sh.WithEnv(subagentPromptCacheTTLEnvKey, subagentPromptCacheTTL, cmd)
+ 	cmd = sh.WithEnv(bashMaxTimeoutEnvKey, bashMaxTimeoutMS, cmd)
+ 	return account.wrap(sh, sh.WithEnv(envFileKey, envFilePath, cmd))
+ }
+@@ -412,6 +429,8 @@ func buildOpenCmd(sh shell.Shell, bin, firstTurn, sessionID, model, effort, sett
+ // The TTL is spec.Role's from claude.yaml, as for a run, and an invalid TTL anywhere in claude.yaml refuses the open.
+ // Both lines open with a statement that exports it as CLAUDE_CODE_PROMPT_CACHE_TTL,
+ // so the resume line and its fresh fallback both run under it, in either shell dialect.
++// A second statement exports CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL at one hour.
++// It keeps a fork's gate call from leaving the foreground early.
+ // A statement that exports or unsets CLAUDE_CONFIG_DIR for the worktree's resolved account follows that export.
+ // It runs ahead of both lines.
+ // With a hub board directory, it creates dir and writes two files into it:
+@@ -504,10 +523,11 @@ func (c *Claude) OpenLaunch(dir string, spec shuttleengine.OpenSpec, cfg shuttle
+ 	fresh := buildOpenCmd(sh, bin, skillLoadMessage, sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, false)
+ 	resumeLine := buildOpenCmd(sh, bin, "", sessionID, resolvedModel, spec.Effort, settingsPath, appendPromptPath, skipPermissions, true)
+ 	exportTTL := sh.ExportEnv(promptCacheTTLEnvKey, promptCacheTTL)
++	exportSubagentTTL := sh.ExportEnv(subagentPromptCacheTTLEnvKey, subagentPromptCacheTTL)
+ 	accountStatement := account.statement(sh)
+ 	return shuttleengine.Launch{
+-		Cmd:        sh.Chain(exportTTL, accountStatement, fresh),
+-		ResumeCmd:  sh.Chain(exportTTL, accountStatement, sh.OrElse(resumeLine, fresh)),
++		Cmd:        sh.Chain(exportTTL, exportSubagentTTL, accountStatement, fresh),
++		ResumeCmd:  sh.Chain(exportTTL, exportSubagentTTL, accountStatement, sh.OrElse(resumeLine, fresh)),
+ 		SessionID:  sessionID,
+ 		CreelHooks: creelFlagDirForHook != "",
+ 	}, nil
+@@ -573,7 +593,7 @@ var _ shuttleengine.SessionOpener = (*Claude)(nil)
+ // When forkSubagents is true, the line is wrapped to keep the fork-subagent capability.
+ // It carries the promptCacheTTLEnvKey assignment too, since the resumed claude inherits nothing from the launch:
+ // without it the session falls back to Claude Code's default TTL.
+-// It carries the bashMaxTimeoutEnvKey assignment too, for the same reason.
++// It carries the subagentPromptCacheTTLEnvKey and bashMaxTimeoutEnvKey assignments too, for the same reason.
+ // It leads with the envFileKey assignment naming envFilePath:
+ // a resumed session keeps the default stdin of its Bash tool.
+ // It applies the account's environment outermost, as the launch line does, since the resumed claude inherits nothing.
+@@ -599,6 +619,7 @@ func buildResumeCmd(sh shell.Shell, bin, settingsPath, sessionID, model, effort,
+ 		cmd = sh.WithEnv(forkSubagentEnvKey, "1", cmd)
+ 	}
+ 	cmd = sh.WithEnv(promptCacheTTLEnvKey, promptCacheTTL, cmd)
++	cmd = sh.WithEnv(subagentPromptCacheTTLEnvKey, subagentPromptCacheTTL, cmd)
+ 	cmd = sh.WithEnv(bashMaxTimeoutEnvKey, bashMaxTimeoutMS, cmd)
+ 	return account.wrap(sh, sh.WithEnv(envFileKey, envFilePath, cmd))
+ }
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index 29fef8c4b..6ed9de2e0 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -20,13 +20,14 @@ import (
+ )
+ 
+ // Each launch and resume line starts with the per-dialect env assignments:
+-// CLAUDE_ENV_FILE, BASH_MAX_TIMEOUT_MS, and the default 5m CLAUDE_CODE_PROMPT_CACHE_TTL.
++// CLAUDE_ENV_FILE, BASH_MAX_TIMEOUT_MS and the one-hour CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL.
++// The default 5m CLAUDE_CODE_PROMPT_CACHE_TTL follows them.
+ // The env file paths are the ones the tests below thread through.
+ const (
+ 	pwshEnvFilePath  = `C:\run\bash-env.sh`
+ 	posixEnvFilePath = "/run/bash-env.sh"
+-	pwshEnvLead      = `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '5m'; `
+-	posixEnvLead     = `CLAUDE_ENV_FILE='/run/bash-env.sh' BASH_MAX_TIMEOUT_MS='3600000' CLAUDE_CODE_PROMPT_CACHE_TTL='5m' `
++	pwshEnvLead      = `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL = '1h'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '5m'; `
++	posixEnvLead     = `CLAUDE_ENV_FILE='/run/bash-env.sh' BASH_MAX_TIMEOUT_MS='3600000' CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL='1h' CLAUDE_CODE_PROMPT_CACHE_TTL='5m' `
+ )
+ 
+ func TestClaudeBinary(t *testing.T) {
+@@ -89,7 +90,7 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 			settingsPath:   `C:\run\settings.json`,
+ 			sessionID:      "abc-123",
+ 			promptCacheTTL: "1h",
+-			want:           `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' 'Read C:\run\prompt.md in full first; it is your complete, authoritative instructions.' --session-id 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions`,
++			want:           `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL = '1h'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' 'Read C:\run\prompt.md in full first; it is your complete, authoritative instructions.' --session-id 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME" --dangerously-skip-permissions`,
+ 		},
+ 		{
+ 			name:         "autonomous_no_model",
+@@ -377,12 +378,12 @@ func TestBuildLaunchCmd(t *testing.T) {
+ 	}
+ }
+ 
+-// openLines returns an open launch's fresh and resume lines with their leading export of the prompt-cache TTL stripped.
+-// It fails the test unless both lines open with that export at ttl.
++// openLines returns an open launch's fresh and resume lines with their leading exports of the prompt-cache TTLs stripped.
++// It fails the test unless both lines open with the export of ttl and then the export of the one-hour subagent TTL.
+ func openLines(t *testing.T, sh shell.Shell, launch shuttleengine.Launch, ttl string) (fresh, resume string) {
+ 	t.Helper()
+ 	const marker = "|"
+-	lead := strings.TrimSuffix(sh.Chain(sh.ExportEnv(promptCacheTTLEnvKey, ttl), marker), marker)
++	lead := strings.TrimSuffix(sh.Chain(sh.ExportEnv(promptCacheTTLEnvKey, ttl), sh.ExportEnv("CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL", "1h"), marker), marker)
+ 	fresh, freshFound := strings.CutPrefix(launch.Cmd, lead)
+ 	resume, resumeFound := strings.CutPrefix(launch.ResumeCmd, lead)
+ 	if !freshFound || !resumeFound {
+@@ -392,7 +393,8 @@ func openLines(t *testing.T, sh shell.Shell, launch shuttleengine.Launch, ttl st
+ }
+ 
+ // TestOpenLaunch pins the open launch: the fresh line with the name reference and optional model flags;
+-// the resume line that falls back to the fresh one; the export of the role's prompt-cache TTL ahead of both;
++// the resume line that falls back to the fresh one;
++// the exports of the role's prompt-cache TTL and the one-hour subagent TTL ahead of both;
+ // and the refusals made before a session id is minted.
+ func TestOpenLaunch(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -868,7 +870,7 @@ func TestBuildResumeCmd(t *testing.T) {
+ 			"fork_mode_on", "", "", "", true, true, "5m", "",
+ 			pwshEnvLead + `$env:CLAUDE_CODE_FORK_SUBAGENT = '1'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`,
+ 		},
+-		{"prompt_cache_ttl_one_hour", "", "", "", true, false, "1h", "", `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
++		{"prompt_cache_ttl_one_hour", "", "", "", true, false, "1h", "", `$env:CLAUDE_ENV_FILE = 'C:\run\bash-env.sh'; $env:BASH_MAX_TIMEOUT_MS = '3600000'; $env:CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL = '1h'; $env:CLAUDE_CODE_PROMPT_CACHE_TTL = '1h'; & 'claude' --resume 'abc-123' --settings 'C:\run\settings.json' --name "$env:LYM_STRAND_NAME"`},
+ 		{
+ 			// A revived session must come back with the remote control it launched with.
+ 			"remote_control_on_resume", "", "", "", true, false, "5m", "neve::ly:orch",
+diff --git a/internal/shuttleengine/claudeengine/config.go b/internal/shuttleengine/claudeengine/config.go
+index 3f0f58058..a6419bc7e 100644
+--- a/internal/shuttleengine/claudeengine/config.go
++++ b/internal/shuttleengine/claudeengine/config.go
+@@ -25,10 +25,10 @@ type Config struct {
+ 	Binary string `yaml:"binary"`
+ 	// DenyAskUserQuestion switches the PreToolUse deny for the AskUserQuestion tool.
+ 	DenyAskUserQuestion bool `yaml:"deny_ask_user_question"`
+-	// PromptCacheTTL is Claude Code's prompt-cache TTL for a role without a map entry;
++	// PromptCacheTTL is the main conversation's prompt-cache TTL for a role without a map entry;
+ 	// it is validated where a run starts, not when the config loads.
+ 	PromptCacheTTL string `yaml:"prompt_cache_ttl"`
+-	// PromptCacheTTLRoles maps a strand's role segment to Claude Code's prompt-cache TTL;
++	// PromptCacheTTLRoles maps a strand's role segment to its main conversation's prompt-cache TTL;
+ 	// it is validated where a run starts, not when the config loads.
+ 	PromptCacheTTLRoles map[string]string `yaml:"prompt_cache_ttl_roles"`
+ 	// KeepWarmCap is the longest one keep-warm wait for a role without a map entry, a Go duration;
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 7cf9b7762..d0d2f2ac9 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -79,14 +79,17 @@
+ // so a server spawned from a pane on one account never hands it to a pane with no export.
+ //
+ // The launch and resume lines both carry `CLAUDE_CODE_PROMPT_CACHE_TTL`,
+-// so a session writes its prompt cache at the TTL its role needs rather than at Claude Code's subscription default.
++// so a main conversation writes its prompt cache at the TTL its role needs, not at Claude Code's subscription default.
+ // Prepare and OpenLaunch resolve it from the spec's role through `prompt_cache_ttl_roles`, else `prompt_cache_ttl`.
+ // They refuse a configured value that is not `5m` or `1h` before any artifact is written.
+ // The value is fixed for the session's life, since a resume line is never rebuilt.
+ // `keep_warm_cap` and `keep_warm_cap_roles` set the longest single wait an agent of a role blocks on.
+-// Forks run at Claude Code's 5-minute subagent lifetime;
+-// a cap above five minutes therefore leaves that role's forks' caches cold.
+ // Both lines also carry `BASH_MAX_TIMEOUT_MS` at one hour, so no Bash call stays in the foreground past that ceiling.
++// The launch, resume and open lines carry `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL` at one hour.
++// Claude Code moves a background subagent's foreground Bash call to the background after 180 seconds.
++// A subagent whose prompt cache is one hour is exempt.
++// On the 5-minute default, a fork's capped `lym gate test` call would leave the foreground before its keep-warm cap.
++// The hour lets a fork's cache outlive any cap, at one-hour cache-write prices for subagents, forks and helper requests.
+ //
+ // The context reading comes from the transcript a Stop payload names:
+ // the latest main-chain assistant usage entry or compaction boundary.
+diff --git a/internal/shuttleengine/claudeengine/template.yaml b/internal/shuttleengine/claudeengine/template.yaml
+index 6be5b41b7..09fc0ce2b 100644
+--- a/internal/shuttleengine/claudeengine/template.yaml
++++ b/internal/shuttleengine/claudeengine/template.yaml
+@@ -1,11 +1,11 @@
+ binary: ${env:LYM_SHUTTLE_CLAUDE:-}  # path to the claude executable; empty falls back to "claude" on PATH — prefer an explicit path, PATH aliases can hit the 0-byte WindowsApps stub; the binary must be the engine or exec it, since a wrapper that does not exec leaves its shell in the foreground and reed reads the strand dead
+ deny_ask_user_question: true  # emit a PreToolUse deny for the AskUserQuestion tool (autonomous runs only)
+-prompt_cache_ttl: 5m  # prompt-cache TTL for every role without an entry in claude.prompt_cache_ttl_roles; Claude Code's own values, validated when a run starts or a session opens, and the refusal names the accepted ones
+-prompt_cache_ttl_roles:  # prompt-cache TTL per role, keyed by a strand's role segment (Spec.Role); the operator's own map, replacing the template's whole when present, so leaving a role out drops it to the default; values are Claude Code's, validated when a run starts or a session opens, and the refusal names the accepted ones
++prompt_cache_ttl: 5m  # prompt-cache TTL of the main conversation for every role without an entry in claude.prompt_cache_ttl_roles; Claude Code's own values, validated when a run starts or a session opens, and the refusal names the accepted ones
++prompt_cache_ttl_roles:  # prompt-cache TTL of the main conversation per role, keyed by a strand's role segment (Spec.Role); the operator's own map, replacing the template's whole when present, so leaving a role out drops it to the default; values are Claude Code's, validated when a run starts or a session opens, and the refusal names the accepted ones
+   driver: 5m
+   webster: 1h
+   orch: 1h
+-keep_warm_cap: 250s  # the keep-warm cap for every role without an entry in claude.keep_warm_cap_roles: the longest one wait an agent of the role blocks on; a Go duration, at least 60s, below the role's prompt-cache lifetime and at most 55m; validated when a run starts and on lym config claude; a cap above five minutes leaves that role's forks' caches cold, since forks run at Claude Code's 5-minute subagent lifetime
++keep_warm_cap: 250s  # the keep-warm cap for every role without an entry in claude.keep_warm_cap_roles: the longest one wait an agent of the role blocks on; a Go duration, at least 60s, below the role's prompt-cache lifetime and at most 55m; validated when a run starts and on lym config claude; forks run under a one-hour prompt cache, so a fork's gate call stays in the foreground for the whole cap
+ keep_warm_cap_roles: {}  # keep-warm cap per role, keyed by a strand's role segment (Spec.Role), replacing claude.keep_warm_cap for that role; the operator's own map, replacing the template's whole when present; values follow the same rules as claude.keep_warm_cap and are validated when a run starts and on lym config claude
+ batching_nudge:  # the after-tool-call hook that adds one line to the calling chain's context when its recent calls break the batching rules, and never denies a call; read when a run starts, so a running session keeps the values it started with; validated when a run starts and on lym config claude
+   enabled: true  # install the hook in every run's settings; false installs none
