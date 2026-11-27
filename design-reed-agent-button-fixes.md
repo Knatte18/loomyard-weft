@@ -1,6 +1,6 @@
 # Reed agent button: explain the name rule and start the agent with lym context
 
-`reed-agent-button-fixes` · Task · bug, reed, stencil · starting · Seed-Child
+`reed-agent-button-fixes` · Task · bug, reed, stencil · running · Record-Write
 
 ## Seen (operator, 2026-11-27)
 
