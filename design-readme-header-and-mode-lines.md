@@ -1,6 +1,6 @@
 # Board README: drop the legend text at the top, and show autonomy and PR setting on P0 and every beam
 
-`readme-header-and-mode-lines` · Task · enhancement, board · running · Drift-Verify
+`readme-header-and-mode-lines` · Task · enhancement, board · running · Code-Bouncer
 
 ## Seen (operator, 2026-11-26)
 
