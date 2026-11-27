@@ -339,9 +339,19 @@
       "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
       "engine": "claude",
       "terminal": false,
-      "status": "",
+      "status": "waiting",
+      "digest": {
+        "batch": "01-kwin-probes",
+        "status": "waiting",
+        "head_sha": "3ae3e45bac3200df93e8ca82fe745b5e947e2a17",
+        "need": "Ask the operator to run /home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/.scratch/kwin-probes/run-probes.sh (adapted: eDP-1 only enabled output, no drag, no laptop-off) as `read-only`, `apply`, `apply-one-row`, and send back each printed output and what they saw; before read-only close windows whose titles must not be committed, since .scratch/kwin-probes/recordings/ already holds a read-only run taken with DP-2 as the only enabled output whose journal.txt holds a mail tab title with the operator's email address (not committed; say if that run should stand in for the eDP-1 one, with the title removed by a rerun or by your decision); the record's Open risks entries of the one-output decision are not written, as the decision record is outside this card's targets"
+      },
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a57e5371e911dc9b6.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a57e5371e911dc9b6.jsonl"
       ]
     }
   },
@@ -354,6 +364,7 @@
   ],
   "masterRecordsBase": "6bbba30721e6f1773da5a26e11b11a86e9fa5878",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a57e5371e911dc9b6.jsonl"
   ]
 }
