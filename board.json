@@ -758,6 +758,25 @@
       "created": "2026-11-27T14:56:57Z",
       "revised": "2026-11-27T14:56:57Z",
       "profile": "solid"
+    },
+    {
+      "id": 1736,
+      "handle": "P1",
+      "slug": "test-speed",
+      "title": "Faster gates: measure where test time goes, then cut or restructure the heavy packages",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Aim (operator, 2026-11-27)\n\nGates are too slow. Measure, package by package, where tier0 and tier1 time goes, then cut or restructure the packages that cost the most, as the fabric-core project does for fabric.\n\nThe measurement task comes first; each cut or restructure is filed from its report.\nA survey from 2026-11-16 ran under coverage and overstates every time, so it is not used.\n",
+      "created": "2026-11-27T15:19:06Z",
+      "revised": "2026-11-27T15:19:06Z"
     }
   ],
   "prime_owner": "neve",
