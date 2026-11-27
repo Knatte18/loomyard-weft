@@ -1,6 +1,6 @@
 # Design-first route: motif in place of arras, Sketch follow-up and a tuned raddle split
 
-`design-first-route` · Task · enhancement, stencil, orch, board, loom · starting · Open-IDE
+`design-first-route` · Task · enhancement, stencil, orch, board, loom · running · Darn-Write
 
 ## Aim
 
