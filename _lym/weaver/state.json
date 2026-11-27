@@ -245,8 +245,31 @@
       "startSha": "24688edd65fd25d24ec61ff248969ae2b63456d7",
       "kind": "strand",
       "spawnedAt": "2026-11-27T11:58:06Z",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-view-projection",
+        "status": "done",
+        "head_sha": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56",
+        "deviations": [
+          ".gitattributes",
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardengine/expect.go",
+          "internal/boardengine/expect_test.go",
+          "internal/boardengine/view.go",
+          "internal/boardengine/view_test.go",
+          "internal/boardserve/server.go",
+          "internal/boardserve/write.go"
+        ],
+        "departures": [
+          "1: board-view-projection: PATTERN-test-only-code — BoardRevision and Board.View take temporary allowlist entries, since their production caller, the board server, is not yet reached from a main",
+          "2: entry-revision-check: PATTERN-test-only-code — Board.Expecting takes a temporary allowlist entry, since its production caller, the board server, is not yet reached from a main",
+          "3: viewer-page-asset: PATTERN-test-only-code — ViewerPage takes a temporary allowlist entry, since its production caller, the board server, is not yet reached from a main"
+        ]
+      },
+      "cardShas": [
+        "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
+      ]
     }
   },
   "attempts": [
@@ -257,14 +280,23 @@
       "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b1/_lym/weaver/reports/01-board-view-projection-a1.yaml",
       "strandGuid": "b26f5ef8ce6415db58600be96df52d71",
       "strandName": "ly:weaver-bench-b1:weaver",
-      "inFlight": true,
       "outcome": "failed",
       "cause": "the attempt timed out before it wrote its report",
       "beganAt": "2026-11-27T11:58:06Z"
+    },
+    {
+      "batch": 1,
+      "number": 2,
+      "rung": 1,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b1/_lym/weaver/reports/01-board-view-projection-a2.yaml",
+      "strandGuid": "67c33e7f350d87d56c257c24e796eab3",
+      "strandName": "ly:weaver-bench-b1:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T12:28:09Z"
     }
   ],
   "batchEnds": {
-    "1": "e655bbe198f58c523dd66d4aec39ce0a8e225346"
+    "1": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
   },
-  "lastEnd": "e655bbe198f58c523dd66d4aec39ce0a8e225346"
+  "lastEnd": "11a16b067975b8df6e22dcb4f3c86bd5476bfb56"
 }
