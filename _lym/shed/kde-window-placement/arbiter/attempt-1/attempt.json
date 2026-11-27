@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 11,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-27T12:20:38.884154607+01:00",
+  "deadline": "2026-11-27T12:50:38.884154607+01:00",
+  "strand_guid": "",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement/_lym/shed/kde-window-placement/drive-reports/drive-envelope-20261127-122038-255f.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement/_lym/shed/kde-window-placement/drive-reports/drive-report-20261127-122038-dd09.md",
+  "snapshot": {
+    "head": "d51900fb264f4423409439bc74805c8a92b0ab77",
+    "branch": "kde-window-placement",
+    "dirty": {}
+  }
+}
