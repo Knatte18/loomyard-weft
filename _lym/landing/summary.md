@@ -1,0 +1,50 @@
+# Keep a fork's gate call in the foreground with a one-hour subagent cache
+
+A fork or background subagent that ran `lym gate test` in the foreground with a one-hour Bash timeout was moved to the background after 180 s.
+The call then ended with exit 75 and `done: false`, an answer that was meant to come back to a foreground caller.
+
+## Cause
+
+In Claude Code (read from the 2.1.332 bundle), Bash calls from the main session and from subagents take different timeouts:
+
+- The main session is backgrounded only by `CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS`, which lym leaves unset, so its calls run to `BASH_MAX_TIMEOUT_MS`.
+- An async subagent, which covers every fork, has its foreground Bash call capped at a fixed 180 s.
+  The cap is skipped only when that subagent's prompt cache is `1h` or off.
+  No variable sets the 180 s itself.
+- The subagent's TTL comes from `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, or else the `subagentPromptCacheTtl` setting.
+  When neither is set it defaults to 5 minutes.
+  `CLAUDE_CODE_PROMPT_CACHE_TTL`, which lym sets per role, reaches only the main session.
+
+A capped gate call waits up to the role's keep-warm cap, which the template sets to 250 s.
+So in a fork the call passed the 180 s cap before its own cap answered.
+
+## Change
+
+- The claude engine's launch and resume lines now set `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL=1h`.
+  The open line exports it next to the prompt-cache TTL export.
+  This is in `internal/shuttleengine/claudeengine/command.go`.
+- `TestBuildLaunchCmd`, `TestBuildResumeCmd` and `TestOpenLaunch` now pin the new assignment in each line's env lead.
+- The engine's package doc, its `template.yaml` comment on `claude.keep_warm_cap` and `docs/overview.md` now say why the subagent TTL is set.
+  They no longer say forks run at a 5-minute cache.
+
+## Design decisions
+
+- **Set the subagent TTL rather than lower the keep-warm cap.**
+  The 180 s cap has no setting of its own, so it cannot be raised from the launch line.
+  Pulling `claude.keep_warm_cap` below 180 s would not fix it either:
+  a gate front cannot tell whether a fork or the main session called it,
+  and a `--gate` call whose runs outlast the break-even waits the long cap, 55 m, which a fork would still lose at 180 s.
+  The one-hour subagent cache removes the cap for every wait length.
+- **Cost.** Subagents and forks now write their prompt cache at one-hour prices instead of 5-minute ones.
+  In exchange, a fork's cache outlives any keep-warm cap, which the old template comment said was cold for caps over five minutes.
+- **The value is a constant, not config.**
+  The hour is what turns the 180 s cap off, so a shorter value would bring the fault back.
+- **Opened sessions get it too.**
+  The orch and other sessions started with `lym shuttle open` fork too, so their forks need the same exemption.
+- **Remaining limit.** If Claude Code's server answers a one-hour cache request with a 5-minute write, for example on a subscription past its usage limits, the 180 s cap applies to that subagent again.
+  `FORCE_PROMPT_CACHING_5M` also overrides the setting.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** shuttle
