@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 10:38 UTC; every age below is as of then.
+Rendered 2026-11-27 10:39 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -22,11 +22,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-wave-2` · Age 1d · Owner `neve`
 
-### Layer C (1)
+### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T6<br>T8 | 1d<br>12m | fabric, shed, landing, batten, dobby |
+| T11 | **Background pushes retry quietly; landing pushes and reads retry instead of failing** | [`push-retry-not-halt`](design-push-retry-not-halt.md) | tapestry | T6<br>T8 | 1d<br>13m | fabric, shed, landing, batten, dobby |
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (7)
 
@@ -38,37 +38,37 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget** | [`fabric-core-foundation`](design-fabric-core-foundation.md)<br>[Sketch](decision-fabric-core-foundation.md) | tapestry · solid | Webster | neve | 12h<br>12h | fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report |
 
-### Layer D (1)
+### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T6<br>T11 | 12h<br>55m | fabric, testkit, shed, board, pattern |
 
-### Layer E (1)
+### Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T24 | **Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core** | [`fabric-core-teardown`](design-fabric-core-teardown.md)<br>[Sketch](decision-fabric-core-teardown.md) | tapestry · solid | T23 | 12h<br>12h | fabric, testkit, shed, landing |
 
-### Layer F (1)
+### Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T25 | **Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core** | [`fabric-core-merge-landing`](design-fabric-core-merge-landing.md)<br>[Sketch](decision-fabric-core-merge-landing.md) | tapestry · solid | T24 | 12h<br>12h | fabric, testkit, shed, batten, landing |
 
-### Layer G (1)
+### Layer F (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T26 | **Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric** | [`fabric-core-pull-replay`](design-fabric-core-pull-replay.md)<br>[Sketch](decision-fabric-core-pull-replay.md) | tapestry · solid | T25 | 12h<br>12h | fabric, testkit, shed, stencil, board, heddle |
 
-### Layer H (1)
+### Layer G (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T27 | **Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut** | [`fabric-core-add-clone`](design-fabric-core-add-clone.md)<br>[Sketch](decision-fabric-core-add-clone.md) | tapestry · solid | T26 | 12h<br>12h | fabric, testkit, ide, batten, heddle, reconcile, shed |
 
-### Layer I (1)
+### Layer H (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -84,7 +84,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T13 | **Close a task's scope at Code-Review, and catch earlier what a PR review found** | [`scope-and-earlier-checks`](design-scope-and-earlier-checks.md) | darn · solid | Code-Burler-Fix | neve | 1d<br>1d | loom, burler |
 
-### Layer D (1)
+### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -94,7 +94,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 `intake-motifs` · Age 1d · Owner `neve`
 
-### Layer J (1)
+### Layer I (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -113,41 +113,40 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 22h<br>22h | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 22h<br>22h | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (12)
+## [P0 Root: entries under no project](project-root.md) (11)
 
 Owner `neve`
 
 Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Running (4)
+### Running (3)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | Discussion-Burler-Fix | neve | 13h<br>28m | termwindow, desktop |
-| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | landing · Finalize | neve | 2h<br>52m | landing |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif | Discussion-Burler-Fix | neve | 13h<br>29m | termwindow, desktop |
 | T10 | **A bench run creates and removes its own bench pairs, forked from its task worktree** | [`bench-makes-own-pairs`](design-bench-makes-own-pairs.md) | darn · solid | Darn-Write | neve | 7m<br>4m | fabric, darn, batten |
 | T19 | **Remove the coverage maps and every user of them, keeping the redundancy sweep and red-first** | [`remove-testmap`](design-remove-testmap.md) | darn · solid | Code-Burler-Fix | neve | 2h<br>2h | testmap, gate, darn, loom, stencil, cleanup |
+
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light |  | 2h<br>2h | shed, loom |
 
 ### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Finalize records a DNS failure classed transient as a failed / producer-hard-failure halt** | [`transient-stop-not-failed`](design-transient-stop-not-failed.md) | darn · light | T2 | 2h<br>2h | shed, loom |
-| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | T19 | 13h<br>12m | gate, testkit |
-
-### Layer B (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
+| T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | T19 | 13h<br>13m | gate, testkit |
 | T8 | **Finalize gates the merged tree without the parent lock and holds the lock only to land** | [`landing-lock-only-for-land`](design-landing-lock-only-for-land.md) | darn · solid | T4 | 3h<br>23m | landing, gate |
 
-### Layer J (1)
+### Layer I (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | T11<br>T28 | 23h<br>55m | fabric, cleanup, batten |
 
-### Layer K (1)
+### Layer J (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -170,3 +169,9 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | T8 | 3h<br>3h | landing, gate, batten |
+
+### Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | 2h<br>52m | landing |
