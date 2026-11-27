@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=448d7795d8936d388a2f449cde6d3d42c2d92528fc94e9a874c44234c1107ac6 build=41f21291af2270176d3d37d61d9637fb4dc57008 time=2026-11-27T11:01:14Z -->
+lym-stencil: sha256=e2886fa0164a8756ce8948e18b516d409f47d5c257ddd876064be2730aeb89b8 build=077e1f48aa8c47674e7fbfa0e8986d133dbcec7f time=2026-11-27T11:11:16Z -->
 
 # Code-Review rubric
 
@@ -145,42 +145,6 @@ Do not flag any of the following as a finding:
   - a behavior the diff adds with no coverage, naming the uncovered behavior; the static prose of a stencil, spec, doc or other text is exempt.
 
   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
-
-  Each test the redundancy report below lists as contained is a test-economy candidate.
-  Coverage blocks do not see assertions, so check the candidate's assertions against those of its covering tests before filing anything.
-  When the covering tests assert what it asserts, file a finding to fold it into one of them or delete it, naming the covering tests.
-  When it pins what coverage cannot see, such as an error message, an output shape, an ordering or a side effect the covering tests never check, accept it:
-  file a finding to mark it `//testtiming:keep <reason>` directly above its `func Test…` line, the reason naming what it pins.
-  A test the report lists as unique or not judged is no finding on that ground; judge it by the bullets above.
-  The reach report below is evidence for two of these findings: a behavior the diff adds with no coverage, and the covering test a redundancy finding names.
-
-## Redundancy report
-
-{{.redundancy_report}}
-
-The note above is the advisory report `lym gate test` writes on the diff's new and changed Go tests, read only when it still matches HEAD's tree.
-When it is `none`, or says no current report exists, judge test economy by the bullets above alone, and raise no finding about the report's absence.
-
-## Reach report
-
-{{.reach_report}}
-
-The note above is the advisory report `lym gate test` writes on the diff's changed functions, read only when it still matches HEAD's tree.
-Read it as evidence for "a behavior the diff adds with no coverage", and for naming a covering test in a redundancy finding.
-A function it lists as reached by no test is a candidate, never a finding by itself.
-When it is `none`, or says no current report exists, raise no finding about its absence.
-
-## Mutation report
-
-{{.mutation_report}}
-
-The note above is the advisory report `lym gate test` writes by mutating the lines the diff changes, read only when it still matches HEAD's tree.
-Each survivor is a changed line whose mutant every test covering it passed: a candidate for a missing check, never a finding by itself.
-Read each survivor's line and the tests that cover it.
-When a test could assert what the mutant changes, and that is the diff's own behavior or a contract its doc comment states, file a finding naming the line and the check the tests lack.
-A survivor no test can reasonably kill, such as a log field, a pure cache, a platform-only branch or a channel capacity, is no finding.
-A survivor whose covering test recomputes the expected value the way its line does is evidence for a tautological test.
-When the note is `none`, or says no current report exists, raise no finding about its absence.
 
 ## Amendment
 
