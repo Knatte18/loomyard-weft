@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 15:16 UTC; every age below is as of then.
+Rendered 2026-11-27 15:17 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Plan-Burler-Fix | neve | 43m<br>43m | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Bouncer | neve | 19m<br>19m | config, reconcile, testkit |
+| T6 | **Cut config, configsync and hubreconcile tier1 test time in half** | [`config-test-cut`](design-config-test-cut.md) | darn · solid | Code-Burler-Review | neve | 20m<br>20m | config, reconcile, testkit |
 
 ## Layer G (1)
 
