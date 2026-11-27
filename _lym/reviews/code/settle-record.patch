@@ -1,0 +1,619 @@
+diff --git a/contracts/stencils/burler/burler-fix-self-check.md b/contracts/stencils/burler/burler-fix-self-check.md
+index 86c1d2281..5b62280b4 100644
+--- a/contracts/stencils/burler/burler-fix-self-check.md
++++ b/contracts/stencils/burler/burler-fix-self-check.md
+@@ -45,5 +45,5 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
+ - You are read-only: never write, edit or delete a file, run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree, and spawn no fork or subagent of your own.
+ - Return your findings only as your final message, each with a severity (`BLOCKING`, `MEDIUM` or `LOW`, as the rubric defines them), the changed text it concerns, a one-line summary and the evidence, and start it with the list your lens asks for, if it asks for one; return "no findings" when you have none.
+ 
+-A fork spawns nothing, so the fixer is the only session that spawns.
++A fork spawns nothing; only the fixer and the subagents it starts to make its fixes spawn.
+ 
+diff --git a/internal/burlerengine/cluster.go b/internal/burlerengine/cluster.go
+index 20886bfea..45f4bf53d 100644
+--- a/internal/burlerengine/cluster.go
++++ b/internal/burlerengine/cluster.go
+@@ -929,6 +929,9 @@ func unreturnedForkWarnings(audit *shuttleengine.ForkAudit) []string {
+ // A fresh subagent the fixer started to make its fixes writes on the fixer's behalf:
+ // it is no self-check fork, so this audit neither checks nor counts it.
+ // A name given to it is no named-fork violation.
++// A subagent belongs to whichever subagent the session itself spawned at the head of its spawner chain.
++// Under a fresh subagent it is part of that subagent's work, so it is neither checked nor counted.
++// Under a fork it is checked like that fork, so what it changed in the target reaches the way forward.
+ func auditFixRound(audit *shuttleengine.ForkAudit, wantN int) (warnings []string, forks int, err error) {
+ 	if audit == nil {
+ 		return []string{fmt.Sprintf("twill fixer spawned 0 fork(s) for %d lens(es)", wantN)}, 0, nil
+@@ -936,8 +939,16 @@ func auditFixRound(audit *shuttleengine.ForkAudit, wantN int) (warnings []string
+ 	selfCheck := *audit
+ 	selfCheck.Forks = nil
+ 	selfCheck.NamedSpawns = audit.NamedForkSpawns
++	reports := map[string]shuttleengine.ForkReport{}
+ 	for _, fork := range audit.Forks {
+-		if !fork.FreshSubagent {
++		reports[fork.TranscriptPath] = fork
++	}
++	for _, fork := range audit.Forks {
++		head := fork
++		for head.SpawnerTranscriptPath != "" {
++			head = reports[head.SpawnerTranscriptPath]
++		}
++		if !head.FreshSubagent {
+ 			selfCheck.Forks = append(selfCheck.Forks, fork)
+ 		}
+ 	}
+diff --git a/internal/burlerengine/cluster_test.go b/internal/burlerengine/cluster_test.go
+index 508f991a4..1e4679ed8 100644
+--- a/internal/burlerengine/cluster_test.go
++++ b/internal/burlerengine/cluster_test.go
+@@ -158,6 +158,51 @@ func TestAuditClusterRound(t *testing.T) {
+ 			fix:       true,
+ 			wantForks: 2,
+ 		},
++		{
++			name: "fix: the forks under a fresh subagent are neither violations nor self-check forks",
++			audit: &shuttleengine.ForkAudit{
++				Forks: []shuttleengine.ForkReport{
++					cleanFork("a"),
++					{TranscriptPath: "deeper", WriteCalls: 1, SpawnerTranscriptPath: "nested"},
++					{TranscriptPath: "fresh", AgentCalls: 1, FreshSubagent: true},
++					{TranscriptPath: "nested", AgentCalls: 1, WriteCalls: 1, BashCommands: []string{"git commit -am x"}, SpawnerTranscriptPath: "fresh"},
++					cleanFork("b"),
++				},
++			},
++			wantN:     2,
++			fix:       true,
++			wantForks: 2,
++		},
++		{
++			name: "fix: a write by a fork a self-check fork spawned keeps the revert way forward",
++			audit: &shuttleengine.ForkAudit{
++				Forks: []shuttleengine.ForkReport{
++					{TranscriptPath: "a", ReportReturned: true, AgentCalls: 1},
++					{TranscriptPath: "nested", WriteCalls: 1, SpawnerTranscriptPath: "a"},
++				},
++			},
++			wantN:          1,
++			wantErr:        true,
++			errSubstr:      `twill fixer fork "a" attempted 1 nested spawn call(s)`,
++			fix:            true,
++			wantForks:      2,
++			wantWayForward: revertWayForward,
++		},
++		{
++			name: "fix: a commit by a fresh subagent a self-check fork spawned keeps the revert way forward",
++			audit: &shuttleengine.ForkAudit{
++				Forks: []shuttleengine.ForkReport{
++					{TranscriptPath: "a", ReportReturned: true, AgentCalls: 1},
++					{TranscriptPath: "fresh", BashCommands: []string{"git commit -am x"}, FreshSubagent: true, SpawnerTranscriptPath: "a"},
++				},
++			},
++			wantN:          1,
++			wantErr:        true,
++			errSubstr:      `twill fixer fork "a" attempted 1 nested spawn call(s)`,
++			fix:            true,
++			wantForks:      2,
++			wantWayForward: revertWayForward,
++		},
+ 		{
+ 			name: "fix: a named fresh delegate is no named-fork violation",
+ 			audit: &shuttleengine.ForkAudit{
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index b0c032328..58668edbc 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -107,7 +107,9 @@
+ // whether or not the gate passed.
+ // Its way forward says when the audit found no target change: no fork wrote a file or changed the target's repository.
+ // A wrong fork count or a fork that returned no report is a warning only, since the fix is on disk.
+-// Subagents the fixer starts to make its fixes are not audited; only the self-check forks are held to the read-only rule.
++// Subagents the fixer starts to make its fixes are not audited.
++// Such a subagent may spawn forks of its own: they are part of its work, so the audit neither checks nor counts them.
++// Only the self-check forks, and whatever they spawn, are held to the read-only rule.
+ //
+ // # Review before fix
+ //
+diff --git a/internal/shuttleengine/claudeengine/audit.go b/internal/shuttleengine/claudeengine/audit.go
+index 2c778db8c..4696818ea 100644
+--- a/internal/shuttleengine/claudeengine/audit.go
++++ b/internal/shuttleengine/claudeengine/audit.go
+@@ -3,6 +3,7 @@
+ // From it, it recovers mechanical facts about a fork-authorized run's subagents.
+ // It can filter to only the subagent transcripts a long-lived caller has not yet seen.
+ // A transcript's sibling .meta.json tells a fork from a subagent started with a fresh context.
++// It also names the subagent that spawned it, whose tool calls the transcript replays as inherited history.
+ // All of this file's knowledge — the project directory's cwd-encoding scheme, the parent/fork
+ // transcript paths, and the JSONL message shape — is Claude-specific and stays contained here, per
+ // the Shuttle Provider-Seam Invariant;
+@@ -36,6 +37,9 @@ func (c *Claude) AuditForks(sessionID, workdir string) (shuttleengine.ForkAudit,
+ // A nil seenTranscripts reports every subagent transcript; missing subagents/ is not an error (zero
+ // forks).
+ // A missing parent transcript or unreadable subagent transcript is an error (audit incomplete).
++// A subagent another subagent spawned carries that subagent's earlier tool calls as inherited history,
++// so its report leaves out every tool call whose id its spawning transcript also holds;
++// that spawning subagent's transcript missing or unreadable is an error too.
+ func (c *Claude) AuditForksIncremental(sessionID, workdir string, seenTranscripts map[string]bool) (shuttleengine.ForkAudit, error) {
+ 	projectDir, err := c.sessionProjectDir(sessionID, workdir)
+ 	if err != nil {
+@@ -43,10 +47,20 @@ func (c *Claude) AuditForksIncremental(sessionID, workdir string, seenTranscript
+ 	}
+ 
+ 	parentPath := filepath.Join(projectDir, sessionID+".jsonl")
+-	spawnCalls, namedSpawns, namedForkSpawns, writeCalls, writes, writeEvents, bashCommands, err := auditParentTranscript(parentPath)
++	parent, err := auditParentTranscript(parentPath)
+ 	if err != nil {
+ 		return shuttleengine.ForkAudit{}, err
+ 	}
++	audit := shuttleengine.ForkAudit{
++		Forks:              []shuttleengine.ForkReport{},
++		SpawnCalls:         parent.spawnCalls,
++		NamedSpawns:        parent.namedSpawns,
++		NamedForkSpawns:    parent.namedForkSpawns,
++		ParentWriteCalls:   parent.writeCalls,
++		ParentWrites:       parent.writes,
++		ParentWriteEvents:  parent.writeEvents,
++		ParentBashCommands: parent.bashCommands,
++	}
+ 
+ 	subagentsDir := filepath.Join(projectDir, sessionID, subagentsDirName)
+ 	entries, err := os.ReadDir(subagentsDir)
+@@ -55,21 +69,12 @@ func (c *Claude) AuditForksIncremental(sessionID, workdir string, seenTranscript
+ 			// The run never actually spawned a fork (or Claude has not yet
+ 			// created the subagents/ directory) — a legitimate, zero-fork
+ 			// finding, not a failure to complete the audit.
+-			return shuttleengine.ForkAudit{
+-				Forks:              []shuttleengine.ForkReport{},
+-				SpawnCalls:         spawnCalls,
+-				NamedSpawns:        namedSpawns,
+-				NamedForkSpawns:    namedForkSpawns,
+-				ParentWriteCalls:   writeCalls,
+-				ParentWrites:       writes,
+-				ParentWriteEvents:  writeEvents,
+-				ParentBashCommands: bashCommands,
+-			}, nil
++			return audit, nil
+ 		}
+ 		return shuttleengine.ForkAudit{}, fmt.Errorf("claudeengine: read subagents dir %q: %w", subagentsDir, err)
+ 	}
+ 
+-	forks := []shuttleengine.ForkReport{}
++	spawnerToolUseIDs := map[string]map[string]bool{}
+ 	for _, entry := range entries {
+ 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".jsonl") {
+ 			continue
+@@ -81,23 +86,55 @@ func (c *Claude) AuditForksIncremental(sessionID, workdir string, seenTranscript
+ 			// already acted on.
+ 			continue
+ 		}
+-		report, err := auditForkTranscript(transcriptPath)
++		meta, metaFound := readSubagentMeta(transcriptPath)
++		spawnerPath := ""
++		inherited := parent.toolUseIDs
++		if meta.ParentAgentID != "" {
++			spawnerPath = filepath.Join(subagentsDir, subagentTranscriptPrefix+meta.ParentAgentID+".jsonl")
++			inherited, err = subagentToolUseIDs(spawnerPath, spawnerToolUseIDs)
++			if err != nil {
++				return shuttleengine.ForkAudit{}, err
++			}
++		}
++		report, err := auditForkTranscript(transcriptPath, meta, metaFound, inherited)
+ 		if err != nil {
+ 			return shuttleengine.ForkAudit{}, err
+ 		}
+-		forks = append(forks, report)
++		report.SpawnerTranscriptPath = spawnerPath
++		audit.Forks = append(audit.Forks, report)
++	}
++	return audit, nil
++}
++
++// subagentToolUseIDs returns the tool_use ids in the subagent transcript at path.
++// It reads each transcript once, keeping its ids in cache by path.
++// Its error never matches fs.ErrNotExist.
++func subagentToolUseIDs(path string, cache map[string]map[string]bool) (map[string]bool, error) {
++	if ids, ok := cache[path]; ok {
++		return ids, nil
++	}
++	ids := map[string]bool{}
++	err := forEachTranscriptLine(path, func(line transcriptLine) {
++		if line.Type == "assistant" {
++			collectToolUseIDs(line, ids)
++		}
++	})
++	if err != nil {
++		// %v, not %w: a caller reads fs.ErrNotExist as the session's own transcript being absent from this machine,
++		// and a missing spawner transcript is an incomplete audit instead.
++		return nil, fmt.Errorf("claudeengine: read spawning subagent transcript %q: %v", path, err)
+ 	}
++	cache[path] = ids
++	return ids, nil
++}
+ 
+-	return shuttleengine.ForkAudit{
+-		Forks:              forks,
+-		SpawnCalls:         spawnCalls,
+-		NamedSpawns:        namedSpawns,
+-		NamedForkSpawns:    namedForkSpawns,
+-		ParentWriteCalls:   writeCalls,
+-		ParentWrites:       writes,
+-		ParentWriteEvents:  writeEvents,
+-		ParentBashCommands: bashCommands,
+-	}, nil
++// collectToolUseIDs adds the id of every tool_use block of line to ids.
++func collectToolUseIDs(line transcriptLine, ids map[string]bool) {
++	for _, block := range line.Message.Content {
++		if block.Type == "tool_use" && block.ID != "" {
++			ids[block.ID] = true
++		}
++	}
+ }
+ 
+ // claudeHomeDir resolves the home directory Claude Code uses for ~/.claude/projects/,
+@@ -236,49 +273,65 @@ func writePath(block transcriptBlock) string {
+ 	return notebookPath
+ }
+ 
+-// auditParentTranscript reads the parent session's transcript.
+-// It extracts spawnCalls (Agent tool_use count) and namedSpawns (non-empty name fields).
+-// namedForkSpawns is the number of named spawns whose subagent_type is the fork type.
+-// It also extracts writeCalls (Write/Edit/NotebookEdit count), writes (file paths), their timed events,
+-// and bashCommands.
+-func auditParentTranscript(path string) (spawnCalls, namedSpawns, namedForkSpawns, writeCalls int, writes []string, events []shuttleengine.WriteEvent, bashCommands []string, err error) {
++// parentTranscriptFacts is what the audit reads from the parent session's own transcript.
++type parentTranscriptFacts struct {
++	// spawnCalls counts Agent tool_use blocks, and namedSpawns those with a non-empty name.
++	spawnCalls  int
++	namedSpawns int
++	// namedForkSpawns counts the named spawns whose subagent_type is the fork type.
++	namedForkSpawns int
++	// writeCalls counts Write/Edit/NotebookEdit blocks; writes and writeEvents hold those with a path.
++	writeCalls  int
++	writes      []string
++	writeEvents []shuttleengine.WriteEvent
++	// bashCommands holds every Bash command, in transcript order.
++	bashCommands []string
++	// toolUseIDs holds the id of every tool_use block, the calls a subagent's inherited history can replay.
++	toolUseIDs map[string]bool
++}
++
++// auditParentTranscript reads the parent session's transcript at path into its facts.
++func auditParentTranscript(path string) (parentTranscriptFacts, error) {
++	facts := parentTranscriptFacts{toolUseIDs: map[string]bool{}}
+ 	var tracker writeTracker
+-	err = forEachTranscriptLine(path, func(line transcriptLine) {
++	err := forEachTranscriptLine(path, func(line transcriptLine) {
+ 		if line.Type != "assistant" {
+ 			tracker.resolveResults(line)
+ 			return
+ 		}
++		collectToolUseIDs(line, facts.toolUseIDs)
+ 		for _, block := range line.Message.Content {
+ 			if block.Type != "tool_use" {
+ 				continue
+ 			}
+ 			switch block.Name {
+ 			case "Agent":
+-				spawnCalls++
++				facts.spawnCalls++
+ 				if name, _ := block.Input["name"].(string); name != "" {
+-					namedSpawns++
++					facts.namedSpawns++
+ 					if subagentType, _ := block.Input["subagent_type"].(string); subagentType == forkSubagentType {
+-						namedForkSpawns++
++						facts.namedForkSpawns++
+ 					}
+ 				}
+ 			case "Write", "Edit", "NotebookEdit":
+-				writeCalls++
++				facts.writeCalls++
+ 				// NotebookEdit carries its path under notebook_path, not file_path.
+ 				if filePath := writePath(block); filePath != "" {
+-					writes = append(writes, filePath)
++					facts.writes = append(facts.writes, filePath)
+ 					tracker.call(block.ID, filePath, line)
+ 				}
+ 			case "Bash":
+ 				if cmd, _ := block.Input["command"].(string); cmd != "" {
+-					bashCommands = append(bashCommands, cmd)
++					facts.bashCommands = append(facts.bashCommands, cmd)
+ 				}
+ 			}
+ 		}
+ 	})
+ 	if err != nil {
+-		return 0, 0, 0, 0, nil, nil, nil, fmt.Errorf("claudeengine: read parent transcript %q: %w", path, err)
++		return parentTranscriptFacts{}, fmt.Errorf("claudeengine: read parent transcript %q: %w", path, err)
+ 	}
+-	return spawnCalls, namedSpawns, namedForkSpawns, writeCalls, writes, tracker.events, bashCommands, nil
++	facts.writeEvents = tracker.events
++	return facts, nil
+ }
+ 
+ // subagentMeta is what Claude Code records in the .meta.json beside a subagent's transcript.
+@@ -289,6 +342,8 @@ type subagentMeta struct {
+ 	AgentType string `json:"agentType"`
+ 	// IsFork is true for a fork, which inherits the parent's context.
+ 	IsFork bool `json:"isFork"`
++	// ParentAgentID is the agent id of the subagent that spawned this one, empty when the session itself spawned it.
++	ParentAgentID string `json:"parentAgentId"`
+ }
+ 
+ // readSubagentMeta reads the .meta.json beside the subagent transcript at transcriptPath.
+@@ -309,15 +364,16 @@ func readSubagentMeta(transcriptPath string) (subagentMeta, bool) {
+ // auditForkTranscript reads one subagent's transcript into a ForkReport,
+ // extracting ToolCalls, AgentCalls, WriteCalls, BashCommands, and ReportReturned
+ // (whether the final assistant message carried a text block).
++// meta and metaFound are what readSubagentMeta read beside the transcript.
++// A tool call whose id is in inherited, the ids its spawning transcript holds, is inherited history and is left out.
+ // A transcript reads as a fresh subagent only on positive evidence:
+ // a parsed .meta.json that names a subagent type other than the fork type and does not flag a fork.
+ // A transcript whose .meta.json is missing, unparseable or records no kind reads as a fork.
+-func auditForkTranscript(path string) (shuttleengine.ForkReport, error) {
++func auditForkTranscript(path string, meta subagentMeta, metaFound bool, inherited map[string]bool) (shuttleengine.ForkReport, error) {
+ 	// The parent's own spawning Agent call is replayed as the fork
+ 	// transcript's inherited-context boundary entry; counting it would flag
+ 	// every legitimate fork as a nested-Agent violation, so it is excluded by
+ 	// its tool_use id (from the sibling .meta.json).
+-	meta, metaFound := readSubagentMeta(path)
+ 	spawnToolUseID := meta.ToolUseID
+ 
+ 	report := shuttleengine.ForkReport{
+@@ -340,8 +396,8 @@ func auditForkTranscript(path string) (shuttleengine.ForkReport, error) {
+ 		for _, block := range line.Message.Content {
+ 			switch block.Type {
+ 			case "tool_use":
+-				if spawnToolUseID != "" && block.ID == spawnToolUseID {
+-					// The parent's spawning call, not something this fork did.
++				if (spawnToolUseID != "" && block.ID == spawnToolUseID) || inherited[block.ID] {
++					// The parent's spawning call or inherited history, not something this fork did.
+ 					continue
+ 				}
+ 				report.ToolCalls[block.Name]++
+diff --git a/internal/shuttleengine/claudeengine/audit_nested_test.go b/internal/shuttleengine/claudeengine/audit_nested_test.go
+new file mode 100644
+index 000000000..ba826df59
+--- /dev/null
++++ b/internal/shuttleengine/claudeengine/audit_nested_test.go
+@@ -0,0 +1,160 @@
++// audit_nested_test.go covers the inherited history a fork's transcript replays from the session or a subagent.
++// A later fork of several carries the spawn calls of the forks before it.
++// These tests pin that the audit counts only the fork's own calls and names the subagent that spawned it.
++
++package claudeengine
++
++import (
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// nestedToolUse renders one assistant transcript line holding a single tool_use block.
++func nestedToolUse(id, name, input string) string {
++	return fmt.Sprintf(`{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":%q,"name":%q,"input":%s}]}}`, id, name, input)
++}
++
++// nestedReport renders one assistant transcript line holding a final text report.
++const nestedReport = `{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Report."}]}}`
++
++// The tool calls of the general-purpose subagent that spawns two forks in turn.
++var (
++	spawnerMainSpawn = nestedToolUse("toolu_MainSpawn", "Agent", `{"subagent_type":"general-purpose","prompt":"p"}`)
++	spawnerBash      = nestedToolUse("toolu_SpawnerBash", "Bash", `{"command":"git commit -am spawner"}`)
++	spawnerFirstFork = nestedToolUse("toolu_FirstFork", "Agent", `{"subagent_type":"fork","prompt":"first"}`)
++	spawnerLastFork  = nestedToolUse("toolu_LastFork", "Agent", `{"subagent_type":"fork","prompt":"last"}`)
++)
++
++// The session's own calls that its directly spawned fork replays.
++var (
++	sessionBash       = nestedToolUse("toolu_SessionBash", "Bash", `{"command":"git commit -am session"}`)
++	sessionOtherSpawn = nestedToolUse("toolu_SessionOtherSpawn", "Agent", `{"subagent_type":"fork","prompt":"other"}`)
++)
++
++// writeNestedLayout writes a session that spawned a general-purpose subagent, agent-gp, and a fork, agent-direct.
++// agent-gp spawned forks agent-first and agent-last in turn.
++// Each fork's transcript opens with the history it inherits from its spawner, then holds its own calls.
++// agent-last's own calls include an Agent call of its own.
++// It sets HOME and returns the session id and workdir.
++func writeNestedLayout(t *testing.T) (sessionID, workdir string) {
++	t.Helper()
++	home := t.TempDir()
++	t.Setenv("HOME", home)
++	workdir = "/home/op/nested"
++	sessionID = "sess-nested"
++	projectDir := filepath.Join(home, ".claude", "projects", encodeForTest(workdir))
++	subagents := filepath.Join(projectDir, sessionID, "subagents")
++	files := map[string]string{
++		filepath.Join(projectDir, sessionID+".jsonl"): strings.Join([]string{spawnerMainSpawn, sessionBash, sessionOtherSpawn}, "\n"),
++		filepath.Join(subagents, "agent-direct.jsonl"): strings.Join([]string{
++			sessionBash, sessionOtherSpawn,
++			nestedToolUse("toolu_DirectRead", "Read", `{"file_path":"/c"}`), nestedReport,
++		}, "\n"),
++		filepath.Join(subagents, "agent-direct.meta.json"): `{"agentType":"fork","isFork":true,"toolUseId":"toolu_DirectFork","spawnDepth":1}`,
++		filepath.Join(subagents, "agent-gp.jsonl"):         strings.Join([]string{spawnerBash, spawnerFirstFork, spawnerLastFork, nestedReport}, "\n"),
++		filepath.Join(subagents, "agent-gp.meta.json"):     `{"agentType":"general-purpose","toolUseId":"toolu_MainSpawn","spawnDepth":1}`,
++		filepath.Join(subagents, "agent-first.jsonl"): strings.Join([]string{
++			spawnerBash, spawnerFirstFork,
++			nestedToolUse("toolu_FirstRead", "Read", `{"file_path":"/a"}`), nestedReport,
++		}, "\n"),
++		filepath.Join(subagents, "agent-first.meta.json"): `{"agentType":"fork","isFork":true,"toolUseId":"toolu_FirstFork","parentAgentId":"gp","spawnDepth":2}`,
++		filepath.Join(subagents, "agent-last.jsonl"): strings.Join([]string{
++			spawnerBash, spawnerFirstFork, spawnerLastFork,
++			nestedToolUse("toolu_LastRead", "Read", `{"file_path":"/b"}`),
++			nestedToolUse("toolu_LastOwnSpawn", "Agent", `{"subagent_type":"fork","prompt":"own"}`), nestedReport,
++		}, "\n"),
++		filepath.Join(subagents, "agent-last.meta.json"): `{"agentType":"fork","isFork":true,"toolUseId":"toolu_LastFork","parentAgentId":"gp","spawnDepth":2}`,
++	}
++	for path, content := range files {
++		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++			t.Fatalf("mkdir %q: %v", filepath.Dir(path), err)
++		}
++		if err := os.WriteFile(path, []byte(content+"\n"), 0o644); err != nil {
++			t.Fatalf("write %q: %v", path, err)
++		}
++	}
++	return sessionID, workdir
++}
++
++// TestAuditForks_SubagentForkCountsOnlyItsOwnCalls checks each subagent's report.
++// A fork's inherited spawn calls and Bash command are its spawner's, so only its own calls count.
++// It runs sequentially because it sets HOME.
++func TestAuditForks_SubagentForkCountsOnlyItsOwnCalls(t *testing.T) {
++	tiergate.Require(t, 0)
++	sessionID, workdir := writeNestedLayout(t)
++
++	audit, err := New().AuditForks(sessionID, workdir)
++	if err != nil {
++		t.Fatalf("AuditForks() error: %v", err)
++	}
++	type want struct {
++		agentCalls   int
++		reads        int
++		bashCommands int
++		// spawner is the file name of the spawning subagent's transcript, "" for the session.
++		spawner string
++	}
++	wants := map[string]want{
++		"agent-direct.jsonl": {agentCalls: 0, reads: 1, bashCommands: 0},
++		"agent-gp.jsonl":     {agentCalls: 2, reads: 0, bashCommands: 1},
++		"agent-first.jsonl":  {agentCalls: 0, reads: 1, bashCommands: 0, spawner: "agent-gp.jsonl"},
++		"agent-last.jsonl":   {agentCalls: 1, reads: 1, bashCommands: 0, spawner: "agent-gp.jsonl"},
++	}
++	if len(audit.Forks) != len(wants) {
++		t.Fatalf("len(Forks) = %d; want %d", len(audit.Forks), len(wants))
++	}
++	for _, report := range audit.Forks {
++		name := filepath.Base(report.TranscriptPath)
++		w, ok := wants[name]
++		if !ok {
++			t.Errorf("unexpected fork transcript %q", name)
++			continue
++		}
++		if report.AgentCalls != w.agentCalls {
++			t.Errorf("%s AgentCalls = %d; want %d", name, report.AgentCalls, w.agentCalls)
++		}
++		if got := report.ToolCalls["Read"]; got != w.reads {
++			t.Errorf(`%s ToolCalls["Read"] = %d; want %d`, name, got, w.reads)
++		}
++		if len(report.BashCommands) != w.bashCommands {
++			t.Errorf("%s BashCommands = %v; want %d command(s)", name, report.BashCommands, w.bashCommands)
++		}
++		wantSpawner := ""
++		if w.spawner != "" {
++			wantSpawner = filepath.Join(filepath.Dir(report.TranscriptPath), w.spawner)
++		}
++		if report.SpawnerTranscriptPath != wantSpawner {
++			t.Errorf("%s SpawnerTranscriptPath = %q; want %q", name, report.SpawnerTranscriptPath, wantSpawner)
++		}
++		if !report.ReportReturned {
++			t.Errorf("%s ReportReturned = false; want true", name)
++		}
++	}
++}
++
++// TestAuditForks_MissingSpawningSubagentTranscriptErrors checks that an absent spawner transcript fails the audit.
++// Without the spawning subagent's transcript, a fork's inherited history cannot be told from its own calls.
++// It runs sequentially because it sets HOME.
++func TestAuditForks_MissingSpawningSubagentTranscriptErrors(t *testing.T) {
++	tiergate.Require(t, 0)
++	sessionID, workdir := writeNestedLayout(t)
++	projectDir := filepath.Join(os.Getenv("HOME"), ".claude", "projects", encodeForTest(workdir))
++	if err := os.Remove(filepath.Join(projectDir, sessionID, "subagents", "agent-gp.jsonl")); err != nil {
++		t.Fatalf("remove spawning transcript: %v", err)
++	}
++
++	_, err := New().AuditForks(sessionID, workdir)
++	if err == nil || !strings.Contains(err.Error(), "agent-gp.jsonl") {
++		t.Errorf("AuditForks() error = %v; want an error naming agent-gp.jsonl", err)
++	}
++	if errors.Is(err, fs.ErrNotExist) {
++		t.Errorf("errors.Is(%v, fs.ErrNotExist) = true; want false", err)
++	}
++}
+diff --git a/internal/shuttleengine/claudeengine/audit_spawnboundary_test.go b/internal/shuttleengine/claudeengine/audit_spawnboundary_test.go
+index 66e81b777..069784bc1 100644
+--- a/internal/shuttleengine/claudeengine/audit_spawnboundary_test.go
++++ b/internal/shuttleengine/claudeengine/audit_spawnboundary_test.go
+@@ -38,8 +38,9 @@ func TestAuditForkTranscript_SpawnBoundaryAgentCallExcluded(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 	transcript := writeSpawnBoundaryFixture(t, forkMeta)
++	meta, metaFound := readSubagentMeta(transcript)
+ 
+-	report, err := auditForkTranscript(transcript)
++	report, err := auditForkTranscript(transcript, meta, metaFound, nil)
+ 	if err != nil {
+ 		t.Fatalf("auditForkTranscript() error: %v", err)
+ 	}
+@@ -71,7 +72,7 @@ func TestAuditForkTranscript_MissingMetaFallsBackToCountingEverything(t *testing
+ 	t.Parallel()
+ 	transcript := writeSpawnBoundaryFixture(t, "")
+ 
+-	report, err := auditForkTranscript(transcript)
++	report, err := auditForkTranscript(transcript, subagentMeta{}, false, nil)
+ 	if err != nil {
+ 		t.Fatalf("auditForkTranscript() error: %v", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/audit_streaming_test.go b/internal/shuttleengine/claudeengine/audit_streaming_test.go
+index 2ef201d47..00aa80510 100644
+--- a/internal/shuttleengine/claudeengine/audit_streaming_test.go
++++ b/internal/shuttleengine/claudeengine/audit_streaming_test.go
+@@ -144,7 +144,7 @@ func TestAuditForkTranscript_UnterminatedFinalLineStillCounted(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	path, _ := writeTranscript(t, assistantBashLine("git status")+"\n"+assistantBashLine("git push"))
+ 
+-	report, err := auditForkTranscript(path)
++	report, err := auditForkTranscript(path, subagentMeta{}, false, nil)
+ 	if err != nil {
+ 		t.Fatalf("auditForkTranscript() error: %v", err)
+ 	}
+diff --git a/internal/shuttleengine/claudeengine/audit_test.go b/internal/shuttleengine/claudeengine/audit_test.go
+index e04da6070..078f632a1 100644
+--- a/internal/shuttleengine/claudeengine/audit_test.go
++++ b/internal/shuttleengine/claudeengine/audit_test.go
+@@ -202,7 +202,20 @@ func TestAuditForks_WriteEventsCarryTimeAndResult(t *testing.T) {
+ 	sessionID := "sess-writes"
+ 	projectDir := filepath.Join(home, ".claude", "projects", encodeForTest(workdir))
+ 	copyFixture(t, "parent-writes-results.jsonl", filepath.Join(projectDir, sessionID+".jsonl"))
+-	copyFixture(t, "parent-writes-results.jsonl", filepath.Join(projectDir, sessionID, "subagents", "01-writer.jsonl"))
++	// The fork makes the same writes under its own tool_use ids:
++	// an id the parent transcript also holds is inherited history, not the fork's call.
++	data, err := os.ReadFile(filepath.Join("testdata", "parent-writes-results.jsonl"))
++	if err != nil {
++		t.Fatalf("read fixture: %v", err)
++	}
++	forkTranscript := filepath.Join(projectDir, sessionID, "subagents", "01-writer.jsonl")
++	if err := os.MkdirAll(filepath.Dir(forkTranscript), 0o755); err != nil {
++		t.Fatalf("mkdir %q: %v", filepath.Dir(forkTranscript), err)
++	}
++	forkData := strings.ReplaceAll(string(data), "toolu_w", "toolu_fork_w")
++	if err := os.WriteFile(forkTranscript, []byte(forkData), 0o644); err != nil {
++		t.Fatalf("write %q: %v", forkTranscript, err)
++	}
+ 
+ 	audit, err := New().AuditForks(sessionID, workdir)
+ 	if err != nil {
+diff --git a/internal/shuttleengine/forkaudit.go b/internal/shuttleengine/forkaudit.go
+index 1078b16bc..fe6c66c5c 100644
+--- a/internal/shuttleengine/forkaudit.go
++++ b/internal/shuttleengine/forkaudit.go
+@@ -23,7 +23,7 @@ type WriteEvent struct {
+ // It counts Agent tool invocations (SpawnCalls) and named spawns (NamedSpawns).
+ // A named spawn is a defect signal, since named forks lose inherited context;
+ // NamedForkSpawns counts the named spawns that are forks, leaving out a named fresh subagent.
+-// Forks holds one report per subagent the parent spawned, forks and fresh subagents alike.
++// Forks holds one report per subagent of the session, fork or fresh, whether the session or a subagent spawned it.
+ type ForkAudit struct {
+ 	Forks              []ForkReport // One ForkReport per subagent, in discovery order.
+ 	SpawnCalls         int          // Agent tool invocations in parent's transcript (attempts, not confirmations).
+@@ -53,4 +53,6 @@ type ForkReport struct {
+ 	ReportReturned bool           // Whether fork produced a final assistant message ("report returned" signal).
+ 	// FreshSubagent is true for a subagent started with a fresh context and false for a fork.
+ 	FreshSubagent bool
++	// SpawnerTranscriptPath is the spawning subagent's TranscriptPath, empty when the parent session spawned this one.
++	SpawnerTranscriptPath string
+ }
