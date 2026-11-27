@@ -15,8 +15,11 @@ A survey from 2026-11-16 ran under coverage and overstates every time, so it is 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Draft (1)
+## Draft (4)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Measure the fixed steps of a gate call one by one** | [`gate-fixed-cost-measure`](design-gate-fixed-cost-measure.md) | darn · docs |  | 0m<br>0m | gate |
+| T4 | `draft` **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light |  | 0m<br>0m | gate, testkit |
+| T5 | `draft` **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light |  | 0m<br>0m | webster, loom, testkit |
+| T6 | `draft` **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 0m<br>0m | batten, testkit |

@@ -8,15 +8,18 @@ Hub-wide default: autonomy `off` · PR setting `off`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (1)
+## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (4)
 
 [`test-speed`](design-test-speed.md) · Age 2h · Owner `neve`
 
-### Draft (1)
+### Draft (4)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | `draft` **Measure the fixed steps of a gate call one by one** | [`gate-fixed-cost-measure`](design-gate-fixed-cost-measure.md) | darn · docs |  | 0m<br>0m | gate |
+| T4 | `draft` **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light |  | 0m<br>0m | gate, testkit |
+| T5 | `draft` **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light |  | 0m<br>0m | webster, loom, testkit |
+| T6 | `draft` **Split the long battencli integration scenario so its parts run in parallel** | [`battencli-split-long-tests`](design-battencli-split-long-tests.md) | darn · light | T11 | 0m<br>0m | batten, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
