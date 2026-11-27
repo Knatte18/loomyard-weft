@@ -1,0 +1,14 @@
+verdict: resume
+reason: >-
+  The Worktree-Create stop is a board push race, not a lost commit. The board commit 853cf6e2 was pushed
+  at 15:57:34, then refused at 15:57:37 because remote main had moved to 9712543f (remote rejected: expected
+  853cf6e2). The retry landed at 15:57:39 (tip 9712543f), and a detached board sync was spawned, so the
+  board was ahead of origin only transiently. Read from the remote: git ls-remote origin refs/heads/main
+  now returns 823c1789e4a43b9dbc84fe66f25cc8a64ca0f751. That tip is local (cat-file ok), and both 853cf6e2
+  and 9712543f are ancestors of it (merge-base --is-ancestor), so the named commit is present. The stop
+  names the fix itself ("run lym board sync, then re-run the verb"), and the sync is already running. A
+  re-run of Worktree-Create from its own row settles it. Caveat: battencli warned that the task worktree
+  /home/knatte/Code/loomyard-LYMHUB/parsers-burler-test-cut is absent although status.json records a prior
+  Worktree-Create on machine neve (same timestamp as this step, so likely this machine). The resume's
+  Worktree-Create should be watched for re-adoption of an existing pair; if it stops on that, hand back.
+goto: Worktree-Create
