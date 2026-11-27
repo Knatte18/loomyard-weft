@@ -27,15 +27,23 @@ The operator runs KDE Plasma with ten virtual desktops and tiles the windows lym
   - `next`: it lands on the orch's desktop plus one; the loomyard hub's orch sits on B1 and its runs on B2.
     When that desktop is full, the window goes on to the desktop after it, and so on.
   The hub sets the default per machine, and a beam or project on the board may override it.
-- The tiling rules live in config.
+- lym's tiling always keeps to one screen, even with two external screens attached at work or at home.
+- The tiling rules live in config, and the grid depends on the screen lym tiles on, its resolution and scale:
+  the laptop screen takes fewer windows per desktop than an external one, so a hub's runs spread over several desktops by the `next` overflow.
   A desktop never holds more than ten windows, so the largest grid is 2x5.
-- The rules depend on the screen setup: with an external screen attached one rule set holds,
-  on the laptop screen alone another, with fewer windows per desktop,
-  so a hub's runs spread over several desktops by the `next` overflow.
+
+## Proposed, to confirm in Discussion
+
+- The screen lym tiles on is the one KDE ranks priority 1 (Display Configuration, `kscreen-doctor -o` shows `priority`).
+  KDE stores the priorities per set of connected screens, so the operator chooses the main screen once per setup in KDE, and lym follows it.
+  On Neve today the external DP-2 is priority 1 and the laptop's eDP-1 priority 2.
+- A rule states a smallest tile size in logical pixels rather than a grid per setup:
+  lym derives the most rows and columns from the screen's logical size (DP-2 is 3840x2160 at scale 1.5, so 2560x1440; eDP-1 1920x1200 at 1.25, so 1536x960),
+  capped at 2x5, and a desktop is full when its grid is.
 
 ## To settle
 
-- How a rule picks the grid for a number of windows, for example one column per window up to a row's width, then a second row.
-- How lym tells the screen setups apart (the outputs KWin reports), and what it does with the windows already placed when the setup changes.
+- How a desktop's grid grows with its windows, for example one column per window up to a row's width, then a second row.
+- What lym does with the windows already placed when the screen setup changes.
 - Where the remembered places live: machine state, or hub config per machine.
 - Where the operator's existing auto-snap script lives: it is not on Neve under `~/.local/bin`, KWin scripts or `kwinrulesrc`.
