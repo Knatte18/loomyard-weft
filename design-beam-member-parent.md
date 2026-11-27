@@ -2,7 +2,7 @@
 
 `beam-member-parent` · Task · bug, batten, landing, orch, stencil, shed, loom, pawl
 
-Depends on: [`describe-review-and-sync`](design-describe-review-and-sync.md), [`push-retry-not-halt`](design-push-retry-not-halt.md)
+Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
 Bundled from the notes below; each part keeps its note's text.
 
