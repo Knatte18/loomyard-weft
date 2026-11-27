@@ -1,6 +1,6 @@
 # Measure every package tier0 and tier1 test, build and wall time
 
-`test-time-measure` · Task · research, gate, testkit · starting · Open-Window
+`test-time-measure` · Task · research, gate, testkit · starting · Seed-IDE
 
 ## Aim (operator, 2026-11-27)
 
