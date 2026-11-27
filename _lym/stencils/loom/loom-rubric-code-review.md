@@ -5,7 +5,7 @@
      Each recipe sets the perch's answer key through the rows' artifact_paths and fasit, never through this rubric.
      It is a marker VALUE, never a template: it carries no top-level stencil markers,
      and internal/stencil's StripLeadingComment removes this comment before either consumer sees it.
-lym-stencil: sha256=34ab5b7fb81748eb7ef30ccba1a0d0d10c291acf75562729de60081aeff8a8a1 build=18e0a52b5a5f254b4eedd48dcc2752ec378095de time=2026-11-26T20:00:08Z -->
+lym-stencil: sha256=8fc3789cbdb81d8a38f5ef497bad6f91bd4d7d8817351507b65100bd65d5bb59 build=34e64ac2eb24ade3497b7db898483a9fcc907938 time=2026-11-27T07:21:35Z -->
 
 # Code-Review rubric
 
@@ -188,8 +188,6 @@ When the note above is not `none`, this generation reviews the whole range, and 
 Read each such file as an input besides the diff.
 When the amendment note names a review input, that file is a report written after this perch last settled: the merge fixer's report of the latest Parent-Align.
 Read it as an input besides the diff: judge from it whether the alignment it reports, and the parent changes it names, keep the code consistent with the answer key.
-A PR-findings input is a `pr-findings-<n>.md` file of findings PR-Review received after Code-Review approved.
-Review the whole range as usual, read the file, and file each of its findings that holds against the code as a finding of this round.
 A finding about an input file itself is never raised; each finding is about the code.
 
 ## Finding class
