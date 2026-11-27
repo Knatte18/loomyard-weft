@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-27 16:17 UTC; every age below is as of then.
+Rendered 2026-11-27 16:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,17 +15,17 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 1h<br>1h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Code-Burler-Fix | neve | 57m<br>56m | landing, loom, shuttle |
-| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | landing · Finalize | neve | 56m<br>56m | loom, stencil |
-| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | landing · Finalize | neve | 56m<br>56m | burler |
-| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light | Code-Burler-Review | neve | 2h<br>50m | webster |
-| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light | Darn-Write | neve | 1h<br>50m | gate, config |
+| T4 | **PR-Review in review mode stalls with no agent session** | [`pr-review-stalls-no-session`](design-pr-review-stalls-no-session.md) | darn · light | Code-Burler-Fix | neve | 59m<br>59m | landing, loom, shuttle |
+| T8 | **Re-step prompt after an interrupted run reports prior work as (none) though the branch carries the earlier spawn's commits** | [`restep-prior-work-none`](design-restep-prior-work-none.md) | darn · light | landing · Finalize | neve | 59m<br>59m | loom, stencil |
+| T9 | **twill nested-spawn check counts a parent's spawns inherited into a fork's transcript, halting the run** | [`twill-nested-spawn-inherited`](design-twill-nested-spawn-inherited.md) | darn · light | landing · Finalize | neve | 59m<br>59m | burler |
+| T13 | **Webster run-exit audit flags a resumed Master earlier friction note** | [`webster-audit-old-friction-note`](design-webster-audit-old-friction-note.md) | darn · light | Code-Burler-Fix | neve | 2h<br>53m | webster |
+| T18 | **Upkeep gate call is refused because gate.gates.upkeep lists no tier covering tier1** | [`upkeep-gate-lacks-tier1`](design-upkeep-gate-lacks-tier1.md) | darn · light | Darn-Write | neve | 1h<br>53m | gate, config |
 
 ## Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 56m<br>56m | batten, fabric |
+| T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | T11 | 59m<br>59m | batten, fabric |
 
 ## Layer G (1)
 
@@ -37,7 +37,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>19h | docs |
+| T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 1d<br>20h | docs |
 
 ## Research (1)
 
