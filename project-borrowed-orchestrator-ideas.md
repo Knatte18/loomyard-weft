@@ -3,7 +3,7 @@
 Rendered 2026-11-27 10:49 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 9d · Owner `neve`
+[`borrowed-orchestrator-ideas`](design-borrowed-orchestrator-ideas.md) · Age 10d · Owner `neve`
 
 Ideas from the October 2026 survey of comparable agent orchestrators that lym has not built.
 The note orchestrator-survey-ideas holds the remaining leads; each other member is one idea picked as most worth doing (orch, 2026-11-17).
