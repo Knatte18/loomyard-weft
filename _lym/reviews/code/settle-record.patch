@@ -1,0 +1,421 @@
+diff --git a/internal/websterengine/acceptbatch_test.go b/internal/websterengine/acceptbatch_test.go
+index 0b7c74fe3..b82e36835 100644
+--- a/internal/websterengine/acceptbatch_test.go
++++ b/internal/websterengine/acceptbatch_test.go
+@@ -36,7 +36,7 @@ func (everyCommandMatches) Matches(string) bool { return true }
+ // The entry's text comes from the audit's own finding for the command cmd.
+ func readOnlyEntry(cmd string) string {
+ 	audit := shuttleengine.ForkAudit{ParentBashCommands: []string{cmd}}
+-	violations := websterengine.CheckParent(audit, "/w/outcome.yaml", "/w/summary.md", "", "/w", everyCommandMatches{})
++	violations := websterengine.CheckParent(audit, "/w/outcome.yaml", "/w/summary.md", nil, "/w", everyCommandMatches{})
+ 	if len(violations) != 1 {
+ 		panic("CheckParent over one flagged command returned " + strconv.Itoa(len(violations)) + " violations; want 1")
+ 	}
+diff --git a/internal/websterengine/audit.go b/internal/websterengine/audit.go
+index b5740514a..87a10834a 100644
+--- a/internal/websterengine/audit.go
++++ b/internal/websterengine/audit.go
+@@ -1,7 +1,8 @@
+ // audit.go implements webster's fail-loud policy over the fork facts in shuttleengine.ForkAudit and ForkReport.
+ // Forks are implementers, so CheckFork allows Write/Edit and repo-native git.
+ // It bans nested Agent calls, fabric references, and writes to contract files, the plan, or run state.
+-// CheckParent guards Master's own parent transcript, which may write only the two contract files and its friction note.
++// CheckParent guards Master's own parent transcript.
++// Master may write only the two contract files and the friction notes the run's Master prompts named.
+ // Every function here is pure: facts in, verdict out. Transcript reading stays in claudeengine.
+ 
+ package websterengine
+@@ -10,6 +11,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"path/filepath"
++	"slices"
+ 	"strconv"
+ 	"strings"
+ 	"time"
+@@ -51,8 +53,8 @@ const (
+ 	// ClassNamedSpawn means Master's parent transcript recorded one or more Agent calls carrying a name parameter.
+ 	// Named forks silently lose inherited context.
+ 	ClassNamedSpawn AuditViolationClass = "named-spawn"
+-	// ClassParentWrite means Master's parent transcript wrote a file besides the two contract files and its friction note.
+-	// Master may write only outcome.yaml, summary.md and the friction note its prompt names.
++	// ClassParentWrite means Master's parent transcript wrote a file Master may not write.
++	// Master may write only outcome.yaml, summary.md and any friction note a Master prompt of the run named.
+ 	// Any other write means Master is implementing a batch itself or hand-writing a batch report.
+ 	ClassParentWrite AuditViolationClass = "parent-write"
+ 	// ClassForkContractWrite means a fork's transcript wrote one of the run's two contract files.
+@@ -251,15 +253,16 @@ func dirSpellings(dir string) ([]string, error) {
+ }
+ 
+ // CheckParent reports the violations in Master's own parent session.
+-// Master may write only to the two contract files, outcomePath and summaryPath, and to notePath.
+-// notePath is the friction note its prompt names, compared in its told and link-resolved spellings.
+-// An empty notePath allows no note.
++// Master may write only to the two contract files, outcomePath and summaryPath, and to any of notePaths.
++// notePaths are the friction notes the run's Master prompts named, each compared in its told and link-resolved spellings;
++// a resumed Master's prompt names a fresh note, and the note an earlier Master wrote stays Master's own.
++// Empty notePaths allow no note.
+ // It bans three hard violations:
+ // any named spawn, any other parent write, and any Bash command referencing the fabric repo.
+ // fabricRef classifies fabric-reference commands.
+ // It must not be nil: Matches is called unguarded, and a nil interface panics.
+ // A hub run passes the fabric reference scanner; a standalone run passes a matcher that never matches.
+-func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath, notePath, workdir string, fabricRef RefMatcher) []AuditViolation {
++func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath string, notePaths []string, workdir string, fabricRef RefMatcher) []AuditViolation {
+ 	var violations []AuditViolation
+ 
+ 	for i := 1; i <= a.NamedSpawns; i++ {
+@@ -277,14 +280,15 @@ func CheckParent(a shuttleengine.ForkAudit, outcomePath, summaryPath, notePath,
+ 	cleanSummary := filepath.Clean(summaryPath)
+ 	for i, w := range a.ParentWrites {
+ 		cw := runplan.ResolveWritePath(workdir, w)
+-		if cw == cleanOutcome || cw == cleanSummary || (notePath != "" && isWriteOf(workdir, w, notePath)) {
++		isNoteWrite := slices.ContainsFunc(notePaths, func(notePath string) bool { return isWriteOf(workdir, w, notePath) })
++		if cw == cleanOutcome || cw == cleanSummary || isNoteWrite {
+ 			continue
+ 		}
+ 		violations = append(violations, AuditViolation{
+ 			Class:  ClassParentWrite,
+ 			Key:    parentKey(ClassParentWrite, i),
+ 			Path:   w,
+-			Detail: fmt.Sprintf("Master wrote %q — Master may write only its two contract files (outcome.yaml and summary.md) and its friction note; any other write means Master implemented a batch itself or hand-wrote a batch report", w),
++			Detail: fmt.Sprintf("Master wrote %q — Master may write only its two contract files (outcome.yaml and summary.md) and the friction notes the run's Master prompts named; any other write means Master implemented a batch itself or hand-wrote a batch report", w),
+ 		})
+ 	}
+ 
+diff --git a/internal/websterengine/audit_test.go b/internal/websterengine/audit_test.go
+index b1bc3c6f4..4e7df6c7b 100644
+--- a/internal/websterengine/audit_test.go
++++ b/internal/websterengine/audit_test.go
+@@ -335,7 +335,9 @@ func TestCheckParent(t *testing.T) {
+ 		name  string
+ 		audit shuttleengine.ForkAudit
+ 		// workdir is the audit workdir a relative write path resolves against; empty means the anchor root.
+-		workdir     string
++		workdir string
++		// notePaths are the friction notes the run's Master prompts named; nil means notePath alone.
++		notePaths   []string
+ 		wantClasses []AuditViolationClass
+ 	}{
+ 		{
+@@ -406,6 +408,20 @@ func TestCheckParent(t *testing.T) {
+ 			},
+ 			wantClasses: []AuditViolationClass{ClassParentWrite},
+ 		},
++		{
++			name: "write to the note an earlier Master's prompt named is allowed",
++			audit: shuttleengine.ForkAudit{
++				ParentWrites: []string{notePath},
++			},
++			notePaths:   []string{notePath, "/hub/master-builder/_lym/loom/friction/webster-master-2.md"},
++			wantClasses: nil,
++		},
++		{
++			name:        "with no note named, a write to Master's friction note is a hard error",
++			audit:       shuttleengine.ForkAudit{ParentWrites: []string{notePath}},
++			notePaths:   []string{},
++			wantClasses: []AuditViolationClass{ClassParentWrite},
++		},
+ 		{
+ 			name: "relative write to a source file is a hard error",
+ 			audit: shuttleengine.ForkAudit{
+@@ -449,7 +465,11 @@ func TestCheckParent(t *testing.T) {
+ 			if workdir == "" {
+ 				workdir = "/hub/master-builder"
+ 			}
+-			got := CheckParent(tt.audit, outcomePath, summaryPath, notePath, workdir, fabricRef)
++			notePaths := tt.notePaths
++			if notePaths == nil {
++				notePaths = []string{notePath}
++			}
++			got := CheckParent(tt.audit, outcomePath, summaryPath, notePaths, workdir, fabricRef)
+ 			if len(got) != len(tt.wantClasses) {
+ 				t.Fatalf("CheckParent() = %v; want %d violation(s) of class %v", got, len(tt.wantClasses), tt.wantClasses)
+ 			}
+@@ -472,7 +492,7 @@ func TestCheckParent(t *testing.T) {
+ 		told := filepath.Join(workdir, "_lym", "loom", "friction", "webster-master.md")
+ 		resolved := filepath.Join(records, "loom", "friction", "webster-master.md")
+ 
+-		got := CheckParent(shuttleengine.ForkAudit{ParentWrites: []string{resolved}}, outcomePath, summaryPath, told, workdir, fabricRef)
++		got := CheckParent(shuttleengine.ForkAudit{ParentWrites: []string{resolved}}, outcomePath, summaryPath, []string{told}, workdir, fabricRef)
+ 
+ 		if len(got) != 0 {
+ 			t.Errorf("CheckParent() = %v; want no violation", got)
+diff --git a/internal/websterengine/auditseverity_test.go b/internal/websterengine/auditseverity_test.go
+index a7d0ec297..fa38c4c57 100644
+--- a/internal/websterengine/auditseverity_test.go
++++ b/internal/websterengine/auditseverity_test.go
+@@ -149,10 +149,10 @@ func TestCheckParent_KeysDistinctAndStable(t *testing.T) {
+ 		NamedSpawns:  2,
+ 		ParentWrites: []string{"/w/a.go", "/w/b.go"},
+ 	}
+-	first := CheckParent(audit, "/w/o.yaml", "/w/s.md", "", "/w", NeverMatches{})
++	first := CheckParent(audit, "/w/o.yaml", "/w/s.md", nil, "/w", NeverMatches{})
+ 	audit.NamedSpawns = 3
+ 	audit.ParentWrites = append(audit.ParentWrites, "/w/c.go")
+-	grown := CheckParent(audit, "/w/o.yaml", "/w/s.md", "", "/w", NeverMatches{})
++	grown := CheckParent(audit, "/w/o.yaml", "/w/s.md", nil, "/w", NeverMatches{})
+ 
+ 	seen := map[string]bool{}
+ 	for _, v := range first {
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 85ce057ab..12ae6c12f 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -124,7 +124,7 @@
+ // A correctness finding means the delta or the run's own state may be wrong:
+ // a fork writing Master's contract files, the plan directory or webster's run directory beyond its report;
+ // a parent write under `_lym`, to tracked content, under `.lym`, or in another worktree;
+-// Master's write to the friction note its prompt names (State.MasterNotePath) is no finding at all;
++// Master's write to a friction note any Master prompt of the run named (State.MasterNotePaths) is no finding at all;
+ // a fabric reference whose command the injected ReadOnly classifier does not accept.
+ // A policy finding breaks a steering rule without touching correctness, such as a named spawn or a nested agent call.
+ // The ledger in state.json dispositions each finding once per run.
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index d7af87183..3e01d4677 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -410,7 +410,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		return nil, err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.State.MasterNotePath, deps.Geom.PaneCwd, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(audit, deps.OutcomePath, deps.SummaryPath, deps.State.MasterNotePaths, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range append(slices.Clone(newReports), bracketForks...) {
+ 		candidates = append(candidates, CheckFork(f, deps.OutcomePath, deps.SummaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, ownReport, deps.RefMatcher)...)
+ 		forkWarnings = append(forkWarnings, ForkWarnings(f)...)
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 438d1170a..44f954867 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -582,12 +582,13 @@ func TestRecordBatch_AuditOutcomes(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name:   "a Master write to the saved friction note path is no finding",
++			name:   "a Master write to any saved friction note path, an earlier Master's included, is no finding",
+ 			audits: oneFork,
+ 			prepare: func(t *testing.T, fx *recordFixture) {
+-				note := filepath.Join(t.TempDir(), "webster-master.md")
+-				fx.Deps.State.MasterNotePath = note
+-				fx.Audit.scripted[0].ParentWrites = []string{note}
++				dir := t.TempDir()
++				earlier, latest := filepath.Join(dir, "webster-master.md"), filepath.Join(dir, "webster-master-2.md")
++				fx.Deps.State.MasterNotePaths = []string{earlier, latest}
++				fx.Audit.scripted[0].ParentWrites = []string{earlier, latest}
+ 			},
+ 			report: okReport,
+ 			check: func(t *testing.T, fx *recordFixture, result *websterengine.RecordResult, err error) {
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index e4a946154..62087c84d 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -719,7 +719,7 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	}
+ 
+ 	// The fixer fork's prompt is rendered and written by Go up front:
+-	// Merriam may write nothing but its two contract files and its friction note.
++	// Master may write nothing but its two contract files and the friction notes the run's Master prompts named.
+ 	verifyFixNotePath := friction.NotePath(deps.FrictionDir, "webster-verify-fix")
+ 	choice, ok := deps.Roles[RoleMaster]
+ 	if !ok {
+@@ -807,7 +807,9 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	// that pane would be invisible to every future reclaim.
+ 	// Two saves, not one, keep the reclaimable record ahead of the fallible resolve.
+ 	st.MasterStrand = handle.StrandGUID()
+-	st.MasterNotePath = masterNotePath
++	if masterNotePath != "" && !slices.Contains(st.MasterNotePaths, masterNotePath) {
++		st.MasterNotePaths = append(st.MasterNotePaths, masterNotePath)
++	}
+ 	st.MasterRecordsBase = masterRecordsBase
+ 	if err := SaveState(deps.Geom.WebsterDir, deps.Geom.ScratchDir, st); err != nil {
+ 		return RunResult{}, err
+@@ -1088,7 +1090,7 @@ func runExitAuditCrossCheck(deps RunDeps, outcomePath, summaryPath string, resul
+ 		return nil, "", err
+ 	}
+ 	var candidates []AuditViolation
+-	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, st.MasterNotePath, deps.Geom.PaneCwd, deps.RefMatcher)...)
++	candidates = append(candidates, CheckParent(*result.ForkAudit, outcomePath, summaryPath, st.MasterNotePaths, deps.Geom.PaneCwd, deps.RefMatcher)...)
+ 	for _, f := range result.ForkAudit.Forks {
+ 		candidates = append(candidates, CheckFork(f, outcomePath, summaryPath, deps.Geom.PaneCwd, planDirs, websterDirs, forkOwnReport(st, deps.Geom, f.TranscriptPath), deps.RefMatcher)...)
+ 	}
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 4ed602ad4..0e052b222 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -1672,8 +1672,8 @@ func TestRun_MasterSpawn(t *testing.T) {
+ 			check: func(t *testing.T, fx *runFixture) {
+ 				st := loadRunState(t, fx)
+ 				note := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
+-				if st.MasterNotePath != note || !strings.Contains(fx.Starter.startCalls[0].Prompt, note) {
+-					t.Errorf("State.MasterNotePath = %q; want %q, the note the prompt names", st.MasterNotePath, note)
++				if !slices.Equal(st.MasterNotePaths, []string{note}) || !strings.Contains(fx.Starter.startCalls[0].Prompt, note) {
++					t.Errorf("State.MasterNotePaths = %q; want [%q], the note the prompt names", st.MasterNotePaths, note)
+ 				}
+ 				if st.MasterRecordsBase != fx.Git.head {
+ 					t.Errorf("State.MasterRecordsBase = %q; want the records side's HEAD %q", st.MasterRecordsBase, fx.Git.head)
+@@ -1919,6 +1919,44 @@ func TestRun_DoneOutcome(t *testing.T) {
+ 	const fabricCommand = "cat FABRICREF/webster/state.json"
+ 	passingGate := &shuttleengine.GateOutcome{Passed: true, Attempts: 1, Entries: []shuttleengine.GateEntryOutcome{{Name: "verify", Attempts: 1, State: shuttleengine.GateEntryPassed}}}
+ 	failingGate := &shuttleengine.GateOutcome{Passed: false, Attempts: 2, Reason: "the verify command failed twice", Entries: []shuttleengine.GateEntryOutcome{{Name: "verify", Attempts: 2, State: shuttleengine.GateEntryFailed}}}
++	// Each of these states is the record of a run whose earlier Master was given a friction note.
++	// The prepare of the row that uses one names the note.
++	noteState := func() *websterengine.State {
++		return &websterengine.State{State: runplan.State{Batches: map[int]*websterengine.BatchState{
++			1: {Slug: "batch1", Kind: "fork", Terminal: true, Status: "done"},
++		}}}
++	}
++	resumedNoteState, legacyKeyState, unwrittenNoteState, notesOffState := noteState(), noteState(), noteState(), noteState()
++	// writeEarlierNote turns friction notes on and writes the earlier Master's note, returning its path.
++	writeEarlierNote := func(t *testing.T, fx *runFixture) string {
++		t.Helper()
++		fx.Deps.FrictionDir = t.TempDir()
++		earlier := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
++		if err := os.WriteFile(earlier, []byte("earlier Master's note\n"), 0o644); err != nil {
++			t.Fatalf("write the earlier Master's note: %v", err)
++		}
++		return earlier
++	}
++	auditBothNotes := func(fx *runFixture) shuttleengine.ForkAudit {
++		earlier := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
++		latest := filepath.Join(fx.Deps.FrictionDir, "webster-master-2.md")
++		return shuttleengine.ForkAudit{ParentWrites: []string{earlier, latest}, Forks: forkReports(1)}
++	}
++	// checkNotes asserts a done run with no parent-write finding whose state lists exactly want.
++	checkNotes := func(t *testing.T, fx *runFixture, result websterengine.RunResult, want ...string) {
++		t.Helper()
++		if result.Outcome != "done" || warningsContain(result.Warnings, "parent-write") {
++			t.Errorf("RunResult = outcome %q, warnings %v; want done with no parent-write finding", result.Outcome, result.Warnings)
++		}
++		if got := loadRunState(t, fx).MasterNotePaths; !slices.Equal(got, want) {
++			t.Errorf("State.MasterNotePaths = %q; want %q", got, want)
++		}
++	}
++	checkBothNotes := func(t *testing.T, fx *runFixture, result websterengine.RunResult) {
++		t.Helper()
++		checkNotes(t, fx, result, filepath.Join(fx.Deps.FrictionDir, "webster-master.md"), filepath.Join(fx.Deps.FrictionDir, "webster-master-2.md"))
++	}
++	var notesOffNote string
+ 	cases := []struct {
+ 		name    string
+ 		cards   int
+@@ -2031,6 +2069,79 @@ func TestRun_DoneOutcome(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			// The earlier note exists, so the resumed Master's prompt names webster-master-2.md.
++			name:    "a resumed Master's write to the note an earlier Master's prompt named leaves the run done",
++			cards:   1,
++			session: "master-session-resumed-note",
++			prepare: func(t *testing.T, fx *runFixture) {
++				resumedNoteState.MasterNotePaths = []string{writeEarlierNote(t, fx)}
++			},
++			state:       resumedNoteState,
++			audit:       auditBothNotes,
++			batchesDone: 1,
++			check:       checkBothNotes,
++		},
++		{
++			name:    "a note recorded under the single-path key stays Master's own on resume",
++			cards:   1,
++			session: "master-session-legacy-note",
++			prepare: func(t *testing.T, fx *runFixture) {
++				legacyKeyState.MasterNotePath = writeEarlierNote(t, fx)
++			},
++			state:       legacyKeyState,
++			audit:       auditBothNotes,
++			batchesDone: 1,
++			check: func(t *testing.T, fx *runFixture, result websterengine.RunResult) {
++				checkBothNotes(t, fx, result)
++				saved, err := os.ReadFile(filepath.Join(fx.Deps.Geom.WebsterDir, "state.json"))
++				if err != nil {
++					t.Fatalf("read saved state.json: %v", err)
++				}
++				if strings.Contains(string(saved), `"masterNotePath"`) {
++					t.Errorf("state.json = %s; want the single-path key dropped", saved)
++				}
++			},
++		},
++		{
++			// No file exists at the listed path, so the resumed Master's prompt names it again.
++			name:    "a note path an earlier Master never wrote is listed once",
++			cards:   1,
++			session: "master-session-unwritten-note",
++			prepare: func(t *testing.T, fx *runFixture) {
++				fx.Deps.FrictionDir = t.TempDir()
++				unwrittenNoteState.MasterNotePaths = []string{filepath.Join(fx.Deps.FrictionDir, "webster-master.md")}
++				// The single-path key repeats the listed path.
++				unwrittenNoteState.MasterNotePath = unwrittenNoteState.MasterNotePaths[0]
++			},
++			state: unwrittenNoteState,
++			audit: func(fx *runFixture) shuttleengine.ForkAudit {
++				note := filepath.Join(fx.Deps.FrictionDir, "webster-master.md")
++				return shuttleengine.ForkAudit{ParentWrites: []string{note}, Forks: forkReports(1)}
++			},
++			batchesDone: 1,
++			check: func(t *testing.T, fx *runFixture, result websterengine.RunResult) {
++				checkNotes(t, fx, result, filepath.Join(fx.Deps.FrictionDir, "webster-master.md"))
++			},
++		},
++		{
++			name:    "a resume with friction notes off keeps the earlier note and records no empty path",
++			cards:   1,
++			session: "master-session-notes-off",
++			prepare: func(t *testing.T, fx *runFixture) {
++				notesOffNote = writeEarlierNote(t, fx)
++				notesOffState.MasterNotePaths = []string{notesOffNote}
++				fx.Deps.FrictionDir = ""
++			},
++			state: notesOffState,
++			audit: func(*runFixture) shuttleengine.ForkAudit {
++				return shuttleengine.ForkAudit{ParentWrites: []string{notesOffNote}, Forks: forkReports(1)}
++			},
++			batchesDone: 1,
++			check: func(t *testing.T, fx *runFixture, result websterengine.RunResult) {
++				checkNotes(t, fx, result, notesOffNote)
++			},
++		},
+ 		{
+ 			name:    "a finding an earlier record-batch warned on is not warned again",
+ 			cards:   3,
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index c3bc4aeea..daec0b83e 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -12,6 +12,7 @@ import (
+ 	"os"
+ 	"path"
+ 	"path/filepath"
++	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+@@ -93,9 +94,13 @@ type State struct {
+ 	// Webster reads the session through it, since a shuttle run record does not outlive its run.
+ 	// Empty for a state written before the field existed.
+ 	MasterEngine string `json:"masterEngine,omitempty"`
+-	// MasterNotePath is the friction note path the most recent Master's prompt names, captured at spawn.
+-	// The parent audit lets Master write it, since the prompt asks Master to.
+-	// Empty when friction notes are off, and for a state written before the field existed.
++	// MasterNotePaths holds every friction note path a Master prompt of this run named, in spawn order, each once.
++	// A spawn appends its prompt's path, so a resumed Master's fresh note joins the note an earlier Master was given.
++	// The parent audit lets Master write each of them, since a prompt of this run asked Master to.
++	// Empty when friction notes were off at every Master spawn.
++	MasterNotePaths []string `json:"masterNotePaths,omitempty"`
++	// MasterNotePath is the single note path written by a binary that records no MasterNotePaths.
++	// LoadState moves it to the end of MasterNotePaths, so a loaded state holds it empty and a save drops its key.
+ 	MasterNotePath string `json:"masterNotePath,omitempty"`
+ 	// MasterRecordsBase is the records side's HEAD commit from before the most recent Master spawned.
+ 	// accept-audit compares a suspect records-side path against it.
+@@ -218,6 +223,10 @@ func LoadState(websterDir, scratchDir string) (*State, error) {
+ 	if !found {
+ 		return nil, nil
+ 	}
++	if st.MasterNotePath != "" && !slices.Contains(st.MasterNotePaths, st.MasterNotePath) {
++		st.MasterNotePaths = append(st.MasterNotePaths, st.MasterNotePath)
++	}
++	st.MasterNotePath = ""
+ 	return &st, nil
+ }
+ 
