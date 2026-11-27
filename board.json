@@ -956,6 +956,25 @@
       "body": "## Seen (operator, 2026-11-27)\n\nEach landing runs its own landing gate, one after the other, so with many runs ready the gates queue in series.\n\n## Idea\n\nA landing queue in the manner of GitHub's merge queue, bors or Zuul:\n\n- A run ready to land joins a queue for its parent branch instead of taking the parent lock.\n- The queue takes the waiting runs, say A, B and C, builds the tree parent + A + B + C and runs the landing gate once on it.\n- A pass lands all of them together.\n- A failure is bisected (parent + A + B, and so on): the runs that pass land, and the culprit goes back to its own run's fixer.\n- A later step may gate the prefixes in parallel (parent + A, parent + A + B, parent + A + B + C) so a failure costs little time.\n\nNo drift: the batch is gated exactly as it lands.\nIt saves the most gate time when many runs land often, and it costs the most to build:\na queue service, batch merging, bisection on failure and fixer handling for the culprit.\nIt builds on the unlocked gating of the other note, which comes first.\n",
       "created": "2026-11-27T07:03:20Z",
       "revised": "2026-11-27T07:03:20Z"
+    },
+    {
+      "id": 1718,
+      "handle": "B1",
+      "slug": "push-over-github-hand-commit",
+      "title": "A rejected push can force origin past a commit made by hand on GitHub",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (board tidy, 2026-11-27)\n\n`pr-modes-no-agent` landed with an open point in its change description: a push can still drop a hand commit made on GitHub.\nFor a task pair, a rejected push is retried by `resetUnnamedTip` (`internal/fabricengine/pushclassified.go`),\nwhich can force-reset origin's code branch past the hand commit.\nThe change description names five other push paths that can push over such a commit.\nThis is read from the code and was not tested against a remote.\n\n## Idea\n\nA push that finds origin ahead with a commit lym did not make stops and names that commit, rather than resetting past it.\nThe push classification moves into the fabric core in `fabric-core-push-origin`, so the fix is made there or after it.\n",
+      "created": "2026-11-27T07:32:40Z",
+      "revised": "2026-11-27T07:32:40Z"
     }
   ],
   "prime_owner": "neve",
