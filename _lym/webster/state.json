@@ -334,11 +334,34 @@
       "spawnedAt": "2026-11-27T13:02:06Z",
       "sessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-vscode-tasks-and-keys",
+        "status": "done",
+        "head_sha": "68c4add1cb51ab929360c46492535cfbb3dc8ea8",
+        "deviations": [
+          "internal/fabricengine/hubworkspace.go",
+          "internal/ideengine/spawn_hub_integration_test.go",
+          "internal/vscode/config_test.go",
+          "internal/vscode/keybindings.go"
+        ],
+        "departures": [
+          "8: fabric: a workspace-content seam for the workspace files: PATTERN-test-only-code — InstallWorkspaceContent is admitted before a main package reaches it, because the root command installs its hook in a later commit"
+        ]
+      },
+      "cardShas": [
+        "68c4add1cb51ab929360c46492535cfbb3dc8ea8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a16b16facf1dcba64.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a16b16facf1dcba64.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "eb4e363928392664bad82975b499603f",
   "masterSessionId": "c267b7d8-3675-40df-b890-352d04c39e01",
   "masterEngine": "claude",
@@ -347,6 +370,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a69d1287548f63552.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a13101e4388da9f08.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a4ea2b02ff892850b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a4ea2b02ff892850b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-weaver-bench-b2/c267b7d8-3675-40df-b890-352d04c39e01/subagents/agent-a16b16facf1dcba64.jsonl"
   ]
 }
