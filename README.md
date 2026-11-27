@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-27 12:41 UTC; every age below is as of then.
+Rendered 2026-11-27 12:43 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `off` · PR setting `off`.
@@ -36,7 +36,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11 | 14h<br>2h | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T11 | 14h<br>3h | fabric, testkit, shed, board, pattern |
 
 ### Layer B (1)
 
@@ -66,13 +66,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 14h<br>18m | fabric, testkit, pattern, docs |
-
-### Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T6 | **Fabric core foundation: layout and core packages, snapshot, action list, executor loop and the layout retarget** | [`fabric-core-foundation`](design-fabric-core-foundation.md)<br>[Sketch](decision-fabric-core-foundation.md) | 14h<br>14h | fabric, testkit, pattern, cwd, loom, batten, landing, gate, orch, board, webster, drift, report |
+| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 14h<br>20m | fabric, testkit, pattern, docs |
 
 ## [P5 Intake wave 3: beam orch parent, scope and earlier checks](project-intake-wave-3.md) (1)
 
@@ -117,7 +111,7 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | raddle | Raddle-Write | neve | 15h<br>25m | termwindow, desktop |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md)<br>[Sketch](decision-kde-window-placement.md) | raddle | Raddle-Write | neve | 15h<br>28m | termwindow, desktop |
 | T5 | **Slow whole-repo guards and .NET builds leave the task gates for landing or periodic upkeep** | [`whole-repo-guards-off-gates`](design-whole-repo-guards-off-gates.md) | darn · solid | Code-Burler-Review | neve | 15h<br>2h | gate, testkit |
 | T9 | **Bench Weaver against Webster on plans Webster already implemented: time, cost and quality** | [`weaver-bench`](design-weaver-bench.md) | darn · docs | Darn-Write | neve | 2h<br>2h | weaver, webster |
 

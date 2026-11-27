@@ -2,8 +2,6 @@
 
 `push-retry-not-halt` · Task · bug, fabric, shed, landing, batten, dobby · running · Discussion-Write
 
-Depends on: [`fabric-core-foundation`](design-fabric-core-foundation.md)
-
 ## Decisions (operator, 2026-11-26)
 
 - No mail per failed push. lym retries quietly with backoff.
