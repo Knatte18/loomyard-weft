@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -122,6 +122,54 @@
       ],
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/twill-nested-spawn-inherited/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-27T16:11:47Z",
+      "started_at": "2026-11-27T15:54:25Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T15:59:32.549284353Z",
+          "end": "2026-11-27T15:59:32.605449875Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T16:00:22.815159353Z",
+          "end": "2026-11-27T16:00:22.835465Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T15:59:32.788375253Z",
+          "end": "2026-11-27T15:59:33.175215085Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-27T15:59:34.0925965Z",
+          "end": "2026-11-27T16:00:21.815720229Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T16:00:23.054363365Z",
+          "end": "2026-11-27T16:11:46.004040489Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-27T16:11:46.343123069Z",
+          "end": "2026-11-27T16:11:46.347553738Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
