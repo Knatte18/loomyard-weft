@@ -1,6 +1,6 @@
 # Build lym for a gate call only when a targeted package test uses it
 
-`gate-fixed-cost-cuts` · Task · enhancement, gate · landing · Finalize
+`gate-fixed-cost-cuts` · Task · enhancement, gate · done
 
 ## Seen
 
