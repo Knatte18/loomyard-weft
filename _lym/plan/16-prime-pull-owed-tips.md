@@ -7,8 +7,8 @@
 - `internal/battenshed#TestLand_Dispositions`
 
 **Create:**
-- `plan:internal/fabricengine#primeAheadByOwedTips` -> `func primeAheadByOwedTips(l *lymcwd.Location) (bool, error)`
-- `plan:internal/battencli#TestLandDeps_PullWithAnOwedLandingPush` -> `func TestLandDeps_PullWithAnOwedLandingPush(t *testing.T)`
+- `internal/fabricengine#primeAheadByOwedTips`
+- `internal/battencli#TestLandDeps_PullWithAnOwedLandingPush`
 
 **Uses:**
 - `internal/fabricengine/doc.go`

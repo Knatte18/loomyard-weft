@@ -5,8 +5,8 @@
 - `internal/battencli#HubCatchUp`
 
 **Create:**
-- `plan:internal/battencli#catchUpPushSeams` -> `type catchUpPushSeams struct`
-- `plan:internal/battencli#TestPushOwedForCatchUp` -> `func TestPushOwedForCatchUp(t *testing.T)`
+- `internal/battencli#catchUpPushSeams`
+- `internal/battencli#TestPushOwedForCatchUp`
 
 **Uses:**
 - `internal/battencli#catchUpPair`

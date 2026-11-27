@@ -6,8 +6,8 @@
 - `internal/fabricengine#FailedPushWayForward`
 
 **Create:**
-- `plan:internal/fabricengine#unmadeOriginCommit` -> `func unmadeOriginCommit(path, named, originTip, branch string) (string, error)`
-- `plan:internal/fabricengine_test#TestRejectedCodePush_RefusesACommitThisMachineDidNotMake` -> `func TestRejectedCodePush_RefusesACommitThisMachineDidNotMake(t *testing.T)`
+- `internal/fabricengine#unmadeOriginCommit`
+- `internal/fabricengine_test#TestRejectedCodePush_RefusesACommitThisMachineDidNotMake`
 
 **Uses:**
 - `internal/fabricengine/doc.go`
