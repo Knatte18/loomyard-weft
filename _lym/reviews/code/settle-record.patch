@@ -1,0 +1,1173 @@
+diff --git a/docs/research/README.md b/docs/research/README.md
+index be6215024..96cdc37c9 100644
+--- a/docs/research/README.md
++++ b/docs/research/README.md
+@@ -221,6 +221,10 @@ A study's script finds the repository root with `git rev-parse --show-toplevel`,
+ - [twill-plan-bench-sonnet](twill/plan-bench/twill-plan-bench-sonnet/report.md) — the Sonnet arm.
+ - [twill-plan-bench-sonnet-medium-fable](twill/plan-bench/twill-plan-bench-sonnet-medium-fable/report.md) — twill on Sonnet at medium effort, and a single Fable writer.
+ 
++## weaver — the cold-start implementer
++
++- [bench-2026-11-27](weaver/bench-2026-11-27/report.md) — Weaver against Webster on three landed plans: time, cost and quality, and what Weaver needs before it replaces Webster.
++
+ ## webster — implementation batches
+ 
+ - [parallel-batches-2026-10-17](webster/parallel-batches-2026-10-17/report.md) — how often cards and batches could have run in parallel worktrees.
+diff --git a/docs/research/weaver/bench-2026-11-27/report.md b/docs/research/weaver/bench-2026-11-27/report.md
+new file mode 100644
+index 000000000..04845aecb
+--- /dev/null
++++ b/docs/research/weaver/bench-2026-11-27/report.md
+@@ -0,0 +1,288 @@
++# Weaver against Webster on landed plans
++
++2026-11-27.
++The figures record runs on one machine and are not claiming to stay true.
++
++## Result
++
++Weaver implemented all three plans: every card committed, every plan-level verify passed on its first run, and no stop.
++On the one plan both implementers ran today, Weaver took the same time as Webster and cost 18% less,
++and its result drew half as many review findings.
++
++**Recommendation:** Weaver can replace Webster as tapestry's implementer, but not as the default yet.
++Switch it on per task first, and make these changes before it becomes the default:
++
++1. Give a Weaver attempt a timeout of its own, sized to a batch.
++   An attempt runs under `shuttle.run_timeout_min`, 30 minutes, which its gate waits and gate fixers count against.
++   The first batch of the calibration plan hit it with three of four cards committed, and the retry climbed to Opus.
++2. Name each batch's deviations and departures in Weaver's `summary.md`.
++   Webster's summary lists them; Weaver records the deviations in `state.json` and its summary lists only attempt counts.
++3. Record gate spans on the row.
++   The Webster rows hold `gate_spans` for the plan-level verify; the Weaver rows hold none.
++4. Watch the paths this bench did not reach: a lost strand, a resume, a failed plan-level verify and the third rung.
++
++The evidence is thin on quality: one run per plan, one review per result, and one same-day comparison.
++
++## Plans
++
++Each plan was implemented by Webster and landed.
++A run is clean when its Webster row has one start and one end, with no machine sleep, restarted Master or recovery strand inside it.
++
++| Plan | Base commit | Landed commit | Cards, Webster batches | Recorded Webster run | Main packages |
++|---|---|---|---|---|---|
++| `board-viewer-server` | `6d3a916f4` | `7bdb031ed` | 9 in 4+2+3 | 2026-11-19 | `boardengine`, `boardserve`, `boardcli`, `vscode` |
++| `launch-manifest-parity` | `40c66912c` | `3bbc92a0e` | 9 in 3+3+3 | 2026-11-17 | `shuttleparity`, `shuttleengine`, `shuttlecli`, `heddleengine` |
++| `gate-test-map-mode` | `5469ff91d` | `b92c95ee5` | 5 in 1+2+2 | 2026-11-17 | `gatecli`, `testcover` |
++
++Why these three:
++
++- Each recorded run is clean.
++- Their main packages differ.
++- Each base commit is an ancestor of `main` and builds `cmd/lym` today, and each plan passes `lym webster validate`.
++- `board-viewer-server` has the newest clean recorded run, so it is the calibration plan.
++
++Newer runs left out:
++
++- `dobby-run-watch-build`: the machine hibernated for over eight hours inside the Webster row.
++- `async-run-pusher`: two Master sessions, and the row's history holds only the later start.
++- `single-repo-namespace-layout`: the row stopped once, and one batch took two recoveries.
++- `review-result-checks`: the plan-level verify failed once and the row did rework.
++- `slack-machine-bridge-build`: one batch took a recovery.
++- `adopt-foreground`: its base commit is no longer in the repository.
++
++Weaver cut `gate-test-map-mode` into batches of 1+1+3 cards; the other partitions equal Webster's.
++
++## How the runs were made
++
++Each run had a worktree pair of its own: the base commit's tree committed on top of a branch,
++the landed run's archived plan and decision record copied in, the run moved straight to the implementer row,
++and a pause after that row.
++Weaver ran its default ladder (`sonnet[medium]`, `opus[medium]`, `opus[high]`), Webster its default models.
++
++| Run | Plan | Implementer | Result head | Started, CET |
++|---|---|---|---|---|
++| `b1` | `board-viewer-server` | Weaver | `18ad1c92f` | 12:58, with `b2` |
++| `b2` | `board-viewer-server` | Webster | `68c4add1c` | 12:58, with `b1` |
++| `b3` | `launch-manifest-parity` | Weaver | `44e4bc47a` | 14:30, with `b4` |
++| `b4` | `gate-test-map-mode` | Weaver | `ebdb1317d` | 14:30, with `b3` |
++
++No run was lost to the machine, and none was repeated.
++In the tables, "recorded" is the landed Webster run of the same plan.
++
++### Questions and stops
++
++- `b1` and `b2` both asked how cards 1–3 could pass the test-only-code guard, and both got the same answer:
++  temporary allow-list entries with a `Pattern-Departure` trailer.
++- `b3` asked about a tree-sitter link its card 7 forced, and was told to add the allow-list entry the landed run had added.
++- `b2` stopped once after its verify passed: the run-exit audit flagged the Master's own friction note.
++  The arbiter cleared it and the resumed row ended 1m47s later.
++
++### Limits
++
++- The archived decision records are the landed runs' final ones.
++  They hold the entries added while those runs ran, and name the findings their reviews left open.
++  Every session of today's runs could read them; the recorded runs started without them.
++- Each pair's history holds the landed solution.
++  No tool result in any session of the four runs held the landed commit's subject or short hash.
++- `lym` was rebuilt at 14:08 CET, from `80df63359` to `2326ef4da`, and the hub's gate config was edited at 14:08 and 14:23.
++  Both calibration runs span these changes; `b3` and `b4` ran after them.
++- Load differed.
++  Sampled load averages on this 12-core machine were 4–45 during `b1` and `b2`, and 6–23 during `b3` and `b4`.
++  Other runs of the hub worked at the same time.
++
++## Wall time
++
++| Plan | Recorded Webster | Webster today | Weaver |
++|---|---|---|---|
++| `board-viewer-server` | 63m00s | 89m28s | 91m57s |
++| `launch-manifest-parity` | 52m29s | — | 57m56s |
++| `gate-test-map-mode` | 53m36s | — | 50m52s |
++
++Webster today is measured to its stop; to the end of the resumed row it is 91m14s.
++
++## Calibration and adjusted figures
++
++The factor is Webster today divided by the recorded Webster run of `board-viewer-server`.
++The adjusted figure is the recorded Webster figure of the other two plans multiplied by it.
++
++| Measure | Recorded | Webster today | Factor |
++|---|---|---|---|
++| Row wall time | 3780 s | 5368 s | 1.42 |
++| Gate tier runs (card, batch, plan-level) | 1518 s | 3376 s | 2.22 |
++| Gate fixer sessions, summed | 566 s | 1105 s | 1.95 |
++| Dollars, without the stop | $11.75 | $13.41 | 1.14 |
++
++| Plan | Measure | Recorded | Adjusted | Weaver | Weaver / recorded | Weaver / adjusted |
++|---|---|---|---|---|---|---|
++| `launch-manifest-parity` | Wall time | 52m29s | 74m32s | 57m56s | 1.10 | 0.78 |
++| `launch-manifest-parity` | Gate tier runs | 976 s | 2171 s | 1624 s | 1.66 | 0.75 |
++| `launch-manifest-parity` | Gate fixers | 600 s | 1171 s | 769 s | 1.28 | 0.66 |
++| `launch-manifest-parity` | Dollars | $17.00 | $19.40 | $12.73 | 0.75 | 0.66 |
++| `gate-test-map-mode` | Wall time | 53m36s | 76m07s | 50m52s | 0.95 | 0.67 |
++| `gate-test-map-mode` | Gate tier runs | 965 s | 2146 s | 1018 s | 1.05 | 0.47 |
++| `gate-test-map-mode` | Gate fixers | 336 s | 656 s | 378 s | 1.13 | 0.58 |
++| `gate-test-map-mode` | Dollars | $14.91 | $17.02 | $8.60 | 0.58 | 0.51 |
++
++The adjusted column favours Weaver on time: `b3` and `b4` ran under less load than the pair that set the factor.
++Read the time ratios of these two plans as lying between the two ratio columns.
++
++## Time in batches, gates and fixers
++
++Batch time runs from a batch's start to the next batch's start, so it holds the batch's gates and fixers.
++The last batch ends where the plan-level verify starts, or, for Weaver, where its last session ends.
++"Verify and close" is the rest of the row.
++
++| Plan | Run | Batch 1 | Batch 2 | Batch 3 | Verify and close | Row |
++|---|---|---|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | 25m49s | 13m48s | 16m18s | 7m05s | 63m00s |
++| `board-viewer-server` | Webster today | 39m58s | 24m04s | 21m20s | 4m05s | 89m28s |
++| `board-viewer-server` | Weaver | 39m44s | 25m34s | 22m16s | 4m23s | 91m57s |
++| `launch-manifest-parity` | Recorded Webster | 16m49s | 20m58s | 11m42s | 3m00s | 52m29s |
++| `launch-manifest-parity` | Weaver | 22m36s | 20m25s | 11m40s | 3m15s | 57m56s |
++| `gate-test-map-mode` | Recorded Webster | 24m28s | 15m59s | 10m16s | 2m53s | 53m36s |
++| `gate-test-map-mode` | Weaver | 21m28s | 3m18s | 22m53s | 3m13s | 50m52s |
++
++Gate times are the summed wall time of the tier runs started inside the row, in seconds, from the gate run records.
++"Direct" is tier runs a session started outside a keyed gate; it is not in the sum.
++
++| Plan | Run | Card | Batch | Plan-level | Sum | Direct | Fixer sessions | Fixer time |
++|---|---|---|---|---|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | 878 | 233 | 407 | 1518 | 0 | 8 | 566 s |
++| `board-viewer-server` | Webster today | 2352 | 782 | 242 | 3376 | 26 | 9 | 1105 s |
++| `board-viewer-server` | Weaver | 2448 | 743 | 219 | 3410 | 37 | 9 | 1051 s |
++| `launch-manifest-parity` | Recorded Webster | 668 | 140 | 168 | 976 | 9 | 8 | 600 s |
++| `launch-manifest-parity` | Weaver | 1199 | 268 | 157 | 1624 | 23 | 9 | 769 s |
++| `gate-test-map-mode` | Recorded Webster | 364 | 432 | 169 | 965 | 253 | 3 | 336 s |
++| `gate-test-map-mode` | Weaver | 465 | 393 | 160 | 1018 | 398 | 3 | 378 s |
++
++## Cost
++
++Counted from the session transcripts, subagents included, one count per message, at the prices in `claudeengine/pricing.go`.
++The usage records alone leave out the gate fixers.
++The `b2` figures include its stop: the arbiter (the only Opus there, $0.32) and the resumed Master ($0.19).
++
++| Plan | Run | Model | Input | Cache write | Cache read | Output | Dollars |
++|---|---|---|---|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | Sonnet | 476 | 1,227,640 | 29,227,456 | 283,224 | $11.75 |
++| `board-viewer-server` | Webster today | Sonnet | 500 | 1,586,257 | 29,191,469 | 245,928 | $13.60 |
++| `board-viewer-server` | Webster today | Opus | 16 | 37,494 | 224,262 | 4,208 | $0.32 |
++| `board-viewer-server` | Weaver | Sonnet | 400 | 1,395,439 | 22,679,047 | 240,949 | $10.43 |
++| `board-viewer-server` | Weaver | Opus | 34 | 56,900 | 756,831 | 4,049 | $0.52 |
++| `launch-manifest-parity` | Recorded Webster | Sonnet | 566 | 1,557,085 | 50,832,097 | 294,206 | $17.00 |
++| `launch-manifest-parity` | Weaver | Sonnet | 442 | 1,684,732 | 30,627,716 | 239,617 | $12.73 |
++| `gate-test-map-mode` | Recorded Webster | Sonnet | 460 | 1,212,552 | 44,685,448 | 293,885 | $14.91 |
++| `gate-test-map-mode` | Weaver | Sonnet | 252 | 1,054,821 | 17,789,104 | 240,876 | $8.60 |
++
++| Plan | Run | Total | Of which gate fixers |
++|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | $11.75 | $1.65 |
++| `board-viewer-server` | Webster today | $13.92 | $2.43 |
++| `board-viewer-server` | Weaver | $10.95 | $2.37 |
++| `launch-manifest-parity` | Recorded Webster | $17.00 | $1.62 |
++| `launch-manifest-parity` | Weaver | $12.73 | $2.61 |
++| `gate-test-map-mode` | Recorded Webster | $14.91 | $0.90 |
++| `gate-test-map-mode` | Weaver | $8.60 | $1.24 |
++
++Most of Weaver's saving is cache reads.
++A likely cause, not measured here, is that each batch starts cold, where a Webster fork carries the Master's context.
++
++## Ladder and stops
++
++| Run | Attempts | Climbed past the first rung | Stops reaching the stop chain | Questions |
++|---|---|---|---|---|
++| Weaver, `board-viewer-server` | 4 | 1 (batch 1, timeout, finished on `opus[medium]`) | 0 | 1 |
++| Weaver, `launch-manifest-parity` | 3 | 0 | 0 | 1 |
++| Weaver, `gate-test-map-mode` | 3 | 0 | 0 | 0 |
++| Webster today, `board-viewer-server` | — | — | 1 (run-exit audit) | 1 |
++| Recorded Webster, all three | — | — | 0 | not measured |
++
++## Quality
++
++### Verify, cards and departures
++
++"Files outside targets" is the scope guard's deviation count, summed over the batches.
++Departures are `Pattern-Departure` trailers; for a recorded run they are what its summary reports.
++
++| Plan | Run | Plan-level verify | Verify fixer rounds | Cards committed | Files outside targets | Departures |
++|---|---|---|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | passed | 0 | 9/9 | 16 | 0 |
++| `board-viewer-server` | Webster today | passed | 0 | 9/9 | 16 | 4 |
++| `board-viewer-server` | Weaver | passed | 0 | 9/9 | 19 | 3 |
++| `launch-manifest-parity` | Recorded Webster | passed | 0 | 9/9 | 17 | 0 |
++| `launch-manifest-parity` | Weaver | passed | 0 | 9/9 | 21 | 3 |
++| `gate-test-map-mode` | Recorded Webster | passed | 0 | 5/5 | 8 | 0 |
++| `gate-test-map-mode` | Weaver | passed | 0 | 5/5 | 9 | 0 |
++
++### Diff against the landed commit
++
++The landed commit holds the recorded run's review fixes, which the results do not, and its base can be newer than the plan's base.
++The recorded runs' implementer heads are no longer in the repository.
++"Go added" is production / test lines.
++
++| Plan | Diff | Files | Lines added / removed | Go added | Files shared with landed |
++|---|---|---|---|---|---|
++| `board-viewer-server` | Landed | 63 | 6048 / 87 | 2221 / 2867 | — |
++| `board-viewer-server` | Webster today | 61 | 4768 / 124 | 1948 / 2169 | 55 |
++| `board-viewer-server` | Weaver | 60 | 4931 / 144 | 2015 / 2144 | 58 |
++| `launch-manifest-parity` | Landed | 63 | 4931 / 118 | 2118 / 2739 | — |
++| `launch-manifest-parity` | Weaver | 61 | 3985 / 118 | 1859 / 2052 | 54 |
++| `gate-test-map-mode` | Landed | 40 | 1406 / 3862 | 598 / 766 | — |
++| `gate-test-map-mode` | Weaver | 40 | 1263 / 3881 | 572 / 641 | 40 |
++
++### Review findings
++
++One Burler round per result: a `sonnet[medium]` reviewer with the code lens fan, over the commits above the base,
++with the archived decision record and plan as the answer key.
++The recorded figures are round 1 of each landed run's Code-Review.
++
++| Plan | Run | Verdict | Blocking | Medium | Low | Nit | Total |
++|---|---|---|---|---|---|---|---|
++| `board-viewer-server` | Recorded Webster | blocking | 1 | 3 | 8 | 0 | 12 |
++| `board-viewer-server` | Webster today | blocking | 3 | 11 | 6 | 0 | 20 |
++| `board-viewer-server` | Weaver | blocking | 1 | 4 | 4 | 1 | 10 |
++| `launch-manifest-parity` | Recorded Webster | blocking | 2 | 6 | 4 | 1 | 13 |
++| `launch-manifest-parity` | Weaver | blocking | 3 | 7 | 6 | 0 | 16 |
++| `gate-test-map-mode` | Recorded Webster | approved | 0 | 0 | 2 | 1 | 3 |
++| `gate-test-map-mode` | Weaver | approved | 0 | 4 | 9 | 0 | 13 |
++
++Only the two `board-viewer-server` runs of today compare like with like.
++The recorded rounds were reviewed by older prompts on other days,
++and the same plan drew 12 findings recorded and 20 today from Webster.
++The higher Weaver counts on the other two plans are therefore not evidence either way.
++
++## Findings per run
++
++The full reviews are in `reviews/`.
++
++### Weaver, `board-viewer-server` ([review](reviews/weaver-board-viewer-server.md))
++
++- Blocking: the opener's exit is waited on and not logged.
++- Medium: a failed server start loses its error; an action moves a dirty edit form onto a new revision,
++  so Save overwrites another writer; server behaviours and verb wiring lack tests.
++- One of the four findings the decision record names as open recurred: untested verb wiring.
++- Beyond its cards, it exported `boardengine.EntryStoreFile` and updated two tests outside its targets.
++
++### Webster today, `board-viewer-server` ([review](reviews/webster-board-viewer-server.md))
++
++- Blocking: editing a task's dependencies silently deletes the met ones; the watch loop has no one-second floor;
++  the opener's exit is not logged.
++  The Weaver result and the landed commit leave the dependency field blank in the edit form and do not have the first.
++- Medium: the dirty-form overwrite; a kind change discards the unsent edit; the server's create makes projects;
++  a lost server error; `board.html` not pinned to LF; missing tests.
++- Three of the four named findings recurred: the watch loop floor, the LF pin and the verb wiring.
++
++### Weaver, `launch-manifest-parity` ([review](reviews/weaver-launch-manifest-parity.md))
++
++- Blocking: the seat catalog never builds the unassisted burler reviewer, which an acceptance criterion names;
++  `CLAUDE.local.md` and the engine names are repeated literals.
++- Medium: the verb refuses the burler roles real runs carry; an empty `CLAUDE.md` reads as a Codex gap;
++  five behaviours are unpinned by tests.
++- The two literal findings and the untested production passage reader
++  are ones the decision record names from the recorded run's review.
++
++### Weaver, `gate-test-map-mode` ([review](reviews/weaver-gate-test-map-mode.md))
++
++- Approved.
++- Medium: `docs/overview.md` still describes the deleted planning; two acceptance behaviours are unpinned;
++  two removed tests have no `Loosened-Check` trailer.
++- Low: a leftover of the old planning, an unbounded scope computation, stale texts and missing test rows.
+diff --git a/docs/research/weaver/bench-2026-11-27/reviews/weaver-board-viewer-server.md b/docs/research/weaver/bench-2026-11-27/reviews/weaver-board-viewer-server.md
+new file mode 100644
+index 000000000..bc46c0d7b
+--- /dev/null
++++ b/docs/research/weaver/bench-2026-11-27/reviews/weaver-board-viewer-server.md
+@@ -0,0 +1,149 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: internal/boardcli/opener_linux.go:26
++    summary: "The opener is waited on through cmd.Wait with no teardown log, which PATTERN-child-processes requires of every wait"
++    fix: "In startOpener of both internal/boardcli/opener_linux.go and opener_windows.go, make the waiting goroutine keep the cmd.Wait error, log it with logger.Info (message such as \"boardcli: the opener exited\", with cmd.Args and the error), and then send it on exited, as internal/creelcli/spawn.go logs its daemon's exit."
++    origin: handler
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: internal/boardcli/open.go:170
++    summary: "A server that fails to start loses its error: spawnServer logs only stderr, while serve reports every failure on stdout, which goes to the null device"
++    fix: "In spawnServer set cmd.Stdout = log beside cmd.Stderr = log, so the JSON error of a failed serve (config load, Register, Listen, NewServer, writeState) lands in the server log, and update the Spawn field and spawnServer comments to say both streams are appended. Pin it with an assertion in a test that reaches spawnServer, or in TestBoardServeScenario, that a serve which fails to start leaves its error in the log."
++    origin: lens:code-correctness
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/board.html:354
++    summary: "A successful release, draft, undraft or promote moves a dirty, outdated edit form onto the new revision, so its next Save overwrites another writer's change without a stale refusal"
++    fix: "In write() of board.html, in the success branch for an action, set state.revision = answer.entry.revision only when state.revision === revision (the revision the action sent, so the form was built on the entry the action saw). Otherwise leave state.revision as it is, so the next Save is refused as stale and shows the fresh entry."
++    origin: lens:code-correctness
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: internal/boardserve/server_test.go:140
++    summary: "Server behaviours with no coverage: the server's own Origin accepted, a stale promote, a listed decision file and project design file, and a long poll with an empty after"
++    fix: "Add rows to TestServer: a write carrying Origin http://127.0.0.1:4321 answers 200; a promote with an older revision answers 409 with the fresh entry and leaves board.json unchanged (StaleWritesAnswerAConflict); GET /file/ serves a decision file of a discussed entry with its record on disk, and a project's design file, and the view names that decision_file (FileRouteServesOnlyListedFiles); a GET /api/board?after= on a board with no board.json and a short bound answers unchanged (LongPoll)."
++    origin: lens:code-tests
++  - id: F5
++    severity: MEDIUM
++    class: design
++    location: internal/boardcli/cli.go:971
++    summary: "Verb wiring with no coverage: the keep-warm cap chosen by strand name, and serve registering RoleBoardServer under HubOwner"
++    fix: "Move the cap selection of openCmd into one function of the strand name and config dirs that openCmd calls, and test that an empty strand gives zero and an orch strand gives a non-zero cap. In TestBoardServeScenario, after the first open, read the run-process records of runproc.HubOwner under fabricengine.RunProcDir(hub.Path) and assert one with role runproc.RoleBoardServer and the server's pid."
++    origin: lens:code-tests
++  - id: F6
++    severity: LOW
++    class: design
++    location: internal/boardengine/board.html:565
++    summary: "The action buttons have no pending guard, so a double click sends the op twice and the page reports its own successful write as a stale refusal"
++    fix: "In board.html keep a set of slugs with an action in flight: the action button's handler returns when its slug is in it, adds the slug before write() and removes it when the promise settles, as the forms do with state.pending."
++    origin: lens:code-correctness
++  - id: F7
++    severity: LOW
++    class: consistency
++    location: internal/runproc/end.go:99
++    summary: "The EndSubject and subjectPassSpared comments say the pass spares the roles that serve the whole hub, which the new hub-wide RoleBoardServer makes false"
++    fix: "Reword both comments in internal/runproc/end.go (near lines 87 and 99) so they name what is spared without claiming every hub-wide process is, for example by saying the board server is ended with the subject's own processes."
++    origin: lens:code-affected-set
++  - id: F8
++    severity: LOW
++    class: design
++    location: internal/fabricengine/hubworkspace_integration_test.go:566
++    summary: "No test covers a beam whose anchor cannot be read, whose workspace file must still be written without hook members"
++    fix: "Add a row to TestRegenerateHubWorkspace that installs a hook returning a tasks member, makes a beam's anchor unreadable to lymcwd.NamedWorktree, and asserts the regeneration succeeds, the beam file is written without a tasks key and the hub file carries it."
++    origin: lens:code-tests
++  - id: F9
++    severity: LOW
++    class: design
++    location: internal/boardengine/view_test.go:21
++    summary: "The projection's waits_on slug fallback for a dependency the board holds no handle for has no coverage"
++    fix: "Give one task of viewFixture, or of a case in TestRenderBoardData, a dependency the board does not hold, and assert its waits_on holds that slug."
++    origin: lens:code-tests
++  - id: F10
++    severity: NIT
++    class: design
++    location: internal/boardengine/board.html:144
++    summary: "A link whose target is a code span renders href=\"0\", because safeTarget trims the placeholder's NULs before the NUL guard looks for them"
++    fix: "In inline(), return stash(all) when the raw target holds \\u0000, before calling safeTarget, and drop the check on href."
++    origin: lens:code-correctness
++---
++
++Review of `git diff 24688edd65fd25d24ec61ff248969ae2b63456d7..HEAD` against the decision record and the nine plan cards.
++Nothing was built or run: the verify gate owns build and test results, and the viewer findings come from reading the page's script.
++
++### [BLOCKING] The opener's wait is not logged
++
++**Location:** `internal/boardcli/opener_linux.go:26`, `internal/boardcli/opener_windows.go:26`
++**Issue:** `pattern/PATTERN-child-processes.md` says a path that starts a process logs its spawn "and logs its teardown wherever it waits for one".
++Only a spawn reaped by `proc.Reap` is excused.
++The opener is waited on through `cmd.Wait`, and neither that goroutine nor `openLauncher` logs the exit.
++The added entry that chooses `cmd.Wait` settles how the wait happens, not its logging.
++An opener left running at the cap leaves no trace of how it ended.
++
++### [MEDIUM] A failed server start leaves no cause
++
++**Location:** `internal/boardcli/open.go:170`
++**Issue:** `spawnServer` sets `cmd.Stderr` only.
++`serve` and the board pre-run report failures with `outputError` and `output.Err`, which write to stdout.
++`open` then waits out its bound and sends the operator to a log holding at most a pid line.
++A failure before `Run` takes the lock leaves the former server's pid at the top of the log, and the refusal tells the operator to end that process.
++
++### [MEDIUM] An action silently rebases a dirty edit form
++
++**Location:** `internal/boardengine/board.html:354`
++**Issue:** The operator types in the edit form, another writer changes the same field, and the live refresh leaves the dirty form on the old revision.
++A press of `release` or `draft` then sends the current revision, succeeds, and sets `state.revision` to the answered one.
++Save now passes the check and overwrites the other writer's field with no fresh entry shown, which D8's stale refusal exists to stop.
++
++### [MEDIUM] Server behaviours without a test row
++
++**Location:** `internal/boardserve/server_test.go:140`
++**Issue:** No test sends the server's own `Origin`, which a browser puts on every page write.
++No test sends a stale promote, asserts a named `decision_file`, or fetches a decision file or project design file.
++No test long-polls with an empty `after`, so the busy loop on a board without `board.json` could return unnoticed.
++
++### [MEDIUM] Verb wiring without a test row
++
++**Location:** `internal/boardcli/cli.go:971`
++**Issue:** `TestRunOpen` injects `OpenerCap`, so nothing fails if `openCmd` stops setting it for a strand-named caller.
++`TestRun` injects `Register` and the runproc test plants its own record, so nothing fails if `serve` registers under another role or owner.
++
++### [LOW] Action buttons can send twice
++
++**Location:** `internal/boardengine/board.html:565`
++**Issue:** A second click before the first answer sends the same revision again, and the 409 message then stays beside an action that succeeded.
++
++### [LOW] runproc comments no longer hold
++
++**Location:** `internal/runproc/end.go:99`
++**Issue:** Both comments say the subject pass spares the processes that serve the whole hub, and the board server is one that it ends.
++
++### [LOW] Unreadable beam anchor is untested
++
++**Location:** `internal/fabricengine/hubworkspace_integration_test.go:566`
++**Issue:** The new Warn-and-continue branch of `regenerateHubWorkspace` has no row.
++
++### [LOW] waits_on slug fallback is untested
++
++**Location:** `internal/boardengine/view_test.go:21`
++**Issue:** Every dependency in the fixture has a handle.
++
++### [NIT] A code-span link target renders as a link to "0"
++
++**Location:** `internal/boardengine/board.html:144`
++**Issue:** The stashed placeholder is a NUL, an index and a NUL; `safeTarget` trims both NULs as control characters and returns the index.
++
++## Rejected
++
++- The server drops `RecordWarning` on promote and edit (code-correctness F3): the plan's cards 3 and 4 pin the success answer as `ok` and `entry`, and D10's "as the CLI's does" concerns the write.
++- A write whose response is lost is retried and answered as stale (code-correctness F4, retry half): D11 asks that a failed page request be retried, and the revision check keeps the resend from writing twice.
++- `open` does not spawn when the lock holder vanishes after the first read (code-correctness F5): D5 settles the held-lock path as wait, then refuse, and the refusal's second run starts a server.
++- No test for `serve` emptying the strand name (code-tests F7): run agents are refused first, and an orch name and an empty name write alike, so no outcome of the page's operations differs.
++- The server's own Origin, stale promote, empty `after` and decision-file gaps as separate findings (code-tests F1 to F4): merged into F4.
++- The two verb wiring gaps as separate findings (code-tests F5 and F6): merged into F5.
++- Unrequested or unbuilt scope: the code-scope lens found none, and I found none.
+diff --git a/docs/research/weaver/bench-2026-11-27/reviews/weaver-gate-test-map-mode.md b/docs/research/weaver/bench-2026-11-27/reviews/weaver-gate-test-map-mode.md
+new file mode 100644
+index 000000000..5cbcf5032
+--- /dev/null
++++ b/docs/research/weaver/bench-2026-11-27/reviews/weaver-gate-test-map-mode.md
+@@ -0,0 +1,188 @@
++---
++verdict: APPROVED
++findings:
++  - id: F1
++    severity: MEDIUM
++    class: consistency
++    location: docs/overview.md:407
++    summary: The internal/testcover tree line still describes the selector and upkeep planning this diff deletes
++    fix: In the `internal/testcover/` line of docs/overview.md, delete the clause ", and compares a map with a commit to plan which tests a build re-measures or to name the miss that rebuilds the package whole" and join the remaining list with "and".
++    origin: "lens:code-affected-set"
++  - id: F2
++    severity: MEDIUM
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMap
++    summary: No test shows that two tests measured side by side each get only their own blocks, the D3 acceptance criterion
++    fix: "Make two tests of one tier that cover different blocks overlap for certain, and assert each entry's own blocks. The pair under the comment `TestAlphaOne and TestAlphaTwo each keep their own blocks` is tier0 and tier1, so it never runs side by side, and both `meets` tests cover block 0. In runTestMapStandIn, let a test whose name makes it cover block 1 also wait in meetsAnother (for example by matching a Meets marker that is not the final suffix beside the `Two` suffix), then assert Blocks [0] for one entry and [0, 1] for the other. Correct the comment on the alpha assertion."
++    origin: "lens:code-tests"
++  - id: F3
++    severity: MEDIUM
++    class: design
++    location: internal/gatecli/testmapstamp_test.go#TestMapSideBySide
++    summary: No row fails when the map run passes the wrong parallel to the memory clamp or swaps the tiers' counts (D4)
++    fix: "In TestMapSideBySide add a row with memory_mb 0 and the `asGiven` capped function wanting 4, the tier's Parallel. In TestGateTestMap add an assertion that each tier uses its own count: give tier0 `parallel: 1` and tier1 `parallel: 2`, and show that two tier0 Excludes tests both pass with passed_alone empty."
++    origin: "lens:code-tests"
++  - id: F4
++    severity: MEDIUM
++    class: consistency
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMap
++    summary: The subtest PrebuiltLymIsBuiltOncePerCall and the row WhileTheLymBuildHangs exist at the review base and are removed with no Loosened-Check trailer naming them
++    fix: "Add a commit in the review range (an empty commit will do) carrying `Loosened-Check: TestGateTestMap/PrebuiltLymIsBuiltOncePerCall — replaced by AMapRunBuildsNoLym — a map run makes 0 lym builds` and `Loosened-Check: TestGateTestMap/ACallEndedDuringABuildOrATestWritesNothing/WhileTheLymBuildHangs — removed — a map run makes 0 lym builds, so no lym build can hang`."
++    origin: handler
++  - id: F5
++    severity: LOW
++    class: consistency
++    location: internal/gatecli/testmappackage.go#testMapRun.runTest
++    summary: "Both logger.Warn messages of the map run still open with the retired verb, gate testmap:"
++    fix: "Change the prefix `gate testmap:` to `gate test --map:` in both logger.Warn calls of testMapRun.runTest."
++    origin: "lens:code-correctness"
++  - id: F6
++    severity: LOW
++    class: consistency
++    location: internal/gateslot/template.yaml:5
++    summary: "The redundancy_build_timeout_min comment still bounds a lym build of a coverage map run, which builds no lym"
++    fix: "Reword the comment so the lym build belongs to the redundancy report step only, for example `minutes each coverage build of a coverage map run, each coverage and lym build of the redundancy report step and each build of lym gate redundant may take ...`. Check each verb's builds against its code before naming them."
++    origin: "lens:code-affected-set"
++  - id: F7
++    severity: LOW
++    class: scope
++    location: internal/gatecli/testmappackage.go#fillMapTests
++    summary: fillMapTests still re-indexes kept entries' blocks and functions, which served only the retired incremental planning
++    fix: "Every job now starts from an empty map, so the only entries already in m are spawn-marked ones with no Blocks and no Funcs. Remove the funcIndex seeding from kept entries, the re-indexing loop over them, the `reindexed` helper, the m.Blocks fallback with its blockIndex, and `ranNames` if nothing else uses it. Append the existing entries unchanged, set m.Blocks to table.keys when table is not nil, and rewrite the doc comment to match."
++    origin: "lens:code-affected-set"
++  - id: F8
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap.go#runTestMap
++    summary: A map call computes its scope with no deadline, so a stalled go list hangs it, where a plain call is bounded by preTierCeiling
++    fix: "In runTestMap, call computeScope under context.WithTimeout(runCtx, request.scope.preTierCeiling) and refuse on its expiry with a way forward, as runTest does through preTierExpiry. The test requests built by testMapScope carry no preTierCeiling, so set one there."
++    origin: "lens:code-correctness"
++  - id: F9
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMapLinkedPackages
++    summary: Nothing fails if the clean check between the coverage build and the tests is removed, so a package dirty at that point could run its tests
++    fix: In ADirtyLinkedPackageLeavesTheMapAsItWasAndCountsNothingAgainstTheCap, record the coverage runs (testMapLymSeenEnv) and assert that no test of caller or follower ran.
++    origin: "lens:code-tests"
++  - id: F10
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMap
++    summary: "No row names a dir/... target, so the subtree filter below a directory other than the module root is untested"
++    fix: "In AnEllipsisTargetMapsEveryPackageBelowIt, add a call with a `<dir>/...` target over a fixture package that has a sibling sharing its name prefix, such as `linked/...` in the linked-packages fixture, and assert the built set."
++    origin: "lens:code-tests"
++  - id: F11
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMap
++    summary: No test covers a package with no map whose test file does not parse, which must enter the set and record the failure
++    fix: Add a subtest that commits a package with no map and an unparsable _test.go file, maps it by name, and asserts it is listed in failed, written with a BuildFailure and absent from left_out.
++    origin: "lens:code-tests"
++  - id: F12
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMap
++    summary: ATiersTestsRunBeforeTheNextTiers shows only that the tiers do not overlap, so reversing their order still passes
++    fix: In that subtest, record the order in which the stand-in runs the two tests and assert that the tier0 test ran first.
++    origin: "lens:code-tests"
++  - id: F13
++    severity: LOW
++    class: design
++    location: internal/gatecli/testmap_integration_test.go#TestGateTestMapInATaskWorktreeKeepsItsOwnMaps
++    summary: The whole-module dirty check has no row for a module below the worktree root
++    fix: "In the task-worktree test, whose module lies under backend, fail the go list (testMapFailListEnv) once with an untracked file under backend, asserting the package is unmeasured naming it, and once with an untracked file outside backend, asserting the failure is recorded."
++    origin: "lens:code-tests"
++---
++
++The diff makes the change D1 to D9 settle: every card's work is present, and the deleted symbols have no reference left in `internal/` or `cmd/`.
++`go vet` over `internal/gatecli`, `internal/testcover` and `internal/gateslot` passes; I ran no test.
++No finding blocks. The open points are two stale texts and two stale log prefixes, one leftover of the old planning, one unbounded wait, missing test coverage and a missing commit trailer.
++
++### [MEDIUM] Overview still describes the deleted planning
++
++**Location:** `docs/overview.md:407`
++
++**Issue:** The line says `internal/testcover` compares a map with a commit to plan re-measures or to name a miss.
++`upkeep.go`, `testselect.go` and `declcompare.go`, which did that, are deleted in this range.
++
++### [MEDIUM] Per-test blocks of side-by-side tests are unpinned
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMap`
++
++**Issue:** `TestAlphaOne` is tier0 and `TestAlphaTwo` tier1, and the tiers run one after the other.
++The pair forced to overlap covers the same block, so workers sharing a profile path would pass.
++
++### [MEDIUM] The per-tier parallel bound is unpinned
++
++**Location:** `internal/gatecli/testmapstamp_test.go#TestMapSideBySide`
++
++**Issue:** The `cappedTo` rows ignore the argument, and the `asGiven` rows expect the memory quotient.
++No row fails when the wrong parallel reaches the clamp.
++
++### [MEDIUM] Removed checks have no trailer
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMap`
++
++**Issue:** The commits after the first two carry no `Loosened-Check:` trailer, and no trailer in the range names these two removed checks.
++
++### [LOW] Log messages name the retired verb
++
++**Location:** `internal/gatecli/testmappackage.go#testMapRun.runTest`
++
++**Issue:** The two warnings open `gate testmap:`, while every refusal of the run was reworded.
++
++### [LOW] Template comment gives a map run a lym build
++
++**Location:** `internal/gateslot/template.yaml:5`
++
++**Issue:** The comment bounds each "coverage, mutant and lym build of a coverage map run, ...", and a map run now builds no `lym`.
++
++### [LOW] Kept-entry merge outlived its planning
++
++**Location:** `internal/gatecli/testmappackage.go#fillMapTests`
++
++**Issue:** `mapPackage` starts every map empty and adds only spawn-marked entries.
++The re-indexing and the doc comment's promise about kept entries' keys describe a case that cannot occur.
++
++### [LOW] Scope computation has no ceiling
++
++**Location:** `internal/gatecli/testmap.go#runTestMap`
++
++**Issue:** `runTest` returns into the map run before it builds the pre-tier context.
++`computeScope` can run `go list` and relies on its context to end a stalled one.
++
++### [LOW] The check before the tests is unpinned
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMapLinkedPackages`
++
++**Issue:** The check after the tests gives the same unmeasured reason, so removing the earlier check passes.
++
++### [LOW] No `dir/...` target row
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMap`
++
++**Issue:** Only `./...` is tried.
++
++### [LOW] No row for an unparsable test file
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMap`
++
++**Issue:** `leftOutReason` lets such a package in so that its failure is recorded; the `garbled` fixture breaks a non-test file instead.
++
++### [LOW] Tier order is unpinned
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMap`
++
++**Issue:** D4 runs tier0 first, and the subtest named for that order checks only separation.
++
++### [LOW] No subdirectory-module row for the whole-module check
++
++**Location:** `internal/gatecli/testmap_integration_test.go#TestGateTestMapInATaskWorktreeKeepsItsOwnMaps`
++
++**Issue:** The failed-listing subtest runs only with the module at the worktree root, so the `moduleRel` filter of `dirtyModuleFile` is untested.
++
++## Rejected
++
++- Records-side paths can mark a root package unmeasured (code-correctness): `dirtyOwnedFile` predates this range unchanged, card 4 prescribes it, and the case needs a package that owns the records directory.
++- Help sentences dropped from `testCmd.Long` (code-affected-set): the 2000-byte cap in `cmd/lym/clitree_test.go` forces long text into the package doc when the `--map` paragraph is added.
++- `lym gate test --map` spelled literally in refusals (handler, `PATTERN-code-conventions`): message prose spells command names throughout the package, while the flag registration, the replay words and the slot site use constants.
+diff --git a/docs/research/weaver/bench-2026-11-27/reviews/weaver-launch-manifest-parity.md b/docs/research/weaver/bench-2026-11-27/reviews/weaver-launch-manifest-parity.md
+new file mode 100644
+index 000000000..4b912dfa6
+--- /dev/null
++++ b/docs/research/weaver/bench-2026-11-27/reviews/weaver-launch-manifest-parity.md
+@@ -0,0 +1,231 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: scope
++    location: internal/shuttleparity/tables.go:383
++    summary: "The seat catalog never builds the unassisted burler reviewer: both SeatTables calls set Assist, so burler-template-reviewer is neither compared nor printable"
++    fix: "In burlerSeatTables, also call engine.SeatTables for the solo and the fanned profile with RunOpts that set no Assist and no AssistFan (Round only), under RolePrefix values distinct from the assisted calls so no two catalog seats share a name. Keep the two assisted calls for the assistant seat and the assisted chair."
++    origin: lens:code-scope
++  - id: F2
++    severity: BLOCKING
++    class: consistency
++    location: internal/shuttleengine/claudeengine/manifest.go:23
++    summary: "PATTERN-code-conventions: the diff declares a constant for CLAUDE.local.md while the same package (capabilities.go:35) and heddle's target table (target.go:68) still spell the literal"
++    fix: "Declare the file name once as an exported constant in internal/heddleengine (which renders the file and which claudeengine already imports). Use it in the claude-file row's File and ReRender in target.go, in InstructionFiles in claudeengine/capabilities.go and in claudeengine/manifest.go, and delete localInstructionFileName."
++    origin: lens:code-affected-set
++  - id: F3
++    severity: BLOCKING
++    class: consistency
++    location: internal/heddleengine/target.go:68
++    summary: "PATTERN-code-conventions: the diff adds second \"claude\" and \"codex\" literals to the target table beside the ones on the prompt rows"
++    fix: "Declare one constant per engine name in internal/heddleengine/target.go and use it as the Engine of both the file row and the prompt row of that engine in targetTable."
++    origin: lens:code-affected-set
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: internal/shuttleparity/tables.go:379
++    summary: "Burler seats are cataloged only under the stand-in prefixes solo and fanned, so lym shuttle manifest refuses the strand role a real round carries, such as code-burler-review"
++    fix: "Make the verb resolve a real burler strand role. Build the unassisted solo seats of F1 with an empty RolePrefix, so burler-review and burler-fix are catalog names. In LookupSeat, when no seat matches exactly, resolve a name of the form <prefix>-burler-review or <prefix>-burler-fix (and the assistant's role) to the catalog seat of that base role. State this in the verb's Long and add a TestReport row for a prefixed burler role."
++    origin: lens:code-correctness
++  - id: F5
++    severity: MEDIUM
++    class: design
++    location: internal/shuttleengine/claudeengine/manifest.go:206
++    summary: "An empty global or above-root CLAUDE.md is listed by Claude and never by Codex, so the parity verdict reports a missing item no delivery can supply"
++    fix: "In nativeManifestItems, skip a setup.InstructionFiles entry whose Text is empty. Add a row to claudeengine's TestPrepare_WritesTheManifest with an empty global CLAUDE.md asserting no instruction-source item for it."
++    origin: lens:code-correctness
++  - id: F6
++    severity: MEDIUM
++    class: design
++    location: internal/shuttleparity/seats_test.go:72
++    summary: "The parity fixture exercises neither the refuse_raw guard row nor a pointer-delivered CLAUDE.md, so dropping either Codex delivery passes the parity tests"
++    fix: "In newParityFixture write a hub gate config with a non-empty refuse_raw list. Also anchor the fixture below its repository root with a CLAUDE.md and an AGENTS.md at the root, so Codex receives that CLAUDE.md only through the instruction pointers. Assert in TestSeats that the Claude manifest holds the refuse-raw guard item and the root CLAUDE.md item, so the fixture cannot lose either silently."
++    origin: lens:code-tests
++  - id: F7
++    severity: MEDIUM
++    class: design
++    location: cmd/lym/main.go:180
++    summary: "No test runs the installed passage reader, so dropping its FileEntries loop or swapping passages with file entries passes every test"
++    fix: "Add a test in cmd/lym that runs root's pre-run, then calls shuttleengine.StandingPassages over a fixture Bolt checkout whose heddle.json holds one agents-prompt and one agents-file entry, and asserts the slug, text and Engine of Passages and of FileEntries."
++    origin: lens:code-tests
++  - id: F8
++    severity: MEDIUM
++    class: design
++    location: internal/shuttleengine/codexengine/manifest.go:118
++    summary: "The read-back filter for text deliveries (passages, instruction files, listing, plugin contexts, notices) has no negative row in either engine, so listing every candidate passes"
++    fix: "In each engine's manifest_test.go add a case that calls codexManifest or claudeManifest with candidates whose text is absent from the launch line or appended prompt, and assert that no item is listed for them."
++    origin: lens:code-tests
++  - id: F9
++    severity: MEDIUM
++    class: design
++    location: internal/shuttleparity/parity_test.go:153
++    summary: "Nothing asserts that PrepareEach appends the edit-directive item, so deleting the append passes every test"
++    fix: "In TestCompare's PrepareEach rows, add one whose spec Prompt holds each engine's editdirective.Directive text and assert that each returned manifest holds the edit-directive item."
++    origin: lens:code-tests
++  - id: F10
++    severity: MEDIUM
++    class: design
++    location: internal/shuttlecli/manifest.go:27
++    summary: "The verb's production wiring is untested: building the set with shuttleengines.New, which runs plugin hooks and the sandbox probe against D10, fails no test"
++    fix: "Add a tier0 test of worktreeManifestReport over a fixture hub with a plugin session-start hook that would leave a marker file, asserting that the report lists the plugin context as omitted with ErrHookUnrun's text and that no marker appears. In TestManifestCmd give one stubbed manifest a non-empty Verdict and assert the output carries no verdict key."
++    origin: lens:code-tests
++  - id: F11
++    severity: LOW
++    class: design
++    location: internal/shuttleengine/claudeengine/manifest.go:201
++    summary: "nativeManifestItems drops setup.Warnings, so a malformed plugins file or unreadable SKILL.md silently shrinks the reference manifest"
++    fix: "After source.UserSetup in nativeManifestItems, log each entry of setup.Warnings with logger.Warn."
++    origin: lens:code-correctness
++  - id: F12
++    severity: LOW
++    class: design
++    location: internal/shuttleparity/parity_test.go:135
++    summary: "No row gives Unmet a spec with Requires, so ignoring spec.Requires passes every test"
++    fix: "In TestCompare's Unmet subtest add a spec with Requires set to RequirementBackgroundWake and expect exactly that requirement."
++    origin: lens:code-tests
++  - id: F13
++    severity: LOW
++    class: design
++    location: internal/shuttleengine/codexengine/manifest_test.go:19
++    summary: "The record's Role and PromptEngine on either engine, and Codex's hand-written prompt key, are unpinned"
++    fix: "Assert manifest.Role and manifest.PromptEngine in both engines' TestPrepare_WritesTheManifest, and add a HandWrittenPrompt row to the Codex table expecting prompt-engine/hand-written."
++    origin: lens:code-tests
++  - id: F14
++    severity: LOW
++    class: design
++    location: internal/shuttleengine/claudeengine/manifest_test.go:19
++    summary: "The Claude manifest's no-repository, anchor-below-root and user-setup-error branches have no row"
++    fix: "Add three rows to claudeengine's TestPrepare_WritesTheManifest: an anchor with no .git above it (only instruction-source/CLAUDE.md of the working directory), an anchor below the root (both CLAUDE.md files by root-relative key), and an unreadable global CLAUDE.md (Prepare still succeeds)."
++    origin: lens:code-tests
++  - id: F15
++    severity: LOW
++    class: design
++    location: internal/shuttleengine/codexengine/codexengine.go:297
++    summary: "No test covers a failed manifest write refusing the launch, in either engine"
++    fix: "Add a row to each engine's TestPrepare_WritesTheManifest that creates a directory at runDir/manifest.json and expects Prepare to fail naming that path."
++    origin: lens:code-tests
++  - id: F16
++    severity: LOW
++    class: design
++    location: internal/shuttleengine/manifest_test.go:89
++    summary: "Nothing pins that only a launch whose run record was saved keeps a manifest copy"
++    fix: "Add a row to TestRunner_Start_KeepsTheManifestCopy in which the run record save fails after Prepare wrote the record, and assert that no manifests directory exists."
++    origin: lens:code-tests
++---
++
++### [BLOCKING] The unassisted burler reviewer is in no catalog table
++
++**Location:** `internal/shuttleparity/tables.go:383`
++
++**Issue:** `opts.Assist` names a stand-in model for the solo call and stays set for the fanned one.
++`probeTable` therefore always passes an assistant through `withAssistant`, which replaces the chair's stencil with the assisted one.
++The reviewer a round with no assistant starts is never rendered, compared or printed.
++The acceptance criterion names every seat in `seatengine`'s tables.
++
++### [BLOCKING] CLAUDE.local.md is redeclared beside its literal spellings
++
++**Location:** `internal/shuttleengine/claudeengine/manifest.go:23`
++
++**Issue:** `PATTERN-code-conventions` asks for one constant, declared once and referenced everywhere.
++The new `localInstructionFileName` leaves `claudeengine/capabilities.go:35` and `heddleengine/target.go:68` spelling the name themselves.
++
++### [BLOCKING] Engine names are repeated literals in heddle's target table
++
++**Location:** `internal/heddleengine/target.go:68`
++
++**Issue:** The new `Engine` values on the two file rows repeat the literals of the two prompt rows.
++`PATTERN-code-conventions` forbids a repeated literal, and no `Pattern-Departure` trailer covers this one.
++
++### [MEDIUM] The verb refuses the burler roles real runs carry
++
++**Location:** `internal/shuttleparity/tables.go:379`
++
++**Issue:** Production rounds lead their burler roles with a recipe's `role_prefix`, or with none.
++The catalog holds only `solo-…` and `fanned-…` names, so a role copied from a run's record is refused.
++D10 takes a seat, and the verb's help says a seat is named by its strand role.
++
++### [MEDIUM] An empty instruction file reads as a Codex gap
++
++**Location:** `internal/shuttleengine/claudeengine/manifest.go:206`
++
++**Issue:** `instructionFiles` returns a 0-byte file as found.
++Claude lists it, while Codex's `inSetting("")` is false.
++`lym shuttle manifest` then exits non-zero for every seat on that machine, with a way forward nobody can follow.
++
++### [MEDIUM] The parity fixture leaves two deliveries unexercised
++
++**Location:** `internal/shuttleparity/seats_test.go:72`
++
++**Issue:** With no gate config, `shellguard.Rows` yields no refuse-raw row.
++With the anchor at the repository root under a marked `AGENTS.override.md`, no `CLAUDE.md` reaches Codex through the pointers.
++The acceptance criterion says dropping any one Codex delivery fails the test.
++
++### [MEDIUM] The production passage reader is never run by a test
++
++**Location:** `cmd/lym/main.go:180`
++
++**Issue:** The existing pre-run test checks only that the reader is installed.
++The engine and parity tests install readers of their own.
++
++### [MEDIUM] The read-back filter for text deliveries is unpinned
++
++**Location:** `internal/shuttleengine/codexengine/manifest.go:118`
++
++**Issue:** The rows show items present, and absent only for guards, the nudge, a skill load and an unmarked file.
++Replacing `inSetting` or `appended` with a non-empty check passes, which would hide a dropped delivery from the parity test.
++
++### [MEDIUM] PrepareEach's edit-directive append is unpinned
++
++**Location:** `internal/shuttleparity/parity_test.go:153`
++
++**Issue:** Removing the append drops the item from both engines' manifests, so the comparison still passes and no row notices.
++
++### [MEDIUM] The verb's no-process wiring is unpinned
++
++**Location:** `internal/shuttlecli/manifest.go:27`
++
++**Issue:** `TestManifestCmd` stubs the whole report.
++D10's bounds (no plugin hook, no sandbox probe, no stored verdict in the output) rest on code no test runs or asserts.
++
++### [LOW] Claude's user-setup warnings are discarded
++
++**Location:** `internal/shuttleengine/claudeengine/manifest.go:201`
++
++**Issue:** `UserSetup` reports these causes as warnings with a nil error, and only the error is logged.
++
++### [LOW] Unmet is tested for forks alone
++
++**Location:** `internal/shuttleparity/parity_test.go:135`
++
++**Issue:** The driver's and the master's background-wake requirement could stop being reported unnoticed.
++
++### [LOW] Record header fields are unpinned
++
++**Location:** `internal/shuttleengine/codexengine/manifest_test.go:19`
++
++**Issue:** The verb prints `role` and `promptEngine`, and no `Prepare` test reads either.
++
++### [LOW] Three Claude manifest branches are untested
++
++**Location:** `internal/shuttleengine/claudeengine/manifest_test.go:19`
++
++**Issue:** Every row makes the anchor its own repository root with a readable user setup.
++
++### [LOW] The manifest write failure path is untested
++
++**Location:** `internal/shuttleengine/codexengine/codexengine.go:297`
++
++**Issue:** Cards 3 and 4 require the refusal, and swallowing the error passes every test.
++
++### [LOW] The copy's placement is untested
++
++**Location:** `internal/shuttleengine/manifest_test.go:89`
++
++**Issue:** Every row starts successfully, so moving `copyManifest` above `saveRunState` passes.
++
++## Rejected
++
++- code-tests F12 (guard keys expected through `shellguard.Rows`): the behaviour under test is that the manifest lists every row of the table, and the table's own contents belong to `shellguard`.
++- code-tests F5, code-correctness F3's second half: the same defect as F1, merged into it.
+diff --git a/docs/research/weaver/bench-2026-11-27/reviews/webster-board-viewer-server.md b/docs/research/weaver/bench-2026-11-27/reviews/webster-board-viewer-server.md
+new file mode 100644
+index 000000000..e701fc946
+--- /dev/null
++++ b/docs/research/weaver/bench-2026-11-27/reviews/webster-board-viewer-server.md
+@@ -0,0 +1,272 @@
++---
++verdict: BLOCKING
++findings:
++  - id: F1
++    severity: BLOCKING
++    class: design
++    location: internal/boardengine/board.html:241
++    summary: The edit form fills depends_on from the unmet dependencies only, so changing the field silently deletes every met dependency of the task.
++    fix: "Give the form the full stored list. Add a depends_on field (the entry's whole depends_on, as slugs) to ViewEntry in internal/boardengine/view.go, set it in viewEntry, name it in the doc.go projection text if it lists fields, and fill the form's depends_on in valuesOf from it instead of entry.waits_on.map(slugOfHandle). Keep waits_on for the facts line. Add a TestRenderBoardData assertion that a task depending on one done and one open entry carries both slugs in the new field."
++    origin: lens:code-correctness
++  - id: F2
++    severity: BLOCKING
++    class: design
++    location: internal/boardserve/run.go:170
++    summary: The watch loop wakes at once on every event of any file in the board directory, breaking the one-second floor of PATTERN-daemon-wakeups (carried-over watch-loop-no-one-second-floor).
++    fix: "In watchBoard, never start an iteration within watchBase of the previous one: after an event, wait out the rest of that second through opts.After (still honouring ctx.Done), coalescing the events that arrive meanwhile, then read the revision once. Pass the name filter to the watcher (opts.Watch(opts.BoardPath, <board.json name exported by boardengine>)) as D11 and card 5 say, and word the watchBoard comment, boardserve/doc.go and the pattern/PATTERN-daemon-wakeups.md bullet to match, stating the floor. Drive the TestRun watch row through the injected clock so it pins that a burst of events yields one wake per second."
++    origin: lens:code-affected-set
++  - id: F3
++    severity: BLOCKING
++    class: design
++    location: internal/boardcli/opener_linux.go:25
++    summary: The opener is waited on with cmd.Wait but its exit is never logged, though PATTERN-child-processes requires a teardown log wherever a spawn is waited on.
++    fix: "In the waiting goroutine of startOpener, in both opener_linux.go and opener_windows.go (line 25), call err := cmd.Wait(), log the exit with logger.Info (opener name and error), then send err on the channel."
++    origin: lens:code-affected-set
++  - id: F4
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/board.html:400
++    summary: After a release, draft or undraft with a dirty form, the panel takes the new revision, so the next Save overwrites another writer's change with no stale refusal.
++    fix: "In send, do not advance panel.revision of a dirty panel past a change it never showed: take answer.entry.revision only when the action's request revision (body.revision) equals panel.revision. Otherwise leave panel.revision as it is, so the next Save is refused as stale and shows the fresh entry."
++    origin: lens:code-correctness
++  - id: F5
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/board.html:293
++    summary: When an entry's kind changes (another writer or the page's own promote), panelFor builds a new panel and discards the unsent edit, its message and the fresh block.
++    fix: "In panelFor, when the existing panel is dirty and the kind differs, keep the typed values: build the new panel's inputs, copy each dirty control's value, its baseline and the old revision into it, and carry over the message and fresh nodes. Only a clean panel is rebuilt from scratch."
++    origin: lens:code-correctness
++  - id: F6
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/board.html:342
++    summary: The fresh entry shown on a stale refusal omits project and dependencies, so a conflict in either is invisible beside the unsent edit.
++    fix: "In showFresh add a project line (slugOfHandle of entry.project, root for the root handle) and, for a task, a depends_on line from the full dependency list F1 adds."
++    origin: handler
++  - id: F7
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/board.html:275
++    summary: A body with CRLF, or a title or brief with a newline, differs from its browser-normalised control value, so the panel is dirty from the start, never refreshes and rewrites the field on Save.
++    fix: "In fill, after assigning the controls, record as baseline what each control reports back (panel.baseline[name] = control.value for every control just filled), not the raw entry value."
++    origin: lens:code-correctness
++  - id: F8
++    severity: MEDIUM
++    class: design
++    location: internal/boardserve/write.go:117
++    summary: create accepts fields.kind project, so a POST creates a project, which D10 limits to tasks and notes and Scope excludes.
++    fix: "In applyWrite, before any write, refuse a create whose fields.kind is boardengine.KindProject (and any kind other than task or note that is given), and refuse an edit whose slug is among view.Projects, each naming the way forward (lym board upsert). Add both as rows of the refused-and-changing-nothing table in server_test.go."
++    origin: lens:code-scope
++  - id: F9
++    severity: MEDIUM
++    class: design
++    location: internal/boardcli/open.go:137
++    summary: The spawned server's stderr alone goes to the log while serve reports its failures on stdout, so why it failed to start is lost and open tells the operator to end a hung process.
++    fix: "In the serve RunE (internal/boardcli/cli.go), also write a Run error to os.Stderr; in spawnServer set cmd.Stdout = logFile as well as cmd.Stderr, so the PersistentPreRunE's config and resolve errors reach the server log."
++    origin: lens:code-correctness
++  - id: F10
++    severity: MEDIUM
++    class: design
++    location: .gitattributes:22
++    summary: The new go:embed target board.html is not pinned to LF, so the embedded and committed bytes depend on core.autocrlf (carried-over board-html-not-pinned-to-lf).
++    fix: "Add the line `internal/boardengine/board.html text eol=lf` to .gitattributes beside the other go:embed targets."
++    origin: lens:code-affected-set
++  - id: F11
++    severity: MEDIUM
++    class: design
++    location: internal/boardcli/cli.go:463
++    summary: "Verb wiring D5, D11 and D12 rely on has no test: strand name to keep-warm cap, the runproc registration, and an orch name proceeding (carried-over verb-wiring-behaviors-untested)."
++    fix: "Add to TestBoardServeScenario a read of the hub's runproc records asserting one RoleBoardServer record under HubOwner. Add to TestServeOpenRefusals an orch-strand row that reaches the --board-path refusal. Pin the cap wiring by moving the strand-to-OpenerCap choice (cli.go:463-465) into a function that runOpen's production deps call and testing it with a strand name set and empty."
++    origin: lens:code-tests
++  - id: F12
++    severity: MEDIUM
++    class: design
++    location: internal/boardengine/view_test.go:182
++    summary: "The projection's displayed values are barely pinned: no row asserts a decoded body, title, brief or handle, or a named decision_file."
++    fix: "In TestRenderBoardData assert from literals the decoded body of the </script> entry, an entry's title, brief and handle, a project's title, brief and labels, and decision_file == decision-<slug>.md for a discussed entry on the Render path."
++    origin: lens:code-tests
++  - id: F13
++    severity: MEDIUM
++    class: design
++    location: internal/boardserve/server_test.go:442
++    summary: The file route's decision-file and project design-file branches have no test.
++    fix: "Add to TestServer/Files a discussed entry's decision file and a project's design file, each asserted to be served with its bytes."
++    origin: lens:code-tests
++  - id: F14
++    severity: MEDIUM
++    class: design
++    location: internal/boardserve/run_test.go:53
++    summary: The watch timer's doubling from one to eight seconds and its reset on a change are unpinned, since the fake After ignores the duration.
++    fix: "Have stepClock.After record each requested duration and add a TestRun row asserting 1s, 2s, 4s, 8s, 8s, then 1s after a board change."
++    origin: lens:code-tests
++  - id: F15
++    severity: LOW
++    class: design
++    location: internal/boardserve/write.go:140
++    summary: The page's promote drops PromoteTo's RecordWarning, so a Sketch whose body outran its record is released with no warning.
++    fix: "Return the PromoteResult's RecordWarning from promote through applyWrite, answer it as a warning key on success, and show it as text in the panel's message in board.html send. Add a server_test.go row."
++    origin: lens:code-correctness
++  - id: F16
++    severity: LOW
++    class: design
++    location: internal/boardserve/run.go:132
++    summary: A failure of serving.Serve is swallowed; the log says only that the server exits as stopped.
++    fix: "In the Serve goroutine, write the error to opts.Log before calling stopWatching."
++    origin: lens:code-correctness
++  - id: F17
++    severity: LOW
++    class: design
++    location: internal/boardcli/open.go:75
++    summary: When the lock holder exits while open waits, open never spawns, and after the bound tells the operator to end a process that is gone.
++    fix: "In runOpen's wait loop, when open spawned nothing yet and the lock now reads free, resolve the prime, spawn once, set Started, and go on waiting. Add a TestRunOpen row."
++    origin: lens:code-correctness
++  - id: F18
++    severity: LOW
++    class: design
++    location: internal/boardengine/board.html:365
++    summary: The retry bound is measured from the first attempt's start, so a long poll that fails late (after a suspend, say) gets little or no retry before the page gives up.
++    fix: "In request, set started at the first failure instead of before the first attempt."
++    origin: handler
++  - id: F19
++    severity: LOW
++    class: design
++    location: internal/boardserve/server_test.go:155
++    summary: "Untested server paths: release, draft and undraft of a project, a write targeting a project, a wrong method (405), an empty slug, and refusal of new requests once exit begins."
++    fix: "Add the first four as rows of the existing TestServer tables, and in TestRun's exit-with-write-in-flight row assert Probe(server) fails while the write is still blocked."
++    origin: lens:code-tests
++  - id: F20
++    severity: LOW
++    class: design
++    location: internal/fabricengine/hubworkspace.go:236
++    summary: The branch for a beam whose anchor cannot be read (file written without hook members) has no test.
++    fix: "Add a TestRegenerateHubWorkspace row with a beam whose anchor lymcwd.NamedWorktree cannot read, asserting the regeneration succeeds and that beam's file carries no hook member."
++    origin: lens:code-tests
++---
++
++The review range is `932c0b3eb1ae2cc1fa4788cfee22166e3214c2ab..HEAD`.
++No change description exists under `_lym/landing/`, and no PATTERN change is declared.
++No build or test was run in this round; the findings come from reading the code.
++
++Of the findings the decision record carries over from the earlier round:
++
++- `watch-loop-no-one-second-floor` is still open (F2).
++- `board-html-not-pinned-to-lf` is still open (F10).
++- `verb-wiring-behaviors-untested` is judged still open in part (F11).
++- `page-busy-loops-on-absent-board-json` is fixed: the page now sleeps a second between requests while the revision is empty.
++
++### [BLOCKING] Editing dependencies deletes the met ones
++
++**Location:** `internal/boardengine/board.html:241`
++**Issue:** `valuesOf` fills the field from `entry.waits_on`, which `viewEntry` builds from `unmetDependencies`.
++A task depending on a done `a` and an open `b` shows only `b`.
++Adding `c` sends `["b","c"]`, and the upsert replaces the stored list, so `a` is lost with no message.
++
++### [BLOCKING] Watch loop has no one-second floor
++
++**Location:** `internal/boardserve/run.go:170`
++**Issue:** An event falls straight through to a full iteration, and the watcher is opened with no name filter.
++One board write renders many files there, so the loop hashes `board.json` and checks the binary many times within milliseconds.
++`PATTERN-daemon-wakeups` allows at most one wake a second.
++The back-to-back binary checks can also satisfy the two-sighting rule of `selfexec` while a deploy is still copying.
++
++### [BLOCKING] Opener's exit is not logged
++
++**Location:** `internal/boardcli/opener_linux.go:25`
++**Issue:** Only the spawn is logged.
++`PATTERN-child-processes` requires a teardown log wherever the starter waits, and only a `proc.Reap` spawn is excused.
++`opener_windows.go` has the same line.
++
++### [MEDIUM] Action on a dirty form hides another writer's change
++
++**Location:** `internal/boardengine/board.html:400`
++**Issue:** The form holds a typed title at revision R1 while another writer moves the entry to R2.
++The `draft` button sends R2 and succeeds, the dirty panel takes the new revision, and Save then overwrites the other writer's title unrefused.
++
++### [MEDIUM] Kind change discards the unsent edit
++
++**Location:** `internal/boardengine/board.html:293`
++**Issue:** A panel is reused only while the kind matches.
++D10 requires the unsent edit to stay in its form.
++
++### [MEDIUM] Fresh entry omits project and dependencies
++
++**Location:** `internal/boardengine/board.html:342`
++**Issue:** D10 shows the fresh entry beside the unsent edit, but two of the editable fields are missing from it.
++
++### [MEDIUM] Normalised field values read as unsent edits
++
++**Location:** `internal/boardengine/board.html:275`
++**Issue:** A textarea turns CRLF into LF and a text input strips newlines, while the baseline keeps the raw value.
++
++### [MEDIUM] The server's create makes projects
++
++**Location:** `internal/boardserve/write.go:117`
++**Issue:** `fields.kind` is passed to the upsert unchecked.
++D10 lists create of "a task or a note", and Scope puts project create or edit out.
++
++### [MEDIUM] Server start failures are lost
++
++**Location:** `internal/boardcli/open.go:137`
++**Issue:** `cmd.Stdout` is nil, and `serve` and its pre-run report errors on stdout.
++A broken `board.yaml` leaves no cause in the log, and `open` refuses after its bound with advice about a hung process.
++
++### [MEDIUM] board.html is not pinned to LF
++
++**Location:** `.gitattributes:22`
++**Issue:** The file's own header pins `go:embed` targets, and `git check-attr eol` answers `unspecified` for `board.html`.
++
++### [MEDIUM] Verb wiring is untested
++
++**Location:** `internal/boardcli/cli.go:463`
++**Issue:** Removing the keep-warm cap wiring or the `runproc` registration fails no test, and no row shows an orch strand name passing.
++
++### [MEDIUM] Projection values are barely asserted
++
++**Location:** `internal/boardengine/view_test.go:182`
++**Issue:** The escaping row asserts only absence, so it passes with the body dropped.
++Only the empty `decision_file` case is asserted.
++
++### [MEDIUM] File route branches untested
++
++**Location:** `internal/boardserve/server_test.go:442`
++**Issue:** Only an entry's design file is served by a test.
++
++### [MEDIUM] Watch backoff untested
++
++**Location:** `internal/boardserve/run_test.go:53`
++**Issue:** A fixed or never-reset interval passes every test.
++
++### [LOW] Promote warning dropped
++
++**Location:** `internal/boardserve/write.go:140`
++**Issue:** The command line's promote reports that a Sketch's body changed after its record was stored; the page reports plain success.
++
++### [LOW] Serve error swallowed
++
++**Location:** `internal/boardserve/run.go:132`
++**Issue:** An accept error only cancels the watch, and `Run` returns nil.
++
++### [LOW] open does not recover from a server exiting mid-wait
++
++**Location:** `internal/boardcli/open.go:75`
++**Issue:** A server closing its listener just before releasing the lock reads as held on the first check, and the loop never spawns once the lock is free.
++
++### [LOW] Retry bound starts too early
++
++**Location:** `internal/boardengine/board.html:365`
++**Issue:** `started` is set before the first attempt, and a long poll attempt alone can last most of the bound.
++
++### [LOW] Untested server paths
++
++**Location:** `internal/boardserve/server_test.go:155`
++**Issue:** The project-target, wrong-method, empty-slug and closed-listener behaviours have no row.
++
++### [LOW] Unreadable beam anchor untested
++
++**Location:** `internal/fabricengine/hubworkspace.go:236`
++**Issue:** The degrade path has no row.
++
++## Rejected
++
++- code-affected-set F4, `docs/overview.md` board section silent on the new verbs: no card or repository rule asks for that text.
++- code-correctness F9, a hand-run `serve` leaves the log without its pid: the plan sets stderr as the log, so the finding is against the answer key.
