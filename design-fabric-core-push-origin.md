@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-fabric-core-push-origin.md)
 
-Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
+Depends on: [`hardener-study-faults`](design-hardener-study-faults.md), [`missing-origin-unreachable`](design-missing-origin-unreachable.md), [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md)
 
 Filed from the Sketch `fabric-git-free-core`.
 

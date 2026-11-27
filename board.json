@@ -446,13 +446,15 @@
       "issues": [],
       "recipe": "tapestry",
       "depends_on": [
-        "hardener-study-faults"
+        "hardener-study-faults",
+        "missing-origin-unreachable",
+        "runpusher-removed-worktrees"
       ],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `fabric-git-free-core`.\n\nTakes: the foundation part's layout, core types, reader and executor loop\nDelivers: the rules of pushclassified, pushanchored, coalesce, failedpush, origin, originreads, originreconcile, originreconcileended, originreconcilemoves, pendingflags, pusherreads, pushlockholder and remoteonly in internal/fabriccore as phase and action-list rules over made-up snapshots, with the retry loop as wait actions and OriginSeams' teardown as a seam-call action; the engine running them, with rejectionRetryKind's error-to-class mapping and the live-pair probe before an origin move kept in the engine; these files' shedrun and shedengine imports cut: run paths, the prime run lock and the status codec reach fabric through required seams, the status readers return bytes their callers decode; D13's seam installer in internal/fabriccli, its call from cmd/lym/main.go and internal/hubforge's one-time call, each required seam's setter with its restore, the unset-seam refusal row and engine test, and shed's adapter with its test in the shed module; the D12 moves of this concern's boardkit and boardengine tests, such as pushclasses, pushanchored and originreconcile*, to internal/boardengine; PATTERN-fabric-boundary's background recorder clause restated as D4 words it, since this part's executor first records entries. Under the parent's added entry 'The restructure cuts fabric's test code, it does not only move it', this concern's tests shrink: a test is kept or moved only where it alone guards a rule, at the lowest tier that can check it, duplicates and the same rule tested at several tiers are deleted, not moved, and the change description lists every deleted test and, for each kept or moved test, the rule it alone guards\nExports: the required-seam installer and setters later parts add seams to; the push and origin core rules ReconcileOrigin callers reach through the unchanged public verbs\n\nThe part changes these packages:\n\n- internal/fabricengine (about 4100 changed lines)\n- internal/fabriccore (about 2500 changed lines)\n- internal/fabriclayout (about 200 changed lines)\n- internal/testkit/fabrickit (about 150 changed lines)\n- internal/fabriccli (about 250 changed lines)\n- internal/hubforge (about 20 changed lines)\n- cmd/lym (about 30 changed lines)\n- internal/shedengine (about 400 changed lines)\n- internal/boardengine (about 1200 changed lines)\n- pattern (about 20 changed lines)\n",
       "created": "2026-11-26T21:44:40Z",
-      "revised": "2026-11-27T18:23:36Z",
+      "revised": "2026-11-27T21:40:02Z",
       "profile": "solid",
       "project": "fabric-core",
       "discussed": true,
@@ -716,7 +718,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Aim\n\n`docs/research/speed/test-time-measure-2026-11-27/report.md` measured `internal/battencli` at 33 to 75 s of tier1 test time.\n`TestBattenIntegration_Rows` (54 s) runs its steps one after another on one hub copy and sets the package's floor.\n\n## Work\n\n- Split it into groups with a hub each, so the groups run in parallel.\n- Keep every assertion; drop none.\n- Leave the cancel tests' structure for a later task.\n- The two measured runs differed by more than a factor of two: measure the package before and after three times each, and put them in the change description.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-27T17:58:08Z",
       "revised": "2026-11-27T17:58:08Z",
       "profile": "light",
@@ -880,10 +882,10 @@
     },
     {
       "id": 1764,
-      "handle": "B2",
+      "handle": "T1",
       "slug": "missing-origin-unreachable",
       "title": "A missing local origin is not classed as unreachable by push or origin reconcile",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric",
@@ -892,19 +894,23 @@
       "issues": [
         294
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hardener-study-faults"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).\n\n## What happened\n\nAn origin that is missing on disk is not treated as unreachable:\n\n- A removed bare repository used as origin is classed `other` by the push failure classification, not as transport.\n- A remote pointing at a missing directory makes the origin reconcile return an error instead of reporting origin unreachable.\n\nTests of an owed push or an unreachable origin had to use a refused connection URL instead.\n\n## Why it is abnormal\n\nAn origin that cannot be reached for a path reason, such as a missing or unmounted directory, takes a different route from one that refuses a connection.\nIt may therefore stop a run where an owed push would be expected.\n\n## What to do\n\nDecide how a missing local remote should be classed.\nEither treat it as unreachable in both places, or document that only network failures count.\n\nProvenance: task `push-retry-not-halt`, notes `06-pusher-target-kinds.md`, `12-finalize-local-landing.md`.\n",
       "created": "2026-11-27T21:39:07Z",
-      "revised": "2026-11-27T21:39:07Z"
+      "revised": "2026-11-27T21:40:02Z",
+      "profile": "light"
     },
     {
       "id": 1765,
-      "handle": "B3",
+      "handle": "T4",
       "slug": "finalize-owed-tips-gate",
       "title": "Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "landing"
@@ -912,19 +918,23 @@
       "issues": [
         292
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "beam-member-parent"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).\n\n## What happened\n\nWith local landing, a parent that is ahead of origin by owed landing tips always reads as moved to Finalize's locked pass.\nThe lock-free pass records the upstream tip (`parentMergeTip`) as the gated tip, while the parent's head is past it.\nEvery such landing therefore loses each of its `landing.finalize_lost_races` races, then merges and runs verify under the parent lock.\nThe behavior was left as it is because `gateUnlocked` and `parentMergeTip` were outside the card's targets.\n\n## Why it is abnormal\n\nThe landing is correct, but the parent lock is held across the verify for as long as an earlier landing's push is owed.\nThe lock-free gate gives no benefit in that state, and other landings on the same parent wait.\n\n## What to do\n\nMake the lock-free pass gate against the parent's local head when that head is ahead of origin only by owed landing tips.\n\nProvenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.\n",
       "created": "2026-11-27T21:39:10Z",
-      "revised": "2026-11-27T21:39:10Z"
+      "revised": "2026-11-27T21:40:02Z",
+      "profile": "light"
     },
     {
       "id": 1766,
-      "handle": "B4",
+      "handle": "T5",
       "slug": "webster-reset-push-sync",
       "title": "webster reset records push is asynchronous and unrecorded, against the decision record",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",
@@ -934,19 +944,21 @@
       "issues": [
         293
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).\n\n## What happened\n\nThe task's decision record lists the records push of `webster reset` among the pushes that stay synchronous, because its owed record holds the run at its transition.\nThe code differs: `fabricSync` in `webstercli` only commits through `Fabric.CommitWithTrailers`, whose spawn starts the pusher.\nThe pusher writes no record for an owed push.\nNo card targeted that path, so it was not changed.\nThe pattern documents `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` describe the code as it is.\n\n## Why it is abnormal\n\nThe approved decision and the delivered behavior disagree: a failed push of the reset's records commit does not hold the run.\nNo card covered this item of the decision record, and the gap surfaced only during documentation.\n\n## What to do\n\nDecide whether the decision record or the code is right.\nIf the record is right, make the reset's records push synchronous and recorded, and update the two pattern documents.\nAlso consider checking at plan review that every decision item is covered by a card.\n\nProvenance: task `push-retry-not-halt`, note `20-dobby-push-summary.md`.\n",
+      "body": "Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).\n\n## What happened\n\nThe task's decision record lists the records push of `webster reset` among the pushes that stay synchronous, because its owed record holds the run at its transition.\nThe code differs: `fabricSync` in `webstercli` only commits through `Fabric.CommitWithTrailers`, whose spawn starts the pusher.\nThe pusher writes no record for an owed push.\nNo card targeted that path, so it was not changed.\nThe pattern documents `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` describe the code as it is.\n\n## Why it is abnormal\n\nThe approved decision and the delivered behavior disagree: a failed push of the reset's records commit does not hold the run.\nNo card covered this item of the decision record, and the gap surfaced only during documentation.\n\n## What to do\n\nDecide whether the decision record or the code is right.\nIf the record is right, make the reset's records push synchronous and recorded, and update the two pattern documents.\nAlso consider checking at plan review that every decision item is covered by a card.\n\nProvenance: task `push-retry-not-halt`, note `20-dobby-push-summary.md`.\n\n## Orch decision\n\nThe decision record is right: make the records push of `webster reset` synchronous and recorded, so an owed push holds the run at its transition, and update `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` to match.\n",
       "created": "2026-11-27T21:39:12Z",
-      "revised": "2026-11-27T21:39:12Z"
+      "revised": "2026-11-27T21:40:03Z",
+      "profile": "light"
     },
     {
       "id": 1767,
-      "handle": "B5",
+      "handle": "T8",
       "slug": "runpusher-removed-worktrees",
       "title": "runpusher tries to start pushers for removed task worktrees",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric"
@@ -954,19 +966,23 @@
       "issues": [
         286
       ],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "hardener-study-faults"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).\n\nOn `lym board sync` from the prime, runpusher logs one WARN per task worktree that was removed long ago:\n\n`runpusher: the pusher did not start ... resolve main worktree: list git worktrees in \"\u003chub\u003e/\u003cslug\u003e\": dotgit: not a git repository: no .git above \u003chub\u003e/\u003cslug\u003e`\n\nFive such slugs were listed, all of runs that landed and whose pairs were removed through lym fabric. The pusher's run registry keeps entries for worktrees that no longer exist. Expected: entries for removed pairs are dropped at removal (or skipped silently when the directory is gone).",
       "created": "2026-11-27T21:39:15Z",
-      "revised": "2026-11-27T21:39:15Z"
+      "revised": "2026-11-27T21:40:04Z",
+      "profile": "light"
     },
     {
       "id": 1768,
-      "handle": "B6",
+      "handle": "T9",
       "slug": "discussed-payload-map-race",
       "title": "boardengine: TestDiscussedPayload crashes with concurrent map writes",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "board"
@@ -974,12 +990,113 @@
       "issues": [
         289
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #289](https://github.com/Knatte18/loomyard/issues/289).\n\n## What happened\n\nA card gate in `internal/boardengine` crashed with `fatal error: concurrent map writes` in `TestDiscussedPayload`.\nThe batch being implemented did not touch that package, and a rerun of the same gate passed.\n\n## Why it is abnormal\n\nA concurrent map write is a data race in the test or in the code under it.\nIt fails gates at random for tasks unrelated to the package.\n\n## What to do\n\nRun `TestDiscussedPayload` repeatedly with the race detector, find the unsynchronized map, and fix it.\n\nProvenance: task `push-retry-not-halt`, note `05-pusher-interval.md`.\n",
       "created": "2026-11-27T21:39:18Z",
-      "revised": "2026-11-27T21:39:18Z"
+      "revised": "2026-11-27T21:40:04Z",
+      "profile": "light"
+    },
+    {
+      "id": 1769,
+      "handle": "T11",
+      "slug": "bouncer-stalemate-uncommitted",
+      "title": "Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "shed",
+        "burler"
+      ],
+      "issues": [
+        287
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "beam-member-parent"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #287](https://github.com/Knatte18/loomyard/issues/287).\n\n## Seen\n\nA motif run's Discussion-Bouncer escalated round 2 with cause `stalemate`, though the round's fixer had changed the decision record.\nThe fixer's round-2 edits to `_lym/discussion/decision-record.md` and `support-log.md`, which answered the one open finding as the review proposed, were in the records worktree but uncommitted.\nThe round's `round-2-changes.md` was empty, and the run agent reported that both round snapshots hash the review target to the SHA-256 of empty input (`e3b0c442…b855`).\nThe round-2 review itself saw the round-1 fixes and marked ten of eleven keys resolved, so reviewers read the working tree while the stalemate check did not.\n\n## Expected\n\nThe stalemate check hashes the same review target the reviewers read, so a round whose fixer changed the decision record is never a stalemate.\nAn empty hash input should fail loudly, not count as an unchanged target.\n\n## Workaround\n\nThe parent reads the decision record, confirms the finding is answered, and runs `lym loom circling accept \u003cslug\u003e`.\nA `continue` would stall at stalemate again.\n",
+      "created": "2026-11-27T21:39:20Z",
+      "revised": "2026-11-27T21:40:05Z",
+      "profile": "light"
+    },
+    {
+      "id": 1770,
+      "handle": "T13",
+      "slug": "review-fix-claims-checked",
+      "title": "Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "burler",
+        "stencil",
+        "webster"
+      ],
+      "issues": [
+        285,
+        288,
+        291,
+        290
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "beam-member-parent"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #285](https://github.com/Knatte18/loomyard/issues/285).\n\n## What happened\n\nIn a Code-Review round, a BLOCKING finding under `PATTERN-test-stand-ins` proposed a fix that depended on test infrastructure the repository does not have.\nIt asked for the affected tests to run over a shared session kit under `internal/testkit/` \"whichever carries the recorded session stand-in\", with `reed` and `creel` real.\n\n- No kit carries a recorded LLM session stand-in. `docs/research/no-fake-other-modules.md` says it \"does not exist yet\".\n- The same file says `testkit/shuttlefake` is not a stand-in for an LLM session, and lists it as a standing module stand-in.\n- A real `reed` needs tmux, which the affected `tier0` tests cannot spawn. The file puts a real `reed` at `tier2`.\n\nThe fixer could do only part of the finding and deferred the rest.\nThe partial fix itself needed new stand-ins, which the fix self-check then reported against `PATTERN-test-stand-ins`:\n\n\u003e fix-affected-set, MEDIUM: F2 is only partly met and adds stand-ins. Fixed differently: F2 is recorded as deferred with the remainder named above.\n\nThe deferral reason in the fixer report:\n\n\u003e Reed, creel and the LLM session are still stood in for: no kit holds a recorded session stand-in, a real reed needs tmux while these tests are tier0, and shuttlefake is itself a standing module stand-in. The parent decides whether to accept this or to build the infrastructure.\n\nThe judge left the finding open and tagged it `design-wrong`, and the segment stopped `awaiting` on cause `budget` with that BLOCKING finding open.\n\n## Why it is abnormal\n\nA proposed fix that cannot be carried out costs a fixer pass, adds code that breaks the rule the finding enforces,\nand ends in a parent escalation over a choice the review could have stated when it raised the finding.\n\n## What to do\n\nHave the review step check that any test infrastructure a proposed fix names (a kit, a recording, a stand-in, a tier able to run it) exists.\nWhen it does not, the finding says so and offers a fix that is possible without it,\nor is raised as a `decision` finding: accept the gap, or build the infrastructure.\nThe review stencils are under `contracts/stencils/burler/`.\n\nProvenance: task `pr-review-stalls-no-session`, note `burler-code-r1.md`.\n\n\n## From issue #288\n\nImported from [issue #288](https://github.com/Knatte18/loomyard/issues/288).\n\n## What happened\n\nIn a Code-Review round 1, two findings carried a `fix` key that could not be applied as written.\nThe fixer found this only by applying each one and running the gate, so each cost a failed gate run.\n\n- One fix asked to move read-only tests from `hubforge.CopyHub` to `hubforge.SharedHub`, and named a test to start with.\n  That test writes into its hub (a shared file lock can create the lock file).\n  The cleanup failed with `shared fixture ... was written to`, and the poisoned template then failed later tests that copy it.\n  The fixer disputed the finding as \"premise false\" and reverted the change.\n- One fix asked a test file to use an identifier that is unexported in another Go package\n  (the file belongs to the external `_test` package), so it did not compile.\n  The fixer applied it differently, through a re-export.\n\n## Why it is abnormal\n\nA `fix` key reads as a checked instruction.\nBoth of these rested on a claim that reading the code could have disproved:\nwhether the named test writes to the hub, including through the code it calls,\nand whether the identifier is visible from the file's declared package.\nThe review passed both on unchecked.\n\n## What to do\n\nHave the review stencils require that a proposed fix is checked against the facts it depends on before it is written:\nthe package clause and export status for any identifier the fix reuses,\nand the callee chain for any claim that code only reads.\nWhen the reviewer cannot establish such a fact, the `fix` text should say it is unverified.\n\nProvenance: task `webster-loom-tests-parallel`, note `burler-code-r1.md`.\n\n\n## From issue #291\n\nImported from [issue #291](https://github.com/Knatte18/loomyard/issues/291).\n\n## What happened\n\nSeveral cards of one approved plan stated things the code contradicts, and each implementer had to deviate:\n\n- A test was to count through the remote-attempt seam of `internal/gitexec`, which other packages cannot reach.\n- Some fields of the status push request were said to be read only by the push child, but `PushPairAnchored` also read one for its teardown lock and takeover read. The fix fell outside the card's targets, and a takeover subtest had to be removed.\n- The board pusher was to yield to a pause through the gate, but the gate only holds a process that `cmd/lym` reads as a detached child, so `--board` had to join that read.\n- Finalize's check for an owed push before the lock was scoped to the pull-request modes `trail` and `review`. `review` is the template default and can land locally, which the same card excluded from the check. Read literally, every default local landing on an owed parent would stop, breaking what the preceding card delivered.\n- A test was to reach a specific halt with a non-ignored untracked file, but such a file stops the earlier clean check, and git reports the collapsed directory rather than the file.\n\n## Why it is abnormal\n\nThe plan passed review with claims that reading the targeted code would have disproved, including one that contradicted another card.\n\n## What to do\n\nHave plan review verify each card's claims about readers, visibility and reachability against the code, and check cards against each other.\n\nProvenance: task `push-retry-not-halt`, notes `05-pusher-interval.md`, `06-pusher-target-kinds.md`, `13-finalize-pr-owed-check.md`.\n\n\n## From issue #290\n\nImported from [issue #290](https://github.com/Knatte18/loomyard/issues/290).\n\n## What happened\n\nA plan card added several exported functions to a new package whose only callers came in later cards.\nThe card gate then failed on `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain`, once a later card made a main package import that package.\nThe implementer added temporary allowlist entries in `cmd/lym/testonlycode_linux_test.go`.\nEach later card that adds a first caller then meets a stale-entry failure and has to remove its entry.\nThe cold fixer could not decide the failure and left it.\n\n## Why it is abnormal\n\nThe plan's card split could not pass the repository's own reachability guard, and neither planning nor plan review noticed.\nThe fix falls outside the card's targets, so the implementer and fixer have no sanctioned way through.\n\n## What to do\n\nHave plan writing and review keep a new production function in the same gated unit as its first caller,\nor give cards a defined way to carry a temporary allowlist entry and to retire it.\n\nProvenance: task `push-retry-not-halt`, note `05-pusher-interval.md`.\n",
+      "created": "2026-11-27T21:39:23Z",
+      "revised": "2026-11-27T21:40:06Z",
+      "profile": "light"
+    },
+    {
+      "id": 1771,
+      "handle": "T18",
+      "slug": "darn-writer-measure-gates",
+      "title": "Darn writer prompt forbids the gate calls a measurement entry requires",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "darn",
+        "stencil"
+      ],
+      "issues": [
+        283
+      ],
+      "recipe": "darn",
+      "depends_on": [
+        "beam-member-parent"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #283](https://github.com/Knatte18/loomyard/issues/283).\n\n## What happened\n\nA darn writer session ran an entry that is itself a measurement: one `lym gate test --tier \u003cn\u003e \u003cpackage\u003e` call per package and tier.\nThe writer's gate rules in `contracts/stencils/darn/darn-fragment-make-change-gated.md` say to run no `lym gate test`,\nbar one test class through the measuring call, and name two exceptions, neither of which covers measurement.\n\nThe writer followed the entry over the prompt: several hundred calls with `--wait --no-carry`, run in loops, about 70 minutes.\nIt did not ask its parent first.\n\n## Why it is abnormal\n\nThe prompt and the entry contradict each other, and the prompt says nothing about which wins.\nA writer that obeys the prompt cannot do the entry; one that does the entry breaks a stated rule on its own decision.\n\n## What to do\n\nGive the writer prompt a rule for an entry whose deliverable is gate measurements: either state that those gate calls are allowed\n(and with what limits), or tell the writer to ask its parent before running them.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
+      "created": "2026-11-27T21:39:25Z",
+      "revised": "2026-11-27T21:40:07Z",
+      "profile": "light"
+    },
+    {
+      "id": 1772,
+      "handle": "E8",
+      "slug": "gate-call-shows-slot-wait",
+      "title": "Timing a gate test call includes the slot wait; run time needs the run record",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [
+        284
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #284](https://github.com/Knatte18/loomyard/issues/284).\n\n## What happened\n\nA session timing packages through `lym gate test` found that a call's wall time includes the wait for a gate slot,\nup to 300 s in that run.\nTiming the calls therefore did not measure the test runs, and the session took its wall figures from `wall_seconds` in each run record.\n\n## Why it is a problem\n\nA caller who measures a gate call from outside gets a figure dominated by contention for slots,\nand has to know about the run records to get the run's own time.\nThe note does not say whether the call's own output separates the two.\n\n## What to do\n\nCheck that the result of `lym gate test` shows the slot wait and the run's wall time as separate values.\nIf it does not, add them; if it does, document in the verb's help where to read the run time without the wait.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
+      "created": "2026-11-27T21:39:28Z",
+      "revised": "2026-11-27T21:39:28Z"
     }
   ],
   "prime_owner": "neve",

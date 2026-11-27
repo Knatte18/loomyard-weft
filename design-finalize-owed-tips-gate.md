@@ -1,6 +1,8 @@
 # Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock
 
-`finalize-owed-tips-gate` · Note · bug, landing
+`finalize-owed-tips-gate` · Task · bug, landing
+
+Depends on: [`beam-member-parent`](design-beam-member-parent.md)
 
 Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).
 

@@ -1,6 +1,8 @@
 # runpusher tries to start pushers for removed task worktrees
 
-`runpusher-removed-worktrees` · Note · bug, fabric
+`runpusher-removed-worktrees` · Task · bug, fabric
+
+Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
 
 Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).
 

@@ -1,6 +1,6 @@
 # webster reset records push is asynchronous and unrecorded, against the decision record
 
-`webster-reset-push-sync` · Note · bug, webster, fabric, pattern
+`webster-reset-push-sync` · Task · bug, webster, fabric, pattern
 
 Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).
 
@@ -24,3 +24,7 @@ If the record is right, make the reset's records push synchronous and recorded, 
 Also consider checking at plan review that every decision item is covered by a card.
 
 Provenance: task `push-retry-not-halt`, note `20-dobby-push-summary.md`.
+
+## Orch decision
+
+The decision record is right: make the records push of `webster reset` synchronous and recorded, so an owed push holds the run at its transition, and update `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` to match.

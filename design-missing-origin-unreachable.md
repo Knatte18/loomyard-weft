@@ -1,6 +1,8 @@
 # A missing local origin is not classed as unreachable by push or origin reconcile
 
-`missing-origin-unreachable` · Note · bug, fabric, git
+`missing-origin-unreachable` · Task · bug, fabric, git
+
+Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
 
 Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).
 
