@@ -1,6 +1,6 @@
 # batten cancel --remove of a beam leaves the project's beam flag set
 
-`beam-cancel-keeps-flag` · Task · bug, batten · running · Drift-Verify
+`beam-cancel-keeps-flag` · Task · bug, batten · running · Code-Bouncer
 
 Imported from [issue #259](https://github.com/Knatte18/loomyard/issues/259).
 
