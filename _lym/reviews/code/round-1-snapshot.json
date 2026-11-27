@@ -1,0 +1,11 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "cc4e238d0e11689e8803c9a26112f9016883caf0",
+  "added_decisions": [
+    {
+      "title": "Cut only packages at 15 s or more",
+      "digest": "cab25298794854c3f4be31f14903eceb9d9da0d9993c0f3811e95222f3dceb26"
+    }
+  ]
+}
