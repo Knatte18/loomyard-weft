@@ -51,7 +51,7 @@
 - `plan:internal/runpusher#RecordLanding`
 - `plan:internal/runpusher#ParentTarget`
 - `plan:internal/runpusher#TargetRefused`
-- `plan:internal/pushledger#OwedTips`
+- `internal/pushledger#OwedTips`
 - `internal/loomcli#TestWire_EverySeamFilled`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_SamplerRecipe`

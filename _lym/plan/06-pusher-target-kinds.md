@@ -42,9 +42,9 @@
 - `internal/boardengine#ApplySkipEnv`
 - `internal/fabricengine#RefusedPushStands`
 - `internal/boardengine#Board.Sync`
-- `plan:internal/pushledger#BoardKey`
-- `plan:internal/pushledger#LandingKey`
-- `plan:internal/pushledger#List`
+- `internal/pushledger#BoardKey`
+- `internal/pushledger#LandingKey`
+- `internal/pushledger#List`
 - `internal/battencli#TestDobbyRuns_StartsThePusherOfOnlyAPairThisMachineOwns`
 - `internal/battencli#TestWiredStartPusher_StartsThePrimesPusherAndAStandingPairs`
 

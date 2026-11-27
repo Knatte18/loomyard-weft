@@ -44,10 +44,10 @@
 - `internal/battenshed#teardownCallRecorder`
 - `internal/fabricengine#TipsOnOrigin`
 - `plan:internal/fabricengine#LandingCommits`
-- `plan:internal/pushledger#HeldRecordsCommit`
-- `plan:internal/pushledger#OwedTips`
-- `plan:internal/pushledger#List`
-- `plan:internal/pushledger#Update`
+- `internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#OwedTips`
+- `internal/pushledger#List`
+- `internal/pushledger#Update`
 - `plan:internal/runpusher#RecordLanding`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_SamplerRecipe`

@@ -25,10 +25,10 @@
 
 **Uses:**
 - `internal/fabriclayout/doc.go`
-- `plan:internal/pushledger#HeldRecordsCommit`
-- `plan:internal/pushledger#OwedTips`
-- `plan:internal/pushledger#RecordsKey`
-- `plan:internal/pushledger#Update`
+- `internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#OwedTips`
+- `internal/pushledger#RecordsKey`
+- `internal/pushledger#Update`
 
 **Intent:** D5's hold: while a run's landing entry stands, and past a dropped landing until the pair goes, no push of the run's pair records sends the records commit the entry holds, nor any commit after it;
 and no ordinary push of a beam pair sends a landing commit its parent target has not yet judged.

@@ -1,29 +1,29 @@
 {
   "runGuid": "5016f5ab475a11e964a5512fe64fe303",
-  "planFingerprint": "b433e06a6b17c5b8b9175f9797c0df0a81c4723cdc7c4ac496cdd39004255caa",
+  "planFingerprint": "0271cffdb078a75b169a283cff4cdd340c38167d85fefcf899e771869cd789ec",
   "planFileHashes": {
     "00-overview.md": "a0d68e40b2375546df3bf8fe278ae20ac38431940188d26f2c30fd6f320eae52",
     "01-push-timing-config.md": "9b146dceda2b800a867e23d78246b3913d01636c3b9a945f71f2b2f2a192851a",
     "02-driver-network-wait.md": "e8bdbd15893fc14d6e296a04e4b862e60f916ac18314376411fe319f024b4b79",
-    "03-driver-wait-readers.md": "c79fb79cd0b7614e182ae31b1f0123fb9166d75bbb3823c88f090450d816d54c",
-    "04-push-ledger.md": "d0bc9461d5b4e98f51b8728842d0e4ec55fad99079bd9ffb81df033b1ffacf81",
-    "05-pusher-interval.md": "655af5cd0ba543cf1fa524a49ae33e0d36b92ff5b499279cc39092f5c1098b21",
-    "06-pusher-target-kinds.md": "eae36d52bb16251ba011859111b4da060c0002f726b21b3bb7ba8a881983b21e",
-    "07-spawns-start-the-pusher.md": "173a0358707931b4aededec9473e130317a16da4ebdf7a6212df48c1f8c4a3d4",
-    "08-owed-code-commits.md": "04bcbb8c074f2eaabde71f7adeacefce6d157b87827d4777ff1d87426d7acb8c",
-    "09-records-hold.md": "dab5f8d0678ee3cf9bd33092ad163c0f1c5a52ea19312d72f73ca40eb734aa5a",
-    "10-parent-push-git.md": "1f72d2ead69c5c91fbc5f1b5c9a458366796d211c7098c42f9b9ee54a4773c78",
-    "11-parent-pusher.md": "f5fe33ae83af24fff458c9a161d1802c5d4f3d1b7f7554600581059177f9aaa0",
-    "12-finalize-local-landing.md": "ec70e1cac8cf1d4a1a50b08a756b60f2088f9355d5badda03b6043216ef10be4",
+    "03-driver-wait-readers.md": "a245ae2f7486ea79e4b7c01c8ae1cbbcadaaae54aeb422b8af913617d350ecaa",
+    "04-push-ledger.md": "441039511c2f38bb743f32626b0409db14697fc8dbb82329eec6e838d4a713b5",
+    "05-pusher-interval.md": "70d1936af1ded8fbbe05824e2980785a5e9702afc67b2d7d26d85b25bcde65af",
+    "06-pusher-target-kinds.md": "885009be93ecde159abc7a73be5b2cd2e0918c6fecc5214f58cc2cf284c3a1de",
+    "07-spawns-start-the-pusher.md": "9e93cf8a1cb3ca56ec97a47d2bbda2a3c216d841d54c381065203e1d1cb3f6ad",
+    "08-owed-code-commits.md": "96dc7779f8aa3883febf273bb0850ae1cb2d9ab27804bbcd320d82c1db85b647",
+    "09-records-hold.md": "7ac42e9841b734edfbf6afe21834e3a3bf55a8bf7505cc2e299972e6060ac43b",
+    "10-parent-push-git.md": "4c61e13d8a1ebe9490f665264a8fa350296a4347ebf6e73034fb5b54de1d5122",
+    "11-parent-pusher.md": "7e88a234e7900566d71e6127bc69a9db0e12212b399f6b5d502ba809fd99045c",
+    "12-finalize-local-landing.md": "3c52a9b79f9b0eadbde3218300cc1b55d8e3b374b37a423d49ca340e1c030451",
     "13-finalize-pr-owed-check.md": "f7547dd760f796a875a8ab7ff0221e06f10fb9d4b3b3737cc8a8b94619b18dc2",
     "14-merge-in-leftovers.md": "72b26673fca55ce6265c912fc55e466db218d2ba2469be6fde2e36cea8889a93",
     "15-run-reader-past-merge.md": "e3b8fa87b930e68aa28dc2e53f686e3adaa9701d62b13be7d6c1698e6b030cb3",
-    "16-prime-pull-owed-tips.md": "77ed34d92b735c4bc754a03540fcba9ce5d72a35866da8e0e8dc9d55c23e17aa",
-    "17-catch-up-hands-to-pusher.md": "1d539e25a1001e0428668607d0f1670fe832c4eac5156b91a2c206c9ff5a2d0f",
+    "16-prime-pull-owed-tips.md": "f458e7755ba6f874fc9815a20f973d041b39584d2d9023c06179e40e06f3a193",
+    "17-catch-up-hands-to-pusher.md": "775064ef4ceca3cbdb6b5f296a3631db774ccaed62914c4b6cc9c2a3f891b4a7",
     "18-reset-hand-commit-guard.md": "1bf05242ce3ee4e78eb3649eca97885f44926cb822e58867a5daf81f134a1dcd",
-    "19-teardown-hands-to-dobby.md": "65585156c93f411ea43a62c32170deeddb1856e8419dd02839afce7c98895a26",
-    "20-dobby-push-summary.md": "e75f749d06d06e837eb2d8ed2ae618b446b53b54aee452900cd1af4521dc5555",
-    "21-sync-status-bar.md": "76f071f2674eafe8a768ca3b54bda23fc21841b9008ac772b1a1e6f713d086df",
+    "19-teardown-hands-to-dobby.md": "180035711cd25723cfc058b7986fbdb8282494ce98529cd91d5e6424a920d0b1",
+    "20-dobby-push-summary.md": "2fe5542ff51f4ab1bbd7d78395c9ef0183e2a506fd6c934812544728ca3db5da",
+    "21-sync-status-bar.md": "e6caaaa21332d8b897647e1a718baec8a71040a4fe1c67a43c09925cfa86aa6f",
     "22-edit-directives.md": "de155d6d06296ba12898504e9185c557032717b85f26f855fcd6968dc74d1658",
     "23-pattern-docs.md": "02170a9ac46e4d3a9c607e43d6a584a19f32e5ff89af51ecc59745f949a24857"
   },
@@ -775,25 +775,46 @@
         "04-push-ledger"
       ],
       "cardHashes": {
-        "03-driver-wait-readers": "c79fb79cd0b7614e182ae31b1f0123fb9166d75bbb3823c88f090450d816d54c",
-        "04-push-ledger": "d0bc9461d5b4e98f51b8728842d0e4ec55fad99079bd9ffb81df033b1ffacf81"
+        "03-driver-wait-readers": "a245ae2f7486ea79e4b7c01c8ae1cbbcadaaae54aeb422b8af913617d350ecaa",
+        "04-push-ledger": "441039511c2f38bb743f32626b0409db14697fc8dbb82329eec6e838d4a713b5"
       },
       "startSha": "eb50fe308753e02c065051605f2c1f402726f14f",
       "kind": "fork",
       "spawnedAt": "2026-11-27T16:21:23Z",
       "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-driver-wait-readers",
+        "status": "done",
+        "head_sha": "916a702054bdbf32467c372474b3b454f033a4d9",
+        "deviations": [
+          "internal/battencli/dobbyreads.go",
+          "internal/loomcli/halt_test.go",
+          "internal/pushledger/ledger.go",
+          "internal/sheddriver/drive.go"
+        ]
+      },
+      "cardShas": [
+        "916a702054bdbf32467c372474b3b454f033a4d9"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-a98a96a1ab09b6c19.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-a98a96a1ab09b6c19.jsonl"
+      ]
     }
   },
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
   "masterNotePath": "/home/knatte/Code/loomyard-LYMHUB/push-retry-not-halt/_lym/loom/friction/webster-master.md",
   "masterRecordsBase": "c978944de24dbb14cc123b2fda8c456680476b55",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-af4eccf17c6ef0be3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-af4eccf17c6ef0be3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-a98a96a1ab09b6c19.jsonl"
   ]
 }

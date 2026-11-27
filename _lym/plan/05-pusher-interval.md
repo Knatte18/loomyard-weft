@@ -31,9 +31,9 @@
 **Uses:**
 - `internal/fabricengine#PushTiming`
 - `internal/fabricengine#Config.PushTiming`
-- `plan:internal/pushledger#Update`
-- `plan:internal/pushledger#Read`
-- `plan:internal/pushledger#RecordsKey`
+- `internal/pushledger#Update`
+- `internal/pushledger#Read`
+- `internal/pushledger#RecordsKey`
 - `internal/loomcli/doc.go`
 - `internal/fabriclayout/doc.go`
 

@@ -15,8 +15,8 @@
 - `internal/fabricengine#PullHub`
 - `internal/fabricengine#pullPairSide`
 - `internal/battencli#pullStopOutcome`
-- `plan:internal/pushledger#OwedTips`
-- `plan:internal/pushledger#LandingKey`
+- `internal/pushledger#OwedTips`
+- `internal/pushledger#LandingKey`
 - `plan:internal/fabricengine#AheadByOnly`
 - `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli#TestWire_BeamRecipe`

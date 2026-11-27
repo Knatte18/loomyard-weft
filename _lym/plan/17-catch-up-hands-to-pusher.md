@@ -13,8 +13,8 @@
 - `internal/battencli#handedOverIsDone`
 - `internal/battencli#TestHubCatchUp`
 - `internal/dobbyengine#TestCatchUp`
-- `plan:internal/pushledger#HeldRecordsCommit`
-- `plan:internal/pushledger#Update`
+- `internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#Update`
 - `plan:internal/fabricengine#HoldPairPushLock`
 
 **Intent:** D8: the dobby's catch-up hands an owed push to the pusher and starts the run.

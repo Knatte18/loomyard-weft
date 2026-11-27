@@ -4,21 +4,21 @@
 - `internal/pushledger/doc.go`
 - `internal/pushledger/ledger_test.go`
 - `internal/pushledger/testmain_test.go`
-- `plan:internal/pushledger#Key` -> `type Key string`
-- `plan:internal/pushledger#BoardKey` -> `const BoardKey Key = "board"`
-- `plan:internal/pushledger#LandingKey` -> `const LandingKey Key = "landing"`
-- `plan:internal/pushledger#RecordsKey` -> `func RecordsKey(recordsWorktree string) Key`
-- `plan:internal/pushledger#Entry` -> `type Entry struct`
-- `plan:internal/pushledger#Entry.Owed` -> `func (e Entry) Owed() bool`
-- `plan:internal/pushledger#Landing` -> `type Landing struct`
-- `plan:internal/pushledger#Read` -> `func Read(hubPath string, key Key) (Entry, bool, error)`
-- `plan:internal/pushledger#Update` -> `func Update(hubPath string, key Key, now time.Time, mutate func(cur Entry, found bool) (next Entry, keep bool, err error)) error`
-- `plan:internal/pushledger#List` -> `func List(hubPath string) (map[Key]Entry, error)`
-- `plan:internal/pushledger#LastClear` -> `func LastClear(hubPath string) (time.Time, error)`
-- `plan:internal/pushledger#HeldRecordsCommit` -> `func HeldRecordsCommit(hubPath, slug string) (commit string, held bool, err error)`
-- `plan:internal/pushledger#OwedTips` -> `func OwedTips(hubPath string, key Key) ([]string, error)`
-- `plan:internal/pushledger#EntryPath` -> `func EntryPath(hubPath string, key Key) string`
-- `plan:internal/lymdirs#PushLedgerDirName` -> `const PushLedgerDirName = "push-ledger"`
+- `internal/pushledger#Key`
+- `internal/pushledger#BoardKey`
+- `internal/pushledger#LandingKey`
+- `internal/pushledger#RecordsKey`
+- `internal/pushledger#Entry`
+- `internal/pushledger#Entry.Owed`
+- `internal/pushledger#Landing`
+- `internal/pushledger#Read`
+- `internal/pushledger#Update`
+- `internal/pushledger#List`
+- `internal/pushledger#LastClear`
+- `internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#OwedTips`
+- `internal/pushledger#EntryPath`
+- `internal/lymdirs#PushLedgerDirName`
 
 **Extends:**
 - `internal/lymdirs/doc.go`

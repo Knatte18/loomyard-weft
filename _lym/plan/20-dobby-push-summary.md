@@ -18,13 +18,13 @@
 - `internal/beamcli/doc.go`
 - `internal/dobbyengine#RunView`
 - `plan:internal/runpusher#TargetRefused`
-- `plan:internal/pushledger#List`
-- `plan:internal/pushledger#Entry`
-- `plan:internal/pushledger#Entry.Owed`
+- `internal/pushledger#List`
+- `internal/pushledger#Entry`
+- `internal/pushledger#Entry.Owed`
 - `internal/fabricengine#Config.PushTiming`
 - `internal/fabricengine#FailedPushWayForward`
 - `internal/battencli#HubRunSlugs`
-- `plan:internal/sheddriver#ReadDriveWait`
+- `internal/sheddriver#ReadDriveWait`
 - `internal/shedrun#DriveWaitRecord`
 
 **Intent:** D3: no mail per failed push; the prime's dobby posts one summary once something stays owed past the threshold, and one all-clear once everything is pushed.

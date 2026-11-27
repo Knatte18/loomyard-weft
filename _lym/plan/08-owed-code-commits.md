@@ -5,7 +5,7 @@
 - `internal/fabricengine_test#TestRunCommitsAhead`
 
 **Uses:**
-- `plan:internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#HeldRecordsCommit`
 
 **Intent:** D1: a pair target is owed whenever either branch is ahead of its origin tracking ref, whatever made the commits.
 `RunCommitsAhead` reads a pair's code branch with `readLocalBranch` and reports it ahead when its tip holds a commit its tracking ref lacks, or it has no upstream and holds a commit,

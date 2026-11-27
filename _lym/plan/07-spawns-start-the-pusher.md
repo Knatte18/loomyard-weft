@@ -24,7 +24,7 @@
 - `internal/fabricengine#Fabric.commit`
 - `internal/fabriccli#runAdd`
 - `internal/fabriccli/doc.go`
-- `plan:internal/pushledger#Read`
+- `internal/pushledger#Read`
 
 **Intent:** D1 and issue #238: every detached push spawn starts the pusher of its target instead of pushing itself, or leaves the commit to the one running, whichever verb or package calls it.
 

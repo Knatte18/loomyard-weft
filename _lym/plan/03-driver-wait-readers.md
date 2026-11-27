@@ -1,9 +1,9 @@
 # Card 3 — driver-wait-readers
 
 **Create:**
-- `plan:internal/sheddriver#ReadDriveWait` -> `func ReadDriveWait(recordPath, driverLockPath string) (wait DriveWait, standing, driverGone bool, err error)`
-- `plan:internal/sheddriver#TestReadDriveWait` -> `func TestReadDriveWait(t *testing.T)`
-- `plan:internal/loomcli#TestLoomStatusExtras` -> `func TestLoomStatusExtras(t *testing.T)`
+- `internal/sheddriver#ReadDriveWait`
+- `internal/sheddriver#TestReadDriveWait`
+- `internal/loomcli#TestLoomStatusExtras`
 
 **Edit:**
 - `internal/loomcli#loomCLI.failedHalt`

@@ -36,9 +36,9 @@
 - `internal/pairteardown#HandOverOwnedElsewhere`
 - `internal/pairteardown#RunPush`
 - `internal/pairteardown#PushRun`
-- `plan:internal/pushledger#OwedTips`
-- `plan:internal/pushledger#Landing`
-- `plan:internal/pushledger#Update`
+- `internal/pushledger#OwedTips`
+- `internal/pushledger#Landing`
+- `internal/pushledger#Update`
 
 **Intent:** D5: the parent target's pusher pushes a landing's parent branch, settles each landing once origin's parent holds it, and holds back what PATTERN-owner-machine forbids.
 

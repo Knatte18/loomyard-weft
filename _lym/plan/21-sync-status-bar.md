@@ -26,11 +26,11 @@
 - `internal/fabriccli#addWeftVerbs`
 - `internal/reedengine#composeSlackStateCommand`
 - `internal/reedengine#Geometry`
-- `plan:internal/pushledger#List`
-- `plan:internal/pushledger#LastClear`
-- `plan:internal/pushledger#Entry.Owed`
+- `internal/pushledger#List`
+- `internal/pushledger#LastClear`
+- `internal/pushledger#Entry.Owed`
 - `internal/fabricengine#Config.PushTiming`
-- `plan:internal/pushledger#Update`
+- `internal/pushledger#Update`
 - `internal/reedengine#TestBar_LineTwoShowsTheCheckMarkBeforeTheClock`
 
 **Intent:** D4: every session bar of a hub shows `sync: <minutes>m · <seconds>s`.

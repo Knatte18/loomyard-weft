@@ -29,13 +29,13 @@
 
 **Uses:**
 - `internal/fabriclayout/doc.go`
-- `plan:internal/pushledger#HeldRecordsCommit`
+- `internal/pushledger#HeldRecordsCommit`
 - `internal/fabriclayout#PushFailureClass`
 - `internal/fabricengine#RecordPushFailure`
 - `internal/fabricengine#ClearPushFailure`
 - `internal/fabricengine#RefusedPushStands`
 - `internal/beamcli/doc.go`
-- `plan:internal/pushledger#OwedTips`
+- `internal/pushledger#OwedTips`
 
 **Intent:** The git steps of D5's parent targets, which cards 11, 12 and 16 call; every git run on a parent stays in `internal/fabricengine`, per PATTERN-fabric-boundary.
 
