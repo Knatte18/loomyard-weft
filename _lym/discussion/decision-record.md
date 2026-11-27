@@ -469,6 +469,12 @@ Rationale: appendHistory in internal/shedengine/run.go skips an empty outcome an
   and the raddle promotion names it in `depends_on` so both rows are built over one stop chain.
 - `beam-member-parent` changes which orch a beam member's run reports to; D7's post goes to the orch of the dobby that drives the run, and that task decides whether that orch stays the run's parent.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - failed-state-halt-not-counted-or-recorded (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1: a tier0 test in `internal/dobbyengine` pins that the lookup, the beam config load's check and the local values check accept `false`, `true` and `unattended`,
