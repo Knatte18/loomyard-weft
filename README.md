@@ -126,6 +126,12 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Finalize blames the fixer session for a push of origin/<task branch> it did not make** | [`finalize-fixer-halt-blame`](design-finalize-fixer-halt-blame.md) | darn · light | Darn-Write | neve | 2h<br>23m | landing |
 | T19 | **Remove the coverage maps and every user of them, keeping the redundancy sweep and red-first** | [`remove-testmap`](design-remove-testmap.md) | darn · solid | Darn-Write | neve | 2h<br>2h | testmap, gate, darn, loom, stencil, cleanup |
 
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | motif |  | 12h<br>0m | termwindow, desktop |
+
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -143,12 +149,6 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | T11<br>T21 | 20h<br>13h | docs |
-
-### Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs** | [`kde-window-placement`](design-kde-window-placement.md) | darn |  | 12h<br>2m | termwindow, desktop |
 
 ### Research (1)
 
