@@ -1,6 +1,6 @@
 # Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures
 
-`webster-loom-tests-parallel` · Task · enhancement, webster, loom, testkit · running · PR-Review
+`webster-loom-tests-parallel` · Task · enhancement, webster, loom, testkit · landing · Finalize
 
 ## Aim
 
