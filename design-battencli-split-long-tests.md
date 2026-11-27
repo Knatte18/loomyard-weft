@@ -1,6 +1,6 @@
 # Split the long battencli integration scenario so its parts run in parallel
 
-`battencli-split-long-tests` · Task · enhancement, batten, testkit · draft
+`battencli-split-long-tests` · Task · enhancement, batten, testkit
 
 Depends on: [`push-retry-not-halt`](design-push-retry-not-halt.md)
 
