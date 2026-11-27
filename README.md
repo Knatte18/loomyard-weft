@@ -12,13 +12,18 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`test-speed`](design-test-speed.md) · Age 2h · Owner `neve`
 
-### Ready (3)
+### Running (2)
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light | starting · Worktree-Create | neve | 0m<br>0m | gate, testkit |
+| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light | starting · Worktree-Create | neve | 0m<br>0m | webster, loom, testkit |
+
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Measure the fixed steps of a gate call one by one** | [`gate-fixed-cost-measure`](design-gate-fixed-cost-measure.md) | darn · docs |  | 0m<br>0m | gate |
-| T4 | **Split the long gatecli tier1 scenario tests** | [`gatecli-split-long-tests`](design-gatecli-split-long-tests.md) | darn · light |  | 0m<br>0m | gate, testkit |
-| T5 | **Run webstercli and loomcli tier1 tests in parallel and share read-only fixtures** | [`webster-loom-tests-parallel`](design-webster-loom-tests-parallel.md) | darn · light |  | 0m<br>0m | webster, loom, testkit |
 
 ### Layer A (1)
 
@@ -119,7 +124,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T15 | `draft` **The closed area's AppArmor fallback barrier, built only when the OSL-1046 probe fails** | [`area-apparmor-barrier`](design-area-apparmor-barrier.md)<br>[Sketch](decision-area-apparmor-barrier.md) | darn · solid | T14 | 1d<br>1d | process |
 | T16 | `draft` **Stage 2 of the closed area: window, hibernate and deploy as supervisor verbs, and lym ide refused inside** | [`area-host-exits`](design-area-host-exits.md)<br>[Sketch](decision-area-host-exits.md) | darn · solid | T15 | 1d<br>1d | termwindow, hibernate, batten, ide, deploy, reed |
 
-## [P0 Root: entries under no project](project-root.md) (8)
+## [P0 Root: entries under no project](project-root.md) (9)
 
 Owner `neve`
 
@@ -167,3 +172,9 @@ Autonomy _off_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 1h<br>1h | testkit, landing |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 10h<br>3h | landing, gate, batten |
+
+### Features (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 0m<br>0m | dobby, batten, orch |

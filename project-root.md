@@ -52,3 +52,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests still hand-write reed, creel and session stand-ins** | [`pr-session-test-stand-ins`](design-pr-session-test-stand-ins.md) | 1h<br>1h | testkit, landing |
 | E4 |  | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 10h<br>3h | landing, gate, batten |
+
+## Features (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F1 |  | **Lym settles known run stops itself, so runs go on overnight without anyone pointing at them** | [`self-healing-runs`](design-self-healing-runs.md) | 0m<br>0m | dobby, batten, orch |
