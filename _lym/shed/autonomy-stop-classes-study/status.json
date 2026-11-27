@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T20:05:01Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/autonomy-stop-classes-study/_lym/landing/summary.md",
+      "at": "2026-11-27T20:19:52Z",
+      "started_at": "2026-11-27T20:05:01Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T20:18:16.608449584Z",
+          "end": "2026-11-27T20:18:16.633520587Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T20:18:16.745258089Z",
+          "end": "2026-11-27T20:18:16.779625116Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-27T20:18:16.860920861Z",
+          "end": "2026-11-27T20:18:16.869827426Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-27T20:18:16.994257873Z",
+          "end": "2026-11-27T20:18:17.554237698Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-27T20:18:17.683332939Z",
+          "end": "2026-11-27T20:18:17.683505321Z"
+        }
+      ]
     }
   ],
   "product": {
