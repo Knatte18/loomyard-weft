@@ -1,6 +1,6 @@
 # Dobby run watch and gate-hold notice: mail the parent on every stop and on a slot held too long
 
-`dobby-run-watch-build` · Task · feature, dobby, gate, batten, orch, pattern · running · Drift-Recheck
+`dobby-run-watch-build` · Task · feature, dobby, gate, batten, orch, pattern · running · Describe
 
 Decision record: [Sketch](decision-dobby-run-watch-build.md)
 
