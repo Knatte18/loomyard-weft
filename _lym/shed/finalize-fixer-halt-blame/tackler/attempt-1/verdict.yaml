@@ -1,0 +1,19 @@
+verdict: resume
+reason: >-
+  The blocked stop at Worktree-Create (trace 42ae5532ac4718e3, step trace
+  .lym/shed/finalize-fixer-halt-blame/steps/42ae5532ac4718e3.trace.log) came from a
+  board push race, not a defect in this run. The step made board commit fdf88e5 at
+  10:46:51; its push was refused at 10:46:59 because the remote main had moved
+  (trace 42ae5532ac4718e3 line 47, "cannot lock ref ... expected 0c566f4"). The
+  stop reason says to run `lym board sync` and re-run the verb. The sync it spawned
+  at 10:47:05 (trace line 49) and a concurrent batten run for remove-testmap
+  (trace 6f3fad464626300e, lines 46-48 and 64-65) both pushed to the shared _bolt
+  board, and the sync commits 325f9b82 (10:47:07) and 26a15bcd (10:47:18) landed.
+  Read now: the remote main tip is 452ae27bec1bb8a251013d5e0434df7acbf87669
+  (ls-remote origin refs/heads/main, read-only), which is a known local commit, and
+  `git merge-base --is-ancestor fdf88e5f099945b1a9db5b4bfff15ec94e8b68f9
+  452ae27bec1bb8a251013d5e0434df7acbf87669` holds. The commit the stop names is
+  therefore present on origin, and the board-sync condition the reason names has
+  been met. Nothing in the run is wrong, so a plain re-launch of Worktree-Create
+  should settle it.
+goto: Worktree-Create
