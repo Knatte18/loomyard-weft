@@ -1,13 +1,13 @@
 {
   "current_producer": "Darn-Write",
-  "state": "blocked",
-  "error": "Darn-Write (seats): the chair's session timed out; elapsed 3h0m1s, limit 3h0m0s, last session state busy (cause turn); way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Darn-Write → stuck",
-    "wait": "Darn-Write (seats): the chair's session timed out; elapsed 3h0m1s, limit 3h0m0s, last session state busy (cause turn); way forward: run lym loom resume, which re-attaches the session while it is live and otherwise starts the row over"
+    "wait": ""
   },
   "history": [
     {
