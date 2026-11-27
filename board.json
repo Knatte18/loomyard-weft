@@ -866,7 +866,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nA darn docs bench that needs pairs of its own cannot make them:\nthe fabric guard refuses every mutating `lym fabric` verb from a task session on the real hub (`internal/fabriccli/roleguard.go`).\nToday the bench agent asks the orch, which runs `env -C \u003ctask worktree\u003e lym fabric add \u003cpair\u003e` and removes the pairs when told.\nThe operator finds that hand-off a hindrance: the bench waits on the orch at every step.\n\n## Idea\n\nThe guard lets a darn run with profile `docs` create and remove bench pairs itself, within bounds:\n\n- Only `lym fabric add` and the removal verb, run from the task's own worktree, so each pair forks from the task branch, as the orch does it today.\n- Only pairs whose slug starts with the task's slug, such as `\u003cslug\u003e-b1`, so a bench never touches another task's pair.\n- Worktree-Teardown removes every bench pair the run left behind, so none outlive the run.\n- The bench body's cap on runs bounds how many pairs it makes; whether lym also caps the number is open.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-27T10:31:49Z",
       "revised": "2026-11-27T10:34:23Z",
       "profile": "solid"
