@@ -1,6 +1,6 @@
 # Foreground lym gate test is backgrounded after 180 s despite a one-hour Bash timeout
 
-`gate-call-backgrounded-180s` · Task · bug, shuttle, gate · running · Code-Bouncer
+`gate-call-backgrounded-180s` · Task · bug, shuttle, gate · running · Code-Burler-Review
 
 Imported from [issue #275](https://github.com/Knatte18/loomyard/issues/275).
 
