@@ -1,6 +1,6 @@
 # Windows lym opens remember their virtual desktop and tile, and new windows land where their kind belongs
 
-`kde-window-placement` · Task · feature, termwindow, desktop · starting · Open-IDE
+`kde-window-placement` · Task · feature, termwindow, desktop · running · Discussion-Write
 
 ## Wish (operator, 2026-11-26)
 
