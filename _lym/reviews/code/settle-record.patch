@@ -1,0 +1,1176 @@
+diff --git a/internal/battencli/teardownpush_integration_test.go b/internal/battencli/teardownpush_integration_test.go
+index 88a8a67ae..84d2f5730 100644
+--- a/internal/battencli/teardownpush_integration_test.go
++++ b/internal/battencli/teardownpush_integration_test.go
+@@ -1,13 +1,16 @@
+-// teardownpush_integration_test.go drives over hubforge pairs the teardown's push and level seams,
+-// and the pushers a wired resume starts.
++// teardownpush_integration_test.go drives the teardown's push and level seams over hubforge pairs.
++// It also drives the wired teardown row over a task pair with a bench pair.
++// It covers the pushers a wired resume starts.
+ 
+ package battencli
+ 
+ import (
+ 	"context"
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenshed"
+@@ -72,6 +75,66 @@ func TestTeardownPushSeams_PushesOffLetTheRowFinishWithoutTouchingThePair(t *tes
+ 	}
+ }
+ 
++// TestWiredTeardown_RemovesTheBenchPairsBeforeTheTaskPair drives the wired teardown row.
++// The hub holds a task pair and one of its bench pairs.
++// A bench pair whose archive push origin refuses halts the row with the task pair still standing.
++func TestWiredTeardown_RemovesTheBenchPairsBeforeTheTaskPair(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		task  = "task1"
++		bench = "task1-b1"
++	)
++	tests := []struct {
++		name         string
++		refuseBench  bool
++		wantOutcome  shedengine.Outcome
++		wantStanding bool
++	}{
++		{"BothPairsAreRemoved", false, shedengine.Done, false},
++		{"ARefusedBenchArchiveKeepsTheTaskPair", true, shedengine.Stuck, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			hubforge.AddPair(t, h, task)
++			hubforge.AddPair(t, h, bench)
++			if tt.refuseBench {
++				gitkit.CommitFile(t, h.PairCodeWorktree(bench), "local.txt", "local\n", "a commit origin lacks")
++				hook := filepath.Join(h.CodeBare, "hooks", "pre-receive")
++				if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
++					t.Fatalf("create the hooks directory: %v", err)
++				}
++				script := "#!/bin/sh\nwhile read old new ref; do\n  case \"$ref\" in *" + bench + "*) exit 1 ;; esac\ndone\n"
++				if err := os.WriteFile(hook, []byte(script), 0o755); err != nil {
++					t.Fatalf("write the pre-receive hook: %v", err)
++				}
++			}
++			c := wireForHub(t, h, task, func(statusPath, statusLockPath string) (shedengine.Status, bool, error) {
++				return shedengine.Status{State: shedengine.StateDone}, true, nil
++			})
++			producer := battenshed.NewWorktreeTeardown("Worktree-Teardown", task, c.env.Teardown, c.env.PrimeLock, c.env.ScratchDir)
++
++			outcome, pointer, err := producer.Call(context.Background())
++
++			if err != nil || outcome != tt.wantOutcome {
++				t.Fatalf("Worktree-Teardown = %q, reason %q, error %v; want %q", outcome, pointer.Reason, err, tt.wantOutcome)
++			}
++			if tt.refuseBench && !strings.Contains(pointer.Reason, "the bench pairs of") {
++				t.Errorf("Stuck reason = %q; want it to name the bench pairs", pointer.Reason)
++			}
++			for _, slug := range []string{task, bench} {
++				if got := pathExists(h.PairCodeWorktree(slug)); got != tt.wantStanding {
++					t.Errorf("pair %s standing = %v; want %v", slug, got, tt.wantStanding)
++				}
++			}
++		})
++	}
++}
++
+ // TestTeardownPushSeams_PushBringsAPresentPairsTipsToOrigin drives the real push and level read.
+ // The pair they run over is one commit ahead of origin.
+ func TestTeardownPushSeams_PushBringsAPresentPairsTipsToOrigin(t *testing.T) {
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index cf4b11c02..a2e11638b 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -1247,8 +1247,20 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 				res, err := td.RemovePair(teardownRequest(slug))
+ 				return finishRemoval(res, err, slug)
+ 			},
+-			// Push and Level read the task worktree when they run, and a pair already gone pushes nothing and reads level.
+-			Push:  teardownPush,
++			// Push and Level read the task worktree when they run, and a task pair already gone pushes nothing and reads level.
++			// Push first removes the bench pairs the run's darn writer made, so none outlives the run.
++			// The row calls it with no prime lock held, so their archive pushes and teardowns never hold that lock.
++			// A failed bench removal keeps the task pair, and the resumed row retries it.
++			Push: func(ctx context.Context) error {
++				benchPairs, err := pairteardown.RemoveBenchPairs(ctx, location, slug)
++				if err != nil {
++					return fmt.Errorf("the bench pairs of %q were not all removed: %w", slug, err)
++				}
++				if len(benchPairs) > 0 {
++					logger.Info("battencli: teardown removed the run's bench pairs", "slug", slug, "bench_pairs", benchPairs)
++				}
++				return teardownPush(ctx)
++			},
+ 			Level: teardownLevel,
+ 		},
+ 		Land: landDeps(location, slug, locateTask),
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index 6109b111b..8c50892a5 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -377,7 +377,7 @@ type TeardownDeps struct {
+ 	// Push brings the pair's commits to origin and returns once they landed, with no prime lock held.
+ 	// An error wrapping ErrPushEntryEnded means origin ended the pair's entry.
+ 	// One wrapping ErrPushHandedOver means the run was handed over.
+-	// Any other error is a refused push.
++	// Any other error, from the push or from a step the closure runs ahead of it, keeps the pair.
+ 	// A nil Push pushes nothing.
+ 	Push func(ctx context.Context) error
+ 	// Level reports whether origin's tracking refs hold the pair's tips.
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 9acbad2d5..31f00ce8e 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -105,13 +105,16 @@
+ //
+ // Worktree-Teardown has two halves, session shutdown and worktree removal,
+ // which call the pair-teardown composite (internal/pairteardown) as its EndSession and RemovePair phases.
++// The push first removes the bench pairs a docs bench's darn writer made, so none outlives the run.
++// That removal holds no prime lock.
+ // A pair of which nothing remains is the done post-condition for both halves.
+ // The row pushes the pair between two holds of the prime lock:
+ // the first hold shuts the session down, the push runs with no lock held,
+ // and the second hold removes the pair once origin's tracking refs hold both its tips.
+ // A tip that moved since the push releases the second hold and pushes again.
+ // After a bounded number of pushes that still leave origin lacking a tip, the row is Stuck and keeps the pair.
+-// With git or pushes off nothing is pushed, and the pair is removed without that read.
++// With git or pushes off nothing of the pair is pushed, and the pair is removed without that read.
++// The bench pairs' archive tags are pushed whatever those switches say.
+ //
+ // Every producer that holds the hub's prime lock waits for a contended lock instead of halting on the first try.
+ // It returns Stuck only when the bound is spent (primelockwait.go).
+diff --git a/internal/battenshed/teardown.go b/internal/battenshed/teardown.go
+index 3311fa2fa..e33c7af60 100644
+--- a/internal/battenshed/teardown.go
++++ b/internal/battenshed/teardown.go
+@@ -217,7 +217,7 @@ func (p *worktreeTeardownProducer) pushPair(ctx context.Context) (stuckReason st
+ 	case errors.Is(pushErr, ErrPushHandedOver):
+ 		return fmt.Sprintf("the run was handed over to another machine and its pair is already removed here, so no resume applies here: %s", pushErr.Error()), false, nil
+ 	}
+-	return fmt.Sprintf("the pair's push failed and the pair is kept: %s; once its way forward is done, resume with `lym batten run %s`", pushErr.Error(), p.slug), false, nil
++	return fmt.Sprintf("the push step failed and the pair is kept: %s; once its way forward is done, resume with `lym batten run %s`", pushErr.Error(), p.slug), false, nil
+ }
+ 
+ // pairIsLevel calls deps.Level, which a nil Level reads as level.
+diff --git a/internal/darnengine/bench.go b/internal/darnengine/bench.go
+new file mode 100644
+index 000000000..47a3d09e3
+--- /dev/null
++++ b/internal/darnengine/bench.go
+@@ -0,0 +1,29 @@
++// bench.go recognizes a bench pair by its slug and a darn writer by its strand name.
++// A bench pair is a pair a darn writer makes for its own bench, forked from its task worktree.
++
++package darnengine
++
++import (
++	"regexp"
++	"strings"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++)
++
++// BenchPairSlugInfix joins a task's slug and a bench pair's number in the bench pair's slug, as in `<slug>-b1`.
++const BenchPairSlugInfix = "-b"
++
++// benchPairNumberPattern matches the number that ends a bench pair's slug: a positive number with no leading zero.
++var benchPairNumberPattern = regexp.MustCompile(`^[1-9][0-9]*$`)
++
++// IsBenchPairSlug reports whether slug names a bench pair of the task taskSlug:
++// the task's slug, BenchPairSlugInfix, then a positive number.
++func IsBenchPairSlug(taskSlug, slug string) bool {
++	number, found := strings.CutPrefix(slug, taskSlug+BenchPairSlugInfix)
++	return found && benchPairNumberPattern.MatchString(number)
++}
++
++// IsWriter reports whether strand names a darn writer, the session that makes a darn task's change.
++func IsWriter(strand agentname.Name) bool {
++	return agentname.MatchesRole(strand.Role, darnRole)
++}
+diff --git a/internal/darnengine/bench_test.go b/internal/darnengine/bench_test.go
+new file mode 100644
+index 000000000..a8e4c6e55
+--- /dev/null
++++ b/internal/darnengine/bench_test.go
+@@ -0,0 +1,39 @@
++// bench_test.go pins which slugs read as a bench pair of a task.
++
++package darnengine_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestIsBenchPairSlug(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name string
++		slug string
++		want bool
++	}{
++		{"FirstBenchPair", "task-b1", true},
++		{"MultiDigitNumber", "task-b12", true},
++		{"TaskSlugAlone", "task", false},
++		{"NoNumber", "task-b", false},
++		{"ZeroNumber", "task-b0", false},
++		{"LeadingZero", "task-b01", false},
++		{"WordAfterTheInfix", "task-bench", false},
++		{"AnotherTaskSharingThePrefix", "task-notes", false},
++		{"BenchPairOfALongerSlug", "task-x-b1", false},
++		{"BenchPairOfAnotherTask", "other-b1", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := darnengine.IsBenchPairSlug("task", tt.slug); got != tt.want {
++				t.Errorf("IsBenchPairSlug(%q, %q) = %v; want %v", "task", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index 55930e47e..9ed50b44c 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -9,6 +9,8 @@
+ // setting one in darn.yaml is refused, naming the `shed` module.
+ //
+ // IsMergeTaskWriter reports whether a strand is the writer of a merge task, from the strand name alone.
++// IsBenchPairSlug reports whether a slug names a bench pair of a task: the task's slug, `-b` and a positive number.
++// A darn writer makes such a pair for its own bench, forked from its task worktree.
+ //
+ // Tree scope applies to a diff wholly under the hub's non-production trees.
+ // Each darn verify site then runs its own gate key over the touched trees' targets, in place of the key's scope.
+diff --git a/internal/darnengine/mergetask.go b/internal/darnengine/mergetask.go
+index 161ced500..3c0b86845 100644
+--- a/internal/darnengine/mergetask.go
++++ b/internal/darnengine/mergetask.go
+@@ -23,5 +23,5 @@ func IsMergeTaskSlug(slug string) bool {
+ // IsMergeTaskWriter reports whether strand names the darn writer of a merge task.
+ // Such a session's work is a merge of the parent branch.
+ func IsMergeTaskWriter(strand agentname.Name) bool {
+-	return agentname.MatchesRole(strand.Role, darnRole) && IsMergeTaskSlug(strand.Slug)
++	return IsWriter(strand) && IsMergeTaskSlug(strand.Slug)
+ }
+diff --git a/internal/fabriccli/doc.go b/internal/fabriccli/doc.go
+index 2986e052e..bd6f67770 100644
+--- a/internal/fabriccli/doc.go
++++ b/internal/fabriccli/doc.go
+@@ -145,4 +145,14 @@
+ // A hardener round builds its throwaway hubs there.
+ // The guard judges the directory the verb acts in: the cwd or a clone's `--into` destination.
+ // The same verb aimed at any other hub is refused.
++//
++// A darn writer on a run with the docs profile adds and removes its own bench pairs on the real hub,
++// so a docs bench makes the pairs it measures in without handing each step to the orch.
++// A bench pair's slug is the task's slug, `-b` and a positive number.
++// The writer runs `add` and `remove` from its task worktree or its records sibling,
++// and an `add` takes neither `--parent` nor `--adopt-local`, so the pair forks from the task branch.
++// The guard reads the recipe and the profile from the run's identity record in that worktree, `_lym/usage/run.json`.
++// A slug that a batten run directory names is refused, since that pair is another run's.
++// The guard reads no board, so a slug that only a board entry names passes.
++// A detached push of a bench pair passes for the same writer, under the same record and run directory checks.
+ package fabriccli
+diff --git a/internal/fabriccli/roleguard.go b/internal/fabriccli/roleguard.go
+index b4b3dcc26..e6b445041 100644
+--- a/internal/fabriccli/roleguard.go
++++ b/internal/fabriccli/roleguard.go
+@@ -1,14 +1,17 @@
+ // roleguard.go refuses the mutating `lym fabric` verbs from a sandboxed task-session role.
+ // It classifies each subcommand as a reader that a sandboxed role may run, or as a verb it may not.
+-// A merge task's writer may also run the merge verbs,
++// A merge task's writer may also run the merge verbs, a docs run's darn writer may add and remove its own bench pairs,
+ // and any sandboxed role may run every verb in a hub under its own worktree's sandbox root.
+-// A detached push passes only for the role's own pair or a pair under that root.
++// A detached push passes only for the role's own pair, a pair under that root,
++// or a bench pair its darn writer's run may touch.
+ // The refusal text is built here as well.
+ 
+ package fabriccli
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
+@@ -16,9 +19,13 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
++	"github.com/Knatte18/loomyard/internal/dotgit"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/runprofile"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+ 	"github.com/spf13/cobra"
+ )
+@@ -110,29 +117,110 @@ func inOwnSandboxRoot(dir string, name agentname.Name) bool {
+ 	}
+ }
+ 
++// strandHubWorktree returns the location of worktree and reports whether it passes three checks.
++// worktree is a worktree root, its name passes named, and its hub records the strand name's shortname.
++func strandHubWorktree(worktree string, name agentname.Name, named func(worktreeName string) bool) (*lymcwd.Location, bool) {
++	location, err := lymcwd.ResolveWorktree(worktree)
++	if err != nil || !named(location.WorktreeName) || location.WorktreePath() != worktree {
++		return nil, false
++	}
++	shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(location.HubPath))
++	return location, found && shortname == name.Shortname
++}
++
+ // isOwnWorktree reports whether worktree is the root of the worktree the strand name identifies.
+ // That worktree is named by the name's slug and sits in the hub whose recorded shortname is the name's shortname.
+ func isOwnWorktree(worktree string, name agentname.Name) bool {
+-	location, err := lymcwd.ResolveWorktree(worktree)
+-	if err != nil || location.WorktreeName != name.Slug || location.WorktreePath() != worktree {
+-		return false
++	_, ok := strandHubWorktree(worktree, name, func(worktreeName string) bool { return worktreeName == name.Slug })
++	return ok
++}
++
++// pairLocation returns the location of the worktree dir belongs to, as that worktree or its records sibling.
++// It reports false unless that worktree's name passes named and it sits in the strand name's hub.
++// dir is judged where it lands, with the symlinks of its deepest existing ancestor resolved.
++func pairLocation(dir string, name agentname.Name, named func(worktreeName string) bool) (*lymcwd.Location, bool) {
++	current, ok := resolveThroughExistingAncestor(dir)
++	if !ok {
++		return nil, false
+ 	}
+-	shortname, found := fabricengine.ReadShortname(fabricengine.BoltDir(location.HubPath))
+-	return found && shortname == name.Shortname
++	return strandHubWorktree(worktreeOwningRecordsDir(current), name, named)
++}
++
++// ownPairLocation returns the location of the strand name's own worktree for dir.
++// It reports false unless dir is that worktree or its records sibling.
++func ownPairLocation(dir string, name agentname.Name) (*lymcwd.Location, bool) {
++	return pairLocation(dir, name, func(worktreeName string) bool { return worktreeName == name.Slug })
+ }
+ 
+ // isOwnPairPath reports whether dir is the worktree the strand name identifies, or that worktree's records sibling.
+-// dir is judged where it lands, with the symlinks of its deepest existing ancestor resolved.
+ func isOwnPairPath(dir string, name agentname.Name) bool {
+-	current, ok := resolveThroughExistingAncestor(dir)
++	_, ok := ownPairLocation(dir, name)
++	return ok
++}
++
++// benchPairAdmitted reports whether the run of the task worktree at task may touch the bench pair benchSlug.
++// It may when the run's identity record there names the darn recipe and the docs profile,
++// and no batten run directory on the prime names benchSlug, which would make the pair another run's.
++// The run's seed writes the record with the profile the run took, the entry's own or the recipe's default.
++// The board is not read, so a slug that only a board entry names is not caught.
++// A non-nil error says why an otherwise admitted run is barred from the pair, or which read failed.
++func benchPairAdmitted(task *lymcwd.Location, benchSlug string) (bool, error) {
++	run, found, err := shedrun.ReadRunUsageRecord(shedrun.UsageDir(task))
++	if err != nil {
++		return false, err
++	}
++	if !found || run.Recipe != shedrun.RecipeDarn || run.Profile != runprofile.DocsProfile {
++		return false, nil
++	}
++	prime, err := hubgeom.PrimeWithoutGit(task)
++	// A repository whose refs are not files can only be listed by git itself.
++	if errors.Is(err, dotgit.ErrRefStorage) {
++		prime, err = primeThroughGit(task)
++	}
++	if err != nil {
++		return false, err
++	}
++	_, err = os.Stat(shedrun.RunDir(prime, benchSlug))
++	switch {
++	case err == nil:
++		return false, fmt.Errorf("a batten run directory names %s, so that pair is another run's; take another number", benchSlug)
++	case !errors.Is(err, fs.ErrNotExist):
++		return false, fmt.Errorf("read the batten run directory of %s: %w", benchSlug, err)
++	}
++	return true, nil
++}
++
++// primeThroughGit returns the location of the hub's prime worktree, as git's own worktree list names it.
++func primeThroughGit(location *lymcwd.Location) (*lymcwd.Location, error) {
++	name, err := fabricengine.PrimeName(location)
++	if err != nil {
++		return nil, err
++	}
++	return lymcwd.ResolveWorktree(fabricengine.WorktreePath(location, name))
++}
++
++// isBenchPairPath reports whether the strand name's darn writer may push dir.
++// dir must be a bench pair of that writer's task, or the pair's records sibling.
++// The bench pair sits in the writer's own hub, and the run of the writer's own worktree in that hub may touch it.
++func isBenchPairPath(dir string, name agentname.Name) bool {
++	if !darnengine.IsWriter(name) {
++		return false
++	}
++	pair, ok := pairLocation(dir, name, func(worktreeName string) bool { return darnengine.IsBenchPairSlug(name.Slug, worktreeName) })
++	if !ok {
++		return false
++	}
++	task, ok := ownPairLocation(filepath.Join(pair.HubPath, name.Slug), name)
+ 	if !ok {
+ 		return false
+ 	}
+-	return isOwnWorktree(worktreeOwningRecordsDir(current), name)
++	admitted, err := benchPairAdmitted(task, pair.WorktreeName)
++	return err == nil && admitted
+ }
+ 
+-// injectedPathsAreOwn reports whether every non-empty path a detached push of cmd names is one the strand may push:
+-// the strand's own worktree, its records sibling, or a path under its own worktree's sandbox root.
++// injectedPathsAreOwn reports whether the strand may push every non-empty path a detached push of cmd names.
++// It may push its own worktree, that worktree's records sibling and a path under its own worktree's sandbox root.
++// A darn writer on a docs run may also push a bench pair of its task or that pair's records sibling.
+ // A relative path is read against the directory the invocation acts in.
+ func injectedPathsAreOwn(cmd *cobra.Command, name agentname.Name, paths ...string) bool {
+ 	cwd, err := lymcwd.CwdFrom(cmd.Context())
+@@ -146,13 +234,56 @@ func injectedPathsAreOwn(cmd *cobra.Command, name agentname.Name, paths ...strin
+ 		if !filepath.IsAbs(path) {
+ 			path = filepath.Join(cwd, path)
+ 		}
+-		if !isOwnPairPath(path, name) && !inOwnSandboxRoot(path, name) {
++		if !isOwnPairPath(path, name) && !inOwnSandboxRoot(path, name) && !isBenchPairPath(path, name) {
+ 			return false
+ 		}
+ 	}
+ 	return true
+ }
+ 
++// benchPairVerbs are the verbs a darn writer may run on a bench pair of its own task.
++var benchPairVerbs = []string{"add", "remove"}
++
++// benchPairVerb reports whether this invocation of cmd adds or removes a bench pair of the strand name's darn writer.
++// The one argument is a bench pair slug of the writer's task.
++// The verb acts in the writer's own worktree or its records sibling,
++// and an add takes neither --parent nor --adopt-local, so the pair forks from the task branch.
++// The run of that worktree must be one that may touch the pair.
++// A non-nil error says why that run is barred from it.
++func benchPairVerb(cmd *cobra.Command, name agentname.Name) (bool, error) {
++	if !darnengine.IsWriter(name) || !slices.Contains(benchPairVerbs, cmd.Name()) {
++		return false, nil
++	}
++	args := cmd.Flags().Args()
++	if len(args) != 1 || !darnengine.IsBenchPairSlug(name.Slug, args[0]) {
++		return false, nil
++	}
++	if cmd.Name() == "add" {
++		parent, _ := cmd.Flags().GetString("parent")
++		adoptLocal, _ := cmd.Flags().GetBool("adopt-local")
++		if parent != "" || adoptLocal {
++			return false, nil
++		}
++	}
++	cwd, err := lymcwd.CwdFrom(cmd.Context())
++	if err != nil {
++		return false, err
++	}
++	location, ok := ownPairLocation(cwd, name)
++	if !ok {
++		return false, nil
++	}
++	return benchPairAdmitted(location, args[0])
++}
++
++// benchPairWayForward is the clause a darn writer's refused add or remove carries.
++// It names the bench pairs the writer may make itself.
++func benchPairWayForward(taskSlug string) string {
++	return fmt.Sprintf("; a darn writer on a run with profile %s adds and removes its own bench pairs itself: "+
++		"a slug of the form %s<N> such as %s1, run from its task worktree, as `lym fabric add %s1` with no --parent or --adopt-local",
++		runprofile.DocsProfile, taskSlug+darnengine.BenchPairSlugInfix, taskSlug+darnengine.BenchPairSlugInfix, taskSlug+darnengine.BenchPairSlugInfix)
++}
++
+ // taskSessionRefusal is the refusal of `lym fabric <verb>` from the task session strandName, naming its ways forward.
+ func taskSessionRefusal(verb, strandName string) string {
+ 	return fmt.Sprintf("lym fabric %s is refused from the task session %s outside a hub under its worktree's %s; "+
+@@ -203,6 +334,8 @@ func readerVerb(cmd *cobra.Command) bool {
+ // or a path under the role's own sandbox root; a path flag on any other subcommand is refused.
+ // The hidden teardown child a removal spawns inherits the strand name the same way, so it passes too.
+ // A merge task's writer passes on the verbs its work is, since the merge of the parent branch is that task.
++// A darn writer on a docs run passes on adding and removing its own bench pairs from its task worktree.
++// It also passes on a push of such a pair, so a docs bench makes its pairs without the orch.
+ // Any verb passes when the directory it acts in lies under the sandbox root of the role's own worktree,
+ // so a hardener round drives its own sandbox hubs while a verb aimed at the real hub stays refused.
+ // The guard reads the strand name and the paths the call names, so it stops a mistaken call.
+@@ -229,11 +362,20 @@ func sandboxedRoleRefusal(cmd *cobra.Command, strandName string) string {
+ 		}
+ 		return taskSessionRefusal(cmd.Name(), strandName)
+ 	}
+-	if readerVerb(cmd) || (darnengine.IsMergeTaskWriter(name) && mergeTaskVerb(cmd)) {
++	benchAdmitted, benchErr := benchPairVerb(cmd, name)
++	if readerVerb(cmd) || (darnengine.IsMergeTaskWriter(name) && mergeTaskVerb(cmd)) || benchAdmitted {
+ 		return ""
+ 	}
+ 	if target, err := verbTargetDir(cmd); err == nil && inOwnSandboxRoot(target, name) {
+ 		return ""
+ 	}
+-	return taskSessionRefusal(cmd.Name(), strandName)
++	refusal := taskSessionRefusal(cmd.Name(), strandName)
++	switch {
++	case benchErr != nil:
++		// The way forward would name the command just run, so the reason it is barred stands in its place.
++		refusal += "; " + benchErr.Error()
++	case darnengine.IsWriter(name) && slices.Contains(benchPairVerbs, cmd.Name()):
++		refusal += benchPairWayForward(name.Slug)
++	}
++	return refusal
+ }
+diff --git a/internal/fabriccli/roleguard_test.go b/internal/fabriccli/roleguard_test.go
+index bcce7f96d..46c57ca25 100644
+--- a/internal/fabriccli/roleguard_test.go
++++ b/internal/fabriccli/roleguard_test.go
+@@ -2,6 +2,7 @@
+ // which subcommands a task-session role may run.
+ // It also pins which strand names the guard lets through.
+ // It pins which directories a task role may run a mutating verb in.
++// It pins which bench pairs a docs run's darn writer may add, remove and push.
+ // It drives the built command tree against directories that hold no hub.
+ // A passing verb stops at its own worktree-resolution error and spawns nothing.
+ 
+@@ -19,7 +20,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabriccli"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fslink"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
++	"github.com/Knatte18/loomyard/internal/runprofile"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/weftname"
+ 	"github.com/spf13/cobra"
+@@ -133,6 +137,26 @@ func linkTo(t *testing.T, target string) string {
+ 	return link
+ }
+ 
++// benchTaskWorktree makes a hub whose recorded shortname is ly and returns its worktree slug.
++// The worktree holds a run identity record naming recipe and profile, and none when recipe is empty.
++func benchTaskWorktree(t *testing.T, recipe, profile string) string {
++	t.Helper()
++	hub := t.TempDir()
++	recordShortname(t, hub, "ly")
++	worktree := fakeWorktree(t, hub, "slug")
++	if recipe == "" {
++		return worktree
++	}
++	location, err := lymcwd.ResolveWorktree(worktree)
++	if err != nil {
++		t.Fatalf("resolve the task worktree: %v", err)
++	}
++	if err := shedrun.WriteRunUsage(shedrun.UsageDir(location), shedrun.RunUsageRecord{Recipe: recipe, Profile: profile}); err != nil {
++		t.Fatalf("write the run identity record: %v", err)
++	}
++	return worktree
++}
++
+ // TestSandboxedRoleGuard sets the strand-name environment variable with t.Setenv.
+ // That variable is process-global, so the test cannot call t.Parallel.
+ func TestSandboxedRoleGuard(t *testing.T) {
+@@ -399,6 +423,108 @@ func TestSandboxedRoleGuard(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a docs run's darn writer adds and removes only its own bench pairs, from its task worktree", func(t *testing.T) {
++		const writer = "ly:slug:darn"
++		docs := benchTaskWorktree(t, shedrun.RecipeDarn, runprofile.DocsProfile)
++		if err := os.MkdirAll(docs+weftname.Suffix, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		other := fakeWorktree(t, filepath.Dir(docs), "other")
++		noRecord := benchTaskWorktree(t, "", "")
++		light := benchTaskWorktree(t, shedrun.RecipeDarn, "light")
++		tapestry := benchTaskWorktree(t, shedrun.RecipeTapestry, runprofile.DocsProfile)
++		broken := benchTaskWorktree(t, shedrun.RecipeDarn, runprofile.DocsProfile)
++		brokenLocation, err := lymcwd.ResolveWorktree(broken)
++		if err != nil {
++			t.Fatalf("resolve the task worktree: %v", err)
++		}
++		if err := os.WriteFile(filepath.Join(shedrun.UsageDir(brokenLocation), "run.json"), []byte("{"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		// A fake worktree is its own repository, so it is its own prime and holds the batten run directory.
++		docsLocation, err := lymcwd.ResolveWorktree(docs)
++		if err != nil {
++			t.Fatalf("resolve the task worktree: %v", err)
++		}
++		if err := os.MkdirAll(shedrun.RunDir(docsLocation, "slug-b3"), 0o755); err != nil {
++			t.Fatal(err)
++		}
++
++		tests := []struct {
++			name    string
++			strand  string
++			cwd     string
++			args    []string
++			refused bool
++			// reason is what a writer's refusal gives in place of the bench pair way forward, empty when it gives none.
++			reason string
++		}{
++			{"AddFromTaskWorktree", writer, docs, []string{"add", "slug-b1"}, false, ""},
++			{"RemoveFromTaskWorktree", writer, docs, []string{"remove", "slug-b2"}, false, ""},
++			{"AddFromRecordsSibling", writer, docs + weftname.Suffix, []string{"add", "slug-b1"}, false, ""},
++			{"NumberedWriter", "ly:slug:darn-2", docs, []string{"add", "slug-b1"}, false, ""},
++			{"AddWithParent", writer, docs, []string{"add", "slug-b1", "--parent", "other"}, true, ""},
++			{"AddAdoptingLocal", writer, docs, []string{"add", "slug-b1", "--adopt-local"}, true, ""},
++			{"SlugNotABenchPair", writer, docs, []string{"add", "slug-notes"}, true, ""},
++			{"NoSlug", writer, docs, []string{"add"}, true, ""},
++			{"BenchPairOfAnotherTask", writer, docs, []string{"remove", "other-b1"}, true, ""},
++			{"FromAnotherWorktree", writer, other, []string{"add", "slug-b1"}, true, ""},
++			{"NoRunRecord", writer, noRecord, []string{"add", "slug-b1"}, true, ""},
++			{"UndecodableRunRecord", writer, broken, []string{"add", "slug-b1"}, true, "does not decode"},
++			{"RunOnAnotherProfile", writer, light, []string{"add", "slug-b1"}, true, ""},
++			{"RunOfAnotherRecipe", writer, tapestry, []string{"remove", "slug-b1"}, true, ""},
++			{"AddOfASlugABattenRunNames", writer, docs, []string{"add", "slug-b3"}, true, "a batten run directory names slug-b3"},
++			{"RemoveOfASlugABattenRunNames", writer, docs, []string{"remove", "slug-b3"}, true, "a batten run directory names slug-b3"},
++			{"NotADarnWriter", webster, docs, []string{"add", "slug-b1"}, true, ""},
++		}
++		for _, tt := range tests {
++			t.Setenv(agentname.StrandNameEnv, tt.strand)
++			code, out := runUnderParentIn(t, tt.cwd, tt.args...)
++			if refused := strings.Contains(out, refusalMarker); refused != tt.refused {
++				t.Errorf("%s: %v under %s refused = %v; want %v; output: %s", tt.name, tt.args, tt.strand, refused, tt.refused, out)
++			}
++			if !tt.refused {
++				continue
++			}
++			if code != 1 {
++				t.Errorf("%s: %v under %s = %d; want exit 1", tt.name, tt.args, tt.strand, code)
++			}
++			wantWayForward := tt.strand == writer && tt.reason == ""
++			if strings.Contains(out, "`lym fabric add slug-b1`") != wantWayForward {
++				t.Errorf("%s: refusal under %s names the bench pair way forward = %v; want %v; output: %s",
++					tt.name, tt.strand, !wantWayForward, wantWayForward, out)
++			}
++			if !strings.Contains(out, tt.reason) {
++				t.Errorf("%s: refusal under %s lacks %q: %s", tt.name, tt.strand, tt.reason, out)
++			}
++		}
++
++		bench := fakeWorktree(t, filepath.Dir(docs), "slug-b1")
++		battenNamedBench := fakeWorktree(t, filepath.Dir(docs), "slug-b3")
++		lightBench := fakeWorktree(t, filepath.Dir(light), "slug-b1")
++		otherHubBench := fakeWorktree(t, filepath.Dir(benchTaskWorktree(t, shedrun.RecipeDarn, runprofile.DocsProfile)), "slug-b1")
++		recordShortname(t, filepath.Dir(otherHubBench), "zz")
++		pushTests := []struct {
++			name    string
++			strand  string
++			pair    string
++			refused bool
++		}{
++			{"WritersBenchPair", writer, bench, false},
++			{"BenchPairInAnotherHub", writer, otherHubBench, true},
++			{"BenchSlugUnderAnotherRole", webster, bench, true},
++			{"WriterOnAnotherProfile", writer, lightBench, true},
++			{"BenchSlugABattenRunNames", writer, battenNamedBench, true},
++		}
++		for _, tt := range pushTests {
++			t.Setenv(agentname.StrandNameEnv, tt.strand)
++			args := []string{"push", "--weft-path", tt.pair + weftname.Suffix, "--warp-path", tt.pair}
++			if _, out := runUnderParent(t, args...); strings.Contains(out, refusalMarker) != tt.refused {
++				t.Errorf("%s: %v under %s refused = %v; want %v; output: %s", tt.name, args, tt.strand, !tt.refused, tt.refused, out)
++			}
++		}
++	})
++
+ 	t.Run("ExecuteIn with no parent passes the guard", func(t *testing.T) {
+ 		t.Setenv(agentname.StrandNameEnv, webster)
+ 		var buf bytes.Buffer
+diff --git a/internal/hubgeom/autonomy.go b/internal/hubgeom/autonomy.go
+index b08f96fdc..a243e51eb 100644
+--- a/internal/hubgeom/autonomy.go
++++ b/internal/hubgeom/autonomy.go
+@@ -1,4 +1,5 @@
+ // autonomy.go is the one reader of beam.yaml's `autonomy` for a run or an orch.
++// It also places the hub's prime from the git files, with no git process.
+ 
+ package hubgeom
+ 
+@@ -28,7 +29,7 @@ func Autonomy(location *lymcwd.Location, slug string) bool {
+ 	if name == "" {
+ 		name = location.WorktreeName
+ 	}
+-	prime, err := resolvePrimeWithoutGit(location)
++	prime, err := PrimeWithoutGit(location)
+ 	if err != nil {
+ 		return autonomyReadFailed(name, err)
+ 	}
+@@ -57,8 +58,10 @@ func autonomyReadFailed(name string, cause error) bool {
+ 	return false
+ }
+ 
+-// resolvePrimeWithoutGit returns the Location of the hub's main worktree, the prime, from the hub's git files.
+-func resolvePrimeWithoutGit(location *lymcwd.Location) (*lymcwd.Location, error) {
++// PrimeWithoutGit returns the Location of the hub's main worktree, the prime, from the hub's git files.
++// It spawns no git, so a caller that must start no process can place the prime.
++// location is any worktree of the hub.
++func PrimeWithoutGit(location *lymcwd.Location) (*lymcwd.Location, error) {
+ 	worktrees, err := dotgit.ListWorktrees(location.WorktreePath())
+ 	if err != nil {
+ 		return nil, fmt.Errorf("hubgeom: list the worktrees of the hub: %w", err)
+diff --git a/internal/pairteardown/doc.go b/internal/pairteardown/doc.go
+index 5d89626a6..64e7d1f6d 100644
+--- a/internal/pairteardown/doc.go
++++ b/internal/pairteardown/doc.go
+@@ -188,6 +188,10 @@
+ // It then archives the code and records tips under owner archive tags and tears the pair down.
+ // Neither settles a board claim or touches a batten record, and a failed archive removes nothing.
+ //
++// RemoveBenchPairs serves a run's teardown for the bench pairs its darn writer made, slugs `<slug>-b<N>`.
++// It archives and removes each the orphan way, but it ends a live process instead of refusing it.
++// It leaves standing a pair whose slug a board entry or batten run names.
++//
+ // # Quiet rule
+ //
+ // A pair is quiet when its run lock and its loop lock are free,
+diff --git a/internal/pairteardown/leftover.go b/internal/pairteardown/leftover.go
+index b02b97ce5..db79bb05e 100644
+--- a/internal/pairteardown/leftover.go
++++ b/internal/pairteardown/leftover.go
+@@ -1,5 +1,6 @@
+-// leftover.go removes two kinds of pair the dobby finds left over that no run's own teardown takes:
+-// the local pair of a run this machine handed over, and an orphan pair no board entry or batten record names.
++// leftover.go removes three kinds of pair that no run's own pair removal takes:
++// the local pair of a run this machine handed over, an orphan pair no board entry or batten record names,
++// and the bench pairs a run's darn writer made, which the run's teardown removes.
+ 
+ package pairteardown
+ 
+@@ -9,10 +10,13 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"path/filepath"
+ 	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -67,19 +71,102 @@ func RemoveOrphanPair(ctx context.Context, prime *lymcwd.Location, slug string)
+ 	return td.Run(ctx, Request{Slug: slug, Force: true, LeaveClaim: true, Verdict: fabricengine.EntryEnded})
+ }
+ 
+-// requireStillOrphan returns an error when the board, the batten run directory or a registered live process names slug.
+-func requireStillOrphan(prime *lymcwd.Location, slug string) error {
++// RemoveBenchPairs tears down every bench pair of the task taskSlug in the hub and returns their slugs.
++// A darn writer makes such pairs for its own bench, forked from its task worktree, and none may outlive its run.
++// Each pair's live processes are ended first, so a driver still running in it does not get the removal refused.
++// Its tips that origin lacks are then archived under owner archive tags pushed to origin.
++// Its uncommitted files are committed onto the archived tip.
++// The pair is then torn down with force.
++// Its branches stay on origin and no board claim is settled.
++// A pair whose slug a board entry or a batten run directory names is another run's and is left standing.
++// A half-removed pair, one git lists as prunable or whose worktree does not resolve, is left with a warning.
++// The first failure returns with the slugs removed before it; a re-run removes the rest.
++func RemoveBenchPairs(ctx context.Context, prime *lymcwd.Location, taskSlug string) ([]string, error) {
++	worktrees, err := fabricengine.List(prime.WorktreePath())
++	if err != nil {
++		return nil, fmt.Errorf("pairteardown: list the hub's pairs for the bench pairs of %q: %w", taskSlug, err)
++	}
++	var removed []string
++	for _, worktree := range worktrees {
++		if worktree.Main {
++			continue
++		}
++		name := filepath.Base(worktree.Path)
++		if worktree.Prunable {
++			warnHalfRemovedBenchPair(taskSlug, name, "git lists it as prunable")
++			continue
++		}
++		pair, err := lymcwd.ResolveWorktree(worktree.Path)
++		if err != nil {
++			warnHalfRemovedBenchPair(taskSlug, name, err.Error())
++			continue
++		}
++		if !darnengine.IsBenchPairSlug(taskSlug, pair.WorktreeName) {
++			continue
++		}
++		slug := pair.WorktreeName
++		reason, err := runNamingReason(prime, slug)
++		if err != nil {
++			return removed, err
++		}
++		if reason != "" {
++			logger.Info("pairteardown: a pair with a bench pair slug belongs to another run and stays", "slug", slug, "task", taskSlug, "reason", reason)
++			continue
++		}
++		td, err := New(prime)
++		if err != nil {
++			return removed, err
++		}
++		// The processes end before the archive, so nothing they commit is left out of it.
++		if _, err := td.endOwned(slug); err != nil {
++			return removed, fmt.Errorf("pairteardown: end the processes of the bench pair %q: %w", slug, err)
++		}
++		archive := []fabricengine.OwnerArchivePair{{Slug: slug, Pair: pair, CommitUncommitted: true}}
++		if _, err := fabricengine.ArchiveOwnerTips(prime.HubPath, archive); err != nil {
++			return removed, fmt.Errorf("pairteardown: archive the tips of the bench pair %q: %w", slug, err)
++		}
++		if _, err := td.Run(ctx, Request{Slug: slug, Force: true, LeaveClaim: true, Verdict: fabricengine.EntryEnded}); err != nil {
++			return removed, fmt.Errorf("pairteardown: remove the bench pair %q: %w", slug, err)
++		}
++		removed = append(removed, slug)
++	}
++	return removed, nil
++}
++
++// warnHalfRemovedBenchPair warns that the worktree name stays, when name is a bench pair slug of the task taskSlug.
++func warnHalfRemovedBenchPair(taskSlug, name, reason string) {
++	if !darnengine.IsBenchPairSlug(taskSlug, name) {
++		return
++	}
++	logger.Warn("pairteardown: a half-removed bench pair is left; run `lym fabric prune --apply` to clear it", "slug", name, "task", taskSlug, "reason", reason)
++}
++
++// runNamingReason returns why slug is a run's own pair: a board entry or a batten run directory names it.
++// It returns "" when neither does.
++func runNamingReason(prime *lymcwd.Location, slug string) (string, error) {
+ 	tasks, err := boardengine.ReadTasks(fabricengine.BoardDir(prime.HubPath))
+ 	if err != nil {
+-		return fmt.Errorf("pairteardown: read the board before removing the orphan pair %q: %w", slug, err)
++		return "", fmt.Errorf("pairteardown: read the board before removing the pair %q: %w", slug, err)
+ 	}
+ 	if slices.ContainsFunc(tasks, func(task boardengine.Task) bool { return task.Slug == slug }) {
+-		return fmt.Errorf("pairteardown: %q is no orphan pair: a board entry names it", slug)
++		return "a board entry names it", nil
+ 	}
+ 	if _, err := os.Stat(shedrun.RunDir(prime, slug)); err == nil {
+-		return fmt.Errorf("pairteardown: %q is no orphan pair: a batten run directory names it", slug)
++		return "a batten run directory names it", nil
+ 	} else if !errors.Is(err, fs.ErrNotExist) {
+-		return fmt.Errorf("pairteardown: read the batten run directory of %q: %w", slug, err)
++		return "", fmt.Errorf("pairteardown: read the batten run directory of %q: %w", slug, err)
++	}
++	return "", nil
++}
++
++// requireStillOrphan returns an error when the board, the batten run directory or a registered live process names slug.
++func requireStillOrphan(prime *lymcwd.Location, slug string) error {
++	reason, err := runNamingReason(prime, slug)
++	if err != nil {
++		return err
++	}
++	if reason != "" {
++		return fmt.Errorf("pairteardown: %q is no orphan pair: %s", slug, reason)
+ 	}
+ 	live, err := runproc.List(fabricengine.RunProcDir(prime.HubPath), slug)
+ 	if err != nil {
+diff --git a/internal/pairteardown/leftover_integration_test.go b/internal/pairteardown/leftover_integration_test.go
+index 0997a8145..748e3784a 100644
+--- a/internal/pairteardown/leftover_integration_test.go
++++ b/internal/pairteardown/leftover_integration_test.go
+@@ -1,7 +1,7 @@
+ //go:build !windows
+ 
+-// leftover_integration_test.go drives RemoveOrphanPair over hub pairs.
+-// Its rows pin the archive-then-remove order and the re-check that runs first.
++// leftover_integration_test.go drives RemoveOrphanPair and RemoveBenchPairs over hub pairs.
++// Its rows pin the archive-then-remove order and the checks that run first.
+ 
+ package pairteardown_test
+ 
+@@ -10,6 +10,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"syscall"
+ 	"testing"
+@@ -17,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -53,11 +55,13 @@ func ownerArchiveTags(t *testing.T, bare, slug string) []string {
+ }
+ 
+ // registerLiveProcess starts a sleeping process and registers it under slug in the hub's process registry.
++// The process inherits the open files in inherited.
+ // The process group is killed when the test ends.
+-func registerLiveProcess(t *testing.T, h *hubforge.Hub, slug string) {
++func registerLiveProcess(t *testing.T, h *hubforge.Hub, slug string, inherited ...*os.File) {
+ 	t.Helper()
+ 
+ 	sleeper := exec.Command("sleep", "300")
++	sleeper.ExtraFiles = inherited
+ 	sleeper.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+ 	if err := sleeper.Start(); err != nil {
+ 		t.Fatalf("start the sleeping process: %v", err)
+@@ -72,6 +76,45 @@ func registerLiveProcess(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ }
+ 
++// holdRunLockFromLiveProcess takes the run lock of the pair slug.
++// It leaves the lock held by a registered sleeping process alone.
++func holdRunLockFromLiveProcess(t *testing.T, h *hubforge.Hub, slug string) {
++	t.Helper()
++
++	pair, err := lymcwd.NamedWorktree(h.Path, slug)
++	if err != nil {
++		t.Fatalf("locate the pair %s: %v", slug, err)
++	}
++	lockPath := shedrun.RunLock(pair, shedrun.SelfRunID)
++	if err := os.MkdirAll(filepath.Dir(lockPath), 0o755); err != nil {
++		t.Fatalf("create the run lock's directory: %v", err)
++	}
++	file, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0o644)
++	if err != nil {
++		t.Fatalf("open the run lock: %v", err)
++	}
++	// The flock belongs to the open file, so it stays with the child that inherits it once this handle is closed.
++	defer file.Close()
++	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
++		t.Fatalf("take the run lock: %v", err)
++	}
++	registerLiveProcess(t, h, slug, file)
++}
++
++// refuseCodePushesNaming installs a pre-receive hook on the code origin that refuses every ref whose name holds part.
++func refuseCodePushesNaming(t *testing.T, h *hubforge.Hub, part string) {
++	t.Helper()
++
++	hook := filepath.Join(h.CodeBare, "hooks", "pre-receive")
++	if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
++		t.Fatalf("create the hooks directory: %v", err)
++	}
++	script := "#!/bin/sh\nwhile read old new ref; do\n  case \"$ref\" in *" + part + "*) exit 1 ;; esac\ndone\n"
++	if err := os.WriteFile(hook, []byte(script), 0o755); err != nil {
++		t.Fatalf("write the pre-receive hook: %v", err)
++	}
++}
++
+ // TestRemoveOrphanPair drives RemoveOrphanPair over an orphan pair.
+ // The pair holds a local commit origin lacks and an uncommitted file.
+ func TestRemoveOrphanPair(t *testing.T) {
+@@ -167,3 +210,109 @@ func TestRemoveOrphanPair(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestRemoveBenchPairs drives RemoveBenchPairs for the task "task".
++// The hub holds two of its bench pairs and a pair whose slug only shares the task's prefix.
++// The first bench pair holds a local commit origin lacks and an uncommitted file.
++func TestRemoveBenchPairs(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	const (
++		task         = "task"
++		bench        = "task-b1"
++		secondBench  = "task-b2"
++		sharedPrefix = "task-notes"
++	)
++	tests := []struct {
++		name string
++		// setup shapes the hub further, after the first bench pair holds its commit and its uncommitted file.
++		setup func(t *testing.T, h *hubforge.Hub)
++		// wantRemoved lists the slugs the removal reports, on a failure those removed before the failing pair.
++		wantRemoved []string
++		// wantErr is a substring of the expected error, empty when the removal succeeds.
++		wantErr string
++	}{
++		{name: "EveryBenchPairIsArchivedAndRemoved", wantRemoved: []string{bench, secondBench}},
++		{
++			name: "ALiveProcessOfABenchPairIsEndedNotRefused",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				registerLiveProcess(t, h, bench)
++			},
++			wantRemoved: []string{bench, secondBench},
++		},
++		{
++			name: "ARunLockHeldByALiveProcessOfABenchPairIsEndedNotRefused",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				holdRunLockFromLiveProcess(t, h, bench)
++			},
++			wantRemoved: []string{bench, secondBench},
++		},
++		{
++			name: "ABoardEntryNamingABenchSlugKeepsThatPair",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				holdBoardEntry(t, h, bench)
++			},
++			wantRemoved: []string{secondBench},
++		},
++		{
++			name: "ARefusedArchiveTagPushKeepsTheBenchPair",
++			setup: func(t *testing.T, h *hubforge.Hub) {
++				gitkit.CommitFile(t, h.PairCodeWorktree(secondBench), "second.txt", "second\n", "a commit origin lacks")
++				refuseCodePushesNaming(t, h, secondBench)
++			},
++			wantRemoved: []string{bench},
++			wantErr:     "archive the tips of the bench pair",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			for _, slug := range []string{bench, secondBench, sharedPrefix} {
++				hubforge.AddPair(t, h, slug)
++			}
++			code := h.PairCodeWorktree(bench)
++			gitkit.CommitFile(t, code, "local.txt", "local\n", "a commit origin lacks")
++			if err := os.WriteFile(filepath.Join(code, "uncommitted.txt"), []byte("uncommitted\n"), 0o644); err != nil {
++				t.Fatalf("write the uncommitted file: %v", err)
++			}
++			if tt.setup != nil {
++				tt.setup(t, h)
++			}
++
++			removed, err := pairteardown.RemoveBenchPairs(context.Background(), h.Location, task)
++
++			requirePairStanding(t, h, sharedPrefix)
++			if tt.wantErr != "" {
++				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
++					t.Errorf("RemoveBenchPairs() error = %v; want one containing %q", err, tt.wantErr)
++				}
++			} else if err != nil {
++				t.Fatalf("RemoveBenchPairs() error = %v; want nil", err)
++			}
++			slices.Sort(removed)
++			if !slices.Equal(removed, tt.wantRemoved) {
++				t.Errorf("RemoveBenchPairs() = %q; want %q", removed, tt.wantRemoved)
++			}
++			for _, slug := range []string{bench, secondBench} {
++				if slices.Contains(tt.wantRemoved, slug) {
++					requirePairGone(t, h, slug)
++				} else {
++					requirePairStanding(t, h, slug)
++				}
++			}
++			if !slices.Contains(tt.wantRemoved, bench) {
++				return
++			}
++			tags := ownerArchiveTags(t, h.CodeBare, bench)
++			if len(tags) != 1 {
++				t.Fatalf("owner archive tags of %s on the code origin = %q; want exactly one", bench, tags)
++			}
++			if got := gitkit.Git(t, h.CodeBare, "show", tags[0]+":uncommitted.txt"); got != "uncommitted" {
++				t.Errorf("uncommitted.txt at the archive tag = %q; want %q", got, "uncommitted")
++			}
++		})
++	}
++}
+diff --git a/internal/retroengine/retro.go b/internal/retroengine/retro.go
+index e25fffab8..2172e8ff4 100644
+--- a/internal/retroengine/retro.go
++++ b/internal/retroengine/retro.go
+@@ -11,6 +11,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/runprofile"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+@@ -36,7 +37,7 @@ const (
+ 	StencilName = "retro-template-task"
+ 
+ 	// TaskProfile is the run profile of the retro task, the darn profile for prose work.
+-	TaskProfile = "docs"
++	TaskProfile = runprofile.DocsProfile
+ 
+ 	// TaskWriter is the model-spec of the retro task's darn writer.
+ 	// The writer judges transcripts and routes proposals, work a weaker model turns into board noise.
+diff --git a/internal/runprofile/runprofile.go b/internal/runprofile/runprofile.go
+index 2a693544e..27cb3388f 100644
+--- a/internal/runprofile/runprofile.go
++++ b/internal/runprofile/runprofile.go
+@@ -26,6 +26,9 @@ const ModuleName = "profiles"
+ // It maps a recipe name to the profile a task of that recipe takes when it names none.
+ const DefaultsEntry = "defaults"
+ 
++// DocsProfile names the template's darn-only profile for prose and config value edits.
++const DocsProfile = "docs"
++
+ //go:embed template.yaml
+ var configTemplate string
+ 
+diff --git a/internal/shedrun/usage.go b/internal/shedrun/usage.go
+index f52653758..c692ccb67 100644
+--- a/internal/shedrun/usage.go
++++ b/internal/shedrun/usage.go
+@@ -1,10 +1,15 @@
+-// usage.go declares the usage records a run keeps under its worktree's _lym/usage: one file per agent session, the run's identity and its landed diff size, with the writer of each and the one reader of the directory.
++// usage.go declares the usage records a run keeps under its worktree's _lym/usage.
++// They are one file per agent session, the run's identity and its landed diff size.
++// It holds each record's writer, the one parser of the directory and a reader of the run's identity.
+ 
+ package shedrun
+ 
+ import (
+ 	"encoding/json"
++	"errors"
+ 	"fmt"
++	"io/fs"
++	"os"
+ 	"path/filepath"
+ 	"sort"
+ 	"strings"
+@@ -117,6 +122,23 @@ func writeUsageRecord[T any](path string, rec T) error {
+ 	return nil
+ }
+ 
++// ReadRunUsageRecord reads the identity record run.json in dir and reports whether it was found.
++// A record that does not decode is an error naming it.
++func ReadRunUsageRecord(dir string) (RunUsageRecord, bool, error) {
++	data, err := os.ReadFile(filepath.Join(dir, runUsageFileName))
++	if errors.Is(err, fs.ErrNotExist) {
++		return RunUsageRecord{}, false, nil
++	}
++	if err != nil {
++		return RunUsageRecord{}, false, fmt.Errorf("shedrun: read usage record %s: %w", runUsageFileName, err)
++	}
++	usage, err := ParseRunUsage(map[string][]byte{runUsageFileName: data})
++	if err != nil {
++		return RunUsageRecord{}, false, err
++	}
++	return usage.Run, true, nil
++}
++
+ // ParseRunUsage reads a usage directory's files, given as a map from file name to bytes the way a git tree read hands them.
+ // A file of another name is ignored, and a key a record does not declare is accepted.
+ // A file that does not decode is an error naming it.
+diff --git a/pattern/PATTERN-pair-remote.md b/pattern/PATTERN-pair-remote.md
+index cbefe9230..7a33e8bdb 100644
+--- a/pattern/PATTERN-pair-remote.md
++++ b/pattern/PATTERN-pair-remote.md
+@@ -59,6 +59,11 @@ and its removal leaves the board claim to the cancel, which clears it.
+   and a handed-over run's local pair in local mode.
+   The prime's dobby also tears down an orphan pair, one no board entry or batten record names,
+   once it has gone idle for `dobbyengine.OrphanGrace`, its tips archived first.
++- A run's Worktree-Teardown tears down the bench pairs its darn writer made, through `internal/pairteardown`,
++  before it pushes the run's own pair and with no prime lock held.
++  It ends each bench pair's live processes first, then archives its tips and removes it with the driver checks skipped.
++  That order is an exception to the ones below:
++  the processes end before the run-lock wait and the refusal probe, so a failed archive or removal leaves them ended.
+ - No production package outside `internal/pairteardown` and `internal/fabricengine` calls `Topology.Remove`.
+ - The composite waits for the pair's driver to go quiet, bounded by `Request.QuietWait`;
+   `--force` answers dirtiness only and never shortens or skips that wait.
