@@ -941,6 +941,22 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-push-retry-not-halt/04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e/subagents/agent-a67258e45a7373b96.jsonl"
       ]
     },
+    "19": {
+      "slug": "teardown-hands-to-dobby",
+      "cards": [
+        "19-teardown-hands-to-dobby"
+      ],
+      "cardHashes": {
+        "19-teardown-hands-to-dobby": "f82279dbb252c673ebfcbaeb407cb98dff17e933e09fb8c1a932f4e035cfda27"
+      },
+      "startSha": "8370a204c048780893ba8deb89c340185f69ccdd",
+      "kind": "fork",
+      "spawnedAt": "2026-11-27T19:36:55Z",
+      "sessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    },
     "3": {
       "slug": "driver-wait-readers",
       "cards": [
@@ -1121,7 +1137,7 @@
       ]
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 19,
   "masterStrand": "959813b92b63af13d645f567e3005179",
   "masterSessionId": "04262acc-4bcc-45d9-b0c8-5ca4ed31aa0e",
   "masterEngine": "claude",
