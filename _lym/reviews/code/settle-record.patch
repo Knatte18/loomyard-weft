@@ -1,0 +1,3056 @@
+diff --git a/internal/loomcli/circling_integration_test.go b/internal/loomcli/circling_integration_test.go
+index bb3e5aa7c..5326dc1b1 100644
+--- a/internal/loomcli/circling_integration_test.go
++++ b/internal/loomcli/circling_integration_test.go
+@@ -36,9 +36,8 @@ func TestLoomVerbs_StaleStampReconcilesBeforeACirclingVerbLoads(t *testing.T) {
+ 	cobra.EnableTraverseRunHooks = true
+ 	t.Cleanup(func() { cobra.EnableTraverseRunHooks = traverse })
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "stale"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	pair, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("resolve the pair: %v", err)
+@@ -86,11 +85,13 @@ func TestLoomVerbs_StaleStampReconcilesBeforeACirclingVerbLoads(t *testing.T) {
+ 	}
+ }
+ 
++// The rows share one hub copy and run in order, since each runs a CLI verb over it.
+ func TestCirclingCLI_PreRunResolvesTarget(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "circling"
+-	hubforge.AddPair(t, hub, slug)
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 
+ 	run := func(cwd string, args ...string) (int, string) {
+ 		t.Helper()
+diff --git a/internal/loomcli/commitstatus_integration_test.go b/internal/loomcli/commitstatus_integration_test.go
+index 8120b6cb8..ab459eebd 100644
+--- a/internal/loomcli/commitstatus_integration_test.go
++++ b/internal/loomcli/commitstatus_integration_test.go
+@@ -20,28 +20,26 @@ import (
+ // It does so whether or not another entry depends on it.
+ // A recipe with a Finalize row leaves the task with the status of the last running transition.
+ // It is serial because it sets the board skip variable, which is process-global.
++// Its rows run in parallel under it, each over a hub copy of its own.
+ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 
++	const slug = hubforge.TemplatePairSlug
+ 	running := boardengine.RunStatus("running", "Discussion-Bouncer")
+ 	wirings := []struct {
+ 		name string
+-		// slugSuffix keeps the pairs of the two entry points apart on the shared hub.
+-		slugSuffix string
+-		wire       func(c *loomCLI, location *lymcwd.Location) error
++		wire func(c *loomCLI, location *lymcwd.Location) error
+ 	}{
+-		{"WireLightweight", "light", func(c *loomCLI, location *lymcwd.Location) error {
++		{"WireLightweight", func(c *loomCLI, location *lymcwd.Location) error {
+ 			return c.wireLightweight(location, location.AnchorPath())
+ 		}},
+-		{"Wire", "full", func(c *loomCLI, location *lymcwd.Location) error {
++		{"Wire", func(c *loomCLI, location *lymcwd.Location) error {
+ 			return c.wire(location, location.AnchorPath())
+ 		}},
+ 	}
+ 	tests := []struct {
+ 		name   string
+-		slug   string
+ 		recipe string
+ 		// wantKind and wantLabels are the entry's kind and labels after the finish, and wantStatus its status, "" for none.
+ 		wantKind   string
+@@ -50,15 +48,15 @@ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ 		// dependedOn makes another entry depend on the run's entry.
+ 		dependedOn bool
+ 	}{
+-		{"FinalizeLessRunMakesTheEntryASketch", "motifrun", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", false},
+-		{"FinalizingRunLeavesTheLastRunningStatus", "tapestryrun", shedrun.RecipeTapestry, boardengine.KindTask, []string{"bug"}, running, false},
+-		{"DependedOnEntryStillBecomesASketch", "dependedrun", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", true},
++		{"FinalizeLessRunMakesTheEntryASketch", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", false},
++		{"FinalizingRunLeavesTheLastRunningStatus", shedrun.RecipeTapestry, boardengine.KindTask, []string{"bug"}, running, false},
++		{"DependedOnEntryStillBecomesASketch", shedrun.RecipeMotif, boardengine.KindNote, []string{boardengine.SketchType}, "", true},
+ 	}
+ 	for _, w := range wirings {
+ 		for _, tt := range tests {
+ 			t.Run(w.name+"_"+tt.name, func(t *testing.T) {
+-				slug := tt.slug + w.slugSuffix
+-				hubforge.AddPair(t, hub, slug)
++				t.Parallel()
++				hub := hubforge.CopyHub(t, pairHubShape)
+ 				location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 				if err != nil {
+ 					t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+@@ -110,28 +108,29 @@ func TestWiredCommitStatus_FinishedRunEntry(t *testing.T) {
+ // A recipe with a Raddle-File row writes nothing once the run's filing mark stands in the prime.
+ // A recipe with no such row writes whether or not a mark stands.
+ // It is serial because it sets the board skip variable, which is process-global.
++// Its rows run in parallel under it, each over a hub copy of its own.
+ func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 
++	const slug = hubforge.TemplatePairSlug
+ 	before := boardengine.RunStatus("running", "Raddle-Write")
+ 	written := boardengine.RunStatus("running", "Raddle-File")
+ 	tests := []struct {
+ 		name       string
+-		slug       string
+ 		recipe     string
+ 		marked     bool
+ 		wantStatus string
+ 	}{
+-		{"ARaddleFileRecipeWithoutTheMarkWrites", "arrasopen", shedrun.RecipeArras, false, written},
+-		{"ARaddleFileRecipeWithTheMarkWritesNothing", "arrasmarked", shedrun.RecipeArras, true, before},
+-		{"ARecipeWithNoRaddleFileRowWritesDespiteTheMark", "tapestrymarked", shedrun.RecipeTapestry, true, written},
++		{"ARaddleFileRecipeWithoutTheMarkWrites", shedrun.RecipeArras, false, written},
++		{"ARaddleFileRecipeWithTheMarkWritesNothing", shedrun.RecipeArras, true, before},
++		{"ARecipeWithNoRaddleFileRowWritesDespiteTheMark", shedrun.RecipeTapestry, true, written},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			hubforge.AddPair(t, hub, tt.slug)
+-			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			t.Parallel()
++			hub := hubforge.CopyHub(t, pairHubShape)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 			if err != nil {
+ 				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 			}
+@@ -139,10 +138,10 @@ func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("OpenHub() error = %v; want nil", err)
+ 			}
+-			if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Run", "kind": "task", "labels": []string{"bug"}}); err != nil {
++			if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Run", "kind": "task", "labels": []string{"bug"}}); err != nil {
+ 				t.Fatalf("UpsertTask() error = %v; want nil", err)
+ 			}
+-			if err := board.SetRunStatus(tt.slug, before); err != nil {
++			if err := board.SetRunStatus(slug, before); err != nil {
+ 				t.Fatalf("SetRunStatus() error = %v; want nil", err)
+ 			}
+ 			if tt.marked {
+@@ -150,7 +149,7 @@ func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
+ 				if err != nil {
+ 					t.Fatalf("primeOfHub() error = %v; want nil", err)
+ 				}
+-				if err := shedrun.WriteFilingMark(prime, tt.slug); err != nil {
++				if err := shedrun.WriteFilingMark(prime, slug); err != nil {
+ 					t.Fatalf("WriteFilingMark() error = %v; want nil", err)
+ 				}
+ 			}
+@@ -160,7 +159,7 @@ func TestCommitStatusDeps_SkipsTheBoardStatusAfterAFilingMark(t *testing.T) {
+ 				t.Fatalf("SetBoardStatus() error = %v; want nil", err)
+ 			}
+ 
+-			task, found, err := board.GetTask(tt.slug)
++			task, found, err := board.GetTask(slug)
+ 			if err != nil || !found || task.Status == nil || *task.Status != tt.wantStatus {
+ 				t.Errorf("board entry = %+v, found %t, error %v; want status %q", task, found, err, tt.wantStatus)
+ 			}
+diff --git a/internal/loomcli/discussionrecord_integration_test.go b/internal/loomcli/discussionrecord_integration_test.go
+index 1b8a8471e..136a69dfa 100644
+--- a/internal/loomcli/discussionrecord_integration_test.go
++++ b/internal/loomcli/discussionrecord_integration_test.go
+@@ -23,15 +23,15 @@ import (
+ // TestApproveDiscussion_Real drives approveDiscussion over one real pair per row, each with its own board entry.
+ // It asserts what the seam stores and when it fails.
+ // It is serial because it sets the board skip variable, which is process-global.
++// Its rows run in parallel under it, each over a hub copy of its own.
+ func TestApproveDiscussion_Real(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 
++	const slug = hubforge.TemplatePairSlug
+ 	const record = "# Decision record\n\nThe approved decisions.\n"
+ 	tests := []struct {
+ 		name         string
+-		slug         string
+ 		withEntry    bool
+ 		markDone     bool
+ 		withRecord   bool
+@@ -39,15 +39,16 @@ func TestApproveDiscussion_Real(t *testing.T) {
+ 		wantStored   bool
+ 		wantFileKept bool
+ 	}{
+-		{"StoresTheWorkingCopyAndFlagsTheEntry", "stores", true, false, true, "", true, true},
+-		{"DoneEntryPassesWithoutStoring", "landed", true, true, true, "", false, false},
+-		{"AbsentEntryFailsTheSettle", "noentry", false, false, true, "lym board upsert", false, false},
+-		{"MissingWorkingCopyFailsTheSettle", "norecord", true, false, false, "read the decision record", false, false},
++		{"StoresTheWorkingCopyAndFlagsTheEntry", true, false, true, "", true, true},
++		{"DoneEntryPassesWithoutStoring", true, true, true, "", false, false},
++		{"AbsentEntryFailsTheSettle", false, false, true, "lym board upsert", false, false},
++		{"MissingWorkingCopyFailsTheSettle", true, false, false, "read the decision record", false, false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			hubforge.AddPair(t, hub, tt.slug)
+-			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			t.Parallel()
++			hub := hubforge.CopyHub(t, pairHubShape)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 			if err != nil {
+ 				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 			}
+@@ -56,13 +57,13 @@ func TestApproveDiscussion_Real(t *testing.T) {
+ 				t.Fatalf("OpenHub() error = %v; want nil", err)
+ 			}
+ 			if tt.withEntry {
+-				if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Approve", "kind": "task", "labels": []string{"bug"}}); err != nil {
++				if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Approve", "kind": "task", "labels": []string{"bug"}}); err != nil {
+ 					t.Fatalf("UpsertTask() error = %v; want nil", err)
+ 				}
+ 			}
+ 			if tt.markDone {
+ 				done := "done"
+-				if err := board.SetStatus(tt.slug, &done); err != nil {
++				if err := board.SetStatus(slug, &done); err != nil {
+ 					t.Fatalf("SetStatus(done) error = %v; want nil", err)
+ 				}
+ 			}
+@@ -84,14 +85,14 @@ func TestApproveDiscussion_Real(t *testing.T) {
+ 				t.Fatalf("approveDiscussion() error = %v; want it to contain %q", err, tt.wantErr)
+ 			}
+ 
+-			got, found, err := board.DecisionRecord(tt.slug)
++			got, found, err := board.DecisionRecord(slug)
+ 			if err != nil {
+ 				t.Fatalf("DecisionRecord() error = %v; want nil", err)
+ 			}
+ 			if found != tt.wantStored || (found && string(got) != record) {
+ 				t.Errorf("DecisionRecord() = %q, %v; want stored = %v with the working copy's bytes", got, found, tt.wantStored)
+ 			}
+-			_, statErr := os.Stat(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+tt.slug+".md"))
++			_, statErr := os.Stat(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+slug+".md"))
+ 			if (statErr == nil) != tt.wantFileKept {
+ 				t.Errorf("record file present = %v; want %v", statErr == nil, tt.wantFileKept)
+ 			}
+@@ -102,16 +103,16 @@ func TestApproveDiscussion_Real(t *testing.T) {
+ // TestSeedDiscussedRecord_Real drives seedDiscussedRecord over one real pair per row, each with its own board entry.
+ // It asserts what the seam seeds into the run and commits.
+ // It is serial because it sets the board skip variable, which is process-global.
++// Its rows run in parallel under it, each over a hub copy of its own.
+ func TestSeedDiscussedRecord_Real(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 
++	const slug = hubforge.TemplatePairSlug
+ 	stored := loomshed.BoardRecord("The approved goal.")
+ 	const existingLog = "# Support log\n\nWritten by the run.\n"
+ 	tests := []struct {
+ 		name      string
+-		slug      string
+ 		withEntry bool
+ 		discussed bool
+ 		// dropStoredFile removes the flagged entry's record file from the board directory.
+@@ -133,20 +134,21 @@ func TestSeedDiscussedRecord_Real(t *testing.T) {
+ 		// wantNoSupportLog asserts no support log was written before the failure.
+ 		wantNoSupportLog bool
+ 	}{
+-		{name: "DiscussedEntrySeedsAndCommitsItsRecord", slug: "discussed", withEntry: true, discussed: true, wantSeeded: true},
+-		{name: "UndiscussedEntrySeedsNothing", slug: "undiscussed", withEntry: true},
+-		{name: "AbsentEntrySeedsNothing", slug: "absent"},
+-		{name: "FlaggedEntryWithMissingRecordFileSeedsNothing", slug: "nofile", withEntry: true, discussed: true, dropStoredFile: true},
+-		{name: "ExistingRecordIsOverwrittenAndExistingSupportLogKept", slug: "existing", withEntry: true, discussed: true, existingRecord: "# Old record\n", existingLog: existingLog, wantSeeded: true},
+-		{name: "UnwritableDiscussionDirectoryFails", slug: "blocked", withEntry: true, discussed: true, blockDir: true, errContains: "create the discussion directory", wantNoSupportLog: true},
+-		{name: "UnwritableRecordFileFails", slug: "recordblocked", withEntry: true, discussed: true, blockRecordWrite: true, errContains: "write the stored decision record", wantNoSupportLog: true},
+-		{name: "UnreadableStoredRecordFails", slug: "boardfail", withEntry: true, discussed: true, blockStoredFile: true, errContains: "read decision record", wantNoSupportLog: true},
+-		{name: "LockedIndexFailsTheCommit", slug: "commitfail", withEntry: true, discussed: true, lockIndex: true, errContains: "commit the stored decision record"},
++		{name: "DiscussedEntrySeedsAndCommitsItsRecord", withEntry: true, discussed: true, wantSeeded: true},
++		{name: "UndiscussedEntrySeedsNothing", withEntry: true},
++		{name: "AbsentEntrySeedsNothing"},
++		{name: "FlaggedEntryWithMissingRecordFileSeedsNothing", withEntry: true, discussed: true, dropStoredFile: true},
++		{name: "ExistingRecordIsOverwrittenAndExistingSupportLogKept", withEntry: true, discussed: true, existingRecord: "# Old record\n", existingLog: existingLog, wantSeeded: true},
++		{name: "UnwritableDiscussionDirectoryFails", withEntry: true, discussed: true, blockDir: true, errContains: "create the discussion directory", wantNoSupportLog: true},
++		{name: "UnwritableRecordFileFails", withEntry: true, discussed: true, blockRecordWrite: true, errContains: "write the stored decision record", wantNoSupportLog: true},
++		{name: "UnreadableStoredRecordFails", withEntry: true, discussed: true, blockStoredFile: true, errContains: "read decision record", wantNoSupportLog: true},
++		{name: "LockedIndexFailsTheCommit", withEntry: true, discussed: true, lockIndex: true, errContains: "commit the stored decision record"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			hubforge.AddPair(t, hub, tt.slug)
+-			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(tt.slug))
++			t.Parallel()
++			hub := hubforge.CopyHub(t, pairHubShape)
++			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 			if err != nil {
+ 				t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 			}
+@@ -155,22 +157,22 @@ func TestSeedDiscussedRecord_Real(t *testing.T) {
+ 				t.Fatalf("OpenHub() error = %v; want nil", err)
+ 			}
+ 			if tt.withEntry {
+-				if _, err := board.UpsertTask(map[string]any{"slug": tt.slug, "title": "Seed", "kind": "task", "labels": []string{"bug"}}); err != nil {
++				if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Seed", "kind": "task", "labels": []string{"bug"}}); err != nil {
+ 					t.Fatalf("UpsertTask() error = %v; want nil", err)
+ 				}
+ 			}
+ 			if tt.discussed {
+-				if err := board.StoreDecisionRecord(tt.slug, stored); err != nil {
++				if err := board.StoreDecisionRecord(slug, stored); err != nil {
+ 					t.Fatalf("StoreDecisionRecord() error = %v; want nil", err)
+ 				}
+ 			}
+ 			if tt.dropStoredFile || tt.blockStoredFile {
+-				if err := os.Remove(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+tt.slug+".md")); err != nil {
++				if err := os.Remove(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+slug+".md")); err != nil {
+ 					t.Fatalf("Remove(stored record file) error = %v; want nil", err)
+ 				}
+ 			}
+ 			if tt.blockStoredFile {
+-				if err := os.Mkdir(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+tt.slug+".md"), 0o755); err != nil {
++				if err := os.Mkdir(filepath.Join(fabriclayout.BoardDir(location.HubPath), "decision-"+slug+".md"), 0o755); err != nil {
+ 					t.Fatalf("Mkdir(stored record path) error = %v; want nil", err)
+ 				}
+ 			}
+diff --git a/internal/loomcli/entrylabels_integration_test.go b/internal/loomcli/entrylabels_integration_test.go
+index d130e6b73..dbb2a9891 100644
+--- a/internal/loomcli/entrylabels_integration_test.go
++++ b/internal/loomcli/entrylabels_integration_test.go
+@@ -17,10 +17,9 @@ import (
+ func TestEntryLabels_ReadsTheRunsBoardEntryAtEachCall(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv("BOARD_SKIP_GIT", "1")
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hub := hubforge.CopyHub(t, pairHubShape)
+ 
+-	const slug = "labelled"
+-	hubforge.AddPair(t, hub, slug)
++	const slug = hubforge.TemplatePairSlug
+ 	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+diff --git a/internal/loomcli/export_test.go b/internal/loomcli/export_test.go
+index 3b375633f..117c9d4eb 100644
+--- a/internal/loomcli/export_test.go
++++ b/internal/loomcli/export_test.go
+@@ -1,4 +1,4 @@
+-// export_test.go re-exports the run owner verdict for the loomcli_test files that drive it over a forged hub.
++// export_test.go re-exports unexported seams and the one-pair hub shape for the loomcli_test files over a forged hub.
+ 
+ package loomcli
+ 
+@@ -31,3 +31,6 @@ type OwnerVerdict = ownerVerdict
+ 
+ // RunOwnerVerdict judges whether another machine owns the run of a slug.
+ var RunOwnerVerdict = runOwnerVerdict
++
++// PairHubShape describes a hub holding one pair, slug hubforge.TemplatePairSlug.
++var PairHubShape = pairHubShape
+diff --git a/internal/loomcli/gatefixer_integration_test.go b/internal/loomcli/gatefixer_integration_test.go
+index 7fea4082d..ce9d71e11 100644
+--- a/internal/loomcli/gatefixer_integration_test.go
++++ b/internal/loomcli/gatefixer_integration_test.go
+@@ -15,9 +15,8 @@ func TestPairSlugOf(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "fixerpair"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 
+ 	for _, tt := range []struct {
+ 		name     string
+diff --git a/internal/loomcli/hubfixture_helper_test.go b/internal/loomcli/hubfixture_helper_test.go
+index 9e64a0cd2..0ab75d8e8 100644
+--- a/internal/loomcli/hubfixture_helper_test.go
++++ b/internal/loomcli/hubfixture_helper_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
++	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -21,6 +22,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/stencilkit"
+ )
+ 
++// pairHubShape describes a hub holding one pair, slug hubforge.TemplatePairSlug.
++// A test copies it with hubforge.CopyHub.
++// The pair is built once per test binary, so a copy of it replaces a per-test hubforge.AddPair.
++var pairHubShape = hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}}
++
+ // seedLoomConfig creates <anchorPath>/_lym/config/loom.yaml with the embedded template's contents.
+ // It seeds the one config file the loom config loader reads strictly.
+ func seedLoomConfig(t *testing.T, anchorPath string) {
+diff --git a/internal/loomcli/landingdeps_integration_test.go b/internal/loomcli/landingdeps_integration_test.go
+index b16e4f684..1973a4fc1 100644
+--- a/internal/loomcli/landingdeps_integration_test.go
++++ b/internal/loomcli/landingdeps_integration_test.go
+@@ -41,17 +41,17 @@ func TestLandingDeps_ConfigNoticeSeamsOverRealHub(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "task")
+-	taskRecords := h.PairRecordsSibling("task")
++	h := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
++	taskRecords := h.PairRecordsSibling(slug)
+ 	gitkit.CommitFile(t, taskRecords, configengine.ConfigFileRel("loom"), "task_setting: changed\n", "task: change loom config")
+ 	gitkit.CommitFile(t, taskRecords, configengine.ConfigFileRel("board"), "task_setting: changed\n", "task: change board config")
+ 
+-	taskLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task"))
++	taskLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) error = %v; want nil", slug, err)
+ 	}
+-	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", "main",
++	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, slug, "main",
+ 		true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
+ 
+ 	t.Run("ConfigChanges reports the per-worktree file and not the hub-wide one", func(t *testing.T) {
+@@ -240,15 +240,15 @@ func TestLandingDeps_TaskHasCommitsReadsTheTaskHeadAgainstTheParent(t *testing.T
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "task")
+-	taskWorktree := h.PairCodeWorktree("task")
++	h := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
++	taskWorktree := h.PairCodeWorktree(slug)
+ 	taskLocation, err := lymcwd.ResolveWorktree(taskWorktree)
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) error = %v; want nil", slug, err)
+ 	}
+ 	taskHasCommits := func(parentBranch string) (bool, error) {
+-		deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", parentBranch,
++		deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, slug, parentBranch,
+ 			true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
+ 		return deps.PullRequest.TaskHasCommits()
+ 	}
+@@ -285,20 +285,20 @@ func TestLandingDeps_RecordLandingWritesWhereTheDobbyReads(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "task")
+-	taskLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task"))
++	h := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
++	taskLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) error = %v; want nil", slug, err)
+ 	}
+-	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, "task", "main",
++	deps := landingDeps(taskLocation, shedrun.RecipeTapestry, websterengine.Geometry{}, slug, "main",
+ 		true, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(taskLocation), parentLockDeps(taskLocation, shedrun.SelfRunID, "", ""))
+ 
+ 	if err := deps.RecordLanding("abc123", true); err != nil {
+ 		t.Fatalf("RecordLanding() error = %v; want nil", err)
+ 	}
+ 
+-	got, err := shedrun.ReadLandedCommit(h.Location, "task")
++	got, err := shedrun.ReadLandedCommit(h.Location, slug)
+ 	if want := (shedrun.LandedCommit{Commit: "abc123", EmptyDiff: true}); err != nil || got != want {
+ 		t.Errorf("ReadLandedCommit(prime, task) = %+v, %v; want %+v, nil", got, err, want)
+ 	}
+@@ -312,13 +312,13 @@ func TestPullRequestDeps_CommitsTheRecord(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "task")
+-	location, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task"))
++	h := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
++	location, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(task) error = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) error = %v; want nil", slug, err)
+ 	}
+-	records := h.PairRecordsSibling("task")
++	records := h.PairRecordsSibling(slug)
+ 
+ 	recordsBranch := gitkit.Git(t, records, "rev-parse", "--abbrev-ref", "HEAD")
+ 	requireOriginAtHead := func(when string) {
+@@ -329,7 +329,7 @@ func TestPullRequestDeps_CommitsTheRecord(t *testing.T) {
+ 		}
+ 	}
+ 
+-	deps := pullRequestDepsGuardedBy(prePushCheck{slug: "task", skip: func() (bool, error) { return true, nil }}, location, "main", true, &shuttleengine.Runner{})
++	deps := pullRequestDepsGuardedBy(prePushCheck{slug: slug, skip: func() (bool, error) { return true, nil }}, location, "main", true, &shuttleengine.Runner{})
+ 	rel := filepath.ToSlash(shedrun.PullRequestRecordRel(location, shedrun.SelfRunID))
+ 	headFiles := func(format string) string {
+ 		t.Helper()
+diff --git a/internal/loomcli/notifystamp_integration_test.go b/internal/loomcli/notifystamp_integration_test.go
+index 3d271df01..6ab3954af 100644
+--- a/internal/loomcli/notifystamp_integration_test.go
++++ b/internal/loomcli/notifystamp_integration_test.go
+@@ -118,12 +118,11 @@ func TestHaltNoticeSeams_CarryTheRunsAutonomy(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv(agentname.StrandNameEnv, "")
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "halt-task")
++	h := hubforge.CopyHub(t, pairHubShape)
+ 	startNoticeOrch(t, h)
+-	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("halt-task"))
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(halt-task) = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) = %v; want nil", hubforge.TemplatePairSlug, err)
+ 	}
+ 	c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeTapestry}
+ 	if err := c.wire(pair, pair.AnchorPath()); err != nil {
+@@ -167,13 +166,12 @@ func TestVerifyBudgetNotice_NamesTheRun(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Setenv(agentname.StrandNameEnv, "")
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "budget-task")
++	h := hubforge.CopyHub(t, pairHubShape)
+ 	startNoticeOrch(t, h)
+ 	seedDarnHubConfig(t, h.Path, "3")
+-	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("budget-task"))
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+-		t.Fatalf("lymcwd.ResolveWorktree(budget-task) = %v; want nil", err)
++		t.Fatalf("lymcwd.ResolveWorktree(%s) = %v; want nil", hubforge.TemplatePairSlug, err)
+ 	}
+ 	c := &loomCLI{runID: shedrun.SelfRunID, recipe: shedrun.RecipeDarn}
+ 	_, budget, err := c.treeScopeSettings(pair)
+@@ -185,7 +183,7 @@ func TestVerifyBudgetNotice_NamesTheRun(t *testing.T) {
+ 		t.Fatalf("Notify() = %v; want nil", err)
+ 	}
+ 
+-	want := []string{"loom budget-task: Darn-Write gate: the verify gate has run past its 30m0s budget"}
++	want := []string{"loom " + hubforge.TemplatePairSlug + ": Darn-Write gate: the verify gate has run past its 30m0s budget"}
+ 	if got := postedSubjects(t, h); !slices.Equal(got, want) {
+ 		t.Errorf("posted subjects = %q; want %q", got, want)
+ 	}
+diff --git a/internal/loomcli/ownercheck_integration_test.go b/internal/loomcli/ownercheck_integration_test.go
+index 9b68d27bc..b49a992a5 100644
+--- a/internal/loomcli/ownercheck_integration_test.go
++++ b/internal/loomcli/ownercheck_integration_test.go
+@@ -33,7 +33,7 @@ func TestRunOwnerVerdict(t *testing.T) {
+ 	t.Parallel()
+ 	boardkit.InstallReplay(t)
+ 
+-	const slug = "owned-task"
++	const slug = hubforge.TemplatePairSlug
+ 	const here = "here"
+ 	tests := []struct {
+ 		name string
+@@ -51,8 +51,7 @@ func TestRunOwnerVerdict(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-			hubforge.AddPair(t, h, slug)
++			h := hubforge.CopyHub(t, loomcli.PairHubShape)
+ 			running := shedengine.Status{CurrentProducer: "Run-Shed", State: shedengine.StateRunning}
+ 			statusPath, statusLockPath := shedrun.StatusFile(h.Location, slug), shedrun.StatusLock(h.Location, slug)
+ 			for _, dir := range []string{filepath.Dir(statusPath), filepath.Dir(statusLockPath)} {
+diff --git a/internal/loomcli/peers_integration_test.go b/internal/loomcli/peers_integration_test.go
+index 5aa121459..49726cf8d 100644
+--- a/internal/loomcli/peers_integration_test.go
++++ b/internal/loomcli/peers_integration_test.go
+@@ -1,5 +1,5 @@
+ // peers_integration_test.go drives the real hubPeersDeps closures over a hub forged by hubforge.
+-// It adds the pairs through hubforge.AddPair.
++// It copies the hub with the caller's pair and adds the other pairs through hubforge.AddPair.
+ // This package's own testmain_test.go arms the hermetic git test environment for the whole binary,
+ // so this file adds no TestMain.
+ 
+@@ -37,8 +37,9 @@ func TestHubPeersDeps_OverRealHub(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	for _, slug := range []string{"caller", "peer", "no-origin", "seeded-darn", "seeded-empty"} {
++	h := hubforge.CopyHub(t, pairHubShape)
++	const caller = hubforge.TemplatePairSlug
++	for _, slug := range []string{"peer", "no-origin", "seeded-darn", "seeded-empty"} {
+ 		hubforge.AddPair(t, h, slug)
+ 	}
+ 
+@@ -48,7 +49,7 @@ func TestHubPeersDeps_OverRealHub(t *testing.T) {
+ 	}
+ 	boardConfig.Path = h.BoardDir()
+ 	board := boardengine.New(boardConfig)
+-	for _, slug := range []string{"caller", "peer", "no-origin", "ghost"} {
++	for _, slug := range []string{caller, "peer", "no-origin", "ghost"} {
+ 		// The recipe is named, since an entry with none runs the board's default_recipe.
+ 		// In the template that recipe is darn, which has no Plan-Write row.
+ 		if _, err := board.UpsertTask(map[string]any{"slug": slug, "title": "Title of " + slug, "kind": "task", "recipe": shedrun.RecipeTapestry, "labels": []string{"bug"}}); err != nil {
+@@ -59,7 +60,7 @@ func TestHubPeersDeps_OverRealHub(t *testing.T) {
+ 		}
+ 	}
+ 
+-	gitkit.CommitFile(t, h.PairCodeWorktree("caller"), "caller.txt", "c", "caller: change")
++	gitkit.CommitFile(t, h.PairCodeWorktree(caller), "caller.txt", "c", "caller: change")
+ 	gitkit.CommitFile(t, h.PairCodeWorktree("peer"), "z/last.txt", "z", "peer: last")
+ 	gitkit.CommitFile(t, h.PairCodeWorktree("peer"), "a/first.txt", "a", "peer: first")
+ 	firstOnParent := gitkit.CommitFile(t, h.PrimeWorktree(), "parent-one.txt", "1", "parent: one")
+@@ -100,7 +101,7 @@ func TestHubPeersDeps_OverRealHub(t *testing.T) {
+ 		t.Fatalf("write the empty-recipe seed: %v", err)
+ 	}
+ 
+-	callerLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("caller"))
++	callerLocation, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(caller))
+ 	if err != nil {
+ 		t.Fatalf("lymcwd.ResolveWorktree(caller) error = %v; want nil", err)
+ 	}
+diff --git a/internal/loomcli/prepush_skip_integration_test.go b/internal/loomcli/prepush_skip_integration_test.go
+index b7343a97d..cc30200f4 100644
+--- a/internal/loomcli/prepush_skip_integration_test.go
++++ b/internal/loomcli/prepush_skip_integration_test.go
+@@ -19,13 +19,12 @@ import (
+ // It is serial because it sets environment variables.
+ func TestNewPrePushCheckSkip(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, hub, "task")
++	hub := hubforge.CopyHub(t, pairHubShape)
+ 	prime, err := lymcwd.ResolveWorktree(hub.PrimeWorktree())
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree(prime) error = %v; want nil", err)
+ 	}
+-	pair, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree("task"))
++	pair, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree(pair) error = %v; want nil", err)
+ 	}
+diff --git a/internal/loomcli/raddlecontext_integration_test.go b/internal/loomcli/raddlecontext_integration_test.go
+index c87e2cd51..8ffcbcee9 100644
+--- a/internal/loomcli/raddlecontext_integration_test.go
++++ b/internal/loomcli/raddlecontext_integration_test.go
+@@ -26,15 +26,15 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, hub, "the-sketch")
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const sketch = hubforge.TemplatePairSlug
+ 	// "docs" is no structural reservation, so only the hub's configured junction names refuse it.
+ 	hubforge.SeedFabricConfig(t, hub, "pathspec: docs\n")
+ 
+ 	// A board write cannot file an entry with a label the config lacks,
+ 	// so the entries are written to the board file directly.
+ 	board := `{"version":1,"entries":[` +
+-		`{"id":1,"slug":"the-sketch","title":"Sketch","kind":"task","recipe":"raddle","labels":["sketch","mod-a"],"revised":"2026-11-01T09:00:00Z"},` +
++		`{"id":1,"slug":"` + sketch + `","title":"Sketch","kind":"task","recipe":"raddle","labels":["sketch","mod-a"],"revised":"2026-11-01T09:00:00Z"},` +
+ 		`{"id":2,"slug":"open-other","title":"Open","kind":"task","labels":["bug"],"revised":"2026-11-01T10:00:00Z"},` +
+ 		`{"id":3,"slug":"done-one","title":"Done","kind":"task","labels":["bug"],"status":"done"}]}`
+ 	if err := os.WriteFile(filepath.Join(hub.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
+@@ -50,7 +50,7 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	if err := os.WriteFile(filepath.Join(storeDir, "store.json"), []byte(`{"hash":"h","filed":["old-part"]}`), 0o644); err != nil {
+ 		t.Fatalf("write store.json: %v", err)
+ 	}
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree("the-sketch"))
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(sketch))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 	}
+@@ -63,7 +63,7 @@ func TestRaddleBoardContext(t *testing.T) {
+ 		t.Fatalf("raddleBoardContext() error = %v; want nil", err)
+ 	}
+ 
+-	if got.Sketch != "the-sketch" || got.Entry != "the-sketch" || !got.Filing {
++	if got.Sketch != sketch || got.Entry != sketch || !got.Filing {
+ 		t.Errorf("context = sketch %q, entry %q, filing %v; want the run's own entry and filing", got.Sketch, got.Entry, got.Filing)
+ 	}
+ 	if !got.LivePattern("PATTERN-live") || got.LivePattern("PATTERN-gone") {
+@@ -87,7 +87,7 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	for _, entry := range got.Entries {
+ 		open[entry.Slug] = entry.Open
+ 	}
+-	if want := map[string]bool{"the-sketch": true, "open-other": true, "done-one": false}; !equalOpenness(open, want) {
++	if want := map[string]bool{sketch: true, "open-other": true, "done-one": false}; !equalOpenness(open, want) {
+ 		t.Errorf("entries open = %v; want %v", open, want)
+ 	}
+ 	for _, entry := range got.Entries {
+@@ -128,12 +128,13 @@ func TestRaddleBoardContext(t *testing.T) {
+ 	}
+ }
+ 
+-// forgeRaddleRun forges a hub with a pair worktree for slug and writes board as its board.json.
++// forgeRaddleRun forges a hub with a pair worktree for the slug hubforge.TemplatePairSlug.
++// It writes board as the hub's board.json.
+ // It returns the pair's location.
+-func forgeRaddleRun(t *testing.T, slug, board string) *lymcwd.Location {
++func forgeRaddleRun(t *testing.T, board string) *lymcwd.Location {
+ 	t.Helper()
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, hub, slug)
++	const slug = hubforge.TemplatePairSlug
++	hub := hubforge.CopyHub(t, pairHubShape)
+ 	if err := os.WriteFile(filepath.Join(hub.BoardDir(), "board.json"), []byte(board), 0o644); err != nil {
+ 		t.Fatalf("write board.json: %v", err)
+ 	}
+@@ -148,7 +149,7 @@ func TestRaddleBoardContextPerch(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	const board = `{"version":1,"entries":[{"id":1,"slug":"the-sketch","title":"Sketch","kind":"task","labels":["sketch"]}]}`
++	const board = `{"version":1,"entries":[{"id":1,"slug":"` + hubforge.TemplatePairSlug + `","title":"Sketch","kind":"task","labels":["sketch"]}]}`
+ 	tests := []struct {
+ 		name string
+ 		// mode is the mode the run's state records, empty for a run with no state file.
+@@ -166,7 +167,7 @@ func TestRaddleBoardContextPerch(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			location := forgeRaddleRun(t, "the-sketch", board)
++			location := forgeRaddleRun(t, board)
+ 			statePath := loomengine.RaddleStatePath(location)
+ 			switch {
+ 			case tt.rawState != "":
+diff --git a/internal/loomcli/raddlewiring_integration_test.go b/internal/loomcli/raddlewiring_integration_test.go
+index 4d88002d8..cbc08303f 100644
+--- a/internal/loomcli/raddlewiring_integration_test.go
++++ b/internal/loomcli/raddlewiring_integration_test.go
+@@ -24,9 +24,8 @@ func TestCreateBeamFromParent(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, hub, "the-sketch")
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree("the-sketch"))
++	hub := hubforge.CopyHub(t, pairHubShape)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree() error = %v; want nil", err)
+ 	}
+@@ -60,7 +59,8 @@ func TestRaddleRunFiling(t *testing.T) {
+ 
+ 	created := time.Date(2026, 11, 1, 9, 0, 0, 0, time.UTC)
+ 	const (
+-		boardWithEntry = `{"version":1,"entries":[{"id":1,"slug":"plan","title":"Plan","kind":"task","created":"2026-11-01T09:00:00Z"}]}`
++		slug           = hubforge.TemplatePairSlug
++		boardWithEntry = `{"version":1,"entries":[{"id":1,"slug":"` + slug + `","title":"Plan","kind":"task","created":"2026-11-01T09:00:00Z"}]}`
+ 		boardWithout   = `{"version":1,"entries":[]}`
+ 		boardBroken    = `{not json`
+ 	)
+@@ -76,18 +76,18 @@ func TestRaddleRunFiling(t *testing.T) {
+ 	}{
+ 		{name: "NoStoreEntry", board: boardWithEntry},
+ 		{name: "StoreEntryOfAnotherSketch", board: boardWithEntry, storeSketch: "other", storeCreated: created},
+-		{name: "StoreEntryOfAnEarlierEntryWithTheSlug", board: boardWithEntry, storeSketch: "plan", storeCreated: created.Add(-time.Hour)},
+-		{name: "MatchingStoreEntry", board: boardWithEntry, storeSketch: "plan", storeCreated: created, wantFiled: []string{"plan", "part-a"}, wantFound: true},
+-		{name: "MatchingStoreEntryWithItsBoardEntryGone", board: boardWithout, storeSketch: "plan", storeCreated: created, wantFiled: []string{"plan", "part-a"}, wantFound: true},
+-		{name: "BoardReadFailure", board: boardBroken, storeSketch: "plan", storeCreated: created, wantErr: true},
++		{name: "StoreEntryOfAnEarlierEntryWithTheSlug", board: boardWithEntry, storeSketch: slug, storeCreated: created.Add(-time.Hour)},
++		{name: "MatchingStoreEntry", board: boardWithEntry, storeSketch: slug, storeCreated: created, wantFiled: []string{slug, "part-a"}, wantFound: true},
++		{name: "MatchingStoreEntryWithItsBoardEntryGone", board: boardWithout, storeSketch: slug, storeCreated: created, wantFiled: []string{slug, "part-a"}, wantFound: true},
++		{name: "BoardReadFailure", board: boardBroken, storeSketch: slug, storeCreated: created, wantErr: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			location := forgeRaddleRun(t, "plan", tt.board)
++			location := forgeRaddleRun(t, tt.board)
+ 			if tt.storeSketch != "" {
+ 				// Filed names the run's slug too, so a store entry of another Sketch still holds it.
+-				data, err := json.Marshal(boardengine.RaddleStoreEntry{Created: tt.storeCreated, Hash: "h", Filed: []string{"plan", "part-a"}})
++				data, err := json.Marshal(boardengine.RaddleStoreEntry{Created: tt.storeCreated, Hash: "h", Filed: []string{slug, "part-a"}})
+ 				if err != nil {
+ 					t.Fatalf("marshal the store record: %v", err)
+ 				}
+@@ -100,7 +100,7 @@ func TestRaddleRunFiling(t *testing.T) {
+ 				}
+ 			}
+ 
+-			filed, found, err := raddleRunFiling(location, "plan")
++			filed, found, err := raddleRunFiling(location, slug)
+ 			if (err != nil) != tt.wantErr {
+ 				t.Fatalf("raddleRunFiling() error = %v; want error %v", err, tt.wantErr)
+ 			}
+diff --git a/internal/loomcli/startpusher_test.go b/internal/loomcli/startpusher_test.go
+index 104c3edab..1c4a8020e 100644
+--- a/internal/loomcli/startpusher_test.go
++++ b/internal/loomcli/startpusher_test.go
+@@ -17,11 +17,10 @@ func TestWiredStartPusher_AsksForThePairsPusher(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, h, "task1")
+-	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("task1"))
++	h := hubforge.CopyHub(t, pairHubShape)
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+-		t.Fatalf("ResolveWorktree(task1) = %v; want nil", err)
++		t.Fatalf("ResolveWorktree(%s) = %v; want nil", hubforge.TemplatePairSlug, err)
+ 	}
+ 	var started []string
+ 	c := &loomCLI{runID: shedrun.SelfRunID, pusherStart: func(target runpusher.Target) (bool, error) {
+@@ -37,7 +36,7 @@ func TestWiredStartPusher_AsksForThePairsPusher(t *testing.T) {
+ 
+ 	c.startPusher()
+ 
+-	if want := []string{"task1/task1"}; !slices.Equal(started, want) {
++	if want := []string{"pair/pair"}; !slices.Equal(started, want) {
+ 		t.Errorf("pushers asked for = %q; want %q", started, want)
+ 	}
+ }
+diff --git a/internal/loomcli/subjects_integration_test.go b/internal/loomcli/subjects_integration_test.go
+index 666925c2a..9cfba4858 100644
+--- a/internal/loomcli/subjects_integration_test.go
++++ b/internal/loomcli/subjects_integration_test.go
+@@ -29,9 +29,8 @@ func TestCodeSubject_Real(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "codesubject"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+@@ -130,9 +129,8 @@ func TestTaskMergeBase_FollowsTheMergedTip(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "taskmergebase"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+@@ -174,9 +172,8 @@ func TestDarnDeps_BranchWorkSeams(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "darnbranchwork"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+diff --git a/internal/loomcli/wiring_carryover_integration_test.go b/internal/loomcli/wiring_carryover_integration_test.go
+index 4ab65dba2..906065708 100644
+--- a/internal/loomcli/wiring_carryover_integration_test.go
++++ b/internal/loomcli/wiring_carryover_integration_test.go
+@@ -24,9 +24,10 @@ import (
+ // Writing the same entry again commits nothing.
+ func TestWriteCarryOver_Real_CommitsTheRecordAlone(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "carryoverrecord"
+-	hubforge.AddPair(t, hub, slug)
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+diff --git a/internal/loomcli/wiring_commitstatus_integration_test.go b/internal/loomcli/wiring_commitstatus_integration_test.go
+index 0180bf4d9..ad2f3f6d9 100644
+--- a/internal/loomcli/wiring_commitstatus_integration_test.go
++++ b/internal/loomcli/wiring_commitstatus_integration_test.go
+@@ -24,15 +24,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// realSeamFixture builds a hub, adds one pair, and seeds a status file at loom's own status path.
++// realSeamFixture copies a hub that holds one pair, and seeds a status file at loom's own status path.
+ // It returns the seam wired to that pair through loomCommitStatusDeps, the same call wire() makes.
+ // It also returns the pair's records sibling path, for direct git inspection.
+ func realSeamFixture(t *testing.T) (seam func(producer, state string) error, location *lymcwd.Location, recordsSibling string) {
+ 	t.Helper()
+ 
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "commitstatus"
+-	hubforge.AddPair(t, hub, slug)
++	hub := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
+ 	codeWorktree := hub.PairCodeWorktree(slug)
+ 
+ 	location, err := lymcwd.ResolveWorktree(codeWorktree)
+@@ -130,6 +129,8 @@ func mergeHeadPresent(t *testing.T, dir string) bool {
+ // Each step changes the status file first, so every seam call has something of its own to commit.
+ func TestCommitStatusSeam_Real(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
++
+ 	seam, location, recordsSibling := realSeamFixture(t)
+ 
+ 	statusRel := realSeamStatusRel(location)
+diff --git a/internal/loomcli/wiring_harden_integration_test.go b/internal/loomcli/wiring_harden_integration_test.go
+index 87b618be1..92d0151fe 100644
+--- a/internal/loomcli/wiring_harden_integration_test.go
++++ b/internal/loomcli/wiring_harden_integration_test.go
+@@ -20,9 +20,8 @@ func TestWire_HardenerRecipe(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+ 
+-	const slug = "hardened"
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	hubforge.AddPair(t, hub, slug)
++	const slug = hubforge.TemplatePairSlug
++	hub := hubforge.CopyHub(t, pairHubShape)
+ 	writeHubGateConfig(t, hub.Path, gateConfigWithTwoTiers())
+ 	reviewers := []string{"opus[medium]", "opus[high]", "sonnet[medium]"}
+ 	seedHardenerConfig(t, hub.Path, `reviewer:
+diff --git a/internal/loomcli/wiring_parentbranch_integration_test.go b/internal/loomcli/wiring_parentbranch_integration_test.go
+index 9f41da9b6..2bc1d2e86 100644
+--- a/internal/loomcli/wiring_parentbranch_integration_test.go
++++ b/internal/loomcli/wiring_parentbranch_integration_test.go
+@@ -20,6 +20,8 @@ import (
+ // Once the pair has one, it returns the parent branch the record names.
+ func TestWire_WebsterParentBranchReadsPairOrigin(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
++
+ 	loc := hubLocation(t, "pair", ".")
+ 
+ 	c := &loomCLI{runID: shedrun.SelfRunID}
+diff --git a/internal/loomcli/wiring_publish_integration_test.go b/internal/loomcli/wiring_publish_integration_test.go
+index 6c50395b3..133adc75b 100644
+--- a/internal/loomcli/wiring_publish_integration_test.go
++++ b/internal/loomcli/wiring_publish_integration_test.go
+@@ -25,15 +25,19 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
+-// TestWireLanding_TellsLanguageSkills asserts wireLanding hands the landing deps the language skills that wire loaded.
+-// It also asserts wireLanding fills the PR-Review session's liveness and registration seams.
++// TestWireLanding_FillsTheLandingSeamsPerRecipe asserts wireLanding fills the landing deps from what wire loaded.
+ // The test runs over a real hub and pair.
+-func TestWireLanding_TellsLanguageSkills(t *testing.T) {
++// Each row hands the landing deps the language skills that wire loaded.
++// It also fills the PR-Review session's liveness and registration seams.
++// A sampler seed fills the Sampler-Session row's seams: the session, liveness, registration and record watch ones.
++// A darn seed leaves them nil.
++// The rows share one hub copy and run in order, since wire and wireLanding only read the hub.
++func TestWireLanding_FillsTheLandingSeamsPerRecipe(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "languagelanding"
+-	hubforge.AddPair(t, hub, slug)
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+ 	}
+@@ -41,30 +45,16 @@ func TestWireLanding_TellsLanguageSkills(t *testing.T) {
+ 	if err := os.MkdirAll(configengine.ConfigDir(boardDir), 0o755); err != nil {
+ 		t.Fatalf("MkdirAll error = %v; want nil", err)
+ 	}
+-	if err := os.WriteFile(configengine.ConfigFile(boardDir, "language"), []byte("skills:\n  - scribe:golang-testing\n"), 0o644); err != nil {
+-		t.Fatalf("WriteFile(language.yaml) error = %v; want nil", err)
+-	}
+-
+-	c := &loomCLI{runID: shedrun.SelfRunID}
+-	if err := c.wire(location, location.AnchorPath()); err != nil {
+-		t.Fatalf("wire() = %v; want nil", err)
+-	}
+-	if err := c.wireLanding(); err != nil {
+-		t.Fatalf("wireLanding() = %v; want nil", err)
+-	}
+-
+-	if want := []string{"scribe:golang-testing"}; !slices.Equal(c.env.Landing.LanguageSkills, want) {
+-		t.Errorf("env.Landing.LanguageSkills = %v; want %v", c.env.Landing.LanguageSkills, want)
+-	}
+-	if pr := c.env.Landing.PullRequest; pr.SessionLive == nil || pr.RegisterSession == nil {
+-		t.Errorf("after wireLanding: PullRequest.SessionLive nil = %v, RegisterSession nil = %v; want both filled", pr.SessionLive == nil, pr.RegisterSession == nil)
++	for module, contents := range map[string]string{
++		"language": "skills:\n  - scribe:golang-testing\n",
++		"darn":     darnengine.ConfigTemplate(),
++		"sampler":  samplerengine.ConfigTemplate(),
++	} {
++		if err := os.WriteFile(configengine.ConfigFile(boardDir, module), []byte(contents), 0o644); err != nil {
++			t.Fatalf("WriteFile(%s.yaml) error = %v; want nil", module, err)
++		}
+ 	}
+-}
+ 
+-// TestWireLanding_FillsSamplerSessionSeams asserts wireLanding fills the Sampler-Session row's seams for a sampler seed.
+-// The seams are the session, liveness, registration and record watch ones, and a darn seed leaves them nil.
+-func TestWireLanding_FillsSamplerSessionSeams(t *testing.T) {
+-	tiergate.Require(t, 1)
+ 	tests := []struct {
+ 		name    string
+ 		recipe  string
+@@ -75,23 +65,6 @@ func TestWireLanding_FillsSamplerSessionSeams(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-			const slug = "samplerlanding"
+-			hubforge.AddPair(t, hub, slug)
+-			location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
+-			if err != nil {
+-				t.Fatalf("ResolveWorktree error = %v; want nil", err)
+-			}
+-			configDir := configengine.ConfigDir(fabriclayout.BoardDir(location.HubPath))
+-			if err := os.MkdirAll(configDir, 0o755); err != nil {
+-				t.Fatalf("MkdirAll error = %v; want nil", err)
+-			}
+-			for module, template := range map[string]string{"darn": darnengine.ConfigTemplate(), "sampler": samplerengine.ConfigTemplate()} {
+-				if err := os.WriteFile(configengine.ConfigFile(fabriclayout.BoardDir(location.HubPath), module), []byte(template), 0o644); err != nil {
+-					t.Fatalf("WriteFile(%s.yaml) error = %v; want nil", module, err)
+-				}
+-			}
+-
+ 			c := &loomCLI{runID: shedrun.SelfRunID, recipe: tt.recipe}
+ 			if err := c.wire(location, location.AnchorPath()); err != nil {
+ 				t.Fatalf("wire() = %v; want nil", err)
+@@ -100,6 +73,12 @@ func TestWireLanding_FillsSamplerSessionSeams(t *testing.T) {
+ 				t.Fatalf("wireLanding() = %v; want nil", err)
+ 			}
+ 
++			if want := []string{"scribe:golang-testing"}; !slices.Equal(c.env.Landing.LanguageSkills, want) {
++				t.Errorf("env.Landing.LanguageSkills = %v; want %v", c.env.Landing.LanguageSkills, want)
++			}
++			if pr := c.env.Landing.PullRequest; pr.SessionLive == nil || pr.RegisterSession == nil {
++				t.Errorf("after wireLanding: PullRequest.SessionLive nil = %v, RegisterSession nil = %v; want both filled", pr.SessionLive == nil, pr.RegisterSession == nil)
++			}
+ 			sampler := c.env.Sampler
+ 			set := sampler.Sessions != nil && sampler.SessionLive != nil && sampler.RegisterSession != nil && sampler.Watch != nil
+ 			unset := sampler.Sessions == nil && sampler.SessionLive == nil && sampler.RegisterSession == nil && sampler.Watch == nil
+@@ -114,10 +93,10 @@ func TestWireLanding_FillsSamplerSessionSeams(t *testing.T) {
+ // The value is the regression check that wire renders from the run's scope record.
+ func TestWire_DescribeTableCarriesTheDriftVerdict(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "describeverdict"
+-	hubforge.AddPair(t, hub, slug)
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+ 	}
+@@ -148,10 +127,10 @@ func TestWire_DescribeTableCarriesTheDriftVerdict(t *testing.T) {
+ // Once a records commit exists, the seam renders the records of the newest one at call time.
+ func TestLandingDeps_DriftVerdict_RendersTheScopeRecord(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "landingverdict"
+-	hubforge.AddPair(t, hub, slug)
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+ 	}
+diff --git a/internal/loomcli/wiring_rework_integration_test.go b/internal/loomcli/wiring_rework_integration_test.go
+index 9a91a2805..226ce3465 100644
+--- a/internal/loomcli/wiring_rework_integration_test.go
++++ b/internal/loomcli/wiring_rework_integration_test.go
+@@ -78,10 +78,10 @@ func commitReworkRound(t *testing.T, c *loomCLI, location *lymcwd.Location, n, f
+ // It answers false after a round whose generation carries a source card.
+ func TestWire_Real_PlanReviewSkipFollowsGenerationClass(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-	const slug = "reworkskip"
+-	hubforge.AddPair(t, hub, slug)
+-	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(slug))
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, pairHubShape)
++	location, err := lymcwd.ResolveWorktree(hub.PairCodeWorktree(hubforge.TemplatePairSlug))
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree error = %v; want nil", err)
+ 	}
+diff --git a/internal/webstercli/acceptaudit.go b/internal/webstercli/acceptaudit.go
+index e1bc04b81..276cc6883 100644
+--- a/internal/webstercli/acceptaudit.go
++++ b/internal/webstercli/acceptaudit.go
+@@ -105,7 +105,7 @@ Example:
+ 			_ = mutateLock.Release()
+ 			mutateHeld = false
+ 
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "accept-audit"); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "accept-audit"); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: audit findings accepted but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+@@ -145,7 +145,7 @@ func (c *websterCLI) acceptBatch(cmd *cobra.Command, st *websterengine.State, n
+ 	_ = release()
+ 	*held = false
+ 
+-	if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "accept-audit"); syncErr != nil {
++	if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "accept-audit"); syncErr != nil {
+ 		clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: batch findings accepted but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 		return
+ 	}
+diff --git a/internal/webstercli/acceptaudit_test.go b/internal/webstercli/acceptaudit_test.go
+index 8f3451324..f43b906d3 100644
+--- a/internal/webstercli/acceptaudit_test.go
++++ b/internal/webstercli/acceptaudit_test.go
+@@ -33,8 +33,8 @@ func (fx *verbsFixture) seedPendingFinding(t *testing.T) {
+ // It records no disposition, and a second call reports nothing.
+ func TestAcceptAuditCmd_AcceptsPendingThenIsIdempotent(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.seedPendingFinding(t)
+ 
+ 	var out strings.Builder
+@@ -73,11 +73,10 @@ func TestAcceptAuditCmd_AcceptsPendingThenIsIdempotent(t *testing.T) {
+ // TestAcceptAuditCmd_BatchClearsFabricReference proves --batch clears a failed batch's pathless finding.
+ // It does so when the batch made no commit, and the envelope names recover-batch as next.
+ // A second call refuses because nothing is left to accept.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestAcceptAuditCmd_BatchClearsFabricReference(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	st := fx.initState(t)
+ 	head := gitkit.RevParse(t, fx.Worktree, "HEAD")
+ 	st.Batches[2] = &websterengine.BatchState{
+@@ -159,10 +158,9 @@ func TestAcceptAuditCmd_BatchClearsFabricReference(t *testing.T) {
+ // It names the way forward and leaves state.json byte-identical.
+ // An edited path refuses with the git way forward.
+ // A commit on top of the recorded head refuses even when a second commit restores the file's content.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestAcceptAuditCmd_Refusals(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 
+ 	cases := []struct {
+ 		name string
+@@ -201,7 +199,8 @@ func TestAcceptAuditCmd_Refusals(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.seedPendingFinding(t)
+ 			tc.move(t, fx)
+ 			statePath := filepath.Join(fx.CLI.geom.WebsterDir, "state.json")
+@@ -234,7 +233,7 @@ func TestAcceptAuditCmd_Refusals(t *testing.T) {
+ // The output names the sentinel and `lym fabric commit`.
+ func TestAcceptAuditCmd_FabricSyncFailureNamesWayForward(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	fx.seedPendingFinding(t)
+ 	syncErr := errors.New("probe: fabric unreachable")
+@@ -262,8 +261,8 @@ func TestAcceptAuditCmd_FabricSyncFailureNamesWayForward(t *testing.T) {
+ // The envelope's next field names the re-run that has Master write them again.
+ func TestAcceptAuditCmd_AbsentContractFilesCarryNext(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.seedPendingFinding(t)
+ 	st, err := websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
+ 	if err != nil || st == nil {
+diff --git a/internal/webstercli/batchpause.go b/internal/webstercli/batchpause.go
+index 210ce2c16..afaad01a0 100644
+--- a/internal/webstercli/batchpause.go
++++ b/internal/webstercli/batchpause.go
+@@ -5,7 +5,6 @@ package webstercli
+ 
+ import (
+ 	"fmt"
+-	"os"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+@@ -13,12 +12,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+-// envMasterStrand returns a lookup of the calling strand's name and guid:
+-// the name is read from the strand-name environment variable, and the guid is resolved from it through resolve.
+-// An unset or empty variable is an error naming it, and a resolve error is returned as is.
+-func envMasterStrand(resolve func(name string) (string, error)) func() (name, guid string, err error) {
++// masterStrandLookup returns a lookup of the calling strand's name and guid:
++// the name is the strand name passed in, and the guid is resolved from it through resolve.
++// An empty name is an error naming the strand-name environment variable, and a resolve error is returned as is.
++func masterStrandLookup(name string, resolve func(name string) (string, error)) func() (string, string, error) {
+ 	return func() (string, string, error) {
+-		name := os.Getenv(agentname.StrandNameEnv)
+ 		if name == "" {
+ 			return "", "", fmt.Errorf("%s is not set", agentname.StrandNameEnv)
+ 		}
+diff --git a/internal/webstercli/batchpause_test.go b/internal/webstercli/batchpause_test.go
+index 2848f57d8..ebf6556c7 100644
+--- a/internal/webstercli/batchpause_test.go
++++ b/internal/webstercli/batchpause_test.go
+@@ -26,7 +26,7 @@ import (
+ const undecodableRecord = "{not json"
+ 
+ // TestBatchVerbs_RefuseUnderAPause drives the batch verbs under a live hub entry with Master's strand lookup stubbed.
+-// It does not run in parallel: envMasterStrand's part sets an environment variable, and the logger is process-global.
++// Serial: its rows capture the process-global logger, so only the subtests after those rows run in parallel.
+ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	const (
+@@ -117,9 +117,8 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+ 			logs := logcapture.Capture(t)
+-			fx := newVerbsFixture(t)
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.initState(t)
+ 			recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
+ 			fx.CLI.pause = pauserecord.Geometry{RecordPath: recordPath, Slug: "pair"}
+@@ -209,8 +208,8 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 	}
+ 
+ 	t.Run("the other verbs are not refused by the pause", func(t *testing.T) {
+-		t.Setenv("FABRIC_SKIP_GIT", "1")
+-		fx := newVerbsFixture(t)
++		t.Parallel()
++		fx := newSkipGitVerbsFixture(t)
+ 		fx.initState(t)
+ 		recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
+ 		fx.CLI.pause = pauserecord.Geometry{RecordPath: recordPath, Slug: "pair"}
+@@ -239,26 +238,25 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("envMasterStrand reads the strand-name variable and resolves its guid", func(t *testing.T) {
++	t.Run("masterStrandLookup resolves the strand name it is given to its guid", func(t *testing.T) {
++		t.Parallel()
+ 		var resolved string
+-		lookup := envMasterStrand(func(name string) (string, error) {
++		resolve := func(name string) (string, error) {
+ 			resolved = name
+ 			return "guid-for-" + name, nil
+-		})
++		}
+ 
+-		t.Setenv(agentname.StrandNameEnv, "")
+-		if _, _, err := lookup(); err == nil || !strings.Contains(err.Error(), agentname.StrandNameEnv) {
+-			t.Errorf("lookup() with the variable empty = %v; want an error naming %s", err, agentname.StrandNameEnv)
++		if _, _, err := masterStrandLookup("", resolve)(); err == nil || !strings.Contains(err.Error(), agentname.StrandNameEnv) {
++			t.Errorf("lookup() with an empty name = %v; want an error naming %s", err, agentname.StrandNameEnv)
+ 		}
+ 
+-		t.Setenv(agentname.StrandNameEnv, masterName)
+-		name, guid, err := lookup()
++		name, guid, err := masterStrandLookup(masterName, resolve)()
+ 		if err != nil || name != masterName || guid != "guid-for-"+masterName || resolved != masterName {
+ 			t.Errorf("lookup() = (%q, %q, %v) after resolving %q; want (%q, %q, nil)", name, guid, err, resolved, masterName, "guid-for-"+masterName)
+ 		}
+ 
+ 		failing := errors.New("no such strand")
+-		if _, _, err := envMasterStrand(func(string) (string, error) { return "", failing })(); !errors.Is(err, failing) {
++		if _, _, err := masterStrandLookup(masterName, func(string) (string, error) { return "", failing })(); !errors.Is(err, failing) {
+ 			t.Errorf("lookup() whose resolve fails = %v; want %v", err, failing)
+ 		}
+ 	})
+diff --git a/internal/webstercli/beginbatch.go b/internal/webstercli/beginbatch.go
+index 3750721a7..b0b9d63bf 100644
+--- a/internal/webstercli/beginbatch.go
++++ b/internal/webstercli/beginbatch.go
+@@ -226,7 +226,7 @@ Example:
+ 
+ 			// The sync commits the scoped _lym pathspec, which holds the reports directory,
+ 			// so an archived report's rename is committed with the state.
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("begin-batch %s", result.BatchName)); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("begin-batch %s", result.BatchName)); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: batch %s begun but the fabric sync failed: %v; %s", result.BatchName, syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/cli.go b/internal/webstercli/cli.go
+index ef27bd32d..b99639908 100644
+--- a/internal/webstercli/cli.go
++++ b/internal/webstercli/cli.go
+@@ -111,6 +111,9 @@ type websterCLI struct {
+ 	// Opening it there would fail the pre-run in healthy but unwired locations.
+ 	// Those are the locations that validate and status run in, and neither verb commits to the fabric.
+ 	openFabric func() (*fabricengine.Fabric, error)
++	// syncOptions are the skip switches every fabric sync and reset of the pair's code runs under.
++	// wireHub and wireStandalone read them from the environment once per process; the zero value skips nothing.
++	syncOptions fabricengine.SyncOptions
+ 	// parentBranch lazily reads the pair's recorded parent branch from fabric's origin record.
+ 	// The clean-parent-merge rule needs it; standalone leaves it nil, since no merge commit is accepted.
+ 	parentBranch websterengine.ParentBranchFunc
+@@ -153,6 +156,10 @@ type websterCLI struct {
+ 	// masterStrand returns the calling Master strand's name and guid.
+ 	// begin-batch and recover-batch claim them into a pause covering the pair; wireHub and wireStandalone set it.
+ 	masterStrand func() (name, guid string, err error)
++	// strandName is the calling strand's name, empty for an unnamed shell.
++	// wireHub and wireStandalone read it from the strand-name environment variable;
++	// the bracket verbs' orphaned-Master guard and masterStrand read it from here.
++	strandName string
+ 
+ 	// stencilsDirFlag, planDirFlag, and targetDirFlag hold the raw values of the three standalone-entry persistent flags.
+ 	// Command() binds each one.
+diff --git a/internal/webstercli/cli_test.go b/internal/webstercli/cli_test.go
+index 0da251754..915be54a8 100644
+--- a/internal/webstercli/cli_test.go
++++ b/internal/webstercli/cli_test.go
+@@ -38,6 +38,7 @@ import (
+ 	"github.com/spf13/cobra"
+ )
+ 
++// Serial: t.Chdir moves the process working directory.
+ func TestCommand_GroupGuard_OutsideGitRepo(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Chdir(t.TempDir())
+@@ -53,6 +54,7 @@ func TestCommand_GroupGuard_OutsideGitRepo(t *testing.T) {
+ 
+ func TestCommand_LongStringsHaveNoStaleBatchLanguage(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	forbidden := []string{"--restart-chain", "restart-chain", "chain", "oversized"}
+ 
+ 	var walk func(cmd *cobra.Command)
+@@ -70,29 +72,28 @@ func TestCommand_LongStringsHaveNoStaleBatchLanguage(t *testing.T) {
+ 	walk(Command())
+ }
+ 
+-// TestFabricSync_GuardOrdering verifies that the FABRIC_SKIP_GIT bypass short-circuits before path validation.
+-// Without the bypass, fabricSync validates the pair's paths before any git work.
+-// It sets FABRIC_SKIP_GIT and FABRIC_SKIP_PUSH, so it is not parallel.
++// TestFabricSync_GuardOrdering verifies that the SkipGit option short-circuits before path validation.
++// Without the option, fabricSync validates the pair's paths before any git work.
+ func TestFabricSync_GuardOrdering(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	cases := []struct {
+ 		name     string
+-		skipGit  string
++		skipGit  bool
+ 		wantMiss bool
+ 	}{
+-		{"skip-git bypass needs no fabric worktree", "1", false},
+-		{"non-bypass validates the pair paths", "", true},
++		{"skip-git bypass needs no fabric worktree", true, false},
++		{"non-bypass validates the pair paths", false, true},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", tc.skipGit)
+-			t.Setenv("FABRIC_SKIP_PUSH", "")
++			t.Parallel()
+ 
+ 			hub := t.TempDir()
+ 			layout := &lymcwd.Location{HubPath: hub, WorktreeName: filepath.Base(filepath.Join(hub, "pair")), AnchorRel: "."}
+ 			open := func() (*fabricengine.Fabric, error) { return fabricengine.Open(layout) }
+ 
+-			committed, err := fabricSync(open, layout.AnchorRel, "guard probe")
++			committed, err := fabricSync(open, layout.AnchorRel, fabricengine.SyncOptions{SkipGit: tc.skipGit}, "guard probe")
+ 			if committed {
+ 				t.Error("fabricSync() committed = true; want false, nothing can be committed")
+ 			}
+@@ -520,9 +521,11 @@ func seedTwoCardGlyphPlanDir(t *testing.T, planDir, worktreeRoot string) {
+ // Both whole-plan branches, no run and a run with no batch begun, answer through the wired index, whose type load a hub slots.
+ func TestValidateCmd_ScopeFollowsRunProgress(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	identity := batcher.Identity()
+ 
+ 	t.Run("NoRunRecordedGetsWholePlanAnswer", func(t *testing.T) {
++		t.Parallel()
+ 		c, _ := newTestCLI(t)
+ 		c.batcher = identity
+ 		seedTwoCardGlyphPlanDir(t, c.geom.PlanDir, c.geom.WorktreeRoot)
+@@ -553,6 +556,7 @@ func TestValidateCmd_ScopeFollowsRunProgress(t *testing.T) {
+ 		{"RunWithNoBatchBegunValidatesThroughTheWiredIndex", true},
+ 	} {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			c, _ := newTestCLI(t)
+ 			c.batcher = identity
+ 			seedTwoCardGlyphPlanDir(t, c.geom.PlanDir, c.geom.WorktreeRoot)
+@@ -586,6 +590,7 @@ func TestValidateCmd_ScopeFollowsRunProgress(t *testing.T) {
+ 		{"BegunBatchScopesToPendingCards", &websterengine.BatchState{Slug: "first"}},
+ 	} {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			c, _ := newTestCLI(t)
+ 			c.batcher = identity
+ 			// A run with a state never prices a partition, so the lister that fails is never called.
+@@ -632,6 +637,7 @@ func TestValidateCmd_ScopeFollowsRunProgress(t *testing.T) {
+ // The refusal names the batch order and the way forward, as the first init does.
+ func TestValidateCmd_RefusesBackwardPlanWithNoRun(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	c, _ := newTestCLI(t)
+ 	c.batcher = batcher.Identity()
+ 	plankit.Write(t, c.geom.PlanDir, plankit.Plan{
+@@ -684,6 +690,7 @@ func TestValidateCmd_RefusesBackwardPlanWithNoRun(t *testing.T) {
+ //testtiming:keep pins that validate restamps a stale plan fingerprint and leaves the run's other state fields untouched, which its covering tests do not assert
+ func TestValidateCmd_RebaselinesStalePlanFingerprint(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	identity := batcher.Identity()
+ 
+ 	c, _ := newTestCLI(t)
+@@ -1123,11 +1130,11 @@ func TestPersistPlanFingerprintRebaseline(t *testing.T) {
+ // TestValidateCmd_RefusesOverviewEditWithoutRestamp proves validate refuses an unrestamped overview edit.
+ // It exits non-zero naming rebaseline and leaves PlanFileHashes and PlanFingerprint untouched in state.json.
+ // The next run entry's fingerprint check still refuses the edit.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestValidateCmd_RefusesOverviewEditWithoutRestamp(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 	c := newRunTestCLI(t)
++	c.syncOptions.SkipGit = true
+ 	before := seedRunState(t, c)
+ 
+ 	overviewPath := filepath.Join(c.geom.PlanDir, "00-overview.md")
+@@ -1237,11 +1244,11 @@ func TestValidateCmd_Regression329_ForthcomingCreateTargetPassesPending(t *testi
+ 
+ // TestRebaselineCmd_AcceptsForeignEditAndKeepsRecords proves a plan edit to a later card is accepted:
+ // the verb exits 0 with batches_kept 1, restamps the fingerprint and leaves batch 1's record intact.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestRebaselineCmd_AcceptsForeignEditAndKeepsRecords(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 	c := newRunTestCLI(t)
++	c.syncOptions.SkipGit = true
+ 	seedTwoCardPlan(t, c.geom.PlanDir, "second card.")
+ 	st := seedRunState(t, c)
+ 	st.Batches[1] = &websterengine.BatchState{Slug: "only", Cards: []string{"01-only"}, StartSHA: "abc123", Kind: "fork", Digest: &websterengine.Digest{Batch: "01-only", Status: websterengine.DigestStatusDone, HeadSHA: "def456"}}
+@@ -1284,10 +1291,9 @@ func TestRebaselineCmd_AcceptsForeignEditAndKeepsRecords(t *testing.T) {
+ // a --card value that is not a positive integer, a usage error naming the value;
+ // a removed card whose batch was begun, which names --fresh;
+ // and a named card of a done batch, which names that its work has landed and --fresh.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestRebaselineCmd_Refusals(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 
+ 	cases := []struct {
+ 		name string
+@@ -1383,7 +1389,9 @@ func TestRebaselineCmd_Refusals(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			c := newRunTestCLI(t)
++			c.syncOptions.SkipGit = true
+ 			// The state is recorded against the two-card plan so the "edited card" row has an unnamed edit to refuse.
+ 			seedTwoCardPlan(t, c.geom.PlanDir, "second card.")
+ 			seedRunState(t, c)
+@@ -1422,10 +1430,9 @@ func TestRebaselineCmd_Refusals(t *testing.T) {
+ // TestRebaselineCmd_FabricSyncFailureWayForward proves rebaseline's fabric-sync refusal names a way forward.
+ // It names the same way forward as the bracket verbs' sync refusals.
+ // The restamped state is saved locally before the sync, which is what that way forward commits.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestRebaselineCmd_FabricSyncFailureWayForward(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	c := newRunTestCLI(t)
+ 	seedTwoCardPlan(t, c.geom.PlanDir, "second card.")
+ 	seedRunState(t, c)
+@@ -1447,11 +1454,11 @@ func TestRebaselineCmd_FabricSyncFailureWayForward(t *testing.T) {
+ }
+ 
+ // TestRestorePlanCmd_RestoresEditedCard proves an edited card is reported and written back, with state.json byte-identical.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
+ func TestRestorePlanCmd_RestoresEditedCard(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 	c := newRunTestCLI(t)
++	c.syncOptions.SkipGit = true
+ 	seedRunState(t, c)
+ 	cardPath := filepath.Join(c.geom.PlanDir, "01-only.md")
+ 	recorded, err := os.ReadFile(cardPath)
+diff --git a/internal/webstercli/fixplan.go b/internal/webstercli/fixplan.go
+index 300c0e1a2..4ea0ca698 100644
+--- a/internal/webstercli/fixplan.go
++++ b/internal/webstercli/fixplan.go
+@@ -142,7 +142,7 @@ Example:
+ 			}
+ 
+ 			if spawned {
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-plan spawn"); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "fix-plan spawn"); syncErr != nil {
+ 					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the plan fixer spawned but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 					return nil
+ 				}
+@@ -165,7 +165,7 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-plan "+result.Status); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "fix-plan "+result.Status); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the plan fixer ended %s but the fabric sync failed: %v; %s", result.Status, syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/fixplan_test.go b/internal/webstercli/fixplan_test.go
+index 09e7b22e4..774483446 100644
+--- a/internal/webstercli/fixplan_test.go
++++ b/internal/webstercli/fixplan_test.go
+@@ -15,6 +15,7 @@ import (
+ // TestFixPlanCmd drives the verb's first call, which spawns the plan fixer and returns a running snapshot, then the second call that attaches to it and reaches a terminal result.
+ func TestFixPlanCmd(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	// spawnWait makes the spawn call return its running snapshot at once.
+ 	const spawnWait = "1ns"
+ 
+@@ -51,8 +52,8 @@ func TestFixPlanCmd(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.initState(t)
+ 			if err := os.MkdirAll(fx.CLI.geom.ScratchDir, 0o755); err != nil {
+ 				t.Fatalf("mkdir scratch dir: %v", err)
+@@ -101,8 +102,8 @@ func TestFixPlanCmd(t *testing.T) {
+ 	}
+ 
+ 	t.Run("no plan-conflict record refuses with its way forward and spawns nothing", func(t *testing.T) {
+-		t.Setenv("FABRIC_SKIP_GIT", "1")
+-		fx := newVerbsFixture(t)
++		t.Parallel()
++		fx := newSkipGitVerbsFixture(t)
+ 		fx.initState(t)
+ 		var out strings.Builder
+ 		exitCode := clihelp.Execute(fx.CLI.fixPlanCmd(), &out, nil)
+diff --git a/internal/webstercli/fixverify.go b/internal/webstercli/fixverify.go
+index 12b13ed30..112ec075e 100644
+--- a/internal/webstercli/fixverify.go
++++ b/internal/webstercli/fixverify.go
+@@ -178,7 +178,7 @@ Example:
+ 			}
+ 
+ 			if spawned {
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-verify spawn"); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "fix-verify spawn"); syncErr != nil {
+ 					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the cold verify-gate fixer spawned but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 					return nil
+ 				}
+@@ -201,7 +201,7 @@ Example:
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, err.Error()))
+ 				return nil
+ 			}
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "fix-verify "+result.Status); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "fix-verify "+result.Status); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: the cold verify-gate fixer ended %s but the fabric sync failed: %v; %s", result.Status, syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/fixverify_test.go b/internal/webstercli/fixverify_test.go
+index 5d803ad95..61cb0b288 100644
+--- a/internal/webstercli/fixverify_test.go
++++ b/internal/webstercli/fixverify_test.go
+@@ -38,6 +38,7 @@ func TestWebsterCLI_PairSlug(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			if got := tt.cli.pairSlug(); got != tt.want {
+ 				t.Errorf("pairSlug() = %q; want %q", got, tt.want)
+ 			}
+@@ -48,6 +49,7 @@ func TestWebsterCLI_PairSlug(t *testing.T) {
+ // TestFixVerifyCmd drives the verb's first call, which spawns the cold fixer and returns a running snapshot, then the second call that attaches to it and reaches a terminal result.
+ func TestFixVerifyCmd(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	// spawnWait makes the spawn call return its running snapshot at once.
+ 	const spawnWait = "1ns"
+ 
+@@ -86,8 +88,8 @@ func TestFixVerifyCmd(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.initState(t)
+ 			report := websterengine.VerifyGateReport{Attempt: 2, Cap: 2, Fixer: websterengine.FixerCold}
+ 			if err := os.MkdirAll(fx.CLI.geom.ReportsDir, 0o755); err != nil {
+@@ -133,8 +135,8 @@ func TestFixVerifyCmd(t *testing.T) {
+ 	}
+ 
+ 	t.Run("no state.json refuses with the run-first way forward", func(t *testing.T) {
+-		t.Setenv("FABRIC_SKIP_GIT", "1")
+-		fx := newVerbsFixture(t)
++		t.Parallel()
++		fx := newSkipGitVerbsFixture(t)
+ 		var out strings.Builder
+ 		exitCode := clihelp.Execute(fx.CLI.fixVerifyCmd(), &out, nil)
+ 		if exitCode != 1 || !strings.Contains(out.String(), `run \"lym webster run\" first`) {
+diff --git a/internal/webstercli/ownership.go b/internal/webstercli/ownership.go
+index 161655146..c864245d2 100644
+--- a/internal/webstercli/ownership.go
++++ b/internal/webstercli/ownership.go
+@@ -9,7 +9,6 @@ package webstercli
+ 
+ import (
+ 	"fmt"
+-	"os"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -57,7 +56,7 @@ func orphanedMasterRefusal(caller, scratchDir, verb string) (refusal string, run
+ func (c *websterCLI) refuseOrphanedMaster(cmd *cobra.Command) *cobra.Command {
+ 	inner := cmd.RunE
+ 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+-		if refusal, runEnded := orphanedMasterRefusal(os.Getenv(agentname.StrandNameEnv), c.geom.ScratchDir, cmd.Name()); refusal != "" {
++		if refusal, runEnded := orphanedMasterRefusal(c.strandName, c.geom.ScratchDir, cmd.Name()); refusal != "" {
+ 			var fields map[string]any
+ 			if runEnded {
+ 				fields = map[string]any{"run_ended": true}
+diff --git a/internal/webstercli/ownership_test.go b/internal/webstercli/ownership_test.go
+index cc3e452b7..3e3f2de5f 100644
+--- a/internal/webstercli/ownership_test.go
++++ b/internal/webstercli/ownership_test.go
+@@ -7,7 +7,6 @@ import (
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
+@@ -22,9 +21,10 @@ import (
+ // The verb never runs.
+ // A Master strand under a held run.lock, another strand and an unnamed shell reach the verb.
+ // The verb tree built by addVerbs wraps each bracket verb and no other verb.
+-// It is not parallel: it sets the strand name variable with t.Setenv.
++// The CLI under test carries the caller's strand name, so no case touches the environment.
+ func TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 
+ 	const masterCaller = "hub:task-a:" + websterengine.MerriamStrandRole
+ 	tests := []struct {
+@@ -53,6 +53,7 @@ func TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			scratchDir := t.TempDir()
+ 			if tt.runLive {
+ 				held, locked, err := lock.TryAcquireWriteLock(filepath.Join(scratchDir, "run.lock"))
+@@ -66,9 +67,8 @@ func TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded(t *testing.T) {
+ 					t.Fatalf("make run.lock a directory: %v", err)
+ 				}
+ 			}
+-			t.Setenv(agentname.StrandNameEnv, tt.caller)
+ 			ran := false
+-			c := &websterCLI{geom: websterengine.Geometry{ScratchDir: scratchDir}}
++			c := &websterCLI{geom: websterengine.Geometry{ScratchDir: scratchDir}, strandName: tt.caller}
+ 			cmd := c.refuseOrphanedMaster(&cobra.Command{
+ 				Use: "record-batch",
+ 				RunE: func(*cobra.Command, []string) error {
+@@ -98,8 +98,8 @@ func TestRefuseOrphanedMaster_RefusesAMasterWhoseRunEnded(t *testing.T) {
+ 	}
+ 
+ 	t.Run("addVerbs wraps each bracket verb and no other", func(t *testing.T) {
+-		t.Setenv(agentname.StrandNameEnv, masterCaller)
+-		c := &websterCLI{geom: websterengine.Geometry{ScratchDir: t.TempDir(), WebsterDir: t.TempDir()}}
++		t.Parallel()
++		c := &websterCLI{geom: websterengine.Geometry{ScratchDir: t.TempDir(), WebsterDir: t.TempDir()}, strandName: masterCaller}
+ 		verbs := []struct {
+ 			name        string
+ 			args        []string
+diff --git a/internal/webstercli/rebaseline.go b/internal/webstercli/rebaseline.go
+index 0abde3c33..a3a128da1 100644
+--- a/internal/webstercli/rebaseline.go
++++ b/internal/webstercli/rebaseline.go
+@@ -120,7 +120,7 @@ Example:
+ 			_ = mutateLock.Release()
+ 			mutateHeld = false
+ 
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "rebaseline"); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "rebaseline"); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: plan rebaselined but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/recordbatch.go b/internal/webstercli/recordbatch.go
+index e00dac98e..0994b89a9 100644
+--- a/internal/webstercli/recordbatch.go
++++ b/internal/webstercli/recordbatch.go
+@@ -177,7 +177,7 @@ Example:
+ 					return nil
+ 				}
+ 				msg := err.Error()
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("record-batch %s failed", batchName)); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("record-batch %s failed", batchName)); syncErr != nil {
+ 					msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
+ 				}
+ 				var resultWarnings []string
+@@ -198,7 +198,7 @@ Example:
+ 					return nil
+ 				}
+ 				msg := err.Error()
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("record-batch %s handed back", batchName)); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("record-batch %s handed back", batchName)); syncErr != nil {
+ 					msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
+ 				}
+ 				clihelp.SetExit(cmd.Context(), output.ErrFields(out, msg, map[string]any{
+@@ -219,7 +219,7 @@ Example:
+ 				_ = mutateLock.Release()
+ 				mutateHeld = false
+ 				msg := err.Error()
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("record-batch %s report-archived", batchName)); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("record-batch %s report-archived", batchName)); syncErr != nil {
+ 					msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
+ 				}
+ 				clihelp.SetExit(cmd.Context(), output.ErrFields(out, msg, map[string]any{
+@@ -261,7 +261,7 @@ Example:
+ 			if result.Digest != nil {
+ 				label = result.Digest.Status
+ 			}
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("record-batch %s %s", batchName, label)); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("record-batch %s %s", batchName, label)); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: batch %s recorded but the fabric sync failed: %v; %s", batchName, syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/recoverbatch.go b/internal/webstercli/recoverbatch.go
+index 3985bc313..508d74b2e 100644
+--- a/internal/webstercli/recoverbatch.go
++++ b/internal/webstercli/recoverbatch.go
+@@ -292,7 +292,7 @@ Example:
+ 			mutateHeld = false
+ 
+ 			if spawned {
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("recover-batch %s spawn", batchName)); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("recover-batch %s spawn", batchName)); syncErr != nil {
+ 					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: batch %s recovery spawned but the fabric sync failed: %v; %s", batchName, syncErr, fabricSyncWayForward)))
+ 					return nil
+ 				}
+@@ -352,7 +352,7 @@ Example:
+ 				if batchFailed {
+ 					// The failed record's digest replaces the strand's, so the message is quoted here.
+ 					msg := batchFailedMessage(err.Error(), result.Digest.LastMessage)
+-					if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("recover-batch %s failed", batchName)); syncErr != nil {
++					if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("recover-batch %s failed", batchName)); syncErr != nil {
+ 						msg = fmt.Sprintf("%s; additionally, the fabric sync failed: %v; %s", msg, syncErr, fabricSyncWayForward)
+ 					}
+ 					clihelp.SetExit(cmd.Context(), output.ErrFields(out, msg, c.batchFailedFields(batchName, result.Warnings, err)))
+@@ -367,7 +367,7 @@ Example:
+ 					return nil
+ 				}
+ 
+-				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("recover-batch %s %s", batchName, result.Digest.Status)); syncErr != nil {
++				if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("recover-batch %s %s", batchName, result.Digest.Status)); syncErr != nil {
+ 					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: batch %s recovery classified %s but the fabric sync failed: %v; %s", batchName, result.Digest.Status, syncErr, fabricSyncWayForward)))
+ 					return nil
+ 				}
+diff --git a/internal/webstercli/refusalnote_test.go b/internal/webstercli/refusalnote_test.go
+index 61282fdb0..0692f75dc 100644
+--- a/internal/webstercli/refusalnote_test.go
++++ b/internal/webstercli/refusalnote_test.go
+@@ -47,6 +47,7 @@ func stubRefusal(c *websterCLI) *cobra.Command {
+ 
+ func TestNoteRefusals_ArgumentRefusals_WriteOneNoteEach(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	cases := []struct {
+ 		name string
+ 		args []string
+@@ -59,6 +60,7 @@ func TestNoteRefusals_ArgumentRefusals_WriteOneNoteEach(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			dir := t.TempDir()
+ 			c, _ := newTestCLI(t)
+ 			c.frictionDir = dir
+@@ -155,6 +157,7 @@ func TestNoteRefusals_VerbEnvelopes(t *testing.T) {
+ //testtiming:keep pins that a validate refusal writes no friction note, which its covering tests do not assert
+ func TestAddVerbs_ValidateRefusal_WritesNoNote(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Parallel()
+ 	dir := t.TempDir()
+ 	c, _ := newTestCLI(t)
+ 	c.frictionDir = dir
+diff --git a/internal/webstercli/reset.go b/internal/webstercli/reset.go
+index f59427126..f9a1609b4 100644
+--- a/internal/webstercli/reset.go
++++ b/internal/webstercli/reset.go
+@@ -138,7 +138,7 @@ Example:
+ 					if err := c.standaloneKeepReset(plan); err != nil {
+ 						return fail(err.Error())
+ 					}
+-				} else if err := fab.ResetPairCode(rec, plan.SHA, parent, plan.OwnPaths, fabricengine.EnvSyncOptions()); err != nil {
++				} else if err := fab.ResetPairCode(rec, plan.SHA, parent, plan.OwnPaths, c.syncOptions); err != nil {
+ 					if remoteBranchMoved(rec) {
+ 						clihelp.SetExit(cmd.Context(), output.ErrFields(out, fmt.Sprintf("webster: reset --to %s moved the remote task branch but not the checkout: %v", target, err), map[string]any{
+ 							"mutations": rec.Entries(),
+@@ -183,7 +183,7 @@ Example:
+ 			if c.runID != "" {
+ 				transition = append(transition, fabriclayout.Trailer{Key: fabriclayout.TransitionTrailerKey, Value: c.runID})
+ 			}
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "reset", transition...); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "reset", transition...); syncErr != nil {
+ 				return fail(fmt.Sprintf("webster: the branch was reset but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward))
+ 			}
+ 
+diff --git a/internal/webstercli/reset_test.go b/internal/webstercli/reset_test.go
+index 1347e0eec..bf4d2c409 100644
+--- a/internal/webstercli/reset_test.go
++++ b/internal/webstercli/reset_test.go
+@@ -1,7 +1,7 @@
+-// reset_test.go covers the reset verb through its cobra.Command over one hubforge hub, each step on its own task pair.
++// reset_test.go covers the reset verb through its cobra.Command, each case over its own copied hub and task pair.
+ // Each success path checks the branch, the files and the mutation record;
+ // each refusal checks its way forward and that nothing moved.
+-// FABRIC_SKIP_GIT=1 is set for the whole scenario,
++// TestResetCmd builds every fixture with the CLI's SkipGit option set,
+ // so the closing fabric sync commits nothing and needs no records sibling beyond the pair's own.
+ // The reset's remote update ignores SkipGit, so the remote-branch steps run it under that setting.
+ 
+@@ -40,13 +40,14 @@ type resetFixture struct {
+ 	base     string
+ }
+ 
+-// newResetFixture adds a pair for slug to h and commits own.txt (the base) and later.txt on its branch.
+-// The CLI carries a fake engine whose parent transcript records a successful write of own.txt.
+-func newResetFixture(t *testing.T, h *hubforge.Hub, slug string) *resetFixture {
++// newResetFixture copies a hub holding one pair and commits own.txt (the base) and later.txt on the pair's branch.
++// The CLI carries a fake engine whose parent transcript records a successful write of own.txt,
++// and its fabric syncs and resets run under syncOptions.
++func newResetFixture(t *testing.T, syncOptions fabricengine.SyncOptions) *resetFixture {
+ 	t.Helper()
+ 
+-	hubforge.AddPair(t, h, slug)
+-	checkout := h.PairCodeWorktree(slug)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: ".", Pairs: []string{hubforge.TemplatePairSlug}})
++	checkout := h.PairCodeWorktree(hubforge.TemplatePairSlug)
+ 	loc, err := lymcwd.ResolveWorktree(checkout)
+ 	if err != nil {
+ 		t.Fatalf("ResolveWorktree(%s): %v", checkout, err)
+@@ -63,13 +64,14 @@ func newResetFixture(t *testing.T, h *hubforge.Hub, slug string) *resetFixture {
+ 	reed := &shuttlefake.Reed{}
+ 	runner := shuttleengine.NewRunner(reed, shuttlefake.EngineSet(engine), loc.AnchorPath(), checkout, shuttleengine.Config{RunDir: t.TempDir(), RunTimeoutMin: 60, StartupTimeoutS: 30, Agents: shuttlefake.Agents(t)})
+ 	c := &websterCLI{
+-		engines:    shuttlefake.EngineSet(engine),
+-		reed:       reed,
+-		runner:     runner,
+-		anchorRel:  loc.AnchorRel,
+-		runID:      loc.WorktreeName,
+-		geom:       hubgeom.WebsterGeometry(loc),
+-		openFabric: func() (*fabricengine.Fabric, error) { return fabricengine.Open(loc) },
++		engines:     shuttlefake.EngineSet(engine),
++		reed:        reed,
++		runner:      runner,
++		anchorRel:   loc.AnchorRel,
++		runID:       loc.WorktreeName,
++		geom:        hubgeom.WebsterGeometry(loc),
++		openFabric:  func() (*fabricengine.Fabric, error) { return fabricengine.Open(loc) },
++		syncOptions: syncOptions,
+ 		// Reset runs on a recorded state and prices no partition, so a lister that fails proves it is never called.
+ 		instructionFiles: failingInstructionFiles,
+ 		parentBranch: func() (string, error) {
+@@ -179,8 +181,7 @@ func TestResetCmd_RecordsTheRunTransitionAtTheNewTip(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+-			fx := newResetFixture(t, h, "rst-transition")
++			fx := newResetFixture(t, fabricengine.SyncOptions{})
+ 			st := startedAt(fx.base)
+ 			st.Batches[1].Terminal, st.Batches[1].Status, st.Batches[1].Digest = true, "done", &websterengine.Digest{HeadSHA: fx.base}
+ 			fx.saveState(t, st)
+@@ -214,16 +215,16 @@ func TestResetCmd_RecordsTheRunTransitionAtTheNewTip(t *testing.T) {
+ 	}
+ }
+ 
+-// TestResetCmd runs every reset case as a step over one hub.
+-// Each step adds its own pair, so no step relies on another's state.
+-// It sets FABRIC_SKIP_GIT, so it is not parallel.
++// TestResetCmd runs every reset case as a parallel subtest.
++// Each subtest copies its own hub with its own pair, so no subtest relies on another's state.
+ func TestResetCmd(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	t.Parallel()
++	skipGit := fabricengine.SyncOptions{SkipGit: true}
+ 
+-	if !t.Run("start resets head and own dirt and keeps untracked", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-start")
++	t.Run("start resets head and own dirt and keeps untracked", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		fx.saveState(t, startedAt(fx.base))
+ 		// The pair's task branch was never pushed, so the remote update is skipped and the record holds only worktree_reset.
+ 		if err := os.WriteFile(filepath.Join(fx.checkout, "own.txt"), []byte("dirty"), 0o644); err != nil {
+@@ -272,12 +273,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got, ok := envelope["warnings"].([]any); !ok || len(got) != 0 {
+ 			t.Errorf("warnings = %v; want an empty list", envelope["warnings"])
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("start archives without moving when the recorded start was rewritten away", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-archive-only")
++	t.Run("start archives without moving when the recorded start was rewritten away", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		gitkit.Git(t, fx.checkout, "checkout", "-b", "rst-archive-only-side", fx.base)
+ 		side := gitkit.CommitFile(t, fx.checkout, "side.txt", "side", "side")
+ 		gitkit.Git(t, fx.checkout, "checkout", fx.branch)
+@@ -309,12 +309,11 @@ func TestResetCmd(t *testing.T) {
+ 		if loaded, err := websterengine.LoadState(fx.cli.geom.WebsterDir, fx.cli.geom.ScratchDir); loaded != nil || err != nil {
+ 			t.Errorf("LoadState after the reset = %+v, %v; want the run record archived", loaded, err)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("start moves the remote task branch after the pair's commits were pushed", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-remote")
++	t.Run("start moves the remote task branch after the pair's commits were pushed", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		fx.saveState(t, startedAt(fx.base))
+ 		gitkit.Git(t, fx.checkout, "push", "origin", "HEAD")
+ 
+@@ -328,12 +327,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := mutationKinds(envelope["mutations"]); !slices.Equal(got, []string{string(fabriclayout.KindRemoteBranchUpdated), string(fabriclayout.KindWorktreeReset)}) {
+ 			t.Errorf("mutation kinds = %v; want remote_branch_updated then worktree_reset", got)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("a checkout rewrite failing after the remote moved is a partial envelope and a re-run converges", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-partial")
++	t.Run("a checkout rewrite failing after the remote moved is a partial envelope and a re-run converges", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		fx.saveState(t, startedAt(fx.base))
+ 		gitkit.Git(t, fx.checkout, "push", "origin", "HEAD")
+ 		lock := gitkit.Git(t, fx.checkout, "rev-parse", "--path-format=absolute", "--git-path", "index.lock")
+@@ -365,12 +363,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := gitkit.RevParse(t, fx.checkout, "HEAD"); got != fx.base {
+ 			t.Errorf("HEAD = %s; want %s", got, fx.base)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("pre-fix resets and clears the pre-fix head", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-prefix")
++	t.Run("pre-fix resets and clears the pre-fix head", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		st := startedAt(fx.base)
+ 		st.PreFixHead = fx.base
+ 		st.FixedBase = fx.base
+@@ -396,11 +393,10 @@ func TestResetCmd(t *testing.T) {
+ 		if loaded.PreFixHead != "" || loaded.FixedBase != "" || loaded.FixedHead != "" {
+ 			t.Errorf("PreFixHead, FixedBase, FixedHead = %q, %q, %q after the reset; want them cleared", loaded.PreFixHead, loaded.FixedBase, loaded.FixedHead)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("last-batch-head and batch-start reset to the commit they name", func(t *testing.T) {
++	t.Run("last-batch-head and batch-start reset to the commit they name", func(t *testing.T) {
++		t.Parallel()
+ 		for _, tc := range []struct {
+ 			target string
+ 			args   []string
+@@ -408,7 +404,7 @@ func TestResetCmd(t *testing.T) {
+ 			{"last-batch-head", []string{"--to", "last-batch-head"}},
+ 			{"batch-start", []string{"--to", "batch-start", "--batch", "1"}},
+ 		} {
+-			fx := newResetFixture(t, h, "rst-"+tc.target)
++			fx := newResetFixture(t, skipGit)
+ 			st := startedAt(fx.base)
+ 			st.Batches[1].Terminal, st.Batches[1].Status, st.Batches[1].Digest = true, "done", &websterengine.Digest{HeadSHA: fx.base}
+ 			st.Batches[1].Recoveries, st.Batches[1].RecoveryStartSHA = 2, fx.base
+@@ -440,12 +436,11 @@ func TestResetCmd(t *testing.T) {
+ 				t.Errorf("after reset --to %s Recoveries, RecoveryStartSHA = %d, %q; want %d, %q", tc.target, bs.Recoveries, bs.RecoveryStartSHA, wantRecoveries, wantStart)
+ 			}
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("report-head moves HEAD while the run lock is held and start is refused under it", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-report-head")
++	t.Run("report-head moves HEAD while the run lock is held and start is refused under it", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		fx.saveState(t, startedAt(fx.base))
+ 		if err := os.MkdirAll(fx.cli.geom.ReportsDir, 0o755); err != nil {
+ 			t.Fatal(err)
+@@ -469,12 +464,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := gitkit.RevParse(t, fx.checkout, "HEAD"); got != fx.base {
+ 			t.Errorf("HEAD = %s; want the report head %s", got, fx.base)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("standalone resets move HEAD with git's keep form and list what they left", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-standalone")
++	t.Run("standalone resets move HEAD with git's keep form and list what they left", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		preFix := gitkit.RevParse(t, fx.checkout, "HEAD")
+ 		gitkit.CommitFile(t, fx.checkout, "fix.txt", "fix", "fix commit")
+ 		st := startedAt(fx.base)
+@@ -511,12 +505,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := mutationKinds(envelope["mutations"]); len(got) != 0 {
+ 			t.Errorf("mutation kinds = %v; want none, the keep-reset touches no pair", got)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("standalone archive-only start reports the archive when the uncommitted paths cannot be read", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-status-fails")
++	t.Run("standalone archive-only start reports the archive when the uncommitted paths cannot be read", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		fx.saveState(t, &websterengine.State{MasterSessionID: "master-session"})
+ 		fx.cli.openFabric = nil
+ 		fx.cli.parentBranch = nil
+@@ -536,12 +529,11 @@ func TestResetCmd(t *testing.T) {
+ 		if loaded, err := websterengine.LoadState(fx.cli.geom.WebsterDir, fx.cli.geom.ScratchDir); loaded != nil || err != nil {
+ 			t.Errorf("LoadState after the reset = %+v, %v; want the run record archived", loaded, err)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("start resolves the octopus merge base of diverging starts", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-octopus")
++	t.Run("start resolves the octopus merge base of diverging starts", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		gitkit.Git(t, fx.checkout, "checkout", "-b", "rst-octopus-s1", fx.base)
+ 		s1 := gitkit.CommitFile(t, fx.checkout, "s1.txt", "1", "s1")
+ 		gitkit.Git(t, fx.checkout, "checkout", "-b", "rst-octopus-s2", fx.base)
+@@ -562,12 +554,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := gitkit.RevParse(t, fx.checkout, "HEAD"); got != fx.base {
+ 			t.Errorf("HEAD = %s; want %s", got, fx.base)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("start removes exactly the live recovery strands", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-recovery")
++	t.Run("start removes exactly the live recovery strands", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		st := startedAt(fx.base)
+ 		fx.withRecoveryStrands(st, map[string]bool{"strand-live": true, "strand-dead": false})
+ 		fx.saveState(t, st)
+@@ -582,12 +573,11 @@ func TestResetCmd(t *testing.T) {
+ 		if got := gitkit.RevParse(t, fx.checkout, "HEAD"); got != fx.base {
+ 			t.Errorf("HEAD = %s; want %s", got, fx.base)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+-	if !t.Run("start refuses when a recovery strand cannot be removed and changes nothing", func(t *testing.T) {
+-		fx := newResetFixture(t, h, "rst-recovery-fail")
++	t.Run("start refuses when a recovery strand cannot be removed and changes nothing", func(t *testing.T) {
++		t.Parallel()
++		fx := newResetFixture(t, skipGit)
+ 		st := startedAt(fx.base)
+ 		st.PreFixHead = fx.base
+ 		fx.withRecoveryStrands(st, map[string]bool{"strand-live": true})
+@@ -601,9 +591,7 @@ func TestResetCmd(t *testing.T) {
+ 		if err != nil || loaded == nil || loaded.PreFixHead != fx.base {
+ 			t.Errorf("state after the refusal = %+v, %v; want it unsaved with PreFixHead %s", loaded, err, fx.base)
+ 		}
+-	}) {
+-		return
+-	}
++	})
+ 
+ 	refusals := []struct {
+ 		name string
+@@ -761,9 +749,10 @@ func TestResetCmd(t *testing.T) {
+ 			}}},
+ 		},
+ 	}
+-	for i, tc := range refusals {
+-		if !t.Run("refuses "+tc.name, func(t *testing.T) {
+-			fx := newResetFixture(t, h, "rst-refuse-"+string(rune('a'+i)))
++	for _, tc := range refusals {
++		t.Run("refuses "+tc.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newResetFixture(t, skipGit)
+ 			tc.arrange(t, fx)
+ 			for _, attempt := range tc.attempts {
+ 				parts := make([]string, len(attempt.wantIn))
+@@ -772,9 +761,7 @@ func TestResetCmd(t *testing.T) {
+ 				}
+ 				fx.wantRefusal(t, attempt.args, parts...)
+ 			}
+-		}) {
+-			return
+-		}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/webstercli/restoreplan.go b/internal/webstercli/restoreplan.go
+index df25c5c67..caf622b2e 100644
+--- a/internal/webstercli/restoreplan.go
++++ b/internal/webstercli/restoreplan.go
+@@ -65,7 +65,7 @@ Example:
+ 			_ = mutateLock.Release()
+ 			mutateHeld = false
+ 
+-			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, "restore-plan"); syncErr != nil {
++			if _, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, "restore-plan"); syncErr != nil {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("webster: plan restored but the fabric sync failed: %v; %s", syncErr, fabricSyncWayForward)))
+ 				return nil
+ 			}
+diff --git a/internal/webstercli/run.go b/internal/webstercli/run.go
+index c4fb6a101..a391ec289 100644
+--- a/internal/webstercli/run.go
++++ b/internal/webstercli/run.go
+@@ -115,7 +115,7 @@ Example:
+ 			if runErr == nil {
+ 				outcomeLabel = result.Outcome
+ 			}
+-			committed, syncErr := fabricSync(c.openFabric, c.anchorRel, fmt.Sprintf("run %s", outcomeLabel))
++			committed, syncErr := fabricSync(c.openFabric, c.anchorRel, c.syncOptions, fmt.Sprintf("run %s", outcomeLabel))
+ 
+ 			if runErr != nil {
+ 				msg := runErr.Error()
+diff --git a/internal/webstercli/secretpaths_test.go b/internal/webstercli/secretpaths_test.go
+index b9f6dc1ae..7d45df92f 100644
+--- a/internal/webstercli/secretpaths_test.go
++++ b/internal/webstercli/secretpaths_test.go
+@@ -18,9 +18,9 @@ import (
+ 
+ // TestRecordBatchCmd_SecretPaths proves record-batch fails a batch whose commit adds a path the loaded matcher matches.
+ // A loader that fails with an invalid config refuses the verb with the fabric.yaml way forward instead.
+-// Serial: each subtest sets FABRIC_SKIP_GIT through t.Setenv, so none calls t.Parallel.
+ func TestRecordBatchCmd_SecretPaths(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	tests := []struct {
+ 		name        string
+ 		secretPaths func() (secretpath.Matcher, error)
+@@ -41,8 +41,8 @@ func TestRecordBatchCmd_SecretPaths(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.CLI.secretPaths = tt.secretPaths
+ 			st := fx.initState(t)
+ 			startSHA := gitkit.RevParse(t, fx.CLI.geom.WorktreeRoot, "HEAD")
+diff --git a/internal/webstercli/sync.go b/internal/webstercli/sync.go
+index f596ac305..3ec195744 100644
+--- a/internal/webstercli/sync.go
++++ b/internal/webstercli/sync.go
+@@ -20,10 +20,9 @@ import (
+ 
+ // fabricSync stages and commits the _lym pathspec under anchorRel through the fabric repo that open returns.
+ // The records commit's message ends with trailers, one line each, after the trailer fabric always writes.
++// opts.SkipGit makes it report (false, nil) without opening the fabric, and opts reaches the commit as is.
+ // A nil open means standalone mode: fabricSync then reports (false, nil) without touching git.
+-func fabricSync(open func() (*fabricengine.Fabric, error), anchorRel, label string, trailers ...fabriclayout.Trailer) (bool, error) {
+-	opts := fabricengine.EnvSyncOptions()
+-
++func fabricSync(open func() (*fabricengine.Fabric, error), anchorRel string, opts fabricengine.SyncOptions, label string, trailers ...fabriclayout.Trailer) (bool, error) {
+ 	if open == nil {
+ 		return false, nil
+ 	}
+diff --git a/internal/webstercli/sync_integration_test.go b/internal/webstercli/sync_integration_test.go
+index f24ed2e3a..478d910ba 100644
+--- a/internal/webstercli/sync_integration_test.go
++++ b/internal/webstercli/sync_integration_test.go
+@@ -145,8 +145,7 @@ func newPairFixtureAt(t *testing.T, relPath string) (*lymcwd.Location, string) {
+ // Fabric.Commit's contract is that the caller learns that alongside the error.
+ func TestFabricSync_ReportsCommittedWhenCorrespondenceRecordFails(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
+-	t.Setenv("FABRIC_SKIP_PUSH", "")
++	t.Parallel()
+ 	layout, records := newPairFixture(t)
+ 
+ 	// A directory where RecordCorrespondence expects its index file makes the record step fail after the commit has landed.
+@@ -155,7 +154,7 @@ func TestFabricSync_ReportsCommittedWhenCorrespondenceRecordFails(t *testing.T)
+ 	}
+ 
+ 	open := func() (*fabricengine.Fabric, error) { return fabricengine.Open(layout) }
+-	committed, err := fabricSync(open, layout.AnchorRel, "corr-fail probe")
++	committed, err := fabricSync(open, layout.AnchorRel, fabricengine.SyncOptions{}, "corr-fail probe")
+ 
+ 	if err == nil {
+ 		t.Fatal("fabricSync() error = nil; want the RecordCorrespondence failure propagated")
+@@ -179,9 +178,10 @@ func TestFabricSync_ReportsCommittedWhenCorrespondenceRecordFails(t *testing.T)
+ // It also guards across modules: a webster commit must hold back the sibling loom module's run lock too.
+ // Each excluded artifact is asserted both absent from the commit and still untracked via `git ls-files`.
+ // Untracked status proves it never reached the pathspec, not merely that this one commit omitted it.
+-// FABRIC_SKIP_PUSH is set because the scratch records repo has no remote; the commit half is what is under test.
++// The sync runs with SkipPush because the scratch records repo has no remote; the commit half is what is under test.
+ func TestFabricSync_CommitsAtEveryRelPathDepth(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	tests := []struct {
+ 		name    string
+ 		relPath string
+@@ -194,12 +194,11 @@ func TestFabricSync_CommitsAtEveryRelPathDepth(t *testing.T) {
+ 
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "")
+-			t.Setenv("FABRIC_SKIP_PUSH", "1")
++			t.Parallel()
+ 			layout, records := newPairFixtureAt(t, tt.relPath)
+ 			open := func() (*fabricengine.Fabric, error) { return fabricengine.Open(layout) }
+ 
+-			committed, err := fabricSync(open, layout.AnchorRel, "depth probe")
++			committed, err := fabricSync(open, layout.AnchorRel, fabricengine.SyncOptions{SkipPush: true}, "depth probe")
+ 			if err != nil {
+ 				t.Fatalf("fabricSync() error = %v; want nil", err)
+ 			}
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 05da7cc8b..c35531968 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -8,8 +8,10 @@
+ // They drive one verb's cobra.Command through clihelp.Execute, the package's injection point for these tests.
+ // seedPersistentPreRunFixture and its tests are the exception.
+ // They drive Command()'s real PersistentPreRunE through clihelp.ExecuteIn.
+-// FABRIC_SKIP_GIT=1 is set on every test that reaches a fabricSync call, so no real records sibling worktree is needed.
+-// The one test proving fabricSync was never reached (ErrRunBusy) leaves FABRIC_SKIP_GIT unset.
++// A test whose verb reaches a working fabricSync builds its fixture with newSkipGitVerbsFixture.
++// That fixture's CLI skips the sync's git work through its syncOptions, so no real records sibling worktree is needed.
++// The tests of a verb's fabric-sync refusal reach fabricSync through a failing opener instead.
++// The one test proving fabricSync was never reached (ErrRunBusy) keeps the zero syncOptions.
+ // It asserts the envelope carries no fabric-sync or fabricengine error text:
+ // that is the failure a reached fabricSync would stamp in this records-less geometry.
+ 
+@@ -155,6 +157,15 @@ func newVerbsFixture(t *testing.T) *verbsFixture {
+ 	return &verbsFixture{CLI: c, Reed: reed, Engine: engine, Runner: runner, Worktree: worktree}
+ }
+ 
++// newSkipGitVerbsFixture is newVerbsFixture with the CLI's fabric syncs skipping their git work.
++// A verb that reaches a sync therefore needs no real records sibling worktree.
++func newSkipGitVerbsFixture(t *testing.T) *verbsFixture {
++	t.Helper()
++	fx := newVerbsFixture(t)
++	fx.CLI.syncOptions = fabricengine.SyncOptions{SkipGit: true}
++	return fx
++}
++
+ // TestPersistentPreRun_OpenFabricWiredButUninvoked proves that pre-run wiring builds the fabric-handle opener.
+ // The opener is a closure stored on c, and wiring never calls it.
+ // The fixture carries a hub-level board directory, so preflight.HubPresent selects hub mode.
+@@ -163,6 +174,7 @@ func newVerbsFixture(t *testing.T) *verbsFixture {
+ // Reaching exit 0 is therefore the behavioural half of the proof, and c.openFabric != nil is the structural half.
+ func TestPersistentPreRun_OpenFabricWiredButUninvoked(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	container := t.TempDir()
+ 	worktree := filepath.Join(container, "pair")
+ 	if err := os.MkdirAll(worktree, 0o755); err != nil {
+@@ -227,6 +239,7 @@ func (b *sizeProbeBatcher) Name() string { return "size-probe" }
+ // A source rooted at the pane's cwd would not find it.
+ func TestExecutionBatches_SizesReadFromWorktreeRoot(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	probe := &sizeProbeBatcher{path: "backend/README.md"}
+ 	fx.CLI.batcher = probe
+@@ -248,8 +261,8 @@ func TestExecutionBatches_SizesReadFromWorktreeRoot(t *testing.T) {
+ // It applies when rebaseline re-forms the unbegun tail of a recorded partition.
+ func TestRebaselineCmd_SizesReadFromWorktreeRoot(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	plan := onlyCreatePlan("", "internal/only/new.go")
+ 	plan.Root = fx.CLI.anchorRel
+ 	plan.Cards = append(plan.Cards, plankit.Card{Number: 2, Slug: "second", Summary: "edits the README", Groups: []plankit.Group{{Label: "Edit", Targets: []string{"README.md"}}}, Intent: "edit it.", ImpactSummary: "Edits the README."})
+@@ -277,8 +290,8 @@ func TestRebaselineCmd_SizesReadFromWorktreeRoot(t *testing.T) {
+ // It also proves that begin-batch types nothing into Master's pane and persists state.json with the new BatchState.
+ func TestBeginBatchCmd_HappyPath(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.initState(t)
+ 
+ 	var out strings.Builder
+@@ -319,8 +332,8 @@ func TestBeginBatchCmd_HappyPath(t *testing.T) {
+ // so a prompt worded for Recovery's engine or the default one fails it.
+ func TestBeginBatchCmd_PromptFollowsMasterEngine(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.CLI.roles[websterengine.RoleMaster] = shuttleengine.ModelChoice{Engine: "codex", Model: "master-model"}
+ 	fx.initState(t)
+ 
+@@ -349,6 +362,7 @@ func TestBeginBatchCmd_PromptFollowsMasterEngine(t *testing.T) {
+ // A report over a recorded batch is refused, with the record's state and its one remedy named.
+ func TestBeginBatchCmd_ReportOnDisk(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	tests := []struct {
+ 		name         string
+ 		record       *websterengine.BatchState
+@@ -381,8 +395,8 @@ func TestBeginBatchCmd_ReportOnDisk(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			st := fx.initState(t)
+ 			if tt.record != nil {
+ 				st.Batches[1] = tt.record
+@@ -424,8 +438,8 @@ func TestBeginBatchCmd_ReportOnDisk(t *testing.T) {
+ // An earlier recorded batch deleted the target, and the envelope's advisories name it as already deleted.
+ func TestBeginBatchCmd_DeleteTargetAlreadyGone(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	const target = "internal/gone/x.txt"
+ 	gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, target, "x", "add the target")
+ 	// The fixture's own single-card plan is replaced, so its card file goes too.
+@@ -469,6 +483,7 @@ func TestBeginBatchCmd_DeleteTargetAlreadyGone(t *testing.T) {
+ // The engine's own test covers it.
+ func TestBeginBatchCmd_PlanConflict(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	// Every row starts with a stale conflict record and a routed file in the scratch directory.
+ 	// A row with a blocked path occupies it with a non-empty directory instead.
+ 	const (
+@@ -561,8 +576,8 @@ func TestBeginBatchCmd_PlanConflict(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			fx.CLI.frictionDir = t.TempDir()
+ 			if tt.shapePlan != nil {
+ 				tt.shapePlan(t, fx)
+@@ -662,6 +677,7 @@ func TestBeginBatchCmd_PlanConflict(t *testing.T) {
+ // Each refusal carries the plan_drifted flag.
+ func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	tests := []struct {
+ 		name string
+ 		// seed brings the fixture to the state the verb refuses from, before the card file is edited.
+@@ -702,8 +718,8 @@ func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T) {
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			tt.seed(t, fx, fx.initState(t))
+ 			plankit.Write(t, fx.CLI.geom.PlanDir, onlyCreatePlan("", "internal/edited/new.go"))
+ 
+@@ -724,6 +740,7 @@ func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T) {
+ // Until then, it returns the {"no_report": true} ladder signal, which is not an error.
+ func TestRecordBatchCmd_Envelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	tests := []struct {
+ 		name        string
+ 		writeReport bool
+@@ -759,8 +776,8 @@ func TestRecordBatchCmd_Envelope(t *testing.T) {
+ 
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			t.Setenv("FABRIC_SKIP_GIT", "1")
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			// record-batch runs on a recorded state and prices no partition, so a lister that fails proves it is never called.
+ 			fx.CLI.instructionFiles = failingInstructionFiles
+ 			st := fx.initState(t)
+@@ -823,8 +840,8 @@ func TestRecordBatchCmd_Envelope(t *testing.T) {
+ // The call exits non-zero with batch_failed and names recover-batch; state.json leaves the batch terminal and failed.
+ func TestRecordBatchCmd_FailedBatchEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	st := fx.initState(t)
+ 	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 	st.Batches[1] = &websterengine.BatchState{Slug: "only", StartSHA: startSHA, Kind: "fork", AmendedCards: []websterengine.AmendedCard{{Card: "01-only"}}}
+@@ -869,8 +886,8 @@ func TestRecordBatchCmd_FailedBatchEnvelope(t *testing.T) {
+ // recover-batch over the same batch then refuses before spawning, with the same flag and way forward.
+ func TestRecordBatchCmd_DeleteReferencedByLaterCard(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	root := fx.CLI.geom.WorktreeRoot
+ 	// The fixture's own single-card plan is replaced, so its card file goes too.
+ 	if err := os.Remove(filepath.Join(fx.CLI.geom.PlanDir, "01-only.md")); err != nil {
+@@ -935,8 +952,8 @@ func TestRecordBatchCmd_DeleteReferencedByLaterCard(t *testing.T) {
+ // The open batch is saved marked handed back.
+ func TestRecordBatchCmd_LaterTargetRemovedEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	root := fx.CLI.geom.WorktreeRoot
+ 	// The fixture's own single-card plan is replaced, so its card file goes too.
+ 	if err := os.Remove(filepath.Join(fx.CLI.geom.PlanDir, "01-only.md")); err != nil {
+@@ -990,8 +1007,8 @@ func TestRecordBatchCmd_LaterTargetRemovedEnvelope(t *testing.T) {
+ // The call exits non-zero with report_archived, and the report is gone from its live path.
+ func TestRecordBatchCmd_ReportArchivedEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.initState(t)
+ 	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+ 	writeBatchReport(t, fx.CLI.geom.ReportsDir, startSHA)
+@@ -1019,8 +1036,8 @@ func TestRecordBatchCmd_ReportArchivedEnvelope(t *testing.T) {
+ // The envelope names the reset-to-start route, and recover-batch spawns nothing.
+ func TestRecoverBatchCmd_NeedsFreshEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	st := fx.initState(t)
+ 	st.Batches[1] = &websterengine.BatchState{
+ 		Slug: "only", Kind: "fork", Terminal: true, Status: websterengine.DigestStatusFailed,
+@@ -1071,10 +1088,11 @@ func TestRecoverBatchCmd_NeedsFreshEnvelope(t *testing.T) {
+ // Both verbs name the way forward and spawn nothing.
+ func TestRenameToolMissingEnvelope(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Parallel()
+ 	for _, verb := range []string{"begin-batch", "recover-batch"} {
+ 		t.Run(verb, func(t *testing.T) {
+-			fx := newVerbsFixture(t)
++			t.Parallel()
++			fx := newSkipGitVerbsFixture(t)
+ 			plan := onlyCreatePlan("", "internal/only/new.go")
+ 			plan.Cards[0].Groups = []plankit.Group{{Label: "Rename", Targets: []string{"`sub#Foo` -> `plan:sub#Bar`"}}}
+ 			plankit.Write(t, fx.CLI.geom.PlanDir, plan)
+@@ -1112,8 +1130,8 @@ func TestRenameToolMissingEnvelope(t *testing.T) {
+ // `recover-batch 1` then spawns with the edited card's gate in its prompt.
+ func TestRebaselineCmd_EditedCardOfFailedBatchThenRecover(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.initState(t)
+ 
+ 	var out strings.Builder
+@@ -1185,8 +1203,8 @@ func TestRebaselineCmd_EditedCardOfFailedBatchThenRecover(t *testing.T) {
+ // A dead recovery that committed offers its retry; a third counted spawn is refused, and a new amendment spawns anyway.
+ func TestRecoverBatchCmd_RunningThenTerminal(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	// recover-batch runs on a recorded state and prices no partition, so a lister that fails proves it is never called.
+ 	fx.CLI.instructionFiles = failingInstructionFiles
+ 	fx.initState(t)
+@@ -1407,12 +1425,13 @@ func TestRecoverBatchCmd_RunningThenTerminal(t *testing.T) {
+ 
+ // TestRunCmd_ErrRunBusySkipsRecordsBackstop proves the ErrRunBusy refusal never reaches Master's own spawn.
+ // It also proves the refusal never runs the exit-time fabric backstop.
+-// FABRIC_SKIP_GIT stays unset, so an accidental fabricSync call fails loudly.
++// The CLI keeps its zero syncOptions, so an accidental fabricSync call fails loudly.
+ // With no records sibling on disk, the stat validation in fabricengine.Open fails,
+ // and the run envelope would carry "fabric sync failed" plus fabricengine's missing-path text.
+ // The output text is the signal that fabricSync was reached, so both strings are asserted absent below.
+ func TestRunCmd_ErrRunBusySkipsRecordsBackstop(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	starter := &verbsFakeMasterStarter{}
+ 	fx.CLI.masterStarter = starter
+@@ -1474,8 +1493,8 @@ var (
+ // The test asserts that the friction note on disk states the error outcome and that the next run reclaims the strand.
+ func TestRunCmd_DiedMasterNotesExpiredShellOutcome(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	fx.CLI.frictionDir = t.TempDir()
+ 	fx.CLI.cfg.VerifyGateAttempts = 3
+ 	master := &verbsDiedMaster{strandGUID: "master-strand-died", sessionID: "master-session-died"}
+@@ -1777,9 +1796,9 @@ func unmakeConfigUnreadable(t *testing.T, h *hubforge.Hub, module string) {
+ // It asserts on planparser's own error text, which only a wrong-root c.planDir can produce.
+ // The plan's `root:` names the anchor's own directory and its Edit target is a file there,
+ // so a card path checked against the anchor instead of the worktree root doubles the prefix and reads as missing.
+-// The test does not call t.Parallel().
+ func TestPersistentPreRunE_PlanDirAnchoredAtSubpath(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	t.Parallel()
+ 	h := seedPersistentPreRunFixture(t, "backend", batcher.ConfigTemplate())
+ 
+ 	if err := os.WriteFile(filepath.Join(h.PrimeWorktree(), "backend", "README.md"), []byte("# backend\n"), 0o644); err != nil {
+@@ -1828,7 +1847,7 @@ func TestPersistentPreRunE_PlanDirAnchoredAtSubpath(t *testing.T) {
+ // The per-verb tests below reach each refusal through a failing opener, which needs no hub.
+ func TestFabricSyncWayForward_NextSyncCommitsSavedState(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
+ 	geom := hubgeom.WebsterGeometry(h.Location)
+ 	st := &websterengine.State{State: runplan.State{PlanFingerprint: "fp", Batches: map[int]*websterengine.BatchState{1: {Slug: "only", Kind: "fork"}}}}
+@@ -1836,12 +1855,12 @@ func TestFabricSyncWayForward_NextSyncCommitsSavedState(t *testing.T) {
+ 		t.Fatalf("SaveState() error = %v", err)
+ 	}
+ 
+-	if _, err := fabricSync(failingFabricOpen, h.Location.AnchorRel, "begin-batch 01-only"); err == nil {
++	if _, err := fabricSync(failingFabricOpen, h.Location.AnchorRel, fabricengine.SyncOptions{}, "begin-batch 01-only"); err == nil {
+ 		t.Fatal("fabricSync with a failing opener = nil error; want the refusal's cause")
+ 	}
+ 
+ 	open := func() (*fabricengine.Fabric, error) { return fabricengine.Open(h.Location) }
+-	committed, err := fabricSync(open, h.Location.AnchorRel, "record-batch 01-only done")
++	committed, err := fabricSync(open, h.Location.AnchorRel, fabricengine.SyncOptions{}, "record-batch 01-only done")
+ 	if err != nil || !committed {
+ 		t.Fatalf("fabricSync after the failure = %v, %v; want the saved state committed", committed, err)
+ 	}
+@@ -1860,7 +1879,7 @@ func TestFabricSyncWayForward_NextSyncCommitsSavedState(t *testing.T) {
+ // TestFabricSyncWayForward_NextSyncCommitsSavedState is the proof that a working sync commits it.
+ func TestBeginBatchCmd_FabricSyncFailureWayForward(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	fx.initState(t)
+ 	fx.CLI.openFabric = failingFabricOpen
+@@ -1886,7 +1905,7 @@ func TestBeginBatchCmd_FabricSyncFailureWayForward(t *testing.T) {
+ // The batch is terminal on disk despite the sync failure, which is the state the way forward commits.
+ func TestRecordBatchCmd_FabricSyncFailureWayForward(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	st := fx.initState(t)
+ 	startSHA := gitkit.CommitFile(t, fx.CLI.geom.WorktreeRoot, "backend/internal/only/new.go", "package only\n", "01.1: add impl")
+@@ -1918,7 +1937,7 @@ func TestRecordBatchCmd_FabricSyncFailureWayForward(t *testing.T) {
+ // TestFabricSyncWayForward_NextSyncCommitsSavedState is the proof that a working sync commits the saved state.
+ func TestRecoverBatchCmd_FabricSyncAndReedBootWayForward(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "")
++	t.Parallel()
+ 	fx := newVerbsFixture(t)
+ 	fx.initState(t)
+ 
+@@ -1949,8 +1968,8 @@ func TestRecoverBatchCmd_FabricSyncAndReedBootWayForward(t *testing.T) {
+ // Once the run's state exists, the same verb proceeds.
+ func TestBracketVerbs_NoRunInProgressWayForward(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	t.Setenv("FABRIC_SKIP_GIT", "1")
+-	fx := newVerbsFixture(t)
++	t.Parallel()
++	fx := newSkipGitVerbsFixture(t)
+ 	verbs := map[string]*cobra.Command{
+ 		"begin-batch":   fx.CLI.beginBatchCmd(),
+ 		"record-batch":  fx.CLI.recordBatchCmd(),
+diff --git a/internal/webstercli/verify_integration_test.go b/internal/webstercli/verify_integration_test.go
+index de461c4df..e644ef9cb 100644
+--- a/internal/webstercli/verify_integration_test.go
++++ b/internal/webstercli/verify_integration_test.go
+@@ -3,7 +3,7 @@
+ // The plan, the verify directory and the webster directories all lie outside the repo,
+ // so a verify run never dirties the tree it checks.
+ // The verb runs the rendered `final` gate call through the `lym` built from the tree.
+-// Each fixture puts that `lym` first on `PATH`, so every test here is not parallel.
++// TestVerifyVerb puts that `lym` first on `PATH` once, so it is serial, and its subtests run in parallel under that.
+ 
+ package webstercli
+ 
+@@ -69,10 +69,9 @@ func verifyGateConfig(t *testing.T, command string, finalTier int) []byte {
+ // The told GateConfig reads that file.
+ // The repo excludes its .lym directory, where a standalone `lym gate test` writes its run record,
+ // so the tree stays clean for the verify.
+-// It puts the `lym` built from the tree first on `PATH`, so the calling test is not parallel.
++// The caller puts the `lym` built from the tree first on `PATH`, since the verb runs its gate call through it.
+ func newVerifyFixture(t *testing.T, command string) *verifyFixture {
+ 	t.Helper()
+-	lymbin.PutFirstOnPath(t)
+ 
+ 	worktree := t.TempDir()
+ 	gitkit.Git(t, worktree, "init", "-b", "main")
+@@ -121,142 +120,150 @@ func (fx *verifyFixture) run(t *testing.T) (int, envelope.Envelope) {
+ 	return code, envelope.Decode(t, out.String())
+ }
+ 
+-func TestVerifyVerb_PassRecordsTheTree(t *testing.T) {
++// TestVerifyVerb drives the verb over one fixture per subtest.
++// Serial: it puts `lym` first on PATH once, and its subtests run in parallel under that.
++func TestVerifyVerb(t *testing.T) {
+ 	tiergate.Require(t, 1)
+-	fx := newVerifyFixture(t, "exit 0")
++	lymbin.PutFirstOnPath(t)
+ 
+-	code, env := fx.run(t)
++	t.Run("PassRecordsTheTree", func(t *testing.T) {
++		t.Parallel()
++		fx := newVerifyFixture(t, "exit 0")
+ 
+-	if code != 0 || !env.OK {
+-		t.Fatalf("verify on a passing plan = %d, envelope %+v; want 0 and ok", code, env)
+-	}
+-	if _, err := os.Stat(verifytree.NewPaths(fx.Worktree, fx.CLI.geom.VerifyDir).Record); err != nil {
+-		t.Errorf("a passing verify wrote no record: %v", err)
+-	}
+-}
++		code, env := fx.run(t)
+ 
+-func TestVerifyVerb_SecondCallOnTheSameTreeSkips(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	fx := newVerifyFixture(t, "exit 0")
+-	if code, _ := fx.run(t); code != 0 {
+-		t.Fatalf("first verify = %d; want 0", code)
+-	}
+-	logPattern := filepath.Join(fx.CLI.geom.VerifyDir, "verify-*.log")
+-	logsBefore, err := filepath.Glob(logPattern)
+-	if err != nil {
+-		t.Fatal(err)
+-	}
++		if code != 0 || !env.OK {
++			t.Fatalf("verify on a passing plan = %d, envelope %+v; want 0 and ok", code, env)
++		}
++		if _, err := os.Stat(verifytree.NewPaths(fx.Worktree, fx.CLI.geom.VerifyDir).Record); err != nil {
++			t.Errorf("a passing verify wrote no record: %v", err)
++		}
++	})
+ 
+-	code, env := fx.run(t)
++	t.Run("SecondCallOnTheSameTreeSkips", func(t *testing.T) {
++		t.Parallel()
++		fx := newVerifyFixture(t, "exit 0")
++		if code, _ := fx.run(t); code != 0 {
++			t.Fatalf("first verify = %d; want 0", code)
++		}
++		logPattern := filepath.Join(fx.CLI.geom.VerifyDir, "verify-*.log")
++		logsBefore, err := filepath.Glob(logPattern)
++		if err != nil {
++			t.Fatal(err)
++		}
+ 
+-	if code != 0 || env.Raw["status"] != string(verifytree.StatusSkipped) {
+-		t.Errorf("second verify = %d, envelope %+v; want 0 and status %q", code, env, verifytree.StatusSkipped)
+-	}
+-	if logs, err := filepath.Glob(logPattern); err != nil || len(logs) != len(logsBefore) {
+-		t.Errorf("verify logs after the second verify = %q, %v; want %q, the command not to have run", logs, err, logsBefore)
+-	}
+-}
++		code, env := fx.run(t)
+ 
+-func TestVerifyVerb_FailureExitsOneWithFindings(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	fx := newVerifyFixture(t, "exit 3")
++		if code != 0 || env.Raw["status"] != string(verifytree.StatusSkipped) {
++			t.Errorf("second verify = %d, envelope %+v; want 0 and status %q", code, env, verifytree.StatusSkipped)
++		}
++		if logs, err := filepath.Glob(logPattern); err != nil || len(logs) != len(logsBefore) {
++			t.Errorf("verify logs after the second verify = %q, %v; want %q, the command not to have run", logs, err, logsBefore)
++		}
++	})
+ 
+-	code, env := fx.run(t)
++	t.Run("FailureExitsOneWithFindings", func(t *testing.T) {
++		t.Parallel()
++		fx := newVerifyFixture(t, "exit 3")
+ 
+-	if code != 1 || env.OK {
+-		t.Fatalf("verify on a failing plan = %d, envelope %+v; want 1 and not ok", code, env)
+-	}
+-	findings, ok := env.Raw["findings"].(map[string]any)
+-	if !ok {
+-		t.Fatalf("failure envelope has no findings object: %+v", env.Raw)
+-	}
+-	if findings["exit_code"] != float64(3) {
+-		t.Errorf("findings exit_code = %v; want 3", findings["exit_code"])
+-	}
+-	if want := filepath.Join(fx.CLI.geom.VerifyDir, "verify-1.log"); findings["log"] != want {
+-		t.Errorf("findings log = %v; want the run's own log %s", findings["log"], want)
+-	}
+-}
++		code, env := fx.run(t)
+ 
+-// TestVerifyVerb_RunnerCrashIsNoFailureToFix pins that a verify refuses a log holding the runner crash line.
+-// The refusal names the crashed run and has no failing identities to fix.
+-// The tier prints the line itself and exits 1, which is no crash signal, so the gate does not wait out its rerun delay.
+-func TestVerifyVerb_RunnerCrashIsNoFailureToFix(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	crashLine := filepath.Join(t.TempDir(), "crash.txt")
+-	if err := os.WriteFile(crashLine, []byte(gateslot.RunnerCrashLine("tier0 (exit 134, SIGABRT)")+"\n"), 0o644); err != nil {
+-		t.Fatal(err)
+-	}
+-	fx := newVerifyFixture(t, "cat '"+crashLine+"'; exit 1")
++		if code != 1 || env.OK {
++			t.Fatalf("verify on a failing plan = %d, envelope %+v; want 1 and not ok", code, env)
++		}
++		findings, ok := env.Raw["findings"].(map[string]any)
++		if !ok {
++			t.Fatalf("failure envelope has no findings object: %+v", env.Raw)
++		}
++		if findings["exit_code"] != float64(3) {
++			t.Errorf("findings exit_code = %v; want 3", findings["exit_code"])
++		}
++		if want := filepath.Join(fx.CLI.geom.VerifyDir, "verify-1.log"); findings["log"] != want {
++			t.Errorf("findings log = %v; want the run's own log %s", findings["log"], want)
++		}
++	})
+ 
+-	code, env := fx.run(t)
++	// RunnerCrashIsNoFailureToFix pins that a verify refuses a log holding the runner crash line.
++	// The refusal names the crashed run and has no failing identities to fix.
++	// The tier prints the line itself and exits 1, which is no crash signal, so the gate does not wait out its rerun delay.
++	t.Run("RunnerCrashIsNoFailureToFix", func(t *testing.T) {
++		t.Parallel()
++		crashLine := filepath.Join(t.TempDir(), "crash.txt")
++		if err := os.WriteFile(crashLine, []byte(gateslot.RunnerCrashLine("tier0 (exit 134, SIGABRT)")+"\n"), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		fx := newVerifyFixture(t, "cat '"+crashLine+"'; exit 1")
+ 
+-	if code != 1 || env.OK {
+-		t.Fatalf("verify on a crashing runner = %d, envelope %+v; want 1 and not ok", code, env)
+-	}
+-	findings, ok := env.Raw["findings"].(map[string]any)
+-	if !ok {
+-		t.Fatalf("crash envelope has no findings object: %+v", env.Raw)
+-	}
+-	if detail, _ := findings["detail"].(string); !strings.Contains(detail, "SIGABRT") {
+-		t.Errorf("findings detail = %q; want it to name SIGABRT", detail)
+-	}
+-	if _, hasFailures := findings["failures"]; hasFailures {
+-		t.Errorf("findings = %+v; want no failures list for a crash", findings)
+-	}
+-}
++		code, env := fx.run(t)
+ 
+-func TestVerifyVerb_DirtyTreeExitsOneNamingPaths(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	fx := newVerifyFixture(t, "exit 0")
+-	if err := os.WriteFile(filepath.Join(fx.Worktree, "stray.txt"), []byte("x"), 0o644); err != nil {
+-		t.Fatalf("write stray file: %v", err)
+-	}
++		if code != 1 || env.OK {
++			t.Fatalf("verify on a crashing runner = %d, envelope %+v; want 1 and not ok", code, env)
++		}
++		findings, ok := env.Raw["findings"].(map[string]any)
++		if !ok {
++			t.Fatalf("crash envelope has no findings object: %+v", env.Raw)
++		}
++		if detail, _ := findings["detail"].(string); !strings.Contains(detail, "SIGABRT") {
++			t.Errorf("findings detail = %q; want it to name SIGABRT", detail)
++		}
++		if _, hasFailures := findings["failures"]; hasFailures {
++			t.Errorf("findings = %+v; want no failures list for a crash", findings)
++		}
++	})
+ 
+-	code, env := fx.run(t)
++	t.Run("DirtyTreeExitsOneNamingPaths", func(t *testing.T) {
++		t.Parallel()
++		fx := newVerifyFixture(t, "exit 0")
++		if err := os.WriteFile(filepath.Join(fx.Worktree, "stray.txt"), []byte("x"), 0o644); err != nil {
++			t.Fatalf("write stray file: %v", err)
++		}
+ 
+-	if code != 1 || env.OK {
+-		t.Fatalf("verify on a dirty tree = %d, envelope %+v; want 1 and not ok", code, env)
+-	}
+-	findings, _ := env.Raw["findings"].(map[string]any)
+-	if got := findings["dirty"]; !strings.Contains(strings.Join(anyStrings(got), ","), "stray.txt") {
+-		t.Errorf("findings dirty = %v; want it to name stray.txt", got)
+-	}
+-}
++		code, env := fx.run(t)
+ 
+-// TestVerifyVerb_GateConfigRefusalIsTheError pins that a gate.yaml the verb cannot load is the verb's error.
+-// A `final` list naming an undeclared tier is refused the same way.
+-// The refusal names `lym config gate`, never a pass.
+-func TestVerifyVerb_GateConfigRefusalIsTheError(t *testing.T) {
+-	tiergate.Require(t, 1)
+-	tests := []struct {
+-		name string
+-		// breakConfig turns the fixture's committed gate.yaml into the refused shape.
+-		breakConfig func(t *testing.T, configFile string)
+-	}{
+-		{"an absent gate.yaml", func(t *testing.T, configFile string) {
+-			if err := os.Remove(configFile); err != nil {
+-				t.Fatal(err)
+-			}
+-		}},
+-		{"a final list naming an undeclared tier", func(t *testing.T, configFile string) {
+-			if err := os.WriteFile(configFile, verifyGateConfig(t, "exit 0", 7), 0o644); err != nil {
+-				t.Fatal(err)
+-			}
+-		}},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			fx := newVerifyFixture(t, "exit 0")
+-			tt.breakConfig(t, configengine.ConfigFile(fx.Worktree, "gate"))
++		if code != 1 || env.OK {
++			t.Fatalf("verify on a dirty tree = %d, envelope %+v; want 1 and not ok", code, env)
++		}
++		findings, _ := env.Raw["findings"].(map[string]any)
++		if got := findings["dirty"]; !strings.Contains(strings.Join(anyStrings(got), ","), "stray.txt") {
++			t.Errorf("findings dirty = %v; want it to name stray.txt", got)
++		}
++	})
+ 
+-			code, env := fx.run(t)
++	// GateConfigRefusalIsTheError pins that a gate.yaml the verb cannot load is the verb's error.
++	// A `final` list naming an undeclared tier is refused the same way.
++	// The refusal names `lym config gate`, never a pass.
++	t.Run("GateConfigRefusalIsTheError", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			// breakConfig turns the fixture's committed gate.yaml into the refused shape.
++			breakConfig func(t *testing.T, configFile string)
++		}{
++			{"an absent gate.yaml", func(t *testing.T, configFile string) {
++				if err := os.Remove(configFile); err != nil {
++					t.Fatal(err)
++				}
++			}},
++			{"a final list naming an undeclared tier", func(t *testing.T, configFile string) {
++				if err := os.WriteFile(configFile, verifyGateConfig(t, "exit 0", 7), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				fx := newVerifyFixture(t, "exit 0")
++				tt.breakConfig(t, configengine.ConfigFile(fx.Worktree, "gate"))
+ 
+-			if code != 1 || env.OK || !strings.Contains(env.Error, "lym config gate") {
+-				t.Errorf("verify over %s = %d, envelope %+v; want 1 and an error naming lym config gate", tt.name, code, env)
+-			}
+-		})
+-	}
++				code, env := fx.run(t)
++
++				if code != 1 || env.OK || !strings.Contains(env.Error, "lym config gate") {
++					t.Errorf("verify over %s = %d, envelope %+v; want 1 and an error naming lym config gate", tt.name, code, env)
++				}
++			})
++		}
++	})
+ }
+ 
+ // anyStrings returns v's elements as strings when v is a decoded JSON array of strings.
+diff --git a/internal/webstercli/verify_parity_integration_test.go b/internal/webstercli/verify_parity_integration_test.go
+index 8db9de302..1ba7ec3aa 100644
+--- a/internal/webstercli/verify_parity_integration_test.go
++++ b/internal/webstercli/verify_parity_integration_test.go
+@@ -2,7 +2,7 @@
+ // `lym webster verify`, loomshed.NewVerifyGate and websterengine.NewVerifyGate.
+ // They must reach the same three-way verdict over one fixture.
+ // It is integration-tagged because every side spawns git and a shell.
+-// It is not parallel because each fixture puts the built `lym` first on `PATH`.
++// The test puts the built `lym` first on `PATH` once, so it is serial, and its cases run in parallel under that.
+ // Every side runs the `final` gate call over the same seeded gate.yaml.
+ // The shape follows loomcli's TestGateParity_*.
+ 
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++	"github.com/Knatte18/loomyard/internal/testkit/lymbin"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+@@ -53,8 +54,10 @@ func verbVerdict(env envelope.Envelope) verifyParityVerdict {
+ 	return verifyVerdictError
+ }
+ 
++// Serial: it puts `lym` first on PATH once, and its cases run in parallel under that.
+ func TestGateParity_VerifyGate(t *testing.T) {
+ 	tiergate.Require(t, 1)
++	lymbin.PutFirstOnPath(t)
+ 	cases := []struct {
+ 		name    string
+ 		command string
+@@ -67,6 +70,7 @@ func TestGateParity_VerifyGate(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			// Each side gets its own fixture, so one side's record cannot skip another side's run.
+ 			prepare := func() *verifyFixture {
+ 				fx := newVerifyFixture(t, tc.command)
+diff --git a/internal/webstercli/wiring.go b/internal/webstercli/wiring.go
+index c67bc9348..792105a3b 100644
+--- a/internal/webstercli/wiring.go
++++ b/internal/webstercli/wiring.go
+@@ -9,7 +9,9 @@ package webstercli
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/batcher"
+ 	"github.com/Knatte18/loomyard/internal/cliwire"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+@@ -213,7 +215,9 @@ func (c *websterCLI) wireHub(loc *lymcwd.Location, stencilsDir, planDir, targetD
+ 	c.roles = roles
+ 	c.instructionFiles = websterengine.MasterInstructionFiles(engines, roles[websterengine.RoleMaster])
+ 	c.pause = pauseGeom
+-	c.masterStrand = envMasterStrand(reedEngine.ResolveStrandGUID)
++	c.strandName = os.Getenv(agentname.StrandNameEnv)
++	c.masterStrand = masterStrandLookup(c.strandName, reedEngine.ResolveStrandGUID)
++	c.syncOptions = fabricengine.EnvSyncOptions()
+ 	geom.VerifyHold = verifytree.NewPauseHold(pauseGeom, nil)
+ 	c.geom = geom
+ 	c.anchorRel = loc.AnchorRel
+@@ -350,7 +354,9 @@ func (c *websterCLI) wireStandalone(cwd, stencilsDir, planDir, targetDirFlag str
+ 	c.roles = roles
+ 	c.instructionFiles = websterengine.MasterInstructionFiles(engines, roles[websterengine.RoleMaster])
+ 	c.pause = pauseGeom
+-	c.masterStrand = envMasterStrand(reedEngine.ResolveStrandGUID)
++	c.strandName = os.Getenv(agentname.StrandNameEnv)
++	c.masterStrand = masterStrandLookup(c.strandName, reedEngine.ResolveStrandGUID)
++	c.syncOptions = fabricengine.EnvSyncOptions()
+ 	geom.VerifyHold = verifytree.NewPauseHold(pauseGeom, nil)
+ 	c.geom = geom
+ 	c.anchorRel = ""
+diff --git a/internal/webstercli/wiring_test.go b/internal/webstercli/wiring_test.go
+index a976e41a8..61a5d50f4 100644
+--- a/internal/webstercli/wiring_test.go
++++ b/internal/webstercli/wiring_test.go
+@@ -31,6 +31,7 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/cliwire"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -97,8 +98,13 @@ func seedStandalonePlanDir(t *testing.T, dir string) {
+ // Another is an unpaired sibling, and the last is a worktree whose paired sibling has been removed.
+ // Keying mode on whether a location is wired would send every one of these to standalone mode.
+ // None of them may be refused, and none of them may land in standalone.
++// Each wired CLI also holds the sync skips and the strand name of the environment it was wired in.
++// It sets those variables, so it is not parallel.
+ func TestWire_ModeHubSelectsHubMode(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Setenv("FABRIC_SKIP_PUSH", "1")
++	t.Setenv(agentname.StrandNameEnv, "wired-strand")
+ 	tests := []struct {
+ 		name         string
+ 		worktreeName string
+@@ -118,6 +124,13 @@ func TestWire_ModeHubSelectsHubMode(t *testing.T) {
+ 				t.Fatalf("wire() = %v; want nil -- a healthy-but-unwired hub location must never be refused", err)
+ 			}
+ 
++			if !c.syncOptions.SkipGit || !c.syncOptions.SkipPush {
++				t.Errorf("syncOptions = %+v; want SkipGit and SkipPush read from the environment", c.syncOptions)
++			}
++			if c.strandName != "wired-strand" {
++				t.Errorf("strandName = %q; want %q", c.strandName, "wired-strand")
++			}
++
+ 			if c.geom.AnchorRoot != loc.AnchorPath() {
+ 				t.Errorf("geom.AnchorRoot = %q; want %q", c.geom.AnchorRoot, loc.AnchorPath())
+ 			}
+@@ -199,9 +212,13 @@ func hash8For(t *testing.T, target string) string {
+ // the in-process reed bring-up is armed, and the friction directory is empty.
+ // The default plan directory has its run-refusal mark clear.
+ // A runner's public entry points return their ordinary verdict, not a told-path refusal.
+-// It sets XDG_STATE_HOME and LOCALAPPDATA, so it is not parallel.
++// The CLI holds the sync skips and the strand name of the environment it was wired in.
++// It sets environment variables, so it is not parallel.
+ func TestWire_StandaloneMode(t *testing.T) {
+ 	tiergate.Require(t, 0)
++	t.Setenv("FABRIC_SKIP_GIT", "1")
++	t.Setenv("FABRIC_SKIP_PUSH", "1")
++	t.Setenv(agentname.StrandNameEnv, "wired-strand")
+ 	target := t.TempDir()
+ 	stateHome := t.TempDir()
+ 	t.Setenv("XDG_STATE_HOME", stateHome)
+@@ -227,6 +244,12 @@ func TestWire_StandaloneMode(t *testing.T) {
+ 		t.Fatalf("wire() = %v; want nil", err)
+ 	}
+ 
++	if !c.syncOptions.SkipGit || !c.syncOptions.SkipPush {
++		t.Errorf("syncOptions = %+v; want SkipGit and SkipPush read from the environment", c.syncOptions)
++	}
++	if c.strandName != "wired-strand" {
++		t.Errorf("strandName = %q; want %q", c.strandName, "wired-strand")
++	}
+ 	if c.geom.WorktreeRoot != target {
+ 		t.Errorf("geom.WorktreeRoot = %q; want the target %q", c.geom.WorktreeRoot, target)
+ 	}
