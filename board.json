@@ -779,7 +779,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Aim\n\n`docs/research/speed/test-time-measure-2026-11-27/report.md` measured `internal/gatecli` at 49 to 56 s of tier1 test time, mostly two long sequences on one fixture:\n`TestGateTest_Scopes` (54 s) and `TestGateTest_Scenario` (45 s).\n\n## Work\n\n- Split each into independent subtests or tests with a fixture each, so they run in parallel.\n- Move scope computation cases that need no subprocess to tier0.\n- Keep every assertion; drop none.\n- Leave `TestGateRedFirst_Dotnet` and `TestGateTest_DotnetFixture` alone: they run only under upkeep.\n- Measure the package's tier1 time before and after, twice each, and put both in the change description.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T17:58:07Z",
       "revised": "2026-11-27T17:58:07Z",
       "profile": "light",

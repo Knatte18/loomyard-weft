@@ -1,6 +1,6 @@
 # Split the long gatecli tier1 scenario tests
 
-`gatecli-split-long-tests` · Task · enhancement, gate, testkit · running · Drift-Verify
+`gatecli-split-long-tests` · Task · enhancement, gate, testkit · running · Code-Bouncer
 
 ## Aim
 
