@@ -43,7 +43,7 @@ tiers:
 gates:
     batch: {tiers: [0, 1], scope: card, reports: []}
     webster-fix: {tiers: [0, 1], scope: diff, reports: []}
-    webster: {tiers: [0, 1, 2], scope: all}
+    webster: {tiers: [0, 1, 2], scope: all, reports: []}
     parent-align: {tiers: [0, 1, 2], scope: all}
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
