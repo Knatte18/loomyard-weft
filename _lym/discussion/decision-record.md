@@ -206,6 +206,16 @@ Rationale: A line naming hundreds of PIDs is unreadable in a status pane; the co
 - Mail volume: each stop now reaches the orch once more, as the watch line ahead of batten's notice.
 - `beam-member-parent` (T12): until it lands, the nearest live orch a beam member's dobby notice resolves to can be the prime's orch rather than the beam's, and watch and gate-hold lines go the same way.
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - untested-blocked-reason-selection (class design, severity MEDIUM, open in rounds 1)
+  - untested-failed-record-holds-clear (class design, severity MEDIUM, open in rounds 1)
+  - untested-gate-hold-hub-wiring (class design, severity MEDIUM, open in rounds 1)
+  - untested-holder-in-task-worktree-itself (class design, severity MEDIUM, open in rounds 1)
+  - untested-second-stop-episode (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A driven run whose child goes from running to blocked at a row posts one `[run watch]` line naming the derived state, batten's and the child's state and row and the reason; a later tick with the same reading posts nothing (D1, D3).
