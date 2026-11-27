@@ -19,9 +19,9 @@
 - `internal/fabricengine#archiveWeftTip`
 
 **Create:**
-- `plan:internal/fabricengine#recordsPushCeiling` -> `func recordsPushCeiling(hubPath, slug string) (hold string, held bool, err error)`
-- `plan:internal/pairteardown_test#TestPushRun_StopsShortOfAHeldRecordsCommit` -> `func TestPushRun_StopsShortOfAHeldRecordsCommit(t *testing.T)`
-- `plan:internal/beamcli#TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings` -> `func TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings(t *testing.T)`
+- `internal/fabricengine#recordsPushCeiling`
+- `internal/pairteardown_test#TestPushRun_StopsShortOfAHeldRecordsCommit`
+- `internal/beamcli#TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings`
 
 **Uses:**
 - `internal/fabriclayout/doc.go`

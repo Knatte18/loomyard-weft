@@ -3,15 +3,15 @@
 **Edit:**
 - `internal/fabricengine#FailedPushWayForward`
 - `internal/fabricengine#pushStep`
-- `plan:internal/fabricengine#recordsPushCeiling`
+- `internal/fabricengine#recordsPushCeiling`
 - `internal/fabricengine_test#TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide`
 - `internal/fabricengine#Topology.removePair`
 - `internal/fabricengine#RunCommitsAhead`
 - `internal/fabricengine_test#TestRunCommitsAhead`
 - `internal/pairteardown#PushRun`
 - `internal/beamcli#hubLandDeps`
-- `plan:internal/pairteardown_test#TestPushRun_StopsShortOfAHeldRecordsCommit`
-- `plan:internal/beamcli#TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings`
+- `internal/pairteardown_test#TestPushRun_StopsShortOfAHeldRecordsCommit`
+- `internal/beamcli#TestHubLandDeps_PushBeamRefusesWhileTheBeamHoldsLandings`
 
 **Create:**
 - `plan:internal/fabriclayout#PushFailureHeldBack` -> `const PushFailureHeldBack PushFailureClass = "held_back"`
