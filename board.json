@@ -932,7 +932,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).\n\n## What happened\n\nThe task's decision record lists the records push of `webster reset` among the pushes that stay synchronous, because its owed record holds the run at its transition.\nThe code differs: `fabricSync` in `webstercli` only commits through `Fabric.CommitWithTrailers`, whose spawn starts the pusher.\nThe pusher writes no record for an owed push.\nNo card targeted that path, so it was not changed.\nThe pattern documents `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` describe the code as it is.\n\n## Why it is abnormal\n\nThe approved decision and the delivered behavior disagree: a failed push of the reset's records commit does not hold the run.\nNo card covered this item of the decision record, and the gap surfaced only during documentation.\n\n## What to do\n\nDecide whether the decision record or the code is right.\nIf the record is right, make the reset's records push synchronous and recorded, and update the two pattern documents.\nAlso consider checking at plan review that every decision item is covered by a card.\n\nProvenance: task `push-retry-not-halt`, note `20-dobby-push-summary.md`.\n\n## Orch decision\n\nThe decision record is right: make the records push of `webster reset` synchronous and recorded, so an owed push holds the run at its transition, and update `pattern/PATTERN-pair-remote.md` and `pattern/PATTERN-run-fsm.md` to match.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T21:39:12Z",
       "revised": "2026-11-27T21:40:03Z",
       "profile": "light"
