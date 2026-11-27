@@ -1,0 +1,247 @@
+{
+  "runGuid": "46bbc0a0ec66149873b6ec24edcb7983",
+  "planRecordsCommit": "e759fc572daea0b1037e355d03ab7fc011047a0f",
+  "planFingerprint": "c80966387f202d9bd16fe4446cc55c72780f864ac2f75160591acb0bca0113cc",
+  "planFileHashes": {
+    "00-overview.md": "943367af210d204a39e7733cc2f2e88920176bce57dc469d18ea6b4ac6e28684",
+    "01-gate-test-map-mode.md": "eb24d91059e5632d52223522143cfa3c14d8ac261712af254aa811d584837208",
+    "02-testcover-planning-delete.md": "21feb3981bbbd2dccfc3a1b7d27158431f457b5cd171abe128ae862ab022fd1c",
+    "03-map-run-tier-bounds.md": "8cc131b8089db87fdd3d8338af5ce0ae09c21d2ebe0684646055ba78cb54e2dd",
+    "04-map-run-clean-checks.md": "564182b0e8c56a00ea267c368624f61fb25aa0af3655fed72de6bed4df9abd68",
+    "05-redundant-map-way-forward.md": "ee04c56e702917fbd5b84000371fd1845f8edb41209b308c4241b6f862e69b80"
+  },
+  "planOverviewFrameHash": "c85477f5ebde436f89def6c54902863fd86cff164011a087a743434fd9e58722",
+  "partition": [
+    {
+      "cards": [
+        "01-gate-test-map-mode"
+      ],
+      "profile": "wide",
+      "estimate": 284506,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 32600,
+        "read_union": 94616,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 2340,
+            "reads": {
+              "file:README.md": 2088,
+              "file:docs/overview.md": 24744,
+              "file:internal/dobbyengine/doc.go": 6372,
+              "file:internal/gatecli/doc.go": 14988,
+              "file:internal/gatecli/testmapaudit.go": 1104,
+              "file:internal/gatecli/testmaporder_test.go": 516,
+              "file:internal/gatecli/testmapwait.go": 552,
+              "file:internal/gateslot/doc.go": 3684,
+              "file:internal/gateslot/template.yaml": 660,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1668,
+              "file:pattern/PATTERN-test-speed.md": 3900,
+              "package:.": 2000,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/dobbyengine": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/testcover": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/dobbyengine": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/testcover": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 516.5,
+            "written": 157290
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-testcover-planning-delete",
+        "03-map-run-tier-bounds"
+      ],
+      "profile": "wide",
+      "estimate": 251322,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 39600,
+        "read_union": 103140,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 360,
+            "reads": {
+              "file:internal/testcover/declcompare.go": 5700,
+              "file:internal/testcover/doc.go": 1428,
+              "file:internal/testcover/miss_string_test.go": 96,
+              "file:internal/testcover/testselect.go": 7944,
+              "file:internal/testcover/testselect_test.go": 6552,
+              "file:internal/testcover/upkeep.go": 1608,
+              "file:internal/testcover/upkeep_test.go": 2136,
+              "package:cmd/lym": 2000,
+              "package:internal/testcover": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/testcover": 2000
+            },
+            "messages": 109.5,
+            "written": 33210
+          },
+          {
+            "card": 3,
+            "card_text": 1572,
+            "reads": {
+              "file:docs/overview.md": 24744,
+              "file:internal/gatecli/doc.go": 14988,
+              "file:internal/gatecli/prebuild.go": 2640,
+              "file:internal/gateslot/doc.go": 3684,
+              "file:pattern/PATTERN-gate-slot.md": 1788,
+              "file:pattern/PATTERN-test-speed.md": 3900,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 246,
+            "written": 75372
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-map-run-clean-checks",
+        "05-redundant-map-way-forward"
+      ],
+      "profile": "wide",
+      "estimate": 159364,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 46600,
+        "read_union": 56748,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 888,
+            "reads": {
+              "file:docs/overview.md": 24744,
+              "file:internal/gatecli/doc.go": 14988,
+              "file:pattern/PATTERN-test-speed.md": 3900,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 144.5,
+            "written": 44238
+          },
+          {
+            "card": 5,
+            "card_text": 228,
+            "reads": {
+              "file:internal/gatecli/doc.go": 14988,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 38.5,
+            "written": 11778
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "gate-test-map-mode",
+      "cards": [
+        "01-gate-test-map-mode"
+      ],
+      "cardHashes": {
+        "01-gate-test-map-mode": "eb24d91059e5632d52223522143cfa3c14d8ac261712af254aa811d584837208"
+      },
+      "startSha": "24cd026e8c1bb76ea9f2ecf0c23d0dbf6d9b3f04",
+      "kind": "strand",
+      "spawnedAt": "2026-11-27T13:30:17Z",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gate-test-map-mode",
+        "status": "done",
+        "head_sha": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/gatecli/cli.go",
+          "internal/gatecli/testmap.go",
+          "internal/gatecli/testmap_integration_test.go",
+          "internal/gatecli/testmappackage.go"
+        ]
+      },
+      "cardShas": [
+        "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
+      ]
+    }
+  },
+  "attempts": [
+    {
+      "batch": 1,
+      "number": 1,
+      "rung": 0,
+      "reportPath": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b4/_lym/weaver/reports/01-gate-test-map-mode-a1.yaml",
+      "strandGuid": "36db9f1dc168b0b2f42c050325bfd598",
+      "strandName": "ly:weaver-bench-b4:weaver",
+      "outcome": "done",
+      "beganAt": "2026-11-27T13:30:17Z"
+    }
+  ],
+  "batchEnds": {
+    "1": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
+  },
+  "lastEnd": "1fa0b625dbde8c55185842441f99ce9fc6c7b22f"
+}
