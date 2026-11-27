@@ -1,13 +1,12 @@
 {
-  "current_producer": "Webster",
-  "state": "running",
+  "current_producer": "Parent-Align",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_after": "Webster",
-  "pause_after_by": "bench",
+  "pause_reason": "paused after Webster, as requested by bench",
   "activity": {
-    "now": "Webster",
-    "last": "Preflight → done",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -17,6 +16,13 @@
       "output": "",
       "at": "2026-11-27T11:57:06Z",
       "started_at": "2026-11-27T11:57:06Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/weaver-bench-b3/_lym/weaver/summary.md",
+      "at": "2026-11-27T14:28:09Z",
+      "started_at": "2026-11-27T13:30:13Z"
     }
   ],
   "product": {
