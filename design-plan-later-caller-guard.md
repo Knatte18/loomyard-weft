@@ -1,6 +1,6 @@
 # Test-only-code guard fails a card whose function gets its first caller in a later card
 
-`plan-later-caller-guard` · Task · bug, webster, loom · running · PR-Review
+`plan-later-caller-guard` · Task · bug, webster, loom · landing · Finalize
 
 Imported from [issue #273](https://github.com/Knatte18/loomyard/issues/273).
 
