@@ -1,6 +1,6 @@
 # Bench Weaver against Webster again on the same three landed plans, both run side by side the same day
 
-`weaver-bench-rerun` · Task · research, weaver, webster · halted · Darn-Write
+`weaver-bench-rerun` · Task · research, weaver, webster · running · Darn-Write
 
 ## Why
 
