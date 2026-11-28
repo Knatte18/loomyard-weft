@@ -127,6 +127,12 @@ Provenance: task `push-retry-not-halt`, note `05-pusher-interval.md`.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-28): No test seam: the fix is stencil wording an LLM reads
+
+Decision: The red-first check does not apply. The fix changes only what the review and plan stencils tell an LLM reviewer or plan writer; no test asserts a stencil's static prose.
+
+Rationale: The defect is reviewer and planner behaviour driven by prompt text. Testing it would mean pinning stencil prose, which the test-economy rules forbid.
+
 ## Constraints
 
 ## Auto-mode assumptions
