@@ -1,11 +1,11 @@
 {
   "current_producer": "Raddle-File",
-  "state": "running",
+  "state": "done",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Raddle-File",
-    "last": "Raddle-Write → done",
+    "last": "Raddle-File → done",
     "wait": ""
   },
   "history": [
@@ -67,6 +67,13 @@
           "end": "2026-11-28T13:37:03.724337498Z"
         }
       ]
+    },
+    {
+      "producer": "Raddle-File",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-28T13:37:13Z",
+      "started_at": "2026-11-28T13:37:08Z"
     }
   ],
   "product": {
