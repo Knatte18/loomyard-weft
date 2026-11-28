@@ -1,0 +1,18 @@
+verdict: hand-on
+reason: |-
+  The stop is a Code-Review round-1 escalation with cause decision. Its one decision finding is F2: keep the two new TestDarnSpec prose assertions as the bug entry's red-first test, or remove them and record a `No test seam` entry.
+  The board entry settles F2 as option (a), keeping the assertions. The entry is labelled bug, so it needs a red-first test, and nothing in the decision record lifts that.
+  A `No test seam` entry would also be untrue. The rendered prompt is a working test point, and the gated row's assertions fail on main, because main's gated fragment carries neither sentence. So F2 needs no code change and no in-scope ruling.
+  F1 (design, MEDIUM) and F3 (NIT) were already fixed by the round-1 fixer in d2f0be1c8 and ad4e247dd. The new closed-scope note clause in both make-change fragments matches the template's Step 3 exception. No BLOCKING finding is open, and the round is below the hard cap.
+  My ruling was `lym loom circling continue darn-measure-rule-gaps`, so that a fresh round 2 reviews the F1 fix, which is new stencil text. Round 2's focus file already targets that fix.
+  That verb refused. Another session had already recorded a decision for round 1 at 2026-11-28T14:31:41+01:00, while this attempt was reading the materials. The file is _lym/reviews/code/round-1-circling-decision.md, with decision accept, cause decision, settled false, automatic false, so the Bouncer did not record it itself.
+  The rule for this case is to hand on any refusal from a repair verb, so I am handing on. I made no commit, no board note and no decision-record entry.
+verbs:
+  - |-
+    lym loom circling continue darn-measure-rule-gaps
+    (refused: {"error":"loom: circling continue: a decision is already recorded for the escalated round at Code-Bouncer; way forward: the decision for this round is recorded and stays; run \"lym loom resume\" in the task worktree to resume the run","ok":false})
+question: |-
+  Code-Review round 1 of darn-measure-rule-gaps already has a recorded `accept`. It is in _lym/reviews/code/round-1-circling-decision.md, written at 14:31:41 by a session other than the arbiter, which is not marked automatic.
+  Did you record that accept, and do you stand by it?
+  If you keep it, run `lym loom resume`. The accept is defensible: the fixer already made the fixes for F1 and F3, and F2 is settled by keeping the prose assertions as the bug entry's red-first test, so no `No test seam` entry is needed. But the F1 fix, a new stencil clause in both darn make-change fragments, goes through without a fresh review round.
+  The arbiter's own ruling would have been `continue`, so that round 2 reviews that fix. Only you can replace the recorded accept to get that.
