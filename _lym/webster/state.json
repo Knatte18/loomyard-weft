@@ -366,9 +366,35 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a64a5c1e6d84b2d8d.jsonl"
       ]
+    },
+    "5": {
+      "slug": "konsole-separate-launch",
+      "cards": [
+        "05-konsole-separate-launch",
+        "06-kwinplace-scripts-readers",
+        "07-kwinplace-prelaunch",
+        "08-kwinplace-script-runner",
+        "09-kwinplace-places",
+        "10-kwinplace-planner"
+      ],
+      "cardHashes": {
+        "05-konsole-separate-launch": "3ecdd6c7d3ec6b74a28e7bdc6793c799ce33514ebe3641066da9accdcb108e2c",
+        "06-kwinplace-scripts-readers": "27aefb102967caa125b277fd82d728e47454b41ae43e28e180df380242b05040",
+        "07-kwinplace-prelaunch": "43dd1cfadcfe666adf47aaa8e33c6ed0d5fc6d50f114af3c58739e6ee1b58440",
+        "08-kwinplace-script-runner": "08af217bf165fc229d329a6c6bc58afdc79028711a1e125ab9d3d1fbd5e4e23a",
+        "09-kwinplace-places": "4fd8fae0e3bfb70ae2cd479a1bcbba94e260417da97edf267a78e9a60d714716",
+        "10-kwinplace-planner": "faba3da9620c4c1919a2c654d5f7e35754cdb2d60def2ba92cbe5f730a39fc8f"
+      },
+      "startSha": "9b5243b09982db7240e32de27f3c62b3d2bdcc34",
+      "kind": "fork",
+      "spawnedAt": "2026-11-28T11:19:00Z",
+      "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "b19f1c9d69e8efc58cd59ad562567257",
   "masterSessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
   "masterEngine": "claude",
