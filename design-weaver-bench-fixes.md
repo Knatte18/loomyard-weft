@@ -1,6 +1,6 @@
 # Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed
 
-`weaver-bench-fixes` · Task · enhancement, weaver, shed, shuttle · running · Code-Bouncer
+`weaver-bench-fixes` · Task · enhancement, weaver, shed, shuttle · running · Code-Burler-Review
 
 ## Why
 
