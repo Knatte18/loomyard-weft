@@ -1273,6 +1273,26 @@
       "revised": "2026-11-28T14:30:55Z",
       "profile": "light",
       "project": "implementer-gate-time"
+    },
+    {
+      "id": 1821,
+      "handle": "B3",
+      "slug": "reset-old-layout-leftovers",
+      "title": "lym fabric clone --reset refuses a hub holding leftovers of an earlier _bolt layout",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [
+        "clone-reset-keeps-unpushed"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe Code-Review Bouncer of `clone-reset-keeps-unpushed` (2026-11-28) reports that a hub holding files of an earlier layout at the `_bolt` root,\nsuch as `.gitrepo-push.lock` and `board.json.swaplock` in the live loomyard hub, still has a plain `lym fabric clone --reset` refused.\nNo current code writes those files, so the run's rule (lym's own ignored files are no work) does not skip them.\n\n## Idea\n\nEither skip the known leftovers of earlier layouts in the reset's work check, or remove them in a reconcile step, so a plain reset passes on an old hub.\n",
+      "created": "2026-11-28T14:43:49Z",
+      "revised": "2026-11-28T14:43:49Z"
     }
   ],
   "prime_owner": "neve",
