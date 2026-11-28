@@ -1,11 +1,11 @@
 {
-  "current_producer": "Record-Write",
+  "current_producer": "Drift-Baseline",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Record-Write",
-    "last": "Preflight → done",
+    "now": "Drift-Baseline",
+    "last": "Record-Write → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +15,13 @@
       "output": "",
       "at": "2026-11-28T15:27:03Z",
       "started_at": "2026-11-28T15:27:03Z"
+    },
+    {
+      "producer": "Record-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/creel-delivery-reed-tier1/_lym/discussion/decision-record.md",
+      "at": "2026-11-28T15:27:04Z",
+      "started_at": "2026-11-28T15:27:04Z"
     }
   ],
   "product": {
