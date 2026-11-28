@@ -1,6 +1,6 @@
 # Tier0 fails on a Go file gofmt would rewrite
 
-`battencli-wire-test-gofmt` · Task · enhancement, gate · running · Code-Burler-Review
+`battencli-wire-test-gofmt` · Task · enhancement, gate · running · Code-Burler-Fix
 
 ## Seen
 
