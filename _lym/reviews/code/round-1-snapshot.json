@@ -2,6 +2,7 @@
   "fix_scope": "source",
   "target_paths": null,
   "target_id": "1f0970a5daa825a9e2a7a429e733fa77887e0002",
+  "post_fix_target_id": "1f0970a5daa825a9e2a7a429e733fa77887e0002",
   "added_decisions": [
     {
       "title": "No bug fixed",
