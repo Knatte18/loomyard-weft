@@ -1,12 +1,17 @@
 # A landing queue gates several ready runs as one batch and lands them together
 
-`landing-queue` · Note · enhancement, landing, gate, batten
-
-Depends on: [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md)
+`landing-queue` · Task · enhancement, landing, gate, batten · draft
 
 ## Seen (operator, 2026-11-27)
 
 Each landing ran its own landing gate under the parent lock, one after the other, so with many runs ready the gates queued in series.
+
+## Seen again (2026-11-28)
+
+With five runs ready at Finalize, each landing made every waiting run's lock-free gate stale:
+the parent moved by real code, so each run in turn merged the new tip and gated tiers 0 to 2 again under the parent lock, 10 to 15 minutes each,
+while the waiting runs' own lock-free gates competed with the holder for the same gate slots.
+The operator released this entry ahead of the measurement of `landing-lock-only-for-land` on that ground (operator, 2026-11-28).
 
 ## Since (`d87a9ce24`, `landing-lock-only-for-land`)
 
