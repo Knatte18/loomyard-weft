@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "Cards 4, 8, 10 against D5: trace every HEAD or current-branch read reachable while a leader's task worktree is detached (pusher, refusal read, owner checks, ParentHoldsTaskWork, reconcile, land check, task-head seams, other processes acting on the pair). Does each resolve the ref D5 names, and is card 4's list of readLocalBranch callers and deferred-push handlers complete?"
+  - "Cards 4, 8, 10: walk a leader that dies, or fails to restore, at each point between marker write and marker removal. Do the push hold-off, shed restore, Finalize's detachedStop and the stated ways forward fit together in each state, and does card 10's refusal at rows other than Finalize carry D5's outcomes?"
+  - "Cards 7, 8, 9: follow Finalize.Call's loop in the code through join, backstop, prune, actOnOutcome, conflict and lockFreed re-passes, leadBatch and the culprit leader's fixer. Is every outcome and exit (held, landed cleared, failed, conflict, Held or Conflicted chain member, rebuild bound spent, land-alone fallback) defined, including for the leader's own entry?"
+  - "Card 8 judgeMember and memberLandingDeps: compare with every check and side effect in landUnderLock, ownerChecks, handedOverStop, landCheck and the pull-request resolver in the code. Is each check D6 names run with the member's own seams, and can any seam used there act on the member? Verify the claims about the judge-only reconcile scope and loomCLI.wireLanding."
+  - "Cards 1, 7, 8, 11 on the move mark and ledger landings: verify what writeLedgerLanding, runpusher.RecordLanding, oldestHeldRecords and LandLocally do when a landing already stands, an origin ref is absent, or the leader dies between writes. Do the two cards' WriteLanding and UpstreamLacks seams behave alike and satisfy D6's backstop and records hold?"
+  - "Card 11 and its Shared Decision: search the repository for every taker of the parent lock and check that each runs the backstop, as D6 requires."
+  - "Cards 3, 7 against D4, D6, D8: check each fabric verb's claims against HoldsWork, MergeTree, landingCommitsOn and MergeGuardError, and whether any bound or behaviour a card adds (such as the walk limit in NewestLandingOf) is licensed by the decision record."
+  - "Cards 7, 8, 10 seam fields and card 6 removal: run repository searches for every constructor, fake, seam table, reflective test and reader that the new Deps fields, parentMerger method, re-signed methods and retired key touch. Is any site outside the cards' targets, and is each listed lym:seam marker change on a target?"
+  - "Cards 3, 4, 8, 9, 10: for each prescribed refusal, error or guard branch, name the input and test that reach it; for each new verb, guard removal or hold-off, check that the introducing card's Intent states its bound. Include card 5's removal of the gated-tip recheck."
+  - "All cards' tests against the Acceptance criteria and the tier0 budget: is each criterion planned at the tier and package it names, does any new test duplicate an existing one, and does every card that creates or widens a tier0 test state an estimate (check the build tags of the edited tests)?"
+  - "Card 8 and card 7: is each an independently reviewable unit, and does any card depend on something a later card does (for example the stop wording and restore that card 8 leans on from card 10)?"
+---
+Seed pass: no round has been judged.
+The entries point at the places where this plan's cards share state (the detached worktree, the queue outcomes, the move mark) and where card claims about existing code carry the design.
