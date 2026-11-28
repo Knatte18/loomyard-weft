@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Cause decision at round 1, Refusal none. The board entry answers both decision findings.\nF8: the entry's Idea puts Plan, Plan Perch, Webster, review and landing in jacquard, and its operator-marked \"Tapestry stays (operator, 2026-11-28)\" passage makes tapestry motif followed by jacquard. So D1 stands. The separate note plan-and-build-recipes is later work, and building its plan/build split now would widen the task's scope.\nF9: the entry asks only that \"jacq\" be added to the nicknames. Under PATTERN-heddle-instructions, Bolt's heddle.json is written only through lym heddle and lives outside the worktree, so D11's route holds: the parent runs lym heddle set after landing.\nBoth rulings are recorded as arbiter decisions. I chose continue over accept because the judge's verdict is CONTINUE with open BLOCKING findings F1 and F2 and MEDIUM design findings F3, F4, F6 and F7. The fixer changed the record for all of them in round 1, and that needs a fresh review round. The round is below the hard cap.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add recipe-build-from-sketch --by arbiter --from .scratch/arbiter-decisions.json",
+    "lym loom circling continue recipe-build-from-sketch"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/shed/recipe-build-from-sketch/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/shed/recipe-build-from-sketch/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step recipe-build-from-sketch --until-stop --arbiter-attempt 1"
+}
