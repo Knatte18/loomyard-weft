@@ -1,0 +1,435 @@
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 15ffa2867..abbd3803e 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -39,6 +39,8 @@
+ // It then takes the parent lock through the shared guard.
+ // It runs the owner checks before that lock-free merge, and again under the lock.
+ // It lands only while the parent's head is the tip that pass merged.
++// That pass merges the upstream tip, or the local tip of a parent ahead of its upstream by owed landing tips alone.
++// A landing known to need GitHub merges the upstream tip of an owed-ahead parent too.
+ // A parent that moved frees the lock, and the merge and the gate run again with no lock held.
+ // Finalize merges and gates under the lock after `landing.finalize_lost_races` lost races.
+ // It does so too for a parent that already holds the task's work.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index dee0b8ba5..2136ec957 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -357,6 +357,12 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ // gateUnlocked is step 1b1: with no lock held, it merges the parent's tip into the task worktree and gates the result.
+ // It runs the owner checks first, so a run this machine may not land ends before anything is merged into its worktree.
+ // It keeps the tip it merged as gatedTip, which the locked pass compares with the parent it lands on.
++// A parent ahead of its upstream by owed landing tips alone is merged at its local tip.
++// That tip is the head the locked pass lands on, so its pass wins the race unless another landing moves the parent.
++// A landing known to need GitHub cannot land until origin holds the owed tips.
++// Such a landing is the exception and merges the upstream tip.
++// A failed read of whether it needs GitHub merges the upstream tip too.
++// A need that only GitHub's repository rules set is not known there, since reading them is a GitHub call.
+ // A parent already holding the task's work runs no such pass and keeps no tip.
+ // A failed read of whether it holds the work halts as an owner check.
+ // When front is set, a lock taken to read the local parent tip is waited for at the front of the queue.
+@@ -375,7 +381,10 @@ func (fz *Finalize) gateUnlocked(ctx context.Context, front bool) *ending {
+ 		return end
+ 	}
+ 	fz.readConfigBeforeMerge()
+-	tip, lockReason, err := parentMergeTip(ctx, fz.deps, fz.guard, finalizeName, front)
++	needsGitHub, readErr := fz.needsGitHubOnDisk()
++	// The decision under the lock ends the call on a failed read, so the read's error only keeps the owed tips out here.
++	takeOwedLocal := readErr == nil && !needsGitHub
++	tip, lockReason, err := parentMergeTip(ctx, fz.deps, fz.guard, finalizeName, front, takeOwedLocal)
+ 	if err != nil {
+ 		return fail(ctx, finalizeName, err)
+ 	}
+@@ -418,9 +427,12 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, summary summa
+ 	fz.lockFreed, fz.parentMoved = false, false
+ 
+ 	// A landing already known to need GitHub waits for the parent's push without holding the lock.
+-	if fz.deps.ParentPushState != nil && fz.needsGitHubOnDisk() {
+-		if end := fz.parentPushBlocks(ctx); end != nil {
+-			return end
++	if fz.deps.ParentPushState != nil {
++		// A failed read answers false here, since the decision under the lock makes the same read and ends the call on it.
++		if needsGitHub, _ := fz.needsGitHubOnDisk(); needsGitHub {
++			if end := fz.parentPushBlocks(ctx); end != nil {
++				return end
++			}
+ 		}
+ 	}
+ 
+@@ -603,41 +615,49 @@ func (fz *Finalize) parentPushBlocks(ctx context.Context) *ending {
+ // needsGitHubOnDisk reports whether the landing needs GitHub, as read with no parent lock and no GitHub call.
+ // A recorded pull request needs it, and so does a trail mode.
+ // A review mode needs it when its origin and task branch let a pull request open.
+-// A failed read answers false, since the decision under the lock makes the same read and ends the call on it.
+-func (fz *Finalize) needsGitHubOnDisk() bool {
++// A failed read is returned as the error, with false.
++func (fz *Finalize) needsGitHubOnDisk() (bool, error) {
+ 	pr := fz.deps.PullRequest
+ 	if pr.Mode == nil {
+-		return false
++		return false, nil
+ 	}
+-	if _, found, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath); err == nil && found {
+-		return true
++	_, found, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath)
++	if err != nil {
++		return false, err
++	}
++	if found {
++		return true, nil
+ 	}
+ 	beam := NotABeam
+ 	if pr.BeamRecord != nil {
+-		if _, recorded, err := pr.BeamRecord(); err == nil && recorded {
+-			return true
++		_, recorded, err := pr.BeamRecord()
++		if err != nil {
++			return false, err
++		}
++		if recorded {
++			return true, nil
+ 		}
+ 		beam = BeamWithoutPullRequest
+ 	}
+ 	mode, err := pr.Mode()
+ 	if err != nil {
+-		return false
++		return false, err
+ 	}
+ 	switch mode {
+ 	case beamsetting.PullRequestTrail:
+-		return true
++		return true, nil
+ 	case beamsetting.PullRequestReview:
+ 		origin, err := pr.Origin()
+ 		if err != nil {
+-			return false
++			return false, err
+ 		}
+ 		hasCommits, err := pr.TaskHasCommits()
+ 		if err != nil {
+-			return false
++			return false, err
+ 		}
+-		return ResolvePullRequest(mode, beam, false, origin, hasCommits).Open
++		return ResolvePullRequest(mode, beam, false, origin, hasCommits).Open, nil
+ 	}
+-	return false
++	return false, nil
+ }
+ 
+ // parentHoldsWork reports whether the parent branch already holds the task's work; with no seam wired it does not.
+diff --git a/internal/landingshed/finalize_unlocked_test.go b/internal/landingshed/finalize_unlocked_test.go
+index df4291e98..4320be327 100644
+--- a/internal/landingshed/finalize_unlocked_test.go
++++ b/internal/landingshed/finalize_unlocked_test.go
+@@ -6,11 +6,13 @@ package landingshed
+ import (
+ 	"context"
+ 	"errors"
++	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/beamsetting"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
+ 	"github.com/Knatte18/loomyard/internal/mergeresolve"
+ 	"github.com/Knatte18/loomyard/internal/parentlock"
+@@ -44,6 +46,7 @@ func (r *tipRecordingResolver) Resolve(_ context.Context, _, tip string) (merger
+ // It is then merged and gated under the lock.
+ // A bound of 0 and a parent already holding the task's work merge and gate under the lock alone.
+ // A local parent behind its upstream is fast-forwarded before its head is compared with the gated tip.
++// A local parent ahead of its upstream by owed landing tips alone is gated at its local head.
+ func TestFinalize_GatesWithNoLockAndLocksToLand(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -54,6 +57,8 @@ func TestFinalize_GatesWithNoLockAndLocksToLand(t *testing.T) {
+ 		held      bool
+ 		// behind makes the local parent p0 sit behind its upstream u1 until the parent pair is fast-forwarded.
+ 		behind bool
++		// owedAhead makes the local parent p1 sit ahead of its upstream u0 by landing tips whose push is owed.
++		owedAhead bool
+ 		// movesAt lists the verify calls, counted from one, during which another landing moves the parent.
+ 		movesAt []int
+ 		// wantLockAtVerify is whether the run held the parent lock at each verify of a tree not verified before, in order.
+@@ -69,6 +74,7 @@ func TestFinalize_GatesWithNoLockAndLocksToLand(t *testing.T) {
+ 		{name: "a bound of 0 merges and gates under the lock from the start", wantLockAtVerify: []bool{true}, wantTips: []string{""}, wantParentCalls: []string{"merge"}},
+ 		{name: "a parent already holding the work merges and gates under the lock", lostRaces: 2, held: true, wantLockAtVerify: []bool{true}, wantTips: []string{""}, wantParentCalls: []string{"merge"}},
+ 		{name: "a parent behind its upstream is fast-forwarded to the gated tip", lostRaces: 2, behind: true, wantLockAtVerify: []bool{false}, wantTips: []string{"u1", ""}, wantParentCalls: []string{"fast-forward", "merge"}},
++		{name: "a parent ahead by owed landing tips lands on its local head gated with no lock", lostRaces: 2, owedAhead: true, wantLockAtVerify: []bool{false}, wantTips: []string{"p1", ""}, wantParentCalls: []string{"merge"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -81,11 +87,15 @@ func TestFinalize_GatesWithNoLockAndLocksToLand(t *testing.T) {
+ 			}
+ 			fx.fz.deps.Config.FinalizeLostRaces = tt.lostRaces
+ 			fx.fz.deps.ReadParentTips = func(bool) (fabriclayout.ParentTips, error) {
+-				if tt.behind {
++				switch {
++				case tt.behind:
+ 					return fabriclayout.ParentTips{Local: parent, Upstream: "u1", Relation: fabriclayout.ParentBehind}, nil
++				case tt.owedAhead:
++					return fabriclayout.ParentTips{Local: parent, Upstream: "u0", Relation: fabriclayout.ParentAhead}, nil
+ 				}
+ 				return fabriclayout.ParentTips{Local: parent, Upstream: parent, Relation: fabriclayout.ParentEqual}, nil
+ 			}
++			fx.fz.deps.ParentAheadByOwed = func() (bool, error) { return tt.owedAhead, nil }
+ 			fx.fz.deps.ParentHoldsTaskWork = func() (bool, error) { return tt.held, nil }
+ 			fx.merger.preMergeHeadSHA = &parent
+ 			var parentCalls []string
+@@ -138,6 +148,57 @@ func TestFinalize_GatesWithNoLockAndLocksToLand(t *testing.T) {
+ 	}
+ }
+ 
++// TestFinalize_LockFreePassMergesTheUpstreamTipOfAnAheadParent pins the ahead parents merged at their upstream tip.
++// They are one ahead by more than owed landing tips, and one that stops being owed-only before the lock.
++// So is any ahead parent when no read of owed landings is wired.
++// The locked pass then refuses the ahead parent.
++func TestFinalize_LockFreePassMergesTheUpstreamTipOfAnAheadParent(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		// unwired leaves the read of owed landings nil.
++		unwired bool
++		// owedReads is how many reads of owed landings answer true before every later one answers false.
++		owedReads int
++	}{
++		{name: "ahead by more than owed landings"},
++		{name: "no read of owed landings wired", unwired: true},
++		{name: "a commit that is no owed landing arrives before the lock", owedReads: 1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newFinalizeGateFixture(t)
++			fx.fz.deps.Config.FinalizeLostRaces = 2
++			fx.fz.deps.ReadParentTips = func(bool) (fabriclayout.ParentTips, error) {
++				return fabriclayout.ParentTips{Local: "p1", Upstream: "u0", Relation: fabriclayout.ParentAhead}, nil
++			}
++			reads := 0
++			fx.fz.deps.ParentAheadByOwed = func() (bool, error) {
++				reads++
++				return reads <= tt.owedReads, nil
++			}
++			if tt.unwired {
++				fx.fz.deps.ParentAheadByOwed = nil
++			}
++			res := &tipRecordingResolver{}
++			fx.fz.resolver = res
++			fx.fz.guard = newParentGuard(fx.fz.deps)
++
++			outcome, ptr := fx.call(t)
++
++			if outcome != shedengine.Stuck || !strings.Contains(ptr.Reason, "is ahead of its upstream") {
++				t.Errorf("Call() = %q, %+v; want Stuck on the ahead parent", outcome, ptr)
++			}
++			if want := []string{"u0"}; !slices.Equal(res.tips, want) {
++				t.Errorf("merged parent tips = %q; want %q", res.tips, want)
++			}
++		})
++	}
++}
++
+ // TestFinalize_QueuesAtTheFrontAfterALostRace pins the queue place of every lock wait of a run that lost a race.
+ // Another run holds the lock at each of the run's acquires, so each one waits with a ticket.
+ func TestFinalize_QueuesAtTheFrontAfterALostRace(t *testing.T) {
+@@ -223,6 +284,19 @@ func TestFinalize_LockFreePassStops(t *testing.T) {
+ 			}
+ 		}
+ 	}
++	// owedParent makes the parent read as ahead of its upstream u0 by owed landing tips alone.
++	// It also wires a pull-request mode read that answers mode and modeErr.
++	owedParent := func(fx *finalizeGateFixture, mode string, modeErr error) {
++		fx.fz.deps.ReadParentTips = func(bool) (fabriclayout.ParentTips, error) {
++			return fabriclayout.ParentTips{Local: "p1", Upstream: "u0", Relation: fabriclayout.ParentAhead}, nil
++		}
++		fx.fz.deps.ParentAheadByOwed = func() (bool, error) { return true, nil }
++		fx.fz.deps.PullRequest = PullRequestDeps{
++			RecordPath:     filepath.Join(fx.deps.ScratchDir, "pull-request.json"),
++			RecordLockPath: filepath.Join(fx.deps.ScratchDir, "pull-request.lock"),
++			Mode:           func() (string, error) { return mode, modeErr },
++		}
++	}
+ 	tests := []struct {
+ 		name      string
+ 		configure func(*testing.T, *finalizeGateFixture)
+@@ -269,6 +343,49 @@ func TestFinalize_LockFreePassStops(t *testing.T) {
+ 			},
+ 			wantError: "Finalize: read the tips of parent branch",
+ 		},
++		{
++			name: "a failed read of whether the parent is ahead by owed landings alone",
++			configure: func(_ *testing.T, fx *finalizeGateFixture) {
++				fx.fz.deps.ReadParentTips = func(bool) (fabriclayout.ParentTips, error) {
++					return fabriclayout.ParentTips{Local: "p1", Upstream: "u0", Relation: fabriclayout.ParentAhead}, nil
++				}
++				fx.fz.deps.ParentAheadByOwed = func() (bool, error) { return false, injected }
++			},
++			wantError: `Finalize: read whether parent branch "main" is ahead by owed landings alone`,
++		},
++		{
++			name: "a failed second read, under the lock, of whether the parent is ahead by owed landings alone",
++			configure: func(_ *testing.T, fx *finalizeGateFixture) {
++				owedParent(fx, "", nil)
++				fx.fz.deps.PullRequest = PullRequestDeps{}
++				reads := 0
++				fx.fz.deps.ParentAheadByOwed = func() (bool, error) {
++					reads++
++					if reads > 1 {
++						return false, injected
++					}
++					return true, nil
++				}
++			},
++			wantError: `Finalize: read whether parent branch "main" is ahead by owed landings alone`,
++		},
++		{
++			name: "a landing known to need GitHub merges the upstream tip of an owed-ahead parent",
++			configure: func(_ *testing.T, fx *finalizeGateFixture) {
++				owedParent(fx, beamsetting.PullRequestTrail, nil)
++				fx.fz.deps.ParentPushState = func() (ParentPush, error) { return ParentPush{}, injected }
++			},
++			wantError: `read the push state of parent branch "main"`,
++			wantTips:  []string{"u0"},
++		},
++		{
++			name: "a failed read of whether the landing needs GitHub merges no owed tip",
++			configure: func(_ *testing.T, fx *finalizeGateFixture) {
++				owedParent(fx, "", injected)
++			},
++			wantHalt: []string{LandingStopPrefix, injected.Error()},
++			wantTips: []string{"u0"},
++		},
+ 		{
+ 			name:      "a failed read of the parent's head under the lock",
+ 			configure: func(_ *testing.T, fx *finalizeGateFixture) { fx.merger.headErr = injected },
+diff --git a/internal/landingshed/parentalign.go b/internal/landingshed/parentalign.go
+index 913f62d0e..e28569836 100644
+--- a/internal/landingshed/parentalign.go
++++ b/internal/landingshed/parentalign.go
+@@ -144,7 +144,7 @@ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		return end.result()
+ 	}
+ 
+-	tip, lockReason, err := parentMergeTip(ctx, m.deps, m.guard, parentAlignName, false)
++	tip, lockReason, err := parentMergeTip(ctx, m.deps, m.guard, parentAlignName, false, false)
+ 	if err != nil {
+ 		return fail(ctx, parentAlignName, err).result()
+ 	}
+@@ -226,14 +226,28 @@ func (m *ParentAlign) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 
+ // parentMergeTip picks the parent tip producer merges with no parent lock held across the merge.
+ // It returns that tip, or a Stuck reason of the parent lock wait.
+-// With an upstream and no push skip, it fetches and takes the upstream tip, never the local tip,
+-// so a landing another run made locally and has not pushed is never merged in.
++// With an upstream and no push skip, it fetches and takes the upstream tip,
++// so a commit on the local parent that origin lacks is not merged in, except the owed landing tips below.
+ // With the push skipped (Deps.PushSkipped) or no upstream, it takes the local tip.
+-// It holds the parent lock through guard only for that read, so the merge itself runs unlocked.
++// When takeOwedLocal is set, it also takes the local tip of a parent ahead of its upstream by owed landing tips alone.
++// Deps.ParentAheadByOwed reports that state.
++// A landing lands on top of those tips, so the local tip is the head it compares with.
++// It holds the parent lock through guard only to read the local tip, so the merge itself runs unlocked.
++// Under that lock it asks again about an owed-ahead parent.
++// It takes the upstream tip when a commit that is no owed landing has arrived since.
+ // When front is set, the read waits for the lock at the front of the queue.
+ // A paused lock wait and an unreadable lock record come back as the reason, for a halting Stuck.
+-func parentMergeTip(ctx context.Context, deps Deps, guard parentGuard, producer string, front bool) (string, string, error) {
++func parentMergeTip(ctx context.Context, deps Deps, guard parentGuard, producer string, front, takeOwedLocal bool) (string, string, error) {
+ 	branch := deps.ParentBranch
++	readAheadByOwed := func() (bool, error) {
++		owed, err := deps.ParentAheadByOwed()
++		if err != nil {
++			return false, fmt.Errorf("landingshed: %s: read whether parent branch %q is ahead by owed landings alone: %w", producer, branch, err)
++		}
++		return owed, nil
++	}
++	// owedUpstream is the upstream tip of a parent first read as ahead by owed landing tips alone, else empty.
++	owedUpstream := ""
+ 	if !deps.PushSkipped {
+ 		tips, err := deps.ReadParentTips(true)
+ 		if err != nil {
+@@ -241,7 +255,19 @@ func parentMergeTip(ctx context.Context, deps Deps, guard parentGuard, producer
+ 		}
+ 		switch tips.Relation {
+ 		case fabriclayout.ParentNoUpstream:
+-		case fabriclayout.ParentEqual, fabriclayout.ParentAhead, fabriclayout.ParentBehind, fabriclayout.ParentDiverged:
++		case fabriclayout.ParentAhead:
++			if !takeOwedLocal || deps.ParentAheadByOwed == nil {
++				return tips.Upstream, "", nil
++			}
++			owed, err := readAheadByOwed()
++			if err != nil {
++				return "", "", err
++			}
++			if !owed {
++				return tips.Upstream, "", nil
++			}
++			owedUpstream = tips.Upstream
++		case fabriclayout.ParentEqual, fabriclayout.ParentBehind, fabriclayout.ParentDiverged:
+ 			return tips.Upstream, "", nil
+ 		default:
+ 			return "", "", fmt.Errorf("landingshed: %s: unknown relation %q of parent branch %q to its upstream", producer, tips.Relation, branch)
+@@ -257,6 +283,16 @@ func parentMergeTip(ctx context.Context, deps Deps, guard parentGuard, producer
+ 	if err != nil {
+ 		return "", "", fmt.Errorf("landingshed: %s: read the tips of parent branch %q: %w", producer, branch, err)
+ 	}
++	// The first answer was read with no lock, and a commit may have reached the parent before the tip just read.
++	if owedUpstream != "" {
++		owed, err := readAheadByOwed()
++		if err != nil {
++			return "", "", err
++		}
++		if !owed {
++			return owedUpstream, "", nil
++		}
++	}
+ 	return tips.Local, "", nil
+ }
+ 
+diff --git a/internal/landingshed/parentalign_test.go b/internal/landingshed/parentalign_test.go
+index 3a61fd5b9..5be1a6afb 100644
+--- a/internal/landingshed/parentalign_test.go
++++ b/internal/landingshed/parentalign_test.go
+@@ -320,9 +320,11 @@ func TestMergeIn_MergeTip(t *testing.T) {
+ 		tips        fabriclayout.ParentTips
+ 		pushSkipped bool
+ 		otherHolds  bool
+-		wantTip     string
+-		wantReads   []tipsRead
+-		wantHeld    bool
++		// owedAhead wires the read of owed landings to answer that the parent is ahead by them alone.
++		owedAhead bool
++		wantTip   string
++		wantReads []tipsRead
++		wantHeld  bool
+ 	}{
+ 		{
+ 			name:       "an upstream tip is merged while another run holds the lock, and no lock is taken",
+@@ -335,6 +337,12 @@ func TestMergeIn_MergeTip(t *testing.T) {
+ 			tips:    fabriclayout.ParentTips{Local: "p2", Upstream: "p1", Relation: fabriclayout.ParentAhead},
+ 			wantTip: "p1", wantReads: []tipsRead{{fetch: true}},
+ 		},
++		{
++			name:      "a local parent ahead by owed landing tips alone still merges the upstream tip",
++			tips:      fabriclayout.ParentTips{Local: "p2", Upstream: "p1", Relation: fabriclayout.ParentAhead},
++			owedAhead: true,
++			wantTip:   "p1", wantReads: []tipsRead{{fetch: true}},
++		},
+ 		{
+ 			name:    "a diverged local parent merges the upstream tip",
+ 			tips:    fabriclayout.ParentTips{Local: "p2", Upstream: "u2", Relation: fabriclayout.ParentDiverged},
+@@ -358,6 +366,9 @@ func TestMergeIn_MergeTip(t *testing.T) {
+ 			fx := newMergeInFixture(t)
+ 			fx.tips = tt.tips
+ 			fx.m.deps.PushSkipped = tt.pushSkipped
++			if tt.owedAhead {
++				fx.m.deps.ParentAheadByOwed = func() (bool, error) { return true, nil }
++			}
+ 			if tt.otherHolds {
+ 				if _, err := fx.store.TryAcquire("main", parentlock.Owner{Slug: "other", Pair: "/p/other", RunID: "r9", PID: 111, StartTime: "t1"}); err != nil {
+ 					t.Fatal(err)
