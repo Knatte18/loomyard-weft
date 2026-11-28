@@ -7,5 +7,6 @@
       "title": "No test seam: the fix is stencil wording an LLM reads",
       "digest": "54ef10f0a630cc99ca2e1a6a99f4162be8038bb82857462f4b8607f0df7315bf"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
