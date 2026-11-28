@@ -1,0 +1,3658 @@
+diff --git a/contracts/recipes/arras-recipe.yaml b/contracts/recipes/arras-recipe.yaml
+index 43d0f1d4b..4c7743248 100644
+--- a/contracts/recipes/arras-recipe.yaml
++++ b/contracts/recipes/arras-recipe.yaml
+@@ -12,7 +12,7 @@
+ #
+ # The split perch is the Raddle-Review segment over the raddle proposal:
+ # Raddle-Bouncer, Raddle-Burler-Review and Raddle-Burler-Fix.
+-# Its rows follow the shared-segment ring tapestry-recipe.yaml's header states, with role_prefix split,
++# Its rows follow the shared-segment ring jacquard-recipe.yaml's header states, with role_prefix split,
+ # and their budget is loom.split.max_bounces, or loom.review.max_bounces when it is absent.
+ # Raddle-Bouncer's artifact_paths name the proposal, which records the raddle run's perch mode:
+ # the perch's approval files the proposal in place of the operator's.
+diff --git a/contracts/recipes/jacquard-recipe.yaml b/contracts/recipes/jacquard-recipe.yaml
+new file mode 100644
+index 000000000..b96781bdd
+--- /dev/null
++++ b/contracts/recipes/jacquard-recipe.yaml
+@@ -0,0 +1,554 @@
++# jacquard-recipe.yaml is the recipe that plans, builds and lands a task whose decision record was approved before the run.
++# It holds every row of a loom run after Discussion: the tapestry recipe runs it inline through its Jacquard block row,
++# after its Motif block, and a board task may name it to run alone, a run in which Discussion never runs.
++# It is embedded into the binary by the sibling recipes.go rather than read from disk.
++# The row names below are the durable on-disk identities pinned against internal/loomshed's Name* constants
++# by the coverage guard -- a rename here without a matching constant rename breaks resume for any in-flight task.
++# Its rows read the tapestry.* and loom.* config keys, as they do inside a tapestry run.
++#
++# The recipe declares contract: loom, so Shed checks the loom contract when it builds it.
++# Its Record-Seed row stands for the record row, since the recipe writes no record of its own.
++#
++# The main line is Preflight, Record-Seed, Drift-Baseline, Parts-Write, Parts-Plan-Write, Plan-Write, the Plan-Review ring,
++# Drift-Await, Drift-Expect, Webster, Parent-Align, the Drift-Verify, the Code-Review ring, Drift-Recheck, Describe,
++# PR-Review, Finalize and Friction-Reflect.
++# Record-Seed writes the board entry's stored decision record when the run has no record,
++# and writes nothing over a record the run's Discussion approved.
++# The Drift rows carry entry_gate: drift.enabled, so a hub that leaves regression off records
++# each of them Skipped and spawns or runs nothing for them.
++# Parts-Write and Parts-Plan-Write carry entry_gate: tapestry.plan.split, and Plan-Write carries entry_gate: tapestry.plan.split != true.
++# With the flag off, each of the two parts rows is recorded Skipped and Plan-Write runs as before.
++# With it on, Parts-Plan-Write's Done enters Plan-Write, whose gate skips it to Plan-Bouncer.
++# Bound: each row reads the flag when the run enters it, and a goto bypasses only its target's gate,
++# so a flag flipped mid-branch routes the rest of the run by the new value.
++# The flag is meant to be set before a run starts, in its profile or run_settings.
++#
++# Every gate and validator bounces back to the producer whose artifact it guards, and a gate whose
++# guarded artifact is produced by no row in the list escalates instead.
++# Preflight carries no on_stuck for exactly that reason: nothing in the list
++# produces what it gates, so a human is the only thing that can fix it.
++# Parent-Align and Finalize carry none either, because each fixes its own merge and test failures in its
++# merge fixer, and a failure the fixer cannot fix halts the run for the orch instead of routing to another row.
++#
++# Those are not the whole escalate-to-a-human set, and the difference matters when auditing
++# routing from this header.
++# These PRODUCER rows also carry no on_stuck -- Record-Seed, Drift-Baseline, Parts-Write, Parts-Plan-Write, Plan-Write,
++# Drift-Await, Drift-Expect, Webster, Drift-Verify, Drift-Recheck, Describe and PR-Review -- and their Stuck halts the whole run just
++# as a gate's does.
++# PR-Review carries no entry_gate either: whether it opens a pull request reads the parent's anchor, a
++# board field and the origin, which the row decides in its own call.
++# A gated writer row's exhausted gate halts the run for a human rather than bouncing to a fresh
++# writer, deliberately: after three in-session re-prompts with the findings already in hand,
++# a cold respawn that knows nothing about the complaint is strictly worse than stopping and telling
++# someone.
++#
++# Webster's Stuck halts the run for a human too, with one exception: Webster declares on_reroute:
++# Plan-Burler-Review, and its producer marks a Stuck Reroute only when begin-batch left a new
++# plan-conflict record.
++# Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
++# PR-Review declares no on_reroute: its session fixes the pull request's findings in place, so nothing sends the run back to the ring.
++# Finalize declares no on_reroute: it settles a fixer change in place, through its own fix review
++# and the fixer, and never sends the run back to an earlier row.
++#
++# Friction-Reflect is outside the escalate-to-a-human set: it also carries no on_stuck, but it always
++# returns Done and never Stuck.
++#
++# Parent-Align follows Webster and brings the parent's upstream tip into the task branch with no parent
++# lock, then hands to the Code-Review perch.
++# Finalize is the only row that lands on the parent, under the parent lock.
++#
++# Drift-Verify checks the code after Parent-Align, before the Code-Review perch, against the baseline
++# Drift-Baseline captured on the branch point and the expectation Drift-Expect sealed, and spawns one judge
++# on the expected changes no stored ruling covers; a change nothing expects, and one the judge rules
++# does not match, is a Stuck for the parent.
++# Drift-Recheck follows the perch and runs the same engine over the code its fixes committed; it carries
++# no on_stuck, so its Stuck halts the run as Drift-Verify's does.
++# Drift-Await holds the run until the baseline capture passed or the parent deferred it.
++# Drift-Expect has an agent write the expectation of the task's changes against the counted capture's real cases, and seals it before Webster starts.
++# A run parked before Drift-Expect reaches it, and one already past it has no seal and is checked against an empty expectation.
++# A run parked at a Drift-Verify halt from before this change goes on with lym loom resume, which checks it under the new Drift.
++#
++# Every review segment follows the same shared-segment on_stuck ring: the three Plan rows carry
++# segment: Plan-Review, and the three Code rows carry segment: Code-Review.
++# motif-recipe.yaml's Discussion-Review ring follows the same rule.
++# A review segment's rows also share one role_prefix, which leads their sessions' roles,
++# so ly:<slug>:plan-burler-review names its segment.
++# In each ring the Bouncer's on_stuck names the review row, the review row's on_stuck names the fix
++# row, and the fix row's on_stuck names the Bouncer, and each Burler row's on_done names the same
++# row as its on_stuck -- neither Burler row ever returns Done, and an empty on_done would end the
++# run silently. A Done by any row of a segment ends its bounce episode, so the hand-offs between
++# the two halves are Stucks. internal/shedengine's validator rejects an OnStuck naming a producer
++# in a different Segment, so each ring needs its own non-empty, shared label for its edges to build
++# at all.
++#
++# A review segment's round is two Shed rows, each one fresh session: the review row reviews, and
++# the fix row fixes only a review with findings, or a clean review whose row gates fail. The
++# reviewer's findings carry their own fix, so the fixer orients on the review and its targets alone.
++#
++# The Bouncer, review and fix rows of those segments declare no max_bounces: their budget is the
++# perch's own key (loom.code.max_bounces or tapestry.plan.max_bounces),
++# an absent per-perch budget takes loom.review.max_bounces, and a perch at 0 keeps its route while its
++# Bouncer settles at once, applied by internal/loomrecipe.
++
++version: 1
++entry: Preflight
++# The arbiter's prompt names this row once the plan is approved: a decision that amends the plan routes here.
++amendment_target: Plan-Burler-Review
++# The recipe declares the loom contract, which Shed checks when it builds the recipe; verify_source names where the verify targets come from.
++contract: loom
++verify_source: plan
++terminals:
++  - Friction-Reflect
++
++producers:
++  - name: Preflight
++    engine: Preflight
++    on_done: Record-Seed
++
++  # Record-Seed writes whichever of _lym/discussion's decision record and support log is missing, the record from the
++  # board entry's stored decision record, and commits the pair, so Plan-Write and the reviews read the record as they
++  # read one a Discussion approved. A record that exists is never overwritten. With the record missing and no stored
++  # record its Stuck halts the run with nothing written, and its reason names the way forward.
++  - name: Record-Seed
++    engine: RecordSeed
++    on_done: Drift-Baseline
++
++  # Drift-Baseline records the task's regression scope from drift.yaml, with no agent, and takes the baseline capture
++  # while the plan is written. Its Stuck halts the run, with the ways forward in its reason.
++  - name: Drift-Baseline
++    engine: DriftBaseline
++    entry_gate: drift.enabled
++    on_done: Parts-Write
++    config:
++      subject: decision-record
++
++  # Parts-Write and Parts-Plan-Write write the plan in two steps when tapestry.plan.split is true: Parts-Write splits
++  # the task into parts with contracts, and Parts-Plan-Write runs one writer per part and a chair that joins their cards
++  # into one ordinary plan. With the flag off both rows are recorded Skipped and Plan-Write runs as before; with it on,
++  # Parts-Plan-Write's Done enters Plan-Write, whose gate skips it to Plan-Bouncer. Neither carries on_stuck: a Stuck
++  # halts the run as Plan-Write's does, and the way back is a rerun of the halted row.
++  - name: Parts-Write
++    engine: PartsWrite
++    entry_gate: tapestry.plan.split
++    on_done: Parts-Plan-Write
++    config:
++      gates:
++        - name: parts
++          attempts: 3
++
++  - name: Parts-Plan-Write
++    engine: PartsPlanWrite
++    entry_gate: tapestry.plan.split
++    on_done: Plan-Write
++    config:
++      # gates holds the chair's handoff until the joined plan passes the plan gate; part_gates gives each writer seat
++      # the plan-part gate over its own part directory.
++      gates:
++        - name: plan
++          attempts: 3
++      part_gates:
++        - name: plan-part
++          attempts: 3
++
++  - name: Plan-Write
++    engine: PlanWrite
++    entry_gate: tapestry.plan.split != true
++    on_done: Plan-Bouncer
++    config:
++      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
++      # validator and re-prompts the live session up to its attempts times, so a failure never
++      # reaches the row below.
++      # fixer names the setting holding the model-spec of a cold fixer that clears a failing plan
++      # gate before the writer hears of it; an empty value turns the fixer off.
++      gates:
++        - name: plan
++          attempts: 3
++          fixer: tapestry.plan.gate_fixer
++
++  - name: Plan-Bouncer
++    engine: Bouncer
++    segment: Plan-Review
++    on_stuck: Plan-Burler-Review
++    on_done: Drift-Await
++    config:
++      run_subdir: plan
++      subject: document
++      role_prefix: plan
++      reviewer_fan_setting: tapestry.plan.reviewer_fan
++      auto_accept_setting: tapestry.plan.auto_accept
++      # A plan is 00-overview.md plus a variable number of card files, so no enumeration written
++      # here stays correct across plans -- the single directory entry is what stays right. Both
++      # consumers accept a directory: shedadapters.NewBouncer stats nothing, and burlerengine's own
++      # path check documents that a file and a directory both satisfy it.
++      artifact_paths:
++        - _lym/plan
++      rubric_stencil: loom-rubric-plan-review
++      # commit_seam is required rather than optional here: Plan-Burler-Fix runs fix-scope: overlay and
++      # an overlay round runs no git at all, and nothing else in this segment commits, so without
++      # the seam every approved fix would stay uncommitted in fabric's records working tree.
++      commit_seam: plan
++      # approve_seam: plan is set on this row and no other -- it is the only row in the whole list
++      # that knows the plan passed review. The approved settle writes the approval flag through
++      # this seam immediately before commit_seam fires, so the flag lands inside the commit rather
++      # than as working-tree dirt afterwards. Discussion-Bouncer carries approve_seam: discussion
++      # instead, and Code-Bouncer gets no approve_seam: its artifact carries no approval flag, and an
++      # absent key leaves the seam nil exactly as an omitted commit_seam already does.
++      approve_seam: plan
++      # skip_seam: rework-exempt lets a rework generation whose cards are all exempt pass without a
++      # judge. Its inputs are agent-written -- the overview's first_card and a swept record.json --
++      # so the seam re-classifies the live committed cards: a stale or forged record can at most
++      # skip a generation whose live cards are themselves exempt. It also re-classifies the
++      # working-tree cards, since a Plan-Burler-Fix fix lands only through the commit a skip runs.
++      # Generation 0 never skips, and a seam error falls back to a real review.
++      skip_seam: rework-exempt
++      # carry_over names this row's own segment: the Bouncer files the round's still-open findings
++      # under it in the decision record's Open risks section, and a test pins it equal to segment.
++      carry_over: Plan-Review
++      # No model/effort/version key: the row refuses them as unknown keys, and loom.review.judge and loom.review.seed, with tapestry.plan.judge and tapestry.plan.seed,
++      # are the only source of this row's passes' models.
++
++  - name: Plan-Burler-Review
++    engine: BurlerReview
++    segment: Plan-Review
++    on_stuck: Plan-Burler-Fix
++    # BurlerReviewProducer never returns Done, so this edge is unreachable -- but an empty on_done
++    # is load-bearing and ends the whole run silently, which is a worse failure than a redundant
++    # edge, so it is set explicitly to the row it can never actually reach.
++    on_done: Plan-Burler-Fix
++    config:
++      # The same run_subdir value as Plan-Bouncer is what makes the three rows write into one
++      # shared run directory.
++      run_subdir: plan
++      role_prefix: plan
++      reviewer_fan_setting: tapestry.plan.reviewer_fan
++      fixer_fan_setting: tapestry.plan.fixer_fan
++      profile:
++        target:
++          paths:
++            - _lym/plan
++        fasit:
++          paths:
++            - _lym/discussion/decision-record.md
++          instructions: >
++            The decision record named above is the answer key: the plan's job is to implement the
++            decisions and constraints it settles. In a rework generation the live generation's
++            findings.md joins it: every finding is covered by some card, and every card's scope is
++            licensed by the decision record or a finding. The live generation's round is, among
++            _lym/loom/rework/round-<N>/ directories, the highest N whose record.json carries a
++            class and whose first_card equals the first_card in _lym/plan/00-overview.md's
++            frontmatter (absent means 1). With no such round (generation 0, or a fresh Plan-Write
++            plan after an operator goto Plan-Write), the decision record alone is the answer key.
++            The round's prior-generation/ archive is context, never the subject of a finding. The
++            format authority is
++            contracts/specs/loom-plan-spec.md, and the mechanical checks over that format are
++            already enforced by this round's own gate over this round's own output, so re-deriving
++            them here is duplicated work. This round may never write the approved: key in the
++            plan's overview file: a fixer that set the flag would be approving the very artifact
++            the review round is judging, and this row already has write access to the overview
++            because it runs fix-scope: overlay with the plan directory in its target paths. When
++            .lym/implementer/plan-conflict.md exists, the implementer's begin refused the approved plan
++            against the current tree: each blocking finding it lists is a finding of this round,
++            fixed by editing only cards Webster's auto-rebaseline accepts: a pending card, or a
++            card of a failed or in-flight batch. When _lym/loom/amendment.yaml exists, each
++            decision-record entry it names by title is a finding for each card that entry names
++            while the entry's change is uncarried for that card, or, when the entry names no
++            card, a finding until some card carries it. An entry's change is carried for a named
++            card when that card carries it, or, for a named card whose batch is done, when a card
++            inserted with lym loom insert-card after the last begun batch carries it. A decision
++            names each card by slug as well as number, because insert-card renumbers every later
++            card, so match cards by slug. Such a finding is fixed by editing only cards Webster's
++            auto-rebaseline accepts, a pending card or a card of a failed or in-flight batch, or
++            by inserting a card with lym loom insert-card after the last begun batch.
++        rubric_stencil: loom-rubric-plan-review
++        # fix-scope: overlay, matching motif-recipe.yaml's Discussion-Burler-Review row. The plan directory is fabric
++        # records content reached through the junction, and the Fabric Git Invariant reserves committing that
++        # class of file to the loop owner, never an agent.
++        fix-scope: overlay
++        # tool-use is required: the round walks the plan directory's card files (the set is
++        # variable and only the Card Index names it), resolves symbol-shaped target entries against
++        # the repo, and reads the decision record.
++        tool-use: true
++      # No model/effort key: model choice lives in tapestry.plan.reviewer_model, tapestry.plan.fixer_model
++      # and their loom.review fallbacks only.
++      # No timeout_s key, for the same Env fallback reason as Plan-Bouncer.
++
++  - name: Plan-Burler-Fix
++    engine: BurlerFix
++    segment: Plan-Review
++    on_stuck: Plan-Bouncer
++    # BurlerFixProducer never returns Done, so this edge is unreachable -- but an empty on_done is
++    # load-bearing and ends the whole run silently, which is a worse failure than a redundant edge,
++    # so it is set explicitly to the row it can never actually reach.
++    on_done: Plan-Bouncer
++    config:
++      run_subdir: plan
++      role_prefix: plan
++      fixer_fan_setting: tapestry.plan.fixer_fan
++      review_row: Plan-Burler-Review
++      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
++      # validator and re-prompts the live session up to its attempts times, so a failure never
++      # reaches the row below.
++      gates:
++        - name: plan
++          attempts: 3
++      profile:
++        target:
++          paths:
++            - _lym/plan
++        # fix-scope: overlay, for the reason the review row gives.
++        fix-scope: overlay
++
++  # Drift-Await is mechanical and spawns nothing: it holds the run until the baseline capture passed
++  # on the branch point, or the parent deferred it.
++  - name: Drift-Await
++    engine: DriftAwait
++    entry_gate: drift.enabled
++    on_done: Drift-Expect
++
++  # Drift-Expect has an agent write expected.yaml: the changes the task is expected to make to the captured values,
++  # written against the counted capture's real cases and identities. Go seals the file when the agent's gate passes,
++  # before Webster starts. Its Stuck halts the run, with the ways forward in its reason.
++  - name: Drift-Expect
++    engine: DriftExpect
++    entry_gate: drift.enabled
++    on_done: Webster
++    config:
++      subject: decision-record
++      gates:
++        - name: expectation
++          attempts: 3
++
++  # Webster is the implementer row: its Implementer engine builds the row with the implementer
++  # tapestry.implementer names, and batching the plan is that implementer's own business. Every
++  # implementer builds this row with these edges, as contracts/specs/implementer-spec.md pins.
++  - name: Webster
++    engine: Implementer
++    on_done: Parent-Align
++    on_reroute: Plan-Burler-Review
++    config:
++      implementer_setting: tapestry.implementer
++      # gates holds Merriam's run-level gate entries beside the plan-level verify gate Webster adds itself.
++      # The drift entry runs the drift check at Merriam's turn ends and fails on a change nothing expects
++      # or a current capture that did not pass; Drift-Verify repeats the check as the guarantee.
++      gates:
++        - name: drift
++          attempts: 3
++
++  # Parent-Align brings the parent's upstream tip into the task branch with no parent lock and runs the
++  # merge fixer on a conflict or a failing merged tree, so the Code-Review perch below reviews code
++  # that already carries the parent. A failure the fixer cannot fix halts the run for the orch.
++  - name: Parent-Align
++    engine: ParentAlign
++    on_done: Drift-Verify
++
++  # Drift-Verify checks the code after Parent-Align against the sealed expectation by code and spawns one
++  # judge on the expected changes whose exact old and new value no stored ruling covers. The judge edits
++  # no code, expectation or record; a change nothing expects is a Stuck whose way forward is the parent's
++  # amendment or a fix through Webster, whose run-level drift entry meets the cells.
++  - name: Drift-Verify
++    engine: DriftVerify
++    entry_gate: drift.enabled
++    on_done: Code-Bouncer
++    config:
++      subject: decision-record
++      gates:
++        - name: judgement
++          attempts: 3
++
++  - name: Code-Bouncer
++    engine: Bouncer
++    segment: Code-Review
++    on_stuck: Code-Burler-Review
++    on_done: Drift-Recheck
++    config:
++      run_subdir: code
++      subject: code
++      role_prefix: code
++      reviewer_fan_setting: loom.code.reviewer_fan
++      auto_accept_setting: loom.code.auto_accept
++      # The subject under review is the committed diff, which artifact_paths cannot name at all:
++      # the key is required and non-empty, every entry resolves to an absolute path under
++      # Env.AnchorPath, and the generic bouncer-template-judge.md renders the list as the
++      # artifacts under review with "read each one". Whatever value is chosen is a workaround, so
++      # the question is only which one gives the judge the most useful reading -- the decision
++      # record and the plan directory are the answer key the diff is measured against, and
++      # Plan-Bouncer already proves a bare directory entry works here (NewBouncer stats nothing).
++      # The rubric is where the diff itself is named as the subject, which reaches the judge and the
++      # fixer round alike because both rows read it.
++      artifact_paths:
++        - _lym/discussion/decision-record.md
++        - _lym/plan
++      rubric_stencil: loom-rubric-code-review
++      # No commit_seam key, deliberately unlike both Discussion-Bouncer and Plan-Bouncer:
++      # Code-Burler-Fix runs fix-scope: source and commits each fix itself, so there is no artifact
++      # left for a loop-owner seam to commit. bouncerEntry documents the resulting nil Commit as a
++      # legitimate configuration and never an error. The segment's own round artifacts are
++      # uncommitted by construction -- Env.RunRoot lands under the ephemeral .lym tree, not the
++      # durable _lym one.
++      # carry_over names this row's own segment: the Bouncer files the round's still-open findings
++      # under it in the decision record's Open risks section, and a test pins it equal to segment.
++      carry_over: Code-Review
++      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
++      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
++      # given none and posts no notice of its own.
++      escalate_decisions: true
++      # scope_closed says the segment runs after the task's scope closed at its first round, so a
++      # decision escalation is answered by ruling findings in scope or filing a note, never by a
++      # decision-record entry, which "lym loom decision add" refuses here.
++      scope_closed: true
++      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
++      # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
++      # reported fixed is first checked against its fix commit, and closed when the check confirms it.
++      blocking_escalates: true
++      # No model/effort/version key: the row refuses them as unknown keys, and loom.review.judge,
++      # loom.review.seed, loom.code.judge and loom.code.seed are the only source of this row's passes' models.
++
++  - name: Code-Burler-Review
++    engine: BurlerReview
++    segment: Code-Review
++    on_stuck: Code-Burler-Fix
++    # BurlerReviewProducer never returns Done, so this edge is unreachable -- but an empty on_done
++    # is load-bearing and ends the whole run silently, which is a worse failure than a redundant
++    # edge, so it is set explicitly to the row it can never actually reach.
++    on_done: Code-Burler-Fix
++    config:
++      # The same run_subdir value as Code-Bouncer is what makes the three rows write into one
++      # shared run directory.
++      run_subdir: code
++      role_prefix: code
++      reviewer_fan_setting: loom.code.reviewer_fan
++      fixer_fan_setting: loom.code.fixer_fan
++      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
++      # read whole, so it never prints or reads the whole diff at once.
++      stage_diff: true
++      profile:
++        target:
++          # No paths key, deliberately: burlerengine's own Profile.validate resolves and stats
++          # every Target.Paths entry, and a diff has no such file on disk. validate accepts a
++          # FileSet carrying Instructions and no Paths, which is exactly the escape this row
++          # needs.
++          instructions: >
++            The subject under review is the committed diff. The rubric supplied in this prompt is
++            the single definition of the review range: read its "Determining the review range"
++            section and derive the range exactly as written there. This instruction deliberately
++            does not restate the derivation.
++        fasit:
++          paths:
++            - _lym/discussion/decision-record.md
++            - _lym/plan
++          instructions: >
++            The decision record and the plan directory named above are the answer key: the diff's
++            job is to make the change the decision record settles and to implement the cards the
++            plan carries, and the Card model those cards implement is described in
++            contracts/specs/loom-plan-spec.md. The mechanical checks over the plan's own format
++            are already enforced by Plan-Write's and Plan-Burler-Fix's own gates over each round's own
++            output, so re-deriving them in this round is duplicated work.
++        rubric_stencil: loom-rubric-code-review
++        # fix-scope: source, the only row in the recipe still carrying this value now that
++        # Discussion-Burler-Fix and Plan-Burler-Fix both run overlay. The target is the repo's own source
++        # files, which the Fabric Git Invariant names as the one explicitly permitted agent commit
++        # (commit-per-fix, never a push) -- the one legitimate reason a Burler row still runs source
++        # here. An overlay round runs no git at all and restricts writes to Target.Paths, which this
++        # profile deliberately leaves empty -- a fixer that cannot write source cannot fix a diff.
++        fix-scope: source
++        # tool-use is required: the round reads _lym/shed/<slug>/status.json and runs read-only git to
++        # obtain the diff, which is its entire subject.
++        tool-use: true
++        # The round reviews code, so its seats load the hub's language skills after their own.
++        language-skills: true
++        # No cluster-fan key: the row's reviewer_fan_setting and fixer_fan_setting keys name
++        # loom.code.reviewer_fan and loom.code.fixer_fan, whose forks reach the diff through read-only git.
++      # No model/effort key: model choice lives in loom.code.reviewer_model, loom.code.fixer_model
++      # and their loom.review fallbacks only.
++      # No timeout_s key, for the same Env fallback reason as Code-Bouncer.
++
++  - name: Code-Burler-Fix
++    engine: BurlerFix
++    segment: Code-Review
++    on_stuck: Code-Bouncer
++    # BurlerFixProducer never returns Done, so this edge is unreachable -- but an empty on_done is
++    # load-bearing and ends the whole run silently, which is a worse failure than a redundant edge,
++    # so it is set explicitly to the row it can never actually reach.
++    on_done: Code-Bouncer
++    config:
++      run_subdir: code
++      role_prefix: code
++      fixer_fan_setting: loom.code.fixer_fan
++      review_row: Code-Burler-Review
++      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
++      # findings to the parent.
++      decisions_escalated: true
++      # The verify gate runs on the committed tree after each round and re-prompts the round
++      # session with the findings until it passes. It first runs the headroom lint from the merge
++      # base with the parent branch, then lints the comments the round added from its own latest
++      # pass, or from the merge base on a first round, then runs the hub's `code-burler-fix` key,
++      # whose scope the gate derives itself. The row runs its own key and shares no pass with
++      # Webster's end gate; gate_key names another key of the hub's gate.yaml. A tree the
++      # record already names passes without running, so a round that changed no code costs
++      # nothing. The clean gate goes first, so a fixer that left an uncommitted or untracked file
++      # commits or deletes it before its session ends.
++      gates:
++        - name: clean
++          attempts: 3
++        - name: verify
++          attempts: 3
++      profile:
++        # No target key, deliberately: the subject is the committed diff, which names no file, so
++        # the fixer finds its files from the review's findings and the gate's findings alone.
++        # fix-scope: source, for the reason the review row gives.
++        fix-scope: source
++        # The round fixes code, so its seat loads the hub's language skills after its own.
++        language-skills: true
++
++  # Drift-Recheck runs the Drift-Verify engine again once the perch approved, over the code its fixes
++  # committed since the last passing check. It carries no on_stuck: its Stuck goes through the stop
++  # chain to the parent, with the ways forward in its reason.
++  - name: Drift-Recheck
++    engine: DriftVerify
++    entry_gate: drift.enabled
++    on_done: Describe
++    config:
++      subject: decision-record
++      gates:
++        - name: judgement
++          attempts: 3
++
++  - name: Describe
++    engine: Describe
++    on_done: PR-Review
++    config:
++      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
++      # validator and re-prompts the live session up to its attempts times, so a failure never
++      # reaches the row below.
++      gates:
++        - name: description
++          attempts: 3
++
++  # PR-Review lands the task through a GitHub pull request when the pull-request resolver says so.
++  # It carries no entry_gate and no on_stuck, because its Stuck halts the run.
++  - name: PR-Review
++    engine: PRReview
++    on_done: Finalize
++
++  # Finalize merges the parent into the task branch and runs the landing gate and the merge fixer with no parent lock held,
++  # then takes the lock, lands on the parent only while its head is still the tip it gated,
++  # and releases the lock on every way out.
++  # After landing.finalize_lost_races lost races, and over a parent already holding the work,
++  # it merges and gates under the lock.
++  # An over-cap fixer change goes to Finalize's own fix review, whose findings the fixer fixes in place
++  # until the review approves or its rounds run out and Finalize halts for the operator; Finalize never
++  # reroutes, and a conflict or a large merge lands through the gate.
++  - name: Finalize
++    engine: Finalize
++    # Hands off to the reflection row rather than ending the run.
++    on_done: Friction-Reflect
++
++  # Friction-Reflect runs the Tier 2 friction reflection under the run lock and is the recipe's
++  # sole terminal, so the engine persists state: done only after the reflection returns (batten's
++  # Run-Shed row reads that done as "finished" and tears the worktree down, deleting the friction
++  # notes). It always returns Done, and reflects under step as under run.
++  - name: Friction-Reflect
++    engine: FrictionReflect
++    # on_done is explicitly empty: the empty value is load-bearing and is what ends the whole run
++    # quietly, per shedengine.ProducerDef.OnDone's own field doc.
++    on_done: ""
+diff --git a/contracts/recipes/motif-recipe.yaml b/contracts/recipes/motif-recipe.yaml
+index 9e617007a..4196bf94a 100644
+--- a/contracts/recipes/motif-recipe.yaml
++++ b/contracts/recipes/motif-recipe.yaml
+@@ -1,6 +1,7 @@
+ # motif-recipe.yaml is the recipe that makes a sketch, the decision record, from a task: Discussion-Write and the Discussion-Review ring.
+-# It is the one definition of those rows: the tapestry recipe runs it inline through its Motif block row, and a board task may name it to run alone.
+-# Discussion-Write carries no on_stuck, so its Stuck halts the run, for the reason tapestry-recipe.yaml's header gives for its writer rows.
++# It is the one definition of those rows: the tapestry recipe runs it inline through its Motif block row,
++# ahead of its Jacquard block, which runs jacquard-recipe.yaml; a board task may name it to run alone.
++# Discussion-Write carries no on_stuck, so its Stuck halts the run, for the reason jacquard-recipe.yaml's header gives for its writer rows.
+ # The ring follows the shared-segment rule that header states: the three rows carry segment: Discussion-Review and role_prefix: discussion,
+ # and their budget is loom.discussion.max_bounces, or loom.review.max_bounces when it is absent.
+ #
+diff --git a/contracts/recipes/recipes.go b/contracts/recipes/recipes.go
+index b0d49c56a..4f8975418 100644
+--- a/contracts/recipes/recipes.go
++++ b/contracts/recipes/recipes.go
+@@ -9,10 +9,18 @@ import (
+ )
+ 
+ // TapestryRecipe is loom's shipped-default producer graph, in internal/shedbuild's recipe format.
++// Its block rows run the motif recipe and then the jacquard recipe inline.
+ //
+ //go:embed tapestry-recipe.yaml
+ var TapestryRecipe []byte
+ 
++// JacquardRecipe is the jacquard recipe's producer graph, in internal/shedbuild's recipe format.
++// Its rows plan, build and land a task from a decision record approved before the run.
++// A recipe may run it inline as a block, and a task may run it alone.
++//
++//go:embed jacquard-recipe.yaml
++var JacquardRecipe []byte
++
+ // DarnRecipe is the darn task recipe's producer graph, in internal/shedbuild's recipe format.
+ //
+ //go:embed darn-recipe.yaml
+diff --git a/contracts/recipes/tapestry-recipe.yaml b/contracts/recipes/tapestry-recipe.yaml
+index e15f33978..076530676 100644
+--- a/contracts/recipes/tapestry-recipe.yaml
++++ b/contracts/recipes/tapestry-recipe.yaml
+@@ -1,91 +1,19 @@
+-# tapestry-recipe.yaml is loom's producer graph. It is embedded into the binary by the sibling
+-# recipes.go rather than read from disk. The row names below are the durable on-disk
+-# identities pinned against internal/loomshed's Name* constants by the coverage guard -- a rename
+-# here without a matching constant rename breaks resume for any in-flight task.
++# tapestry-recipe.yaml is loom's producer graph for a task the run discusses, plans and builds.
++# It is embedded into the binary by the sibling recipes.go rather than read from disk.
+ #
+-# The recipe declares contract: loom, so Shed checks the loom contract when it builds it.
+-#
+-# The main line is Preflight, the Motif block, which runs motif-recipe.yaml's Discussion-Write and Discussion-Review ring inline,
+-# Drift-Baseline, Parts-Write, Parts-Plan-Write, Plan-Write, the Plan-Review ring, Drift-Await, Drift-Expect, Webster, Parent-Align, the
+-# Drift-Verify, the Code-Review ring, Drift-Recheck, Describe, PR-Review, Finalize and Friction-Reflect.
+-# The Drift rows carry entry_gate: drift.enabled, so a hub that leaves regression off records
+-# each of them Skipped and spawns or runs nothing for them.
+-# Parts-Write and Parts-Plan-Write carry entry_gate: tapestry.plan.split, and Plan-Write carries entry_gate: tapestry.plan.split != true.
+-# With the flag off, each of the two parts rows is recorded Skipped and Plan-Write runs as before.
+-# With it on, Parts-Plan-Write's Done enters Plan-Write, whose gate skips it to Plan-Bouncer.
+-# Bound: each row reads the flag when the run enters it, and a goto bypasses only its target's gate,
+-# so a flag flipped mid-branch routes the rest of the run by the new value.
+-# The flag is meant to be set before a run starts, in its profile or run_settings.
+-#
+-# Every gate and validator bounces back to the producer whose artifact it guards, and a gate whose
+-# guarded artifact is produced by no row in the list escalates instead.
+-# Preflight carries no on_stuck for exactly that reason: nothing in the list
+-# produces what it gates, so a human is the only thing that can fix it.
+-# Parent-Align and Finalize carry none either, because each fixes its own merge and test failures in its
+-# merge fixer, and a failure the fixer cannot fix halts the run for the orch instead of routing to another row.
+-#
+-# Those are not the whole escalate-to-a-human set, and the difference matters when auditing
+-# routing from this header.
+-# These PRODUCER rows also carry no on_stuck -- the Motif block's Discussion-Write, Drift-Baseline, Parts-Write, Parts-Plan-Write, Plan-Write,
+-# Drift-Await, Drift-Expect, Webster, Drift-Verify, Drift-Recheck, Describe and PR-Review -- and their Stuck halts the whole run just
+-# as a gate's does.
+-# PR-Review carries no entry_gate either: whether it opens a pull request reads the parent's anchor, a
+-# board field and the origin, which the row decides in its own call.
+-# A gated writer row's exhausted gate halts the run for a human rather than bouncing to a fresh
+-# writer, deliberately: after three in-session re-prompts with the findings already in hand,
+-# a cold respawn that knows nothing about the complaint is strictly worse than stopping and telling
+-# someone.
+-#
+-# Webster's Stuck halts the run for a human too, with one exception: Webster declares on_reroute:
+-# Plan-Burler-Review, and its producer marks a Stuck Reroute only when begin-batch left a new
+-# plan-conflict record.
+-# Shed's reroute cap bounds that edge, and a reroute spends no bounce budget.
+-# PR-Review declares no on_reroute: its session fixes the pull request's findings in place, so nothing sends the run back to the ring.
+-# Finalize declares no on_reroute: it settles a fixer change in place, through its own fix review
+-# and the fixer, and never sends the run back to an earlier row.
+-#
+-# Friction-Reflect is outside the escalate-to-a-human set: it also carries no on_stuck, but it always
+-# returns Done and never Stuck.
+-#
+-# Parent-Align follows Webster and brings the parent's upstream tip into the task branch with no parent
+-# lock, then hands to the Code-Review perch.
+-# Finalize is the only row that lands on the parent, under the parent lock.
+-#
+-# Drift-Verify checks the code after Parent-Align, before the Code-Review perch, against the baseline
+-# Drift-Baseline captured on the branch point and the expectation Drift-Expect sealed, and spawns one judge
+-# on the expected changes no stored ruling covers; a change nothing expects, and one the judge rules
+-# does not match, is a Stuck for the parent.
+-# Drift-Recheck follows the perch and runs the same engine over the code its fixes committed; it carries
+-# no on_stuck, so its Stuck halts the run as Drift-Verify's does.
+-# Drift-Await holds the run until the baseline capture passed or the parent deferred it.
+-# Drift-Expect has an agent write the expectation of the task's changes against the counted capture's real cases, and seals it before Webster starts.
+-# A run parked before Drift-Expect reaches it, and one already past it has no seal and is checked against an empty expectation.
+-# A run parked at a Drift-Verify halt from before this change goes on with lym loom resume, which checks it under the new Drift.
++# It is two block rows and no row of its own:
++# the Motif block runs motif-recipe.yaml's Discussion-Write and Discussion-Review ring inline,
++# and the Jacquard block runs jacquard-recipe.yaml's rows inline, from Preflight to Friction-Reflect.
++# Each row is defined once, in the recipe its block names, so tapestry's rows are motif's followed by jacquard's.
++# The rows keep their names inside a block, so a run resumes by row name.
++# The header of each of those recipes states the routing of its rows.
+ #
+-# Every review segment follows the same shared-segment on_stuck ring: the Motif block's Discussion-Bouncer,
+-# Discussion-Burler-Review and Discussion-Burler-Fix carry segment: Discussion-Review, the three
+-# Plan rows carry segment: Plan-Review, and the three Code rows carry segment: Code-Review.
+-# A review segment's rows also share one role_prefix, which leads their sessions' roles,
+-# so ly:<slug>:plan-burler-review names its segment.
+-# In each ring the Bouncer's on_stuck names the review row, the review row's on_stuck names the fix
+-# row, and the fix row's on_stuck names the Bouncer, and each Burler row's on_done names the same
+-# row as its on_stuck -- neither Burler row ever returns Done, and an empty on_done would end the
+-# run silently. A Done by any row of a segment ends its bounce episode, so the hand-offs between
+-# the two halves are Stucks. internal/shedengine's validator rejects an OnStuck naming a producer
+-# in a different Segment, so each ring needs its own non-empty, shared label for its edges to build
+-# at all.
+-#
+-# A review segment's round is two Shed rows, each one fresh session: the review row reviews, and
+-# the fix row fixes only a review with findings, or a clean review whose row gates fail. The
+-# reviewer's findings carry their own fix, so the fixer orients on the review and its targets alone.
+-#
+-# The Bouncer, review and fix rows of those segments declare no max_bounces: their budget is the
+-# perch's own key (loom.discussion.max_bounces, loom.code.max_bounces or tapestry.plan.max_bounces),
+-# an absent per-perch budget takes loom.review.max_bounces, and a perch at 0 keeps its route while its
+-# Bouncer settles at once, applied by internal/loomrecipe.
++# The recipe declares contract: loom, so Shed checks the loom contract when it builds it.
++# Its top-level keys are the run's, since an expansion reads none of a block recipe's keys;
++# all but entry equal jacquard-recipe.yaml's.
+ 
+ version: 1
+-entry: Preflight
++entry: Motif
+ # The arbiter's prompt names this row once the plan is approved: a decision that amends the plan routes here.
+ amendment_target: Plan-Burler-Review
+ # The recipe declares the loom contract, which Shed checks when it builds the recipe; verify_source names where the verify targets come from.
+@@ -95,455 +23,18 @@ terminals:
+   - Friction-Reflect
+ 
+ producers:
+-  - name: Preflight
+-    engine: Preflight
+-    on_done: Motif
+-
+-  # Motif runs the motif recipe inline: Discussion-Write and the Discussion-Review ring, defined once in motif-recipe.yaml.
++  # Motif runs the motif recipe inline: Discussion-Write and the Discussion-Review ring.
+   # Its block_gate undiscussed enters the block unless the run's board entry is flagged discussed.
+   # For a discussed entry the gate writes the entry's stored decision record into _lym/discussion, commits it,
+-  # and passes over the block to Drift-Baseline, so Plan-Write and the reviews read the record as they read one this run approved.
++  # and passes over the block to Jacquard, whose Record-Seed row then finds the record and writes nothing.
+   - name: Motif
+     block: motif
+     block_gate: undiscussed
+-    on_done: Drift-Baseline
+-
+-  # Drift-Baseline records the task's regression scope from drift.yaml, with no agent, and takes the baseline capture
+-  # while the plan is written. Its Stuck halts the run, with the ways forward in its reason.
+-  - name: Drift-Baseline
+-    engine: DriftBaseline
+-    entry_gate: drift.enabled
+-    on_done: Parts-Write
+-    config:
+-      subject: decision-record
+-
+-  # Parts-Write and Parts-Plan-Write write the plan in two steps when tapestry.plan.split is true: Parts-Write splits
+-  # the task into parts with contracts, and Parts-Plan-Write runs one writer per part and a chair that joins their cards
+-  # into one ordinary plan. With the flag off both rows are recorded Skipped and Plan-Write runs as before; with it on,
+-  # Parts-Plan-Write's Done enters Plan-Write, whose gate skips it to Plan-Bouncer. Neither carries on_stuck: a Stuck
+-  # halts the run as Plan-Write's does, and the way back is a rerun of the halted row.
+-  - name: Parts-Write
+-    engine: PartsWrite
+-    entry_gate: tapestry.plan.split
+-    on_done: Parts-Plan-Write
+-    config:
+-      gates:
+-        - name: parts
+-          attempts: 3
+-
+-  - name: Parts-Plan-Write
+-    engine: PartsPlanWrite
+-    entry_gate: tapestry.plan.split
+-    on_done: Plan-Write
+-    config:
+-      # gates holds the chair's handoff until the joined plan passes the plan gate; part_gates gives each writer seat
+-      # the plan-part gate over its own part directory.
+-      gates:
+-        - name: plan
+-          attempts: 3
+-      part_gates:
+-        - name: plan-part
+-          attempts: 3
+-
+-  - name: Plan-Write
+-    engine: PlanWrite
+-    entry_gate: tapestry.plan.split != true
+-    on_done: Plan-Bouncer
+-    config:
+-      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
+-      # validator and re-prompts the live session up to its attempts times, so a failure never
+-      # reaches the row below.
+-      # fixer names the setting holding the model-spec of a cold fixer that clears a failing plan
+-      # gate before the writer hears of it; an empty value turns the fixer off.
+-      gates:
+-        - name: plan
+-          attempts: 3
+-          fixer: tapestry.plan.gate_fixer
+-
+-  - name: Plan-Bouncer
+-    engine: Bouncer
+-    segment: Plan-Review
+-    on_stuck: Plan-Burler-Review
+-    on_done: Drift-Await
+-    config:
+-      run_subdir: plan
+-      subject: document
+-      role_prefix: plan
+-      reviewer_fan_setting: tapestry.plan.reviewer_fan
+-      auto_accept_setting: tapestry.plan.auto_accept
+-      # A plan is 00-overview.md plus a variable number of card files, so no enumeration written
+-      # here stays correct across plans -- the single directory entry is what stays right. Both
+-      # consumers accept a directory: shedadapters.NewBouncer stats nothing, and burlerengine's own
+-      # path check documents that a file and a directory both satisfy it.
+-      artifact_paths:
+-        - _lym/plan
+-      rubric_stencil: loom-rubric-plan-review
+-      # commit_seam is required rather than optional here: Plan-Burler-Fix runs fix-scope: overlay and
+-      # an overlay round runs no git at all, and nothing else in this segment commits, so without
+-      # the seam every approved fix would stay uncommitted in fabric's records working tree.
+-      commit_seam: plan
+-      # approve_seam: plan is set on this row and no other -- it is the only row in the whole list
+-      # that knows the plan passed review. The approved settle writes the approval flag through
+-      # this seam immediately before commit_seam fires, so the flag lands inside the commit rather
+-      # than as working-tree dirt afterwards. Discussion-Bouncer carries approve_seam: discussion
+-      # instead, and Code-Bouncer gets no approve_seam: its artifact carries no approval flag, and an
+-      # absent key leaves the seam nil exactly as an omitted commit_seam already does.
+-      approve_seam: plan
+-      # skip_seam: rework-exempt lets a rework generation whose cards are all exempt pass without a
+-      # judge. Its inputs are agent-written -- the overview's first_card and a swept record.json --
+-      # so the seam re-classifies the live committed cards: a stale or forged record can at most
+-      # skip a generation whose live cards are themselves exempt. It also re-classifies the
+-      # working-tree cards, since a Plan-Burler-Fix fix lands only through the commit a skip runs.
+-      # Generation 0 never skips, and a seam error falls back to a real review.
+-      skip_seam: rework-exempt
+-      # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+-      # under it in the decision record's Open risks section, and a test pins it equal to segment.
+-      carry_over: Plan-Review
+-      # No model/effort/version key: the row refuses them as unknown keys, and loom.review.judge and loom.review.seed, with tapestry.plan.judge and tapestry.plan.seed,
+-      # are the only source of this row's passes' models.
+-
+-  - name: Plan-Burler-Review
+-    engine: BurlerReview
+-    segment: Plan-Review
+-    on_stuck: Plan-Burler-Fix
+-    # BurlerReviewProducer never returns Done, so this edge is unreachable -- but an empty on_done
+-    # is load-bearing and ends the whole run silently, which is a worse failure than a redundant
+-    # edge, so it is set explicitly to the row it can never actually reach.
+-    on_done: Plan-Burler-Fix
+-    config:
+-      # The same run_subdir value as Plan-Bouncer is what makes the three rows write into one
+-      # shared run directory.
+-      run_subdir: plan
+-      role_prefix: plan
+-      reviewer_fan_setting: tapestry.plan.reviewer_fan
+-      fixer_fan_setting: tapestry.plan.fixer_fan
+-      profile:
+-        target:
+-          paths:
+-            - _lym/plan
+-        fasit:
+-          paths:
+-            - _lym/discussion/decision-record.md
+-          instructions: >
+-            The decision record named above is the answer key: the plan's job is to implement the
+-            decisions and constraints it settles. In a rework generation the live generation's
+-            findings.md joins it: every finding is covered by some card, and every card's scope is
+-            licensed by the decision record or a finding. The live generation's round is, among
+-            _lym/loom/rework/round-<N>/ directories, the highest N whose record.json carries a
+-            class and whose first_card equals the first_card in _lym/plan/00-overview.md's
+-            frontmatter (absent means 1). With no such round (generation 0, or a fresh Plan-Write
+-            plan after an operator goto Plan-Write), the decision record alone is the answer key.
+-            The round's prior-generation/ archive is context, never the subject of a finding. The
+-            format authority is
+-            contracts/specs/loom-plan-spec.md, and the mechanical checks over that format are
+-            already enforced by this round's own gate over this round's own output, so re-deriving
+-            them here is duplicated work. This round may never write the approved: key in the
+-            plan's overview file: a fixer that set the flag would be approving the very artifact
+-            the review round is judging, and this row already has write access to the overview
+-            because it runs fix-scope: overlay with the plan directory in its target paths. When
+-            .lym/implementer/plan-conflict.md exists, the implementer's begin refused the approved plan
+-            against the current tree: each blocking finding it lists is a finding of this round,
+-            fixed by editing only cards Webster's auto-rebaseline accepts: a pending card, or a
+-            card of a failed or in-flight batch. When _lym/loom/amendment.yaml exists, each
+-            decision-record entry it names by title is a finding for each card that entry names
+-            while the entry's change is uncarried for that card, or, when the entry names no
+-            card, a finding until some card carries it. An entry's change is carried for a named
+-            card when that card carries it, or, for a named card whose batch is done, when a card
+-            inserted with lym loom insert-card after the last begun batch carries it. A decision
+-            names each card by slug as well as number, because insert-card renumbers every later
+-            card, so match cards by slug. Such a finding is fixed by editing only cards Webster's
+-            auto-rebaseline accepts, a pending card or a card of a failed or in-flight batch, or
+-            by inserting a card with lym loom insert-card after the last begun batch.
+-        rubric_stencil: loom-rubric-plan-review
+-        # fix-scope: overlay, matching the Discussion-Burler-Review row above. The plan directory is fabric
+-        # records content reached through the junction, and the Fabric Git Invariant reserves committing that
+-        # class of file to the loop owner, never an agent.
+-        fix-scope: overlay
+-        # tool-use is required: the round walks the plan directory's card files (the set is
+-        # variable and only the Card Index names it), resolves symbol-shaped target entries against
+-        # the repo, and reads the decision record.
+-        tool-use: true
+-      # No model/effort key: model choice lives in tapestry.plan.reviewer_model, tapestry.plan.fixer_model
+-      # and their loom.review fallbacks only.
+-      # No timeout_s key, for the same Env fallback reason as Plan-Bouncer.
+-
+-  - name: Plan-Burler-Fix
+-    engine: BurlerFix
+-    segment: Plan-Review
+-    on_stuck: Plan-Bouncer
+-    # BurlerFixProducer never returns Done, so this edge is unreachable -- but an empty on_done is
+-    # load-bearing and ends the whole run silently, which is a worse failure than a redundant edge,
+-    # so it is set explicitly to the row it can never actually reach.
+-    on_done: Plan-Bouncer
+-    config:
+-      run_subdir: plan
+-      role_prefix: plan
+-      fixer_fan_setting: tapestry.plan.fixer_fan
+-      review_row: Plan-Burler-Review
+-      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
+-      # validator and re-prompts the live session up to its attempts times, so a failure never
+-      # reaches the row below.
+-      gates:
+-        - name: plan
+-          attempts: 3
+-      profile:
+-        target:
+-          paths:
+-            - _lym/plan
+-        # fix-scope: overlay, for the reason the review row gives.
+-        fix-scope: overlay
+-
+-  # Drift-Await is mechanical and spawns nothing: it holds the run until the baseline capture passed
+-  # on the branch point, or the parent deferred it.
+-  - name: Drift-Await
+-    engine: DriftAwait
+-    entry_gate: drift.enabled
+-    on_done: Drift-Expect
+-
+-  # Drift-Expect has an agent write expected.yaml: the changes the task is expected to make to the captured values,
+-  # written against the counted capture's real cases and identities. Go seals the file when the agent's gate passes,
+-  # before Webster starts. Its Stuck halts the run, with the ways forward in its reason.
+-  - name: Drift-Expect
+-    engine: DriftExpect
+-    entry_gate: drift.enabled
+-    on_done: Webster
+-    config:
+-      subject: decision-record
+-      gates:
+-        - name: expectation
+-          attempts: 3
+-
+-  # Webster is the implementer row: its Implementer engine builds the row with the implementer
+-  # tapestry.implementer names, and batching the plan is that implementer's own business. Every
+-  # implementer builds this row with these edges, as contracts/specs/implementer-spec.md pins.
+-  - name: Webster
+-    engine: Implementer
+-    on_done: Parent-Align
+-    on_reroute: Plan-Burler-Review
+-    config:
+-      implementer_setting: tapestry.implementer
+-      # gates holds Merriam's run-level gate entries beside the plan-level verify gate Webster adds itself.
+-      # The drift entry runs the drift check at Merriam's turn ends and fails on a change nothing expects
+-      # or a current capture that did not pass; Drift-Verify repeats the check as the guarantee.
+-      gates:
+-        - name: drift
+-          attempts: 3
+-
+-  # Parent-Align brings the parent's upstream tip into the task branch with no parent lock and runs the
+-  # merge fixer on a conflict or a failing merged tree, so the Code-Review perch below reviews code
+-  # that already carries the parent. A failure the fixer cannot fix halts the run for the orch.
+-  - name: Parent-Align
+-    engine: ParentAlign
+-    on_done: Drift-Verify
+-
+-  # Drift-Verify checks the code after Parent-Align against the sealed expectation by code and spawns one
+-  # judge on the expected changes whose exact old and new value no stored ruling covers. The judge edits
+-  # no code, expectation or record; a change nothing expects is a Stuck whose way forward is the parent's
+-  # amendment or a fix through Webster, whose run-level drift entry meets the cells.
+-  - name: Drift-Verify
+-    engine: DriftVerify
+-    entry_gate: drift.enabled
+-    on_done: Code-Bouncer
+-    config:
+-      subject: decision-record
+-      gates:
+-        - name: judgement
+-          attempts: 3
+-
+-  - name: Code-Bouncer
+-    engine: Bouncer
+-    segment: Code-Review
+-    on_stuck: Code-Burler-Review
+-    on_done: Drift-Recheck
+-    config:
+-      run_subdir: code
+-      subject: code
+-      role_prefix: code
+-      reviewer_fan_setting: loom.code.reviewer_fan
+-      auto_accept_setting: loom.code.auto_accept
+-      # The subject under review is the committed diff, which artifact_paths cannot name at all:
+-      # the key is required and non-empty, every entry resolves to an absolute path under
+-      # Env.AnchorPath, and the generic bouncer-template-judge.md renders the list as the
+-      # artifacts under review with "read each one". Whatever value is chosen is a workaround, so
+-      # the question is only which one gives the judge the most useful reading -- the decision
+-      # record and the plan directory are the answer key the diff is measured against, and
+-      # Plan-Bouncer already proves a bare directory entry works here (NewBouncer stats nothing).
+-      # The rubric is where the diff itself is named as the subject, which reaches the judge and the
+-      # fixer round alike because both rows read it.
+-      artifact_paths:
+-        - _lym/discussion/decision-record.md
+-        - _lym/plan
+-      rubric_stencil: loom-rubric-code-review
+-      # No commit_seam key, deliberately unlike both Discussion-Bouncer and Plan-Bouncer:
+-      # Code-Burler-Fix runs fix-scope: source and commits each fix itself, so there is no artifact
+-      # left for a loop-owner seam to commit. bouncerEntry documents the resulting nil Commit as a
+-      # legitimate configuration and never an error. The segment's own round artifacts are
+-      # uncommitted by construction -- Env.RunRoot lands under the ephemeral .lym tree, not the
+-      # durable _lym one.
+-      # carry_over names this row's own segment: the Bouncer files the round's still-open findings
+-      # under it in the decision record's Open risks section, and a test pins it equal to segment.
+-      carry_over: Code-Review
+-      # escalate_decisions makes this Bouncer send a round's decision-class findings to the run's
+-      # parent and wait for its ruling; Code-Burler-Fix sets decisions_escalated so its fixer is
+-      # given none and posts no notice of its own.
+-      escalate_decisions: true
+-      # scope_closed says the segment runs after the task's scope closed at its first round, so a
+-      # decision escalation is answered by ruling findings in scope or filing a note, never by a
+-      # decision-record entry, which "lym loom decision add" refuses here.
+-      scope_closed: true
+-      # blocking_escalates sends a spent budget with an open BLOCKING finding to the run's parent,
+-      # which accepts it or orders another round, instead of to the auto-accept; a finding the fixer
+-      # reported fixed is first checked against its fix commit, and closed when the check confirms it.
+-      blocking_escalates: true
+-      # No model/effort/version key: the row refuses them as unknown keys, and loom.review.judge,
+-      # loom.review.seed, loom.code.judge and loom.code.seed are the only source of this row's passes' models.
+-
+-  - name: Code-Burler-Review
+-    engine: BurlerReview
+-    segment: Code-Review
+-    on_stuck: Code-Burler-Fix
+-    # BurlerReviewProducer never returns Done, so this edge is unreachable -- but an empty on_done
+-    # is load-bearing and ends the whole run silently, which is a worse failure than a redundant
+-    # edge, so it is set explicitly to the row it can never actually reach.
+-    on_done: Code-Burler-Fix
+-    config:
+-      # The same run_subdir value as Code-Bouncer is what makes the three rows write into one
+-      # shared run directory.
+-      run_subdir: code
+-      role_prefix: code
+-      reviewer_fan_setting: loom.code.reviewer_fan
+-      fixer_fan_setting: loom.code.fixer_fan
+-      # The reviewer gets the task's diff written out in per-package pieces, each small enough to
+-      # read whole, so it never prints or reads the whole diff at once.
+-      stage_diff: true
+-      profile:
+-        target:
+-          # No paths key, deliberately: burlerengine's own Profile.validate resolves and stats
+-          # every Target.Paths entry, and a diff has no such file on disk. validate accepts a
+-          # FileSet carrying Instructions and no Paths, which is exactly the escape this row
+-          # needs.
+-          instructions: >
+-            The subject under review is the committed diff. The rubric supplied in this prompt is
+-            the single definition of the review range: read its "Determining the review range"
+-            section and derive the range exactly as written there. This instruction deliberately
+-            does not restate the derivation.
+-        fasit:
+-          paths:
+-            - _lym/discussion/decision-record.md
+-            - _lym/plan
+-          instructions: >
+-            The decision record and the plan directory named above are the answer key: the diff's
+-            job is to make the change the decision record settles and to implement the cards the
+-            plan carries, and the Card model those cards implement is described in
+-            contracts/specs/loom-plan-spec.md. The mechanical checks over the plan's own format
+-            are already enforced by Plan-Write's and Plan-Burler-Fix's own gates over each round's own
+-            output, so re-deriving them in this round is duplicated work.
+-        rubric_stencil: loom-rubric-code-review
+-        # fix-scope: source, the only row in the recipe still carrying this value now that
+-        # Discussion-Burler-Fix and Plan-Burler-Fix both run overlay. The target is the repo's own source
+-        # files, which the Fabric Git Invariant names as the one explicitly permitted agent commit
+-        # (commit-per-fix, never a push) -- the one legitimate reason a Burler row still runs source
+-        # here. An overlay round runs no git at all and restricts writes to Target.Paths, which this
+-        # profile deliberately leaves empty -- a fixer that cannot write source cannot fix a diff.
+-        fix-scope: source
+-        # tool-use is required: the round reads _lym/shed/<slug>/status.json and runs read-only git to
+-        # obtain the diff, which is its entire subject.
+-        tool-use: true
+-        # The round reviews code, so its seats load the hub's language skills after their own.
+-        language-skills: true
+-        # No cluster-fan key: the row's reviewer_fan_setting and fixer_fan_setting keys name
+-        # loom.code.reviewer_fan and loom.code.fixer_fan, whose forks reach the diff through read-only git.
+-      # No model/effort key: model choice lives in loom.code.reviewer_model, loom.code.fixer_model
+-      # and their loom.review fallbacks only.
+-      # No timeout_s key, for the same Env fallback reason as Code-Bouncer.
+-
+-  - name: Code-Burler-Fix
+-    engine: BurlerFix
+-    segment: Code-Review
+-    on_stuck: Code-Bouncer
+-    # BurlerFixProducer never returns Done, so this edge is unreachable -- but an empty on_done is
+-    # load-bearing and ends the whole run silently, which is a worse failure than a redundant edge,
+-    # so it is set explicitly to the row it can never actually reach.
+-    on_done: Code-Bouncer
+-    config:
+-      run_subdir: code
+-      role_prefix: code
+-      fixer_fan_setting: loom.code.fixer_fan
+-      review_row: Code-Burler-Review
+-      # decisions_escalated says Code-Bouncer's escalate_decisions sends the round's decision-class
+-      # findings to the parent.
+-      decisions_escalated: true
+-      # The verify gate runs on the committed tree after each round and re-prompts the round
+-      # session with the findings until it passes. It first runs the headroom lint from the merge
+-      # base with the parent branch, then lints the comments the round added from its own latest
+-      # pass, or from the merge base on a first round, then runs the hub's `code-burler-fix` key,
+-      # whose scope the gate derives itself. The row runs its own key and shares no pass with
+-      # Webster's end gate; gate_key names another key of the hub's gate.yaml. A tree the
+-      # record already names passes without running, so a round that changed no code costs
+-      # nothing. The clean gate goes first, so a fixer that left an uncommitted or untracked file
+-      # commits or deletes it before its session ends.
+-      gates:
+-        - name: clean
+-          attempts: 3
+-        - name: verify
+-          attempts: 3
+-      profile:
+-        # No target key, deliberately: the subject is the committed diff, which names no file, so
+-        # the fixer finds its files from the review's findings and the gate's findings alone.
+-        # fix-scope: source, for the reason the review row gives.
+-        fix-scope: source
+-        # The round fixes code, so its seat loads the hub's language skills after its own.
+-        language-skills: true
+-
+-  # Drift-Recheck runs the Drift-Verify engine again once the perch approved, over the code its fixes
+-  # committed since the last passing check. It carries no on_stuck: its Stuck goes through the stop
+-  # chain to the parent, with the ways forward in its reason.
+-  - name: Drift-Recheck
+-    engine: DriftVerify
+-    entry_gate: drift.enabled
+-    on_done: Describe
+-    config:
+-      subject: decision-record
+-      gates:
+-        - name: judgement
+-          attempts: 3
+-
+-  - name: Describe
+-    engine: Describe
+-    on_done: PR-Review
+-    config:
+-      # gates holds this row's handoff until the artifact is mechanically valid: each entry names a
+-      # validator and re-prompts the live session up to its attempts times, so a failure never
+-      # reaches the row below.
+-      gates:
+-        - name: description
+-          attempts: 3
+-
+-  # PR-Review lands the task through a GitHub pull request when the pull-request resolver says so.
+-  # It carries no entry_gate and no on_stuck, because its Stuck halts the run.
+-  - name: PR-Review
+-    engine: PRReview
+-    on_done: Finalize
+-
+-  # Finalize merges the parent into the task branch and runs the landing gate and the merge fixer with no parent lock held,
+-  # then takes the lock, lands on the parent only while its head is still the tip it gated,
+-  # and releases the lock on every way out.
+-  # After landing.finalize_lost_races lost races, and over a parent already holding the work,
+-  # it merges and gates under the lock.
+-  # An over-cap fixer change goes to Finalize's own fix review, whose findings the fixer fixes in place
+-  # until the review approves or its rounds run out and Finalize halts for the operator; Finalize never
+-  # reroutes, and a conflict or a large merge lands through the gate.
+-  - name: Finalize
+-    engine: Finalize
+-    # Hands off to the reflection row rather than ending the run.
+-    on_done: Friction-Reflect
+-
+-  # Friction-Reflect runs the Tier 2 friction reflection under the run lock and is the recipe's
+-  # sole terminal, so the engine persists state: done only after the reflection returns (batten's
+-  # Run-Shed row reads that done as "finished" and tears the worktree down, deleting the friction
+-  # notes). It always returns Done, and reflects under step as under run.
+-  - name: Friction-Reflect
+-    engine: FrictionReflect
+-    # on_done is explicitly empty: the empty value is load-bearing and is what ends the whole run
+-    # quietly, per shedengine.ProducerDef.OnDone's own field doc.
+-    on_done: ""
++    on_done: Jacquard
++
++  # Jacquard runs the jacquard recipe inline: Preflight, Record-Seed and every row after them.
++  # It is the recipe's last row, so its empty on_done ends the run once its own last row, Friction-Reflect, does,
++  # and its block_gate always holds, so no skip falls back to the block's entry.
++  - name: Jacquard
++    block: jacquard
++    block_gate: always
+diff --git a/contracts/specs/shed-recipe-spec.md b/contracts/specs/shed-recipe-spec.md
+index 0d2d1afe6..78ebd7bcc 100644
+--- a/contracts/specs/shed-recipe-spec.md
++++ b/contracts/specs/shed-recipe-spec.md
+@@ -9,7 +9,8 @@
+ ## The idea
+ 
+ `internal/loomrecipe.New()` builds tapestry's `[]shedengine.ProducerDef` by parsing and building a declarative recipe.
+-The recipe is the data file `contracts/recipes/tapestry-recipe.yaml`, which names, per row, its `Name`, `Engine`, `Config` and routing fields.
++The recipes are the data files under `contracts/recipes/`, which name, per engine row, its `Name`, `Engine`, `Config` and routing fields.
++`tapestry-recipe.yaml` composes `motif-recipe.yaml` and `jacquard-recipe.yaml` through block rows.
+ The rows are assembled into the `[]shedengine.ProducerDef` `shedengine.Shed` consumes, with no change to `shedengine`.
+ 
+ Most rows are pure `Engine + Config`, the shape a declarative recipe expresses cleanly; `Discussion-Write` is not.
+@@ -204,8 +205,10 @@ It parses each block's recipe through `Parse`.
+ It returns a new `Recipe` in which every block row is followed by the rows of its recipe, under their own names.
+ The block row becomes an `engine: Block` row.
+ Its `on_done` is the sub-recipe's `entry`, and its skip target is the block's exit.
+-The exit is the block row's own `on_done`, or, when that is empty, the exit of the block enclosing it,
+-and an outermost block row must set `on_done`.
++The exit is the block row's own `on_done`, or, when that is empty, the exit of the block enclosing it.
++A block row whose exit is still empty ends the run once its rows do.
++It is admitted only as the last row of its recipe with `block_gate` `always`,
++and the rows it inlines keep an empty `on_done` where they set none.
+ Every inlined row's empty `on_done` becomes the exit of the innermost block enclosing the row.
+ So does an inlined block row's empty skip target.
+ Each inlined row carries its block path, the enclosing block rows' names joined by `/`, outermost first.
+@@ -221,7 +224,10 @@ Every error this package raises after a successful decode names the offending ro
+ `Build` refuses one that breaks a clause, naming the clause and its way forward.
+ The clauses are checked in this order:
+ 
+-1. The recipe holds exactly one record row, an engine of `shedrecipe.LoomRecordEngines`.
++1. The recipe holds at most one record row (an engine of `shedrecipe.LoomRecordEngines`),
++   at most one seed row (`shedrecipe.LoomSeedEngine`), and at least one of the two.
++   With both, the seed row lies after the record row on the `on_done` path walked from `entry`.
++   With no record row, the seed row stands for the record row in every later clause.
+ 2. It holds exactly one build row, an engine of `shedrecipe.LoomBuildEngines`;
+    the build segment is the rows a variant owns that turn the record into the change,
+    and the contract checks the one row of it that is a build engine.
+diff --git a/docs/overview.md b/docs/overview.md
+index a5d735c2c..98733b1c5 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -331,12 +331,12 @@ github.com/Knatte18/loomyard/
+ ├── internal/shedadapters/        the Shed engine adapters (Webster, Weaver, the Burler review and fix row producers, MultiLLMProducer, and the Bouncer) over shuttle/websterengine/burlerengine/seatengine
+ ├── internal/loomcli/             loom's cobra module: the session bootstrap, arming `internal/shedverbs`' generic status and pause verb bodies, and mounting `internal/sheddriver` for `lym loom drive`
+ ├── internal/loomshed/            loom's own row-name constants and producer constructors over `shedengine`
+-├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, darn, pawl, sampler, motif, raddle and arras recipes from their embedded files, arras kept in code but not offered, and expands tapestry's and arras's `Motif` block from motif, the recipe that makes a sketch, the decision record
++├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, jacquard, darn, pawl, sampler, motif, raddle and arras recipes from their embedded files, arras kept in code but not offered, and expands tapestry's and arras's `Motif` block from motif, the recipe that makes a sketch, the decision record, and tapestry's `Jacquard` block from jacquard, the rows after Discussion
+ ├── internal/shedrecipe/          the engine registry — the name to `ShedProducer`-constructor mapping a recipe loader resolves each row's `Engine` against
+ ├── internal/shedbuild/           the recipe file format's loader and builder — decodes a recipe document and assembles the producer-definition list the shed engine already consumes
+ ├── internal/shedverbs/           the generic run/step/status/pause/goto cobra verb bodies shared by every module that arms a `*shedengine.Shed` onto a CLI subtree
+ ├── internal/sheddriver/          the shed layer's Go driver: its settle loop, rule table and hand-back, the tackler agent call, and the `shed` config module, told its paths and seams by the arming module
+-├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, motif, raddle, arras (kept in code but not offered), darn, pawl, sampler, hardener and batten recipes plus the three CLI seams that register it under the lym root
++├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, jacquard, motif, raddle, arras (kept in code but not offered), darn, pawl, sampler, hardener and batten recipes plus the three CLI seams that register it under the lym root
+ ├── internal/runpusher/           the background pusher of one push target: its start conditions, spawn, push loop, parent step and exit protocol
+ ├── internal/pushledger/          the machine-local ledger of owed pushes and unpushed landings, one entry per push target
+ ├── internal/statuscommit/        the shared per-transition status commit core (skip while mid-merge, commit hard-errors, start the worktree's pusher) that `loomcli` and `battencli` wrap
+@@ -1059,7 +1059,8 @@ User-facing modules each get one `lym <module>` namespace:
+   A seed commit that conflicts at push is dropped and regenerated.
+   ✅ Implemented.
+ - **loom** — phased orchestrator: drives its flat, ordered producer list, each row gated by a `Bouncer` review segment.
+-  The list is `contracts/recipes/tapestry-recipe.yaml`, assembled by `internal/loomrecipe`.
++  The list is `contracts/recipes/tapestry-recipe.yaml`, assembled by `internal/loomrecipe`:
++  its `Motif` block runs `motif-recipe.yaml`'s Discussion rows and its `Jacquard` block runs `jacquard-recipe.yaml`'s rows after them.
+   The packages are `internal/loomcli` + `internal/loomengine` + `internal/loomshed`.
+   Two more packages serve it: `internal/loomrecipe` and `internal/shedverbs`.
+   The verbs are `lym loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|validate-parts|join-parts|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|decision replace|decision store|parent-review answer|parent-review await|peers|peers show|raddle-propose|raddle-approve`.
+diff --git a/internal/battencli/overview_test.go b/internal/battencli/overview_test.go
+index f1b560671..f0edd4196 100644
+--- a/internal/battencli/overview_test.go
++++ b/internal/battencli/overview_test.go
+@@ -96,7 +96,7 @@ func TestOverviewRunCells(t *testing.T) {
+ 				Batten: foundStatus(shedengine.StateRunning, battenrecipe.NameRunShed, shedengine.HistoryEntry{At: stamp(minutesAgo(90))}),
+ 				Child:  foundStatus(shedengine.StateRunning, "Plan-Write", shedengine.HistoryEntry{At: stamp(minutesAgo(30))}),
+ 			},
+-			want: RunCells{State: "running", Stage: "6.8 Plan-Write", InStage: "30m"},
++			want: RunCells{State: "running", Stage: "6.10 Plan-Write", InStage: "30m"},
+ 		},
+ 		{
+ 			name: "a child row in a review segment takes its segment's number",
+@@ -105,7 +105,7 @@ func TestOverviewRunCells(t *testing.T) {
+ 				Batten: foundStatus(shedengine.StateRunning, battenrecipe.NameRunShed, shedengine.HistoryEntry{At: stamp(minutesAgo(90))}),
+ 				Child:  foundStatus(shedengine.StateRunning, "Plan-Burler-Review", shedengine.HistoryEntry{At: stamp(minutesAgo(30))}),
+ 			},
+-			want: RunCells{State: "running", Stage: "6.9 Plan-Burler-Review", InStage: "30m"},
++			want: RunCells{State: "running", Stage: "6.11 Plan-Burler-Review", InStage: "30m"},
+ 		},
+ 		{
+ 			name: "a child row shows alone when the child recipe is unknown",
+@@ -137,7 +137,7 @@ func TestOverviewRunCells(t *testing.T) {
+ 				Batten: foundStatus(shedengine.StateRunning, battenrecipe.NameRunShed, shedengine.HistoryEntry{At: stamp(minutesAgo(40))}),
+ 				Child:  foundStatus(shedengine.StateRunning, "Plan-Write"),
+ 			},
+-			want: RunCells{State: "running", Stage: "6.8 Plan-Write", InStage: "40m"},
++			want: RunCells{State: "running", Stage: "6.10 Plan-Write", InStage: "40m"},
+ 		},
+ 		{
+ 			name: "a run in Run-Shed whose child status is not found shows batten's producer",
+@@ -386,7 +386,7 @@ func TestDobbyRunCells_ReadsTheRunsFromDisk(t *testing.T) {
+ 	}
+ 
+ 	want := map[string]RunCells{
+-		"run-a":      {State: "running", Stage: "6.8 Plan-Write", InStage: "2h00m", Owes: owesPush},
++		"run-a":      {State: "running", Stage: "6.10 Plan-Write", InStage: "2h00m", Owes: owesPush},
+ 		"run-b":      {State: "running", Stage: "Plan", InStage: "1h00m", Owes: owesTip},
+ 		"future-key": {State: "running", Stage: "Plan", InStage: "-"},
+ 	}
+@@ -538,7 +538,7 @@ func TestDobbyRunCells_ResolvesTheChildPairAgainInEachRunShedSpell(t *testing.T)
+ 	if err := shedrun.WriteSeed(locationkit.Location(hub, slug, "."), shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipeTapestry, Driver: shedrun.DriverGo}); err != nil {
+ 		t.Fatal(err)
+ 	}
+-	check("read in the first Run-Shed spell", RunCells{State: "running", Stage: "6.8 Plan-Write", InStage: "2h00m"})
++	check("read in the first Run-Shed spell", RunCells{State: "running", Stage: "6.10 Plan-Write", InStage: "2h00m"})
+ 
+ 	// The run leaves Run-Shed, the pair's anchor moves, and a new run enters Run-Shed again.
+ 	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: "Plan"}, minutesAgo(50))
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 1cc29a752..24cacc943 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -636,7 +636,7 @@ func childSeedParams(recipe string, childLocation *lymcwd.Location) (map[string]
+ 	if !found || origin.ParentBranch == "" {
+ 		return nil, nil
+ 	}
+-	return map[string]string{"parent": origin.ParentBranch}, nil
++	return map[string]string{loomshed.SeedParentParam: origin.ParentBranch}, nil
+ }
+ 
+ // childSeedFor builds the seed written into the task worktree from the given recipe, driver and params.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 8fca10723..0751c3097 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -164,6 +164,9 @@ var intentionallyNil = map[string]string{
+ 	"RecordWrite.ReadBody":                "loom-only seam, batten wires no loom record",
+ 	"RecordWrite.ReadStored":              "loom-only seam, batten wires no loom record",
+ 	"RecordWrite.Commit":                  "loom-only seam, batten wires no loom record",
++	"RecordSeed.ReadStored":               "loom-only seam, batten wires no loom record",
++	"RecordSeed.Commit":                   "loom-only seam, batten wires no loom record",
++	"RecordSeed.ReadSeed":                 "loom-only seam, batten wires no loom record",
+ 	"RaddleWrite.Deps.SplitPerch":         "raddle-only seam, batten runs no raddle row",
+ 	"RaddleWrite.Deps.AutoApprove":        "raddle-only seam, batten runs no raddle row",
+ 	"RaddleWrite.Deps.FreshEntry":         "raddle-only seam, batten runs no raddle row",
+@@ -243,6 +246,7 @@ var intentionallyNil = map[string]string{
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index b613f9014..b5571524c 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -92,7 +92,7 @@ func (c *loomCLI) resolveRunID(location *lymcwd.Location, verb string, args []st
+ 	// So only run and step on the self run-id get the seed-without-driver remedy.
+ 	remedy := `run "lym loom start" first to bootstrap this task`
+ 	if (verb == "run" || verb == "step") && runID == shedrun.SelfRunID {
+-		remedy = `run "lym loom start" first to bootstrap this task, or seed it without a driver with "lym shed seed self --recipe tapestry --driver go --param parent=<parent-branch>" (<parent-branch> is the pair's recorded parent branch) and then run "lym loom step"`
++		remedy = `run "lym loom start" first to bootstrap this task, or seed it without a driver with "lym shed seed self --recipe tapestry --driver go --param ` + loomshed.SeedParentParam + `=<parent-branch>" (<parent-branch> is the pair's recorded parent branch) and then run "lym loom step"`
+ 	}
+ 	// Rendered through shedrun.MissingSeedMessage, the renderer every seed refusal shares.
+ 	// This refusal therefore words identically to the others.
+diff --git a/internal/loomcli/sharedbootstrap.go b/internal/loomcli/sharedbootstrap.go
+index 42fd89344..3e63f879e 100644
+--- a/internal/loomcli/sharedbootstrap.go
++++ b/internal/loomcli/sharedbootstrap.go
+@@ -252,8 +252,8 @@ func runUsageRecord(recipe string, entry boardengine.Task, found bool, defaultPr
+ // Its way forward clears the one file and re-seeds with the existing recipe, driver and recorded parent.
+ // Following it therefore cannot loop on the same refusal.
+ func disagreeingSeedRefusal(seedPath string, existing shedrun.Seed, parent string) error {
+-	return fmt.Errorf("%w: loom: the seed at %s records recipe %q, driver %q and params %v, which disagree with the recorded parent branch %q; way forward: rm %s, then lym shed seed self --recipe %s --driver %s --param parent=%s",
+-		shedrun.ErrDisagreeingSeed, seedPath, existing.Recipe, existing.Driver, existing.Params, parent, seedPath, existing.Recipe, existing.Driver, parent)
++	return fmt.Errorf("%w: loom: the seed at %s records recipe %q, driver %q and params %v, which disagree with the recorded parent branch %q; way forward: rm %s, then lym shed seed self --recipe %s --driver %s --param %s=%s",
++		shedrun.ErrDisagreeingSeed, seedPath, existing.Recipe, existing.Driver, existing.Params, parent, seedPath, existing.Recipe, existing.Driver, loomshed.SeedParentParam, parent)
+ }
+ 
+ // resolveSeedDriver returns the driver a run records when it is seeded.
+@@ -290,7 +290,7 @@ func loomSeedFor(recipe, parent, driver string) shedrun.Seed {
+ 	return shedrun.Seed{
+ 		Recipe: recipe,
+ 		Driver: driver,
+-		Params: map[string]string{"parent": parent},
++		Params: map[string]string{loomshed.SeedParentParam: parent},
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/smoke_test.go b/internal/loomcli/smoke_test.go
+index 791b4b1fc..9f06ce51f 100644
+--- a/internal/loomcli/smoke_test.go
++++ b/internal/loomcli/smoke_test.go
+@@ -15,7 +15,7 @@
+ // TestSmokeBootstrapLifecycle's concurrent-bootstrap step pins it.
+ //
+ // Driver liveness is timing-dependent.
+-// The producer table in contracts/recipes/tapestry-recipe.yaml backs every row with a real producer,
++// Tapestry's expanded producer table backs every row with a real producer,
+ // so no row reports Done unconditionally.
+ // A freshly bootstrapped driver against a pair with no discussion or plan artifacts bounces at Discussion-Write's gate.
+ // It does so a bounded number of times, set by the attempts budget of its "gates" entry.
+diff --git a/internal/loomcli/specfill_test.go b/internal/loomcli/specfill_test.go
+index 22d3b3185..8e06438ce 100644
+--- a/internal/loomcli/specfill_test.go
++++ b/internal/loomcli/specfill_test.go
+@@ -42,8 +42,8 @@ func TestSpecFor_FillsRunIdentityForSelf(t *testing.T) {
+ 	if spec.StepsDir != wantSteps {
+ 		t.Errorf("StepsDir = %q, want %q", spec.StepsDir, wantSteps)
+ 	}
+-	if spec.Routing.Entry != "Preflight" {
+-		t.Errorf("Routing.Entry = %q, want %q", spec.Routing.Entry, "Preflight")
++	if spec.Routing.Entry != "Motif" {
++		t.Errorf("Routing.Entry = %q, want %q", spec.Routing.Entry, "Motif")
+ 	}
+ 	if spec.Routing.MaxBounces != 3 {
+ 		t.Errorf("Routing.MaxBounces = %d, want 3", spec.Routing.MaxBounces)
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index a67ec09dc..ab6676213 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -549,6 +549,28 @@ func recordWriteDeps(l *lymcwd.Location, record runRecord) loomshed.RecordWriteD
+ 	}
+ }
+ 
++// recordSeedDeps returns the Record-Seed row's deps for the run runID of the worktree at l.
++// They share Record-Write's record paths, stored-record read and commit.
++// discussionRow is the row of the run's recipe that runs Discussion, empty when it holds none.
++// Building it opens nothing: the board and the seed are read on each call.
++func recordSeedDeps(l *lymcwd.Location, record runRecord, runID, discussionRow string) loomshed.RecordSeedDeps {
++	write := recordWriteDeps(l, record)
++	return loomshed.RecordSeedDeps{
++		RecordPath:     write.RecordPath,
++		SupportLogPath: write.SupportLogPath,
++		DiscussionDir:  write.DiscussionDir,
++		ReadStored:     write.ReadStored,
++		Commit:         write.Commit,
++		DiscussionRow:  discussionRow,
++		Slug:           seedSlug(l.WorktreeName),
++		SeedPath:       shedrun.SeedFile(l, runID),
++		ReadSeed: func() (loomshed.ReseedValues, error) {
++			seed, _, err := shedrun.ReadSeed(l, runID)
++			return loomshed.ReseedValues{Recipe: shedrun.RecipeTapestry, Driver: seed.Driver, Parent: seed.Params[loomshed.SeedParentParam]}, err
++		},
++	}
++}
++
+ // entryLabels returns a reader of the labels of the run's board entry for the worktree at l.
+ // It opens the board on each call, and an entry the board lacks reads as one with no label.
+ func entryLabels(l *lymcwd.Location) func() ([]string, error) {
+@@ -820,6 +842,10 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 	if err != nil {
+ 		return err
+ 	}
++	discussionRow, _, err := loomrecipe.EngineRow(c.recipe, discussionWriteEngine)
++	if err != nil {
++		return err
++	}
+ 
+ 	// A pair run's row gates may hand a failure to a cold fixer.
+ 	// The prime and a run outside a hub have no pair to own one.
+@@ -1029,6 +1055,9 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 		// RecordWrite is filled for every recipe: only a recipe with a RecordWrite row reads it,
+ 		// and it opens the board on a call, never at wire time.
+ 		RecordWrite: recordWriteDeps(location, record),
++		// RecordSeed is filled for every recipe: only a recipe with a RecordSeed row reads it,
++		// and it opens the board and reads the seed on a call, never at wire time.
++		RecordSeed: recordSeedDeps(location, record, c.runID, discussionRow),
+ 		// RaddleWrite and RaddleFile are filled for every recipe: only a recipe with a raddle row reads them,
+ 		// and every closure reads the board, the status or the setting on a call, never at wire time.
+ 		RaddleWrite: raddleWriteEnv(location, loomCfg, websterGeom.StencilsDir, websterGeom.SpecsDir, registry, seedSlug(location.WorktreeName), c.recipe, settingLookup),
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index c2106906e..2dc6821ec 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -41,6 +41,7 @@ import (
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 15486e705..13afb1fc8 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -58,6 +58,7 @@ const wantDarnWriteCall = "lym gate test --wait --gate darn-write --stop-on-fail
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+@@ -551,6 +552,7 @@ func TestWire_DarnRecipe(t *testing.T) {
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/pawlengine#Deps
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 0d4f236c2..b934e6c76 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -159,6 +159,7 @@ var intentionallyNil = map[string]string{
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 52db4db7c..982b8d4e8 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -1397,3 +1397,29 @@ func TestLoomRerouteCapWayForward(t *testing.T) {
+ 		}
+ 	}
+ }
++
++// TestRecordSeedDeps_ReadsTheRunsSeed pins the values Record-Seed's way forward is filled in with.
++func TestRecordSeedDeps_ReadsTheRunsSeed(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	loc := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."}
++	seed := shedrun.Seed{Recipe: shedrun.RecipeJacquard, Driver: shedrun.DriverLLM, Params: map[string]string{"parent": "feature-x"}}
++	if err := shedrun.WriteSeed(loc, shedrun.SelfRunID, seed); err != nil {
++		t.Fatalf("WriteSeed() = %v; want nil", err)
++	}
++
++	deps := recordSeedDeps(loc, runRecord{}, shedrun.SelfRunID, "")
++
++	got, err := deps.ReadSeed()
++	want := loomshed.ReseedValues{Recipe: "tapestry", Driver: "llm", Parent: "feature-x"}
++	if err != nil || got != want {
++		t.Errorf("ReadSeed() = %+v, %v; want %+v, nil", got, err, want)
++	}
++	if deps.Slug != "pair" {
++		t.Errorf("Slug = %q; want %q", deps.Slug, "pair")
++	}
++	if _, err := os.Stat(deps.SeedPath); err != nil {
++		t.Errorf("stat SeedPath %q = %v; want the seed file the run wrote", deps.SeedPath, err)
++	}
++}
+diff --git a/internal/loomrecipe/approveseam_test.go b/internal/loomrecipe/approveseam_test.go
+index 4f12572a4..e0ba37762 100644
+--- a/internal/loomrecipe/approveseam_test.go
++++ b/internal/loomrecipe/approveseam_test.go
+@@ -15,7 +15,6 @@ import (
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/contracts/recipes"
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+@@ -32,9 +31,9 @@ import (
+ func TestShippedRecipe_SeamsWiredOnPlanBouncerOnly(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+-	r, err := shedbuild.Parse(recipes.TapestryRecipe)
++	r, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse(recipes.TapestryRecipe) error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 
+ 	for _, row := range r.Producers {
+diff --git a/internal/loomrecipe/blockrecipes_test.go b/internal/loomrecipe/blockrecipes_test.go
+index bdb39617b..dfaede797 100644
+--- a/internal/loomrecipe/blockrecipes_test.go
++++ b/internal/loomrecipe/blockrecipes_test.go
+@@ -1,5 +1,5 @@
+-// blockrecipes_test.go checks the tapestry recipe's Motif block against its pre-block rows in testdata;
+-// and checks that the motif recipe builds and runs alone.
++// blockrecipes_test.go checks the tapestry recipe's Motif and Jacquard blocks against its pre-block rows in testdata;
++// and checks that the motif and jacquard recipes build and run alone.
+ 
+ package loomrecipe
+ 
+@@ -18,16 +18,18 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// tapestryBeforeMotifFile names the testdata file holding the tapestry recipe rows that precede the Motif block.
++// tapestryBeforeMotifFile names the testdata file holding the tapestry recipe rows that precede its blocks.
+ const tapestryBeforeMotifFile = "tapestry-rows-before-motif.yaml"
+ 
+ // motifRowNames are the motif recipe's rows, in file order.
+ var motifRowNames = []string{loomshed.NameDiscussionWrite, loomshed.NameDiscussionBouncer, loomshed.NameDiscussionBurlerReview, loomshed.NameDiscussionBurlerFix}
+ 
+-// TestTapestryMotifBlock asserts the expanded tapestry recipe matches its pre-block recipe, config included:
+-// the rows match, with the Motif block row after Preflight and the Discussion rows inside the block;
+-// the top-level keys match too.
+-func TestTapestryMotifBlock(t *testing.T) {
++// TestTapestryBlocks asserts the expanded tapestry recipe is the Motif block's rows followed by the Jacquard block's.
++// Each row is as the pre-block recipe held it, config included, but for the edges the blocks add:
++// Motif enters Discussion-Write and Discussion-Bouncer exits to Jacquard.
++// Jacquard enters Preflight, whose Done enters Record-Seed ahead of Drift-Baseline.
++// The top-level keys match the pre-block recipe's but for the entry, and jacquard's but for the entry equal tapestry's.
++func TestTapestryBlocks(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -46,27 +48,48 @@ func TestTapestryMotifBlock(t *testing.T) {
+ 
+ 	t.Run("rows", func(t *testing.T) {
+ 		t.Parallel()
+-		var want []shedbuild.Row
++		want := []shedbuild.Row{{
++			Name:      loomshed.NameMotif,
++			Engine:    shedrecipe.EngineBlock,
++			OnDone:    loomshed.NameDiscussionWrite,
++			SkipTo:    loomshed.NameJacquard,
++			Block:     shedrun.RecipeMotif,
++			BlockGate: shedrecipe.BlockGateUndiscussed,
++		}}
++		var preflight shedbuild.Row
++		var jacquardRows []shedbuild.Row
+ 		for _, row := range before.Producers {
+-			if row.Name == loomshed.NamePreflight {
+-				row.OnDone = loomshed.NameMotif
+-				want = append(want, row, shedbuild.Row{
+-					Name:      loomshed.NameMotif,
+-					Engine:    shedrecipe.EngineBlock,
+-					OnDone:    loomshed.NameDiscussionWrite,
+-					SkipTo:    loomshed.NameDriftBaseline,
+-					Block:     shedrun.RecipeMotif,
+-					BlockGate: shedrecipe.BlockGateUndiscussed,
+-				})
+-				continue
+-			}
+-			if slices.Contains(motifRowNames, row.Name) {
++			switch {
++			case row.Name == loomshed.NamePreflight:
++				preflight = row
++			case slices.Contains(motifRowNames, row.Name):
++				if row.Name == loomshed.NameDiscussionBouncer {
++					row.OnDone = loomshed.NameJacquard
++				}
+ 				row.BlockPath = loomshed.NameMotif
++				want = append(want, row)
++			default:
++				row.BlockPath = loomshed.NameJacquard
++				jacquardRows = append(jacquardRows, row)
+ 			}
+-			want = append(want, row)
+ 		}
++		preflight.OnDone = loomshed.NameRecordSeed
++		preflight.BlockPath = loomshed.NameJacquard
++		want = append(want,
++			shedbuild.Row{
++				Name:      loomshed.NameJacquard,
++				Engine:    shedrecipe.EngineBlock,
++				OnDone:    loomshed.NamePreflight,
++				Block:     shedrun.RecipeJacquard,
++				BlockGate: shedrecipe.BlockGateAlways,
++			},
++			preflight,
++			shedbuild.Row{Name: loomshed.NameRecordSeed, Engine: shedrecipe.LoomSeedEngine, OnDone: loomshed.NameDriftBaseline, BlockPath: loomshed.NameJacquard},
++		)
++		want = append(want, jacquardRows...)
++
+ 		if !reflect.DeepEqual(expanded.Producers, want) {
+-			t.Errorf("tapestry rows = %+v; want its rows before the Motif block, with the block row %+v", expanded.Producers, want)
++			t.Errorf("tapestry rows = %+v; want the Motif block's rows then the Jacquard block's %+v", expanded.Producers, want)
+ 		}
+ 	})
+ 
+@@ -74,9 +97,22 @@ func TestTapestryMotifBlock(t *testing.T) {
+ 		t.Parallel()
+ 		got, want := expanded, before
+ 		got.Producers, want.Producers = nil, nil
++		want.Entry = loomshed.NameMotif
+ 		if !reflect.DeepEqual(got, want) {
+ 			t.Errorf("tapestry top-level keys = %+v; want %+v", got, want)
+ 		}
++
++		jacquard, err := parseEmbeddedRecipe(shedrun.RecipeJacquard)
++		if err != nil {
++			t.Fatalf("parseEmbeddedRecipe(jacquard) = _, %v; want nil", err)
++		}
++		if jacquard.Entry != loomshed.NamePreflight {
++			t.Errorf("jacquard entry = %q; want %q", jacquard.Entry, loomshed.NamePreflight)
++		}
++		jacquard.Producers, jacquard.Entry = nil, got.Entry
++		if !reflect.DeepEqual(jacquard, got) {
++			t.Errorf("jacquard top-level keys but entry = %+v; want tapestry's %+v", jacquard, got)
++		}
+ 	})
+ }
+ 
+@@ -106,3 +142,30 @@ func TestMotifRecipeRunsAlone(t *testing.T) {
+ 		t.Errorf("motif %s OnDone = %q; want empty, which ends the run", loomshed.NameDiscussionBouncer, bouncer.OnDone)
+ 	}
+ }
++
++// TestJacquardRecipeRunsAlone asserts the jacquard recipe builds under the loom contract as a run of its own.
++// It holds the tapestry rows from Preflight on and no Discussion row, and its run ends on Friction-Reflect's Done.
++func TestJacquardRecipeRunsAlone(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	env, paths := testEnv(t)
++
++	shed, err := New(shedrun.RecipeJacquard, env, paths)
++	if err != nil {
++		t.Fatalf("New(jacquard) = _, %v; want nil", err)
++	}
++	var want []string
++	for _, row := range wantProducerTable[slices.IndexFunc(wantProducerTable, func(row wantProducerRow) bool { return row.name == loomshed.NamePreflight }):] {
++		want = append(want, row.name)
++	}
++	names := make([]string, 0, len(shed.Producers))
++	for _, def := range shed.Producers {
++		names = append(names, def.Name)
++	}
++	if !slices.Equal(names, want) {
++		t.Errorf("New(jacquard) rows = %v; want %v", names, want)
++	}
++	if last := shed.Producers[len(shed.Producers)-1]; last.Name != loomshed.NameFrictionReflect || last.OnDone != "" {
++		t.Errorf("jacquard last row = %q with OnDone %q; want %q with an empty OnDone, which ends the run", last.Name, last.OnDone, loomshed.NameFrictionReflect)
++	}
++}
+diff --git a/internal/loomrecipe/bouncerrows.go b/internal/loomrecipe/bouncerrows.go
+index 983637c0a..f610e9e3c 100644
+--- a/internal/loomrecipe/bouncerrows.go
++++ b/internal/loomrecipe/bouncerrows.go
+@@ -1,4 +1,4 @@
+-// bouncerrows.go answers whether a row of the embedded tapestry, darn, arras or hardener recipe is a Bouncer.
++// bouncerrows.go answers whether a row of the embedded tapestry, jacquard, darn, arras or hardener recipe is a Bouncer.
+ // It also answers the run directory of such a row.
+ // It reads each recipe through parseEmbeddedRecipe, so the rows are the expanded ones.
+ 
+@@ -11,11 +11,11 @@ import (
+ // bouncerEngine is the recipe engine name a Bouncer row carries.
+ const bouncerEngine = "Bouncer"
+ 
+-// BouncerRunSubdir returns the `run_subdir` of the named row of the tapestry, darn, arras or hardener recipe.
++// BouncerRunSubdir returns the `run_subdir` of the named row of the tapestry, jacquard, darn, arras or hardener recipe.
+ // The bool is true only when that row's engine is Bouncer and it has a non-empty `run_subdir`.
+ // A recipe parse failure is a `loomrecipe:`-prefixed error.
+ func BouncerRunSubdir(row string) (string, bool, error) {
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeArras, shedrun.RecipeHardener} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeJacquard, shedrun.RecipeDarn, shedrun.RecipeArras, shedrun.RecipeHardener} {
+ 		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+ 			return "", false, err
+diff --git a/internal/loomrecipe/clusterexcludes_test.go b/internal/loomrecipe/clusterexcludes_test.go
+index 3479e0713..cd1ccceb2 100644
+--- a/internal/loomrecipe/clusterexcludes_test.go
++++ b/internal/loomrecipe/clusterexcludes_test.go
+@@ -19,8 +19,8 @@ import (
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/contracts/recipes"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -84,9 +84,9 @@ func clusterExcludesMismatches(r shedbuild.Recipe) []string {
+ //testtiming:keep pins that no shipped Bouncer/BurlerReview pair disagrees on cluster_excludes, a guard that fires on the recipe file, which TestApproveSeam_FailsToBuild never reads
+ func TestShippedRecipe_ClusterExcludesAgreesWithPartnerFan(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	r, err := shedbuild.Parse(recipes.TapestryRecipe)
++	r, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse(recipes.TapestryRecipe) error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 	if msgs := clusterExcludesMismatches(r); len(msgs) != 0 {
+ 		t.Errorf("clusterExcludesMismatches(shipped recipe) = %v; want none", msgs)
+diff --git a/internal/loomrecipe/darnrecipe_test.go b/internal/loomrecipe/darnrecipe_test.go
+index f165df5ba..2dc0d16b4 100644
+--- a/internal/loomrecipe/darnrecipe_test.go
++++ b/internal/loomrecipe/darnrecipe_test.go
+@@ -78,11 +78,11 @@ func TestNewDarn_RowsMatchTheDarnTable(t *testing.T) {
+ // the decision record alone, whose fasit instructions read it as the task's scope with its added entries as amendments.
+ func TestDarnPerch_SharesLoomsPerchBarTheAnswerKey(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	rowsOf := func(source []byte) map[string]shedbuild.Row {
++	rowsOf := func(name string) map[string]shedbuild.Row {
+ 		t.Helper()
+-		recipe, err := shedbuild.Parse(source)
++		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+-			t.Fatalf("shedbuild.Parse() error = %v; want nil", err)
++			t.Fatalf("parseEmbeddedRecipe(%s) error = %v; want nil", name, err)
+ 		}
+ 		rows := map[string]shedbuild.Row{}
+ 		for _, row := range recipe.Producers {
+@@ -90,7 +90,7 @@ func TestDarnPerch_SharesLoomsPerchBarTheAnswerKey(t *testing.T) {
+ 		}
+ 		return rows
+ 	}
+-	darn, loom := rowsOf(recipes.DarnRecipe), rowsOf(recipes.TapestryRecipe)
++	darn, loom := rowsOf(shedrun.RecipeDarn), rowsOf(shedrun.RecipeTapestry)
+ 	profileOf := func(row shedbuild.Row) map[string]any {
+ 		profile, _ := row.Config["profile"].(map[string]any)
+ 		return profile
+@@ -354,9 +354,9 @@ func TestDarnVerifyBudget(t *testing.T) {
+ 	})
+ 
+ 	t.Run("on the tapestry recipe Code-Burler-Fix runs the clean gate before verify", func(t *testing.T) {
+-		recipe, err := shedbuild.Parse(recipes.TapestryRecipe)
++		recipe, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 		if err != nil {
+-			t.Fatalf("shedbuild.Parse() error = %v; want nil", err)
++			t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 		}
+ 		var names []any
+ 		for _, row := range recipe.Producers {
+diff --git a/internal/loomrecipe/discussionapproval_test.go b/internal/loomrecipe/discussionapproval_test.go
+index 896e160a4..d1ec24d8d 100644
+--- a/internal/loomrecipe/discussionapproval_test.go
++++ b/internal/loomrecipe/discussionapproval_test.go
+@@ -43,7 +43,7 @@ func TestPastDiscussionApproval(t *testing.T) {
+ 			want    bool
+ 			wantHas bool
+ 		}{
+-			{"BeforeTheSegment_Preflight", shedrun.RecipeTapestry, "Preflight", false, true},
++			{"AfterTheSegment_Preflight", shedrun.RecipeTapestry, "Preflight", true, true},
+ 			{"BeforeTheSegment_TheMotifBlockRow", shedrun.RecipeTapestry, "Motif", false, true},
+ 			{"BeforeTheSegment_DiscussionWrite", shedrun.RecipeTapestry, "Discussion-Write", false, true},
+ 			{"TheApprovalRow", shedrun.RecipeTapestry, "Discussion-Bouncer", false, true},
+diff --git a/internal/loomrecipe/escalation_test.go b/internal/loomrecipe/escalation_test.go
+index c2170a694..2b009aebc 100644
+--- a/internal/loomrecipe/escalation_test.go
++++ b/internal/loomrecipe/escalation_test.go
+@@ -62,7 +62,7 @@ func newEscalationShed(t *testing.T) (*shedengine.Shed, string, *shedfake.Burler
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 
+ 	readStatus := func() shedengine.Status {
+ 		st, found, err := state.ReadJSON[shedengine.Status](env.StatusPath, env.StatusLockPath)
+@@ -322,7 +322,7 @@ func TestEscalation_PerchBudgetOneWithAutoAccept(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("New() error = %v; want nil", err)
+ 			}
+-			shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++			setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 			for i := range shed.Producers {
+ 				switch shed.Producers[i].Name {
+ 				case loomshed.NameParentAlign:
+diff --git a/internal/loomrecipe/finalizerow.go b/internal/loomrecipe/finalizerow.go
+index c22110759..e8a878b38 100644
+--- a/internal/loomrecipe/finalizerow.go
++++ b/internal/loomrecipe/finalizerow.go
+@@ -1,4 +1,4 @@
+-// finalizerow.go answers whether a row of the embedded tapestry, darn and hardener recipes is the Finalize row.
++// finalizerow.go answers whether a row of the embedded tapestry, jacquard, darn and hardener recipes is the Finalize row.
+ // It reads each recipe through parseEmbeddedRecipe, so the rows are the expanded ones.
+ 
+ package loomrecipe
+@@ -10,11 +10,11 @@ import (
+ // finalizeEngine is the recipe engine name the Finalize row carries.
+ const finalizeEngine = "Finalize"
+ 
+-// IsFinalizeRow reports whether the named row of the tapestry, darn or hardener recipe has engine Finalize.
++// IsFinalizeRow reports whether the named row of the tapestry, jacquard, darn or hardener recipe has engine Finalize.
+ // The row is identified by its engine, never its name; an unknown name is false.
+ // A recipe parse failure is a `loomrecipe:`-prefixed error.
+ func IsFinalizeRow(row string) (bool, error) {
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeHardener} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeJacquard, shedrun.RecipeDarn, shedrun.RecipeHardener} {
+ 		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+ 			return false, err
+diff --git a/internal/loomrecipe/fixture_test.go b/internal/loomrecipe/fixture_test.go
+index 85f25ac4a..c8d372d82 100644
+--- a/internal/loomrecipe/fixture_test.go
++++ b/internal/loomrecipe/fixture_test.go
+@@ -38,6 +38,19 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ )
+ 
++// setRowProducer replaces the producer of shed's row named name with producer.
++// It fails the test when no row has that name.
++func setRowProducer(t *testing.T, shed *shedengine.Shed, name string, producer shedengine.ShedProducer) {
++	t.Helper()
++	for i := range shed.Producers {
++		if shed.Producers[i].Name == name {
++			shed.Producers[i].Producer = producer
++			return
++		}
++	}
++	t.Fatalf("the built recipe has no row named %q", name)
++}
++
+ // fakeAlwaysDoneProducer is a minimal shedengine.ShedProducer fake that always reports Done.
+ // It substitutes the built row 1 (Preflight) without spawning git.
+ type fakeAlwaysDoneProducer struct{}
+@@ -457,8 +470,9 @@ func writeBatcherConfig(t *testing.T, anchorPath, content string) {
+ //
+ // The status file is seeded through the production loomshed.Seed, never by hand-writing JSON.
+ // A regression in Seed therefore shows up here.
+-// Row 1 is not injected here: New builds it from env.Cwd via preflightEntry.
+-// A caller that drives Run replaces shed.Producers[0].Producer after New.
++// Preflight is not injected here: New builds it from env.Cwd via preflightEntry.
++// A caller that drives Run replaces its producer after New through setRowProducer.
++// Record-Seed reads the fixture's discussion pair, so it finds the record and writes nothing.
+ // WebsterRun is a fake run that reports Webster's own done outcome.
+ // WebsterDeps keeps the placeholder seams of envkit.FullEnv.
+ // LockPath and StatusLockPath get two distinct paths, because shedengine rejects a pair that names one file.
+@@ -570,6 +584,9 @@ func buildSequenceFixture(t *testing.T) (anchorPath string, env shedrecipe.Env,
+ 	env.StatusLockPath = statusLockPath
+ 	env.DecisionRecordPath = decisionRecordPath
+ 	env.SupportLogPath = supportLogPath
++	env.RecordSeed.RecordPath = decisionRecordPath
++	env.RecordSeed.SupportLogPath = supportLogPath
++	env.RecordSeed.DiscussionDir = discussionDir
+ 	env.WebsterRun = (&fakeWebsterRun{}).run
+ 	env.ImplementerSeam.AnchorRoot = dir
+ 	env.Landing = landing
+diff --git a/internal/loomrecipe/gatequiescence_test.go b/internal/loomrecipe/gatequiescence_test.go
+index 6c4f1fcac..9dd8e70b5 100644
+--- a/internal/loomrecipe/gatequiescence_test.go
++++ b/internal/loomrecipe/gatequiescence_test.go
+@@ -12,6 +12,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/contracts/recipes"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -86,9 +87,9 @@ func gatedRowFanViolations(r shedbuild.Recipe, fans map[string][]string) []strin
+ //testtiming:keep pins that no gated shipped row authorizes fork subagents outside an ungated BurlerReview reviewer, a guard that fires on the recipe file, which TestApproveSeam_FailsToBuild never reads
+ func TestNoGatedRowAuthorizesForkSubagents(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	shipped, err := shedbuild.Parse(recipes.TapestryRecipe)
++	shipped, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse(recipes.TapestryRecipe) error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 
+ 	gatedRowFound := false
+@@ -202,9 +203,9 @@ func TestNoGatedRowAuthorizesForkSubagents(t *testing.T) {
+ //testtiming:keep pins that the shipped Webster round's gates list is exactly the drift entry, a guard that fires on the recipe file, which TestApproveSeam_FailsToBuild never reads
+ func TestWebsterRoundCarriesNoGateKey(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	r, err := shedbuild.Parse(recipes.TapestryRecipe)
++	r, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse(recipes.TapestryRecipe) error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 
+ 	found := false
+diff --git a/internal/loomrecipe/interruptpolicy_meta_test.go b/internal/loomrecipe/interruptpolicy_meta_test.go
+index f332e7da9..1a48bd3ba 100644
+--- a/internal/loomrecipe/interruptpolicy_meta_test.go
++++ b/internal/loomrecipe/interruptpolicy_meta_test.go
+@@ -17,7 +17,7 @@ import (
+ 
+ // TestInterruptPolicies_MatchAssembledRows checks loomshed.InterruptPolicies in both directions.
+ // The table must cover exactly the rows New assembles for every loom recipe:
+-// tapestry, darn, sampler, motif, raddle, arras, hardener and pawl.
++// tapestry, jacquard, darn, sampler, motif, raddle, arras, hardener and pawl.
+ // Every row that one of those recipes' current output has must carry an entry in the table.
+ // That catches a row added to a recipe with no policy assigned.
+ // Every key in the table must name a row one of them actually has.
+@@ -28,7 +28,7 @@ func TestInterruptPolicies_MatchAssembledRows(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	env, paths := testEnv(t)
+ 	rowNames := map[string]bool{}
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener, shedrun.RecipePawl} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeJacquard, shedrun.RecipeDarn, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener, shedrun.RecipePawl} {
+ 		// Pawl is last, since its build has no review segment to budget and the others need theirs.
+ 		if name == shedrun.RecipePawl {
+ 			delete(env.Segments, codeReviewSegment)
+@@ -47,7 +47,7 @@ func TestInterruptPolicies_MatchAssembledRows(t *testing.T) {
+ 
+ 	for rowName := range loomshed.InterruptPolicies {
+ 		if !rowNames[rowName] {
+-			t.Errorf("loomshed.InterruptPolicies names row %q, which none of tapestry, darn, sampler, motif, raddle, arras, hardener and pawl has", rowName)
++			t.Errorf("loomshed.InterruptPolicies names row %q, which none of tapestry, jacquard, darn, sampler, motif, raddle, arras, hardener and pawl has", rowName)
+ 		}
+ 	}
+ }
+diff --git a/internal/loomrecipe/languageskills_test.go b/internal/loomrecipe/languageskills_test.go
+index 9d73ad5ec..07b03d436 100644
+--- a/internal/loomrecipe/languageskills_test.go
++++ b/internal/loomrecipe/languageskills_test.go
+@@ -7,8 +7,7 @@ import (
+ 	"slices"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/contracts/recipes"
+-	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -21,30 +20,30 @@ func TestShippedRecipes_LanguageSkillsOnCodeRounds(t *testing.T) {
+ 
+ 	tests := []struct {
+ 		name     string
+-		data     []byte
++		recipe   string
+ 		wantRows []string
+ 	}{
+ 		{
+ 			name:     "loom",
+-			data:     recipes.TapestryRecipe,
++			recipe:   shedrun.RecipeTapestry,
+ 			wantRows: []string{"Code-Burler-Fix", "Code-Burler-Review"},
+ 		},
+ 		{
+ 			name:     "darn",
+-			data:     recipes.DarnRecipe,
++			recipe:   shedrun.RecipeDarn,
+ 			wantRows: []string{"Code-Burler-Fix", "Code-Burler-Review"},
+ 		},
+ 		{
+-			name: "pawl",
+-			data: recipes.PawlRecipe,
++			name:   "pawl",
++			recipe: shedrun.RecipePawl,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			recipe, err := shedbuild.Parse(tt.data)
++			recipe, err := parseEmbeddedRecipe(tt.recipe)
+ 			if err != nil {
+-				t.Fatalf("Parse() error = %v; want nil", err)
++				t.Fatalf("parseEmbeddedRecipe(%s) error = %v; want nil", tt.recipe, err)
+ 			}
+ 
+ 			var gotRows []string
+diff --git a/internal/loomrecipe/names.go b/internal/loomrecipe/names.go
+index 3a7b84de3..367f921e1 100644
+--- a/internal/loomrecipe/names.go
++++ b/internal/loomrecipe/names.go
+@@ -17,7 +17,7 @@ import (
+ // RecipeEngines returns the sorted engine set of the loom module's recipes.
+ // It parses each recipe, expands its blocks, and collects each row's engine name, without duplicates.
+ // The recipes are the loom module's, so the set is their union.
+-// It holds the Block engine of the tapestry recipe's Motif block row.
++// It holds the Block engine of the tapestry recipe's Motif and Jacquard block rows.
+ // Deriving the set from the recipes, rather than writing it down, keeps every union of consumer engine sets honest.
+ // It needs no second hand-maintained table alongside the recipes.
+ //
+@@ -27,7 +27,7 @@ import (
+ func RecipeEngines() []string {
+ 	seen := map[string]bool{}
+ 	var engines []string
+-	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener} {
++	for _, name := range []string{shedrun.RecipeTapestry, shedrun.RecipeJacquard, shedrun.RecipeDarn, shedrun.RecipePawl, shedrun.RecipeSampler, shedrun.RecipeMotif, shedrun.RecipeRaddle, shedrun.RecipeArras, shedrun.RecipeHardener} {
+ 		recipe, err := parseEmbeddedRecipe(name)
+ 		if err != nil {
+ 			panic(fmt.Sprintf("loomrecipe: RecipeEngines: %v", err))
+@@ -116,6 +116,7 @@ func AmendmentTarget(recipe string) (string, error) {
+ // embeddedRecipes is the one table from recipe name to embedded recipe bytes.
+ var embeddedRecipes = map[string][]byte{
+ 	shedrun.RecipeTapestry: recipes.TapestryRecipe,
++	shedrun.RecipeJacquard: recipes.JacquardRecipe,
+ 	shedrun.RecipeDarn:     recipes.DarnRecipe,
+ 	shedrun.RecipeBatten:   recipes.BattenRecipe,
+ 	shedrun.RecipePawl:     recipes.PawlRecipe,
+diff --git a/internal/loomrecipe/overlay_seam_guard_test.go b/internal/loomrecipe/overlay_seam_guard_test.go
+index aa67f0a77..674fabbdf 100644
+--- a/internal/loomrecipe/overlay_seam_guard_test.go
++++ b/internal/loomrecipe/overlay_seam_guard_test.go
+@@ -14,9 +14,9 @@ import (
+ 	"strings"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/contracts/recipes"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
++	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -161,15 +161,15 @@ func assertCommitSeam(t testing.TB, r shedbuild.Recipe, burlerRow shedbuild.Row,
+ 	}
+ }
+ 
+-// TestShippedRecipe_OverlayBurlersCommitThroughSeam parses the embedded recipes.TapestryRecipe.
++// TestShippedRecipe_OverlayBurlersCommitThroughSeam parses and expands the embedded tapestry recipe.
+ // It runs assertOverlayBurlerCommitSeams on the result, a read of the shipped file.
+ //
+ //testtiming:keep pins that the shipped overlay Burlers commit through their partner Bouncer's seam, which TestOverlayBurlerCommitSeams_RejectsBadShapes only checks on hand-written recipes
+ func TestShippedRecipe_OverlayBurlersCommitThroughSeam(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	r, err := shedbuild.Parse(recipes.TapestryRecipe)
++	r, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse(recipes.TapestryRecipe) error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 	assertOverlayBurlerCommitSeams(t, r)
+ }
+diff --git a/internal/loomrecipe/plansplit_test.go b/internal/loomrecipe/plansplit_test.go
+index 7983ee190..52b9edcd2 100644
+--- a/internal/loomrecipe/plansplit_test.go
++++ b/internal/loomrecipe/plansplit_test.go
+@@ -110,7 +110,7 @@ func TestSequence_PlanSplitRunsThePartsRows(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+diff --git a/internal/loomrecipe/progress_test.go b/internal/loomrecipe/progress_test.go
+index 608316dae..634e4d433 100644
+--- a/internal/loomrecipe/progress_test.go
++++ b/internal/loomrecipe/progress_test.go
+@@ -102,20 +102,21 @@ func TestRouting_ProgressAt(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("Preflight, Motif, Discussion-Write and Discussion-Review come before Drift-Baseline", func(t *testing.T) {
++	t.Run("Motif, Discussion-Write, Discussion-Review, Jacquard and Preflight come before Drift-Baseline", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, want := range []struct {
+ 			row  string
+ 			step int
+ 			name string
+ 		}{
+-			{loomshed.NamePreflight, 1, loomshed.NamePreflight},
+-			{loomshed.NameMotif, 2, loomshed.NameMotif},
+-			{loomshed.NameDiscussionWrite, 3, loomshed.NameDiscussionWrite},
+-			{loomshed.NameDiscussionBouncer, 4, "Discussion-Review"},
+-			{loomshed.NameDiscussionBurlerFix, 4, "Discussion-Review"},
++			{loomshed.NameMotif, 1, loomshed.NameMotif},
++			{loomshed.NameDiscussionWrite, 2, loomshed.NameDiscussionWrite},
++			{loomshed.NameDiscussionBouncer, 3, "Discussion-Review"},
++			{loomshed.NameDiscussionBurlerFix, 3, "Discussion-Review"},
+ 			// The step a pass-over of Motif moves to.
+-			{loomshed.NameDriftBaseline, 5, loomshed.NameDriftBaseline},
++			{loomshed.NameJacquard, 4, loomshed.NameJacquard},
++			{loomshed.NamePreflight, 5, loomshed.NamePreflight},
++			{loomshed.NameDriftBaseline, 7, loomshed.NameDriftBaseline},
+ 		} {
+ 			if got := routing.ProgressAt(want.row); got.Step != want.step || got.Name != want.name {
+ 				t.Errorf("ProgressAt(%q) = step %d %q; want step %d %q", want.row, got.Step, got.Name, want.step, want.name)
+diff --git a/internal/loomrecipe/recipe_test.go b/internal/loomrecipe/recipe_test.go
+index e200b16d7..6acceedbe 100644
+--- a/internal/loomrecipe/recipe_test.go
++++ b/internal/loomrecipe/recipe_test.go
+@@ -343,17 +343,18 @@ func TestEntryNumbers(t *testing.T) {
+ 		want   map[string]int
+ 	}{
+ 		{"loom", shedrun.RecipeTapestry, map[string]int{
+-			"Preflight": 1, "Motif": 2, "Discussion-Write": 3,
+-			"Discussion-Bouncer": 4, "Discussion-Burler-Review": 4, "Discussion-Burler-Fix": 4,
+-			"Drift-Baseline": 5,
+-			"Parts-Write":    6, "Parts-Plan-Write": 7,
+-			"Plan-Write":   8,
+-			"Plan-Bouncer": 9, "Plan-Burler-Review": 9, "Plan-Burler-Fix": 9,
+-			"Drift-Await": 10, "Drift-Expect": 11,
+-			"Webster": 12, "Parent-Align": 13,
+-			"Drift-Verify": 14,
+-			"Code-Bouncer": 15, "Code-Burler-Review": 15, "Code-Burler-Fix": 15,
+-			"Drift-Recheck": 16, "Describe": 17, "PR-Review": 18, "Finalize": 19, "Friction-Reflect": 20,
++			"Motif": 1, "Discussion-Write": 2,
++			"Discussion-Bouncer": 3, "Discussion-Burler-Review": 3, "Discussion-Burler-Fix": 3,
++			"Jacquard": 4, "Preflight": 5, "Record-Seed": 6,
++			"Drift-Baseline": 7,
++			"Parts-Write":    8, "Parts-Plan-Write": 9,
++			"Plan-Write":   10,
++			"Plan-Bouncer": 11, "Plan-Burler-Review": 11, "Plan-Burler-Fix": 11,
++			"Drift-Await": 12, "Drift-Expect": 13,
++			"Webster": 14, "Parent-Align": 15,
++			"Drift-Verify": 16,
++			"Code-Bouncer": 17, "Code-Burler-Review": 17, "Code-Burler-Fix": 17,
++			"Drift-Recheck": 18, "Describe": 19, "PR-Review": 20, "Finalize": 21, "Friction-Reflect": 22,
+ 		}},
+ 		{"motif", shedrun.RecipeMotif, map[string]int{
+ 			"Discussion-Write": 1, "Discussion-Bouncer": 2, "Discussion-Burler-Review": 2, "Discussion-Burler-Fix": 2,
+@@ -467,9 +468,9 @@ func TestRecipe_WebsterReroutesToPlanReview(t *testing.T) {
+ 		}
+ 	}
+ 
+-	recipe, err := shedbuild.Parse(recipes.TapestryRecipe)
++	recipe, err := parseEmbeddedRecipe(shedrun.RecipeTapestry)
+ 	if err != nil {
+-		t.Fatalf("shedbuild.Parse() error = %v; want nil", err)
++		t.Fatalf("parseEmbeddedRecipe(tapestry) error = %v; want nil", err)
+ 	}
+ 	for _, row := range recipe.Producers {
+ 		if row.Name != loomshed.NamePlanBurlerReview {
+diff --git a/internal/loomrecipe/recipekeys.go b/internal/loomrecipe/recipekeys.go
+index 23439ecc8..39798dd23 100644
+--- a/internal/loomrecipe/recipekeys.go
++++ b/internal/loomrecipe/recipekeys.go
+@@ -151,20 +151,25 @@ func RowsHoldSplitPerch(rows []shedbuild.Row) bool {
+ }
+ 
+ // RecordEngine returns the engine of the named recipe's row that writes the decision record.
+-// It is empty when the recipe has no such row.
++// It is the seed row's engine, shedrecipe.LoomSeedEngine, for a recipe whose only record source is a seed row.
++// It is empty when the recipe has neither.
+ // An empty recipe name reads as the tapestry recipe, and a name that selects no embedded recipe is refused.
+ func RecordEngine(recipe string) (string, error) {
+ 	parsed, err := parseEmbeddedRecipe(recipe)
+ 	if err != nil {
+ 		return "", err
+ 	}
++	engine := ""
+ 	for _, row := range parsed.Producers {
+ 		if slices.Contains(shedrecipe.LoomRecordEngines, row.Engine) {
+ 			return row.Engine, nil
+ 		}
++		if row.Engine == shedrecipe.LoomSeedEngine {
++			engine = row.Engine
++		}
+ 	}
+ 
+-	return "", nil
++	return engine, nil
+ }
+ 
+ // VerifySource returns the named recipe's top-level verify_source, empty when it sets none.
+diff --git a/internal/loomrecipe/recipekeys_test.go b/internal/loomrecipe/recipekeys_test.go
+index 8233d80ec..3d84cf998 100644
+--- a/internal/loomrecipe/recipekeys_test.go
++++ b/internal/loomrecipe/recipekeys_test.go
+@@ -121,9 +121,24 @@ func TestRecipeKeys(t *testing.T) {
+ 				"Block":       true,
+ 				"Implementer": true,
+ 				"PlanWrite":   true,
++				"RecordSeed":  true,
+ 				"RecordWrite": false,
+ 			},
+-			wantEngineRow: map[string]string{"DiscussionWrite": "Discussion-Write", "Block": "Motif"},
++			wantEngineRow: map[string]string{"DiscussionWrite": "Discussion-Write", "Block": "Motif", "RecordSeed": "Record-Seed"},
++		},
++		{
++			name:       "JacquardRunsAlone",
++			recipe:     shedrun.RecipeJacquard,
++			wantLoom:   true,
++			wantRecord: "RecordSeed",
++			wantVerify: "plan",
++			wantEngines: map[string]bool{
++				"RecordSeed":      true,
++				"Implementer":     true,
++				"DiscussionWrite": false,
++				"Block":           false,
++			},
++			wantEngineRow: map[string]string{"RecordSeed": "Record-Seed", "Preflight": "Preflight"},
+ 		},
+ 		{
+ 			name:       "EmptyReadsAsTapestry",
+diff --git a/internal/loomrecipe/resume_test.go b/internal/loomrecipe/resume_test.go
+index b3f865bb6..b56e20495 100644
+--- a/internal/loomrecipe/resume_test.go
++++ b/internal/loomrecipe/resume_test.go
+@@ -67,7 +67,7 @@ func TestResume_DoesNotRestartAtRowOne(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed1.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed1, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result1, err := shed1.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("first Run() error = %v; want nil", err)
+@@ -85,7 +85,7 @@ func TestResume_DoesNotRestartAtRowOne(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed2.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed2, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result2, err := shed2.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("second Run() error = %v; want nil", err)
+@@ -132,7 +132,7 @@ func TestResume_CrashRecoveryRecallsUnconditionally(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed1.Producers[0].Producer = counting
++	setRowProducer(t, shed1, loomshed.NamePreflight, counting)
+ 	result1, err := shed1.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("first Run() error = %v; want nil", err)
+@@ -150,7 +150,7 @@ func TestResume_CrashRecoveryRecallsUnconditionally(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed2.Producers[0].Producer = counting
++	setRowProducer(t, shed2, loomshed.NamePreflight, counting)
+ 	result2, err := shed2.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("second Run() error = %v; want nil", err)
+@@ -176,7 +176,7 @@ func TestResume_PauseStopsAtBoundaryAndClearsFlag(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed1.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed1, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result1, err := shed1.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("first Run() error = %v; want nil", err)
+@@ -212,7 +212,7 @@ func TestResume_PauseStopsAtBoundaryAndClearsFlag(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed2.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed2, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result2, err := shed2.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("second Run() error = %v; want nil", err)
+@@ -245,7 +245,7 @@ func TestBounceRouting_StuckContinuesAtDeclaredTarget(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("Run() error = %v; want nil", err)
+@@ -281,7 +281,7 @@ func TestBounceRouting_EmptyTargetBlocksInstead(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("Run() error = %v; want nil", err)
+@@ -324,7 +324,7 @@ func TestBounceRouting_BudgetExhaustionBlocks(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("Run() error = %v; want nil", err)
+@@ -376,7 +376,7 @@ func TestResume_DiscussionWriteRespawnsRatherThanReportDoneOffFileExistence(t *t
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("Run() error = %v; want nil", err)
+@@ -438,7 +438,7 @@ func TestResume_LiveMatchingRunAttachesInsteadOfRespawning(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+ 		t.Fatalf("Run() error = %v; want nil", err)
+diff --git a/internal/loomrecipe/sequence_test.go b/internal/loomrecipe/sequence_test.go
+index 3077e86d4..00b916778 100644
+--- a/internal/loomrecipe/sequence_test.go
++++ b/internal/loomrecipe/sequence_test.go
+@@ -7,6 +7,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+@@ -27,7 +28,7 @@ type wantSequenceEntry struct {
+ // wantSequenceOrder is the name and outcome sequence of the rows from 1 through Merge-In.
+ // A clean Run over buildSequenceFixture must produce exactly this sequence.
+ // It follows the row order of wantProducerTable, which TestNew_ShapeMatchesRecipe pins against New;
+-// a reordering of the rows in contracts/recipes/tapestry-recipe.yaml therefore fails the test.
++// a reordering of the rows of the recipes tapestry composes therefore fails the test.
+ //
+ // Every entry but the three review segments and the trailing Merge-In carries a Done outcome by rule.
+ // The segment entries carry no such rule, so they are spelled out explicitly.
+@@ -86,7 +87,9 @@ func deriveSequenceOrder() []wantSequenceEntry {
+ 	return order
+ }
+ 
+-// TestSequence_FullRunBlocksAtMergeIn runs the built row list from Preflight through Webster.
++// TestSequence_FullRunBlocksAtMergeIn runs the built row list of an undiscussed entry from Motif through Webster.
++// The run walks Motif, the Discussion rows, Jacquard and Preflight.
++// It then walks Record-Seed, which writes nothing, and Drift-Baseline.
+ // It checks that the run blocks on Merge-In's Stuck verdict, never reaching the Code-Review perch.
+ // It also checks that the plan is left approved after the run.
+ // The fake writer seeds and rewrites the plan unapproved.
+@@ -110,11 +113,17 @@ func TestSequence_FullRunBlocksAtMergeIn(t *testing.T) {
+ 		return nil
+ 	}
+ 
++	// The fixture's record exists when the run reaches Record-Seed, so the row seeds nothing.
++	env.RecordSeed.ReadStored = func() ([]byte, bool, error) {
++		t.Error("Record-Seed read the stored record while the run's record exists")
++		return nil, false, nil
++	}
++
+ 	shed, err := New(shedrun.RecipeTapestry, env, paths)
+ 	if err != nil {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+-	shed.Producers[0].Producer = fakeAlwaysDoneProducer{}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
+ 
+ 	result, err := shed.Run(context.Background())
+ 	if err != nil {
+@@ -229,3 +238,57 @@ func TestSequence_FullRunBlocksAtMergeIn(t *testing.T) {
+ 		t.Errorf("ParsePlan().Approved = false; want true after a clean run")
+ 	}
+ }
++
++// TestSequence_DiscussedEntryPassesOverMotif runs the built row list of an entry flagged discussed.
++// The Motif gate seeds the stored record and passes over the block, so no Discussion row runs.
++// Record-Seed then finds the seeded record and writes nothing, and the run goes on as an undiscussed one does.
++func TestSequence_DiscussedEntryPassesOverMotif(t *testing.T) {
++	tiergate.Require(t, 0)
++	_, env, paths := buildSequenceFixture(t)
++
++	seeds := 0
++	env.SeedDiscussedRecord = func() (bool, error) {
++		seeds++
++		return true, nil
++	}
++	env.RecordSeed.ReadStored = func() ([]byte, bool, error) {
++		t.Error("Record-Seed read the stored record while the run's record exists")
++		return nil, false, nil
++	}
++
++	shed, err := New(shedrun.RecipeTapestry, env, paths)
++	if err != nil {
++		t.Fatalf("New() error = %v; want nil", err)
++	}
++	setRowProducer(t, shed, loomshed.NamePreflight, fakeAlwaysDoneProducer{})
++
++	result, err := shed.Run(context.Background())
++	if err != nil {
++		t.Fatalf("Run() error = %v; want nil", err)
++	}
++	if result.Outcome != shedengine.RunBlocked || result.HaltedProducer != loomshed.NameParentAlign {
++		t.Fatalf("Run() = %q at %q; want %q at %q (reason: %s)", result.Outcome, result.HaltedProducer, shedengine.RunBlocked, loomshed.NameParentAlign, result.Reason)
++	}
++	if seeds != 1 {
++		t.Errorf("SeedDiscussedRecord calls = %d; want 1", seeds)
++	}
++
++	var want []wantSequenceEntry
++	for _, entry := range wantSequenceOrder {
++		switch {
++		case entry.name == loomshed.NameMotif:
++			want = append(want, wantSequenceEntry{entry.name, shedengine.OutcomeSkipped})
++		case slices.Contains(motifRowNames, entry.name):
++		default:
++			want = append(want, entry)
++		}
++	}
++	if len(result.History) != len(want) {
++		t.Fatalf("Run() History has %d entries; want %d: %+v", len(result.History), len(want), result.History)
++	}
++	for i, entry := range want {
++		if got := result.History[i]; got.Producer != entry.name || got.Outcome != entry.outcome {
++			t.Errorf("History[%d] = %s %q; want %s %q", i, got.Producer, got.Outcome, entry.name, entry.outcome)
++		}
++	}
++}
+diff --git a/internal/loomrecipe/shape_test.go b/internal/loomrecipe/shape_test.go
+index c9bc38e03..749eeb12e 100644
+--- a/internal/loomrecipe/shape_test.go
++++ b/internal/loomrecipe/shape_test.go
+@@ -59,7 +59,7 @@ var (
+ 	driftVerifyType   = reflect.TypeOf(&driftengine.DriftVerify{})
+ )
+ 
+-// blockProducerType returns the concrete type of the Block engine's producer for the Motif row.
++// blockProducerType returns the concrete type of the Block engine's producer for the Motif and Jacquard rows.
+ // shedrecipe does not export that type, so the test builds the producer and reads its type.
+ func blockProducerType() reflect.Type {
+ 	construct, err := shedrecipe.Lookup(shedrecipe.EngineBlock)
+@@ -83,12 +83,14 @@ func frictionReflectProducerType() reflect.Type {
+ }
+ 
+ var wantProducerTable = []wantProducerRow{
+-	{loomshed.NamePreflight, "Preflight", reflect.TypeOf(preflightshed.NewPreflightWithChecks("", "", preflightshed.Checks{}))},
+ 	{loomshed.NameMotif, shedrecipe.EngineBlock, blockProducerType()},
+ 	{loomshed.NameDiscussionWrite, "DiscussionWrite", reflect.TypeOf(loomshed.NewDiscussionWrite("", nil, nil))},
+ 	{loomshed.NameDiscussionBouncer, "Bouncer", bouncerType},
+ 	{loomshed.NameDiscussionBurlerReview, "BurlerReview", burlerReviewType},
+ 	{loomshed.NameDiscussionBurlerFix, "BurlerFix", burlerFixType},
++	{loomshed.NameJacquard, shedrecipe.EngineBlock, blockProducerType()},
++	{loomshed.NamePreflight, "Preflight", reflect.TypeOf(preflightshed.NewPreflightWithChecks("", "", preflightshed.Checks{}))},
++	{loomshed.NameRecordSeed, shedrecipe.LoomSeedEngine, reflect.TypeOf(loomshed.NewRecordSeed("", loomshed.RecordSeedDeps{}))},
+ 	{loomshed.NameDriftBaseline, "DriftBaseline", driftBaselineType},
+ 	{loomshed.NamePartsWrite, "PartsWrite", reflect.TypeOf(loomshed.NewPlanWrite("", nil, nil))},
+ 	{loomshed.NamePartsPlanWrite, "PartsPlanWrite", reflect.TypeOf(loomshed.NewPlanWrite("", nil, nil))},
+@@ -271,7 +273,7 @@ func TestNew_RoutingGraphIsClean(t *testing.T) {
+ 		t.Fatalf("New() error = %v; want nil", err)
+ 	}
+ 
+-	findings := shedcheckkit.Check(shed.Producers, loomshed.NamePreflight, []string{loomshed.NameFrictionReflect})
++	findings := shedcheckkit.Check(shed.Producers, loomshed.NameMotif, []string{loomshed.NameFrictionReflect})
+ 	for _, f := range findings {
+ 		t.Errorf("%s", f.String())
+ 	}
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 5dc87dd2d..c702094b8 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -1,7 +1,8 @@
+ // Package loomshed owns loom's producer constructors and its durable row names.
+ // It also owns loom's status seeder and its cancellation helpers.
+-// Loom's ordered producer list lives in contracts/recipes/tapestry-recipe.yaml.
+-// internal/loomrecipe assembles a *shedengine.Shed from it.
++// Loom's producer lists live in the recipe files under contracts/recipes.
++// Tapestry's is composed from the motif and jacquard recipes through block rows.
++// internal/loomrecipe assembles a *shedengine.Shed from a recipe.
+ // It takes told absolute paths and has no direct production import of internal/lymcwd -- see PATTERN-cwd-resolution.
+ //
+ // The stops its gate rows halt on each name a way forward, as contracts/specs/refusal-spec.md defines one.
+@@ -121,6 +122,11 @@
+ // A board with no entry for the run is reported as Stuck.
+ // So is an entry body holding a CLI error envelope, which a failed verb's captured output leaves there.
+ //
++// The Record-Seed row's producer (NewRecordSeed) is Record-Write in a stored-only mode.
++// It writes a missing record only from the entry's stored record, so it never clobbers a record a Discussion approved.
++// A missing record with no stored record is Stuck with nothing written.
++// Its way forward depends on whether the recipe holds a Discussion row.
++//
+ // A raddle run's state is RaddleState, the run's `state.json`.
+ // It is read and updated through internal/state under one lock, so a key it does not declare survives a rewrite.
+ // CheckRaddleProposal is the one D6 check of a proposal on disk, and RecheckRaddleBoard is the one D8 re-check.
+diff --git a/internal/loomshed/interruptpolicy.go b/internal/loomshed/interruptpolicy.go
+index 3b11a28e8..c4d02ef93 100644
+--- a/internal/loomshed/interruptpolicy.go
++++ b/internal/loomshed/interruptpolicy.go
+@@ -56,8 +56,10 @@ var InterruptPolicies = map[string]string{
+ 	NameHardenBurlerReview: shedverbs.InterruptPolicyReinvoke,
+ 	NameHardenBurlerFix:    shedverbs.InterruptPolicyReinvoke,
+ 
+-	// Record-Write writes its files only when missing and commits the pair; a re-invocation completes what a crash left.
++	// Record-Write and Record-Seed write their files only when missing and commit the pair.
++	// A re-invocation completes what a crash left.
+ 	NameRecordWrite: shedverbs.InterruptPolicyReinvoke,
++	NameRecordSeed:  shedverbs.InterruptPolicyReinvoke,
+ 
+ 	// Agent-spawning Drift rows probe for a live chair and reattach to it; Drift-Await and Drift-Recheck spawn nothing.
+ 	NameDriftBaseline: shedverbs.InterruptPolicyReinvoke,
+@@ -70,8 +72,9 @@ var InterruptPolicies = map[string]string{
+ 	NamePartsWrite:     shedverbs.InterruptPolicyReinvoke,
+ 	NamePartsPlanWrite: shedverbs.InterruptPolicyReinvoke,
+ 
+-	// The Motif producer returns Done at once, so re-invoking it repeats nothing.
+-	NameMotif: shedverbs.InterruptPolicyReinvoke,
++	// A block row's producer returns Done at once, so re-invoking Motif or Jacquard repeats nothing.
++	NameMotif:    shedverbs.InterruptPolicyReinvoke,
++	NameJacquard: shedverbs.InterruptPolicyReinvoke,
+ 
+ 	// Sampler-Session reattaches the live session or resumes the recorded one rather than spawning a second.
+ 	NameSamplerSession: shedverbs.InterruptPolicyReinvoke,
+diff --git a/internal/loomshed/loomshed.go b/internal/loomshed/loomshed.go
+index 95575328b..699ad6234 100644
+--- a/internal/loomshed/loomshed.go
++++ b/internal/loomshed/loomshed.go
+@@ -2,14 +2,14 @@
+ 
+ package loomshed
+ 
+-// The producer names, verbatim per the rows of contracts/recipes/tapestry-recipe.yaml.
++// The producer names, verbatim per the rows of the loom recipes under contracts/recipes.
+ // Each name is the durable on-disk identity in current_producer.
+ // A later rename breaks resume for any in-flight task.
+ // So every row is built from these constants, never a repeated string literal.
+ //
+ // NameParentAlign and NameFinalize are generic ShedProducers shared with the landing shed, not loom's own producers.
+-// They are declared here like every other row, because the tapestry recipe names them too.
+-// contracts/recipes/tapestry-recipe.yaml spells the same names as YAML strings; these constants remain the authority.
++// They are declared here like every other row, because the loom recipes name them too.
++// Those recipe files spell the same names as YAML strings; these constants remain the authority.
+ // internal/loomrecipe's coverage guard pins the two declarations together.
+ // It keys its row table off these constants rather than off string literals.
+ //
+@@ -30,6 +30,7 @@ const (
+ 	NameDarnWrite         = "Darn-Write"
+ 	NameSamplerSession    = "Sampler-Session"
+ 	NameRecordWrite       = "Record-Write"
++	NameRecordSeed        = "Record-Seed"
+ 	NameFinalize          = "Finalize"
+ 	NameFrictionReflect   = "Friction-Reflect"
+ 
+@@ -50,6 +51,8 @@ const (
+ 
+ 	// NameMotif is the block row of the tapestry recipe that runs the motif recipe.
+ 	NameMotif = "Motif"
++	// NameJacquard is the block row of the tapestry recipe that runs the jacquard recipe, its rows after Discussion.
++	NameJacquard = "Jacquard"
+ 
+ 	// NameRaddleWrite is the raddle recipe's row of the agent session that proposes the split of a decision record.
+ 	NameRaddleWrite = "Raddle-Write"
+diff --git a/internal/loomshed/recordseed.go b/internal/loomshed/recordseed.go
+new file mode 100644
+index 000000000..6821c92e2
+--- /dev/null
++++ b/internal/loomshed/recordseed.go
+@@ -0,0 +1,97 @@
++// recordseed.go implements the Record-Seed producer, which is Record-Write in a stored-only mode.
++// It seeds a loom run's decision record from its board entry's stored record and never from the entry's body.
++
++package loomshed
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++// ReseedValues are the values the re-seed of a run with no Discussion row is written with.
++type ReseedValues struct {
++	// Recipe is the recipe the task runs again under, one that discusses it first.
++	Recipe string
++	// Driver is the driver the run's seed records.
++	Driver string
++	// Parent is the parent branch the run's seed records.
++	Parent string
++}
++
++// RecordSeedDeps are the injected seams and absolute paths of the Record-Seed producer.
++type RecordSeedDeps struct {
++	// RecordPath is the absolute path of the decision record.
++	RecordPath string
++	// SupportLogPath is the absolute path of the support log.
++	SupportLogPath string
++	// DiscussionDir is the absolute path of the directory holding both files.
++	DiscussionDir string
++	// ReadStored returns the stored record; found is true only when the entry is flagged discussed and its file exists.
++	ReadStored func() (record []byte, found bool, err error)
++	// Commit commits the discussion directory.
++	// It is a no-op on a directory with no uncommitted change.
++	Commit func() error
++	// DiscussionRow is the row of the run's recipe that runs Discussion, empty when the recipe holds none.
++	// A run with such a row goes back to it when there is no record to seed.
++	DiscussionRow string
++	// Slug is the run's board entry slug, which the way forward of a run with no Discussion row names.
++	Slug string
++	// SeedPath is the absolute path of the run's seed file.
++	SeedPath string
++	// ReadSeed returns the values the re-seed of a run with no Discussion row is written with.
++	ReadSeed func() (ReseedValues, error)
++}
++
++// SeedParentParam is the seed parameter that records a loom run's parent branch.
++const SeedParentParam = "parent"
++
++// noStoredRecordReason opens the Stuck reason of a run with no record to seed.
++const noStoredRecordReason = "the decision record is missing and the board entry holds no stored decision record, so there is no record to seed; "
++
++// NewRecordSeed returns the producer of the Record-Seed row, identified as name.
++// Its Call removes the torn temp files a crash left in the discussion directory.
++// It then writes whichever of the record and the support log is missing, and commits the pair.
++// A missing record is the board entry's stored record, written verbatim;
++// a missing support log is the stored-record log when the entry has a stored record.
++// With no stored record, the missing log is one that makes no claim about the record's source.
++// A file that exists is never overwritten, so an approved record and every entry added to it survive.
++// With the record missing and no stored record, the row is Stuck with nothing written.
++// The reason's way forward takes a run with a Discussion row back to it.
++// For a run with none it names the re-run as tapestry.
++// It gives the steps for a pair batten made and for any other pair, with the seed's path, driver and parent filled in.
++func NewRecordSeed(name string, deps RecordSeedDeps) shedengine.ShedProducer {
++	return &recordWrite{
++		name: name,
++		deps: RecordWriteDeps{
++			RecordPath:     deps.RecordPath,
++			SupportLogPath: deps.SupportLogPath,
++			DiscussionDir:  deps.DiscussionDir,
++			ReadStored:     deps.ReadStored,
++			Commit:         deps.Commit,
++		},
++		noStoredReason: func() (string, error) { return recordSeedStuckReason(deps) },
++	}
++}
++
++// recordSeedStuckReason renders the Stuck reason of a run whose record is missing and whose entry holds no stored record.
++func recordSeedStuckReason(deps RecordSeedDeps) (string, error) {
++	if deps.DiscussionRow != "" {
++		return fmt.Sprintf("%sway forward: \"lym loom goto --to %s\", then \"lym loom resume\"", noStoredRecordReason, deps.DiscussionRow), nil
++	}
++
++	seed, err := deps.ReadSeed()
++	if err != nil {
++		return "", err
++	}
++	return fmt.Sprintf("%sway forward: run the task as %s, which discusses it first. "+
++		"For a pair batten made, from the hub's prime worktree: \"lym batten cancel %s --remove\", "+
++		"\"lym board upsert '{\"slug\":\"%s\",\"recipe\":\"%s\"}'\", "+
++		"\"lym board set-status '{\"slug\":\"%s\",\"status\":null}'\", then \"lym batten run %s\". "+
++		"For any other pair, from its task worktree: \"rm %s\", "+
++		"\"lym shed seed self --recipe %s --driver %s --param %s=%s\", "+
++		"\"lym loom goto --to %s\", \"lym loom start\", then \"lym loom resume\"",
++		noStoredRecordReason, seed.Recipe,
++		deps.Slug, deps.Slug, seed.Recipe, deps.Slug, deps.Slug,
++		deps.SeedPath, seed.Recipe, seed.Driver, SeedParentParam, seed.Parent, NameDiscussionWrite), nil
++}
+diff --git a/internal/loomshed/recordseed_test.go b/internal/loomshed/recordseed_test.go
+new file mode 100644
+index 000000000..369289cb1
+--- /dev/null
++++ b/internal/loomshed/recordseed_test.go
+@@ -0,0 +1,227 @@
++// recordseed_test.go covers the Record-Seed producer over a temp directory and fake seams:
++// the stored record it seeds and the record it leaves alone.
++// They also cover its Stuck with nothing written when there is no record to seed.
++
++package loomshed
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// recordSeedFixture is a Record-Seed producer's deps over a temp discussion directory.
++// Its commit and seed seams count their calls.
++type recordSeedFixture struct {
++	deps      RecordSeedDeps
++	commits   int
++	seedReads int
++}
++
++// newRecordSeedFixture returns a fixture whose board entry holds stored as its stored record, none when stored is nil.
++// discussionRow is the run recipe's Discussion row, empty for a recipe with none.
++func newRecordSeedFixture(t *testing.T, stored []byte, discussionRow string) *recordSeedFixture {
++	t.Helper()
++	root := t.TempDir()
++	dir := filepath.Join(root, "discussion")
++	fixture := &recordSeedFixture{}
++	fixture.deps = RecordSeedDeps{
++		RecordPath:     filepath.Join(dir, "decision-record.md"),
++		SupportLogPath: filepath.Join(dir, "support-log.md"),
++		DiscussionDir:  dir,
++		ReadStored:     func() ([]byte, bool, error) { return stored, stored != nil, nil },
++		Commit: func() error {
++			fixture.commits++
++			return nil
++		},
++		DiscussionRow: discussionRow,
++		Slug:          "my-task",
++		SeedPath:      filepath.Join(root, "seed.json"),
++		ReadSeed: func() (ReseedValues, error) {
++			fixture.seedReads++
++			return ReseedValues{Recipe: "tapestry", Driver: "llm", Parent: "main"}, nil
++		},
++	}
++	return fixture
++}
++
++func TestRecordSeed_Call(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	stored := []byte("## Goal\n\nthe Sketch's own record\n")
++
++	t.Run("MissingRecordIsSeededFromTheStoredRecord", func(t *testing.T) {
++		t.Parallel()
++		f := newRecordSeedFixture(t, stored, "")
++
++		outcome, pointer, err := NewRecordSeed(NameRecordSeed, f.deps).Call(context.Background())
++
++		if err != nil || outcome != shedengine.Done || pointer.Path != f.deps.RecordPath {
++			t.Fatalf("Call() = %q, %q, %v; want Done, %q, nil", outcome, pointer.Path, err, f.deps.RecordPath)
++		}
++		if mustRead(t, f.deps.RecordPath) != string(stored) || mustRead(t, f.deps.SupportLogPath) != string(StoredRecordSupportLog()) {
++			t.Errorf("record, support log = %q, %q; want the stored record verbatim and the stored-record support log", mustRead(t, f.deps.RecordPath), mustRead(t, f.deps.SupportLogPath))
++		}
++		if f.commits != 1 {
++			t.Errorf("Commit calls = %d; want 1", f.commits)
++		}
++	})
++
++	t.Run("ExistingRecordIsLeftAsItIsAndStillCommitted", func(t *testing.T) {
++		t.Parallel()
++		f := newRecordSeedFixture(t, stored, NameDiscussionWrite)
++		if err := os.MkdirAll(f.deps.DiscussionDir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		record, support := "## Goal\n\napproved by this run's Discussion\n", "support\n"
++		for path, content := range map[string]string{f.deps.RecordPath: record, f.deps.SupportLogPath: support} {
++			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}
++
++		outcome, _, err := NewRecordSeed(NameRecordSeed, f.deps).Call(context.Background())
++
++		if err != nil || outcome != shedengine.Done {
++			t.Fatalf("Call() = %q, %v; want Done, nil", outcome, err)
++		}
++		if mustRead(t, f.deps.RecordPath) != record || mustRead(t, f.deps.SupportLogPath) != support {
++			t.Error("Call() rewrote a file that existed; want both left byte for byte")
++		}
++		if f.commits != 1 {
++			t.Errorf("Commit calls = %d; want 1, so a pair a crash left uncommitted is committed", f.commits)
++		}
++	})
++
++	stuck := []struct {
++		name          string
++		discussionRow string
++		wantSeedReads int
++		want          []string
++	}{
++		{
++			name:          "ARecipeWithADiscussionRowGoesBackToIt",
++			discussionRow: NameDiscussionWrite,
++			wantSeedReads: 0,
++			want:          []string{`way forward: "lym loom goto --to Discussion-Write", then "lym loom resume"`},
++		},
++		{
++			name:          "ARecipeWithNoDiscussionRowIsRunAsTapestry",
++			discussionRow: "",
++			wantSeedReads: 1,
++			want: []string{
++				`For a pair batten made, from the hub's prime worktree: "lym batten cancel my-task --remove", ` +
++					`"lym board upsert '{"slug":"my-task","recipe":"tapestry"}'", ` +
++					`"lym board set-status '{"slug":"my-task","status":null}'", then "lym batten run my-task".`,
++				`For any other pair, from its task worktree: "rm `,
++				`seed.json", "lym shed seed self --recipe tapestry --driver llm --param parent=main", ` +
++					`"lym loom goto --to Discussion-Write", "lym loom start", then "lym loom resume"`,
++			},
++		},
++	}
++	for _, tt := range stuck {
++		t.Run("NoStoredRecordIsStuck_"+tt.name, func(t *testing.T) {
++			t.Parallel()
++			f := newRecordSeedFixture(t, nil, tt.discussionRow)
++
++			outcome, pointer, err := NewRecordSeed(NameRecordSeed, f.deps).Call(context.Background())
++
++			if err != nil || outcome != shedengine.Stuck {
++				t.Fatalf("Call() = %q, %v; want Stuck, nil", outcome, err)
++			}
++			for _, want := range append([]string{"there is no record to seed"}, tt.want...) {
++				if !strings.Contains(pointer.Reason, want) {
++					t.Errorf("Reason = %q; want it to name %q", pointer.Reason, want)
++				}
++			}
++			if f.seedReads != tt.wantSeedReads {
++				t.Errorf("ReadSeed calls = %d; want %d", f.seedReads, tt.wantSeedReads)
++			}
++			for _, path := range []string{f.deps.RecordPath, f.deps.SupportLogPath} {
++				if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
++					t.Errorf("stat %s error = %v; want nothing written", path, err)
++				}
++			}
++			if f.commits != 0 {
++				t.Errorf("Commit calls = %d; want 0", f.commits)
++			}
++		})
++	}
++
++	t.Run("ReadSeedErrorIsReturned", func(t *testing.T) {
++		t.Parallel()
++		boom := errors.New("boom")
++		f := newRecordSeedFixture(t, nil, "")
++		f.deps.ReadSeed = func() (ReseedValues, error) { return ReseedValues{}, boom }
++
++		_, _, err := NewRecordSeed(NameRecordSeed, f.deps).Call(context.Background())
++		if !errors.Is(err, boom) {
++			t.Fatalf("Call() error = %v; want it to wrap the seam's error", err)
++		}
++		for _, want := range []string{"read the run's seed", "way forward: the fault is transient, re-step the Record-Seed row"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("Call() error = %q; want it to name %q", err, want)
++			}
++		}
++	})
++
++	t.Run("RecordWithoutSupportLogOrStoredRecordGetsALogNamingNoSource", func(t *testing.T) {
++		t.Parallel()
++		f := newRecordSeedFixture(t, nil, "")
++		if err := os.MkdirAll(f.deps.DiscussionDir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		record := "## Goal\n\nkept\n"
++		if err := os.WriteFile(f.deps.RecordPath, []byte(record), 0o644); err != nil {
++			t.Fatal(err)
++		}
++
++		outcome, _, err := NewRecordSeed(NameRecordSeed, f.deps).Call(context.Background())
++
++		if err != nil || outcome != shedengine.Done {
++			t.Fatalf("Call() = %q, %v; want Done, nil", outcome, err)
++		}
++		wantLog := "## Interview\n\n" +
++			"The support log was missing beside an existing record; the record was kept as it stood.\n\n" +
++			"## Rejected alternatives\n\n" +
++			"## Review rounds\n\n" +
++			"_No rounds yet._\n\n" +
++			"## Question ledger\n"
++		if got := mustRead(t, f.deps.SupportLogPath); got != wantLog {
++			t.Errorf("support log = %q; want %q", got, wantLog)
++		}
++		if got := mustRead(t, f.deps.RecordPath); got != record {
++			t.Errorf("record = %q; want it unchanged %q", got, record)
++		}
++	})
++
++	// The context is cancelled from inside the call, so the check made on entry does not answer first.
++	t.Run("CancelDuringTheCallWinsOverStuck", func(t *testing.T) {
++		t.Parallel()
++		f := newRecordSeedFixture(t, nil, NameDiscussionWrite)
++		ctx, cancel := context.WithCancel(context.Background())
++		defer cancel()
++		f.deps.ReadStored = func() ([]byte, bool, error) {
++			cancel()
++			return nil, false, nil
++		}
++
++		outcome, _, err := NewRecordSeed(NameRecordSeed, f.deps).Call(ctx)
++
++		if !errors.Is(err, context.Canceled) || outcome == shedengine.Stuck {
++			t.Errorf("Call() = %q, %v; want a context.Canceled error and no verdict", outcome, err)
++		}
++		for _, path := range []string{f.deps.RecordPath, f.deps.SupportLogPath} {
++			if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
++				t.Errorf("stat %s error = %v; want nothing written", path, err)
++			}
++		}
++	})
++}
+diff --git a/internal/loomshed/recordwrite.go b/internal/loomshed/recordwrite.go
+index efba7486d..a1db4aadf 100644
+--- a/internal/loomshed/recordwrite.go
++++ b/internal/loomshed/recordwrite.go
+@@ -31,10 +31,14 @@ type RecordWriteDeps struct {
+ 	Commit func() error
+ }
+ 
+-// recordWrite is the Record-Write producer.
++// recordWrite is the Record-Write producer, and the Record-Seed producer in its stored-only mode.
+ type recordWrite struct {
+ 	name string
+ 	deps RecordWriteDeps
++	// noStoredReason is set in the stored-only mode.
++	// It renders the Stuck reason of a missing record whose board entry holds no stored record.
++	// This mode never renders that record from the entry's body.
++	noStoredReason func() (string, error)
+ }
+ 
+ var _ shedengine.ShedProducer = (*recordWrite)(nil)
+@@ -106,25 +110,30 @@ func longestBacktickRun(text string) int {
+ 	return longest
+ }
+ 
+-// boardSupportLog renders the support log of a run whose record was written from the board entry.
+-func boardSupportLog() []byte {
++// supportLogWithInterview renders a support log with no review rounds, whose Interview section holds the line interview.
++func supportLogWithInterview(interview string) []byte {
+ 	return []byte("## Interview\n\n" +
+-		"The decision record was written from the board entry, with no interview.\n\n" +
++		interview + "\n\n" +
+ 		"## Rejected alternatives\n\n" +
+ 		"## Review rounds\n\n" +
+ 		"_No rounds yet._\n\n" +
+ 		"## Question ledger\n")
+ }
+ 
++// boardSupportLog renders the support log of a run whose record was written from the board entry.
++func boardSupportLog() []byte {
++	return supportLogWithInterview("The decision record was written from the board entry, with no interview.")
++}
++
++// keptRecordSupportLog renders the support log of a run whose record was kept as it stood, of unstated source.
++func keptRecordSupportLog() []byte {
++	return supportLogWithInterview("The support log was missing beside an existing record; the record was kept as it stood.")
++}
++
+ // StoredRecordSupportLog renders the support log of a run whose decision record is the board entry's stored record.
+ // The stored record was approved in an earlier run.
+ func StoredRecordSupportLog() []byte {
+-	return []byte("## Interview\n\n" +
+-		"The decision record is the board entry's stored record, approved in an earlier run, so this run held no Discussion.\n\n" +
+-		"## Rejected alternatives\n\n" +
+-		"## Review rounds\n\n" +
+-		"_No rounds yet._\n\n" +
+-		"## Question ledger\n")
++	return supportLogWithInterview("The decision record is the board entry's stored record, approved in an earlier run, so this run held no Discussion.")
+ }
+ 
+ // Call implements shedengine.ShedProducer.
+@@ -135,9 +144,12 @@ func StoredRecordSupportLog() []byte {
+ // otherwise it is rendered from the entry's body.
+ // A missing support log is the stored-record log when the entry has a stored record;
+ // otherwise it is the board-rendered log, whether or not the record was missing too.
++// In the stored-only mode that otherwise case is a log that makes no claim about the record's source.
+ // A file that exists is never overwritten, so a resume keeps every entry added to the record after it was written.
+ // The commit runs on every call, so a pair a crash left written but uncommitted is committed on resume.
+ // A board with no entry for the run is Stuck, and so is an entry body holding a CLI error envelope, with nothing written.
++// In the stored-only mode the body is never read.
++// There a missing record with no stored record is Stuck with that mode's reason, and nothing is written.
+ // A read, write or commit failure is a returned error.
+ func (p *recordWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+ 	if err := entryErr(ctx, p.name); err != nil {
+@@ -166,11 +178,21 @@ func (p *recordWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		}
+ 	}
+ 	if recordMissing {
+-		if storedFound {
++		switch {
++		case storedFound:
+ 			if err := fsx.AtomicWriteBytes(p.deps.RecordPath, stored); err != nil {
+ 				return "", shedengine.OutputPointer{}, p.fail(ctx, "write the decision record", err)
+ 			}
+-		} else {
++		case p.noStoredReason != nil:
++			reason, err := p.noStoredReason()
++			if err != nil {
++				return "", shedengine.OutputPointer{}, p.fail(ctx, "read the run's seed", err)
++			}
++			if err := cancelErr(ctx, p.name); err != nil {
++				return "", shedengine.OutputPointer{}, err
++			}
++			return shedengine.Stuck, shedengine.OutputPointer{Reason: reason}, nil
++		default:
+ 			body, found, err := p.deps.ReadBody()
+ 			if err != nil {
+ 				return "", shedengine.OutputPointer{}, p.fail(ctx, "read the board entry", err)
+@@ -193,9 +215,14 @@ func (p *recordWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.
+ 		}
+ 	}
+ 	if logMissing {
+-		supportLog := boardSupportLog()
+-		if storedFound {
++		var supportLog []byte
++		switch {
++		case storedFound:
+ 			supportLog = StoredRecordSupportLog()
++		case p.noStoredReason != nil:
++			supportLog = keptRecordSupportLog()
++		default:
++			supportLog = boardSupportLog()
+ 		}
+ 		if err := fsx.AtomicWriteBytes(p.deps.SupportLogPath, supportLog); err != nil {
+ 			return "", shedengine.OutputPointer{}, p.fail(ctx, "write the support log", err)
+diff --git a/internal/shedbuild/build_test.go b/internal/shedbuild/build_test.go
+index 26f9d7df6..e3b4bf346 100644
+--- a/internal/shedbuild/build_test.go
++++ b/internal/shedbuild/build_test.go
+@@ -189,14 +189,36 @@ func TestBuild_LoomContract(t *testing.T) {
+ 		wantSubs []string
+ 	}{
+ 		{
+-			name:     "no record row",
++			name:     "neither a record row nor a seed row",
+ 			mutate:   setEngine("Record", "Stub"),
+-			wantSubs: []string{"shedbuild: ", "0 record rows", "way forward: give the recipe exactly one record row, engine DiscussionWrite or RecordWrite"},
++			wantSubs: []string{"shedbuild: ", "holds no record row and no seed row", "way forward: give the recipe one record row, engine DiscussionWrite or RecordWrite, or one seed row, engine RecordSeed"},
+ 		},
+ 		{
+ 			name:     "two record rows",
+ 			mutate:   setEngine("Middle", "RecordWrite"),
+-			wantSubs: []string{"shedbuild: ", "2 record rows", "way forward: give the recipe exactly one record row, engine DiscussionWrite or RecordWrite"},
++			wantSubs: []string{"shedbuild: ", "2 record rows, more than one", "way forward: keep at most one record row, engine DiscussionWrite or RecordWrite"},
++		},
++		{
++			name: "two seed rows",
++			mutate: func(r *Recipe) {
++				setEngine("Pre", "RecordSeed")(r)
++				setEngine("Middle", "RecordSeed")(r)
++			},
++			wantSubs: []string{"shedbuild: ", "2 seed rows, more than one", "way forward: keep at most one seed row, engine RecordSeed"},
++		},
++		{
++			name:     "a seed row ahead of its record row on the on_done path",
++			mutate:   setEngine("Pre", "RecordSeed"),
++			wantSubs: []string{"shedbuild: ", `the seed row "Pre" does not lie after the record row "Record"`, "way forward: place the seed row after the record row on the on_done path from the entry"},
++		},
++		{
++			name: "a seed row standing for the record row after the build row",
++			mutate: func(r *Recipe) {
++				setEngine("Record", "Stub")(r)
++				setEngine("Land", "RecordSeed")(r)
++				setEngine("Reflect", "Finalize")(r)
++			},
++			wantSubs: []string{"shedbuild: ", `the build row "Build" does not lie after the record row "Land"`},
+ 		},
+ 		{
+ 			name:     "no build row",
+@@ -340,6 +362,24 @@ func TestBuild_LoomContract(t *testing.T) {
+ 		}
+ 	})
+ 
++	seedForms := []struct {
++		name   string
++		mutate func(*Recipe)
++	}{
++		{"a seed row after the record row", setEngine("Middle", "RecordSeed")},
++		{"a seed row in place of the record row", setEngine("Record", "RecordSeed")},
++	}
++	for _, tt := range seedForms {
++		t.Run(tt.name+" passes the check", func(t *testing.T) {
++			t.Parallel()
++			r := validLoom()
++			tt.mutate(&r)
++			if err := checkLoomContract(r); err != nil {
++				t.Errorf("checkLoomContract(%s) = %v; want nil", tt.name, err)
++			}
++		})
++	}
++
+ 	t.Run("a record-only recipe, with neither a build row nor a Finalize row, passes with no verify_source", func(t *testing.T) {
+ 		t.Parallel()
+ 		r := validLoom()
+diff --git a/internal/shedbuild/expand.go b/internal/shedbuild/expand.go
+index 9314883b0..f4bb87e82 100644
+--- a/internal/shedbuild/expand.go
++++ b/internal/shedbuild/expand.go
+@@ -23,13 +23,17 @@ import (
+ // when that is empty, it is the exit of the block enclosing it.
+ // An inlined row's empty on_done becomes the exit of the innermost block enclosing the row.
+ // An inlined block row's empty skip target does too.
++// A block row whose exit is still empty ends the run once its rows do:
++// it is admitted only as the last row of its recipe with block gate shedrecipe.BlockGateAlways,
++// so no skip can fall back to the block's own entry,
++// and the rows it inlines keep an empty on_done where they set none.
+ // Each inlined row's BlockPath is the names of the block rows enclosing it, outermost first, joined by "/".
+ // A sub-recipe's terminals and top-level keys are not read;
+ // the parent's stay the run's, so a recipe that runs alone may also be a block.
+ //
+ // Every refusal names the block row and a way forward.
+ // It covers an unresolvable or cyclic recipe, and a name or segment clash with rows outside the block.
+-// An on_done inside the block is refused too, as is an outermost block row with no on_done.
++// An on_done inside the block is refused too, as is a block row with an empty exit that is not last or not always gated.
+ func Expand(r Recipe, resolve func(name string) ([]byte, error)) (Recipe, error) {
+ 	if !slices.ContainsFunc(r.Producers, func(row Row) bool { return row.Block != "" }) {
+ 		return r, nil
+@@ -72,7 +76,7 @@ func (e *expander) register(rows []Row) {
+ // path is the block path of rows, and chain the names of the recipes entered to reach them.
+ func (e *expander) expandRows(rows []Row, exit, path string, chain []string) ([]Row, error) {
+ 	out := make([]Row, 0, len(rows))
+-	for _, row := range rows {
++	for i, row := range rows {
+ 		if row.Block == "" {
+ 			if exit != "" && row.OnDone == "" {
+ 				row.OnDone = exit
+@@ -84,11 +88,13 @@ func (e *expander) expandRows(rows []Row, exit, path string, chain []string) ([]
+ 
+ 		blockExit := row.OnDone
+ 		if blockExit == "" {
+-			if exit == "" {
+-				return nil, blockError(row, "on_done is empty; way forward: set on_done to the row the run takes after the block")
+-			}
+ 			blockExit = exit
+ 		}
++		if blockExit == "" {
++			if err := checkRunEndingBlock(row, i == len(rows)-1); err != nil {
++				return nil, err
++			}
++		}
+ 		inlined, entry, err := e.inline(row, blockExit, path, chain)
+ 		if err != nil {
+ 			return nil, err
+@@ -107,6 +113,19 @@ func (e *expander) expandRows(rows []Row, exit, path string, chain []string) ([]
+ 	return out, nil
+ }
+ 
++// checkRunEndingBlock refuses block, a block row with an empty exit, unless it may end the run.
++// It may when last says it is its recipe's last row and its gate always holds:
++// any other gate's skip would fall back to the block's own entry.
++func checkRunEndingBlock(block Row, last bool) error {
++	if !last {
++		return blockError(block, "on_done is empty; way forward: set on_done to the row the run takes after the block")
++	}
++	if block.BlockGate != shedrecipe.BlockGateAlways {
++		return blockError(block, "on_done is empty on the recipe's last row and block_gate is %q, so a skip would fall back to the block's own entry; way forward: set on_done, or use block_gate %s", block.BlockGate, shedrecipe.BlockGateAlways)
++	}
++	return nil
++}
++
+ // inline resolves, parses and expands the recipe that block names.
+ // It returns the recipe's rows, ready to follow the block row, and its entry.
+ // exit is the block's exit and path the block path of the block row;
+diff --git a/internal/shedbuild/expand_test.go b/internal/shedbuild/expand_test.go
+index 3cd653025..2449e07f8 100644
+--- a/internal/shedbuild/expand_test.go
++++ b/internal/shedbuild/expand_test.go
+@@ -104,6 +104,32 @@ func TestExpand(t *testing.T) {
+ 					{Name: "Post", Engine: "Stub"},
+ 				},
+ 			},
++			{
++				name:    "a last block row with no on_done and the always gate ends the run, its inlined last row keeping an empty on_done",
++				parent:  recipeYAML("Pre", stubRowYAML("Pre", "on_done: Blk"), blockRowForExpand("Blk", "sub")),
++				sources: map[string]string{"sub": sub},
++				want: []Row{
++					{Name: "Pre", Engine: "Stub", OnDone: "Blk"},
++					{Name: "Blk", Engine: "Block", OnDone: "S1", Block: "sub", BlockGate: "always"},
++					{Name: "S1", Engine: "Stub", OnDone: "S2", Segment: "seg", BlockPath: "Blk"},
++					{Name: "S2", Engine: "Stub", BlockPath: "Blk"},
++				},
++			},
++			{
++				name:   "a last always-gated block ending a run-ending block's recipe is admitted, the innermost last row keeping an empty on_done",
++				parent: recipeYAML("Pre", stubRowYAML("Pre", "on_done: Blk"), blockRowForExpand("Blk", "sub")),
++				sources: map[string]string{
++					"sub":   recipeYAML("O1", stubRowYAML("O1", "on_done: Inner"), blockRowForExpand("Inner", "inner")),
++					"inner": recipeYAML("I1", stubRowYAML("I1")),
++				},
++				want: []Row{
++					{Name: "Pre", Engine: "Stub", OnDone: "Blk"},
++					{Name: "Blk", Engine: "Block", OnDone: "O1", Block: "sub", BlockGate: "always"},
++					{Name: "O1", Engine: "Stub", OnDone: "Inner", BlockPath: "Blk"},
++					{Name: "Inner", Engine: "Block", OnDone: "I1", Block: "inner", BlockGate: "always", BlockPath: "Blk"},
++					{Name: "I1", Engine: "Stub", BlockPath: "Blk/Inner"},
++				},
++			},
+ 			{
+ 				name:   "an inner block with an on_done of its own exits there",
+ 				parent: parentYAML("on_done: Post"),
+@@ -256,6 +282,21 @@ func TestExpand(t *testing.T) {
+ 			sources: map[string]string{"sub": sub},
+ 			want:    `shedbuild: block "Blk": on_done is empty; way forward: set on_done to the row the run takes after the block`,
+ 		},
++		{
++			name:   "an inner block with an empty on_done that is not last in a run-ending block's recipe",
++			parent: recipeYAML("Pre", stubRowYAML("Pre", "on_done: Blk"), blockRowForExpand("Blk", "sub")),
++			sources: map[string]string{
++				"sub":   recipeYAML("Inner", blockRowForExpand("Inner", "inner"), stubRowYAML("O2")),
++				"inner": recipeYAML("I1", stubRowYAML("I1")),
++			},
++			want: `shedbuild: block "Inner": on_done is empty; way forward: set on_done to the row the run takes after the block`,
++		},
++		{
++			name:    "a last block row with no on_done whose gate is not always",
++			parent:  recipeYAML("Pre", stubRowYAML("Pre", "on_done: Blk"), rowYAML("Blk", []string{"block: sub", "block_gate: undiscussed"})),
++			sources: map[string]string{"sub": sub},
++			want:    `shedbuild: block "Blk": on_done is empty on the recipe's last row and block_gate is "undiscussed", so a skip would fall back to the block's own entry; way forward: set on_done, or use block_gate always`,
++		},
+ 		{
+ 			name:    "an on_done naming the block row itself",
+ 			parent:  parentYAML("on_done: Blk"),
+diff --git a/internal/shedbuild/loomcontract.go b/internal/shedbuild/loomcontract.go
+index e0dd482eb..541c434aa 100644
+--- a/internal/shedbuild/loomcontract.go
++++ b/internal/shedbuild/loomcontract.go
+@@ -14,7 +14,9 @@ import (
+ const loomContract = "loom"
+ 
+ // checkLoomContract refuses a recipe whose rows, edges or keys break the loom contract.
+-// The contract is one record row.
++// The contract is at most one record row and at most one seed row, and at least one of the two.
++// A recipe holding both needs the seed row after the record row on the on_done path from the entry.
++// Every later clause reads the seed row as the record row when the recipe holds no record row.
+ // A recipe that lands a change also needs one build row after the record row on the on_done path from the entry.
+ // Such a recipe also needs a Finalize row followed only by terminals, and a set verify_source.
+ // A recipe with neither a build row nor a Finalize row is the record-only form:
+@@ -29,7 +31,7 @@ const loomContract = "loom"
+ // Each refusal names the broken clause and its way forward.
+ // The first broken clause in that order is the one returned.
+ func checkLoomContract(r Recipe) error {
+-	recordRow, err := onlyRowOf(r, shedrecipe.LoomRecordEngines, "record", "DiscussionWrite or RecordWrite")
++	recordRow, err := recordSourceRow(r)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -64,6 +66,46 @@ func checkLoomContract(r Recipe) error {
+ 	return nil
+ }
+ 
++// recordSourceRow returns the row that names the source of r's decision record:
++// its record row when it holds one, and its seed row otherwise.
++// It refuses several record rows, several seed rows, neither,
++// and a seed row that does not follow the record row on the on_done path from the entry.
++func recordSourceRow(r Recipe) (Row, error) {
++	records := rowsOf(r, shedrecipe.LoomRecordEngines)
++	seeds := rowsOf(r, []string{shedrecipe.LoomSeedEngine})
++	switch {
++	case len(records) > 1:
++		return Row{}, fmt.Errorf("the recipe holds %d record rows, more than one; way forward: keep at most one record row, engine DiscussionWrite or RecordWrite", len(records))
++	case len(seeds) > 1:
++		return Row{}, fmt.Errorf("the recipe holds %d seed rows, more than one; way forward: keep at most one seed row, engine %s", len(seeds), shedrecipe.LoomSeedEngine)
++	case len(records) == 0 && len(seeds) == 0:
++		return Row{}, fmt.Errorf("the recipe holds no record row and no seed row; way forward: give the recipe one record row, engine DiscussionWrite or RecordWrite, or one seed row, engine %s", shedrecipe.LoomSeedEngine)
++	case len(records) == 0:
++		return seeds[0], nil
++	case len(seeds) == 0:
++		return records[0], nil
++	}
++
++	path := onDonePath(r, r.Entry)
++	recordAt := slices.Index(path, records[0].Name)
++	seedAt := slices.Index(path, seeds[0].Name)
++	if recordAt < 0 || seedAt < recordAt {
++		return Row{}, fmt.Errorf("the seed row %q does not lie after the record row %q on the on_done path from the entry; way forward: place the seed row after the record row on the on_done path from the entry", seeds[0].Name, records[0].Name)
++	}
++	return records[0], nil
++}
++
++// rowsOf returns the rows of r whose engine is in engines, in row order.
++func rowsOf(r Recipe, engines []string) []Row {
++	var found []Row
++	for _, row := range r.Producers {
++		if slices.Contains(engines, row.Engine) {
++			found = append(found, row)
++		}
++	}
++	return found
++}
++
+ // segmentBouncerEngine is the engine of the row that gates a segment's review ring.
+ const segmentBouncerEngine = "Bouncer"
+ 
+@@ -121,12 +163,7 @@ func recordOnly(r Recipe) bool {
+ // onlyRowOf returns the one row of r whose engine is in engines.
+ // It refuses zero or several such rows, and its error names role and the engine choice.
+ func onlyRowOf(r Recipe, engines []string, role, engineChoice string) (Row, error) {
+-	var found []Row
+-	for _, row := range r.Producers {
+-		if slices.Contains(engines, row.Engine) {
+-			found = append(found, row)
+-		}
+-	}
++	found := rowsOf(r, engines)
+ 	if len(found) != 1 {
+ 		return Row{}, fmt.Errorf("the recipe holds %d %s rows, not exactly one; way forward: give the recipe exactly one %s row, engine %s", len(found), role, role, engineChoice)
+ 	}
+diff --git a/internal/shedcli/table.go b/internal/shedcli/table.go
+index c9dc37e26..550d4f6ec 100644
+--- a/internal/shedcli/table.go
++++ b/internal/shedcli/table.go
+@@ -56,6 +56,11 @@ var recipes = map[string]entry{
+ 		Verbs:         []string{"run", "step", "status", "pause", "goto"},
+ 		BootstrapVerb: loomcli.BootstrapVerb,
+ 	},
++	shedrun.RecipeJacquard: {
++		Arm:           loomcli.ArmAt,
++		Verbs:         []string{"run", "step", "status", "pause", "goto"},
++		BootstrapVerb: loomcli.BootstrapVerb,
++	},
+ 	"batten": {
+ 		Arm:           battencli.ArmAt,
+ 		Verbs:         []string{"run", "step", "status", "pause", "goto"},
+diff --git a/internal/shedcli/table_test.go b/internal/shedcli/table_test.go
+index 38313cfdc..0bb48e261 100644
+--- a/internal/shedcli/table_test.go
++++ b/internal/shedcli/table_test.go
+@@ -40,7 +40,7 @@ func TestRecipes_KeySet(t *testing.T) {
+ 		name string
+ 		want []string
+ 	}{
+-		{"exactly arras, batten, darn, hardener, motif, pawl, raddle, sampler and tapestry", []string{"arras", "batten", "darn", "hardener", "motif", "pawl", "raddle", "sampler", "tapestry"}},
++		{"exactly arras, batten, darn, hardener, jacquard, motif, pawl, raddle, sampler and tapestry", []string{"arras", "batten", "darn", "hardener", "jacquard", "motif", "pawl", "raddle", "sampler", "tapestry"}},
+ 		{"matches the shedrun vocabulary", shedrun.RecipeNames()},
+ 	}
+ 	for _, tt := range tests {
+@@ -67,6 +67,7 @@ func TestRecipes_Entries(t *testing.T) {
+ 		wantSeedRule      bool
+ 	}{
+ 		{"tapestry", loomcli.BootstrapVerb, false},
++		{shedrun.RecipeJacquard, loomcli.BootstrapVerb, false},
+ 		{"darn", loomcli.BootstrapVerb, false},
+ 		{"pawl", loomcli.BootstrapVerb, false},
+ 		{"sampler", loomcli.BootstrapVerb, false},
+diff --git a/internal/shedrecipe/conformance_test.go b/internal/shedrecipe/conformance_test.go
+index 876535d37..63d1a71d3 100644
+--- a/internal/shedrecipe/conformance_test.go
++++ b/internal/shedrecipe/conformance_test.go
+@@ -30,6 +30,7 @@ func minimalEntries() map[string]minimalEntry {
+ 		"DarnWrite":       {darnTestEnv, emptyConfig},
+ 		"SamplerSession":  {newTestEnv, emptyConfig},
+ 		"RecordWrite":     {newTestEnv, emptyConfig},
++		"RecordSeed":      {newTestEnv, emptyConfig},
+ 		"RaddleWrite":     {newTestEnv, func(*testing.T, Env) Config { return gatesCfg("raddle", 3) }},
+ 		"RaddleFile":      {newTestEnv, emptyConfig},
+ 		"Finalize":        {withLanding, emptyConfig},
+diff --git a/internal/shedrecipe/doc.go b/internal/shedrecipe/doc.go
+index 3931d5de1..eb60ecc2d 100644
+--- a/internal/shedrecipe/doc.go
++++ b/internal/shedrecipe/doc.go
+@@ -16,7 +16,8 @@
+ //
+ // # The loom engine sets
+ //
+-// LoomRecordEngines, LoomBuildEngines and LoomFinalizeEngine name the engines of a loom recipe's rows.
++// LoomRecordEngines, LoomSeedEngine, LoomBuildEngines and LoomFinalizeEngine name the engines of a loom recipe's rows.
++// A seed row writes a missing record from the board entry's stored record, beside or in place of the record row.
+ // shedbuild reads them to check a recipe declaring `contract: loom`, so a new loom recipe needs no change to the check.
+ //
+ // # The Implementer row
+diff --git a/internal/shedrecipe/entries_recordseed.go b/internal/shedrecipe/entries_recordseed.go
+new file mode 100644
+index 000000000..e199ee8f0
+--- /dev/null
++++ b/internal/shedrecipe/entries_recordseed.go
+@@ -0,0 +1,48 @@
++// entries_recordseed.go implements recordSeedEntry, the Constructor for the "RecordSeed" registry row:
++// a Go row that seeds a loom run's decision record from its board entry's stored record, with no agent.
++
++package shedrecipe
++
++import (
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++// recordSeedEntry is the Constructor for the "RecordSeed" registry row.
++// It takes no Config key and returns loomshed.NewRecordSeed over Env.RecordSeed.
++// The record, support log, discussion directory and seed paths must be absolute, and the slug non-empty.
++// ReadStored, Commit and ReadSeed must be non-nil; the refusal names the Env field.
++func recordSeedEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
++	const entry = LoomSeedEngine
++	if err := configRejectUnknown(cfg); err != nil {
++		return nil, err
++	}
++	deps := env.RecordSeed
++	for _, path := range []struct{ field, value string }{
++		{"RecordSeed.RecordPath", deps.RecordPath},
++		{"RecordSeed.SupportLogPath", deps.SupportLogPath},
++		{"RecordSeed.DiscussionDir", deps.DiscussionDir},
++		{"RecordSeed.SeedPath", deps.SeedPath},
++	} {
++		if err := requireAbsRoot(entry, path.field, path.value); err != nil {
++			return nil, err
++		}
++	}
++	if err := requireNonEmpty(entry, "RecordSeed.Slug", deps.Slug); err != nil {
++		return nil, err
++	}
++	for _, seam := range []struct {
++		field string
++		value any
++	}{
++		{"RecordSeed.ReadStored", deps.ReadStored},
++		{"RecordSeed.Commit", deps.Commit},
++		{"RecordSeed.ReadSeed", deps.ReadSeed},
++	} {
++		if err := requireSeam(entry, seam.field, seam.value); err != nil {
++			return nil, err
++		}
++	}
++
++	return loomshed.NewRecordSeed(row.Name, deps), nil
++}
+diff --git a/internal/shedrecipe/entries_recordseed_test.go b/internal/shedrecipe/entries_recordseed_test.go
+new file mode 100644
+index 000000000..fe4fed116
+--- /dev/null
++++ b/internal/shedrecipe/entries_recordseed_test.go
+@@ -0,0 +1,51 @@
++// entries_recordseed_test.go covers recordSeedEntry.
++// It checks the construction-time validation of the paths, slug and seams of Env.RecordSeed.
++// It also checks the build over a filled Env.
++
++package shedrecipe
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestRecordSeedEntry(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		field string
++		edit  func(*Env)
++	}{
++		{"RelativeRecordPath", "RecordSeed.RecordPath", func(e *Env) { e.RecordSeed.RecordPath = "decision-record.md" }},
++		{"RelativeSupportLogPath", "RecordSeed.SupportLogPath", func(e *Env) { e.RecordSeed.SupportLogPath = "support-log.md" }},
++		{"RelativeDiscussionDir", "RecordSeed.DiscussionDir", func(e *Env) { e.RecordSeed.DiscussionDir = "discussion" }},
++		{"RelativeSeedPath", "RecordSeed.SeedPath", func(e *Env) { e.RecordSeed.SeedPath = "seed.json" }},
++		{"EmptySlug", "RecordSeed.Slug", func(e *Env) { e.RecordSeed.Slug = "" }},
++		{"NilReadStored", "RecordSeed.ReadStored", func(e *Env) { e.RecordSeed.ReadStored = nil }},
++		{"NilCommit", "RecordSeed.Commit", func(e *Env) { e.RecordSeed.Commit = nil }},
++		{"NilReadSeed", "RecordSeed.ReadSeed", func(e *Env) { e.RecordSeed.ReadSeed = nil }},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			env := newTestEnv(t)
++			tt.edit(&env)
++			_, err := recordSeedEntry(RowIdentity{Name: "Row"}, Config{}, env)
++			if err == nil {
++				t.Fatalf("recordSeedEntry() error = nil; want a refusal naming %s", tt.field)
++			}
++			assertErrContains(t, err, tt.field)
++		})
++	}
++
++	t.Run("BuildsWithAFilledEnv", func(t *testing.T) {
++		t.Parallel()
++		producer, err := recordSeedEntry(RowIdentity{Name: "Row"}, Config{}, newTestEnv(t))
++		if err != nil || producer == nil {
++			t.Fatalf("recordSeedEntry() = %v, %v; want a producer and nil", producer, err)
++		}
++	})
++}
+diff --git a/internal/shedrecipe/fixture_test.go b/internal/shedrecipe/fixture_test.go
+index 23eeb054b..f4baa7f69 100644
+--- a/internal/shedrecipe/fixture_test.go
++++ b/internal/shedrecipe/fixture_test.go
+@@ -351,6 +351,16 @@ func newTestEnv(t *testing.T) Env {
+ 			ReadStored:     func() ([]byte, bool, error) { return nil, false, nil },
+ 			Commit:         func() error { return nil },
+ 		},
++		RecordSeed: loomshed.RecordSeedDeps{
++			RecordPath:     filepath.Join(dir, "decision-record.md"),
++			SupportLogPath: filepath.Join(dir, "support-log.md"),
++			DiscussionDir:  dir,
++			ReadStored:     func() ([]byte, bool, error) { return nil, false, nil },
++			Commit:         func() error { return nil },
++			Slug:           "test-slug",
++			SeedPath:       filepath.Join(dir, "seed.json"),
++			ReadSeed:       func() (loomshed.ReseedValues, error) { return loomshed.ReseedValues{}, nil },
++		},
+ 		RaddleWrite: validRaddleWriteEnv(dir),
+ 		RaddleFile:  validRaddleFileDeps(dir),
+ 		Slug:        "test-slug",
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index b5cd8a8cb..97ec01bee 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -352,6 +352,8 @@ type Env struct {
+ 	Sampler loomshed.SamplerDeps
+ 	// RecordWrite is a whole-struct passthrough to loomshed.NewRecordWrite, read by the RecordWrite entry only.
+ 	RecordWrite loomshed.RecordWriteDeps
++	// RecordSeed is a whole-struct passthrough to loomshed.NewRecordSeed, read by the RecordSeed entry only.
++	RecordSeed loomshed.RecordSeedDeps
+ 	// RaddleWrite is a whole-struct passthrough to the Raddle-Write producer and its gate.
+ 	// Only the RaddleWrite entry reads it.
+ 	RaddleWrite RaddleWriteEnv
+diff --git a/internal/shedrecipe/registry.go b/internal/shedrecipe/registry.go
+index f79342aa4..06418dba9 100644
+--- a/internal/shedrecipe/registry.go
++++ b/internal/shedrecipe/registry.go
+@@ -26,6 +26,7 @@ var registry = map[string]Constructor{
+ 	"DarnWrite":        darnWriteEntry,
+ 	"SamplerSession":   samplerSessionEntry,
+ 	"RecordWrite":      recordWriteEntry,
++	LoomSeedEngine:     recordSeedEntry,
+ 	"Finalize":         finalizeEntry,
+ 	"FrictionReflect":  frictionReflectEntry,
+ 	"Implementer":      implementerEntry,
+@@ -63,6 +64,10 @@ var registry = map[string]Constructor{
+ // That row writes the decision record before the build segment.
+ var LoomRecordEngines = []string{"DiscussionWrite", "RecordWrite"}
+ 
++// LoomSeedEngine is the engine whose row is a loom recipe's seed row.
++// That row writes a missing decision record from the board entry's stored record, beside or in place of the record row.
++const LoomSeedEngine = "RecordSeed"
++
+ // LoomBuildEngines are the engines whose row is a loom recipe's build row.
+ // That row is the one in the build segment that turns the record into the change.
+ // A beam's BeamAwait row is one: the members' runs make the change while it holds the run.
+diff --git a/internal/shedrecipe/registry_test.go b/internal/shedrecipe/registry_test.go
+index 58e63f346..090b29f8c 100644
+--- a/internal/shedrecipe/registry_test.go
++++ b/internal/shedrecipe/registry_test.go
+@@ -116,6 +116,7 @@ func TestNames(t *testing.T) {
+ 			"Preflight",
+ 			"RaddleFile",
+ 			"RaddleWrite",
++			"RecordSeed",
+ 			"RecordWrite",
+ 			"SamplerSession",
+ 			"SeedChild",
+diff --git a/internal/shedrun/seed.go b/internal/shedrun/seed.go
+index 8b86f0dce..c31170eef 100644
+--- a/internal/shedrun/seed.go
++++ b/internal/shedrun/seed.go
+@@ -80,6 +80,10 @@ const (
+ 	// RecipeMotif names the motif recipe, the run that makes a sketch, the decision record, from a task and lands no code.
+ 	// The tapestry recipe also runs it as its Motif block.
+ 	RecipeMotif = "motif"
++	// RecipeJacquard names the jacquard recipe.
++	// It is the run that plans, builds and lands a task from its approved decision record.
++	// Discussion never runs in it; the tapestry recipe also runs it as its Jacquard block, after Discussion.
++	RecipeJacquard = "jacquard"
+ 	// RecipeRaddle names the raddle recipe, the run that splits a Sketch into the entries the operator approves and files them on the board.
+ 	// It is the one recipe whose task may carry a Sketch's decision record and its sketch type label.
+ 	RecipeRaddle = "raddle"
+@@ -96,7 +100,7 @@ const (
+ // Callers must not rely on a fixed order beyond "sorted" and must not mutate the vocabulary through
+ // the returned slice affecting any other caller, since each call allocates its own.
+ func RecipeNames() []string {
+-	return []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeHardener, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
++	return []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeHardener, RecipeJacquard, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
+ }
+ 
+ // OfferedRecipeNames returns the recipe names a message may list to a user, sorted and freshly allocated.
+diff --git a/internal/shedrun/seed_test.go b/internal/shedrun/seed_test.go
+index f39f29107..883d46d32 100644
+--- a/internal/shedrun/seed_test.go
++++ b/internal/shedrun/seed_test.go
+@@ -207,7 +207,7 @@ func TestValidateRecipe(t *testing.T) {
+ func TestRecipeNames(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	got := RecipeNames()
+-	want := []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeHardener, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
++	want := []string{RecipeArras, RecipeBatten, RecipeDarn, RecipeHardener, RecipeJacquard, RecipeMotif, RecipePawl, RecipeRaddle, RecipeSampler, RecipeTapestry}
+ 	if len(got) != len(want) {
+ 		t.Fatalf("RecipeNames() = %v; want %v", got, want)
+ 	}
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index e7fdb9d7b..f0d60c508 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -630,6 +630,16 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			ReadStored:     func() ([]byte, bool, error) { return nil, false, nil },
+ 			Commit:         func() error { return nil },
+ 		},
++		RecordSeed: loomshed.RecordSeedDeps{
++			RecordPath:     filepath.Join(dir, "discussion", "decision-record.md"),
++			SupportLogPath: filepath.Join(dir, "discussion", "support-log.md"),
++			DiscussionDir:  filepath.Join(dir, "discussion"),
++			ReadStored:     func() ([]byte, bool, error) { return nil, false, nil },
++			Commit:         func() error { return nil },
++			Slug:           "test-slug",
++			SeedPath:       filepath.Join(dir, "seed.json"),
++			ReadSeed:       func() (loomshed.ReseedValues, error) { return loomshed.ReseedValues{}, nil },
++		},
+ 		RaddleWrite: raddleWriteEnv(dir),
+ 		RaddleFile:  raddleFileDeps(dir),
+ 		Harden:      hardenCampaign(dir),
+diff --git a/internal/testkit/envkit/envkit_test.go b/internal/testkit/envkit/envkit_test.go
+index e535bf6d2..3ff5cc2eb 100644
+--- a/internal/testkit/envkit/envkit_test.go
++++ b/internal/testkit/envkit/envkit_test.go
+@@ -41,6 +41,7 @@ import (
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+@@ -84,7 +85,7 @@ func TestFullEnv_FillsEverySeam(t *testing.T) {
+ 
+ 	t.Run("Segments_HoldEveryReviewSegmentOfTheEmbeddedRecipes", func(t *testing.T) {
+ 		segments := FullEnv(t).Segments
+-		for name, data := range map[string][]byte{"tapestry": recipes.TapestryRecipe, "darn": recipes.DarnRecipe, "hardener": recipes.HardenerRecipe} {
++		for name, data := range map[string][]byte{"motif": recipes.MotifRecipe, "jacquard": recipes.JacquardRecipe, "darn": recipes.DarnRecipe, "hardener": recipes.HardenerRecipe} {
+ 			recipe, err := shedbuild.Parse(data)
+ 			if err != nil {
+ 				t.Fatalf("parse the %s recipe: %v", name, err)
+@@ -120,6 +121,7 @@ func TestFullEnv_FillsEverySeam(t *testing.T) {
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
+@@ -172,6 +174,7 @@ func TestNilSeams_ReportsExactPaths(t *testing.T) {
+ //lym:seam internal/loomshed#RaddleFileDeps
+ //lym:seam internal/loomshed#RaddleWriteDeps
+ //lym:seam internal/loomshed#RecordWriteDeps
++//lym:seam internal/loomshed#RecordSeedDeps
+ //lym:seam internal/loomshed#PRReworkDeps
+ //lym:seam internal/loomshed#SamplerDeps
+ //lym:seam internal/loomshed#VerifyBudget
