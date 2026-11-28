@@ -1,0 +1,10 @@
+internal/beamcli/dobbyautonomystamps_test.go
+internal/beamcli/dobbydeps.go
+internal/beamcli/dobbynoticestamp_integration_test.go
+internal/beamcli/keynames.go
+internal/hubgeom/autonomy.go
+internal/hubgeom/autonomy_integration_test.go
+internal/hubgeom/doc.go
+internal/loomcli/autonomy_integration_test.go
+internal/loomcli/pawlwiring_integration_test.go
+internal/slackcli/wiring_test.go

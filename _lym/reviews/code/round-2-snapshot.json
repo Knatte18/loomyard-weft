@@ -1,0 +1,15 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "880ca688cce59ee08e4e9db595d093158d4767f8",
+  "added_decisions": [
+    {
+      "title": "A stop that leaves no history entry counts once and is recorded (F37)",
+      "digest": "59cc239acfd3746c01db97b4aaf7080ff95f57d482a4c5f8170b8f816a1f2cb3"
+    },
+    {
+      "title": "A stop with no history entry is counted and recorded through its stop identity",
+      "digest": "bd9eb053d389de99a8c4accc413ee2f872d11aa56c223ea716aafec8a667ffc7"
+    }
+  ]
+}
