@@ -104,14 +104,14 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)<br>[Sketch](decision-recipe-build-from-sketch.md) | raddle | Raddle-Write | neve | 2h<br>5m | shed, loom, batten, board |
+| T3 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)<br>[Sketch](decision-recipe-build-from-sketch.md) | raddle | Raddle-Write | neve | 2h<br>6m | shed, loom, batten, board |
 
 ### Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T3<br>F3 | 2h<br>43m | loom, batten, shed |
-| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 51m<br>47m | board, dobby |
+| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 51m<br>48m | board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
 
@@ -144,7 +144,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | landing · Finalize | neve | 1h<br>31m | gate, landing |
+| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | landing · Finalize | neve | 1h<br>32m | gate, landing |
 | T6 | **The batch gate runs tier1 over the batch own packages, not their dependents** | [`batch-gate-tier1-own-packages`](design-batch-gate-tier1-own-packages.md) | darn · light | Darn-Write | neve | 5m<br>5m | gate, webster |
 
 ### Enhancements (3)
@@ -168,7 +168,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid | landing · Finalize | neve | 1h<br>1h | weaver, shed, shuttle |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 22h<br>22h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md)<br>[Sketch](decision-landing-queue.md) | raddle | Raddle-Write | neve | 1d<br>1m | landing, gate, batten |
-| T10 | **Darn measurement rule covers a run with no parent and bars subagents from measurement calls** | [`darn-measure-rule-gaps`](design-darn-measure-rule-gaps.md) | darn · light | Code-Bouncer | neve | 51m<br>51m | darn, stencil |
+| T10 | **Darn measurement rule covers a run with no parent and bars subagents from measurement calls** | [`darn-measure-rule-gaps`](design-darn-measure-rule-gaps.md) | darn · light | halted · Code-Bouncer | neve | 51m<br>51m | darn, stencil |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Darn-Write | neve | 3h<br>3h | fabric |
 
 ### Layer A (2)
