@@ -36,4 +36,8 @@ Running the chain in a beam of its own keeps the parent quiet, so the merge in s
 - The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.
   From A's record and plan, estimate how much of what B builds on A will change;
   when A is estimated to change too much of it, B does not plan ahead and waits as today.
+- A run parked in the wait row of step 4 does nothing useful, so it must not hold one of `beam.max_runs`'s run places.
+- Each link planned ahead of landed code adds error to the plans, so the cascade is kept short.
+- Open: when B's plan counts as done for C to start.
+  Proposed: only when B has passed step 5, so C plans from a plan re-aligned against A's landed code and the chain runs at most one link ahead.
 - Not for now (operator, 2026-11-28).
