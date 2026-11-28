@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T15:29:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/card-gate-own-packages/_lym/landing/summary.md",
+      "at": "2026-11-28T16:08:13Z",
+      "started_at": "2026-11-28T15:29:14Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T15:37:34.97988108Z",
+          "end": "2026-11-28T15:37:35.010489481Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T15:37:35.345025297Z",
+          "end": "2026-11-28T16:06:43.942151613Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T16:06:44.286700235Z",
+          "end": "2026-11-28T16:06:44.320979545Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T16:06:44.470999148Z",
+          "end": "2026-11-28T16:06:45.149770816Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T16:06:45.448250405Z",
+          "end": "2026-11-28T16:06:45.448640274Z"
+        }
+      ]
     }
   ],
   "product": {
