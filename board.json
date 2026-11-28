@@ -1371,6 +1371,27 @@
       "body": "## Seen\n\nGate queues on Neve hold landings back: two slots, load near 30 on 12 cores, a tier1 verify past its 30-minute budget.\nThe operator's desktop Septim (Ryzen 7 9800X3D, water-cooled, Windows 11 with WSL2 installed) sits idle on the LAN.\n\n## Idea\n\nThe agents stay on Neve; only gate tier runs move to Septim.\n\n- Septim runs a `lym` gate service inside WSL2 (Linux), started at Windows boot and reachable over SSH on the LAN.\n  WSL2's mirrored networking, or a port forward, makes it reachable; the repository and Go build cache live on WSL2's own ext4 disk, not `/mnt/c`.\n- The gate slot pool gains Septim's slots beside Neve's local ones; a gate call takes a free remote slot first.\n- A gate call syncs the worktree, uncommitted edits included, to Septim over SSH (rsync, so only changes travel after the first copy),\n  runs the tier there and streams the `go-json` results back, so the caller sees the same report as a local run.\n- When Septim is down or asleep the gate falls back to local slots; Wake-on-LAN is an option.\n\n## Two modes, chosen per hub\n\n- **Stored**, for hubs whose code the operator owns, such as loomyard: the code may be checked out on Septim, with a warm build cache on disk.\n- **Ephemeral**, for work code (the OSL-1046 hubs): the worktree is sent into a RAM disk (tmpfs) on Septim, the tier runs there,\n  and everything is deleted when the run ends; nothing is written to disk and no git checkout is made.\n  The build cache lives only in RAM. The code is processed on Septim but never stored, as with a model server such as Ollama.\n\n## Bounds (operator, 2026-11-28)\n\n- Work code may use Septim only in the ephemeral mode, and only over a closed network; the operator confirmed the network is closed.\n- A hub opts in and names its mode; a hub that names none never sends a gate run to Septim.\n- Windows itself is not a lym target: the service runs only inside WSL2.\n\n## Open\n\n- Measure first: the same tier1 run on Septim's WSL2 and on Neve.\n- How the remote slots are configured, how a remote slot is found to be dead, and what tier2 (tmux) needs there.\n- Whether a .NET hub's gate (C#) runs in WSL2 as the Go gate does.\n",
       "created": "2026-11-28T15:36:11Z",
       "revised": "2026-11-28T15:38:48Z"
+    },
+    {
+      "id": 1829,
+      "handle": "T3",
+      "slug": "septim-farm-study",
+      "title": "Study: how much work, and how real, a WSL2 gate farm on Septim is in its stored and ephemeral modes",
+      "kind": "task",
+      "labels": [
+        "research",
+        "gate",
+        "process"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "A desk study for note `remote-gate-farm`, which holds the design and the operator's bounds; read that note first.\nThe report lands under `docs/research/gate/`.\n\n## Question\n\nHow much work is it, and how realistic, to run lym gate tier runs on Septim, a Windows 11 desktop (Ryzen 7 9800X3D) with WSL2 installed, on a closed LAN, while the hub and its agents stay on Neve (Linux, KDE)?\nAnswer it for each of the two modes:\n\n1. **Stored:** the hub's code is checked out on Septim, with a warm build cache on WSL2's disk (private code such as loomyard).\n2. **Ephemeral:** the code may not be checked out or stored on Septim; it is sent into a RAM disk for one tier run and deleted after (work code on OSL-1046).\n\n## What the report covers\n\n- The Septim side: WSL2 networking (mirrored mode or port forward), SSH into WSL2, start at Windows boot, systemd, Defender exclusions, sleep and Wake-on-LAN, the Go toolchain and tmux for tier2, and a .NET SDK for a C# hub.\n- The lym side, read from this repository's gate code (the slot pool, the tier runner, `prebuilt_lym`, the detached gate runs, the go-json counter): what must change to send a tier run to a remote slot and stream its results back, and how a dead or asleep remote is found and fallen back from.\n- For ephemeral mode: what stays on Septim during and after a run (tmpfs, build cache, swap, logs, test temp dirs, core dumps), and what it costs in speed without a warm disk cache.\n- A rough size of the lym change in tasks, and the risks that could make either mode not worth it.\n- A recommendation for each mode.\n\n## Bounds\n\n- A desk study only: it reads this repository and public documentation. It runs no gate tier, no benchmark and no command on Septim, and it reaches no machine but Neve.\n- No web search beyond what WSL2, OpenSSH and tmpfs behaviour need; at most 15 pages read.\n",
+      "created": "2026-11-28T15:41:52Z",
+      "revised": "2026-11-28T15:41:52Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve",
