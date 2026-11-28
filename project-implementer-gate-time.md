@@ -1,9 +1,9 @@
 # P8 Webster and Weaver spend less of their row in gate runs
 
-Rendered 2026-11-28 12:58 UTC; every age below is as of then.
+Rendered 2026-11-28 12:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`implementer-gate-time`](design-implementer-gate-time.md) · Age 58m · Owner `neve`
+[`implementer-gate-time`](design-implementer-gate-time.md) · Age 59m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -18,17 +18,12 @@ This project cuts how often and how widely the implementers gate, where project 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (1)
+## Running (2)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | landing · Finalize | neve | 58m<br>58m | gate, webster, weaver |
-
-## Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed |  | 52m<br>0m | gate, landing |
+| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | starting · Worktree-Create | neve | 52m<br>0m | gate, landing |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | landing · Finalize | neve | 59m<br>59m | gate, webster, weaver |
 
 ## Enhancements (3)
 
