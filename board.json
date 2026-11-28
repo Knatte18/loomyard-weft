@@ -1143,6 +1143,25 @@
       "body": "## Seen\n\nCode-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.\n`prReviewMailDeps` takes only `Mode`, `Origin` and `TaskHead` from `wired.PullRequest`.\nIt still reads envkit's hand-written `DirtyPaths` (nil), `CommitsMissing` (nil), `TaskHasCommits` (true), `PauseCovered` (false) and `RecordChanges` (nil channel),\nstanding in for verifytree, fabricengine, the pause record and the record watch over a real pair.\n\n## Idea\n\nAssign those seams from `wired.PullRequest` as well, and make the state a wired seam needs through gitkit or fabric in the test setup,\nsuch as a commit on the pair's HEAD beyond the parent branch for `TaskHasCommits`.\nKeep `RecordPath` and `RecordLockPath` in step with the wired record paths.\n",
       "created": "2026-11-28T11:41:45Z",
       "revised": "2026-11-28T11:41:50Z"
+    },
+    {
+      "id": 1799,
+      "handle": "F4",
+      "slug": "shed-dynamic-rows",
+      "title": "Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "weaver"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-28)\n\nWeaver runs its batches in its own Go loop inside tapestry's implementer row, because Shed could not step through them:\na recipe is a fixed file of rows and edges, and a producer's `Yield` ends the driver's loop (Weaver's decision record, Q1).\nAbout 15–20% of Weaver's production code, its stop and re-entry glue, part of its resume and its run lock, therefore repeats in concept what Shed does.\nReview rounds are a loop too, and the plan-ahead wait row of `pipelined-chain-planning` is a dynamic row.\n\n## Idea\n\nLet a recipe hold a row that repeats while its producer asks for another pass, or that unfolds into rows from a list its producer writes, such as a plan's batches.\nEach pass or unfolded row then gets Shed's own stops, re-entry, resume, history and arbiter, and Weaver shrinks to a thin producer per batch.\n\n## Bounds (operator, 2026-11-28)\n\n- Shed is a vital part of lym, and changing its logic this deep can have fatal consequences.\n- So the change is designed first, through motif, before anything is built,\n  and it only adds: every existing recipe, row and edge runs as today, and a recipe without the new row kind takes none of the new code paths.\n- Weaver stays as it is until the new row kind has proven itself; moving Weaver onto it is a task of its own.\n",
+      "created": "2026-11-28T11:46:02Z",
+      "revised": "2026-11-28T11:46:02Z"
     }
   ],
   "prime_owner": "neve",
