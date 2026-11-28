@@ -1,0 +1,2388 @@
+diff --git a/contracts/stencils/loom/loom-template-arbiter.md b/contracts/stencils/loom/loom-template-arbiter.md
+index 1cc2f68a0..b3f27a574 100644
+--- a/contracts/stencils/loom/loom-template-arbiter.md
++++ b/contracts/stencils/loom/loom-template-arbiter.md
+@@ -13,7 +13,7 @@
+      {{.decision_record_path}} and {{.support_log_path}} are the task's decision record and support log.
+      {{.verdict_path}} is the one file the arbiter writes.
+      {{.amendment_target}} is the row a plan amendment routes to, or the literal `none`.
+-     {{.parent_directive}} is the no-parent variant of the parent directive rendered by internal/parentdirective.
++     {{.parent_directive}} is the hand-back variant of the parent directive rendered by internal/parentdirective.
+      {{.edit_directive}} is the edit directive of the engine the prompt launches on, rendered by internal/editdirective.
+      {{.edit_scope}} is what the arbiter may edit: loom-fragment-arbiter-fix when its driver lets it fix the stop itself,
+      loom-fragment-arbiter-no-fix otherwise.
+diff --git a/contracts/stencils/parent/parent-directive-handback.md b/contracts/stencils/parent/parent-directive-handback.md
+new file mode 100644
+index 000000000..c27a4199d
+--- /dev/null
++++ b/contracts/stencils/parent/parent-directive-handback.md
+@@ -0,0 +1,9 @@
++<!-- This is the hand-back variant of the parent directive, for a role whose verdict file is its only channel.
++     internal/parentdirective.HandBack renders it when it is told a non-empty parent name;
++     an empty one renders parent-directive-none instead.
++     Its one marker is the parent name: the orch that parents the run. -->
++
++## Your parent
++
++Your run's parent is `{{.parent_name}}`.
++When you are blocked, write your report and stop; the run hands the stop back.
+diff --git a/contracts/stencils/shed/shed-template-tackler.md b/contracts/stencils/shed/shed-template-tackler.md
+index ff6e9089c..9aa41169d 100644
+--- a/contracts/stencils/shed/shed-template-tackler.md
++++ b/contracts/stencils/shed/shed-template-tackler.md
+@@ -12,7 +12,7 @@
+      {{.trace_copy}} the copy of the stop step's trace, {{.stderr_path}} the stop step's captured stderr,
+      {{.trace_dir}} the directory of the child traces, {{.driver_log}} the shed driver's own log,
+      {{.verdict_path}} the file the tackler always writes, {{.case_brief_path}} the file it writes on an escalate,
+-     {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
++     {{.parent_directive}} the hand-back variant of the shared parent directive rendered by internal/parentdirective,
+      and {{.edit_directive}} the edit directive of the engine the prompt launches on, rendered by internal/editdirective.
+      The body is recipe-blind:
+      the recipe and the rows a `goto` may name arrive only through {{.recipe}} and {{.goto_rows}},
+diff --git a/contracts/stencils/stencils.go b/contracts/stencils/stencils.go
+index fa4961d2a..49acba3c3 100644
+--- a/contracts/stencils/stencils.go
++++ b/contracts/stencils/stencils.go
+@@ -599,6 +599,12 @@ var ParentDirectiveOperatorBan []byte
+ //go:embed parent/parent-directive-none.md
+ var ParentDirectiveNone []byte
+ 
++// ParentDirectiveHandBack is the shared parent directive's shipped-default hand-back variant.
++// It serves a role whose verdict is its only channel, and names the run's parent orch.
++//
++//go:embed parent/parent-directive-handback.md
++var ParentDirectiveHandBack []byte
++
+ // TwillDirective is the twill directive's shipped default:
+ // the host-neutral procedure that has a writer review its finished record through fork lenses.
+ //
+@@ -1050,6 +1056,7 @@ var entries = []registryEntry{
+ 	{"parent-directive-parent", &ParentDirectiveParent},
+ 	{"parent-directive-operator-ban", &ParentDirectiveOperatorBan},
+ 	{"parent-directive-none", &ParentDirectiveNone},
++	{"parent-directive-handback", &ParentDirectiveHandBack},
+ 	{"twill-directive", &TwillDirective},
+ 	{"twill-writer-fork", &TwillWriterFork},
+ 	{"twill-writer-fork-gated", &TwillWriterForkGated},
+diff --git a/docs/overview.md b/docs/overview.md
+index 6f943f094..f9f0fe979 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -316,7 +316,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/retroengine/         the retro domain kernel (the last retro's stamp, the landed runs a retro covers under its cap, and the retro task's body and board fields)
+ ├── internal/orchcli/             the orch CLI command
+ ├── internal/orchengine/          the orch domain kernel (config, stencil renders, persisted state, cycle state machine)
+-├── internal/orchroute/           the orch lookups below `orchcli`: the orch paths, the liveness of a worktree's orch, its strand name and the walk to the nearest live orch (`Asker`)
++├── internal/orchroute/           the orch lookups below `orchcli`: the orch paths, the liveness of a worktree's orch, its strand name and the walk to the orch a notice goes to (`Destination`, `Asker`)
+ ├── internal/ghissuescli/         the ghissues CLI command
+ ├── internal/ghissuesengine/      the ghissues domain kernel
+ ├── internal/selfreportcli/       the selfreport CLI command
+@@ -855,7 +855,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Stop takes a beam's orch and dobby down.
+   Status prints, once, the dobby section a beam's window draws, for the prime and for each local beam:
+   alive or not, the runs it drives with their state, stage, time in stage and last pass, and each released task it has not started with what the task waits on, and the beam's orch: strand live, watcher live and the recorded session, then one adopt check item per subject, shown only when the hub holds a record of it: the subject, its state, the tier in flight, the tiers done and the paths of its log and output.
+-  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends the nearest live orch its own notices, the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents) and the `[run watch]` lines of every run it drives, one per stop or, under `beam.run_watch: rows`, one per change, and a `[dobby notice]` for a gate slot a driven run holds past its bound, spawns the board-tidy agent every few landings, and, while a beam's pull request is recorded, spawns a describer agent after each member landing to rewrite the beam's change description.
++  Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, sends its beam's orch, or while that orch is not started or is stopped the nearest live orch above, its own notices, the `[dobby notice]` lines of a running child (a dead driver, an API-error stall, a usage limit, idle agents) and the `[run watch]` lines of every run it drives, one per stop or, under `beam.run_watch: rows`, one per change, and a `[dobby notice]` for a gate slot a driven run holds past its bound, spawns the board-tidy agent every few landings, and, while a beam's pull request is recorded, spawns a describer agent after each member landing to rewrite the beam's change description.
+   It logs to its `dobby.log` the changes it sees, such as a task start, a run changing state and a failing pass episode, plus a heartbeat line every ten minutes.
+   A front task, filed through `internal/fronttask`, is the one open task of its worktree that dobby starts first, past `beam.max_runs`, while no other task of that worktree starts.
+   Its `on_land` action runs once it lands or its entry is removed by hand with `lym board remove`, from a closed action table and on the subject's owner machine only.
+@@ -891,9 +891,10 @@ User-facing modules each get one `lym <module>` namespace:
+   `lym tender status` lists the live entries, the network operations in flight and the parent locks held, every live session in the hub with its state, cause and whether an entry covers it, each pair with no reed session under `skipped`, the lym processes running a replaced binary, the processes registered to runs with their orphans, and each pair's owner machine with the run-held entries owned by another machine;
+   it changes nothing, and any caller may run it.
+   `lym tender reap` ends the orphans of one fresh reading of that processes part, which are the processes of a slug with no pair and no running batten and the unregistered lym processes in a deleted hub directory, never a hub-owner process or one working inside a registered worktree;
+-  the orch and an external caller may run it,
++  the prime's orch and an external caller may run it,
+   and a survivor makes it exit non-zero naming the pid and role.
+   An agent may pause, resume or revive only its own pair; the orchestrator and an external caller may do each for the hub or any pair.
++  A beam's orch may pause, resume or revive its beam and every pair under it, but not the whole hub or another pair, and it may not reap.
+   Every lym process in a hub runs its network git and GitHub calls under a gate that waits while a pause covers it,
+   and every reader that reacts to an unexpected stop or to idle time consults the record (`internal/pauserecord`).
+   ✅ Implemented. See the `internal/tenderengine` and `internal/tendercli` package documentation.
+@@ -1252,7 +1253,8 @@ User-facing modules each get one `lym <module>` namespace:
+   The call also appends the title of each entry to the plan amendment record, committed with the entries.
+   It is refused on a recipe with no Plan-Write row and for a plan that is not approved.
+   It is refused while Discussion-Write is running.
+-  It refuses a named session other than the run's parent orch, the nearest live orch up its beam chain.
++  It refuses a named session that is not an orch on the run's beam chain:
++  the orchs above the run's pair, or for a beam's project record the beam's own orch and those above it.
+   The operator's own unnamed shell always passes.
+   It resumes nothing.
+   After the commit it sends one creel line to each live shuttle run of the worktree.
+diff --git a/internal/battencli/arbiterworktree_integration_test.go b/internal/battencli/arbiterworktree_integration_test.go
+index a8a657068..5e6353295 100644
+--- a/internal/battencli/arbiterworktree_integration_test.go
++++ b/internal/battencli/arbiterworktree_integration_test.go
+@@ -1,4 +1,4 @@
+-// arbiterworktree_integration_test.go pins which worktree batten's arbiter edits in.
++// arbiterworktree_integration_test.go pins which worktree batten's arbiter edits in and which parent its agents are told.
+ // It is a white-box "package battencli" test on a hubforge hub, since the wiring it covers is unexported.
+ 
+ package battencli
+@@ -6,11 +6,36 @@ package battencli
+ import (
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/shedarbiter"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++// TestLoadedDriverAgentDeps_NameTheRunsParentOrch covers the parent name a member's tackler and arbiter prompts are told.
++func TestLoadedDriverAgentDeps_NameTheRunsParentOrch(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	hubforge.AddPairWith(t, h, "m", fabricengine.AddOptions{SkipPush: true, Parent: "b"})
++	c := &battenCLI{location: h.Location, slug: "m"}
++
++	tackler, err := c.loadedTacklerDeps()
++	if err != nil {
++		t.Fatalf("loadedTacklerDeps() = _, %v; want nil error", err)
++	}
++	arbiter, err := c.loadedArbiterDeps()
++	if err != nil {
++		t.Fatalf("loadedArbiterDeps() = _, %v; want nil error", err)
++	}
++
++	if tackler.Prompt.ParentName != "tst:b:orch" || arbiter.Prompt.ParentName != "tst:b:orch" {
++		t.Errorf("tackler, arbiter ParentName = %q, %q; want tst:b:orch", tackler.Prompt.ParentName, arbiter.Prompt.ParentName)
++	}
++}
++
+ // TestWithTaskWorktree covers the worktree batten's arbiter may edit.
+ // A present task worktree gives the arbiter a seam and a prompt worktree over the task worktree, never the prime.
+ // An absent task worktree gives it no seam, so the call is verdict-only, and leaves the prompt worktree as it was.
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 9fef6fca7..276ab4e27 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -416,10 +416,11 @@ func (c *battenCLI) withTaskWorktree(deps shedarbiter.Deps) (shedarbiter.Deps, e
+ 	return deps, nil
+ }
+ 
+-// tacklerDepsFor fills the tackler call's seams and fixed values over settings and shuttle.
++// tacklerDepsFor fills the tackler call's seams and fixed values over settings, shuttle and parentName.
++// parentName is the run's parent orch.
+ // A batten tackler has no worktree snapshot, since the prime has other writers,
+ // and a resume names the halted row only.
+-func (c *battenCLI) tacklerDepsFor(settings sheddriver.TacklerSettings, shuttle sheddriver.AgentShuttle) sheddriver.TacklerDeps {
++func (c *battenCLI) tacklerDepsFor(settings sheddriver.TacklerSettings, shuttle sheddriver.AgentShuttle, parentName string) sheddriver.TacklerDeps {
+ 	location, slug := c.location, c.slug
+ 	settlePath := shedrun.SettleRecords(location, slug)
+ 	return sheddriver.TacklerDeps{
+@@ -455,10 +456,11 @@ func (c *battenCLI) tacklerDepsFor(settings sheddriver.TacklerSettings, shuttle
+ 		Recipe:         battenTacklerRecipe,
+ 		GotoRoutedFrom: false,
+ 		Prompt: sheddriver.TacklerPromptInput{
+-			Slug:      slug,
+-			Worktree:  location.WorktreePath(),
+-			TraceDir:  logger.TraceDir(),
+-			DriverLog: logger.TraceFile(),
++			Slug:       slug,
++			ParentName: parentName,
++			Worktree:   location.WorktreePath(),
++			TraceDir:   logger.TraceDir(),
++			DriverLog:  logger.TraceFile(),
+ 		},
+ 		StencilsDir: fabriclayout.StencilsDir(location.HubPath),
+ 		Shuttle:     shuttle,
+@@ -492,7 +494,18 @@ func (c *battenCLI) loadedTacklerDeps() (sheddriver.TacklerDeps, error) {
+ 	if err != nil {
+ 		return sheddriver.TacklerDeps{}, err
+ 	}
+-	return c.tacklerDepsFor(settings, shuttle), nil
++	return c.tacklerDepsFor(settings, shuttle, c.promptParentName()), nil
++}
++
++// promptParentName returns the run's parent orch name for the parent line of its tackler and arbiter prompts.
++// A failed read answers "" with a warning: the line is optional, and the stop is still judged without it.
++func (c *battenCLI) promptParentName() string {
++	name, err := hubgeom.ParentOrchName(c.location, c.slug)
++	if err != nil {
++		logger.Warn("battencli: read the run's parent orch failed; its prompts name no parent", "slug", c.slug, "error", err)
++		return ""
++	}
++	return name
+ }
+ 
+ // primeShuttle builds the prime's shuttle runner, shared by the tackler and the arbiter.
+@@ -572,9 +585,10 @@ func (c *battenCLI) loadedArbiterDeps() (shedarbiter.Deps, error) {
+ 		GotoGuard:  c.haltedRowGuard(),
+ 		Stop:       arbiterstop.NewBattenReaders(),
+ 		Prompt: shedarbiter.PromptInput{
+-			Recipe:   battenArbiterRecipe,
+-			Slug:     slug,
+-			Worktree: location.WorktreePath(),
++			Recipe:     battenArbiterRecipe,
++			ParentName: c.promptParentName(),
++			Slug:       slug,
++			Worktree:   location.WorktreePath(),
+ 		},
+ 		StencilsDir:        fabriclayout.StencilsDir(location.HubPath),
+ 		AmendmentTarget:    func() string { return "" },
+diff --git a/internal/battencli/driverdeps_test.go b/internal/battencli/driverdeps_test.go
+index b62d5734f..7cd0a42f2 100644
+--- a/internal/battencli/driverdeps_test.go
++++ b/internal/battencli/driverdeps_test.go
+@@ -110,10 +110,13 @@ func TestBattenDriverDeps(t *testing.T) {
+ 		t.Errorf("NewReportPath() directory = %q; want %q", filepath.Dir(deps.NewReportPath()), want)
+ 	}
+ 
+-	tackler := c.tacklerDepsFor(sheddriver.TacklerSettings{}, nil)
++	tackler := c.tacklerDepsFor(sheddriver.TacklerSettings{}, nil, "tst:orch")
+ 	if tackler.Recipe != battenTacklerRecipe || tackler.GotoRoutedFrom {
+ 		t.Errorf("tackler Recipe = %q, GotoRoutedFrom = %v; want %q and false", tackler.Recipe, tackler.GotoRoutedFrom, battenTacklerRecipe)
+ 	}
++	if tackler.Prompt.ParentName != "tst:orch" {
++		t.Errorf("tackler Prompt.ParentName = %q; want tst:orch", tackler.Prompt.ParentName)
++	}
+ 	if want := shedrun.TacklerDir(c.location, c.slug); tackler.TacklerDir != want {
+ 		t.Errorf("tackler TacklerDir = %q; want %q", tackler.TacklerDir, want)
+ 	}
+diff --git a/internal/battencli/notices.go b/internal/battencli/notices.go
+index b9edcc7d2..a6bfacdc0 100644
+--- a/internal/battencli/notices.go
++++ b/internal/battencli/notices.go
+@@ -15,7 +15,7 @@ import (
+ )
+ 
+ // notifyRunParent sends line, stamped with the run's autonomy, as creel mail.
+-// It goes to the nearest live orch above the run slug, signed as batten.
++// It goes to the orch above the run slug, signed as batten.
+ // The mail is tagged with slug as its run, so the run's teardown drops it while it is unread.
+ // It reports whether the mail was posted.
+ // The walk starts at the run's pair when it is present here.
+@@ -38,7 +38,7 @@ func runNotifyTags(slug string) creelengine.PostTags {
+ 	return creelengine.PostTags{Run: slug}
+ }
+ 
+-// runParentRecorded reports whether the live orch above the run slug records an orch strand.
++// runParentRecorded reports whether the orch a notice about the run slug goes to records an orch strand.
+ // The answer decides whether the run is watched or silent.
+ func runParentRecorded(prime *lymcwd.Location, slug string) (bool, error) {
+ 	site, isPair, err := runNoticeSite(prime, slug)
+@@ -48,7 +48,7 @@ func runParentRecorded(prime *lymcwd.Location, slug string) (bool, error) {
+ 	if isPair {
+ 		return orchcli.ParentOrchRecorded(site)
+ 	}
+-	destination, err := hubgeom.NearestLiveOrch(site, orchcli.OrchLive)
++	destination, err := orchcli.NoticeDestination(site)
+ 	if err != nil {
+ 		return false, err
+ 	}
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 8aa339f98..853aa2b4d 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -451,7 +451,7 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 		},
+ 		StencilsDir: fabriclayout.StencilsDir(prime.HubPath),
+ 		NearestOrch: func() (string, error) {
+-			parent, err := hubgeom.NearestLiveOrch(worktree, orchcli.OrchLive)
++			parent, err := orchcli.NoticeDestination(worktree)
+ 			return parent.Name, err
+ 		},
+ 	}
+diff --git a/internal/creelcli/cli.go b/internal/creelcli/cli.go
+index b0f5ac95f..5d550ec5b 100644
+--- a/internal/creelcli/cli.go
++++ b/internal/creelcli/cli.go
+@@ -391,8 +391,8 @@ recorded it unanswered after chasing its holder.
+ --wait-reply marks it too.
+ 
+ With --parent the text goes to your parent orch, so no receiver is given: from a
+-pair the nearest live orch up from its recorded parent, else the prime's; from a
+-beam or the prime that worktree's own orch when live.
++pair its recorded parent's, from a beam or the prime its own, even when down.
++A stopped or unstarted one passes it to a live orch above, else the prime's.
+ 
+ --interrupt stops the receiver's running turn first; it needs a receiver
+ shuttle launched with creel's hooks, and the answer says whether a turn was
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 5728e2386..c2b9ad82a 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -5,6 +5,10 @@
+ // The prime is the root beam:
+ // its dobby has an empty slug in Geometry, and the dobby of any other beam carries that beam's slug.
+ //
++// "The nearest live orch" names where the hub wiring sends the dobby's lines.
++// That is the orch of the dobby's own worktree while its strand stands, even when it reads as down.
++// Otherwise it is the nearest live orch up the beam chain, else the prime's.
++//
+ // The package holds:
+ //
+ //   - Geometry is the absolute paths and names the hub wiring tells the engine.
+diff --git a/internal/driftcli/amend.go b/internal/driftcli/amend.go
+index ff6308943..ba9596e0c 100644
+--- a/internal/driftcli/amend.go
++++ b/internal/driftcli/amend.go
+@@ -3,8 +3,10 @@
+ package driftcli
+ 
+ import (
++	"cmp"
+ 	"fmt"
+ 	"os"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/spf13/cobra"
+@@ -40,8 +42,9 @@ neither failed. --discard sets the whole expectation aside, so the run is
+ checked against its amendments alone.
+ 
+ It is admitted at a blocked Darn-Write, Webster, Drift-Verify or Drift-Recheck,
+-and at a blocked Drift-Expect for --restore alone, and run lym loom resume after it. Only the run's parent or the operator's own
+-shell runs it, from any worktree of the hub: <slug> names the task.
++and at a blocked Drift-Expect for --restore alone, and run lym loom resume after
++it. Only an orch on the run's beam chain above the pair, or the operator's own
++shell, runs it, from any worktree of the hub: <slug> names the task.
+ 
+ Example:
+   lym drift amend my-task --entries amended.yaml`,
+@@ -101,8 +104,9 @@ func readEntriesFile(path string) (string, error) {
+ // It returns the operator for an unnamed shell and the run's parent otherwise.
+ func (w *worktree) callerBy(verb string) (string, error) {
+ 	strand := os.Getenv(agentname.StrandNameEnv)
++	orchsAbove := func() ([]hubgeom.Parent, error) { return hubgeom.OrchChainAbove(w.location) }
+ 	parent := func() (hubgeom.Parent, error) { return orchcli.NearestLiveParent(w.location) }
+-	if err := checkParentCaller(verb, strand, parent); err != nil {
++	if err := checkParentCaller(verb, strand, orchsAbove, parent); err != nil {
+ 		return "", err
+ 	}
+ 	if strand == "" {
+@@ -112,22 +116,27 @@ func (w *worktree) callerBy(verb string) (string, error) {
+ }
+ 
+ // checkParentCaller is the caller check that `drift amend` and `drift defer` run.
+-// The caller's strand name must equal the run's parent's name; an empty name, the operator's unnamed shell, passes.
+-// An empty name passes without resolving the parent.
++// An empty name, the operator's unnamed shell, passes without resolving any orch.
++// A named caller passes when it is an orch that orchsAbove lists or the one parent resolves.
+ // Any other name is refused, and the refusal names the parent and the operator's shell.
+-// A parent that cannot be resolved refuses a named caller naming the error and the operator's shell.
++// A caller neither one admits is refused when either cannot be resolved.
++// That refusal names the error and the operator's shell.
+ // Bound: the check rests on the strand name and on the shell guard that refuses setting lym's strand variables.
+-func checkParentCaller(verb, strand string, parent func() (hubgeom.Parent, error)) error {
++func checkParentCaller(verb, strand string, orchsAbove func() ([]hubgeom.Parent, error), parent func() (hubgeom.Parent, error)) error {
+ 	if strand == "" {
+ 		return nil
+ 	}
+-	resolved, err := parent()
+-	if err != nil {
+-		return fmt.Errorf("drift %s refused: the caller %q is a named session and the run's parent could not be resolved (%w); way forward: the operator's own unnamed shell may run it", verb, strand, err)
++	chain, chainErr := orchsAbove()
++	if slices.ContainsFunc(chain, func(orch hubgeom.Parent) bool { return orch.Name == strand }) {
++		return nil
+ 	}
+-	if strand == resolved.Name {
++	resolved, parentErr := parent()
++	if parentErr == nil && strand == resolved.Name {
+ 		return nil
+ 	}
++	if err := cmp.Or(chainErr, parentErr); err != nil {
++		return fmt.Errorf("drift %s refused: the caller %q is a named session and the run's parent could not be resolved (%w); way forward: the operator's own unnamed shell may run it", verb, strand, err)
++	}
+ 	way := "the operator's own unnamed shell may always run it"
+ 	if resolved.Name != "" {
+ 		way = fmt.Sprintf("ask %s to run it; %s", resolved.Name, way)
+diff --git a/internal/driftcli/amend_test.go b/internal/driftcli/amend_test.go
+index 886a461ad..735eb5082 100644
+--- a/internal/driftcli/amend_test.go
++++ b/internal/driftcli/amend_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestCheckParentCaller covers the unnamed shell, the run's parent, another session, and an unresolvable parent.
++// TestCheckParentCaller covers each caller the check admits and each refusal, with the chain and parent readable or not.
+ func TestCheckParentCaller(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -21,7 +21,10 @@ func TestCheckParentCaller(t *testing.T) {
+ 	tests := []struct {
+ 		name   string
+ 		strand string
+-		parent func() (hubgeom.Parent, error)
++		// chain and chainErr are what the read of the orchs above the pair answers.
++		chain    []hubgeom.Parent
++		chainErr error
++		parent   func() (hubgeom.Parent, error)
+ 		// wantErr holds the fragments the refusal names; nil wants the caller admitted.
+ 		wantErr []string
+ 	}{
+@@ -31,6 +34,15 @@ func TestCheckParentCaller(t *testing.T) {
+ 			parent: func() (hubgeom.Parent, error) { return hubgeom.Parent{}, errors.New("must not be read") },
+ 		},
+ 		{name: "TheRunsParentPasses", strand: parentName, parent: resolved},
++		{name: "ABeamOrchAboveThePairPassesWhileAnotherOrchResolvesAsTheParent", strand: "ly:beam-b:orch", chain: []hubgeom.Parent{{Name: "ly:beam-b:orch"}, {Name: parentName}}, parent: resolved},
++		{name: "TheResolvedParentPassesWhenTheChainCannotBeRead", strand: parentName, chainErr: errors.New("origin record unreadable"), parent: resolved},
++		{
++			name:     "AnUnreadableChainRefusesAnotherSessionNamingTheError",
++			strand:   "ly:task:writer",
++			chainErr: errors.New("origin record unreadable"),
++			parent:   resolved,
++			wantErr:  []string{"drift amend refused", "could not be resolved", "origin record unreadable", "operator's own unnamed shell"},
++		},
+ 		{
+ 			name:    "AnotherSessionIsRefusedNamingTheParent",
+ 			strand:  "ly:task:writer",
+@@ -47,7 +59,8 @@ func TestCheckParentCaller(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			err := checkParentCaller("amend", tt.strand, tt.parent)
++			orchsAbove := func() ([]hubgeom.Parent, error) { return tt.chain, tt.chainErr }
++			err := checkParentCaller("amend", tt.strand, orchsAbove, tt.parent)
+ 			if tt.wantErr == nil {
+ 				if err != nil {
+ 					t.Errorf("checkParentCaller(%q) = %v; want nil", tt.strand, err)
+diff --git a/internal/driftcli/cli.go b/internal/driftcli/cli.go
+index 7c2a6d05f..5414a7851 100644
+--- a/internal/driftcli/cli.go
++++ b/internal/driftcli/cli.go
+@@ -338,8 +338,8 @@ Drift-Baseline capture halt, and a halt of Drift-Expect, the writer,
+ Drift-Verify or Drift-Recheck whose reason names it or whose baseline check
+ fails. It is refused while a capture or a lym drift check holds the capture
+ lock. After the writer it skips the regression check for the rest of the run,
+-and the verdict states it, so only the run's parent or the operator's own
+-shell runs it.
++and the verdict states it, so only an orch on the run's beam chain above the
++pair, or the operator's own shell, runs it.
+ 
+ With a slug it acts on that task's worktree, so the parent need not stand in
+ the run's worktree.
+diff --git a/internal/driftcli/doc.go b/internal/driftcli/doc.go
+index 92eae53c1..48d1686aa 100644
+--- a/internal/driftcli/doc.go
++++ b/internal/driftcli/doc.go
+@@ -45,9 +45,9 @@
+ // `defer` without a slug acts on the cwd's own worktree.
+ // Both run a parent-caller check first, as `lym loom decision add` runs its own caller check:
+ // the caller's strand name, from agentname.StrandNameEnv, passes when it is empty, as in the operator's own shell;
+-// it passes when it equals the run's parent orch;
++// it passes when it is an orch on the run's beam chain above the pair, or the orch the pair's notices go to;
+ // it is refused, naming the parent and the operator's shell, when it is another session;
+-// a parent that cannot be resolved refuses a named caller, naming the error.
++// a chain or parent that cannot be resolved refuses a caller neither one admits, naming the error.
+ // Bound: the check rests on the strand name and on the shell guard that refuses setting lym's strand variables.
+ // `amend` takes exactly one of `--entries <file>`, `--restore` or `--discard`, and calls driftengine.Amend.
+ // It refuses a file it cannot read, naming its path.
+diff --git a/internal/hubgeom/doc.go b/internal/hubgeom/doc.go
+index 2aff5e9ff..4c82b3c3e 100644
+--- a/internal/hubgeom/doc.go
++++ b/internal/hubgeom/doc.go
+@@ -40,12 +40,11 @@
+ // It reads as the prime when the record names the prime's checked-out branch or the prime's worktree.
+ // It is never derived by matching the recorded branch against the pairs present here.
+ // So a member whose beam pair is absent on this machine still reads the beam as its parent.
++// ParentOrchName names the orch of that parent, for a run driven from the prime, whose own worktree tells no parent.
+ // ResolveParent answers the parent pair's orch name for a reader that needs the pair itself:
+ // the parent names the driver's prompts carry.
+-// The `lym loom decision add --by parent` guard admits the destination of notices instead,
+-// so the orch that receives them can record the call.
+ //
+-// NearestLiveOrch is the destination of a notice to an orch.
++// NearestLiveOrch is the walk behind the destination of a notice to an orch.
+ // It tries the worktree it is told, then walks upward through the origin records' parent worktrees.
+ // It answers the nearest worktree whose orch a told predicate reports live.
+ // When none is live it answers the prime, whatever its state.
+@@ -54,6 +53,10 @@
+ // So does an empty parent worktree, a parent worktree that is gone, and a cycle.
+ // An error from the predicate is returned.
+ //
++// OrchChain lists every orch on that walk, nearest first and the prime's last, and asks none whether it is live.
++// An orch keeps its place on the chain whether or not it reads as live.
++// OrchChainAbove is that list without the told worktree's own orch.
++//
+ // Autonomy is the reader of beam.yaml's `autonomy` for runs and orchs.
+ // It answers for the worktree it is named, through TaskSettingChain and the per-task lookup, at the moment of the call.
+ // A failed read answers false and warns once per episode.
+diff --git a/internal/hubgeom/nearestlive.go b/internal/hubgeom/nearestlive.go
+index 589c8c511..66255caef 100644
+--- a/internal/hubgeom/nearestlive.go
++++ b/internal/hubgeom/nearestlive.go
+@@ -8,6 +8,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+@@ -30,14 +31,10 @@ func NearestLiveOrch(from *lymcwd.Location, live func(worktree *lymcwd.Location)
+ 		logger.Warn("hubgeom: hub has no recorded shortname; the notice gets no orch", "worktree", from.WorktreeName)
+ 		return Parent{}, nil
+ 	}
+-	start := from.WorktreeName
+-	fromPrime, err := isPrimeWorktree(from.WorktreePath())
++	start, err := walkStart(from)
+ 	if err != nil {
+ 		return Parent{}, err
+ 	}
+-	if fromPrime {
+-		start = ""
+-	}
+ 	worktree, err := nearestLive(start,
+ 		func(worktree string) (string, bool, error) { return recordedParentWorktree(from, worktree) },
+ 		func(worktree string) (bool, error) {
+@@ -57,6 +54,60 @@ func NearestLiveOrch(from *lymcwd.Location, live func(worktree *lymcwd.Location)
+ 	return Parent{Name: name, Worktree: worktree}, nil
+ }
+ 
++// OrchChain returns the orchs on the beam chain at and above the worktree of from, nearest first and the prime's last.
++// It walks the chain NearestLiveOrch walks and ends where that walk ends.
++// It asks no orch whether it is live, so an orch reading as down keeps its place.
++// Each answer's Name is a worktree's orch agent name and its Worktree the worktree's name, empty for the prime.
++// A hub with no recorded shortname yields no orch and a warning, since no name can be formed.
++// A read error is returned.
++func OrchChain(from *lymcwd.Location) ([]Parent, error) {
++	shortname, found := fabricengine.ReadShortname(fabriclayout.BoltDir(from.HubPath))
++	if !found {
++		logger.Warn("hubgeom: hub has no recorded shortname; the beam chain names no orch", "worktree", from.WorktreeName)
++		return nil, nil
++	}
++	start, err := walkStart(from)
++	if err != nil {
++		return nil, err
++	}
++	worktrees, err := chainWorktrees(start, func(worktree string) (string, bool, error) { return recordedParentWorktree(from, worktree) })
++	if err != nil {
++		return nil, err
++	}
++	chain := make([]Parent, 0, len(worktrees))
++	for _, worktree := range worktrees {
++		name, err := agentname.Format(shortname, worktree, agentname.RoleOrch)
++		if err != nil {
++			return nil, fmt.Errorf("hubgeom: form orch agent name for worktree %q: %w", worktree, err)
++		}
++		chain = append(chain, Parent{Name: name, Worktree: worktree})
++	}
++	return chain, nil
++}
++
++// OrchChainAbove returns the orchs on the beam chain above the worktree of pair, nearest first and the prime's last.
++// It leaves out the orch of pair's own worktree and asks none whether it is live.
++// A hub with no recorded shortname yields no orch, and a read error is returned.
++func OrchChainAbove(pair *lymcwd.Location) ([]Parent, error) {
++	chain, err := OrchChain(pair)
++	if err != nil {
++		return nil, err
++	}
++	return slices.DeleteFunc(chain, func(orch Parent) bool { return orch.Worktree == pair.WorktreeName }), nil
++}
++
++// walkStart returns the worktree a walk up the beam chain from the worktree of from starts at, "" for the prime.
++func walkStart(from *lymcwd.Location) (string, error) {
++	fromPrime, err := isPrimeWorktree(from.WorktreePath())
++	if err != nil {
++		return "", err
++	}
++	if fromPrime {
++		return "", nil
++	}
++	return from.WorktreeName, nil
++}
++
+ // recordedParentWorktree reads the parent worktree of the named worktree from its origin record, "" meaning the prime.
+ // It reports false when the worktree has no record, the record names no parent worktree or the parent worktree is gone.
+ func recordedParentWorktree(from *lymcwd.Location, worktree string) (string, bool, error) {
+@@ -81,6 +132,27 @@ func recordedParentWorktree(from *lymcwd.Location, worktree string) (string, boo
+ 	return origin.ParentWorktree, true, nil
+ }
+ 
++// chainWorktrees walks up from start through parentOf and returns every worktree on the walk, nearest first.
++// The walk ends where nearestLive's ends, and the list always closes with "", the prime.
++// It reads no filesystem itself.
++func chainWorktrees(start string, parentOf func(worktree string) (string, bool, error)) ([]string, error) {
++	var chain []string
++	visited := map[string]bool{}
++	for current := start; current != "" && !visited[current]; {
++		visited[current] = true
++		chain = append(chain, current)
++		parent, found, err := parentOf(current)
++		if err != nil {
++			return nil, err
++		}
++		if !found {
++			break
++		}
++		current = parent
++	}
++	return append(chain, ""), nil
++}
++
+ // nearestLive walks up from start through parentOf and returns the first worktree that live reports live.
+ // It returns "" when no worktree on the walk is live, and it reads no filesystem itself.
+ // parentOf reports a worktree's parent worktree, "" for the prime, and false when the walk ends there;
+diff --git a/internal/hubgeom/nearestlive_test.go b/internal/hubgeom/nearestlive_test.go
+index 7c45efb7b..b6b9129a2 100644
+--- a/internal/hubgeom/nearestlive_test.go
++++ b/internal/hubgeom/nearestlive_test.go
+@@ -1,14 +1,79 @@
+-// nearestlive_test.go covers the walk behind NearestLiveOrch over told reads, so no filesystem is touched.
++// nearestlive_test.go covers the walks behind NearestLiveOrch and OrchChain over told reads, so no filesystem is touched.
+ 
+ package hubgeom
+ 
+ import (
+ 	"errors"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
++func TestChainWorktrees(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	errRead := errors.New("origin read failed")
++	type parentRead struct {
++		parent string
++		found  bool
++		err    error
++	}
++	tests := []struct {
++		name    string
++		start   string
++		parents map[string]parentRead
++		want    []string
++		wantErr error
++	}{
++		{
++			name:    "a member lists its beam and the prime",
++			start:   "m",
++			parents: map[string]parentRead{"m": {parent: "b", found: true}, "b": {parent: "", found: true}},
++			want:    []string{"m", "b", ""},
++		},
++		{
++			name:    "a gone parent worktree ends the walk at the prime",
++			start:   "m",
++			parents: map[string]parentRead{"m": {}},
++			want:    []string{"m", ""},
++		},
++		{
++			name:    "a cycle ends the walk at the prime",
++			start:   "a",
++			parents: map[string]parentRead{"a": {parent: "b", found: true}, "b": {parent: "a", found: true}},
++			want:    []string{"a", "b", ""},
++		},
++		{
++			name:  "the prime lists itself alone",
++			start: "",
++			want:  []string{""},
++		},
++		{
++			name:    "a read error is returned",
++			start:   "m",
++			parents: map[string]parentRead{"m": {parent: "b", found: true}, "b": {err: errRead}},
++			wantErr: errRead,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := chainWorktrees(tt.start, func(worktree string) (string, bool, error) {
++				read := tt.parents[worktree]
++				return read.parent, read.found, read.err
++			})
++			if !errors.Is(err, tt.wantErr) {
++				t.Fatalf("chainWorktrees(%q) error = %v; want %v", tt.start, err, tt.wantErr)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("chainWorktrees(%q) = %q; want %q", tt.start, got, tt.want)
++			}
++		})
++	}
++}
++
+ func TestNearestLive(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+diff --git a/internal/hubgeom/parentof.go b/internal/hubgeom/parentof.go
+index b272848d6..f01f14dfe 100644
+--- a/internal/hubgeom/parentof.go
++++ b/internal/hubgeom/parentof.go
+@@ -6,12 +6,32 @@ import (
+ 	"fmt"
+ 	"path/filepath"
+ 
++	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ )
+ 
++// ParentOrchName returns the agent name of the orch that parents the entry slug:
++// the orch of the pair ParentOf answers, or the prime's orch when it answers the prime.
++// It serves a run driven from the prime, whose own worktree tells no parent.
++// A hub with no recorded shortname yields "" and a warning, since no name can be formed.
++// A read error from ParentOf is returned.
++func ParentOrchName(prime *lymcwd.Location, slug string) (string, error) {
++	shortname, found := fabricengine.ReadShortname(fabriclayout.BoltDir(prime.HubPath))
++	if !found {
++		logger.Warn("hubgeom: hub has no recorded shortname; the run's prompts name no parent", "slug", slug)
++		return "", nil
++	}
++	parent, err := ParentOf(prime, slug)
++	if err != nil {
++		return "", err
++	}
++	return agentname.Format(shortname, parent, agentname.RoleOrch)
++}
++
+ // ParentOf returns the slug of the pair that is the parent of the entry slug, "" meaning the prime.
+ // A pair's origin record decides, read over the prime's location, and its recorded parent worktree is the answer.
+ // The answer is the prime when the record names no parent worktree, the prime's worktree or its checked-out branch.
+diff --git a/internal/hubgeom/parentof_integration_test.go b/internal/hubgeom/parentof_integration_test.go
+index 3175d7001..bb6a07a62 100644
+--- a/internal/hubgeom/parentof_integration_test.go
++++ b/internal/hubgeom/parentof_integration_test.go
+@@ -25,6 +25,7 @@ import (
+ // A record naming the prime's branch under another worktree name does the same.
+ // A slug with no pair reads the beam its board entry's project chain reaches,
+ // and a pair forked from the prime reads the prime though its board entry is a member of a beam.
++// ParentOrchName names the orch of each of those parents.
+ func TestParentOf(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -84,15 +85,17 @@ func TestParentOf(t *testing.T) {
+ 		name string
+ 		slug string
+ 		want string
++		// wantOrch is the parent orch's agent name ParentOrchName answers for the slug.
++		wantOrch string
+ 	}{
+-		{"PairForkedFromThePrime", fromPrime, ""},
+-		{"PairForkedFromAnotherPair", fromBeam, beamPair},
+-		{"RecordNamingARemovedParentPair", goneParent, "po-removed"},
+-		{"RecordWithNoParentWorktree", noParent, ""},
+-		{"RecordNamingThePrimesBranchUnderAnotherWorktreeName", otherName, ""},
+-		{"SlugWithNoPairReadsTheBoardsBeam", unspawned, "po-beam"},
+-		{"PairForkedFromThePrimeReadsTheRecordOverTheBoard", member, ""},
+-		{"SlugWithNoPairAndNoEntry", "po-ghost", ""},
++		{"PairForkedFromThePrime", fromPrime, "", "tst:orch"},
++		{"PairForkedFromAnotherPair", fromBeam, beamPair, "tst:po-b:orch"},
++		{"RecordNamingARemovedParentPair", goneParent, "po-removed", "tst:po-removed:orch"},
++		{"RecordWithNoParentWorktree", noParent, "", "tst:orch"},
++		{"RecordNamingThePrimesBranchUnderAnotherWorktreeName", otherName, "", "tst:orch"},
++		{"SlugWithNoPairReadsTheBoardsBeam", unspawned, "po-beam", "tst:po-beam:orch"},
++		{"PairForkedFromThePrimeReadsTheRecordOverTheBoard", member, "", "tst:orch"},
++		{"SlugWithNoPairAndNoEntry", "po-ghost", "", "tst:orch"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -104,6 +107,10 @@ func TestParentOf(t *testing.T) {
+ 			if got != tt.want {
+ 				t.Errorf("ParentOf(%q) = %q; want %q", tt.slug, got, tt.want)
+ 			}
++			orch, err := hubgeom.ParentOrchName(l, tt.slug)
++			if err != nil || orch != tt.wantOrch {
++				t.Errorf("ParentOrchName(%q) = %q, %v; want %q, nil", tt.slug, orch, err, tt.wantOrch)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/loomcli/arbiter.go b/internal/loomcli/arbiter.go
+index 50b3cd5df..fdf6cb52a 100644
+--- a/internal/loomcli/arbiter.go
++++ b/internal/loomcli/arbiter.go
+@@ -168,6 +168,7 @@ func (c *loomCLI) arbiterDepsFor() (shedarbiter.Deps, error) {
+ 		},
+ 		Prompt: shedarbiter.PromptInput{
+ 			Recipe:             arbiterRecipeDescription(c.recipe, weaverengine.ArbiterNote(implementer, location.AnchorPath())),
++			ParentName:         c.parentName,
+ 			Slug:               seedSlug(location.WorktreeName),
+ 			Worktree:           location.WorktreePath(),
+ 			DecisionRecordPath: record.path,
+diff --git a/internal/loomcli/decision.go b/internal/loomcli/decision.go
+index edd8ef3ee..80461f8f2 100644
+--- a/internal/loomcli/decision.go
++++ b/internal/loomcli/decision.go
+@@ -49,6 +49,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
++	"github.com/Knatte18/loomyard/internal/orchroute"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
+@@ -280,8 +281,10 @@ type decisionDeps struct {
+ 	strandName string
+ 	// programName resolves the hub's full LOOM program name, '<shortname>:LOOM', which sends notices as the program.
+ 	programName func() (string, error)
+-	// parent resolves the nearest live orch up the beam chain, which receives the run's notices, for a named caller only.
++	// parent resolves the orch up the beam chain that receives the run's notices, for a named caller only.
+ 	parent func() (hubgeom.Parent, error)
++	// orchChain resolves every orch that may record on the run, asking none whether it is live, for a named caller only.
++	orchChain func() ([]hubgeom.Parent, error)
+ 	// arbiterStrand reports whether name is the target run's own arbiter strand, called only for a named caller.
+ 	arbiterStrand func(name string) bool
+ 	// samplerStrand reports whether name is the strand the Sampler-Session row recorded, while the run stands at that row.
+@@ -758,7 +761,7 @@ func holdDecisionLock(recordPath string) (release func() error, err error) {
+ // The operator's own unnamed shell always may.
+ // The arbiter label is the run's own arbiter strand's alone.
+ // The run's sampler strand passes only with the operator label.
+-// Any other named caller must be the run's parent orch.
++// Any other named caller must be an orch on the run's beam chain; the refusal names the one the run's notices go to.
+ func decisionCallerRefusal(deps decisionDeps, by string) string {
+ 	if by == decisionByArbiter {
+ 		if deps.strandName == "" || !deps.arbiterStrand(deps.strandName) {
+@@ -776,26 +779,37 @@ func decisionCallerRefusal(deps decisionDeps, by string) string {
+ 		}
+ 		return ""
+ 	}
+-	// An unreadable sampler record refuses only a caller that is not the run's parent, whose call never depended on it.
++	// An unreadable sampler record refuses only a caller that is no orch on the run's chain, whose call never depended on it.
+ 	samplerRead := fmt.Sprintf("read the run's sampler session: %s; %s", samplerErr, decisionWayRetry)
+-	parent, err := deps.parent()
++	chain, err := admissibleOrchs(deps.strandName, deps.orchChain, deps.parent)
+ 	if err != nil {
+ 		if samplerErr != nil {
+ 			return samplerRead
+ 		}
+-		return fmt.Sprintf("the caller %q is a named session; way forward: the run's parent could not be resolved (%s); the operator's own unnamed shell may still run the verb", deps.strandName, err)
++		return decisionParentUnresolved(deps.strandName, err)
+ 	}
+-	switch {
+-	case deps.strandName == parent.Name:
++	if onChain(chain, deps.strandName) {
+ 		return ""
+-	case samplerErr != nil:
++	}
++	if samplerErr != nil {
+ 		return samplerRead
++	}
++	parent, err := deps.parent()
++	switch {
++	case err != nil:
++		return decisionParentUnresolved(deps.strandName, err)
+ 	case parent.Name == "":
+ 		return fmt.Sprintf("the caller %q is a task session; way forward: a design call after the Discussion is the operator's to record; the operator's own unnamed shell may always run it", deps.strandName)
+ 	}
+ 	return fmt.Sprintf("the caller %q is a task session; way forward: a design call after the Discussion is the parent's to record; ask %s to run the verb; the operator's own unnamed shell may always run it", deps.strandName, parent.Name)
+ }
+ 
++// decisionParentUnresolved returns the refusal text for the named caller.
++// It covers the case where the orchs that may record on the run could not be resolved.
++func decisionParentUnresolved(caller string, err error) string {
++	return fmt.Sprintf("the caller %q is a named session; way forward: the run's parent could not be resolved (%s); the operator's own unnamed shell may still run the verb", caller, err)
++}
++
+ // amendmentCall holds what a `--amends-plan` call must put back when its append or commit fails:
+ // both records' bytes before the call, whether each existed, and the amendment record's bytes the call wrote.
+ type amendmentCall struct {
+@@ -1286,7 +1300,7 @@ func addedDecisionHeading(d discussionparser.AddedDecision) string {
+ const decisionStoreRetry = `way forward: re-run "lym loom decision store"`
+ 
+ // decisionStoreVerb copies the committed decision record onto the run's board entry, or refuses with a way forward.
+-// It admits the operator's own unnamed shell, the run's own arbiter strand and the run's parent orch.
++// It admits the operator's own unnamed shell, the run's own arbiter strand and every orch on the run's beam chain.
+ // It is admitted on the runs whose decision calls refresh the board copy:
+ // a run past its Discussion approval, or one whose recipe has no approval row and whose entry carries a stored record.
+ // It refuses a raddle run whose filing is done.
+@@ -1297,13 +1311,18 @@ func decisionStoreVerb(out io.Writer, slug string, deps decisionDeps) int {
+ 	}
+ 
+ 	if deps.strandName != "" && !deps.arbiterStrand(deps.strandName) {
+-		parent, err := deps.parent()
+-		switch {
+-		case err != nil:
+-			return refuse("the caller %q is a named session; way forward: the run's parent could not be resolved (%s); the operator's own unnamed shell may still run the verb", deps.strandName, err)
+-		case deps.strandName != parent.Name && parent.Name == "":
+-			return refuse(`the caller %q is a task session; way forward: the operator's own unnamed shell may always run "lym loom decision store"`, deps.strandName)
+-		case deps.strandName != parent.Name:
++		chain, err := admissibleOrchs(deps.strandName, deps.orchChain, deps.parent)
++		if err != nil {
++			return refuse("%s", decisionParentUnresolved(deps.strandName, err))
++		}
++		if !onChain(chain, deps.strandName) {
++			parent, err := deps.parent()
++			switch {
++			case err != nil:
++				return refuse("%s", decisionParentUnresolved(deps.strandName, err))
++			case parent.Name == "":
++				return refuse(`the caller %q is a task session; way forward: the operator's own unnamed shell may always run "lym loom decision store"`, deps.strandName)
++			}
+ 			return refuse(`the caller %q is a task session; way forward: ask %s to run "lym loom decision store"; the operator's own unnamed shell may always run it`, deps.strandName, parent.Name)
+ 		}
+ 	}
+@@ -1640,6 +1659,7 @@ func (s *decisionState) preRun(cmd *cobra.Command, args []string) error {
+ 		strandName:  os.Getenv(agentname.StrandNameEnv),
+ 		programName: loomProgramName(target),
+ 		parent:      func() (hubgeom.Parent, error) { return decisionParent(target, record, orchcli.OrchLive) },
++		orchChain:   func() ([]hubgeom.Parent, error) { return decisionOrchChain(target, record) },
+ 		arbiterStrand: func(name string) bool {
+ 			geometry, err := hubgeom.ReedGeometry(target)
+ 			if err != nil {
+@@ -1851,12 +1871,12 @@ func seedRecipe(target *lymcwd.Location) (string, error) {
+ }
+ 
+ // decisionParent resolves the orch that may record a decision on target's run.
+-// A beam's project record is the beam's own orch's to change: the nearest live orch from the beam itself.
+-// Any other record is the run's parent orch's: the nearest live one up from the run's parent.
++// A beam's project record is the beam's own orch's to change: the walk starts at the beam itself.
++// Any other record is the run's parent orch's: the walk starts at the run's parent.
+ // orchLive reports whether a worktree's orch is live.
+ func decisionParent(target *lymcwd.Location, record runRecord, orchLive func(*lymcwd.Location) (bool, error)) (hubgeom.Parent, error) {
+ 	if record.project {
+-		parent, err := hubgeom.NearestLiveOrch(target, orchLive)
++		parent, err := orchroute.Destination(target, orchLive)
+ 		if err != nil {
+ 			return hubgeom.Parent{}, err
+ 		}
+@@ -1868,6 +1888,35 @@ func decisionParent(target *lymcwd.Location, record runRecord, orchLive func(*ly
+ 	return orchcli.NearestLiveParent(target)
+ }
+ 
++// decisionOrchChain resolves every orch that may record a decision on target's run, nearest first and the prime's last.
++// A beam's project record takes the orchs at and above the beam; any other record takes the orchs above the run's pair.
++// No orch is asked whether it is live, so a parent orch that reads as down is still admitted for its own runs.
++func decisionOrchChain(target *lymcwd.Location, record runRecord) ([]hubgeom.Parent, error) {
++	if record.project {
++		return hubgeom.OrchChain(target)
++	}
++	return hubgeom.OrchChainAbove(target)
++}
++
++// admissibleOrchs returns the orchs whose name admits the named caller: the run's beam chain, read by orchChain.
++// A chain that cannot be read still admits a caller that parent resolves to, as a chain holding that orch alone.
++// Any other caller gets the chain's read error.
++func admissibleOrchs(caller string, orchChain func() ([]hubgeom.Parent, error), parent func() (hubgeom.Parent, error)) ([]hubgeom.Parent, error) {
++	chain, err := orchChain()
++	if err == nil {
++		return chain, nil
++	}
++	if resolved, parentErr := parent(); parentErr == nil && resolved.Name == caller {
++		return []hubgeom.Parent{resolved}, nil
++	}
++	return nil, err
++}
++
++// onChain reports whether name is the agent name of an orch on chain.
++func onChain(chain []hubgeom.Parent, name string) bool {
++	return slices.ContainsFunc(chain, func(orch hubgeom.Parent) bool { return orch.Name == name })
++}
++
+ // decisionReceivers returns the strand names of the live shuttle runs a decision on target's record reaches.
+ // A project record reaches the beam's own runs and the runs of every member pair under the beam.
+ // Every member works under the project's scope, so the project record reaches their runs too.
+@@ -2039,8 +2088,8 @@ addresses itself; from the prime the slug is required. On a beam,
+ of the project's scope in the beam's project record; the beam's own orch runs
+ it, and its notice reaches
+ the live agents of every member run under the beam. It refuses a task
+-session's label: a caller whose reed strand name differs from the run's
+-parent orch is refused, and the operator's own unnamed shell always passes.
++session's label: a named caller that is no orch on the run's beam chain is
++refused, and the operator's own unnamed shell always passes.
+ The one other caller is the run's own arbiter strand, which passes --by arbiter.
+ On a sampler run the strand its Sampler-Session row recorded as its session is
+ also admitted while the run stands at that row, and only with --by operator.
+@@ -2066,9 +2115,9 @@ It then notifies the run's other live agents.
+ 
+ --by is parent, operator or arbiter (the last only from the run's arbiter
+ strand). --title, --decision and --rationale are required without --from.
+-Callers other than the parent orch, arbiter or sampler session (--by operator
+-only) are refused, as is any call while Discussion-Write runs or before a
+-Record-Write recipe has committed the record.
++Callers other than an orch on the run's beam chain, the arbiter or the sampler
++session (--by operator only) are refused, as is any call while Discussion-Write
++runs or before a Record-Write recipe has committed the record.
+ 
+ From the first Code-Review round until Finalize only a bug's "No test seam" or
+ "No bug fixed" entry that changes nothing else is taken: file any other call
+@@ -2127,7 +2176,7 @@ no Discussion approval, when the run's entry carries a stored record. It
+ refuses a run still inside Discussion-Review, a record HEAD does not hold,
+ an entry that has landed, which keeps the record it last stored, and a raddle
+ run whose filing is done. The operator's own unnamed shell, the run's own
+-arbiter strand and the run's parent orch may run it.
++arbiter strand and every orch on the run's beam chain may run it.
+ 
+ Example:
+   lym loom decision store <slug>`,
+diff --git a/internal/loomcli/decision_test.go b/internal/loomcli/decision_test.go
+index 0cab60f53..a08d592b4 100644
+--- a/internal/loomcli/decision_test.go
++++ b/internal/loomcli/decision_test.go
+@@ -53,7 +53,13 @@ type decisionFake struct {
+ 	// strandName is the caller's exported strand name, empty for an unnamed shell.
+ 	strandName string
+ 	parent     hubgeom.Parent
+-	parentErr  error
++	// parentErr is returned by both the parent and the orch chain resolvers.
++	parentErr error
++	// chainErr, when set, fails the orch chain resolver alone.
++	chainErr error
++	// orchChain, when set, is the run's beam chain.
++	// Otherwise the chain holds the parent alone, or nothing for a nameless one.
++	orchChain []hubgeom.Parent
+ 	// arbiterName is the one strand name the run's arbiter check accepts.
+ 	arbiterName string
+ 	// samplerName is the one strand name the sampler session check accepts; samplerErr is returned instead of its answer.
+@@ -274,9 +280,18 @@ func newDarnDecisionFake(t *testing.T) *decisionFake {
+ 
+ func (f *decisionFake) deps() decisionDeps {
+ 	return decisionDeps{
+-		strandName:     f.strandName,
+-		programName:    func() (string, error) { return "hub:LOOM", f.programNameErr },
+-		parent:         func() (hubgeom.Parent, error) { return f.parent, f.parentErr },
++		strandName:  f.strandName,
++		programName: func() (string, error) { return "hub:LOOM", f.programNameErr },
++		parent:      func() (hubgeom.Parent, error) { return f.parent, f.parentErr },
++		orchChain: func() ([]hubgeom.Parent, error) {
++			if f.chainErr != nil {
++				return nil, f.chainErr
++			}
++			if f.orchChain != nil || f.parent.Name == "" {
++				return f.orchChain, f.parentErr
++			}
++			return []hubgeom.Parent{f.parent}, f.parentErr
++		},
+ 		arbiterStrand:  func(name string) bool { return name == f.arbiterName },
+ 		samplerStrand:  func(name string) (bool, error) { return f.samplerName != "" && name == f.samplerName, f.samplerErr },
+ 		readStatus:     func() (shedengine.Status, bool, error) { return f.status, f.found, f.statusErr },
+@@ -544,8 +559,12 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		parentName  string
+ 		arbiterName string
+ 		samplerName string
++		// beamOrch, when set, puts that orch on the run's beam chain below the parent.
++		beamOrch string
+ 		// samplerErr makes the read of the run's sampler record fail.
+ 		samplerErr error
++		// chainErr makes the read of the run's beam chain fail while the parent still resolves.
++		chainErr error
+ 		// recordRow runs the case on a Record-Write record that is committed and unchanged.
+ 		recordRow bool
+ 		// pattern sets the three PATTERN-change flags.
+@@ -583,6 +602,8 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 		{name: "program name unresolvable", by: "parent", programNameFails: true},
+ 		{name: "recorded parent's own name", by: "parent", strandName: "hub:orch", parentName: "hub:orch"},
+ 		{name: "slug-bearing recorded parent's own name", by: "parent", strandName: "hub:other:orch", parentName: "hub:other:orch"},
++		{name: "a beam's orch on the run's chain while the prime's orch resolves as the parent", by: "parent", strandName: "hub:beam-b:orch", parentName: "hub:orch", beamOrch: "hub:beam-b:orch"},
++		{name: "the resolved parent while the beam chain cannot be read", by: "parent", strandName: "hub:orch", parentName: "hub:orch", chainErr: errors.New("origin record unreadable")},
+ 		{name: "the run's arbiter strand with the arbiter label", by: "arbiter", strandName: "hub:slug:arbiter", parentName: "hub:orch", arbiterName: "hub:slug:arbiter"},
+ 		{name: "the run's sampler session with the operator label on a Record-Write record", by: "operator", strandName: "hub:slug:sampler", parentName: "hub:orch", samplerName: "hub:slug:sampler", recordRow: true},
+ 		{name: "the recorded parent with an unreadable sampler record", by: "parent", strandName: "hub:orch", parentName: "hub:orch", samplerErr: errors.New("record boom")},
+@@ -598,6 +619,7 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 			f.arbiterName = tc.arbiterName
+ 			f.samplerName = tc.samplerName
+ 			f.samplerErr = tc.samplerErr
++			f.chainErr = tc.chainErr
+ 			f.judgeOpen = tc.judgeOpen
+ 			if tc.programNameFails {
+ 				f.programNameErr = errors.New("geometry boom")
+@@ -612,6 +634,9 @@ func TestDecisionVerb_AppendsAndCommits(t *testing.T) {
+ 				f.raddlePerch = true
+ 			}
+ 			f.parent = hubgeom.Parent{Name: tc.parentName}
++			if tc.beamOrch != "" {
++				f.orchChain = []hubgeom.Parent{{Name: tc.beamOrch, Worktree: "beam-b"}, f.parent}
++			}
+ 			input := goodDecisionInput()
+ 			input.by = by
+ 			input.dropsCreate = tc.dropsCreate
+@@ -1819,6 +1844,13 @@ func TestDecisionStoreVerb(t *testing.T) {
+ 				reachStore(f).strandName, f.parent = "hub:orch", hubgeom.Parent{Name: "hub:orch"}
+ 			},
+ 		},
++		{
++			name: "BeamOrchOnTheChain_StoresWhileThePrimeResolvesAsTheParent",
++			setup: func(f *decisionFake) {
++				reachStore(f).strandName, f.parent = "hub:beam-b:orch", hubgeom.Parent{Name: "hub:orch"}
++				f.orchChain = []hubgeom.Parent{{Name: "hub:beam-b:orch", Worktree: "beam-b"}, f.parent}
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/loomcli/decisionchain_integration_test.go b/internal/loomcli/decisionchain_integration_test.go
+new file mode 100644
+index 000000000..47e5d0bb6
+--- /dev/null
++++ b/internal/loomcli/decisionchain_integration_test.go
+@@ -0,0 +1,54 @@
++// decisionchain_integration_test.go proves over a real hub which orchs may record a decision on a run:
++// a beam's project record keeps the beam's own orch, and a task record leaves out the pair's own.
++
++package loomcli
++
++import (
++	"slices"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestDecisionOrchChain(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	hubforge.AddPairWith(t, h, "m", fabricengine.AddOptions{SkipPush: true, Parent: "b"})
++
++	tests := []struct {
++		name   string
++		slug   string
++		record runRecord
++		want   []string
++	}{
++		{"A beam's project record keeps the beam's own orch", "b", runRecord{project: true}, []string{"tst:b:orch", "tst:orch"}},
++		{"A task record leaves out the pair's own orch", "m", runRecord{}, []string{"tst:b:orch", "tst:orch"}},
++		{"A beam's task record is its parents' alone", "b", runRecord{}, []string{"tst:orch"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			target, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(tt.slug))
++			if err != nil {
++				t.Fatalf("ResolveWorktree(%q) = %v; want nil", tt.slug, err)
++			}
++			chain, err := decisionOrchChain(target, tt.record)
++			if err != nil {
++				t.Fatalf("decisionOrchChain(%s) = _, %v; want nil error", tt.slug, err)
++			}
++			var got []string
++			for _, orch := range chain {
++				got = append(got, orch.Name)
++			}
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("decisionOrchChain(%s) = %q; want %q", tt.slug, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index fedd21e4c..65b205cec 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -46,8 +46,12 @@
+ // `decision add`, `replace` and `store` copy the committed record onto the board entry, never a beam's project record.
+ // A failed copy is reported as `record_store_error` and never fails the verb.
+ // `decisionCallerRefusal` is the caller rule of `decision add` and `decision replace`:
+-// the run's parent orch, the run's own arbiter with `--by arbiter`,
++// an orch on the run's beam chain, the run's own arbiter with `--by arbiter`,
+ // and a sampler run's recorded session strand with `--by operator` only while its Sampler-Session row is current.
++// The beam chain is read from the origin records with no regard to which orch is live:
++// the orchs above the run's pair, or for a beam's project record the beam's own orch and the orchs above it.
++// `decision store` admits the same orchs.
++// A chain that cannot be read still admits the orch the run's notices go to, here and at `parent-review answer`.
+ // `decision add`, `replace` and `store` refuse a raddle run, naming the goto or the filed parts.
+ // `decision add` with `--amends-plan` or a PATTERN change is refused while the run's drift judge session is open.
+ // `decision add` and `replace` refuse every caller once the task's scope is closed:
+@@ -58,7 +62,8 @@
+ // `decision replace` commits a whole record with a `Lym-Record-Replaced` trailer under the run's decision lock.
+ //
+ // `parent-review answer` records the parent orch's answer to the run's latest ask.
+-// It admits the operator's unnamed shell, the run's parent orch and the strand the ask went to.
++// It admits the operator's unnamed shell and the strand the ask went to.
++// It also admits an orch on the run's beam chain, as the decision verbs read that chain.
+ // `parent-review await` is the asking agent's capped wait on the same ask, and it writes nothing but a timeout.
+ // The Discussion-Review parent seat reads `loom.discussion.review_ask_parent`.
+ // The Code-Review parent seat reads `loom.code.review_ask_parent`.
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index 7e9ab94cd..b9828320e 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -162,6 +162,17 @@ func handBackNotify(location *lymcwd.Location) func(_ sheddriver.Stop, line stri
+ 	}
+ }
+ 
++// tacklerPrompt returns what the tackler's prompt is told about the run the pre-run armed.
++func (c *loomCLI) tacklerPrompt() sheddriver.TacklerPromptInput {
++	return sheddriver.TacklerPromptInput{
++		Slug:       seedSlug(c.location.WorktreeName),
++		ParentName: c.parentName,
++		Worktree:   c.location.WorktreePath(),
++		TraceDir:   logger.TraceDir(),
++		DriverLog:  loomengine.LoomDriverLog(c.location),
++	}
++}
++
+ // goDriverDepsFor assembles the Go driver's seams for the run the pre-run armed.
+ // release is the driver lock's early release, which the hand-over calls before it spawns its successor.
+ // Every closure reads on demand, and the on-disk lym path is resolved once, here.
+@@ -230,15 +241,10 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 		Recipe:         tacklerRecipe,
+ 		GotoRoutedFrom: true,
+ 		GotoGuard:      gotoGuard,
+-		Prompt: sheddriver.TacklerPromptInput{
+-			Slug:      seedSlug(location.WorktreeName),
+-			Worktree:  location.WorktreePath(),
+-			TraceDir:  logger.TraceDir(),
+-			DriverLog: loomengine.LoomDriverLog(location),
+-		},
+-		StencilsDir: c.runDeps.Geom.StencilsDir,
+-		Shuttle:     sheddriver.RunnerShuttle{Runner: c.runner},
+-		Now:         time.Now,
++		Prompt:         c.tacklerPrompt(),
++		StencilsDir:    c.runDeps.Geom.StencilsDir,
++		Shuttle:        sheddriver.RunnerShuttle{Runner: c.runner},
++		Now:            time.Now,
+ 	}
+ 
+ 	deps := sheddriver.Deps{
+diff --git a/internal/loomcli/parentreview.go b/internal/loomcli/parentreview.go
+index 66ce75785..0950502b6 100644
+--- a/internal/loomcli/parentreview.go
++++ b/internal/loomcli/parentreview.go
+@@ -50,8 +50,10 @@ const (
+ type parentReviewDeps struct {
+ 	// strandName is the full name reed exported to the calling session, empty for a shell reed did not spawn.
+ 	strandName string
+-	// parent resolves the run's parent orch at call time.
++	// parent resolves the run's parent orch at call time, the one up the beam chain its notices go to.
+ 	parent func() (hubgeom.Parent, error)
++	// orchChain resolves every orch on the run's beam chain at call time, asking none whether it is live.
++	orchChain func() ([]hubgeom.Parent, error)
+ 	// files locates the run's ask record and the parent's reports.
+ 	files burlerengine.ParentReviewFiles
+ 	// now is the clock every deadline is judged against.
+@@ -128,16 +130,16 @@ func containsWord[T comparable](words []T, word T) bool {
+ }
+ 
+ // parentAnswerCallerRefusal returns the refusal text for a caller that may not answer asked, or empty when it may.
+-// The operator's own unnamed shell always may, and so does the run's parent orch as resolved at call time.
++// The operator's own unnamed shell always may, and so does every orch on chain, the run's beam chain read at call time.
+ // So does the orch strand asked went to, which keeps an orch that came up or went down since the ask from refusing it.
+-func parentAnswerCallerRefusal(caller string, parent hubgeom.Parent, parentErr error, asked burlerengine.ParentAsk) string {
++func parentAnswerCallerRefusal(caller string, chain []hubgeom.Parent, chainErr error, asked burlerengine.ParentAsk) string {
+ 	if caller == "" || (asked.Strand != "" && caller == asked.Strand) {
+ 		return ""
+ 	}
+-	if parentErr != nil {
+-		return fmt.Sprintf("the caller %q is not the strand the ask went to, and the run's parent orch could not be resolved (%s); %s", caller, parentErr, parentReviewWayParentAnswers)
++	if chainErr != nil {
++		return fmt.Sprintf("the caller %q is not the strand the ask went to, and the run's parent orch could not be resolved (%s); %s", caller, chainErr, parentReviewWayParentAnswers)
+ 	}
+-	if parent.Name != "" && caller == parent.Name {
++	if onChain(chain, caller) {
+ 		return ""
+ 	}
+ 	return fmt.Sprintf("the caller %q is neither the run's parent orch nor the strand the ask went to; %s", caller, parentReviewWayParentAnswers)
+@@ -201,10 +203,11 @@ func parentReviewAnswerVerb(out io.Writer, slug string, deps parentReviewDeps, i
+ 		return refuse("read the run's parent-review asks: %s; %s", err, parentReviewWayRetry)
+ 	}
+ 	asked, _ := record.Ask(input.ask)
+-	parent, parentErr := deps.parent()
+-	if refusal := parentAnswerCallerRefusal(deps.strandName, parent, parentErr, asked); refusal != "" {
++	chain, chainErr := admissibleOrchs(deps.strandName, deps.orchChain, deps.parent)
++	if refusal := parentAnswerCallerRefusal(deps.strandName, chain, chainErr, asked); refusal != "" {
+ 		return refuse("%s", refusal)
+ 	}
++	parent, parentErr := deps.parent()
+ 
+ 	ask, err := burlerengine.AnswerParentAsk(deps.files, input.ask, deps.now(), findings)
+ 	var refusal *burlerengine.ParentAnswerRefusal
+@@ -315,6 +318,7 @@ func (s *parentReviewState) preRun(cmd *cobra.Command, args []string) error {
+ 	s.deps = parentReviewDeps{
+ 		strandName: strand,
+ 		parent:     func() (hubgeom.Parent, error) { return decisionParent(target, record, orchcli.OrchLive) },
++		orchChain:  func() ([]hubgeom.Parent, error) { return decisionOrchChain(target, record) },
+ 		files:      burlerengine.ParentReviewFilesOf(target.AnchorPath()),
+ 		now:        time.Now,
+ 		awaitCap:   shuttleengines.KeepWarm(fabricengine.ConfigDirs(target), strand).Cap,
+@@ -364,9 +368,9 @@ answer refused. A call the parent still wants made after a refusal goes in with
+ "lym loom decision add <slug> --by parent"; once the task's scope is closed, as
+ from Code-Review on, it is filed as a board note for a new task instead.
+ 
+-The callers are the run's parent orch, resolved at call time, the orch strand
+-the ask went to, and the operator's own unnamed shell; the strand name is not
+-verified. It edits no tracked file and never the decision record.
++The callers are every orch on the run's beam chain, read at call time, the
++orch strand the ask went to, and the operator's own unnamed shell; the strand
++name is not verified. It edits no tracked file and never the decision record.
+ 
+ Example:
+   lym loom parent-review answer <slug> --ask 2 --findings-file findings.yaml`,
+diff --git a/internal/loomcli/parentreview_test.go b/internal/loomcli/parentreview_test.go
+index 9eba1552a..c8aa7b501 100644
+--- a/internal/loomcli/parentreview_test.go
++++ b/internal/loomcli/parentreview_test.go
+@@ -27,7 +27,8 @@ var parentReviewNow = time.Date(2026, 11, 11, 12, 0, 0, 0, time.UTC)
+ const parentReviewParent = "ly:orch"
+ 
+ // parentReviewFixture records asks into a fresh run's files and returns deps over them.
+-// The parent resolves to parentReviewParent and the caller is the operator's unnamed shell until the test sets them.
++// The parent resolves to parentReviewParent, the run's beam chain holds it alone,
++// and the caller is the operator's unnamed shell until the test sets them.
+ func parentReviewFixture(t *testing.T, asks ...burlerengine.ParentAsk) parentReviewDeps {
+ 	t.Helper()
+ 	files := burlerengine.ParentReviewFilesOf(t.TempDir())
+@@ -37,9 +38,10 @@ func parentReviewFixture(t *testing.T, asks ...burlerengine.ParentAsk) parentRev
+ 		}
+ 	}
+ 	return parentReviewDeps{
+-		parent: func() (hubgeom.Parent, error) { return hubgeom.Parent{Name: parentReviewParent}, nil },
+-		files:  files,
+-		now:    func() time.Time { return parentReviewNow },
++		parent:    func() (hubgeom.Parent, error) { return hubgeom.Parent{Name: parentReviewParent}, nil },
++		orchChain: func() ([]hubgeom.Parent, error) { return []hubgeom.Parent{{Name: parentReviewParent}}, nil },
++		files:     files,
++		now:       func() time.Time { return parentReviewNow },
+ 	}
+ }
+ 
+@@ -93,6 +95,18 @@ func TestParentReviewAnswerVerb(t *testing.T) {
+ 			setup:      func(d *parentReviewDeps) { d.strandName = parentReviewParent },
+ 			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
+ 		},
++		{
++			name:  "a beam's orch on the run's chain answers an ask that went to the prime's orch",
++			asks:  []burlerengine.ParentAsk{openParentAsk(time.Minute)},
++			input: parentAnswerInput{ask: 1, satisfied: true},
++			setup: func(d *parentReviewDeps) {
++				d.strandName = "ly:beam-b:orch"
++				d.orchChain = func() ([]hubgeom.Parent, error) {
++					return []hubgeom.Parent{{Name: "ly:beam-b:orch", Worktree: "beam-b"}, {Name: parentReviewParent}}, nil
++				}
++			},
++			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskDone},
++		},
+ 		{
+ 			name:       "the strand the ask went to answers a pending-post ask after the parent resolves to another orch",
+ 			asks:       []burlerengine.ParentAsk{{State: burlerengine.ParentAskPendingPost, Strand: "ly:orch-asked", Deadline: parentReviewNow.Add(time.Minute)}},
+@@ -143,7 +157,7 @@ func TestParentReviewAnswerVerb(t *testing.T) {
+ 			input: parentAnswerInput{ask: 1, satisfied: true},
+ 			setup: func(d *parentReviewDeps) {
+ 				d.strandName = "ly:task-a:darn"
+-				d.parent = func() (hubgeom.Parent, error) { return hubgeom.Parent{}, errors.New("no orch is live") }
++				d.orchChain = func() ([]hubgeom.Parent, error) { return nil, errors.New("origin record unreadable") }
+ 			},
+ 			want:       []string{`"ly:task-a:darn"`, "could not be resolved", parentReviewWayParentAnswers},
+ 			wantStates: []burlerengine.ParentAskState{burlerengine.ParentAskOpen},
+diff --git a/internal/loomcli/wiring_beam_test.go b/internal/loomcli/wiring_beam_test.go
+index f4ccc556b..c2106906e 100644
+--- a/internal/loomcli/wiring_beam_test.go
++++ b/internal/loomcli/wiring_beam_test.go
+@@ -88,10 +88,14 @@ func TestWire_BeamRecipe(t *testing.T) {
+ 		if got := c.env.RecordWrite; got.RecordPath != wantRecord || got.SupportLogPath != loomengine.ProjectSupportLog(loc, "pair") || got.DiscussionDir != loomengine.ProjectDir(loc, "pair") {
+ 			t.Errorf("c.env.RecordWrite = %q, %q, %q; want the project record, its support log and the project directory", got.RecordPath, got.SupportLogPath, got.DiscussionDir)
+ 		}
++		c.parentName = "tst:b:orch"
+ 		arbiter, err := c.arbiterDepsFor()
+ 		if err != nil {
+ 			t.Fatalf("arbiterDepsFor() = %v; want nil", err)
+ 		}
++		if got, tackler := arbiter.Prompt.ParentName, c.tacklerPrompt().ParentName; got != "tst:b:orch" || tackler != "tst:b:orch" {
++			t.Errorf("arbiter and tackler prompt ParentName = %q, %q; want the run's parent orch tst:b:orch", got, tackler)
++		}
+ 		if arbiter.Prompt.DecisionRecordPath != wantRecord || arbiter.Prompt.SupportLogPath != loomengine.ProjectSupportLog(loc, "pair") {
+ 			t.Errorf("arbiter prompt record = %q, support log = %q; want the project record %q and its support log", arbiter.Prompt.DecisionRecordPath, arbiter.Prompt.SupportLogPath, wantRecord)
+ 		}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index ccf9fd8d6..a1697385e 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -107,7 +107,8 @@
+ // A module sends the orch a notice as creel mail and never types into the orch session itself.
+ // `PrimePaths` is the one accessor for the orch's told paths.
+ // `NotifyPrime` posts a line to the prime's orch strand and posts nothing, with no error, when none is recorded.
+-// `NotifyParent` and `NotifyFrom` route a run's notice to the nearest live orch up its beam chain.
++// `NotifyParent` and `NotifyFrom` route a run's notice up its beam chain:
++// the orch the walk starts at while reed holds its strand, else the nearest live orch above.
+ // They route to the prime's orch when none is live.
+ // `NotifyAsker` routes a hold notice to the orch the held agent's own question reached.
+ // `PostAsProgram` signs a post as a lym program alone.
+diff --git a/internal/orchcli/notify.go b/internal/orchcli/notify.go
+index 907d93c5c..184b94ff2 100644
+--- a/internal/orchcli/notify.go
++++ b/internal/orchcli/notify.go
+@@ -1,6 +1,8 @@
+ // notify.go sends a notice to an orch as creel mail.
+ // Each Notify function differs in which orch it reaches from a location,
+ // and the lookups here resolve the orch strand that mail addresses.
++// A walk up a beam chain keeps a notice at the worktree it starts at while reed holds that orch's strand, live or not.
++// Otherwise, as for a stopped orch, it passes the notice to the nearest live orch above, else the prime's.
+ 
+ package orchcli
+ 
+@@ -41,10 +43,11 @@ func NotifyPrime(location *lymcwd.Location, program, line string) (posted bool,
+ 	return postNotice(location, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return PrimeOrchStrand(location) })
+ }
+ 
+-// NotifyParent sends line as creel mail to the nearest live orch up the beam chain of the pair's parent.
++// NotifyParent sends line as creel mail to the orch a walk from the pair's parent reaches.
+ // It is signed as program, and it reports whether the notice was posted.
+ // The mail is tagged with the pair's slug as its run, so the pair's teardown drops it while it is unread.
+-// The destination is resolved at each call; the prime's orch is the answer when no orch above the pair is live.
++// The destination is resolved at each call.
++// It is the parent's orch while reed holds its strand, else the nearest live orch above, else the prime's.
+ // A destination with no orch strand recorded is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+ func NotifyParent(pair *lymcwd.Location, program, line string) (posted bool, err error) {
+@@ -52,20 +55,20 @@ func NotifyParent(pair *lymcwd.Location, program, line string) (posted bool, err
+ 	return postNotice(pair, "", program, line, tags, func() (string, bool, error) { return parentOrchStrand(pair, OrchLive) })
+ }
+ 
+-// NotifyFrom sends line as creel mail to the nearest live orch on the beam chain at or above from.
++// NotifyFrom sends line as creel mail to the orch a walk up the beam chain from the worktree from reaches.
+ // It is signed as program, and it reports whether the notice was posted.
+ // It serves a notice of a run whose pair is absent, which the run's beam worktree stands in for.
+ func NotifyFrom(from *lymcwd.Location, program, line string) (posted bool, err error) {
+ 	return postNotice(from, "", program, line, creelengine.PostTags{}, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
+ }
+ 
+-// NotifyFromScoped sends line as creel mail to the nearest live orch on the beam chain at or above from.
++// NotifyFromScoped sends line as creel mail to the orch a walk up the beam chain from the worktree from reaches.
+ // It is signed as program scoped to slug, as "<shortname>:<slug>:<NAME>", and it reports whether the notice was posted.
+ func NotifyFromScoped(from *lymcwd.Location, slug, program, line string) (posted bool, err error) {
+ 	return postNotice(from, slug, program, line, creelengine.PostTags{}, func() (string, bool, error) { return nearestOrchStrand(from, OrchLive) })
+ }
+ 
+-// NotifyRunFrom sends line as creel mail carrying tags to the nearest live orch on the beam chain at or above from.
++// NotifyRunFrom sends line as creel mail carrying tags to the orch a walk from the worktree from reaches.
+ // It is signed as program scoped to slug, the unscoped program for an empty slug,
+ // and it reports whether the notice was posted.
+ // It serves a notice about one run: its run tag lets the run's teardown drop it unread,
+@@ -75,7 +78,7 @@ func NotifyRunFrom(from *lymcwd.Location, slug, program string, tags creelengine
+ }
+ 
+ // NotifyParentHalt sends line, stamped with the pair's autonomy, as creel mail.
+-// It goes to the nearest live orch up the pair's beam chain.
++// It goes to the orch a walk from the pair's parent reaches.
+ // It serves a run's halt notices, and routes, tags and signs as NotifyParent does.
+ // The stamp is the autonomy the pair reads when the notice is built,
+ // so the orch the notice reaches handles it under the run's value, never its own worktree's.
+@@ -84,7 +87,7 @@ func NotifyParentHalt(pair *lymcwd.Location, program, line string) (posted bool,
+ }
+ 
+ // NotifyRunFromHalt sends line, stamped with the autonomy of the run slug, as creel mail carrying tags.
+-// It goes to the nearest live orch on the beam chain at or above from.
++// It goes to the orch a walk up the beam chain from the worktree from reaches.
+ // It serves a run's halt notices for a run whose pair is absent, and routes and tags as NotifyRunFrom does.
+ // It is signed as the unscoped program: slug names the run whose autonomy stamps the line, never a scope of the signer.
+ func NotifyRunFromHalt(from *lymcwd.Location, slug, program string, tags creelengine.PostTags, line string) (posted bool, err error) {
+@@ -101,7 +104,7 @@ func WithRunAutonomy(location *lymcwd.Location, slug, line string) string {
+ // NotifyAsker sends line as creel mail to the orch the agents of location reach as their parent.
+ // It is signed as program, and it reports whether the notice was posted.
+ // It serves a hold notice.
+-// The walk to the nearest live orch starts at the pair's recorded parent when location is a pair.
++// The walk up the beam chain starts at the pair's recorded parent when location is a pair.
+ // Otherwise, for a beam or the prime, it starts at location itself.
+ // A destination with no orch strand recorded is not an error: the notice is logged and nothing is posted.
+ // A refusal or failure comes back as an error carrying the full line, and the notice is not retried.
+@@ -120,7 +123,6 @@ func NotifyOrchAt(worktree *lymcwd.Location, program, line string) (posted bool,
+ 
+ // ParentStrand answers the orch strand a notice of pair goes to, by NotifyParent's routing.
+ // It also reports whether that orch's state records one.
+-// The answer is the nearest worktree up from the pair's parent whose orch is live, else the prime's.
+ func ParentStrand(pair *lymcwd.Location) (name string, recorded bool, err error) {
+ 	return parentOrchStrand(pair, OrchLive)
+ }
+@@ -173,12 +175,21 @@ func notifyClientsOf(location *lymcwd.Location, slug, program string) notifyClie
+ }
+ 
+ // NearestLiveParent answers the orch a notice of pair goes to, as the orch's agent name and worktree.
+-// It is the nearest worktree up from the pair's parent whose orch is live, else the prime's.
++// It is the orch of the pair's parent while reed holds its strand, live or not.
++// Otherwise it is the nearest live orch above, else the prime's.
+ // The answer's Worktree is empty for the prime.
+ func NearestLiveParent(pair *lymcwd.Location) (hubgeom.Parent, error) {
+ 	return nearestLiveParent(pair, OrchLive)
+ }
+ 
++// NoticeDestination answers the orch a notice starting at the worktree from goes to, as its agent name and worktree.
++// It is the orch of from while reed holds its strand, live or not.
++// Otherwise it is the nearest live orch above, else the prime's.
++// The answer's Worktree is empty for the prime.
++func NoticeDestination(from *lymcwd.Location) (hubgeom.Parent, error) {
++	return orchroute.Destination(from, OrchLive)
++}
++
+ // nearestLiveParent answers the orch a notice of pair goes to, deciding each candidate orch's liveness with live.
+ func nearestLiveParent(pair *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (hubgeom.Parent, error) {
+ 	parent, err := hubgeom.ResolveParent(pair)
+@@ -189,7 +200,7 @@ func nearestLiveParent(pair *lymcwd.Location, live func(worktree *lymcwd.Locatio
+ 	if err != nil {
+ 		return hubgeom.Parent{}, err
+ 	}
+-	return hubgeom.NearestLiveOrch(start, live)
++	return orchroute.Destination(start, live)
+ }
+ 
+ // askerOrchStrand answers the orch strand a hold notice of location goes to, and whether that orch's state records one.
+@@ -197,15 +208,12 @@ func askerOrchStrand(location *lymcwd.Location, live func(worktree *lymcwd.Locat
+ 	return orchroute.Asker(location, live)
+ }
+ 
+-// parentOrchStrand answers the orch strand a notice of pair goes to.
+-// It is the nearest worktree up from the pair's parent whose orch live reports live, else the prime's.
++// parentOrchStrand answers the orch strand a notice of pair goes to, deciding liveness with live.
+ func parentOrchStrand(pair *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error) {
+ 	return orchroute.FromPair(pair, live)
+ }
+ 
+-// nearestOrchStrand answers the orch strand of the nearest worktree on the beam chain at or above start.
+-// It is the nearest one whose orch live reports live.
+-// It falls back to the prime's orch strand when none is live.
++// nearestOrchStrand answers the orch strand a notice starting at start goes to, deciding liveness with live.
+ func nearestOrchStrand(start *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error) {
+ 	return orchroute.From(start, live)
+ }
+diff --git a/internal/orchcli/notify_integration_test.go b/internal/orchcli/notify_integration_test.go
+index 650522ef4..38f76a74a 100644
+--- a/internal/orchcli/notify_integration_test.go
++++ b/internal/orchcli/notify_integration_test.go
+@@ -1,5 +1,6 @@
+ // notify_integration_test.go proves PrimeOrchStrand over a real hub: from a task worktree it names the prime's orch strand, and answers not recorded when the prime records none.
+-// It also proves the destination of a run's notice up a beam chain: a live beam orch, a stopped one, a pair forked from the prime and a destination with no strand recorded.
++// It also proves the destination of a run's notice up a beam chain, for a beam orch that is live or read as down.
++// A pair forked from the prime and a destination with no strand recorded are covered too.
+ 
+ package orchcli
+ 
+@@ -98,6 +99,10 @@ func TestParentOrchStrand(t *testing.T) {
+ 		return func(worktree *lymcwd.Location) (bool, error) { return live && worktree.WorktreeName == "b", nil }
+ 	}
+ 	beamOrch := hubforge.TestShortname + ":b:orch"
++	beamReed := &reedengine.ReedState{Strands: []reedengine.Strand{{GUID: "beam-guid", Name: beamOrch}}}
++	if err := reedengine.SaveState(filepath.Join(beam.AnchorPath(), lymdirs.DotLymDirName), beamReed); err != nil {
++		t.Fatalf("reedengine.SaveState: %v", err)
++	}
+ 	primeOrch := hubforge.TestShortname + ":orch"
+ 
+ 	t.Run("a live beam orch is the member's destination", func(t *testing.T) {
+@@ -112,7 +117,15 @@ func TestParentOrchStrand(t *testing.T) {
+ 			t.Errorf("askerOrchStrand(b) = (%q, %v, %v); want (%q, true, nil)", name, recorded, err, beamOrch)
+ 		}
+ 	})
+-	t.Run("a stopped beam orch leaves the prime's", func(t *testing.T) {
++	t.Run("a beam orch the probe reads as down still takes the member's notice", func(t *testing.T) {
++		name, recorded, err := parentOrchStrand(member, beamLive(false))
++		if err != nil || !recorded || name != beamOrch {
++			t.Errorf("parentOrchStrand(m) = (%q, %v, %v); want (%q, true, nil)", name, recorded, err, beamOrch)
++		}
++	})
++	t.Run("a beam whose orch state records no strand leaves the prime's", func(t *testing.T) {
++		seed(beam, "")
++		defer seed(beam, "beam-guid")
+ 		name, recorded, err := parentOrchStrand(member, beamLive(false))
+ 		if err != nil || !recorded || name != primeOrch {
+ 			t.Errorf("parentOrchStrand(m) = (%q, %v, %v); want (%q, true, nil)", name, recorded, err, primeOrch)
+@@ -130,9 +143,9 @@ func TestParentOrchStrand(t *testing.T) {
+ 			t.Errorf("nearestLiveParent(m) = (%+v, %v); want (%+v, nil)", parent, err, want)
+ 		}
+ 	})
+-	t.Run("a stopped beam orch leaves the prime's as the member's parent orch name", func(t *testing.T) {
++	t.Run("a beam orch the probe reads as down is still the member's parent orch name", func(t *testing.T) {
+ 		parent, err := nearestLiveParent(member, beamLive(false))
+-		if want := (hubgeom.Parent{Name: primeOrch}); err != nil || parent != want {
++		if want := (hubgeom.Parent{Name: beamOrch, Worktree: "b"}); err != nil || parent != want {
+ 			t.Errorf("nearestLiveParent(m) = (%+v, %v); want (%+v, nil)", parent, err, want)
+ 		}
+ 	})
+diff --git a/internal/orchroute/asker_integration_test.go b/internal/orchroute/asker_integration_test.go
+index 1aae79642..711442486 100644
+--- a/internal/orchroute/asker_integration_test.go
++++ b/internal/orchroute/asker_integration_test.go
+@@ -1,14 +1,18 @@
+ // asker_integration_test.go proves Asker over a real hub: the walk starts at a beam or the prime itself and at a pair's recorded parent.
++// The worktree it starts at keeps the notice while reed holds its orch strand, live or not.
+ 
+ package orchroute
+ 
+ import (
++	"path/filepath"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+@@ -37,10 +41,21 @@ func TestAsker(t *testing.T) {
+ 	}
+ 	seed(h.Location, "prime-guid")
+ 	seed(beam, "beam-guid")
++	beamOrch := hubforge.TestShortname + ":b:orch"
++	holdBeamStrand := func(held bool) {
++		t.Helper()
++		reedState := &reedengine.ReedState{}
++		if held {
++			reedState.Strands = []reedengine.Strand{{GUID: "beam-guid", Name: beamOrch}}
++		}
++		if err := reedengine.SaveState(filepath.Join(beam.AnchorPath(), lymdirs.DotLymDirName), reedState); err != nil {
++			t.Fatalf("reedengine.SaveState: %v", err)
++		}
++	}
++	holdBeamStrand(true)
+ 	beamLive := func(live bool) func(*lymcwd.Location) (bool, error) {
+ 		return func(worktree *lymcwd.Location) (bool, error) { return live && worktree.WorktreeName == "b", nil }
+ 	}
+-	beamOrch := hubforge.TestShortname + ":b:orch"
+ 	primeOrch := hubforge.TestShortname + ":orch"
+ 
+ 	tests := []struct {
+@@ -48,17 +63,24 @@ func TestAsker(t *testing.T) {
+ 		asker        *lymcwd.Location
+ 		live         bool
+ 		unrecordBeam bool
++		stopBeam     bool
+ 		wantName     string
+ 		wantRecorded bool
+ 	}{
+-		{"A beam with its orch live answers its own orch", beam, true, false, beamOrch, true},
+-		{"A beam with its orch not live answers the prime's", beam, false, false, primeOrch, true},
+-		{"The prime answers the prime's", h.Location, true, false, primeOrch, true},
+-		{"A member pair answers its beam's live orch", member, true, false, beamOrch, true},
+-		{"A walk ending at an orch with no strand recorded answers not recorded", beam, true, true, "", false},
++		{"A beam with its orch live answers its own orch", beam, true, false, false, beamOrch, true},
++		{"A beam whose orch reads as down still answers its own orch", beam, false, false, false, beamOrch, true},
++		{"A beam with no orch strand and none live answers the prime's", beam, false, true, false, primeOrch, true},
++		{"A beam whose orch strand reed no longer holds, as after a stop, answers the prime's", beam, false, false, true, primeOrch, true},
++		{"The prime answers the prime's", h.Location, true, false, false, primeOrch, true},
++		{"A member pair answers its beam's live orch", member, true, false, false, beamOrch, true},
++		{"A walk ending at an orch with no strand recorded answers not recorded", beam, true, true, false, "", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			if tt.stopBeam {
++				holdBeamStrand(false)
++				defer holdBeamStrand(true)
++			}
+ 			if tt.unrecordBeam {
+ 				seed(beam, "")
+ 				defer seed(beam, "beam-guid")
+diff --git a/internal/orchroute/doc.go b/internal/orchroute/doc.go
+index 4f8e2ad9f..37ab2e73f 100644
+--- a/internal/orchroute/doc.go
++++ b/internal/orchroute/doc.go
+@@ -1,12 +1,17 @@
+ // Package orchroute resolves which orch a worktree's agents reach.
+ // It provides the orch module's paths and the liveness of one worktree's orch.
+-// It also reads the strand name its orch state records and walks up a beam chain to the nearest live orch.
++// It also reads the strand name its orch state records and walks up a beam chain to the orch a notice goes to.
+ // It sits below internal/orchcli, which delegates to it.
+ // A package that orchcli imports, such as the creel CLI, resolves the same orch through it without importing orchcli.
+ //
+ // Asker applies one rule to every caller that needs the orch above a worktree.
+ // A post to the caller's parent and a hold notice both use it.
+ // From a pair, the walk starts at the pair's recorded parent.
+-// It ends at the nearest worktree whose orch is live, else the prime's.
+ // From a beam or the prime, the walk starts at that worktree itself.
++//
++// Destination is the walk's one rule.
++// The worktree it starts at takes the notice while reed still holds the strand its orch state records, live or not.
++// So a member's mail stays with its beam's orch when the liveness probe reads that orch as down.
++// Creel delivers it once the orch is live.
++// A start whose orch never started or was stopped passes the notice to the nearest live orch above it, else the prime's.
+ package orchroute
+diff --git a/internal/orchroute/walk.go b/internal/orchroute/walk.go
+index 0903d521b..4a0c65f37 100644
+--- a/internal/orchroute/walk.go
++++ b/internal/orchroute/walk.go
+@@ -1,4 +1,4 @@
+-// walk.go declares the lookups of an orch's strand name and the walk up a beam chain to the nearest live orch.
++// walk.go declares the lookups of an orch's strand name and the walk up a beam chain to the orch a notice goes to.
+ // It includes Asker, which answers the orch strand the agents of a worktree reach as their parent orch.
+ 
+ package orchroute
+@@ -31,16 +31,12 @@ func StrandOf(worktree *lymcwd.Location) (name string, recorded bool, err error)
+ 	if orch.Strand == "" {
+ 		return "", false, nil
+ 	}
+-	reedState, err := reedengine.LoadState(filepath.Join(worktree.AnchorPath(), lymdirs.DotLymDirName))
++	held, found, err := reedStrandName(worktree, orch.Strand)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+-	if reedState != nil {
+-		for _, strand := range reedState.Strands {
+-			if strand.GUID == orch.Strand {
+-				return strand.Name, true, nil
+-			}
+-		}
++	if found {
++		return held, true, nil
+ 	}
+ 	fixed, err := FixedStrandName(worktree)
+ 	if err != nil {
+@@ -49,6 +45,31 @@ func StrandOf(worktree *lymcwd.Location) (name string, recorded bool, err error)
+ 	return fixed, true, nil
+ }
+ 
++// reedStrandName answers the name reed's state of worktree holds for the strand guid, and whether it holds that strand.
++func reedStrandName(worktree *lymcwd.Location, guid string) (name string, found bool, err error) {
++	reedState, err := reedengine.LoadState(filepath.Join(worktree.AnchorPath(), lymdirs.DotLymDirName))
++	if err != nil || reedState == nil {
++		return "", false, err
++	}
++	for _, strand := range reedState.Strands {
++		if strand.GUID == guid {
++			return strand.Name, true, nil
++		}
++	}
++	return "", false, nil
++}
++
++// holdsOrchStrand reports whether the orch state of worktree records a strand that reed's state still holds.
++// Stopping an orch removes its strand from reed's state, while the orch state keeps the record.
++func holdsOrchStrand(worktree *lymcwd.Location) (bool, error) {
++	orch, err := orchengine.LoadState(Paths(worktree))
++	if err != nil || orch.Strand == "" {
++		return false, err
++	}
++	_, found, err := reedStrandName(worktree, orch.Strand)
++	return found, err
++}
++
+ // FixedStrandName answers the name the orch strand of worktree takes when reed holds none for it:
+ // `<shortname>:orch` for the prime and `<shortname>:<slug>:orch` for a beam.
+ func FixedStrandName(worktree *lymcwd.Location) (string, error) {
+@@ -88,10 +109,26 @@ func WorktreeOrPrime(location *lymcwd.Location, worktree string) (*lymcwd.Locati
+ 	return Prime(location)
+ }
+ 
+-// From answers the orch strand of the nearest worktree up start's beam chain whose orch live reports live.
+-// When no such worktree exists, it answers the orch strand of the prime.
++// Destination answers the orch a notice starting at the worktree start goes to, as its agent name and worktree.
++// start takes it while reed still holds its orch strand, live or not, since creel holds the mail of a down orch.
++// Otherwise it is the nearest worktree up start's beam chain whose orch live reports live, else the prime.
++// So a stopped orch, whose strand is removed, passes its notices up.
++// The answer's Worktree is empty for the prime.
++func Destination(start *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (hubgeom.Parent, error) {
++	return hubgeom.NearestLiveOrch(start, func(worktree *lymcwd.Location) (bool, error) {
++		if worktree.WorktreeName == start.WorktreeName {
++			held, err := holdsOrchStrand(worktree)
++			if err != nil || held {
++				return held, err
++			}
++		}
++		return live(worktree)
++	})
++}
++
++// From answers the strand of the orch a notice starting at start goes to, and whether its state records one.
+ func From(start *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error) {
+-	destination, err := hubgeom.NearestLiveOrch(start, live)
++	destination, err := Destination(start, live)
+ 	if err != nil {
+ 		return "", false, err
+ 	}
+@@ -103,7 +140,7 @@ func From(start *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, er
+ }
+ 
+ // FromPair answers the orch strand a notice of pair goes to.
+-// It walks up from the pair's parent to the nearest worktree whose orch live reports live, or else to the prime.
++// The walk to it starts at the pair's parent.
+ // The parent comes from the pair's origin record, and the prime stands in when it names none or does not exist.
+ func FromPair(pair *lymcwd.Location, live func(worktree *lymcwd.Location) (bool, error)) (name string, recorded bool, err error) {
+ 	parent, err := hubgeom.ResolveParent(pair)
+diff --git a/internal/parentdirective/doc.go b/internal/parentdirective/doc.go
+index 42838fb17..afee4d426 100644
+--- a/internal/parentdirective/doc.go
++++ b/internal/parentdirective/doc.go
+@@ -18,6 +18,12 @@
+ // An interactive role does not, since its interview questions go to the operator.
+ // An empty parent name renders the no-parent variant: a blocked role writes its report and stops.
+ //
++// HandBack serves a role whose verdict file is its only channel, as a tackler or an arbiter.
++// A non-empty parent name renders the hand-back variant.
++// That variant names the run's parent orch.
++// It still sends a blocked role to its report.
++// An empty one renders the no-parent variant.
++//
+ // # Who renders it
+ //
+ // Each spawning module calls Directive once per prompt.
+diff --git a/internal/parentdirective/parentdirective.go b/internal/parentdirective/parentdirective.go
+index 9b2094d91..f289ad189 100644
+--- a/internal/parentdirective/parentdirective.go
++++ b/internal/parentdirective/parentdirective.go
+@@ -18,8 +18,28 @@ const (
+ 	parentStencil      = "parent-directive-parent"
+ 	operatorBanStencil = "parent-directive-operator-ban"
+ 	noneStencil        = "parent-directive-none"
++	handBackStencil    = "parent-directive-handback"
+ )
+ 
++// HandBack returns the parent directive of a role whose verdict file is its only channel, read from stencilsDir.
++// A non-empty parentName renders the hand-back variant, which names the run's parent orch;
++// an empty one renders the no-parent variant.
++// It returns ("", err) when a stencil read or fill fails; the error names the stencil.
++func HandBack(stencilsDir, parentName string) (string, error) {
++	if parentName == "" {
++		return readStripped(stencilsDir, noneStencil)
++	}
++	template, err := stencilstore.Read(stencilsDir, handBackStencil)
++	if err != nil {
++		return "", fmt.Errorf("parentdirective: %w", err)
++	}
++	filled, err := stencil.Fill(template, map[string]string{"parent_name": parentName})
++	if err != nil {
++		return "", fmt.Errorf("parentdirective: fill stencil %q: %w", handBackStencil, err)
++	}
++	return trimTrailingNewlines(string(filled)), nil
++}
++
+ // Directive returns the parent directive text read from stencilsDir.
+ // An empty parentName renders the no-parent variant.
+ // A non-empty one renders the parent variant, with the operator-ban line filled in unless interactive is true.
+diff --git a/internal/parentdirective/parentdirective_test.go b/internal/parentdirective/parentdirective_test.go
+index db489ddb0..3f543bb32 100644
+--- a/internal/parentdirective/parentdirective_test.go
++++ b/internal/parentdirective/parentdirective_test.go
+@@ -81,20 +81,45 @@ func TestDirective_EmptyNameRendersNoParentVariant(t *testing.T) {
+ 	}
+ }
+ 
++// TestHandBack covers the hand-back variant naming the parent and the no-parent variant for an empty name.
++func TestHandBack(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	dir := stencilkit.Seed(t)
++
++	got, err := HandBack(dir, "ab:beam-b:orch")
++	if err != nil {
++		t.Fatalf("HandBack = _, %v; want nil error", err)
++	}
++	if !strings.Contains(got, "`ab:beam-b:orch`") || strings.Contains(got, "{{") {
++		t.Errorf("HandBack = %q; want the parent name filled in and no marker left", got)
++	}
++	none, err := HandBack(dir, "")
++	if err != nil {
++		t.Fatalf("HandBack(no parent) = _, %v; want nil error", err)
++	}
++	if !strings.Contains(none, "No parent is recorded for this run.") {
++		t.Errorf("HandBack(no parent) = %q; want the no-parent variant", none)
++	}
++}
++
+ // TestDirective_MissingStencilNamesIt covers a missing stencil: each variant's error names the stencil it could not read.
+ func TestDirective_MissingStencilNamesIt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
++	directive := func(parentName string, interactive bool) func(string) (string, error) {
++		return func(dir string) (string, error) { return Directive(dir, parentName, interactive) }
++	}
+ 	tests := []struct {
+-		name        string
+-		parentName  string
+-		interactive bool
+-		missing     string
++		name    string
++		render  func(stencilsDir string) (string, error)
++		missing string
+ 	}{
+-		{"None", "", false, noneStencil},
+-		{"Parent", "ab:cd:webster", true, parentStencil},
+-		{"OperatorBan", "ab:cd:webster", false, operatorBanStencil},
++		{"None", directive("", false), noneStencil},
++		{"Parent", directive("ab:cd:webster", true), parentStencil},
++		{"OperatorBan", directive("ab:cd:webster", false), operatorBanStencil},
++		{"HandBack", func(dir string) (string, error) { return HandBack(dir, "ab:orch") }, handBackStencil},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -104,12 +129,12 @@ func TestDirective_MissingStencilNamesIt(t *testing.T) {
+ 				t.Fatalf("os.Remove = %v; want nil error", err)
+ 			}
+ 
+-			got, err := Directive(dir, tt.parentName, tt.interactive)
++			got, err := tt.render(dir)
+ 			if err == nil {
+-				t.Fatalf("Directive = %q, nil; want an error", got)
++				t.Fatalf("render = %q, nil; want an error", got)
+ 			}
+ 			if !strings.Contains(err.Error(), tt.missing) {
+-				t.Errorf("Directive error = %v; want it to name %q", err, tt.missing)
++				t.Errorf("render error = %v; want it to name %q", err, tt.missing)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shedarbiter/prompt.go b/internal/shedarbiter/prompt.go
+index 22181a812..ab28a0830 100644
+--- a/internal/shedarbiter/prompt.go
++++ b/internal/shedarbiter/prompt.go
+@@ -40,14 +40,17 @@ const (
+ const editScopeMarker = "edit_scope"
+ 
+ // PromptInput carries what the arbiter stencil's markers are filled from.
+-// Recipe, ReportPath, BriefPath, CaseBriefPath, DecisionRecordPath, SupportLogPath and AmendmentTarget may be empty.
++// Recipe, ParentName, ReportPath, BriefPath and CaseBriefPath may be empty.
++// DecisionRecordPath, SupportLogPath and AmendmentTarget may be empty too.
+ // Every other field is required.
+ // Recipe is the description of the run's recipe, including the repair verbs the arbiter may run.
+ // AmendmentTarget is the row a plan amendment routes to.
+ // MayEdit lets the arbiter make one fix of its own and commit it in Worktree; false keeps it to a verdict.
+ type PromptInput struct {
+-	MayEdit            bool
+-	Recipe             string
++	MayEdit bool
++	Recipe  string
++	// ParentName is the run's parent orch, empty for a run with no parent.
++	ParentName         string
+ 	RunID              string
+ 	Slug               string
+ 	Worktree           string
+@@ -63,13 +66,13 @@ type PromptInput struct {
+ 
+ // Prompt composes the arbiter session's launch prompt for the engine named engine.
+ // It reads the arbiter stencil in stencilsDir and fills it with in.
+-// It renders the no-parent directive, since the verdict file is the arbiter's only channel.
++// It renders the hand-back parent directive naming in.ParentName, since the verdict file is the arbiter's only channel.
+ // It also renders the edit directive of engine.
+ // Its edit rules are the one-shot fix fragment when in.MayEdit is set, and the no-fix fragment otherwise.
+ // An empty recipe description, report, brief, case brief, decision record, support log or amendment target is filled as the literal "none".
+ // It returns the read or fill error wrapped with the stencil's name.
+ func Prompt(stencilsDir, engine string, in PromptInput) (string, error) {
+-	directive, err := parentdirective.Directive(stencilsDir, "", false)
++	directive, err := parentdirective.HandBack(stencilsDir, in.ParentName)
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/shedarbiter/prompt_test.go b/internal/shedarbiter/prompt_test.go
+index 066c057bd..82d1faec8 100644
+--- a/internal/shedarbiter/prompt_test.go
++++ b/internal/shedarbiter/prompt_test.go
+@@ -26,7 +26,8 @@ func seededStencils(t *testing.T) string {
+ 	return dir
+ }
+ 
+-// TestPrompt asserts the shipped stencil renders every marker value, the no-parent and edit directives.
++// TestPrompt asserts the shipped stencil renders every marker value and the edit directive.
++// It renders the hand-back directive naming the run's parent, or the no-parent one without a parent.
+ // The recipe description renders too, and absent inputs render as the literal none.
+ // No marker stays unfilled, and the verdict example is one the verdict reader accepts.
+ //
+@@ -38,6 +39,7 @@ func TestPrompt(t *testing.T) {
+ 	const battenRecipe = "This is a batten run; it has no repair verb."
+ 	in := PromptInput{
+ 		Recipe:             "This is a tapestry run. Its repair verbs: `lym loom decision add <slug>`.",
++		ParentName:         "tst:beam-b:orch",
+ 		RunID:              "operator-surface",
+ 		Slug:               "operator-surface-task",
+ 		Worktree:           "/hub/wt",
+@@ -73,8 +75,9 @@ func TestPrompt(t *testing.T) {
+ 			want: []string{
+ 				in.Recipe, in.RunID, in.Slug, in.Worktree, in.EnvelopePath, in.ReportPath, in.BriefPath, in.CaseBriefPath, in.DecisionRecordPath, in.SupportLogPath, in.VerdictPath,
+ 				"amendment target `" + in.AmendmentTarget + "`", fixHeading, "committed in `" + in.Worktree + "`", "`Arbiter-Attempt: " + in.RunID + "`",
++				"Your run's parent is `" + in.ParentName + "`",
+ 			},
+-			wantNot: []string{noFixHeading},
++			wantNot: []string{noFixHeading, "No parent is recorded"},
+ 		},
+ 		{
+ 			name:    "a batten description fills the recipe marker, and an arbiter that may not edit gets the no-fix rules",
+@@ -83,9 +86,9 @@ func TestPrompt(t *testing.T) {
+ 			wantNot: []string{fixHeading},
+ 		},
+ 		{
+-			name: "absent recipe, report, brief, case brief, amendment target, decision record and support log read none",
++			name: "absent recipe, report, brief, case brief, amendment target, decision record and support log read none, and no parent reads the no-parent directive",
+ 			in:   absent,
+-			want: []string{"## The run\n\nnone\n"},
++			want: []string{"## The run\n\nnone\n", "No parent is recorded for this run."},
+ 			absent: []string{
+ 				"driver's stop or fork report `none`", "escalation brief `none`", "case brief `none`", "amendment target `none`",
+ 				"decision record `none`", "support log `none`",
+@@ -120,12 +123,12 @@ func TestPrompt(t *testing.T) {
+ 					t.Errorf("Prompt() carries %q; want it absent", unwanted)
+ 				}
+ 			}
+-			directive, err := parentdirective.Directive(dir, "", false)
++			directive, err := parentdirective.HandBack(dir, tc.in.ParentName)
+ 			if err != nil {
+-				t.Fatalf("parentdirective.Directive: %v", err)
++				t.Fatalf("parentdirective.HandBack: %v", err)
+ 			}
+ 			if !strings.Contains(got, directive) {
+-				t.Errorf("Prompt() does not carry the no-parent directive %q", directive)
++				t.Errorf("Prompt() does not carry the parent directive %q", directive)
+ 			}
+ 			stencilkit.RequireEditDirectiveOf(t, dir, got, engine, otherEngine)
+ 			if strings.Contains(got, "{{") {
+diff --git a/internal/sheddriver/tacklerprompt.go b/internal/sheddriver/tacklerprompt.go
+index edc6ae0e2..89b6036ee 100644
+--- a/internal/sheddriver/tacklerprompt.go
++++ b/internal/sheddriver/tacklerprompt.go
+@@ -20,10 +20,12 @@ import (
+ const tacklerStencilName = "shed-template-tackler"
+ 
+ // TacklerPromptInput carries what the tackler stencil's markers are filled from.
+-// ReportPath may be empty; every other field is required.
++// ReportPath and ParentName may be empty; every other field is required.
+ type TacklerPromptInput struct {
+ 	RunID string
+ 	Slug  string
++	// ParentName is the run's parent orch, empty for a run with no parent.
++	ParentName string
+ 	// Recipe is the one-line description of the recipe the run belongs to.
+ 	Recipe string
+ 	// GotoRows names the rows a resume may name in its goto.
+@@ -41,8 +43,9 @@ type TacklerPromptInput struct {
+ 
+ // RenderTacklerPrompt composes the tackler session's launch prompt for the engine named engine.
+ // It reads the tackler stencil from stencilsDir through stencilstore.Read.
+-// It fills the stencil with the input, the no-parent directive and the edit directive of engine.
+-// The no-parent directive is rendered because the verdict file is the tackler's only channel.
++// It fills the stencil with the input and the edit directive of engine.
++// It also fills in the hand-back parent directive, naming the input's parent.
++// The hand-back directive is rendered because the verdict file is the tackler's only channel.
+ // An empty report path is filled as the literal "none".
+ // An empty Recipe or GotoRows is a wiring fault and is refused, naming the marker.
+ // A read or fill error is returned wrapped with the stencil's name.
+@@ -52,7 +55,7 @@ func RenderTacklerPrompt(stencilsDir, engine string, in TacklerPromptInput) (str
+ 			return "", fmt.Errorf("sheddriver: tackler prompt: the %s marker is empty", required.marker)
+ 		}
+ 	}
+-	directive, err := parentdirective.Directive(stencilsDir, "", false)
++	directive, err := parentdirective.HandBack(stencilsDir, in.ParentName)
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/sheddriver/tacklerprompt_test.go b/internal/sheddriver/tacklerprompt_test.go
+index f79392873..bf3665057 100644
+--- a/internal/sheddriver/tacklerprompt_test.go
++++ b/internal/sheddriver/tacklerprompt_test.go
+@@ -17,7 +17,11 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-// TestTacklerPrompt asserts the shipped stencil renders every marker value, the no-parent and edit directives, the literal none for an absent report, the recipe line under its heading, and no unfilled marker; it refuses an empty recipe or goto rows naming the marker.
++// TestTacklerPrompt asserts the shipped stencil renders every marker value and the edit directive.
++// It renders the hand-back directive naming the run's parent, or the no-parent one without a parent.
++// An absent report renders as the literal none, and the recipe line renders under its heading.
++// No marker stays unfilled.
++// An empty recipe or empty goto rows are refused, naming the marker.
+ func TestTacklerPrompt(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -25,6 +29,7 @@ func TestTacklerPrompt(t *testing.T) {
+ 	in := TacklerPromptInput{
+ 		RunID:         "operator-surface",
+ 		Slug:          "operator-surface-task",
++		ParentName:    "tst:beam-b:orch",
+ 		Recipe:        "loom: a phased task run (discussion, plan, webster's coded batches, reviews, landing)",
+ 		GotoRows:      "`Plan-Bouncer`",
+ 		Worktree:      "/hub/wt",
+@@ -45,6 +50,8 @@ func TestTacklerPrompt(t *testing.T) {
+ 	noRecipe.Recipe = ""
+ 	noGotoRows := in
+ 	noGotoRows.GotoRows = ""
++	noParent := in
++	noParent.ParentName = ""
+ 	cases := []struct {
+ 		name string
+ 		in   TacklerPromptInput
+@@ -61,6 +68,17 @@ func TestTacklerPrompt(t *testing.T) {
+ 			in:   in,
+ 			want: []string{in.RunID, in.Slug, in.Recipe, in.GotoRows, in.Worktree, in.EnvelopePath, in.ReportPath, in.TraceCopy, in.StderrPath, in.TraceDir, in.DriverLog, in.VerdictPath, in.CaseBriefPath},
+ 		},
++		{
++			name:       "the run's parent is named as the orch the run hands its stops back to",
++			in:         in,
++			want:       []string{"Your run's parent is `tst:beam-b:orch`"},
++			wantAbsent: []string{"No parent is recorded"},
++		},
++		{
++			name: "a run with no parent reads the no-parent directive",
++			in:   noParent,
++			want: []string{"No parent is recorded for this run."},
++		},
+ 		{
+ 			name: "absent report reads none",
+ 			in:   noReport,
+@@ -115,12 +133,12 @@ func TestTacklerPrompt(t *testing.T) {
+ 					t.Errorf("RenderTacklerPrompt() carries %q; want it absent", absent)
+ 				}
+ 			}
+-			directive, err := parentdirective.Directive(dir, "", false)
++			directive, err := parentdirective.HandBack(dir, tc.in.ParentName)
+ 			if err != nil {
+-				t.Fatalf("parentdirective.Directive: %v", err)
++				t.Fatalf("parentdirective.HandBack: %v", err)
+ 			}
+ 			if !strings.Contains(got, directive) {
+-				t.Errorf("RenderTacklerPrompt() does not carry the no-parent directive %q", directive)
++				t.Errorf("RenderTacklerPrompt() does not carry the parent directive %q", directive)
+ 			}
+ 			stencilkit.RequireEditDirectiveOf(t, dir, got, engine, otherEngine)
+ 			if strings.Contains(got, "{{.") {
+diff --git a/internal/tendercli/cli.go b/internal/tendercli/cli.go
+index ff0664196..3098a9374 100644
+--- a/internal/tendercli/cli.go
++++ b/internal/tendercli/cli.go
+@@ -6,6 +6,7 @@ package tendercli
+ import (
+ 	"errors"
+ 	"fmt"
++	"io/fs"
+ 	"os"
+ 	"slices"
+ 	"strings"
+@@ -14,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/tenderengine"
+@@ -29,8 +31,10 @@ const (
+ 
+ // caller says who runs a verb.
+ type caller struct {
+-	// orch is true for the hub orchestrator.
++	// orch is true for the hub orchestrator, the prime's orch.
+ 	orch bool
++	// beam is the beam whose orch runs the verb, empty for any other caller.
++	beam string
+ 	// agent is true for any other strand.
+ 	agent bool
+ 	// slug is the pair an agent belongs to, empty for an agent with no pair.
+@@ -38,37 +42,85 @@ type caller struct {
+ }
+ 
+ // callerOf reads the caller from the strand name.
+-// An empty name is external, and the orch role in the prime is the orch.
++// An empty name is external, the orch role in the prime is the orch, and the orch role of a beam is that beam's orch.
+ // Any other name is an agent of the slug it carries.
+ func callerOf(strand string) caller {
+ 	if strand == "" {
+ 		return caller{}
+ 	}
+ 	name, err := agentname.Parse(strand)
+-	if err == nil && name.Role == agentname.RoleOrch && name.Slug == "" {
+-		return caller{orch: true}
+-	}
+ 	if err != nil {
+ 		return caller{agent: true}
+ 	}
++	if name.Role == agentname.RoleOrch {
++		if name.Slug == "" {
++			return caller{orch: true}
++		}
++		return caller{beam: name.Slug}
++	}
+ 	return caller{agent: true, slug: name.Slug}
+ }
+ 
+-// refuseCaller refuses an agent's pause, resume or revive unless it names its own pair.
+-// The orch and an external caller are never refused.
+-func refuseCaller(c caller, slug string) error {
+-	if !c.agent || (slug != "" && slug == c.slug) {
+-		return nil
++// refuseCaller refuses a pause, resume or revive of slug, empty for the whole hub, by a caller that may not run it.
++// The orch and an external caller are never refused, and an agent may act only on its own pair.
++// A beam's orch may act on its beam and on every pair whose beam chain holds the beam.
++// That reach exists because the beam's orch is the session that settles those runs' halts.
++// underBeam reports whether a pair's chain holds the beam.
++func refuseCaller(c caller, slug string, underBeam func(beam, slug string) (bool, error)) error {
++	switch {
++	case c.agent:
++		if slug != "" && slug == c.slug {
++			return nil
++		}
++		return errors.New(`pause: an agent may pause, resume or revive only its own pair; way forward: ask your parent session, which runs "lym tender pause", "lym tender resume" or "lym tender revive" for you`)
++	case c.beam != "":
++		if slug != "" {
++			under, err := underBeam(c.beam, slug)
++			if err != nil {
++				return fmt.Errorf("pause: read whether %q works under the beam %q: %w; way forward: re-run the verb", slug, c.beam, err)
++			}
++			if under {
++				return nil
++			}
++		}
++		return errors.New(`pause: a beam's orch may pause, resume or revive only its beam and the pairs under it; way forward: ask your parent session, which runs "lym tender pause", "lym tender resume" or "lym tender revive" for you`)
++	}
++	return nil
++}
++
++// pairUnderBeam reports whether the beam chain of the pair slug in the hub of location holds beam.
++// The chain includes the pair itself.
++// A pair not present here is under no beam.
++func pairUnderBeam(location *lymcwd.Location, beam, slug string) (bool, error) {
++	root := fabricengine.WorktreePath(location, slug)
++	if _, err := os.Stat(root); errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	pair, err := lymcwd.ResolveWorktree(root)
++	if err != nil {
++		return false, err
++	}
++	chain, err := hubgeom.OrchChain(pair)
++	if err != nil {
++		return false, err
+ 	}
+-	return errors.New(`pause: an agent may pause, resume or revive only its own pair; way forward: ask your parent session, which runs "lym tender pause", "lym tender resume" or "lym tender revive" for you`)
++	return slices.ContainsFunc(chain, func(orch hubgeom.Parent) bool { return orch.Worktree == beam }), nil
+ }
+ 
+-// refuseReapCaller refuses an agent's reap: only the orch and an external caller end orphaned processes.
++// refuseCallerIn applies refuseCaller to the calling strand for a pause, resume or revive of slug in the hub of location.
++func refuseCallerIn(location *lymcwd.Location, slug string) error {
++	return refuseCaller(callerOf(os.Getenv(agentname.StrandNameEnv)), slug, func(beam, slug string) (bool, error) {
++		return pairUnderBeam(location, beam, slug)
++	})
++}
++
++// refuseReapCaller refuses a reap by any caller but the orch and an external caller.
++// Those two are the only ones that end orphaned processes.
+ func refuseReapCaller(c caller) error {
+-	if !c.agent {
++	if !c.agent && c.beam == "" {
+ 		return nil
+ 	}
+-	return errors.New(`reap: an agent may not end orphaned processes; way forward: ask your parent session, which runs "lym tender reap" for you`)
++	return errors.New(`reap: only the hub's orch ends orphaned processes; way forward: ask your parent session, which runs "lym tender reap" for you`)
+ }
+ 
+ // Command returns the cobra command for `lym tender`, with its pause, resume, revive, status and reap verbs.
+@@ -139,9 +191,6 @@ Example:
+ 			if grace < 0 || grace > maxGraceSeconds {
+ 				return fail(fmt.Errorf("pause: --grace %d is outside the range 0 to %d seconds; way forward: pass a --grace within it", grace, maxGraceSeconds))
+ 			}
+-			if err := refuseCaller(callerOf(os.Getenv(agentname.StrandNameEnv)), slug); err != nil {
+-				return fail(err)
+-			}
+ 			cwd, err := lymcwd.CwdFrom(ctx)
+ 			if err != nil {
+ 				return fail(err)
+@@ -150,6 +199,9 @@ Example:
+ 			if err != nil {
+ 				return fail(err)
+ 			}
++			if err := refuseCallerIn(location, slug); err != nil {
++				return fail(err)
++			}
+ 			deps, slugs, err := HubDeps(location, os.Getenv(agentname.StrandNameEnv))
+ 			if err != nil {
+ 				return fail(err)
+@@ -234,9 +286,6 @@ Example:
+ 			if len(args) == 1 {
+ 				slug = args[0]
+ 			}
+-			if err := refuseCaller(callerOf(os.Getenv(agentname.StrandNameEnv)), slug); err != nil {
+-				return fail(err)
+-			}
+ 			cwd, err := lymcwd.CwdFrom(ctx)
+ 			if err != nil {
+ 				return fail(err)
+@@ -245,6 +294,9 @@ Example:
+ 			if err != nil {
+ 				return fail(err)
+ 			}
++			if err := refuseCallerIn(location, slug); err != nil {
++				return fail(err)
++			}
+ 			deps, _, err := HubDeps(location, os.Getenv(agentname.StrandNameEnv))
+ 			if err != nil {
+ 				return fail(err)
+@@ -302,9 +354,6 @@ Example:
+ 			if len(args) == 1 {
+ 				slug = args[0]
+ 			}
+-			if err := refuseCaller(callerOf(os.Getenv(agentname.StrandNameEnv)), slug); err != nil {
+-				return fail(err)
+-			}
+ 			cwd, err := lymcwd.CwdFrom(ctx)
+ 			if err != nil {
+ 				return fail(err)
+@@ -313,6 +362,9 @@ Example:
+ 			if err != nil {
+ 				return fail(err)
+ 			}
++			if err := refuseCallerIn(location, slug); err != nil {
++				return fail(err)
++			}
+ 			deps, slugs, err := HubDeps(location, os.Getenv(agentname.StrandNameEnv))
+ 			if err != nil {
+ 				return fail(err)
+diff --git a/internal/tendercli/cli_test.go b/internal/tendercli/cli_test.go
+index 50ef81db7..ccb0656e7 100644
+--- a/internal/tendercli/cli_test.go
++++ b/internal/tendercli/cli_test.go
+@@ -1,5 +1,6 @@
+ // cli_test.go drives `lym tender pause`, `status`, `resume` and `revive` through the cobra commands.
+-// The commands run over a hubforge hub with one pair and no agents running.
++// The commands run over a hubforge hub with one pair and no agents running;
++// the caller-rules test adds a beam and a member forked from it.
+ // The network gate installer runs over the same hub.
+ // No test but TestNewShuttlePair_TellsTheHubsPauseGeometry calls t.Parallel:
+ // each sets the strand-name variable or reads the process-wide network gate.
+@@ -417,6 +418,45 @@ func TestPauseAndResume_ApplyTheCallerRules(t *testing.T) {
+ 		t.Errorf("agent resume of its own pair: %q", lifted.Error)
+ 	}
+ 
++	const beamSlug, memberSlug = "cr-beam", "cr-member"
++	hubforge.AddPairWith(t, h, beamSlug, fabricengine.AddOptions{SkipPush: true, Beam: true})
++	hubforge.AddPairWith(t, h, memberSlug, fabricengine.AddOptions{SkipPush: true, Parent: beamSlug})
++	beamOrch, err := agentname.Format(hubforge.TestShortname, beamSlug, agentname.RoleOrch)
++	if err != nil {
++		t.Fatal(err)
++	}
++	t.Setenv(agentname.StrandNameEnv, beamOrch)
++	for _, tc := range []struct {
++		name string
++		args []string
++		want string
++	}{
++		{"a hub-wide pause", []string{"pause"}, "ask your parent session"},
++		{"a pause of a pair outside its beam", []string{"pause", pairSlug}, "ask your parent session"},
++		{"a pause of a slug with no worktree here", []string{"pause", "cr-ghost"}, "ask your parent session"},
++		{"a hub-wide revive", []string{"revive"}, "ask your parent session"},
++		{"a reap", []string{"reap"}, "only the hub's orch ends orphaned processes"},
++	} {
++		env, code := verb(t, Command(), prime, tc.args...)
++		if env.OK || code == 0 || !strings.Contains(env.Error, tc.want) {
++			t.Errorf("beam orch %s: ok=%v error=%q; want a refusal holding %q", tc.name, env.OK, env.Error, tc.want)
++		}
++	}
++	for _, slug := range []string{memberSlug, beamSlug} {
++		if paused, code := verb(t, Command(), prime, "pause", slug); !paused.OK || code != 0 {
++			t.Errorf("beam orch pause of %s: ok=%v error=%q; want it to succeed", slug, paused.OK, paused.Error)
++		}
++		if revived, code := verb(t, Command(), prime, "revive", slug); !revived.OK || code != 0 {
++			t.Errorf("beam orch revive of %s: ok=%v error=%q; want it to succeed", slug, revived.OK, revived.Error)
++		}
++		if lifted, code := verb(t, Command(), prime, "resume", slug); !lifted.OK || code != 0 {
++			t.Errorf("beam orch resume of %s: ok=%v error=%q; want it to succeed", slug, lifted.OK, lifted.Error)
++		}
++	}
++	if live, _ := liveEntries(t, h); len(live) != 0 {
++		t.Fatalf("live entries after the beam orch's resumes = %+v; want none", live)
++	}
++
+ 	t.Setenv(agentname.StrandNameEnv, orch)
+ 	if hubWide, _ := verb(t, Command(), prime, "pause"); !hubWide.OK {
+ 		t.Errorf("orch hub-wide pause: %q", hubWide.Error)
+diff --git a/internal/tendercli/doc.go b/internal/tendercli/doc.go
+index eacf7c707..2b126f224 100644
+--- a/internal/tendercli/doc.go
++++ b/internal/tendercli/doc.go
+@@ -10,11 +10,15 @@
+ // # Callers
+ //
+ // The caller is read from the strand-name variable reed injects:
+-// empty is an external caller, the orch's name is the orch, and any other name is an agent of the slug it carries.
++// empty is an external caller, the prime's orch name is the orch, a beam's orch name is that beam's orch,
++// and any other name is an agent of the slug it carries.
+ // The orch and an external caller may run `pause`, `resume` and `revive` with or without a slug.
+ // An agent may pause, resume or revive only its own pair.
++// A beam's orch may pause, resume or revive its beam and every pair whose beam chain holds the beam.
++// That reach exists because the beam's orch settles those runs' halts.
++// The chain is read from the origin records with no regard to which orch is live.
+ // A hub-wide call, or one naming another slug, is refused with the way forward of asking its parent session.
+-// `status` takes no caller check, since it writes nothing; `reap` takes it with no slug.
++// `status` takes no caller check, since it writes nothing; `reap` takes it with no slug, and refuses a beam's orch.
+ // The check guards against a mistaken call:
+ // the agents' settings deny any command naming the variable, so an agent cannot clear it to read as external.
+ //
