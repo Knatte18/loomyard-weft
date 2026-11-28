@@ -1,6 +1,6 @@
 # Finalize joins a landing queue, and the parent lock's holder builds, gates, bisects and lands a batch of queued runs with one gate run
 
-`landing-queue-batch` · Task · enhancement, landing, fabric, git, cwd, loom, shed, docs, pattern, heddle · starting · Worktree-Create
+`landing-queue-batch` · Task · enhancement, landing, fabric, git, cwd, loom, shed, docs, pattern, heddle · starting · Seed-Child
 
 Decision record: [Sketch](decision-landing-queue-batch.md)
 
