@@ -1,6 +1,6 @@
 # A catch-up fetch that fails on an unreachable origin still stops a run start
 
-`catchup-fetch-stops-start` · Task · bug, dobby, fabric · starting · Open-Window
+`catchup-fetch-stops-start` · Task · bug, dobby, fabric · starting · Seed-IDE
 
 ## Seen
 
