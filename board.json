@@ -1311,6 +1311,24 @@
       "body": "## Seen\n\n`kde-window-placement-build` halted twice at Parent-Align on 2026-11-28 (14:18 and 14:47 UTC) with\n`landing stop: the remote ref origin/\u003cslug\u003e moved during the fixer session of Parent-Align to \u003csha\u003e, which holds commits the task head \u003csha\u003e the session started from lacks`.\nBoth times the new commits were the Parent-Align fixer's own fixes on the task branch (a guard rename, a hermetic-guard exemption, a doc comment), pushed by its session.\nThe orch checked the commits and resumed with `lym loom resume`; each halt cost a halt notice, an orch turn and the wait.\n\n## Idea\n\nParent-Align tells its own fixer's commits from a foreign move: commits the fixer session made on the task branch, descending from the session's start head, pass without a halt.\nOnly a move that holds commits the session did not make stops the run.\n",
       "created": "2026-11-28T14:48:29Z",
       "revised": "2026-11-28T14:48:29Z"
+    },
+    {
+      "id": 1824,
+      "handle": "B5",
+      "slug": "autonomy-refusal-own-tick",
+      "title": "Dobby posts a refused beam.autonomy on its own tick",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nIn the run of `autonomy-unattended-level`, Code-Review round 1 finding F7:\nthe halt notices loom and batten post through `NotifyParentHalt` and `NotifyRunFromHalt` stamp a run's autonomy through `hubgeom.Autonomy`, which drops the refusal.\nThe orch hears of a refused `beam.autonomy` value only when the dobby builds one of its own stamped mails about the run.\nUnder `beam.run_watch` off, a run whose halts come only from loom or batten is stamped `false`, and its refusal is never posted.\n\n## Idea\n\nThe dobby checks each listed run's `beam.autonomy` value on its own tick, whether or not it posts a mail,\nand posts a refusal through the same `runAutonomyStamps` episode, so a mistyped level never passes unseen.\n",
+      "created": "2026-11-28T15:07:24Z",
+      "revised": "2026-11-28T15:07:24Z"
     }
   ],
   "prime_owner": "neve",
