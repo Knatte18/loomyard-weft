@@ -1,6 +1,6 @@
 # Gate tier timeout leaves out suspended time, and --gate with explicit targets runs or refuses marked tests
 
-`gate-suspend-marked-targets` · Task · bug, gate, hibernate · draft
+`gate-suspend-marked-targets` · Task · bug, gate, hibernate
 
 Depends on: [`card-gate-own-packages`](design-card-gate-own-packages.md)
 
