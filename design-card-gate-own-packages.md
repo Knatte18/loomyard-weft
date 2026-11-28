@@ -1,6 +1,6 @@
 # The card gate runs over the card own packages and its fixer stops at the failed check
 
-`card-gate-own-packages` · Task · enhancement, gate, webster, weaver
+`card-gate-own-packages` · Task · enhancement, gate, webster, weaver · starting · Worktree-Create
 
 ## Seen
 
