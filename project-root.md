@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 10:29 UTC; every age below is as of then.
+Rendered 2026-11-28 10:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -14,13 +14,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | darn · light | Code-Burler-Review | neve | 12h<br>12h | fabric, git |
+| T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | darn · light | halted · Code-Burler-Review | neve | 12h<br>12h | fabric, git |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 19h<br>19h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | Code-Burler-Fix | neve | 1d<br>1d | docs |
 | T4 | **Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock**<br>• `beam: land_notice on` | [`finalize-owed-tips-gate`](design-finalize-owed-tips-gate.md) | darn · light | landing · Finalize | neve | 12h<br>12h | landing |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | Code-Burler-Fix | neve | 15h<br>1h | testkit, landing, reed, creel |
 | T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | Darn-Write | neve | 12h<br>12h | fabric |
-| T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | Describe | neve | 12h<br>1h | dobby, fabric |
+| T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | Describe | neve | 13h<br>1h | dobby, fabric |
 
 ## Ready (4)
 
