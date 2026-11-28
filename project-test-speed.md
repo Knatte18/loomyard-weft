@@ -3,7 +3,7 @@
 Rendered 2026-11-28 13:19 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`test-speed`](design-test-speed.md) · Age 21h · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 22h · Owner `neve`
 
 ## Aim (operator, 2026-11-27)
 

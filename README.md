@@ -10,7 +10,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages](project-test-speed.md) (0)
 
-[`test-speed`](design-test-speed.md) · Age 21h · Owner `neve`
+[`test-speed`](design-test-speed.md) · Age 22h · Owner `neve`
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -145,7 +145,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | landing · Finalize | neve | 1h<br>20m | gate, landing |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | landing · Finalize | neve | 1h<br>1h | gate, webster, weaver |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | Friction-Reflect | neve | 1h<br>1h | gate, webster, weaver |
 
 ### Enhancements (3)
 
