@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:21 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 27m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 28m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
