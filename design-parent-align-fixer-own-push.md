@@ -2,6 +2,8 @@
 
 `parent-align-fixer-own-push` · Task · bug, landing · draft
 
+Depends on: [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)
+
 ## Seen
 
 `kde-window-placement-build` halted twice at Parent-Align on 2026-11-28 (14:18 and 14:47 UTC) with

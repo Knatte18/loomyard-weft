@@ -210,7 +210,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T8 | `draft` **Gate tier timeout leaves out suspended time, and --gate with explicit targets runs or refuses marked tests** | [`gate-suspend-marked-targets`](design-gate-suspend-marked-targets.md) | darn · light | T1 | 0m<br>0m | gate, hibernate |
 | T10 | `draft` **Test git can reach the network and open a credential prompt, hanging an agent's test run** | [`test-git-hermetic-network`](design-test-git-hermetic-network.md) | darn · light |  | 1m<br>0m | testkit, git |
 | T18 | `draft` **Review fork guard halts the run on a push from the fork's own throwaway repo after an ln, with a message that names the wrong rule** | [`review-fork-guard-ln-push`](design-review-fork-guard-ln-push.md) | darn · light |  | 0m<br>0m | burler, stencil |
-| T29 | `draft` **Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move** | [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md) | darn · light |  | 29m<br>0m | landing |
+| T29 | `draft` **Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move** | [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md) | darn · light | T3 | 29m<br>0m | landing |
 
 ### Research (1)
 
