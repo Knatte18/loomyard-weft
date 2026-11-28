@@ -153,7 +153,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/hardener-works-study.md` (`c6618b538`), section \"Faults found by this study\", read these in the code; none was driven:\n\n- a refused credential during a one-repository seed keeps the hub and says origin may still take the push;\n- an empty teardown job clears an earlier teardown's pending record;\n- the `cleanup` remote sweep counts local tags as landed and never pushes them;\n- `--reset` is advised without regard to unpushed work;\n- `fetchRunForCatchUp` reads no records layout;\n- a `lym fabric remove` pending record can outlive its pair (`cd8090733` fixed only the cancel's records, by choice).\n\n## Idea\n\nConfirm each against the code with a test that fails first, and fix the confirmed ones.\n",
-      "status": "running · Describe",
+      "status": "landing · Finalize",
       "created": "2026-11-26T11:25:44Z",
       "revised": "2026-11-27T18:23:35Z",
       "profile": "light"

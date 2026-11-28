@@ -1,6 +1,6 @@
 # Faults the hardener study read in fabric, cleanup and teardown code
 
-`hardener-study-faults` · Task · bug, fabric, cleanup, batten · running · Describe
+`hardener-study-faults` · Task · bug, fabric, cleanup, batten · landing · Finalize
 
 ## Seen
 
