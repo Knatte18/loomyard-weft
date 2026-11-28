@@ -1,22 +1,14 @@
 # Remove shedcli's unreached names accessor
 
-`internal/shedcli.names` returned the sorted keys of the recipe arming table, but no main package reached it.
-The unknown-recipe error in `lookup` lists `shedrun.OfferedRecipeNames()` instead, so `table_test.go` was its only caller.
-`TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` fails on any function that only tests call.
+`internal/shedcli.names` was reached by no main package of the module; only `table_test.go` called it.
+`TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` in `cmd/lym` fails on such a function.
+This change removes it, along with the `sort` import it alone used in `table.go`.
+There is no user-visible change: the unknown-recipe error from `lookup` already lists `shedrun.OfferedRecipeNames()`.
 
-## Changes
+`names` is removed rather than given a production caller.
 
-- `internal/shedcli/table.go`: deletes `names` and its `sort` import.
-  The file header now names `lookup` as the table's only accessor.
-- `internal/shedcli/table_test.go`: `TestRecipes_KeySet` reads `slices.Sorted(maps.Keys(recipes))` itself and checks it against the same two expectations as before:
-  the literal recipe list and `shedrun.RecipeNames()`.
-  The file header no longer mentions `names`.
-
-## Design decisions
-
-- The function is deleted rather than given a production caller.
-  No production code needs the full armed set:
-  the one user-facing list, the unknown-recipe error, shows the offered recipes, which leave out a recipe that is armed but no longer offered.
+`TestRecipes_KeySet` still pins the set of recipe names, now by sorting the keys of `recipes` itself.
+The header comments of `table.go` and `table_test.go` no longer mention the accessor.
 
 ## Merge danger
 
