@@ -1,6 +1,8 @@
 # PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API
 
-`pr-review-github-recorded` · Note · enhancement, testkit, landing
+`pr-review-github-recorded` · Task · enhancement, testkit, landing · draft
+
+Depends on: [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md)
 
 ## Seen
 
