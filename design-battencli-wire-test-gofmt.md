@@ -14,3 +14,7 @@ No gate checks formatting, so a mis-formatted Go file passes every tier.
 ## Idea
 
 Add a gofmt check to tier0 (for example `gofmt -l` over the changed files).
+
+## Orch decision
+
+Check every Go file under `cmd`, `internal` and `tools`, not only changed files: the tree is clean today, so the whole-tree check stays cheap and needs no diff scope.
