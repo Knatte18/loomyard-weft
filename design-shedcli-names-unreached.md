@@ -1,6 +1,6 @@
 # internal/shedcli.names is reached by no main package
 
-`shedcli-names-unreached` · Task · enhancement, shed · starting · Seed-IDE
+`shedcli-names-unreached` · Task · enhancement, shed · running · Darn-Write
 
 ## Seen
 

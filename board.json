@@ -842,7 +842,7 @@
       "isolated": false,
       "brief": "Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate",
       "body": "## Seen\n\nThe upkeep gate at `3fb0787e3` fails `TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain` (`cmd/lym/testonlycode_linux_test.go`):\n`internal/shedcli.names`, in `internal/shedcli/table.go`, is reached by no main package of the module.\nOnly `internal/shedcli/table_test.go` calls it.\nSince `design-first-route` (`9acc400f8`) the unknown-recipe error in `lookup` lists `shedrun.OfferedRecipeNames()` instead.\n\n## Idea\n\nRemove `names` with the test of it, or give it a production caller.\nThe file's header comment names the `names` accessor and needs the same edit.\n",
-      "status": "starting · Seed-IDE",
+      "status": "running · Darn-Write",
       "created": "2026-11-27T21:29:06Z",
       "revised": "2026-11-28T07:58:10Z",
       "profile": "light"
