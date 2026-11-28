@@ -74,6 +74,12 @@ a batched run's later `LandLocally` call takes its own landing commit too (D6).
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - wired-landlocally-failed-head-read-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - D6: a parent ahead of its upstream by a chain of three landing commits, whose ledger holds one landing per run with that run's own landing commit as its tip, reads as ahead by owed tips alone, and a run recorded again through `landLocally` with its own landing commit keeps that tip. Tier 1, `internal/loomcli`.
