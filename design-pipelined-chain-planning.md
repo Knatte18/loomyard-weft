@@ -36,6 +36,14 @@ The merge in step 5 also brings in whatever else landed on the parent, not only 
 That is no new cost: Parent-Align already meets the same landings later today.
 Running the chain in a beam of its own keeps the parent quiet, so the merge in step 5 brings in little beside A.
 
+## One dependency list (operator, 2026-11-28)
+
+- `depends_on` keeps one list and one meaning: B builds only after each entry in it has landed.
+- When B may start planning is derived from that list, with no second field:
+  a jacquard task B may start once each of its dependencies has landed or has an approved plan.
+  The wait row of step 4 then holds B until every dependency has landed.
+- While B plans or parks ahead of a dependency that has not landed, the board marks it beside its status, such as `plans ahead of <slug>`.
+
 ## A parked run (operator, 2026-11-28)
 
 - A run parked in the wait row of step 4 holds none of `beam.max_runs`'s run places, no tmux session and no Konsole window, so it leaves the KDE tiling alone.
