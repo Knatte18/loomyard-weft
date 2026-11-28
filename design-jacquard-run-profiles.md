@@ -1,6 +1,6 @@
 # Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile
 
-`jacquard-run-profiles` · Task · feature, profiles, config
+`jacquard-run-profiles` · Task · feature, profiles, config · starting · Worktree-Create
 
 Decision record: [Sketch](decision-jacquard-run-profiles.md)
 
