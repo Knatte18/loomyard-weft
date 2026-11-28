@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-landing-queue-batch.md)
 
-Depends on: [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md), [`fabric-core-push-origin`](design-fabric-core-push-origin.md)
+Depends on: [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md), [`fabric-core-push-origin`](design-fabric-core-push-origin.md), [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md)
 
 Filed from the Sketch `landing-queue`.
 
