@@ -1,6 +1,6 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 16:47 UTC; every age below is as of then.
+Rendered 2026-11-28 16:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 4h · Owner `neve`
@@ -23,7 +23,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid | landing · Finalize | neve | 3h<br>3h | shed, loom, testkit |
+| T9 | **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid | Friction-Reflect | neve | 3h<br>3h | shed, loom, testkit |
 
 ## Layer A (1)
 

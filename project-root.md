@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 16:47 UTC; every age below is as of then.
+Rendered 2026-11-28 16:48 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -47,7 +47,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Read the Septim gate farm study and decide each mode** | [`septim-farm-followup`](design-septim-farm-followup.md) | 57m<br>57m | gate |
+| R1 |  | **Read the Septim gate farm study and decide each mode** | [`septim-farm-followup`](design-septim-farm-followup.md) | 58m<br>58m | gate |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 10d<br>10d | shuttle |
 
 ## Bugs (1)
@@ -68,4 +68,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 19h<br>6h | board, orch, dobby |
 | F4 | L | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 5h<br>1h | shed, weaver |
-| F5 |  | **Gate runs on a LAN machine: Septim takes gate slots through a lym service in WSL2** | [`remote-gate-farm`](design-remote-gate-farm.md) |  | 1h<br>44m | gate, process, hibernate |
+| F5 |  | **Gate runs on a LAN machine: Septim takes gate slots through a lym service in WSL2** | [`remote-gate-farm`](design-remote-gate-farm.md) |  | 1h<br>45m | gate, process, hibernate |
