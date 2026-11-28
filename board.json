@@ -730,41 +730,51 @@
     },
     {
       "id": 1758,
-      "handle": "E1",
+      "handle": "T5",
       "slug": "pr-session-mail-stand-ins",
-      "title": "PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins",
-      "kind": "note",
+      "title": "PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes",
+      "kind": "task",
       "labels": [
         "enhancement",
         "testkit",
-        "landing"
+        "landing",
+        "reed",
+        "creel"
       ],
       "issues": [],
-      "depends_on": [],
+      "recipe": "darn",
+      "depends_on": [
+        "beam-member-parent"
+      ],
       "isolated": false,
       "brief": "Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins",
-      "body": "## Seen\n\nThe run that gives testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\n## Idea\n\nMove the `MailAgent` rows to a tier1 loomcli test over a real creel daemon,\nand move `envkit`'s session stand-ins onto the recorded tmux kit.\n",
+      "body": "## Seen\n\nThe run that gave testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\nThe landed recorded tmux kit (`internal/testkit/tmuxrec`) neither records nor matches a call's stdin.\nEach paste names a fresh random buffer in its arguments, so a replayed paste matches no recorded one and fails as unanswered.\nNo current recording holds a `load-buffer` call, so a scenario that sends text to a pane cannot use the kit.\n\n## Change\n\n- Move the `MailAgent` rows to a tier1 loomcli test over a real creel daemon.\n- Teach `tmuxrec` to record and match a call's stdin, and to match a paste's buffer name by pattern rather than literally, with a recording that pastes and a replay test over it.\n- Move `envkit`'s session stand-ins onto the recorded tmux kit, using paste replay where they send text.\n",
+      "status": "draft",
       "created": "2026-11-27T19:02:48Z",
-      "revised": "2026-11-27T21:29:05Z"
+      "revised": "2026-11-28T08:45:18Z",
+      "profile": "solid"
     },
     {
       "id": 1759,
-      "handle": "E2",
+      "handle": "T6",
       "slug": "arras-visible-leftovers",
       "title": "Arras still shows in seeded profiles and in the overview and glossary",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "board",
         "docs"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "The landed design-first route left arras keys in the profile template and descriptions in two docs",
       "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
+      "status": "draft",
       "created": "2026-11-27T19:53:35Z",
-      "revised": "2026-11-27T19:53:35Z"
+      "revised": "2026-11-28T08:45:19Z",
+      "profile": "light"
     },
     {
       "id": 1760,
@@ -783,25 +793,6 @@
       "body": "## Seen\n\nThe `design-first-route` landing (`9acc400f8`) listed a mis-spaced assignment in `internal/battencli/wire_test.go`,\n`err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite.\nThat line does not stand in the file at `9acc400f8` or at `3fb0787e3`, and `gofmt -l cmd internal tools` lists no file at `3fb0787e3`.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nAdd a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n",
       "created": "2026-11-27T19:53:36Z",
       "revised": "2026-11-27T21:30:01Z"
-    },
-    {
-      "id": 1761,
-      "handle": "E3",
-      "slug": "tmuxrec-paste-replay",
-      "title": "The recorded tmux kit cannot replay a pasted call, so no scenario that pastes runs over it",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "testkit",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "tmuxrec neither records nor matches stdin, and each paste names a fresh random buffer, so a replayed paste fails as unanswered",
-      "body": "## Seen\n\nThe landed recorded tmux kit (`internal/testkit/tmuxrec`) neither records nor matches a call's stdin.\nEach paste names a fresh random buffer in its arguments, so a replayed paste matches no recorded one and fails as unanswered.\nNo current recording holds a `load-buffer` call, so the PR-Review session tests pass; a scenario that sends text to a pane cannot use the kit.\n\n## Idea\n\nRecord and match stdin, and match a paste's buffer name by pattern rather than literally, with a recording that pastes and a replay test over it.\n",
-      "created": "2026-11-27T20:27:53Z",
-      "revised": "2026-11-27T20:27:53Z"
     },
     {
       "id": 1763,
