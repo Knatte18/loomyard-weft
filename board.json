@@ -862,12 +862,13 @@
         "weaver"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nWeaver runs its batches in its own Go loop inside tapestry's implementer row, because Shed could not step through them:\na recipe is a fixed file of rows and edges, and a producer's `Yield` ends the driver's loop (Weaver's decision record, Q1).\nAbout 15–20% of Weaver's production code, its stop and re-entry glue, part of its resume and its run lock, therefore repeats in concept what Shed does.\nReview rounds are a loop too, and the plan-ahead wait row of `pipelined-chain-planning` is a dynamic row.\n\n## Idea\n\nLet a recipe hold a row that repeats while its producer asks for another pass, or that unfolds into rows from a list its producer writes, such as a plan's batches.\nEach pass or unfolded row then gets Shed's own stops, re-entry, resume, history and arbiter, and Weaver shrinks to a thin producer per batch.\n\n## Bounds (operator, 2026-11-28)\n\n- Shed is a vital part of lym, and changing its logic this deep can have fatal consequences.\n- So the change is designed first, through motif, before anything is built,\n  and it only adds: every existing recipe, row and edge runs as today, and a recipe without the new row kind takes none of the new code paths.\n- Weaver stays as it is until the new row kind has proven itself; moving Weaver onto it is a task of its own.\n",
       "created": "2026-11-28T11:46:02Z",
-      "revised": "2026-11-28T11:46:02Z"
+      "revised": "2026-11-28T15:18:13Z"
     },
     {
       "id": 1800,
@@ -881,6 +882,7 @@
         "shed"
       ],
       "issues": [],
+      "priority": "low",
       "depends_on": [
         "shed-dynamic-rows"
       ],
@@ -888,7 +890,7 @@
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nAbout 15–20% of Weaver's production code repeats in concept what Shed does: its stop and re-entry glue, part of its resume and its run lock.\nIt exists because Shed had no row that repeats or unfolds from a list.\n\n## Idea\n\nOnce Shed has that row kind and it has proven itself, move Weaver onto it:\neach batch becomes a pass or an unfolded row with Weaver as a thin producer,\nand Weaver's own stop record, re-entry, in-row resume and run lock give way to Shed's.\nThe model ladder, batch partitioning, verify fixer, in-flight strand probing and reset stay Weaver's, since Shed has no counterpart for them.\n\n## Bounds\n\n- Weaver's behaviour seen from the run stays the same: the same batches, ladder, journal, summary and outcome.\n- A bench against today's Weaver on the same plans checks it before Weaver's own loop is removed.\n",
       "created": "2026-11-28T11:46:46Z",
-      "revised": "2026-11-28T11:46:48Z"
+      "revised": "2026-11-28T15:18:13Z"
     },
     {
       "id": 1801,
@@ -1308,10 +1310,10 @@
     },
     {
       "id": 1825,
-      "handle": "B6",
+      "handle": "T10",
       "slug": "test-git-hermetic-network",
       "title": "Test git can reach the network and open a credential prompt, hanging an agent's test run",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "testkit",
@@ -1320,12 +1322,14 @@
       "issues": [
         299
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #299](https://github.com/Knatte18/loomyard/issues/299).\n\n## What happened\n\nDuring a code-review fix round, an agent wrote an integration test that took its dependencies from `internal/loomcli`'s production wiring.\nThe test thereby ran the real record commit and push over a fixture pair whose origin is a github.com URL.\ngit asked for credentials through the desktop askpass helper, which opened a dialog on the operator's desktop.\nThe run hung for about eighteen minutes, until the test timeout.\n\n## Why it is abnormal\n\nA test run, unattended in an agent session, must neither reach the network nor prompt the operator.\nThe shared hermetic git environment (`internal/gitkit/hermetic.go`) stops neither, so any test that wires a real push can repeat this.\nThe one test that hit it now sets the variables itself, which protects no other test.\n\n## What to do\n\nSet these in the shared hermetic git environment, for every test:\n\n- `GIT_ALLOW_PROTOCOL=file`\n- `GIT_TERMINAL_PROMPT=0`\n- `GIT_ASKPASS` set to empty\n\nCheck whether `SSH_ASKPASS` needs the same treatment, and whether any test relies on a non-file protocol.\n\nProvenance: task `pr-session-mail-stand-ins`, note `burler-code-r2.md`.\n",
+      "status": "draft",
       "created": "2026-11-28T15:17:15Z",
-      "revised": "2026-11-28T15:17:15Z"
+      "revised": "2026-11-28T15:18:14Z"
     },
     {
       "id": 1826,
