@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -202,6 +202,52 @@
       "output": "",
       "at": "2026-11-28T14:43:33Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/clone-reset-keeps-unpushed/_lym/landing/summary.md",
+      "at": "2026-11-28T14:45:28Z",
+      "started_at": "2026-11-28T14:43:33Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T14:44:21.075509923Z",
+          "end": "2026-11-28T14:44:21.075576778Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T14:45:26.628480961Z",
+          "end": "2026-11-28T14:45:26.628537527Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T14:44:21.256459053Z",
+          "end": "2026-11-28T14:44:21.256670318Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "held",
+          "start": "2026-11-28T14:44:21.346412217Z",
+          "end": "2026-11-28T14:45:16.358300139Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "rework",
+          "start": "2026-11-28T14:45:16.937239218Z",
+          "end": "2026-11-28T14:45:25.968780241Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T14:45:26.768144027Z",
+          "end": "2026-11-28T14:45:26.768166599Z"
+        }
+      ]
     }
   ],
   "product": {
