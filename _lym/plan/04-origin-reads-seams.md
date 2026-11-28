@@ -13,13 +13,13 @@
 - `internal/fabricengine_test#TestOriginRunReads`
 
 **Create:**
-- `plan:internal/fabricengine#refuseUnsuppliedSeams` -> `func refuseUnsuppliedSeams(needed ...fabriccore.RequiredSeam) error`
-- `plan:internal/fabriccli_test#TestInstallRequiredSeams` -> `func TestInstallRequiredSeams(t *testing.T)`
-- `plan:internal/fabricengine#originStatusBytesAtTip` -> `func originStatusBytesAtTip(prime *lymcwd.Location, recordsRoot, tip, slug string) ([]byte, bool, error)`
-- `plan:internal/fabriccore#MarkBeamVerdict` -> `func MarkBeamVerdict(recordFound, alreadyMarked, recordsWorktreePresent bool) (mark, missingWorktree, missingRecord bool)`
-- `plan:internal/fabriccore#ReadOriginForVerdict` -> `func ReadOriginForVerdict(recordPresent, lockDirPresent bool) (read, missingLockDir bool)`
-- `plan:internal/fabriccore#RemoteOnly` -> `func RemoteOnly(hasOrigin bool, tips map[string]string, branch string) (tip string, read bool)`
-- `plan:internal/fabriccore_test#TestOriginRecordRules` -> `func TestOriginRecordRules(t *testing.T)`
+- `internal/fabricengine#refuseUnsuppliedSeams`
+- `internal/fabriccli_test#TestInstallRequiredSeams`
+- `internal/fabricengine#originStatusBytesAtTip`
+- `internal/fabriccore#MarkBeamVerdict`
+- `internal/fabriccore#ReadOriginForVerdict`
+- `internal/fabriccore#RemoteOnly`
+- `internal/fabriccore_test#TestOriginRecordRules`
 
 **Uses:**
 - `internal/fabricengine#SetRunRecordPaths`

@@ -26,7 +26,7 @@
 **Edit:**
 - `internal/fabricengine#coalescePushSides`
 - `internal/fabricengine/doc.go`
-- `plan:internal/fabriccli_test#TestInstallRequiredSeams`
+- `internal/fabriccli_test#TestInstallRequiredSeams`
 - `internal/fabriccore#Snapshot`
 - `internal/fabricengine#pushClassified`
 - `internal/fabricengine#pushJob`
@@ -54,7 +54,7 @@
 
 **Uses:**
 - `internal/fabricengine#runRule`
-- `plan:internal/fabricengine#refuseUnsuppliedSeams`
+- `internal/fabricengine#refuseUnsuppliedSeams`
 - `internal/fabricengine#SetRunRecordPaths`
 - `plan:internal/fabriccore#IsOwedClass`
 - `internal/testkit/fabrickit#NewSnapshot`

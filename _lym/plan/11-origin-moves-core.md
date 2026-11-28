@@ -18,7 +18,7 @@
 - `internal/fabricengine#tryPrimeLock`
 - `internal/fabricengine#recordedPairs`
 - `internal/fabricengine_test#TestReconcileOrigin_Moves`
-- `plan:internal/fabriccli_test#TestInstallRequiredSeams`
+- `internal/fabriccli_test#TestInstallRequiredSeams`
 - `cmd/lym#uncontainedWriteAllowlist`
 
 **Delete:**

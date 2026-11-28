@@ -25,7 +25,7 @@
 - `internal/fabricengine_test#TestRunCommitsAhead`
 - `internal/fabricengine_test#TestTipsOnOrigin`
 - `internal/fabricengine_test#TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide`
-- `plan:internal/fabriccli_test#TestInstallRequiredSeams`
+- `internal/fabriccli_test#TestInstallRequiredSeams`
 
 **Delete:**
 - `internal/fabricengine#localBranch.ahead`
@@ -40,7 +40,7 @@
 - `internal/fabricengine#runRule`
 - `internal/fabricengine#recordOwedRecordsPush`
 - `internal/fabricengine#teardownLockOwedError`
-- `plan:internal/fabricengine#refuseUnsuppliedSeams`
+- `internal/fabricengine#refuseUnsuppliedSeams`
 
 **Intent:**
 The pair push's own loop and the pusher's local reads become core rules.
