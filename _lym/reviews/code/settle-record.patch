@@ -1,0 +1,702 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 2beb48dd7..47d3ac3a5 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -301,6 +301,10 @@
+ // The wait of a call that runs in this process has no cap and ends when the slots free.
+ // An interrupt cancels the wait and exits 128 plus the signal number.
+ // A tier with `slots: all` holds every slot and waits behind the pool's drain.
++// The holder carries the call's slot priority, read once before the first tier.
++// A call whose worktree's run holds a live parent lock of the hub waits first.
++// A `card` or `batch` call waits next, and every other call last.
++// A parent lock store that cannot be read is logged and reads as no lock held.
+ // Bound: a gate tier or the build step holds its slots for at most its `timeout_min`.
+ // Outside a hub the tiers run unslotted.
+ //
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 163c43d76..b3a477f93 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -23,11 +23,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/envconfig"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fabriclayout"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
++	"github.com/Knatte18/loomyard/internal/parentlock"
+ 	"github.com/Knatte18/loomyard/internal/preflight"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+@@ -156,6 +158,7 @@ func runTest(ctx context.Context, out io.Writer, request testRequest) int {
+ 		exe.pool = hubgeom.GateSlots(location)
+ 		exe.request.prebuiltStore = exe.pool.PrebuiltDir()
+ 		exe.slug = originSlug(location)
++		exe.priority = gateslot.SlotPriority(request.gate, holdsParentLock(location, exe.slug))
+ 		if inherited := os.Getenv(gateslot.InheritEnv); inherited != "" && exe.pool.Inherited(inherited) {
+ 			logger.Info("gate test: running inside the slot an enclosing gate run holds", "slot", inherited, "dir", dir)
+ 			exe.inherited = true
+@@ -548,6 +551,21 @@ func originSlug(location *lymcwd.Location) string {
+ 	return location.WorktreeName
+ }
+ 
++// holdsParentLock reports whether the run of slug holds a live parent lock of location's hub.
++// A slug of "" holds none, and a lock store that cannot be read is logged and reads as held by none.
++func holdsParentLock(location *lymcwd.Location, slug string) bool {
++	if slug == "" {
++		return false
++	}
++	store := &parentlock.Store{Dir: parentlock.Dir(fabriclayout.BoltDir(location.HubPath))}
++	held, err := store.HeldBy(slug)
++	if err != nil {
++		logger.Warn("gate test: could not read the parent locks; the call takes its slots as a run holding none", "cause", err)
++		return false
++	}
++	return held
++}
++
+ // execution holds the state of one call's tier runs after planning.
+ // It records where slots come from, the environment the tiers get, and where their records go.
+ type execution struct {
+@@ -563,7 +581,9 @@ type execution struct {
+ 	env       []string
+ 	runLogDir string
+ 	slug      string
+-	tierList  []int
++	// priority is the rank every tier of the call waits for its slots with.
++	priority gateslot.Priority
++	tierList []int
+ 	// guards maps tier to directory to guard names, which the plan's guard runs are built over.
+ 	guards map[int]map[string][]string
+ 	// green is the green record the call uses; nil when the worktree is dirty or it cannot apply, so every tier runs.
+@@ -705,7 +725,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ 			}
+ 			count, copiesRun = copyLease(e.request.copies, run.tier.Slots, limits.Slots)
+ 		}
+-		lease, code := acquireSlot(e.ctx, e.out, e.pool, e.location, e.request, tierName(run.number), count)
++		lease, code := acquireSlot(e.ctx, e.out, e.pool, e.location, e.request, tierName(run.number), count, e.priority)
+ 		if lease == nil {
+ 			return runEnd{code: code, halt: true}
+ 		}
+@@ -816,11 +836,11 @@ func runMarkerEntry(pid int) string {
+ 	return enclosingGateEnv + "=" + strconv.Itoa(pid)
+ }
+ 
+-// acquireSlot takes count slots of pool for tier.
++// acquireSlot takes count slots of pool for tier, waiting with priority.
+ // It keeps a wait record in the worktree's wait directory until the acquire returns.
+ // The wait has no cap of its own: it ends when the slots free or ctx is cancelled.
+ // It returns the held lease, or a nil lease and the exit code to return, 1 for any failure, a cancelled ctx included.
+-func acquireSlot(ctx context.Context, out io.Writer, pool *gateslot.Pool, location *lymcwd.Location, request testRequest, tier string, count int) (*gateslot.Lease, int) {
++func acquireSlot(ctx context.Context, out io.Writer, pool *gateslot.Pool, location *lymcwd.Location, request testRequest, tier string, count int, priority gateslot.Priority) (*gateslot.Lease, int) {
+ 	site := strings.TrimSpace(siteLabelPrefix + " " + tier + " " + strings.Join(request.targets, " "))
+ 	if request.phase != nil {
+ 		request.phase(runPhase{State: phaseSlots, Tier: tier})
+@@ -832,7 +852,7 @@ func acquireSlot(ctx context.Context, out io.Writer, pool *gateslot.Pool, locati
+ 		defer os.Remove(waitPath)
+ 	}
+ 
+-	holder := gateslot.Holder{Worktree: location.WorktreePath(), Site: site, Tier: tier, Marker: runMarkerEntry(os.Getpid())}
++	holder := gateslot.Holder{Worktree: location.WorktreePath(), Site: site, Tier: tier, Marker: runMarkerEntry(os.Getpid()), Priority: priority}
+ 	lease, err := pool.AcquireSlots(ctx, holder, count)
+ 	switch {
+ 	case err == nil:
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index cb5f91e05..30b916133 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -20,6 +20,14 @@
+ // A multi-slot acquire first takes the drain lock, so new single-slot acquires queue behind it and cannot starve it.
+ // It then takes slots in ascending order, so two multi-slot waiters never deadlock.
+ // A cancelled context releases every slot and the drain lock already taken.
++//
++// A Holder's Priority ranks its wait: PriorityLockHolder, then PriorityImplementer, then PriorityOther, the zero value.
++// SlotPriority derives it from a call's gate key and whether its run holds a parent lock.
++// A waiter above PriorityOther holds an OS lock on a queue ticket at `<Dir>/queue/<priority>-<pid>-<n>.lock`.
++// While a higher ticket's lock is held, a lower acquirer takes no slot and no drain lock, even with a slot free,
++// and a lower multi-slot acquire that holds the drain lock and only part of its slots releases them all and waits again.
++// A held slot is never taken back, and a ticket file left by a crashed waiter outranks nobody.
++//
+ // A `lym gate test --copies` call takes one lease of its copies' slots together through AcquireSlots.
+ // It never runs BilledTier, the tier that drives a billed LLM session.
+ // Every tier run prints a started line built by FormatStartedLine, which ParseStartedLines alone reads back.
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index f16dbf129..e979b49cb 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -87,6 +87,8 @@ type Holder struct {
+ 	// A nested `lym gate test` run inside the slot replaces the entry for the processes it starts,
+ 	// so those do not carry this marker.
+ 	Marker string `yaml:"marker,omitempty"`
++	// Priority is the rank the holder waited with; while it waits, no acquirer of a lower one takes a slot.
++	Priority Priority `yaml:"priority,omitempty"`
+ 	// Slot is the number of the held slot, read from the record's file name; the record never carries it.
+ 	Slot int `yaml:"-"`
+ }
+@@ -130,9 +132,11 @@ func (p *Pool) PrebuiltDir() string {
+ // While all are held, it logs the wait start, polls, and logs the wait end on acquiring.
+ // While a multi-slot acquire holds the drain lock, it waits the same way.
+ // The drain lock keeps a multi-slot waiter from being starved by new single-slot holders.
++// While a waiter of a priority above h.Priority waits, it waits the same way, even with a slot free.
++// From its wait's start until it returns, a holder above PriorityOther keeps a queue ticket naming its priority.
+ // It imposes no deadline of its own; a caller wanting a bound passes a deadline context.
+ // A cancelled context returns its error with no slot held.
+-// Polling gives no FIFO order among waiters.
++// Polling gives no FIFO order among waiters of one priority.
+ func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error) {
+ 	poll, err := p.prepare(&h)
+ 	if err != nil {
+@@ -140,6 +144,8 @@ func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error) {
+ 	}
+ 
+ 	var waitStart time.Time
++	var waiting *ticket
++	defer func() { dropTicket(waiting) }()
+ 	for {
+ 		if err := ctx.Err(); err != nil {
+ 			return nil, fmt.Errorf("wait for gate slot: %w", err)
+@@ -152,8 +158,12 @@ func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
++		outranked, err := p.outranked(h.Priority)
++		if err != nil {
++			return nil, err
++		}
+ 		var lease *Lease
+-		if !draining {
++		if !draining && !outranked {
+ 			if lease, err = p.tryAcquireAny(limits, h); err != nil {
+ 				return nil, err
+ 			}
+@@ -166,7 +176,10 @@ func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error) {
+ 		}
+ 		if waitStart.IsZero() {
+ 			waitStart = time.Now()
+-			logger.Info("gate slot wait start", "site", h.Site, "worktree", h.Worktree)
++			logger.Info("gate slot wait start", "site", h.Site, "worktree", h.Worktree, "priority", int(h.Priority))
++			if waiting, err = p.queueTicket(h.Priority); err != nil {
++				return nil, err
++			}
+ 		}
+ 		sleepPoll(ctx, poll)
+ 	}
+@@ -181,6 +194,9 @@ func (p *Pool) Acquire(ctx context.Context, h Holder) (*Lease, error) {
+ // It releases the drain lock once it holds them all.
+ // The drain admits one multi-slot waiter at a time.
+ // Every single-slot holder finishes, so two multi-slot waiters never deadlock.
++// While a waiter of a priority above h.Priority waits, it does not take the drain lock.
++// When one starts waiting before it holds every slot, it releases the slots and the drain lock and waits again.
++// It keeps a queue ticket for its wait as Acquire does.
+ // A cancelled context releases every slot and the drain lock already taken and returns its error with nothing held.
+ func (p *Pool) AcquireSlots(ctx context.Context, h Holder, count int) (*Lease, error) {
+ 	if count == 1 {
+@@ -192,27 +208,43 @@ func (p *Pool) AcquireSlots(ctx context.Context, h Holder, count int) (*Lease, e
+ 	}
+ 
+ 	var waitStart time.Time
+-	noteWait := func() {
+-		if waitStart.IsZero() {
+-			waitStart = time.Now()
+-			logger.Info("gate slot wait start", "site", h.Site, "worktree", h.Worktree, "slots", count)
++	var waiting *ticket
++	defer func() { dropTicket(waiting) }()
++	noteWait := func() error {
++		if !waitStart.IsZero() {
++			return nil
+ 		}
++		waitStart = time.Now()
++		logger.Info("gate slot wait start", "site", h.Site, "worktree", h.Worktree, "slots", count, "priority", int(h.Priority))
++		var err error
++		waiting, err = p.queueTicket(h.Priority)
++		return err
+ 	}
+-	drain, err := p.acquireDrain(ctx, poll, noteWait)
+-	if err != nil {
+-		return nil, err
+-	}
+-	lease, err := p.takeSlotsInOrder(ctx, h, count, poll, noteWait)
+-	if err != nil {
+-		return nil, errors.Join(err, drain.Release())
+-	}
+-	if err := drain.Release(); err != nil {
+-		return nil, errors.Join(fmt.Errorf("release gate drain lock: %w", err), lease.Release())
+-	}
+-	if !waitStart.IsZero() {
+-		logger.Info("gate slot wait end", "site", h.Site, "worktree", h.Worktree, "waited", time.Since(waitStart).String())
++	for {
++		drain, err := p.acquireDrain(ctx, h.Priority, poll, noteWait)
++		if err != nil {
++			return nil, err
++		}
++		lease, yielded, err := p.takeSlotsInOrder(ctx, h, count, poll, noteWait)
++		if err != nil {
++			return nil, errors.Join(err, drain.Release())
++		}
++		releaseErr := drain.Release()
++		if yielded {
++			if releaseErr != nil {
++				return nil, fmt.Errorf("release gate drain lock: %w", releaseErr)
++			}
++			logger.Info("gate slot wait yields to a higher priority", "site", h.Site, "worktree", h.Worktree, "slots", count)
++			continue
++		}
++		if releaseErr != nil {
++			return nil, errors.Join(fmt.Errorf("release gate drain lock: %w", releaseErr), lease.Release())
++		}
++		if !waitStart.IsZero() {
++			logger.Info("gate slot wait end", "site", h.Site, "worktree", h.Worktree, "waited", time.Since(waitStart).String())
++		}
++		return lease, nil
+ 	}
+-	return lease, nil
+ }
+ 
+ // prepare creates the slot directory, stamps h with this process and returns the poll interval.
+@@ -249,20 +281,29 @@ func sleepPoll(ctx context.Context, poll time.Duration) {
+ 	}
+ }
+ 
+-// acquireDrain takes the drain lock, calling noteWait before each wait for another holder to release it.
+-func (p *Pool) acquireDrain(ctx context.Context, poll time.Duration, noteWait func()) (*lock.FileLock, error) {
++// acquireDrain takes the drain lock, calling noteWait before each wait.
++// It waits while another holder has the drain lock or a waiter of a priority above priority waits.
++func (p *Pool) acquireDrain(ctx context.Context, priority Priority, poll time.Duration, noteWait func() error) (*lock.FileLock, error) {
+ 	for {
+ 		if err := ctx.Err(); err != nil {
+ 			return nil, fmt.Errorf("wait for gate drain lock: %w", err)
+ 		}
+-		drain, acquired, err := lock.TryAcquireWriteLock(p.drainLockPath())
++		outranked, err := p.outranked(priority)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		if acquired {
+-			return drain, nil
++		if !outranked {
++			drain, acquired, err := lock.TryAcquireWriteLock(p.drainLockPath())
++			if err != nil {
++				return nil, err
++			}
++			if acquired {
++				return drain, nil
++			}
++		}
++		if err := noteWait(); err != nil {
++			return nil, err
+ 		}
+-		noteWait()
+ 		sleepPoll(ctx, poll)
+ 	}
+ }
+@@ -272,33 +313,43 @@ func (p *Pool) acquireDrain(ctx context.Context, poll time.Duration, noteWait fu
+ // A count of 0, or above the current Limits().Slots, means every slot.
+ // Limits are re-read at each attempt, so a lowered count takes effect.
+ // It does not check the drain lock, which the caller holds.
++// Once a waiter of a priority above h.Priority waits, it releases every slot it holds and reports yielded.
+ // On an error or a cancelled context it releases every slot it holds.
+-func (p *Pool) takeSlotsInOrder(ctx context.Context, h Holder, count int, poll time.Duration, noteWait func()) (*Lease, error) {
+-	lease := &Lease{}
++func (p *Pool) takeSlotsInOrder(ctx context.Context, h Holder, count int, poll time.Duration, noteWait func() error) (lease *Lease, yielded bool, err error) {
++	lease = &Lease{}
+ 	for {
+ 		if err := ctx.Err(); err != nil {
+-			return nil, errors.Join(fmt.Errorf("wait for gate slots: %w", err), lease.Release())
++			return nil, false, errors.Join(fmt.Errorf("wait for gate slots: %w", err), lease.Release())
+ 		}
+ 		limits, err := p.readLimits()
+ 		if err != nil {
+-			return nil, errors.Join(err, lease.Release())
++			return nil, false, errors.Join(err, lease.Release())
+ 		}
+ 		target := count
+ 		if target < 1 || target > limits.Slots {
+ 			target = limits.Slots
+ 		}
+ 		if len(lease.slots) >= target {
+-			return lease, nil
++			return lease, false, nil
++		}
++		outranked, err := p.outranked(h.Priority)
++		if err != nil {
++			return nil, false, errors.Join(err, lease.Release())
++		}
++		if outranked {
++			return nil, true, lease.Release()
+ 		}
+ 		slot, acquired, err := p.tryAcquireSlot(len(lease.slots)+1, h)
+ 		if err != nil {
+-			return nil, errors.Join(err, lease.Release())
++			return nil, false, errors.Join(err, lease.Release())
+ 		}
+ 		if acquired {
+ 			lease.slots = append(lease.slots, slot)
+ 			continue
+ 		}
+-		noteWait()
++		if err := noteWait(); err != nil {
++			return nil, false, errors.Join(err, lease.Release())
++		}
+ 		sleepPoll(ctx, poll)
+ 	}
+ }
+diff --git a/internal/gateslot/priority.go b/internal/gateslot/priority.go
+new file mode 100644
+index 000000000..5a9d92e77
+--- /dev/null
++++ b/internal/gateslot/priority.go
+@@ -0,0 +1,148 @@
++// priority.go orders the waiters for gate slots by priority.
++// It covers the queue ticket a waiter holds while it waits and the check that makes a lower-priority acquirer stand back.
++
++package gateslot
++
++import (
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"sync/atomic"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// Priority orders the acquirers of gate slots.
++// While a waiter of a higher priority waits, no acquirer of a lower one takes a slot or the drain lock,
++// so a slot that frees goes to a waiter of the highest priority waiting.
++// A slot already held is never taken back.
++type Priority int
++
++const (
++	// PriorityOther is the zero value: every acquirer that is neither a lock holder's gate nor an implementer's.
++	PriorityOther Priority = iota
++	// PriorityImplementer is a gate call that checks an implementer's card or batch.
++	PriorityImplementer
++	// PriorityLockHolder is a gate call whose run holds a parent lock.
++	// Its landing moves the parent, which makes the gates of the runs queued behind that lock stale.
++	PriorityLockHolder
++)
++
++// batchGateKey is the name of the gate.yaml key that runs a batch's gate.
++const batchGateKey = "batch"
++
++// SlotPriority returns the priority a call of the gate key key takes its slots with.
++// A call whose run holds a parent lock comes first, whatever its key.
++// A call of the card or batch key comes next, and every other call, one with no key included, comes last.
++func SlotPriority(key string, holdsParentLock bool) Priority {
++	switch {
++	case holdsParentLock:
++		return PriorityLockHolder
++	case key == cardGateKey || key == batchGateKey:
++		return PriorityImplementer
++	default:
++		return PriorityOther
++	}
++}
++
++const (
++	queueDirName = "queue"
++	ticketSuffix = ".lock"
++	// staleTicketAge is the age past which a ticket file whose lock no process holds is removed.
++	// A younger one may belong to a waiter that has created the file and not yet locked it.
++	staleTicketAge = time.Minute
++)
++
++// ticketSequence makes the ticket names of one process unique.
++var ticketSequence atomic.Uint64
++
++// ticket is the queue file a waiter holds an OS lock on while it waits.
++// Process death releases the lock, so a crashed waiter outranks nobody.
++type ticket struct {
++	lock *lock.FileLock
++	path string
++}
++
++func (p *Pool) queueDir() string {
++	return filepath.Join(p.Dir, queueDirName)
++}
++
++// queueTicket holds a ticket naming priority at `<Dir>/queue/<priority>-<pid>-<n>.lock` until it is dropped.
++// PriorityOther outranks nobody, so it gets no ticket and a nil return.
++func (p *Pool) queueTicket(priority Priority) (*ticket, error) {
++	if priority == PriorityOther {
++		return nil, nil
++	}
++	if err := os.MkdirAll(p.queueDir(), 0o755); err != nil {
++		return nil, fmt.Errorf("create gate queue directory: %w", err)
++	}
++	name := fmt.Sprintf("%d-%d-%d%s", priority, os.Getpid(), ticketSequence.Add(1), ticketSuffix)
++	path := filepath.Join(p.queueDir(), name)
++	fileLock, acquired, err := lock.TryAcquireWriteLock(path)
++	if err != nil {
++		return nil, fmt.Errorf("take gate queue ticket: %w", err)
++	}
++	if !acquired {
++		return nil, fmt.Errorf("take gate queue ticket: %s is locked by another holder", path)
++	}
++	return &ticket{lock: fileLock, path: path}, nil
++}
++
++// dropTicket removes the ticket's file and then releases its lock; a nil ticket holds nothing.
++// A failure is logged, since the wait it served has already ended.
++func dropTicket(t *ticket) {
++	if t == nil {
++		return
++	}
++	removeErr := os.Remove(t.path)
++	if errors.Is(removeErr, os.ErrNotExist) {
++		removeErr = nil
++	}
++	if err := errors.Join(removeErr, t.lock.Release()); err != nil {
++		logger.Warn("gate slot: could not drop the queue ticket", "ticket", t.path, "cause", err)
++	}
++}
++
++// outranked reports whether a waiter of a priority above priority holds its ticket.
++// A ticket file of a higher priority that no process holds is removed once it is older than staleTicketAge.
++func (p *Pool) outranked(priority Priority) (bool, error) {
++	entries, err := os.ReadDir(p.queueDir())
++	if errors.Is(err, os.ErrNotExist) {
++		return false, nil
++	}
++	if err != nil {
++		return false, fmt.Errorf("list gate queue tickets: %w", err)
++	}
++	for _, entry := range entries {
++		rank, _, found := strings.Cut(entry.Name(), "-")
++		if !found || !strings.HasSuffix(entry.Name(), ticketSuffix) {
++			continue
++		}
++		if ranked, err := strconv.Atoi(rank); err != nil || Priority(ranked) <= priority {
++			continue
++		}
++		path := filepath.Join(p.queueDir(), entry.Name())
++		fileLock, free, err := lock.TryAcquireWriteLock(path)
++		if err != nil {
++			return false, err
++		}
++		if !free {
++			return true, nil
++		}
++		// The file is removed while the probe holds its lock, so no waiter can be holding it meanwhile.
++		if info, err := entry.Info(); err == nil && time.Since(info.ModTime()) > staleTicketAge {
++			if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
++				logger.Warn("gate slot: could not remove a stale queue ticket", "ticket", path, "cause", err)
++			}
++		}
++		if err := fileLock.Release(); err != nil {
++			return false, err
++		}
++	}
++	return false, nil
++}
+diff --git a/internal/gateslot/priority_test.go b/internal/gateslot/priority_test.go
+new file mode 100644
+index 000000000..9a3c63362
+--- /dev/null
++++ b/internal/gateslot/priority_test.go
+@@ -0,0 +1,197 @@
++// priority_test.go covers the priority order among gate slot waiters:
++// the priority a gate call takes, the queue tickets of waiting holders and a lower multi-slot acquire's yield.
++
++package gateslot
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"strconv"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++func TestSlotPriority(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name            string
++		key             string
++		holdsParentLock bool
++		want            Priority
++	}{
++		{"LockHolder_FinalizeKey", "finalize", true, PriorityLockHolder},
++		{"LockHolder_CardKey", "card", true, PriorityLockHolder},
++		{"LockHolder_NoKey", "", true, PriorityLockHolder},
++		{"Implementer_CardKey", "card", false, PriorityImplementer},
++		{"Implementer_BatchKey", "batch", false, PriorityImplementer},
++		{"Other_FinalizeKey", "finalize", false, PriorityOther},
++		{"Other_NoKey", "", false, PriorityOther},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := SlotPriority(tt.key, tt.holdsParentLock); got != tt.want {
++				t.Errorf("SlotPriority(%q, %v) = %d; want %d", tt.key, tt.holdsParentLock, got, tt.want)
++			}
++		})
++	}
++}
++
++// heldTickets counts the queue tickets whose lock a waiter holds, per priority.
++func heldTickets(t *testing.T, pool *Pool) map[Priority]int {
++	t.Helper()
++	entries, err := os.ReadDir(filepath.Join(pool.Dir, "queue"))
++	if errors.Is(err, os.ErrNotExist) {
++		return nil
++	}
++	if err != nil {
++		t.Fatal(err)
++	}
++	counts := map[Priority]int{}
++	for _, entry := range entries {
++		held, err := lockIsHeld(filepath.Join(pool.Dir, "queue", entry.Name()))
++		if err != nil {
++			t.Fatal(err)
++		}
++		rank, _, _ := strings.Cut(entry.Name(), "-")
++		number, err := strconv.Atoi(rank)
++		if err != nil {
++			t.Fatalf("queue file %s names no priority", entry.Name())
++		}
++		if held {
++			counts[Priority(number)]++
++		}
++	}
++	return counts
++}
++
++func TestAcquire_HigherPriorityWaiterTakesTheFreedSlotFirst(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	pool := newPool(t, fixedLimits(1))
++	blocker := holdSlot(t, pool, 1)
++	lower := acquireSlotsAsync(shortContext(t), pool, Holder{Site: "implementer", Priority: PriorityImplementer}, 1)
++	higher := acquireSlotsAsync(shortContext(t), pool, Holder{Site: "lock holder", Priority: PriorityLockHolder}, 1)
++	eventually(t, "both waiters holding their queue tickets", func() bool {
++		counts := heldTickets(t, pool)
++		return counts[PriorityImplementer] == 1 && counts[PriorityLockHolder] == 1
++	})
++
++	if err := blocker.Release(); err != nil {
++		t.Fatal(err)
++	}
++	won := awaitResult(t, higher)
++	if won.err != nil {
++		t.Fatalf("lock holder's Acquire error = %v; want the freed slot", won.err)
++	}
++	select {
++	case got := <-lower:
++		t.Fatalf("implementer's Acquire returned (%v, %v) while the lock holder held the only slot", got.lease, got.err)
++	default:
++	}
++	if counts := heldTickets(t, pool); counts[PriorityLockHolder] != 0 || counts[PriorityImplementer] != 1 {
++		t.Errorf("held tickets after the lock holder's acquire = %v; want only the implementer's", counts)
++	}
++
++	if err := won.lease.Release(); err != nil {
++		t.Fatal(err)
++	}
++	next := awaitResult(t, lower)
++	if next.err != nil {
++		t.Fatalf("implementer's Acquire error = %v; want the slot once the lock holder released it", next.err)
++	}
++	if err := next.lease.Release(); err != nil {
++		t.Fatal(err)
++	}
++	if counts := heldTickets(t, pool); len(counts) != 0 {
++		t.Errorf("held tickets after both acquires = %v; want none", counts)
++	}
++}
++
++func TestAcquireSlots_LowerDrainHolderYieldsItsSlotsToAHigherWaiter(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	pool := newPool(t, fixedLimits(2))
++	blocker := holdSlot(t, pool, 2)
++	lower := acquireSlotsAsync(shortContext(t), pool, Holder{Site: "other", Tier: "tier1"}, 2)
++	eventually(t, "the lower waiter holding slot 1 and the drain lock", func() bool {
++		draining, err := lockIsHeld(pool.drainLockPath())
++		return err == nil && draining && holdsSlot(pool, 1)
++	})
++
++	higher := acquireSlotsAsync(shortContext(t), pool, Holder{Site: "implementer", Priority: PriorityImplementer}, 1)
++	won := awaitResult(t, higher)
++	if won.err != nil {
++		t.Fatalf("implementer's Acquire error = %v; want slot 1, which the lower waiter yields", won.err)
++	}
++	if got, want := won.lease.slots[0].lockPath, pool.slotLockPath(1); got != want {
++		t.Errorf("implementer's lease holds %s; want %s", got, want)
++	}
++	select {
++	case got := <-lower:
++		t.Fatalf("lower AcquireSlots returned (%v, %v) while slots 1 and 2 were held by others", got.lease, got.err)
++	default:
++	}
++
++	for _, lease := range []*Lease{blocker, won.lease} {
++		if err := lease.Release(); err != nil {
++			t.Fatal(err)
++		}
++	}
++	got := awaitResult(t, lower)
++	if got.err != nil {
++		t.Fatalf("lower AcquireSlots error = %v; want both slots once they freed", got.err)
++	}
++	if n := len(got.lease.slots); n != 2 {
++		t.Errorf("lower AcquireSlots holds %d slots; want 2", n)
++	}
++	if err := got.lease.Release(); err != nil {
++		t.Fatal(err)
++	}
++}
++
++func TestAcquire_UnheldTicketOutranksNobodyAndAStaleOneIsRemoved(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	pool := newPool(t, fixedLimits(1))
++	queue := filepath.Join(pool.Dir, "queue")
++	if err := os.MkdirAll(queue, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	stale := filepath.Join(queue, "2-1-1.lock")
++	fresh := filepath.Join(queue, "2-1-2.lock")
++	for _, path := range []string{stale, fresh} {
++		if err := os.WriteFile(path, nil, 0o644); err != nil {
++			t.Fatal(err)
++		}
++	}
++	old := time.Now().Add(-2 * staleTicketAge)
++	if err := os.Chtimes(stale, old, old); err != nil {
++		t.Fatal(err)
++	}
++
++	short, cancel := context.WithTimeout(context.Background(), time.Second)
++	defer cancel()
++	lease, err := pool.Acquire(short, Holder{Site: "other"})
++	if err != nil {
++		t.Fatalf("Acquire() error = %v; want the free slot, since no waiter holds either ticket", err)
++	}
++	if err := lease.Release(); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := os.Stat(stale); !errors.Is(err, os.ErrNotExist) {
++		t.Errorf("stale ticket stat error = %v; want it removed", err)
++	}
++	if _, err := os.Stat(fresh); err != nil {
++		t.Errorf("fresh ticket stat error = %v; want it kept, since its waiter may not have locked it yet", err)
++	}
++}
