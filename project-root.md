@@ -20,7 +20,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | landing · Finalize | neve | 13h<br>13h | fabric |
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | Describe | neve | 13h<br>13h | shed, burler |
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | landing · Finalize | neve | 13h<br>13h | burler, stencil, webster |
-| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | Drift-Recheck | neve | 13h<br>13h | darn, stencil |
+| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | Describe | neve | 13h<br>13h | darn, stencil |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | Darn-Write | neve | 1h<br>1h | orch, reed, cwd |
 
 ## Layer A (2)
