@@ -1393,6 +1393,26 @@
       "created": "2026-11-28T15:41:52Z",
       "revised": "2026-11-28T15:41:52Z",
       "profile": "docs"
+    },
+    {
+      "id": 1830,
+      "handle": "R1",
+      "slug": "septim-farm-followup",
+      "title": "Read the Septim gate farm study and decide each mode",
+      "kind": "note",
+      "labels": [
+        "research",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [
+        "septim-farm-study"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "When the Septim study lands, its report under `docs/research/gate/` answers how much work, and how real, a WSL2 gate farm on Septim is in its stored and ephemeral modes.\n\nThe operator reads it with the orch and decides, for each mode, whether to build it.\nA mode chosen to build goes into note `remote-gate-farm`, which then runs as a motif; a mode not chosen is dropped from that note.\n",
+      "created": "2026-11-28T15:49:21Z",
+      "revised": "2026-11-28T15:49:22Z"
     }
   ],
   "prime_owner": "neve",
