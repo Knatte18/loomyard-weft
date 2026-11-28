@@ -1,6 +1,6 @@
 # P6 Intake motifs: run watch, landed records, closed area
 
-Rendered 2026-11-28 15:56 UTC; every age below is as of then.
+Rendered 2026-11-28 16:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-motifs` · Age 2d · Owner `neve`
