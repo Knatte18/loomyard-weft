@@ -1,46 +1,54 @@
-# Class a remote whose local repository path is missing as unreachable
+# gitexec: treat a missing local origin as unreachable
 
-An origin that is missing on disk took a different route from one that refuses a connection.
-A push to a removed bare repository was recorded with failure class `other`, which stops the run,
-and an origin reconcile against a remote naming a missing directory returned an error instead of reporting origin unreachable.
-A missing local origin, such as a removed directory or an unmounted share, can come back as a refused connection can,
-so both now treat it as unreachable.
+A remote whose repository path is gone from this machine, such as a removed bare repository
+or a directory below an unmounted mount point, is now a transport failure, as a refused connection is.
+The path may come back, so such an origin should leave work owed or retried rather than stop it as a refusal.
 
-## The change
+Closes #294
 
-`gitexec.IsTransportFailure` keeps its network phrases and gains one more case.
-When a remote subcommand's stderr says the repository it named cannot be opened,
-git's `'<path>' does not appear to be a git repository` for push, fetch, pull and ls-remote,
-or `repository '<path>' does not exist` for clone,
-it reads the named path, resolving a relative one against the directory git ran in, and strips a `file://` prefix.
-When that path does not exist on this machine, the failure is a transport failure.
+## What changes
 
-Every caller that classifies through this function follows:
+`gitexec.IsTransportFailure` now also accepts git's "does not appear to be a git repository"
+and "repository ... does not exist" messages when the path they name does not exist.
+The change is in that one function, so every caller of it is affected:
 
-- the push classification records an owed `transport` failure, retried quietly, in place of `other`;
-- `ReconcileOrigin`'s ls-remote retry loop retries the failure and then sets `Unreachable` with a nil error.
+- A push to such an origin is retried on the push backoff (unless it is single-attempt),
+  then recorded as an owed `transport` failure instead of `other`.
+- An origin reconcile retries and then reports `Unreachable` with a nil error instead of returning an error.
+  Its callers take their existing unreachable paths.
+  For example, `orch start` warns, the loop's pre-push check lets the push go on unchecked,
+  `fabric remove` judges from local state, and Finalize reports a transient failure.
+- `cleanup --apply` over a missing origin now warns and runs its removal segments,
+  where it used to refuse and run none.
+- Origin reads during an add are retried on their short backoff.
+- A pull whose code-side fetch fails on a missing origin now returns an error that reports a transport failure.
+- `shedtransient.Class` classes the error as a git transport failure, so the steps that retry transient errors retry it.
 
 ## Design decisions
 
-- A path that exists but holds no repository stays a refusal.
-  That is a misconfigured remote, which retrying does not fix, so it still stops with `other` or an error.
-- The check is a stat of the path git names, not a lookup of the remote's URL, so it adds no git call to the failure path.
-  Bound: an ssh remote naming a server path that is also absent on this machine reads as unreachable.
-  Its push is then retried as owed instead of stopping.
-  GitHub over ssh prints `Repository not found` instead and is unaffected.
+- The decision rests on the filesystem as well as on stderr: git prints the same message for a missing path
+  and for an existing directory that holds no repository.
+  Only the missing path counts, so a directory holding no repository stays a refusal.
+  A link whose target is gone counts as missing.
+- A name with no path separator is never read as a path, because git names an unconfigured remote that way.
+- Existing tests that meant "an origin that is no repository" by a nonexistent path now use an existing directory.
 
-## Tests
+Known limits, also stated on `IsTransportFailure`:
 
-- `TestIsTransportFailure` gains hand-built rows: a missing absolute path, a missing `file://` URL,
-  a missing relative path read against the command's directory and a clone of a missing path count;
-  an existing directory holding no repository and a local command do not.
-- `TestIsTransportFailure_RealGit` removes the bare origin and pins git's real stderr for push, fetch, ls-remote and clone,
-  then recreates it as an empty directory and pins that a push there is not a transport failure.
-- In fabricengine, a push of a never-pushed branch to a removed local origin writes one `transport` record and one mail.
-  The `other`-class push test now points origin at an existing directory holding no repository.
-- The reconcile lock test now asserts `Unreachable` per row.
-  Its missing-directory row expects no error and `Unreachable` set,
-  and a new row for an existing directory holding no repository expects the error.
+- A mount point left behind as an empty directory reads as a refusal.
+- A relative remote path with no separator reads as a refusal.
+- A relative path is read against the directory git ran in,
+  which matches git for push, fetch, pull and ls-remote only at the worktree top.
+- An ssh remote naming a server path that is also absent on this machine reads as unreachable.
+- A mistyped or deleted local origin path is now treated as owed or retryable, not reported as a refusal.
+
+## To check by hand
+
+- An unconfigured remote name that holds a path separator now reads as unreachable
+  when no such path exists (`namesMissingLocalPath` in `internal/gitexec/transport.go`).
+  Decide whether that is acceptable.
+- `TestIsTransportFailure` in `internal/gitexec/transport_test.go` now creates a symlink and fails if it cannot.
+  On Windows that needs the symlink privilege.
 
 ## Merge danger
 
