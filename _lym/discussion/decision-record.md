@@ -285,6 +285,12 @@ Decision: The operator tests on one screen only: with DP-2 connected, KWin moves
 
 Rationale: The operator cannot test anything with two screens connected (operator, 2026-11-27), so the run proceeds on what one screen can observe rather than waiting.
 
+### Added after Discussion (parent, 2026-11-28): Probes run on the two enabled outputs DP-2 and HDMI-A-1
+
+Decision: This replaces the decision that every probe runs with eDP-1 as the only enabled output. The operator connected a second screen over HDMI (HDMI-A-1, 2048x1152 logical at 0,470) beside DP-2 (2560x1440 logical at 2048,0), with eDP-1 disabled, and asks that the probes run there. Adapt .scratch/kwin-probes/run-probes.sh: drop require_edp1_only and instead require DP-2 and HDMI-A-1 enabled; read-only as written; apply and apply-one-row place the throwaway windows on a non-current desktop grid of each output, and the cross-output move (workspace.sendClientToScreen, D3, D4) is observed from HDMI-A-1 to DP-2. This setup is also the laptop-off case, so its recording is taken again and cards 6 and 8 read it. A disabled output priority (eDP-1) is read from kscreen-doctor -j in this state. The open risk that KWin moved windows between virtual desktops on its own with two screens stays in Open risks; the probe output records any such move it sees.
+
+Rationale: The operator, 2026-11-28: two screens are fine to test now; the run gets the cross-output facts it lacked instead of leaving them unobserved.
+
 ## Constraints
 
 - Plasma 6.6.6, KWin 6.6.6, Wayland on Neve (`plasmashell --version`, `kwin_wayland --version`, `XDG_SESSION_TYPE`).
