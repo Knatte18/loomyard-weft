@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T12:46:42Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/darn-measure-rule-gaps/_lym/landing/summary.md",
+      "at": "2026-11-28T13:06:56Z",
+      "started_at": "2026-11-28T12:46:43Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T12:49:14.069044635Z",
+          "end": "2026-11-28T12:49:14.170972255Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T12:49:14.579035777Z",
+          "end": "2026-11-28T13:03:53.731722478Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T13:03:54.33815026Z",
+          "end": "2026-11-28T13:03:57.030015085Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T13:03:57.32457822Z",
+          "end": "2026-11-28T13:03:58.349790978Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T13:03:59.580814594Z",
+          "end": "2026-11-28T13:03:59.591608403Z"
+        }
+      ]
     }
   ],
   "product": {
