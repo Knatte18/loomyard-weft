@@ -1,6 +1,6 @@
 # Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys
 
-`config-key-comment-sweep` · Task · enhancement, docs
+`config-key-comment-sweep` · Task · enhancement, docs · starting · Worktree-Create
 
 Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
 
