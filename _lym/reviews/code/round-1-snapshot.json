@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "b6a155e25777bed8f0b5a8b8eb31f0162cf9867c",
+  "added_decisions": [
+    {
+      "title": "A first card runs the KWin probes",
+      "digest": "f4f51170f5705279067f76fe9887959f729bc2ed6601c8b44d790c0ccbae1f4c"
+    },
+    {
+      "title": "KWin probes run on one output; cross-output facts stay open risks",
+      "digest": "410d30e0bccb9441aae815b4685e6a38bb8f988708fad42ea4f8f61d6e3b66f1"
+    },
+    {
+      "title": "Probes run on the two enabled outputs DP-2 and HDMI-A-1",
+      "digest": "5833e2f79b79e6413ad0e6bc0629ec3fdccbe3df018a4ab53de980d121688508"
+    },
+    {
+      "title": "D6 clamp: leave windows tiled, no release and no frame setting",
+      "digest": "d9def8638197a29c4071e90f50ced04a167cde99d81dd3f98f9c7a64551b41ea"
+    }
+  ]
+}
