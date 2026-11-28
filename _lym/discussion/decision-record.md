@@ -257,6 +257,13 @@ Rationale: The board's standing rule, kept by the operator's board policy, is th
 
 - D11 asks the run's parent to run `lym heddle set` for the `nicknames` entry once the run lands; the entry asks the task to add it, and no card of the run can.
 
+<!-- lym:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/discussion/round-3-review.md; fixer report: _lym/reviews/discussion/round-3-fixer-report.md.
+  - motif-clear-serves-state-board-refuses (class design, severity BLOCKING, open in rounds 3)
+  - motif-standing-pair-way-forward-loops (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - D1, D2: the expanded tapestry recipe's rows equal the Motif block's rows followed by the Jacquard block's rows, in order with the same edges, and jacquard's top-level keys other than `entry` equal tapestry's (tier 0, `internal/loomrecipe`).
