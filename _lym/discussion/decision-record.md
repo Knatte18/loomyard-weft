@@ -27,4 +27,16 @@ Confirm each against the code with a test that fails first, and fix the confirme
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - catchup-no-pair-call-site-untested (class design, severity MEDIUM, open in rounds 1)
+  - doc-overstates-settle-callers (class consistency, severity MEDIUM, open in rounds 1)
+  - existing-hub-advice-partial-clone (class design, severity MEDIUM, open in rounds 1)
+  - reset-refusal-local-tags-and-pending-teardowns (class design, severity MEDIUM, open in rounds 1)
+  - reset-refusal-misses-prime-uncommitted-stash-detached (class design, severity MEDIUM, open in rounds 1)
+  - summary-merge-danger-understated (class consistency, severity MEDIUM, open in rounds 1)
+  - sweep-failed-tag-push-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
