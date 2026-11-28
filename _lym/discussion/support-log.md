@@ -71,7 +71,7 @@ _No rounds yet._
 - Q4 (auto-pick): Where does the batch gate run? — In the leader's own task worktree, detached at the chain tip, restored on every exit and on resume. Rationale: only a hub-child worktree resolves for the gate.
 - Q5 (auto-pick): How is a failure split? — A binary search for the first failing prefix under the same lock; the prefix before it lands. Rationale: the entry's bisection, at about log2(n) gates, revised after the lens review.
 - Q6 (auto-pick): How does a culprit reach its fixer? — An outcome `failed` on its entry; its own Finalize runs today's path alone. Rationale: a fixer works only in its own worktree.
-- Q7 (auto-pick): What is the cap? — `landing.batch_max`, default 4, 1 disables batching. Rationale: bounds bisection at three extra gates.
+- Q7 (auto-pick): What is the cap? — `landing.batch_max`, default 4, 1 disables batching. Rationale: bounds bisection at two extra gates.
 - Q8 (auto-pick): What happens to `landing.finalize_lost_races`? — Removed, no reinterpretation; the hub base does not set it. Rationale: the loop it bounds is gone.
 - Q9 (auto-pick): Do pull-request landings batch? — No. Rationale: GitHub merges them one at a time, so they cannot land as gated.
 - Q10 (auto-pick): Who writes each ledger landing? — The leader, for every entry it lands, right after the move; each run does its other landing records itself. Rationale: the parent is never ahead by a non-owed commit; revised after the lens review.
