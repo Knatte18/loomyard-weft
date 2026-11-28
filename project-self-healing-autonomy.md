@@ -1,9 +1,9 @@
 # P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-Rendered 2026-11-28 10:11 UTC; every age below is as of then.
+Rendered 2026-11-28 10:14 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 31m · Owner `neve`
+[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 34m · Owner `neve`
 
 Groups the entries filed from the Sketch `self-healing-runs`: stop-settlement-table, autonomy-unattended-level, loom-verbs-await-park, stop-halt-count, dobby-pause-lift-resume, driver-settles-stops, arbiter-budget-escalations, severe-halt-slack-post, idle-notice-correct-waits, dobby-stall-chase, orch-unattended-rules.
 
@@ -14,28 +14,28 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T29 | 31m<br>23m | dobby, config, cwd, board, orch, slack, loom |
+| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T29 | 34m<br>26m | dobby, config, cwd, board, orch, slack, loom |
 
 ## Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · solid | T21 | 31m<br>24m | shed, loom, batten |
+| T12 | **The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · solid | T21 | 34m<br>26m | shed, loom, batten |
 
 ## Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 31m<br>24m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
+| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 34m<br>26m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
 
 ## Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2<br>T19 | 31m<br>24m | dobby, tender, batten, slack, creel, shuttle, loom, config |
+| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2<br>T19 | 34m<br>26m | dobby, tender, batten, slack, creel, shuttle, loom, config |
 
 ## Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 31m<br>24m | orch, heddle |
+| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 34m<br>26m | orch, heddle |
