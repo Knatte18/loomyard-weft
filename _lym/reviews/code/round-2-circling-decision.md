@@ -2,6 +2,6 @@
 round: 2
 decision: accept
 cause: decision
-settled: false
+settled: true
 automatic: false
 ---

@@ -1,0 +1,1295 @@
+diff --git a/internal/beamcli/dobbyautonomystamps_test.go b/internal/beamcli/dobbyautonomystamps_test.go
+new file mode 100644
+index 000000000..bfb14f2d5
+--- /dev/null
++++ b/internal/beamcli/dobbyautonomystamps_test.go
+@@ -0,0 +1,55 @@
++// dobbyautonomystamps_test.go pins when a refused run's episode lets the refusal be posted again.
++// It is in package beamcli, since no hub can be made to fail a read or a post between two stamps.
++
++package beamcli
++
++import (
++	"errors"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestRunAutonomyStamps_PostsARefusalOncePerEpisode feeds one run's reads through the refusal episode in order.
++func TestRunAutonomyStamps_PostsARefusalOncePerEpisode(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	refused := errors.New("refused value")
++	type read struct {
++		refusal   error
++		succeeded bool
++		postFails bool
++	}
++	tests := []struct {
++		name      string
++		reads     []read
++		wantPosts int
++	}{
++		{"RepeatedRefusal", []read{{refusal: refused}, {refusal: refused}}, 1},
++		{"FailureWithNoRefusalKeepsTheEpisode", []read{{refusal: refused}, {}, {refusal: refused}}, 1},
++		{"SuccessfulReadEndsTheEpisode", []read{{refusal: refused}, {succeeded: true}, {refusal: refused}}, 2},
++		{"FailedPostIsTriedAgain", []read{{refusal: refused, postFails: true}, {refusal: refused}, {refusal: refused}}, 2},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			posts, postFails := 0, false
++			stamps := &runAutonomyStamps{post: func(string) error {
++				posts++
++				if postFails {
++					return errors.New("no orch")
++				}
++				return nil
++			}}
++			for _, r := range tt.reads {
++				postFails = r.postFails
++				stamps.tellRefusal("task1", r.refusal, r.succeeded)
++			}
++			if posts != tt.wantPosts {
++				t.Errorf("posts after %+v = %d; want %d", tt.reads, posts, tt.wantPosts)
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 057313753..e8c8da9e6 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -136,6 +136,59 @@ func requirePosted(posted bool, err error) error {
+ 	return nil
+ }
+ 
++// runAutonomyStamps stamps a dobby's mails about a run with the run's beam.autonomy level, read as each mail is built.
++// A run whose value is refused is stamped false, and the refusal goes to the dobby's orch through post once per episode,
++// so a mistyped level does not pass unseen.
++// The episode ends at the run's next read that succeeds.
++// It is safe for concurrent use.
++type runAutonomyStamps struct {
++	worktree *lymcwd.Location
++	post     func(line string) error
++	mu       sync.Mutex
++	// told holds, for each run with an open episode, the refusal mail that episode has sent or is sending.
++	told map[string]*string
++}
++
++// stamp returns line stamped with the autonomy level of the run slug, telling the orch of a refused value first.
++func (s *runAutonomyStamps) stamp(slug, line string) string {
++	level, refusal, read := hubgeom.AutonomyWithRefusal(s.worktree, slug)
++	s.tellRefusal(slug, refusal, read)
++	return orchcli.StampAutonomy(line, level)
++}
++
++// tellRefusal posts the run slug's refusal unless the open episode already has.
++// A successful read ends the episode.
++// A failed read with no refusal leaves the episode as it is.
++// A post that fails leaves the episode untold, so the run's next refused read posts again.
++// The post runs unlocked, so a slow one holds up no other mail.
++// A mail of the same run stamped while the post runs may go out ahead of it.
++func (s *runAutonomyStamps) tellRefusal(slug string, refusal error, read bool) {
++	s.mu.Lock()
++	if read {
++		delete(s.told, slug)
++	}
++	if refusal == nil || s.told[slug] != nil {
++		s.mu.Unlock()
++		return
++	}
++	line := fmt.Sprintf("the %s of run %s is refused, so its notices carry autonomy: %s until it is fixed: %v", autonomyName(), slug, dobbyengine.AutonomyOff, refusal)
++	if s.told == nil {
++		s.told = map[string]*string{}
++	}
++	s.told[slug] = &line
++	s.mu.Unlock()
++
++	if err := s.post(line); err != nil {
++		s.mu.Lock()
++		// A successful read during the post may have ended this episode, and a later refusal opened another.
++		if s.told[slug] == &line {
++			delete(s.told, slug)
++		}
++		s.mu.Unlock()
++		logger.Warn("beamcli: a refused "+autonomyName()+" value was not posted to the orch", "run", slug, "error", err)
++	}
++}
++
+ // registerDobby records this process as the dobby of geom in the run-process registry under runProcDir.
+ // The owner is the beam's slug, so the pair teardown of a landed beam ends its dobby;
+ // the prime's dobby has the hub owner instead.
+@@ -325,9 +378,12 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 		return battencli.DobbyPairSlugs(prime, geom, parents)
+ 	})
+ 	underHold := orchcli.UnderOwnHold(prime)
++	autonomy := &runAutonomyStamps{worktree: worktree, post: func(line string) error {
++		return requirePosted(orchcli.NotifyFromScoped(worktree, geom.Slug, dobbyProgram, line))
++	}}
+ 	runNotices := battencli.DobbyRunNotices(prime, pause.RecordPath, quiet)
+ 	runNotices.Post = func(_ context.Context, slug, line string) error {
+-		stamped := orchcli.WithRunAutonomy(worktree, slug, line)
++		stamped := autonomy.stamp(slug, line)
+ 		return requirePosted(orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, runNoticeTags(slug), stamped))
+ 	}
+ 	deps := dobbyengine.Deps{
+@@ -417,7 +473,7 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 			},
+ 			// Untagged, so no watch line replaces another unread one and a run's teardown drops none.
+ 			Post: func(_ context.Context, slug, line string) (bool, error) {
+-				stamped := orchcli.WithRunAutonomy(worktree, slug, line)
++				stamped := autonomy.stamp(slug, line)
+ 				return orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, creelengine.PostTags{}, stamped)
+ 			},
+ 		},
+@@ -433,7 +489,7 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 			Tree:       proc.TreeSample,
+ 			MarkedPIDs: proc.PIDsWithEnv,
+ 			Post: func(_ context.Context, slug, line string) error {
+-				stamped := orchcli.WithRunAutonomy(worktree, slug, line)
++				stamped := autonomy.stamp(slug, line)
+ 				return requirePosted(orchcli.NotifyRunFrom(worktree, geom.Slug, dobbyProgram, gateHoldTags(slug), stamped))
+ 			},
+ 		},
+diff --git a/internal/beamcli/dobbynoticestamp_integration_test.go b/internal/beamcli/dobbynoticestamp_integration_test.go
+index 7a6819ad1..4ad36f720 100644
+--- a/internal/beamcli/dobbynoticestamp_integration_test.go
++++ b/internal/beamcli/dobbynoticestamp_integration_test.go
+@@ -28,7 +28,9 @@ import (
+ // TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy pins the autonomy stamp on a dobby's mails about a run:
+ // the gate-hold notice, the run notice and the watch line.
+ // The prime's dobby signs unscoped and a beam's dobby signs in its own scope, and both stamp the run "task1".
+-// The value is read from the run's beam.yaml when each mail is built.
++// The level is read from the run's beam.yaml when each mail is built.
++// A refused value stamps false, and the dobby tells its orch of the refusal once, before the first mail it stamps.
++// A read that succeeds ends that episode, so a later refusal is told again.
+ // A watch line carries no tags, so no mail here replaces another unread one.
+ // It runs without t.Parallel: the strand environment variable is process-global.
+ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+@@ -56,14 +58,20 @@ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 		t.Fatalf("lymcwd.ResolveWorktree(task1) = %v; want nil", err)
+ 	}
+ 
++	// refusalPrefix opens the dobby's mail telling its orch of the run's refused value.
++	// The rest names the setting file's path, so the mail is matched by its opening alone.
++	const refusalPrefix = "the beam.autonomy of run task1 is refused, so its notices carry autonomy: false"
+ 	tests := []struct {
+-		name     string
+-		dobby    string
+-		autonomy string
+-		wantFrom string
++		name string
++		// autonomy is the run's beam.yaml value, and wantStamp the level its mails carry.
++		dobby, autonomy, wantStamp, wantFrom string
++		// wantRefusal says the dobby tells its orch of the refused value once, before the first stamped mail.
++		wantRefusal bool
+ 	}{
+-		{"PrimeDobbyOn", prime.WorktreeName, "true", slack.Shortname + ":DOBBY"},
+-		{"BeamDobbyOff", "task1", "false", slack.Shortname + ":task1:DOBBY"},
++		{"PrimeDobbyOn", prime.WorktreeName, "true", "true", slack.Shortname + ":DOBBY", false},
++		{"BeamDobbyOff", "task1", "false", "false", slack.Shortname + ":task1:DOBBY", false},
++		{"PrimeDobbyUnattended", prime.WorktreeName, "unattended", "unattended", slack.Shortname + ":DOBBY", false},
++		{"BeamDobbyRefused", "task1", "maybe", "false", slack.Shortname + ":task1:DOBBY", true},
+ 	}
+ 	type mail struct{ from, subject string }
+ 	var want []mail
+@@ -80,26 +88,55 @@ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+ 			t.Fatalf("MkdirAll(%q) = %v; want nil", filepath.Dir(path), err)
+ 		}
+-		if err := os.WriteFile(path, []byte("autonomy: "+tt.autonomy+"\n"), 0o644); err != nil {
+-			t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++		writeLevel := func(value string) {
++			t.Helper()
++			if err := os.WriteFile(path, []byte("autonomy: "+value+"\n"), 0o644); err != nil {
++				t.Fatalf("WriteFile(%q) = %v; want nil", path, err)
++			}
++		}
++		writeLevel(tt.autonomy)
++		if tt.wantRefusal {
++			want = append(want, mail{tt.wantFrom, refusalPrefix})
+ 		}
+ 		holdLine := tt.name + ": a gate slot is held"
+ 		if err := deps.GateHolds.Post(t.Context(), "task1", holdLine); err != nil {
+ 			t.Fatalf("%s: GateHolds.Post = %v; want nil", tt.name, err)
+ 		}
+-		want = append(want, mail{tt.wantFrom, holdLine + "; autonomy: " + tt.autonomy})
++		want = append(want, mail{tt.wantFrom, holdLine + "; autonomy: " + tt.wantStamp})
+ 
+ 		line := tt.name + ": the driver died"
+ 		if err := deps.RunNotices.Post(t.Context(), "task1", line); err != nil {
+ 			t.Fatalf("%s: RunNotices.Post = %v; want nil", tt.name, err)
+ 		}
+-		want = append(want, mail{tt.wantFrom, line + "; autonomy: " + tt.autonomy})
++		want = append(want, mail{tt.wantFrom, line + "; autonomy: " + tt.wantStamp})
+ 
+ 		watchLine := tt.name + ": the run halted"
+ 		if posted, err := deps.RunWatch.Post(t.Context(), "task1", watchLine); !posted || err != nil {
+ 			t.Fatalf("%s: RunWatch.Post = %v, %v; want true, nil", tt.name, posted, err)
+ 		}
+-		want = append(want, mail{tt.wantFrom, watchLine + "; autonomy: " + tt.autonomy})
++		want = append(want, mail{tt.wantFrom, watchLine + "; autonomy: " + tt.wantStamp})
++
++		if !tt.wantRefusal {
++			continue
++		}
++		// These reads go through the same deps, which hold the open episode.
++		// They post watch lines, since a second run notice would replace the unread one above.
++		for _, later := range []struct {
++			autonomy, line string
++			wantRefusal    bool
++		}{
++			{"false", tt.name + ": the value is fixed", false},
++			{tt.autonomy, tt.name + ": the value is refused again", true},
++		} {
++			writeLevel(later.autonomy)
++			if posted, err := deps.RunWatch.Post(t.Context(), "task1", later.line); !posted || err != nil {
++				t.Fatalf("%s: RunWatch.Post = %v, %v; want true, nil", later.line, posted, err)
++			}
++			if later.wantRefusal {
++				want = append(want, mail{tt.wantFrom, refusalPrefix})
++			}
++			want = append(want, mail{tt.wantFrom, later.line + "; autonomy: false"})
++		}
+ 	}
+ 
+ 	reader, err := creelcli.NewProgramClient(prime, "CHECK")
+@@ -113,7 +150,11 @@ func TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy(t *testing.T) {
+ 	var got []mail
+ 	for _, entry := range entries {
+ 		if entry.Event == "posted" {
+-			got = append(got, mail{entry.From, entry.Subject})
++			subject := entry.Subject
++			if strings.HasPrefix(subject, refusalPrefix) {
++				subject = refusalPrefix
++			}
++			got = append(got, mail{entry.From, subject})
+ 		}
+ 		if entry.Event == "undelivered" && entry.Reason == creelengine.SupersededReason {
+ 			t.Errorf("message %d was superseded; want every mail standing unread", entry.ID)
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 53bd38410..07e22fbc9 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -213,6 +213,9 @@
+ // so the pair teardown of a landed beam can end that beam's dobby.
+ // It prints `already_running` when the lock stays held past the lock wait.
+ //
++// Its gate-hold notices, run notices and watch lines carry the run's beam.autonomy level, read as each is built.
++// A run whose value is refused is stamped false, and the dobby posts the refusal to its orch once per episode.
++//
+ // A path that is neither the prime nor a local pair whose origin record carries the beam mark is refused.
+ // The refusal names `lym beam start` and comes before anything is registered or locked.
+ // A hand invocation therefore can do no more than `lym beam start` does.
+diff --git a/internal/beamcli/keynames.go b/internal/beamcli/keynames.go
+index 7d5880a89..ad0fdd96e 100644
+--- a/internal/beamcli/keynames.go
++++ b/internal/beamcli/keynames.go
+@@ -12,6 +12,11 @@ func pullRequestName() string {
+ 	return configengine.KeyName(beamsetting.Module, beamsetting.PullRequestKey)
+ }
+ 
++// autonomyName returns the full name of the beam key that decides how far the orch settles a run's halts.
++func autonomyName() string {
++	return configengine.KeyName(beamsetting.Module, beamsetting.AutonomyKey)
++}
++
+ // maxRunsName returns the full name of the beam key bounding the runs a dobby drives at once.
+ func maxRunsName() string {
+ 	return configengine.KeyName(beamsetting.Module, "max_runs")
+diff --git a/internal/beamsetting/beamsetting.go b/internal/beamsetting/beamsetting.go
+index 9f1e301cc..c12d8fdf0 100644
+--- a/internal/beamsetting/beamsetting.go
++++ b/internal/beamsetting/beamsetting.go
+@@ -13,8 +13,7 @@ const (
+ 	// LandNoticeKey decides whether dobby posts a line to the orch once a task's run lands or ends without landing.
+ 	// A landed motif run's line goes whatever it reads.
+ 	LandNoticeKey = "land_notice"
+-	// AutonomyKey decides whether the orch settles every halt of a task's runs.
+-	// Under it the orch reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
++	// AutonomyKey decides how far the orch settles the halts of a task's runs without the operator.
+ 	AutonomyKey = "autonomy"
+ 	// RunWatchKey decides which changes of a task's run dobby mails the orch as a watch line.
+ 	RunWatchKey = "run_watch"
+@@ -54,6 +53,23 @@ const (
+ 	LandNoticeOff = "off"
+ )
+ 
++// The values of beam.autonomy.
++// false and true are YAML booleans in a layer, and unattended is text.
++const (
++	// AutonomyOff relays to the operator every halt the orch does not settle.
++	AutonomyOff = "false"
++	// AutonomyOn has the orch settle every halt.
++	// It reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
++	AutonomyOn = "true"
++	// AutonomyUnattended has the orch settle every halt and never ask the operator; only a severe halt reaches them.
++	AutonomyUnattended = "unattended"
++)
++
++// AutonomyValues returns every value beam.autonomy takes.
++func AutonomyValues() []string {
++	return []string{AutonomyOff, AutonomyOn, AutonomyUnattended}
++}
++
+ // PullRequestValues returns every value beam.pull_request takes.
+ func PullRequestValues() []string {
+ 	return []string{PullRequestReview, PullRequestOff, PullRequestTrail, PullRequestMergeIn}
+diff --git a/internal/boardengine/beammodes.go b/internal/boardengine/beammodes.go
+index 3a953de41..bb41b54e1 100644
+--- a/internal/boardengine/beammodes.go
++++ b/internal/boardengine/beammodes.go
+@@ -26,7 +26,7 @@ type BeamModes struct {
+ 
+ // BeamMode is how one beam, or the root, runs its members.
+ type BeamMode struct {
+-	// Autonomy is on when the orch settles every halt of the members' runs, and off otherwise.
++	// Autonomy is the members' beam.autonomy level as the board shows it: off, on or unattended.
+ 	Autonomy SettingValue
+ 	// PullRequest is beam.pull_request as it resolves for the members.
+ 	PullRequest SettingValue
+diff --git a/internal/dobbyengine/config.go b/internal/dobbyengine/config.go
+index 0fa909025..8a12cc3f7 100644
+--- a/internal/dobbyengine/config.go
++++ b/internal/dobbyengine/config.go
+@@ -7,6 +7,7 @@ import (
+ 	"fmt"
+ 	"math"
+ 	"strconv"
++	"strings"
+ 
+ 	"gopkg.in/yaml.v3"
+ 
+@@ -30,11 +31,31 @@ const (
+ 	// LandNoticeKey decides whether dobby posts a line to the orch once a task's run lands or ends without landing.
+ 	// A landed motif run's line goes whatever it reads.
+ 	LandNoticeKey = beamsetting.LandNoticeKey
+-	// AutonomyKey decides whether the orch settles every halt of a task's runs.
+-	// Under it the orch reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
++	// AutonomyKey decides how far the orch settles the halts of a task's runs without the operator.
+ 	AutonomyKey = beamsetting.AutonomyKey
+ )
+ 
++// AutonomyLevel is a beam.autonomy level: how far the orch settles the halts of a task's runs without the operator.
++// Its text is the value a layer sets, and a halt notice's autonomy stamp carries it.
++type AutonomyLevel string
++
++// The levels of beam.autonomy, declared once in beamsetting.
++const (
++	// AutonomyOff relays to the operator every halt the orch does not settle.
++	AutonomyOff AutonomyLevel = beamsetting.AutonomyOff
++	// AutonomyOn has the orch settle every halt.
++	// It reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
++	AutonomyOn AutonomyLevel = beamsetting.AutonomyOn
++	// AutonomyUnattended has the orch settle every halt and never ask the operator; only a severe halt reaches them.
++	AutonomyUnattended AutonomyLevel = beamsetting.AutonomyUnattended
++)
++
++// On reports whether the level is true or unattended, the two under which the orch settles halts itself.
++// A reader that asks only whether autonomy is on reads it through On.
++func (level AutonomyLevel) On() bool {
++	return level == AutonomyOn || level == AutonomyUnattended
++}
++
+ // The values of beam.pull_request, declared once in beamsetting.
+ const (
+ 	// PullRequestReview lands through a pull request whose review ends on the operator's word.
+@@ -125,7 +146,7 @@ func ConfigSpec() configengine.Spec {
+ // So is a beam.gate_hold_factor that is negative or not finite, and a beam.gate_hold_min below 1.
+ // A resolved per-task key holding a value it does not take is refused too.
+ // beam.pull_request takes review, off, trail or merge-in, and beam.land_notice takes on or off.
+-// beam.run_watch takes stops, rows or off, and beam.autonomy takes a YAML boolean.
++// beam.run_watch takes stops, rows or off, and beam.autonomy takes false, true or unattended.
+ // A write the per-task lookup would refuse is therefore refused when it is made.
+ func LoadConfig(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.Load(dirs, ConfigSpec())
+@@ -192,13 +213,17 @@ func CheckLocalValues(document []byte) error {
+ // checkTaskSetting returns the per-task key's value as text, or refuses a value its key does not take.
+ // where names the file or layer the value was read from, for the refusal.
+ // A refusal is marked [configengine.ErrInvalid] and names the key, the values it takes and the way forward.
+-// beam.autonomy takes a YAML boolean and answers "true" or "false".
++// beam.autonomy takes a YAML boolean, answered "true" or "false", or the text unattended.
+ func checkTaskSetting(key string, value any, where string) (string, error) {
+ 	if key == AutonomyKey {
+ 		if flag, isBool := value.(bool); isBool {
+ 			return strconv.FormatBool(flag), nil
+ 		}
+-		return "", configengine.MarkInvalid(fmt.Errorf("config key %q in %s is %v: must be true or false; way forward: fix it with `lym config beam --set %s=<true|false>` in that worktree, or in the task's run_settings for its next run", keyName(key), where, value, key))
++		if text, isText := value.(string); isText && text == beamsetting.AutonomyUnattended {
++			return text, nil
++		}
++		levels := beamsetting.AutonomyValues()
++		return "", configengine.MarkInvalid(fmt.Errorf("config key %q in %s is %v: must be one of %v; way forward: fix it with `lym config beam --set %s=<%s>` in that worktree, or in the task's run_settings for its next run", keyName(key), where, value, levels, key, strings.Join(levels, "|")))
+ 	}
+ 	allowed := beamsetting.LandNoticeValues()
+ 	switch key {
+diff --git a/internal/dobbyengine/config_test.go b/internal/dobbyengine/config_test.go
+index d43439930..dd8490781 100644
+--- a/internal/dobbyengine/config_test.go
++++ b/internal/dobbyengine/config_test.go
+@@ -5,6 +5,7 @@
+ package dobbyengine
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -62,7 +63,6 @@ func TestLoadConfig(t *testing.T) {
+ 		{name: "an unknown pull_request is refused naming the key and the way forward", worktree: "pull_request: maybe\n", wantErr: []string{"pull_request", "maybe", "lym config beam --set pull_request="}},
+ 		{name: "a retired land_notice of all is refused naming the key and the way forward", worktree: "land_notice: all\n", wantErr: []string{"land_notice", "all", "lym config beam --set land_notice="}},
+ 		{name: "a retired land_notice of per-task is refused naming the key and the way forward", local: "land_notice: per-task\n", wantErr: []string{"land_notice", "per-task", "lym config beam --set land_notice="}},
+-		{name: "a non-boolean autonomy is refused naming the key and the way forward", worktree: "autonomy: maybe\n", wantErr: []string{"autonomy", "true or false", "lym config beam --set autonomy="}},
+ 		{name: "a negative board_tidy_every is refused naming the key", worktree: "board_tidy_every: -1\n", wantErr: []string{"board_tidy_every", "lym config beam --set"}},
+ 		{name: "a negative task_headroom is refused naming the key", worktree: "task_headroom: -1\n", wantErr: []string{"task_headroom", "lym config beam --set"}},
+ 		{name: "a worktree layer's adopt_fix_tries resolves as set", worktree: "adopt_fix_tries: 1\n", want: defaultsWith(func(c *Config) { c.AdoptFixTries = 1 })},
+@@ -118,3 +118,69 @@ func TestLoadConfig(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestAutonomyLevels_EveryCheckingPathTakesTheThreeLevels pins one value set for every checking path.
++// The lookup, the load's check and the local values check take false, true and unattended alike.
++// Each refuses any other value the same way.
++// The local values check is what a board run_settings goes through, so a boolean there still reads.
++func TestAutonomyLevels_EveryCheckingPathTakesTheThreeLevels(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name     string
++		document string
++		// want is the level the lookup answers; wantOn is what that level's On reports.
++		want   AutonomyLevel
++		wantOn bool
++		// wantRefused says every path refuses the value, and the lookup then reads AutonomyOff.
++		wantRefused bool
++	}{
++		{name: "the boolean false reads off", document: "autonomy: false\n", want: AutonomyOff},
++		{name: "the boolean true reads on", document: "autonomy: true\n", want: AutonomyOn, wantOn: true},
++		{name: "unattended reads unattended", document: "autonomy: unattended\n", want: AutonomyUnattended, wantOn: true},
++		{name: "a quoted unattended reads unattended", document: "autonomy: \"unattended\"\n", want: AutonomyUnattended, wantOn: true},
++		{name: "an unknown text is refused", document: "autonomy: maybe\n", want: AutonomyOff, wantRefused: true},
++		{name: "the text true is refused", document: "autonomy: \"true\"\n", want: AutonomyOff, wantRefused: true},
++		{name: "a number is refused", document: "autonomy: 1\n", want: AutonomyOff, wantRefused: true},
++	}
++	checkRefusal := func(t *testing.T, path string, err error) {
++		t.Helper()
++		if err == nil {
++			t.Errorf("%s = nil; want a refusal", path)
++			return
++		}
++		if !errors.Is(err, configengine.ErrInvalid) {
++			t.Errorf("%s = %v; want it marked configengine.ErrInvalid", path, err)
++		}
++		for _, want := range []string{"[false true unattended]", "lym config beam --set autonomy=<false|true|unattended>"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("%s = %q; want it to contain %q", path, err.Error(), want)
++			}
++		}
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			board, anchor := t.TempDir(), t.TempDir()
++			writeBeamLayer(t, board, ConfigTemplate())
++			writeBeamLayer(t, anchor, tt.document)
++
++			got, lookupErr := LookupAutonomy(TaskSettingChain{Anchors: []string{anchor}, Board: board})
++			if got != tt.want || got.On() != tt.wantOn {
++				t.Errorf("LookupAutonomy() = %q with On %v; want %q with On %v", got, got.On(), tt.want, tt.wantOn)
++			}
++			_, loadErr := LoadConfig(configengine.Dirs{Anchor: anchor, Board: board})
++			localErr := CheckLocalValues([]byte(tt.document))
++			if tt.wantRefused {
++				checkRefusal(t, "LookupAutonomy()", lookupErr)
++				checkRefusal(t, "LoadConfig()", loadErr)
++				checkRefusal(t, "CheckLocalValues()", localErr)
++				return
++			}
++			if lookupErr != nil || loadErr != nil || localErr != nil {
++				t.Errorf("LookupAutonomy(), LoadConfig(), CheckLocalValues() = %v, %v, %v; want nil from each", lookupErr, loadErr, localErr)
++			}
++		})
++	}
++}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index 3ffd040d9..afd3a2c1a 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -148,6 +148,8 @@
+ //     LookupWithSource also names the worktree of the chain whose own files set the value, or the hub-wide default.
+ //     A task's value is the one its own worktree's files set, else each parent worktree's own value up to the prime,
+ //     else the hub's default layer's, else the template's.
++//   - LookupAutonomy answers an AutonomyLevel: false, true or unattended.
++//     Every path that checks the key takes the three alike and refuses any other value, naming them.
+ //   - Each tick reads Deps.LandNotice for each listed run ahead of its Land row and remembers the reading.
+ //     A failed read keeps the last reading and is logged once per episode; a nil LandNotice reads every run as off.
+ //   - A run seen past its Land row that dobby remembered ahead of it with `beam.land_notice` on owes one line
+diff --git a/internal/dobbyengine/tasksetting.go b/internal/dobbyengine/tasksetting.go
+index fb1fe1d4a..c4a82533f 100644
+--- a/internal/dobbyengine/tasksetting.go
++++ b/internal/dobbyengine/tasksetting.go
+@@ -45,13 +45,16 @@ func LookupLandNotice(chain TaskSettingChain) (bool, error) {
+ 	return value == LandNoticeOn, err
+ }
+ 
+-// LookupAutonomy reports whether beam.autonomy is on for the task at the chain's head.
+-// Under it the orch settles every halt of the task's runs.
+-// It reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval.
++// LookupAutonomy returns the beam.autonomy level of the task at the chain's head: false, true or unattended.
++// It decides how far the orch settles the halts of the task's runs without the operator.
+ // A value the key does not take is refused, naming the file that set it.
+-func LookupAutonomy(chain TaskSettingChain) (bool, error) {
++// A refused value reads as AutonomyOff, the level at which the orch asks the operator.
++func LookupAutonomy(chain TaskSettingChain) (AutonomyLevel, error) {
+ 	value, err := lookupTaskSetting(chain, AutonomyKey)
+-	return value == "true", err
++	if err != nil {
++		return AutonomyOff, err
++	}
++	return AutonomyLevel(value), nil
+ }
+ 
+ // LookupRunWatch returns the beam.run_watch of the task at the chain's head: stops, rows or off.
+@@ -85,7 +88,7 @@ const HubWideSource = -1
+ // and the first that sets the key decides.
+ // With none set, the board's default layer decides, and then the template.
+ // An envsource marker in the winning value is expanded the way a load of beam.yaml expands it.
+-// beam.autonomy answers "true" or "false".
++// beam.autonomy answers "false", "true" or "unattended".
+ // A value the key does not take is refused, naming the file that set it.
+ func LookupWithSource(chain TaskSettingChain, key string) (value string, anchor int, err error) {
+ 	places := make([]configengine.Dirs, 0, len(chain.Anchors)+1)
+diff --git a/internal/dobbyengine/tasksetting_test.go b/internal/dobbyengine/tasksetting_test.go
+index f28f2e469..25ddabe2b 100644
+--- a/internal/dobbyengine/tasksetting_test.go
++++ b/internal/dobbyengine/tasksetting_test.go
+@@ -32,7 +32,10 @@ func lookupAsText(key string, chain TaskSettingChain) (string, error) {
+ 	if key == LandNoticeKey || key == AutonomyKey {
+ 		lookup := LookupLandNotice
+ 		if key == AutonomyKey {
+-			lookup = LookupAutonomy
++			lookup = func(chain TaskSettingChain) (bool, error) {
++				level, err := LookupAutonomy(chain)
++				return level.On(), err
++			}
+ 		}
+ 		on, err := lookup(chain)
+ 		if err != nil {
+@@ -186,8 +189,8 @@ func TestLookupTaskSettings(t *testing.T) {
+ 		if got, err := LookupLandNotice(chain); err != nil || got {
+ 			t.Errorf("LookupLandNotice() = %v, %v; want false", got, err)
+ 		}
+-		if got, err := LookupAutonomy(chain); err != nil || got {
+-			t.Errorf("LookupAutonomy() = %v, %v; want false", got, err)
++		if got, err := LookupAutonomy(chain); err != nil || got != AutonomyOff {
++			t.Errorf("LookupAutonomy() = %q, %v; want %q", got, err, AutonomyOff)
+ 		}
+ 		if got, source, err := LookupWithSource(chain, PullRequestKey); err != nil || got != "review" || source != HubWideSource {
+ 			t.Errorf("LookupWithSource(pull_request) = %q, %d, %v; want review, %d", got, source, err, HubWideSource)
+diff --git a/internal/dobbyengine/template.yaml b/internal/dobbyengine/template.yaml
+index 07abe9c4c..48399d297 100644
+--- a/internal/dobbyengine/template.yaml
++++ b/internal/dobbyengine/template.yaml
+@@ -4,7 +4,7 @@ board_tidy_timeout_min: 30  # the minutes the board-tidy agent may run before do
+ task_headroom: 500  # the fewest free tasks under the cgroup task limit (pids.max) for dobby to start a run; 0 never holds a start
+ pull_request: "review"  # per task: whether a task's landing goes through a GitHub pull request: review (one that waits, whatever beam.autonomy says, with a PR-Review agent session in the task's window, until the operator approves or merges it on GitHub or lym loom pr-continue ends the review on the operator's word), off (none, unless GitHub's rules for the parent branch require one), trail (always, squash-merged on GitHub at once with no agent and no review, so the parent keeps a trail of pull requests to backtrack through) or merge-in (none, a true merge keeping the merged commit); the task's run_settings, else the nearest worktree up to the prime that sets it, else the hub's default decides
+ land_notice: "off"  # per task: whether dobby posts a line to the orch once a task's run lands or ends without landing: on or off; a landed motif run's line, saying its entry is now a Sketch, goes whatever this reads; decided like beam.pull_request
+-autonomy: false  # per task: whether the orch settles every halt of the task's runs and reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval: true or false; decided like beam.pull_request
++autonomy: false  # per task: how far the orch settles the halts of the task's runs without the operator: false (it relays every halt it does not settle to the operator), true (it settles every halt and reaches the operator only for a severe halt, a merge-ready beam or a raddle split's approval) or unattended (it settles every halt and never asks the operator; only a severe halt reaches them); set unattended only once every machine of the hub runs a build that knows it, since an older build refuses the beam config while a layer holds it; decided like beam.pull_request
+ adopt_fix_tries: 3  # the most adopt fix tasks a failed adopt check files for this worktree's subject between two hand adopts; 0 files none
+ run_watch: "stops"  # per task: which changes of a task's run dobby mails the orch as a `[run watch]` line: stops, rows or off; decided like beam.pull_request
+ gate_hold_factor: 1.5  # dobby notices a gate slot a run holds past this many times its tier's gate.tiers.<tier>.timeout_min, in awake time; 0 sends no gate-hold notice
+diff --git a/internal/hubgeom/autonomy.go b/internal/hubgeom/autonomy.go
+index e172e7afc..aa35d1df2 100644
+--- a/internal/hubgeom/autonomy.go
++++ b/internal/hubgeom/autonomy.go
+@@ -4,8 +4,10 @@
+ package hubgeom
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/dotgit"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -15,23 +17,34 @@ import (
+ // autonomyFailures keeps one episode per worktree whose autonomy read failed, so a failure that repeats warns once.
+ var autonomyFailures logger.EpisodeSet
+ 
+-// Autonomy reports whether autonomy is on for the worktree slug, read at the moment of the call.
++// Autonomy returns the beam.autonomy level of the worktree slug, read at the moment of the call.
+ // A run's reader passes the run's own pair slug.
+ // An orch's reader passes its own worktree's name, so the lookup starts at its own worktree and never at its parent's.
+ // The prime's own name reads the prime's chain, the same as an empty slug.
+ // location is any worktree of the hub and only locates it.
+ // The prime is resolved from the hub's git files, so the reader spawns no git.
+-// Any failure reads false and warns once per episode.
++// Any failure reads AutonomyOff and warns once per episode.
+ // A failure is a prime that does not resolve, a chain that does not read, or a stack that does not load.
+-// False falls back to asking the operator and never to skipping one.
+-func Autonomy(location *lymcwd.Location, slug string) bool {
++// A value the key does not take is one of these failures.
++// AutonomyOff falls back to asking the operator and never to skipping one.
++func Autonomy(location *lymcwd.Location, slug string) dobbyengine.AutonomyLevel {
++	level, _, _ := AutonomyWithRefusal(location, slug)
++	return level
++}
++
++// AutonomyWithRefusal returns the level Autonomy returns, read and warned the same way.
++// When the read fails on a value the key does not take, it also returns that refusal.
++// The refusal names the file that set the value, the values the key takes and the way forward.
++// Every other failure comes back with a nil refusal.
++// read reports that the read succeeded, which a caller needs to tell a good value from a failure with no refusal.
++func AutonomyWithRefusal(location *lymcwd.Location, slug string) (level dobbyengine.AutonomyLevel, refusal error, read bool) {
+ 	name := slug
+ 	if name == "" {
+ 		name = location.WorktreeName
+ 	}
+ 	prime, err := PrimeWithoutGit(location)
+ 	if err != nil {
+-		return autonomyReadFailed(name, err)
++		return autonomyReadFailed(name, err), nil, false
+ 	}
+ 	if slug == prime.WorktreeName {
+ 		slug = ""
+@@ -41,21 +54,24 @@ func Autonomy(location *lymcwd.Location, slug string) bool {
+ 	}
+ 	chain, err := TaskSettingChain(prime, slug)
+ 	if err != nil {
+-		return autonomyReadFailed(name, err)
++		return autonomyReadFailed(name, err), nil, false
+ 	}
+-	on, err := dobbyengine.LookupAutonomy(chain)
++	level, err = dobbyengine.LookupAutonomy(chain)
+ 	if err != nil {
+-		return autonomyReadFailed(name, err)
++		if errors.Is(err, configengine.ErrInvalid) {
++			refusal = err
++		}
++		return autonomyReadFailed(name, err), refusal, false
+ 	}
+ 	autonomyFailures.Recover(name, "hubgeom: read autonomy recovered", "worktree", name)
+-	return on
++	return level, nil, true
+ }
+ 
+ // autonomyReadFailed warns of a failed read of the worktree name's autonomy, once per episode.
+-// It answers the false that a failed read reads as.
+-func autonomyReadFailed(name string, cause error) bool {
++// It answers the AutonomyOff that a failed read reads as.
++func autonomyReadFailed(name string, cause error) dobbyengine.AutonomyLevel {
+ 	autonomyFailures.Fail(name, "hubgeom: read autonomy failed, reading false", "worktree", name, "cause", cause)
+-	return false
++	return dobbyengine.AutonomyOff
+ }
+ 
+ // PrimeWithoutGit returns the Location of the hub's main worktree, the prime, from the hub's git files.
+diff --git a/internal/hubgeom/autonomy_integration_test.go b/internal/hubgeom/autonomy_integration_test.go
+index 1b8c756ed..c5ad95eec 100644
+--- a/internal/hubgeom/autonomy_integration_test.go
++++ b/internal/hubgeom/autonomy_integration_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -74,34 +75,39 @@ func TestAutonomy(t *testing.T) {
+ 		taskValue, beamValue, primeValue string
+ 		// slug is the worktree the reader is named.
+ 		slug string
+-		want bool
++		want dobbyengine.AutonomyLevel
+ 	}{
+-		{name: "a task true under a beam false reads true", taskValue: "true", beamValue: "false", slug: task, want: true},
+-		{name: "a task that sets nothing under a beam true reads true", beamValue: "true", slug: task, want: true},
+-		{name: "a task false under a beam true reads false", taskValue: "false", beamValue: "true", slug: task, want: false},
+-		{name: "the beam's own name starts at the beam, not at its parent", beamValue: "true", primeValue: "false", slug: beamPair, want: true},
+-		{name: "the prime's own name reads the prime's chain", primeValue: "true", slug: l.WorktreeName, want: true},
++		{name: "a task true under a beam false reads true", taskValue: "true", beamValue: "false", slug: task, want: dobbyengine.AutonomyOn},
++		{name: "a task that sets nothing under a beam true reads true", beamValue: "true", slug: task, want: dobbyengine.AutonomyOn},
++		{name: "a task false under a beam true reads false", taskValue: "false", beamValue: "true", slug: task, want: dobbyengine.AutonomyOff},
++		{name: "a task unattended under a beam true reads unattended", taskValue: "unattended", beamValue: "true", slug: task, want: dobbyengine.AutonomyUnattended},
++		{name: "the beam's own name starts at the beam, not at its parent", beamValue: "true", primeValue: "false", slug: beamPair, want: dobbyengine.AutonomyOn},
++		{name: "the prime's own name reads the prime's chain", primeValue: "true", slug: l.WorktreeName, want: dobbyengine.AutonomyOn},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			writeAutonomy(t, taskAnchor, tt.taskValue)
+ 			writeAutonomy(t, beamAnchor, tt.beamValue)
+ 			writeAutonomy(t, l.AnchorPath(), tt.primeValue)
+-			if got := hubgeom.Autonomy(l, tt.slug); got != tt.want {
+-				t.Errorf("Autonomy(%q) = %v; want %v", tt.slug, got, tt.want)
++			if got, refusal, read := hubgeom.AutonomyWithRefusal(l, tt.slug); got != tt.want || refusal != nil || !read {
++				t.Errorf("AutonomyWithRefusal(%q) = %q, %v, %v; want %q, nil, true", tt.slug, got, refusal, read, tt.want)
+ 			}
+ 		})
+ 	}
+ 
+ 	const warning = "hubgeom: read autonomy failed"
+-	t.Run("a refused value reads false and warns once", func(t *testing.T) {
++	t.Run("a refused value reads false, hands back its refusal and warns once", func(t *testing.T) {
+ 		logs := logcapture.Capture(t)
+ 		writeAutonomy(t, taskAnchor, "")
+ 		writeAutonomy(t, beamAnchor, `"yes"`)
+ 		writeAutonomy(t, l.AnchorPath(), "")
+-		for read := 1; read <= 2; read++ {
+-			if got := hubgeom.Autonomy(l, task); got {
+-				t.Errorf("Autonomy(%q) read %d = true; want false", task, read)
++		for call := 1; call <= 2; call++ {
++			got, refusal, read := hubgeom.AutonomyWithRefusal(l, task)
++			if got != dobbyengine.AutonomyOff || read {
++				t.Errorf("AutonomyWithRefusal(%q) call %d = %q, read %v; want %q, false", task, call, got, read, dobbyengine.AutonomyOff)
++			}
++			if refusal == nil || !strings.Contains(refusal.Error(), "lym config beam --set autonomy=") {
++				t.Errorf("AutonomyWithRefusal(%q) call %d refusal = %v; want one naming the way forward", task, call, refusal)
+ 			}
+ 		}
+ 		if got := strings.Count(logs.String(), warning); got != 1 {
+@@ -112,11 +118,11 @@ func TestAutonomy(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a location that is no git worktree reads false with a warning", func(t *testing.T) {
++	t.Run("a location that is no git worktree reads false with a warning and no refusal", func(t *testing.T) {
+ 		logs := logcapture.Capture(t)
+ 		plain := &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "au-plain", AnchorRel: "."}
+-		if got := hubgeom.Autonomy(plain, ""); got {
+-			t.Errorf("Autonomy(plain, \"\") = true; want false")
++		if got, refusal, read := hubgeom.AutonomyWithRefusal(plain, ""); got != dobbyengine.AutonomyOff || refusal != nil || read {
++			t.Errorf("AutonomyWithRefusal(plain, \"\") = %q, %v, %v; want %q, nil, false", got, refusal, read, dobbyengine.AutonomyOff)
+ 		}
+ 		if got := strings.Count(logs.String(), warning); got != 1 {
+ 			t.Errorf("warnings = %d; want 1 in %q", got, logs.String())
+diff --git a/internal/hubgeom/beammodes.go b/internal/hubgeom/beammodes.go
+index 7f6fefa25..37c7aef88 100644
+--- a/internal/hubgeom/beammodes.go
++++ b/internal/hubgeom/beammodes.go
+@@ -10,7 +10,6 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"path/filepath"
+-	"strconv"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+@@ -22,11 +21,12 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/pawlengine"
+ )
+ 
+-// The autonomy values the board files show, for beam.autonomy's true and false.
+-const (
+-	autonomyOnText  = "on"
+-	autonomyOffText = "off"
+-)
++// autonomyTexts are the autonomy values the board files show, by beam.autonomy level.
++var autonomyTexts = map[dobbyengine.AutonomyLevel]string{
++	dobbyengine.AutonomyOff:        "off",
++	dobbyengine.AutonomyOn:         "on",
++	dobbyengine.AutonomyUnattended: "unattended",
++}
+ 
+ // errBeamWorktreeAbsent marks a beam whose worktree is not on this machine, which a hub that spans machines expects.
+ var errBeamWorktreeAbsent = errors.New("the beam's worktree is not on this machine")
+@@ -130,17 +130,13 @@ func readBeamMode(prime *lymcwd.Location, slug string) (boardengine.BeamMode, er
+ }
+ 
+ // readBeamSettings reads beam.autonomy and beam.pull_request over chain, each with the worktree whose own files set it.
+-// Autonomy reads as on or off.
++// Autonomy reads as off, on or unattended.
+ func readBeamSettings(chain dobbyengine.TaskSettingChain) (boardengine.BeamMode, error) {
+ 	autonomy, err := readBeamSetting(chain, dobbyengine.AutonomyKey)
+ 	if err != nil {
+ 		return boardengine.BeamMode{}, err
+ 	}
+-	text := autonomyOffText
+-	if autonomy.Value == strconv.FormatBool(true) {
+-		text = autonomyOnText
+-	}
+-	autonomy.Value = text
++	autonomy.Value = autonomyTexts[dobbyengine.AutonomyLevel(autonomy.Value)]
+ 	pullRequest, err := readBeamSetting(chain, dobbyengine.PullRequestKey)
+ 	if err != nil {
+ 		return boardengine.BeamMode{}, err
+diff --git a/internal/hubgeom/beammodes_integration_test.go b/internal/hubgeom/beammodes_integration_test.go
+index f3c1cf29f..74052bfcb 100644
+--- a/internal/hubgeom/beammodes_integration_test.go
++++ b/internal/hubgeom/beammodes_integration_test.go
+@@ -53,7 +53,7 @@ func TestBeamModes(t *testing.T) {
+ 	}
+ 	writeBeamFile(t, h.BoardDir(), "autonomy: false\npull_request: \"off\"\n")
+ 	writeBeamFile(t, l.AnchorPath(), "autonomy: true\n")
+-	writeBeamFile(t, beamLocation.AnchorPath(), "pull_request: \"trail\"\n")
++	writeBeamFile(t, beamLocation.AnchorPath(), "autonomy: unattended\npull_request: \"trail\"\n")
+ 	const pullRequestURL = "https://github.com/example/repo/pull/12"
+ 	setPullRequest := func(rec *pawlengine.LandingRecord) error {
+ 		rec.PullRequest = &pawlengine.LandingPullRequest{Number: 12, URL: pullRequestURL}
+@@ -78,7 +78,7 @@ func TestBeamModes(t *testing.T) {
+ 			PullRequest: boardengine.SettingValue{Value: "off"},
+ 		},
+ 		Beams: map[string]boardengine.BeamMode{beam: {
+-			Autonomy:          boardengine.SettingValue{Value: "on", SetBy: boardengine.RootSubject},
++			Autonomy:          boardengine.SettingValue{Value: "unattended", SetBy: beam},
+ 			PullRequest:       boardengine.SettingValue{Value: "trail", SetBy: beam},
+ 			ParentBranch:      primeBranch,
+ 			PullRequestNumber: 12,
+diff --git a/internal/hubgeom/doc.go b/internal/hubgeom/doc.go
+index f612de977..455810e35 100644
+--- a/internal/hubgeom/doc.go
++++ b/internal/hubgeom/doc.go
+@@ -58,8 +58,11 @@
+ // OrchChainAbove is that list without the told worktree's own orch.
+ //
+ // Autonomy is the reader of `beam.autonomy` for runs and orchs.
+-// It answers for the worktree it is named, through TaskSettingChain and the per-task lookup, at the moment of the call.
++// It answers the level for the worktree it is named, through TaskSettingChain and the per-task lookup.
++// The level is false, true or unattended, read at the moment of the call.
+ // A failed read answers false and warns once per episode.
++// AutonomyWithRefusal also hands back a refused value's refusal, for a caller that tells the orch of it.
++// It reports whether the read succeeded too.
+ //
+ // BeamModes is the board's beam mode reader.
+ // It reads beam.autonomy and beam.pull_request for the root and each beam the way their runs read them.
+diff --git a/internal/loomcli/autonomy_integration_test.go b/internal/loomcli/autonomy_integration_test.go
+index a24d32999..551043e84 100644
+--- a/internal/loomcli/autonomy_integration_test.go
++++ b/internal/loomcli/autonomy_integration_test.go
+@@ -33,7 +33,7 @@ func writeConfigFile(t *testing.T, path, content string) {
+ // TestRunAutonomy_ForcesTheRunsKeysOverARealHub reads the run's autonomy from the task's beam.
+ // The task sets nothing itself.
+ // The layers hold the values autonomy forces away from.
+-// With beam.autonomy true for the beam, every reader of a forced key reads the forced value.
++// With beam.autonomy true or unattended for the beam, every reader of a forced key reads the forced value.
+ // With it false, every reader reads its layered value.
+ // The rows rewrite the one hub's beam file, so they run serially.
+ func TestRunAutonomy_ForcesTheRunsKeysOverARealHub(t *testing.T) {
+@@ -74,6 +74,7 @@ func TestRunAutonomy_ForcesTheRunsKeysOverARealHub(t *testing.T) {
+ 		forced bool
+ 	}{
+ 		{name: "the beam's autonomy true forces the task's keys", beamFile: "autonomy: true\n", forced: true},
++		{name: "the beam's autonomy unattended forces the task's keys", beamFile: "autonomy: unattended\n", forced: true},
+ 		{name: "the beam's autonomy false reads the layered values", beamFile: "autonomy: false\n"},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/loomcli/driftwiring.go b/internal/loomcli/driftwiring.go
+index c03245f96..72b409d40 100644
+--- a/internal/loomcli/driftwiring.go
++++ b/internal/loomcli/driftwiring.go
+@@ -97,8 +97,9 @@ func driftJudgeSessionOpen(location *lymcwd.Location) func() (bool, error) {
+ }
+ 
+ // runAutonomy reports whether autonomy is on for the run of l's worktree, read at the moment of the call.
++// Autonomy is on at the levels true and unattended.
+ func runAutonomy(l *lymcwd.Location) bool {
+-	return hubgeom.Autonomy(l, l.WorktreeName)
++	return hubgeom.Autonomy(l, l.WorktreeName).On()
+ }
+ 
+ // driftDeps builds the seams the Drift rows read over location's worktree.
+diff --git a/internal/loomcli/pawlwiring.go b/internal/loomcli/pawlwiring.go
+index 453f65e99..2e2080d3a 100644
+--- a/internal/loomcli/pawlwiring.go
++++ b/internal/loomcli/pawlwiring.go
+@@ -151,7 +151,7 @@ func pawlDeps(location *lymcwd.Location, slug string) (pawlengine.Deps, error) {
+ 			return shedrun.WriteWakeStamp(shedrun.WakeRecord(location, shedrun.SelfRunID), pawlengine.NameBeamAwait, at)
+ 		},
+ 		Notify:     notifyPosted,
+-		Autonomous: func() bool { return hubgeom.Autonomy(location, slug) },
++		Autonomous: func() bool { return hubgeom.Autonomy(location, slug).On() },
+ 		HoldsCommits: func() (bool, error) {
+ 			hub, err := prime()
+ 			if err != nil {
+diff --git a/internal/loomcli/pawlwiring_integration_test.go b/internal/loomcli/pawlwiring_integration_test.go
+index 7355020ca..b830bf1bd 100644
+--- a/internal/loomcli/pawlwiring_integration_test.go
++++ b/internal/loomcli/pawlwiring_integration_test.go
+@@ -1,11 +1,12 @@
+-// pawlwiring_integration_test.go drives the production closures of a beam's landing record.
+-// It runs over a real beam pair and real git.
++// pawlwiring_integration_test.go drives the production closures of a pawl run over a real beam pair and real git:
++// its landing record seams and its autonomy seam.
+ 
+ package loomcli
+ 
+ import (
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -18,6 +19,29 @@ import (
+ 
+ const beamPullRequestURL = "https://github.com/o/r/pull/7"
+ 
++// TestPawlDeps_AutonomousReadsUnattendedAsOn pins that the seam asks whether the beam's autonomy is on.
++func TestPawlDeps_AutonomousReadsUnattendedAsOn(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	beam, err := lymcwd.ResolveWorktree(h.PairCodeWorktree("b"))
++	if err != nil {
++		t.Fatalf("lymcwd.ResolveWorktree(b) error = %v; want nil", err)
++	}
++	writeConfigFile(t, configengine.ConfigFile(beam.AnchorPath(), "beam"), "autonomy: unattended\n")
++
++	deps, err := pawlDeps(beam, "b")
++	if err != nil {
++		t.Fatalf("pawlDeps(b) error = %v; want nil", err)
++	}
++
++	if !deps.Autonomous() {
++		t.Error("Autonomous() = false under beam.autonomy unattended; want true")
++	}
++}
++
+ // TestBeamLandingRecordSeams_DropRewritesTheRecordAndCommitsTheLandingDirectory asserts the seams:
+ // the read seam names the pull request the landing record holds,
+ // and the drop seam rewrites the record with none and commits the landing directory.
+diff --git a/internal/orchcli/notify.go b/internal/orchcli/notify.go
+index 184b94ff2..d764d6a00 100644
+--- a/internal/orchcli/notify.go
++++ b/internal/orchcli/notify.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/agentname"
+ 	"github.com/Knatte18/loomyard/internal/creelcli"
+ 	"github.com/Knatte18/loomyard/internal/creelengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+@@ -94,11 +95,16 @@ func NotifyRunFromHalt(from *lymcwd.Location, slug, program string, tags creelen
+ 	return NotifyRunFrom(from, "", program, tags, WithRunAutonomy(from, slug, line))
+ }
+ 
+-// WithRunAutonomy returns line followed by "; autonomy: true" or "; autonomy: false".
+-// The value is the autonomy the worktree slug reads at the call.
++// WithRunAutonomy returns line stamped with the autonomy level the worktree slug reads at the call.
+ // It stamps a notice a caller posts through NotifyRunFrom with its own signer scope.
+ func WithRunAutonomy(location *lymcwd.Location, slug, line string) string {
+-	return fmt.Sprintf("%s; autonomy: %t", line, hubgeom.Autonomy(location, slug))
++	return StampAutonomy(line, hubgeom.Autonomy(location, slug))
++}
++
++// StampAutonomy returns line followed by "; autonomy: " and level: false, true or unattended.
++// The orch a halt notice reaches handles the halt under the level its stamp names.
++func StampAutonomy(line string, level dobbyengine.AutonomyLevel) string {
++	return line + "; autonomy: " + string(level)
+ }
+ 
+ // NotifyAsker sends line as creel mail to the orch the agents of location reach as their parent.
+diff --git a/internal/orchcli/paths.go b/internal/orchcli/paths.go
+index 83ae6b765..d3de6a43d 100644
+--- a/internal/orchcli/paths.go
++++ b/internal/orchcli/paths.go
+@@ -4,6 +4,7 @@
+ package orchcli
+ 
+ import (
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+@@ -20,13 +21,27 @@ func PrimePaths(location *lymcwd.Location) orchengine.Paths {
+ 
+ // orchPaths returns every path orch operates on, rooted at location's anchor.
+ // It also sets the machine's presence record, which the rendered pointers read,
+-// and the autonomy of the orch's own worktree, read each time a pointer is built.
++// and the autonomy level of the orch's own worktree, read each time a pointer is built.
+ // A hub whose Slack geometry cannot be built leaves the presence path empty, which reads as no presence line.
+ func orchPaths(location *lymcwd.Location) orchengine.Paths {
+ 	paths := orchroute.Paths(location)
+ 	if geometry, err := hubgeom.SlackGeometry(location.HubPath); err == nil {
+ 		paths.SlackPresencePath = geometry.PresencePath
+ 	}
+-	paths.Autonomy = func() bool { return hubgeom.Autonomy(location, location.WorktreeName) }
++	paths.Autonomy = func() orchengine.AutonomyLevel {
++		return orchAutonomy(hubgeom.Autonomy(location, location.WorktreeName))
++	}
+ 	return paths
+ }
++
++// orchAutonomy returns the orch's autonomy level for a beam.autonomy level.
++// Any other value reads as off, the level at which the orch asks the operator.
++func orchAutonomy(level dobbyengine.AutonomyLevel) orchengine.AutonomyLevel {
++	switch level {
++	case dobbyengine.AutonomyOn:
++		return orchengine.AutonomyOn
++	case dobbyengine.AutonomyUnattended:
++		return orchengine.AutonomyUnattended
++	}
++	return orchengine.AutonomyOff
++}
+diff --git a/internal/orchcli/start_test.go b/internal/orchcli/start_test.go
+index a09926da0..d95d39e85 100644
+--- a/internal/orchcli/start_test.go
++++ b/internal/orchcli/start_test.go
+@@ -1598,7 +1598,7 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 			}
+ 			h.cli.cfg.PermissionMode = "bypass"
+ 			if c.autonomous {
+-				h.cli.paths.Autonomy = func() bool { return true }
++				h.cli.paths.Autonomy = func() orchengine.AutonomyLevel { return orchengine.AutonomyOn }
+ 			}
+ 			if c.presence {
+ 				h.cli.paths.SlackPresencePath = filepath.Join(t.TempDir(), "presence.json")
+@@ -1697,6 +1697,30 @@ func TestStart_ResumesTheRecordedSession(t *testing.T) {
+ 	}
+ }
+ 
++// TestOrchAutonomy_KeepsEachLevel pins that each beam.autonomy level reaches the orch's pointers as the same level.
++func TestOrchAutonomy_KeepsEachLevel(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	tests := []struct {
++		name  string
++		level dobbyengine.AutonomyLevel
++		want  orchengine.AutonomyLevel
++	}{
++		{"Off", dobbyengine.AutonomyOff, orchengine.AutonomyOff},
++		{"On", dobbyengine.AutonomyOn, orchengine.AutonomyOn},
++		{"Unattended", dobbyengine.AutonomyUnattended, orchengine.AutonomyUnattended},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := orchAutonomy(tt.level); got != tt.want {
++				t.Errorf("orchAutonomy(%q) = %d; want %d", tt.level, got, tt.want)
++			}
++		})
++	}
++}
++
+ // noTranscriptErr is a resume refusal for a session this machine holds no transcript of.
+ var noTranscriptErr = fmt.Errorf("shuttle: resume check: claudeengine: no transcript for that session: %w", shuttleengine.ErrNoTranscript)
+ 
+diff --git a/internal/orchengine/prompt.go b/internal/orchengine/prompt.go
+index b4c3e8e46..63f595783 100644
+--- a/internal/orchengine/prompt.go
++++ b/internal/orchengine/prompt.go
+@@ -49,21 +49,29 @@ func WithPresence(p Paths, pointer string) string {
+ 	return pointer + presenceLine
+ }
+ 
++// The autonomy lines appended to a pointer's own line, one per level of the orch's autonomy, each naming its level.
+ const (
+-	// autonomyOnLine is appended to a pointer's own line while the orch's autonomy is on.
++	// autonomyOnLine is appended while the orch's autonomy is true.
+ 	autonomyOnLine = " Autonomy is on: settle every halt yourself and reach the operator only for a severe halt, a merge-ready beam or a raddle split's approval, as role-autonomy.md beside your role says."
+-	// autonomyOffLine is appended to a pointer's own line while the orch's autonomy is off.
++	// autonomyUnattendedLine is appended while the orch's autonomy is unattended.
++	autonomyUnattendedLine = " Autonomy is unattended: settle every halt yourself and never ask the operator; only a severe halt reaches them, as role-autonomy.md beside your role says."
++	// autonomyOffLine is appended while the orch's autonomy is false.
+ 	autonomyOffLine = " Autonomy is off."
+ )
+ 
+ // WithLaunchFacts returns WithPresence(p, pointer) with the orch's autonomy line appended to the same line.
+-// The autonomy is read from p.Autonomy each time, and a nil seam reads off.
++// The autonomy level is read from p.Autonomy each time, and a nil seam reads off.
+ // The line informs only.
+ // It stands beside the presence step, never inside it, and appears under any presence.
+ func WithLaunchFacts(p Paths, pointer string) string {
+ 	line := autonomyOffLine
+-	if p.Autonomy != nil && p.Autonomy() {
+-		line = autonomyOnLine
++	if p.Autonomy != nil {
++		switch p.Autonomy() {
++		case AutonomyOn:
++			line = autonomyOnLine
++		case AutonomyUnattended:
++			line = autonomyUnattendedLine
++		}
+ 	}
+ 	return WithPresence(p, pointer) + line
+ }
+diff --git a/internal/orchengine/prompt_test.go b/internal/orchengine/prompt_test.go
+index 3cd07d98b..b5e8ec7fa 100644
+--- a/internal/orchengine/prompt_test.go
++++ b/internal/orchengine/prompt_test.go
+@@ -36,16 +36,18 @@ func TestWithLaunchFacts(t *testing.T) {
+ 		presence slackengine.Presence
+ 		noPath   bool
+ 		// autonomy is the seam's answer; nilSeam leaves the seam nil instead.
+-		autonomy bool
++		autonomy AutonomyLevel
+ 		nilSeam  bool
+ 		want     string
+ 	}{
+-		{name: "OnUnderSlack", presence: slackengine.PresenceSlack, autonomy: true, want: pointer + presenceLine + autonomyOnLine},
+-		{name: "OffUnderSlack", presence: slackengine.PresenceSlack, want: pointer + presenceLine + autonomyOffLine},
+-		{name: "OnUnderTerminal", presence: slackengine.PresenceTerminal, autonomy: true, want: pointer + autonomyOnLine},
+-		{name: "OffUnderTerminal", presence: slackengine.PresenceTerminal, want: pointer + autonomyOffLine},
+-		{name: "OnWithNoPresencePath", noPath: true, autonomy: true, want: pointer + autonomyOnLine},
+-		{name: "OffWithNoPresencePath", noPath: true, want: pointer + autonomyOffLine},
++		{name: "OnUnderSlack", presence: slackengine.PresenceSlack, autonomy: AutonomyOn, want: pointer + presenceLine + autonomyOnLine},
++		{name: "OffUnderSlack", presence: slackengine.PresenceSlack, autonomy: AutonomyOff, want: pointer + presenceLine + autonomyOffLine},
++		{name: "UnattendedUnderSlack", presence: slackengine.PresenceSlack, autonomy: AutonomyUnattended, want: pointer + presenceLine + autonomyUnattendedLine},
++		{name: "OnUnderTerminal", presence: slackengine.PresenceTerminal, autonomy: AutonomyOn, want: pointer + autonomyOnLine},
++		{name: "OffUnderTerminal", presence: slackengine.PresenceTerminal, autonomy: AutonomyOff, want: pointer + autonomyOffLine},
++		{name: "UnattendedUnderTerminal", presence: slackengine.PresenceTerminal, autonomy: AutonomyUnattended, want: pointer + autonomyUnattendedLine},
++		{name: "OnWithNoPresencePath", noPath: true, autonomy: AutonomyOn, want: pointer + autonomyOnLine},
++		{name: "OffWithNoPresencePath", noPath: true, autonomy: AutonomyOff, want: pointer + autonomyOffLine},
+ 		{name: "NilSeamReadsOff", presence: slackengine.PresenceSlack, nilSeam: true, want: pointer + presenceLine + autonomyOffLine},
+ 	}
+ 	for _, tt := range tests {
+@@ -56,7 +58,7 @@ func TestWithLaunchFacts(t *testing.T) {
+ 				p.SlackPresencePath = presenceFileIn(t, tt.presence)
+ 			}
+ 			if !tt.nilSeam {
+-				p.Autonomy = func() bool { return tt.autonomy }
++				p.Autonomy = func() AutonomyLevel { return tt.autonomy }
+ 			}
+ 			got := WithLaunchFacts(p, pointer)
+ 			if got != tt.want {
+diff --git a/internal/orchengine/resumecontext_test.go b/internal/orchengine/resumecontext_test.go
+index 725a53cf0..30c743b6e 100644
+--- a/internal/orchengine/resumecontext_test.go
++++ b/internal/orchengine/resumecontext_test.go
+@@ -115,7 +115,11 @@ func TestResumeContext_RendersPointerPerPhaseAndWritesMark(t *testing.T) {
+ 				p.SlackPresencePath = presenceFileIn(t, tt.presence)
+ 			}
+ 			if tt.autonomyOn || tt.autonomyOff {
+-				p.Autonomy = func() bool { return tt.autonomyOn }
++				level := AutonomyOff
++				if tt.autonomyOn {
++					level = AutonomyOn
++				}
++				p.Autonomy = func() AutonomyLevel { return level }
+ 			}
+ 			if err := SaveState(p, tt.state); err != nil {
+ 				t.Fatal(err)
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index a520c4455..5f19cc915 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -39,10 +39,24 @@ type Paths struct {
+ 	// SlackPresencePath is the machine's presence record, which every rendered pointer reads; empty means no presence line.
+ 	SlackPresencePath string
+ 
+-	// Autonomy reports whether the orch's autonomy is on, read each time a pointer is built; nil reads off.
+-	Autonomy func() bool
++	// Autonomy answers the orch's autonomy level, read each time a pointer is built; nil reads off.
++	Autonomy func() AutonomyLevel
+ }
+ 
++// AutonomyLevel is how far an orch settles halts without the operator.
++// The zero value is AutonomyOff.
++type AutonomyLevel int
++
++// The autonomy levels an orch runs under.
++const (
++	// AutonomyOff relays to the operator every halt the orch does not settle.
++	AutonomyOff AutonomyLevel = iota
++	// AutonomyOn settles halts and reaches the operator for the few cases the orch role names.
++	AutonomyOn
++	// AutonomyUnattended never asks the operator, and only a severe halt reaches them.
++	AutonomyUnattended
++)
++
+ // PendingStep is one post or inject the watcher persisted before sending it to creel.
+ type PendingStep struct {
+ 	// Mail is true for a post of Text as mail and false for an inject.
+diff --git a/internal/orchengine/watcher_test.go b/internal/orchengine/watcher_test.go
+index ad7115408..0a74c5e2c 100644
+--- a/internal/orchengine/watcher_test.go
++++ b/internal/orchengine/watcher_test.go
+@@ -691,7 +691,7 @@ func TestWatcher_HandoffCompleteClearsThenResumes(t *testing.T) {
+ 			if slack {
+ 				e.paths.SlackPresencePath = presenceFileIn(t, slackengine.PresenceSlack)
+ 			}
+-			e.paths.Autonomy = func() bool { return true }
++			e.paths.Autonomy = func() AutonomyLevel { return AutonomyOn }
+ 			e.w = e.newWatcher()
+ 			e.reachClearing()
+ 			handoff := e.state().PendingHandoff
+@@ -1572,7 +1572,7 @@ func TestWatcher_HookDeliveredPointerIsSkippedAndAnythingElseIsTyped(t *testing.
+ 			if tt.slack {
+ 				e.paths.SlackPresencePath = presenceFileIn(t, slackengine.PresenceSlack)
+ 			}
+-			e.paths.Autonomy = func() bool { return true }
++			e.paths.Autonomy = func() AutonomyLevel { return AutonomyOn }
+ 			baseline := e.clock.now.Add(-time.Minute)
+ 			e.setState(func(st *State) { st.CompactionBaseline = baseline })
+ 			e.w = e.newWatcher()
+@@ -1652,7 +1652,7 @@ func TestWatcher_AutoCompactionReloadsPluginsThenPointer(t *testing.T) {
+ 
+ 	e := newWatchEnv(t)
+ 	e.withSkills()
+-	e.paths.Autonomy = func() bool { return true }
++	e.paths.Autonomy = func() AutonomyLevel { return AutonomyOn }
+ 	e.w = e.newWatcher()
+ 	boundary := e.clock.now.Add(time.Second)
+ 	e.s.autoCompact = map[string]shuttleengine.CompactionBoundary{"a": freshBoundary(boundary)}
+diff --git a/internal/slackcli/wiring.go b/internal/slackcli/wiring.go
+index 315dfcaaa..89e33ceeb 100644
+--- a/internal/slackcli/wiring.go
++++ b/internal/slackcli/wiring.go
+@@ -128,7 +128,7 @@ func wireProduction(c *slackCLI, location *lymcwd.Location) error {
+ 		return slackengine.NewDialer(baseURL, appToken, &http.Client{}, slackengine.HelloTimeout)
+ 	}
+ 	c.liveHubs = liveHubGeometries
+-	c.orchAutonomous = func() bool { return hubgeom.Autonomy(location, location.WorktreeName) }
++	c.orchAutonomous = func() bool { return hubgeom.Autonomy(location, location.WorktreeName).On() }
+ 	c.strandName = func() string { return os.Getenv(agentname.StrandNameEnv) }
+ 	c.newStrandClient = func(strand string) (strandClient, error) {
+ 		client, err := creelcli.NewStrandClient(location, strand)
+diff --git a/internal/slackcli/wiring_test.go b/internal/slackcli/wiring_test.go
+index a3457a875..4c1259dca 100644
+--- a/internal/slackcli/wiring_test.go
++++ b/internal/slackcli/wiring_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+@@ -59,6 +60,34 @@ func TestReceiverPaused(t *testing.T) {
+ 	}
+ }
+ 
++// TestWireProduction_OrchAutonomousReadsUnattendedAsOn pins that the seam asks whether the orch's autonomy is on.
++func TestWireProduction_OrchAutonomousReadsUnattendedAsOn(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	hub := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	prime, err := lymcwd.ResolveWorktree(hub.PrimeWorktree())
++	if err != nil {
++		t.Fatalf("ResolveWorktree(%q) = %v", hub.PrimeWorktree(), err)
++	}
++	path := configengine.ConfigFile(prime.AnchorPath(), "beam")
++	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
++		t.Fatalf("MkdirAll = %v", err)
++	}
++	if err := os.WriteFile(path, []byte("autonomy: unattended\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile(%q) = %v", path, err)
++	}
++
++	c := &slackCLI{}
++	if err := wireProduction(c, prime); err != nil {
++		t.Fatalf("wireProduction() = %v", err)
++	}
++
++	if !c.orchAutonomous() {
++		t.Error("orchAutonomous() = false under beam.autonomy unattended; want true")
++	}
++}
++
+ func TestWorktreeOrch(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
