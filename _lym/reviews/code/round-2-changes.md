@@ -1,0 +1,16 @@
+contracts/recipes/arras-recipe.yaml
+contracts/recipes/jacquard-recipe.yaml
+contracts/specs/shed-recipe-spec.md
+internal/battencli/wire.go
+internal/loomcli/arm.go
+internal/loomcli/sharedbootstrap.go
+internal/loomcli/smoke_test.go
+internal/loomcli/wiring.go
+internal/loomcli/wiring_test.go
+internal/loomrecipe/sequence_test.go
+internal/loomshed/doc.go
+internal/loomshed/loomshed.go
+internal/loomshed/recordseed.go
+internal/loomshed/recordseed_test.go
+internal/loomshed/recordwrite.go
+internal/shedbuild/expand_test.go
