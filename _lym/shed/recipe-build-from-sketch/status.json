@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-Write",
+  "current_producer": "Raddle-File",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-Write",
-    "last": "Raddle-File → bounced to Raddle-Write",
+    "now": "Raddle-File",
+    "last": "Raddle-Write → done",
     "wait": ""
   },
   "history": [
@@ -51,6 +51,22 @@
       "at": "2026-11-28T13:34:37Z",
       "started_at": "2026-11-28T13:34:36Z",
       "routed_to": "Raddle-Write"
+    },
+    {
+      "producer": "Raddle-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/raddle/proposal.yaml",
+      "at": "2026-11-28T13:37:06Z",
+      "started_at": "2026-11-28T13:34:39Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "raddle",
+          "kind": "gate",
+          "start": "2026-11-28T13:37:03.682181395Z",
+          "end": "2026-11-28T13:37:03.724337498Z"
+        }
+      ]
     }
   ],
   "product": {
