@@ -661,30 +661,6 @@
       "revised": "2026-11-27T15:19:06Z"
     },
     {
-      "id": 1740,
-      "handle": "T10",
-      "slug": "worktree-create-transient-net",
-      "title": "Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "batten",
-        "fabric"
-      ],
-      "issues": [
-        279
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #279](https://github.com/Knatte18/loomyard/issues/279).\n\nSeen: a released task's batten run blocked at Worktree-Create when `git ls-remote origin refs/heads/\u003cbranch\u003e-weft` failed with \"Recv failure: Connection reset by peer\". The error was transient: the same lookup succeeded seconds later. The run stayed blocked with no retry. When it was handed back, the stop question claimed that the run's durable status said the task worktree was already created, and asked whether to restore the absent weft branch on origin or abandon the pair. In fact the status history held only the one stuck Worktree-Create step, no worktree existed, and the branch is absent for every new task. Workaround: a hand pass with `lym batten run \u003cslug\u003e` went straight through Worktree-Create to Run-Shed. Expected: Worktree-Create retries a network failure of a remote lookup a few times with backoff before it blocks, and the stop question reads an absent branch on a run whose Worktree-Create never succeeded as the normal fresh state.",
-      "status": "done",
-      "created": "2026-11-27T15:20:37Z",
-      "revised": "2026-11-27T15:20:57Z",
-      "profile": "light"
-    },
-    {
       "id": 1750,
       "handle": "S1",
       "slug": "self-healing-runs",
@@ -698,7 +674,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "worktree-create-transient-net",
         "beam-member-parent"
       ],
       "isolated": false,
@@ -770,7 +745,7 @@
       "isolated": false,
       "brief": "The landed design-first route left arras keys in the profile template and descriptions in two docs",
       "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T19:53:35Z",
       "revised": "2026-11-28T08:45:19Z",
       "profile": "light"

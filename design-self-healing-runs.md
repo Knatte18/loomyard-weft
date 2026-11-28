@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-self-healing-runs.md)
 
-Depends on: [`worktree-create-transient-net`](design-worktree-create-transient-net.md), [`beam-member-parent`](design-beam-member-parent.md)
+Depends on: [`beam-member-parent`](design-beam-member-parent.md)
 
 ## Seen (operator, 2026-11-27)
 
