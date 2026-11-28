@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T15:42:39Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/septim-farm-study/_lym/landing/summary.md",
+      "at": "2026-11-28T15:50:05Z",
+      "started_at": "2026-11-28T15:42:39Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T15:48:43.568666756Z",
+          "end": "2026-11-28T15:48:43.596129192Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T15:48:43.722739458Z",
+          "end": "2026-11-28T15:48:43.756782914Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T15:48:43.886892224Z",
+          "end": "2026-11-28T15:48:43.901692467Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T15:48:44.259473551Z",
+          "end": "2026-11-28T15:48:44.934164803Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T15:48:45.3493245Z",
+          "end": "2026-11-28T15:48:45.349476284Z"
+        }
+      ]
     }
   ],
   "product": {
