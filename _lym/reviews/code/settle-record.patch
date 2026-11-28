@@ -1,0 +1,913 @@
+diff --git a/internal/battencli/catchup.go b/internal/battencli/catchup.go
+index 25389b446..bca2ae837 100644
+--- a/internal/battencli/catchup.go
++++ b/internal/battencli/catchup.go
+@@ -27,7 +27,8 @@ import (
+ )
+ 
+ // catchUpRefusal is the refusal of a pass whose catch-up failed or stopped before it acted on the run.
+-// A pass exits with its own code on this refusal, and dobby reads that code as no failing pass.
++// A pass exits with one code on this refusal for an unreachable origin and another for any other cause.
++// Dobby reads neither as a failing pass of a run.
+ type catchUpRefusal struct {
+ 	// text is the refusal's message, which ends in its way forward.
+ 	text string
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 83e24d746..7c815a818 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -122,7 +122,9 @@ func (c *battenCLI) driveRun(cmd *cobra.Command) error {
+ // passExitCode returns the exit code of a pass that refused with err before the step loop:
+ // the owned-elsewhere code for a run another machine owns; the covered code for a run a pause covers;
+ // the continue-refused code for a continue pass of a run dobby may not continue;
+-// the origin-wait code for a pass whose catch-up failed or was refused; and 1 for any other refusal.
++// the origin-wait code for a pass whose catch-up could not reach origin;
++// the refused-catch-up code for a pass whose catch-up failed otherwise or was refused;
++// and 1 for any other refusal.
+ func passExitCode(err error) int {
+ 	var owned *OwnedElsewhereError
+ 	var covered *coveredRefusal
+@@ -135,8 +137,10 @@ func passExitCode(err error) int {
+ 		return dobbyengine.PassExitCovered
+ 	case errors.As(err, &continueRefused):
+ 		return dobbyengine.PassExitContinueRefused
+-	case errors.As(err, &catchUpRefused):
++	case errors.As(err, &catchUpRefused) && errors.Is(err, dobbyengine.ErrOriginUnreachable):
+ 		return dobbyengine.PassExitOriginWait
++	case errors.As(err, &catchUpRefused):
++		return dobbyengine.PassExitCatchUpRefused
+ 	default:
+ 		return 1
+ 	}
+diff --git a/internal/battencli/owner_test.go b/internal/battencli/owner_test.go
+index 06d49ca8b..18ed41857 100644
+--- a/internal/battencli/owner_test.go
++++ b/internal/battencli/owner_test.go
+@@ -332,7 +332,8 @@ func TestPreflightRunOwner_RemoveFollowUp(t *testing.T) {
+ // A refusal of a run another machine owns that the pre-run reaches exits 77, wrapped or not.
+ // A covered run exits 78.
+ // A continue pass of a run dobby may not continue exits 79.
+-// A pass whose catch-up failed exits 80, and any other error exits 1.
++// A pass whose catch-up could not reach origin exits 80, one whose catch-up failed otherwise exits 81,
++// and any other error exits 1.
+ // A claim the Worktree-Create row loses is not a row here.
+ // No pre-run wraps it, and its stop ends in the driver's own envelope.
+ func TestPassExitCode(t *testing.T) {
+@@ -358,9 +359,12 @@ func TestPassExitCode(t *testing.T) {
+ 		{"WrappedOwnedElsewhere", func() error { return fmt.Errorf("outer: %w", ownedElsewhereFor(slug, "there", "some-beam")) }, dobbyengine.PassExitOwnedElsewhere},
+ 		{"Covered", func() error { return &coveredRefusal{err: errors.New("pause: held")} }, dobbyengine.PassExitCovered},
+ 		{"ContinueRefused", func() error { return fmt.Errorf("outer: %w", &continueRefusal{reason: "no state", slug: slug}) }, dobbyengine.PassExitContinueRefused},
+-		{"CatchUpRefused", func() error {
+-			return fmt.Errorf("outer: %w", &catchUpRefusal{text: "origin is unreachable", err: errors.New("no route")})
++		{"CatchUpOriginUnreachable", func() error {
++			return fmt.Errorf("outer: %w", &catchUpRefusal{text: "origin is unreachable", err: fmt.Errorf("pull: %w", dobbyengine.ErrOriginUnreachable)})
+ 		}, dobbyengine.PassExitOriginWait},
++		{"CatchUpFailedOtherwise", func() error {
++			return fmt.Errorf("outer: %w", &catchUpRefusal{text: "the catch-up failed", err: errors.New("push refused")})
++		}, dobbyengine.PassExitCatchUpRefused},
+ 		{"PlainError", func() error { return errors.New("boom") }, 1},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/battencli/run_test.go b/internal/battencli/run_test.go
+index ba65ad688..d853b60e4 100644
+--- a/internal/battencli/run_test.go
++++ b/internal/battencli/run_test.go
+@@ -241,8 +241,9 @@ func writeStatus(t *testing.T, c *battenCLI, st shedengine.Status) {
+ // An absent status file never runs the reconcile.
+ // Over a fake catch-up, which runs before the reconcile:
+ // an unreachable origin refuses with the origin-wait exit and the re-run;
+-// a registration refusal passes its way forward;
+-// any other failure names its error and the re-run, and a run handed over exits owned elsewhere;
++// a registration refusal passes its way forward with the refused-catch-up exit;
++// any other failure names its error and the re-run with the same exit;
++// a run handed over exits owned elsewhere;
+ // a clean catch-up goes on to the reconcile.
+ // Over fake owner seams:
+ // an owned_elsewhere verdict refuses naming the owner and "lym adopt";
+@@ -334,7 +335,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 			catchUp: func() (dobbyengine.CatchUpReport, error) {
+ 				return dobbyengine.CatchUpReport{}, &boardengine.RegistrationError{Reason: "the name is taken", WayForward: "rename this machine"}
+ 			},
+-			wantCatchUps: 1, wantExit: dobbyengine.PassExitOriginWait,
++			wantCatchUps: 1, wantExit: dobbyengine.PassExitCatchUpRefused,
+ 			wantErrors: []string{"machine registration refused: the name is taken", "way forward: rename this machine"},
+ 		},
+ 		{
+@@ -342,7 +343,7 @@ func TestRunCmd_ResumeDispositions(t *testing.T) {
+ 			catchUp: func() (dobbyengine.CatchUpReport, error) {
+ 				return dobbyengine.CatchUpReport{}, errors.New("push refused")
+ 			},
+-			wantCatchUps: 1, wantExit: dobbyengine.PassExitOriginWait,
++			wantCatchUps: 1, wantExit: dobbyengine.PassExitCatchUpRefused,
+ 			wantErrors: []string{"push refused", "fix the cause it names, then run lym batten run " + slug + " again"},
+ 		},
+ 		{
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 853aa2b4d..6b1ece237 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -513,13 +513,16 @@ func hubDobbyDepsStarting(prime *lymcwd.Location, geom dobbyengine.Geometry, sta
+ 
+ // hubPushSummary fills the reads of the push summary over the hub of prime.
+ func hubPushSummary(prime *lymcwd.Location) dobbyengine.PushSummaryDeps {
+-	var timingWarnings, unreadableWaits logger.EpisodeSet
++	var timingWarnings, unreadableWaits, unreadableBeams logger.EpisodeSet
+ 	return dobbyengine.PushSummaryDeps{
+ 		Ledger: func() (map[pushledger.Key]pushledger.Entry, error) { return pushledger.List(prime.HubPath) },
+ 		Refused: func(key pushledger.Key, entry pushledger.Entry) (string, bool, error) {
+ 			return refusedPushWayForward(prime, key, entry)
+ 		},
+ 		Waits: func() ([]dobbyengine.RunView, error) { return hubDriveWaits(prime, &unreadableWaits) },
++		BeamCatchUpWaits: func() (map[string]dobbyengine.CatchUpWait, error) {
++			return hubBeamCatchUpWaits(prime, &unreadableBeams)
++		},
+ 		Threshold: func() (time.Duration, error) {
+ 			config, err := fabricengine.LoadConfig(fabricengine.ConfigDirs(prime))
+ 			if err != nil {
+@@ -621,6 +624,43 @@ func hubDriveWaits(prime *lymcwd.Location, unreadable *logger.EpisodeSet) ([]dob
+ 	return waits, nil
+ }
+ 
++// hubBeamCatchUpWaits returns the catch-up wait each live beam dobby of the hub of prime records, keyed by beam slug.
++// A beam whose dobby is not live is left out, since nothing retries or clears its record.
++// A beam whose record does not read is left out too, logged once per episode through unreadable.
++func hubBeamCatchUpWaits(prime *lymcwd.Location, unreadable *logger.EpisodeSet) (map[string]dobbyengine.CatchUpWait, error) {
++	beams, err := hubgeom.DobbyStart(prime).Beams()
++	if err != nil {
++		return nil, err
++	}
++	waits := map[string]dobbyengine.CatchUpWait{}
++	for _, beam := range beams {
++		wait, err := liveCatchUpWait(prime, beam.Slug)
++		if err != nil {
++			unreadable.Fail(beam.Slug, "beamcli: a beam dobby's catch-up wait is unreadable and is left out of the push summary", "beam", beam.Slug, "error", err)
++			continue
++		}
++		unreadable.Recover(beam.Slug, "beamcli: a beam dobby's catch-up wait reads again", "beam", beam.Slug)
++		if wait != nil {
++			waits[beam.Slug] = *wait
++		}
++	}
++	return waits, nil
++}
++
++// liveCatchUpWait returns the catch-up wait the dobby of the beam slug records while it is live, nil otherwise.
++func liveCatchUpWait(prime *lymcwd.Location, slug string) (*dobbyengine.CatchUpWait, error) {
++	geom, err := hubgeom.DobbyGeometry(prime, slug)
++	if err != nil {
++		return nil, err
++	}
++	live, err := dobbyengine.Live(geom)
++	if err != nil || !live {
++		return nil, err
++	}
++	record, _, err := dobbyengine.ReadState(geom.StatePath)
++	return record.CatchUp, err
++}
++
+ // beamDescribeDeps fills the description rewrite's seams for the beam slug over the hub of prime.
+ // beam is the beam's worktree.
+ // The describer agent runs on landing.yaml's describe model for its describe_timeout_min.
+diff --git a/internal/beamcli/dobbydeps_integration_test.go b/internal/beamcli/dobbydeps_integration_test.go
+index 8783819ce..74098a6e9 100644
+--- a/internal/beamcli/dobbydeps_integration_test.go
++++ b/internal/beamcli/dobbydeps_integration_test.go
+@@ -220,6 +220,43 @@ func TestHubDobbyDeps_PushSummaryWaitsReadBattenAndPairRecords(t *testing.T) {
+ 	}
+ }
+ 
++// TestHubDobbyDeps_PushSummaryBeamCatchUpWaitsReadLiveBeamDobbies pins the wired push summary's read of beam catch-ups.
++// A beam dobby's recorded wait counts only while the dobby holds its lock.
++func TestHubDobbyDeps_PushSummaryBeamCatchUpWaitsReadLiveBeamDobbies(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++	geom, err := hubgeom.DobbyGeometry(h.Location, "b")
++	if err != nil {
++		t.Fatalf("DobbyGeometry(b) = %v; want nil", err)
++	}
++	if err := os.MkdirAll(filepath.Dir(geom.StatePath), 0o755); err != nil {
++		t.Fatalf("mkdir the beam directory: %v", err)
++	}
++	err = dobbyengine.UpdateState(geom.StatePath, func(s *dobbyengine.State) error {
++		s.CatchUp = &dobbyengine.CatchUpWait{Reason: dobbyengine.CatchUpWaitOrigin}
++		return nil
++	})
++	if err != nil {
++		t.Fatalf("UpdateState() = %v; want nil", err)
++	}
++	read := hubPushSummary(h.Location).BeamCatchUpWaits
++
++	if waits, err := read(); err != nil || len(waits) != 0 {
++		t.Errorf("BeamCatchUpWaits() with the dobby lock free = %+v, %v; want none", waits, err)
++	}
++	held, err := lock.AcquireWriteLock(geom.LockPath)
++	if err != nil {
++		t.Fatalf("hold the dobby lock: %v", err)
++	}
++	t.Cleanup(func() { _ = held.Release() })
++	if waits, err := read(); err != nil || len(waits) != 1 || waits["b"].Reason != dobbyengine.CatchUpWaitOrigin {
++		t.Errorf("BeamCatchUpWaits() with the dobby lock held = %+v, %v; want the origin wait of b", waits, err)
++	}
++}
++
+ // TestHubDobbyDeps_PushSummaryRefusedReadsThePrimeCodeRecord pins the wired push summary's refusal read:
+ // the prime's code-branch record refuses the landing target alone, until it is cleared.
+ func TestHubDobbyDeps_PushSummaryRefusedReadsThePrimeCodeRecord(t *testing.T) {
+diff --git a/internal/dobbyengine/catchupwait.go b/internal/dobbyengine/catchupwait.go
+index 7db9c4f4f..6648c1bca 100644
+--- a/internal/dobbyengine/catchupwait.go
++++ b/internal/dobbyengine/catchupwait.go
+@@ -33,6 +33,16 @@ type CatchUpWait struct {
+ 	Detail string `json:"detail,omitempty"`
+ 	// At is when the failure was read.
+ 	At time.Time `json:"at"`
++	// Since is when the catch-up first failed with this reason in a row, so how long it has waited.
++	Since time.Time `json:"since,omitzero"`
++}
++
++// waitingSince returns when the wait began, At for a record written before Since was kept.
++func (w CatchUpWait) waitingSince() time.Time {
++	if w.Since.IsZero() {
++		return w.At
++	}
++	return w.Since
+ }
+ 
+ // oweCatchUp marks the catch-up from origin owed.
+@@ -71,7 +81,11 @@ func (d *daemon) catchUpFailed(ctx context.Context, now time.Time, err error) {
+ 	d.catchUpDelay = nextCatchUpDelay(d.catchUpDelay)
+ 	d.catchUpNext = now.Add(d.catchUpDelay)
+ 	if updateErr := UpdateState(d.geom.StatePath, func(s *State) error {
+-		s.CatchUp = &CatchUpWait{Reason: reason, Detail: detail, At: now}
++		since := now
++		if s.CatchUp != nil && s.CatchUp.Reason == reason {
++			since = s.CatchUp.waitingSince()
++		}
++		s.CatchUp = &CatchUpWait{Reason: reason, Detail: detail, At: now, Since: since}
+ 		return nil
+ 	}); updateErr != nil {
+ 		logger.Warn("dobbyengine: the catch-up wait could not be recorded", "worktree", d.geom.WorktreeName, "error", updateErr)
+@@ -98,6 +112,7 @@ func (d *daemon) catchUpFailed(ctx context.Context, now time.Time, err error) {
+ // The per-run memory of each run the catch-up touched is dropped, so the run's next pass is a full pass.
+ func (d *daemon) catchUpSucceeded(now time.Time, report CatchUpReport) {
+ 	d.catchUpOwed, d.catchUpDelay, d.catchUpNext, d.catchUpNoticed = false, 0, time.Time{}, nil
++	d.catchUpSuccesses++
+ 	if d.catchUpReason != "" {
+ 		d.catchUpReason = ""
+ 		d.logLine(now, "catch-up succeeds again")
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index c2b9ad82a..cbbe25a4d 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -60,7 +60,7 @@
+ //   - A pass that exits as owned by another machine keeps the run's full pass owed and marks it owned elsewhere.
+ //     Dobby pauses nothing: it releases the parent lock record naming its child and owes the catch-up from origin.
+ //     It posts one notice per owner episode naming `lym adopt <subject>`.
+-//   - A covered pass or a pass that waits on origin counts as no failure.
++//   - A covered pass, or a pass its catch-up stopped, counts as no failure.
+ //     The third failure in a row with one error text posts one notice to the nearest live orch.
+ //   - A task waits on the board as `draft` until released, and dobby starts it from an empty status.
+ //     A task starts only when its dependencies are done, its parent is this dobby's worktree,
+@@ -70,6 +70,10 @@
+ //     The hold only delays starts, never a pass of a run already started.
+ //     `task_headroom: 0`, a nil seam and a limit that does not read hold nothing.
+ //   - A first pass refused for a covering pause is no refused start and waits for the lift.
++//     A first pass whose catch-up could not reach origin is no refused start either:
++//     it owes the catch-up from origin, and the task starts once the catch-up succeeds.
++//     It is a refused start when the dobby has no catch-up,
++//     or when a catch-up has succeeded since an earlier such exit of the same entry.
+ //     Any other first pass that exits non-zero and leaves no status file is a refused start:
+ //     it gets one notice per refusal text and a retry backoff that doubles up to an hour.
+ //   - A front task is a task entry whose `front` is true, filed ahead of the worktree's other starts.
+@@ -260,21 +264,28 @@
+ //   - An unreachable origin returns an error wrapping ErrOriginUnreachable before any run is acted on.
+ //     A failed push or hand-over is joined into the returned error and the other runs go on.
+ //     A nil seam is a wiring error returned at once.
+-//   - The dobby owes the catch-up at a fresh start, never at a re-exec, after a sleep,
+-//     and when a pass exits PassExitOriginWait or PassExitOwnedElsewhere.
++//   - The dobby owes the catch-up at a fresh start, after a sleep,
++//     at a re-exec only while State.CatchUp records a wait,
++//     when a run's pass exits PassExitOriginWait, PassExitCatchUpRefused or PassExitOwnedElsewhere,
++//     and when a first pass exits PassExitOriginWait that the catch-up can still answer.
+ //     Deps.CatchUp with no PullBolt means no catch-up.
+ //   - While the catch-up is owed the tick spawns no pass, starts no task, takes no landing step and runs no tidy step.
+-//     A failure retries with a doubling delay and records State.CatchUp as a CatchUpWait.
++//     A failure retries with a doubling delay and records State.CatchUp as a CatchUpWait,
++//     which keeps when failures of its reason began.
++//     A wait on origin posts no notice of its own;
++//     the prime's push summary reports every live dobby's wait on origin past its threshold.
+ //
+ // The push summary:
+ //
+ //   - A failed push sends no mail of its own.
+ //     The prime's dobby, the one wired with Deps.PushSummary.Ledger, reads each tick what is owed to origin:
+-//     the push ledger's owed entries and every run of the hub whose driver waits on the network.
++//     the push ledger's owed entries, every run of the hub whose driver waits on the network,
++//     and the catch-up of its own and of every live beam dobby while it waits on origin.
+ //     Only an anchor change stops the read.
+ //   - The owed period starts at the earliest thing owed and lasts while anything is.
+ //     Once it has lasted PushSummaryDeps.Threshold, one notice lists each owed branch with its minutes,
+-//     a refused one with its way forward, and each waiting run with its producer.
++//     a refused one with its way forward, each waiting run with its producer,
++//     and each catch-up waiting on origin with its minutes.
+ //     No further summary follows in that period.
+ //   - An entry holding only held records, dropped landings or owed hand-overs is listed as held.
+ //     It opens and holds no period, so it does not block the all-clear.
+diff --git a/internal/dobbyengine/geometry.go b/internal/dobbyengine/geometry.go
+index a724da644..dccc5b26b 100644
+--- a/internal/dobbyengine/geometry.go
++++ b/internal/dobbyengine/geometry.go
+@@ -10,9 +10,13 @@ const (
+ 	PassExitCovered = 78
+ 	// PassExitContinueRefused is the exit code of a continue pass that refused because the run is not one dobby may continue.
+ 	PassExitContinueRefused = 79
+-	// PassExitOriginWait is the exit code of a `lym batten run` pass whose catch-up could not reach origin or was refused.
++	// PassExitOriginWait is the exit code of a `lym batten run` pass whose catch-up could not reach origin.
+ 	// The pass acted on no run, and dobby counts it as no failing pass.
+ 	PassExitOriginWait = 80
++	// PassExitCatchUpRefused is the exit code of a `lym batten run` pass whose catch-up did not succeed.
++	// It covers a refusal and every failure but an unreachable origin.
++	// Dobby counts it as no failing pass of a run, and reads a first pass that exits with it as a refused start.
++	PassExitCatchUpRefused = 81
+ )
+ 
+ const (
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index 645895793..7d534b53a 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -362,6 +362,10 @@ type daemon struct {
+ 	catchUpReason string
+ 	// catchUpNoticed holds the failure classes whose notice went out this episode.
+ 	catchUpNoticed map[string]bool
++	// catchUpSuccesses counts the catch-ups from origin that succeeded in this process.
++	catchUpSuccesses int
++	// originStops holds, by slug, the last first pass the catch-up was owed for, in memory only.
++	originStops map[string]originStop
+ 	// handedOver holds the slugs whose hand-over verdict already owed the catch-up, until they stop answering hand over.
+ 	handedOver map[string]bool
+ 	// syncFailures is the failure episode of the bolt-hold sync; syncFailing reports whether its line was logged.
+@@ -489,13 +493,18 @@ func (d *daemon) postRefusedReexec(ctx context.Context) {
+ // A record with this pid and these start ticks owes nothing.
+ // One with this pid and no ticks owes a full pass and gains the ticks.
+ // Any other start owes the catch-up from origin and a full pass, and rewrites the pid, the start time and the ticks.
+-// A re-exec follows no absence, so it owes no catch-up.
++// A re-exec follows no absence, so it owes the catch-up only while the record holds a wait, which only a success clears.
++// A fresh start drops the recorded wait, so a wait recorded after it counts from its own first failure.
+ func (d *daemon) recordStart() error {
+ 	record, found, err := ReadState(d.geom.StatePath)
+ 	if err != nil {
+ 		return err
+ 	}
+ 	d.keptTidy, d.keptDescribe = record.Tidy, record.Describe
++	// A recorded wait is a catch-up that has not succeeded, and a re-exec forgets that it is owed.
++	if record.CatchUp != nil {
++		d.oweCatchUp()
++	}
+ 	own := found && record.PID == os.Getpid()
+ 	if own && record.StartTicks == d.startTicks {
+ 		return nil
+@@ -511,6 +520,7 @@ func (d *daemon) recordStart() error {
+ 	now := d.deps.Now()
+ 	return UpdateState(d.geom.StatePath, func(s *State) error {
+ 		s.PID, s.StartTime, s.StartTicks = os.Getpid(), now.UTC().Format(time.RFC3339), d.startTicks
++		s.CatchUp = nil
+ 		return nil
+ 	})
+ }
+diff --git a/internal/dobbyengine/loop_catchup_test.go b/internal/dobbyengine/loop_catchup_test.go
+index dd54b45de..61e5be5c8 100644
+--- a/internal/dobbyengine/loop_catchup_test.go
++++ b/internal/dobbyengine/loop_catchup_test.go
+@@ -55,22 +55,31 @@ func TestRun_CatchUp(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	t.Run("a fresh start runs the catch-up before the first pass and a re-exec runs none", func(t *testing.T) {
++	t.Run("a fresh start runs the catch-up before the first pass, and a re-exec only while a wait is recorded", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, tt := range []struct {
+ 			name         string
+ 			reexec       bool
++			waiting      bool
+ 			wantFirst    string
+ 			wantCatchUps int
+ 		}{
+-			{"FreshStart", false, "catch-up", 1},
+-			{"ReExec", true, "pass r1 continue", 0},
++			{"FreshStart", false, false, "catch-up", 1},
++			{"ReExec", true, false, "pass r1 continue", 0},
++			{"ReExecDuringAWait", true, true, "catch-up", 1},
+ 		} {
+ 			t.Run(tt.name, func(t *testing.T) {
+ 				t.Parallel()
+ 				h := newLoopHarness(t, 2)
+ 				if tt.reexec {
+-					if err := UpdateState(h.geom.StatePath, func(s *State) error { s.PID, s.StartTicks = os.Getpid(), loopStartTicks; return nil }); err != nil {
++					err := UpdateState(h.geom.StatePath, func(s *State) error {
++						s.PID, s.StartTicks = os.Getpid(), loopStartTicks
++						if tt.waiting {
++							s.CatchUp = &CatchUpWait{Reason: CatchUpWaitOrigin}
++						}
++						return nil
++					})
++					if err != nil {
+ 						t.Fatalf("UpdateState() = %v; want nil", err)
+ 					}
+ 				}
+@@ -102,6 +111,32 @@ func TestRun_CatchUp(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a fresh start counts a wait from its own failure, not from the one a stopped dobby recorded", func(t *testing.T) {
++		t.Parallel()
++		h := newLoopHarness(t, 1)
++		recorded := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
++		err := UpdateState(h.geom.StatePath, func(s *State) error {
++			s.CatchUp = &CatchUpWait{Reason: CatchUpWaitOrigin, At: recorded, Since: recorded}
++			return nil
++		})
++		if err != nil {
++			t.Fatalf("UpdateState() = %v; want nil", err)
++		}
++		h.deps.CatchUp = fakeCatchUpDeps(func() error { return ErrOriginUnreachable })
++
++		if err := h.run(t); err != nil {
++			t.Fatalf("Run() = %v; want nil", err)
++		}
++
++		record, _, err := ReadState(h.geom.StatePath)
++		if err != nil {
++			t.Fatalf("ReadState() = %v; want nil", err)
++		}
++		if record.CatchUp == nil || !record.CatchUp.Since.After(recorded) {
++			t.Errorf("recorded wait = %+v; want one that began after %v", record.CatchUp, recorded)
++		}
++	})
++
+ 	t.Run("a sleep the watch sees runs the catch-up before the next pass, which is a full pass", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newLoopHarness(t, 4)
+@@ -235,6 +270,26 @@ func TestRun_CatchUp(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the wait's start restarts when the failure reason changes and holds while it repeats", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		failure := errors.New("the board diverged")
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return failure })
++		h.d.catchUpOwed = true
++		first := h.clock.now()
++		second, third := first.Add(time.Hour), first.Add(2*time.Hour)
++
++		h.d.catchUp(t.Context(), first)
++		failure = ErrOriginUnreachable
++		h.d.catchUp(t.Context(), second)
++		h.d.catchUp(t.Context(), third)
++
++		wait := h.stateRecord().CatchUp
++		if wait == nil || !wait.Since.Equal(second) || !wait.At.Equal(third) {
++			t.Errorf("recorded wait = %+v; want Since %v and At %v", wait, second, third)
++		}
++	})
++
+ 	t.Run("a listed run handing over with its pair present owes the catch-up, gets no pass and is handed over", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newPassHarness(t, handOverRun("r1", true))
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index 7d523f646..cea284926 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -417,7 +417,8 @@ func (d *daemon) collectExits(now time.Time) {
+ // Exit 0 clears the run's failing-pass count and noticed texts.
+ // It also clears the owed full pass when the pass was full.
+ // A refused continue pass owes a full pass, and a covered pass counts as no failure.
+-// The owned-elsewhere exit and the origin-wait exit are never a failing pass, and each owes the catch-up from origin.
++// The owned-elsewhere, origin-wait and refused-catch-up exits are never a failing pass.
++// Each of them owes the catch-up from origin.
+ // Any other exit counts a failure by its error text.
+ // Once the count reaches failingPassNoticeAfter, one notice per error text goes to the nearest live orch.
+ func (d *daemon) passExited(slug string, full bool, code int, errText string, at time.Time) {
+@@ -435,7 +436,7 @@ func (d *daemon) passExited(slug string, full bool, code int, errText string, at
+ 			}
+ 		case PassExitContinueRefused:
+ 			rs.FullPassOwed = true
+-		case PassExitCovered, PassExitOwnedElsewhere, PassExitOriginWait:
++		case PassExitCovered, PassExitOwnedElsewhere, PassExitOriginWait, PassExitCatchUpRefused:
+ 		default:
+ 			if errText == rs.FailingPassError {
+ 				rs.FailingPassCount++
+@@ -464,7 +465,7 @@ func (d *daemon) passExited(slug string, full bool, code int, errText string, at
+ 	if noticeDue {
+ 		d.noticeFailingPass(slug, errText)
+ 	}
+-	if code == PassExitOriginWait {
++	if code == PassExitOriginWait || code == PassExitCatchUpRefused {
+ 		d.oweCatchUp()
+ 	}
+ 	if code == PassExitOwnedElsewhere {
+diff --git a/internal/dobbyengine/passes_test.go b/internal/dobbyengine/passes_test.go
+index 56417eec4..e82577dd0 100644
+--- a/internal/dobbyengine/passes_test.go
++++ b/internal/dobbyengine/passes_test.go
+@@ -425,7 +425,7 @@ func TestDrivePasses_ExitHandling(t *testing.T) {
+ 
+ 	t.Run("an origin-wait or owned-elsewhere exit owes the catch-up", func(t *testing.T) {
+ 		t.Parallel()
+-		for _, code := range []int{PassExitOriginWait, PassExitOwnedElsewhere} {
++		for _, code := range []int{PassExitOriginWait, PassExitCatchUpRefused, PassExitOwnedElsewhere} {
+ 			h := newPassHarness(t, runningRun("task"))
+ 			catchUps := 0
+ 			h.d.deps.CatchUp = fakeCatchUpDeps(func() error { catchUps++; return nil })
+diff --git a/internal/dobbyengine/pushsummary.go b/internal/dobbyengine/pushsummary.go
+index d26505231..dd93539d8 100644
+--- a/internal/dobbyengine/pushsummary.go
++++ b/internal/dobbyengine/pushsummary.go
+@@ -28,11 +28,15 @@ type PushSummaryDeps struct {
+ 	// Waits lists every run of the hub whose driver waits on the network, with Slug, WaitProducer and WaitSince filled.
+ 	// A nil Waits lists none.
+ 	Waits func() ([]RunView, error)
++	// BeamCatchUpWaits lists the catch-up from origin each live beam dobby of the hub waits on, keyed by beam slug.
++	// A nil BeamCatchUpWaits lists none.
++	BeamCatchUpWaits func() (map[string]CatchUpWait, error)
+ 	// Threshold reads how long something stays owed before the summary reports it.
+ 	Threshold func() (time.Duration, error)
+ }
+ 
+ // pushSummary posts one summary once a push or a network wait has stayed owed for the threshold.
++// A catch-up waiting on origin, the dobby's own or a beam dobby's, counts as a network wait.
+ // It posts one all-clear once nothing is owed after such a summary.
+ // A failed read or post is logged once per episode and tried again on the next tick.
+ func (d *daemon) pushSummary(ctx context.Context, now time.Time) {
+@@ -59,6 +63,12 @@ func (d *daemon) summarisePushes(ctx context.Context, now time.Time) error {
+ 			return err
+ 		}
+ 	}
++	var beamCatchUps map[string]CatchUpWait
++	if seams.BeamCatchUpWaits != nil {
++		if beamCatchUps, err = seams.BeamCatchUpWaits(); err != nil {
++			return err
++		}
++	}
+ 
+ 	var since time.Time
+ 	earliest := func(at time.Time) {
+@@ -82,15 +92,28 @@ func (d *daemon) summarisePushes(ctx context.Context, now time.Time) error {
+ 			held = append(held, targetName(key, entry))
+ 		}
+ 	}
++	record, _, err := ReadState(d.geom.StatePath)
++	if err != nil {
++		return err
++	}
+ 	var waiting []string
+ 	for _, wait := range waits {
+ 		earliest(wait.WaitSince)
+ 		waiting = append(waiting, fmt.Sprintf("%s at %s for %dm", wait.Slug, wait.WaitProducer, minutesSince(wait.WaitSince, now)))
+ 	}
+-
+-	record, _, err := ReadState(d.geom.StatePath)
+-	if err != nil {
+-		return err
++	addCatchUp := func(whose string, wait CatchUpWait) {
++		if wait.Reason != CatchUpWaitOrigin {
++			return
++		}
++		began := wait.waitingSince()
++		earliest(began)
++		waiting = append(waiting, fmt.Sprintf("%s catch-up from origin for %dm", whose, minutesSince(began, now)))
++	}
++	if record.CatchUp != nil {
++		addCatchUp("the dobby's", *record.CatchUp)
++	}
++	for _, beam := range slices.Sorted(maps.Keys(beamCatchUps)) {
++		addCatchUp(beam+"'s", beamCatchUps[beam])
+ 	}
+ 	period := record.PushPeriod
+ 	if len(owed) == 0 && len(waiting) == 0 {
+@@ -98,7 +121,7 @@ func (d *daemon) summarisePushes(ctx context.Context, now time.Time) error {
+ 			return nil
+ 		}
+ 		if period.Posted {
+-			if err := d.deps.Notice(ctx, d.geom.WorktreeName+": every branch is pushed to origin and no run waits on the network"); err != nil {
++			if err := d.deps.Notice(ctx, d.geom.WorktreeName+": every branch is pushed to origin and nothing waits on the network"); err != nil {
+ 				return err
+ 			}
+ 		}
+@@ -129,7 +152,7 @@ func (d *daemon) summarisePushes(ctx context.Context, now time.Time) error {
+ 		parts = append(parts, "not yet on origin: "+strings.Join(owed, "; "))
+ 	}
+ 	if len(waiting) > 0 {
+-		parts = append(parts, "runs waiting on the network: "+strings.Join(waiting, "; "))
++		parts = append(parts, "waiting on the network: "+strings.Join(waiting, "; "))
+ 	}
+ 	if len(held) > 0 {
+ 		parts = append(parts, "held, until its pair goes or its commit leaves the parent: "+strings.Join(held, "; "))
+diff --git a/internal/dobbyengine/pushsummary_test.go b/internal/dobbyengine/pushsummary_test.go
+index e00865184..ce5efa77d 100644
+--- a/internal/dobbyengine/pushsummary_test.go
++++ b/internal/dobbyengine/pushsummary_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/pushledger"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+@@ -86,7 +87,7 @@ func (h *summaryHarness) wantNotice(n int, parts ...string) {
+ 	}
+ }
+ 
+-const allClear = "prime: every branch is pushed to origin and no run waits on the network"
++const allClear = "prime: every branch is pushed to origin and nothing waits on the network"
+ 
+ func TestPushSummary(t *testing.T) {
+ 	tiergate.Require(t, 0)
+@@ -126,6 +127,86 @@ func TestPushSummary(t *testing.T) {
+ 		h.wantNotice(0, "member at Finalize for 10m")
+ 	})
+ 
++	t.Run("ACatchUpWaitingOnOriginIsSummarisedPastTheThreshold", func(t *testing.T) {
++		t.Parallel()
++		h := newSummaryHarness(t)
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return ErrOriginUnreachable })
++		h.d.oweCatchUp()
++		h.d.catchUp(h.t.Context(), h.start)
++		h.tickAt(9, 0)
++
++		h.d.catchUpNext = time.Time{}
++		h.d.catchUp(h.t.Context(), h.start.Add(10*time.Minute))
++		h.tickAt(10, 1)
++		h.wantNotice(0, "the dobby's catch-up from origin for 10m")
++
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return nil })
++		h.d.catchUpNext = time.Time{}
++		h.d.catchUp(h.t.Context(), h.start.Add(11*time.Minute))
++		h.tickAt(11, 2)
++		if h.notices[1] != allClear {
++			t.Errorf("second notice = %q; want %q", h.notices[1], allClear)
++		}
++	})
++
++	t.Run("ABeamsCatchUpWaitingOnOriginIsSummarised", func(t *testing.T) {
++		t.Parallel()
++		h := newSummaryHarness(t)
++		h.d.deps.PushSummary.BeamCatchUpWaits = func() (map[string]CatchUpWait, error) {
++			return map[string]CatchUpWait{
++				"beam":    {Reason: CatchUpWaitOrigin, At: h.start.Add(5 * time.Minute), Since: h.start},
++				"refused": {Reason: CatchUpWaitRefused, At: h.start, Since: h.start},
++			}, nil
++		}
++
++		h.tickAt(9, 0)
++		h.tickAt(10, 1)
++		want := "prime: waiting on the network: beam's catch-up from origin for 10m. lym retries by itself, so only a refused push needs a step"
++		if h.notices[0] != want {
++			t.Errorf("notice = %q; want %q", h.notices[0], want)
++		}
++	})
++
++	t.Run("AWaitRecordedWithoutItsStartCountsFromWhenItWasRead", func(t *testing.T) {
++		t.Parallel()
++		h := newSummaryHarness(t)
++		err := UpdateState(h.d.geom.StatePath, func(s *State) error {
++			s.CatchUp = &CatchUpWait{Reason: CatchUpWaitOrigin, At: h.start}
++			return nil
++		})
++		if err != nil {
++			t.Fatalf("UpdateState() = %v; want nil", err)
++		}
++
++		h.tickAt(9, 0)
++		h.tickAt(10, 1)
++		h.wantNotice(0, "the dobby's catch-up from origin for 10m")
++	})
++
++	t.Run("ACatchUpRefusedOrFailedStaysOutOfTheSummary", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			err  error
++		}{
++			{"Refused", &boardengine.RegistrationError{Reason: "the name is taken", WayForward: "rename this machine"}},
++			{"Failed", errors.New("the board diverged")},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newSummaryHarness(t)
++				h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return tt.err })
++				h.d.oweCatchUp()
++				h.d.catchUp(h.t.Context(), h.start)
++
++				// The one notice is the catch-up's own.
++				h.tickAt(10, 1)
++				h.tickAt(60, 1)
++			})
++		}
++	})
++
+ 	t.Run("HeldEntriesAreListedAndBlockNoAllClear", func(t *testing.T) {
+ 		t.Parallel()
+ 		tests := []struct {
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index c82a7bf7c..3c2a73acc 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -89,7 +89,11 @@ func readyToStart(task TaskView, here string, covered bool) bool {
+ // While an open front task of the worktree stands, the step starts no other task.
+ // It starts the front task itself once it is released, even when the runs in flight fill max_runs.
+ // While the beam is flagged ready, the step starts no task at all.
++// Nor does it while the catch-up from origin is owed, which a first pass read earlier in the tick can owe.
+ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
++	if d.catchUpOwed {
++		return nil
++	}
+ 	cfg, err := d.deps.LoadConfig()
+ 	if err != nil {
+ 		return fmt.Errorf("load beam.yaml: %w", err)
+@@ -338,13 +342,20 @@ func (d *daemon) startFirstPass(task TaskView, now time.Time) {
+ 
+ // firstPassExited reads how a first pass exited.
+ // A pass that left a status file claimed the task: its start record is cleared, and the exit is read as any pass's.
+-// A covered pass is no refusal, and any other exit that left no status file is a refused start.
++// A covered pass is no refusal.
++// A pass whose catch-up could not reach origin is no refusal either while the dobby's catch-up can answer it:
++// it owes that catch-up, which retries on its own delay and lets the task start once it succeeds.
++// Any other exit that left no status file is a refused start.
+ func (d *daemon) firstPassExited(slug string, f flight, exit PassExit, now time.Time) {
+ 	claimed, err := d.deps.StatusExists(slug)
+ 	if err != nil {
+ 		logger.Warn("dobbyengine: whether the first pass left a status file is unreadable; the exit is read as a pass's", "slug", slug, "error", err)
+ 		claimed = true
+ 	}
++	// A remembered stop speaks only of the entry's next exit, so any other exit forgets it.
++	if claimed || exit.Code != PassExitOriginWait {
++		delete(d.originStops, slug)
++	}
+ 	switch {
+ 	case claimed:
+ 		if err := d.updateStart(slug, func(s *StartState) { *s = StartState{} }); err != nil {
+@@ -352,6 +363,7 @@ func (d *daemon) firstPassExited(slug string, f flight, exit PassExit, now time.
+ 		}
+ 		d.passExited(slug, f.full, exit.Code, exit.Error, now)
+ 	case exit.Code == PassExitCovered:
++	case exit.Code == PassExitOriginWait && d.oweCatchUpForStart(slug, f.fingerprint):
+ 	case exit.Code == 0:
+ 		if err := d.updateStart(slug, func(s *StartState) { *s = StartState{} }); err != nil {
+ 			logger.Warn("dobbyengine: the start record could not be cleared", "slug", slug, "error", err)
+@@ -365,6 +377,31 @@ func (d *daemon) firstPassExited(slug string, f flight, exit PassExit, now time.
+ 	}
+ }
+ 
++// originStop is a first pass that an unreachable origin stopped:
++// the board entry it started, and the count of successful catch-ups when it exited.
++type originStop struct {
++	fingerprint string
++	successes   int
++}
++
++// oweCatchUpForStart owes the catch-up from origin for a first pass of slug that an unreachable origin stopped.
++// It reports false, owing nothing, when the catch-up cannot answer that stop:
++// the dobby has none, or one succeeded since an earlier such stop of the same entry, so the failure is the start's own.
++func (d *daemon) oweCatchUpForStart(slug, fingerprint string) bool {
++	if stop, stopped := d.originStops[slug]; stopped && stop.fingerprint == fingerprint && d.catchUpSuccesses > stop.successes {
++		return false
++	}
++	d.oweCatchUp()
++	if !d.catchUpOwed {
++		return false
++	}
++	if d.originStops == nil {
++		d.originStops = map[string]originStop{}
++	}
++	d.originStops[slug] = originStop{fingerprint: fingerprint, successes: d.catchUpSuccesses}
++	return true
++}
++
+ // refusedStart records a refused start of slug and schedules its retry backoff.
+ // It posts one notice per refusal text to the nearest live orch.
+ func (d *daemon) refusedStart(slug, fingerprint, text string, now time.Time) {
+diff --git a/internal/dobbyengine/starts_test.go b/internal/dobbyengine/starts_test.go
+index 5e4920fbb..515ec6b01 100644
+--- a/internal/dobbyengine/starts_test.go
++++ b/internal/dobbyengine/starts_test.go
+@@ -204,6 +204,113 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("an origin-wait first pass is no refused start: it owes the catch-up and starts again once that succeeds", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		h.fake.tasks = []TaskView{readyTask("a")}
++		h.fake.exits = []PassExit{{Code: PassExitOriginWait, Error: "batten run: origin is unreachable, so the catch-up acted on no run"}}
++		originDown := true
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error {
++			if originDown {
++				return ErrOriginUnreachable
++			}
++			return nil
++		})
++
++		for range 4 {
++			h.tick(true)
++		}
++		if len(h.fake.spawned) != 1 || len(h.fake.notices) != 0 {
++			t.Fatalf("passes, notices while origin is down = %d, %q; want 1 pass and no notice", len(h.fake.spawned), h.fake.notices)
++		}
++		if got, found := h.stateRecord().Starts["a"]; found {
++			t.Errorf("start record while origin is down = %+v; want none", got)
++		}
++		if got := h.stateRecord().CatchUp; got == nil || got.Reason != CatchUpWaitOrigin {
++			t.Errorf("catch-up wait while origin is down = %+v; want reason %q", got, CatchUpWaitOrigin)
++		}
++
++		originDown = false
++		h.tick(true)
++		if len(h.fake.spawned) != 2 || len(h.fake.notices) != 0 {
++			t.Errorf("passes, notices once origin answers = %d, %q; want the second start and no notice", len(h.fake.spawned), h.fake.notices)
++		}
++	})
++
++	t.Run("a first pass stopped by origin again after a catch-up succeeded is a refused start with one notice and a backoff", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		h.fake.tasks = []TaskView{readyTask("a")}
++		stopped := PassExit{Code: PassExitOriginWait, Error: "origin is unreachable"}
++		h.fake.exits = []PassExit{stopped, stopped, stopped}
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return nil })
++
++		for range 4 {
++			h.tick(true)
++		}
++		if len(h.fake.spawned) != 2 || len(h.fake.notices) != 1 {
++			t.Fatalf("passes, notices after the second stop = %d, %q; want 2 passes and one notice", len(h.fake.spawned), h.fake.notices)
++		}
++		if got := h.stateRecord().Starts["a"]; !got.NextTry.After(h.clock.now()) {
++			t.Errorf("start record = %+v; want a backoff that has not run out", got)
++		}
++
++		for range 3 {
++			h.tick(true)
++		}
++		if got := h.stateRecord().Starts["a"]; len(h.fake.spawned) != 3 || len(h.fake.notices) != 1 || got.Interval != 20*time.Second {
++			t.Errorf("passes, notices, start record after the retry = %d, %q, %+v; want 3 passes, the one notice and a doubled backoff", len(h.fake.spawned), h.fake.notices, got)
++		}
++	})
++
++	t.Run("another exit between two origin stops forgets the first", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		h.fake.tasks = []TaskView{readyTask("a")}
++		stopped := PassExit{Code: PassExitOriginWait}
++		h.fake.exits = []PassExit{stopped, {Code: PassExitCovered}, stopped}
++		h.d.deps.CatchUp = fakeCatchUpDeps(func() error { return nil })
++
++		for range 5 {
++			h.tick(true)
++		}
++
++		if len(h.fake.spawned) != 3 || len(h.fake.notices) != 0 {
++			t.Errorf("passes, notices = %d, %q; want 3 passes and no notice", len(h.fake.spawned), h.fake.notices)
++		}
++	})
++
++	t.Run("a first pass its catch-up stopped that no catch-up of the dobby answers is a refused start", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name    string
++			code    int
++			catchUp CatchUpDeps
++		}{
++			{"OriginWaitWithNoCatchUp", PassExitOriginWait, CatchUpDeps{}},
++			{"CatchUpRefused", PassExitCatchUpRefused, fakeCatchUpDeps(func() error { return nil })},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				h := newPassHarness(t)
++				h.fake.tasks = []TaskView{readyTask("a")}
++				h.fake.exits = []PassExit{{Code: tt.code, Error: "the catch-up failed"}}
++				h.d.deps.CatchUp = tt.catchUp
++
++				h.tick(true)
++				h.tick(true)
++
++				if len(h.fake.spawned) != 1 || len(h.fake.notices) != 1 {
++					t.Errorf("passes, notices = %d, %q; want 1 pass and one notice", len(h.fake.spawned), h.fake.notices)
++				}
++				if got := h.stateRecord().Starts["a"]; got.NextTry.IsZero() || got.Refusal != "the catch-up failed" {
++					t.Errorf("start record = %+v; want the refusal with a backoff", got)
++				}
++			})
++		}
++	})
++
+ 	t.Run("an owned-elsewhere first pass with no status file is a refused start with one notice", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newPassHarness(t)
