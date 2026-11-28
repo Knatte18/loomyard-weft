@@ -2,8 +2,6 @@
 
 `reset-partial-commit-push` · Task · bug, webster, fabric
 
-Depends on: [`webster-reset-push-sync`](design-webster-reset-push-sync.md)
-
 ## Seen
 
 Code-Review of `webster-reset-push-sync` (finding F1, 2026-11-28) found an edge in `internal/webstercli/reset.go`.
