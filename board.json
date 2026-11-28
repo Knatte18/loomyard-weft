@@ -1057,29 +1057,6 @@
       "project": "implementer-gate-time"
     },
     {
-      "id": 1807,
-      "handle": "T5",
-      "slug": "lock-holder-gates-first",
-      "title": "A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "gate",
-        "landing"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (2026-11-28)\n\nA run gating tiers 0 to 2 under the parent lock waited for the same four gate slots as the runs queued behind its lock,\nwhose lock-free gates its landing would make stale anyway.\n`docs/research/webster/webster-time-2026-11-08.md` (lever 4) also measured 3.1 min of slot wait per Webster row, 27 min in one.\n\n## Idea\n\nGive gate slot requests a priority: a gate run under the parent lock first, then implementer gates, then the rest.\n",
-      "status": "done",
-      "created": "2026-11-28T12:06:20Z",
-      "revised": "2026-11-28T12:58:28Z",
-      "profile": "speed",
-      "project": "implementer-gate-time"
-    },
-    {
       "id": 1808,
       "handle": "F3",
       "slug": "release-order-queue",
@@ -1334,6 +1311,7 @@
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `landing-queue`.\n\nTakes: D6's ledger steps, as the Constraints' push-ledger bullet words them: the push-ledger landing write in internal/loomcli/landingdeps.go (landLocally and recordHeldLanding, calling runpusher.RecordLanding with a pushledger.Landing) takes the run's slug, the landing tip and the records commit as arguments instead of reading them from the calling run's worktree, the records commit picked as oldestHeldRecords picks it today; landingshed's Deps.LandLocally takes the run's own landing commit as its tip, which a lone run's Finalize (internal/landingshed/finalize.go, its LandLocally call) passes, and which for a lone run is the commit it lands today; on a run whose ledger landing stands, LandLocally rewrites it with the same tip, keeps its records commit while origin lacks it and the run's new records commit descends from it, and still commits the run's status records and marks its pair's push. No queue, no batch and no leader: a run's Finalize still writes only its own landing.\nDelivers: One push-ledger landing writer that takes another run's slug, tip and records commit, with today's single-run landing unchanged; a parent ahead of origin by a chain of runs' landing commits, each the tip of its own run's ledger landing, reads as ahead by owed tips alone.\nExports: Fixed for landing-queue-batch: the loomcli writer of one push-ledger landing taking the parent branch, the run's slug, its landing commit and its records commit, and the landingshed Deps seam a Finalize reaches it through; the plan names both and the change description lists their signatures.\n\nThe part changes these packages:\n\n- internal/loomcli (about 220 changed lines)\n- internal/landingshed (about 30 changed lines)\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-28T13:38:15Z",
       "revised": "2026-11-28T13:38:15Z",
       "profile": "light",
