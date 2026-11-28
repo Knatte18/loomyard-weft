@@ -37,5 +37,6 @@
       "title": "Fabric asks a status codec verdict instead of decoding shed records",
       "digest": "a1f290150814404e518123690cb3b8118b971a5d18b7b4735f8822bdf455d393"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
