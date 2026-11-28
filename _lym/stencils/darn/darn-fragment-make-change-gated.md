@@ -7,7 +7,7 @@
      fills the {{.subagent_model}} marker its Claude engine block declares from loom.subagent_model,
      fills the {{.measure_call}} marker with the measuring call the hub's gate config can run,
      then fills the result whole into darn-template-write's make_change marker.
-lym-stencil: sha256=7e9d8b491455e7750682dc803dd42db7fab56afadb7d5e66e92c0567c59cd711 build=ef9062d91eb149410187eaa5017ea2be0db59db0 time=2026-11-28T12:09:50Z -->
+lym-stencil: sha256=d2680b8e606bcaab23df4dbd5d0d770f05f17fe8a7050a0838f4118b38b07b73 build=e9a8aa10f1c68376fd6a088bc75faa4b8fbf8c67 time=2026-11-28T14:25:38Z -->
 
 1. When the task starts from a reported test failure, ask your parent before you diagnose it or make any edit:
    send `lym creel post --parent --expect-reply "<text>"`, then end your turn to wait.
@@ -44,14 +44,23 @@ lym-stencil: sha256=7e9d8b491455e7750682dc803dd42db7fab56afadb7d5e66e92c0567c59c
    Before any of them, ask your parent with `lym creel post --parent --expect-reply "<text>"`,
    naming every call you plan and their count, then end your turn to wait.
    Run only the calls your parent's answer allows, within the limits it sets, one at a time in the foreground.
+   Run them in this session: no subagent runs them.
    The verify gate's test of your committed tree is none of these calls and still runs.
    With no parent, or when the post is refused and no strand answers,
    run only the calls an `Added after Discussion` entry of the record allows,
    within its limits, one at a time in the foreground.
-   With no such entry, run none of them and stop.
+   With no such entry, on a task a Code-Review round has run on,
+   a `Decision for <slug>:` board note, `<slug>` being this task's, that says the scope is closed
+   and files the measurements for a new task settles the point:
+   run none of them, do not stop, make what the record asks without them,
+   and name the note in the change description's design decisions.
+   With no such entry or note, run none of them and stop.
    Write the change description, your one output file, as a stop report in the final-summary spec's form,
    naming the measurements the entry asks for and their scope, never as gate or tier calls,
-   and as the way forward a decision on the measurement runs and their limits.
+   and as the way forward `lym loom decision add` with an entry naming the calls it allows and their limits,
+   then `lym loom resume`, after which the resumed writer runs them under that entry;
+   on a task a Code-Review round has run on, name instead a board note titled `Decision for <slug>: <call>`
+   that says the scope is closed and files the measurements for a new task, then `lym loom resume`.
    Then create the stop marker Step 3 names, and end your turn with no further commit.
    Once you end your turn, the row's verify gate tests your committed tree, and a cold fixer clears its failures before you hear of them.
    You are re-prompted only with what the fixer leaves: act on that alone.
