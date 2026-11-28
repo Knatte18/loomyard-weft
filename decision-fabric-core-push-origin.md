@@ -330,6 +330,12 @@ Decision: Option (a): cards 7 and 8 run refuseUnsuppliedSeams(fabriccore.SeamRun
 
 Rationale: D13 requires refusal before acting; option (b) would add a shedrun import to handover.go and extend the debt D13 cuts.
 
+### Added after Discussion (parent, 2026-11-28): Fabric asks a status codec verdict instead of decoding shed records
+
+Decision: Option (a): add StatusCodec.Recorded func(data []byte) (bool, error), answered by shed's adapter; cards 10 and 11 read each status file through RunRecordPaths.StatusFile and ask that verdict in place of readRunStatusRows; card 2 adds the shed half and its test, card 3 the field (finding F11).
+
+Rationale: D13 names a shed record decode inside fabric as exactly the rule the seam replaces; an exception would keep the debt.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
