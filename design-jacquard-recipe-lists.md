@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-jacquard-recipe-lists.md)
 
-Depends on: [`jacquard-recipe`](design-jacquard-recipe.md)
-
 Filed from the Sketch `recipe-build-from-sketch`.
 
 Takes: jacquard-recipe's shedrun.RecipeJacquard, loomshed.NameRecordSeed and the Jacquard block row. D8 whole but loomrecipe's lists, which jacquard-recipe adds: every non-test closed recipe list naming shedrun.RecipeTapestry for a path a jacquard run walks names jacquard too, found by grepping for it outside tests: batten's admitted child recipes and their refusal text (internal/battencli/wire.go childRecipeSupported and unsupportedChildRecipeRefusal), loomcli's lists (arbiterprompt.go, arm.go, peers.go, wiring.go), tools/tokencount/shed.go, and the report's selected run recipes (internal/reportengine/runs.go); the report's jacquard phase table is tapestry's without its Discussion families, and both tables put the Jacquard block row and Record-Seed in Preflight's phase; a default that falls back to tapestry when a run has no seed (sharedbootstrap.go resolveSeedRecipe) stays tapestry. D9 whole: internal/reportengine's cost cells key a tapestry run whose stored_record is true under jacquard, and only the cell key changes.
