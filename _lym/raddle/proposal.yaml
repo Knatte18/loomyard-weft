@@ -21,7 +21,7 @@
     {"slug": "plan-ahead-chains", "revised": "2026-11-28T12:42:44Z"},
     {"slug": "closed-area", "revised": "2026-11-26T20:49:28Z"},
     {"slug": "pipelined-chain-planning", "revised": "2026-11-28T12:47:03Z"},
-    {"slug": "landing-queue", "revised": "2026-11-28T13:21:16Z"}
+    {"slug": "landing-queue", "revised": "2026-11-28T13:28:49Z"}
   ],
   "parts": [
     {
@@ -89,7 +89,7 @@
       ],
       "pattern_changes": [],
       "expected_cost_usd": null,
-      "cost_line": "darn light with stored_record true reads too few runs (no run yet), so no figure; about 255 changed lines over four packages; the stored_record-false darn light fit (118 runs) reads about $7 for reference only. Edges left out: keep-landed-run-records changes reportengine for lym report landed, apart from cost.go, runs.go and timingspans.go, and driver-settles-stops and fabric-core-merge-landing change battencli away from wire.go's child-recipe list; each overlap is a few lines that merge by hand."
+      "cost_line": "darn light with stored_record true reads too few runs (no run yet), so no figure; about 255 changed lines over four packages; the stored_record-false darn light fit (118 runs) reads about $7 for reference only. Edges left out: keep-landed-run-records changes reportengine for lym report landed, apart from cost.go, runs.go and timingspans.go, and driver-settles-stops and fabric-core-merge-landing change battencli away from wire.go's child-recipe list; each overlap is a few lines that merge by hand. landing-queue is a Sketch still in Raddle-Write with no filed parts, so no edge can name it; whatever it files for batten's landing path sits apart from wire.go and startguard.go."
     },
     {
       "slug": "jacquard-start-refusal",
