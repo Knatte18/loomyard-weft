@@ -1,13 +1,13 @@
 {
   "current_producer": "Parent-Align",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "landing stop: the remote ref origin/kde-window-placement-build moved during the fixer session of Parent-Align to 742ae6ce62570f770f9faf49eb811f2f83498ce5, which holds commits the task head 98eab927cc45c68c9445b255783ae9c8f12536b4 the session started from lacks; session: claude session 043d6ce8-6182-42c1-a424-37eb27beccd7; way forward: check the commits 98eab927cc45c68c9445b255783ae9c8f12536b4..742ae6ce62570f770f9faf49eb811f2f83498ce5 are the task's, then `lym loom resume`",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Parent-Align",
     "last": "Parent-Align → stuck",
-    "wait": ""
+    "wait": "landing stop: the remote ref origin/kde-window-placement-build moved during the fixer session of Parent-Align to 742ae6ce62570f770f9faf49eb811f2f83498ce5, which holds commits the task head 98eab927cc45c68c9445b255783ae9c8f12536b4 the session started from lacks; session: claude session 043d6ce8-6182-42c1-a424-37eb27beccd7; way forward: check the commits 98eab927cc45c68c9445b255783ae9c8f12536b4..742ae6ce62570f770f9faf49eb811f2f83498ce5 are the task's, then `lym loom resume`"
   },
   "history": [
     {
@@ -297,7 +297,9 @@
       "output": "",
       "at": "2026-11-28T14:18:36Z",
       "started_at": "2026-11-28T13:35:57Z",
-      "budget_exempt": true
+      "budget_exempt": true,
+      "repeats": 1,
+      "last_at": "2026-11-28T14:47:41Z"
     }
   ],
   "product": {
