@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 08:38 UTC; every age below is as of then.
+Rendered 2026-11-28 08:39 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,7 +18,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | landing · Finalize | neve | 10h<br>10h | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | landing · Finalize | neve | 17h<br>17h | batten, fabric |
 | T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | landing · Finalize | neve | 10h<br>10h | gate |
-| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | Code-Burler-Fix | neve | 41m<br>41m | webster, fabric |
+| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | Code-Burler-Fix | neve | 42m<br>42m | webster, fabric |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Code-Burler-Fix | neve | 1d<br>14h | fabric, cleanup, batten |
 
 ## Layer A (7)
@@ -61,8 +61,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 1d<br>14h | landing, gate, batten |
 | E7 |  | **No gate checks Go formatting**<br>• A mis-formatted Go file passes every tier; add a gofmt check to tier0 | [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md) | 12h<br>11h | gate |
 
-## Features (1)
+## Features (2)
 
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | 10h<br>10h | board, orch, dobby |
+| # | Prio | Note | Slug | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) |  | 10h<br>10h | board, orch, dobby |
+| F2 |  | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | T2 | 0m<br>0m | termwindow, desktop |
