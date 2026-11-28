@@ -1,6 +1,6 @@
 # A landing queue gates several ready runs as one batch and lands them together
 
-`landing-queue` · Task · enhancement, landing, gate, batten · running · Discussion-Write
+`landing-queue` · Task · enhancement, landing, gate, batten · running · Discussion-Bouncer
 
 ## Seen (operator, 2026-11-27)
 
