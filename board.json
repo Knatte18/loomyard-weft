@@ -979,22 +979,27 @@
       "id": 1779,
       "handle": "T12",
       "slug": "stop-settlement-table",
-      "title": "The settlement table: stop classes and who settles each, per autonomy level and halt count",
+      "title": "The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count",
       "kind": "task",
       "labels": [
         "feature",
-        "shed"
+        "enhancement",
+        "shed",
+        "loom",
+        "batten"
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "autonomy-unattended-level"
+      ],
       "isolated": false,
       "brief": "",
-      "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D2's table and its verdict order; nothing from another part.\nDelivers: D2's table steps: the new leaf package `internal/stopclass`, standard library only and no I/O, holding one named class constant per row of D2's table and the one function that returns a verdict for a class, a level and the halt count at the row, read in D2's order. lym's bound per class lives here, and lym's column applies at every level. The driver rows that take their bound from it, and the `settle: orch` hand-back, are built by `driver-settles-stops`.\nExports: Fixed for consumers: `stopclass.Class` with one constant per row; `stopclass.Level` with `LevelOff` (\"false\"), `LevelOn` (\"true\") and `LevelUnattended` (\"unattended\"), the same strings `dobbyengine.AutonomyLevel` holds, so a consumer converts with `stopclass.Level(level)`; `stopclass.Verdict` with `VerdictLym`, `VerdictOrch`, `VerdictOperator`; `stopclass.Settle(class Class, level Level, haltsAtRow, lymSettles int) Decision`, `Decision{Verdict, Bound}`.\n\nThe part changes these packages:\n\n- internal/stopclass (about 480 changed lines)\n",
+      "body": "## The settlement table: stop classes and who settles each, per autonomy level and halt count\n\nFiled from the Sketch `self-healing-runs`.\n\nTakes: D2's table and its verdict order; nothing from another part.\nDelivers: D2's table steps: the new leaf package `internal/stopclass`, standard library only and no I/O, holding one named class constant per row of D2's table and the one function that returns a verdict for a class, a level and the halt count at the row, read in D2's order. lym's bound per class lives here, and lym's column applies at every level. The driver rows that take their bound from it, and the `settle: orch` hand-back, are built by `driver-settles-stops`.\nExports: Fixed for consumers: `stopclass.Class` with one constant per row; `stopclass.Level` with `LevelOff` (\"false\"), `LevelOn` (\"true\") and `LevelUnattended` (\"unattended\"), the same strings `dobbyengine.AutonomyLevel` holds, so a consumer converts with `stopclass.Level(level)`; `stopclass.Verdict` with `VerdictLym`, `VerdictOrch`, `VerdictOperator`; `stopclass.Settle(class Class, level Level, haltsAtRow, lymSettles int) Decision`, `Decision{Verdict, Bound}`.\n\nThe part changes these packages:\n\n- internal/stopclass (about 480 changed lines)\n\n## lym loom resume and lym loom start wait for the driver to park, with a no-wait option batten passes\n\nFiled from the Sketch `self-healing-runs`.\n\nTakes: D5 whole: the `shedrun.StartNotParkedKind` refusals in `internal/loomcli/resume.go` and `internal/loomcli/start.go`, the driver's wait record `sheddriver.ReadDriveWait` that push-retry-not-halt added, the keep-warm cap from `shuttleengines.KeepWarm`, `childSpawnError` in `internal/battencli/wire.go` and the `battenshed.ErrChildNotParked` retry in `internal/battenshed/innerrun.go`.\nDelivers: Both verbs wait for the park, or for a run lock on a non-running run to be released, under the keep-warm cap, waking at most once a second with an injected clock; answer at once for a driver that keeps a wait record; refuse past the cap naming the retry; and refuse at once with the no-wait option, which batten passes on its child start and on every resume it runs, the resume of dobby-pause-lift-resume's lift pass among them.\nExports: Fixed for consumers: the `--no-wait` flag on `lym loom resume` and `lym loom start`.\n\nThe part changes these packages:\n\n- internal/loomcli (about 420 changed lines)\n- internal/battencli (about 60 changed lines)\n- internal/battenshed (about 50 changed lines)\n\n## The driver gives each stop an identity, counts halts at a row with lym's retries, and records a halt's four facts\n\nFiled from the Sketch `self-healing-runs`.\n\nTakes: D3 whole and D7's recording steps; `stopclass.Settle` and the class constants from stop-settlement-table; `dobbyengine.AutonomyLevel` through `hubgeom.Autonomy` from autonomy-unattended-level, converted with `stopclass.Level(level)` in the driver wiring in `internal/loomcli/drivewiring.go`. It answers the Discussion-Review round-3 BLOCKING finding failed-state-halt-not-counted-or-recorded through the stop identity, as both added decisions rule.\nDelivers: D3: the stop record written through `internal/state` beside the settle records, holding the open stop's key, its halt entry's history index and the four facts; the identity opened, closed and taken over across a driver restart as D3 says; settle records carrying the stop identity, the class and the halt entry's index; one function that computes both the halt count at a row and lym's settles of a class at the row over the whole history, counting and excluding exactly what D3 lists, so `wakeRestartGap` never restores a bound. D7's recording steps: every hand-back records `class:`, `settle:`, `halts_at_row:` and `halt:` on its history entry, or on the stop record when the stop left none, and carries them on the notice beside `autonomy:`; every hand-back to the orch reads `settle: orch` or `settle: operator`. D7's criterion, which needs the dobby's child read, is carried by severe-halt-slack-post.\nExports: Fixed for consumers: `shedengine.HistoryEntry` fields `Class`, `Settle`, `HaltsAtRow` and `Halt`; `shedrun.SettleRecord` fields `StopID`, `Class` and `HistoryIndex`; the stop record type and its path helper in `internal/shedrun`; the halt key, the row's producer and the stop identity joined, which readers treat as an opaque string; the count function in `internal/sheddriver`.\n\nThe part changes these packages:\n\n- internal/sheddriver (about 820 changed lines)\n- internal/shedrun (about 80 changed lines)\n- internal/shedengine (about 90 changed lines)\n- internal/loomcli (about 40 changed lines)\n\n",
       "status": "draft",
       "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
-      "profile": "light",
+      "revised": "2026-11-28T09:47:40Z",
+      "profile": "solid",
       "project": "self-healing-autonomy",
       "discussed": true,
       "record_body_sha256": "402c48f85516160b1f43a366cee7de162e3e628cc84e5b53fae138effb2d1a66"
@@ -1032,61 +1037,6 @@
       "record_body_sha256": "14f845a346186ddaab80c59e48d41e30b3d83b7b1a9c9c4e579fad0d57038148"
     },
     {
-      "id": 1781,
-      "handle": "T30",
-      "slug": "loom-verbs-await-park",
-      "title": "lym loom resume and lym loom start wait for the driver to park, with a no-wait option batten passes",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "batten"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [
-        "autonomy-unattended-level"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D5 whole: the `shedrun.StartNotParkedKind` refusals in `internal/loomcli/resume.go` and `internal/loomcli/start.go`, the driver's wait record `sheddriver.ReadDriveWait` that push-retry-not-halt added, the keep-warm cap from `shuttleengines.KeepWarm`, `childSpawnError` in `internal/battencli/wire.go` and the `battenshed.ErrChildNotParked` retry in `internal/battenshed/innerrun.go`.\nDelivers: Both verbs wait for the park, or for a run lock on a non-running run to be released, under the keep-warm cap, waking at most once a second with an injected clock; answer at once for a driver that keeps a wait record; refuse past the cap naming the retry; and refuse at once with the no-wait option, which batten passes on its child start and on every resume it runs, the resume of dobby-pause-lift-resume's lift pass among them.\nExports: Fixed for consumers: the `--no-wait` flag on `lym loom resume` and `lym loom start`.\n\nThe part changes these packages:\n\n- internal/loomcli (about 420 changed lines)\n- internal/battencli (about 60 changed lines)\n- internal/battenshed (about 50 changed lines)\n",
-      "status": "draft",
-      "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
-      "profile": "light",
-      "project": "self-healing-autonomy",
-      "discussed": true,
-      "record_body_sha256": "4ba1d171c20571cb61b543ce629b7f764518c94f41b530cc52b80a77a2351c5c"
-    },
-    {
-      "id": 1782,
-      "handle": "T31",
-      "slug": "stop-halt-count",
-      "title": "The driver gives each stop an identity, counts halts at a row with lym's retries, and records a halt's four facts",
-      "kind": "task",
-      "labels": [
-        "feature",
-        "shed",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [
-        "stop-settlement-table",
-        "loom-verbs-await-park"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D3 whole and D7's recording steps; `stopclass.Settle` and the class constants from stop-settlement-table; `dobbyengine.AutonomyLevel` through `hubgeom.Autonomy` from autonomy-unattended-level, converted with `stopclass.Level(level)` in the driver wiring in `internal/loomcli/drivewiring.go`. It answers the Discussion-Review round-3 BLOCKING finding failed-state-halt-not-counted-or-recorded through the stop identity, as both added decisions rule.\nDelivers: D3: the stop record written through `internal/state` beside the settle records, holding the open stop's key, its halt entry's history index and the four facts; the identity opened, closed and taken over across a driver restart as D3 says; settle records carrying the stop identity, the class and the halt entry's index; one function that computes both the halt count at a row and lym's settles of a class at the row over the whole history, counting and excluding exactly what D3 lists, so `wakeRestartGap` never restores a bound. D7's recording steps: every hand-back records `class:`, `settle:`, `halts_at_row:` and `halt:` on its history entry, or on the stop record when the stop left none, and carries them on the notice beside `autonomy:`; every hand-back to the orch reads `settle: orch` or `settle: operator`. D7's criterion, which needs the dobby's child read, is carried by severe-halt-slack-post.\nExports: Fixed for consumers: `shedengine.HistoryEntry` fields `Class`, `Settle`, `HaltsAtRow` and `Halt`; `shedrun.SettleRecord` fields `StopID`, `Class` and `HistoryIndex`; the stop record type and its path helper in `internal/shedrun`; the halt key, the row's producer and the stop identity joined, which readers treat as an opaque string; the count function in `internal/sheddriver`.\n\nThe part changes these packages:\n\n- internal/sheddriver (about 820 changed lines)\n- internal/shedrun (about 80 changed lines)\n- internal/shedengine (about 90 changed lines)\n- internal/loomcli (about 40 changed lines)\n",
-      "status": "draft",
-      "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
-      "profile": "solid",
-      "project": "self-healing-autonomy",
-      "discussed": true,
-      "record_body_sha256": "2595b4d7ef157303a4686e6ad8675f1b1d20dd345903275b8549242ef8b07443"
-    },
-    {
       "id": 1783,
       "handle": "T32",
       "slug": "dobby-pause-lift-resume",
@@ -1100,7 +1050,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "loom-verbs-await-park",
         "catchup-fetch-stops-start",
         "kde-window-placement-build"
       ],
@@ -1109,7 +1058,7 @@
       "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D4's pause-lift and hold steps: `liftPending` and `spawn` in `internal/dobbyengine/passes.go`, `syncBoltHold` in `internal/dobbyengine/catchupwait.go`, `Pause` in `internal/tenderengine/pause.go` and `pauserecord.Entry`; the `--no-wait` flag from loom-verbs-await-park, which batten passes on the lift pass's child resume.\nDelivers: The lift resumes a run whose last stop is the hand-back for the lifted pause, matched by scope, with a dobby pass on a run that is not drivable, keeping the lift in the dobby state record until the resume succeeds or the run moves on; a hold reason on a pause entry, set on a live entry of the scope when one exists, that stands through a `lym tender resume` with no slug and is lifted only by one naming the slug; a bolt-hold entry carrying a hold reason replaced by the dobby's own hold entry when it lifts the bolt-hold. The driver rows of D4 are built by driver-settles-stops.\nExports: Fixed for consumers: the hold reason field on `pauserecord.Entry` and the tender pause option that sets it, which the orch's hold of orch-unattended-rules uses.\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 480 changed lines)\n- internal/tenderengine (about 220 changed lines)\n- internal/pauserecord (about 50 changed lines)\n",
       "status": "draft",
       "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
+      "revised": "2026-11-28T09:47:40Z",
       "profile": "light",
       "project": "self-healing-autonomy",
       "discussed": true,
@@ -1119,7 +1068,7 @@
       "id": 1784,
       "handle": "T33",
       "slug": "driver-settles-stops",
-      "title": "The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound",
+      "title": "The driver and the arbiter settle known stops and budget escalations themselves within the table's bound",
       "kind": "task",
       "labels": [
         "feature",
@@ -1127,54 +1076,28 @@
         "board",
         "batten",
         "shuttle",
-        "webster"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [
-        "stop-halt-count",
-        "bouncer-stalemate-uncommitted",
-        "missing-origin-unreachable"
-      ],
-      "isolated": false,
-      "brief": "",
-      "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D4's driver rows, D2's driver steps and D3's bound check, over stop-halt-count's count function and stop record and stop-settlement-table's bounds. Raise sites: the claim push in `pushOwnerCommit` in `internal/boardengine/ownerset.go`, reached from `claimBoardEntry` in `internal/battencli/owner.go`; `shuttleengine.ErrNotStarted` and `shedtransient.TransientAgentStart`; the session timeout reason in `internal/shedadapters/multillm.go`; the fixer fork in `internal/websterengine`; `strandGoneError` in `internal/shuttleengine/run.go`; and the gate-attempts Stuck from `gateFailedReason` in `internal/shedadapters/gateattempts.go`.\nDelivers: New rows in `decideDrive` in `internal/sheddriver/driverules.go`: a board claim refusal gets a board sync and a re-step; a launch never ready, a session timeout, a failed fixer fork and a lost strand get one fresh start of the row's producer; a bounce budget exhausted gets one resume, matching the `shedengine.ReasonBounceBudgetExhausted` prefix; a gate-attempts Stuck gets a re-step with a fresh producer session. Each class but the bounce budget's is raised as a named kind or field where the stop starts. Each row takes its bound from the table, a settle within the bound sends no notice and leaves a settle record, and a stop past it is handed back with its verdict. The tackler keeps every stop no row names.\nExports: The named kinds for the claim refusal, the session timeout, the fixer fork failure, the lost strand and the gate-attempts Stuck.\n\nThe part changes these packages:\n\n- internal/sheddriver (about 650 changed lines)\n- internal/boardengine (about 70 changed lines)\n- internal/battencli (about 30 changed lines)\n- internal/shuttleengine (about 130 changed lines)\n- internal/shedadapters (about 140 changed lines)\n- internal/shedtransient (about 50 changed lines)\n- internal/websterengine (about 80 changed lines)\n",
-      "status": "draft",
-      "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
-      "profile": "solid",
-      "project": "self-healing-autonomy",
-      "discussed": true,
-      "record_body_sha256": "4ddd3e8b39624084d8cdc9a86647bf9be802c2a34c6868761d99afe3b1b15d1f"
-    },
-    {
-      "id": 1785,
-      "handle": "T34",
-      "slug": "arbiter-budget-escalations",
-      "title": "The arbiter takes budget escalations, and nothing lands a round with an open blocking finding unattended",
-      "kind": "task",
-      "labels": [
-        "feature",
+        "webster",
         "arbiter",
-        "shed",
         "loom",
         "stencil"
       ],
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "driver-settles-stops"
+        "stop-settlement-table",
+        "bouncer-stalemate-uncommitted",
+        "missing-origin-unreachable"
       ],
       "isolated": false,
       "brief": "",
-      "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D6's Go and arbiter-stencil steps: `Eligibility` and `Stop` in `internal/arbiterstop/arbiterstop.go`, built in `arbiterstop.Check` from `NewReaders`; the arbiter call in `internal/shedarbiter`; the stencil `contracts/stencils/loom/loom-template-arbiter.md`; the Bouncer's escalation and accept paths in `internal/shedadapters/bouncer.go` and `readCirclingFile` and `recordAutoContinue` in `internal/shedadapters/circling.go`; `circlingVerb` and `finalizeCirclingVerb` in `internal/loomcli/circling.go`; the fixer report's `deferred` disposition parsed by `internal/burlerengine/fixerreport.go`; `dobbyengine.LookupAutonomy` from autonomy-unattended-level.\nDelivers: Cause `budget` admitted; `arbiterstop.Stop` carrying the run's level, named in the arbiter's prompt; the arbiter's `budget` rules in D6's order, with the one continue per segment read from the circling decision files and refused at the hard cap; one board note for a deferred-findings accept at Code-Review and after, filed by the driver through a seam the loomcli driver wiring backs with `internal/boardengine`, with no board grant for the arbiter; under `unattended` the Bouncer runs every perch as with `blocking_escalates`, and neither the arbiter at any cause nor a Finalize fix-review accept lands a round with an open BLOCKING finding or a red gate. The orch's side of D6, the hold and the role text, is built by orch-unattended-rules.\nExports: The `Autonomy` field on `arbiterstop.Stop`.\n\nThe part changes these packages:\n\n- internal/arbiterstop (about 160 changed lines)\n- internal/shedarbiter (about 90 changed lines)\n- internal/shedadapters (about 230 changed lines)\n- internal/sheddriver (about 160 changed lines)\n- internal/loomcli (about 150 changed lines)\n- contracts/stencils/loom (about 60 changed lines)\n",
+      "body": "## The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound\n\nFiled from the Sketch `self-healing-runs`.\n\nTakes: D4's driver rows, D2's driver steps and D3's bound check, over stop-halt-count's count function and stop record and stop-settlement-table's bounds. Raise sites: the claim push in `pushOwnerCommit` in `internal/boardengine/ownerset.go`, reached from `claimBoardEntry` in `internal/battencli/owner.go`; `shuttleengine.ErrNotStarted` and `shedtransient.TransientAgentStart`; the session timeout reason in `internal/shedadapters/multillm.go`; the fixer fork in `internal/websterengine`; `strandGoneError` in `internal/shuttleengine/run.go`; and the gate-attempts Stuck from `gateFailedReason` in `internal/shedadapters/gateattempts.go`.\nDelivers: New rows in `decideDrive` in `internal/sheddriver/driverules.go`: a board claim refusal gets a board sync and a re-step; a launch never ready, a session timeout, a failed fixer fork and a lost strand get one fresh start of the row's producer; a bounce budget exhausted gets one resume, matching the `shedengine.ReasonBounceBudgetExhausted` prefix; a gate-attempts Stuck gets a re-step with a fresh producer session. Each class but the bounce budget's is raised as a named kind or field where the stop starts. Each row takes its bound from the table, a settle within the bound sends no notice and leaves a settle record, and a stop past it is handed back with its verdict. The tackler keeps every stop no row names.\nExports: The named kinds for the claim refusal, the session timeout, the fixer fork failure, the lost strand and the gate-attempts Stuck.\n\nThe part changes these packages:\n\n- internal/sheddriver (about 650 changed lines)\n- internal/boardengine (about 70 changed lines)\n- internal/battencli (about 30 changed lines)\n- internal/shuttleengine (about 130 changed lines)\n- internal/shedadapters (about 140 changed lines)\n- internal/shedtransient (about 50 changed lines)\n- internal/websterengine (about 80 changed lines)\n\n## The arbiter takes budget escalations, and nothing lands a round with an open blocking finding unattended\n\nFiled from the Sketch `self-healing-runs`.\n\nTakes: D6's Go and arbiter-stencil steps: `Eligibility` and `Stop` in `internal/arbiterstop/arbiterstop.go`, built in `arbiterstop.Check` from `NewReaders`; the arbiter call in `internal/shedarbiter`; the stencil `contracts/stencils/loom/loom-template-arbiter.md`; the Bouncer's escalation and accept paths in `internal/shedadapters/bouncer.go` and `readCirclingFile` and `recordAutoContinue` in `internal/shedadapters/circling.go`; `circlingVerb` and `finalizeCirclingVerb` in `internal/loomcli/circling.go`; the fixer report's `deferred` disposition parsed by `internal/burlerengine/fixerreport.go`; `dobbyengine.LookupAutonomy` from autonomy-unattended-level.\nDelivers: Cause `budget` admitted; `arbiterstop.Stop` carrying the run's level, named in the arbiter's prompt; the arbiter's `budget` rules in D6's order, with the one continue per segment read from the circling decision files and refused at the hard cap; one board note for a deferred-findings accept at Code-Review and after, filed by the driver through a seam the loomcli driver wiring backs with `internal/boardengine`, with no board grant for the arbiter; under `unattended` the Bouncer runs every perch as with `blocking_escalates`, and neither the arbiter at any cause nor a Finalize fix-review accept lands a round with an open BLOCKING finding or a red gate. The orch's side of D6, the hold and the role text, is built by orch-unattended-rules.\nExports: The `Autonomy` field on `arbiterstop.Stop`.\n\nThe part changes these packages:\n\n- internal/arbiterstop (about 160 changed lines)\n- internal/shedarbiter (about 90 changed lines)\n- internal/shedadapters (about 230 changed lines)\n- internal/sheddriver (about 160 changed lines)\n- internal/loomcli (about 150 changed lines)\n- contracts/stencils/loom (about 60 changed lines)\n\n",
       "status": "draft",
       "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
+      "revised": "2026-11-28T09:47:41Z",
       "profile": "solid",
       "project": "self-healing-autonomy",
       "discussed": true,
-      "record_body_sha256": "36c8b395d8bcc9030ad0d474beede2c275739d35049897d852c561cde37618ce"
+      "record_body_sha256": "4ddd3e8b39624084d8cdc9a86647bf9be802c2a34c6868761d99afe3b1b15d1f"
     },
     {
       "id": 1786,
@@ -1278,7 +1201,6 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "arbiter-budget-escalations",
         "dobby-stall-chase"
       ],
       "isolated": false,
@@ -1286,7 +1208,7 @@
       "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D9 and D13 whole and the role-text steps of D6 and D7, written in `contracts/orchrole/role-autonomy.md`, `contracts/orchrole/orch-role.md` and `internal/heddleengine/glossary.md`; the hold reason from dobby-pause-lift-resume, the arbiter's hand-on from arbiter-budget-escalations, the `settle: operator` post from severe-halt-slack-post and the stall posts from dobby-stall-chase, each landed. D9's autonomy line in `internal/orchengine/prompt.go` is built by autonomy-unattended-level.\nDelivers: The unattended rules D9 lists; D6's hold of a round with an open BLOCKING finding or a red gate and of a Finalize halt while one remains; D7's relay rule, keyed posts, the in-pane relay while the slack button is off, the hold after a severe relay and the `lym selfreport create` filing, with \"lym classifies no halt\" dropped; and D13's three glossary lines.\nExports: Nothing in Go.\n\nThe part changes these packages:\n\n- contracts/orchrole (about 200 changed lines)\n- internal/heddleengine (about 10 changed lines)\n",
       "status": "draft",
       "created": "2026-11-28T09:40:38Z",
-      "revised": "2026-11-28T09:40:38Z",
+      "revised": "2026-11-28T09:47:41Z",
       "profile": "docs",
       "project": "self-healing-autonomy",
       "discussed": true,

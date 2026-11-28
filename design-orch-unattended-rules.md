@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-orch-unattended-rules.md)
 
-Depends on: [`arbiter-budget-escalations`](design-arbiter-budget-escalations.md), [`dobby-stall-chase`](design-dobby-stall-chase.md)
+Depends on: [`dobby-stall-chase`](design-dobby-stall-chase.md)
 
 Filed from the Sketch `self-healing-runs`.
 

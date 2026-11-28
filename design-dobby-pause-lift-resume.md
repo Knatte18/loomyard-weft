@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-dobby-pause-lift-resume.md)
 
-Depends on: [`loom-verbs-await-park`](design-loom-verbs-await-park.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md), [`kde-window-placement-build`](design-kde-window-placement-build.md)
+Depends on: [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md), [`kde-window-placement-build`](design-kde-window-placement-build.md)
 
 Filed from the Sketch `self-healing-runs`.
 
