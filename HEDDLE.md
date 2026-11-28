@@ -44,6 +44,7 @@ Rendered at every worktree's anchor.
 
 - Read "Sketch" (capital S) as the decision record: the approved record a Discussion writes, stored on the board for a discussed entry.
 - Read "Merriam" as webster's long-lived master session, which forks one implementer per batch.
+- Read "jacq" as the jacquard recipe.
 - Use every nickname in this list freely with the operator.
 - Keep the formal names in code, files, verbs and specs.
 ```
