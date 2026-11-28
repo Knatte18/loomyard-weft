@@ -1,6 +1,6 @@
 # internal/shedcli.names is reached by no main package
 
-`shedcli-names-unreached` · Task · enhancement, shed · running · Friction-Reflect
+`shedcli-names-unreached` · Task · enhancement, shed · done
 
 ## Seen
 
