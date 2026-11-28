@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is the round-2 Code-Bouncer escalation with cause `decision`, and the brief names no refusal. Its one decision finding is F11, which carries round 1's F2. F11 says the new tier1 mail test adds uses of prkit.API and of creelfake.Delivery, the second reached through startNoticeOrch, and that it writes the change description at deps.DescriptionPath by hand.\nThe board entry settles F11 as out of scope. Its change asks only to move the `MailAgent` rows to \"a tier1 loomcli test over a real creel daemon\". It asks for no recorded GitHub stand-in, no reed-backed creel delivery and no recorded change description. The run's parent has already ruled on this finding and filed the follow-up work as board notes. E1 (`pr-review-github-recorded`) and E2 (`creel-delivery-reed-tier1`) both state that \"the parent accepted the use for that task\". The hand-written description is not new: the base rows wrote it the same way (internal/landingshed/prreview_wait_test.go:215). Ruling F11 in scope would widen the task, so it is not ruled in scope.\nThe round's other BLOCKING finding, F10, was fixed in 3e73ca9a8 and d889bf5b5. round-2-verification.md closes it, and the ledger marks its key resolved. The only open ledger entry is therefore the decision-class key, so no BLOCKING entry of another class holds the accept. I made no commit.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept pr-session-mail-stand-ins"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/shed/pr-session-mail-stand-ins/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/shed/pr-session-mail-stand-ins/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lym shed step pr-session-mail-stand-ins --until-stop --arbiter-attempt 2"
+}
