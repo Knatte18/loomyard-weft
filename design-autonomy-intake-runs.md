@@ -2,6 +2,8 @@
 
 `autonomy-intake-runs` · Note · feature, board, orch, dobby
 
+Depends on: [`self-healing-runs`](design-self-healing-runs.md)
+
 ## Seen
 
 Runs file their findings as GitHub issues on the hub repository.
