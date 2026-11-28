@@ -336,6 +336,12 @@ Decision: Option (a): add StatusCodec.Recorded func(data []byte) (bool, error), 
 
 Rationale: D13 names a shed record decode inside fabric as exactly the rule the seam replaces; an exception would keep the debt.
 
+### Added after Discussion (parent, 2026-11-28): A protected refusal of the leased reset keeps today's other record
+
+Decision: Plan round 2 F16, option (a): add OutcomeProtectedUnrejected (protected_unrejected). outcomeClassOf maps to it a protected refusal that does not wrap gitrepo.ErrPushRejected, such as resetUnnamedTip's leased reset, and keeps OutcomeProtected for one that does. That outcome stops the retry loop, its error is not joined to the rejection, and JudgePush records other with that error and asks no FieldPushJudgment. Add a TestPushSide row and a TestOutcomeClassOf row. This narrows the earlier entry A protected-branch refusal keeps the rejection path to a protected refusal of the push itself.
+
+Rationale: The move must keep each push's class, text and git process count as today (D5); option (b) would change the reset's record and add a fetch.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
