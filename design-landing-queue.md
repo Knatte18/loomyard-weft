@@ -16,6 +16,10 @@ A run whose parent moved during its gate merges the new tip and gates again,
 and after `landing.finalize_lost_races` lost races (default 2) it merges and gates under the lock.
 Each ready run still pays for its own gate, plus one for each race it loses.
 
+Since `5c985d926` (`finalize-owed-tips-gate`), this also holds when the parent is ahead of origin only by owed landing tips,
+except for a landing that needs GitHub only because of GitHub's repository rules.
+Before, every landing on such a parent lost all its races and gated under the lock.
+
 ## Idea
 
 A landing queue in the manner of GitHub's merge queue, bors or Zuul:
