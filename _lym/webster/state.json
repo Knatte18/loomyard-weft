@@ -247,7 +247,19 @@
       "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
       "engine": "claude",
       "terminal": false,
-      "status": ""
+      "status": "waiting",
+      "digest": {
+        "batch": "01-board-view-projection",
+        "status": "waiting",
+        "head_sha": "006ac6d57aae43dd7113565e63ed96559d12182c",
+        "need": "Decide how cards 1-4 pass guard TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain: Board.View and BoardRevision (card 1, committed 006ac6d57) and the later boardengine exports only boardserve calls have no main caller until card 6, so either allow temporary testOnlyCodeAllowed entries in cmd/lym/testonlycode_linux_test.go that card 6 removes, or amend the plan so each function arrives with its main caller."
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
+      ]
     }
   },
   "currentBatch": 1,
@@ -257,5 +269,8 @@
   "masterNotePaths": [
     "/home/knatte/Code/loomyard-LYMHUB/wbr-b2/_lym/loom/friction/webster-master.md"
   ],
-  "masterRecordsBase": "1436b50c12ffbce98c66b6f28adc0b4c176e342c"
+  "masterRecordsBase": "1436b50c12ffbce98c66b6f28adc0b4c176e342c",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
+  ]
 }

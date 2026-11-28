@@ -1,0 +1,3 @@
+status: NEEDS_PARENT
+head_sha: 006ac6d57aae43dd7113565e63ed96559d12182c
+need: "Decide how cards 1-4 pass guard TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain: Board.View and BoardRevision (card 1, committed 006ac6d57) and the later boardengine exports only boardserve calls have no main caller until card 6, so either allow temporary testOnlyCodeAllowed entries in cmd/lym/testonlycode_linux_test.go that card 6 removes, or amend the plan so each function arrives with its main caller."
