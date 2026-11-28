@@ -1,6 +1,6 @@
 # Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard
 
-`jacquard-recipe-lists` · Task · feature, batten, loom, report, tools · draft
+`jacquard-recipe-lists` · Task · feature, batten, loom, report, tools
 
 Decision record: [Sketch](decision-jacquard-recipe-lists.md)
 

@@ -1,6 +1,6 @@
 # Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row
 
-`jacquard-start-refusal` · Task · feature, loom, batten · draft
+`jacquard-start-refusal` · Task · feature, loom, batten
 
 Decision record: [Sketch](decision-jacquard-start-refusal.md)
 
