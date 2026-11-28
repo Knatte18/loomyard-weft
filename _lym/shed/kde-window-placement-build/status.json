@@ -1,12 +1,11 @@
 {
-  "current_producer": "Parent-Align",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Parent-Align",
-    "last": "Parent-Align → stuck",
+    "now": "Drift-Verify",
+    "last": "Parent-Align → done",
     "wait": ""
   },
   "history": [
@@ -300,6 +299,14 @@
       "budget_exempt": true,
       "repeats": 1,
       "last_at": "2026-11-28T14:47:41Z"
+    },
+    {
+      "producer": "Parent-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-28T14:59:50Z",
+      "started_at": "2026-11-28T14:48:13Z",
+      "by": "shed"
     }
   ],
   "product": {
