@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 14:49 UTC; every age below is as of then.
+Rendered 2026-11-28 14:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -16,7 +16,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 1m<br>1m | gate, testkit |
+| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 6m<br>6m | gate, testkit |
 
 ## [P2 Ideas borrowed from comparable agent orchestrators](project-borrowed-orchestrator-ideas.md) (1)
 
@@ -104,7 +104,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Tapestry chains plan the next task while the one before still builds](project-plan-ahead-chains.md) (7)
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 2h · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 3h · Owner `neve`
 
 ### Running (2)
 
@@ -175,7 +175,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>18m | gate, webster, weaver |
+| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>22m | gate, webster, weaver |
 
 ### Enhancements (1)
 
@@ -194,7 +194,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | loom, landing |
+| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | Code-Bouncer | neve | 1h<br>1h | loom, landing |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | Darn-Write | neve | 3h<br>3h | weaver, webster |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | landing · Finalize | neve | 5h<br>5h | fabric |
 
@@ -217,8 +217,8 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Webster run-exit audit flags Master friction note as a parent write** | [`webster-audit-master-friction`](design-webster-audit-master-friction.md) |  | 1h<br>1h | webster |
 | B2 |  | **A window whose home desktop no longer exists keeps that home after it is placed elsewhere** | [`kwin-home-desktop-gone`](design-kwin-home-desktop-gone.md) | T2 | 1h<br>1h | termwindow |
-| B3 |  | **lym fabric clone --reset refuses a hub holding leftovers of an earlier _bolt layout** | [`reset-old-layout-leftovers`](design-reset-old-layout-leftovers.md) | T30 | 5m<br>5m | fabric |
-| B4 |  | **Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move** | [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md) |  | 0m<br>0m | landing |
+| B3 |  | **lym fabric clone --reset refuses a hub holding leftovers of an earlier _bolt layout** | [`reset-old-layout-leftovers`](design-reset-old-layout-leftovers.md) | T30 | 9m<br>9m | fabric |
+| B4 |  | **Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move** | [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md) |  | 5m<br>5m | landing |
 
 ### Enhancements (3)
 

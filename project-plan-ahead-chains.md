@@ -1,9 +1,9 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 14:49 UTC; every age below is as of then.
+Rendered 2026-11-28 14:53 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 2h · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 3h · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
