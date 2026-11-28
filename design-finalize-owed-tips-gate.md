@@ -1,6 +1,6 @@
 # Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock
 
-`finalize-owed-tips-gate` · Task · bug, landing · running · Darn-Write
+`finalize-owed-tips-gate` · Task · bug, landing · running · Code-Bouncer
 
 Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).
 
