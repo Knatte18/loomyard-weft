@@ -807,7 +807,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe Code-Review of `pr-session-mail-stand-ins` (round 1, finding F2) found that its new tier1 test reaches `creelfake.Delivery` through `startNoticeOrch`,\nwhose inventory verdict is \"real\", and that the halt row's unknown-strand refusal rests on the fake delivery's hand-written strand list.\nThe tree has no reed-backed creel delivery at tier1, so the parent accepted the use for that task.\n\n## Idea\n\nGive tier1 tests a creel delivery backed by a real reed, or by the recorded tmux kit, so a strand is known because reed holds it,\nand move `startNoticeOrch` and its callers onto it.\n",
-      "status": "starting · Open-Window",
+      "status": "starting · Seed-IDE",
       "created": "2026-11-28T10:32:33Z",
       "revised": "2026-11-28T15:18:52Z",
       "profile": "light"
