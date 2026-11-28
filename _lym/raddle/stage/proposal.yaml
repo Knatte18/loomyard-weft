@@ -1,0 +1,141 @@
+{
+  "sketch": "landing-queue",
+  "shape": "tasks",
+  "board_checked": [
+    {"slug": "kde-window-placement-build", "revised": "2026-11-27T14:33:20Z"},
+    {"slug": "recipe-build-from-sketch", "revised": "2026-11-28T13:24:31Z"},
+    {"slug": "lock-holder-gates-first", "revised": "2026-11-28T12:58:28Z"},
+    {"slug": "batch-gate-tier1-own-packages", "revised": "2026-11-28T13:24:49Z"},
+    {"slug": "weaver-bench-fixes", "revised": "2026-11-28T11:36:30Z"},
+    {"slug": "darn-measure-rule-gaps", "revised": "2026-11-28T12:38:52Z"},
+    {"slug": "autonomy-unattended-level", "revised": "2026-11-28T09:48:14Z"},
+    {"slug": "clone-reset-keeps-unpushed", "revised": "2026-11-28T09:48:05Z"},
+    {"slug": "fabric-core-push-origin", "revised": "2026-11-28T10:41:16Z"},
+    {"slug": "stop-settlement-table", "revised": "2026-11-28T09:47:40Z"},
+    {"slug": "fabric-core-teardown", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "fabric-core-merge-landing", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "driver-settles-stops", "revised": "2026-11-28T09:47:41Z"},
+    {"slug": "dobby-pause-lift-resume", "revised": "2026-11-28T09:47:43Z"},
+    {"slug": "fabric-core-add-clone", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "keep-landed-run-records", "revised": "2026-11-27T09:46:36Z"},
+    {"slug": "area-host-exits", "revised": "2026-11-26T11:58:18Z"},
+    {"slug": "test-speed", "revised": "2026-11-27T15:19:06Z"},
+    {"slug": "self-healing-autonomy", "revised": "2026-11-28T09:40:38Z"},
+    {"slug": "fabric-core", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "plan-ahead-chains", "revised": "2026-11-28T12:42:44Z"},
+    {"slug": "closed-area", "revised": "2026-11-26T20:49:28Z"},
+    {"slug": "implementer-gate-time", "revised": "2026-11-28T13:22:14Z"},
+    {"slug": "landing-lock-effect-measure", "revised": "2026-11-28T11:03:45Z"},
+    {"slug": "jacquard-recipe", "revised": "2026-11-28T13:37:08Z"},
+    {"slug": "jacquard-recipe-lists", "revised": "2026-11-28T13:37:08Z"},
+    {"slug": "jacquard-start-refusal", "revised": "2026-11-28T13:37:08Z"},
+    {"slug": "jacquard-run-profiles", "revised": "2026-11-28T13:37:08Z"},
+    {"slug": "raddle-names-jacquard", "revised": "2026-11-28T13:37:08Z"}
+  ],
+  "parts": [
+    {
+      "slug": "landing-ledger-own-tip",
+      "title": "A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips",
+      "type": "enhancement",
+      "labels": ["loom", "landing"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D6"],
+      "packages": [
+        {"path": "internal/loomcli", "size": 220},
+        {"path": "internal/landingshed", "size": 30}
+      ],
+      "contract": {
+        "takes": "D6's ledger steps, as the Constraints' push-ledger bullet words them: the push-ledger landing write in internal/loomcli/landingdeps.go (landLocally and recordHeldLanding, calling runpusher.RecordLanding with a pushledger.Landing) takes the run's slug, the landing tip and the records commit as arguments instead of reading them from the calling run's worktree, the records commit picked as oldestHeldRecords picks it today; landingshed's Deps.LandLocally takes the run's own landing commit as its tip, which a lone run's Finalize (internal/landingshed/finalize.go, its LandLocally call) passes, and which for a lone run is the commit it lands today; on a run whose ledger landing stands, LandLocally rewrites it with the same tip, keeps its records commit while origin lacks it and the run's new records commit descends from it, and still commits the run's status records and marks its pair's push. No queue, no batch and no leader: a run's Finalize still writes only its own landing.",
+        "delivers": "One push-ledger landing writer that takes another run's slug, tip and records commit, with today's single-run landing unchanged; a parent ahead of origin by a chain of runs' landing commits, each the tip of its own run's ledger landing, reads as ahead by owed tips alone.",
+        "exports": "Fixed for landing-queue-batch: the loomcli writer of one push-ledger landing taking the parent branch, the run's slug, its landing commit and its records commit, and the landingshed Deps seam a Finalize reaches it through; the plan names both and the change description lists their signatures."
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": [
+        "D6: a parent ahead of its upstream by a chain of three landing commits, whose ledger holds one landing per run with that run's own landing commit as its tip, reads as ahead by owed tips alone, and a run recorded again through `landLocally` with its own landing commit keeps that tip. Tier 1, `internal/loomcli`."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn light with stored_record true reads too few runs (no run yet), so no figure; about 250 changed lines over two packages, most of them tier-1 loomcli tests; the stored_record-false darn light fit (118 runs) reads about $7 for reference only. Light because a lone run's ledger landing keeps today's slug, tip and records commit, which the loomcli test pins. It goes first because landing-queue-batch's leader writes every member's ledger landing through it, and it runs while landing-queue-batch waits for fabric-core-push-origin. Edges left out: autonomy-unattended-level (running) changes loomcli's driftwiring.go and pawlwiring.go, apart from landingdeps.go; keep-landed-run-records (released, behind the fabric-core chain) changes loomcli and landingshed for kept records, and follows this split once the edge the cost line names is filed; both merge by hand."
+    },
+    {
+      "slug": "landing-queue-batch",
+      "title": "Finalize joins a landing queue, and the parent lock's holder builds, gates, bisects and lands a batch of queued runs with one gate run",
+      "type": "enhancement",
+      "labels": ["landing", "fabric", "git", "cwd", "loom", "shed", "docs", "pattern", "heddle"],
+      "recipe": "tapestry",
+      "profile": "solid",
+      "decisions": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"],
+      "packages": [
+        {"path": "internal/landingqueue", "size": 650},
+        {"path": "internal/landingshed", "size": 2650},
+        {"path": "internal/fabricengine", "size": 550},
+        {"path": "internal/gitrepo", "size": 80},
+        {"path": "internal/lymdirs", "size": 10},
+        {"path": "internal/loomcli", "size": 450},
+        {"path": "internal/shedengine", "size": 60},
+        {"path": "internal/runpusher", "size": 80},
+        {"path": "internal/fabriccli", "size": 60},
+        {"path": "internal/heddleengine", "size": 1},
+        {"path": "contracts/recipes", "size": 8},
+        {"path": "docs", "size": 5},
+        {"path": "PATTERN.md", "size": 2},
+        {"path": "pattern", "size": 40}
+      ],
+      "contract": {
+        "takes": "landing-ledger-own-tip's ledger-landing writer and its Deps seam, which the leader calls for each prefix entry with that entry's own landing commit and the records commit the move mark names. D1 to D5 and D7 to D12 whole, and D6 but the ledger writer it takes. D1: Finalize.Call's lock-free pass (gateUnlocked), its lost-race loop and landUnderLock's gated-tip recheck in internal/landingshed/finalize.go go, with finalize_unlocked_test.go deleted or rewritten onto the queue; the lock-free merge through the resolver, needsGitHubOnDisk and parentguard.go's parentlock wait stay. D2: internal/landingqueue (new), its per-parent directory named in internal/lymdirs and keyed by the branch's hex as internal/parentlock/store.go keys its records, entries through internal/state under an internal/lock file lock, and the move mark. D3 and D8 in landingshed under the lock. D4: the chain verb in internal/fabricengine beside today's merge code (merge.go, mergelifecycle.go), so fabric-core-merge-landing moves it with that code, with a commit-tree call added to internal/gitrepo/merge.go beside MergeTree. D5: the detached checkout and its restore as fabric verbs; Deps.RemoveLeftovers is the seam over fabricengine's RemoveIgnoredLeftovers; the marker's path in lymdirs; the pusher's hold-off at readLocalBranch and RefusedPushStands, in internal/fabricengine/pusherreads.go and internal/runpusher's targetreads.go and parentseams.go, or wherever fabric-core-push-origin leaves those reads; the restore on resume in shedengine.(*Shed).Run before any row runs, beside refuseUnderRunLock, wired from internal/loomcli. D6: each member's own seams built from its pair path through internal/loomcli/landingdeps.go's wiring; the guarded move as a fabric verb; the backstop at every taker of the parent lock, which today is a run's Finalize and lym fabric anchor (internal/fabriccli/anchordeps.go's Acquire), since lym fabric pull takes no parent lock. D9: batch_max in landingshed's Config and template.yaml; finalize_lost_races leaves config.go, template.yaml, keynames.go, the finalize.go comment and config_test.go and joins RetiredKeys as CategoryCrossPair, and its mentions in the four contracts/recipes comments and docs/overview.md go. D11: the glossary line after `landing` in internal/heddleengine/glossary.md. D12: PATTERN.md's PATTERN-landing line, pattern/PATTERN-landing.md's new queue section, and internal/landingshed/doc.go's lock-free and lost-race paragraphs replaced.",
+        "delivers": "Ready runs on one parent land in batches of up to landing.batch_max with one gate run each, the parent's new tip the commit the gate ran on; a failed batch is bisected under the same lock and its culprit goes to its own fixer; a batch of one, a pull-request landing and a run with outcome failed or conflict land alone as today.",
+        "exports": "internal/landingqueue's entry, outcome and move-mark types with their reader and writers; fabricengine's chain-build, detached-checkout and restore, and guarded-move verbs; gitrepo's commit-tree call; landingshed's batch_max key."
+      },
+      "depends_on": ["landing-ledger-own-tip", "fabric-core-push-origin"],
+      "open_risks": [],
+      "criteria": [
+        "D1, D3: a single run at Finalize with no other queued run merges the parent, gates under the lock, and lands as today; no gate runs before it holds the lock. Tier 1, `internal/landingshed`.",
+        "D2: an entry is written, read, rewritten with an unknown key kept, ignored once its owner process is gone, and kept past its owner's death while it carries an outcome. Tier 0, `internal/landingqueue` (new).",
+        "D2: a run that ends Finalize at Done leaves no queue entry. Tier 1, `internal/landingshed`.",
+        "D3: a leader skips an entry whose run is paused, whose task branch moved past its recorded head, or which carries an outcome, and takes at most `landing.batch_max` entries in join order after its own. Tier 1, `internal/landingshed`.",
+        "D4: three task branches on one parent build a chain of three landing commits, each with its run's message and `Lym-Landing` trailer, one parent each when squashing and two when true-merging; a branch that conflicts with the chain is left out and the next one merges onto the commit before it. Tier 1, `internal/fabricengine`.",
+        "D5: the leader's gate runs with its task worktree at the chain commit and leaves it on its task branch after a pass and after a failure; a run resumed at any row with its worktree clean and detached while the batch marker stands is put back on its task branch first. Tier 1, `internal/landingshed`.",
+        "D5: a Finalize resumed with its task worktree dirty and detached is Stuck naming the dirty paths, and moves nothing. Tier 1, `internal/landingshed`.",
+        "D5: a batch whose member deletes a directory holding ignored build output gates the chain commit and restores the leader clean. Tier 1, `internal/landingshed`.",
+        "D5: a darn leader's batch gate over a chain commit runs targets for every member's trees. Tier 1, `internal/landingshed`.",
+        "D6: three queued runs land with one gate run; the parent's tip is the commit the gate ran on; the push ledger holds one landing per run with its own landing commit before the lock is freed; a parent whose head moved after the chain was built is not moved. Tier 1, `internal/landingshed`.",
+        "D6: a member whose entry reads as owned elsewhere, or ended on origin, after it joined is not moved onto the parent; the other members land. Tier 1, `internal/landingshed`.",
+        "D6: a member paused, or whose task branch moved, after the batch was taken is not moved onto the parent. Tier 1, `internal/landingshed`.",
+        "D6: after a leader dies between the move and the ledger write, and its dead entries would be pruned, the next run to take the lock writes one ledger landing per moved commit with that member's records commit. Tier 1, `internal/landingshed`.",
+        "D6: after a batch of three lands, each run's `Deps.LandLocally` and `Deps.RecordLanding` calls, the leader's included, take that run's own landing commit, never the parent's head. Tier 1, `internal/landingshed`.",
+        "D6: a member's pair pusher sends nothing past the records commit the leader's ledger landing holds until the parent's push is made. Tier 1, `internal/landingshed`.",
+        "D6, D8: a run woken with outcome `landed` runs no merge and no gate and ends Finalize; a run that takes the lock after a leader died between the move and the ledger write writes the missing landings; a run whose `landed` commit the parent's head no longer holds, as after an operator's reset of the parent, leads a batch. Tier 1, `internal/landingshed`.",
+        "D7: a batch of four whose third run fails lands the first two, gives the third outcome `failed`, and leaves the fourth with no outcome; the batch failure writes no landing failure record for the leader; a run with outcome `failed` gates alone and runs its own fixer. Tier 1, `internal/landingshed`.",
+        "D7: a batch whose culprit is the leader lands nothing, gives the leader outcome `failed` and leaves the other entries with no outcome. Tier 1, `internal/landingshed`.",
+        "D7: while a leader that was its batch's culprit runs its fixer with the lock freed, the next leader's batch does not take its entry. Tier 1, `internal/landingshed`.",
+        "D8: a run with outcome `conflict` merges the parent itself, lands alone, and is taken into no batch meanwhile; its conflict session runs with no parent lock held. Tier 1, `internal/landingshed`.",
+        "D8: a run whose work the parent holds, whatever its entry says, runs no merge and no gate, writes no landing commit and ends Finalize. Tier 1, `internal/landingshed`.",
+        "D8: a run whose task branch gained commits after it was marked `landed` lands them. Tier 1, `internal/landingshed`.",
+        "D9: `landing.batch_max` reads 4 by default and 1 for a value below 1; a hub default layer setting `landing.finalize_lost_races` loads with the unknown-key warning. Tier 0, `internal/landingshed`.",
+        "D10: a run known before the lock to need GitHub writes no queue entry, and a leader never lands a run whose landing goes through a pull request in its batch. Tier 1, `internal/landingshed`.",
+        "D10: a member whose pull-request record appears after it joined is left out of the batch and lands alone through its pull request. Tier 1, `internal/landingshed`.",
+        "Review: D11 — `internal/heddleengine/glossary.md` carries the `landing queue` line as D11 gives it.",
+        "Review: D12 — `PATTERN.md`'s `PATTERN-landing` line, `pattern/PATTERN-landing.md` and `internal/landingshed/doc.go` describe the queue, its leader, the batch's gate and bisection and the ledger landings, and drop the lock-free pass and lost races."
+      ],
+      "pattern_changes": ["PATTERN-landing"],
+      "expected_cost_usd": 52.3,
+      "cost_line": "tapestry solid stored_record true fit (6 runs, correlation 0.93) at $31.63 fixed plus $0.44 per 100 lines over about 4,650 changed lines reads about $52, against a $64.84 mean; about 670 lines deleted besides (the lock-free pass, the lost-race loop and finalize_unlocked_test.go). One tapestry because the queue entry and move mark (landingqueue's types) and fabric's chain-commit interface are one shape the leader, the backstop in lym fabric anchor, the resume restore and the pusher's hold-off all read, which a single plan must fix; no seam lands whole, since the queue store, the chain verb and the detached checkout have no production caller but the leader, and a leader without D7's bisection or D8's outcomes would need a failed-batch behaviour no decision gives. Solid because the leader lands other runs' work on the parent and writes their ledger landings. D11 and D12 ride here so doc.go and PATTERN-landing change with the code they describe. Edge on fabric-core-push-origin (running), which moves pusherreads' rules into fabriccore where D5's hold-off sits. Edges left out: fabric-core-merge-landing and keep-landed-run-records (released), since the record's Constraints have fabric-core-merge-landing move this part's verbs, so both follow it; fabric-core-teardown (released) changes fabricengine's and fabriccli's remove, cleanup, prune and archive files, apart from the merge, pusher and anchor files this part changes; clone-reset-keeps-unpushed (running) changes fabricengine's clone files and fabriccli's clone verb; kde-window-placement-build (running) adds lines to lymdirs/dirs.go, docs/overview.md and other pattern/ files; autonomy-unattended-level (running) changes loomcli's drift and pawl wiring; the jacquard drafts, not yet released, change loomcli's decision, bootstrap and recipe-list files and one glossary line apart from this part's; each overlap is a few lines that merge by hand. D6's Backstop names lym fabric pull as a lock taker, but it takes no parent lock today, so the backstop runs at a run's lock take and lym fabric anchor's."
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "Two parts filed at the top level, where the Sketch sits: landing-ledger-own-tip, a darn light, then landing-queue-batch, a tapestry solid, which also waits for fabric-core-push-origin. The darn light stored_record true cell reads too few runs, so no total; the tapestry part reads about $52 and the darn's stored_record-false fit about $7, about $59 in all for reference only. File by hand: add landing-queue-batch to fabric-core-merge-landing's depends_on, since the record's Constraints have that task move this split's fabric verbs into fabriccore. The note landing-lock-effect-measure measures the lock-free gate landing-queue-batch removes, so it needs measuring before that part lands, or retiring.",
+    "next_best": {
+      "split": "One tapestry part building every decision, the ledger writer included, about 4,900 changed lines.",
+      "expected_usd": 53.4,
+      "line": "the tapestry solid stored_record true fit (6 runs, correlation 0.93) at $31.63 fixed plus $0.44 per 100 lines reads about $53, against a $64.84 mean; cheaper than the two parts' reference figure, but the ledger writer's change would then wait behind fabric-core-push-origin and be reviewed inside the larger part, where the operator takes a smaller darn first."
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
