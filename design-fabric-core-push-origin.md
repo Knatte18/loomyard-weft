@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-fabric-core-push-origin.md)
 
-Depends on: [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md)
-
 Filed from the Sketch `fabric-git-free-core`.
 
 Takes: the foundation part's layout, core types, reader and executor loop

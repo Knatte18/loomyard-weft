@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`implementer-gate-time`](design-implementer-gate-time.md) · Age 0m · Owner `neve`
+[`implementer-gate-time`](design-implementer-gate-time.md) · Age 1m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 

@@ -2,8 +2,6 @@
 
 `clone-reset-keeps-unpushed` · Task · bug, fabric
 
-Depends on: [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md)
-
 ## Seen
 
 The landing of `hardener-study-faults` (`7cb004818`) says `lym fabric clone --reset` still removes unpushed records and board commits,
