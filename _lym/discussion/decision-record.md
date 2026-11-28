@@ -348,6 +348,12 @@ Decision: Card 12 (board-test-moves) as fixed in round 3 answers F19, F20 and F2
 
 Rationale: Each round-3 finding's prescribed fix is in card 12 as the review wrote it, so the open design-wrong findings are answered by the fix in place. The Unverified facts read as true in the code: otherPairSessions treats a hub with no tmux server as having no sessions, fabriccli's tier1 removelanding test already runs a real pairteardown removal over a hubforge hub, and OwnerReader returns ParseOwners' error on board bytes that do not decode.
 
+### Added after Discussion (parent, 2026-11-28): Card 12 follows the plan review's round-3 fixes
+
+Decision: Card 12 is built with the fixes of plan review round 3 findings F19, F20 and F21: one shared git helper gitkit.CommitOnBare in place of the restated boardengine_test helpers; no internal/testkit/pushkit kit, the moved rows assert inline; teardownRecorder is a recording wrapper over the real pairteardown seams, with no scripted replies. The fix text of each finding in _lym/reviews/plan/round-3-review.md is the instruction.
+
+Rationale: Operator decision in chat, 2026-11-28: accept the hard-capped plan round with the review's three fixes as the decision.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
