@@ -580,25 +580,6 @@
       "profile": "light"
     },
     {
-      "id": 1777,
-      "handle": "R1",
-      "slug": "landing-lock-effect-measure",
-      "title": "Measure how much landing-lock-only-for-land cut the wait for the parent lock",
-      "kind": "note",
-      "labels": [
-        "research",
-        "landing",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Why\n\n`landing-lock-only-for-land` (`d87a9ce24`) made Finalize merge and gate with no parent lock held, and take the lock only to land.\nWhether ready runs now land without queuing is unmeasured.\nOn 2026-11-28 `reset-partial-commit-push` still showed 38 minutes at Finalize with no agent activity before it took the lock on `main`.\nThe answer was to decide whether the landing queue was still worth building.\nThe queue's Sketch `landing-queue` has since been split into the tasks `landing-ledger-own-tip` and `landing-queue-batch`,\nand the latter replaces the lock-free gate this note measures.\n\nUntil `finalize-owed-tips-gate` (`5c985d926`, 2026-11-28), a landing on a parent that was ahead of origin only by owed landing tips\nlost all of its `landing.finalize_lost_races` races and then merged and ran verify under the parent lock.\nFigures from landings before that commit can therefore include this fault.\n\nSince `db892e0f9` (2026-11-28), a gate call of a run that holds the parent lock takes a free gate slot ahead of other waiters,\nso slot waits under the lock before and after that commit do not compare.\n\n## What to measure\n\nFrom the drive reports and gate run logs of landings already made, no new runs:\n\n- For each landing, the time from Finalize's start to taking the parent lock, the time holding it, and the lost races (`landing.finalize_lost_races`).\n- How often a run fell back to merging and gating under the lock.\n- The same figures for the landings before `d87a9ce24`, for comparison.\n\nCap: the last 20 landings before `d87a9ce24` and the first 20 after `5c985d926`, on the prime of this hub.\nThe report lands as a commit under `docs/research/`.\n",
-      "created": "2026-11-28T09:26:31Z",
-      "revised": "2026-11-28T14:22:20Z"
-    },
-    {
       "id": 1778,
       "handle": "P3",
       "slug": "self-healing-autonomy",
@@ -891,25 +872,6 @@
       "profile": "docs"
     },
     {
-      "id": 1798,
-      "handle": "E3",
-      "slug": "pr-mail-test-wired-seams",
-      "title": "The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "testkit",
-        "landing"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nCode-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.\n\n## Built since\n\nThe landed test (`c17e0a5f8`, `internal/loomcli/prreview_mail_integration_test.go`) assigns `DirtyPaths`, `CommitsMissing`, `TaskHasCommits`, `PauseCovered`, `RecordChanges`, `RecordPath` and `RecordLockPath` from `wired.PullRequest`,\nand its setup commits on the pair's HEAD beyond the parent branch.\n\n## What is left\n\n`CommitRecord`, `BaseCommand` and `GateTiers` still keep `envkit`'s hand-written answers.\nThe landing's description says the wired `CommitRecord` pushes to the pair's origin, a GitHub URL in this test,\nand the wired gate seams drop the tier from the mail and halt reason on this fixture hub.\n\n## Idea\n\nTake those three from `loomcli` wiring as well, once the test setup gives the wired seams what they need.\n",
-      "created": "2026-11-28T11:41:45Z",
-      "revised": "2026-11-28T13:22:11Z"
-    },
-    {
       "id": 1799,
       "handle": "F4",
       "slug": "shed-dynamic-rows",
@@ -1012,27 +974,6 @@
       "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)\n\nA Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.\n\n## Measured again (`docs/research/webster/gate-time-2026-11-28.md`)\n\nA fork or batch session's first edit comes a mean 136 s in, 13.6 min per row.\nThe estimated saving is 7 min per row, still resting on the 2026-11-08 assumption that orientation is halved.\nThe figure gives no Weaver-only number.\n\n## Idea\n\nHand each batch the file and symbol list its cards name, or have it read them in one batched turn.\nWeaver's cold batches are measured on their own before this is built.\n",
       "created": "2026-11-28T12:06:17Z",
       "revised": "2026-11-28T13:22:12Z",
-      "project": "implementer-gate-time"
-    },
-    {
-      "id": 1806,
-      "handle": "E7",
-      "slug": "batch-gate-covers-cmd-lym",
-      "title": "The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "gate",
-        "webster",
-        "weaver"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Built (`docs/research/webster/gate-time-2026-11-28.md`, lever 3)\n\nNothing in this note is left to build.\nThe last batch gate runs the main packages (`4d8aa9d58`) and the gates run dependent packages.\nNo row measured after `a69580709` failed its plan-level verify, and the report puts the lever's saving at 0.\n\n## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)\n\n8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,\nand each paid a verify-fix session plus a second verify: 3.9 min per row, 6.8 per affected row.\n\n## Idea as filed\n\nAdd `cmd/lym` to the batch gate's scope, or to the last batch's gate, so a batch session that can fix the failure meets it at once.\n",
-      "created": "2026-11-28T12:06:19Z",
-      "revised": "2026-11-28T13:22:13Z",
       "project": "implementer-gate-time"
     },
     {
