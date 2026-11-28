@@ -70,7 +70,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T8 | 1d<br>55m | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T8 | 1d<br>56m | fabric, testkit, shed, board, pattern |
 
 ### Layer B (1)
 
@@ -131,10 +131,11 @@ Owner `neve`
 
 Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Running (7)
+### Running (8)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid | starting · Worktree-Create | neve | 1m<br>1m | weaver, shed, shuttle |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 21h<br>21h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | landing · Finalize | neve | 1d<br>1d | docs |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | Code-Burler-Fix | neve | 16h<br>2h | testkit, landing, reed, creel |
@@ -143,17 +144,11 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | landing · Finalize | neve | 13h<br>13h | darn, stencil |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | orch, reed, cwd |
 
-### Ready (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid |  | 0m<br>0m | weaver, shed, shuttle |
-
 ### Layer A (3)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 0m<br>0m | weaver, webster |
+| T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 1m<br>1m | weaver, webster |
 | T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 2h<br>2h | termwindow, desktop |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | T8 | 1h<br>1h | fabric |
 
@@ -177,5 +172,5 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 13h<br>1h | board, orch, dobby |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | F3 | 22m<br>7m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | F3 | 23m<br>7m | loom, batten, shed |
 | F3 |  | **A recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) |  | 7m<br>7m | shed, loom, batten, board |
