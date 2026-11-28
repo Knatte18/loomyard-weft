@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 10:55 UTC; every age below is as of then.
+Rendered 2026-11-28 10:56 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -143,7 +143,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | landing · Finalize | neve | 13h<br>1h | dobby, fabric |
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | Code-Burler-Review | neve | 13h<br>13h | shed, burler |
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | Code-Burler-Review | neve | 13h<br>13h | burler, stencil, webster |
-| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | Code-Bouncer | neve | 13h<br>13h | darn, stencil |
+| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | Code-Burler-Review | neve | 13h<br>13h | darn, stencil |
 
 ### Ready (1)
 
