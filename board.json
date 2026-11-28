@@ -714,6 +714,11 @@
       "status": "landing · Finalize",
       "created": "2026-11-27T21:39:10Z",
       "revised": "2026-11-27T21:40:02Z",
+      "run_settings": {
+        "beam": {
+          "land_notice": "on"
+        }
+      },
       "profile": "light"
     },
     {
