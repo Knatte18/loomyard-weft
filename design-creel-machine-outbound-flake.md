@@ -1,6 +1,6 @@
 # A creelengine scheduler test fails at times and passes on a rerun
 
-`creel-machine-outbound-flake` · Task · bug, creel · landing · Finalize
+`creel-machine-outbound-flake` · Task · bug, creel · done
 
 ## Seen
 
