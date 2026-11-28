@@ -77,7 +77,11 @@ A record that exists is never overwritten, so an approved record and every entry
 With the record missing and no stored record, the row is Stuck with nothing written.
 Its reason names a way forward per recipe:
 
-- a jacquard run: `lym batten cancel <slug> --remove` from the hub's prime worktree, `lym board upsert '{"slug":"<slug>","recipe":"tapestry"}'`, `lym board set-status '{"slug":"<slug>","status":null}'`, then `lym batten run <slug>`;
+- a jacquard run names two cases, as `lym loom start`'s refusal does (D5):
+  - a pair batten made: `lym batten cancel <slug> --remove` from the hub's prime worktree, `lym board upsert '{"slug":"<slug>","recipe":"tapestry"}'`, `lym board set-status '{"slug":"<slug>","status":null}'`, then `lym batten run <slug>`;
+  - any other pair, from its task worktree: `rm <seed path>`, `lym shed seed self --recipe tapestry --driver <driver> --param parent=<parent>`, `lym loom goto --to Discussion-Write`, `lym loom start`, then `lym loom resume`;
+    the reason fills in the seed's path and its recorded driver and parent, as `disagreeingSeedRefusal` does,
+    and the start commits the new seed before the resume lifts the goto's pause;
 - a tapestry run: `lym loom goto --to Discussion-Write`, then `lym loom resume`.
 
 The loom contract in `internal/shedbuild/loomcontract.go` changes from "one record row" to:
@@ -104,9 +108,10 @@ The refusal is one message, `<slug> runs the jacquard recipe, which builds from 
 It is judged in two places, and each carries its own way forward:
 
 - batten's start guard, for a run or step with no status file, beside raddle's check, so no worktree is made.
-  Its way forward is `lym board upsert '{"slug":"<slug>","recipe":"tapestry"}'`;
-  when the slug holds a done motif run, it first names `lym batten cleanup --apply` from the hub's prime worktree,
-  since a tapestry start does not clear that run.
+  Its way forward is `lym board upsert '{"slug":"<slug>","recipe":"tapestry"}'`.
+  A slug that holds a done run never reaches the check:
+  batten's done-run refusal (`doneSlugRefusal` in `internal/battencli/arm.go`) refuses the start first.
+  That refusal names `lym batten cleanup --apply`.
 - `lym loom start`, for a start made in a worktree directly, on a first start only:
   the check stats the status file before `loomshed.Seed` and runs only when it is absent.
   The stat judges the check alone; seeding still goes through `loomshed.Seed`'s lock, and a refused start writes no status file.
@@ -117,12 +122,13 @@ It is judged in two places, and each carries its own way forward:
 A resume, and a re-run of `lym loom start` over an existing status file, passes over it;
 Record-Seed's Stuck guards a run whose entry lost its record before the row ran.
 
-An entry its own motif run discussed keeps that run's done status under its slug.
-Batten's done-motif-run clear (`startClearsMotifRun` in `internal/battencli/startguard.go`) admits a start whose recipe needs a stored record, judged by the predicate above, beside the raddle start it admits today.
-That start is judged as fresh, and the refusal above applies to it.
-The clear is the one a raddle start takes, which leaves the motif run's task branch; a jacquard start meets that branch as a raddle start does.
+A finished motif run turns its entry into a Sketch (`finishesAsSketch` in `internal/loomcli/wiring.go`);
+a Sketch the board refuses leaves the entry a draft task over its done run (`sketchFinish`).
+The done-run refusal above guards that task's start.
+Only a raddle run takes a Sketch (`checkDiscussedPromotion` in `internal/boardengine/sketch.go`).
+So jacquard builds the parts raddle files and other discussed tasks, and batten gains no motif-run clear for it.
 
-Bound: the check reads the board once at start, and batten's site also reads the slug's done run for the clear above;
+Bound: the check reads the board once at start;
 it refuses only a needing recipe on an entry with no stored record.
 
 Rationale: `PATTERN-shed-recipe-registry` has a loom verb refuse by a recipe's rows, never its name.
@@ -143,11 +149,17 @@ Rationale: a part filed from a Sketch always has its record, so naming tapestry 
 Each profile of `internal/runprofile/template.yaml` that holds a tapestry block gains a `jacquard` block with the same keys minus `loom.discussion`.
 `defaults` gains `jacquard: solid`, as tapestry's.
 An existing hub's profiles file gains the blocks at its next reconcile, since a key absent from both the file and its `profiles.template-base` takes the template's value.
-A one-time reinterpretation, registered in `internal/configreg` beside the arras one, covers the two cases that reconcile leaves:
+That follow gives a shipped profile the template's jacquard values whatever the operator tuned under its tapestry block,
+so a one-time reinterpretation, registered in `internal/configreg` beside the arras one, carries the operator's values over.
+It runs after the template follow in the same reconcile walk (`internal/hubreconcile/walk.go`), in two cases:
 
-- a gained `defaults.jacquard` that names a profile with no jacquard block, as on a hub that removed `solid`, is dropped, as the arras default's was;
-- a profile the operator added that holds a tapestry block gains a jacquard block made from that tapestry block minus `loom.discussion`.
+- every profile that holds a tapestry block gets a jacquard block equal to that tapestry block minus `loom.discussion`;
+  for a shipped profile left as shipped this equals the template's block, so the rewrite changes nothing;
+- `defaults.jacquard` is set to the profile `defaults.tapestry` names when that profile then holds a jacquard block,
+  and is dropped otherwise, as the arras default's was.
 
+A derived block whose values differ from `profiles.template-base` is kept as the operator's on later reconciles,
+since the follow keeps a unit the file holds otherwise than its base (`internal/yamlengine/follow.go`).
 A profile the operator adds after the reinterpretation ran gets its blocks from the operator, as it does today.
 
 Rationale: a run reads its recipe's block, and raddle's check refuses a part whose profile holds no block for its recipe.
@@ -170,6 +182,8 @@ Run reports and phase tables keep the recipe the run's seed names.
 Bound: only the cost-cell key changes, and only for tapestry runs with `stored_record` true; the tapestry cell with `stored_record` true is left empty.
 A tapestry run of an entry flagged discussed whose record file was missing ran Discussion and is still counted under jacquard;
 that case is rare, and the cost cell accepts it.
+A jacquard run re-seeded as tapestry after Record-Seed's Stuck keeps its first seed's usage record (`internal/loomcli/sharedbootstrap.go`),
+so it is counted under jacquard though it ran Discussion; that case is rare too, and the cost cell accepts it.
 
 Rationale: those runs walked jacquard's rows, and raddle's cost lines for jacquard parts would otherwise read too few runs for weeks.
 
@@ -207,6 +221,12 @@ Decision: Accept D11: the parent writes the jacq nickname into the heddle nickna
 
 Rationale: The heddle glossary is hub-level text the orch keeps; writing it after landing keeps the run's scope to code and avoids a nickname for a recipe that has not landed.
 
+### Added after Discussion (parent, 2026-11-28): Jacquard gains no motif-run clear; a Sketch goes only to raddle
+
+Decision: Apply F16's fix: delete D5's motif-run passage. A finished motif run turns its entry into a Sketch (finishesAsSketch in internal/loomcli/wiring.go), which only a raddle run takes (checkDiscussedPromotion in internal/boardengine/sketch.go), so jacquard builds the parts raddle files and other discussed tasks, and batten gains no motif-run clear for it. D5's Bound drops the clause on reading the slug's done run for the clear; the acceptance criterion on a jacquard start after a done motif run and the Constraints fact on a motif run's task branch are dropped. Batten's refusal keeps its lym batten cleanup --apply clause for a task whose Sketch the board refused. F17 falls with the passage it concerned; nothing else changes. Answers round-3 findings F16 and F17.
+
+Rationale: The board's standing rule, kept by the operator's board policy, is that a Sketch is split only by its raddle task; the entry asks for jacquard on raddle's parts, not for a Sketch to run jacquard directly. The fix narrows D5 to that and removes a recovery sequence that loops on two refusals.
+
 ## Constraints
 
 - `PATTERN-shed-recipe-registry`: jacquard declares `contract: loom` in its standard form; the start refusal reads rows, not the name; RecordSeed is one row of the registry map.
@@ -219,6 +239,10 @@ Rationale: The heddle glossary is hub-level text the orch keeps; writing it afte
 - Fact, from `internal/loomshed/recordwrite.go`: Record-Write writes only a missing record or support log and commits every call.
 - Fact, from `internal/boardengine/raddlefile.go` and `internal/loomshed/raddlefile.go`: filing writes each part's record, sets its discussed flag and re-runs the proposal check first.
 - Fact, from `internal/runprofile/doc.go`: the reconcile gives a profiles file each template key it holds as its base does, gained ones included.
+- Fact, from `internal/loomcli/arm.go` (`resolveRecipe`), `internal/shedengine/status.go` and `internal/loomcli/sharedbootstrap.go`:
+  every loom verb reads its recipe from the seed and the status file names none,
+  so a re-seeded run goes on under the new recipe from its current row,
+  and a `lym loom start` over an existing status file commits the new seed and wakes the driver.
 
 ## Auto-mode assumptions
 
@@ -239,20 +263,23 @@ Rationale: The heddle glossary is hub-level text the orch keeps; writing it afte
 - D1: `jacquard` is in the recipe-name vocabulary and builds as a loom recipe with Preflight as its entry and Friction-Reflect as its terminal (tier 0).
 - D2: a tapestry run of an undiscussed entry walks Motif, Discussion, Preflight, Record-Seed with nothing written, then Drift-Baseline; one of a discussed entry passes over Motif with the record seeded and Record-Seed writes nothing (tier 0, a recipe walk over the real rows).
 - D3: Expand admits a last outermost block row with no `on_done`, whose inlined terminal row keeps an empty `on_done`; it still refuses an outermost block row with no `on_done` that is not last, and refuses a last block row with no `on_done` whose gate is not `always` (tier 0, `internal/shedbuild`).
-- D4: Record-Seed seeds a missing record from the stored record, leaves an existing record untouched, and with no stored record is Stuck with nothing written and a reason naming both ways forward (tier 0, `internal/loomshed`).
+- D4: Record-Seed seeds a missing record from the stored record, leaves an existing record untouched, and with no stored record is Stuck with nothing written;
+  its reason names, per case, the tapestry goto, the jacquard batten sequence and the jacquard re-seed for a pair batten did not make (tier 0, `internal/loomshed`).
 - D4: the loom contract builds tapestry, jacquard, darn and motif, and refuses a recipe with two record rows, two seed rows, neither, or a seed row ahead of its record row (tier 0, `internal/shedbuild`).
 - D4: `loomrecipe.RecordEngine` returns DiscussionWrite for tapestry and RecordSeed for jacquard, and `lym loom decision add` on a jacquard run before and after Record-Seed takes the RecordWrite path (tier 0 and tier 1).
 - D4: a tapestry run Stuck at Record-Seed moves with `lym loom goto --to Discussion-Write` and runs Discussion on resume (tier 1).
+- D4: a jacquard run Stuck at Record-Seed in a pair batten did not make, re-seeded as tapestry, moves with `lym loom goto --to Discussion-Write` and runs Discussion after `lym loom start` and `lym loom resume` (tier 1).
 - D4: on a jacquard run past Record-Seed with an uncommitted record, `lym loom decision add` refuses with a way forward naming `lym loom goto --to Record-Seed` (tier 1).
 - D5: `lym batten run` of a jacquard entry with no stored record is refused before a worktree is made, and a first `lym loom start` on a jacquard seed of such an entry refuses the same;
   each site's message carries its own way forward, and the test reaches both;
   an entry with a stored record starts, and an undiscussed tapestry entry starts;
   re-running `lym loom start` on a seeded jacquard run whose entry has lost its record is not refused there (tier 1).
-- D5: after a done motif run of an entry, `lym batten run` of the same entry set to jacquard starts (tier 1).
 - D5: the needs-stored-record predicate is true for jacquard and false for tapestry, darn, motif and raddle (tier 0).
 - D6: raddle's check refuses a part naming tapestry with a detail naming jacquard and accepts jacquard and darn; a filed jacquard part carries recipe jacquard, the discussed flag and its record (tier 0).
 - D7: every profile holding a tapestry block holds a jacquard block without `loom.discussion`, and the defaults name jacquard;
-  the reinterpretation drops a `defaults.jacquard` naming a profile with no jacquard block and gives an operator-added profile holding a tapestry block its jacquard block (tier 0, `internal/runprofile`).
+  the reinterpretation drops `defaults.jacquard` when the profile `defaults.tapestry` names holds no jacquard block and gives an operator-added profile holding a tapestry block its jacquard block;
+  a shipped profile whose tapestry block the operator changed gains a jacquard block carrying the changed values,
+  and a changed `defaults.tapestry` carries into `defaults.jacquard` (tier 0, `internal/runprofile`).
 - D8: batten admits jacquard as a child recipe, and the report selects a jacquard run with its phase table (tier 0).
 - D9: a tapestry run with `stored_record` true lands in the jacquard cost cell, and one with false stays in tapestry's (tier 0, `internal/reportengine`).
 - Review: D6 — the raddle stencil, `contracts/specs/raddle-proposal-spec.md` and the raddle review rubric name jacquard as the part recipe.
@@ -262,6 +289,3 @@ Rationale: The heddle glossary is hub-level text the orch keeps; writing it afte
 ## Notes for the plan writer
 
 - The recipe lists D8 covers are found by grepping for `shedrun.RecipeTapestry` outside tests.
-- D5's claim that a jacquard start meets the motif run's leftover task branch as a raddle start does is unverified:
-  `ClearMotifRun` in `internal/battencli/cleanup.go` discards no branch, and how the next start's pair creation takes that branch was not read.
-  Confirm it; when it does not hold, the jacquard start clears through `ClearDoneRun`'s path, which archives and deletes the branch.
