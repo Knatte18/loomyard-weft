@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:33 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 39m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 40m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -23,11 +23,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | halted · Discussion-Bouncer | neve | 1h<br>36m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | halted · Discussion-Bouncer | neve | 1h<br>37m | shed, loom, batten, board |
 
 ## Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>38m | loom, batten, shed |
-| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 22m<br>14m | shed, loom, batten, board, dobby |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>39m | loom, batten, shed |
+| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 23m<br>15m | shed, loom, batten, board, dobby |
