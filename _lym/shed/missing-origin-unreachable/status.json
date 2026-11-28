@@ -1,12 +1,12 @@
 {
   "current_producer": "Code-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-missing-origin-unreachable/b61ee992-0917-48af-b208-9de75dedf8ee/subagents/agent-aec6cd6f2c4e8dfd2.jsonl\" ran a git-mutating command (\"S=/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/.scratch/exp2; mkdir -p $S; git init -q $S/r; git -C $S/r commit -q --allow-empty -m c; ln -s /nonexistent-mount/x.git $S/link.git; git -C $S/r remote add origin $S/link.git; git -C $S/r push origin HEAD 2\u003e\u00261 | head -1; echo \\\"--- -C relative\\\"; git -C $S/r remote set-url origin ../gone.git; env -C $S git -C r ls-remote origin 2\u003e\u00261 | head -1; ls -d $S/gone.git $S/r/../gone.git 2\u003e\u00261\") — a fork must never run a state-mutating git command outside a repository it created",
   "pause_requested": false,
   "activity": {
     "now": "Code-Burler-Review",
     "last": "Code-Bouncer → bounced to Code-Burler-Review",
-    "wait": ""
+    "wait": "shedadapters: Code-Burler-Review (burler-review): round 1 attempt 1: review: burler: fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-missing-origin-unreachable/b61ee992-0917-48af-b208-9de75dedf8ee/subagents/agent-aec6cd6f2c4e8dfd2.jsonl\" ran a git-mutating command (\"S=/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/.scratch/exp2; mkdir -p $S; git init -q $S/r; git -C $S/r commit -q --allow-empty -m c; ln -s /nonexistent-mount/x.git $S/link.git; git -C $S/r remote add origin $S/link.git; git -C $S/r push origin HEAD 2\u003e\u00261 | head -1; echo \\\"--- -C relative\\\"; git -C $S/r remote set-url origin ../gone.git; env -C $S git -C r ls-remote origin 2\u003e\u00261 | head -1; ls -d $S/gone.git $S/r/../gone.git 2\u003e\u00261\") — a fork must never run a state-mutating git command outside a repository it created"
   },
   "history": [
     {
