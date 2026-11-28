@@ -10,4 +10,5 @@ This project cuts how often and how widely the implementers gate, where project 
 ## Parts
 
 1. A measurement of where the implementer rows' gate time goes now.
+   Done: `docs/research/webster/gate-time-2026-11-28.md`.
 2. Cuts filed from its report, one task per lever the operator picks.

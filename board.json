@@ -1060,9 +1060,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Aim (operator, 2026-11-28)\n\nThe implementer row spends much of its time in gate runs: card gates, batch gates, the plan-level verify and the slot waits between them.\nThis project cuts how often and how widely the implementers gate, where project `test-speed` makes the tests themselves faster.\n\n## Parts\n\n1. A measurement of where the implementer rows' gate time goes now.\n2. Cuts filed from its report, one task per lever the operator picks.\n",
+      "body": "## Aim (operator, 2026-11-28)\n\nThe implementer row spends much of its time in gate runs: card gates, batch gates, the plan-level verify and the slot waits between them.\nThis project cuts how often and how widely the implementers gate, where project `test-speed` makes the tests themselves faster.\n\n## Parts\n\n1. A measurement of where the implementer rows' gate time goes now.\n   Done: `docs/research/webster/gate-time-2026-11-28.md`.\n2. Cuts filed from its report, one task per lever the operator picks.\n",
       "created": "2026-11-28T11:59:49Z",
-      "revised": "2026-11-28T11:59:52Z"
+      "revised": "2026-11-28T13:22:14Z"
     },
     {
       "id": 1804,
@@ -1101,9 +1101,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)\n\nA Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.\n\n## Idea\n\nHand each batch the file and symbol list its cards name, or have it read them in one batched turn; the report assumed this halves orientation, 3 to 6 min per row.\nWeaver's cold batches are measured too before this is built.\n",
+      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)\n\nA Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.\n\n## Measured again (`docs/research/webster/gate-time-2026-11-28.md`)\n\nA fork or batch session's first edit comes a mean 136 s in, 13.6 min per row.\nThe estimated saving is 7 min per row, still resting on the 2026-11-08 assumption that orientation is halved.\nThe figure gives no Weaver-only number.\n\n## Idea\n\nHand each batch the file and symbol list its cards name, or have it read them in one batched turn.\nWeaver's cold batches are measured on their own before this is built.\n",
       "created": "2026-11-28T12:06:17Z",
-      "revised": "2026-11-28T12:06:18Z",
+      "revised": "2026-11-28T13:22:12Z",
       "project": "implementer-gate-time"
     },
     {
@@ -1122,9 +1122,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)\n\n8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,\nand each paid a verify-fix session plus a second verify: 3.9 min per row, 6.8 per affected row.\n\n## Idea\n\nAdd `cmd/lym` to the batch gate's scope, or to the last batch's gate, so a batch session that can fix the failure meets it at once.\nThe cost of the added gate run is measured before this is built.\n",
+      "body": "## Built (`docs/research/webster/gate-time-2026-11-28.md`, lever 3)\n\nNothing in this note is left to build.\nThe last batch gate runs the main packages (`4d8aa9d58`) and the gates run dependent packages.\nNo row measured after `a69580709` failed its plan-level verify, and the report puts the lever's saving at 0.\n\n## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)\n\n8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,\nand each paid a verify-fix session plus a second verify: 3.9 min per row, 6.8 per affected row.\n\n## Idea as filed\n\nAdd `cmd/lym` to the batch gate's scope, or to the last batch's gate, so a batch session that can fix the failure meets it at once.\n",
       "created": "2026-11-28T12:06:19Z",
-      "revised": "2026-11-28T12:06:19Z",
+      "revised": "2026-11-28T13:22:13Z",
       "project": "implementer-gate-time"
     },
     {
