@@ -1,6 +1,6 @@
 # Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record
 
-`jacquard-recipe` · Task · feature, shed, loom, testkit
+`jacquard-recipe` · Task · feature, shed, loom, testkit · starting · Worktree-Create
 
 Decision record: [Sketch](decision-jacquard-recipe.md)
 
