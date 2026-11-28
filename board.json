@@ -1293,6 +1293,28 @@
       "body": "## Seen\n\nThe Code-Review Bouncer of `clone-reset-keeps-unpushed` (2026-11-28) reports that a hub holding files of an earlier layout at the `_bolt` root,\nsuch as `.gitrepo-push.lock` and `board.json.swaplock` in the live loomyard hub, still has a plain `lym fabric clone --reset` refused.\nNo current code writes those files, so the run's rule (lym's own ignored files are no work) does not skip them.\n\n## Idea\n\nEither skip the known leftovers of earlier layouts in the reset's work check, or remove them in a reconcile step, so a plain reset passes on an old hub.\n",
       "created": "2026-11-28T14:43:49Z",
       "revised": "2026-11-28T14:43:49Z"
+    },
+    {
+      "id": 1822,
+      "handle": "T5",
+      "slug": "test-speed-effect-measure",
+      "title": "Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load",
+      "kind": "task",
+      "labels": [
+        "research",
+        "gate",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Why\n\nThe test-speed project's cuts have landed (parallel scenario rows in gatecli, battencli, webstercli and loomcli, the prebuilt lym built only when a test may use it, parallel .NET red-first rows, PR-Review tests over real reed).\nThe operator asked whether they had an effect (2026-11-28).\nThe machine will not be quiet for a long time, so the before and after sides run interleaved, under the same load.\n\n## Runs\n\nExactly these, and no more:\n\n- Sides: A is the tree of `ea00087ec` (before the cuts), B is the tree of `main` at the run's start.\n- Packages: `internal/gatecli`, `internal/battencli`, `internal/webstercli`, `internal/loomcli`, `cmd/lym`.\n- For each package, tier0 and tier1 through `lym gate test --tier`, in the order A, B, A, B: two repeats per side, side by side in time.\n- Side A runs in one extra worktree pair: ask the orch, which creates it from this task's worktree; commit A's tree on top of its branch there.\n  Do not push it; tell the orch when it can be removed.\n- Record the load average at each call's start.\n\n## Report\n\n`docs/research/speed/test-speed-effect-2026-11-28/report.md`, beside the earlier speed reports:\nwall time per package, tier and side, each repeat and the mean, the load at each call, and B against A as minutes and as a share.\nName where a cut shows and where it does not, and how the load limits what the numbers say.\nIt compares with `ea00087ec`'s package report only to name the packages; the earlier numbers ran under other load.\n",
+      "created": "2026-11-28T14:47:28Z",
+      "revised": "2026-11-28T14:47:28Z",
+      "profile": "docs",
+      "project": "test-speed"
     }
   ],
   "prime_owner": "neve",
