@@ -7,5 +7,6 @@
       "title": "Name the down cause; no guessed fix for #232",
       "digest": "c2927830d42f4be747b4dd6b6d56194cf600977c503025b9352bc7b6f2973ac7"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
