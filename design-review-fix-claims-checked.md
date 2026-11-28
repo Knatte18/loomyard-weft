@@ -1,6 +1,6 @@
 # Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers
 
-`review-fix-claims-checked` · Task · bug, burler, stencil, webster · running · Code-Bouncer
+`review-fix-claims-checked` · Task · bug, burler, stencil, webster · running · Code-Burler-Review
 
 Imported from [issue #285](https://github.com/Knatte18/loomyard/issues/285).
 
