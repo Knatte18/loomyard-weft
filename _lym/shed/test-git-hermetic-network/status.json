@@ -1,12 +1,21 @@
 {
-  "current_producer": "Worktree-Create",
+  "current_producer": "Seed-Child",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Seed-Child",
+    "last": "Worktree-Create → done",
     "wait": ""
   },
-  "history": []
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-28T15:19:11Z",
+      "started_at": "2026-11-28T15:18:50Z",
+      "machine": "neve"
+    }
+  ]
 }
