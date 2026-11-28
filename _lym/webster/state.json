@@ -243,21 +243,12 @@
       },
       "startSha": "566528b0773b1e97358c07a0d242d111a10b72c7",
       "kind": "fork",
-      "spawnedAt": "2026-11-28T15:29:43Z",
+      "spawnedAt": "2026-11-28T15:43:12Z",
       "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
       "engine": "claude",
       "terminal": false,
-      "status": "waiting",
-      "digest": {
-        "batch": "01-board-view-projection",
-        "status": "waiting",
-        "head_sha": "006ac6d57aae43dd7113565e63ed96559d12182c",
-        "need": "Decide how cards 1-4 pass guard TestTestOnlyCode_EveryProductionFunctionIsReachableFromAMain: Board.View and BoardRevision (card 1, committed 006ac6d57) and the later boardengine exports only boardserve calls have no main caller until card 6, so either allow temporary testOnlyCodeAllowed entries in cmd/lym/testonlycode_linux_test.go that card 6 removes, or amend the plan so each function arrives with its main caller."
-      },
+      "status": "",
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
-      ],
-      "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
       ]
     }
