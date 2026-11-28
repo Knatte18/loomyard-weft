@@ -1081,6 +1081,27 @@
       "body": "## Seen (operator, 2026-11-28)\n\nA chain of tapestry tasks where B depends on A runs fully in series: B's Discussion and Plan wait until A has landed, though the plan writer is the slowest row.\nThe six serial parts of project `fabric-core` are the case at hand.\n\nIn Millhouse, which LoomYard grew from, the operator sped such chains up by hand, with success:\n\n- Once A's discussion record was approved, B's Discussion started, told to build on everything A had decided.\n- Plan writing for B likewise started before A was done, from A's record.\n- When A had landed, B merged A's changes, and a small fixer read the code changes and updated B's discussion and plan for what had moved.\n- Only then did B's builders start, so the builders were the only part that waited for A.\n\n## Design (operator, 2026-11-28)\n\nTapestry only: darn has no separate plan row to run ahead.\n\n1. B depends on A.\n2. When A's plan is approved, B is released.\n3. B runs Discussion and Plan as usual, Plan Perch included, with A's record and plan as input.\n4. After B's plan is approved, a new producer row waits for B's dependencies: B parks there until A has landed.\n5. When A has landed, that row merges B's parent into B, bringing in A's change,\n   and a fixer updates B's decision record and plan for what A's change brought.\n   This stays small when A kept to its own plan.\n6. B then goes on to Webster as today.\n\nThe merge in step 5 also brings in whatever else landed on the parent, not only A.\nThat is no new cost: Parent-Align already meets the same landings later today.\nRunning the chain in a beam of its own keeps the parent quiet, so the merge in step 5 brings in little beside A.\n\n## Bounds\n\n- The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.\n  From A's record and plan, estimate how much of what B builds on A will change;\n  when A is estimated to change too much of it, B does not plan ahead and waits as today.\n- A run parked in the wait row of step 4 does nothing useful, so it must not hold one of `beam.max_runs`'s run places.\n- Each link planned ahead of landed code adds error to the plans, so the cascade is kept short.\n- Open: when B's plan counts as done for C to start.\n  Proposed: only when B has passed step 5, so C plans from a plan re-aligned against A's landed code and the chain runs at most one link ahead.\n- Not for now (operator, 2026-11-28).\n",
       "created": "2026-11-28T11:14:18Z",
       "revised": "2026-11-28T11:26:49Z"
+    },
+    {
+      "id": 1795,
+      "handle": "F3",
+      "slug": "recipe-build-from-sketch",
+      "title": "A recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "batten",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-28)\n\nThe operator now seldom runs a full tapestry without a motif first.\nA task raddle files from a Sketch already carries `discussed`, so its tapestry run skips Discussion;\nwhich tapestry run does Discussion and which does not is read from a flag, not from the recipe named.\n\n## Idea\n\nA new recipe holds the tapestry rows after Discussion: Plan, Plan Perch, Webster, review and landing.\nIt runs only on an entry with a stored decision record, a task filed from a Sketch or a discussed entry, and refuses any other at start.\nTapestry then reads as motif plus this recipe, and the operator can say \"run recipe X\" with no doubt about whether Discussion runs.\nRaddle names this recipe for the parts it files from a Sketch where it names tapestry today.\n\n## Open\n\n- The recipe's name.\n- Whether plain tapestry stays as a recipe or becomes motif then this recipe.\n",
+      "created": "2026-11-28T11:29:56Z",
+      "revised": "2026-11-28T11:29:56Z"
     }
   ],
   "prime_owner": "neve",
