@@ -7,5 +7,6 @@
       "title": "No test seam: the flake is a race in the test's own synchronization",
       "digest": "212970e2713136b4915e6e891f3c26d7f8a182a1a530696099e7be82aeb0d576"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
