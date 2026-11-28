@@ -1,6 +1,6 @@
 # Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record
 
-`recipe-build-from-sketch` · Task · feature, shed, loom, batten, board
+`recipe-build-from-sketch` · Task · feature, shed, loom, batten, board · starting · Worktree-Create
 
 ## Seen (operator, 2026-11-28)
 
