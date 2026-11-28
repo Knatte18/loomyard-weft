@@ -1,11 +1,11 @@
 {
-  "current_producer": "Raddle-File",
+  "current_producer": "Raddle-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Raddle-File",
-    "last": "Raddle-Write → done",
+    "now": "Raddle-Write",
+    "last": "Raddle-File → bounced to Raddle-Write",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,14 @@
           "end": "2026-11-28T13:34:32.407621576Z"
         }
       ]
+    },
+    {
+      "producer": "Raddle-File",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-28T13:34:37Z",
+      "started_at": "2026-11-28T13:34:36Z",
+      "routed_to": "Raddle-Write"
     }
   ],
   "product": {
