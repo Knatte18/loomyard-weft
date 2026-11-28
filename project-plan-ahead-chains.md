@@ -1,6 +1,6 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 13:11 UTC; every age below is as of then.
+Rendered 2026-11-28 13:13 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 1h · Owner `neve`
@@ -19,15 +19,15 @@ which a card-graph study found buys about 1.6x at best (`docs/research/webster/p
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (1)
+## Sketches (1)
 
-| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | halted · Discussion-Bouncer | neve | 1h<br>1h | shed, loom, batten, board |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| S1 |  | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)<br>[Sketch](decision-recipe-build-from-sketch.md) | 1h<br>0m | shed, loom, batten, board |
 
 ## Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6<br>F3 | 1h<br>24m | loom, batten, shed |
-| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 33m<br>29m | board, dobby |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | S1<br>F3 | 1h<br>26m | loom, batten, shed |
+| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 34m<br>30m | board, dobby |
