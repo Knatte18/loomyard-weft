@@ -1,6 +1,6 @@
 # P5 Intake wave 3: beam orch parent, scope and earlier checks
 
-Rendered 2026-11-28 10:22 UTC; every age below is as of then.
+Rendered 2026-11-28 10:24 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-3` · Age 2d · Owner `neve`
