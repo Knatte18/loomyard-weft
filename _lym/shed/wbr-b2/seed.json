@@ -1,0 +1,8 @@
+{
+  "recipe": "tapestry",
+  "driver": "go",
+  "params": {
+    "parent": "weaver-bench-rerun"
+  },
+  "started_at": "2026-11-28T15:28:40Z"
+}
