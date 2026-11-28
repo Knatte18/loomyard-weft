@@ -2,8 +2,6 @@
 
 `gatecli-dotnet-redfirst-time` · Task · enhancement, gate
 
-Depends on: [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md)
-
 ## Seen
 
 The landed split of the long gatecli tier1 scenario tests made `TestGateTest_Scopes` and `TestGateTest_Scenario` parallel; their longest rows now take 2.9 to 7.3 s.
