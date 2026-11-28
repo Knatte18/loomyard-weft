@@ -1,6 +1,6 @@
 # P8 Webster and Weaver spend less of their row in gate runs
 
-Rendered 2026-11-28 13:29 UTC; every age below is as of then.
+Rendered 2026-11-28 13:30 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`implementer-gate-time`](design-implementer-gate-time.md) · Age 1h · Owner `neve`
