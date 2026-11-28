@@ -1036,7 +1036,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #284](https://github.com/Knatte18/loomyard/issues/284).\n\n## What happened\n\nA session timing packages through `lym gate test` found that a call's wall time includes the wait for a gate slot,\nup to 300 s in that run.\nTiming the calls therefore did not measure the test runs, and the session took its wall figures from `wall_seconds` in each run record.\n\n## Why it is a problem\n\nA caller who measures a gate call from outside gets a figure dominated by contention for slots,\nand has to know about the run records to get the run's own time.\nThe note does not say whether the call's own output separates the two.\n\n## What to do\n\nCheck that the result of `lym gate test` shows the slot wait and the run's wall time as separate values.\nIf it does not, add them; if it does, document in the verb's help where to read the run time without the wait.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-27T21:39:28Z",
       "revised": "2026-11-27T21:40:48Z",
       "profile": "light"
