@@ -667,7 +667,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #283](https://github.com/Knatte18/loomyard/issues/283).\n\n## What happened\n\nA darn writer session ran an entry that is itself a measurement: one `lym gate test --tier \u003cn\u003e \u003cpackage\u003e` call per package and tier.\nThe writer's gate rules in `contracts/stencils/darn/darn-fragment-make-change-gated.md` say to run no `lym gate test`,\nbar one test class through the measuring call, and name two exceptions, neither of which covers measurement.\n\nThe writer followed the entry over the prompt: several hundred calls with `--wait --no-carry`, run in loops, about 70 minutes.\nIt did not ask its parent first.\n\n## Why it is abnormal\n\nThe prompt and the entry contradict each other, and the prompt says nothing about which wins.\nA writer that obeys the prompt cannot do the entry; one that does the entry breaks a stated rule on its own decision.\n\n## What to do\n\nGive the writer prompt a rule for an entry whose deliverable is gate measurements: either state that those gate calls are allowed\n(and with what limits), or tell the writer to ask its parent before running them.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
-      "status": "running · Friction-Reflect",
+      "status": "done",
       "created": "2026-11-27T21:39:25Z",
       "revised": "2026-11-27T21:40:07Z",
       "profile": "light"
