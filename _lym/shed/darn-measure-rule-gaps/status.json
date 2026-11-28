@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Drift-Recheck",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Drift-Recheck",
+    "last": "Code-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -160,6 +159,14 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/darn-measure-rule-gaps/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-28T13:30:45Z",
       "started_at": "2026-11-28T13:30:12Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/darn-measure-rule-gaps/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-28T13:33:56Z",
+      "started_at": "2026-11-28T13:33:55Z",
+      "by": "shed"
     }
   ],
   "product": {
