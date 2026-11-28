@@ -1,6 +1,6 @@
 # Webster run-exit audit flags Master friction note as a parent write
 
-`webster-audit-master-friction` · Note · bug, webster
+`webster-audit-master-friction` · Task · bug, webster · draft
 
 ## Seen (2026-11-28, `kde-window-placement-build`)
 

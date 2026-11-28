@@ -1,6 +1,6 @@
 # A window whose home desktop no longer exists keeps that home after it is placed elsewhere
 
-`kwin-home-desktop-gone` · Note · bug, termwindow
+`kwin-home-desktop-gone` · Task · bug, termwindow · draft
 
 Depends on: [`kde-window-placement-build`](design-kde-window-placement-build.md)
 
