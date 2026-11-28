@@ -1,6 +1,6 @@
 # Timing a gate test call includes the slot wait; run time needs the run record
 
-`gate-call-shows-slot-wait` · Task · enhancement, gate · running · Describe
+`gate-call-shows-slot-wait` · Task · enhancement, gate · landing · Finalize
 
 Imported from [issue #284](https://github.com/Knatte18/loomyard/issues/284).
 
