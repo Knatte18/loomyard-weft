@@ -49,5 +49,9 @@
       "reason": "batten.open_ide = false",
       "machine": "neve"
     }
-  ]
+  ],
+  "pause_intent": {
+    "by": "ly:orch",
+    "at": "2026-11-28T17:47:19+01:00"
+  }
 }
