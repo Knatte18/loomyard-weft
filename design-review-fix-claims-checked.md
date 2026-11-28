@@ -1,6 +1,6 @@
 # Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers
 
-`review-fix-claims-checked` · Task · bug, burler, stencil, webster · running · Describe
+`review-fix-claims-checked` · Task · bug, burler, stencil, webster · landing · Finalize
 
 Imported from [issue #285](https://github.com/Knatte18/loomyard/issues/285).
 
