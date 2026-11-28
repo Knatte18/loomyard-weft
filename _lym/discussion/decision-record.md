@@ -342,6 +342,12 @@ Decision: Plan round 2 F16, option (a): add OutcomeProtectedUnrejected (protecte
 
 Rationale: The move must keep each push's class, text and git process count as today (D5); option (b) would change the reset's record and add a fetch.
 
+### Added after Discussion (arbiter, 2026-11-28): Plan review round 3 accepted at the hard cap: card 12's support fixes stand
+
+Decision: Card 12 (board-test-moves) as fixed in round 3 answers F19, F20 and F21: the git plumbing both test packages need is one gitkit.CommitOnBare export that fabric's recordsFixture.originCommit and originCommitFile call, with that one edit to replay_integration_test.go named as a departure from D9's own-files criterion; no internal/testkit/pushkit kit is created and moved rows assert inline; teardownRecorder is a recording wrapper over the real pairteardown.New and OriginSeams(HubSeamOptions) seams, and OwnerOf comes from pairteardown.OwnerReader with a fixed identity. The implementer confirms the card's two Unverified facts in the code while writing card 12, keeping the real seams: the real teardown of a hubforge pair runs in tier1 with no tmux server, and the owner rows write whatever board fields boardengine.ParseOwners reads (entries' owners, and prime_owner, machines or holds where a row needs them).
+
+Rationale: Each round-3 finding's prescribed fix is in card 12 as the review wrote it, so the open design-wrong findings are answered by the fix in place. The Unverified facts read as true in the code: otherPairSessions treats a hub with no tmux server as having no sessions, fabriccli's tier1 removelanding test already runs a real pairteardown removal over a hubforge hub, and OwnerReader returns ParseOwners' error on board bytes that do not decode.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
