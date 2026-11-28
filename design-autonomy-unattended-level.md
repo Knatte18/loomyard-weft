@@ -1,6 +1,6 @@
 # beam.autonomy takes false, true or unattended, and every reader reads the level
 
-`autonomy-unattended-level` · Task · feature, dobby, config, cwd, board, orch, slack, loom · running · Drift-Recheck
+`autonomy-unattended-level` · Task · feature, dobby, config, cwd, board, orch, slack, loom · running · Describe
 
 Decision record: [Sketch](decision-autonomy-unattended-level.md)
 
