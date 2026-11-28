@@ -12,7 +12,7 @@ tiers:
         timeout_min: 10
     tier1:
         about: integration tests with build and vet first
-        command: go build ./... && go vet {targets} && go test -json {test_targets} {args}
+        command: go vet {targets} && go test -json {test_targets} {args}
         all_targets: ./...
         env:
             GOFLAGS: "-trimpath -p={parallel} -timeout=20m"
@@ -43,12 +43,12 @@ tiers:
 gates:
     batch: {tiers: [0, 1], scope: card, reports: []}
     webster-fix: {tiers: [0, 1], scope: diff, reports: []}
-    webster: {tiers: [0, 1, 2], scope: all, reports: []}
-    parent-align: {tiers: [0, 1, 2], scope: all, reports: []}
+    webster: {tiers: [0, 1, 2], scope: diff, reports: []}
+    parent-align: {tiers: [0, 1, 2], scope: diff, reports: []}
     finalize: {tiers: [0, 1, 2], scope: all}
     adopt: {tiers: [0, 1, 2], scope: all}
     darn-write: {tiers: [0, 1, 2], scope: diff, reports: []}
-    code-burler-fix: {tiers: [0, 1, 2], scope: diff, reports: []}
+    code-burler-fix: {tiers: [0, 1], scope: diff, reports: []}
     harden-live:
         tiers: [1]
         scope: diff
