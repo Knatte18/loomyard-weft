@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -144,6 +144,15 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-11-28T12:52:30Z",
+      "started_at": "2026-11-28T12:51:53Z",
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Review"
     }
   ],
   "product": {
