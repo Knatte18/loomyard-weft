@@ -956,7 +956,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nThe operator now seldom runs a full tapestry without a motif first.\nA task raddle files from a Sketch already carries `discussed`, so its tapestry run skips Discussion;\nwhich tapestry run does Discussion and which does not is read from a flag, not from the recipe named.\n\n## Idea\n\nA new recipe, `jacquard`, holds the tapestry rows after Discussion: Plan, Plan Perch, Webster, review and landing.\nIt runs only on an entry with a stored decision record, a task filed from a Sketch or a discussed entry, and refuses any other at start.\nRaddle names jacquard for the parts it files from a Sketch where it names tapestry today.\n\n## Tapestry stays (operator, 2026-11-28)\n\nTapestry stays a recipe, and it is made of motif followed by jacquard: one source for each part, never a copy of jacquard's rows in tapestry.\nThe operator can say \"run jacquard\" with no doubt about whether Discussion runs, and \"run tapestry\" for both.\n\n## Name (operator, 2026-11-28)\n\nThe recipe is `jacquard` in code, config, verbs and records.\nThe operator calls it \"jacq\" in chat and text; the task adds `jacquard` to lym's glossary (`internal/heddleengine/glossary.md`)\nand \"jacq\" to the nicknames in the repository's instructions, beside \"Sketch\" and \"Merriam\".\n",
-      "status": "running · Discussion-Burler-Fix",
+      "status": "running · Discussion-Bouncer",
       "created": "2026-11-28T11:29:56Z",
       "revised": "2026-11-28T11:56:08Z",
       "project": "plan-ahead-chains"
