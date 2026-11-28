@@ -1,12 +1,12 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "landing stop: the remote ref origin/gatecli-dotnet-redfirst-time moved during the fixer session of Finalize to 9663d3073f3871d95b752bf994a232e691862213, which holds commits the task head 8169ba2b6d932c03be922f42986da6419d95521e the session started from lacks; session: claude session 48927808-ca1f-49c4-b067-366f4f2b2afa; way forward: check the commits 8169ba2b6d932c03be922f42986da6419d95521e..9663d3073f3871d95b752bf994a232e691862213 are the task's, then `lym loom resume`",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
-    "last": "PR-Review → done",
-    "wait": ""
+    "last": "Finalize → stuck",
+    "wait": "landing stop: the remote ref origin/gatecli-dotnet-redfirst-time moved during the fixer session of Finalize to 9663d3073f3871d95b752bf994a232e691862213, which holds commits the task head 8169ba2b6d932c03be922f42986da6419d95521e the session started from lacks; session: claude session 48927808-ca1f-49c4-b067-366f4f2b2afa; way forward: check the commits 8169ba2b6d932c03be922f42986da6419d95521e..9663d3073f3871d95b752bf994a232e691862213 are the task's, then `lym loom resume`"
   },
   "history": [
     {
@@ -219,6 +219,14 @@
       "output": "",
       "at": "2026-11-28T10:43:06Z",
       "started_at": "2026-11-28T10:43:05Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-11-28T11:31:37Z",
+      "started_at": "2026-11-28T10:43:07Z",
+      "budget_exempt": true
     }
   ],
   "product": {
