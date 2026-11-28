@@ -21,7 +21,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | landing · Finalize | neve | 49m<br>49m | webster, fabric |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Code-Burler-Fix | neve | 1d<br>14h | fabric, cleanup, batten |
 
-## Layer A (9)
+## Layer A (10)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -34,6 +34,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | T12 | 11h<br>11h | shed, burler |
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | T12 | 11h<br>11h | burler, stencil, webster |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | T12 | 11h<br>11h | darn, stencil |
+| T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 6m<br>0m | termwindow, desktop |
 
 ## Sketches (1)
 
@@ -59,9 +60,8 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 1d<br>14h | landing, gate, batten |
 
-## Features (2)
+## Features (1)
 
-| # | Prio | Note | Slug | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) |  | 11h<br>11h | board, orch, dobby |
-| F2 |  | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | T2 | 6m<br>6m | termwindow, desktop |
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | 11h<br>11h | board, orch, dobby |

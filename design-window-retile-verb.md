@@ -1,6 +1,6 @@
 # A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted
 
-`window-retile-verb` · Note · feature, termwindow, desktop
+`window-retile-verb` · Task · feature, termwindow, desktop
 
 Depends on: [`kde-window-placement-build`](design-kde-window-placement-build.md)
 
