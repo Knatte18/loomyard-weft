@@ -964,7 +964,7 @@
       "id": 1798,
       "handle": "E3",
       "slug": "pr-mail-test-wired-seams",
-      "title": "The PR-Review mail test takes every git, pause and record seam from loomcli wiring instead of envkit stand-ins",
+      "title": "The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -975,9 +975,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\nCode-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.\n`prReviewMailDeps` takes only `Mode`, `Origin` and `TaskHead` from `wired.PullRequest`.\nIt still reads envkit's hand-written `DirtyPaths` (nil), `CommitsMissing` (nil), `TaskHasCommits` (true), `PauseCovered` (false) and `RecordChanges` (nil channel),\nstanding in for verifytree, fabricengine, the pause record and the record watch over a real pair.\n\n## Idea\n\nAssign those seams from `wired.PullRequest` as well, and make the state a wired seam needs through gitkit or fabric in the test setup,\nsuch as a commit on the pair's HEAD beyond the parent branch for `TaskHasCommits`.\nKeep `RecordPath` and `RecordLockPath` in step with the wired record paths.\n",
+      "body": "## Seen\n\nCode-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.\n\n## Built since\n\nThe landed test (`c17e0a5f8`, `internal/loomcli/prreview_mail_integration_test.go`) assigns `DirtyPaths`, `CommitsMissing`, `TaskHasCommits`, `PauseCovered`, `RecordChanges`, `RecordPath` and `RecordLockPath` from `wired.PullRequest`,\nand its setup commits on the pair's HEAD beyond the parent branch.\n\n## What is left\n\n`CommitRecord`, `BaseCommand` and `GateTiers` still keep `envkit`'s hand-written answers.\nThe landing's description says the wired `CommitRecord` pushes to the pair's origin, a GitHub URL in this test,\nand the wired gate seams drop the tier from the mail and halt reason on this fixture hub.\n\n## Idea\n\nTake those three from `loomcli` wiring as well, once the test setup gives the wired seams what they need.\n",
       "created": "2026-11-28T11:41:45Z",
-      "revised": "2026-11-28T11:41:50Z"
+      "revised": "2026-11-28T13:22:11Z"
     },
     {
       "id": 1799,
@@ -1080,9 +1080,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 1)\n\nThe guard step was 7,043 of the card gate's 9,117 s (77%), run 787 times for 226 cards, while the batch gate already runs it.\nDropping it from the card gate saved an estimated 6 to 8 min per Webster row; its failures would surface at the batch gate, about 60 s a fix round.\n\n## Idea\n\nRun the guard step only in the batch gate, for Webster and Weaver alike.\nKeep or drop this note on the figures the implementer gate-time measurement gives.\n",
+      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 1)\n\nThe guard step was 7,043 of the card gate's 9,117 s (77%), run 787 times for 226 cards, while the batch gate already runs it.\nDropping it from the card gate saved an estimated 6 to 8 min per Webster row; its failures would surface at the batch gate, about 60 s a fix round.\n\n## Measured again (`docs/research/webster/gate-time-2026-11-28.md`)\n\nThe lever still holds with a smaller net saving: 3 to 8 min per row, ranked fifth of the report's levers.\nThe card guard step is 8.1 of 28.7 card gate minutes per row, and one more batch gate (3.0 min) per failed guard step costs up to 5.5 min of that.\nIt overlaps the report's lever C (card gate over the card's own packages), which would make the guard step take back about 4.4 min.\n\n## Idea\n\nRun the guard step only in the batch gate, for Webster and Weaver alike.\nKeep or drop this note on those figures.\n",
       "created": "2026-11-28T12:06:16Z",
-      "revised": "2026-11-28T12:06:17Z",
+      "revised": "2026-11-28T13:22:11Z",
       "project": "implementer-gate-time"
     },
     {
