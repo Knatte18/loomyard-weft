@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-27T21:40:39Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/discussed-payload-map-race/_lym/landing/summary.md",
+      "at": "2026-11-28T08:05:29Z",
+      "started_at": "2026-11-27T21:40:39Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-27T21:43:25.105941234Z",
+          "end": "2026-11-27T21:43:25.149206815Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-27T21:43:25.240604408Z",
+          "end": "2026-11-28T08:01:43.28037321Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T08:01:43.639989752Z",
+          "end": "2026-11-28T08:03:45.322564606Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T08:03:45.682487659Z",
+          "end": "2026-11-28T08:03:46.55151172Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T08:03:47.296497612Z",
+          "end": "2026-11-28T08:03:47.30020403Z"
+        }
+      ]
     }
   ],
   "product": {
