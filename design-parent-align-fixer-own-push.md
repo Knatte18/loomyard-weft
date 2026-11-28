@@ -2,7 +2,7 @@
 
 `parent-align-fixer-own-push` · Task · bug, landing
 
-Depends on: [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)
+Depends on: [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md), [`landing-queue-batch`](design-landing-queue-batch.md)
 
 ## Seen
 
