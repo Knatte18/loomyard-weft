@@ -1,6 +1,6 @@
 # TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s
 
-`gatecli-dotnet-redfirst-time` · Task · enhancement, gate · running · Friction-Reflect
+`gatecli-dotnet-redfirst-time` · Task · enhancement, gate · done
 
 ## Seen
 
