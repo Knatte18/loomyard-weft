@@ -1,6 +1,6 @@
 # Test git can reach the network and open a credential prompt, hanging an agent's test run
 
-`test-git-hermetic-network` · Task · bug, testkit, git · starting · Seed-IDE
+`test-git-hermetic-network` · Task · bug, testkit, git · running · Darn-Write
 
 Imported from [issue #299](https://github.com/Knatte18/loomyard/issues/299).
 
