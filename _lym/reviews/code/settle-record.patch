@@ -1,0 +1,459 @@
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 607cefcaf..8121f9720 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -173,6 +173,7 @@ import (
+ 	"fmt"
+ 	"os/exec"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -265,6 +266,9 @@ type battenCLI struct {
+ 	// readopt carries the seams that re-make a live pair whose task worktree is gone.
+ 	// A receiver that skips the arm leaves it zero, which reads as no re-adoption.
+ 	readopt readoptSeams
++	// backoffSleep sleeps for one delay of the backoff that the create of a pair waits out before it reads origin again.
++	// Nil sleeps for the delay.
++	backoffSleep func(time.Duration)
+ 	// reconcileOptions bounds the run-scope origin reconcile of a resume and of a gone pair's re-adoption.
+ 	// The zero value makes one attempt, which a hand-populated receiver keeps.
+ 	reconcileOptions fabricengine.ReconcileOptions
+diff --git a/internal/battencli/drive.go b/internal/battencli/drive.go
+index 9fef6fca7..eb4b38a02 100644
+--- a/internal/battencli/drive.go
++++ b/internal/battencli/drive.go
+@@ -47,12 +47,15 @@ import (
+ )
+ 
+ // battenTacklerRecipe is the one-line description of a batten run the tackler's prompt names under its run heading.
+-const battenTacklerRecipe = "batten: a task worktree's whole lifecycle run from the hub's prime (create the pair, seed and run the task's own run, tear the pair down and land it)"
++const battenTacklerRecipe = "batten: a task worktree's whole lifecycle run from the hub's prime (create the pair, seed and run the task's own run, tear the pair down and land it). " +
++	"A run whose Worktree-Create row never finished done has made no pair yet: " +
++	"its absent task worktree and the absence of its records branch on origin are its fresh state, never a pair to restore or abandon."
+ 
+ // battenArbiterRecipe describes batten's rows and the arbiter's moves.
+ // The arbiter's prompt names it under its run heading.
+ const battenArbiterRecipe = "batten: a task worktree's whole lifecycle run from the hub's prime, in rows. " +
+-	"Worktree-Create claims the task and makes the pair; " +
++	"Worktree-Create claims the task and makes the pair, " +
++	"so until it has finished done once, an absent task worktree and a records branch absent from origin are the fresh state, never a pair to restore; " +
+ 	"Seed-Child writes the child's seed and run settings; " +
+ 	"Open-Window, Seed-IDE and Open-IDE run the optional window and IDE commands; " +
+ 	"Run-Shed watches the child's own run; " +
+@@ -529,10 +532,17 @@ func (c *battenCLI) primeShuttle(dirs configengine.Dirs) (sheddriver.AgentShuttl
+ 	runner.SetReplyProbe(creelcli.AwaitsReplyProbe(location, battenProgram))
+ 	// The tackler and the arbiter work for the task's run,
+ 	// so their sessions count toward the task worktree's usage records.
+-	if taskLocation, err := taskWorktreeLocation(location, c.slug); err != nil {
++	// Before Worktree-Create has made the pair there is no task worktree to record them in, which is no failure.
++	present, err := taskWorktreePresent(location, c.slug)
++	if err == nil && present {
++		var taskLocation *lymcwd.Location
++		taskLocation, err = taskWorktreeLocation(location, c.slug)
++		if err == nil {
++			runner.SetSessionEnd(shedadapters.UsageRecorder(taskLocation, shuttleengines.RecordReaders(dirs)))
++		}
++	}
++	if err != nil {
+ 		logger.Warn("battencli: locate the task worktree to record its tackler and arbiter sessions failed; they stay unrecorded", "slug", c.slug, "error", err)
+-	} else {
+-		runner.SetSessionEnd(shedadapters.UsageRecorder(taskLocation, shuttleengines.RecordReaders(dirs)))
+ 	}
+ 	return sheddriver.RunnerShuttle{Runner: runner}, nil
+ }
+diff --git a/internal/battencli/wire.go b/internal/battencli/wire.go
+index 0164d8947..6967a5f87 100644
+--- a/internal/battencli/wire.go
++++ b/internal/battencli/wire.go
+@@ -1176,7 +1176,14 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 			top := fabricengine.NewTopology(cfg)
+ 			// A member of a beam forks from the beam's pair, whichever worktree started the run;
+ 			// every other task forks from the prime.
+-			parent, err := beamForkParent(location, slug, func(beam string) (bool, error) { return top.TaskBranchOnOrigin(location, beam) })
++			parent, err := beamForkParent(location, slug, func(beam string) (onOrigin bool, err error) {
++				err = fabricengine.AddOptions{BackoffSleep: c.backoffSleep}.RetryOriginReadInTransit("beam", func() error {
++					var readErr error
++					onOrigin, readErr = top.TaskBranchOnOrigin(location, beam)
++					return readErr
++				})
++				return onOrigin, err
++			})
+ 			if err != nil {
+ 				return err
+ 			}
+@@ -1192,7 +1199,7 @@ func (c *battenCLI) wire(location *lymcwd.Location, slug string) error {
+ 					return err
+ 				}
+ 			}
+-			_, err = top.Add(location, slug, fabricengine.AddOptions{Parent: parent, Anchor: anchor, Hold: holdPrime})
++			_, err = top.Add(location, slug, fabricengine.AddOptions{Parent: parent, Anchor: anchor, Hold: holdPrime, BackoffSleep: c.backoffSleep})
+ 			logger.Info("battencli: create worktree", "slug", slug)
+ 			if err != nil {
+ 				return createRefusal(err, slug, cfg.BranchPrefix+slug, func() bool { return fabricengine.PairWorktreeStands(location, slug) })
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 0858cadb8..f1bee2c1d 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -31,6 +31,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/state"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envkit"
++	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ 	"github.com/Knatte18/loomyard/internal/weaverengine"
+@@ -299,9 +300,10 @@ func TestWire_EverySeamFilled(t *testing.T) {
+ 
+ // TestPrimeShuttle_WiresTheReplyProbe pins that the prime's runner holds a reply probe.
+ // The tackler and the arbiter run through that runner.
++// It also pins that building the runner before the task worktree exists logs no failure to locate it.
++// It does not call t.Parallel: logcapture redirects the process-global logger.
+ func TestPrimeShuttle_WiresTheReplyProbe(t *testing.T) {
+ 	tiergate.Require(t, 0)
+-	t.Parallel()
+ 
+ 	hub := t.TempDir()
+ 	// A .git directory marks the worktree as the prime.
+@@ -314,9 +316,13 @@ func TestPrimeShuttle_WiresTheReplyProbe(t *testing.T) {
+ 		WorktreeName: "hub-repo",
+ 		AnchorRel:    ".",
+ 	}
+-	c := &battenCLI{location: location}
++	c := &battenCLI{location: location, slug: "a-slug"}
++	logs := logcapture.Capture(t)
+ 
+ 	shuttle, err := c.primeShuttle(fabricengine.ConfigDirs(location))
++	if got := logs.String(); strings.Contains(got, "locate the task worktree") {
++		t.Errorf("primeShuttle() with no task worktree logged %q; want no failure to locate it", got)
++	}
+ 	if err != nil {
+ 		t.Fatalf("primeShuttle() error = %v; want nil", err)
+ 	}
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index bbad13c09..58588f681 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -39,8 +39,9 @@ type AddOptions struct {
+ 	SkipGit bool
+ 	// SkipPush skips push operations if true.
+ 	SkipPush bool
+-	// BackoffSleep sleeps for one delay of the backoff that a push waits out.
+-	// A push waits it out before it records a branch gone from origin or an unreachable origin.
++	// BackoffSleep sleeps for one delay of the backoff that a push or an origin read waits out.
++	// A push waits it out before it records a branch gone from origin or an unreachable origin;
++	// a retried origin read waits it out before it runs again after a failure in transit.
+ 	// Nil sleeps for the delay.
+ 	BackoffSleep func(time.Duration)
+ 	// Parent is the slug of the hub pair the new pair forks from, its last commit and its records branch.
+@@ -76,6 +77,32 @@ func (o AddOptions) probesOrigins() bool {
+ 	return !o.SkipGit && !o.SkipPush
+ }
+ 
++// originReadBackoffDelays are the delays an origin read waits out before each re-run after a failure in transit.
++var originReadBackoffDelays = []time.Duration{time.Second, 2 * time.Second, 4 * time.Second}
++
++// RetryOriginReadInTransit runs read, and while it fails in transit runs it again after each delay of a short backoff.
++// A dropped connection to origin is often gone seconds later, so one such failure is no answer about a pair.
++// read must be safe to run again, as a lookup or a fetch is.
++// It returns the first error that is no transport failure, nil included.
++// Once the delays are spent, it returns the last transport failure.
++// side names what is read in the retry's log line.
++func (o AddOptions) RetryOriginReadInTransit(side string, read func() error) error {
++	sleep := o.BackoffSleep
++	if sleep == nil {
++		sleep = time.Sleep
++	}
++	err := read()
++	for attempt, delay := range originReadBackoffDelays {
++		if !gitexec.IsTransportFailure(err) {
++			return err
++		}
++		logger.Warn("fabricengine: origin read failed in transit, retrying", "verb", "add", "side", side, "attempt", attempt+1, "error", err)
++		sleep(delay)
++		err = read()
++	}
++	return err
++}
++
+ // syncOptions returns the options the records helpers take.
+ func (o AddOptions) syncOptions() SyncOptions {
+ 	return SyncOptions{SkipGit: o.SkipGit, SkipPush: o.SkipPush, BackoffSleep: o.BackoffSleep}
+@@ -141,6 +168,11 @@ func SourceDirtyPaths(l *lymcwd.Location) ([]string, error) {
+ // That error names re-running the command that made the pair.
+ // The caller's push of the new pair runs after Add has released the lock, and it takes the lock shared.
+ // The origin probes start in the background, and every return waits for them, a refusal before them included.
++// A probe that fails in transit runs again after each delay of a short backoff.
++// So do the fetches of an adopted warp branch and of a live weft branch, and the lookup of a weft branch only on origin.
++// Only the last failure of each fails the Add.
++// The lookup of the pair's branch name under opts.AdoptOnly runs once.
++// So does the lookup of the warp's default branch under opts.AdoptLocal.
+ // A newly forked weft branch does not inherit the parent's shed run records.
+ // The fork is no-checkout, so the run-records root never reaches the new worktree's disk,
+ // and the pair's first weft commit, the origin record's, also records the root's deletion.
+@@ -261,13 +293,21 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res fa
+ 		probes.Add(1)
+ 		go func() {
+ 			defer probes.Done()
+-			warpTip, warpTipErr = remoteHeadTip(l.WorktreePath(), warpBranch)
++			warpTipErr = opts.RetryOriginReadInTransit("warp", func() error {
++				var err error
++				warpTip, err = remoteHeadTip(l.WorktreePath(), warpBranch)
++				return err
++			})
+ 		}()
+ 	}
+ 	probes.Add(1)
+ 	go func() {
+ 		defer probes.Done()
+-		weftProbe, weftProbeErr = weftLiveness(l, slug, weftBranch, weftBranchAlreadyExists, opts)
++		weftProbeErr = opts.RetryOriginReadInTransit("weft", func() error {
++			var err error
++			weftProbe, err = weftLiveness(l, slug, weftBranch, weftBranchAlreadyExists, opts)
++			return err
++		})
+ 	}()
+ 	// No git call a probe started outlives Add.
+ 	defer probes.Wait()
+@@ -487,8 +527,12 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res fa
+ 	warpStart, warpRemote := "", ""
+ 	if warpAdoptTip != "" {
+ 		warpStart, warpRemote = originRemoteName+"/"+warpBranch, originRemoteName
+-		if _, err := gitrepo.New(l.WorktreePath()).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+warpBranch+":refs/remotes/"+warpStart); err != nil {
+-			return fabriclayout.AddResult{}, fmt.Errorf("fetch warp branch %q from %q: %w", warpBranch, originRemoteName, err)
++		fetchErr := opts.RetryOriginReadInTransit("warp", func() error {
++			_, err := gitrepo.New(l.WorktreePath()).FetchWithArgs("--no-tags", originRemoteName, "refs/heads/"+warpBranch+":refs/remotes/"+warpStart)
++			return err
++		})
++		if fetchErr != nil {
++			return fabriclayout.AddResult{}, fmt.Errorf("fetch warp branch %q from %q: %w", warpBranch, originRemoteName, fetchErr)
+ 		}
+ 	}
+ 	if deleteIgnoredLeftover {
+@@ -555,9 +599,15 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res fa
+ 	// A branch a reused records worktree has checked out cannot be fetched into,
+ 	// so its tip is fetched by SHA and merged inside that worktree.
+ 	if weftOld.fastForwardTo != "" {
++		fetchWeft := func(refspec string) error {
++			return opts.RetryOriginReadInTransit("weft", func() error {
++				_, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, refspec)
++				return err
++			})
++		}
+ 		var advanceErr error
+ 		if weftReused {
+-			if _, advanceErr = gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, weftOld.fastForwardTo); advanceErr == nil {
++			if advanceErr = fetchWeft(weftOld.fastForwardTo); advanceErr == nil {
+ 				_, advanceErr = gitexec.Run([]string{"merge", "--ff-only", weftOld.fastForwardTo}, weftPath)
+ 			}
+ 		} else {
+@@ -565,7 +615,7 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res fa
+ 			if nsErr != nil {
+ 				advanceErr = nsErr
+ 			} else {
+-				_, advanceErr = gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, ns.Branch(weftBranch)+":refs/heads/"+weftBranch)
++				advanceErr = fetchWeft(ns.Branch(weftBranch) + ":refs/heads/" + weftBranch)
+ 			}
+ 		}
+ 		if advanceErr != nil {
+@@ -577,7 +627,7 @@ func (t *Topology) Add(l *lymcwd.Location, slug string, opts AddOptions) (res fa
+ 
+ 	weftAdopted := false
+ 	if weftOld.live {
+-		weftAdopted, _, err = resolveWeftBranch(rec, l, weftBranch, !opts.SkipGit && !opts.SkipPush)
++		weftAdopted, _, err = resolveWeftBranch(rec, l, weftBranch, !opts.SkipGit && !opts.SkipPush, opts.RetryOriginReadInTransit)
+ 		if err != nil {
+ 			_ = t.rollbackAdd(rec, pairAt, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, weftReused, warpTok, &warpPush)
+ 			return fabriclayout.AddResult{}, err
+diff --git a/internal/fabricengine/add_remoteleftover_integration_test.go b/internal/fabricengine/add_remoteleftover_integration_test.go
+index 686fbe1d9..e42a8d731 100644
+--- a/internal/fabricengine/add_remoteleftover_integration_test.go
++++ b/internal/fabricengine/add_remoteleftover_integration_test.go
+@@ -2,6 +2,7 @@
+ // a live pair's branches on origin are adopted,
+ // and a leftover remote branch from a removed pair is refused with an *ErrRemoteLeftover before Add's first mutation.
+ // A provably replaceable leftover does not block the add.
++// A probe that fails in transit is retried, so an origin that answers again within the backoff does not fail the add.
+ //
+ // Every hub here is built through hubforge.CopyHub with an empty branch_prefix,
+ // so a slug's warp branch is the bare slug and its weft branch is <slug>-weft.
+@@ -16,7 +17,10 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
++	"sync"
++	"sync/atomic"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/fabriclayout"
+@@ -76,6 +80,91 @@ func requireNothingCreated(t *testing.T, h *hubforge.Hub, slug string) {
+ 	}
+ }
+ 
++// TestAdd_RetriesOriginProbesThatFailInTransit pins that Add runs an origin probe again after a transport failure.
++// An origin that answers again during the backoff makes the pair.
++// An origin that stays unreachable fails the Add with the transport failure after three re-runs of each probe.
++// That Add leaves nothing created.
++// A probe failure that is not a transport failure, an origin that is no repository, fails the Add with no re-run.
++func TestAdd_RetriesOriginProbesThatFailInTransit(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	// git refuses this URL with `connection refused`, which reads as a transport failure.
++	const refused = "http://127.0.0.1:1/x"
++	tests := []struct {
++		name string
++		// brokenURL is both stores' origin when the Add starts; empty names a local path that does not exist.
++		brokenURL     string
++		originReturns bool
++		wantTransport bool
++		// wantSleeps is the exact count of backoff waits, and the least count when origin returns.
++		wantSleeps int32
++	}{
++		{"OriginAnswersAgain", refused, true, false, 1},
++		{"OriginStaysDown", refused, false, true, 6},
++		{"OriginNotARepository", "", false, false, 0},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++			const slug = "transient"
++			stores := []string{h.PrimeWorktree(), h.PrimeRecords()}
++			brokenURL := tt.brokenURL
++			if brokenURL == "" {
++				brokenURL = filepath.Join(t.TempDir(), "missing.git")
++			}
++			urls := map[string]string{}
++			for _, store := range stores {
++				urls[store] = strings.TrimSpace(gitkit.Git(t, store, "config", "--get", "remote.origin.url"))
++				gitkit.Git(t, store, "remote", "set-url", "origin", brokenURL)
++			}
++
++			var sleeps atomic.Int32
++			var restore sync.Once
++			// The hook runs on Add's probe goroutines, where a test must not be failed fatally.
++			var restoreErr error
++			opts := fabricengine.AddOptions{BackoffSleep: func(time.Duration) {
++				sleeps.Add(1)
++				if tt.originReturns {
++					restore.Do(func() {
++						for store, url := range urls {
++							if _, err := gitexec.Run([]string{"remote", "set-url", "origin", url}, store); err != nil && restoreErr == nil {
++								restoreErr = err
++							}
++						}
++					})
++				}
++			}}
++
++			_, err := fabricengine.NewTopology(fabricengine.Config{}).Add(h.Location, slug, opts)
++			if restoreErr != nil {
++				t.Fatalf("restore origin: %v", restoreErr)
++			}
++			if tt.originReturns {
++				if err != nil {
++					t.Fatalf("Add() = %v; want nil once origin answers again", err)
++				}
++				if got := sleeps.Load(); got < tt.wantSleeps {
++					t.Errorf("backoff delays waited out = %d; want at least %d after the refused probe", got, tt.wantSleeps)
++				}
++				if _, statErr := os.Stat(fabricengine.WorktreePath(h.Location, slug)); statErr != nil {
++					t.Errorf("task worktree after Add() = %v; want it made", statErr)
++				}
++				return
++			}
++			if err == nil || gitexec.IsTransportFailure(err) != tt.wantTransport {
++				t.Fatalf("Add() = %v; want the probe's error with transport failure = %v", err, tt.wantTransport)
++			}
++			if got := sleeps.Load(); got != tt.wantSleeps {
++				t.Errorf("backoff delays waited out = %d; want %d", got, tt.wantSleeps)
++			}
++			requireNothingCreated(t, h, slug)
++		})
++	}
++}
++
+ // removedPair adds slug, plain-removes it, and returns the hub.
+ func removedPair(t *testing.T, slug string) *hubforge.Hub {
+ 	t.Helper()
+diff --git a/internal/fabricengine/checkout.go b/internal/fabricengine/checkout.go
+index 0a94dd4dd..9e78cde70 100644
+--- a/internal/fabricengine/checkout.go
++++ b/internal/fabricengine/checkout.go
+@@ -225,7 +225,7 @@ func (t *Topology) switchOrForkWeft(rec *Mutations, l *lymcwd.Location, branch s
+ 	weftWorktree := RecordsWorktree(l)
+ 	weftBranch := fabriclayout.RecordsBranchName(branch)
+ 
+-	exists, fromOrigin, err := resolveWeftBranch(rec, l, weftBranch, true)
++	exists, fromOrigin, err := resolveWeftBranch(rec, l, weftBranch, true, readOriginOnce)
+ 	if err != nil {
+ 		return false, err
+ 	}
+diff --git a/internal/fabricengine/reconcile.go b/internal/fabricengine/reconcile.go
+index 6186265f4..d03fbc43d 100644
+--- a/internal/fabricengine/reconcile.go
++++ b/internal/fabricengine/reconcile.go
+@@ -308,7 +308,7 @@ func (t *Topology) reconcileMissingWeft(
+ 		return fabriclayout.ReconcileActionUnmanagedReported
+ 	}
+ 
+-	exists, fromOrigin, resolveErr := resolveWeftBranch(rec, warpLayout, weftBranch, true)
++	exists, fromOrigin, resolveErr := resolveWeftBranch(rec, warpLayout, weftBranch, true, readOriginOnce)
+ 	if resolveErr != nil {
+ 		pr.Error = fmt.Sprintf("recreate weft worktree: %v", resolveErr)
+ 		return fabriclayout.ReconcileActionWeftRecreated
+diff --git a/internal/fabricengine/weftbranch.go b/internal/fabricengine/weftbranch.go
+index 100a919d4..98893c7f6 100644
+--- a/internal/fabricengine/weftbranch.go
++++ b/internal/fabricengine/weftbranch.go
+@@ -22,7 +22,8 @@ import (
+ // A failed probe, fetch or branch creation returns an error that names origin and the branch.
+ // It never falls through to exists=false.
+ // It pushes, replaces and deletes nothing on origin.
+-func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, consultOrigin bool) (exists bool, fromOrigin bool, err error) {
++// readOrigin runs each of the probe and the fetch, so the caller decides whether a failed one runs again.
++func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, consultOrigin bool, readOrigin func(side string, read func() error) error) (exists bool, fromOrigin bool, err error) {
+ 	if weftBranchExists(l, weftBranch) {
+ 		return true, false, nil
+ 	}
+@@ -38,8 +39,12 @@ func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, co
+ 		return false, false, nil
+ 	}
+ 
+-	tip, err := remoteHeadTip(weftRepoRoot, weftBranch)
+-	if err != nil {
++	var tip string
++	if err := readOrigin("weft", func() error {
++		var err error
++		tip, err = remoteHeadTip(weftRepoRoot, weftBranch)
++		return err
++	}); err != nil {
+ 		return false, false, err
+ 	}
+ 	if tip == "" {
+@@ -51,7 +56,10 @@ func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, co
+ 		return false, false, err
+ 	}
+ 	trackingRef := originRemoteName + "/" + weftBranch
+-	if _, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, ns.Branch(weftBranch)+":refs/remotes/"+trackingRef); err != nil {
++	if err := readOrigin("weft", func() error {
++		_, err := gitrepo.New(weftRepoRoot).FetchWithArgs("--no-tags", originRemoteName, ns.Branch(weftBranch)+":refs/remotes/"+trackingRef)
++		return err
++	}); err != nil {
+ 		return false, false, fmt.Errorf("fetch weft branch %q from %q: %w", weftBranch, originRemoteName, err)
+ 	}
+ 	if _, err := gitexec.Run([]string{"branch", "--track", weftBranch, trackingRef}, weftRepoRoot); err != nil {
+@@ -60,3 +68,8 @@ func resolveWeftBranch(rec *Mutations, l *lymcwd.Location, weftBranch string, co
+ 	rec.AppendRef(fabriclayout.KindBranchCreated, weftBranch, refDetail("records", weftRepoRoot, originRemoteName))
+ 	return true, true, nil
+ }
++
++// readOriginOnce runs read a single time, for a verb that does not run a failed origin read again.
++func readOriginOnce(_ string, read func() error) error {
++	return read()
++}
