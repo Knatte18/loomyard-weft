@@ -18,13 +18,21 @@ The agents stay on Neve; only gate tier runs move to Septim.
   runs the tier there and streams the `go-json` results back, so the caller sees the same report as a local run.
 - When Septim is down or asleep the gate falls back to local slots; Wake-on-LAN is an option.
 
+## Two modes, chosen per hub
+
+- **Stored**, for hubs whose code the operator owns, such as loomyard: the code may be checked out on Septim, with a warm build cache on disk.
+- **Ephemeral**, for work code (the OSL-1046 hubs): the worktree is sent into a RAM disk (tmpfs) on Septim, the tier runs there,
+  and everything is deleted when the run ends; nothing is written to disk and no git checkout is made.
+  The build cache lives only in RAM. The code is processed on Septim but never stored, as with a model server such as Ollama.
+
 ## Bounds (operator, 2026-11-28)
 
-- Only for hubs whose code the operator owns, such as loomyard: their code may be checked out on Septim.
-- Work code (the OSL-1046 hubs) is never synced to or stored on Septim; a hub opts in, and a work hub never does.
+- Work code may use Septim only in the ephemeral mode, and only over a closed network; the operator confirmed the network is closed.
+- A hub opts in and names its mode; a hub that names none never sends a gate run to Septim.
 - Windows itself is not a lym target: the service runs only inside WSL2.
 
 ## Open
 
 - Measure first: the same tier1 run on Septim's WSL2 and on Neve.
 - How the remote slots are configured, how a remote slot is found to be dead, and what tier2 (tmux) needs there.
+- Whether a .NET hub's gate (C#) runs in WSL2 as the Go gate does.
