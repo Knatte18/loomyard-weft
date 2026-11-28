@@ -1,6 +1,6 @@
 # Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub
 
-`kde-window-placement-build` · Task · feature, termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs · running · Code-Bouncer
+`kde-window-placement-build` · Task · feature, termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs · running · Code-Burler-Review
 
 Decision record: [Sketch](decision-kde-window-placement-build.md)
 
