@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-driver-settles-stops.md)
 
-Depends on: [`stop-settlement-table`](design-stop-settlement-table.md), [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md)
+Depends on: [`stop-settlement-table`](design-stop-settlement-table.md)
 
 ## The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound
 
