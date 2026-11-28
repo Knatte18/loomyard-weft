@@ -642,7 +642,7 @@
       "isolated": false,
       "brief": "Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins",
       "body": "## Seen\n\nThe run that gave testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:\nthe `MailAgent` closures in the PR-Review session tests, one returning a made-up \"no such strand\" error,\nand the session stand-ins in `envkit`.\n`MailAgent` posts through creelcli's `GoClient`, which talks to a creel daemon it spawns, so no real creel path runs at tier0.\n\nThe landed recorded tmux kit (`internal/testkit/tmuxrec`) neither records nor matches a call's stdin.\nEach paste names a fresh random buffer in its arguments, so a replayed paste matches no recorded one and fails as unanswered.\nNo current recording holds a `load-buffer` call, so a scenario that sends text to a pane cannot use the kit.\n\n## Change\n\n- Move the `MailAgent` rows to a tier1 loomcli test over a real creel daemon.\n- Teach `tmuxrec` to record and match a call's stdin, and to match a paste's buffer name by pattern rather than literally, with a recording that pastes and a replay test over it.\n- Move `envkit`'s session stand-ins onto the recorded tmux kit, using paste replay where they send text.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T19:02:48Z",
       "revised": "2026-11-28T08:45:18Z",
       "profile": "solid"
@@ -763,6 +763,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #287](https://github.com/Knatte18/loomyard/issues/287).\n\n## Seen\n\nA motif run's Discussion-Bouncer escalated round 2 with cause `stalemate`, though the round's fixer had changed the decision record.\nThe fixer's round-2 edits to `_lym/discussion/decision-record.md` and `support-log.md`, which answered the one open finding as the review proposed, were in the records worktree but uncommitted.\nThe round's `round-2-changes.md` was empty, and the run agent reported that both round snapshots hash the review target to the SHA-256 of empty input (`e3b0c442…b855`).\nThe round-2 review itself saw the round-1 fixes and marked ten of eleven keys resolved, so reviewers read the working tree while the stalemate check did not.\n\n## Expected\n\nThe stalemate check hashes the same review target the reviewers read, so a round whose fixer changed the decision record is never a stalemate.\nAn empty hash input should fail loudly, not count as an unchanged target.\n\n## Workaround\n\nThe parent reads the decision record, confirms the finding is answered, and runs `lym loom circling accept \u003cslug\u003e`.\nA `continue` would stall at stalemate again.\n",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-27T21:39:20Z",
       "revised": "2026-11-27T21:40:05Z",
       "profile": "light"
