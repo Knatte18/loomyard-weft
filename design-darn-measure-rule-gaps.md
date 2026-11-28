@@ -1,6 +1,6 @@
 # Darn measurement rule covers a run with no parent and bars subagents from measurement calls
 
-`darn-measure-rule-gaps` · Task · bug, darn, stencil · running · Code-Burler-Fix
+`darn-measure-rule-gaps` · Task · bug, darn, stencil · running · Code-Bouncer
 
 ## Seen
 
