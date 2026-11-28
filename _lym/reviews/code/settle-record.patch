@@ -1,0 +1,450 @@
+diff --git a/internal/runpusher/doc.go b/internal/runpusher/doc.go
+index f69430ac6..290bd0b72 100644
+--- a/internal/runpusher/doc.go
++++ b/internal/runpusher/doc.go
+@@ -15,11 +15,14 @@
+ // Start and StartIfAhead spawn the pusher verb, `lym loom pusher`, when every start condition holds:
+ // the lock is free, and no refused push of the target's branch stands, as TargetRefused reads it.
+ // For a pair, no pause may cover the run, and no hand-over mark may name it.
++// A pair whose worktree no longer stands starts none and logs nothing.
++// A worktree stands while it holds its `.git` entry.
++// TargetOf reads it as a pair, and TargetRefused reads it as not refused.
+ // StartIfAhead also requires something origin lacks, and writes or drops the target's ledger entry as it reads.
+ // The board is ahead while it holds an uncommitted file or an unpushed commit,
+ // and every target is ahead while its entry holds a landing.
+ // The landing target is also ahead while the prime's code branch carries an unsettled landing commit.
+-// PruneLedger drops the entries of worktrees that are gone.
++// PruneLedger drops the entries of worktrees that no longer stand.
+ // A process with FABRIC_SKIP_GIT or FABRIC_SKIP_PUSH set starts none.
+ // The spawn is detached and runs in the hub's Bolt directory.
+ // It is registered under the hub's owner with the push role, so a run's teardown, cancel or hand-over never ends it.
+diff --git a/internal/runpusher/parentseams.go b/internal/runpusher/parentseams.go
+index a35b0c8ee..6cc82048e 100644
+--- a/internal/runpusher/parentseams.go
++++ b/internal/runpusher/parentseams.go
+@@ -4,10 +4,7 @@
+ package runpusher
+ 
+ import (
+-	"errors"
+ 	"fmt"
+-	"io/fs"
+-	"os"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+@@ -56,17 +53,15 @@ func beamPair(t Target) bool {
+ 	return false
+ }
+ 
+-// pairOf returns the location of the run's pair, standing reporting false when its code worktree is gone.
++// pairOf returns the location of the run's pair.
++// standing reports whether the pair stands, which it does while its code worktree holds its `.git` entry.
+ func pairOf(hubPath, run string) (pair *lymcwd.Location, standing bool, err error) {
+ 	pair, err = lymcwd.NamedWorktree(hubPath, run)
+ 	if err != nil {
+ 		return nil, false, err
+ 	}
+-	_, err = os.Stat(pair.WorktreePath())
+-	if errors.Is(err, fs.ErrNotExist) {
+-		return pair, false, nil
+-	}
+-	return pair, err == nil, err
++	gone, err := worktreeGone(pair.WorktreePath())
++	return pair, err == nil && !gone, err
+ }
+ 
+ // parentSeams fills every parent seam of t but PushTip and HandOver, which the caller adds.
+diff --git a/internal/runpusher/run.go b/internal/runpusher/run.go
+index 158ffea2f..0f7031d7a 100644
+--- a/internal/runpusher/run.go
++++ b/internal/runpusher/run.go
+@@ -6,7 +6,6 @@ package runpusher
+ import (
+ 	"context"
+ 	"errors"
+-	"os"
+ 	"path/filepath"
+ 	"slices"
+ 	"time"
+@@ -56,7 +55,7 @@ type Deps struct {
+ 	Guard func() error
+ 	// Push pushes the worktree once.
+ 	Push func() error
+-	// WorktreeGone reports whether the worktree no longer exists.
++	// WorktreeGone reports whether the worktree no longer stands, holding no `.git` entry.
+ 	WorktreeGone func() (bool, error)
+ 	// Owed reports whether a failed push is owed, so the pusher retries it.
+ 	Owed func(err error) bool
+@@ -96,7 +95,7 @@ func NewDeps(t Target, timing fabricengine.PushTiming) Deps {
+ 			marked, err := handedOver(t)
+ 			return !marked, err
+ 		},
+-		WorktreeGone: func() (bool, error) { return worktreeGone(t) },
++		WorktreeGone: func() (bool, error) { return worktreeGone(t.Location.WorktreePath()) },
+ 		Owed:         func(err error) bool { return errors.Is(err, errParentOwed) || fabricengine.IsPushOwed(err) },
+ 		Timing:       timing,
+ 		HubPath:      hubPath,
+@@ -420,7 +419,7 @@ func workRemains(deps Deps) (bool, error) {
+ 	return deps.Ahead()
+ }
+ 
+-// canPush reports whether the worktree exists and the start conditions but the lock hold.
++// canPush reports whether the worktree stands and the start conditions but the lock hold.
+ func canPush(deps Deps) (bool, error) {
+ 	gone, err := deps.WorktreeGone()
+ 	if err != nil || gone {
+@@ -460,12 +459,3 @@ func attemptPush(ctx context.Context, t Target, deps Deps) error {
+ 	}
+ 	return deps.Push()
+ }
+-
+-// worktreeGone reports whether the worktree of t no longer exists.
+-func worktreeGone(t Target) (bool, error) {
+-	_, err := os.Stat(t.Location.WorktreePath())
+-	if os.IsNotExist(err) {
+-		return true, nil
+-	}
+-	return false, err
+-}
+diff --git a/internal/runpusher/seams_test.go b/internal/runpusher/seams_test.go
+index 06bc10664..748592183 100644
+--- a/internal/runpusher/seams_test.go
++++ b/internal/runpusher/seams_test.go
+@@ -64,21 +64,73 @@ func TestPusherLock_ExcludesASecondPusherUntilReleased(t *testing.T) {
+ 	third()
+ }
+ 
+-func TestWorktreeGone_ReadsWhetherTheDirectoryStands(t *testing.T) {
++// removals change a pair's worktree so that it no longer stands.
++var removals = []struct {
++	name   string
++	remove func(path string) error
++}{
++	{"TheDirectoryIsGone", os.RemoveAll},
++	{"TheDirectoryStandsWithoutItsGitEntry", func(path string) error { return os.Remove(filepath.Join(path, ".git")) }},
++	{"ThePathIsARegularFile", func(path string) error {
++		if err := os.RemoveAll(path); err != nil {
++			return err
++		}
++		return os.WriteFile(path, nil, 0o644)
++	}},
++}
++
++func TestWorktreeGone_ReadsWhetherTheWorktreeStands(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	target := pairTargetIn(t)
+-	if gone, err := worktreeGone(target); err != nil || gone {
++	path := pairTargetIn(t).Location.WorktreePath()
++	if gone, err := worktreeGone(path); err != nil || gone {
+ 		t.Errorf("worktreeGone() of a standing worktree = %v, %v; want false, nil", gone, err)
+ 	}
++	for _, tt := range removals {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			path := pairTargetIn(t).Location.WorktreePath()
++			if err := tt.remove(path); err != nil {
++				t.Fatalf("remove the worktree: %v", err)
++			}
+ 
+-	if err := os.RemoveAll(target.Location.WorktreePath()); err != nil {
+-		t.Fatalf("remove the worktree: %v", err)
++			if gone, err := worktreeGone(path); err != nil || !gone {
++				t.Errorf("worktreeGone() = %v, %v; want true, nil", gone, err)
++			}
++		})
+ 	}
++}
+ 
+-	if gone, err := worktreeGone(target); err != nil || !gone {
+-		t.Errorf("worktreeGone() of a removed worktree = %v, %v; want true, nil", gone, err)
++// TestTargetOf_AWorktreeNoLongerStandingIsAPairThatStartsNoPusher covers a run whose pair no longer stands:
++// its target reads as the pair with no error, and its start and refusal reads answer false with no error.
++func TestTargetOf_AWorktreeNoLongerStandingIsAPairThatStartsNoPusher(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	for _, tt := range removals {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			location := pairTargetIn(t).Location
++			if err := tt.remove(location.WorktreePath()); err != nil {
++				t.Fatalf("remove the worktree: %v", err)
++			}
++
++			target, err := TargetOf(location, "task")
++
++			want := Target{Location: location, Slug: "task", Pair: true}
++			if err != nil || target != want {
++				t.Fatalf("TargetOf() = %+v, %v; want %+v, nil", target, err, want)
++			}
++			if started, err := StartIfAhead(target); err != nil || started {
++				t.Errorf("StartIfAhead() = %v, %v; want false, nil", started, err)
++			}
++			if refused, err := TargetRefused(target); err != nil || refused {
++				t.Errorf("TargetRefused() = %v, %v; want false, nil", refused, err)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/runpusher/start.go b/internal/runpusher/start.go
+index 890a463ee..4087bb86c 100644
+--- a/internal/runpusher/start.go
++++ b/internal/runpusher/start.go
+@@ -42,6 +42,8 @@ type spawnRequest struct {
+ type starter struct {
+ 	// skipped reports whether git or pushes are off for this process.
+ 	skipped func() bool
++	// pairGone reports whether the pair t names no longer stands.
++	pairGone func(t Target) (bool, error)
+ 	// lockFree reports whether nobody holds the pusher lock at path.
+ 	lockFree func(path string) (bool, error)
+ 	// refusedPushStands reports whether a refused-push record stands for the target's branches.
+@@ -60,6 +62,8 @@ type starter struct {
+ // The conditions are a free pusher lock and no refused push of the target's branch.
+ // A pair also needs no pause covering its run and no hand-over mark naming it.
+ // A process with FABRIC_SKIP_GIT or FABRIC_SKIP_PUSH set starts none.
++// A pair whose worktree no longer stands starts none and reads no other condition.
++// A worktree stands while it holds its `.git` entry.
+ // Two racing starts may both spawn: the loser exits at the lock.
+ // A failed read returns its error and starts none.
+ func Start(t Target) (bool, error) {
+@@ -90,6 +94,7 @@ func newStarter() starter {
+ 			options := fabricengine.EnvSyncOptions()
+ 			return options.SkipGit || options.SkipPush
+ 		},
++		pairGone: func(t Target) (bool, error) { return worktreeGone(t.Location.WorktreePath()) },
+ 		lockFree: func(path string) (bool, error) {
+ 			release, acquired, err := tryLock(path)
+ 			if acquired {
+@@ -111,6 +116,12 @@ func (s starter) start(t Target, ifAhead bool) (bool, error) {
+ 	if s.skipped() {
+ 		return false, nil
+ 	}
++	if t.Pair {
++		gone, err := s.pairGone(t)
++		if err != nil || gone {
++			return false, err
++		}
++	}
+ 	ledger := Deps{HubPath: t.Location.HubPath, Now: time.Now}
+ 	if ifAhead {
+ 		ledger.Key = ledgerKey(t)
+diff --git a/internal/runpusher/start_test.go b/internal/runpusher/start_test.go
+index 65da07edf..6a12ce272 100644
+--- a/internal/runpusher/start_test.go
++++ b/internal/runpusher/start_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+@@ -20,12 +21,13 @@ import (
+ // startFake holds what the fake reads answer and records what the starter read and spawned.
+ type startFake struct {
+ 	skipped  bool
++	gone     bool
+ 	lockFree bool
+ 	stands   bool
+ 	paused   bool
+ 	marked   bool
+ 	ahead    bool
+-	// failing names the read that fails: lock, stands, paused, marked, ahead or spawn.
++	// failing names the read that fails: gone, lock, stands, paused, marked, ahead or spawn.
+ 	failing string
+ 	reads   []string
+ 	spawned []spawnRequest
+@@ -43,7 +45,13 @@ func (f *startFake) starter() starter {
+ 		return answer, nil
+ 	}
+ 	return starter{
+-		skipped:           func() bool { return f.skipped },
++		skipped: func() bool { return f.skipped },
++		pairGone: func(Target) (bool, error) {
++			if f.failing == "gone" {
++				return false, errFakeRead
++			}
++			return f.gone, nil
++		},
+ 		lockFree:          func(string) (bool, error) { return read("lock", f.lockFree) },
+ 		refusedPushStands: func(Target) (bool, error) { return read("stands", f.stands) },
+ 		pauseCovers:       func(Target) (bool, error) { return read("paused", f.paused) },
+@@ -127,6 +135,13 @@ func TestStart(t *testing.T) {
+ 		{name: "PauseAndMarkDoNotApplyToTheBoard", target: "board", wantSpawn: true, setup: func(f *startFake) { f.paused, f.marked = true, true }},
+ 		{name: "PauseAndMarkDoNotApplyToTheLandingTarget", target: "landing", wantSpawn: true, setup: func(f *startFake) { f.paused, f.marked = true, true }},
+ 		{name: "GitOrPushesOffReadsNothing", target: "pair", setup: func(f *startFake) { f.skipped = true }, wantNoReads: true},
++		{name: "AGonePairReadsNothingElse", target: "pair", setup: func(f *startFake) { f.gone = true }, wantNoReads: true},
++		{
++			name: "IfAheadWithAGonePairWritesNothing", target: "pair", ifAhead: true,
++			setup: func(f *startFake) { f.gone = true }, wantNoReads: true,
++		},
++		{name: "AGoneReadDoesNotApplyToThePrime", target: "prime", wantSpawn: true, setup: func(f *startFake) { f.gone = true }},
++		{name: "GoneReadFails", target: "pair", setup: func(f *startFake) { f.failing = "gone" }, wantErr: true},
+ 		{name: "IfAheadWithTheWorktreeLevel", target: "pair", ifAhead: true, setup: func(f *startFake) { f.ahead = false }},
+ 		{
+ 			name: "IfAheadWithTheWorktreeLevelDropsItsEntry", target: "pair", ifAhead: true,
+@@ -205,7 +220,8 @@ func seedEntry(t *testing.T, hub string, key pushledger.Key, entry pushledger.En
+ 	}
+ }
+ 
+-// TestPruneLedger covers which entries the pruning drops: only that of a gone worktree holding no landing.
++// TestPruneLedger covers which entries the pruning drops: only that of a worktree no longer standing, with no landing.
++// An entry whose worktree cannot be read is kept and its failure returned.
+ func TestPruneLedger(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+@@ -215,10 +231,21 @@ func TestPruneLedger(t *testing.T) {
+ 	if err := os.Mkdir(standing, 0o755); err != nil {
+ 		t.Fatal(err)
+ 	}
++	if err := os.WriteFile(filepath.Join(standing, ".git"), []byte("gitdir: elsewhere\n"), 0o644); err != nil {
++		t.Fatal(err)
++	}
++	leftover := filepath.Join(hub, "leftover")
++	if err := os.Mkdir(leftover, 0o755); err != nil {
++		t.Fatal(err)
++	}
+ 	gone := filepath.Join(hub, "gone")
++	// A name past the file system's length limit fails the read for every user, root included.
++	unreadable := filepath.Join(hub, strings.Repeat("u", 300))
+ 	entries := map[pushledger.Key]pushledger.Entry{
++		"unreadable":          {Worktree: unreadable, Slug: "unreadable"},
+ 		"standing":            {Worktree: standing, Slug: "standing"},
+ 		"gone":                {Worktree: gone, Slug: "gone"},
++		"leftover":            {Worktree: leftover, Slug: "leftover"},
+ 		"gone-with-a-landing": {Worktree: gone, Slug: "landed", Landings: []pushledger.Landing{{Run: "landed"}}},
+ 		pushledger.BoardKey:   {},
+ 		pushledger.LandingKey: {},
+@@ -227,8 +254,8 @@ func TestPruneLedger(t *testing.T) {
+ 		seedEntry(t, hub, key, entry)
+ 	}
+ 
+-	if err := PruneLedger(hub, time.Unix(3, 0)); err != nil {
+-		t.Fatalf("PruneLedger() = %v; want nil", err)
++	if err := PruneLedger(hub, time.Unix(3, 0)); err == nil || !strings.Contains(err.Error(), unreadable) {
++		t.Fatalf("PruneLedger() = %v; want the failed read of %s", err, unreadable)
+ 	}
+ 
+ 	left, err := pushledger.List(hub)
+@@ -237,7 +264,7 @@ func TestPruneLedger(t *testing.T) {
+ 	}
+ 	for key := range entries {
+ 		_, found := left[key]
+-		if want := key != "gone"; found != want {
++		if want := key != "gone" && key != "leftover"; found != want {
+ 			t.Errorf("entry %s found = %v; want %v", key, found, want)
+ 		}
+ 	}
+diff --git a/internal/runpusher/target.go b/internal/runpusher/target.go
+index e4a9646f2..65e129b98 100644
+--- a/internal/runpusher/target.go
++++ b/internal/runpusher/target.go
+@@ -69,7 +69,15 @@ func ledgerKey(t Target) pushledger.Key {
+ // TargetOf builds the target of the worktree l for the run slug.
+ // The prime's target carries an empty slug whatever slug is passed:
+ // its pusher carries every batten run's commits and names no one run.
++// A worktree that no longer stands reads as a pair, since the prime stands while its hub does.
++// A worktree stands while it holds its `.git` entry.
++// A pair read this way starts no pusher.
+ func TargetOf(l *lymcwd.Location, slug string) (Target, error) {
++	pair := Target{Location: l, Slug: slug, Pair: true}
++	gone, err := worktreeGone(l.WorktreePath())
++	if err != nil || gone {
++		return pair, err
++	}
+ 	prime, err := fabricengine.IsPrimeWorktree(l)
+ 	if err != nil {
+ 		return Target{}, fmt.Errorf("runpusher: tell whether %s is the prime: %w", l.WorktreePath(), err)
+@@ -77,7 +85,7 @@ func TargetOf(l *lymcwd.Location, slug string) (Target, error) {
+ 	if prime {
+ 		return Target{Location: l}, nil
+ 	}
+-	return Target{Location: l, Slug: slug, Pair: true}, nil
++	return pair, nil
+ }
+ 
+ // LockPath returns the lock file of the pusher of t.
+diff --git a/internal/runpusher/targetreads.go b/internal/runpusher/targetreads.go
+index 2b924f815..cb396e9a8 100644
+--- a/internal/runpusher/targetreads.go
++++ b/internal/runpusher/targetreads.go
+@@ -7,6 +7,8 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"path/filepath"
++	"syscall"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+@@ -77,9 +79,33 @@ func boardAhead(hubPath string) (bool, error) {
+ 	return bolt.HasUnpushed()
+ }
+ 
++// gitEntryName is the `.git` entry every worktree of a repository holds at its root.
++const gitEntryName = ".git"
++
++// worktreeGone reports whether no worktree stands at path, which holds when no `.git` entry is under it.
++// So a missing path, a file at the path and a directory without the entry all read as gone.
++func worktreeGone(path string) (bool, error) {
++	_, err := os.Lstat(filepath.Join(path, gitEntryName))
++	switch {
++	case err == nil:
++		return false, nil
++	// ENOTDIR is what a file at the path answers.
++	case errors.Is(err, fs.ErrNotExist), errors.Is(err, syscall.ENOTDIR):
++		return true, nil
++	}
++	return false, fmt.Errorf("runpusher: read the worktree %s: %w", path, err)
++}
++
+ // TargetRefused reports whether a refused push of t's branch stands, which no retry clears.
+ // The landing target reads the refusals of the prime's code branch, which count against no other target.
++// A pair whose worktree no longer stands reads as not refused, since nothing pushes it again.
+ func TargetRefused(t Target) (bool, error) {
++	if t.Pair {
++		gone, err := worktreeGone(t.Location.WorktreePath())
++		if err != nil || gone {
++			return false, err
++		}
++	}
+ 	switch t.Kind {
+ 	case KindLanding:
+ 		return fabricengine.PrimeCodeRefusalStands(t.Location)
+@@ -109,7 +135,7 @@ func boardRefused(hubPath string) (bool, error) {
+ 	return false, nil
+ }
+ 
+-// PruneLedger removes each ledger entry whose worktree no longer stands.
++// PruneLedger removes each ledger entry whose worktree no longer stands, holding no `.git` entry.
+ // An entry holding landings is kept, since its pending writes wait for the push.
+ // The board and landing entries name no worktree of their own and are kept.
+ // A failed worktree read keeps its entry and is returned with every other failure.
+@@ -123,15 +149,14 @@ func PruneLedger(hubPath string, now time.Time) error {
+ 		if key == pushledger.BoardKey || key == pushledger.LandingKey || entry.Worktree == "" || len(entry.Landings) > 0 {
+ 			continue
+ 		}
+-		_, err := os.Stat(entry.Worktree)
++		gone, err := worktreeGone(entry.Worktree)
+ 		switch {
+-		case err == nil:
+-		case errors.Is(err, fs.ErrNotExist):
++		case err != nil:
++			failures = append(failures, err)
++		case gone:
+ 			failures = append(failures, pushledger.Update(hubPath, key, now, func(current pushledger.Entry, found bool) (pushledger.Entry, bool, error) {
+ 				return current, found && len(current.Landings) > 0, nil
+ 			}))
+-		default:
+-			failures = append(failures, fmt.Errorf("runpusher: read the worktree %s: %w", entry.Worktree, err))
+ 		}
+ 	}
+ 	return errors.Join(failures...)
