@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-raddle-names-jacquard.md)
 
-Depends on: [`jacquard-start-refusal`](design-jacquard-start-refusal.md), [`jacquard-run-profiles`](design-jacquard-run-profiles.md)
+Depends on: [`jacquard-start-refusal`](design-jacquard-start-refusal.md)
 
 Filed from the Sketch `recipe-build-from-sketch`.
 
