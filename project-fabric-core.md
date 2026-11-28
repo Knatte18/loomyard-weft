@@ -1,6 +1,6 @@
 # P4 Fabric split into a git-free core, a layout package and a thin git engine
 
-Rendered 2026-11-28 12:22 UTC; every age below is as of then.
+Rendered 2026-11-28 12:23 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`fabric-core`](design-fabric-core.md) · Age 1d · Owner `neve`
@@ -44,4 +44,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 1d<br>23h | fabric, testkit, pattern, docs |
+| T28 | **Fabric core: anchors, records store, commit, trailers and index move to the core; import guards, PATTERN close-out and remeasure** | [`fabric-core-records-guards`](design-fabric-core-records-guards.md)<br>[Sketch](decision-fabric-core-records-guards.md) | tapestry · solid | T27 | 1d<br>1d | fabric, testkit, pattern, docs |
