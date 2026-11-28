@@ -15,6 +15,7 @@ defaults:
   motif: solid
   pawl: light
   raddle: light
+  jacquard: solid
 speed:
   tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_fan: ""}, discussion: {hard_max_bounces: 1, max_bounces: 0}}, tapestry: {plan: {hard_max_bounces: 1, max_bounces: 0}}}
   darn: {loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_model: 'opus[medium]'}}}
@@ -26,6 +27,9 @@ speed:
     loom: {code: {hard_max_bounces: 1, max_bounces: 0}}
   raddle:
     loom: {raddle: {auto_approve: false}}
+  jacquard:
+    loom: {code: {max_bounces: 1, hard_max_bounces: 2, reviewer_fan: ""}}
+    tapestry: {plan: {max_bounces: 0, hard_max_bounces: 1}}
 light:
   tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 2, max_bounces: 1}}, tapestry: {plan: {hard_max_bounces: 2, max_bounces: 1}}}
   darn: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_model: 'opus[medium]'}}}
@@ -38,6 +42,9 @@ light:
     sampler: {code_review: true}
   raddle:
     loom: {raddle: {auto_approve: false}}
+  jacquard:
+    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
+    tapestry: {plan: {max_bounces: 1, hard_max_bounces: 2}}
 solid:
   tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 3, max_bounces: 2}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
   darn: {loom: {code: {hard_max_bounces: 3, max_bounces: 2, reviewer_model: 'opus[medium]'}}}
@@ -50,6 +57,9 @@ solid:
     sampler: {code_review: true}
   raddle:
     loom: {raddle: {auto_approve: false}}
+  jacquard:
+    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
+    tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
 wide:
   tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 4, max_bounces: 3}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
   darn: {loom: {code: {hard_max_bounces: 4, max_bounces: 3, reviewer_model: 'opus[medium]'}}}
@@ -62,5 +72,8 @@ wide:
     sampler: {code_review: true}
   raddle:
     loom: {raddle: {auto_approve: false}}
+  jacquard:
+    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
+    tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
 docs:
   darn: {darn: {writer: 'sonnet[medium]', report_dir: "docs/research"}, loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_fan: "", reviewer_model: 'opus[medium]'}}, drift: {scope: "off"}}
