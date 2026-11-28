@@ -1,0 +1,516 @@
+diff --git a/internal/orchcli/cli_test.go b/internal/orchcli/cli_test.go
+index f71c0dc43..eb5313021 100644
+--- a/internal/orchcli/cli_test.go
++++ b/internal/orchcli/cli_test.go
+@@ -321,15 +321,23 @@ func TestStatus_Envelope(t *testing.T) {
+ 		{
+ 			name: "unknown tokens are null",
+ 			want: func(*orchCLI) map[string]any {
+-				return map[string]any{"context_tokens": nil, "strand_live": false, "last_deferral": nil, "cycle_trigger": "", "session_id": "", "watcher_restarted": false, "strand_elsewhere": ""}
++				return map[string]any{"context_tokens": nil, "strand_live": false, "last_deferral": nil, "cycle_trigger": "", "session_id": "", "watcher_restarted": false, "strand_elsewhere": "", "strand_down": "no-strand-recorded"}
+ 			},
+ 		},
+ 		{
+ 			name:    "a pane in another session is named",
+-			strands: []reedengine.StrandStatus{{GUID: "g1", Name: "orch", Live: true, Elsewhere: "other:2"}},
++			strands: []reedengine.StrandStatus{{GUID: "g1", Name: "orch", Elsewhere: "other:2", Down: reedengine.DownPaneElsewhere}},
+ 			state:   &orchengine.State{Strand: "g1", Phase: orchengine.PhaseIdle},
+ 			want: func(*orchCLI) map[string]any {
+-				return map[string]any{"strand_elsewhere": "other:2"}
++				return map[string]any{"strand_elsewhere": "other:2", "strand_live": false, "strand_down": "pane-elsewhere"}
++			},
++		},
++		{
++			name:    "a strand missing from reed's state reads down with that cause",
++			strands: []reedengine.StrandStatus{{GUID: "g2", Name: "other", Live: true}},
++			state:   &orchengine.State{Strand: "g1", Phase: orchengine.PhaseIdle},
++			want: func(*orchCLI) map[string]any {
++				return map[string]any{"strand_live": false, "strand_down": "strand-not-in-reed-state"}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/orchcli/live.go b/internal/orchcli/live.go
+index 4aee2429e..d3faff5c6 100644
+--- a/internal/orchcli/live.go
++++ b/internal/orchcli/live.go
+@@ -62,6 +62,7 @@ func HubOrchs(location *lymcwd.Location) ([]*lymcwd.Location, error) {
+ // its orch state records a strand that reed tracks and reports live.
+ // A worktree whose orch never started, or whose reed session is gone, is not live.
+ // Nor is one whose recorded strand reed no longer tracks.
++// Every down reading is logged with its cause.
+ func OrchLive(worktree *lymcwd.Location) (bool, error) {
+ 	return orchroute.Live(worktree)
+ }
+diff --git a/internal/orchcli/status.go b/internal/orchcli/status.go
+index ff26097c4..6901fd398 100644
+--- a/internal/orchcli/status.go
++++ b/internal/orchcli/status.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
++	"github.com/Knatte18/loomyard/internal/orchroute"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -167,7 +168,11 @@ when this call spawned one, and watcher_live keeps what the probe found. While a
+ start or stop holds the lock nothing is restarted and a hint says to rerun
+ status. A dead strand gets no watcher: "lym beam start" relaunches strand and
+ watcher together. strand_elsewhere names the session:window of the strand's pane
+-when it sits in another session of reed's server, empty otherwise.`,
++when it sits in another session of reed's server, empty otherwise.
++strand_down names why the strand is not live, empty while it is:
++` + orchroute.DownNoStrandRecorded + `, ` + orchroute.DownStrandNotInReedState + `, ` + string(reedengine.DownPaneDead) + `,
++` + string(reedengine.DownPaneUnlisted) + `, ` + string(reedengine.DownPanePlacementUnread) + `,
++` + string(reedengine.DownPaneElsewhere) + `, or ` + string(reedengine.DownStartShell) + ` for the pane's start shell in the foreground.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -213,6 +218,7 @@ when it sits in another session of reed's server, empty otherwise.`,
+ 			if hint != "" {
+ 				fields["hint"] = hint
+ 			}
++			fields["strand_down"] = orchroute.ReadingOf(st, strands).Down
+ 			fields["cycle_request"] = cycleRequestField(req, pending, pending && c.hubPauseHolds())
+ 			clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
+ 			return nil
+diff --git a/internal/orchroute/doc.go b/internal/orchroute/doc.go
+index 37ab2e73f..fd7c22dde 100644
+--- a/internal/orchroute/doc.go
++++ b/internal/orchroute/doc.go
+@@ -1,5 +1,6 @@
+ // Package orchroute resolves which orch a worktree's agents reach.
+ // It provides the orch module's paths and the liveness of one worktree's orch.
++// A reading of an orch as down names its cause, and the liveness probe logs every down reading with it.
+ // It also reads the strand name its orch state records and walks up a beam chain to the orch a notice goes to.
+ // It sits below internal/orchcli, which delegates to it.
+ // A package that orchcli imports, such as the creel CLI, resolves the same orch through it without importing orchcli.
+diff --git a/internal/orchroute/live.go b/internal/orchroute/live.go
+index 69e5c130f..8c771c7c4 100644
+--- a/internal/orchroute/live.go
++++ b/internal/orchroute/live.go
+@@ -1,4 +1,5 @@
+-// live.go declares the liveness predicate of one worktree's orch, the same reading `lym orch status` makes of the strand.
++// live.go declares the liveness reading of one worktree's orch, the same reading `lym orch status` makes of the strand.
++// A reading that is not live names its cause.
+ 
+ package orchroute
+ 
+@@ -7,14 +8,37 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lymcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengines"
+ )
+ 
++// The causes an orch reads as down for that lie outside its strand's own reed reading.
++const (
++	// DownNoStrandRecorded is an orch whose state records no strand, one that never started.
++	DownNoStrandRecorded = "no-strand-recorded"
++	// DownNoReedSession is an orch whose worktree has no reed session.
++	DownNoReedSession = "no-reed-session"
++	// DownStrandNotInReedState is an orch whose state records a strand that reed's state no longer holds.
++	DownStrandNotInReedState = "strand-not-in-reed-state"
++)
++
++// downReadingLogMessage is the log line of every down reading, the one text a search of the log needs.
++const downReadingLogMessage = "orch: the orch reads as down"
++
++// Reading is one reading of a worktree's orch: whether it is live, and why not when it reads as down.
++type Reading struct {
++	Live bool
++	// Down names why the orch reads as down, empty for a live orch.
++	// It is one of this package's down causes or the reed down cause of the orch's strand.
++	Down string
++}
++
+ // Live reports whether the orch of worktree is live: its orch state records a strand that reed tracks and reports live.
+ // A worktree whose orch never started, whose reed session is gone, or whose recorded strand reed no longer tracks, is not live.
++// Every down reading is logged with its cause, at Debug for an orch that never started and at Info otherwise.
+ func Live(worktree *lymcwd.Location) (bool, error) {
+ 	st, err := orchengine.LoadState(Paths(worktree))
+ 	if err != nil {
+@@ -29,32 +53,51 @@ func Live(worktree *lymcwd.Location) (bool, error) {
+ 		return false, err
+ 	}
+ 	reed := reedengine.New(reedCfg, reedGeom, shuttleengines.EnvScrub())
+-	return liveFrom(st, func() ([]reedengine.StrandStatus, error) {
++	reading, err := readingFrom(st, func() ([]reedengine.StrandStatus, error) {
+ 		result, err := reed.Status()
+ 		if err != nil {
+ 			return nil, err
+ 		}
+ 		return result.Strands, nil
+ 	})
++	if err != nil {
++		return false, err
++	}
++	switch {
++	case reading.Live:
++	case reading.Down == DownNoStrandRecorded:
++		logger.Debug(downReadingLogMessage, "worktree", worktree.WorktreeName, "cause", reading.Down)
++	default:
++		logger.Info(downReadingLogMessage, "worktree", worktree.WorktreeName, "strandGUID", st.Strand, "cause", reading.Down)
++	}
++	return reading.Live, nil
++}
++
++// ReadingOf reads the orch whose state is st against strands, the strands reed lists for its worktree.
++func ReadingOf(st orchengine.State, strands []reedengine.StrandStatus) Reading {
++	if st.Strand == "" {
++		return Reading{Down: DownNoStrandRecorded}
++	}
++	for _, strand := range strands {
++		if strand.GUID == st.Strand {
++			return Reading{Live: strand.Live, Down: string(strand.Down)}
++		}
++	}
++	return Reading{Down: DownStrandNotInReedState}
+ }
+ 
+-// liveFrom reports whether st records a strand that strands lists as live.
++// readingFrom reads the orch whose state is st against the strands that strands lists.
+ // strands is read only when st records a strand, so a never-started orch costs no reed call.
+-func liveFrom(st orchengine.State, strands func() ([]reedengine.StrandStatus, error)) (bool, error) {
++func readingFrom(st orchengine.State, strands func() ([]reedengine.StrandStatus, error)) (Reading, error) {
+ 	if st.Strand == "" {
+-		return false, nil
++		return ReadingOf(st, nil), nil
+ 	}
+ 	listed, err := strands()
+ 	if errors.Is(err, reedengine.ErrNoSession) {
+-		return false, nil
++		return Reading{Down: DownNoReedSession}, nil
+ 	}
+ 	if err != nil {
+-		return false, err
+-	}
+-	for _, strand := range listed {
+-		if strand.GUID == st.Strand {
+-			return strand.Live, nil
+-		}
++		return Reading{}, err
+ 	}
+-	return false, nil
++	return ReadingOf(st, listed), nil
+ }
+diff --git a/internal/orchroute/live_test.go b/internal/orchroute/live_test.go
+index f72028438..22b569055 100644
+--- a/internal/orchroute/live_test.go
++++ b/internal/orchroute/live_test.go
+@@ -1,4 +1,4 @@
+-// live_test.go covers the orch liveness predicate over hand-built orch state and a fake reed strand list.
++// live_test.go covers the orch liveness reading over hand-built orch state and a fake reed strand list.
+ 
+ package orchroute
+ 
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-func TestLiveFrom(t *testing.T) {
++func TestReadingFrom(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+@@ -21,7 +21,7 @@ func TestLiveFrom(t *testing.T) {
+ 		name    string
+ 		st      orchengine.State
+ 		strands func() ([]reedengine.StrandStatus, error)
+-		want    bool
++		want    Reading
+ 		wantErr bool
+ 	}{
+ 		{
+@@ -30,6 +30,7 @@ func TestLiveFrom(t *testing.T) {
+ 			strands: func() ([]reedengine.StrandStatus, error) {
+ 				return nil, boom
+ 			},
++			want: Reading{Down: "no-strand-recorded"},
+ 		},
+ 		{
+ 			name: "A tracked live strand",
+@@ -37,21 +38,23 @@ func TestLiveFrom(t *testing.T) {
+ 			strands: func() ([]reedengine.StrandStatus, error) {
+ 				return []reedengine.StrandStatus{{GUID: "g1", Live: true}}, nil
+ 			},
+-			want: true,
++			want: Reading{Live: true},
+ 		},
+ 		{
+-			name: "A tracked dead strand",
++			name: "A tracked strand down names reed's cause",
+ 			st:   orchengine.State{Strand: "g1"},
+ 			strands: func() ([]reedengine.StrandStatus, error) {
+-				return []reedengine.StrandStatus{{GUID: "g1", Live: false}}, nil
++				return []reedengine.StrandStatus{{GUID: "g1", Down: reedengine.DownPaneElsewhere}}, nil
+ 			},
++			want: Reading{Down: "pane-elsewhere"},
+ 		},
+ 		{
+-			name: "An untracked strand",
++			name: "A strand missing from reed's state",
+ 			st:   orchengine.State{Strand: "g1"},
+ 			strands: func() ([]reedengine.StrandStatus, error) {
+ 				return []reedengine.StrandStatus{{GUID: "g2", Live: true}}, nil
+ 			},
++			want: Reading{Down: "strand-not-in-reed-state"},
+ 		},
+ 		{
+ 			name: "A reed session that is gone",
+@@ -59,6 +62,7 @@ func TestLiveFrom(t *testing.T) {
+ 			strands: func() ([]reedengine.StrandStatus, error) {
+ 				return nil, fmt.Errorf("no reed session; run \"lym reed up\": %w", reedengine.ErrNoSession)
+ 			},
++			want: Reading{Down: "no-reed-session"},
+ 		},
+ 		{
+ 			name: "A strands error",
+@@ -72,12 +76,12 @@ func TestLiveFrom(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got, err := liveFrom(tt.st, tt.strands)
++			got, err := readingFrom(tt.st, tt.strands)
+ 			if (err != nil) != tt.wantErr {
+-				t.Fatalf("liveFrom() error = %v; want error %t", err, tt.wantErr)
++				t.Fatalf("readingFrom() error = %v; want error %t", err, tt.wantErr)
+ 			}
+ 			if got != tt.want {
+-				t.Errorf("liveFrom() = %t; want %t", got, tt.want)
++				t.Errorf("readingFrom() = %+v; want %+v", got, tt.want)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/reedengine/apply.go b/internal/reedengine/apply.go
+index f09ef2274..15e261034 100644
+--- a/internal/reedengine/apply.go
++++ b/internal/reedengine/apply.go
+@@ -76,6 +76,46 @@ func shellBaseName(command string) string {
+ 	return strings.TrimPrefix(filepath.Base(fields[0]), "-")
+ }
+ 
++// DownCause names why a strand reads not live.
++type DownCause string
++
++// The causes a strand reads not live for.
++const (
++	// DownPaneDead is a strand whose pane the session lists as dead.
++	DownPaneDead DownCause = "pane-dead"
++	// DownPaneUnlisted is a strand whose pane no listing carries, or that is bound to no pane.
++	DownPaneUnlisted DownCause = "pane-unlisted"
++	// DownPanePlacementUnread is a strand whose own-window pane is missing from the session and could not be looked up.
++	// The lookup across the reed server failed, so the pane may sit in another session or be gone.
++	DownPanePlacementUnread DownCause = "pane-placement-unread"
++	// DownPaneElsewhere is a strand whose pane sits in another session of the reed server.
++	DownPaneElsewhere DownCause = "pane-elsewhere"
++	// DownStartShell is a strand whose pane shows the shell it started with in the foreground past the launch grace.
++	DownStartShell DownCause = "start-shell"
++)
++
++// downCause returns why the strand bound to paneID reads not live, and empty for a live strand.
++// aliveIDs holds the panes whose engine runs.
++// runningIDs holds the present panes that are not dead, and presentIDs holds every present pane.
++// elsewhere is the placement of the pane in another session, empty when it sits in none.
++// placementUnread reports that the pane's placement was looked up and the lookup failed.
++func downCause(paneID string, aliveIDs, runningIDs, presentIDs map[string]bool, elsewhere string, placementUnread bool) DownCause {
++	switch {
++	case aliveIDs[paneID]:
++		return ""
++	case elsewhere != "":
++		return DownPaneElsewhere
++	case placementUnread:
++		return DownPanePlacementUnread
++	case !presentIDs[paneID]:
++		return DownPaneUnlisted
++	case !runningIDs[paneID]:
++		return DownPaneDead
++	default:
++		return DownStartShell
++	}
++}
++
+ // engineAliveIDSet returns the set of pane ids whose strand's engine still runs, using this engine's pane-age probe.
+ // The shell-only rule is skipped on Windows, where a PowerShell cmdlet runs inside the shell.
+ func (e *Engine) engineAliveIDSet(present []LivePane) map[string]bool {
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 108ecd4a4..222ee77fc 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -84,6 +84,7 @@
+ // engineAliveIDs is the one predicate.
+ // Every pane on Windows reads live.
+ // An engine that never takes the foreground reads dead, and a shell-only pane younger than the launch grace reads live.
++// StrandStatus.Down names which of these conditions a strand that is not live fails.
+ //
+ // # Revival
+ //
+diff --git a/internal/reedengine/lifecycle.go b/internal/reedengine/lifecycle.go
+index c330e4d86..1cdae2c45 100644
+--- a/internal/reedengine/lifecycle.go
++++ b/internal/reedengine/lifecycle.go
+@@ -84,6 +84,8 @@ type StrandStatus struct {
+ 	// Elsewhere is the session:window placement of the strand's bound pane.
+ 	// It is set only when that pane sits in another session of the reed server, and empty otherwise.
+ 	Elsewhere string
++	// Down names why the strand is not live, and is empty for a live strand.
++	Down DownCause
+ 	// Retiring reports that a caller asked for this strand's removal.
+ 	// It grants nothing by itself: a caller that finds it set only completes the request.
+ 	Retiring bool
+@@ -1328,6 +1330,7 @@ func (e *Engine) Status() (StatusResult, error) {
+ 		// Present, OwnWindow and PanePID stay pane-level.
+ 		aliveIDs := e.engineAliveIDSet(present)
+ 		presentIDs := liveIDSet(present)
++		runningIDs := aliveIDSet(present)
+ 		alivePIDs := make(map[string]int, len(present))
+ 		for _, p := range present {
+ 			if !p.Dead {
+@@ -1338,10 +1341,10 @@ func (e *Engine) Status() (StatusResult, error) {
+ 		// Selvage is not a strand and is never reported here (see ReedState.SelvagePaneID).
+ 		// Status still succeeds when st.Strands is empty but Selvage is alive, because the session is up.
+ 		// Appending a Selvage row here would be wrong.
+-		elsewhere := e.strandsElsewhereLocked(st.Strands, windows)
++		elsewhere, unread := e.strandsElsewhereLocked(st.Strands, windows)
+ 		strands := make([]StrandStatus, len(st.Strands))
+ 		for i, s := range st.Strands {
+-			strands[i] = StrandStatus{GUID: s.GUID, Name: s.Name, PaneID: s.PaneID, PanePID: alivePIDs[s.PaneID], Live: aliveIDs[s.PaneID], Present: presentIDs[s.PaneID], OwnWindow: isOwnWindow(s.Display), Elsewhere: elsewhere[s.PaneID], Retiring: s.Retiring, Held: s.Held, Color: e.withColor(s).Color, LymBin: s.LymBin, Provider: s.Provider}
++			strands[i] = StrandStatus{GUID: s.GUID, Name: s.Name, PaneID: s.PaneID, PanePID: alivePIDs[s.PaneID], Live: aliveIDs[s.PaneID], Present: presentIDs[s.PaneID], OwnWindow: isOwnWindow(s.Display), Elsewhere: elsewhere[s.PaneID], Down: downCause(s.PaneID, aliveIDs, runningIDs, presentIDs, elsewhere[s.PaneID], unread[s.PaneID]), Retiring: s.Retiring, Held: s.Held, Color: e.withColor(s).Color, LymBin: s.LymBin, Provider: s.Provider}
+ 		}
+ 
+ 		result = StatusResult{Session: session, Socket: e.Socket(), Strands: strands}
+diff --git a/internal/reedengine/lifecycle_test.go b/internal/reedengine/lifecycle_test.go
+index c4731ec63..f7cf9a54e 100644
+--- a/internal/reedengine/lifecycle_test.go
++++ b/internal/reedengine/lifecycle_test.go
+@@ -238,6 +238,9 @@ func TestStatus_ReportsSegmentColor(t *testing.T) {
+ // A pane the session lacks is looked up once across the server.
+ // Found in another session, its row names the placement.
+ // Found nowhere, or on a failed lookup, the row names none, and the failure logs one Warn however often it repeats.
++// Each row that is not live names its down cause: a dead pane, a pane elsewhere, an unlisted pane or the start shell.
++// A strand bound to no pane reads as unlisted.
++// On a failed lookup, each pane the session lacks reads its placement as unread.
+ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	logs := logcapture.Capture(t)
+@@ -260,6 +263,7 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 			{GUID: "shellonly", Name: "shellonly", PaneID: "%7", Display: render.Display{Anchor: render.AnchorOwnWindow}},
+ 			{GUID: "engine", Name: "engine", PaneID: "%8", Display: render.Display{Anchor: render.AnchorOwnWindow}},
+ 			{GUID: "nowhere", Name: "nowhere", PaneID: "%10", Display: render.Display{Anchor: render.AnchorOwnWindow}},
++			{GUID: "unbound", Name: "unbound", Display: render.Display{Anchor: render.AnchorOwnWindow}},
+ 		},
+ 	}
+ 	if err := SaveState(e.stateDir(), st); err != nil {
+@@ -280,7 +284,8 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 		}
+ 	}
+ 
+-	// A failed lookup reads every absent pane as found nowhere, and logs one Warn across repeats.
++	// A failed lookup names no placement, reads every absent pane's placement as unread, and logs one Warn across repeats.
++	wantFailedDown := map[string]DownCause{"dead": DownPaneDead, "gone": DownPanePlacementUnread, "nowhere": DownPanePlacementUnread, "shellonly": DownStartShell, "unbound": DownPaneUnlisted}
+ 	fake.answer(serverListVerb, "", errors.New("list-panes -a failed"))
+ 	for range 2 {
+ 		failed, err := e.Status()
+@@ -291,6 +296,9 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 			if s.Elsewhere != "" {
+ 				t.Errorf("Status Elsewhere of strand %q after a failed lookup = %q, want none", s.GUID, s.Elsewhere)
+ 			}
++			if s.Down != wantFailedDown[s.GUID] {
++				t.Errorf("Status Down of strand %q after a failed lookup = %q, want %q", s.GUID, s.Down, wantFailedDown[s.GUID])
++			}
+ 		}
+ 	}
+ 	if got := strings.Count(logs.String(), "could not look up the panes of the whole server"); got != 1 {
+@@ -305,6 +313,7 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 		"gone":  {own: true},
+ 		// A strand whose pane is in no listing is neither live nor present.
+ 		"nowhere": {own: true},
++		"unbound": {own: true},
+ 		// A shell-only pane past the launch grace is present but not live; its engine in the foreground reads live.
+ 		"shellonly": {present: true, own: true},
+ 		"engine":    {live: true, present: true, own: true},
+@@ -314,7 +323,13 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 			t.Errorf("Status of strand %q = %+v, want %+v", s.GUID, got, want[s.GUID])
+ 		}
+ 	}
+-	wantPanePID := map[string]int{"w": 4323, "alive": 4325, "dead": 0, "gone": 0, "nowhere": 0, "shellonly": 4327, "engine": 4328}
++	wantDown := map[string]DownCause{"dead": DownPaneDead, "gone": DownPaneElsewhere, "nowhere": DownPaneUnlisted, "shellonly": DownStartShell, "unbound": DownPaneUnlisted}
++	for _, s := range result.Strands {
++		if s.Down != wantDown[s.GUID] {
++			t.Errorf("Status Down of strand %q = %q, want %q", s.GUID, s.Down, wantDown[s.GUID])
++		}
++	}
++	wantPanePID := map[string]int{"w": 4323, "alive": 4325, "dead": 0, "gone": 0, "nowhere": 0, "unbound": 0, "shellonly": 4327, "engine": 4328}
+ 	for _, s := range result.Strands {
+ 		if s.PanePID != wantPanePID[s.GUID] {
+ 			t.Errorf("Status PanePID of strand %q = %d, want %d", s.GUID, s.PanePID, wantPanePID[s.GUID])
+diff --git a/internal/reedengine/ownwindow.go b/internal/reedengine/ownwindow.go
+index 7ac172dc7..33dff0eaa 100644
+--- a/internal/reedengine/ownwindow.go
++++ b/internal/reedengine/ownwindow.go
+@@ -126,9 +126,10 @@ func (p TmuxCmd) panePlacements() (map[string]panePlacement, error) {
+ 
+ // strandsElsewhereLocked maps the pane id of each own-window strand that the session does not list.
+ // It maps each pane to its session:window and keeps only panes that sit in another session of reed's server.
+-// It runs one server-wide lookup, and only when such a pane exists; with none it returns nil and runs no tmux command.
+-// A failed lookup is logged as an episode and answers nil, so every such pane reads as found nowhere.
+-func (e *Engine) strandsElsewhereLocked(strands []Strand, windows []windowPane) map[string]string {
++// It runs one server-wide lookup, and only when such a pane exists; with none it returns nils and runs no tmux command.
++// A failed lookup is logged as an episode.
++// It maps no placement then, and unread holds every pane the lookup was for.
++func (e *Engine) strandsElsewhereLocked(strands []Strand, windows []windowPane) (elsewhere map[string]string, unread map[string]bool) {
+ 	listed := make(map[string]bool, len(windows))
+ 	for _, w := range windows {
+ 		listed[w.PaneID] = true
+@@ -140,16 +141,19 @@ func (e *Engine) strandsElsewhereLocked(strands []Strand, windows []windowPane)
+ 		}
+ 	}
+ 	if len(absent) == 0 {
+-		return nil
++		return nil, nil
+ 	}
+ 	placements, err := e.tmux.panePlacements()
+ 	if err != nil {
+-		e.calleeFailures.Fail("pane placements", "reed: could not look up the panes of the whole server, reading every pane the session lacks as found nowhere",
++		e.calleeFailures.Fail("pane placements", "reed: could not look up the panes of the whole server, so where a pane the session lacks sits is unknown",
+ 			"socket", e.Socket(), "session", e.SessionName(), "err", err)
+-		return nil
++		unread = make(map[string]bool, len(absent))
++		for _, id := range absent {
++			unread[id] = true
++		}
++		return nil, unread
+ 	}
+ 	e.calleeFailures.Recover("pane placements", "reed: the server-wide pane lookup works again", "socket", e.Socket(), "session", e.SessionName())
+-	var elsewhere map[string]string
+ 	for _, id := range absent {
+ 		placement, found := placements[id]
+ 		if !found || placement.Session == e.SessionName() {
+@@ -160,7 +164,7 @@ func (e *Engine) strandsElsewhereLocked(strands []Strand, windows []windowPane)
+ 		}
+ 		elsewhere[id] = placement.String()
+ 	}
+-	return elsewhere
++	return elsewhere, nil
+ }
+ 
+ // unseenWindowOption is the display-only window option marking an own window the operator has not selected since it opened.
+diff --git a/internal/reedengine/reconcile.go b/internal/reedengine/reconcile.go
+index afe220d98..27491f140 100644
+--- a/internal/reedengine/reconcile.go
++++ b/internal/reedengine/reconcile.go
+@@ -213,7 +213,9 @@ func clearConflictingPaneBindings(st *ReedState) []string {
+ // Those windows are not in killed, since no window 0 pane went.
+ // A viewer on any other window is never moved.
+ func (e *Engine) reconcileLocked(st *ReedState, live []LivePane, windows []windowPane) (killed []string, err error) {
+-	plan := planReconcile(st.Strands, live, windows, newReapPolicy(st, live), e.strandsElsewhereLocked(st.Strands, windows))
++	// A pane whose placement could not be looked up is planned as one found nowhere.
++	elsewhere, _ := e.strandsElsewhereLocked(st.Strands, windows)
++	plan := planReconcile(st.Strands, live, windows, newReapPolicy(st, live), elsewhere)
+ 
+ 	// deadKilled and untrackedKilled collect the ids actually destroyed, one list per kill reason.
+ 	// The plan's kill lists name what was scheduled, not what a partial kill-pane failure reached,
