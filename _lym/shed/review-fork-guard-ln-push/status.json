@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T15:19:27Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/review-fork-guard-ln-push/_lym/landing/summary.md",
+      "at": "2026-11-28T16:07:24Z",
+      "started_at": "2026-11-28T15:19:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T15:24:18.470662064Z",
+          "end": "2026-11-28T15:24:18.490547768Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T15:24:18.582614894Z",
+          "end": "2026-11-28T16:05:24.535405514Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T16:05:24.871157329Z",
+          "end": "2026-11-28T16:05:28.330102889Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T16:05:28.674146195Z",
+          "end": "2026-11-28T16:05:29.272512575Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T16:05:29.638599194Z",
+          "end": "2026-11-28T16:05:29.639682009Z"
+        }
+      ]
     }
   ],
   "product": {
