@@ -1,6 +1,6 @@
 # A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips
 
-`landing-ledger-own-tip` · Task · enhancement, loom, landing · running · Darn-Write
+`landing-ledger-own-tip` · Task · enhancement, loom, landing · running · Code-Bouncer
 
 Decision record: [Sketch](decision-landing-ledger-own-tip.md)
 
