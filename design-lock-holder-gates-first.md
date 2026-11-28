@@ -1,6 +1,6 @@
 # A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock
 
-`lock-holder-gates-first` · Task · enhancement, gate, landing · starting · Seed-Child
+`lock-holder-gates-first` · Task · enhancement, gate, landing · running · Darn-Write
 
 ## Seen (2026-11-28)
 

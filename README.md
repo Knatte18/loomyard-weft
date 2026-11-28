@@ -144,16 +144,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | starting · Seed-Child | neve | 52m<br>0m | gate, landing |
+| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | Darn-Write | neve | 53m<br>1m | gate, landing |
 | T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | landing · Finalize | neve | 59m<br>59m | gate, webster, weaver |
 
 ### Enhancements (3)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 52m<br>52m | gate, webster, weaver |
-| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 52m<br>52m | webster, weaver, stencil |
-| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 52m<br>52m | gate, webster, weaver |
+| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 53m<br>53m | gate, webster, weaver |
+| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 53m<br>53m | webster, weaver, stencil |
+| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 53m<br>53m | gate, webster, weaver |
 
 ## [P0 Root: entries under no project](project-root.md) (17)
 
