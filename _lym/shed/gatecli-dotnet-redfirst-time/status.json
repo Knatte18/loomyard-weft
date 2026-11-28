@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T10:11:48Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gatecli-dotnet-redfirst-time/_lym/landing/summary.md",
+      "at": "2026-11-28T10:27:23Z",
+      "started_at": "2026-11-28T10:11:48Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T10:22:12.275923661Z",
+          "end": "2026-11-28T10:22:12.305397916Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T10:22:12.676526193Z",
+          "end": "2026-11-28T10:25:27.349796083Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T10:25:27.810724272Z",
+          "end": "2026-11-28T10:25:27.818989801Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T10:25:27.967525686Z",
+          "end": "2026-11-28T10:25:28.650696603Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T10:25:29.122801336Z",
+          "end": "2026-11-28T10:25:29.123934165Z"
+        }
+      ]
     }
   ],
   "product": {
