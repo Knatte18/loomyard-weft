@@ -1,9 +1,9 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 12:46 UTC; every age below is as of then.
+Rendered 2026-11-28 12:47 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 52m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 53m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -30,4 +30,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6<br>F3 | 1h<br>0m | loom, batten, shed |
-| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 7m<br>3m | board, dobby |
+| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 8m<br>4m | board, dobby |

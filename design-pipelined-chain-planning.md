@@ -41,6 +41,8 @@ Running the chain in a beam of its own keeps the parent quiet, so the merge in s
 - `depends_on` keeps one list and one meaning: B builds only after each entry in it has landed.
 - When B may start planning is derived from that list, with no second field:
   a jacquard task B may start once each of its dependencies has landed or has an approved plan.
+  A dependency with no plan row of its own, such as a darn task, counts only once it has landed:
+  darn runs are short, and its record is too thin to plan ahead from.
   The wait row of step 4 then holds B until every dependency has landed.
 - While B plans or parks ahead of a dependency that has not landed, the board marks it beside its status, such as `plans ahead of <slug>`.
 

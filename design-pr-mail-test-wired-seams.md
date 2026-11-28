@@ -2,8 +2,6 @@
 
 `pr-mail-test-wired-seams` · Note · enhancement, testkit, landing
 
-Depends on: [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md)
-
 ## Seen
 
 Code-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.
