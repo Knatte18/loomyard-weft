@@ -1,53 +1,48 @@
-# Name the cause whenever an orch reads as down
+# Name why an orch reads as down
 
-Issue #232 reported a running beam orch that read as down, so its members' notices went to the prime's orch.
-The cause cannot be read from the code: every caller reads an orch's liveness through `orchroute.Live`.
-That is the same reed `Status` read `lym orch status` makes, over the same reed geometry the orch was spawned with.
-Before this change, the read returned a bare `false` for every down reading,
-so no log line or status field said why an orch read as down.
-This change names that cause everywhere the read happens, so the next report shows which case it was.
+Issue #232 reported a running beam orch that read as down, and nothing recorded why.
+Its cause is still unknown, since the hub it happened on is not available to inspect.
+This change leaves the rule for what counts as live as it was and makes every down reading name its cause,
+so the next occurrence shows which condition failed.
+#232 stays open.
+A guessed correction was left out on purpose: without evidence it risks counting dead strands as live.
 
 ## What changes
 
-**reed.**
-`reedengine.StrandStatus` gains `Down`, a `DownCause` naming why a strand is not live, empty for a live one:
-`pane-dead`, `pane-unlisted` (no listing carries the pane, or the strand has none),
-`pane-elsewhere` (the pane sits in another session of the reed server),
-or `start-shell` (the pane's start shell is in the foreground past the launch grace).
-`Status` derives it from the same pane sets it already computes `Live` from.
+- `lym orch status` gains a `strand_down` field, empty while the strand is live.
+- The orch liveness probe, which notice routing and `lym beam status` use, logs every down reading with its cause.
+  The line is at Debug for an orch that never started, and at Info with the strand GUID otherwise.
+- `reedengine.StrandStatus` gains `Down`, the reed-level cause for a strand that is not live.
+- An orch whose recorded strand is missing from reed's state still reads as down, now as `strand-not-in-reed-state`.
 
-**orchroute.**
-The liveness read now produces a `Reading` with `Live` and `Down`.
-On top of reed's causes it names three of its own:
-`no-strand-recorded`, `no-reed-session`,
-and `strand-not-in-reed-state`, an orch whose state records a strand that reed's state no longer holds.
-`orchroute.Live` keeps its signature, so the notice routing, `creel post --parent`, the dobby's lines and the decision checks all use it unchanged.
-It logs every down reading with its worktree and cause:
-at Info for an orch that started, at Debug for one that never did.
-`ReadingOf` maps an orch state and reed's strand list to a reading, and both the probe and `lym orch status` call it.
+| Cause | Meaning |
+| --- | --- |
+| `no-strand-recorded` | The orch state records no strand. |
+| `no-reed-session` | The worktree has no reed session. Only the log shows this one, since `lym orch status` errors then. |
+| `strand-not-in-reed-state` | The recorded strand is not in reed's state. |
+| `pane-dead` | The session lists the pane as dead. |
+| `pane-unlisted` | No listing carries the pane, or the strand is bound to none. |
+| `pane-placement-unread` | An own-window pane is missing from the session and the server-wide lookup failed. |
+| `pane-elsewhere` | The pane sits in another session of reed's server. |
+| `start-shell` | The pane's start shell is in the foreground past the launch grace. |
 
-**`lym orch status`.**
-The envelope gains `strand_down`, the reading's cause, empty while the strand is live.
-The verb's help lists the values.
+## Design notes
 
-## Design decisions
-
-- No fix to the liveness rule itself.
-  One candidate was reading a strand whose pane sits in another session as live.
-  Nothing shows that this caused #232, and a guessed rule risks reading a dead strand as live.
-  Naming the cause makes the next occurrence decisive instead.
-- An orch whose strand is missing from reed's state already read as down and passed its notices up the beam chain.
-  The change keeps that routing and only names the cause.
-- `no-strand-recorded` is logged at Debug: a beam whose orch never started is common, and an Info line for each probe of it would be noise.
-- `lym beam status` also reads through `orchroute.Live`, so it logs a started orch's down reading at Info as well.
+- `lym orch status` and the liveness probe both take the down cause from `orchroute.ReadingOf`.
+  `strand_live` and the watcher restart in `lym orch status` still come from its own strand lookup.
+- A failed server-wide pane lookup used to be indistinguishable from a pane found nowhere.
+  `strandsElsewhereLocked` now returns those panes separately, and its warning text changes to match.
+  Reconcile ignores the new return value and plans such a pane as before.
+- Notice routing does not probe the starting worktree's own orch while reed still holds its strand,
+  so that path logs no down reading for it. `lym orch status` there still shows `strand_down`.
 
 ## To check by hand
 
-- The #232 scenario has not been replayed in a hub with a running beam orch.
-  The next time a live beam orch reads as down, the `orch: the orch reads as down` log line and `strand_down` should name the case.
-- No repository-wide test run was made.
+- The new and updated tests run against fakes.
+  Reading `strand_down` off a live reed server, for a running orch and for one whose pane was killed or moved,
+  is not covered by them.
 
 ## Merge danger
 
 **Door:** two-way
-**Blast radius:** orch
+**Blast radius:** reed
