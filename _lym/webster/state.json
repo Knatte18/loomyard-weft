@@ -1,6 +1,6 @@
 {
   "runGuid": "e321b798881361ecc272e875dad42dec",
-  "planFingerprint": "694b9471db0b0cd7101eb657911937c8c3fad25a81692ef26b39ac441bf6aa63",
+  "planFingerprint": "523943166488ad7ef3f9333fa30c91211e07ca3a400f3bc0165bc91eddabc699",
   "planFileHashes": {
     "00-overview.md": "e3911eb2d7bd28f4409b34e9dc6f9d43422d30213c127e75d00d4b6621c52340",
     "01-kwin-probes.md": "4f223aef42e20493dadab583e11f83cda12b3644d141295728e076114de82e5d",
@@ -13,10 +13,10 @@
     "08-kwinplace-script-runner.md": "bbed78c3c942bf62c6680e38d89530d5b52a46f389e6e0d00194c43cce8afd7b",
     "09-kwinplace-places.md": "3c79c25caaf800f6cbe9037815ee31c7fa85ce29ba8fb7605bc22bde9e2352b8",
     "10-kwinplace-planner.md": "46e73b9ed3949c450009a0c7b45815a184d46c56589a68cdc5d490a8b268afd5",
-    "11-kwinplace-place-flow.md": "845848742a6732f5f280ee50cdf6d8997cb1699c9ce9ed5e044f93860e718f87",
-    "12-place-window-child.md": "502d146890ce37b17a6574bda5421a935bac8d2bb8a11ad31489845a2c1b52c9",
-    "13-reed-window-placement.md": "8473ba96fe68b8250f9ba163d750e4e490fe5bd9dd2821399f952d41829aa34a",
-    "14-machine-start-placement.md": "2bad36c7ab2d439d08f5946752979d10b5343b0234474d626529283cad76fa81"
+    "11-kwinplace-place-flow.md": "03bd7d9c92938941a2220e53cd3b8e52cc6ac12ab8206f807ec9aee5f2803663",
+    "12-place-window-child.md": "f6f481f42076eb041475edebafb1a829ab50965361d194bf27f1a5a7811493f1",
+    "13-reed-window-placement.md": "acf0dcf49c007f5901f5cabe01c831bc67be1f5747a2629a657f70bc11a219bf",
+    "14-machine-start-placement.md": "cee81ecad5924a8cee677bfba33cb28718a9c67bce93d39e4ff37c1a50cfcbaf"
   },
   "planOverviewFrameHash": "4d130a8d09d1ea07a3dd024740aeaecc8909758ffb3ff1a9a80ba57594cb683f",
   "partition": [
@@ -376,18 +376,40 @@
         "14-machine-start-placement"
       ],
       "cardHashes": {
-        "11-kwinplace-place-flow": "845848742a6732f5f280ee50cdf6d8997cb1699c9ce9ed5e044f93860e718f87",
-        "12-place-window-child": "502d146890ce37b17a6574bda5421a935bac8d2bb8a11ad31489845a2c1b52c9",
-        "13-reed-window-placement": "8473ba96fe68b8250f9ba163d750e4e490fe5bd9dd2821399f952d41829aa34a",
-        "14-machine-start-placement": "2bad36c7ab2d439d08f5946752979d10b5343b0234474d626529283cad76fa81"
+        "11-kwinplace-place-flow": "03bd7d9c92938941a2220e53cd3b8e52cc6ac12ab8206f807ec9aee5f2803663",
+        "12-place-window-child": "f6f481f42076eb041475edebafb1a829ab50965361d194bf27f1a5a7811493f1",
+        "13-reed-window-placement": "acf0dcf49c007f5901f5cabe01c831bc67be1f5747a2629a657f70bc11a219bf",
+        "14-machine-start-placement": "cee81ecad5924a8cee677bfba33cb28718a9c67bce93d39e4ff37c1a50cfcbaf"
       },
       "startSha": "3822ec075a160471df0b6ce58cd8f33d92a9dc69",
       "kind": "fork",
       "spawnedAt": "2026-11-28T12:29:19Z",
       "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-kwinplace-place-flow",
+        "status": "done",
+        "head_sha": "f525096fd28c477e09b6092ca26ca61d2dbe57f7",
+        "deviations": [
+          "internal/kwinplace/child.go",
+          "internal/kwinplace/flow.go",
+          "internal/kwinplace/flow_test.go",
+          "internal/kwinplace/parentwait.go",
+          "internal/machinecli/start_test.go",
+          "internal/reedcli/placewindowchild.go"
+        ]
+      },
+      "cardShas": [
+        "f525096fd28c477e09b6092ca26ca61d2dbe57f7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a7276e8fc0534899b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a7276e8fc0534899b.jsonl"
+      ]
     },
     "5": {
       "slug": "konsole-separate-launch",
@@ -443,7 +465,7 @@
       ]
     }
   },
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "b19f1c9d69e8efc58cd59ad562567257",
   "masterSessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
   "masterEngine": "claude",
@@ -461,6 +483,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a9b157b73dfa921ca.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a5c65087f1f388c11.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a64a5c1e6d84b2d8d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-adab46d2414f09366.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-adab46d2414f09366.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a7276e8fc0534899b.jsonl"
   ]
 }

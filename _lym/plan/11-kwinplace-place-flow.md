@@ -1,15 +1,15 @@
 # Card 11 — kwinplace-place-flow
 
 **Create:**
-- `plan:internal/kwinplace#Request` -> `type Request struct`
-- `plan:internal/kwinplace#Mode` -> `func Mode(perTask, machine string) string`
-- `plan:internal/kwinplace#Flow` -> `type Flow struct`
-- `plan:internal/kwinplace#NewFlow` -> `func NewFlow(runner *Runner, afterPlace func(ctx context.Context) error) Flow`
-- `plan:internal/kwinplace#Flow.Place` -> `func (f Flow) Place(ctx context.Context, req Request) error`
-- `plan:internal/kwinplace#Flow.awaitParent` -> `func (f Flow) awaitParent(ctx context.Context, placesPath, parent string, deadline time.Time) bool`
-- `plan:internal/kwinplace#reportUpdateFrom` -> `func reportUpdateFrom(snap Snapshot, tilingOutput string, report ApplyReport, places Places, req Request, plan Placement, fallback bool, now time.Time) ReportUpdate`
-- `plan:internal/kwinplace#TestMode` -> `func TestMode(t *testing.T)`
-- `plan:internal/kwinplace#TestFlow_Place` -> `func TestFlow_Place(t *testing.T)`
+- `internal/kwinplace#Request`
+- `internal/kwinplace#Mode`
+- `internal/kwinplace#Flow`
+- `internal/kwinplace#NewFlow`
+- `internal/kwinplace#Flow.Place`
+- `internal/kwinplace#Flow.awaitParent`
+- `internal/kwinplace#reportUpdateFrom`
+- `internal/kwinplace#TestMode`
+- `internal/kwinplace#TestFlow_Place`
 
 **Edit:**
 - `cmd/lym#unboundedWaitFiles`

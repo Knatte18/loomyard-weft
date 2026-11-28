@@ -2,11 +2,11 @@
 
 **Create:**
 - `internal/reedcli/placewindowchild_integration_test.go`
-- `plan:internal/runproc#RolePlacement` -> `const RolePlacement = "placement"`
-- `plan:internal/kwinplace#ChildVerbName` -> `const ChildVerbName = "place-window"`
-- `plan:internal/kwinplace#Spawn` -> `func Spawn(lymPath, hubPath, worktree, title string, pid int, prime bool) error`
-- `plan:internal/reedcli#reedCLI.placeWindowCmd` -> `func (c *reedCLI) placeWindowCmd() *cobra.Command`
-- `plan:internal/reedcli#TestPlaceWindowChild` -> `func TestPlaceWindowChild(t *testing.T)`
+- `internal/runproc#RolePlacement`
+- `internal/kwinplace#ChildVerbName`
+- `internal/kwinplace#Spawn`
+- `internal/reedcli#reedCLI.placeWindowCmd`
+- `internal/reedcli#TestPlaceWindowChild`
 
 **Edit:**
 - `internal/reedcli/cli.go#`

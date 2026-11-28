@@ -2,8 +2,8 @@
 
 **Create:**
 - `internal/reedcli/handterminalwindow_integration_test.go`
-- `plan:internal/reedcli#handTerminalWindow` -> `func handTerminalWindow(lymPath, dir, title string, pid int) error`
-- `plan:internal/reedcli#TestHandTerminalWindow_DirectoryInNoWorktreeHandsNothing` -> `func TestHandTerminalWindow_DirectoryInNoWorktreeHandsNothing(t *testing.T)`
+- `internal/reedcli#handTerminalWindow`
+- `internal/reedcli#TestHandTerminalWindow_DirectoryInNoWorktreeHandsNothing`
 
 **Edit:**
 - `internal/reedcli/window.go#`
