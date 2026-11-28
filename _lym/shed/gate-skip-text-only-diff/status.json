@@ -49,5 +49,10 @@
       "reason": "batten.open_ide = false",
       "machine": "neve"
     }
-  ]
+  ],
+  "cancel": {
+    "started_at": "2026-11-28T16:53:37+01:00",
+    "machine": "neve",
+    "remove": true
+  }
 }
