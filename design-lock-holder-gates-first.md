@@ -2,6 +2,8 @@
 
 `lock-holder-gates-first` · Note · enhancement, gate, landing
 
+Depends on: [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md)
+
 ## Seen (2026-11-28)
 
 A run gating tiers 0 to 2 under the parent lock waited for the same four gate slots as the runs queued behind its lock,
