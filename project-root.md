@@ -33,6 +33,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | T12 | 10h<br>10h | burler, stencil, webster |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | T12 | 10h<br>10h | darn, stencil |
 
+## Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T20 | `draft` **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn | T5 | 0m<br>0m | webster, fabric |
+
 ## Sketches (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
