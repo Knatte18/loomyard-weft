@@ -1,6 +1,6 @@
 # lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes
 
-`clone-reset-keeps-unpushed` · Task · bug, fabric · running · Friction-Reflect
+`clone-reset-keeps-unpushed` · Task · bug, fabric · done
 
 ## Seen
 
