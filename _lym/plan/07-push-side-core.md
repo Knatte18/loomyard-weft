@@ -3,9 +3,11 @@
 **Create:**
 - `plan:internal/fabriccore#OutcomeTakeover` -> `const OutcomeTakeover OutcomeClass = "takeover"`
 - `plan:internal/fabriccore#OutcomeProtected` -> `const OutcomeProtected OutcomeClass = "protected"`
+- `plan:internal/fabriccore#OutcomeProtectedUnrejected` -> `const OutcomeProtectedUnrejected OutcomeClass = "protected_unrejected"`
 - `plan:internal/fabriccore#OutcomeReplayConflict` -> `const OutcomeReplayConflict OutcomeClass = "replay_conflict"`
 - `plan:internal/fabriccore#OutcomeOriginAhead` -> `const OutcomeOriginAhead OutcomeClass = "origin_ahead"`
 - `plan:internal/fabriccore#OutcomeDeferred` -> `const OutcomeDeferred OutcomeClass = "deferred"`
+- `plan:internal/fabriccore#OutcomeRetriesExhausted` -> `const OutcomeRetriesExhausted OutcomeClass = "retries_exhausted"`
 - `plan:internal/fabriccore#FieldPushSide` -> `const FieldPushSide Field = "push_side"`
 - `plan:internal/fabriccore#FieldPushJudgment` -> `const FieldPushJudgment Field = "push_judgment"`
 - `plan:internal/fabriccore#SeamRejectionRetry` -> `const SeamRejectionRetry = "rejection_retry"`
@@ -18,9 +20,13 @@
 - `plan:internal/fabricengine#pushJob.read` -> `func (j *pushJob) read(phase fabriccore.Phase, fields []fabriccore.Field, snapshot *fabriccore.Snapshot) error`
 - `plan:internal/fabricengine#pushJob.runners` -> `func (j *pushJob) runners(retry func() (deferred bool, err error)) map[fabriccore.ActionKind]actionRunner`
 - `plan:internal/fabricengine#errRetryDeferred` -> `var errRetryDeferred error`
-- `plan:internal/fabricengine#TestPushClassified_Snapshot` -> `func TestPushClassified_Snapshot(t *testing.T)`
+- `plan:internal/fabricengine_test#TestPushClassified_Snapshot` -> `func TestPushClassified_Snapshot(t *testing.T)`
+- `plan:internal/fabricengine#PushClassifiedSnapshotForTest` -> `func PushClassifiedSnapshotForTest(hubPath, side, path string, opts SyncOptions) (fabriccore.Snapshot, error)`
 
 **Edit:**
+- `internal/fabricengine#coalescePushSides`
+- `internal/fabricengine/doc.go`
+- `plan:internal/fabriccli_test#TestInstallRequiredSeams`
 - `internal/fabriccore#Snapshot`
 - `internal/fabricengine#pushClassified`
 - `internal/fabricengine#pushJob`
@@ -33,6 +39,8 @@
 - `internal/fabricengine#TestOutcomeClassOf`
 - `internal/fabricengine_test#TestPushFailureClasses`
 - `internal/fabricengine_test#TestCoalescePushBothAt_AdvancesBothSidesAndLeavesNoWarpRootLock`
+- `internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers`
+- `internal/fabricengine#TestCoalescePushBothAt_HeldByAPauseWithoutThePushLock`
 - `pattern/PATTERN-fabric-boundary.md`
 
 **Delete:**
@@ -43,10 +51,11 @@
 
 **Extends:**
 - `internal/fabriccore/doc.go`
-- `internal/fabricengine/doc.go`
 
 **Uses:**
 - `internal/fabricengine#runRule`
+- `plan:internal/fabricengine#refuseUnsuppliedSeams`
+- `plan:internal/fabricengine#SetRunRecordPaths`
 - `plan:internal/fabriccore#IsOwedClass`
 - `internal/testkit/fabrickit#NewSnapshot`
 - `internal/fabricengine#TestBoltReplay_NamesNoBoardFile`
@@ -82,15 +91,22 @@ Actions and outcomes:
   an `*AnchorStopError`'s way forward, a `*replayConflict`'s paths, and a takeover error returned as the same object,
   so `errors.As` for `*TakeoverError` and `*TakeoversError` and `errors.Is` for `ErrTakeoverPassOwed` and `ErrHandedOver` hold for every caller (`internal/pairteardown/handover.go`).
 - `outcomeClassOf` (`executor.go`) takes over `rejectionRetryKind`'s mapping, in its order:
-  an `*AnchorStopError` is anchor stop, auth refused is auth refused, a takeover stop is `OutcomeTakeover`, a protected-branch refusal is `OutcomeProtected`,
+  an `*AnchorStopError` is anchor stop, auth refused is auth refused, a takeover stop is `OutcomeTakeover`,
+  a protected-branch refusal that wraps `gitrepo.ErrPushRejected` is `OutcomeProtected`,
+  and one that does not, such as a hook's or ruleset's refusal of `resetUnnamedTip`'s leased reset, which `gitrepo.UpdateRemoteBranchLeased` returns as a wrapped git error, is `OutcomeProtectedUnrejected`;
   a bare rejection is rejected, `ErrReplayConflict` is `OutcomeReplayConflict`, a destructive refusal is destructive refusal,
-  `gitrepo.ErrPushRetriesExhausted` and a transport failure are transport failure, `errOriginAhead` is `OutcomeOriginAhead`, and anything else is failed.
+  `gitrepo.ErrPushRetriesExhausted` is `OutcomeRetriesExhausted`, ahead of the transport case, a transport failure is transport failure, `errOriginAhead` is `OutcomeOriginAhead`, and anything else is failed.
   A retry that reported a deferral returns `errRetryDeferred`, which `outcomeClassOf` maps to `OutcomeDeferred`.
-  `gitrepo.ErrPushRetriesExhausted` reads transport, as `classifyFailure` records it today; it is a push error no snapshot read returns, so `TestRunRule`'s read rows stand as they are.
-  The mapping is the engine's one rule, as D3 keeps it; `TestOutcomeClassOf` gains a row per new class, `errRetryDeferred`'s included, and the takeover and protected precedence over rejected.
+  `OutcomeRetriesExhausted` is a push error no snapshot read returns, so `TestRunRule`'s read rows stand as they are.
+  The mapping is the engine's one rule, as D3 keeps it; `TestOutcomeClassOf` gains a row per new class, `errRetryDeferred`'s and `OutcomeRetriesExhausted`'s included,
+  a row for a protected refusal that wraps no `gitrepo.ErrPushRejected` mapping to `OutcomeProtectedUnrejected`,
+  and the takeover and protected precedence over rejected and the exhausted precedence over transport.
+- `coalescePushSides` runs `refuseUnsuppliedSeams(fabriccore.SeamRunRecordPaths)` first, before it takes the push lock, and returns the refusal unrecorded (D13).
+  So a records push whose rejection retry reads the takeover (`ReadUpstreamTakeover`) never meets an unset seam mid-flow.
 
 The rules `PushSide` and `JudgePush` carry, each as today:
 - A transport failure of the push is pushed again after each backoff delay, unless `SingleAttempt`; the last transport failure stands once the delays are spent.
+  An exhausted push (`OutcomeRetriesExhausted`) is never pushed again, as `retryTransportPush` re-pushes only what `gitexec.IsTransportFailure` classes as transport today.
 - The origin lookup retries a gone branch whose entry is not ended, and a transport read failure, once per delay; a failure for any other reason reads unchecked and the push goes on.
   `SingleAttempt` returns a transport read failure at once.
   An ended entry answers a local `ActionRefDelete` of the branch's tracking ref, keeping the upstream setting, run as today through `DeleteRemoteTrackingRef` and not through `destroy.go`, which guards no tracking ref today;
@@ -99,13 +115,20 @@ The rules `PushSide` and `JudgePush` carry, each as today:
   `goneEntryEnded` stays in `pushclassified.go`, called from `pushJob.read`, so `TestBoltReplay_NamesNoBoardFile`'s readers map stays true.
   A gone, not ended branch is a `gone` record wrapping `ErrBranchGone`; a rewound task branch, a `rewound` record holding the dropped commits.
 - A rejection runs the retry seam call; it is called again after each delay while it ends rejected or failed, at most once per delay plus the first call, so no loop runs more rounds than today.
-  Origin ahead stops at once and keeps the first rejection; any named class stops at once.
+  A first push that is a protected refusal is a rejection, so it runs the retry seam call as today, where `mapPlainPushError` wraps a declining hook's refusal in `ErrPushRejected`.
+  A retry outcome that is a protected refusal, of either protected class, stops the loop at once, as `rejectionRetryKind`'s not-retryable answer does today.
+  An `OutcomeProtectedUnrejected` outcome's error is not joined to the rejection, as `settleRejection` returns a named class's error unjoined today.
+  Origin ahead stops at once and keeps the first rejection; any other named class stops at once.
   An unnamed final failure is joined to the rejection.
-- The verdict's class: anchor stop is `anchor_change` with its way forward; auth is `auth`; a rejection the retries did not settle reads the judgment facts:
+- The verdict's class: anchor stop is `anchor_change` with its way forward; auth is `auth`;
+  an `OutcomeProtectedUnrejected` outcome is `other` with that outcome's error and asks no `FieldPushJudgment`,
+  as today `classifyFailure` names no class for it and `pushClassified` records it as `other`;
+  a rejection the retries did not settle, an `OutcomeProtected` refusal of the push among them, reads the judgment facts, as `failRejection` does today:
   a refused reset's unmade commit is `not_fast_forward` naming it and origin's tip;
   a failed judgment fetch or tip read is `other` with that error joined;
   origin holding commits the branch lacks is `not_fast_forward` with the local commits; otherwise `other`, "a fetch found origin holding nothing this branch lacks".
-  Replay conflict and destructive refusal are `not_fast_forward` with the conflicting paths and local commits; transport is `transport`; protected is `other` with `protectedParentWayForward` when the push carried landings; failed is `other`.
+  Replay conflict and destructive refusal are `not_fast_forward` with the conflicting paths and local commits; transport and an exhausted push are `transport`; failed is `other`.
+  An `other` record of a push that carried landings and ended in a protected refusal, of either protected class, keeps `protectedParentWayForward`, as `pushJob.record` sets it today.
   A takeover is returned unrecorded; a deferral writes the deferred record and returns nil, or its unrecorded `*PushFailedError` under `OwedUnrecorded`.
   A namespace read failure is `other` before origin is read.
   A landed push records today's mutation entries and clears the side's record.
@@ -116,12 +139,17 @@ The executor records in `fabricengine.Mutations` exactly the entries today's cod
 So `PATTERN-fabric-boundary`'s background, `### Destruction chokepoint`'s last bullet, is restated as D4 words it:
 "The executor records in `fabricengine.Mutations` the entries today's code records for the same effect, kind for kind, and destructive primitives stay in `destroy.go`."
 The retry functions' bodies, the weft and Bolt replays, stay one seam-call action each; their replay rules are the replay concern's (overview, Shared Decisions).
+The executor section of `internal/fabricengine/doc.go` has its outcome-class sentence rewritten to list the classes `outcomeClassOf` maps after this card.
 
 Tests (the commit message lists them):
 - `TestPushSide` (core, tier0) over `fabrickit` snapshots with `Outcomes` and `ReadFailures` set per row:
   the transport loop pushes once per delay and stops after the last;
+  an exhausted push is pushed once and records `transport`;
   `SingleAttempt` pushes once;
   the rejection loop calls the retry once plus once per delay over rejected outcomes and then stops with the rejection, the acceptance row of D3;
+  a protected first push runs one retry call and then the judgment read;
+  a protected rejection with origin holding commits the branch lacks reads `not_fast_forward`;
+  an `OutcomeProtectedUnrejected` retry outcome stops the loop and records `other` with its own error, unjoined to the rejection, with no judgment read;
   a failed retry outcome keeps retrying and joins the rejection;
   origin ahead and each named class stop at once;
   a deferred retry outcome answers the deferred verdict;
@@ -150,12 +178,20 @@ Tests (the commit message lists them):
   D4's tier1 row of a destructive action whose target turned dirty after the snapshot needs an action whose `destroy.go` request checks dirtiness.
   This concern's one destructive action, `resetUnnamedTip`'s leased reset, passes `dirtinessNA` (`pushclassified.go`), and no other action of the concern goes through `destroy.go`,
   so that row lands with the first part whose concern moves a dirtiness-checked action, the teardown part (D9); the live-pair half of the criterion is card 11's row.
-- `TestPushClassified_Snapshot` is a tier1 test in package `fabricengine`, the push flow's seam test (D6):
-  on a hubforge pair it runs `pushClassified` of the records side with one unpushed commit, asserts the snapshot its phases read (the push side's facts and the phases in order) and then the end state, the branch on origin and no record.
+- `TestPushClassified_Snapshot` is a tier1 test in package `fabricengine_test`, the push flow's seam test (D6);
+  package `fabricengine` cannot hold it, since `internal/hubforge` imports `internal/fabricengine`.
+  It reads the snapshot through `PushClassifiedSnapshotForTest`, an `export_test.go` accessor that runs `pushClassified`'s `runRule` and returns the snapshot its phases read.
+  On a hubforge pair it pushes the records side with one unpushed commit, asserts that snapshot (the push side's facts and the phases in order) and then the end state, the branch on origin and no record.
   A second row, a code branch with no upstream, asserts the snapshot holds no `PhaseOrigin` and no judgment read, so that path reads no more than today (D2).
   Card 8's records-landing loop runs the same reads per push and shares it.
   The per-verb reader makes today's git and `gitrepo` calls unchanged, so its handling of a ref storage other than `files` is today's.
 - `TestCoalescePushBothAt_AdvancesBothSidesAndLeavesNoWarpRootLock` asserts the push's exact printed `mutations` array against the array today's code prints (D4, D5);
   `CoalescePushRequest` runs the same `coalescePushSides` and shares it.
+- `TestCoalescePushRequest_CoveredCallDefers`, all three of whose subtests call `CoalescePushRequest`, and `TestCoalescePushBothAt_HeldByAPauseWithoutThePushLock` push plain repos with bare origins and build no hub,
+  so each now meets the pre-lock refusal.
+  Each sets the run-records paths seam itself through `SetRunRecordPaths`, with paths under its own temp repos, restores it before it returns and stays free of `t.Parallel` (D13);
+  package `fabricengine` cannot take `hubforge.InstallRequiredSeams`, since `internal/hubforge` imports `internal/fabricengine`.
+  Their assertions are unchanged.
+- `TestInstallRequiredSeams` gains a row: with the run-records paths seam unset through `fabricengine.SetRunRecordPaths(nil)`, `CoalescePushRequest` of a pair with an unpushed records commit refuses naming the seam, and origin's records branch is unchanged.
 
-**ImpactSummary:** pushClassified keeps its signature, so its four callers in pushanchored.go and coalesce.go are untouched; the executor's class mapping grows five classes; one PATTERN background clause is restated.
+**ImpactSummary:** pushClassified keeps its signature, so its callers are untouched; coalescePushSides gains a pre-lock seam refusal; the executor's class mapping gains the new classes; one PATTERN background clause is restated.

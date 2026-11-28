@@ -29,11 +29,18 @@
 - `internal/fabricengine#runRule`
 - `internal/fabricengine#OriginSeams`
 - `plan:internal/fabricengine#RunRecordPaths`
+- `plan:internal/fabricengine#StatusCodec`
 
 **Intent:**
 The removal of ended runs becomes a core rule whose teardown is a seam-call action, and `originreconcileended.go` stops importing `internal/shedrun` (D3, D13).
 
-- `recordedRuns` lists the run directories through `RunRecordPaths.RunsRoot` and `Reserved`, and reads each status through `StatusFile`, in place of the shedrun calls; card 9's pre-lock refusal guarantees the seam is installed when it runs.
+- `recordedRuns` lists the run directories through `RunRecordPaths.RunsRoot` and `Reserved`, in place of the shedrun calls.
+  It reads each status file's bytes at `RunRecordPaths.StatusFile` and asks `StatusCodec.Recorded`, in place of `readRunStatusRows`, so fabric decodes no shed record (D13):
+  an absent file is not recorded, and a verdict error fails the reconcile wrapped as "decode <path>".
+  The verdict parses shed's whole `Status`, not fabric's narrow `runStatusRows`, so its error text is the codec's,
+  and a record whose field only shed's `Status` declares has the wrong type now fails where the narrow decode read it recorded; that judgment is the codec's, as D13 hands it to shed.
+  Card 9's pre-lock refusal guarantees both seams are installed when it runs.
+  `readRunStatusRows` stays for its callers in `replay.go`, the replay concern's.
 - `EndedFacts` (in `Snapshot.Ended`) holds, per ended slug in slug order, its how, whether this machine holds a part of its pair, whether an earlier snapshot tag exists, and the scope; and, once run, each teardown's report: tags, kept, busy and on what, error, mutations.
 - `EndedTeardowns` answers one `ActionSeamCall` with `SeamTeardown` and the slug in `Ref`, for the first entry not yet torn down that has a local part, outside a judge-only scope, not the scope's own run, and with a teardown seam installed.
   The list ends at the seam call, since the next answer reads its report (D3); a failing teardown stops no other entry.
@@ -42,7 +49,9 @@ The removal of ended runs becomes a core rule whose teardown is a seam-call acti
   `busyWayForward`'s two lines move with it word for word.
 - `MergeEndedEntries` and `WithoutRemovedPairs` are today's helpers word for word.
 - `StalePushFailures` returns the records whose branch is not local, `local` keyed by repository path and branch, which `clearStalePushFailures` reads and then clears.
-- The engine's runner for `SeamTeardown` calls `seams.Teardown` with today's `EndedTeardown`, appends the report's mutations to the reconcile's record and adds the report to the snapshot; the reads of local parts and snapshot tags stay engine reads in the under-lock phase.
+- The engine's runner for `SeamTeardown` calls `seams.Teardown` with today's `EndedTeardown`, appends the report's mutations to the reconcile's record and adds the report to the snapshot.
+  `EndedTeardowns` runs in its own `runRule`, after `OriginJudge`'s has returned and released the remote-refs locks, with a nil lock, as `reconcileEnded` runs today;
+  the reads of local parts and snapshot tags stay engine reads, that rule's `PhasePreLock` reads.
   The printed mutations of a reconcile are unchanged (D4, D5).
 
 Tests (the commit message lists them):

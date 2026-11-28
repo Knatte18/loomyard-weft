@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -50,6 +50,6 @@ The concern's tests shrink: rules become tier0 core rows, git effects and interl
 
 ### Decision: required seams are set only through their setters, sequentially
 
-- **Decision:** a fabric test that unsets or sets a required seam builds its hub through `internal/hubforge` first, uses the seam's setter, restores it, and does not call `t.Parallel`; every other test takes the seams `internal/hubforge` installed once per test binary (D13).
+- **Decision:** a fabric test that unsets or sets a required seam uses the seam's setter, restores it, and does not call `t.Parallel`, and one that also builds a hub through `internal/hubforge` builds it first; every other test takes the seams `internal/hubforge` installed once per test binary (D13).
 - **Rationale:** Go runs a binary's parallel tests after its sequential ones, so no parallel test sees a seam change.
-- **Applies to:** cards 4, 9, 11
+- **Applies to:** cards 4, 7, 8, 9, 11

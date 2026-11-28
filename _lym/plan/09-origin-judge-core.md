@@ -16,7 +16,8 @@
 - `plan:internal/fabriccore_test#TestClassifyEntries` -> `func TestClassifyEntries(t *testing.T)`
 - `plan:internal/fabricengine#reconcileReader` -> `type reconcileReader struct`
 - `plan:internal/fabricengine_test#TestReconcileOrigin_RefusesAnUnsuppliedSeam` -> `func TestReconcileOrigin_RefusesAnUnsuppliedSeam(t *testing.T)`
-- `plan:internal/fabricengine#TestReconcileOrigin_Snapshot` -> `func TestReconcileOrigin_Snapshot(t *testing.T)`
+- `plan:internal/fabricengine_test#TestReconcileOrigin_Snapshot` -> `func TestReconcileOrigin_Snapshot(t *testing.T)`
+- `plan:internal/fabricengine#ReconcileJudgeSnapshotForTest` -> `func ReconcileJudgeSnapshotForTest(l *lymcwd.Location, scope fabriclayout.ReconcileScope, opts ReconcileOptions) (fabriccore.Snapshot, error)`
 
 **Edit:**
 - `cmd/lym#remoteRefsLockFetchAllowlist`
@@ -55,7 +56,8 @@
 
 Phases, in today's order:
 1. `PhasePreLock` reads `FieldSeams` and `FieldReconcileTargets` (today's `originTargets`: targets, pairs, the two repository directories, an absent pair).
-   `OriginJudge` refuses through `RefuseUnsupplied` when `SeamRunRecordPaths` is unsupplied, or `SeamRunLocks` for a moving hub scope, the one scope that takes the prime lock (a run scope never does, `movePrime`), before any lock or remote call.
+   `OriginJudge` refuses through `RefuseUnsupplied` when `SeamRunRecordPaths` or `SeamStatusCodec` is unsupplied, or `SeamRunLocks` for a moving hub scope, the one scope that takes the prime lock (a run scope never does, `movePrime`), before any lock or remote call.
+   The codec is needed in every scope because `recordedRuns` and `recordedPairs`, which every reconcile runs, ask its `Recorded` verdict from cards 10 and 11 on.
    A run scope with no registered pair and no `PairMayBeAbsent` refuses as today, as a `PhasePreLock` read error.
 2. `PhaseOrigin` is locked by the engine's phase lock, which takes both repositories' remote-refs locks (`HoldRemoteRefs`) and holds them until `runRule` returns, as `judgeAgainstOrigin` holds them today.
    It reads `FieldOriginRefs` through `lsRemoteOnce` with the options' deadline and call hook.
@@ -80,7 +82,7 @@ Tests (the commit message lists them):
   the retry loop over transport read failures waiting once per interval and ending unreachable after the attempts, and `attempts` of 1 with no retry;
   a moved head asks for the fetch and an unmoved one does not;
   and `JudgeBranch` rows for every state, taken from `TestReconcileOrigin_Judge`'s verdict rows.
-- `TestClassifyEntries` (core, tier0) takes the fifteen `classifyEntry` precedence rows of `TestReconcileOrigin_Judge`, the D3 stop and busy-own-records rows, and the owned_elsewhere way forward.
+- `TestClassifyEntries` (core, tier0) takes the fifteen `classifyEntry` precedence rows of `TestReconcileOrigin_Judge`, the D3 stop and busy-own-records rows, and the owned_elsewhere way forward, its empty-subject row naming the slug included.
   `EntryFactsForTest` and `ClassifyEntryForTest` go with their last user.
 - `TestFailedPushRecord`'s `StopWayForward_*` rows move to `TestFailedPushWayForward` (card 5's core test) as `BranchStopWayForward` rows, but `AnchorStoppedPairWeftSetsTheAnchorInTheAnchoredDir`, which pins the anchored directory's read; `StopWayForwardForTest` stays for it.
 - `TestReconcileOrigin_Judge` keeps the rows that pin git or an interleaving:
@@ -90,8 +92,10 @@ Tests (the commit message lists them):
   Its rows that rest on run records or the board move in card 12.
 - `TestReconcileOrigin_RefusesAnUnsuppliedSeam` is a tier1 test in `internal/fabricengine_test`: it builds a hub through `internal/hubforge` first, unsets the run-records paths seam through `SetRunRecordPaths(nil)`, restoring it on return, and does not call `t.Parallel`.
   A moving `ReconcileOrigin` then refuses naming the seam, its report holds no branch, no entry and no mutation, and no branch or tracking ref moved.
-- `TestReconcileOrigin_Snapshot` is a tier1 test in package `fabricengine`, the reconcile flow's seam test (D6):
-  on a hubforge pair whose code branch is behind origin it runs the judge through `runRule`, asserts the snapshot each phase read (the targets, origin's heads, the moved heads, the branch facts) and the phases in order, then the report's verdicts.
+- `TestReconcileOrigin_Snapshot` is a tier1 test in package `fabricengine_test`, the reconcile flow's seam test (D6);
+  package `fabricengine` cannot hold it, since `internal/hubforge` imports `internal/fabricengine`.
+  It reads the snapshot through `ReconcileJudgeSnapshotForTest`, an `export_test.go` accessor that runs `OriginJudge` through `runRule` and returns the snapshot its phases read.
+  On a hubforge pair whose code branch is behind origin it asserts that snapshot (the targets, origin's heads, the moved heads, the branch facts) and the phases in order, then the report's verdicts.
 The core tests add about 2 seconds to one tier0 run.
 
 **ImpactSummary:** ReconcileOrigin keeps its signature for its thirteen production callers; judging moves into the core with the remote-refs locks still taken by the engine; two test shims go with their last user.

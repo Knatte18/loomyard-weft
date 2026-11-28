@@ -25,6 +25,7 @@
 - `internal/fabricengine_test#TestRunCommitsAhead`
 - `internal/fabricengine_test#TestTipsOnOrigin`
 - `internal/fabricengine_test#TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide`
+- `plan:internal/fabriccli_test#TestInstallRequiredSeams`
 
 **Delete:**
 - `internal/fabricengine#localBranch.ahead`
@@ -39,9 +40,13 @@
 - `internal/fabricengine#runRule`
 - `internal/fabricengine#recordOwedRecordsPush`
 - `internal/fabricengine#teardownLockOwedError`
+- `plan:internal/fabricengine#refuseUnsuppliedSeams`
 
 **Intent:**
 The pair push's own loop and the pusher's local reads become core rules.
+
+`PushPairAnchored` runs `refuseUnsuppliedSeams(fabriccore.SeamRunRecordPaths)` first, before it takes any lock, and returns the refusal unrecorded (D13).
+So a records push whose rejection retry reads the takeover (`ReadUpstreamTakeover`) never meets an unset seam mid-flow.
 
 Records side of `PushPairAnchored`:
 - Today `pushRecordsSide` pushes the records side, re-reads whether it is still unpushed under its ceiling, and pushes again after each backoff delay while origin holds the branch.
@@ -69,6 +74,7 @@ Tests (the commit message lists them):
   `TestTipsOnOrigin` keeps `BothTipsPushed` and `CodeBranchWithItsTrackingRefDeletedReadsHeld`; it deletes the rest.
 - `TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide` keeps its interleaving rows (`PrimeRecordsCommitDuringThePushIsPushedAgain`, the `PrimeRecordsPushOwed_*` rows, the deferral and owner-guard rows, the held and capped rows) and its first section's mutation assertion, which it widens to the exact `mutations` array the push prints, entry for entry, against the array today's code prints (D4, D5).
   It deletes the inline section "a remote that always declines gives a bare rejection after the whole backoff and one `other` record", held by `TestPushSide`'s rejection loop row and `TestPushFailureClasses`' kept `Code` row.
+- `TestInstallRequiredSeams` gains a row: with the run-records paths seam unset through `fabricengine.SetRunRecordPaths(nil)`, `PushPairAnchored` of a pair with an unpushed records commit refuses naming the seam, and origin's records branch is unchanged.
 The core tests add about 1 second to one tier0 run.
 
 **ImpactSummary:** PushPairAnchored, RunCommitsAhead and TipsOnOrigin keep their signatures for their callers in tendercli, runpusher, beamcli, battencli, loomcli and pairteardown; only private readers change.
