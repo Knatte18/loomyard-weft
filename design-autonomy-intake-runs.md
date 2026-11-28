@@ -18,6 +18,7 @@ What autonomy may start is a level of its own, beside how far it settles stops (
    It settles their stops and lands them, and starts no new work.
 2. Next level: the orch may also turn notes, and incoming issues, into tasks and start them.
 
+   It also picks up the notes that runs and other agents file on the board, such as bugs, and decides what to do with each.
 Turning a note or issue into a task is the risky step, since autonomy could start large work the operator would not approve.
 Raddle splits are the example: their first draft is regularly reshaped by the operator, as project `self-healing-autonomy` went from eleven parts to five.
 
