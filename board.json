@@ -762,13 +762,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "gate-call-shows-slot-wait"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A mis-formatted Go file passes every tier; add a gofmt check to tier0",
       "body": "## Seen\n\nThe `design-first-route` landing (`9acc400f8`) listed a mis-spaced assignment in `internal/battencli/wire_test.go`,\n`err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite.\nThat line does not stand in the file at `9acc400f8` or at `3fb0787e3`, and `gofmt -l cmd internal tools` lists no file at `3fb0787e3`.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nAdd a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n\n## Orch decision\n\nCheck every Go file under `cmd`, `internal` and `tools`, not only changed files: the tree is clean today, so the whole-tree check stays cheap and needs no diff scope.\n",
-      "status": "starting · Seed-Child",
+      "status": "starting · Open-Window",
       "created": "2026-11-27T19:53:36Z",
       "revised": "2026-11-28T08:45:27Z",
       "profile": "light"
@@ -942,29 +940,6 @@
       "body": "Imported from [issue #283](https://github.com/Knatte18/loomyard/issues/283).\n\n## What happened\n\nA darn writer session ran an entry that is itself a measurement: one `lym gate test --tier \u003cn\u003e \u003cpackage\u003e` call per package and tier.\nThe writer's gate rules in `contracts/stencils/darn/darn-fragment-make-change-gated.md` say to run no `lym gate test`,\nbar one test class through the measuring call, and name two exceptions, neither of which covers measurement.\n\nThe writer followed the entry over the prompt: several hundred calls with `--wait --no-carry`, run in loops, about 70 minutes.\nIt did not ask its parent first.\n\n## Why it is abnormal\n\nThe prompt and the entry contradict each other, and the prompt says nothing about which wins.\nA writer that obeys the prompt cannot do the entry; one that does the entry breaks a stated rule on its own decision.\n\n## What to do\n\nGive the writer prompt a rule for an entry whose deliverable is gate measurements: either state that those gate calls are allowed\n(and with what limits), or tell the writer to ask its parent before running them.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
       "created": "2026-11-27T21:39:25Z",
       "revised": "2026-11-27T21:40:07Z",
-      "profile": "light"
-    },
-    {
-      "id": 1772,
-      "handle": "T19",
-      "slug": "gate-call-shows-slot-wait",
-      "title": "Timing a gate test call includes the slot wait; run time needs the run record",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "gate"
-      ],
-      "issues": [
-        284
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #284](https://github.com/Knatte18/loomyard/issues/284).\n\n## What happened\n\nA session timing packages through `lym gate test` found that a call's wall time includes the wait for a gate slot,\nup to 300 s in that run.\nTiming the calls therefore did not measure the test runs, and the session took its wall figures from `wall_seconds` in each run record.\n\n## Why it is a problem\n\nA caller who measures a gate call from outside gets a figure dominated by contention for slots,\nand has to know about the run records to get the run's own time.\nThe note does not say whether the call's own output separates the two.\n\n## What to do\n\nCheck that the result of `lym gate test` shows the slot wait and the run's wall time as separate values.\nIf it does not, add them; if it does, document in the verb's help where to read the run time without the wait.\n\nProvenance: task `test-time-measure`, note `Darn-Write.md`.\n",
-      "status": "done",
-      "created": "2026-11-27T21:39:28Z",
-      "revised": "2026-11-27T21:40:48Z",
       "profile": "light"
     },
     {

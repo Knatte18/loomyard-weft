@@ -1,8 +1,6 @@
 # Tier0 fails on a Go file gofmt would rewrite
 
-`battencli-wire-test-gofmt` · Task · enhancement, gate · starting · Seed-Child
-
-Depends on: [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md)
+`battencli-wire-test-gofmt` · Task · enhancement, gate · starting · Open-Window
 
 ## Seen
 
