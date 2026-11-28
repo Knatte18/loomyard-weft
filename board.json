@@ -1073,7 +1073,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (2026-11-28)\n\nA run gating tiers 0 to 2 under the parent lock waited for the same four gate slots as the runs queued behind its lock,\nwhose lock-free gates its landing would make stale anyway.\n`docs/research/webster/webster-time-2026-11-08.md` (lever 4) also measured 3.1 min of slot wait per Webster row, 27 min in one.\n\n## Idea\n\nGive gate slot requests a priority: a gate run under the parent lock first, then implementer gates, then the rest.\n",
-      "status": "running · Friction-Reflect",
+      "status": "done",
       "created": "2026-11-28T12:06:20Z",
       "revised": "2026-11-28T12:58:28Z",
       "profile": "speed",

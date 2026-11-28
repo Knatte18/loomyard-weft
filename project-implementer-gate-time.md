@@ -1,6 +1,6 @@
 # P8 Webster and Weaver spend less of their row in gate runs
 
-Rendered 2026-11-28 14:03 UTC; every age below is as of then.
+Rendered 2026-11-28 14:04 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`implementer-gate-time`](design-implementer-gate-time.md) · Age 2h · Owner `neve`
@@ -19,11 +19,10 @@ This project cuts how often and how widely the implementers gate, where project 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (2)
+## Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | darn · speed | Friction-Reflect | neve | 1h<br>1h | gate, landing |
 | T6 | **The batch gate runs tier1 over the batch own packages, not their dependents** | [`batch-gate-tier1-own-packages`](design-batch-gate-tier1-own-packages.md) | darn · light | Darn-Write | neve | 39m<br>39m | gate, webster |
 
 ## Enhancements (3)
@@ -33,3 +32,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | 1h<br>41m | gate, webster, weaver |
 | E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | 1h<br>41m | webster, weaver, stencil |
 | E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | 1h<br>41m | gate, webster, weaver |
+
+## Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | 1h<br>1h | gate, landing |
