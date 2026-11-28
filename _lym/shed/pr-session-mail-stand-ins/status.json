@@ -68,6 +68,26 @@
       "budget_exempt": true,
       "routed_to": "Run-Shed",
       "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Code-Bouncer",
+      "at": "2026-11-28T11:40:28Z",
+      "started_at": "2026-11-28T11:40:28Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Describe",
+      "at": "2026-11-28T11:41:59Z",
+      "started_at": "2026-11-28T11:41:58Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed",
+      "machine": "neve"
     }
   ]
 }
