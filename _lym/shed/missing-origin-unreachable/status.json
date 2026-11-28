@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Fix",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Fix",
-    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
+    "now": "Code-Bouncer",
+    "last": "Code-Burler-Fix → bounced to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -123,6 +123,54 @@
       "budget_exempt": true,
       "routed_to": "Code-Burler-Fix",
       "by": "shed"
+    },
+    {
+      "producer": "Code-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-28T10:57:53Z",
+      "started_at": "2026-11-28T10:35:29Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T10:44:42.266258472Z",
+          "end": "2026-11-28T10:44:42.345314208Z"
+        },
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T10:46:36.157074709Z",
+          "end": "2026-11-28T10:46:36.183358288Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T10:44:42.886541819Z",
+          "end": "2026-11-28T10:44:43.644799001Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-11-28T10:44:45.060697855Z",
+          "end": "2026-11-28T10:46:34.462694784Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T10:46:36.529775833Z",
+          "end": "2026-11-28T10:57:51.678168498Z"
+        },
+        {
+          "gate": "fixer-report",
+          "kind": "gate",
+          "start": "2026-11-28T10:57:51.981651661Z",
+          "end": "2026-11-28T10:57:51.984688972Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
