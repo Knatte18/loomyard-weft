@@ -1,38 +1,34 @@
-# Run TestGateRedFirst_Dotnet's rows in parallel, each in its own hub
+# gatecli: run TestGateRedFirst_Dotnet's rows in parallel
 
-`TestGateRedFirst_Dotnet` set the minimum time of the `internal/gatecli` tier1 run.
-Each `lym gate red-first` call under the dotnet scoper exports the base into a fresh checkout and builds the .NET solution there from cold.
-So each row costs one cold restore, build and test run, and the three rows ran one after another over one shared working tree.
+`TestGateRedFirst_Dotnet` is a slow test in `internal/gatecli`.
+Each of its three rows built the .NET solution cold in a fresh checkout of the base,
+and the rows ran one after another over one shared working tree.
 
-## Change
-
-- Each row now copies its own hubforge hub, commits the fixture there and runs in parallel with the other rows.
-- The row whose test passes on the base is folded into the red row as a second test method.
-  That row asserts that only the test failing on the base is named in `red_tests`, so a real passing test still has to read as not red.
-- The rows are a table with one envelope check loop.
+Each row now copies its own hub and runs in parallel, and there are two rows instead of three.
+Only the test file changes.
 
 ## Design decisions
 
-- The dropped row asserted the `gateslot.RedFirstGreenExit` exit code over a real dotnet run.
-  `TestDotnetRedFirstCallRun_RunsTheChangedTestMethodsInACheckoutOfTheBase` still pins that exit, with stand-in tier runs.
-  `TestGateTest_DotnetFixture` still pins test counts read from a real vstest run.
-  The commit records the drop in a `Loosened-Check:` trailer.
-- No production code changes.
-  Sharing one built fixture across rows would need red-first to reuse a checkout between calls, and each call exporting its own fresh base checkout is what the test pins.
+- The test that passes on the base no longer has a row of its own.
+  It runs beside the failing test in the red row,
+  which asserts that both are selected, that only the failing one is named red,
+  and that the run reports `discovered 2 passed 1 failed 1`.
+- This loosens the test: no real `dotnet` run of `lym gate red-first` now asserts the exit code
+  `gateslot.RedFirstGreenExit` or the "does not show the bug" text.
+  `TestDotnetRedFirstCallRun_RunsTheChangedTestMethodsInACheckoutOfTheBase` still asserts both, with stand-in tier runs.
+- Keeping that case as a third parallel row was measured and rejected.
+  In alternating runs started at a 1-minute load of 34 to 52,
+  the longest parallel row took 18.1 to 23.6 s with three rows against 12.5 to 14.2 s with two.
 
-## Measurements
+## To check by hand
 
-Each figure is from one run that selected `^TestGateRedFirst_Dotnet$` over the tests marked `//lym:only upkeep`, with `TestGateTest_DotnetFixture` running beside it in the same package.
+- Time the whole test and the `internal/gatecli` package before and after this change if the saving matters.
+  The figures above compare only the two parallel layouts, not the old serial test or the package time.
 
-| | merge base `687d3580a` | this change |
-|---|---|---|
-| machine load average, 1 min, at start | 40.4 | 41.7 |
-| `TestGateRedFirst_Dotnet` rows | 12.37 s, 7.34 s, 10.58 s in series | 13.57 s, 10.88 s in parallel |
-| `TestGateRedFirst_Dotnet` wall time | 34.43 s | about 13.6 s, its longest row |
-| `TestGateTest_DotnetFixture` | 16.51 s | 17.96 s |
-| `internal/gatecli` package | 34.458 s | 18.001 s |
-
-The package time is now set by `TestGateTest_DotnetFixture`.
+- Accept or reject the lost coverage in `TestGateRedFirst_Dotnet`
+  (`internal/gatecli/redfirstdotnet_integration_test.go`).
+  No row has a real `dotnet test` run that exits 0 in red-first's exported checkout,
+  so a defect on that path that turns an all-passing run into a non-zero exit is not caught there.
 
 ## Merge danger
 
