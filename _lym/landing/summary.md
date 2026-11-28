@@ -1,26 +1,23 @@
-# Board upserts and merges leave the caller's payload map unchanged
+# Leave the caller's payload map unchanged on board upserts and merges
 
-`TestDiscussedPayload` in `internal/boardengine` crashed now and then with `fatal error: concurrent map writes`.
-The payload checks in `Store.UpsertTask`, `Store.UpsertTasksBatch` and `Store.MergeTasks` drop a key whose value equals the stored one,
+`TestDiscussedPayload` in `internal/boardengine` could crash with `fatal error: concurrent map writes`.
+The store's payload checks drop a key that equals the stored value,
 and they dropped it from the caller's own map.
-The test hands one row's payload map to its parallel upsert, batch and merge subtests,
-so the subtests that passed the check deleted `discussed` from the same map at once.
+The test shares one payload map across its parallel upsert, batch and merge subtests, so those deletes raced.
 
-## The fix
+`Store.UpsertTask`, `Store.UpsertTasksBatch` and `Store.MergeTasks` now clone each payload before checking it.
+A caller's map is never changed by these calls, and callers may share one payload across concurrent writes.
+`TestDiscussedPayload` now asserts that every path leaves the shared payload unchanged.
 
-Each of the three store methods now clones its payload before checking it,
-so a caller's map is never changed and callers may share one payload across concurrent writes.
-`Store.MergeTasks` already cloned its payload before adding `issues`, `created` and `project`;
-that clone moves to the top of the method, ahead of the checks.
-
-`TestDiscussedPayload` keeps the shared payload and asserts that every path leaves it unchanged.
-On the old code the `StoredValuePasses` row fails that assertion on each path every run, race detector or not.
+Closes #289
 
 ## Design decisions
 
-- The fix is in the store rather than in the test.
-  A board method that deletes keys from the map its caller passed is the defect,
-  and copying the payload in the test would have hidden it from every other caller.
+- The fix is in the store rather than in the test, so the guarantee holds for every caller of the three methods.
+- The checks still delete no-op keys, now from the store's own copy.
+- The copy is a shallow `maps.Clone`: it protects the map's keys, not the values nested in it.
+- `MergeTasks` already cloned the upsert map before writing the carried keys into it; that clone now comes first,
+  ahead of the checks.
 
 ## Merge danger
 
