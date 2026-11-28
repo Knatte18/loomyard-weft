@@ -1,6 +1,6 @@
 # Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock
 
-`finalize-owed-tips-gate` · Task · bug, landing
+`finalize-owed-tips-gate` · Task · bug, landing · starting · Worktree-Create
 
 Depends on: [`beam-member-parent`](design-beam-member-parent.md)
 
