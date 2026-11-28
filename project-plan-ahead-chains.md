@@ -30,4 +30,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>27m | loom, batten, shed |
-| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 10m<br>3m | shed, loom, batten, board, dobby |
+| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 11m<br>3m | shed, loom, batten, board, dobby |
