@@ -1013,7 +1013,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (`docs/research/webster/gate-time-2026-11-28.md`, lever A)\n\nSince the card gate scope grew in `a69580709`, the batch gate takes 24.1 min per row against 6.6 before, mostly its tier1 run over the dependent packages.\nThat tier1 listed run takes 18.9 min per row.\nNone of the batch gate's tier1 failures after the change was in a dependent package, and the plan-level verify still runs tier1 over everything.\n\n## Change\n\nThe batch gate's tier1 runs over the packages of the batch's own cards only, not their dependents.\nTier0 and the card gate keep their scope, and so does the plan-level verify.\n\n## Expected\n\nAbout 14.6 min saved per Webster or Weaver row; the report's estimate is 4.3 min for the narrower run against 18.9 min today.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-11-28T13:24:49Z",
       "revised": "2026-11-28T13:24:49Z",
       "profile": "light",
