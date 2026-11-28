@@ -1,6 +1,6 @@
 # The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls
 
-`dobby-pause-lift-resume` · Task · feature, enhancement, dobby, tender, batten, slack, creel, shuttle, loom, config · draft
+`dobby-pause-lift-resume` · Task · feature, enhancement, dobby, tender, batten, slack, creel, shuttle, loom, config
 
 Decision record: [Sketch](decision-dobby-pause-lift-resume.md)
 

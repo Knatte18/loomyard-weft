@@ -1,6 +1,6 @@
 # The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count
 
-`stop-settlement-table` · Task · feature, enhancement, shed, loom, batten · draft
+`stop-settlement-table` · Task · feature, enhancement, shed, loom, batten
 
 Decision record: [Sketch](decision-stop-settlement-table.md)
 

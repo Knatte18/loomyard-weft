@@ -1,6 +1,6 @@
 # The orch role texts gain the unattended level's rules and the glossary names the level
 
-`orch-unattended-rules` · Task · feature, orch, heddle · draft
+`orch-unattended-rules` · Task · feature, orch, heddle
 
 Decision record: [Sketch](decision-orch-unattended-rules.md)
 

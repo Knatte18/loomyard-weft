@@ -1,6 +1,6 @@
 # The driver and the arbiter settle known stops and budget escalations themselves within the table's bound
 
-`driver-settles-stops` · Task · feature, shed, board, batten, shuttle, webster, arbiter, loom, stencil · draft
+`driver-settles-stops` · Task · feature, shed, board, batten, shuttle, webster, arbiter, loom, stencil
 
 Decision record: [Sketch](decision-driver-settles-stops.md)
 
