@@ -1130,6 +1130,54 @@
       "project": "self-healing-autonomy",
       "discussed": true,
       "record_body_sha256": "af87c4dd2e4aa69249a3fc380e6d9586d3df95e86cdae4398d3f2842f6f68ff8"
+    },
+    {
+      "id": 1790,
+      "handle": "T29",
+      "slug": "beam-orch-reads-down",
+      "title": "A running beam orch reads as down, and a strand missing from reed state is not covered",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "orch",
+        "reed",
+        "cwd"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nIssue #232 reported a running beam orch that lym read as down.\nThe landing of `beam-member-parent` (`b439f157e`) made the parent check admit every orch on the chain whether or not it reads as live,\nbut its commit says the cause of the down reading is not known,\nand that the change does not cover the case where the orch's strand is also missing from reed's state.\n\n## Idea\n\nFind why a live beam orch reads as down: the liveness read, the strand's record in reed's state, or both.\nFix the read so a live orch reads as live, and make an orch whose strand is missing from reed's state read as down with that cause named.\n",
+      "status": "draft",
+      "created": "2026-11-28T09:48:04Z",
+      "revised": "2026-11-28T09:48:04Z",
+      "profile": "light"
+    },
+    {
+      "id": 1791,
+      "handle": "T30",
+      "slug": "clone-reset-keeps-unpushed",
+      "title": "lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "fabric"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "missing-origin-unreachable",
+        "runpusher-removed-worktrees",
+        "catchup-fetch-stops-start"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe landing of `hardener-study-faults` (`7cb004818`) says `lym fabric clone --reset` still removes unpushed records and board commits,\nuncommitted Bolt changes and ignored files, and leaves open whether that is acceptable.\n\n## Operator decision (2026-11-28)\n\nIt is not acceptable: `--reset` refuses when it would lose work, and names what would be lost.\n\n## Idea\n\nBefore `--reset` removes anything, check for unpushed records and board commits, uncommitted Bolt changes and ignored files that hold work.\nWhen any is found, refuse with the list and the way forward: push or commit them first, or pass an explicit flag that accepts the loss.\n",
+      "status": "draft",
+      "created": "2026-11-28T09:48:05Z",
+      "revised": "2026-11-28T09:48:05Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
