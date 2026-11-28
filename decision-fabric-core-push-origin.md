@@ -318,6 +318,12 @@ Decision: Every part shrinks the fabric test code it touches, with no fixed targ
 
 Rationale: The operator has asked several times to cut fabric's test suite, and agents have always answered that every test is needed. Fabric's tests are 1.6 times its production code, and their size is what makes the gates slow.
 
+### Added after Discussion (parent, 2026-11-28): A protected-branch refusal keeps the rejection path
+
+Decision: Card 7 keeps today's path for a protected refusal: the first protected refusal is a rejection that runs the SeamRejectionRetry call; a protected retry outcome stops the retry loop as a not-retryable answer does; its verdict reads failRejection's judgment facts, class and text as any unsettled rejection does; protectedParentWayForward stays on an other record of a push that carried landings. Card 7 adds the two TestPushSide rows the plan review names (finding F2).
+
+Rationale: D5 keeps push behaviour unchanged; mapping a protected refusal to other at once would change record text, class and git process count.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
