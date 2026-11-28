@@ -1357,6 +1357,24 @@
       "body": "When the Septim study lands, its report under `docs/research/gate/` answers how much work, and how real, a WSL2 gate farm on Septim is in its stored and ephemeral modes.\n\nThe operator reads it with the orch and decides, for each mode, whether to build it.\nA mode chosen to build goes into note `remote-gate-farm`, which then runs as a motif; a mode not chosen is dropped from that note.\n",
       "created": "2026-11-28T15:49:21Z",
       "revised": "2026-11-28T15:49:22Z"
+    },
+    {
+      "id": 1831,
+      "handle": "F6",
+      "slug": "gate-fast-lane",
+      "title": "A task the operator marks fast lane ranks first in the gate slot queue",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nOn 2026-11-28 the landing queue task waited behind many other runs for one of two gate slots, while it is the task that would shorten every later landing.\nGate slots rank only by `gateslot.SlotPriority`: the parent lock's holder, then implementers, then the rest.\nNo task can be put first, so the orch had to pause five unrelated runs by hand to free slots for it.\n\n## Idea\n\nThe operator marks a task fast lane on its board entry.\nEvery gate call of that task's run waits at a rank above `PriorityImplementer`, below `PriorityLockHolder`, so it takes the next free slot before other runs' calls.\nThe mark is shown on the board and in `lym gate status`, and the operator clears it as easily as setting it.\n",
+      "created": "2026-11-28T16:48:39Z",
+      "revised": "2026-11-28T16:48:39Z"
     }
   ],
   "prime_owner": "neve",
