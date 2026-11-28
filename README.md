@@ -30,37 +30,37 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack](project-self-healing-autonomy.md) (5)
 
-[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 54m · Owner `neve`
+[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 55m · Owner `neve`
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T29 | 54m<br>47m | dobby, config, cwd, board, orch, slack, loom |
+| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T29 | 55m<br>47m | dobby, config, cwd, board, orch, slack, loom |
 
 ### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · solid | T21 | 54m<br>47m | shed, loom, batten |
+| T12 | **The settlement table of stop classes, loom verbs that wait for the driver to park, and the driver's halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · solid | T21 | 55m<br>48m | shed, loom, batten |
 
 ### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 54m<br>47m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
+| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 55m<br>48m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
 
 ### Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2 | 54m<br>47m | dobby, tender, batten, slack, creel, shuttle, loom, config |
+| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2 | 55m<br>48m | dobby, tender, batten, slack, creel, shuttle, loom, config |
 
 ### Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 54m<br>47m | orch, heddle |
+| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 55m<br>48m | orch, heddle |
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (6)
 
@@ -139,15 +139,15 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | darn · light | Code-Burler-Review | neve | 12h<br>12h | fabric, git |
+| T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | darn · light | Code-Burler-Fix | neve | 12h<br>12h | fabric, git |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 20h<br>20h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | Code-Burler-Fix | neve | 1d<br>1d | docs |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | Code-Burler-Review | neve | 15h<br>1h | testkit, landing, reed, creel |
 | T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | Darn-Write | neve | 12h<br>12h | fabric |
 | T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | landing · Finalize | neve | 13h<br>1h | dobby, fabric |
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | Darn-Write | neve | 12h<br>12h | shed, burler |
-| T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | starting · Worktree-Create | neve | 12h<br>12h | burler, stencil, webster |
-| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | starting · Worktree-Create | neve | 12h<br>12h | darn, stencil |
+| T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | Darn-Write | neve | 12h<br>12h | burler, stencil, webster |
+| T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | Darn-Write | neve | 12h<br>12h | darn, stencil |
 
 ### Ready (1)
 
@@ -173,8 +173,8 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 2m<br>2m | testkit, landing |
-| E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 2m<br>2m | testkit, creel, reed |
+| E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 3m<br>3m | testkit, landing |
+| E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 3m<br>3m | testkit, creel, reed |
 | E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>1h | landing, gate, batten |
 
 ### Features (1)
