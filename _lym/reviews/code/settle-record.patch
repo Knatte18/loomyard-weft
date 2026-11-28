@@ -1,0 +1,365 @@
+diff --git a/internal/cleanupcli/cleanup_integration_test.go b/internal/cleanupcli/cleanup_integration_test.go
+index 625d6892a..9c07d7f77 100644
+--- a/internal/cleanupcli/cleanup_integration_test.go
++++ b/internal/cleanupcli/cleanup_integration_test.go
+@@ -268,7 +268,11 @@ func TestCleanupVerb_RefusesOutsideThePrimeThenListsAndThenRemovesEverySeededLef
+ 	if err != nil {
+ 		t.Fatalf("records repository root: %v", err)
+ 	}
+-	restoreOrigin := setOrigin(t, recordsRepo, filepath.Join(t.TempDir(), "no-repository"))
++	noRepository := filepath.Join(t.TempDir(), "no-repository")
++	if err := os.Mkdir(noRepository, 0o755); err != nil {
++		t.Fatalf("make a directory holding no repository: %v", err)
++	}
++	restoreOrigin := setOrigin(t, recordsRepo, noRepository)
+ 	broken, code := run(h.PrimeWorktree(), "--apply")
+ 	if broken.OK || code == 0 || broken.Raw["segments"] != nil || !strings.Contains(broken.Error, "origin reconcile failed") || !strings.Contains(broken.Error, "no-repository") {
+ 		t.Errorf("--apply over a broken origin: ok=%v code=%d error=%q segments=%v; want a refusal naming the error and no segment", broken.OK, code, broken.Error, broken.Raw["segments"])
+diff --git a/internal/fabricengine/add_remoteleftover_integration_test.go b/internal/fabricengine/add_remoteleftover_integration_test.go
+index e42a8d731..622f42f29 100644
+--- a/internal/fabricengine/add_remoteleftover_integration_test.go
++++ b/internal/fabricengine/add_remoteleftover_integration_test.go
+@@ -93,7 +93,7 @@ func TestAdd_RetriesOriginProbesThatFailInTransit(t *testing.T) {
+ 	const refused = "http://127.0.0.1:1/x"
+ 	tests := []struct {
+ 		name string
+-		// brokenURL is both stores' origin when the Add starts; empty names a local path that does not exist.
++		// brokenURL is both stores' origin when the Add starts; empty names a directory that holds no repository.
+ 		brokenURL     string
+ 		originReturns bool
+ 		wantTransport bool
+@@ -113,7 +113,7 @@ func TestAdd_RetriesOriginProbesThatFailInTransit(t *testing.T) {
+ 			stores := []string{h.PrimeWorktree(), h.PrimeRecords()}
+ 			brokenURL := tt.brokenURL
+ 			if brokenURL == "" {
+-				brokenURL = filepath.Join(t.TempDir(), "missing.git")
++				brokenURL = t.TempDir()
+ 			}
+ 			urls := map[string]string{}
+ 			for _, store := range stores {
+diff --git a/internal/fabricengine/originreconcile_integration_test.go b/internal/fabricengine/originreconcile_integration_test.go
+index de2066668..96bf39933 100644
+--- a/internal/fabricengine/originreconcile_integration_test.go
++++ b/internal/fabricengine/originreconcile_integration_test.go
+@@ -344,15 +344,17 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 			Sleep:         func(time.Duration) {},
+ 		}
+ 		for _, row := range []struct {
+-			name      string
+-			breakURL  string
+-			scope     fabriclayout.ReconcileScope
+-			options   fabricengine.ReconcileOptions
+-			wantError bool
++			name            string
++			breakURL        string
++			scope           fabriclayout.ReconcileScope
++			options         fabricengine.ReconcileOptions
++			wantError       bool
++			wantUnreachable bool
+ 		}{
+-			{"a judge-only reconcile", "", fabriclayout.ReconcileScope{JudgeOnly: true}, fabricengine.ReconcileOptions{}, false},
+-			{"an unreachable origin", "http://127.0.0.1:1/x", fabriclayout.ReconcileScope{}, unreachableOptions, false},
+-			{"an origin that is no repository", filepath.Join(t.TempDir(), "no-repository"), fabriclayout.ReconcileScope{}, unreachableOptions, true},
++			{"a judge-only reconcile", "", fabriclayout.ReconcileScope{JudgeOnly: true}, fabricengine.ReconcileOptions{}, false, false},
++			{"an unreachable origin", "http://127.0.0.1:1/x", fabriclayout.ReconcileScope{}, unreachableOptions, false, true},
++			{"an origin missing on disk", filepath.Join(t.TempDir(), "removed.git"), fabriclayout.ReconcileScope{}, unreachableOptions, false, true},
++			{"an origin that is no repository", t.TempDir(), fabriclayout.ReconcileScope{}, unreachableOptions, true, false},
+ 		} {
+ 			hub := newOriginHub(t)
+ 			if row.breakURL != "" {
+@@ -360,11 +362,14 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 			}
+ 			lockPaths := remoteRefsLockPaths(t, hub)
+ 
+-			_, err := fabricengine.ReconcileOrigin(hub.Location, row.scope, fabricengine.OriginSeams{}, row.options)
++			report, err := fabricengine.ReconcileOrigin(hub.Location, row.scope, fabricengine.OriginSeams{}, row.options)
+ 
+ 			if (err != nil) != row.wantError {
+ 				t.Errorf("%s: ReconcileOrigin() error = %v; want error %v", row.name, err, row.wantError)
+ 			}
++			if report.Unreachable != row.wantUnreachable {
++				t.Errorf("%s: ReconcileOrigin() Unreachable = %v; want %v", row.name, report.Unreachable, row.wantUnreachable)
++			}
+ 			if free := freeRemoteRefsLocks(t, lockPaths); len(free) != len(lockPaths) {
+ 				t.Errorf("%s: remote-refs locks free after the reconcile = %v; want all of %v", row.name, free, lockPaths)
+ 			}
+@@ -593,7 +598,7 @@ func TestReconcileOrigin_Judge(t *testing.T) {
+ 
+ 	t.Run("An origin that is no repository is an error with no retry", func(t *testing.T) {
+ 		hub := newOriginHub(t)
+-		gitkit.Git(t, hub.PrimeRecords(), "remote", "set-url", "origin", filepath.Join(t.TempDir(), "no-repository"))
++		gitkit.Git(t, hub.PrimeRecords(), "remote", "set-url", "origin", t.TempDir())
+ 		var calls callLog
+ 		sleeps := 0
+ 
+diff --git a/internal/fabricengine/pushanchored_integration_test.go b/internal/fabricengine/pushanchored_integration_test.go
+index 4a03044a7..0b6227e4f 100644
+--- a/internal/fabricengine/pushanchored_integration_test.go
++++ b/internal/fabricengine/pushanchored_integration_test.go
+@@ -278,7 +278,7 @@ func TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide(t *testing.T)
+ 	}
+ 
+ 	// A rejection whose fetch then keeps failing is never pushed again:
+-	// the code side pushes to its real bare but fetches from a missing path,
++	// the code side pushes to its real bare but fetches from a directory holding no repository,
+ 	// and a remote that declines once would accept a retry.
+ 	noSleep := fabricengine.SyncOptions{BackoffSleep: func(time.Duration) {}}
+ 	warpBareBeforeFetchFailure := fabricengine.BareBranchSHAForTest(t, p.hub.CodeBare, p.warpBranch)
+@@ -288,7 +288,7 @@ func TestPushPairAnchored_PushesBothSidesRetriesAndReportsEachSide(t *testing.T)
+ 	gitkit.CommitFile(t, p.warpPath, "warp-file.txt", "warp change fetch failure", "warp change fetch failure")
+ 	warpFetchURL := gitkit.Git(t, p.warpPath, "config", "--get", "remote.origin.url")
+ 	gitkit.MustRun(t, p.warpPath, "git", "config", "remote.origin.pushurl", warpFetchURL)
+-	gitkit.MustRun(t, p.warpPath, "git", "config", "remote.origin.url", filepath.Join(t.TempDir(), "missing"))
++	gitkit.MustRun(t, p.warpPath, "git", "config", "remote.origin.url", t.TempDir())
+ 	_, err = fabricengine.PushPairAnchored(p.location, noSleep, fabriclayout.PairPush{LockWait: fabriclayout.LockWaitUnbounded})
+ 	if !fabricengine.IsPushRejected(err) {
+ 		t.Errorf("PushPairAnchored() with a rejected push and a failing fetch error = %v; want the bare rejection", err)
+diff --git a/internal/fabricengine/pushclasses_integration_test.go b/internal/fabricengine/pushclasses_integration_test.go
+index 503538130..26cb2b26f 100644
+--- a/internal/fabricengine/pushclasses_integration_test.go
++++ b/internal/fabricengine/pushclasses_integration_test.go
+@@ -644,18 +644,29 @@ func TestPushFailureClasses(t *testing.T) {
+ 
+ 	t.Run("APushToAnUnreachableOriginWritesATransportRecord", func(t *testing.T) {
+ 		t.Run("OfABranchNeverPushed", func(t *testing.T) {
+-			f, fake := newFailureFixture(t)
+-			weft := f.hub.PrimeRecords()
+-			gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+-			gitkit.Git(t, weft, "remote", "set-url", "origin", refusedOriginURL)
+-
+-			if _, err := fabricengine.CoalescePushRequest(fabriclayout.PushSpawn{WeftPath: weft}, fake.options(func(time.Duration) {}), fabriclayout.MachineNames{}); err != nil {
+-				t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
++			tests := []struct {
++				name      string
++				originURL string
++			}{
++				{"ARefusedConnection", refusedOriginURL},
++				{"ARemovedLocalOrigin", filepath.Join(t.TempDir(), "removed.git")},
+ 			}
++			for _, tt := range tests {
++				t.Run(tt.name, func(t *testing.T) {
++					f, fake := newFailureFixture(t)
++					weft := f.hub.PrimeRecords()
++					gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
++					gitkit.Git(t, weft, "remote", "set-url", "origin", tt.originURL)
+ 
+-			requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabriclayout.PushFailureTransport)
+-			if len(fake.lines) != 1 {
+-				t.Errorf("mails = %q; want one", fake.lines)
++					if _, err := fabricengine.CoalescePushRequest(fabriclayout.PushSpawn{WeftPath: weft}, fake.options(func(time.Duration) {}), fabriclayout.MachineNames{}); err != nil {
++						t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
++					}
++
++					requireOneFailedPush(t, f.hub.Location.HubPath, "records", fabriclayout.PushFailureTransport)
++					if len(fake.lines) != 1 {
++						t.Errorf("mails = %q; want one", fake.lines)
++					}
++				})
+ 			}
+ 		})
+ 
+@@ -747,7 +758,7 @@ func TestPushFailureClasses(t *testing.T) {
+ 		f, fake := newFailureFixture(t)
+ 		weft := f.hub.PrimeRecords()
+ 		gitkit.CommitFile(t, weft, "local.txt", "local\n", "local")
+-		gitkit.Git(t, weft, "remote", "set-url", "origin", filepath.Join(t.TempDir(), "no-such-repository"))
++		gitkit.Git(t, weft, "remote", "set-url", "origin", t.TempDir())
+ 
+ 		if _, err := fabricengine.CoalescePushRequest(fabriclayout.PushSpawn{WeftPath: weft}, fake.options(nil), fabriclayout.MachineNames{}); err != nil {
+ 			t.Fatalf("CoalescePushRequest() error = %v; want nil", err)
+diff --git a/internal/gitexec/doc.go b/internal/gitexec/doc.go
+index c722f9bcc..63f58e021 100644
+--- a/internal/gitexec/doc.go
++++ b/internal/gitexec/doc.go
+@@ -20,6 +20,9 @@
+ // At the deadline the call kills the whole process group on Unix and git alone on Windows.
+ // It returns a *GitError whose Timeout is the deadline and whose exit code is -1.
+ // IsTransportFailure reports such a timeout, and a transfer the low-speed limit stopped, as a transport failure.
++// It reports a remote whose repository path is gone from this machine as one too.
++// A removed origin directory, or one below an unmounted mount point, then reads as a refused connection does.
++// Bound: a mount point left as an empty directory reads as a refusal.
+ // A local subcommand runs unbounded.
+ // A remote subcommand first waits through the process's network gate while a pause is on.
+ // That wait counts against no deadline.
+diff --git a/internal/gitexec/transport.go b/internal/gitexec/transport.go
+index 73d22ef5c..a65381483 100644
+--- a/internal/gitexec/transport.go
++++ b/internal/gitexec/transport.go
+@@ -5,6 +5,9 @@ package gitexec
+ 
+ import (
+ 	"errors"
++	"io/fs"
++	"os"
++	"path/filepath"
+ 	"regexp"
+ 	"strings"
+ )
+@@ -65,9 +68,44 @@ func holdsHTTPClientRefusal(stderr string) bool {
+ 	return false
+ }
+ 
++// missingRepositoryPattern matches the stderr line git prints when the repository a remote names cannot be opened.
++// Its first group is the path git names, kept in its own case.
++// Push, fetch, pull and ls-remote print the first form, and clone prints the second.
++var missingRepositoryPattern = regexp.MustCompile(`(?i)'(.+)' does not appear to be a git repository|repository '(.+)' does not exist`)
++
++// namesMissingLocalPath reports whether stderr names a repository path that does not exist on this machine.
++// A relative path is read against dir, the directory git ran in.
++// A name with no path separator is never read as a path, since git names an unconfigured remote that way.
++// A path that exists but holds no repository is not missing, while a link whose target is gone is.
++func namesMissingLocalPath(stderr, dir string) bool {
++	match := missingRepositoryPattern.FindStringSubmatch(stderr)
++	if match == nil {
++		return false
++	}
++	named := match[1] + match[2]
++	if filepath.Base(named) == named {
++		return false
++	}
++	path := strings.TrimPrefix(named, "file://")
++	if !filepath.IsAbs(path) {
++		path = filepath.Join(dir, path)
++	}
++	_, err := os.Stat(path)
++	return errors.Is(err, fs.ErrNotExist)
++}
++
+ // IsTransportFailure reports whether err holds a *GitError for a remote operation that failed to reach the remote.
+ // Remote operations are push, fetch, pull, ls-remote and clone.
+ // A *GitError with a non-zero Timeout counts too, since git was killed for outliving its deadline or stalling twice.
++// A remote whose repository path is gone counts too, since the path may come back, as a refused connection may.
++// A removed directory is gone, and so is one below an unmounted mount point.
++// A path that exists but holds no repository is a refusal.
++// So is an unconfigured remote name that holds no path separator.
++// Bound: a mount point left as an empty directory reads as a refusal.
++// Bound: a relative remote path with no path separator reads as a refusal too.
++// Bound: a relative remote path is read against the directory git ran in.
++// For push, fetch, pull and ls-remote that matches git only when the directory is the worktree top.
++// Bound: an ssh remote naming a server path that is also absent on this machine reads as unreachable.
+ // A rejected push, an authentication failure, a missing ref or a local command is not a transport failure.
+ // A stderr holding an HTTP 4xx status is a refusal, whatever disconnect phrase follows it.
+ // The exceptions are 408 and 429, which name a moment rather than a refusal.
+@@ -93,7 +131,7 @@ func IsTransportFailure(err error) bool {
+ 			return true
+ 		}
+ 	}
+-	return false
++	return namesMissingLocalPath(gitErr.Stderr, gitErr.Dir)
+ }
+ 
+ // subcommand returns the first argument after git's global options.
+diff --git a/internal/gitexec/transport_integration_test.go b/internal/gitexec/transport_integration_test.go
+index 6cda067d7..c6b62a87f 100644
+--- a/internal/gitexec/transport_integration_test.go
++++ b/internal/gitexec/transport_integration_test.go
+@@ -1,4 +1,6 @@
+-// transport_integration_test.go pins the real stderr git prints for an unreachable remote and for a rejected push.
++// transport_integration_test.go pins the real stderr git prints for failed remote operations.
++// Its cases are an unreachable remote, a removed local origin and a directory holding no repository.
++// They also cover an unconfigured remote name and a rejected push.
+ 
+ package gitexec_test
+ 
+@@ -11,7 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+ )
+ 
+-//testtiming:keep pins the real stderr git prints for an unreachable remote and a hook-rejected push, which TestIsTransportFailure's hand-built stderr rows do not
++//testtiming:keep pins the real stderr git prints for an unreachable remote, a removed local origin, an unconfigured remote name and a hook-rejected push, which TestIsTransportFailure's hand-built stderr rows do not
+ func TestIsTransportFailure_RealGit(t *testing.T) {
+ 	tiergate.Require(t, 1)
+ 	t.Parallel()
+@@ -55,4 +57,41 @@ func TestIsTransportFailure_RealGit(t *testing.T) {
+ 	if gitexec.IsTransportFailure(err) {
+ 		t.Errorf("rejected push classified as transport failure: %v", err)
+ 	}
++
++	if err := os.RemoveAll(bare); err != nil {
++		t.Fatal(err)
++	}
++	for _, args := range [][]string{
++		{"push", "origin", "HEAD:refs/heads/x"},
++		{"fetch", "origin"},
++		{"ls-remote", "origin"},
++		{"clone", bare, filepath.Join(t.TempDir(), "clone")},
++	} {
++		_, err := gitexec.Run(args, dir)
++		if err == nil {
++			t.Fatalf("git %v against a removed origin succeeded", args)
++		}
++		if !gitexec.IsTransportFailure(err) {
++			t.Errorf("git %v against a removed origin not classified as transport failure: %v", args, err)
++		}
++	}
++
++	if err := os.Mkdir(bare, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	_, err = gitexec.Run([]string{"push", "origin", "HEAD:refs/heads/x"}, dir)
++	if err == nil {
++		t.Fatal("push to a directory holding no repository succeeded")
++	}
++	if gitexec.IsTransportFailure(err) {
++		t.Errorf("push to a directory holding no repository classified as transport failure: %v", err)
++	}
++
++	_, err = gitexec.Run([]string{"ls-remote", "unconfigured"}, dir)
++	if err == nil {
++		t.Fatal("ls-remote of an unconfigured remote succeeded")
++	}
++	if gitexec.IsTransportFailure(err) {
++		t.Errorf("ls-remote of an unconfigured remote classified as transport failure: %v", err)
++	}
+ }
+diff --git a/internal/gitexec/transport_test.go b/internal/gitexec/transport_test.go
+index 20f9f445f..e0d837c58 100644
+--- a/internal/gitexec/transport_test.go
++++ b/internal/gitexec/transport_test.go
+@@ -1,10 +1,13 @@
+ // transport_test.go covers IsTransportFailure on hand-built *GitError values; it spawns no git.
++// Its local-path rows use a temporary directory.
+ 
+ package gitexec_test
+ 
+ import (
+ 	"errors"
+ 	"fmt"
++	"os"
++	"path/filepath"
+ 	"testing"
+ 	"time"
+ 
+@@ -51,11 +54,32 @@ func TestIsTransportFailure(t *testing.T) {
+ 		}
+ 	}
+ 
++	existing := t.TempDir()
++	missing := filepath.Join(existing, "removed.git")
++	dangling := filepath.Join(existing, "dangling.git")
++	if err := os.Symlink(missing, dangling); err != nil {
++		t.Fatal(err)
++	}
++	apostrophe := filepath.Join(existing, "it's", "plain.git")
++	if err := os.MkdirAll(apostrophe, 0o755); err != nil {
++		t.Fatal(err)
++	}
+ 	cases := []struct {
+ 		name string
+ 		err  error
+ 		want bool
+ 	}{
++		{"push to a missing local path", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "fatal: '" + missing + "' does not appear to be a git repository\nfatal: Could not read from remote repository."}, true},
++		{"ls-remote of a missing file URL", &gitexec.GitError{Args: []string{"ls-remote", "origin"}, Stderr: "fatal: 'file://" + missing + "' does not appear to be a git repository"}, true},
++		{"fetch of a missing relative path", &gitexec.GitError{Args: []string{"fetch", "origin"}, Dir: existing, Stderr: "fatal: './removed.git' does not appear to be a git repository"}, true},
++		{"push to a link whose target is missing", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "fatal: '" + dangling + "' does not appear to be a git repository"}, true},
++		{"push to an unconfigured remote", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "fatal: 'origin' does not appear to be a git repository"}, false},
++		{"ls-remote of a file URL that holds no repository", &gitexec.GitError{Args: []string{"ls-remote", "origin"}, Stderr: "fatal: 'file://" + existing + "' does not appear to be a git repository"}, false},
++		{"fetch of an existing relative path", &gitexec.GitError{Args: []string{"fetch", "origin"}, Dir: filepath.Dir(existing), Stderr: "fatal: './" + filepath.Base(existing) + "' does not appear to be a git repository"}, false},
++		{"push to a path holding an apostrophe", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "fatal: '" + apostrophe + "' does not appear to be a git repository"}, false},
++		{"clone of a missing local path", &gitexec.GitError{Args: []string{"clone", missing}, Stderr: "fatal: repository '" + missing + "' does not exist"}, true},
++		{"push to a directory that holds no repository", &gitexec.GitError{Args: []string{"push", "origin"}, Stderr: "fatal: '" + existing + "' does not appear to be a git repository"}, false},
++		{"local command naming a missing path", &gitexec.GitError{Args: []string{"status"}, Stderr: "fatal: '" + missing + "' does not appear to be a git repository"}, false},
+ 		{"autoSetupRemote push", &gitexec.GitError{Args: []string{"-c", "push.autoSetupRemote=true", "push", "origin", "HEAD"}, Stderr: "fatal: Failed to connect to h"}, true},
+ 		{"-C fetch", &gitexec.GitError{Args: []string{"-C", "/some/dir", "fetch"}, Stderr: "fatal: Could not resolve host: h"}, true},
+ 		{"ls-remote", &gitexec.GitError{Args: []string{"ls-remote", "origin"}, Stderr: "Connection refused"}, true},
