@@ -1,6 +1,6 @@
 # Study: how much work, and how real, a WSL2 gate farm on Septim is in its stored and ephemeral modes
 
-`septim-farm-study` · Task · research, gate, process · running · Code-Bouncer
+`septim-farm-study` · Task · research, gate, process · landing · Finalize
 
 A desk study for note `remote-gate-farm`, which holds the design and the operator's bounds; read that note first.
 The report lands under `docs/research/gate/`.
