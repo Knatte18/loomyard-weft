@@ -23,6 +23,7 @@ merges the landed change, runs a small re-align row that updates its record and 
 
 ## Bounds
 
-- When A rewrites a very large part of what B builds on, the plan written ahead is mostly wasted, and B should wait as today.
-  The re-align row needs a measure of how much changed, and a threshold past which B plans again from scratch.
+- The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.
+  From A's record and plan, estimate how much of what B builds on A will change;
+  when A is estimated to change too much of it, B does not plan ahead and waits as today (operator, 2026-11-28).
 - Not for now (operator, 2026-11-28).
