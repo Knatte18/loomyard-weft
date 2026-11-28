@@ -1,6 +1,6 @@
 # Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks
 
-`raddle-names-jacquard` · Task · feature, parsers, loom, stencil, heddle, docs · draft
+`raddle-names-jacquard` · Task · feature, parsers, loom, stencil, heddle, docs
 
 Decision record: [Sketch](decision-raddle-names-jacquard.md)
 

@@ -19,11 +19,12 @@ which a card-graph study found buys about 1.6x at best (`docs/research/webster/p
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (1)
+## Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid |  | 3m<br>3m | shed, loom, testkit |
+| T18 | **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light |  | 3m<br>3m | profiles, config |
 
 ## Layer A (1)
 
@@ -37,12 +38,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T13 | **Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row** | [`jacquard-start-refusal`](design-jacquard-start-refusal.md)<br>[Sketch](decision-jacquard-start-refusal.md) | darn · light | T11 | 3m<br>3m | loom, batten |
 
-## Draft (2)
+## Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T18 | `draft` **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light |  | 3m<br>3m | profiles, config |
-| T19 | `draft` **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 3m<br>3m | parsers, loom, stencil, heddle, docs |
+| T19 | **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 3m<br>3m | parsers, loom, stencil, heddle, docs |
 
 ## Features (2)
 
