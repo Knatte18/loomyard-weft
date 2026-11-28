@@ -324,6 +324,12 @@ Decision: Card 7 keeps today's path for a protected refusal: the first protected
 
 Rationale: D5 keeps push behaviour unchanged; mapping a protected refusal to other at once would change record text, class and git process count.
 
+### Added after Discussion (parent, 2026-11-28): Push verbs refuse an unset run record seam before the push lock
+
+Decision: Option (a): cards 7 and 8 run refuseUnsuppliedSeams(fabriccore.SeamRunRecordPaths) before the push lock in PushPairAnchored and coalescePushSides; card 4's sentence names exactly those verbs; the handover verbs' own pre-action refusal is left to part 4 (finding F4).
+
+Rationale: D13 requires refusal before acting; option (b) would add a shedrun import to handover.go and extend the debt D13 cuts.
+
 ## Constraints
 
 - `PATTERN-fabric-boundary`: only `internal/fabricengine` runs git on warp or weft; destructive primitives only in `internal/fabricengine/destroy.go`; store gc only in `housekeeping.go`; the bare-side vocabulary owner set gains the new packages.
