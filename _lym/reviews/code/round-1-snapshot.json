@@ -11,5 +11,6 @@
       "title": "A stop with no history entry is counted and recorded through its stop identity",
       "digest": "bd9eb053d389de99a8c4accc413ee2f872d11aa56c223ea716aafec8a667ffc7"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
