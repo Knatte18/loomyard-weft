@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 12:21 UTC; every age below is as of then.
+Rendered 2026-11-28 12:22 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -110,7 +110,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Burler-Review | neve | 51m<br>25m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Burler-Review | neve | 52m<br>25m | shed, loom, batten, board |
 
 ### Features (2)
 
@@ -144,13 +144,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P8 Webster and Weaver spend less of their row in gate runs](project-implementer-gate-time.md) (5)
 
-[`implementer-gate-time`](design-implementer-gate-time.md) · Age 21m · Owner `neve`
+[`implementer-gate-time`](design-implementer-gate-time.md) · Age 22m · Owner `neve`
 
 ### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs |  | 21m<br>21m | gate, webster, weaver |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs |  | 22m<br>22m | gate, webster, weaver |
 
 ### Enhancements (4)
 
@@ -177,7 +177,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | landing · Finalize | neve | 17h<br>3h | testkit, landing, reed, creel |
 | T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | motif | Discussion-Write | neve | 1d<br>17m | landing, gate, batten |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | landing · Finalize | neve | 2h<br>2h | orch, reed, cwd |
-| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | starting · Open-IDE | neve | 2h<br>2h | fabric |
+| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Drift-Baseline | neve | 2h<br>2h | fabric |
 
 ### Layer A (2)
 
@@ -199,12 +199,12 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 1h<br>1h | testkit, landing |
 | E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 1h<br>1h | testkit, creel, reed |
-| E3 |  | **The PR-Review mail test takes every git, pause and record seam from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) | T5 | 40m<br>39m | testkit, landing |
-| E5 |  | **Weaver runs each batch as a Shed row of the new kind and drops its own stop, re-entry, resume and lock code** | [`weaver-onto-shed-rows`](design-weaver-onto-shed-rows.md) | F4 | 34m<br>34m | weaver, shed |
+| E3 |  | **The PR-Review mail test takes every git, pause and record seam from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) | T5 | 40m<br>40m | testkit, landing |
+| E5 |  | **Weaver runs each batch as a Shed row of the new kind and drops its own stop, re-entry, resume and lock code** | [`weaver-onto-shed-rows`](design-weaver-onto-shed-rows.md) | F4 | 35m<br>35m | weaver, shed |
 
 ### Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 14h<br>2h | board, orch, dobby |
-| F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 35m<br>35m | shed, weaver |
+| F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 36m<br>36m | shed, weaver |

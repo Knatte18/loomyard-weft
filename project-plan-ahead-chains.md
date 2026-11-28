@@ -1,6 +1,6 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 12:21 UTC; every age below is as of then.
+Rendered 2026-11-28 12:22 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 28m · Owner `neve`
@@ -23,7 +23,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Burler-Review | neve | 51m<br>25m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Burler-Review | neve | 52m<br>25m | shed, loom, batten, board |
 
 ## Features (2)
 
