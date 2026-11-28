@@ -1,6 +1,6 @@
 # Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages
 
-`implementer-gate-time-measure` · Task · research, gate, webster, weaver · draft
+`implementer-gate-time-measure` · Task · research, gate, webster, weaver
 
 ## Why
 

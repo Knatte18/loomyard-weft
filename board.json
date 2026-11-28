@@ -1253,7 +1253,6 @@
       "isolated": false,
       "brief": "",
       "body": "## Why\n\n`docs/research/webster/webster-time-2026-11-08.md` named five levers worth 15 to 23 min of an 86 min Webster row, the largest the guard step in every card gate.\nThe Weaver bench of 2026-11-27 (`docs/research/weaver/bench-2026-11-27/report.md`) then found gate tier time per row 2.2 times its recorded figure,\nthe same day `a69580709` made the card gate also run the packages that depend on a card's packages.\nNeither cause is measured, so the cuts would rest on guesses.\n\n## What to measure\n\nRead recorded data only: gate run records under the Bolt checkout's `.lym/gate/runs`, implementer state and row history, and the archived runs' records.\nStart no run, agent, bench or gate call.\n\nTake every Webster and Weaver implementer row that ended between 2026-11-20 and the task's start, split at `a69580709`'s landing.\nFor each, split the row's time into agent work, card gates, batch gates, plan-level verify, gate fixers and gate-slot waits.\nWithin the card gates, give the time of each step of the tier commands, the guard step and the dependent-package scope included.\n\n## Report\n\nA report under `docs/research/webster/` with those tables, before and after `a69580709`,\nand for each of the 2026-11-08 levers whether it still holds and what it would save now.\nAdd any new lever the records show, and rank all of them by minutes saved per row.\n",
-      "status": "draft",
       "created": "2026-11-28T11:59:51Z",
       "revised": "2026-11-28T11:59:51Z",
       "profile": "docs",
