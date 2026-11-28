@@ -1,6 +1,8 @@
 # A catch-up fetch that fails on an unreachable origin still stops a run start
 
-`catchup-fetch-stops-start` · Note · bug, dobby, fabric
+`catchup-fetch-stops-start` · Task · bug, dobby, fabric · draft
+
+Depends on: [`hardener-study-faults`](design-hardener-study-faults.md), [`missing-origin-unreachable`](design-missing-origin-unreachable.md)
 
 ## Seen
 
