@@ -1244,7 +1244,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe landing that has the darn writer ask before an entry's measurement gate calls (`ef9062d91`) closed Code-Review over two accepted-circling findings on the new stencil rule:\n\n- `measurement-rule-no-parent-path-drops-deliverable`: with no parent session, the measurements the entry asks for are never produced.\n- `ungated-subagents-bypass-measurement-rule`: the gated fragment has no sentence of its own barring subagents from measurement calls.\n\n## Fix\n\n- Give the rule a path for a run with no parent, so the entry's measurements are still produced or the run stops with a way forward.\n- Add a sentence to the gated fragment that bars subagents from measurement calls.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-28T12:38:52Z",
       "revised": "2026-11-28T12:38:52Z",
       "profile": "light"
