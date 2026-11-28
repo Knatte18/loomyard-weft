@@ -1,6 +1,6 @@
 # P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages
 
-Rendered 2026-11-28 15:00 UTC; every age below is as of then.
+Rendered 2026-11-28 15:05 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-speed`](design-test-speed.md) · Age 23h · Owner `neve`
@@ -19,4 +19,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 13m<br>13m | gate, testkit |
+| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 17m<br>17m | gate, testkit |
