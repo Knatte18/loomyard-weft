@@ -1,0 +1,19 @@
+verdict: resume
+reason: |-
+  The stop is a review escalation at round 2 with cause decision and no refusal named.
+  Its one decision finding, F9 (LOW), is the round-1 finding F7 carried forward: halt notices from loom and batten stamp through hubgeom.Autonomy and drop the refusal.
+  The parent already ruled on that exact finding at round 1.
+  round-1-circling-decision.md records a continue with nothing ruled in scope.
+  The parent filed the build option as board note B5 `autonomy-refusal-own-tick` ("Dobby posts a refused beam.autonomy on its own tick"), a new task.
+  So F9 is outside this task's scope, tracked on the board, and needs no fix in this segment.
+  The parent asked for no doc sentence (option A), so I add none.
+  The round's only BLOCKING finding, F8, is fixed in place.
+  Commit 14d45ead6 adds tiergate.Require(t, 0) before t.Parallel() and the tiergate import in internal/beamcli/dobbyautonomystamps_test.go.
+  round-2-verification.md closes F8, and the ledger lists refusal-episode-test-tier-unnamed as resolved.
+  So no open BLOCKING ledger entry holds the accept over the judge's CONTINUE.
+  The judge's CONTINUE rested on F8 alone, and round 3's only focus question re-asks F8, so another round would only re-check a verified fix.
+  I accepted the segment, which passes with F9 recorded as unconverged and tracked by B5.
+  I made no commit.
+verbs:
+  - |-
+    lym loom circling accept autonomy-unattended-level

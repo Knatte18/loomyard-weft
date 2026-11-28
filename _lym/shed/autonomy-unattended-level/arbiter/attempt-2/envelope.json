@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "The stop is a review escalation at round 2 with cause decision and no refusal named.\nIts one decision finding, F9 (LOW), is the round-1 finding F7 carried forward: halt notices from loom and batten stamp through hubgeom.Autonomy and drop the refusal.\nThe parent already ruled on that exact finding at round 1.\nround-1-circling-decision.md records a continue with nothing ruled in scope.\nThe parent filed the build option as board note B5 `autonomy-refusal-own-tick` (\"Dobby posts a refused beam.autonomy on its own tick\"), a new task.\nSo F9 is outside this task's scope, tracked on the board, and needs no fix in this segment.\nThe parent asked for no doc sentence (option A), so I add none.\nThe round's only BLOCKING finding, F8, is fixed in place.\nCommit 14d45ead6 adds tiergate.Require(t, 0) before t.Parallel() and the tiergate import in internal/beamcli/dobbyautonomystamps_test.go.\nround-2-verification.md closes F8, and the ledger lists refusal-episode-test-tier-unnamed as resolved.\nSo no open BLOCKING ledger entry holds the accept over the judge's CONTINUE.\nThe judge's CONTINUE rested on F8 alone, and round 3's only focus question re-asks F8, so another round would only re-check a verified fix.\nI accepted the segment, which passes with F9 recorded as unconverged and tracked by B5.\nI made no commit.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept autonomy-unattended-level"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/shed/autonomy-unattended-level/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/shed/autonomy-unattended-level/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lym shed step autonomy-unattended-level --until-stop --arbiter-attempt 2"
+}

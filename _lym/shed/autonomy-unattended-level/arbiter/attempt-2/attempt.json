@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Code-Bouncer",
+    "history_length": 15,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-28T17:05:34.482738437+01:00",
+  "deadline": "2026-11-28T17:35:34.482738437+01:00",
+  "strand_guid": "0ea543eb306df78339752de136536986",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/shed/autonomy-unattended-level/drive-reports/drive-envelope-20261128-170534-8ad3.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/shed/autonomy-unattended-level/drive-reports/drive-report-20261128-170534-a26f.md",
+  "snapshot": {
+    "head": "14d45ead6a0cf53d707d9d498b00f1cbd91fb8ea",
+    "branch": "autonomy-unattended-level",
+    "dirty": {}
+  }
+}

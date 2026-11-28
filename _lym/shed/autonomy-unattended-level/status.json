@@ -1,14 +1,13 @@
 {
   "current_producer": "Code-Bouncer",
-  "state": "awaiting",
-  "error": "bouncer Code-Bouncer: round 2 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/reviews/code/round-2-escalation.md; file each call the record does not ask for as a board note for a new task, since the task's scope is closed, then decide with `lym loom circling accept autonomy-unattended-level` or `lym loom circling continue autonomy-unattended-level`, then run `lym loom resume` in the task worktree to resume",
-  "parent_notice": "Review segment of task `autonomy-unattended-level` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/reviews/code/round-2-escalation.md` with a one-shot fork. Way forward: the task's scope is closed, so no decision enters the record: rule each finding the record already asks for in scope with \"lym loom circling continue autonomy-unattended-level --in-scope \u003cfinding-id\u003e\", which hands it to the next round's fixer, file every other call as a board note for a new task, and decide with \"lym loom circling accept autonomy-unattended-level\" or \"lym loom circling continue autonomy-unattended-level\".",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
     "last": "Code-Bouncer → awaiting",
-    "wait": "bouncer Code-Bouncer: round 2 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/reviews/code/round-2-escalation.md; file each call the record does not ask for as a board note for a new task, since the task's scope is closed, then decide with `lym loom circling accept autonomy-unattended-level` or `lym loom circling continue autonomy-unattended-level`, then run `lym loom resume` in the task worktree to resume"
+    "wait": ""
   },
   "history": [
     {
