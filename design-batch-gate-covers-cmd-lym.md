@@ -2,8 +2,6 @@
 
 `batch-gate-covers-cmd-lym` · Note · enhancement, gate, webster, weaver
 
-Depends on: [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md)
-
 ## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)
 
 8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,

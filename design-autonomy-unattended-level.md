@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-autonomy-unattended-level.md)
 
-Depends on: [`beam-orch-reads-down`](design-beam-orch-reads-down.md)
-
 Filed from the Sketch `self-healing-runs`.
 
 Takes: D1 whole: `LookupAutonomy` in `internal/dobbyengine/tasksetting.go`, `checkTaskSetting` in `internal/dobbyengine/config.go` and its callers, the template comment in `internal/dobbyengine/template.yaml`, `hubgeom.Autonomy` in `internal/hubgeom/autonomy.go` and its callers in slackcli, loomcli, orchcli and beamcli, the beam modes in `internal/boardengine/beammodes.go`, and the autonomy line in `internal/orchengine/prompt.go`, which also serves D9's rule that the line names the level.

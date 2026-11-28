@@ -2,8 +2,6 @@
 
 `card-gate-no-guard-step` · Note · enhancement, gate, webster, weaver
 
-Depends on: [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md)
-
 ## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 1)
 
 The guard step was 7,043 of the card gate's 9,117 s (77%), run 787 times for 226 cards, while the batch gate already runs it.

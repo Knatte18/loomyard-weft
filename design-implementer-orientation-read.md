@@ -2,8 +2,6 @@
 
 `implementer-orientation-read` · Note · enhancement, webster, weaver, stencil
 
-Depends on: [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md)
-
 ## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)
 
 A Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.

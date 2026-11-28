@@ -701,9 +701,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "beam-orch-reads-down"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Filed from the Sketch `self-healing-runs`.\n\nTakes: D1 whole: `LookupAutonomy` in `internal/dobbyengine/tasksetting.go`, `checkTaskSetting` in `internal/dobbyengine/config.go` and its callers, the template comment in `internal/dobbyengine/template.yaml`, `hubgeom.Autonomy` in `internal/hubgeom/autonomy.go` and its callers in slackcli, loomcli, orchcli and beamcli, the beam modes in `internal/boardengine/beammodes.go`, and the autonomy line in `internal/orchengine/prompt.go`, which also serves D9's rule that the line names the level.\nDelivers: The three levels on every path that checks the key, a refusal naming the three values and `lym config beam`, a refused value read as `false` and posted once per episode to the orch, the level on the `autonomy:` stamp, `off`, `on` or `unattended` in the beam modes, and the level named in the orch prompt and the template comment. Every reader that asks only whether autonomy is on reads `true` and `unattended` as on.\nExports: Fixed for consumers: `dobbyengine.AutonomyLevel`, a string type with `AutonomyOff` (\"false\"), `AutonomyOn` (\"true\") and `AutonomyUnattended` (\"unattended\") and an `On() bool` method; `dobbyengine.LookupAutonomy` and `hubgeom.Autonomy` return it.\n\nThe part changes these packages:\n\n- internal/dobbyengine (about 260 changed lines)\n- internal/hubgeom (about 70 changed lines)\n- internal/boardengine (about 40 changed lines)\n- internal/orchengine (about 30 changed lines)\n- internal/orchcli (about 40 changed lines)\n- internal/slackcli (about 15 changed lines)\n- internal/loomcli (about 30 changed lines)\n- internal/beamcli (about 45 changed lines)\n",
@@ -807,29 +805,6 @@
       "project": "self-healing-autonomy",
       "discussed": true,
       "record_body_sha256": "af87c4dd2e4aa69249a3fc380e6d9586d3df95e86cdae4398d3f2842f6f68ff8"
-    },
-    {
-      "id": 1790,
-      "handle": "T29",
-      "slug": "beam-orch-reads-down",
-      "title": "A running beam orch reads as down, and a strand missing from reed state is not covered",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "orch",
-        "reed",
-        "cwd"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nIssue #232 reported a running beam orch that lym read as down.\nThe landing of `beam-member-parent` (`b439f157e`) made the parent check admit every orch on the chain whether or not it reads as live,\nbut its commit says the cause of the down reading is not known,\nand that the change does not cover the case where the orch's strand is also missing from reed's state.\n\n## Idea\n\nFind why a live beam orch reads as down: the liveness read, the strand's record in reed's state, or both.\nFix the read so a live orch reads as live, and make an orch whose strand is missing from reed's state read as down with that cause named.\n",
-      "status": "done",
-      "created": "2026-11-28T09:48:04Z",
-      "revised": "2026-11-28T09:48:04Z",
-      "profile": "light"
     },
     {
       "id": 1791,
@@ -1087,34 +1062,7 @@
       "brief": "",
       "body": "## Aim (operator, 2026-11-28)\n\nThe implementer row spends much of its time in gate runs: card gates, batch gates, the plan-level verify and the slot waits between them.\nThis project cuts how often and how widely the implementers gate, where project `test-speed` makes the tests themselves faster.\n\n## Parts\n\n1. A measurement of where the implementer rows' gate time goes now.\n2. Cuts filed from its report, one task per lever the operator picks.\n",
       "created": "2026-11-28T11:59:49Z",
-      "revised": "2026-11-28T11:59:52Z",
-      "order": [
-        "implementer-gate-time-measure"
-      ]
-    },
-    {
-      "id": 1803,
-      "handle": "T9",
-      "slug": "implementer-gate-time-measure",
-      "title": "Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages",
-      "kind": "task",
-      "labels": [
-        "research",
-        "gate",
-        "webster",
-        "weaver"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Why\n\n`docs/research/webster/webster-time-2026-11-08.md` named five levers worth 15 to 23 min of an 86 min Webster row, the largest the guard step in every card gate.\nThe Weaver bench of 2026-11-27 (`docs/research/weaver/bench-2026-11-27/report.md`) then found gate tier time per row 2.2 times its recorded figure,\nthe same day `a69580709` made the card gate also run the packages that depend on a card's packages.\nNeither cause is measured, so the cuts would rest on guesses.\n\n## What to measure\n\nRead recorded data only: gate run records under the Bolt checkout's `.lym/gate/runs`, implementer state and row history, and the archived runs' records.\nStart no run, agent, bench or gate call.\n\nTake every Webster and Weaver implementer row that ended between 2026-11-20 and the task's start, split at `a69580709`'s landing.\nFor each, split the row's time into agent work, card gates, batch gates, plan-level verify, gate fixers and gate-slot waits.\nWithin the card gates, give the time of each step of the tier commands, the guard step and the dependent-package scope included.\n\n## Report\n\nA report under `docs/research/webster/` with those tables, before and after `a69580709`,\nand for each of the 2026-11-08 levers whether it still holds and what it would save now.\nAdd any new lever the records show, and rank all of them by minutes saved per row.\n",
-      "status": "done",
-      "created": "2026-11-28T11:59:51Z",
-      "revised": "2026-11-28T11:59:51Z",
-      "profile": "docs",
-      "project": "implementer-gate-time"
+      "revised": "2026-11-28T11:59:52Z"
     },
     {
       "id": 1804,
@@ -1129,9 +1077,7 @@
         "weaver"
       ],
       "issues": [],
-      "depends_on": [
-        "implementer-gate-time-measure"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 1)\n\nThe guard step was 7,043 of the card gate's 9,117 s (77%), run 787 times for 226 cards, while the batch gate already runs it.\nDropping it from the card gate saved an estimated 6 to 8 min per Webster row; its failures would surface at the batch gate, about 60 s a fix round.\n\n## Idea\n\nRun the guard step only in the batch gate, for Webster and Weaver alike.\nKeep or drop this note on the figures the implementer gate-time measurement gives.\n",
@@ -1152,9 +1098,7 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "implementer-gate-time-measure"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)\n\nA Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.\n\n## Idea\n\nHand each batch the file and symbol list its cards name, or have it read them in one batched turn; the report assumed this halves orientation, 3 to 6 min per row.\nWeaver's cold batches are measured too before this is built.\n",
@@ -1175,9 +1119,7 @@
         "weaver"
       ],
       "issues": [],
-      "depends_on": [
-        "implementer-gate-time-measure"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)\n\n8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,\nand each paid a verify-fix session plus a second verify: 3.9 min per row, 6.8 per affected row.\n\n## Idea\n\nAdd `cmd/lym` to the batch gate's scope, or to the last batch's gate, so a batch session that can fix the failure meets it at once.\nThe cost of the added gate run is measured before this is built.\n",
