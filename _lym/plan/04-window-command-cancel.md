@@ -1,9 +1,9 @@
 # Card 4 — window-command-cancel
 
 **Create:**
-- `plan:internal/desktophook#AfterPlacement` -> `func AfterPlacement(ctx context.Context, dirs configengine.Dirs, dir string) error`
-- `plan:internal/desktophook#AfterPlacementWithTiming` -> `func AfterPlacementWithTiming(ctx context.Context, dirs configengine.Dirs, dir string, commandTimeout, commandWaitDelay, groupKillAfter time.Duration) error`
-- `plan:internal/desktophook_test#TestAfterPlacement` -> `func TestAfterPlacement(t *testing.T)`
+- `internal/desktophook#AfterPlacement`
+- `internal/desktophook#AfterPlacementWithTiming`
+- `internal/desktophook_test#TestAfterPlacement`
 
 **Edit:**
 - `internal/desktophook#runWindowCommand` -> `func runWindowCommand(ctx context.Context, command, dir string, t timing) error`

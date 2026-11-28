@@ -1,15 +1,15 @@
 # Card 2 — beam-window-placement-setting
 
 **Create:**
-- `plan:internal/beamsetting#WindowPlacementKey` -> `const WindowPlacementKey = "window_placement"`
-- `plan:internal/beamsetting#WindowPlacementInherit` -> `const WindowPlacementInherit = ""`
-- `plan:internal/beamsetting#WindowPlacementOff` -> `const WindowPlacementOff = "off"`
-- `plan:internal/beamsetting#WindowPlacementSame` -> `const WindowPlacementSame = "same"`
-- `plan:internal/beamsetting#WindowPlacementNext` -> `const WindowPlacementNext = "next"`
-- `plan:internal/beamsetting#WindowPlacementValues` -> `func WindowPlacementValues() []string`
-- `plan:internal/beamsetting#WindowPlacementModes` -> `func WindowPlacementModes() []string`
-- `plan:internal/dobbyengine#WindowPlacementKey` -> `const WindowPlacementKey = beamsetting.WindowPlacementKey`
-- `plan:internal/dobbyengine#LookupWindowPlacement` -> `func LookupWindowPlacement(chain TaskSettingChain) (string, error)`
+- `internal/beamsetting#WindowPlacementKey`
+- `internal/beamsetting#WindowPlacementInherit`
+- `internal/beamsetting#WindowPlacementOff`
+- `internal/beamsetting#WindowPlacementSame`
+- `internal/beamsetting#WindowPlacementNext`
+- `internal/beamsetting#WindowPlacementValues`
+- `internal/beamsetting#WindowPlacementModes`
+- `internal/dobbyengine#WindowPlacementKey`
+- `internal/dobbyengine#LookupWindowPlacement`
 
 **Edit:**
 - `internal/beamsetting/beamsetting.go#`
