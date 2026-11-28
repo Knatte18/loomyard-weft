@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 20,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-28T14:32:05.64175592+01:00",
+  "deadline": "2026-11-28T15:02:05.64175592+01:00",
+  "strand_guid": "d312ab3e6b545494292d05e788a5d77d",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/shed/kde-window-placement-build/drive-reports/drive-envelope-20261128-143204-1aaa.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/shed/kde-window-placement-build/drive-reports/drive-report-20261128-143204-e625.md",
+  "snapshot": {
+    "head": "f525096fd28c477e09b6092ca26ca61d2dbe57f7",
+    "branch": "kde-window-placement-build",
+    "dirty": {}
+  }
+}

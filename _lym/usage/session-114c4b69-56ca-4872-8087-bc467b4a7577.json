@@ -1,0 +1,14 @@
+{
+  "session_id": "114c4b69-56ca-4872-8087-bc467b4a7577",
+  "row": "Webster",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 12,
+  "cache_write_tokens": 29015,
+  "cache_read_tokens": 148750,
+  "output_tokens": 3009,
+  "cost_usd": 0.235053,
+  "started": "2026-11-28T13:32:07Z",
+  "ended": "2026-11-28T13:32:57Z"
+}

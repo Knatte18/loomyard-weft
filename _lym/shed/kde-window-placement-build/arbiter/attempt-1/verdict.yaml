@@ -1,0 +1,12 @@
+verdict: hand-on
+reason: |-
+  The run is blocked at the Webster row because of a pending run-exit audit finding (parent-write). It is not a review escalation and no code defect caused it. All three batches (cards 01-14) are recorded done in _lym/webster/state.json, and their commits sit on the branch, with HEAD at f525096fd "14: machine-start-placement".
+  The finding flags _lym/loom/friction/webster-master.md, which is Master's own friction note: state.json lists that exact path under masterNotePaths. The finding's own text says Master may write its friction note. Its content is an ordinary friction note covering the batch 01 operator-step churn and an unverified observation about places.go. Master implemented no batch and hand-wrote no batch report in it. The finding looks like a false positive from the audit, which does not exempt the registered note path.
+  The way forward the stop names needs three steps: restore or rm a file under _lym/, run `lym webster accept-audit`, then re-step the row. I may not edit under _lym/, and accept-audit is not one of this run's repair verbs. A plain re-launch would hit the same pending finding again. Two Webster steps have already stopped on it, at 13:31:55Z and 13:32:04Z. There is no code fix to make and nothing for the board entry or the decision record to settle.
+verbs: []
+question: |-
+  Webster is blocked by the audit finding "parent-write" against _lym/loom/friction/webster-master.md. That file is Master's own friction note: _lym/webster/state.json lists it under masterNotePaths, and the finding's text says the friction note is allowed. All 14 cards are done and committed, with HEAD at f525096fd.
+  Will you clear the finding with `lym webster accept-audit kde-window-placement-build` (or the verb's actual form) and re-step the Webster row? Restoring the file to records commit 6bbba30721 instead would delete the note, because that commit does not hold it.
+  If you restore it, save its content first. It records the batch 01 operator-step churn and an unverified observation: a window whose home desktop no longer exists is placed elsewhere but keeps its old home (internal/kwinplace/places.go).
+  The audit treating a path from masterNotePaths as a parent-write looks like a tooling bug worth filing.
+  The arbiter made no commit and ran no verbs.

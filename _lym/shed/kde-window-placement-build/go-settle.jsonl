@@ -1,1 +1,3 @@
 {"stop_key":{"current_producer":"Webster","history_length":19,"state":"blocked"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-11-28T14:31:56.51843226+01:00","build":"6a80320a5b1a"}
+{"stop_key":{"current_producer":"Webster","history_length":20,"state":"blocked"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-11-28T14:32:59.183642179+01:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Webster","history_length":20,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-11-28T14:32:59.183947961+01:00"}
