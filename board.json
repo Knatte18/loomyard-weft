@@ -951,13 +951,14 @@
       ],
       "issues": [],
       "depends_on": [
-        "recipe-build-from-sketch"
+        "recipe-build-from-sketch",
+        "release-order-queue"
       ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nA chain of tapestry tasks where B depends on A runs fully in series: B's Discussion and Plan wait until A has landed, though the plan writer is the slowest row.\nThe six serial parts of project `fabric-core` are the case at hand.\n\nIn Millhouse, which LoomYard grew from, the operator sped such chains up by hand, with success:\n\n- Once A's discussion record was approved, B's Discussion started, told to build on everything A had decided.\n- Plan writing for B likewise started before A was done, from A's record.\n- When A had landed, B merged A's changes, and a small fixer read the code changes and updated B's discussion and plan for what had moved.\n- Only then did B's builders start, so the builders were the only part that waited for A.\n\n## Design (operator, 2026-11-28)\n\nOnly for the recipe that starts from a stored decision record (jacquard): darn has no separate plan row to run ahead,\nand a run with its Discussion still to run never plans ahead, so B always plans from a record already approved.\nThe model of plan and build as two recipes sharing one standing pair was weighed and dropped:\nit would leave a pair on disk with no run, against the rule that only a run has a worktree on disk.\n\n1. B depends on A.\n2. When A's plan is approved, B is released.\n3. B runs Plan as usual, Plan Perch included, with A's record and plan as input.\n4. After B's plan is approved, a new producer row waits for B's dependencies: B parks there until A has landed.\n5. When A has landed, that row merges B's parent into B, bringing in A's change,\n   and a fixer updates B's decision record and plan for what A's change brought.\n   This stays small when A kept to its own plan.\n6. B then goes on to Webster as today.\n\nThe merge in step 5 also brings in whatever else landed on the parent, not only A.\nThat is no new cost: Parent-Align already meets the same landings later today.\nRunning the chain in a beam of its own keeps the parent quiet, so the merge in step 5 brings in little beside A.\n\n## A parked run (operator, 2026-11-28)\n\n- A run parked in the wait row of step 4 holds none of `beam.max_runs`'s run places, no tmux session and no Konsole window, so it leaves the KDE tiling alone.\n  Its pair stays on disk, local; nothing it needs is trusted to origin.\n- When its dependencies are done, dobby reopens its session and window and resumes it.\n- A parked run whose dependencies are done is resumed before dobby starts any new task:\n  it was released when it began planning, so it never rejoins the back of the ready queue.\n\n## Bounds\n\n- The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.\n  From A's record and plan, estimate how much of what B builds on A will change;\n  when A is estimated to change too much of it, B does not plan ahead and waits as today.\n- Each link planned ahead of landed code adds error to the plans, so the cascade is kept short:\n  one parked run per chain. C may plan ahead only once B has passed step 5, so C plans from a plan re-aligned against A's landed code.\n- Not for now (operator, 2026-11-28).\n",
       "created": "2026-11-28T11:14:18Z",
-      "revised": "2026-11-28T12:38:35Z",
+      "revised": "2026-11-28T12:42:42Z",
       "project": "plan-ahead-chains"
     },
     {
@@ -1109,9 +1110,10 @@
       "brief": "",
       "body": "## Aim (operator, 2026-11-28)\n\nA chain of tapestry tasks runs fully in series today, though the plan writer is the slowest row.\nStarting the next task's planning before the one before has finished building gains more than parallel batches inside one plan,\nwhich a card-graph study found buys about 1.6x at best (`docs/research/webster/parallel-batches-2026-10-17/report.md`).\n\n## Parts\n\n1. A recipe, `jacquard`, that runs the tapestry rows after Discussion and starts only from a stored decision record.\n2. Plan-ahead on that recipe: a dependent task plans from its dependency's record and plan, parks before building, re-aligns after the dependency lands, then builds.\n",
       "created": "2026-11-28T11:53:28Z",
-      "revised": "2026-11-28T11:54:20Z",
+      "revised": "2026-11-28T12:42:44Z",
       "order": [
         "recipe-build-from-sketch",
+        "release-order-queue",
         "pipelined-chain-planning"
       ]
     },
@@ -1270,7 +1272,8 @@
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nWhen a run place frees, dobby walks the board's tasks in their stored order and starts the first released one nothing holds (`startReady` in `internal/dobbyengine/starts.go`).\nWhen a task was released plays no part, and the board shows no order: nobody can see which task starts next.\nThe only way ahead of the others is a front task.\n\n## Idea (operator, 2026-11-28)\n\n- Released tasks form a queue ordered by release time; dobby starts the oldest ready one first.\n- The board shows each released task's place in the queue.\n- The operator, or the orch on the operator's word, can move a task in the queue.\n- A held task keeps its place: when its dependencies are done it is the next to start once a run place frees, never sent to the back.\n",
       "created": "2026-11-28T12:38:51Z",
-      "revised": "2026-11-28T12:38:51Z"
+      "revised": "2026-11-28T12:42:41Z",
+      "project": "plan-ahead-chains"
     },
     {
       "id": 1809,
