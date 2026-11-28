@@ -1368,6 +1368,26 @@
       "body": "Imported from [issue #295](https://github.com/Knatte18/loomyard/issues/295).\n\n## What happened\n\nThe machine hibernated from 2026-11-27 22:47:54 to 2026-11-28 08:52:17 while `lym gate` was running tier1.\nOn wake, the gate killed tier1 as past its 30-minute limit.\nThe timeout report asked the reader to find a hang or to raise `gate.tiers.tier1.timeout_min`.\nNeither applied, and only the system journal showed the cause.\n\n## Why it is abnormal\n\nThe tier timeout counts wall-clock time across a hibernation, so time in which the tier could not run is charged against its limit.\nA run that was not hung fails, and the report sends the reader after a cause that is not there.\n\n## What to do\n\n- Exclude suspended time from the tier timeout.\n- Or detect a suspend during the tier run, say so in the report, and rerun the tier instead of reporting a timeout.\n\nProvenance: task `discussed-payload-map-race`, note `gate-fixer-darn-write.md`.\n",
       "created": "2026-11-28T15:17:26Z",
       "revised": "2026-11-28T15:17:26Z"
+    },
+    {
+      "id": 1828,
+      "handle": "B9",
+      "slug": "gate-targets-marked-tier-skip",
+      "title": "gate test --gate K with explicit targets runs a K-marked tier1 test under tier0, where it skips with exit 0",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate"
+      ],
+      "issues": [
+        298
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #298](https://github.com/Knatte18/loomyard/issues/298).\n\n## What happened\n\nA darn writer had to time a tier1 test marked `//lym:only upkeep`, before and after its change, through `lym gate test`.\n\n- The gate key its prompt gives it, `darn-write`, skips the test because of the marker, so getting the timings took a round trip to the parent.\n- `lym gate test --gate upkeep \u003cpackage\u003e -- -run \u003ctest\u003e` then ran the package under tier0, where the tier1 test skipped, and exited 0.\n- The same call with no package argument ran the test under tier1.\n- `--tier 1` beside `--gate upkeep` is refused.\n\n## Why it is abnormal\n\nThe call that names the package and the test reads as a successful run, yet the selected test never ran, so a timing taken from it is wrong without any failure to show it.\nThe behaviour follows from two rules that are each documented: explicit targets beside `--gate` replace the key's scope, and a `marked` key runs its tests under each file's tier only in its own scope.\nThe writer saw exit 0 and no refusal.\n\n## What to do\n\n- With `--gate K` and explicit targets, run the tests marked for `K` in those packages under their files' tiers, or refuse the call and name the form that runs them.\n- At least, say on stderr that a test marked for the key belongs to a tier this call does not run.\n- Give the darn writer's measuring call a stated way to reach a test held by another key's marker, such as naming `--tier` with a `--filter` and no `--gate`, which holds nothing back.\n\nProvenance: task `gatecli-dotnet-redfirst-time`, note `Darn-Write.md`.\n",
+      "created": "2026-11-28T15:17:32Z",
+      "revised": "2026-11-28T15:17:32Z"
     }
   ],
   "prime_owner": "neve",
