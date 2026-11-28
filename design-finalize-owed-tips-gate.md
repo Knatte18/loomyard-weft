@@ -2,8 +2,6 @@
 
 `finalize-owed-tips-gate` · Task · bug, landing · running · Darn-Write
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md)
-
 Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).
 
 ## What happened

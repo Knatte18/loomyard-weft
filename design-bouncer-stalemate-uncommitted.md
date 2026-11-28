@@ -2,8 +2,6 @@
 
 `bouncer-stalemate-uncommitted` · Task · bug, shed, burler
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md)
-
 Imported from [issue #287](https://github.com/Knatte18/loomyard/issues/287).
 
 ## Seen

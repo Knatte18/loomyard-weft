@@ -2,8 +2,6 @@
 
 `darn-writer-measure-gates` · Task · bug, darn, stencil
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md)
-
 Imported from [issue #283](https://github.com/Knatte18/loomyard/issues/283).
 
 ## What happened

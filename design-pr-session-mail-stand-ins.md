@@ -2,8 +2,6 @@
 
 `pr-session-mail-stand-ins` · Task · enhancement, testkit, landing, reed, creel · running · Darn-Write
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md)
-
 ## Seen
 
 The run that gave testkit a recorded tmux stand-in under reedengine left two stand-ins out of its scope by the parent's decision:

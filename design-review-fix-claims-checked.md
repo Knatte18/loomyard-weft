@@ -2,8 +2,6 @@
 
 `review-fix-claims-checked` · Task · bug, burler, stencil, webster
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md)
-
 Imported from [issue #285](https://github.com/Knatte18/loomyard/issues/285).
 
 ## What happened

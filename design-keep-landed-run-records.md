@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-keep-landed-run-records.md)
 
-Depends on: [`beam-member-parent`](design-beam-member-parent.md), [`fabric-core-records-guards`](design-fabric-core-records-guards.md)
+Depends on: [`fabric-core-records-guards`](design-fabric-core-records-guards.md)
 
 Filed from the Sketch `keep-landed-records`.
 
