@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add recipe-build-from-sketch`, then decide with `lym loom circling accept recipe-build-from-sketch` or `lym loom circling continue recipe-build-from-sketch`, then run `lym loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `recipe-build-from-sketch` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/reviews/discussion/round-1-escalation.md` with a one-shot fork. Way forward: record each answer with \"lym loom decision add recipe-build-from-sketch --by parent\", one entry per answered finding, then decide with \"lym loom circling accept recipe-build-from-sketch\" or \"lym loom circling continue recipe-build-from-sketch\".",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/reviews/discussion/round-1-escalation.md; record the answer with `lym loom decision add recipe-build-from-sketch`, then decide with `lym loom circling accept recipe-build-from-sketch` or `lym loom circling continue recipe-build-from-sketch`, then run `lym loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -80,6 +81,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-11-28T12:32:17Z",
+      "started_at": "2026-11-28T12:31:36Z"
     }
   ],
   "product": {
