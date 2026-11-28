@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Parent-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
+    "now": "Parent-Align",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -266,6 +265,29 @@
       "at": "2026-11-28T13:32:04Z",
       "started_at": "2026-11-28T13:32:04Z",
       "budget_exempt": true,
+      "by": "shed"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/kde-window-placement-build/_lym/webster/summary.md",
+      "at": "2026-11-28T13:35:52Z",
+      "started_at": "2026-11-28T13:35:04Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T13:35:47.932604001Z",
+          "end": "2026-11-28T13:35:49.714938671Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T13:35:50.375848356Z",
+          "end": "2026-11-28T13:35:50.823087423Z"
+        }
+      ],
       "by": "shed"
     }
   ],
