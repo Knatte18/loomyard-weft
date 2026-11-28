@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "D4, D6 and the parent pair: settle what today's landing does to each side of a pair and beyond a plain merge (records and `_lym` content, any fabric merge rules, hooks, message and trailer), and whether a chain built by merge-tree and commit-tree, then a guarded move, produces the same result on every side."
+  - "D6 and D8 crash and ordering windows: walk a death or error between the parent move, each ledger write, each outcome write and each entry removal, including multi-repo partial moves; settle who recovers each state, whether the backstop can identify every missing landing and its records commit, and whether the parent can be left ahead by a non-owed commit."
+  - "D6's held-back records commits and landed members: settle what a member run, its pusher, the parent's pusher, the dobby and the board each do between the leader's move and the member's own wake-up, and what bounds a member that never resumes."
+  - "D2, D3, D8 membership over time: settle what happens when an entry's run is paused, stopped, abandoned, restarted, re-run with a new run id, or has its task branch or pair changed after the leader took its batch but before the move; check the leader's own pause and a parent move by a non-queue actor too."
+  - "D5 detached checkout: settle what else reads or writes the leader's task worktree while it is detached (record commits, status writes, pushers, other lym verbs, sessions, ignored or untracked build output), which of them can follow HEAD, and whether the resume restore can misfire on a detach it did not make."
+  - "D7 bisection premises: settle whether the empty prefix may be taken as passing, how a flaky or environmental failure, a failing parent, a gate outcome other than pass, fail, crash or memory stop, and verifytree's rerun and result reuse affect the blame, and what an outcome `failed` or `conflict` run can still skip or repeat on its own path."
+  - "Facts the design rests on without a pin: verifytree and the Finalize gate key on a detached chain commit (what is compared against the parent, which config layers and inert paths apply per member), git merge-tree and commit-tree results against today's squash and true merge, the parent lock's order and idle release across a long bisection, and the retired-key warning."
+  - "Today's behaviors the queue replaces: list what the removed lock-free pass, lost-race loop and per-run merge-and-gate under the lock did (checks, records, per-run gate config or overrides, fixer, size and empty checks, owner checks, pull-request resolution) and settle that each has a home for a leader, a batched member and a run on its own path."
+  - "Agreement between the files and within the record: check gate-count and batch-bound claims, the Goal's bisection wording against D7, and that `## Acceptance criteria` names a test or review check for each behavior and doc statement the Decisions add, including D5's dirty-detached stop, D6's backstop and held-back push, and D7's culprit-is-leader path."
+---
+
+Seed focus for round 1, drawn from the artifacts, the writer stencil and the discussion spec.
