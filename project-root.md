@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 07:56 UTC; every age below is as of then.
+Rendered 2026-11-28 07:57 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light | halted · Code-Bouncer | neve | 10h<br>10h | webster, fabric, pattern |
+| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light | Describe | neve | 10h<br>10h | webster, fabric, pattern |
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | Darn-Write | neve | 10h<br>10h | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Code-Burler-Fix | neve | 16h<br>16h | batten, fabric |
 | T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | Darn-Write | neve | 10h<br>10h | gate |
