@@ -246,14 +246,40 @@
       "spawnedAt": "2026-11-28T15:43:12Z",
       "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
       "engine": "claude",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-board-view-projection",
+        "status": "done",
+        "head_sha": "49f17ada4a3e264b62e83fe67c246feb01bd9e35",
+        "deviations": [
+          "cmd/lym/testonlycode_linux_test.go",
+          "internal/boardengine/expecting_test.go",
+          "internal/boardengine/render.go",
+          "internal/boardengine/view.go",
+          "internal/boardengine/view_test.go",
+          "internal/boardserve/server.go",
+          "internal/boardserve/write.go"
+        ],
+        "departures": [
+          "1: board: render board-data.js, the board's view projection (fix): PATTERN-test-only-code — temporary testOnlyCodeAllowed entries admit boardengine.BoardRevision and boardengine.Board.View, which are not test helpers; their caller, the board server, is reached by a main only once card 6 wires lym board serve, which removes the entries",
+          "2: board: refuse a write whose entry revision is stale: PATTERN-test-only-code — a temporary testOnlyCodeAllowed entry admits boardengine.Board.Expecting, which is not a test helper; its caller, the board server, is reached by a main only once card 6 wires lym board serve, which removes the entry",
+          "3: board: embed the viewer page and claim its files in the replay: PATTERN-test-only-code — a temporary testOnlyCodeAllowed entry admits boardengine.ViewerPage, which is not a test helper; its caller, the board server, is reached by a main only once card 6 wires lym board serve, which removes the entry"
+        ]
+      },
+      "cardShas": [
+        "49f17ada4a3e264b62e83fe67c246feb01bd9e35"
+      ],
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a2fe56bf586405cf4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a2fe56bf586405cf4.jsonl"
       ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "3b72c7243ad10915642d1322bdc1c96b",
   "masterSessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
   "masterEngine": "claude",
@@ -262,6 +288,7 @@
   ],
   "masterRecordsBase": "1436b50c12ffbce98c66b6f28adc0b4c176e342c",
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a2fe56bf586405cf4.jsonl"
   ]
 }
