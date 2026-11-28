@@ -1,12 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Friction-Reflect",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "Finalize → stuck",
+    "now": "Friction-Reflect",
+    "last": "Finalize → done",
     "wait": ""
   },
   "history": [
@@ -228,6 +227,14 @@
       "at": "2026-11-28T11:31:37Z",
       "started_at": "2026-11-28T10:43:07Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-11-28T12:32:54Z",
+      "started_at": "2026-11-28T11:32:36Z",
+      "by": "shed"
     }
   ],
   "product": {
