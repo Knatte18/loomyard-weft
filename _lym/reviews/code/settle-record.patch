@@ -1,0 +1,69 @@
+diff --git a/internal/shedcli/table.go b/internal/shedcli/table.go
+index 7899e8674..c9dc37e26 100644
+--- a/internal/shedcli/table.go
++++ b/internal/shedcli/table.go
+@@ -1,12 +1,11 @@
+ // table.go declares the named-recipe arming table: the recipes map literal and its entry type.
+-// Each recipe is declared once, in recipes, and reached only through the lookup and names accessors.
++// Each recipe is declared once, in recipes, and reached only through the lookup accessor.
+ // There is no init() self-registration and no runtime Register function.
+ 
+ package shedcli
+ 
+ import (
+ 	"fmt"
+-	"sort"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battencli"
+ 	"github.com/Knatte18/loomyard/internal/loomcli"
+@@ -105,14 +104,3 @@ func lookup(name string) (entry, error) {
+ 	}
+ 	return e, nil
+ }
+-
+-// names returns every recipe name in recipes, sorted.
+-// Each call returns a fresh slice, so a caller may modify it without affecting later calls or recipes.
+-func names() []string {
+-	result := make([]string, 0, len(recipes))
+-	for name := range recipes {
+-		result = append(result, name)
+-	}
+-	sort.Strings(result)
+-	return result
+-}
+diff --git a/internal/shedcli/table_test.go b/internal/shedcli/table_test.go
+index 3eadca625..38313cfdc 100644
+--- a/internal/shedcli/table_test.go
++++ b/internal/shedcli/table_test.go
+@@ -1,10 +1,11 @@
+-// table_test.go covers table.go's recipes map and its two accessors. It stays in tier 0: it
+-// calls lookup and names alone, neither of which resolves cwd or spawns git.
++// table_test.go covers table.go's recipes map and its lookup accessor.
++// It stays in tier 0: it reads recipes and calls lookup alone, neither of which resolves cwd or spawns git.
+ 
+ package shedcli
+ 
+ import (
+ 	"go/ast"
++	"maps"
+ 	"slices"
+ 	"sort"
+ 	"strings"
+@@ -45,14 +46,9 @@ func TestRecipes_KeySet(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			got := names()
+-			if len(got) != len(tt.want) {
+-				t.Fatalf("names() = %v; want %v", got, tt.want)
+-			}
+-			for i := range tt.want {
+-				if got[i] != tt.want[i] {
+-					t.Errorf("names()[%d] = %q; want %q", i, got[i], tt.want[i])
+-				}
++			got := slices.Sorted(maps.Keys(recipes))
++			if !slices.Equal(got, tt.want) {
++				t.Errorf("sorted recipes keys = %v; want %v", got, tt.want)
+ 			}
+ 		})
+ 	}
