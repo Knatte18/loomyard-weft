@@ -30,6 +30,12 @@ It compares with `ea00087ec`'s package report only to name the packages; the ear
 
 ## Decisions
 
+### Added after Discussion (operator, 2026-11-28): One repeat per side: 20 gate calls
+
+Decision: Each package runs tier0 and tier1 once per side, in the order A then B: 20 calls, not 40. The spread across the five packages stands in for repeats.
+
+Rationale: Operator, 2026-11-28: 40 calls hold a gate slot for hours; two repeats are not needed.
+
 ## Constraints
 
 ## Auto-mode assumptions
