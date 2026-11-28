@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -184,6 +184,52 @@
       "output": "",
       "at": "2026-11-28T10:28:48Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/catchup-fetch-stops-start/_lym/landing/summary.md",
+      "at": "2026-11-28T10:30:29Z",
+      "started_at": "2026-11-28T10:28:48Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T10:29:27.154314248Z",
+          "end": "2026-11-28T10:29:27.154389418Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T10:30:27.484138311Z",
+          "end": "2026-11-28T10:30:27.484186902Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T10:29:27.380114524Z",
+          "end": "2026-11-28T10:29:27.380274413Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "held",
+          "start": "2026-11-28T10:29:27.476161831Z",
+          "end": "2026-11-28T10:30:16.307117589Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "rework",
+          "start": "2026-11-28T10:30:16.8813437Z",
+          "end": "2026-11-28T10:30:26.996061754Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T10:30:27.603711531Z",
+          "end": "2026-11-28T10:30:27.603731207Z"
+        }
+      ]
     }
   ],
   "product": {
