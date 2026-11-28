@@ -1,6 +1,6 @@
 # A gate whose run changes only text no build or test reads, such as docs, passes without running its tiers
 
-`gate-skip-text-only-diff` · Task · enhancement, gate · starting · Seed-IDE
+`gate-skip-text-only-diff` · Task · enhancement, gate · starting · Open-IDE
 
 ## Seen
 
