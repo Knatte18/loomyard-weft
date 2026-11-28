@@ -2,8 +2,6 @@
 
 `missing-origin-unreachable` · Task · bug, fabric, git
 
-Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
-
 Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).
 
 ## What happened

@@ -2,8 +2,6 @@
 
 `runpusher-removed-worktrees` · Task · bug, fabric
 
-Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
-
 Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).
 
 On `lym board sync` from the prime, runpusher logs one WARN per task worktree that was removed long ago:

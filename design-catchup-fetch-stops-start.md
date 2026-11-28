@@ -2,8 +2,6 @@
 
 `catchup-fetch-stops-start` · Task · bug, dobby, fabric
 
-Depends on: [`hardener-study-faults`](design-hardener-study-faults.md)
-
 ## Seen
 
 The landed `push-retry-not-halt` (`3fb0787e3`) records that a dobby catch-up whose fetch fails on an unreachable origin still stops that run's start,
