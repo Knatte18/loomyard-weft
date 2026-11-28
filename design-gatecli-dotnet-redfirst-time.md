@@ -1,6 +1,8 @@
 # TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s
 
-`gatecli-dotnet-redfirst-time` · Note · enhancement, gate
+`gatecli-dotnet-redfirst-time` · Task · enhancement, gate
+
+Depends on: [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md)
 
 ## Seen
 
