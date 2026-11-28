@@ -1,6 +1,6 @@
 # Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move
 
-`parent-align-fixer-own-push` · Note · bug, landing
+`parent-align-fixer-own-push` · Task · bug, landing · draft
 
 ## Seen
 
