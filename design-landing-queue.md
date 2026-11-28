@@ -1,6 +1,6 @@
 # A landing queue gates several ready runs as one batch and lands them together
 
-`landing-queue` · Task · sketch, landing, gate, batten · starting · Open-IDE
+`landing-queue` · Task · sketch, landing, gate, batten · running · Raddle-Write
 
 Decision record: [Sketch](decision-landing-queue.md)
 
