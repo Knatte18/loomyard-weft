@@ -1,27 +1,39 @@
-# Darn writer asks its parent before the gate calls of a measurement entry
+# Have the darn writer ask before an entry's measurement gate calls
 
-The darn writer's Step 4 lists had no rule for an entry whose deliverable is itself gate measurements, such as test times per package and tier.
-With a cold fixer on the verify gate, `darn-fragment-make-change-gated.md` forbade every `lym gate test` call bar one measuring run of one test class,
-so a writer could either refuse the entry or break the rule on its own decision.
-Without a cold fixer, `darn-fragment-make-change.md` allowed gate runs per commit but set no bound on a measurement series.
+An entry can have gate measurements as its deliverable, such as test times per package, one `lym gate test` call per package and tier.
+The darn writer's gated Step 4 list, `darn-fragment-make-change-gated.md`, forbade those calls and named no exception for them,
+so a writer on it had to either leave the entry undone or break a stated rule on its own decision.
+The other list, `darn-fragment-make-change.md`, had no rule or limit for them.
 
-Both lists now carry the same rule in their item 3:
-before any gate call for such an entry, the writer asks its parent with `lym creel post --parent --expect-reply`,
-naming every planned call and their count, and ends its turn to wait.
-It runs only the calls the answer allows, within the limits the answer sets, one at a time in the foreground.
-With no parent it runs none of them and names them in the change description.
+Both Step 4 fragments, `darn-fragment-make-change.md` and `darn-fragment-make-change-gated.md`, now carry a rule for these calls:
 
-## Design decisions
+- They fall outside the other test-running rules of that step.
+- Before any of them, the writer sends its parent every planned call and their count, and ends its turn to wait.
+- It runs only what the answer allows, within the limits the answer sets, one at a time in the foreground.
+- With no parent, or when the post is refused and no strand answers,
+  it runs only what an `Added after Discussion` entry of the record allows.
+- With no such entry it runs none, writes a stop report that asks for a decision on the measurement runs and their limits,
+  creates the stop marker and makes no further commit.
 
-- The rule asks the parent rather than granting the calls with fixed limits:
-  the right number of calls, tiers and repeats depends on the entry, and the parent can weigh them against the hub's other runs.
-- The rule sits in both lists, since an ungated writer meets the same entry and its per-commit gate rule does not bound a measurement series.
+In `darn-fragment-make-change.md`, where subagents run the gate themselves, the measurement calls stay in the writer's session,
+and the gate run after each commit's last edit still follows.
+In the gated fragment, the verify gate's test of the committed tree is not one of these calls and still runs.
 
-## Changes
+The doc comments in `contracts/stencils/stencils.go` and `internal/darnengine/spec.go` state the new rule.
+No Go behavior changes.
 
-- `contracts/stencils/darn/darn-fragment-make-change-gated.md` and `contracts/stencils/darn/darn-fragment-make-change.md`: the rule and their header comments.
-- `contracts/stencils/stencils.go` and `internal/darnengine/spec.go`: doc comments name the rule.
-- `internal/darnengine/spec_test.go`: `TestDarnSpec` checks that both the gated and the ungated prompt carry the rule.
+Closes #283
+
+## To check by hand
+
+- No-parent path and the entry's deliverable, in Step 4 item 3 of both fragments:
+  with no parent and no `Added after Discussion` entry allowing the calls, the measurements are not produced.
+  Check that the stop report and stop marker make this a visible stop, so the deliverable is not silently dropped.
+- Subagents and the measurement rule, in Step 4 items 2 and 3 of the fragments:
+  check that no subagent can make measurement calls without the question to the parent.
+  `darn-fragment-make-change.md` says that no subagent runs them.
+  `darn-fragment-make-change-gated.md` has no such sentence and relies on item 2, which tells each subagent to run no `lym gate test`.
+- The new wording has no test, and the diff holds no run of a darn writer against a measurement entry.
 
 ## Merge danger
 
