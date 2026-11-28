@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 11:29 UTC; every age below is as of then.
+Rendered 2026-11-28 11:30 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -171,5 +171,5 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 13h<br>1h | board, orch, dobby |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) |  | 15m<br>3m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | F3 | 15m<br>0m | loom, batten, shed |
 | F3 |  | **A recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) |  | 0m<br>0m | shed, loom, batten, board |

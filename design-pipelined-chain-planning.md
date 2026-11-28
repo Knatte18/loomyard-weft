@@ -2,6 +2,8 @@
 
 `pipelined-chain-planning` · Note · feature, loom, batten, shed
 
+Depends on: [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)
+
 ## Seen (operator, 2026-11-28)
 
 A chain of tapestry tasks where B depends on A runs fully in series: B's Discussion and Plan wait until A has landed, though the plan writer is the slowest row.
@@ -16,7 +18,8 @@ In Millhouse, which LoomYard grew from, the operator sped such chains up by hand
 
 ## Design (operator, 2026-11-28)
 
-Tapestry only: darn has no separate plan row to run ahead.
+Only for the recipe that starts from a stored decision record: darn has no separate plan row to run ahead,
+and a run with its Discussion still to run never plans ahead, so B always plans from a record already approved.
 
 1. B depends on A.
 2. When A's plan is approved, B is released.
