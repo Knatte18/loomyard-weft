@@ -4,8 +4,6 @@
 
 Decision record: [Sketch](decision-stop-settlement-table.md)
 
-Depends on: [`autonomy-unattended-level`](design-autonomy-unattended-level.md)
-
 ## The settlement table: stop classes and who settles each, per autonomy level and halt count
 
 Filed from the Sketch `self-healing-runs`.
