@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The stop is a producer stop at Code-Burler-Review, round 1 attempt 1. The burler\nreview fork (agent-aec6cd6f2c4e8dfd2.jsonl) ran a shell command that the lym guard\nclassed as state-mutating git: it created a scratch repository at\n.scratch/exp2/r, committed, added a remote pointing at a symlink to\n/nonexistent-mount/x.git, ran git push, and ran git remote set-url. The guard refused\nthe step (driver log line 20, trace 7723990c1c822b39; drive-report line 5; envelope error field).\nNothing in the review's output was produced, so the review did not complete.\nA plain re-launch is not a fix: the fork ran these git probes on its own initiative,\nand the same brief would likely produce the same probes and the same refusal.\nThe fix (stopping the fork from running state-mutating git probes, or allowing them\nin a scratch repo it created) changes the review's brief, which is a scope choice for\nthe run's parent. The guard's judgment that a push and set-url inside a repo the fork\ncreated count as outside its rights is also for the parent to confirm. I have not\njudged the guard's call.\nNot transient, no interrupt, no lym verb or git command was run by me.\n",
+  "question": "The review fork at Code-Burler-Review round 1 ran git init, commit, remote add,\npush and remote set-url inside .scratch/exp2 to probe missing-origin behaviour, and\nthe guard refused the step as a state-mutating git command outside a repository the\nfork created. Should the review be re-run with its brief changed to forbid state-mutating\ngit probes (read-only git only, e.g. ls-remote and merge-base), or should it be allowed\nto run such probes in a scratch repository it created itself? Please confirm which,\nand whether the step should then be re-run.\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/_lym/shed/missing-origin-unreachable/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/_lym/shed/missing-origin-unreachable/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}

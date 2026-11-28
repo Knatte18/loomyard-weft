@@ -1,0 +1,14 @@
+{
+  "session_id": "77e45d9b-18ff-4487-a393-c79a7ca5ca82",
+  "row": "Code-Burler-Review",
+  "role": "tackler",
+  "model": "claude-haiku-5-5",
+  "engine": "claude",
+  "input_tokens": 8,
+  "cache_write_tokens": 28628,
+  "cache_read_tokens": 59092,
+  "output_tokens": 3958,
+  "cost_usd": 0.0061492199999999995,
+  "started": "2026-11-28T10:30:01Z",
+  "ended": "2026-11-28T10:30:25Z"
+}

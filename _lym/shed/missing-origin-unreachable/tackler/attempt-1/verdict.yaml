@@ -1,0 +1,25 @@
+verdict: hand-back
+reason: |
+  The stop is a producer stop at Code-Burler-Review, round 1 attempt 1. The burler
+  review fork (agent-aec6cd6f2c4e8dfd2.jsonl) ran a shell command that the lym guard
+  classed as state-mutating git: it created a scratch repository at
+  .scratch/exp2/r, committed, added a remote pointing at a symlink to
+  /nonexistent-mount/x.git, ran git push, and ran git remote set-url. The guard refused
+  the step (driver log line 20, trace 7723990c1c822b39; drive-report line 5; envelope error field).
+  Nothing in the review's output was produced, so the review did not complete.
+  A plain re-launch is not a fix: the fork ran these git probes on its own initiative,
+  and the same brief would likely produce the same probes and the same refusal.
+  The fix (stopping the fork from running state-mutating git probes, or allowing them
+  in a scratch repo it created) changes the review's brief, which is a scope choice for
+  the run's parent. The guard's judgment that a push and set-url inside a repo the fork
+  created count as outside its rights is also for the parent to confirm. I have not
+  judged the guard's call.
+  Not transient, no interrupt, no lym verb or git command was run by me.
+question: |
+  The review fork at Code-Burler-Review round 1 ran git init, commit, remote add,
+  push and remote set-url inside .scratch/exp2 to probe missing-origin behaviour, and
+  the guard refused the step as a state-mutating git command outside a repository the
+  fork created. Should the review be re-run with its brief changed to forbid state-mutating
+  git probes (read-only git only, e.g. ls-remote and merge-base), or should it be allowed
+  to run such probes in a scratch repository it created itself? Please confirm which,
+  and whether the step should then be re-run.

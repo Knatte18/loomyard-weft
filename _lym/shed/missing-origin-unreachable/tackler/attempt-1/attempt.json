@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Code-Burler-Review",
+    "history_length": 8,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "82cff27aef81d020b46345c951fbfb790f033342",
+    "branch": "missing-origin-unreachable",
+    "dirty": {}
+  },
+  "spawned_at": "2026-11-28T11:30:01.209465007+01:00",
+  "deadline": "2026-11-28T11:40:01.209465007+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/_lym/shed/missing-origin-unreachable/drive-reports/drive-envelope-20261128-113001-df76.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/missing-origin-unreachable/_lym/shed/missing-origin-unreachable/drive-reports/drive-report-20261128-113001-db1b.md",
+  "strand_guid": "40017850681e3dfb3325035ba2570c14"
+}
