@@ -1,6 +1,6 @@
 # Review fork guard halts the run on a push from the fork's own throwaway repo after an ln, with a message that names the wrong rule
 
-`review-fork-guard-ln-push` · Task · bug, burler, stencil · running · Code-Bouncer
+`review-fork-guard-ln-push` · Task · bug, burler, stencil · running · Code-Burler-Review
 
 Imported from [issue #296](https://github.com/Knatte18/loomyard/issues/296).
 
