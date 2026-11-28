@@ -18,7 +18,8 @@ The agents stay on the hub's machine (Neve for loomyard, OSL-1046 for work hubs)
 - A gate call sends the worktree, uncommitted edits included, from the hub's machine into a RAM disk (tmpfs) inside Septim's WSL2,
   runs the tier there, streams the `go-json` results back so the caller sees the same report as a local run, and deletes the tree when the run ends.
   No git checkout is made on Septim.
-- A build cache kept in RAM inside WSL2 between runs is allowed, so warm runs stay fast.
+- The build cache is kept in RAM inside WSL2 between runs, so warm runs stay fast.
+  A build cache on WSL2's own disk is allowed only if the measurement shows a RAM cache is not enough (operator, 2026-11-28); it stays inside WSL2 like everything else.
 - When Septim is down or asleep the gate falls back to local slots.
 
 ## One mode for every hub (operator, 2026-11-28)
