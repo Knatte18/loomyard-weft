@@ -2,7 +2,7 @@
 
 `autonomy-intake-runs` · Note · feature, board, orch, dobby
 
-Depends on: [`self-healing-runs`](design-self-healing-runs.md)
+Depends on: [`orch-unattended-rules`](design-orch-unattended-rules.md)
 
 ## Seen
 

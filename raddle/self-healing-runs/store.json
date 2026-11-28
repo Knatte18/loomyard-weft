@@ -1,0 +1,19 @@
+{
+  "created": "2026-11-27T17:58:36Z",
+  "hash": "1c9cb2eac56813cd46a10449da412e99daa95237387691a995b1feeb058036ce",
+  "filed": [
+    "self-healing-autonomy",
+    "stop-settlement-table",
+    "autonomy-unattended-level",
+    "loom-verbs-await-park",
+    "stop-halt-count",
+    "dobby-pause-lift-resume",
+    "driver-settles-stops",
+    "arbiter-budget-escalations",
+    "severe-halt-slack-post",
+    "idle-notice-correct-waits",
+    "dobby-stall-chase",
+    "orch-unattended-rules"
+  ],
+  "project": "self-healing-autonomy"
+}
