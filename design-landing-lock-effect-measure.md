@@ -7,11 +7,16 @@
 `landing-lock-only-for-land` (`d87a9ce24`) made Finalize merge and gate with no parent lock held, and take the lock only to land.
 Whether ready runs now land without queuing is unmeasured.
 On 2026-11-28 `reset-partial-commit-push` still showed 38 minutes at Finalize with no agent activity before it took the lock on `main`.
-The answer decides whether the landing queue note `landing-queue` is still worth building.
+The answer was to decide whether the landing queue was still worth building.
+The queue's Sketch `landing-queue` has since been split into the tasks `landing-ledger-own-tip` and `landing-queue-batch`,
+and the latter replaces the lock-free gate this note measures.
 
 Until `finalize-owed-tips-gate` (`5c985d926`, 2026-11-28), a landing on a parent that was ahead of origin only by owed landing tips
 lost all of its `landing.finalize_lost_races` races and then merged and ran verify under the parent lock.
 Figures from landings before that commit can therefore include this fault.
+
+Since `db892e0f9` (2026-11-28), a gate call of a run that holds the parent lock takes a free gate slot ahead of other waiters,
+so slot waits under the lock before and after that commit do not compare.
 
 ## What to measure
 
