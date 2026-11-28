@@ -1,41 +1,41 @@
-# Darn measurement rule: a no-parent way forward and a subagent bar
+# darn: give measurement stops a way forward, bar subagents when gated
 
-The darn writer's Step 4 lists carry a rule for an entry whose deliverable is gate measurements, such as test times per package:
-the writer asks its parent before any of those calls and runs only what the answer allows.
-Two gaps remained in that rule.
+This closes two gaps in the rule for an entry whose deliverable is gate measurements.
+The change is to the two darn Step 4 stencils, `darn-fragment-make-change.md` and `darn-fragment-make-change-gated.md`,
+plus assertions in `TestDarnSpec`.
 
-## No-parent path
-
-With no parent, and no `Added after Discussion` entry allowing the calls, the writer stopped
-and named as the way forward only "a decision on the measurement runs and their limits".
-Nothing said how that decision reaches the run, so the measurements the entry asks for had no route to being made.
-
-Both fragments, `contracts/stencils/darn/darn-fragment-make-change.md` and `darn-fragment-make-change-gated.md`, now have the stop report name:
-
-- `lym loom decision add` with an entry naming the allowed calls and their limits, then `lym loom resume`,
-  after which the writer runs them under that entry, as the rule's existing no-parent branch already allows;
-- on a task whose scope a Code-Review round has closed, where the record takes no new entry,
-  a board note filing the measurements for a new task, then `lym loom resume`.
-
-This mirrors the way forward the darn template's Step 3 gives for an outdated entry.
-
-## Subagents in the gated list
-
-`darn-fragment-make-change-gated.md` relied on its item 2, which tells each subagent to run no `lym gate test`,
-and had no sentence of its own keeping measurement calls out of subagents.
-It now says, as the ungated list already did: "Run them in this session: no subagent runs them."
-
-## Tests
-
-`TestDarnSpec` in `internal/darnengine/spec_test.go` checks both lines in the rendered prompt of its ungated and gated rows.
-On the merge base the gated row fails on both lines and the ungated row on the way-forward line.
+- **A way forward with no parent.**
+  While the task's scope is open, a writer with no parent and no `Added after Discussion` entry allowing the calls
+  still stops.
+  Its stop report now names `lym loom decision add`, with an entry naming the allowed calls and their limits,
+  then `lym loom resume`; the resumed writer runs the calls under that entry.
+  Before, the report asked for a decision without saying how it reaches the run.
+- **No subagents for measurement calls when gated.**
+  The gated fragment now says the writer runs these calls in its own session and no subagent runs them,
+  as the ungated fragment already did.
 
 ## Design decisions
 
-- The closed-scope case gets its own way forward because a record entry cannot be added once Code-Review has run,
-  so naming only `lym loom decision add` would point at a refused step.
-- The doc comments in `contracts/stencils/stencils.go` and `internal/darnengine/spec.go` stay as they are:
-  they state that the writer asks before measurement calls, which still holds, and name neither changed detail.
+- On a task that a Code-Review round has run on, the scope is closed
+  and no decision allowing the measurement calls can be added.
+  There the stop report instead names a board note titled `Decision for <slug>: <call>`,
+  saying the scope is closed and filing the measurements for a new task, then `lym loom resume`.
+- In both fragments, such a note settles the point for the resumed writer:
+  it runs none of the calls, does not stop, makes what the record asks without them,
+  and names the note in its change description's design decisions.
+  Without this clause the resumed writer would stop again on every resume.
+- The fragments spell the slug as `<slug>` in words, because they are not filled with a slug marker.
+
+## To check by hand
+
+- **Prose-only assertions** (`internal/darnengine/spec_test.go`, `measureNoSubagent` and `measureNoParentWayForward`):
+  both fragments carry both lines, so the assertions tell neither fragment apart and pin only stencil wording, not behaviour.
+  Decide whether to keep them as the test that fails without this fix, or to remove them.
+- **Resume loop on a closed scope** (the no-parent branch of the measurement rule in both fragments):
+  without a clause for the closed-scope note, a resumed writer stops again each time.
+  The clause is in both fragments; read it and confirm it ends the loop.
+  No resumed run was exercised.
+- How the later checks treat a measurements-only task that such a note settles, with no commit on the branch, was not examined.
 
 ## Merge danger
 
