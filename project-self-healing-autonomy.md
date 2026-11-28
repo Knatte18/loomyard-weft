@@ -1,6 +1,6 @@
 # P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-Rendered 2026-11-28 10:06 UTC; every age below is as of then.
+Rendered 2026-11-28 10:07 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 26m · Owner `neve`
@@ -14,7 +14,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T9<br>T29 | 26m<br>18m | dobby, config, cwd, board, orch, slack, loom |
+| T21 | **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T9<br>T29 | 26m<br>19m | dobby, config, cwd, board, orch, slack, loom |
 
 ## Layer B (1)
 
