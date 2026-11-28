@@ -871,9 +871,9 @@
       ],
       "isolated": false,
       "brief": "",
-      "body": "## Seen\n\nRuns file their findings as GitHub issues on the hub repository.\nNobody takes them in unless the operator asks for intake, so under autonomy they lie until morning.\nOn 2026-11-27 the operator asked the orch to take in and run every incoming issue as part of autonomy, and said a module of its own for autonomy may be needed.\n\n## Idea\n\nAn autonomy module that owns what the orch now does by hand overnight:\nwatch the hub repository for new issues, import them, bundle them by package, chain them against running and waiting tasks,\nstart them as darn light, and report what it started.\nIt would share its home with the stop settling in Sketch `self-healing-runs`.\n\n## Open\n\n- Whether this is lym code (dobby or a new module) or an orch procedure.\n- Which issues it never runs on its own: features, wide changes, data risk.\n- The operator is still thinking this through.\n",
+      "body": "## Seen\n\nRuns file their findings as GitHub issues on the hub repository.\nNobody takes them in unless the operator asks for intake, so under autonomy they lie until morning.\nOn 2026-11-27 the operator asked the orch to take in and run every incoming issue as part of autonomy, and said a module of its own for autonomy may be needed.\n\n## Idea\n\nAn autonomy module that owns what the orch now does by hand overnight:\nwatch the hub repository for new issues, import them, bundle them by package, chain them against running and waiting tasks,\nstart them as darn light, and report what it started.\nIt would share its home with the stop settling that project `self-healing-autonomy` builds.\n\n## Open\n\n- Whether this is lym code (dobby or a new module) or an orch procedure.\n- Which issues it never runs on its own: features, wide changes, data risk.\n- The operator is still thinking this through.\n",
       "created": "2026-11-27T21:40:50Z",
-      "revised": "2026-11-28T09:40:38Z"
+      "revised": "2026-11-28T09:42:51Z"
     },
     {
       "id": 1775,

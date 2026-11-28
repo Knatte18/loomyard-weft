@@ -15,7 +15,7 @@ On 2026-11-27 the operator asked the orch to take in and run every incoming issu
 An autonomy module that owns what the orch now does by hand overnight:
 watch the hub repository for new issues, import them, bundle them by package, chain them against running and waiting tasks,
 start them as darn light, and report what it started.
-It would share its home with the stop settling in Sketch `self-healing-runs`.
+It would share its home with the stop settling that project `self-healing-autonomy` builds.
 
 ## Open
 

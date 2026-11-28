@@ -30,23 +30,23 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack](project-self-healing-autonomy.md) (11)
 
-[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 1m · Owner `neve`
+[`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 2m · Owner `neve`
 
 ### Draft (11)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T12 | `draft` **The settlement table: stop classes and who settles each, per autonomy level and halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · light |  | 1m<br>1m | shed |
-| T21 | `draft` **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T9 | 1m<br>1m | dobby, config, cwd, board, orch, slack, loom |
-| T30 | `draft` **lym loom resume and lym loom start wait for the driver to park, with a no-wait option batten passes** | [`loom-verbs-await-park`](design-loom-verbs-await-park.md)<br>[Sketch](decision-loom-verbs-await-park.md) | darn · light | T21 | 1m<br>1m | loom, batten |
-| T31 | `draft` **The driver gives each stop an identity, counts halts at a row with lym's retries, and records a halt's four facts** | [`stop-halt-count`](design-stop-halt-count.md)<br>[Sketch](decision-stop-halt-count.md) | darn · solid | T12<br>T30 | 1m<br>1m | shed, loom |
-| T32 | `draft` **The dobby resumes a run handed back for a pause once the pause lifts, and never a run the orch holds** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · light | T30<br>T10<br>T2 | 1m<br>1m | dobby, tender |
-| T33 | `draft` **The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T31<br>T11<br>T1 | 1m<br>1m | shed, board, batten, shuttle, webster |
-| T34 | `draft` **The arbiter takes budget escalations, and nothing lands a round with an open blocking finding unattended** | [`arbiter-budget-escalations`](design-arbiter-budget-escalations.md)<br>[Sketch](decision-arbiter-budget-escalations.md) | darn · solid | T33 | 1m<br>1m | arbiter, shed, loom, stencil |
-| T35 | `draft` **The dobby posts each severe halt to Slack, and the relay mentions the operator on a severe-halt post** | [`severe-halt-slack-post`](design-severe-halt-slack-post.md)<br>[Sketch](decision-severe-halt-slack-post.md) | darn · light | T33<br>T32 | 1m<br>1m | dobby, batten, slack |
-| T36 | `draft` **The idle and held notices skip correct waits and name what an agent waits on** | [`idle-notice-correct-waits`](design-idle-notice-correct-waits.md)<br>[Sketch](decision-idle-notice-correct-waits.md) | darn · light | T35<br>T19 | 1m<br>1m | dobby, batten, creel, shuttle, loom |
-| T37 | `draft` **The dobby chases stalls the orch leaves unsettled, reminds of severe posts, and warns when autonomy cannot reach the operator** | [`dobby-stall-chase`](design-dobby-stall-chase.md)<br>[Sketch](decision-dobby-stall-chase.md) | darn · light | T36 | 1m<br>1m | dobby, batten, config |
-| T38 | `draft` **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T34<br>T37 | 1m<br>1m | orch, heddle |
+| T12 | `draft` **The settlement table: stop classes and who settles each, per autonomy level and halt count** | [`stop-settlement-table`](design-stop-settlement-table.md)<br>[Sketch](decision-stop-settlement-table.md) | darn · light |  | 2m<br>2m | shed |
+| T21 | `draft` **beam.autonomy takes false, true or unattended, and every reader reads the level** | [`autonomy-unattended-level`](design-autonomy-unattended-level.md)<br>[Sketch](decision-autonomy-unattended-level.md) | darn · solid | T9 | 2m<br>2m | dobby, config, cwd, board, orch, slack, loom |
+| T30 | `draft` **lym loom resume and lym loom start wait for the driver to park, with a no-wait option batten passes** | [`loom-verbs-await-park`](design-loom-verbs-await-park.md)<br>[Sketch](decision-loom-verbs-await-park.md) | darn · light | T21 | 2m<br>2m | loom, batten |
+| T31 | `draft` **The driver gives each stop an identity, counts halts at a row with lym's retries, and records a halt's four facts** | [`stop-halt-count`](design-stop-halt-count.md)<br>[Sketch](decision-stop-halt-count.md) | darn · solid | T12<br>T30 | 2m<br>2m | shed, loom |
+| T32 | `draft` **The dobby resumes a run handed back for a pause once the pause lifts, and never a run the orch holds** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · light | T30<br>T10<br>T2 | 2m<br>2m | dobby, tender |
+| T33 | `draft` **The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T31<br>T11<br>T1 | 2m<br>2m | shed, board, batten, shuttle, webster |
+| T34 | `draft` **The arbiter takes budget escalations, and nothing lands a round with an open blocking finding unattended** | [`arbiter-budget-escalations`](design-arbiter-budget-escalations.md)<br>[Sketch](decision-arbiter-budget-escalations.md) | darn · solid | T33 | 2m<br>2m | arbiter, shed, loom, stencil |
+| T35 | `draft` **The dobby posts each severe halt to Slack, and the relay mentions the operator on a severe-halt post** | [`severe-halt-slack-post`](design-severe-halt-slack-post.md)<br>[Sketch](decision-severe-halt-slack-post.md) | darn · light | T33<br>T32 | 2m<br>2m | dobby, batten, slack |
+| T36 | `draft` **The idle and held notices skip correct waits and name what an agent waits on** | [`idle-notice-correct-waits`](design-idle-notice-correct-waits.md)<br>[Sketch](decision-idle-notice-correct-waits.md) | darn · light | T35<br>T19 | 2m<br>2m | dobby, batten, creel, shuttle, loom |
+| T37 | `draft` **The dobby chases stalls the orch leaves unsettled, reminds of severe posts, and warns when autonomy cannot reach the operator** | [`dobby-stall-chase`](design-dobby-stall-chase.md)<br>[Sketch](decision-dobby-stall-chase.md) | darn · light | T36 | 2m<br>2m | dobby, batten, config |
+| T38 | `draft` **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T34<br>T37 | 2m<br>2m | orch, heddle |
 
 ## [P4 Fabric split into a git-free core, a layout package and a thin git engine](project-fabric-core.md) (6)
 
@@ -56,7 +56,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T1<br>T8<br>T10 | 1d<br>22m | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T1<br>T8<br>T10 | 1d<br>23m | fabric, testkit, shed, board, pattern |
 
 ### Layer B (1)
 
@@ -128,11 +128,11 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 19h<br>19h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | Darn-Write | neve | 1d<br>1d | docs |
 | T4 | **Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock** | [`finalize-owed-tips-gate`](design-finalize-owed-tips-gate.md) | darn · light | Darn-Write | neve | 12h<br>12h | landing |
-| T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | Darn-Write | neve | 14h<br>56m | testkit, landing, reed, creel |
-| T6 | **Arras still shows in seeded profiles and in the overview and glossary**<br>• The landed design-first route left arras keys in the profile template and descriptions in two docs | [`arras-visible-leftovers`](design-arras-visible-leftovers.md) | darn · light | landing · Finalize | neve | 13h<br>56m | board, docs |
-| T9 | **Tier0 fails on a Go file gofmt would rewrite**<br>• A mis-formatted Go file passes every tier; add a gofmt check to tier0 | [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md) | darn · light | landing · Finalize | neve | 13h<br>56m | gate |
+| T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | Darn-Write | neve | 14h<br>57m | testkit, landing, reed, creel |
+| T6 | **Arras still shows in seeded profiles and in the overview and glossary**<br>• The landed design-first route left arras keys in the profile template and descriptions in two docs | [`arras-visible-leftovers`](design-arras-visible-leftovers.md) | darn · light | landing · Finalize | neve | 13h<br>57m | board, docs |
+| T9 | **Tier0 fails on a Go file gofmt would rewrite**<br>• A mis-formatted Go file passes every tier; add a gofmt check to tier0 | [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md) | darn · light | landing · Finalize | neve | 13h<br>57m | gate |
 | T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | Darn-Write | neve | 12h<br>21m | dobby, fabric |
-| T19 | **A creelengine scheduler test fails at times and passes on a rerun** | [`creel-machine-outbound-flake`](design-creel-machine-outbound-flake.md) | darn · light | landing · Finalize | neve | 36m<br>22m | creel |
+| T19 | **A creelengine scheduler test fails at times and passes on a rerun** | [`creel-machine-outbound-flake`](design-creel-machine-outbound-flake.md) | darn · light | landing · Finalize | neve | 37m<br>23m | creel |
 
 ### Ready (5)
 
@@ -154,17 +154,17 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Measure how much landing-lock-only-for-land cut the wait for the parent lock** | [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md) | T4 | 15m<br>15m | landing, batten |
+| R1 |  | **Measure how much landing-lock-only-for-land cut the wait for the parent lock** | [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md) | T4 | 16m<br>16m | landing, batten |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) |  | 10d<br>10d | shuttle |
 
 ### Enhancements (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>15m | landing, gate, batten |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>16m | landing, gate, batten |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 12h<br>1m | board, orch, dobby |
+| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 12h<br>0m | board, orch, dobby |
