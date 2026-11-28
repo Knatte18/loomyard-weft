@@ -1,1 +1,2 @@
 {"stop_key":{"current_producer":"Darn-Write","history_length":5,"state":"failed"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-11-27T22:39:16.310650372+01:00","build":"3fb0787e3247"}
+{"stop_key":{"current_producer":"Code-Bouncer","history_length":11,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"an awaiting stop with a parent notice: relay it and hand back","at":"2026-11-28T09:58:05.385372126+01:00"}
