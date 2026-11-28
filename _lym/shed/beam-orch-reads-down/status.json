@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T11:00:56Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/beam-orch-reads-down/_lym/landing/summary.md",
+      "at": "2026-11-28T11:35:12Z",
+      "started_at": "2026-11-28T11:00:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T11:09:37.558402758Z",
+          "end": "2026-11-28T11:09:37.616931773Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T11:09:37.925534057Z",
+          "end": "2026-11-28T11:21:09.51256948Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T11:21:09.97656531Z",
+          "end": "2026-11-28T11:32:02.80989312Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T11:32:03.225223363Z",
+          "end": "2026-11-28T11:32:04.123620664Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T11:32:04.585592959Z",
+          "end": "2026-11-28T11:32:04.585783516Z"
+        }
+      ]
     }
   ],
   "product": {
