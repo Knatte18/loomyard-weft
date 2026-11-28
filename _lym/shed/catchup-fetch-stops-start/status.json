@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T09:42:14Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/catchup-fetch-stops-start/_lym/landing/summary.md",
+      "at": "2026-11-28T09:56:37Z",
+      "started_at": "2026-11-28T09:42:15Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T09:46:30.834895243Z",
+          "end": "2026-11-28T09:46:30.89673294Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T09:46:31.355580967Z",
+          "end": "2026-11-28T09:55:06.828200117Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T09:55:07.242515183Z",
+          "end": "2026-11-28T09:55:11.930462287Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T09:55:12.279547391Z",
+          "end": "2026-11-28T09:55:13.252730173Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T09:55:13.735724281Z",
+          "end": "2026-11-28T09:55:13.735953731Z"
+        }
+      ]
     }
   ],
   "product": {
