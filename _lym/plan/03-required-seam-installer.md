@@ -1,16 +1,16 @@
 # Card 3 — required-seam-installer
 
 **Create:**
-- `plan:internal/fabricengine#RunRecordPaths` -> `type RunRecordPaths struct`
-- `plan:internal/fabricengine#SetRunRecordPaths` -> `func SetRunRecordPaths(paths *RunRecordPaths) (restore func())`
-- `plan:internal/fabricengine#RunLocks` -> `type RunLocks struct`
-- `plan:internal/fabricengine#SetRunLocks` -> `func SetRunLocks(locks *RunLocks) (restore func())`
-- `plan:internal/fabricengine#StatusCodec` -> `type StatusCodec struct`
-- `plan:internal/fabricengine#SetStatusCodec` -> `func SetStatusCodec(codec *StatusCodec) (restore func())`
-- `plan:internal/fabricengine#suppliedSeams` -> `func suppliedSeams() map[fabriccore.RequiredSeam]bool`
-- `plan:internal/fabriccli#InstallRequiredSeams` -> `func InstallRequiredSeams()`
-- `plan:internal/hubforge#requiredSeamsOnce` -> `var requiredSeamsOnce sync.Once`
-- `plan:internal/hubforge#InstallRequiredSeams` -> `func InstallRequiredSeams()`
+- `internal/fabricengine#RunRecordPaths`
+- `internal/fabricengine#SetRunRecordPaths`
+- `internal/fabricengine#RunLocks`
+- `internal/fabricengine#SetRunLocks`
+- `internal/fabricengine#StatusCodec`
+- `internal/fabricengine#SetStatusCodec`
+- `internal/fabricengine#suppliedSeams`
+- `internal/fabriccli#InstallRequiredSeams`
+- `internal/hubforge#requiredSeamsOnce`
+- `internal/hubforge#InstallRequiredSeams`
 
 **Edit:**
 - `internal/fabricengine#snapshotReader.read`
@@ -26,9 +26,9 @@
 - `internal/hubforge/doc.go`
 
 **Uses:**
-- `plan:internal/shedengine#StatusLastMachine`
-- `plan:internal/shedengine#StatusRecorded`
-- `plan:internal/fabriccore#RequiredSeam`
+- `internal/shedengine#StatusLastMachine`
+- `internal/shedengine#StatusRecorded`
+- `internal/fabriccore#RequiredSeam`
 
 **Intent:**
 D13's required seams reach every process that runs fabric on a hub through one installer.

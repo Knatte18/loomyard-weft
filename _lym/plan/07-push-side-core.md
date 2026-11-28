@@ -55,7 +55,7 @@
 **Uses:**
 - `internal/fabricengine#runRule`
 - `plan:internal/fabricengine#refuseUnsuppliedSeams`
-- `plan:internal/fabricengine#SetRunRecordPaths`
+- `internal/fabricengine#SetRunRecordPaths`
 - `plan:internal/fabriccore#IsOwedClass`
 - `internal/testkit/fabrickit#NewSnapshot`
 - `internal/fabricengine#TestBoltReplay_NamesNoBoardFile`

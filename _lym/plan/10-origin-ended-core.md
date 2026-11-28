@@ -28,8 +28,8 @@
 **Uses:**
 - `internal/fabricengine#runRule`
 - `internal/fabricengine#OriginSeams`
-- `plan:internal/fabricengine#RunRecordPaths`
-- `plan:internal/fabricengine#StatusCodec`
+- `internal/fabricengine#RunRecordPaths`
+- `internal/fabricengine#StatusCodec`
 
 **Intent:**
 The removal of ended runs becomes a core rule whose teardown is a seam-call action, and `originreconcileended.go` stops importing `internal/shedrun` (D3, D13).

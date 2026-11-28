@@ -22,10 +22,10 @@
 - `plan:internal/fabriccore_test#TestOriginRecordRules` -> `func TestOriginRecordRules(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#SetRunRecordPaths`
-- `plan:internal/fabricengine#SetStatusCodec`
-- `plan:internal/fabriccore#RefuseUnsupplied`
-- `plan:internal/fabriccli#InstallRequiredSeams`
+- `internal/fabricengine#SetRunRecordPaths`
+- `internal/fabricengine#SetStatusCodec`
+- `internal/fabriccore#RefuseUnsupplied`
+- `internal/fabriccli#InstallRequiredSeams`
 - `internal/pairteardown/doc.go`
 
 **Intent:**

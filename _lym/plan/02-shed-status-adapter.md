@@ -1,9 +1,9 @@
 # Card 2 — shed-status-adapter
 
 **Create:**
-- `plan:internal/shedengine#StatusLastMachine` -> `func StatusLastMachine(data []byte) (string, error)`
-- `plan:internal/shedengine#StatusRecorded` -> `func StatusRecorded(data []byte) (bool, error)`
-- `plan:internal/shedengine#TestStatusCodec` -> `func TestStatusCodec(t *testing.T)`
+- `internal/shedengine#StatusLastMachine`
+- `internal/shedengine#StatusRecorded`
+- `internal/shedengine#TestStatusCodec`
 
 **Uses:**
 - `internal/shedengine#ParseStatusTolerant`

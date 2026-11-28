@@ -47,8 +47,8 @@
 - `internal/fabricengine#lsRemoteOnce`
 - `internal/fabricengine#fetchMovedHeads`
 - `plan:internal/fabricengine#refuseUnsuppliedSeams`
-- `plan:internal/fabricengine#SetRunRecordPaths`
-- `plan:internal/fabriccore#RefuseUnsupplied`
+- `internal/fabricengine#SetRunRecordPaths`
+- `internal/fabriccore#RefuseUnsupplied`
 - `plan:internal/fabriccore#VerbDirs`
 
 **Intent:**

@@ -1,14 +1,14 @@
 # Card 1 — core-required-seams
 
 **Create:**
-- `plan:internal/fabriccore#RequiredSeam` -> `type RequiredSeam string`
-- `plan:internal/fabriccore#SeamRunRecordPaths` -> `const SeamRunRecordPaths RequiredSeam = "run_record_paths"`
-- `plan:internal/fabriccore#SeamRunLocks` -> `const SeamRunLocks RequiredSeam = "run_locks"`
-- `plan:internal/fabriccore#SeamStatusCodec` -> `const SeamStatusCodec RequiredSeam = "status_codec"`
-- `plan:internal/fabriccore#FieldSeams` -> `const FieldSeams Field = "seams"`
-- `plan:internal/fabriccore#RefuseUnsupplied` -> `func RefuseUnsupplied(snapshot Snapshot, needed ...RequiredSeam) *Refusal`
-- `plan:internal/testkit/fabrickit#Builder.Seam` -> `func (b *Builder) Seam(seam fabriccore.RequiredSeam, supplied bool) *Builder`
-- `plan:internal/fabriccore_test#TestRefuseUnsupplied` -> `func TestRefuseUnsupplied(t *testing.T)`
+- `internal/fabriccore#RequiredSeam`
+- `internal/fabriccore#SeamRunRecordPaths`
+- `internal/fabriccore#SeamRunLocks`
+- `internal/fabriccore#SeamStatusCodec`
+- `internal/fabriccore#FieldSeams`
+- `internal/fabriccore#RefuseUnsupplied`
+- `internal/testkit/fabrickit#Builder.Seam`
+- `internal/fabriccore_test#TestRefuseUnsupplied`
 
 **Edit:**
 - `internal/fabriccore#Snapshot`

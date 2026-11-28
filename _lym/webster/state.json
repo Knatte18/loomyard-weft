@@ -1,19 +1,19 @@
 {
   "runGuid": "fea4c5cf108ab5d47cb79b8d962a90b6",
-  "planFingerprint": "14d86a47dd0dad835eaa952595c542feb49917bdfdfbfe8539215535c83cbe70",
+  "planFingerprint": "7df15672b0c565fb18600cc1ed3fcec2e000aa063dcf86867146967eb3c3df89",
   "planFileHashes": {
     "00-overview.md": "cba8eba5b971f46ef0e91fdf0a94fec948533bbc9f1c8969ffdd118367a54e90",
-    "01-core-required-seams.md": "9dbf3d937486e3d254c57f8e0289e8388979efeb71883aeb6591740dfc02c0e8",
-    "02-shed-status-adapter.md": "4e6f8421dcf9ece53cbb9e61d225e9db18cf41a3886007a2f7a4bf95e4c55be8",
-    "03-required-seam-installer.md": "d046127fec51452b952ffd51421de3699aee283bf7edce4c731ef81ec9d6c34c",
-    "04-origin-reads-seams.md": "5364437c9150ebcc5eb45595f61a127d2b2debdf981e9033e63820437f4af1e6",
+    "01-core-required-seams.md": "3e869c1c4f85e37bc083d68c0ed52d2c086bacbe7a3c70aff20e7b4718db5fef",
+    "02-shed-status-adapter.md": "3d7219ae8d89d1ff6cd3bffa5385bd9449a5e3a901178d8c2d5d9710402ec5d6",
+    "03-required-seam-installer.md": "3b622ecb4dc449c712988853309547271d03b0a823e9e4385bf944854c447b71",
+    "04-origin-reads-seams.md": "bc50a45136b5b25fb2b7ecced423e39d6b8ef79dd2e98f41f9f23e609cebe509",
     "05-failed-push-core.md": "eee7f5125236ff7bc5da95fc5a60f11d084afa1c9be185f6c8ab46605259ebe5",
     "06-push-lock-holder-core.md": "76c68e79d5602da664efe15990dffd4c8119987a1c968af46349a1270d2b2426",
-    "07-push-side-core.md": "8bcf68e8f5e620a08dfd6dbebdf5ddc2396a380dc7097386be8cbfb7f9739891",
+    "07-push-side-core.md": "4b2979a67327485635cba819ed4c9bfd508bb9243546a51a7186404e8d3d3cd5",
     "08-pair-push-core.md": "1a2081f7a19389580da0067a39da0cdc98c68180e81b39c40a45117d98e798b5",
-    "09-origin-judge-core.md": "74cac858acaaafd7ffbb6a369f4327c5a32f1bd3e353276d93bc3bc11dcb86e8",
-    "10-origin-ended-core.md": "b155fdfa7e345ed85bc108264f6dfe4da22732cd428c10f3c88fa36d3feb42c9",
-    "11-origin-moves-core.md": "594083496f35f2772b142fbc97be78e728cc6c66a3f8c8c2d64e854ad2e01bbf",
+    "09-origin-judge-core.md": "7d59b53824e1bc9f09e179d7f34c20adb06bd38b4d72570376985a2fca4eaeb4",
+    "10-origin-ended-core.md": "9b633fa46c618bee4654e96d04b7c98b43924ff893f32ce0e5523493ca377d3a",
+    "11-origin-moves-core.md": "88584443c8a1d428b6897b142820b398ccd36aca6e7852c73138abc556735d98",
     "12-board-test-moves.md": "94d2da82b114b3d12a849f3ebfe44be1c7fb429ceba97ca11bcaa34d41105f07"
   },
   "planOverviewFrameHash": "0adb8156c549f8a1dac4ea8a255ac7aff8460c9ba77830b841c00413388ca57f",
@@ -429,25 +429,45 @@
         "03-required-seam-installer"
       ],
       "cardHashes": {
-        "01-core-required-seams": "9dbf3d937486e3d254c57f8e0289e8388979efeb71883aeb6591740dfc02c0e8",
-        "02-shed-status-adapter": "4e6f8421dcf9ece53cbb9e61d225e9db18cf41a3886007a2f7a4bf95e4c55be8",
-        "03-required-seam-installer": "d046127fec51452b952ffd51421de3699aee283bf7edce4c731ef81ec9d6c34c"
+        "01-core-required-seams": "3e869c1c4f85e37bc083d68c0ed52d2c086bacbe7a3c70aff20e7b4718db5fef",
+        "02-shed-status-adapter": "3d7219ae8d89d1ff6cd3bffa5385bd9449a5e3a901178d8c2d5d9710402ec5d6",
+        "03-required-seam-installer": "3b622ecb4dc449c712988853309547271d03b0a823e9e4385bf944854c447b71"
       },
       "startSha": "4193549e00552e9d5e3fb0a7955c5a1791162644",
       "kind": "fork",
       "spawnedAt": "2026-11-28T16:09:30Z",
       "sessionId": "dacc6059-b7fb-493f-a0d3-1e7ef648a403",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-core-required-seams",
+        "status": "done",
+        "head_sha": "92ffec987b94d46210245c3c4ce48a0d085c1528",
+        "deviations": [
+          "internal/fabricengine/requiredseams.go"
+        ]
+      },
+      "cardShas": [
+        "92ffec987b94d46210245c3c4ce48a0d085c1528"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-push-origin/dacc6059-b7fb-493f-a0d3-1e7ef648a403/subagents/agent-a00f46a6222a0e445.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-push-origin/dacc6059-b7fb-493f-a0d3-1e7ef648a403/subagents/agent-a00f46a6222a0e445.jsonl"
+      ]
     }
   },
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "7099519bb1a6bd9665ae79f593b641af",
   "masterSessionId": "dacc6059-b7fb-493f-a0d3-1e7ef648a403",
   "masterEngine": "claude",
   "masterNotePaths": [
     "/home/knatte/Code/loomyard-LYMHUB/fabric-core-push-origin/_lym/loom/friction/webster-master.md"
   ],
-  "masterRecordsBase": "8fea47860ece3cf762a9dfce2fbaabb66b732bc4"
+  "masterRecordsBase": "8fea47860ece3cf762a9dfce2fbaabb66b732bc4",
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-fabric-core-push-origin/dacc6059-b7fb-493f-a0d3-1e7ef648a403/subagents/agent-a00f46a6222a0e445.jsonl"
+  ]
 }

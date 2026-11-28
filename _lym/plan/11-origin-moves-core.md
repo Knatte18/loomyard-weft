@@ -29,9 +29,9 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#RunLocks`
-- `plan:internal/fabricengine#StatusCodec`
-- `plan:internal/fabriccli#InstallRequiredSeams`
+- `internal/fabricengine#RunLocks`
+- `internal/fabricengine#StatusCodec`
+- `internal/fabriccli#InstallRequiredSeams`
 - `internal/fabricengine#ffWorktree`
 - `internal/fabricengine#originMover.pairLive`
 
