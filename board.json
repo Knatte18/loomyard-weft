@@ -825,7 +825,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nIssue #232 reported a running beam orch that lym read as down.\nThe landing of `beam-member-parent` (`b439f157e`) made the parent check admit every orch on the chain whether or not it reads as live,\nbut its commit says the cause of the down reading is not known,\nand that the change does not cover the case where the orch's strand is also missing from reed's state.\n\n## Idea\n\nFind why a live beam orch reads as down: the liveness read, the strand's record in reed's state, or both.\nFix the read so a live orch reads as live, and make an orch whose strand is missing from reed's state read as down with that cause named.\n",
-      "status": "landing · Finalize",
+      "status": "running · Friction-Reflect",
       "created": "2026-11-28T09:48:04Z",
       "revised": "2026-11-28T09:48:04Z",
       "profile": "light"

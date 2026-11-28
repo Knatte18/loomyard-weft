@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 13:17 UTC; every age below is as of then.
+Rendered 2026-11-28 13:18 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -110,7 +110,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | S1<br>F3 | 2h<br>30m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | S1<br>F3 | 2h<br>31m | loom, batten, shed |
 | F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 39m<br>35m | board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
@@ -169,7 +169,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 22h<br>22h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | motif | Discussion-Burler-Fix | neve | 1d<br>1h | landing, gate, batten |
 | T10 | **Darn measurement rule covers a run with no parent and bars subagents from measurement calls** | [`darn-measure-rule-gaps`](design-darn-measure-rule-gaps.md) | darn · light | Code-Burler-Fix | neve | 39m<br>39m | darn, stencil |
-| T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | landing · Finalize | neve | 3h<br>3h | orch, reed, cwd |
+| T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | Friction-Reflect | neve | 3h<br>3h | orch, reed, cwd |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Darn-Write | neve | 3h<br>3h | fabric |
 
 ### Layer A (2)
