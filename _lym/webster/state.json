@@ -1,0 +1,261 @@
+{
+  "runGuid": "b41ee73f102b208101ae66658baecab7",
+  "planFingerprint": "2624fcbf49a5df8e790611e6de89f3ccde1600b685192fdd917c54fb4018d3e8",
+  "planFileHashes": {
+    "00-overview.md": "6b6689ee50c2c21276a6cdc1ff939cc33391480803dbe37278e205d61809c3ea",
+    "01-board-view-projection.md": "a302a734e788b14109be86a05e3d6cbccd935d894e8d3e55184471d8ea5c9102",
+    "02-entry-revision-check.md": "ab9203493f39da8300de10ed0874e0872c4a1da6a4cdae5f78fe09f5a39535e6",
+    "03-viewer-page-asset.md": "41ef7fe846f20c1ad3b53f52d89af07561e9556beb3600d21b78fd323fdfff65",
+    "04-board-server-routes.md": "6fd1cf3643508e9ad5719a79706e2677db4ad2e6a400ad0711d6c4c66aa07493",
+    "05-board-server-lifecycle.md": "fcd79135eea48fddeae7d518df2cb54d281e36804fd61f0fa87878efdcadc430",
+    "06-board-serve-open-verbs.md": "ad56df7eb1f8c65548bd29fe422dd7ee295e4c80a21968e0eec6a04d54ecff29",
+    "07-vscode-tasks-and-keys.md": "26bf4ab10eb7a217ba600e0f71cf2079605cdf74e17bd622daaa8b913a1375f7",
+    "08-workspace-content-seam.md": "549c51698866b1778cfa47003e12c6aa9cffc9ad424ea272354e72bcf89b3de8",
+    "09-beam-start-workspace-task.md": "076aa1ed6e8d6d4ecb1ce3b3cbe92533c669bce7939b1a3f22ac70a721f850a2"
+  },
+  "planOverviewFrameHash": "3d06d23f0d0b8fcd5451db95184bd24e1e6d7c4559d54a8dac98daf781f2226e",
+  "partition": [
+    {
+      "cards": [
+        "01-board-view-projection",
+        "02-entry-revision-check",
+        "03-viewer-page-asset",
+        "04-board-server-routes"
+      ],
+      "profile": "wide",
+      "estimate": 253462,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54688,
+        "read_union": 51804,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1092,
+            "reads": {
+              "file:internal/boardengine/doc.go": 10308,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 169.5,
+            "written": 51942
+          },
+          {
+            "card": 2,
+            "card_text": 660,
+            "reads": {
+              "file:internal/boardengine/doc.go": 10308,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 83.5,
+            "written": 25710
+          },
+          {
+            "card": 3,
+            "card_text": 924,
+            "reads": {
+              "file:internal/boardengine/doc.go": 10308,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 85.5,
+            "written": 26574
+          },
+          {
+            "card": 4,
+            "card_text": 1344,
+            "reads": {
+              "file:docs/overview.md": 25476,
+              "package:docs": 2000,
+              "package:internal/boardserve": 2000,
+              "tests:docs": 2000,
+              "tests:internal/boardserve": 2000
+            },
+            "messages": 138,
+            "written": 42744
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-board-server-lifecycle",
+        "06-board-serve-open-verbs"
+      ],
+      "profile": "wide",
+      "estimate": 225564,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61688,
+        "read_union": 46048,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1164,
+            "reads": {
+              "file:internal/lymdirs/doc.go": 144,
+              "file:pattern/PATTERN-daemon-wakeups.md": 1668,
+              "package:cmd/lym": 2000,
+              "package:internal/boardserve": 2000,
+              "package:internal/lymdirs": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/boardserve": 2000,
+              "tests:internal/lymdirs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 177,
+            "written": 54264
+          },
+          {
+            "card": 6,
+            "card_text": 1464,
+            "reads": {
+              "file:internal/boardcli/doc.go": 2448,
+              "file:internal/boardengine/doc.go": 10308,
+              "file:internal/runproc/doc.go": 852,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/runproc": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/runproc": 2000
+            },
+            "messages": 207,
+            "written": 63564
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-vscode-tasks-and-keys",
+        "08-workspace-content-seam",
+        "09-beam-start-workspace-task"
+      ],
+      "profile": "wide",
+      "estimate": 270740,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68688,
+        "read_union": 78992,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 684,
+            "reads": {
+              "file:docs/overview.md": 25476,
+              "package:docs": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/vscode": 2000,
+              "tests:docs": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/vscode": 2000
+            },
+            "messages": 124,
+            "written": 37884
+          },
+          {
+            "card": 8,
+            "card_text": 600,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 31656,
+              "package:internal/fabricengine": 2000,
+              "package:internal/vscode": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/vscode": 2000
+            },
+            "messages": 181,
+            "written": 54900
+          },
+          {
+            "card": 9,
+            "card_text": 576,
+            "reads": {
+              "file:docs/overview.md": 25476,
+              "package:cmd/lym": 2000,
+              "package:docs": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/vscode": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:docs": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/vscode": 2000
+            },
+            "messages": 99,
+            "written": 30276
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "board-view-projection",
+      "cards": [
+        "01-board-view-projection",
+        "02-entry-revision-check",
+        "03-viewer-page-asset",
+        "04-board-server-routes"
+      ],
+      "cardHashes": {
+        "01-board-view-projection": "a302a734e788b14109be86a05e3d6cbccd935d894e8d3e55184471d8ea5c9102",
+        "02-entry-revision-check": "ab9203493f39da8300de10ed0874e0872c4a1da6a4cdae5f78fe09f5a39535e6",
+        "03-viewer-page-asset": "41ef7fe846f20c1ad3b53f52d89af07561e9556beb3600d21b78fd323fdfff65",
+        "04-board-server-routes": "6fd1cf3643508e9ad5719a79706e2677db4ad2e6a400ad0711d6c4c66aa07493"
+      },
+      "startSha": "566528b0773b1e97358c07a0d242d111a10b72c7",
+      "kind": "fork",
+      "spawnedAt": "2026-11-28T15:29:43Z",
+      "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "3b72c7243ad10915642d1322bdc1c96b",
+  "masterSessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
+  "masterEngine": "claude",
+  "masterNotePaths": [
+    "/home/knatte/Code/loomyard-LYMHUB/wbr-b2/_lym/loom/friction/webster-master.md"
+  ],
+  "masterRecordsBase": "1436b50c12ffbce98c66b6f28adc0b4c176e342c"
+}
