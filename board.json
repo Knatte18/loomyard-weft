@@ -824,7 +824,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe landing of `hardener-study-faults` (`7cb004818`) says `lym fabric clone --reset` still removes unpushed records and board commits,\nuncommitted Bolt changes and ignored files, and leaves open whether that is acceptable.\n\n## Operator decision (2026-11-28)\n\nIt is not acceptable: `--reset` refuses when it would lose work, and names what would be lost.\n\n## Idea\n\nBefore `--reset` removes anything, check for unpushed records and board commits, uncommitted Bolt changes and ignored files that hold work.\nWhen any is found, refuse with the list and the way forward: push or commit them first, or pass an explicit flag that accepts the loss.\n",
-      "status": "running · Drift-Verify",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-28T09:48:05Z",
       "revised": "2026-11-28T09:48:05Z",
       "profile": "light"
