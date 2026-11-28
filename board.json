@@ -750,7 +750,7 @@
       "isolated": false,
       "brief": "The landed design-first route left arras keys in the profile template and descriptions in two docs",
       "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
-      "status": "running · Describe",
+      "status": "landing · Finalize",
       "created": "2026-11-27T19:53:35Z",
       "revised": "2026-11-28T08:45:19Z",
       "profile": "light"
