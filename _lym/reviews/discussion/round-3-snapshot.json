@@ -1,0 +1,22 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/discussion/decision-record.md",
+    "_lym/discussion/support-log.md"
+  ],
+  "target_id": "9de384cfcea8135185edf69615125fb768c7398a68fcf68088acc4026166d9ef",
+  "added_decisions": [
+    {
+      "title": "Jacquard stays one recipe of every row after Discussion; the plan-and-build-recipes note is later work",
+      "digest": "429d0af4f4754055ec0cfa3365d42b4b612c8f10fc8c6f72995009a6c89286e7"
+    },
+    {
+      "title": "The jacq nickname is written by the run's parent after landing, as D11 says",
+      "digest": "d1be9fe3aa1d30620f648dc85864f6a41d6760a3ca637d29ba12998319aa2941"
+    },
+    {
+      "title": "Nickname jacq written after landing",
+      "digest": "48a32b9944332ac62bd702c1f7d574ded7f0d727a9c9d6e2cb954663837c690f"
+    }
+  ]
+}
