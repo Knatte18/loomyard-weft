@@ -1316,6 +1316,24 @@
       "revised": "2026-11-28T14:47:28Z",
       "profile": "docs",
       "project": "test-speed"
+    },
+    {
+      "id": 1823,
+      "handle": "B4",
+      "slug": "parent-align-fixer-own-push",
+      "title": "Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`kde-window-placement-build` halted twice at Parent-Align on 2026-11-28 (14:18 and 14:47 UTC) with\n`landing stop: the remote ref origin/\u003cslug\u003e moved during the fixer session of Parent-Align to \u003csha\u003e, which holds commits the task head \u003csha\u003e the session started from lacks`.\nBoth times the new commits were the Parent-Align fixer's own fixes on the task branch (a guard rename, a hermetic-guard exemption, a doc comment), pushed by its session.\nThe orch checked the commits and resumed with `lym loom resume`; each halt cost a halt notice, an orch turn and the wait.\n\n## Idea\n\nParent-Align tells its own fixer's commits from a foreign move: commits the fixer session made on the task branch, descending from the session's start head, pass without a halt.\nOnly a move that holds commits the session did not make stops the run.\n",
+      "created": "2026-11-28T14:48:29Z",
+      "revised": "2026-11-28T14:48:29Z"
     }
   ],
   "prime_owner": "neve",
