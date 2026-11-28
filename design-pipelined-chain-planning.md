@@ -2,7 +2,7 @@
 
 `pipelined-chain-planning` · Note · feature, loom, batten, shed
 
-Depends on: [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md), [`release-order-queue`](design-release-order-queue.md)
+Depends on: [`raddle-names-jacquard`](design-raddle-names-jacquard.md), [`release-order-queue`](design-release-order-queue.md)
 
 ## Seen (operator, 2026-11-28)
 

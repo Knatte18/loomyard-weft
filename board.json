@@ -882,14 +882,14 @@
       ],
       "issues": [],
       "depends_on": [
-        "recipe-build-from-sketch",
+        "raddle-names-jacquard",
         "release-order-queue"
       ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nA chain of tapestry tasks where B depends on A runs fully in series: B's Discussion and Plan wait until A has landed, though the plan writer is the slowest row.\nThe six serial parts of project `fabric-core` are the case at hand.\n\nIn Millhouse, which LoomYard grew from, the operator sped such chains up by hand, with success:\n\n- Once A's discussion record was approved, B's Discussion started, told to build on everything A had decided.\n- Plan writing for B likewise started before A was done, from A's record.\n- When A had landed, B merged A's changes, and a small fixer read the code changes and updated B's discussion and plan for what had moved.\n- Only then did B's builders start, so the builders were the only part that waited for A.\n\n## Design (operator, 2026-11-28)\n\nOnly for the recipe that starts from a stored decision record (jacquard): darn has no separate plan row to run ahead,\nand a run with its Discussion still to run never plans ahead, so B always plans from a record already approved.\nThe model of plan and build as two recipes sharing one standing pair was weighed and dropped:\nit would leave a pair on disk with no run, against the rule that only a run has a worktree on disk.\n\n1. B depends on A.\n2. When A's plan is approved, B is released.\n3. B runs Plan as usual, Plan Perch included, with A's record and plan as input.\n4. After B's plan is approved, a new producer row waits for B's dependencies: B parks there until A has landed.\n5. When A has landed, that row merges B's parent into B, bringing in A's change,\n   and a fixer updates B's decision record and plan for what A's change brought.\n   This stays small when A kept to its own plan.\n6. B then goes on to Webster as today.\n\nThe merge in step 5 also brings in whatever else landed on the parent, not only A.\nThat is no new cost: Parent-Align already meets the same landings later today.\nRunning the chain in a beam of its own keeps the parent quiet, so the merge in step 5 brings in little beside A.\n\n## One dependency list (operator, 2026-11-28)\n\n- `depends_on` keeps one list and one meaning: B builds only after each entry in it has landed.\n- When B may start planning is derived from that list, with no second field:\n  a jacquard task B may start once each of its dependencies has landed or has an approved plan.\n  A dependency with no plan row of its own, such as a darn task, counts only once it has landed:\n  darn runs are short, and its record is too thin to plan ahead from.\n  The wait row of step 4 then holds B until every dependency has landed.\n- While B plans or parks ahead of a dependency that has not landed, the board marks it beside its status, such as `plans ahead of \u003cslug\u003e`.\n\n## A parked run (operator, 2026-11-28)\n\n- A run parked in the wait row of step 4 holds none of `beam.max_runs`'s run places, no tmux session and no Konsole window, so it leaves the KDE tiling alone.\n  Its pair stays on disk, local; nothing it needs is trusted to origin.\n- When its dependencies are done, dobby reopens its session and window and resumes it.\n- A parked run whose dependencies are done is resumed before dobby starts any new task:\n  it was released when it began planning, so it never rejoins the back of the ready queue.\n\n## Bounds\n\n- The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.\n  From A's record and plan, estimate how much of what B builds on A will change;\n  when A is estimated to change too much of it, B does not plan ahead and waits as today.\n- Each link planned ahead of landed code adds error to the plans, so the cascade is kept short:\n  one parked run per chain. C may plan ahead only once B has passed step 5, so C plans from a plan re-aligned against A's landed code.\n- Not for now (operator, 2026-11-28).\n",
       "created": "2026-11-28T11:14:18Z",
-      "revised": "2026-11-28T12:47:03Z",
+      "revised": "2026-11-28T13:37:08Z",
       "project": "plan-ahead-chains"
     },
     {
@@ -911,7 +911,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nThe operator now seldom runs a full tapestry without a motif first.\nA task raddle files from a Sketch already carries `discussed`, so its tapestry run skips Discussion;\nwhich tapestry run does Discussion and which does not is read from a flag, not from the recipe named.\n\n## Idea\n\nA new recipe, `jacquard`, holds the tapestry rows after Discussion: Plan, Plan Perch, Webster, review and landing.\nIt runs only on an entry with a stored decision record, a task filed from a Sketch or a discussed entry, and refuses any other at start.\nRaddle names jacquard for the parts it files from a Sketch where it names tapestry today.\n\n## Tapestry stays (operator, 2026-11-28)\n\nTapestry stays a recipe, and it is made of motif followed by jacquard: one source for each part, never a copy of jacquard's rows in tapestry.\nThe operator can say \"run jacquard\" with no doubt about whether Discussion runs, and \"run tapestry\" for both.\n\n## Name (operator, 2026-11-28)\n\nThe recipe is `jacquard` in code, config, verbs and records.\nThe operator calls it \"jacq\" in chat and text; the task adds `jacquard` to lym's glossary (`internal/heddleengine/glossary.md`)\nand \"jacq\" to the nicknames in the repository's instructions, beside \"Sketch\" and \"Merriam\".\n",
-      "status": "running · Raddle-Write",
+      "status": "running · Raddle-File",
       "created": "2026-11-28T11:29:56Z",
       "revised": "2026-11-28T13:24:31Z",
       "project": "plan-ahead-chains",
@@ -1256,6 +1256,144 @@
       "body": "## Seen (2026-11-28, Webster friction note of `kde-window-placement-build`)\n\nA batch fork reading `internal/kwinplace/places.go` noted that a window whose home desktop no longer exists is placed on another desktop but keeps the old home.\nIt left this unchanged as outside its cards, and nobody has verified it.\n\n## Idea\n\nVerify the case; when it holds, the placement records the desktop it used as the window's new home, or states why the old home is kept.\n",
       "created": "2026-11-28T13:33:41Z",
       "revised": "2026-11-28T13:33:41Z"
+    },
+    {
+      "id": 1813,
+      "handle": "T9",
+      "slug": "jacquard-recipe",
+      "title": "Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "testkit"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `recipe-build-from-sketch`.\n\nTakes: D1 whole: contracts/recipes/jacquard-recipe.yaml holding Preflight, Record-Seed and every tapestry row from Drift-Baseline to Friction-Reflect, moved with routing, segments, gates and comments, never copied, with jacquard's top-level keys; shedrun's recipe-name constant jacquard in the closed vocabulary (RecipeNames, OfferedRecipeNames, ValidateRecipe) and shedcli's recipe table kept in step with it; the embed in contracts/recipes/recipes.go; internal/loomrecipe's embedded-recipe map and the loomrecipe recipe lists jacquard's own rows need to run alone and as a block (RecipeEngines, bouncerrows.go, finalizerow.go). D2 whole: tapestry-recipe.yaml as the Motif block row (block_gate undiscussed, on_done Jacquard) and the Jacquard block row (block_gate always, no on_done), entry Motif, row names unchanged so an in-flight tapestry run resumes by row name; the tapestry and motif recipe headers rewritten for the move and naming jacquard, which is D10's recipe-header step. D3 whole: shedbuild.Expand admits a last outermost block row with empty on_done and block_gate always, refuses a last one with another gate with the way forward \"set on_done, or use block_gate always\", and refuses every other outermost empty on_done as today. D4's engine and contract steps: the RecordSeed registry entry in internal/shedrecipe, the RecordSeed producer in internal/loomshed (Record-Write's stored-only mode, writing only a missing record or support log and committing the pair, Stuck with nothing written when the record is missing and no stored record exists, its reason naming the tapestry goto, the jacquard batten sequence and the jacquard re-seed with the seed's path, driver and parent filled in as disagreeingSeedRefusal does), its Env wiring in internal/loomcli/wiring.go and testkit/envkit, the widened loom contract in internal/shedbuild/loomcontract.go (at most one record row, at most one seed row, at least one, seed after record on the on_done path, the seed read as the record row when no record row exists), and loomrecipe.RecordEngine returning RecordSeed for a recipe with only a seed row. Per the added entry, no plan or build recipe, pair handover or Worktree-Teardown skip.\nDelivers: A jacquard recipe that builds as a loom recipe from Preflight to Friction-Reflect; tapestry expanded as Motif's rows followed by Jacquard's with the same edges; a tapestry run of an undiscussed entry walking Motif, Discussion, Preflight, Record-Seed (writing nothing) and Drift-Baseline; Record-Seed seeding, keeping or Stuck per D4; the loom contract building tapestry, jacquard, darn and motif under the widened clauses.\nExports: Fixed for later parts: shedrun.RecipeJacquard (\"jacquard\"); the engine name RecordSeed in shedrecipe's registry and beside LoomRecordEngines; loomshed.NameRecordSeed (\"Record-Seed\"); the block row name Jacquard in tapestry-recipe.yaml; loomrecipe.RecordEngine returning DiscussionWrite for tapestry and RecordSeed for jacquard; loomrecipe.EngineRow unchanged in signature.\n\nThe part changes these packages:\n\n- contracts/recipes (about 490 changed lines)\n- internal/shedrun (about 20 changed lines)\n- internal/shedcli (about 5 changed lines)\n- internal/shedrecipe (about 110 changed lines)\n- internal/shedbuild (about 190 changed lines)\n- internal/loomshed (about 270 changed lines)\n- internal/loomrecipe (about 190 changed lines)\n- internal/loomcli (about 40 changed lines)\n- internal/testkit/envkit (about 10 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-28T13:37:08Z",
+      "revised": "2026-11-28T13:37:08Z",
+      "profile": "solid",
+      "project": "plan-ahead-chains",
+      "discussed": true,
+      "record_body_sha256": "6ddc2fdb21b4d10074549cafe766f351bbbef28a623403dca6804621606bd214"
+    },
+    {
+      "id": 1814,
+      "handle": "T11",
+      "slug": "jacquard-recipe-lists",
+      "title": "Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "batten",
+        "loom",
+        "report",
+        "tools"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "jacquard-recipe"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `recipe-build-from-sketch`.\n\nTakes: jacquard-recipe's shedrun.RecipeJacquard, loomshed.NameRecordSeed and the Jacquard block row. D8 whole but loomrecipe's lists, which jacquard-recipe adds: every non-test closed recipe list naming shedrun.RecipeTapestry for a path a jacquard run walks names jacquard too, found by grepping for it outside tests: batten's admitted child recipes and their refusal text (internal/battencli/wire.go childRecipeSupported and unsupportedChildRecipeRefusal), loomcli's lists (arbiterprompt.go, arm.go, peers.go, wiring.go), tools/tokencount/shed.go, and the report's selected run recipes (internal/reportengine/runs.go); the report's jacquard phase table is tapestry's without its Discussion families, and both tables put the Jacquard block row and Record-Seed in Preflight's phase; a default that falls back to tapestry when a run has no seed (sharedbootstrap.go resolveSeedRecipe) stays tapestry. D9 whole: internal/reportengine's cost cells key a tapestry run whose stored_record is true under jacquard, and only the cell key changes.\nDelivers: Batten admits jacquard as a child recipe; lym report selects jacquard runs with their phase table; a tapestry run with stored_record true lands in the jacquard cost cell and the tapestry cell with stored_record true is left empty.\nExports: No new symbol; batten's admitted child recipes include jacquard, which jacquard-start-refusal's batten tests rely on.\n\nThe part changes these packages:\n\n- internal/battencli (about 20 changed lines)\n- internal/loomcli (about 40 changed lines)\n- internal/reportengine (about 190 changed lines)\n- tools/tokencount (about 5 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-28T13:37:08Z",
+      "revised": "2026-11-28T13:37:08Z",
+      "profile": "light",
+      "project": "plan-ahead-chains",
+      "discussed": true,
+      "record_body_sha256": "cc9aefeb1d54d24bf8e74d0756d66b00835d407c2a6309d55aba51e4f9611d0c"
+    },
+    {
+      "id": 1815,
+      "handle": "T13",
+      "slug": "jacquard-start-refusal",
+      "title": "Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "loom",
+        "batten"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "jacquard-recipe-lists"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `recipe-build-from-sketch`.\n\nTakes: jacquard-recipe's RecordSeed engine, Record-Seed row and RecordEngine, and jacquard-recipe-lists' batten admission. D4's decision-verb steps: the decision verbs treat RecordSeed as RecordWrite (rowWritten in internal/loomcli/decision.go), with Record-Seed among the rows before the record is written, and the RecordWrite-path refusals decisionWayRecordStart, decisionWayRecordResume, decisionWayRecordGoto, decisionWayUncommittedGoto and recordWritePending name the row of the run's recipe that runs the record or seed engine, read through loomrecipe.EngineRow, never the literal Record-Write; darn's Record-Write row is unchanged; plus the tier-1 tests of Record-Seed's ways forward. D5 whole: one predicate in internal/loomrecipe (needs a stored record: the expanded rows hold a seed row and no record row), true for jacquard and false for tapestry, darn, motif and raddle; the refusal message `\u003cslug\u003e runs the jacquard recipe, which builds from a stored decision record, and it holds none`, filled from shedrun.RecipeJacquard, judged at batten's start guard beside raddle's check (internal/battencli/startguard.go, way forward the tapestry board upsert, a done slug refused first by doneSlugRefusal) and at a first lym loom start (stat of the status file before loomshed.Seed in sharedbootstrap.go, way forward naming the batten pair's cancel, upsert, set-status and batten run sequence and the other pair's re-seed keeping driver and parent as disagreeingSeedRefusal does); a resume and a re-run of lym loom start over an existing status file pass over it. Per the parent's added entry, batten gains no motif-run clear.\nDelivers: Both start sites refuse a jacquard entry with no stored record with their own way forward, before any worktree or status file is made; a jacquard run's lym loom decision add takes the RecordWrite path before and after Record-Seed; the Record-Seed Stuck recoveries for tapestry and for a re-seeded jacquard run work end to end.\nExports: Fixed for later work: the predicate loomrecipe.NeedsStoredRecord(recipe string) (bool, error).\n\nThe part changes these packages:\n\n- internal/loomrecipe (about 45 changed lines)\n- internal/loomcli (about 560 changed lines)\n- internal/battencli (about 140 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-28T13:37:08Z",
+      "revised": "2026-11-28T13:37:08Z",
+      "profile": "light",
+      "project": "plan-ahead-chains",
+      "discussed": true,
+      "record_body_sha256": "55eddb130cff7d2aa1e8a32905d805af518762ca66c7d59c85cd11c1ec42eea6"
+    },
+    {
+      "id": 1816,
+      "handle": "T18",
+      "slug": "jacquard-run-profiles",
+      "title": "Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "profiles",
+        "config"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `recipe-build-from-sketch`.\n\nTakes: D7 whole: each profile of internal/runprofile/template.yaml holding a tapestry block gains a jacquard block with the same keys minus loom.discussion, and defaults gains jacquard: solid; a one-time reinterpretation in internal/runprofile beside ReinterpretArrasDefault, registered in internal/configreg's runprofile entry after the arras one, so internal/hubreconcile/walk.go runs it after the template follow unchanged; it gives every profile holding a tapestry block a jacquard block equal to that block minus loom.discussion, and sets defaults.jacquard to the profile defaults.tapestry names when that profile holds a jacquard block, dropping it otherwise. The block key is the literal recipe name jacquard, which needs no other part.\nDelivers: Shipped and operator-tuned profiles hold jacquard blocks after the next reconcile, with defaults naming jacquard, so a jacquard run and raddle's profile check find a block.\nExports: Fixed for raddle-names-jacquard: the profiles speed, light, solid and wide hold a jacquard block, and defaults.jacquard is solid in the template.\n\nThe part changes these packages:\n\n- internal/runprofile (about 230 changed lines)\n- internal/configreg (about 5 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-28T13:37:08Z",
+      "revised": "2026-11-28T13:37:08Z",
+      "profile": "light",
+      "project": "plan-ahead-chains",
+      "discussed": true,
+      "record_body_sha256": "0130aba482dd21f43119b333b818c0ba690a97c9fd3509d811665d6286a48025"
+    },
+    {
+      "id": 1817,
+      "handle": "T19",
+      "slug": "raddle-names-jacquard",
+      "title": "Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks",
+      "kind": "task",
+      "labels": [
+        "feature",
+        "parsers",
+        "loom",
+        "stencil",
+        "heddle",
+        "docs"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "jacquard-start-refusal",
+        "jacquard-run-profiles"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "Filed from the Sketch `recipe-build-from-sketch`.\n\nTakes: jacquard-run-profiles' jacquard blocks, and jacquard-start-refusal's tree with jacquard admitted by batten. D6 whole: internal/raddleparser's part recipe vocabulary becomes jacquard or darn, a part naming tapestry is a recipe-invalid finding whose detail names jacquard as the recipe for a part filed from a Sketch; the raddle stencil (contracts/stencils/raddle/raddle-template-agent.md), contracts/specs/raddle-proposal-spec.md, the raddle review rubric (contracts/stencils/loom/loom-rubric-raddle-review.md) and the loom raddle context's profile listing (internal/loomcli/raddlecontext.go) say jacquard where they name the part recipe tapestry; the tapestry shape keeps its name; filing copies the part's recipe, tested with a filed jacquard part. D10's glossary and docs steps: the jacquard line in internal/heddleengine/glossary.md as D10 gives it, a jacquard row in docs/reference/weaving-glossary.md with its tapestry row saying tapestry is motif followed by jacquard, and docs/overview.md's recipe mentions; the recipe-header step landed in jacquard-recipe. D11: no file of the diff writes Bolt's heddle.json or a nickname line.\nDelivers: Raddle proposals name jacquard or darn for each part and are refused with a jacquard-naming detail when a part names tapestry; filed parts carry jacquard, their record and the discussed flag; the glossary and docs list jacquard.\nExports: raddleparser.RecipeJacquard beside RecipeDarn; RecipeTapestry leaves the part vocabulary.\n\nThe part changes these packages:\n\n- internal/raddleparser (about 30 changed lines)\n- internal/loomcli (about 10 changed lines)\n- internal/loomshed (about 20 changed lines)\n- contracts/stencils (about 5 changed lines)\n- contracts/specs (about 10 changed lines)\n- internal/heddleengine (about 2 changed lines)\n- docs (about 40 changed lines)\n",
+      "status": "draft",
+      "created": "2026-11-28T13:37:08Z",
+      "revised": "2026-11-28T13:37:08Z",
+      "profile": "light",
+      "project": "plan-ahead-chains",
+      "discussed": true,
+      "record_body_sha256": "b6cd07f37a1fbeff052ecc1c1a338f49e0406a00d51c378742ba9b945c8b3f94"
     }
   ],
   "prime_owner": "neve",
