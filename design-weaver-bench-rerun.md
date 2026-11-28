@@ -1,8 +1,6 @@
 # Bench Weaver against Webster again on the same three landed plans, both run side by side the same day
 
-`weaver-bench-rerun` · Task · research, weaver, webster · starting · Worktree-Create
-
-Depends on: [`weaver-bench-fixes`](design-weaver-bench-fixes.md)
+`weaver-bench-rerun` · Task · research, weaver, webster · running · Darn-Write
 
 ## Why
 

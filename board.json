@@ -869,29 +869,6 @@
       "project": "plan-ahead-chains"
     },
     {
-      "id": 1796,
-      "handle": "T1",
-      "slug": "weaver-bench-fixes",
-      "title": "Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "weaver",
-        "shed",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Why\n\nThe Weaver bench of 2026-11-27 (`docs/research/weaver/bench-2026-11-27/report.md`) found Weaver can replace Webster as tapestry's implementer,\nbut named four changes to make first (operator, 2026-11-28: fix them, then bench again).\n\n## Changes\n\n1. A Weaver attempt gets a timeout of its own, sized to a batch.\n   Today an attempt runs under `shuttle.run_timeout_min` (30 minutes), which its gate waits and gate fixers count against;\n   the bench's first calibration batch hit it with three of four cards committed, and the retry climbed to Opus.\n2. Weaver's `summary.md` names each batch's deviations and departures, as Webster's summary does.\n   Today Weaver records the deviations only in `state.json`, and its summary lists attempt counts.\n3. The Weaver row records `gate_spans` for the plan-level verify, as the Webster rows do.\n4. Tests pin the paths the bench did not reach: a lost strand, a resume, a failed plan-level verify and the ladder's third rung.\n",
-      "status": "done",
-      "created": "2026-11-28T11:36:30Z",
-      "revised": "2026-11-28T11:36:30Z",
-      "profile": "solid"
-    },
-    {
       "id": 1797,
       "handle": "T4",
       "slug": "weaver-bench-rerun",
@@ -904,13 +881,11 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "weaver-bench-fixes"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nThe bench of 2026-11-27 (`docs/research/weaver/bench-2026-11-27/report.md`) had only one plan where Weaver and Webster ran the same day,\nso its quality and cost comparison is thin.\nIt is run again after Weaver's four named changes have landed (operator, 2026-11-28).\n\n## Runs\n\nExactly six implementer runs and six reviews:\n\n- The same three plans as the first bench: `board-viewer-server`, `launch-manifest-parity` and `gate-test-map-mode`, from the same base commits.\n- Each plan once with Weaver on its default ladder and once with Webster on its default models, the two started together, the same day.\n- One Burler round per result, as in the first bench: a `sonnet[medium]` reviewer with the code lens fan and the archived record and plan as the answer key.\n\nSet up each run the way the first bench did, in a worktree pair of its own.\n\n## Report\n\nA new report beside the first one, with the same tables: wall time, gate time, fixer time, dollars, ladder and stops, verify, diff and review findings.\nIt checks that the four changes show: no attempt killed by the shuttle timeout, deviations in `summary.md`, and `gate_spans` on the Weaver rows.\nIt explains where Weaver's saving comes from, measured rather than guessed: cache reads per batch for Weaver against cache reads per fork for Webster.\nIt ends with a recommendation on making Weaver tapestry's default implementer.\n",
-      "status": "starting · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-11-28T11:36:31Z",
       "revised": "2026-11-28T11:36:31Z",
       "profile": "docs"
