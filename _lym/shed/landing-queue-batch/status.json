@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Parts-Plan-Write → skipped",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,22 @@
       "output": "",
       "at": "2026-11-28T15:37:07Z",
       "reason": "tapestry.plan.split = false"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/landing-queue-batch/_lym/plan/00-overview.md",
+      "at": "2026-11-28T16:17:47Z",
+      "started_at": "2026-11-28T15:37:07Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-11-28T16:01:53.049197864Z",
+          "end": "2026-11-28T16:17:45.339664748Z"
+        }
+      ]
     }
   ],
   "product": {
