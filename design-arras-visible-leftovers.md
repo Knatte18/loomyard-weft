@@ -1,6 +1,6 @@
 # Arras still shows in seeded profiles and in the overview and glossary
 
-`arras-visible-leftovers` · Task · enhancement, board, docs · landing · Finalize
+`arras-visible-leftovers` · Task · enhancement, board, docs · running · Friction-Reflect
 
 ## Seen
 
