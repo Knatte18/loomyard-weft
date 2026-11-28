@@ -1,0 +1,221 @@
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index e7799c6fa..b633c3c52 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -170,7 +170,11 @@ type Deps struct {
+ 	//
+ 	// Nil is never called, since a nil OwnedElsewhere never answers elsewhere.
+ 	HandOver func(owner, subject string) error
+-	// LandLocally records the landing whose parent head is tip and hands its push to the parent's pusher.
++	// LandLocally records the run's landing with tip as its tip, and hands its push to the parent's pusher.
++	// tip is the parent's head right after the parent-side merge.
++	// On a pass whose merge commits, that head is the run's own landing commit.
++	// On a re-run over a parent that already holds the run's work, it is the parent's head.
++	// A standing landing of the run is rewritten with that tip.
+ 	// It commits the run's status records, and holds that commit back from origin until the landing's push is made.
+ 	// The finalize step calls it after the parent-side merge, on every pass that lands, unless PushSkipped is set.
+ 	// A returned error is returned from Call.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 74f15d7d1..1d3911c3f 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -566,8 +566,11 @@ func (fz *Finalize) landUnderLock(ctx context.Context, front bool, summary summa
+ 		if mergeErr == nil {
+ 			// The landing has happened on the local parent, and its push is handed to the parent's pusher.
+ 			// A beam's spent pull request record is dropped once that hand-off answers Done.
+-			fz.recordLanding(parentHandle)
+-			end := fz.pushParent(ctx, parentHandle, notice)
++			// The parent's head right after the merge goes to both landing records.
++			// On a pass whose merge commits, it is the run's own landing commit.
++			landed, headErr := parentHandle.HeadSHA()
++			fz.recordLanding(landed, headErr)
++			end := fz.pushParent(ctx, landed, headErr, notice)
+ 			if end.err == nil && end.outcome == shedengine.Done && landing.dropBeamRecord {
+ 				fz.dropBeamRecord()
+ 			}
+@@ -953,17 +956,18 @@ func (fz *Finalize) pushRecords() *ending {
+ 	return nil
+ }
+ 
+-// recordLanding hands the parent pair's head, the commit the landing put on the parent branch, to `Deps.RecordLanding`.
++// recordLanding hands commit, the parent's head right after the parent-side merge, to `Deps.RecordLanding`.
++// On a pass whose merge commits, it is the run's own landing commit.
+ // With it goes whether the landed diff is empty.
+ // It then hands the landed diff's size to `Deps.RecordLandedSize`.
+-// A failed head read or record is logged and never changes the verdict.
+-func (fz *Finalize) recordLanding(parentHandle parentMerger) {
++// A non-nil headErr is the failed read of that commit.
++// It is logged and records nothing; a failed record is logged too, and neither changes the verdict.
++func (fz *Finalize) recordLanding(commit string, headErr error) {
+ 	if fz.deps.RecordLanding == nil && fz.deps.RecordLandedSize == nil {
+ 		return
+ 	}
+-	commit, err := parentHandle.HeadSHA()
+-	if err != nil {
+-		logger.Warn("landingshed: read the landing commit failed", "producer", finalizeName, "cause", err)
++	if headErr != nil {
++		logger.Warn("landingshed: read the landing commit failed", "producer", finalizeName, "cause", headErr)
+ 		return
+ 	}
+ 	if fz.deps.RecordLanding != nil {
+@@ -1024,14 +1028,17 @@ func (fz *Finalize) keepParentHead(parentHandle parentMerger) {
+ // pushParent hands the push of the parent branch the merge just landed on to that parent's pusher, and reports Done,
+ // so no failed push fails a landing.
+ // It first reads whether another machine owns the run now, and one that does takes the run over and halts.
+-// It records the parent's head as the landing through `Deps.LandLocally`.
++// It records landed as the landing's tip through `Deps.LandLocally`.
++// landed is the parent's head right after the parent-side merge.
++// On a pass whose merge commits, that head is the run's own landing commit.
++// A non-nil headErr is the failed read of landed, which fails the call only when that seam is reached.
+ // It writes no board `done`, since that write is made once origin holds the landing.
+ // With a nil `Deps.LandLocally` it records no landing and commits the run's records.
+ // Under `Deps.PushSkipped` it records no landing, commits the run's records and writes the board `done` itself.
+ // The hand-off is the same whether the landing went through a pull request merged on GitHub or not.
+ // On its Done return only, a non-empty notice is queued through `Deps.Notify`;
+ // a failure there is a logged warning that never changes the verdict.
+-func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, notice string) *ending {
++func (fz *Finalize) pushParent(ctx context.Context, landed string, headErr error, notice string) *ending {
+ 	if end := fz.handedOverStop(ctx); end != nil {
+ 		return end
+ 	}
+@@ -1045,11 +1052,10 @@ func (fz *Finalize) pushParent(ctx context.Context, parentHandle parentMerger, n
+ 			}
+ 		}
+ 	} else {
+-		tip, err := parentHandle.HeadSHA()
+-		if err != nil {
+-			return fail(ctx, finalizeName, fmt.Errorf("landingshed: %s: read the head of parent branch %q: %w", finalizeName, fz.deps.ParentBranch, err))
++		if headErr != nil {
++			return fail(ctx, finalizeName, fmt.Errorf("landingshed: %s: read the head of parent branch %q: %w", finalizeName, fz.deps.ParentBranch, headErr))
+ 		}
+-		if err := fz.deps.LandLocally(tip); err != nil {
++		if err := fz.deps.LandLocally(landed); err != nil {
+ 			return fail(ctx, finalizeName, fmt.Errorf("landingshed: %s: record the landing on parent branch %q: %w", finalizeName, fz.deps.ParentBranch, err))
+ 		}
+ 	}
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index f90ff8206..b79ab7aec 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -507,6 +507,27 @@ func TestFinalize_RecordLandingFailureKeepsDone(t *testing.T) {
+ 	}
+ }
+ 
++// TestFinalize_HeadReadFailureFailsAWiredLanding pins that a wired landing needs the head after the parent-side merge.
++// A failed read of that head fails the call, and no landing is recorded.
++func TestFinalize_HeadReadFailureFailsAWiredLanding(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	headFailure := errors.New("no head")
++	var landed []string
++	deps := newTestDeps(t)
++	deps.LandLocally = func(tip string) error { landed = append(landed, tip); return nil }
++	merger := &recordingParentMerger{results: []mergeCallResult{{result: fabriclayout.MergeResult{Committed: true}}}, headSHA: "landed1", headErr: headFailure, preMergeHeadSHA: stringPointer("parent0")}
++	fz := &Finalize{deps: deps, resolver: &recordingResolver{result: mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved}}, guard: newParentGuard(deps), parentOpener: func() (parentMerger, error) { return merger, nil }}
++
++	if _, _, err := fz.Call(context.Background()); !errors.Is(err, headFailure) {
++		t.Errorf("Call() error = %v; want it to wrap %v", err, headFailure)
++	}
++	if len(landed) != 0 {
++		t.Errorf("LandLocally tips = %q; want no call", landed)
++	}
++}
++
+ // TestFinalize_RecordsWhetherTheLandedDiffIsEmpty pins the empty-diff flag handed to RecordLanding.
+ // It is set only when the landing changed no code path against the parent head merged into the task worktree.
+ // A failed path read, or no merged head held, records the landing as not empty.
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index fdbaf44d5..b6ac3d9d9 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -919,7 +919,8 @@ func parentLedgerKey(parent runpusher.Target) pushledger.Key {
+ }
+ 
+ // landLocally returns the seam that records the landing of the run slug, whose task pair is l, on its parent branch.
+-// It commits the run's status records and records the landing with the parent head and that commit.
++// The seam takes the landing's tip from its caller.
++// It commits the run's status records and records the landing with that tip and the records commit it holds back.
+ // It then asks the pushers of the parent branch and of the pair to push at once.
+ // The pair's push lock is held across the commit and the record,
+ // so no push of the pair sends the commit before it is held back.
+@@ -946,6 +947,7 @@ func landLocally(l *lymcwd.Location, slug string) func(tip string) error {
+ // It holds the pair's push lock across both.
+ // A run recorded again keeps holding its earlier records commit while origin lacks it.
+ func recordHeldLanding(l *lymcwd.Location, slug string, parent runpusher.Target, tip string) error {
++	// Read before the status commit, so a failed read leaves no commit that no landing holds back.
+ 	branch, err := gitrepo.New(parent.Location.WorktreePath()).CurrentBranch()
+ 	if err != nil {
+ 		return fmt.Errorf("read the branch of the parent pair %s: %w", parent.Location.WorktreePath(), err)
+@@ -971,6 +973,15 @@ func recordHeldLanding(l *lymcwd.Location, slug string, parent runpusher.Target,
+ 	if err != nil {
+ 		return err
+ 	}
++	return writeLedgerLanding(parent, branch, slug, tip, records)
++}
++
++// writeLedgerLanding writes the push-ledger landing of the run slug on branch, the parent branch.
++// parent is the parent pair's pusher target.
++// tip is the commit the landing records on branch and records is the records commit it holds back from origin.
++// A standing landing of the run is replaced.
++// Every value is an argument, so a caller may record a run other than its own.
++func writeLedgerLanding(parent runpusher.Target, branch, slug, tip, records string) error {
+ 	now := time.Now()
+ 	return runpusher.RecordLanding(parent, pushledger.Landing{Run: slug, Tip: tip, RecordsCommit: records, ParentBranch: branch, At: now}, now)
+ }
+diff --git a/internal/loomcli/landlocally_integration_test.go b/internal/loomcli/landlocally_integration_test.go
+index 380ebb665..66d88ba33 100644
+--- a/internal/loomcli/landlocally_integration_test.go
++++ b/internal/loomcli/landlocally_integration_test.go
+@@ -464,3 +464,51 @@ func TestLandLocally(t *testing.T) {
+ 		t.Errorf("landLocally() from the prime = %v; want a refusal naming a way forward", err)
+ 	}
+ }
++
++// TestWriteLedgerLanding_AChainOfOwnTipsReadsAsOwed lands three runs on the prime as a chain of landing commits.
++// Each run's ledger landing carries its own landing commit, and a run recorded again keeps that tip.
++func TestWriteLedgerLanding_AChainOfOwnTipsReadsAsOwed(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Parallel()
++
++	f := newParentFixture(t)
++	slugs := []string{"one", "two", "three"}
++	tips, records := map[string]string{}, map[string]string{}
++	for _, slug := range slugs {
++		f.addRun(slug, "", false)
++	}
++	for _, slug := range slugs {
++		tips[slug] = f.merge(slug, f.h.PrimeWorktree())
++		records[slug] = gitkit.CommitFile(t, f.h.PairRecordsSibling(slug), "finalize.txt", slug+"\n", "finalize records")
++	}
++	target := runpusher.LandingTarget(f.h.Location)
++	pairOne := f.location("one")
++	aheadByOwed := parentAheadByOwed(pairOne)
++	requireAheadByOwed := func(when string, want bool) {
++		t.Helper()
++		if got, err := aheadByOwed(); err != nil || got != want {
++			t.Errorf("parentAheadByOwed() %s = %v, %v; want %v", when, got, err, want)
++		}
++	}
++	for _, slug := range slugs {
++		if err := writeLedgerLanding(target, f.branch, slug, tips[slug], records[slug]); err != nil {
++			t.Fatalf("writeLedgerLanding(%s) = %v; want nil", slug, err)
++		}
++	}
++	requireAheadByOwed("with every landing commit recorded", true)
++
++	f.atFinalize("one")
++	if err := landLocally(pairOne, "one")(tips["one"]); err != nil {
++		t.Fatalf("landLocally(one) = %v; want nil", err)
++	}
++	requireAheadByOwed("after run one is recorded again", true)
++	landings := f.entry(pushledger.LandingKey).Landings
++	if len(landings) != len(slugs) {
++		t.Fatalf("landings = %+v; want one per run", landings)
++	}
++	for _, landing := range landings {
++		if landing.Tip != tips[landing.Run] || landing.RecordsCommit != records[landing.Run] || landing.ParentBranch != f.branch {
++			t.Errorf("landing = %+v; want run %s at its own tip %s holding %s on %s", landing, landing.Run, tips[landing.Run], records[landing.Run], f.branch)
++		}
++	}
++}
