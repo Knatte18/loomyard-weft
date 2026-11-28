@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause `decision`, round 1, with one LOW decision finding (F1), no BLOCKING findings, no refusal, and judge verdict CONVERGED.\nF1 holds as a code reading: when the reset's weft commit lands but fails to record, `CommitWithTrailers` returns a\n`*PartialCommitError` (internal/fabricengine/commit.go:242-245, 173-175). `fabricSync` passes it on (internal/webstercli/sync.go:38-41),\nand reset.go:192-194 refuses before the synchronous `c.pushRecords` at reset.go:202-211, so that commit goes only to the background pusher.\nThe decision record answers the finding. Its `No bug fixed` entry rules that nothing changes and that the landed code at 3fb0787e3 matches the record.\nThe review range is empty, so there is no fix to converge on. The scope closed at round 1, so `decision add` would refuse.\nRuling F1 in scope would reopen that ruling, which is not an arbiter's call. On this path the verb still refuses with status FAILED\nand `fabricSyncWayForward`, so the run does not silently go past the reset.\nSo I accepted the segment. Follow-up for the run's parent, which may file it as a board note for a new task (my verbs do not include `lym board upsert`):\nwhen `fabricSync` returns an error after the weft commit landed, the reset should run `c.pushRecords` before it refuses,\nso that an owed push of that commit writes its record.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom circling accept webster-reset-push-sync"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/webster-reset-push-sync/_lym/shed/webster-reset-push-sync/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/webster-reset-push-sync/_lym/shed/webster-reset-push-sync/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step webster-reset-push-sync --until-stop --arbiter-attempt 1"
+}
