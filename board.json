@@ -307,7 +307,7 @@
       "isolated": false,
       "brief": "",
       "body": "After `config-keys-nested` nests the config keys by area, about 525 Go comment lines in about 199 files, plus single-word keys on top, still name a template key bare.\nPATTERN-config-key-names asks that such a comment say `\u003cmodule\u003e.\u003cpath\u003e`.\n\nSweep every Go comment and package doc that names a config key to its nested `\u003cmodule\u003e.\u003cpath\u003e` form.\nA comment-only change, no behaviour or user-visible text.\nDeferred from T3 code review round 1, finding F1, to keep that run short.\n\n\n## From issue #265\n\nImported from [issue #265](https://github.com/Knatte18/loomyard/issues/265).\n\n## What happened\n\nA code review finding asked for a repository-wide sweep of config key names written without their module, and no tool finds them.\nA grep over the underscored template keys was the only practical method.\nIt missed single-word keys such as `engine` and `scoper`, and any key that ended a string literal, so messages were reported done while several were not.\nSelf-check forks caught the misses.\n\nAn earlier implementer had also found bare key names in messages and help texts outside its card's packages:\n`gatecli`, `batcher`, `battencli`, `beamcli`, `webstercli`, `hibernatecli`, `reportcli`, `preflightshed`,\n`weaverengine` (`ResolveLadder` and `settingRefusal`), `sheddriver/tackler.go`, `shedarbiter`, `burlerengine/fix.go` and `loomshed/plancontext.go`.\nSome of these may have been fixed since.\n\n## Why it is abnormal\n\nA message or help text naming a key without its module can regress at any time, and nothing detects it mechanically.\n\n## What to do\n\nAdd a guard test that scans Go string literals for a config template's key names written without their module.\n\nProvenance: task `config-keys-nested`, notes `burler-code-r1.md`, `11-module-key-messages.md`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-26T13:52:00Z",
       "revised": "2026-11-26T20:19:01Z",
       "profile": "light"
@@ -711,7 +711,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).\n\n## What happened\n\nWith local landing, a parent that is ahead of origin by owed landing tips always reads as moved to Finalize's locked pass.\nThe lock-free pass records the upstream tip (`parentMergeTip`) as the gated tip, while the parent's head is past it.\nEvery such landing therefore loses each of its `landing.finalize_lost_races` races, then merges and runs verify under the parent lock.\nThe behavior was left as it is because `gateUnlocked` and `parentMergeTip` were outside the card's targets.\n\n## Why it is abnormal\n\nThe landing is correct, but the parent lock is held across the verify for as long as an earlier landing's push is owed.\nThe lock-free gate gives no benefit in that state, and other landings on the same parent wait.\n\n## What to do\n\nMake the lock-free pass gate against the parent's local head when that head is ahead of origin only by owed landing tips.\n\nProvenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-27T21:39:10Z",
       "revised": "2026-11-27T21:40:02Z",
       "profile": "light"
@@ -734,6 +734,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).\n\nOn `lym board sync` from the prime, runpusher logs one WARN per task worktree that was removed long ago:\n\n`runpusher: the pusher did not start ... resolve main worktree: list git worktrees in \"\u003chub\u003e/\u003cslug\u003e\": dotgit: not a git repository: no .git above \u003chub\u003e/\u003cslug\u003e`\n\nFive such slugs were listed, all of runs that landed and whose pairs were removed through lym fabric. The pusher's run registry keeps entries for worktrees that no longer exist. Expected: entries for removed pairs are dropped at removal (or skipped silently when the directory is gone).",
+      "status": "starting · Worktree-Create",
       "created": "2026-11-27T21:39:15Z",
       "revised": "2026-11-27T21:40:04Z",
       "profile": "light"
