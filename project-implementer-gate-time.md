@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:38 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`implementer-gate-time`](design-implementer-gate-time.md) · Age 38m · Owner `neve`
+[`implementer-gate-time`](design-implementer-gate-time.md) · Age 39m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -22,7 +22,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | Darn-Write | neve | 38m<br>38m | gate, webster, weaver |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | Darn-Write | neve | 39m<br>39m | gate, webster, weaver |
 
 ## Enhancements (4)
 

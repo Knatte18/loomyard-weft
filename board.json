@@ -1252,6 +1252,47 @@
       "created": "2026-11-28T12:06:20Z",
       "revised": "2026-11-28T12:06:20Z",
       "project": "implementer-gate-time"
+    },
+    {
+      "id": 1808,
+      "handle": "F3",
+      "slug": "release-order-queue",
+      "title": "Released tasks start in a queue order the board shows and the operator can change",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "board",
+        "dobby"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-28)\n\nWhen a run place frees, dobby walks the board's tasks in their stored order and starts the first released one nothing holds (`startReady` in `internal/dobbyengine/starts.go`).\nWhen a task was released plays no part, and the board shows no order: nobody can see which task starts next.\nThe only way ahead of the others is a front task.\n\n## Idea (operator, 2026-11-28)\n\n- Released tasks form a queue ordered by release time; dobby starts the oldest ready one first.\n- The board shows each released task's place in the queue.\n- The operator, or the orch on the operator's word, can move a task in the queue.\n- A held task keeps its place: when its dependencies are done it is the next to start once a run place frees, never sent to the back.\n",
+      "created": "2026-11-28T12:38:51Z",
+      "revised": "2026-11-28T12:38:51Z"
+    },
+    {
+      "id": 1809,
+      "handle": "T10",
+      "slug": "darn-measure-rule-gaps",
+      "title": "Darn measurement rule covers a run with no parent and bars subagents from measurement calls",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "darn",
+        "stencil"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThe landing that has the darn writer ask before an entry's measurement gate calls (`ef9062d91`) closed Code-Review over two accepted-circling findings on the new stencil rule:\n\n- `measurement-rule-no-parent-path-drops-deliverable`: with no parent session, the measurements the entry asks for are never produced.\n- `ungated-subagents-bypass-measurement-rule`: the gated fragment has no sentence of its own barring subagents from measurement calls.\n\n## Fix\n\n- Give the rule a path for a run with no parent, so the entry's measurements are still produced or the run stops with a way forward.\n- Add a sentence to the gated fragment that bars subagents from measurement calls.\n",
+      "status": "draft",
+      "created": "2026-11-28T12:38:52Z",
+      "revised": "2026-11-28T12:38:52Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve",
