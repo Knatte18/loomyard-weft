@@ -1061,6 +1061,26 @@
       "body": "## Seen\n\nThe Code-Review of `pr-session-mail-stand-ins` (round 1, finding F2) found that its new tier1 test reaches `creelfake.Delivery` through `startNoticeOrch`,\nwhose inventory verdict is \"real\", and that the halt row's unknown-strand refusal rests on the fake delivery's hand-written strand list.\nThe tree has no reed-backed creel delivery at tier1, so the parent accepted the use for that task.\n\n## Idea\n\nGive tier1 tests a creel delivery backed by a real reed, or by the recorded tmux kit, so a strand is known because reed holds it,\nand move `startNoticeOrch` and its callers onto it.\n",
       "created": "2026-11-28T10:32:33Z",
       "revised": "2026-11-28T10:32:33Z"
+    },
+    {
+      "id": 1794,
+      "handle": "F2",
+      "slug": "pipelined-chain-planning",
+      "title": "A dependent task plans ahead from its dependency's record and plan, and waits only to build",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "batten",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (operator, 2026-11-28)\n\nA chain of tapestry tasks where B depends on A runs fully in series: B's Discussion and Plan wait until A has landed, though the plan writer is the slowest row.\nThe six serial parts of project `fabric-core` are the case at hand.\n\nIn Millhouse, which LoomYard grew from, the operator sped such chains up by hand, with success:\n\n- Once A's discussion record was approved, B's Discussion started, told to build on everything A had decided.\n- Plan writing for B likewise started before A was done, from A's record.\n- When A had landed, B merged A's changes, and a small fixer read the code changes and updated B's discussion and plan for what had moved.\n- Only then did B's builders start, so the builders were the only part that waited for A.\n\n## Idea\n\nLet lym do this systematically, since keeping it straight by hand is hard:\na task whose dependency has an approved record (and later an approved plan) may run its own Discussion and Plan rows ahead,\nreading the dependency's record and plan as given; it then parks before its build rows until the dependency lands,\nmerges the landed change, runs a small re-align row that updates its record and plan for what the landing changed, and builds.\n\n## Bounds\n\n- When A rewrites a very large part of what B builds on, the plan written ahead is mostly wasted, and B should wait as today.\n  The re-align row needs a measure of how much changed, and a threshold past which B plans again from scratch.\n- Not for now (operator, 2026-11-28).\n",
+      "created": "2026-11-28T11:14:18Z",
+      "revised": "2026-11-28T11:14:18Z"
     }
   ],
   "prime_owner": "neve",
