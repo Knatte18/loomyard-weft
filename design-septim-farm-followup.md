@@ -2,8 +2,6 @@
 
 `septim-farm-followup` · Note · research, gate
 
-Depends on: [`septim-farm-study`](design-septim-farm-study.md)
-
 When the Septim study lands, its report under `docs/research/gate/` answers how much work, and how real, a WSL2 gate farm on Septim is in its stored and ephemeral modes.
 
 The operator reads it with the orch and decides, for each mode, whether to build it.
