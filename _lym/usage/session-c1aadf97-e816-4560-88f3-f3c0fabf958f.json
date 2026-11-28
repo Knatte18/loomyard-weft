@@ -1,0 +1,14 @@
+{
+  "session_id": "c1aadf97-e816-4560-88f3-f3c0fabf958f",
+  "row": "Darn-Write",
+  "role": "gate-fixer",
+  "model": "claude-sonnet-5-5",
+  "engine": "claude",
+  "input_tokens": 18,
+  "cache_write_tokens": 31863,
+  "cache_read_tokens": 224874,
+  "output_tokens": 1996,
+  "cost_usd": 0.1446283,
+  "started": "2026-11-27T21:46:18Z",
+  "ended": "2026-11-28T07:52:19Z"
+}
