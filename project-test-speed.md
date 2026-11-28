@@ -1,6 +1,6 @@
 # P1 Faster gates: measure where test time goes, then cut or restructure the heavy packages
 
-Rendered 2026-11-28 10:10 UTC; every age below is as of then.
+Rendered 2026-11-28 10:11 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`test-speed`](design-test-speed.md) · Age 18h · Owner `neve`
@@ -15,8 +15,8 @@ A survey from 2026-11-16 ran under coverage and overstates every time, so it is 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Ready (1)
+## Running (1)
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T20 | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | darn · light |  | 15h<br>47m | gate |
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T20 | **TestGateRedFirst_Dotnet sets the floor of the gatecli tier1 time at 31 to 47 s**<br>• After the scenario split, one .NET red-first test holds gatecli tier1 near its old time | [`gatecli-dotnet-redfirst-time`](design-gatecli-dotnet-redfirst-time.md) | darn · light | starting · Worktree-Create | neve | 15h<br>48m | gate |
