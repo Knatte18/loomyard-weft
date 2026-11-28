@@ -104,37 +104,37 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T18 | **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light | starting · Worktree-Create | neve | 3m<br>3m | profiles, config |
+| T18 | **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light | starting · Worktree-Create | neve | 4m<br>4m | profiles, config |
 
 ### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid |  | 3m<br>3m | shed, loom, testkit |
+| T9 | **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid |  | 4m<br>4m | shed, loom, testkit |
 
 ### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T11 | **Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard** | [`jacquard-recipe-lists`](design-jacquard-recipe-lists.md)<br>[Sketch](decision-jacquard-recipe-lists.md) | darn · light | T9 | 3m<br>3m | batten, loom, report, tools |
+| T11 | **Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard** | [`jacquard-recipe-lists`](design-jacquard-recipe-lists.md)<br>[Sketch](decision-jacquard-recipe-lists.md) | darn · light | T9 | 4m<br>4m | batten, loom, report, tools |
 
 ### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T13 | **Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row** | [`jacquard-start-refusal`](design-jacquard-start-refusal.md)<br>[Sketch](decision-jacquard-start-refusal.md) | darn · light | T11 | 3m<br>3m | loom, batten |
+| T13 | **Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row** | [`jacquard-start-refusal`](design-jacquard-start-refusal.md)<br>[Sketch](decision-jacquard-start-refusal.md) | darn · light | T11 | 4m<br>4m | loom, batten |
 
 ### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T19 | **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 3m<br>3m | parsers, loom, stencil, heddle, docs |
+| T19 | **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 4m<br>4m | parsers, loom, stencil, heddle, docs |
 
 ### Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T19<br>F3 | 2h<br>3m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T19<br>F3 | 2h<br>4m | loom, batten, shed |
 | F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 1h<br>58m | board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
@@ -175,7 +175,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | 1h<br>18m | gate, webster, weaver |
+| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | 1h<br>19m | gate, webster, weaver |
 | E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | 1h<br>18m | webster, weaver, stencil |
 | E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | 1h<br>18m | gate, webster, weaver |
 
@@ -228,7 +228,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 3h<br>3h | testkit, landing |
 | E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 3h<br>3h | testkit, creel, reed |
-| E3 |  | **The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) |  | 1h<br>18m | testkit, landing |
+| E3 |  | **The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) |  | 1h<br>19m | testkit, landing |
 | E5 |  | **Weaver runs each batch as a Shed row of the new kind and drops its own stop, re-entry, resume and lock code** | [`weaver-onto-shed-rows`](design-weaver-onto-shed-rows.md) | F4 | 1h<br>1h | weaver, shed |
 
 ### Features (2)
