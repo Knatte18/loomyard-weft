@@ -1,6 +1,6 @@
 # webster reset refuses before its records push when fabricSync fails after the records commit landed
 
-`reset-partial-commit-push` · Task · bug, webster, fabric · running · Code-Bouncer
+`reset-partial-commit-push` · Task · bug, webster, fabric · running · Describe
 
 ## Seen
 

@@ -913,7 +913,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #289](https://github.com/Knatte18/loomyard/issues/289).\n\n## What happened\n\nA card gate in `internal/boardengine` crashed with `fatal error: concurrent map writes` in `TestDiscussedPayload`.\nThe batch being implemented did not touch that package, and a rerun of the same gate passed.\n\n## Why it is abnormal\n\nA concurrent map write is a data race in the test or in the code under it.\nIt fails gates at random for tasks unrelated to the package.\n\n## What to do\n\nRun `TestDiscussedPayload` repeatedly with the race detector, find the unsynchronized map, and fix it.\n\nProvenance: task `push-retry-not-halt`, note `05-pusher-interval.md`.\n",
-      "status": "landing · Finalize",
+      "status": "running · Friction-Reflect",
       "created": "2026-11-27T21:39:18Z",
       "revised": "2026-11-27T21:40:04Z",
       "profile": "light"
@@ -1057,7 +1057,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nCode-Review of `webster-reset-push-sync` (finding F1, 2026-11-28) found an edge in `internal/webstercli/reset.go`.\nWhen `fabricSync` returns an error after the records commit of the reset landed, the verb refuses before its synchronous push.\nAn owed push of that commit then writes no failed-push record and does not hold the run,\nalthough the pattern documents say the reset's records push is synchronous and its owed record sets `PushOwed`.\n\n## Fix\n\nWhen `fabricSync` fails after the records commit landed, run the reset's records push (`c.pushRecords`) before refusing,\nso the owed push is recorded as on the normal path; pin it with a test row beside `UnreachableRecordsOriginLeavesAnOwedRecord`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Describe",
       "created": "2026-11-28T07:56:44Z",
       "revised": "2026-11-28T07:56:46Z",
       "profile": "light"
