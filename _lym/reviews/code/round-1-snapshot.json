@@ -1,0 +1,23 @@
+{
+  "fix_scope": "source",
+  "target_paths": null,
+  "target_id": "bc6132f1db7b2b0057bf95198536bea81002024b",
+  "added_decisions": [
+    {
+      "title": "Jacquard stays one recipe of every row after Discussion; the plan-and-build-recipes note is later work",
+      "digest": "429d0af4f4754055ec0cfa3365d42b4b612c8f10fc8c6f72995009a6c89286e7"
+    },
+    {
+      "title": "The jacq nickname is written by the run's parent after landing, as D11 says",
+      "digest": "d1be9fe3aa1d30620f648dc85864f6a41d6760a3ca637d29ba12998319aa2941"
+    },
+    {
+      "title": "Nickname jacq written after landing",
+      "digest": "48a32b9944332ac62bd702c1f7d574ded7f0d727a9c9d6e2cb954663837c690f"
+    },
+    {
+      "title": "Jacquard gains no motif-run clear; a Sketch goes only to raddle",
+      "digest": "9acfc7866c67607f4daf86ba9d3bad0d27377f792690f3d6c2199eed0fe7743c"
+    }
+  ]
+}
