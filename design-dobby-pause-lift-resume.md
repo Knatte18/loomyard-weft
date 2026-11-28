@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-dobby-pause-lift-resume.md)
 
-Depends on: [`driver-settles-stops`](design-driver-settles-stops.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md), [`kde-window-placement-build`](design-kde-window-placement-build.md), [`creel-machine-outbound-flake`](design-creel-machine-outbound-flake.md)
+Depends on: [`driver-settles-stops`](design-driver-settles-stops.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md), [`kde-window-placement-build`](design-kde-window-placement-build.md)
 
 ## The dobby resumes a run handed back for a pause once the pause lifts, and never a run the orch holds
 
