@@ -754,7 +754,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).\n\n## What happened\n\nWith local landing, a parent that is ahead of origin by owed landing tips always reads as moved to Finalize's locked pass.\nThe lock-free pass records the upstream tip (`parentMergeTip`) as the gated tip, while the parent's head is past it.\nEvery such landing therefore loses each of its `landing.finalize_lost_races` races, then merges and runs verify under the parent lock.\nThe behavior was left as it is because `gateUnlocked` and `parentMergeTip` were outside the card's targets.\n\n## Why it is abnormal\n\nThe landing is correct, but the parent lock is held across the verify for as long as an earlier landing's push is owed.\nThe lock-free gate gives no benefit in that state, and other landings on the same parent wait.\n\n## What to do\n\nMake the lock-free pass gate against the parent's local head when that head is ahead of origin only by owed landing tips.\n\nProvenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.\n",
-      "status": "running · Code-Bouncer",
+      "status": "running · Code-Burler-Review",
       "created": "2026-11-27T21:39:10Z",
       "revised": "2026-11-27T21:40:02Z",
       "profile": "light"
