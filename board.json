@@ -734,7 +734,7 @@
       "isolated": false,
       "brief": "A mis-formatted Go file passes every tier; add a gofmt check to tier0",
       "body": "## Seen\n\nThe `design-first-route` landing (`9acc400f8`) listed a mis-spaced assignment in `internal/battencli/wire_test.go`,\n`err =c.env.SeedChild.WriteSeed`, which gofmt would rewrite.\nThat line does not stand in the file at `9acc400f8` or at `3fb0787e3`, and `gofmt -l cmd internal tools` lists no file at `3fb0787e3`.\nNo gate checks formatting, so a mis-formatted Go file passes every tier.\n\n## Idea\n\nAdd a gofmt check to tier0 (for example `gofmt -l` over the changed files).\n\n## Orch decision\n\nCheck every Go file under `cmd`, `internal` and `tools`, not only changed files: the tree is clean today, so the whole-tree check stays cheap and needs no diff scope.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T19:53:36Z",
       "revised": "2026-11-28T08:45:27Z",
       "profile": "light"
