@@ -1,0 +1,453 @@
+{
+  "runGuid": "fea4c5cf108ab5d47cb79b8d962a90b6",
+  "planFingerprint": "14d86a47dd0dad835eaa952595c542feb49917bdfdfbfe8539215535c83cbe70",
+  "planFileHashes": {
+    "00-overview.md": "cba8eba5b971f46ef0e91fdf0a94fec948533bbc9f1c8969ffdd118367a54e90",
+    "01-core-required-seams.md": "9dbf3d937486e3d254c57f8e0289e8388979efeb71883aeb6591740dfc02c0e8",
+    "02-shed-status-adapter.md": "4e6f8421dcf9ece53cbb9e61d225e9db18cf41a3886007a2f7a4bf95e4c55be8",
+    "03-required-seam-installer.md": "d046127fec51452b952ffd51421de3699aee283bf7edce4c731ef81ec9d6c34c",
+    "04-origin-reads-seams.md": "5364437c9150ebcc5eb45595f61a127d2b2debdf981e9033e63820437f4af1e6",
+    "05-failed-push-core.md": "eee7f5125236ff7bc5da95fc5a60f11d084afa1c9be185f6c8ab46605259ebe5",
+    "06-push-lock-holder-core.md": "76c68e79d5602da664efe15990dffd4c8119987a1c968af46349a1270d2b2426",
+    "07-push-side-core.md": "8bcf68e8f5e620a08dfd6dbebdf5ddc2396a380dc7097386be8cbfb7f9739891",
+    "08-pair-push-core.md": "1a2081f7a19389580da0067a39da0cdc98c68180e81b39c40a45117d98e798b5",
+    "09-origin-judge-core.md": "74cac858acaaafd7ffbb6a369f4327c5a32f1bd3e353276d93bc3bc11dcb86e8",
+    "10-origin-ended-core.md": "b155fdfa7e345ed85bc108264f6dfe4da22732cd428c10f3c88fa36d3feb42c9",
+    "11-origin-moves-core.md": "594083496f35f2772b142fbc97be78e728cc6c66a3f8c8c2d64e854ad2e01bbf",
+    "12-board-test-moves.md": "94d2da82b114b3d12a849f3ebfe44be1c7fb429ceba97ca11bcaa34d41105f07"
+  },
+  "planOverviewFrameHash": "0adb8156c549f8a1dac4ea8a255ac7aff8460c9ba77830b841c00413388ca57f",
+  "partition": [
+    {
+      "cards": [
+        "01-core-required-seams",
+        "02-shed-status-adapter",
+        "03-required-seam-installer"
+      ],
+      "profile": "wide",
+      "estimate": 219968,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54904,
+        "read_union": 42052,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 528,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/testkit/fabrickit/doc.go": 84,
+              "package:internal/fabriccore": 2000,
+              "package:internal/testkit/fabrickit": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/testkit/fabrickit": 2000
+            },
+            "messages": 80.5,
+            "written": 24678
+          },
+          {
+            "card": 2,
+            "card_text": 396,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1476,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 41,
+            "written": 12696
+          },
+          {
+            "card": 3,
+            "card_text": 888,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 1956,
+              "file:internal/fabricengine/doc.go": 8112,
+              "file:internal/hubforge/doc.go": 468,
+              "package:cmd/lym": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/hubforge": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/hubforge": 2000
+            },
+            "messages": 282.5,
+            "written": 85638
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-origin-reads-seams"
+      ],
+      "profile": "wide",
+      "estimate": 160356,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61904,
+        "read_union": 19804,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 948,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 2856,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 259,
+            "written": 78648
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-failed-push-core",
+        "06-push-lock-holder-core"
+      ],
+      "profile": "wide",
+      "estimate": 230624,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68904,
+        "read_union": 10352,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 972,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/fabricengine/wayforward_test.go": 540,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 293.5,
+            "written": 89022
+          },
+          {
+            "card": 6,
+            "card_text": 696,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 205.5,
+            "written": 62346
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-push-side-core"
+      ],
+      "profile": "wide",
+      "estimate": 229928,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75904,
+        "read_union": 28660,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 2364,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/fabricengine/doc.go": 8112,
+              "file:pattern/PATTERN-fabric-boundary.md": 2040,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 410,
+            "written": 125364
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-pair-push-core"
+      ],
+      "profile": "wide",
+      "estimate": 188168,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82904,
+        "read_union": 13104,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 960,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 304,
+            "written": 92160
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-origin-judge-core"
+      ],
+      "profile": "wide",
+      "estimate": 222234,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89904,
+        "read_union": 21468,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 1212,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/fabricengine/doc.go": 8112,
+              "package:cmd/lym": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 365.5,
+            "written": 110862
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-origin-ended-core",
+        "11-origin-moves-core"
+      ],
+      "profile": "wide",
+      "estimate": 280250,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96904,
+        "read_union": 25876,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 804,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/fabricengine/doc.go": 8112,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 227.5,
+            "written": 69054
+          },
+          {
+            "card": 11,
+            "card_text": 816,
+            "reads": {
+              "file:internal/fabriccore/doc.go": 144,
+              "file:internal/fabricengine/doc.go": 8112,
+              "package:cmd/lym": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabriccore": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lym": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabriccore": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 292,
+            "written": 88416
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-board-test-moves"
+      ],
+      "profile": "wide",
+      "estimate": 249432,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103904,
+        "read_union": 31000,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 1728,
+            "reads": {
+              "file:internal/boardengine/doc.go": 4692,
+              "file:internal/fabricengine/doc.go": 8112,
+              "file:internal/gitkit/doc.go": 468,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitkit": 2000,
+              "package:internal/testkit/boardkit": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitkit": 2000,
+              "tests:internal/testkit/boardkit": 2000
+            },
+            "messages": 376,
+            "written": 114528
+          }
+        ]
+      }
+    }
+  ],
+  "batches": {
+    "1": {
+      "slug": "core-required-seams",
+      "cards": [
+        "01-core-required-seams",
+        "02-shed-status-adapter",
+        "03-required-seam-installer"
+      ],
+      "cardHashes": {
+        "01-core-required-seams": "9dbf3d937486e3d254c57f8e0289e8388979efeb71883aeb6591740dfc02c0e8",
+        "02-shed-status-adapter": "4e6f8421dcf9ece53cbb9e61d225e9db18cf41a3886007a2f7a4bf95e4c55be8",
+        "03-required-seam-installer": "d046127fec51452b952ffd51421de3699aee283bf7edce4c731ef81ec9d6c34c"
+      },
+      "startSha": "4193549e00552e9d5e3fb0a7955c5a1791162644",
+      "kind": "fork",
+      "spawnedAt": "2026-11-28T16:09:30Z",
+      "sessionId": "dacc6059-b7fb-493f-a0d3-1e7ef648a403",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  },
+  "currentBatch": 1,
+  "masterStrand": "7099519bb1a6bd9665ae79f593b641af",
+  "masterSessionId": "dacc6059-b7fb-493f-a0d3-1e7ef648a403",
+  "masterEngine": "claude",
+  "masterNotePaths": [
+    "/home/knatte/Code/loomyard-LYMHUB/fabric-core-push-origin/_lym/loom/friction/webster-master.md"
+  ],
+  "masterRecordsBase": "8fea47860ece3cf762a9dfce2fbaabb66b732bc4"
+}
