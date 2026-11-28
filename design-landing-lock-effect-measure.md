@@ -2,8 +2,6 @@
 
 `landing-lock-effect-measure` · Note · research, landing, batten
 
-Depends on: [`finalize-owed-tips-gate`](design-finalize-owed-tips-gate.md)
-
 ## Why
 
 `landing-lock-only-for-land` (`d87a9ce24`) made Finalize merge and gate with no parent lock held, and take the lock only to land.

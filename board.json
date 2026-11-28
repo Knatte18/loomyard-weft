@@ -694,34 +694,6 @@
       "profile": "light"
     },
     {
-      "id": 1765,
-      "handle": "T4",
-      "slug": "finalize-owed-tips-gate",
-      "title": "Finalize: a parent ahead by owed landing tips loses every race and verifies under the parent lock",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "landing"
-      ],
-      "issues": [
-        292
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #292](https://github.com/Knatte18/loomyard/issues/292).\n\n## What happened\n\nWith local landing, a parent that is ahead of origin by owed landing tips always reads as moved to Finalize's locked pass.\nThe lock-free pass records the upstream tip (`parentMergeTip`) as the gated tip, while the parent's head is past it.\nEvery such landing therefore loses each of its `landing.finalize_lost_races` races, then merges and runs verify under the parent lock.\nThe behavior was left as it is because `gateUnlocked` and `parentMergeTip` were outside the card's targets.\n\n## Why it is abnormal\n\nThe landing is correct, but the parent lock is held across the verify for as long as an earlier landing's push is owed.\nThe lock-free gate gives no benefit in that state, and other landings on the same parent wait.\n\n## What to do\n\nMake the lock-free pass gate against the parent's local head when that head is ahead of origin only by owed landing tips.\n\nProvenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.\n",
-      "status": "done",
-      "created": "2026-11-27T21:39:10Z",
-      "revised": "2026-11-27T21:40:02Z",
-      "run_settings": {
-        "beam": {
-          "land_notice": "on"
-        }
-      },
-      "profile": "light"
-    },
-    {
       "id": 1767,
       "handle": "T8",
       "slug": "runpusher-removed-worktrees",
@@ -875,9 +847,7 @@
         "batten"
       ],
       "issues": [],
-      "depends_on": [
-        "finalize-owed-tips-gate"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Why\n\n`landing-lock-only-for-land` (`d87a9ce24`) made Finalize merge and gate with no parent lock held, and take the lock only to land.\nWhether ready runs now land without queuing is unmeasured.\nOn 2026-11-28 `reset-partial-commit-push` still showed 38 minutes at Finalize with no agent activity before it took the lock on `main`.\nThe answer decides whether the landing queue note `landing-queue` is still worth building.\n\n## What to measure\n\nFrom the drive reports and gate run logs of landings already made, no new runs:\n\n- For each landing, the time from Finalize's start to taking the parent lock, the time holding it, and the lost races (`landing.finalize_lost_races`).\n- How often a run fell back to merging and gating under the lock.\n- The same figures for the landings before `d87a9ce24`, for comparison.\n\nCap: the last 20 landings before `d87a9ce24` and the first 20 after `finalize-owed-tips-gate` lands, on the prime of this hub.\nThe report lands as a commit under `docs/research/`.\n",
