@@ -15,7 +15,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | PR-Review | neve | 1h<br>1h | loom, landing |
+| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | landing · Finalize | neve | 1h<br>1h | loom, landing |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | Darn-Write | neve | 3h<br>3h | weaver, webster |
 
 ## Layer A (2)
