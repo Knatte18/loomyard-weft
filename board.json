@@ -1218,6 +1218,44 @@
       "revised": "2026-11-28T13:24:49Z",
       "profile": "light",
       "project": "implementer-gate-time"
+    },
+    {
+      "id": 1811,
+      "handle": "B1",
+      "slug": "webster-audit-master-friction",
+      "title": "Webster run-exit audit flags Master friction note as a parent write",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-28, `kde-window-placement-build`)\n\nAt a Webster run exit, the audit raised `parent-write` against `_lym/loom/friction/webster-master.md`, changed since Master spawned.\nThat file is Master's own friction note: `_lym/webster/state.json` lists it under `masterNotePaths`, and the finding's own text says Master may write its friction note.\nThe way forward it named, restoring the file to the records commit, deletes the note, since that commit does not hold it; `lym webster accept-audit` refuses while the file differs.\nSo the run lost its friction note to clear a false finding.\n\n## Idea\n\nThe parent-write audit admits every path in `masterNotePaths`, so a Master friction note never raises a finding.\n",
+      "created": "2026-11-28T13:33:40Z",
+      "revised": "2026-11-28T13:33:40Z"
+    },
+    {
+      "id": 1812,
+      "handle": "B2",
+      "slug": "kwin-home-desktop-gone",
+      "title": "A window whose home desktop no longer exists keeps that home after it is placed elsewhere",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "termwindow"
+      ],
+      "issues": [],
+      "depends_on": [
+        "kde-window-placement-build"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-28, Webster friction note of `kde-window-placement-build`)\n\nA batch fork reading `internal/kwinplace/places.go` noted that a window whose home desktop no longer exists is placed on another desktop but keeps the old home.\nIt left this unchanged as outside its cards, and nobody has verified it.\n\n## Idea\n\nVerify the case; when it holds, the placement records the desktop it used as the window's new home, or states why the old home is kept.\n",
+      "created": "2026-11-28T13:33:41Z",
+      "revised": "2026-11-28T13:33:41Z"
     }
   ],
   "prime_owner": "neve",
