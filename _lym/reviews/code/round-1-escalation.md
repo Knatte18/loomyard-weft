@@ -1,0 +1,98 @@
+---
+round: 1
+cause: decision
+---
+# Escalation — review segment `Code-Bouncer`, round 1
+
+You are a one-shot fork of the parent session of a tapestry run.
+The run's review segment `Code-Bouncer` for task `pr-session-mail-stand-ins` has stopped at round 1 and is `awaiting` a decision.
+The cause is `decision`:
+
+- `circling`: the judge found no progress on recurring gating findings, or a design-wrong finding returned after a continue.
+- `budget`: the budget is spent and the round cannot settle as an accept by itself:
+  BLOCKING findings are still open, the round's live gate is red, or the soft-cap rule could not read its inputs.
+  The detail below, when present, names which.
+  A round whose review also holds `decision`-class findings reaches this cause when such BLOCKING findings are open,
+  and its detail names those findings.
+- `hard-cap`: the round is at or past the perch's hard cap with a design-wrong finding still open, or a continue was recorded there.
+- `decision`: the round's review holds a finding the review cannot settle itself.
+- `stalemate`: the review target stayed unchanged for the configured number of rounds in a row.
+
+### Decision findings
+
+Each finding below is a question the review could not settle itself.
+Where an arbiter runs, it settles each finding the board entry and the decision record answer before the parent sees it.
+Settle each remaining finding yourself when it is a run-level call, and put it to the operator only when it is a design question, unless a recorded operator decision answers it.
+
+- `F2` (BLOCKING): The new test adds uses of two standing fakes whose inventory verdicts forbid new uses, prkit.API (verdict goes) and creelfake.Delivery through startNoticeOrch (verdict real); the halt row's unknown-strand refusal rests on the fake delivery's hand-written strand list. Fix: Leave the code in place and defer this finding to the run's parent. The tree has no recorded GitHub stand-in to drive pullrequest.Client over, and no reed-backed creel delivery at tier1. Only the parent can rule whether this task builds them, or whether the board entry's tier1 test over a real creel daemon accepts the two standing fakes. The parent files that ruling as a board note for a new task.
+
+### BLOCKING findings of the round's review
+
+- `F1` (BLOCKING): The new tier1 test hand-writes the Mode, Origin and TaskHead seams, standing in for beam.yaml config and fabric, though it holds a real pair whose wired seams read them; PATTERN-test-stand-ins forbids a change adding such a stand-in. Fix: In prReviewMailDeps, stop assigning pr.Mode, pr.Origin and deps.TaskHead by hand. Take Mode and Origin from the same pullRequestDeps(pair, ...) value the test already takes MailAgent from, and read TaskHead from the pair's real HEAD through fabric. Set the state those seams read through each owner: beam.yaml's pull_request through configengine.Set over the beam template, and the pair's origin URL and upstream through fabric or git in the hub fixture. Assert the expected head and mail text from that real head instead of the literal "head".
+- `F2` (BLOCKING): The new test adds uses of two standing fakes whose inventory verdicts forbid new uses, prkit.API (verdict goes) and creelfake.Delivery through startNoticeOrch (verdict real); the halt row's unknown-strand refusal rests on the fake delivery's hand-written strand list. Fix: Leave the code in place and defer this finding to the run's parent. The tree has no recorded GitHub stand-in to drive pullrequest.Client over, and no reed-backed creel delivery at tier1. Only the parent can rule whether this task builds them, or whether the board entry's tier1 test over a real creel daemon accepts the two standing fakes. The parent files that ruling as a board note for a new task.
+
+### Refusal
+
+none
+
+When a refusal is named, the round is re-judged before the recorded answer acts while budget is left.
+An `accept` passes the round over every BLOCKING finding listed once a judgment is admitted, except that over a CONTINUE or CIRCLING verdict an open BLOCKING ledger entry of another class holds it: the round then runs another round, or inside the soft-cap window escalates again with cause budget, which only the parent accepts. An `accept` at or past the hard cap halts the run if the refusal still holds at the budget.
+A `continue` runs another round whose fresh reviewers re-review the artifact, so a listed BLOCKING finding reaches that round's fixer only if they raise it again.
+
+### Way forward
+
+The task's scope closed before this segment, so no decision enters the record, and `lym loom decision add` refuses.
+Rule each finding the decision record already asks for in scope by passing its id to `--in-scope` on the continue verb below; the next round's fixer then takes it.
+File every other call as a board note for a new task with `lym board upsert` and kind note.
+Then record the segment's outcome with exactly one of:
+
+- `lym loom circling continue pr-session-mail-stand-ins --in-scope <finding-id>`, the flag repeated per finding, for a round whose fixer takes the findings ruled in scope
+- `lym loom circling accept pr-session-mail-stand-ins` to proceed
+
+Then resume the run with `lym loom resume`.
+
+What a ledger entry's `design-wrong` and `mechanical` tags mean is defined in `/home/knatte/Code/loomyard-LYMHUB/_bolt/_lym/stencils/bouncer/bouncer-template-judge.md`.
+
+## Materials
+
+Read these before you decide anything:
+
+1. The arbiter attempt's `envelope.json`, when your parent session names one: read it first, since the arbiter already judged the review materials by its own rule and its `question` is what you answer.
+2. The round's review at `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/reviews/code/round-1-review.md`.
+3. The round's ledger at `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/reviews/code/round-1-bouncer-ledger.md`.
+4. The judge's verdict at `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/reviews/code/round-1-bouncer-verdict.md`.
+5. The decision record at `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins/_lym/discussion/decision-record.md`, when it exists.
+6. The support log `support-log.md` in the decision record's directory, read when the definition below needs its `## Interview`.
+
+The run's worktree is `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins`.
+
+## What to do
+
+Settle the question only when a recorded operator decision answers the envelope's question directly.
+A recorded operator decision is one of:
+
+- A passage of the task's board entry that the entry marks as an operator decision with a date, as `Operator decision (<date>)` does.
+- A board note whose body states that it records an operator decision.
+- A decision-record entry added with `--by operator` that is already in the committed decision record when the escalation arrives.
+- A Discussion answer that the support log's `## Interview` shows the operator gave.
+
+These never count: an `Idea` or agent-suggestion passage, an operator view not marked as a decision, a decision-record entry added with `--by arbiter` or `--by parent`, a writer's auto-pick, and an `## Auto-mode assumptions` entry.
+`--by` is an unverified label, since only `--by arbiter` is restricted, so a `--by operator` entry counts only when it was in the committed decision record before the escalation.
+Never settle a question whose answer widens the task's scope, and never accept over an open design-wrong finding unless a recorded operator decision covers that finding.
+At cause `budget`, decide nothing: report back to your parent session what the cause names,
+which the parent settles by accepting the round or ordering another one.
+
+When a recorded operator decision answers the question:
+
+1. Record the operator decision you applied, citing where it is recorded, with `lym loom decision add pr-session-mail-stand-ins --by parent --title … --decision … --rationale …`, run in `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins`, when the decision record exists; never record with `--by operator`.
+   Without a decision record, name the applied decision and its source in your report back to your parent session instead.
+   When the verb refuses because the task's scope is closed, name the applied decision and its source in your report back instead,
+   and handle each decision finding as the cause detail says for a closed scope.
+2. On the ground of the operator decision you applied, record the segment's outcome with exactly one of:
+   - `lym loom circling accept pr-session-mail-stand-ins` ends the segment unconverged on this round.
+     The segment passes with its open findings, recorded as unconverged.
+   - `lym loom circling continue pr-session-mail-stand-ins` runs one more round.
+3. Resume the run with `lym loom resume` in `/home/knatte/Code/loomyard-LYMHUB/pr-session-mail-stand-ins`.
+
+Otherwise record nothing and report back to your parent session, which asks the operator.
+The run stays `awaiting`.
