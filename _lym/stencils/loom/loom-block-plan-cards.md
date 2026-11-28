@@ -4,7 +4,7 @@
      so it declares two required markers: {{.specs_dir}} and {{.gate_tiers}}.
      It names no step of the stencil around it;
      each including stencil states its own rule for the lines this block leaves out.
-lym-stencil: sha256=d8746ff91b3d897c16c1637e8796ad6b7d71e1a6f292d3b31267b4baacbcc6e9 build=2326ef4da0640800959a1d7b2bc9c3444f708748 time=2026-11-27T13:07:11Z -->
+lym-stencil: sha256=345c2ebda0c0e9e853da7ad01c9ae4085f980084180cae0e24dcd8cff97bcc39 build=1ae03e17f62aa83fbd81bfa9dbadabad3645366e time=2026-11-28T11:31:35Z -->
 
 A symbol `Rename` needs the hub's `language.rename_tools`; the plan gate refuses one when the list is empty.
 
@@ -53,6 +53,12 @@ A test that calls only the refusal's error constructor does not reach it.
 
 A card whose `**Intent:**` covers every instance of one kind across the repository lists every file holding one.
 Its Intent names the repository search that found them, so a reviewer can re-run it to prove the list complete.
+
+Each claim a card makes about the code is one you read in the code:
+who reads or writes a field or value, through every function on the call chain;
+whether a member is exported or otherwise visible from the package that uses it, and whether a test or seam can reach it from there;
+and which input reaches a branch once every check before it passes.
+No card's rule or claim contradicts another card's, or is made false by another card's change.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.
 

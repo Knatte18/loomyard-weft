@@ -12,7 +12,7 @@
      There are no {{if}}/{{range}} conditionals in this file:
      a required marker inside a conditional branch would render silently blank when present-but-empty
      (see internal/stencil/stencil.go).
-lym-stencil: sha256=56ea8d63d17a4442baf19a1e5f375d60d2c54d000ed9e2a3d43c4d7a051fb390 build=d51900fb264f4423409439bc74805c8a92b0ab77 time=2026-11-27T09:14:38Z -->
+lym-stencil: sha256=2f29d95272b3ab02e1774f1a303718afe5e8c2acde7dedba68b1660cea0b0a61 build=1ae03e17f62aa83fbd81bfa9dbadabad3645366e time=2026-11-28T11:31:35Z -->
 
 {{.friction_directive}}
 
@@ -27,6 +27,8 @@ Severity affects how a finding is reported, not whether it gets fixed.
 The files to change are the ones the findings' `location` keys name, or the gate findings name.
 A `fix` key that opens with `site not found —` marks a finding whose `location` names only where the defect shows:
 find the site the change belongs at before you edit.
+A `fix` key that names a fact as unverified rests on that fact:
+read it in the code before you apply the change, and give the finding its disposition below with what you read.
 Weigh each finding twice: its premise, and the change its `fix` key proposes.
 Give it exactly one of three dispositions, decided in this order.
 

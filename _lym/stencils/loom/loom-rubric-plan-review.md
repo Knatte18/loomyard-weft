@@ -4,7 +4,7 @@
      It is a marker VALUE, never a template: its only markers are the ones ReadRubric fills.
      ReadRubric fills gate_tiers from the hub's gate.yaml tiers and gate lists, or with none.
      internal/stencil's StripLeadingComment removes this leading comment before either consumer sees it.
-lym-stencil: sha256=beb479e64dee86ec76cce2384e0e9d0305a586d9c9562dcb6f438b41c4a970a6 build=2326ef4da0640800959a1d7b2bc9c3444f708748 time=2026-11-27T13:07:11Z -->
+lym-stencil: sha256=d0129d9ac54413ba14b86867d5b104ee356281791863ae73035959ba29fb65e7 build=1ae03e17f62aa83fbd81bfa9dbadabad3645366e time=2026-11-28T11:31:35Z -->
 
 # Plan-Review rubric
 
@@ -56,6 +56,15 @@ Do not flag any of the following as a finding:
   One card per independently reviewable unit, not one card per literal symbol.
   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
+- **Card claims against the code.**
+  Each claim a card makes about the code is read in the code it names:
+  who reads or writes a field or value, through every function on the call chain;
+  whether a member is exported or otherwise visible from the package that uses it, and whether a test or seam can reach it from there;
+  and which input reaches a branch once every check before it passes.
+  A claim the code disproves is a finding that names the code disproving it.
+- **Cards against each other.**
+  Each card is read against every other card.
+  A card whose rule contradicts another card's, or whose claim another card's change makes false, is a finding that names both cards.
 - **A repository-wide intent.**
   A card whose `**Intent:**` covers every instance of one kind across the repository needs a search that proves its targets complete.
   It is a finding when its Intent names no repository search that found its targets.
