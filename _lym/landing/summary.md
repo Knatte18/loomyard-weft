@@ -1,49 +1,66 @@
-# beam.autonomy takes false, true or unattended, read as a level
+# beam.autonomy takes false, true or unattended
 
-`beam.autonomy` gains a third value, `unattended`: a stricter autonomy level under which the orch settles every halt and never asks the operator, and only a severe halt reaches them.
-`false` and `true` keep their meaning, so every existing layer and every boolean in a task's `run_settings` stays valid and no reinterpretation ships.
+`beam.autonomy` was a boolean.
+It now takes three levels, to make room for a stricter overnight mode:
 
-## What changes
+- `false`: the orch relays to the operator every halt it does not settle, as before.
+- `true`: autonomy, as before.
+- `unattended`: meant as the level where the orch settles every halt and never asks the operator,
+  and only a severe halt reaches them.
+  The orch prompt line and the template comment say so; the orch role texts do not yet define the handling.
 
-- `dobbyengine.AutonomyLevel` is a string type with `AutonomyOff` (`"false"`), `AutonomyOn` (`"true"`) and `AutonomyUnattended` (`"unattended"`), and an `On()` method that reports true for both `true` and `unattended`.
-  The text values are declared once in `beamsetting`, beside the other per-task values, with `AutonomyValues()`.
-- `checkTaskSetting`, the one value check for per-task settings, takes a YAML boolean or the text `unattended`.
-  Every path that runs it takes the three levels alike: `LookupAutonomy`, `LoadConfig`'s check of the resolved file (which `lym config beam --set` runs) and `CheckLocalValues` (which a task's `run_settings` runs).
-  Any other value, the quoted text `"true"` included, is refused, naming `[false true unattended]` and `lym config beam --set autonomy=<false|true|unattended>`.
-- `LookupAutonomy` and `hubgeom.Autonomy` return the level.
-  A refused value reads as `AutonomyOff`, the level at which the orch asks the operator.
-  `hubgeom.AutonomyWithRefusal` returns the same level and also hands back the refusal when the read failed on a value the key does not take.
-- Readers that ask only whether autonomy is on (the run's forced loom and drift keys, the pawl run's autonomy seam and the Slack hook's reply filter) read it through `On()`, so `unattended` counts as on for them.
-- A halt notice's stamp carries the level: `; autonomy: false`, `; autonomy: true` or `; autonomy: unattended`, through the new `orchcli.StampAutonomy`.
-- The dobby stamps its gate-hold notices, run notices and watch lines through a per-dobby `runAutonomyStamps`.
-  When a run's value is refused, the first stamped mail is preceded by one mail to the dobby's orch carrying the refusal.
-  The episode ends at the run's next read that is not refused, so a later refusal is posted again.
+What changes with the third level:
+
+- The lookup, the beam config load, `lym config beam --set` and a task's `run_settings` accept all three.
+  Any other value is refused, naming the three and `lym config beam`.
+- A halt notice's `autonomy:` stamp carries the level.
 - The board's beam modes show `off`, `on` or `unattended`.
-- The orch prompt's autonomy line names the level; `unattended` gets a line of its own.
-- The template comment on `beam.autonomy` names the three values and says to set `unattended` only once every machine of the hub runs a build that knows it, since an older build refuses the beam config while a layer holds it.
+- The orch prompt's autonomy line names `unattended` when that is the level.
+- The template comment on `beam.autonomy` describes all three.
+- Readers that ask only whether autonomy is on (loom's run and pawl wiring, the Slack wiring) treat `true` and `unattended` as on.
+- A refused value still reads as `false`.
+  The dobby now also posts the refusal to its orch, once per episode, when it stamps one of its own mails about that run.
 
 ## Design decisions
 
-- Only a refusal (an error marked `configengine.ErrInvalid`) is posted to the orch.
-  A read that fails for another reason, such as a prime that does not resolve, still reads `false` and warns once per episode in the log, as before, but posts nothing.
-- A refusal post that fails is logged and leaves the episode open and untold, so the run's next refused read tries the post again.
-- The orch role texts, which name `autonomy: true` as the stamp that calls for the autonomy rules, are not changed here.
-  The rules for the `unattended` level and the glossary entry for it come in a separate change.
-  Until then an orch receiving `autonomy: unattended` has no role text for that level.
-  This is why the template comment carries the bound, and why an operator should not set the level before that change lands.
+- `false` and `true` keep their meaning, so no config reinterpretation ships and a boolean in a board `run_settings` stays valid.
+- `dobbyengine.LookupAutonomy` and `hubgeom.Autonomy` return a `dobbyengine.AutonomyLevel` instead of a bool.
+  `On()` answers the on-or-off question.
+- The level strings are declared once, in `beamsetting`.
+  `orchengine` has its own `AutonomyLevel`, which `orchcli` maps to.
+- `hubgeom.AutonomyWithRefusal` hands the refusal to the dobby.
+  A read that fails for another reason neither posts nor ends an episode.
+- The refusal is posted without holding the lock, so another mail of the same run stamped meanwhile may arrive first.
+  A failed post is retried at the run's next refused read.
 
-## Tests
+## What the tests pin
 
-- `TestAutonomyLevels_EveryCheckingPathTakesTheThreeLevels` (tier 0, `internal/dobbyengine`) runs the lookup, `LoadConfig` and `CheckLocalValues` over the same documents.
-  It pins that `false`, `true`, `unattended` and a quoted `"unattended"` pass with the right level and `On()`, that a boolean document passes the local check that a task's `run_settings` goes through, and that `maybe`, `"true"` and `1` are refused on every path, read as `AutonomyOff` and name the three values and the way forward.
-  It replaces the old `LoadConfig` row that expected "true or false".
-- `TestAutonomy` (tier 1, `internal/hubgeom`) adds an `unattended` row, and pins that a refused value reads `AutonomyOff` with its refusal handed back and one warning, and that a failure that is not a refusal hands back none.
-- `TestBeamModes` (tier 1) sets the beam to `unattended` and expects the mode `unattended` set by the beam.
-- `TestHubDobbyDeps_RunNoticePostCarriesTheRunsAutonomy` (tier 1, `internal/beamcli`) adds an `unattended` row stamped `unattended`, and a refused row whose three mails are stamped `false` and preceded by exactly one refusal mail to the orch.
-- `TestWithLaunchFacts` adds `unattended` rows for the orch prompt's line.
-  The other orch tests switch their autonomy seam to the level type.
+- The lookup, the beam config load and the local values check accept `false`, `true` and `unattended`.
+  They refuse any other value, naming the three and `lym config beam`.
+- `hubgeom` returns the level and reads a refused value as `false`.
+- A dobby mail's stamp carries the level, and a refusal is posted once per episode.
+- The board's beam modes show `unattended`.
+
+## To check by hand
+
+- The orch role texts under `contracts/orchrole/` are unchanged and do not mention `unattended`.
+  `role-autonomy.md` and `orch-role.md` tie autonomy handling to a notice carrying `autonomy: true`,
+  while the prompt line for `unattended` points the orch to `role-autonomy.md`.
+  Check that this is acceptable until the role texts describe the level, or hold off setting `unattended`.
+- Check that `TestRunAutonomyStamps_PostsARefusalOncePerEpisode`
+  (`internal/beamcli/dobbyautonomystamps_test.go`) opens with `tiergate.Require(t, 0)`,
+  as `TestTierTags_OneTierPerTestFile` in `cmd/lym` demands.
+- Halt notices that loom and batten post through `NotifyParentHalt` and `NotifyRunFromHalt`
+  (`internal/orchcli/notify.go`) stamp a refused value as `false` and drop the refusal.
+  The orch learns of it only when the dobby stamps one of its own mails about the run,
+  so under `beam.run_watch: off` it may never learn why.
+  Decide whether that gap is acceptable.
 
 ## Merge danger
 
-**Door:** two-way
-**Blast radius:** autonomy
+**Door:** one-way
+**Blast radius:** config
+
+A build older than this change refuses the beam config while a layer holds `unattended`, and so does a revert of it.
+Nothing in the change writes that value; the risk starts when someone sets it.
+Set it only once every machine of the hub runs a build that knows it, and remove it before reverting.
