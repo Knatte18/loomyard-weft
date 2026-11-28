@@ -104,7 +104,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)<br>[Sketch](decision-recipe-build-from-sketch.md) | raddle | Raddle-File | neve | 2h<br>10m | shed, loom, batten, board |
+| T3 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md)<br>[Sketch](decision-recipe-build-from-sketch.md) | raddle | Raddle-Write | neve | 2h<br>10m | shed, loom, batten, board |
 
 ### Features (2)
 
